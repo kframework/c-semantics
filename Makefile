@@ -35,6 +35,9 @@ dist: $(DIST_DIR)/dist.done
 
 filter: $(OUTPUT_FILTER)
 
+pdf:
+	@make -C $(SEMANTICS_DIR) pdf
+
 $(OUTPUT_FILTER): $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
 	make -C $(OUTPUT_FILTER_DIR)
 
@@ -82,7 +85,7 @@ cparser:
 	@make -C $(PARSER_DIR)
 
 kcompile:
-	@make -C $(SEMANTICS_DIR) dynamic
+	@make -C $(SEMANTICS_DIR) semantics
 
 benchmark: profile.csv
 

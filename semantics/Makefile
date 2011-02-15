@@ -16,8 +16,14 @@ PROGRAM_TARGET = $(foreach var, $(PROGRAM_BASE_NAMES), program-$(var)-compiled.m
 PROGRAM_TARGET_NO_MAUDE = $(foreach var, $(PROGRAM_BASE_NAMES), program-$(var)-compiled)
 COMPILED_PROGRAM_LOADS = `echo -e "$(foreach var, $(PROGRAM_TARGET_NO_MAUDE), load $(var) .\n)"`
 
+ALL_K_FILES = common-c-syntax.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
+match-c-syntax.k match-c-semantics.k match-c-configuration.k \
+dynamic-c-semantics.k dynamic-c-configuration.k
 
-.PHONY: all clean force check-input dynamic match semantics
+LATEX_CLEAN_FILES = c.tex c.aux c.log temp.pdflatex.out *.pdf temp.kpdf.out
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
+
+.PHONY: all clean force check-input dynamic match semantics pdf common-pdf-modules common-c-%-fake
 
 .SECONDARY:
 
@@ -27,17 +33,39 @@ check-input:
 ifeq ($(INPUT),)
 	exit 1
 endif
+
+pdf: common-pdf-modules
+#c-expressions.pdf
+
+# these are fake in order to set the modules correctly
+common-c-%-fake: PDF_MODULES=`grep -o '^kmod.* is' common-c-$*.k | grep -o ' .* '`
+common-c-%-fake: c-%.pdf
+	@true
+
+# this is used to start all of the common files
+common-pdf-modules: common-c-statements-fake common-c-expressions-fake common-c-memory-fake
+
+c-%.pdf: c.k $(ALL_K_FILES) Makefile
+	@rm -f temp-c-$*.tex
+	@cp c.k temp-c-$*.k
+	@echo "Creating latex..."
+	@$(K_MAUDE) temp-c-$*.k -l C -style bb -latex $(PDF_MODULES) 1> temp.kpdf.out
+	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\geometry{papersize={17in,11in},textwidth=16.75in,textheight=10in}\\begin{document}|' temp-c-$*.tex
+	@echo "Compiling latex..."
+	@pdflatex temp-c-$*.tex 1> temp.pdflatex.out
+	@mv temp-c-$*.pdf $@
+	@echo "Done."
 	
 c-syntax.k: Makefile
 	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.k	
 	
 c.k: c-syntax.k c-maude.template Makefile
-	@printf "`cat c-maude.template`" $(K_PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.k
+	@printf "`cat c-maude.template`" $(K_PRELUDE) dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
-c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) \
-common-c-syntax.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
-match-c-syntax.k match-c-semantics.k match-c-configuration.k \
-dynamic-c-semantics.k dynamic-c-configuration.k
+
+	
+c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
 	@$(K_MAUDE) c.k -u -language C
 	@echo "Done".
@@ -48,27 +76,10 @@ c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL
 #load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 #echo adds a newline
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl slurp.pl ./ > c-total.maude
-	
-dynamic-test: dynamic test.maude
-
-match-test: match test.maude
-
-dynamic: SEMANTICS_MODULE = "DYNAMIC-C-SEMANTICS" 
-dynamic: SEMANTICS_FILE = "dynamic-c-semantics"
-dynamic: CONFIGURATION_FILE = "dynamic-c-configuration"
-dynamic: semantics
-
-match: SEMANTICS_MODULE = "MATCH-C-SEMANTICS"
-match: SEMANTICS_FILE = "match-c-semantics"
-match: CONFIGURATION_FILE = "match-c-configuration"
-match: semantics
 
 semantics: c-total.maude
 
 clean:
-	rm -f program-*-gen.maude program-*-compiled.maude program-*-compiled.maude.tmp kcompile_* quoted.maude \
-	c-syntax.maude c-syntax.k c-compiled.maude c.k c.maude test.maude programs-gen.maude test-benchmark.maude c-total.maude \
-	common-c-syntax.maude common-c-configuration.maude common-c-semantics.maude common-c-declarations.maude common-c-expressions.maude common-c-memory.maude common-c-typing.maude common-c-conversions.maude common-c-statements.maude common-c-standard-lib.maude match-c-syntax.maude shared.maude match-c-configuration.maude match-c-semantics.maude \
-	dynamic-c-configuration.maude dynamic-c-semantics.maude  
+	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp
 
 force: ;
