@@ -1,4 +1,5 @@
 Build the tool:
+	- set K_MAUDE_BASE to the path in which you installed the K framework.  e.g., export K_MAUDE_BASE=~/k-framework/trunk
 	- run "make"  in the main C directory
 
 Interpret a program:

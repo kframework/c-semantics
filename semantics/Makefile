@@ -1,11 +1,11 @@
-K-MAUDE-BASE = ../../../..
-K-COMPILE-BASE = tools/kompile.pl
-K-PROGRAM-COMPILE = $(K-MAUDE-BASE)/tools/kcompile-program.sh
+K_MAUDE_BASE ?= ..
+K_COMPILE_BASE = tools/kompile.pl
+K-PROGRAM-COMPILE = $(K_MAUDE_BASE)/tools/kcompile-program.sh
 
-K-MAUDE = $(K-MAUDE-BASE)/$(K-COMPILE-BASE)
-K-PRELUDE = $(K-MAUDE-BASE)/k-prelude
-K-PL-BUILTINS = $(K-MAUDE-BASE)/pl-builtins
-K-PL-MODEL-CHECKER = $(K-MAUDE-BASE)/k-model-checker
+K_MAUDE = $(K_MAUDE_BASE)/$(K_COMPILE_BASE)
+K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
+K-PL-BUILTINS = $(K_MAUDE_BASE)/pl-builtins
+K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
 ADDITIONAL_SYNTAX = "including MATCH-C-SYNTAX ."
 
@@ -32,20 +32,20 @@ c-syntax.k: Makefile
 	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.k	
 	
 c.k: c-syntax.k c-maude.template Makefile
-	@printf "`cat c-maude.template`" $(K-PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.k
+	@printf "`cat c-maude.template`" $(K_PRELUDE) $(CONFIGURATION_FILE) $(SEMANTICS_FILE) $(SEMANTICS_MODULE) > c.k
 	
-c-compiled.maude: c.k $(K-MAUDE-BASE)/k-prelude.maude $(K-MAUDE) \
+c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) \
 common-c-syntax.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
 match-c-syntax.k match-c-semantics.k match-c-configuration.k \
 dynamic-c-semantics.k dynamic-c-configuration.k
 	@echo "Compiling the C definition..."
-	@$(K-MAUDE) c.k -u -language C
+	@$(K_MAUDE) c.k -u -language C
 	@echo "Done".
 	
-c-total.maude: c-compiled.maude $(K-PRELUDE).maude $(K-PL-BUILTINS).maude $(K-PL-MODEL-CHECKER).maude Makefile
-#@sed -i '2 i load $(K-PL-MODEL-CHECKER)' c-compiled.maude
+c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude Makefile
+#@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 #@sed -i'' -e '2i\
-#load $(K-PL-MODEL-CHECKER)' c-compiled.maude
+#load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 #echo adds a newline
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl slurp.pl ./ > c-total.maude
 	

@@ -3,7 +3,12 @@ SEMANTICS_DIR = semantics
 PARSER_DIR = parser
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-OUTPUT_FILTER_DIR = ../../../tools/OutputFilter
+
+# this should be defined by the user
+K_MAUDE_BASE ?= .
+
+
+OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
 OUTPUT_FILTER = $(OUTPUT_FILTER_DIR)/filterOutput
 FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 #VPATH = programs
