@@ -73,25 +73,6 @@ endkm
 kmod COMMON-SEMANTICS-BOOLEAN is
 	including COMMON-INCLUDE 
 	
-	--- rule
-		--- < k > tv(0, ?) || E:Expression => sequencePoint ~> E:Expression ? tv(1, int) : tv(0, int) ...</ k >
-		--- [structural] 
-	--- rule
-		--- < k > tv(N:Nat, ?) || E:Expression => sequencePoint ~> tv(1, int) ...</ k >
-		--- if N:Nat =/=Bool 0
-		--- [structural] 
-		
-	--- rule
-		--- < k > tv(0, ?) && E:Expression => sequencePoint ~> tv(0, int) ...</ k >
-		--- [structural] 
-	--- rule
-		--- < k > tv(N:Nat, ?) && E:Expression => sequencePoint ~> E:Expression ? tv(1, int) : tv(0, int)  ...</ k >
-		--- if N:Nat =/=Bool 0
-		--- [structural] 
-	
-	--- make sure sequence points are maintained properly
-	
-	
 	rule
 		< k > E1:K || E:Expression
 			=> E1:K ? tv(1, int) : (E:Expression ? tv(1, int) : tv(0, int))
@@ -104,34 +85,16 @@ kmod COMMON-SEMANTICS-BOOLEAN is
 		[structural] 
 	
 	--- FIXME the types of these results are wrong.  The correct behavior is quite complicated.  see 6.5.15
-	--- rule
-		--- < k > tv(N:Nat, ?) ? E1:Expression : E2:Expression => sequencePoint ~> E1:Expression ...</ k >
-		--- if N:Nat =/=Bool 0
-		--- [structural] 
-		
-	--- rule
-		--- < k > tv(0, ?) ? E1:Expression : E2:Expression => sequencePoint ~> E2:Expression ...</ k >
-		--- [structural] 
+
 	rule
 		< k > E:K ? E1:Expression : E2:Expression 
 			=> IfThenElse(E:K, E1:Expression, E2:Expression) 
 		...</ k >
 		[structural]
 		
-	
-	--- rule !(tv(V:BaseValue, ?)) => tv(0, int)
-		--- if V:BaseValue =/=Bool 0
-		--- [structural] 
-	--- rule !(tv(V:BaseValue, ?)) => tv(1, int)
-		--- if (V:BaseValue ==Bool 0)
-		--- [structural] 
-		
 	--- c1x 6.5.3.3:5 The expression !E is equivalent to (0==E)
 	rule !(E:K) => tv(0, int) == E:K
 		[structural] 
-	--- rule !(tv(V:BaseValue, ?)) => tv(1, int)
-		--- if (V:BaseValue ==Bool 0)
-		--- [structural] 
 endkm
 
 kmod COMMON-SEMANTICS-SIZEOF is
@@ -300,7 +263,6 @@ endkm
 
 kmod COMMON-SEMANTICS-ARRAY-SUBSCRIPTING is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
-	--- can't be done everywhere because same syntax as in declarations
 	rule < k > E1:Expression[E2:Expression] => *(E1:Expression + E2:Expression) ...</ k > 
 		[structural] 
 endkm

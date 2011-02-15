@@ -35,7 +35,7 @@ void test(char *fmt, ...) {
       printf("int %d\n", d);
       break;
     case 'd':
-      printf("double %f\n", va_arg(ap, double));
+      printf("double %d\n", (int)(10000*va_arg(ap, double)));
       break;
     case 'l':
       printf("long long %lld\n", va_arg(ap, long long));
@@ -52,11 +52,11 @@ void test(char *fmt, ...) {
       break;
     case 'Q':
       qw = va_arg(ap, QuadWordS);
-      printf("QuadWord { %d, %f }\n", qw.i, qw.d);
+      printf("QuadWord { %d, %d }\n", qw.i, (int)(10000*qw.d));
       break;
     case 'L':
       ls = va_arg(ap, LargeS);
-      printf("LargeS { %d, %f, 0x%d, %d }\n", ls.i, ls.d, ls.ptr != 0, ls.j);
+      printf("LargeS { %d, %d, 0x%d, %d }\n", ls.i, (int)(10000*ls.d), ls.ptr != 0, ls.j);
       break;
     }
   va_end(ap);
