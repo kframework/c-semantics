@@ -15,3 +15,5 @@ Interpret a program:
 	- Wrap statements with StatementLoc holding the location
 	PROTO => Prototype
 	NO_INIT => NoInit
+
+For licensing information, see LICENSE.
