@@ -260,6 +260,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op _::_ : List{Type} List{Type} -> List{Type} [ditto metadata "ditto"] 
 	op Nil : -> List{Type} [ditto] 
 	
+	
+	op DeclType : K K -> K [metadata "strict(1)"] --- represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+	
+	
 	op setOfTypes : -> Set [memo] 
 	eq setOfTypes = Set(
 		l('arrayType),, 
@@ -276,7 +280,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op concretize : Type K -> K [metadata "strict(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
-	op DeclType : K K -> K [metadata "strict(1)"] --- represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	
 	op firstChar : String -> Char 
 	op nthChar : String Nat -> Char 

@@ -1398,7 +1398,7 @@ generic_assoc_list:
 ;
 generic_assoc:
 | DEFAULT COLON assignment_expression { GENERIC_DEFAULT (fst $3) }
-| type_name COLON assignment_expression { let b, d = $1 in GENERIC_PAIR (b, d, (fst $3)) }
+| type_name COLON assignment_expression { let b, d = $1 in let typ = (b, d) in GENERIC_PAIR (typ, (fst $3)) }
 
 
 postfix_attr:

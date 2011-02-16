@@ -75,10 +75,10 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | Tunion of string * field_group list option * attribute list
   | Tenum of string * enum_item list option * attribute list
   | TtypeofE of expression                      (* GCC __typeof__ *)
-  | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
+  | TtypeofT of type_name       (* GCC __typeof__ *)
   | Tcomplex
   | Timaginary
-  | Tatomic of specifier * decl_type
+  | Tatomic of type_name
 
 and storage =
     NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER | THREAD_LOCAL
@@ -109,9 +109,10 @@ and spec_elem =
 
 and alignment_spec =
 	| EXPR_ALIGNAS of expression
-	| TYPE_ALIGNAS of specifier * decl_type
+	| TYPE_ALIGNAS of type_name
 (* decided to go ahead and replace 'spec_elem list' with specifier *)
 and specifier = spec_elem list
+and type_name = specifier * decl_type
 
 
 (* Declarator type. They modify the base type given in the specifier. Keep
@@ -266,7 +267,7 @@ and expression =
   | QUESTION of expression * expression * expression
 
    (* A CAST can actually be a constructor expression *)
-  | CAST of (specifier * decl_type) * init_expression
+  | CAST of type_name * init_expression
 
     (* There is a special form of CALL in which the function called is
        __builtin_va_arg and the second argument is sizeof(T). This 
@@ -277,9 +278,9 @@ and expression =
   | PAREN of expression
   | VARIABLE of string
   | EXPR_SIZEOF of expression
-  | TYPE_SIZEOF of specifier * decl_type
+  | TYPE_SIZEOF of type_name
   | EXPR_ALIGNOF of expression
-  | TYPE_ALIGNOF of specifier * decl_type
+  | TYPE_ALIGNOF of type_name
   | INDEX of expression * expression
   | MEMBEROF of expression * string
   | MEMBEROFPTR of expression * string
@@ -288,7 +289,7 @@ and expression =
   | GENERIC of expression * (generic_association list)
   
 and generic_association =
-	| GENERIC_PAIR of specifier * decl_type * expression
+	| GENERIC_PAIR of type_name * expression
 	| GENERIC_DEFAULT of expression
 
 and constant =

@@ -1,6 +1,7 @@
 K_MAUDE_BASE ?= ..
 K_COMPILE_BASE = tools/kompile.pl
 K-PROGRAM-COMPILE = $(K_MAUDE_BASE)/tools/kcompile-program.sh
+SCRIPTS_DIR = ../scripts
 
 K_MAUDE = $(K_MAUDE_BASE)/$(K_COMPILE_BASE)
 K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
@@ -20,7 +21,7 @@ ALL_K_FILES = common-c-syntax.k common-c-configuration.k common-c-semantics.k co
 match-c-syntax.k match-c-semantics.k match-c-configuration.k \
 dynamic-c-semantics.k dynamic-c-configuration.k
 
-LATEX_CLEAN_FILES = c.tex c.aux c.log temp.pdflatex.out *.pdf temp.kpdf.out
+LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp-c-*.k temp.pdflatex.out *.pdf temp.kpdf.out
 K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
 
 .PHONY: all clean force check-input dynamic match semantics pdf common-pdf-modules common-c-%-fake
@@ -75,7 +76,7 @@ c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL
 #@sed -i'' -e '2i\
 #load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 #echo adds a newline
-	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl slurp.pl ./ > c-total.maude
+	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
 semantics: c-total.maude
 

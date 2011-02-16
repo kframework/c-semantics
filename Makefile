@@ -1,5 +1,6 @@
 C_DIR = programs
 SEMANTICS_DIR = semantics
+SCRIPTS_DIR = scripts
 PARSER_DIR = parser
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
@@ -15,14 +16,13 @@ FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 
 FILES_TO_DIST = \
 	$(SEMANTICS_DIR)/c-total.maude \
-	$(SEMANTICS_DIR)/compile.sh \
-	$(SEMANTICS_DIR)/slurp.pl \
-	$(SEMANTICS_DIR)/wrapper.pl \
-	$(SEMANTICS_DIR)/link.pl \
+	$(SCRIPTS_DIR)/link.pl \
+	$(SCRIPTS_DIR)/slurp.pl \
+	$(SCRIPTS_DIR)/wrapper.pl \
+	$(SCRIPTS_DIR)/compile.sh \
+	$(SCRIPTS_DIR)/compileProgram.sh \
+	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(PARSER_DIR)/cparser \
-	$(PARSER_DIR)/xmlToK.pl \
-	$(C_DIR)/compileProgram.sh \
-	$(C_DIR)/embed.pl \
 	$(wildcard $(C_DIR)/includes/*) \
 	$(wildcard $(C_DIR)/lib/*)
 
@@ -52,7 +52,9 @@ $(DIST_DIR)/dist.done: Makefile filter cparser kcompile $(FILES_TO_DIST)
 	@mv $(DIST_DIR)/clib.c $(DIST_DIR)/lib
 #@ln -s -f compile.sh $(DIST_DIR)/kcc
 	@mv $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
+	@echo "Compiling the standard library..."
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
+	@echo "Done."
 	@touch $(DIST_DIR)/dist.done
 
 $(DIST_DIR)/dist.tested: $(DIST_DIR)/dist.done 
@@ -74,11 +76,6 @@ torture-test:
 thirdParty-test:
 	@make -C tests thirdParty
 	
-fix: 
-	maude $(SEMANTICS_DIR)/programs-gen.maude
-fixnew:
-	maude $(SEMANTICS_DIR)/kcompile_in.maude
-
 force: ;
 
 cparser:
