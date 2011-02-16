@@ -97,72 +97,72 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	--- < k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
 			--- => printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, unsigned-int))
 	
-	op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
+	--- op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
 	
-	rule [spawn-begin]:
-		< k > prepareBuiltin((Identifier("spawn")), (Fun:Value :: tv(Len:Nat, ?) :: L:List{C})) => spawn-aux(Fun:Value, Len:Nat, L:List{C}, Nil) ...</ k >
-		[structural]
+	--- rule [spawn-begin]:
+		--- < k > prepareBuiltin((Identifier("spawn")), (Fun:Value :: tv(Len:Nat, ?) :: L:List{C})) => spawn-aux(Fun:Value, Len:Nat, L:List{C}, Nil) ...</ k >
+		--- [structural]
 		
-	rule [spawn-args1]:
-		< k > spawn-aux(Fun:Value, sNat(Len:Nat), vararg(tv(Loc:Nat, ?)), L:List{C}) 
-			=> spawn-aux(Fun:Value, Len:Nat, nextvarg(Loc:Nat, int), L:List{C})
-		...</ k >
-		[structural]
+	--- rule [spawn-args1]:
+		--- < k > spawn-aux(Fun:Value, sNat(Len:Nat), vararg(tv(Loc:Nat, ?)), L:List{C}) 
+			--- => spawn-aux(Fun:Value, Len:Nat, nextvarg(Loc:Nat, int), L:List{C})
+		--- ...</ k >
+		--- [structural]
 		
-	rule [spawn-args2]:
-		< k > spawn-aux(Fun:Value, Len:Nat, (vpair(tv(D:Int, int), V:Value) :: ?), L:List{C}) 
-			=> spawn-aux(Fun:Value, Len:Nat, V:Value, (L:List{C} :: tv(D:Int, int)))
-		...</ k >
-		[structural]
+	--- rule [spawn-args2]:
+		--- < k > spawn-aux(Fun:Value, Len:Nat, (vpair(tv(D:Int, int), V:Value) :: ?), L:List{C}) 
+			--- => spawn-aux(Fun:Value, Len:Nat, V:Value, (L:List{C} :: tv(D:Int, int)))
+		--- ...</ k >
+		--- [structural]
 	
-	rule [spawn]:
-		< thread > 
-			C:Bag 
-			< callStack > ?:List </ callStack >
-			< control >
-				C':Bag
-				< k > spawn-aux(Fun:Value, 0, ?, L:List{C}) => skipval ...</ k > 
-			</ control >
-		</ thread >
-		(.Bag => 
-		< thread > 
-			C:Bag
-			< callStack > .List </ callStack > 
-			< control >
-				C':Bag
-				< k > Call(Fun:Value, L:List{C}) ~> discard </ k > 
-			</ control >
-		</ thread >)
-		[structural] 
-	--------------------------------------------
-	rule [lock]:
-		< k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		< busy > Busy:Bag (.Bag => BagItem(Loc:Nat)) </ busy >
-		< holds >... .Map => Loc:Nat |-> 0 ...</ holds >
-		if notBool Loc:Nat in Busy:Bag
-		[metadata "computational"]
-	rule [lock]:
-		< k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		< holds >... Loc:Nat |-> (N:Nat => sNat(N:Nat)) ...</ holds >
-		[metadata "computational"]
-	--------------------------------------------
-	rule [unlock]:
-		< k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		< busy >... BagItem(Loc:Nat) => .Bag ...</ busy >
-		< holds >... Loc:Nat |-> 0 => .Map ...</ holds >
-		[structural] 
-	rule [unlock]:
-		< k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		< holds >... Loc:Nat |-> (sNat(N:Nat) => N:Nat) ...</ holds >
-		[structural] 
-	--------------------------------------------
-	rule [sync]:
-		< threads >
-			< thread >...
-				< k > prepareBuiltin(Identifier("sync"), Nil) => skipval ...</ k > 
-			...</ thread >
-		</ threads >
-		[structural] 
+	--- rule [spawn]:
+		--- < thread > 
+			--- C:Bag 
+			--- < callStack > ?:List </ callStack >
+			--- < control >
+				--- C':Bag
+				--- < k > spawn-aux(Fun:Value, 0, ?, L:List{C}) => skipval ...</ k > 
+			--- </ control >
+		--- </ thread >
+		--- (.Bag => 
+		--- < thread > 
+			--- C:Bag
+			--- < callStack > .List </ callStack > 
+			--- < control >
+				--- C':Bag
+				--- < k > Call(Fun:Value, L:List{C}) ~> discard </ k > 
+			--- </ control >
+		--- </ thread >)
+		--- [structural] 
+	--- --------------------------------------------
+	--- rule [lock]:
+		--- < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		--- < busy > Busy:Bag (.Bag => BagItem(Loc:Nat)) </ busy >
+		--- < holds >... .Map => Loc:Nat |-> 0 ...</ holds >
+		--- if notBool Loc:Nat in Busy:Bag
+		--- [metadata "computational"]
+	--- rule [lock]:
+		--- < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		--- < holds >... Loc:Nat |-> (N:Nat => sNat(N:Nat)) ...</ holds >
+		--- [metadata "computational"]
+	--- --------------------------------------------
+	--- rule [unlock]:
+		--- < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		--- < busy >... BagItem(Loc:Nat) => .Bag ...</ busy >
+		--- < holds >... Loc:Nat |-> 0 => .Map ...</ holds >
+		--- [structural] 
+	--- rule [unlock]:
+		--- < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		--- < holds >... Loc:Nat |-> (sNat(N:Nat) => N:Nat) ...</ holds >
+		--- [structural] 
+	--- --------------------------------------------
+	--- rule [sync]:
+		--- < threads >
+			--- < thread >...
+				--- < k > prepareBuiltin(Identifier("sync"), Nil) => skipval ...</ k > 
+			--- ...</ thread >
+		--- </ threads >
+		--- [structural] 
 	--------------------------------------------
 	rule [exit]:
 		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, int)) ~> ? => tv(I:Int, int) </ k >
@@ -183,7 +183,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		--- [structural] 
 	rule [sqrt]:
 		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double) ...</ k >
-		[structural] 
+		[structural]
 	--------------------------------------------
 	--- rule [log-is-value]:
 		--- < k > Identifier("log") => builtin(Identifier("log")) ...</ k >
@@ -661,4 +661,22 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			=> printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{C}) 
 		...</ k >
 		[structural] 
+		
+	--------------------------------------------
+	--- Threads
+	--------------------------------------------
+	ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Nat
+	macro thrd-success = tv(0, int)
+	macro thrd-error = tv(1, int)
+	macro thrd-timeout = tv(2, int)
+	macro thrd-busy = tv(3, int)
+	macro thrd-nomem = tv(4, int)
+		
+	rule [sqrt]:
+		< k > prepareBuiltin((Identifier("thrd_create")),
+			(ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value)
+			) 
+			=> thrd-success
+		...</ k >
+		[structural]
 endkm

@@ -118,7 +118,7 @@ let printList f x =
 	
 let rec cabsToXML ((filename, defs) : file) (sourceCode : string) = 
 (* encoding="utf-8"  *)
-	"<?xml version=\"1.1\" encoding=\"utf-8\" ?>\n" ^
+	"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" ^
 	printTranslationUnit filename sourceCode defs
 			
 and printTranslationUnit (filename : string) (sourceCode : string) defs =

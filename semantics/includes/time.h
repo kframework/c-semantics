@@ -1,0 +1,1 @@
+typedef signed long long time_t;

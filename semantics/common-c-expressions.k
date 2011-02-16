@@ -1,7 +1,7 @@
 kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	including COMMON-INCLUDE 
 	op assign : K K -> K 
-	op compoundLiteral : Nat -> Id 
+	op compoundLiteral : Nat -> Id
 endkm
 
 --- i'm just playing around here

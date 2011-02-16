@@ -1,4 +1,3 @@
-C_DIR = programs
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
@@ -6,7 +5,7 @@ PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 
 # this should be defined by the user
-K_MAUDE_BASE ?= .
+# K_MAUDE_BASE ?= .
 
 
 OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
@@ -23,25 +22,31 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/compileProgram.sh \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(PARSER_DIR)/cparser \
-	$(wildcard $(C_DIR)/includes/*) \
-	$(wildcard $(C_DIR)/lib/*)
-
+	$(wildcard $(SEMANTICS_DIR)/includes/*) \
+	$(wildcard $(SEMANTICS_DIR)/lib/*)
 	
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test dist-make
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test dist-make check-input
 
 all: dist
 
-dist: $(DIST_DIR)/dist.done
+check-vars: 
+ifeq ($(K_MAUDE_BASE),)
+	@echo "Error: Please set K_MAUDE_BASE to the full path of your K installation."
+	@exit 1
+endif
+
+dist: check-vars $(DIST_DIR)/dist.done
 
 filter: $(OUTPUT_FILTER)
 
-pdf:
+pdf: check-vars
 	@make -C $(SEMANTICS_DIR) pdf
 
-$(OUTPUT_FILTER): $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
-	make -C $(OUTPUT_FILTER_DIR)
+$(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
+	@make -C $(OUTPUT_FILTER_DIR)
+	@strip $(OUTPUT_FILTER)
 
-$(DIST_DIR)/dist.done: Makefile filter cparser kcompile $(FILES_TO_DIST)
+$(DIST_DIR)/dist.done: check-vars Makefile filter cparser kcompile $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
@@ -57,14 +62,11 @@ $(DIST_DIR)/dist.done: Makefile filter cparser kcompile $(FILES_TO_DIST)
 	@echo "Done."
 	@touch $(DIST_DIR)/dist.done
 
-$(DIST_DIR)/dist.tested: $(DIST_DIR)/dist.done 
-	@make -C $(C_DIR) fast-test
-	@touch $(DIST_DIR)/dist.tested
-	
 test: dist
 	@make -C tests
 
-integration-test:
+# these don't require dist so that we don't compile if C itself is already installed
+integration-test: 
 	@make -C tests integration
 	
 unit-test:
@@ -81,7 +83,7 @@ force: ;
 cparser:
 	@make -C $(PARSER_DIR)
 
-kcompile:
+kcompile: check-vars
 	@make -C $(SEMANTICS_DIR) semantics
 
 benchmark: profile.csv
@@ -90,7 +92,6 @@ profile.csv: profile.log
 	perl analyzeProfile.pl > profile.csv
 
 clean:
-	make -C $(C_DIR) clean
 	make -C $(PARSER_DIR) clean
 	make -C $(SEMANTICS_DIR) clean
 	make -C gcc-test clean

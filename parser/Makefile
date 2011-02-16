@@ -30,10 +30,10 @@ all: cparser
 # mv xmlPrinter.tmp xmlPrinter.ml
 	
 clexer.ml: clexer.mll
-	$(OCAML_LEX) clexer.mll
+	@$(OCAML_LEX) clexer.mll
 
 cparser.ml cparser.mli: cparser.mly
-	$(OCAML_YACC) cparser.mly
+	@$(OCAML_YACC) cparser.mly
 
 lexerhack.cmx lexerhack.cmi: errormsg.cmi
 whitetrack.cmx whitetrack.cmi: cabs.cmi cabshelper.cmi
@@ -52,15 +52,16 @@ xmlPrinter.cmx xmlPrinter.cmi: cabs.cmi
 #xmlPrinter.cmx xmlPrinter.cmi: $(IOXML)
 %.cmx %.cmi: %.ml 
 #Makefile
-	$(OCAML_COMPILE) $*.ml
+	@$(OCAML_COMPILE) $*.ml
 	
 cparser.cmi: cparser.mli cabs.cmi clexer.ml
-	$(OCAML_COMPILE) cparser.mli
+	@$(OCAML_COMPILE) cparser.mli
 	
 cabsDriver.cmx cabsDriver.cmi: cabsPrinter.cmi xmlPrinter.cmi
 
 cparser: $(MODULES)
-	$(OCAML_LINK) -o $@ unix.cmxa str.cmxa nums.cmxa $^
+	@$(OCAML_LINK) -o $@ unix.cmxa str.cmxa nums.cmxa $^
+	@strip $@
 #ioXML.cmx 
 
 clean:

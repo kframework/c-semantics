@@ -4,10 +4,10 @@ set -o errexit
 PEDANTRY_OPTIONS="-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99"
 GCC_OPTIONS="-std=c99 -nostdlib -nodefaultlibs -U __GNUC__"
 myDirectory=`dirname "$0"`
-
+filename=
 function die {
 	cleanup
-	echo "Something went wrong in compileProgram.sh"
+	echo "Something went wrong while parsing the program."
 	echo "$1" >&2
 	exit $2
 }

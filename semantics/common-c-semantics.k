@@ -1,3 +1,5 @@
+--- ! 6.4.4.3 An identifier declared as an enumeration constant has type int.
+
 ***(
 
 maybe say something like
@@ -377,7 +379,6 @@ kmod C-SETTINGS is
 		,, "fslOpenFile"
 		,, "fslPutc"
 		,, "getchar"
-		,, "lock"
 		,, "log"
 		,, "longjmp"
 		,, "malloc"
@@ -386,11 +387,10 @@ kmod C-SETTINGS is
 		,, "rand"
 		,, "setjmp"
 		,, "sin"
-		,, "spawn"
 		,, "sqrt"
-		,, "sync"
 		,, "tan"
-		,, "unlock"
+		--- <threads.h>
+		,, "thrd_create"
 	)) 
 	
 	--- S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either

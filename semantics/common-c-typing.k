@@ -266,7 +266,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(L:KLabel((Identifier("") => unnamed(N:Nat)),, L:List{C}))) ...</ k >
+		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, L:List{C})))) ...</ k >
 		< freshNat > N:Nat => sNat(N:Nat) </ freshNat >
 		if L:KLabel ==Bool 'StructDef
 		orBool L:KLabel ==Bool 'EnumDef
