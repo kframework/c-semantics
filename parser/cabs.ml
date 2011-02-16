@@ -77,6 +77,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | TtypeofE of expression                      (* GCC __typeof__ *)
   | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
   | Tcomplex
+  | Timaginary
   | Tatomic of specifier * decl_type
 
 and storage =

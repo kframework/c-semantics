@@ -1024,6 +1024,7 @@ type_spec:   /* ISO 6.7.2 */
 |   TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
                                           TtypeofT (s, d), $1 }
 |   COMPLEX        { Tcomplex, $1 }
+|   IMAGINARY        { Timaginary, $1 }
 |   ATOMIC LPAREN type_name RPAREN {let b, d = $3 in Tatomic (b, d), $1}
 ;
 struct_decl_list: /* (* ISO 6.7.2. Except that we allow empty structs. We 
