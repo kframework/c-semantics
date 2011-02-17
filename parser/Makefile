@@ -61,7 +61,6 @@ cabsDriver.cmx cabsDriver.cmi: cabsPrinter.cmi xmlPrinter.cmi
 
 cparser: $(MODULES)
 	@$(OCAML_LINK) -o $@ unix.cmxa str.cmxa nums.cmxa $^
-	@strip $@
 #ioXML.cmx 
 
 clean:

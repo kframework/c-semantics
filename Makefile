@@ -45,6 +45,9 @@ pdf: check-vars
 $(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
 	@make -C $(OUTPUT_FILTER_DIR)
 	@strip $(OUTPUT_FILTER)
+#@if [ `which strip 2> /dev/null` ]; then strip $(OUTPUT_FILTER); fi
+#@if [ `which gzexe 2> /dev/null` ]; then gzexe $(OUTPUT_FILTER); fi
+#@rm -f $(OUTPUT_FILTER_DIR)/filterOutput~
 
 $(DIST_DIR)/dist.done: check-vars Makefile filter cparser kcompile $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
@@ -82,6 +85,7 @@ force: ;
 
 cparser:
 	@make -C $(PARSER_DIR)
+	@strip $(PARSER)
 
 kcompile: check-vars
 	@make -C $(SEMANTICS_DIR) semantics

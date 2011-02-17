@@ -1,6 +1,13 @@
-Build the tool:
+Install Maude:
+	- go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on your machine
+	
+Install K:
+	- go to http://code.google.com/p/k-framework/ and check out the K Semantic Framework from http://code.google.com/p/k-framework/source/checkout
+	- Check that the installation of K works by running their 'make test' command in their /examples directory
+
+Build our tool:
 	- set K_MAUDE_BASE to the full (non-relative) path in which you installed the K framework.  e.g., export K_MAUDE_BASE=~/k-framework/trunk
-	- run "make"  in the main C directory
+	- run "make" in our main directory, the directory of this README
 
 Interpret a program:
 	- dist/kcc program.c
@@ -8,12 +15,15 @@ Interpret a program:
 	
 	Take a look at 'kcc -h' for some options.
 	
-(Some of the) Changes to the CABS abstract syntax tree:
-	- Different cases and names (e.g., "Signed" instead of "Tsigned", "DecDef" instead of "DECDEF", etc.)
-	- "Identifier" around strings
-	- Flattened SpecifierElem
-	- Wrap statements with StatementLoc holding the location
-	PROTO => Prototype
-	NO_INIT => NoInit
+Generate pdf versions of the semantics:
+	- run 'make pdf'
+	- Currently this creates only a few pdfs in the /semantics directory.  They are still rough, but should help understanding the semantics
+	
+Links to help understand K:
+	- http://code.google.com/p/k-framework/
+	- http://fsl.cs.uiuc.edu/K See particularly:
+		- Traian Serbanuta's thesis defense slides (http://fsl.cs.uiuc.edu/pubs/serbanuta-2010-thesis-slides.pdf) for a high level overview 
+		- "An Overview of the K Semantic Framework" from the Journal of Logic and Algebraic Programming (http://fsl.cs.uiuc.edu/pubs/rosu-serbanuta-2010-jlap.pdf) for a detailed explanation
+
 
 For licensing information, see LICENSE.
