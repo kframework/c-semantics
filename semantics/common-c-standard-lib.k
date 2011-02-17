@@ -672,11 +672,41 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	macro thrd-busy = tv(3, int)
 	macro thrd-nomem = tv(4, int)
 		
-	rule [sqrt]:
-		< k > prepareBuiltin((Identifier("thrd_create")),
-			(ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value)
-			) 
-			=> thrd-success
+	op spawn-aux : Nat Value Value -> K
+	rule [thrd_create-start]:
+		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value)) 
+			=> Computation((* ThreadIdPointer:Value) := tv(Fresh:Nat, int))
+			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:Value, ThreadArg:Value)
 		...</ k >
+		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
 		[structural]
+***(
+From http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm:
+In 7.25.5.1p2, add to the description of thrd_create either:
+    The completion of the thrd_create call synchronizes with the beginning of the execution of func(arg). 
+or:
+    The thrd_create call performs an action a that synchronizes with the beginning of the execution of func(arg). The action a need not be sequenced after the setting of thr. 
+
+The former requires would imply that the stored thread value is visible immediately to the child thread. The thread cannot be started until it is stored. The latter formulation avoids this requirement. It appears that Posix does not impose this requirement, though that may have been an accident. The first formulation may require minor implementation changes in the underlying thread library, but is slightly friendlier to programmers. 
+***)
+		
+	rule [thrd_create-finish]:
+		< thread >
+			C:Bag 
+			< callStack > ?:List </ callStack >
+			< control >
+				C':Bag
+				< k > spawn-aux(ThreadId:Nat, ThreadFuncPointer:Value, ThreadArg:Value) => thrd-success ...</ k > 
+			</ control >
+		</ thread >
+		(.Bag => 
+		< thread > 
+			C:Bag
+			< callStack > .List </ callStack > 
+			< control >
+				C':Bag
+				< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) ~> discard </ k > 
+			</ control >
+		</ thread >)
+		[structural] 
 endkm

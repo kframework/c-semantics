@@ -13,7 +13,7 @@ ALL_K_FILES = common-c-syntax.k common-c-configuration.k common-c-semantics.k co
 match-c-syntax.k match-c-semantics.k match-c-configuration.k \
 dynamic-c-semantics.k dynamic-c-configuration.k
 
-LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp-c-*.k temp.pdflatex.out *.pdf temp.kpdf.out
+LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
 K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
 
 .PHONY: all clean force match semantics pdf common-pdf-modules common-c-%-fake
@@ -35,9 +35,8 @@ common-pdf-modules: common-c-statements-fake common-c-expressions-fake common-c-
 
 c-%.pdf: c.k $(ALL_K_FILES) Makefile
 	@rm -f temp-c-$*.tex
-	@cp c.k temp-c-$*.k
 	@echo "Creating latex..."
-	@$(K_MAUDE) temp-c-$*.k -l C -style bb -latex $(PDF_MODULES) 1> temp.kpdf.out
+	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
 	@sed -i 's|\\begin{document}|\\geometry{papersize={17in,11in},textwidth=16.75in,textheight=10in}\\begin{document}|' temp-c-$*.tex
 	@echo "Compiling latex..."
