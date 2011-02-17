@@ -87,6 +87,11 @@ kmod C-CONFIGURATION is
 				</ thread * >
 			</ threads >
 			@latex("\\kBR")
+			< threadInformation >
+				< threadStatus > .Map </ threadStatus >
+				< joiningMap > .Map </ joiningMap >
+				< detachingMap > .Map </ detachingMap >
+			</ threadInformation >
 			< compoundLiteralMap > .Map </ compoundLiteralMap >
 			< unfinishedComputation > .K </ unfinishedComputation > --- this is here to make it easy to check if we've terminated.  it disappears when we terminate
 		</ T >

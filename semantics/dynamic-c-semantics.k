@@ -100,71 +100,23 @@ kmod DYNAMIC-C-SEMANTICS is
 		</ files >
 		< xmessages > .K </ xmessages >
 		
-	***(
-	--- throw away annotations
-	mb [no-annotations]: rule [annotation(?); => .K] : KSentence [metadata "structural"] .
-	***)		
+
 	--- fixme I'm not sure threads clean up their memory
 	
 	--- this shouldn't happen for normal programs (functions end in a return).  it is only used for threads
-	rule [terminate-thread]:
-		< thread >... < k > .K </ k > ...</ thread > => .Bag
-		[structural]
+	--- rule [terminate-thread]:
+		--- < thread >... < k > .K </ k > ...</ thread > => .Bag
+		--- [structural]
 	
-	rule [terminate] :
-		(< T >... < threads > < thread >... < k > V:Value </ k > ...</ thread > </ threads > ...</ T >
-		=> < resultValue > V:Value </ resultValue >)
+	rule [terminate]:
+		(< T >... < threads >... < thread >... 
+			< threadId > 0 </ threadId >
+			< k > V:Value </ k >
+		...</ thread > ...</ threads > ...</ T >
+			=> < resultValue > V:Value </ resultValue >)
 		< files >...
 			"stdin" |-> S1:String	"stdout" |-> S2:String => .Map
 		...</ files >
 		(.Bag => < input > S1:String </ input >	< output > S2:String </ output >)
-
-		
-
-	--- op unclutterConfiguration : Bag -> Bag
-	--- op stripConfiguration : Bag -> Bag
-	
-	--- doesn't [owise] rules :(
-	---eq unclutterConfiguration(B:Bag) = stripConfiguration(B:Bag) [owise] .
-	
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag (< aLabelMap > M:Map </ aLabelMap >) </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag </ T >) .
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag
-		--- < threads > B2:Bag
-				--- < thread > B3:Bag
-					--- < callStack > ?:List </ callStack >
-				--- </ thread >
-		--- </ threads >
-	--- </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag 
-		--- < threads > B2:Bag
-			--- < thread > B3:Bag
-			--- </ thread >
-		--- </ threads > </ T >) .
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag
-		--- < threads > B2:Bag
-				--- < thread > B3:Bag
-					--- < types > ?:Map </ types >
-				--- </ thread >
-		--- </ threads >
-	--- </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag 
-		--- < threads > B2:Bag
-			--- < thread > B3:Bag
-			--- </ thread >
-		--- </ threads > </ T >) .
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag
-		--- < mem > M:Map
-			--- B:Nat |-> memblock(N:Nat, (0 |-> Closure(X:Id, functionType(?, ?), ?)))
-		--- </ mem >
-	--- </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag 
-		--- < mem > M:Map
-			--- B:Nat |-> memblock(N:Nat, (0 |-> Closure(X:Id, .K, .K)))
-		--- </ mem >
-		--- </ T >) .
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag
-		--- < typedefs > ?:Map </ typedefs >
-	--- </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag </ T >) .
-	--- eq stripConfiguration(B0:Bag (< T > B1:Bag
-		--- < genv > ?:Map </ genv >
-	--- </ T >)) = stripConfiguration(B0:Bag < T > B1:Bag </ T >) .
-
 		
 endkm

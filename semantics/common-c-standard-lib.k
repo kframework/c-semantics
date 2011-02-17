@@ -671,6 +671,9 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	macro thrd-timeout = tv(2, int)
 	macro thrd-busy = tv(3, int)
 	macro thrd-nomem = tv(4, int)
+	
+	ops threadRunning threadClosed : -> K
+	ops threadJoining : Nat -> K
 		
 	op spawn-aux : Nat Value Value -> K
 	rule [thrd_create-start]:
@@ -701,9 +704,10 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< callStack > .List </ callStack > 
 			< control >
 				C':Bag
-				< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) ~> discard </ k > 
+				< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) </ k > 
 			</ control >
 		</ thread >)
+		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:Nat] </ threadStatus >
 		[structural] 
 		
 	rule [thrd_current]:
@@ -711,5 +715,42 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			=> tv(ThreadId:Nat, int)
 		...</ k >
 		< threadId > ThreadId:Nat </ threadId >
+		[structural]
+		
+	op join-aux : Nat Value -> K
+		
+	rule [thrd_join-start]:
+		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, int) :: ResultPointer:Value)) 
+			=> join-aux(ThreadId:Nat, ResultPointer:Value)
+		...</ k >
+		< threadId > MyId:Nat </ threadId >
+		< joiningMap > Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </ joiningMap >
+		< detachingMap > Detaching:Map </ detachingMap >
+		if notBool $hasMapping(Joining:Map, ThreadId:Nat)
+		andBool notBool $hasMapping(Detaching:Map, ThreadId:Nat)
+		[structural]
+	
+	rule [thrd_join-error]:
+		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, int) :: ?)) 
+			=> thrd-error
+		...</ k >
+		< joiningMap > Joining:Map </ joiningMap >
+		< detachingMap > Detaching:Map </ detachingMap >
+		if $hasMapping(Joining:Map, ThreadId:Nat)
+		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
+		[structural]
+	
+	--- at this point, we've already "locked" the join/detach.  This is the blocking part
+	rule [thrd_join-success]:
+		< thread >...
+			< k > join-aux(ThreadId:Nat, ResultPointer:Value)
+				=> Computation((* ResultPointer:Value) := cast(int, V:Value))
+				~> thrd-success
+			...</ k >
+		...</ thread >
+		< thread >...
+			< k > V:Value </ k >
+			< threadId > ThreadId:Nat </ threadId >
+		...</ thread >
 		[structural]
 endkm

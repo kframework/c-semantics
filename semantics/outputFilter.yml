@@ -10,15 +10,16 @@ k:
   #keep-chars: 140
   
 # mem: show
-  
+threadId: show 
+
 unfinishedComputation: show
 xmessages: show
 env: show
-currentSubObject: show
-currentObject: show
-nestingDepth: show
-blockHistory: show
-localVariables: show
+# currentSubObject: show
+# currentObject: show
+# nestingDepth: show
+# blockHistory: show
+# localVariables: show
 type: show
 files: show
 computation: 
@@ -27,11 +28,11 @@ computation:
 currentTranslationUnit: show
 currentFunction: show
 currentProgramLoc: show
-declarationTypeHolder: show
+# declarationTypeHolder: show
 callStack: recursively-hide
-blockStack: show
-savedInitialization: show
-#blockStack: recursively-hide
+# blockStack: show
+# savedInitialization: show
+blockStack: recursively-hide
 
 # cell-style:
     # foreground: dullyellow
