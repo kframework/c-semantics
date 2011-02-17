@@ -12,6 +12,7 @@ kmod C-CONFIGURATION is
 			< mem > .Map </ mem >
 			< nextLoc > 0 </ nextLoc >
 			< freshNat > 0 </ freshNat >
+			< nextThreadId > 1 </ nextThreadId >
 			< nextFile > 0 </ nextFile >
 			< malloced > .Map </ malloced >
 			< statics > .Map </ statics >
@@ -36,6 +37,7 @@ kmod C-CONFIGURATION is
 			@latex("\\kBR")
 			< threads >
 				< thread * >
+					< threadId > 0 </ threadId >
 					< callStack > .List </ callStack > --- stack of "control" cells
 					< control >
 						< k > .K </ k >

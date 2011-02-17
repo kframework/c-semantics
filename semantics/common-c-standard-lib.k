@@ -678,20 +678,15 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			=> Computation((* ThreadIdPointer:Value) := tv(Fresh:Nat, int))
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:Value, ThreadArg:Value)
 		...</ k >
-		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		< nextThreadId > Fresh:Nat => sNat(Fresh:Nat) </ nextThreadId >
 		[structural]
 ***(
-From http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm:
-In 7.25.5.1p2, add to the description of thrd_create either:
-    The completion of the thrd_create call synchronizes with the beginning of the execution of func(arg). 
-or:
-    The thrd_create call performs an action a that synchronizes with the beginning of the execution of func(arg). The action a need not be sequenced after the setting of thr. 
-
-The former requires would imply that the stored thread value is visible immediately to the child thread. The thread cannot be started until it is stored. The latter formulation avoids this requirement. It appears that Posix does not impose this requirement, though that may have been an accident. The first formulation may require minor implementation changes in the underlying thread library, but is slightly friendlier to programmers. 
+See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 ***)
 		
 	rule [thrd_create-finish]:
 		< thread >
+			< threadId > ?:Nat </ threadId >
 			C:Bag 
 			< callStack > ?:List </ callStack >
 			< control >
@@ -699,8 +694,9 @@ The former requires would imply that the stored thread value is visible immediat
 				< k > spawn-aux(ThreadId:Nat, ThreadFuncPointer:Value, ThreadArg:Value) => thrd-success ...</ k > 
 			</ control >
 		</ thread >
-		(.Bag => 
-		< thread > 
+		(.Bag =>
+		< thread >
+			< threadId > ThreadId:Nat </ threadId >
 			C:Bag
 			< callStack > .List </ callStack > 
 			< control >
@@ -709,4 +705,11 @@ The former requires would imply that the stored thread value is visible immediat
 			</ control >
 		</ thread >)
 		[structural] 
+		
+	rule [thrd_current]:
+		< k > prepareBuiltin((Identifier("thrd_current")), Nil) 
+			=> tv(ThreadId:Nat, int)
+		...</ k >
+		< threadId > ThreadId:Nat </ threadId >
+		[structural]
 endkm

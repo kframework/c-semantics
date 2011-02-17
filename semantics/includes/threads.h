@@ -31,26 +31,34 @@ enum {
 };
 
 /* C1X 7.25.5.1
-The thrd_create function creates a new thread executing func(arg). If the
-thrd_create function succeeds, it sets the thread thr to a value that uniquely
-identifies the newly created thread. 
+The thrd_create function creates a new thread executing func(arg). If the thrd_create function succeeds, it sets the thread thr to a value that uniquely identifies the newly created thread. 
 
-The thrd_create function returns thrd_success on success, or thrd_nomem if
-no memory could be allocated for the thread requested, or thrd_error if the request
-could not be honored.
+The thrd_create function returns thrd_success on success, or thrd_nomem if no memory could be allocated for the thread requested, or thrd_error if the request could not be honored.
 */
 int thrd_create(thrd_t *thr, thrd_start_t func, void *arg);
+
+/* C1X 7.25.5.2
+The thrd_current function identifies the thread that called it.
+
+The thrd_current function returns a value that uniquely identifies the thread that called it.
+*/
+thrd_t thrd_current(void);
+
+/* C1X 7.25.5.3
+The thrd_detach function tells the operating system to dispose of any resources allocated to the thread identified by thr when that thread terminates. The value of the thread identified by thr value shall not have been set by a call to thrd_join or thrd_detach.
+
+The thrd_detach function returns thrd_success on success or thrd_error if the request could not be honored.
+*/
+int thrd_detach(thrd_t thr);
 
 /**************************************************
 The below are fully defined in C
 **************************************************/
 
 /* C1X 7.25.5.4
-The thrd_equal function will determine whether the thread identified by thr0 refers
-to the thread identified by thr1.
+The thrd_equal function will determine whether the thread identified by thr0 refers to the thread identified by thr1.
 
-The thrd_equal function returns zero if the thread thr0 and the thread thr1 refer to
-different threads. Otherwise the thrd_equal function returns a nonzero value.
+The thrd_equal function returns zero if the thread thr0 and the thread thr1 refer to different threads. Otherwise the thrd_equal function returns a nonzero value.
 */
 int thrd_equal(thrd_t thr0, thrd_t thr1) {
 	return thr0 == thr1;
