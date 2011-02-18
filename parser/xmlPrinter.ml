@@ -624,6 +624,7 @@ and printSpecElem a =
 	| SpecStorage sto ->
 		wrap ((match sto with
 		| NO_STORAGE -> printCell "NoStorage" [] ""
+		| THREAD_LOCAL -> printCell "ThreadLocal" [] ""
 		| AUTO -> printCell "Auto" [] ""
 		| STATIC -> printCell "Static" [] ""
 		| EXTERN -> printCell "Extern" [] ""

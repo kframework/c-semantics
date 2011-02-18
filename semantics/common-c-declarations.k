@@ -75,8 +75,17 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
 		orBool T:Type ==Bool float 
 	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
-		if (notBool(hasIntegerType(T:Type)) orBool rank(T:Type) >=Int rank(int))
-		orBool T:Type ==Bool double orBool T:Type ==Bool long-double 
+		if (notBool(hasIntegerType(T:Type)) 
+			andBool notBool T:Type ==Bool float
+			andBool notBool hasArrayType(T:Type)
+		) 
+		orBool rank(T:Type) >=Int rank(int)
+		orBool T:Type ==Bool double 
+		orBool T:Type ==Bool long-double
+		
+	rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
+		[structural] 
+		
 
 	eq promoteList(Nil) = .List{K} 
 	--- fixme report bug: this context doesn't work

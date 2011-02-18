@@ -9,5 +9,6 @@ int main(void){
 	code[2][2] = 0;
 	int i = 2;
 	
-	printf("\n'code[%d]' contents :  %s\t\tStrlen(code[%d]) = %d\n",i,code[i],i,strlen(code[i]));
+	printf("%d%s%d%d\n",i,code[i],i,strlen(code[i]));
+	return 0;
 }

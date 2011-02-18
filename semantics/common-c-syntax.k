@@ -169,7 +169,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 and storage =
 	NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
 ***)
-	ops NoStorage Auto Static Extern Register : -> Storage [ctor]
+	ops NoStorage Auto Static Extern Register ThreadLocal : -> Storage [ctor]
 	
 ***(
 and funspec = 

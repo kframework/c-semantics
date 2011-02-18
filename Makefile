@@ -67,19 +67,6 @@ $(DIST_DIR)/dist.done: check-vars Makefile filter cparser kcompile $(FILES_TO_DI
 
 test: dist
 	@make -C tests
-
-# these don't require dist so that we don't compile if C itself is already installed
-integration-test: 
-	@make -C tests integration
-	
-unit-test:
-	@make -C tests unit
-	
-torture-test:
-	@make -C tests torture
-	
-thirdParty-test:
-	@make -C tests thirdParty
 	
 force: ;
 
