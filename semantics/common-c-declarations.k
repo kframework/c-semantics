@@ -88,6 +88,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k >
 		[structural] 
 		
+***(
+	<k> ('debug) ~> ('bindVariadic-pre)((0 +Nat sym(41)), kList("wklist_")(('tv)(2, int), ('tv)(6 +Nat sym34, ('arrayType)(signed-char, 3)), ('tv)(2, int), ('tv)(2, unsigned-long-int))) ~> ('handleBuiltin)(printf, ('functionType)(int, ('_::_).KHybridLabel(('typedDeclaration)(('pointerType)(signed-char), format), ('variadic)))) ~> ('Return)(('emptyValue)) </k>
+***)
+		
 	rule [bind-variadic-start]:
 		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) => bindVariadic(Loc:Nat, L:List{KResult}) ...</ k > 
 		[structural] 

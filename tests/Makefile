@@ -32,7 +32,7 @@ all: $(PARSER) test
 
 integration: $(INTEGRATION_TARGETS)
 
-unit: $(UNIT_TARGETS) fail
+unit: $(UNIT_TARGETS)
 
 thirdParty: $(THIRD_PARTY_TARGETS)
 
@@ -40,14 +40,14 @@ torture: $(TORTURE_TARGETS)
 
 #.INTERMEDIATE: test-%.kcc test-%.gcc output-% retval-%
 #.PRECIOUS: test-%.kcc test-%.gcc output-% retval-% compare-%.pass
-.PHONY: all test clean good fail clean-%
+.PHONY: all test clean good shouldFail clean-%
 
 test: good
 	@echo "Tests finished running."
 	
 good: $(GOOD_TARGETS)
 
-fail: $(FAIL_TARGETS)
+shouldFail: $(FAIL_TARGETS)
 
 results-pass-%.xml:
 	@perl runtest.pl -p $*
