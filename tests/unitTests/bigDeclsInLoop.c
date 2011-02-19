@@ -9,6 +9,5 @@ int main(void){
 			int (*f)(void);
 		} s[] = {{1}, {2}};
 	}
-	debug();
 	return 0;
 }
