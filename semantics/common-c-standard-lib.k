@@ -508,7 +508,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			fi)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
 		...</ k >
 		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("x") --- orBool N:Nat ==Bool asciiCharString("p")
+		if N:Nat ==Bool asciiCharString("x") orBool N:Nat ==Bool asciiCharString("X")
 		[structural] 
 	
 	--- fixme might be messing things up elsewhere
