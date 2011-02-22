@@ -1,7 +1,7 @@
-// some comments below are © ISO/IEC and come from 9899:201x n1516
+// some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
 #include <time.h>
 // expands to a value that can be used to initialize an object of type once_flag
-#define ONCE_FLAG_INIT
+#define ONCE_FLAG_INIT 0
 
 // expands to an integer constant expression representing the maximum number of times that destructors will be called when a thread terminates.
 #define TSS_DTOR_ITERATIONS 1
@@ -29,6 +29,36 @@ enum {
 	thrd_busy = 3, // which is returned by a function to indicate that the requested operation failed because a resource requested by a test and return function is already in use;
 	thrd_nomem = 4 // which is returned by a function to indicate that the requested operation failed because it was unable to allocate memory.
 };
+
+
+/* C1X 7.25.2.1
+The call_once function uses the once_flag pointed to by flag to ensure that func is called exactly once, the first time the call_once function is called with that value of flag. Completion of an effective call to the call_once function synchronizes with all subsequent calls to the call_once function with the same value of flag.
+*/
+void call_once(once_flag *flag, void (*func)(void));
+
+
+/* C1X 7.25.4.1
+The mtx_destroy function releases any resources used by the mutex pointed to by mtx. No threads can be blocked waiting for the mutex pointed to by mtx.
+
+The mtx_destroy function returns no value.
+*/
+void mtx_destroy(mtx_t *mtx);
+
+
+/* C1X 7.25.4.2
+The mtx_init function creates a mutex object with properties indicated by type, which must have one of the six values:
+mtx_plain for a simple non-recursive mutex,
+mtx_timed for a non-recursive mutex that supports timeout,
+mtx_try for a non-recursive mutex that supports test and return,
+mtx_plain | mtx_recursive for a simple recursive mutex,
+mtx_timed | mtx_recursive for a recursive mutex that supports timeout, or
+mtx_try | mtx_recursive for a recursive mutex that supports test and return.
+
+If the mtx_init function succeeds, it sets the mutex pointed to by mtx to a value that uniquely identifies the newly created mutex.
+
+Note: the committee may be removing mtx_try, as discussed in http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
+*/
+int mtx_init(mtx_t *mtx, int type);
 
 
 /* C1X 7.25.5.1
