@@ -9,8 +9,8 @@
 typedef int cnd_t;
 typedef int thrd_t;
 typedef int tss_t;
-typedef int mtx_t;
-typedef void (*tss_dtor_t)(void*) ;
+typedef struct { int id; int type; thrd_t owner; int owned; int flag; int alive; } mtx_t;
+typedef void (*tss_dtor_t)(void*);
 typedef int (*thrd_start_t)(void*);
 typedef int once_flag;
 typedef struct {time_t sec; long nsec;} xtime;
@@ -20,7 +20,7 @@ enum {
 	mtx_plain = 0, // which is passed to mtx_init to create a mutex object that supports neither timeout nor test and return;
 	mtx_recursive = 1, // which is passed to mtx_init to create a mutex object that supports recursive locking;
 	mtx_timed = 2, // which is passed to mtx_init to create a mutex object that supports timeout;
-	mtx_try = 3, // which is passed to mtx_init to create a mutex object that supports test and return;
+	mtx_try = 4, // which is passed to mtx_init to create a mutex object that supports test and return;
 };
 enum {
 	thrd_success = 0, //which is returned by a function to indicate that the requested operation succeeded;
@@ -29,6 +29,10 @@ enum {
 	thrd_busy = 3, // which is returned by a function to indicate that the requested operation failed because a resource requested by a test and return function is already in use;
 	thrd_nomem = 4 // which is returned by a function to indicate that the requested operation failed because it was unable to allocate memory.
 };
+
+
+// our threading primitive
+int __test_and_set(int *p, int value);
 
 
 /* C1X 7.25.2.1
@@ -56,9 +60,27 @@ mtx_try | mtx_recursive for a recursive mutex that supports test and return.
 
 If the mtx_init function succeeds, it sets the mutex pointed to by mtx to a value that uniquely identifies the newly created mutex.
 
+The mtx_init function returns thrd_success on success, or thrd_error if the request could not be honored.
+
 Note: the committee may be removing mtx_try, as discussed in http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 */
 int mtx_init(mtx_t *mtx, int type);
+
+
+/* C1X 7.25.4.3
+The mtx_lock function blocks until it locks the mutex pointed to by mtx. If the mutex is non-recursive, it shall not be locked by the calling thread. Prior calls to mtx_unlock on the same mutex shall synchronize with this operation.
+
+The mtx_lock function returns thrd_success on success, or thrd_busy if the resource requested is already in use, or thrd_error if the request could not be honored.
+*/
+int mtx_lock(mtx_t *mtx);
+
+
+/* C1X 7.25.4.4
+The mtx_unlock function unlocks the mutex pointed to by mtx. The mutex pointed to by mtx shall be locked by the calling thread.
+
+The mtx_unlock function returns thrd_success on success or thrd_error if the request could not be honored.
+*/
+int mtx_unlock(mtx_t *mtx);
 
 
 /* C1X 7.25.5.1
@@ -90,9 +112,7 @@ The thrd_equal function will determine whether the thread identified by thr0 ref
 
 The thrd_equal function returns zero if the thread thr0 and the thread thr1 refer to different threads. Otherwise the thrd_equal function returns a nonzero value.
 */
-int thrd_equal(thrd_t thr0, thrd_t thr1) {
-	return thr0 == thr1;
-}
+int thrd_equal(thrd_t thr0, thrd_t thr1);
 
 
 /* C1X 7.25.5.5

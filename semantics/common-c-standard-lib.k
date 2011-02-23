@@ -753,4 +753,18 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< threadId > ThreadId:Nat </ threadId >
 		...</ thread >
 		[structural]
+
+	op testAndSet : K K K -> K [strict(1)]
+	rule [test-and-set-start]:
+		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:Value :: V:Value)) 
+			=> testAndSet(*(Loc:Value), Loc:Value, V:Value)
+		...</ k >
+		[structural]
+		
+	rule [test-and-set]:
+		< k > testAndSet(Retval:Value, Loc:Value, V:Value)
+			=> Computation((* Loc:Value) := V:Value)
+			~> Retval:Value
+		...</ k >
+		[structural]
 endkm
