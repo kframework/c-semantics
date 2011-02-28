@@ -7,16 +7,13 @@ K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
 K-PL-BUILTINS = $(K_MAUDE_BASE)/pl-builtins
 K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
-ADDITIONAL_SYNTAX = "including MATCH-C-SYNTAX ."
-
 ALL_K_FILES = common-c-syntax.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
-match-c-syntax.k match-c-semantics.k match-c-configuration.k \
 dynamic-c-semantics.k dynamic-c-configuration.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
 K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
 
-.PHONY: all clean force match semantics pdf common-pdf-modules common-c-%-fake
+.PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
 .SECONDARY:
 
@@ -45,7 +42,7 @@ c-%.pdf: c.k $(ALL_K_FILES) Makefile
 	@echo "Done."
 	
 c-syntax.k: Makefile
-	@printf "`cat c-syntax.template`" $(ADDITIONAL_SYNTAX) > c-syntax.k	
+	@printf "`cat c-syntax.template`" > c-syntax.k	
 	
 c.k: c-syntax.k c-maude.template Makefile
 	@printf "`cat c-maude.template`" $(K_PRELUDE) dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k

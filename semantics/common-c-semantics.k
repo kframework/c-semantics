@@ -819,6 +819,54 @@ kmod C-SEMANTICS-MISC is
 	eq Identifier("___missing_field_name") = #NoName 
 endkm
 
+kmod FIXED-WIDTH-ARITHMETIC-SYNTAX is
+	including K
+
+	sort FWInt
+	subsort FWInt < K
+	
+	op smint : Int Nat -> FWInt --- numerical value, bit width
+	op umint : Int Nat -> FWInt --- numerical value, bit width
+	
+	op uoverflow : K -> FWInt
+	op soverflow : K -> FWInt
+	
+	op _+Int[_]_ : K Nat K -> FWInt --- operand, width, operand
+	op _-Int[_]_ : K Nat K -> FWInt
+	op _*Int[_]_ : K Nat K -> FWInt
+	--- op _/Int[_]_ : Int Nat Int -> Int
+	--- op _%Int[_]_ : Int Nat Int -> Int
+
+	op umin : Nat -> Int
+	op umax : Nat -> Int
+	op smin : Nat -> Int
+	op smax : Nat -> Int
+	
+	macro umin(_) = 0
+	macro umax(N:Nat) = (2 ^Nat N:Nat) -Int 1
+endkm
+
+kmod FIXED-UNSIGNED-ARITHMETIC is
+	including FIXED-WIDTH-ARITHMETIC-SYNTAX
+	
+	--- rule umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Sum:Nat, W:Nat)
+		--- if Sum:Nat <=Nat umax(W:Nat)
+		--- where Sum:Nat = (N:Nat +Nat N':Nat)
+		
+	--- rule umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Sum:Nat, W:Nat)
+		--- where Sum:Nat = (N:Nat +Nat N':Nat)
+		
+		--- if Sum:Nat <=Nat umax(W:Nat)
+endkm
+
+kmod FIXED-TWOS-COMPLEMENT-ARITHMETIC is
+	including FIXED-UNSIGNED-ARITHMETIC
+	
+	macro smin(N:Nat) = -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
+	macro smax(N:Nat) = (2 ^Nat absInt(N:Nat -Int 1)) -Int 1
+endkm
+
+
 load common-c-conversions
 load common-c-expressions
 load common-c-statements
@@ -830,6 +878,8 @@ load common-c-declarations
 kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
 	including C-SEMANTICS-MISC 
+	
+	including FIXED-TWOS-COMPLEMENT-ARITHMETIC
 	
 	including COMMON-C-TYPING 
 	including COMMON-C-DECLARATIONS 
