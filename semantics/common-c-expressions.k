@@ -2,6 +2,17 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	including COMMON-INCLUDE 
 	op assign : K K -> K 
 	op compoundLiteral : Nat -> Id
+	
+	op ktoNat : K -> Nat
+	eq ktoNat(N:Nat) = N:Nat
+	op arith : Type K -> K
+	eq arith(T:Type, umint(N:Nat, ?)) = tv(N:Nat, T:Type)
+	eq arith(T:Type, smint(I:Int, ?)) = tv(I:Int, T:Type)
+	op fix : Int K -> K --- num, type
+	ceq fix(I:Int, T:Type) = umint(I:Int, ktoNat(bitSizeofType(T:Type)))
+		if hasUnsignedIntegerType(T:Type)
+	ceq fix(I:Int, T:Type) = smint(I:Int, ktoNat(bitSizeofType(T:Type)))
+		if hasSignedIntegerType(T:Type)
 endkm
 
 --- i'm just playing around here
@@ -742,7 +753,8 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		if _-Int_(Offset1:Nat, Offset2:Nat) %Int Size:Nat ==Bool 0
 		[structural]
 		
-	rule - tv(I:Int, T:Type) => arithInterpret(T:Type, (-Int I:Int))
+	--- rule - tv(I:Int, T:Type) => arith(T:Type, -Int[ktoNat(bitSizeofType(T:Type))] fix(I:Int, T:Type))
+	rule - tv(I:Int, T:Type) => arithInterpret(T:Type, -Int I:Int)
 		if hasIntegerType(T:Type) 
 		andBool rank(T:Type) >=Int rank(int)
 		andBool hasBeenPromoted(T:Type)

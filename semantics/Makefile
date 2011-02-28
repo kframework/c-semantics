@@ -52,6 +52,12 @@ c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@time ($(K_MAUDE) c.k -u -language C)
 	@echo "Done".
 	
+lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
+	@echo "Checking the C definition..."
+	@time ($(K_MAUDE) c.k -u -lint -language C)
+	@rm -f c-compiled.maude
+	@echo "Done".
+	
 c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 #@sed -i'' -e '2i\

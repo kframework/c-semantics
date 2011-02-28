@@ -352,6 +352,55 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 endkm
 
+
+kmod FIXED-WIDTH-SYNTAX is
+	including K
+
+	sort FWInt
+	subsort FWInt < K
+	
+	op smint : Int Nat -> FWInt --- numerical value, bit width
+	op umint : Int Nat -> FWInt --- numerical value, bit width
+	
+	op getmint : K -> Int
+	
+	macro getmint(smint(I:Int, ?)) = I:Int
+	macro getmint(umint(N:Nat, ?)) = N:Nat
+	
+	op overflow : -> FWInt
+	--- op uoverflow : K -> FWInt --- I don't know of any systems where this is a problem
+	op soverflow : K -> FWInt
+	op divideByZero : -> FWInt
+	
+	op _+Int[_]_ : K Nat K -> FWInt --- operand, width, operand
+	op _*Int[_]_ : K Nat K -> FWInt
+	op _/Int[_]_ : K Nat K -> FWInt
+	op _%Int[_]_ : K Nat K -> FWInt
+	op _-Int[_]_ : K Nat K -> FWInt
+	op -Int[_]_ : Nat K -> FWInt
+	
+	op _&Int[_]_ : K Nat K -> FWInt
+	op _|Int[_]_ : K Nat K -> FWInt
+	op _xorInt[_]_ : K Nat K -> FWInt
+	op ~Int[_]_ : Nat K -> FWInt
+	
+	op _>>Int[_]_ : K Nat K -> FWInt
+	op _<<Int[_]_ : K Nat K -> FWInt
+
+	op umin : Nat -> Nat
+	op umax : Nat -> Nat
+	op usize : Nat -> NzNat
+	
+	op smin : Nat -> Int
+	op smax : Nat -> Nat
+	op ssize : Nat -> NzNat
+	
+	macro umin(_) = 0
+	macro umax(N:Nat) = (2 ^Nat N:Nat) -Int 1
+	macro usize(N:Nat) = 2 ^Nat N:Nat
+endkm
+
+
 kmod C-SETTINGS is
 	including INCOMING-MODULES 
 	including COMMON-SEMANTIC-SYNTAX 
@@ -637,6 +686,7 @@ kmod COMMON-INCLUDE is
 	including SEMANTIC-HELPERS 
 	including C-SETTINGS 
 	including COMMON-SEMANTIC-SYNTAX
+	including FIXED-WIDTH-SYNTAX
 endkm
 
 kmod C-SEMANTICS-MISC is
@@ -819,53 +869,195 @@ kmod C-SEMANTICS-MISC is
 	eq Identifier("___missing_field_name") = #NoName 
 endkm
 
-kmod FIXED-WIDTH-ARITHMETIC-SYNTAX is
-	including K
-
-	sort FWInt
-	subsort FWInt < K
-	
-	op smint : Int Nat -> FWInt --- numerical value, bit width
-	op umint : Int Nat -> FWInt --- numerical value, bit width
-	
-	op uoverflow : K -> FWInt
-	op soverflow : K -> FWInt
-	
-	op _+Int[_]_ : K Nat K -> FWInt --- operand, width, operand
-	op _-Int[_]_ : K Nat K -> FWInt
-	op _*Int[_]_ : K Nat K -> FWInt
-	--- op _/Int[_]_ : Int Nat Int -> Int
-	--- op _%Int[_]_ : Int Nat Int -> Int
-
-	op umin : Nat -> Int
-	op umax : Nat -> Int
-	op smin : Nat -> Int
-	op smax : Nat -> Int
-	
-	macro umin(_) = 0
-	macro umax(N:Nat) = (2 ^Nat N:Nat) -Int 1
-endkm
-
 kmod FIXED-UNSIGNED-ARITHMETIC is
-	including FIXED-WIDTH-ARITHMETIC-SYNTAX
+	including FIXED-WIDTH-SYNTAX
 	
-	--- rule umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Sum:Nat, W:Nat)
-		--- if Sum:Nat <=Nat umax(W:Nat)
-		--- where Sum:Nat = (N:Nat +Nat N':Nat)
+	rule [fixed-unsigned-addition-normal]:
+		umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		if Result:Nat <=Nat umax(W:Nat)
+		where Result:Nat = (N:Nat +Nat N':Nat)
+	rule [fixed-unsigned-addition-overflow]:
+		umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat %Nat usize(W:Nat), W:Nat)
+		if Result:Nat >Nat umax(W:Nat)
+		where Result:Nat = (N:Nat +Nat N':Nat)
 		
-	--- rule umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Sum:Nat, W:Nat)
-		--- where Sum:Nat = (N:Nat +Nat N':Nat)
+	rule [fixed-unsigned-multiplication-normal]:
+		umint(N:Nat, W:Nat) *Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		if Result:Nat <=Nat umax(W:Nat)
+		where Result:Nat = (N:Nat *Nat N':Nat)
+	rule [fixed-unsigned-multiplication-overflow]:
+		umint(N:Nat, W:Nat) *Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat %Nat usize(W:Nat), W:Nat)
+		if Result:Nat >Nat umax(W:Nat)
+		where Result:Nat = (N:Nat *Nat N':Nat)
 		
-		--- if Sum:Nat <=Nat umax(W:Nat)
+	rule [fixed-unsigned-division-normal]:
+		umint(N:Nat, W:Nat) /Int[W:Nat] umint(N':NzNat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (N:Nat /Nat N':NzNat)
+	rule [fixed-unsigned-division-divz]:
+		umint(?, W:Nat) /Int[W:Nat] umint(0, W:Nat) => divideByZero
+		
+	rule [fixed-unsigned-modulo-normal]:
+		umint(N:Nat, W:Nat) %Int[W:Nat] umint(N':NzNat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (N:Nat %Nat N':NzNat)
+	rule [fixed-unsigned-modulo-divz]:
+		umint(?, W:Nat) %Int[W:Nat] umint(0, W:Nat) => divideByZero
+		
+	rule [fixed-unsigned-subtraction-normal]:
+		umint(N:Nat, W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) => umint(absInt(Result:Int), W:Nat)
+		if Result:Int >=Int umin(W:Nat)
+		where Result:Int = (N:Nat -Int N':Nat)
+	rule [fixed-unsigned-subtraction-underflow]:
+		umint(N:Nat, W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) 
+		=> umint(N:Nat +Nat usize(W:Nat), W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) 
+		if Result:Int <Int umin(W:Nat)
+		where Result:Int = (N:Nat -Int N':Nat)
 endkm
 
-kmod FIXED-TWOS-COMPLEMENT-ARITHMETIC is
+kmod FIXED-UNSIGNED-BITWISE is
+	including FIXED-WIDTH-SYNTAX
+	
+	rule [fixed-unsigned-bitwise-and]:
+		umint(N:Nat, W:Nat) &Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (N:Nat &Nat N':Nat)
+	rule [fixed-unsigned-bitwise-or]:
+		umint(N:Nat, W:Nat) |Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (N:Nat |Nat N':Nat)
+	rule [fixed-unsigned-bitwise-xor]:
+		umint(N:Nat, W:Nat) xorInt[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (N:Nat xorNat N':Nat)
+	rule [fixed-unsigned-bitwise-negation]:
+		~Int[W:Nat] umint(N:Nat, W:Nat) => umint(Result:Nat, W:Nat)
+		where Result:Nat = (~Int N:Nat)
+		
+	--- can shift by signed or unsigned of any non-negative width
+	rule [fixed-unsigned-shift-right-1]:
+		umint(N:Nat, W:Nat) >>Int[W:Nat] umint(N':Nat, ?) => umint(Result:Nat, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Nat = (N:Nat >>Nat N':Nat)
+	rule [fixed-unsigned-shift-left-1]:
+		umint(N:Nat, W:Nat) <<Int[W:Nat] umint(N':Nat, ?) => umint(Result:Nat, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Nat = (N:Nat <<Nat N':Nat)
+	rule [fixed-unsigned-shift-right-2]:
+		umint(N:Nat, W:Nat) >>Int[W:Nat] smint(N':Nat, ?) => umint(Result:Nat, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Nat = (N:Nat >>Nat N':Nat)
+	rule [fixed-unsigned-shift-left-2]:
+		umint(N:Nat, W:Nat) <<Int[W:Nat] smint(N':Nat, ?) => umint(Result:Nat, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Nat = (N:Nat <<Nat N':Nat)
+endkm
+
+kmod FIXED-UNSIGNED-DEFAULT is
 	including FIXED-UNSIGNED-ARITHMETIC
+	including FIXED-UNSIGNED-BITWISE
+endkm
+	
+kmod FIXED-C-STYLE-ARITHMETIC is
+	including FIXED-WIDTH-SYNTAX
+	
+	rule [fixed-signed-addition-normal]:
+		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int +Int N':Int)
+	rule [fixed-signed-addition-overflow]:
+		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int +Int N':Int)
+		
+	rule [fixed-signed-multiplication-normal]:
+		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int *Int N':Int)
+	rule [fixed-signed-multiplication-overflow]:
+		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int *Int N':Int)
+		
+	rule [fixed-signed-division-normal]:
+		smint(N:Int, W:Nat) /Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int /Int N':NzInt)
+	rule [fixed-signed-division-divz]:
+		smint(?, W:Nat) /Int[W:Nat] smint(0, W:Nat) => divideByZero
+		
+	rule [fixed-signed-modulo-normal]:
+		smint(N:Int, W:Nat) %Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int %Int N':NzInt)
+	rule [fixed-signed-modulo-divz]:
+		smint(?, W:Nat) %Int[W:Nat] smint(0, W:Nat) => divideByZero --- why do i have to do this?
+		
+	rule [fixed-signed-subtraction-normal]:
+		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int -Int N':Int)
+	rule [fixed-signed-subtraction-overflow]:
+		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int -Int N':Int)
+		
+	rule [fixed-unsigned-negation-normal]:
+		-Int[W:Nat] smint(N:Int, W:Nat) => smint(absInt(Result:Int), W:Nat)
+		if Result:Int >=Int smin(W:Nat) andBool Result:Int <=Int smax(W:Nat)
+		where Result:Int = (-Int N:Int)
+	rule [fixed-unsigned-negation-overflow]:
+		-Int[W:Nat] smint(N:Int, W:Nat) => overflow
+		if Result:Int <Int smin(W:Nat) orBool Result:Int >Int smax(W:Nat)
+		where Result:Int = (-Int N:Int)
+endkm
+
+
+kmod FIXED-C-STYLE-BITWISE is
+	including FIXED-WIDTH-SYNTAX
+	
+	rule [fixed-signed-bitwise-and]:
+		smint(N:Int, W:Nat) &Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int &Int N':Int)
+	rule [fixed-signed-bitwise-or]:
+		smint(N:Int, W:Nat) |Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int |Int N':Int)
+	rule [fixed-signed-bitwise-xor]:
+		smint(N:Int, W:Nat) xorInt[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int xorInt N':Int)
+	rule [fixed-signed-bitwise-negation]:
+		~Int[W:Nat] smint(N:Int, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (~Int N:Int)
+		
+	--- can shift by signed or unsigned of any non-negative width
+	rule [fixed-signed-shift-right-1]:
+		smint(N:Int, W:Nat) >>Int[W:Nat] umint(N':Nat, ?) => smint(Result:Int, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Int = (N:Int >>Int N':Nat)
+	rule [fixed-signed-shift-left-1]:
+		smint(N:Int, W:Nat) <<Int[W:Nat] umint(N':Nat, ?) => smint(Result:Int, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Int = (N:Int <<Int N':Nat)
+	rule [fixed-signed-shift-right-2]:
+		smint(N:Int, W:Nat) >>Int[W:Nat] smint(N':Nat, ?) => smint(Result:Int, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Int = (N:Int >>Int N':Nat)
+	rule [fixed-signed-shift-left-2]:
+		smint(N:Int, W:Nat) <<Int[W:Nat] smint(N':Nat, ?) => smint(Result:Int, W:Nat)
+		if N':Nat <Nat W:Nat
+		where Result:Int = (N:Int <<Int N':Nat)
+endkm
+
+kmod FIXED-C-STYLE-TWOS-COMPLEMENT is
+	including FIXED-WIDTH-SYNTAX
+	
+	rule [fixed-unsigned-negation-normal]:
+		-Int[W:Nat] umint(N:Nat, W:Nat) => umint(absInt(Result:Int +Int usize(W:Nat)) %Nat usize(W:Nat), W:Nat)
+		where Result:Int = (-Int N:Nat)
+endkm
+	
+kmod FIXED-C-STYLE is
+	including FIXED-UNSIGNED-DEFAULT
+	including FIXED-C-STYLE-ARITHMETIC
+	including FIXED-C-STYLE-BITWISE
 	
 	macro smin(N:Nat) = -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
 	macro smax(N:Nat) = (2 ^Nat absInt(N:Nat -Int 1)) -Int 1
+	macro ssize(N:Nat) = 2 ^Nat N:Nat
 endkm
-
 
 load common-c-conversions
 load common-c-expressions
@@ -879,7 +1071,8 @@ kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
 	including C-SEMANTICS-MISC 
 	
-	including FIXED-TWOS-COMPLEMENT-ARITHMETIC
+	including FIXED-C-STYLE
+	including FIXED-C-STYLE-TWOS-COMPLEMENT 
 	
 	including COMMON-C-TYPING 
 	including COMMON-C-DECLARATIONS 
@@ -890,5 +1083,5 @@ kmod COMMON-C-SEMANTICS is
 	including COMMON-C-STANDARD-LIBRARY 
 	
 	op eval : K -> Bag 
-	op eval : K List{K} String -> Bag 
+	op eval : K List{K} String -> Bag
 endkm
