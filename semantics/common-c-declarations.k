@@ -610,7 +610,16 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
-		andBool notBool X:Id in Vars:List
+		andBool notBool X:Id in Vars:List --- this should be here statically, but not dynamically
+		[structural]
+	rule --- same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
+		< k > declareOnly(X:Id, T:Type, noLinkage)
+			=> .K
+		...</ k >
+		< localVariables >... ListItem(X:Id) ...</ localVariables >
+		if notBool hasIncompleteType(T:Type)
+		andBool notBool hasStaticType(T:Type)
+		andBool notBool hasExternType(T:Type)
 		[structural] 
 	
 	--- exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
@@ -619,7 +628,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> .K
 		...</ k >
 		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
-		--- < externalDefinitions > Def:Map => Def:Map[declarationObject(unqualifyType(T:Type), Tu:K, K:K) / X:Id] </ externalDefinitions >
 		< externalDefinitions > Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:Type), Tu:K, K:K)) </ externalDefinitions >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
@@ -648,8 +656,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
 		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
-		if notBool X:Id in Vars:List
+		if notBool X:Id in Vars:List --- again, this should be needed statically, but not dynamically
 		[structural] 
+	rule --- this happens when we jump before a variable declaration with an initialization in the same block
+		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
+			=> justInit(figureInitializer(X:Id, T:Type, K:K))
+		...</ k >
+		< localVariables >... ListItem(X:Id) ...</ localVariables >
+		[structural] 
+		
+	op justInit : K -> K [strict(1)]
+	
+	rule
+		< k > justInit(initializerValue(X:Id, T:Type, K:K)) => initialize(X:Id, T:Type, K:K) ...</ k >
+		[structural]
 		
 	rule
 		< k > defineAndInit(X:Id, ?, initializerValue(X:Id, T:Type, K:K), Loc:Nat)

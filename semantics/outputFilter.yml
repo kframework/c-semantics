@@ -30,7 +30,7 @@ env: show
 # threadId: show 
 
 unfinishedComputation: show
-# xmessages: show
+xmessages: show
 
 # currentSubObject: show
 # currentObject: show

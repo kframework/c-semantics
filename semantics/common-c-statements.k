@@ -241,7 +241,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< blockHistory > ListItem(CurrentBlock:Nat) BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
 		< localVariables > Vars:List </ localVariables >
-		--- < xmessages >... (. => "Gotoing: in same block " +String toString(CurrentBlock:Nat)) </ xmessages >
+		< xmessages >... (. => "Gotoing: in same block " +String toString(CurrentBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
@@ -311,7 +311,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		--- < blockHistory > (. => ListItem(TargetBlock:Nat)) BlockHistory:List </ blockHistory >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
-		--- < xmessages >... (. => "Gotoing: above target, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
+		< xmessages >... (. => "Gotoing: above target, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
@@ -337,7 +337,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "Goto: skipping variable declaration " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		< xmessages >... (. => "Goto: skipping variable declaration " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[metadata "computational"] 
 		
@@ -359,7 +359,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
 		< shouldInit > ? => false </ shouldInit >
-		--- < xmessages >... (. => "Goto: couldn't find variable " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		< xmessages >... (. => "Goto: couldn't find variable " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[metadata "computational"] 
 		
