@@ -2,9 +2,6 @@ COMMAND_PREFIX = nice -n 19
 # i feel like this is in danger of messing up tests
 #COMMAND_PREFIX =
 
-KCC ?= ../dist/compile.sh
-GCC ?= gcc -lm -Wall -Wextra -x c -O0 -U __GNUC__ -pedantic -std=c99
-#-Werror 
 PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests

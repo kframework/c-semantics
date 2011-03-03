@@ -263,7 +263,7 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		</ control >
 		=>
 		< control >
-			< k > sequencePoint ~> populateFromGlobal ~> resetNestingDepth ~> bind(L:List{C}, P:List{Type}) ~> B:K ~> Return(NothingExpression) </ k >
+			< k > sequencePoint ~> populateFromGlobal ~> resetNestingDepth ~> bind(L:List{C}, P:List{Type}) ~> B:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi) </ k >
 			< currentFunction > X:Id </ currentFunction >
 			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		...</ control >)

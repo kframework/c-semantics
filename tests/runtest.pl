@@ -15,6 +15,8 @@ if ($numArgs != 2) {
 }
 
 my $kcc = "../dist/kcc";
+#my $kcc = "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -fvararg-calls -dparse -dc";
+#my $kcc = "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -fvararg-calls";
 my $gcc = "gcc -lm -Wall -Wextra -x c -O0 -U __GNUC__ -pedantic -std=c99";
 
 my $flag = $ARGV[0];
