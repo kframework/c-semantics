@@ -755,47 +755,39 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		
 	--- rule - tv(I:Int, T:Type) => arith(T:Type, -Int[ktoNat(bitSizeofType(T:Type))] fix(I:Int, T:Type))
 	rule - tv(I:Int, T:Type) => arithInterpret(T:Type, -Int I:Int)
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 		
 	rule + tv(I:Int, T:Type) => arithInterpret(T:Type, I:Int)
 		if hasIntegerType(T:Type)
-		andBool rank(T:Type) >=Int rank(int)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 		
 	rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T:Type, (I1:Int +Int I2:Int))
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 	rule _-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => arithInterpret(T:Type, _-Int_(I1:Int,I2:Int))
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 	rule tv(I1:Int, T:Type) * tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int *Int I2:Int)
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 	rule tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int /Int I2:Int) 
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		andBool I2:Int =/=Bool 0
 		[structural] 
 	rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int %Int I2:Int) 
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		andBool I2:Int =/=Bool 0
 		[structural] 
 	rule - tv(I1:Int, T:Type) => arithInterpret(T:Type, -Int_(I1:Int))
-		if hasIntegerType(T:Type) 
-		andBool rank(T:Type) >=Int rank(int)
+		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 	

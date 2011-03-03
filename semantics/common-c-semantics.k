@@ -913,6 +913,42 @@ kmod FIXED-UNSIGNED-ARITHMETIC is
 		where Result:Int = (N:Nat -Int N':Nat)
 endkm
 
+kmod FIXED-SIGNED-ARITHMETIC is
+	including FIXED-WIDTH-SYNTAX
+	
+	rule [fixed-signed-addition-normal]:
+		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int +Int N':Int)
+		
+	rule [fixed-signed-multiplication-normal]:
+		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int *Int N':Int)
+		
+	rule [fixed-signed-division-normal]:
+		smint(N:Int, W:Nat) /Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int /Int N':NzInt)
+	rule [fixed-signed-division-divz]:
+		smint(?, W:Nat) /Int[W:Nat] smint(0, W:Nat) => divideByZero
+		
+	rule [fixed-signed-modulo-normal]:
+		smint(N:Int, W:Nat) %Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
+		where Result:Int = (N:Int %Int N':NzInt)
+	rule [fixed-signed-modulo-divz]:
+		smint(?, W:Nat) %Int[W:Nat] smint(0, W:Nat) => divideByZero --- why do i have to do this?
+		
+	rule [fixed-signed-subtraction-normal]:
+		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
+		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
+		where Result:Int = (N:Int -Int N':Int)
+		
+	rule [fixed-unsigned-negation-normal]:
+		-Int[W:Nat] smint(N:Int, W:Nat) => smint(absInt(Result:Int), W:Nat)
+		if Result:Int >=Int smin(W:Nat) andBool Result:Int <=Int smax(W:Nat)
+		where Result:Int = (-Int N:Int)
+endkm
+
 kmod FIXED-UNSIGNED-BITWISE is
 	including FIXED-WIDTH-SYNTAX
 	
@@ -948,65 +984,7 @@ kmod FIXED-UNSIGNED-BITWISE is
 		where Result:Nat = (N:Nat <<Nat N':Nat)
 endkm
 
-kmod FIXED-UNSIGNED-DEFAULT is
-	including FIXED-UNSIGNED-ARITHMETIC
-	including FIXED-UNSIGNED-BITWISE
-endkm
-	
-kmod FIXED-C-STYLE-ARITHMETIC is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-signed-addition-normal]:
-		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int +Int N':Int)
-	rule [fixed-signed-addition-overflow]:
-		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int +Int N':Int)
-		
-	rule [fixed-signed-multiplication-normal]:
-		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int *Int N':Int)
-	rule [fixed-signed-multiplication-overflow]:
-		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int *Int N':Int)
-		
-	rule [fixed-signed-division-normal]:
-		smint(N:Int, W:Nat) /Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int /Int N':NzInt)
-	rule [fixed-signed-division-divz]:
-		smint(?, W:Nat) /Int[W:Nat] smint(0, W:Nat) => divideByZero
-		
-	rule [fixed-signed-modulo-normal]:
-		smint(N:Int, W:Nat) %Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int %Int N':NzInt)
-	rule [fixed-signed-modulo-divz]:
-		smint(?, W:Nat) %Int[W:Nat] smint(0, W:Nat) => divideByZero --- why do i have to do this?
-		
-	rule [fixed-signed-subtraction-normal]:
-		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int -Int N':Int)
-	rule [fixed-signed-subtraction-overflow]:
-		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int -Int N':Int)
-		
-	rule [fixed-unsigned-negation-normal]:
-		-Int[W:Nat] smint(N:Int, W:Nat) => smint(absInt(Result:Int), W:Nat)
-		if Result:Int >=Int smin(W:Nat) andBool Result:Int <=Int smax(W:Nat)
-		where Result:Int = (-Int N:Int)
-	rule [fixed-unsigned-negation-overflow]:
-		-Int[W:Nat] smint(N:Int, W:Nat) => overflow
-		if Result:Int <Int smin(W:Nat) orBool Result:Int >Int smax(W:Nat)
-		where Result:Int = (-Int N:Int)
-endkm
-
-
-kmod FIXED-C-STYLE-BITWISE is
+kmod FIXED-SIGNED-BITWISE is
 	including FIXED-WIDTH-SYNTAX
 	
 	rule [fixed-signed-bitwise-and]:
@@ -1041,6 +1019,50 @@ kmod FIXED-C-STYLE-BITWISE is
 		where Result:Int = (N:Int <<Int N':Nat)
 endkm
 
+kmod FIXED-UNSIGNED-DEFAULT is
+	including FIXED-UNSIGNED-ARITHMETIC
+	including FIXED-UNSIGNED-BITWISE
+endkm
+
+kmod FIXED-SIGNED-DEFAULT is
+	including FIXED-SIGNED-ARITHMETIC
+	including FIXED-SIGNED-BITWISE
+endkm
+	
+kmod FIXED-C-STYLE-ARITHMETIC is
+	including FIXED-WIDTH-SYNTAX
+	including FIXED-UNSIGNED-ARITHMETIC
+	including FIXED-SIGNED-ARITHMETIC
+	
+	rule [fixed-signed-addition-overflow]:
+		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int +Int N':Int)
+
+	rule [fixed-signed-multiplication-overflow]:
+		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int *Int N':Int)
+		
+	rule [fixed-signed-subtraction-overflow]:
+		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => overflow
+		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
+		where Result:Int = (N:Int -Int N':Int)
+		
+	rule [fixed-unsigned-negation-overflow]:
+		-Int[W:Nat] smint(N:Int, W:Nat) => overflow
+		if Result:Int <Int smin(W:Nat) orBool Result:Int >Int smax(W:Nat)
+		where Result:Int = (-Int N:Int)
+endkm
+
+
+kmod FIXED-C-STYLE-BITWISE is
+	including FIXED-WIDTH-SYNTAX
+	including FIXED-UNSIGNED-BITWISE
+	including FIXED-SIGNED-BITWISE
+	--- could add checks for shift problems
+endkm
+
 kmod FIXED-C-STYLE-TWOS-COMPLEMENT is
 	including FIXED-WIDTH-SYNTAX
 	
@@ -1050,7 +1072,6 @@ kmod FIXED-C-STYLE-TWOS-COMPLEMENT is
 endkm
 	
 kmod FIXED-C-STYLE is
-	including FIXED-UNSIGNED-DEFAULT
 	including FIXED-C-STYLE-ARITHMETIC
 	including FIXED-C-STYLE-BITWISE
 	
