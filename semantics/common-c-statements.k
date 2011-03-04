@@ -3,7 +3,6 @@
 kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	op loopMarked : -> Statement 
-	op deleteLoc : Nat -> K --- deletes the base object from memory, given a location
 	op genLabel : Nat K -> K --- switchid, value (tv or 'Default)
 	op popLoop : -> K 
 	op popBlock : -> K 
@@ -660,14 +659,9 @@ endkm
 
 kmod COMMON-SEMANTICS-RETURN is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
-	
-	rule [erase-loc]:
-		< k > deleteLoc(sym(Block:Nat) +Nat ?) => .K ...</ k >
-		< mem >... Block:Nat |-> ? => .Map ...</ mem >
-		[structural] 
-	
+
 	rule [return-clean-local]:
-		< k > (. => deleteLoc(Loc:Nat)) ~> Return(V:Value) ...</ k >
+		< k > (. => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
 		< localAddresses >... SetItem(Loc:Nat) => (.).Set ...</ localAddresses >	
 		[structural] 
 		
@@ -746,7 +740,7 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		[structural] 
 		
 	rule [pop-block-free-memory]:
-		< k > (. => deleteLoc(Loc:Nat)) ~> popBlock ...</ k >
+		< k > (. => deleteBlock(Loc:Nat)) ~> popBlock ...</ k >
 		< localAddresses >... (SetItem(Loc:Nat) => (.).Set) ...</ localAddresses >
 		[structural] 
 		

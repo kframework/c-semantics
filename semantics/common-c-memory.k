@@ -229,15 +229,6 @@ kmod COMMON-SEMANTICS-WRITING is
 		andBool notBool hasBitfieldType(T:Type)
 		[structural] 
 		
-	--- fixme not sure about this.  are zero length objects okay?
-	--- comes up in va-arg-22.c
-	rule
-		< k > write(Loc:Nat, tv(.List{K}, T:Type), 0)
-			=> .K
-		...</ k >
-		[structural] 
-		
-
 	eq bitoffset(? +Nat bito(N:Nat)) = N:Nat 
 	eq bitoffset(?) = 0 [owise] 
 	
@@ -428,6 +419,30 @@ endkm
 kmod COMMON-C-MEMORY-MISC is
 	including COMMON-MEMORY-INCLUDE 
 
+	--- used by calloc
+	rule
+		< k > zeroBlock(sym(Block:Nat) +Nat 0) => . ...</ k >
+		< mem >... Block:Nat |-> memblock(Len:Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
+		[structural]
+	
+	--- used for variadic functions
+	rule [append-existing]:
+		< k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
+			=> write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
+		...</ k >
+		< mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
+		[structural] 	
+	
+	rule [delete-sized-block]:
+		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >
+		< mem >... Block:Nat |-> memblock(Len:Nat, ?) => (.).Map ...</ mem >
+		[structural] 
+	
+	rule [delete-loc]:
+		< k > deleteBlock(sym(Block:Nat) +Nat ?) => .K ...</ k >
+		< mem >... Block:Nat |-> ? => .Map ...</ mem >
+		[structural] 
+	
 	rule [storeNew]:
 		< k > storeNew tv(V:K, T:Type) atLoc Loc:Nat 
 			=> alloc(Loc:Nat, value(byteSizeofType(T:Type))) 

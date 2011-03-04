@@ -58,14 +58,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		< k > (. => isTypeCompatible(T:Type, T':Type)) ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
-	
-	op append : Nat Nat Value -> K
-	rule [append-existing]:
-		< k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
-			=> write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
-		...</ k >
-		< mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
-		[structural] 
+
 		
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 
@@ -218,9 +211,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zero(Name:K) => zeroType(Name:K, unqualifyType(T:Type)) ...</ k >
 		< types >... Name:K |-> T:Type ...</ types >
-		--- < currentFunction > F:Id </ currentFunction >
-		--- < env >... Name:K |-> sym(Block:Nat) +Nat 0 ...</ env >
-		--- < mem >... Block:Nat |-> memblock(Len:Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
 		[structural] 
 		
 	op zeroType : K Type -> K 
@@ -286,12 +276,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > zeroType(Name:K, flexibleArrayType(T:Type))
 			=> .K
 		...</ k >
-		[structural] 
-		
-	rule
-		< k > zeroBlock(sym(Block:Nat) +Nat 0) => . ...</ k >
-		< mem >... Block:Nat |-> memblock(Len:Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
-		[structural] 
+		[structural]
 	
 	rule
 		< k > defineType(typedDeclaration(T:Type, X:Id)) => giveType(typedef(X:Id), T:Type) ...</ k >

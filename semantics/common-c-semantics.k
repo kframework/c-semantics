@@ -339,8 +339,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op handleBuiltin : Id Type -> K 
 	
-	op min : Type -> Int [memo] 
-	op max : Type -> Int [memo] 
+	op min : Type -> Int [memo]
+	op max : Type -> Int [memo]
 	op storeNew_atLoc_ : K Nat -> K [metadata "strict(1)"] 
 	op store_atLoc_ : K Nat -> K [metadata "strict(1)"] 
 	op alloc : K K -> K --- should be K K 
@@ -349,7 +349,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op initializerValue : Id Type K -> KResult 
 	op figureInitializer : Id K K -> K [metadata "strict(2)"] --- id, type, initializer
 	
-	
+		
+	op append : Nat Nat Value -> K --- appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
+	op deleteBlock : Nat -> K --- deletes the base object from memory, given a location
+	op deleteSizedBlock : Nat Nat -> K --- deletes the base object from memory, given a location and it size (as a check)
 endkm
 
 

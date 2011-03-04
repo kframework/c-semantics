@@ -263,7 +263,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
 			=> alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
 		...</ k >
-		< malloced >... (.).Map => Loc:Nat |-> N:Nat ...</ malloced >
+		< malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		if T:Type ==Bool cfg:sizeut
 	[structural] 
@@ -288,11 +288,10 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	--- [structural] 
 	
 	rule [free]:
-		< k > prepareBuiltin((Identifier("free")), tv(sym(Block:Nat) +Nat Offset:Nat, pointerType(?))) 
-			=> skipval 
+		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, pointerType(?))) 
+			=> deleteSizedBlock(Loc:Nat, Len:Nat) ~> skipval 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(N:Nat, ?) => (.).Map ...</ mem >
-		< malloced >... sym(Block:Nat) +Nat Offset:Nat |-> N:Nat => (.).Map ...</ malloced >
+		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
 	[structural] 
 	--------------------------------------------
 	--- rule [calloc-is-value]:
@@ -305,7 +304,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			~> zeroBlock(Loc:Nat)
 			~> tv(Loc:Nat, pointerType(void)) 
 		...</ k >
-		< malloced >... (.).Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
+		< malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 	[structural] 
 	--------------------------------------------
@@ -349,7 +348,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	--- [structural] 
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("fslCloseFile")), tv(FD:Nat, int)) => tv(0, int) ...</ k >
-		< openFiles >... FD:Nat |-> ? => (.).Map ...</ openFiles >
+		< openFiles >... FD:Nat |-> ? => .Map ...</ openFiles >
 	[structural] 
 	--- --------------------------------------------
 	--- rule [fslOpenFile-is-value]:
