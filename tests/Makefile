@@ -10,6 +10,7 @@ INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests
 THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-unit
 TORTURE_DIRECTORIES = gcc-torture
+CSMITH_DIRECTORIES = csmith
 ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(TORTURE_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES)
 
 #ALL_FILES = $(foreach var, $(GOOD_DIRECTORIES), $(wildcard $(var)/*.c))
@@ -22,6 +23,7 @@ INTEGRATION_TARGETS = $(foreach var, $(INTEGRATION_DIRECTORIES), results-pass-$(
 UNIT_TARGETS = $(foreach var, $(UNIT_DIRECTORIES), results-pass-$(var).xml)
 THIRD_PARTY_TARGETS = $(foreach var, $(THIRD_PARTY_DIRECTORIES), results-pass-$(var).xml)
 TORTURE_TARGETS = $(foreach var, $(TORTURE_DIRECTORIES), results-pass-$(var).xml)
+CSMITH_TARGETS = $(foreach var, $(CSMITH_DIRECTORIES), results-pass-$(var).xml)
 
 CLEAN_TARGETS = $(foreach var, $(ALL_DIRECTORIES), clean-$(var))
 
@@ -34,6 +36,8 @@ unit: $(UNIT_TARGETS)
 thirdParty: $(THIRD_PARTY_TARGETS)
 
 torture: $(TORTURE_TARGETS)
+
+csmith: $(CSMITH_TARGETS)
 
 #.INTERMEDIATE: test-%.kcc test-%.gcc output-% retval-%
 #.PRECIOUS: test-%.kcc test-%.gcc output-% retval-% compare-%.pass
