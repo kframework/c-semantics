@@ -146,17 +146,19 @@ kmod COMMON-SEMANTICS-READING is
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
 		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		andBool Offset:Nat <Nat Size:Nat
+		andBool Offset:Nat <Nat Size:Nat --- theoretically redundant
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		[structural]
+		--- [metadata "computational"]
 		
 	rule [read-byte-buffer]:
 		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		< buffer >...  bwrite(Loc:Nat, V:K) Mem:List </ buffer >
+		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:Nat in Locs:Bag
 		andBool notBool Loc:Nat in locations(Mem:List)
-		[structural]
+		[metadata "computational"] --- for speed in interpretation
+		--- [structural]
 endkm
 
 kmod COMMON-SEMANTICS-WRITING is
@@ -308,14 +310,14 @@ kmod COMMON-SEMANTICS-WRITING is
 			~> writeBytes(sym(Block:Nat) +Nat sNat(Offset:Nat), dataList(L:List{K}))
 		...</ k >
 		[structural]
-	rule [write-buffer]:
+	rule [write-byte-buffer]:
 		< k > writeByte(Loc:Nat, V:K) => .K ...</ k >
 		< buffer >... (.List => bwrite(Loc:Nat, V:K)) </ buffer >
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(Loc:Nat)) </ locsWrittenTo >
 		if notBool Loc:Nat in Locs:Bag
 		[structural] 
 		
-	rule [write-memory]:
+	rule [write-byte-memory]:
 		< blocked > false </ blocked >
 		< buffer > (bwrite(sym(Block:Nat) +Nat Offset:Nat, V:K) => .List) ...</ buffer >
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
@@ -421,11 +423,13 @@ kmod COMMON-C-MEMORY-MISC is
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(Len:Nat, ?) => .Map ...</ mem >
+		< buffer > .List </ buffer > --- fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
 	rule [delete-block]:
 		< k > deleteBlock(sym(Block:Nat) +Nat ?) => .K ...</ k >
 		< mem >... Block:Nat |-> ? => .Map ...</ mem >
+		< buffer > .List </ buffer >
 		[structural] 
 	
 	rule [storeNew]:

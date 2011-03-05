@@ -5,11 +5,15 @@
     # background: dullcyan
   # text-styel:
     # foreground: green
-k:
-  text-style:
-    foreground: dullred
+# k:
+  # text-style:
+    # foreground: dullred
+	
+k: show
 
 env: show
+
+buffer: show
 
 # cell-style:
     # background: dullcyan

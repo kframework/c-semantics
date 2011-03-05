@@ -39,10 +39,10 @@ kmod C-CONFIGURATION is
 				< thread * >
 					< threadId > 0 </ threadId >
 					< callStack > .List </ callStack > --- stack of "control" cells
+					< buffer > (.).List </ buffer >
+					< blocked > false </ blocked >
 					< control >
 						< k > .K </ k >
-						< buffer > (.).List </ buffer >
-						< blocked > false </ blocked >
 						< blockStack > .List </ blockStack > --- stack of "local" cells
 						< local >
 							--- maps from Ids

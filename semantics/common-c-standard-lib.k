@@ -417,30 +417,50 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	op printf-aux : Nat Nat List{C} -> K 
 	op printf-string : Nat Nat -> K 
 	op printf-% : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%l : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%ll : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%llu : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%lld : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%x : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%d : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%f : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%u : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%s : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%c : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%p : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	
+	
 	rule [lib-printf-start]:
 		< k > prepareBuiltin((Identifier("printf")), (tv(Loc:Nat, pointerType(?)) :: L:List{C})) => printf-aux(0, Loc:Nat, L:List{C}) ...</ k >
 	[structural] 
 		
+	
+		
+	rule [lib-printf-prepare-string]:
+		< k > (.K => read(Loc:Nat, char)) ~> printf-string(Len:Nat, (Loc:Nat => sNat(Loc:Nat))) ...</ k >
+		[structural]
+		
 	rule [lib-printf-string]:
-		< k > printf-string(Len:Nat, sym(Block:Nat) +Nat Offset:Nat) 
+		< k > tv(N:Nat, ?) ~> printf-string(Len:Nat, Loc:Nat) 
 			=> writeToFD(1, N:Nat) 
-			~> printf-string(sNat(Len:Nat), sym(Block:Nat) +Nat sNat(Offset:Nat)) 
+			~> printf-string(sNat(Len:Nat), Loc:Nat) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? Offset:Nat |-> piece(N:Nat, 8))) ...</ mem >
 		if N:Nat =/=Bool 0
-	[structural] 
+		[structural] 
 	
 	rule [lib-printf-string-done]:
-		< k > printf-string(Len:Nat, sym(Block:Nat) +Nat Offset:Nat) => tv(Len:Nat, int) ...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? Offset:Nat |-> piece(0, 8))) ...</ mem >
-	[structural] 
+		< k > tv(0, ?) ~> printf-string(Len:Nat, Loc:Nat) => tv(Len:Nat, int) ...</ k >
+		[structural] 
+	
+	rule [lib-printf-prepare-normal]:
+		< k > (.K => read(Loc:Nat, char)) ~> printf-aux(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
+		[structural]
 	
 	---fixme why do i have to have the 0--255 check?
 	rule [lib-printf-normal]:
-		< k > printf-aux(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) 
-			=> writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), sym(Block:Nat) +Nat sNat(Offset:Nat), L:List{C}) 
+		< k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
+			=> writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? Offset:Nat |-> piece(N:Nat, 8))) ...</ mem >
 		if N:Nat =/=Bool asciiCharString("%") 
 		andBool N:Nat =/=Bool 0
 		andBool N:Nat >=Nat 0 
@@ -448,54 +468,57 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		[structural] 
 	
 	rule [lib-printf-done]:
-		< k > printf-aux(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) => tv(Len:Nat, int) ...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? Offset:Nat |-> piece(0, 8))) ...</ mem >
+		< k > tv(0, ?) ~> printf-aux(Len:Nat, ?, ?) => tv(Len:Nat, int) ...</ k >
 		[structural] 
+		
+	--- fixme technically unsafe
 	rule [lib-printf-null]:
 		< k > printf-aux(0, sym(0) +Nat 0, Nil) => writeToFD(1, "(null)") ~> tv(6, int) ...</ k >
 		[structural] 
 	
 	rule [lib-printf-%]:
-		< k > printf-aux(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) 
-			=> printf-%(Len:Nat, sNat(sym(Block:Nat) +Nat Offset:Nat), L:List{C}) 
+		< k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C})
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if (N:Nat ==Bool asciiCharString("%"))
 		[structural] 
-	rule [lib-printf-%%]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) 
-			=> writeToFD(1, N:Nat) 
-			~> printf-aux(sNat(Len:Nat), sNat(sym(Block:Nat) +Nat Offset:Nat), L:List{C}) ...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("%") 
+		
+	rule [lib-printf-prepare-%]:
+		< k > (.K => read(Loc:Nat, char)) ~> printf-%(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
 		[structural] 
+
+	rule [lib-printf-%%]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> writeToFD(1, N:Nat) 
+			~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) ...</ k >
+		if N:Nat ==Bool asciiCharString("%") 
+		[structural]
+		
 	--- fixme ignoring 0 flag for now
 	rule [lib-printf-0]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) 
-			=> printf-%(Len:Nat, sNat(sym(Block:Nat) +Nat Offset:Nat), L:List{C}) 
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("0") 
 		[structural] 
+		
 	--- ignoring num width
 	rule [lib-printf-width]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, L:List{C}) 
-			=> printf-%(Len:Nat, sNat(sym(Block:Nat) +Nat Offset:Nat), L:List{C}) 
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat >Int asciiCharString("0") 
 		andBool N:Nat <=Int asciiCharString("9")
 		[structural] 
 	
 	rule [lib-printf-%x]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, unsigned-int))
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%x(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("x") orBool N:Nat ==Bool asciiCharString("X") --- orBool N:Nat ==Bool asciiCharString("p")
+		if N:Nat ==Bool asciiCharString("x") orBool N:Nat ==Bool asciiCharString("X")
 		[structural]
 	rule [lib-printf-%x]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
+		< k > printf-%x(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
 			=> writeToFD(1, (if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
 				"0" +String Rat2String(D:Int, 16)
 			else 
@@ -504,10 +527,8 @@ kmod COMMON-C-STANDARD-LIBRARY is
 				"0" +String Rat2String(D:Int, 16)
 			else 
 				Rat2String(D:Int, 16)
-			fi)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			fi)), Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("x") orBool N:Nat ==Bool asciiCharString("X")
 		[structural] 
 	
 	--- fixme might be messing things up elsewhere
@@ -516,147 +537,139 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	eq pointerToString(NullPointer) = "NullPointer" 
 		
 	rule [lib-printf-%p]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, pointerType(void)))
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%p(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, pointerType(void)))
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("p")
 		[structural] 
 	rule [lib-printf-%p]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vpair(tv(N':Nat, pointerType(void)), V:Value) :: ?)) 
+		< k > printf-%p(Len:Nat, Loc:Nat, (vpair(tv(N':Nat, pointerType(void)), V:Value) :: ?)) 
 			=> writeToFD(1, pointerToString(N':Nat))
-			~> printf-aux(Len:Nat +Nat lengthString(pointerToString(N':Nat)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			~> printf-aux(Len:Nat +Nat lengthString(pointerToString(N':Nat)), Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("p")
 		[structural] 
-	
-	--- fixme tool bug, can't match one item in a C list
-	--- below matches the rest of the list even though it's Nil, just to throw it away
-	--- < k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vararg(tv(Loc:Nat, ?)) => nextvarg(Loc:Nat, int)))
-	--- even printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, ((vararg(tv(Loc:Nat, ?)) :: L:List{C}) => nextvarg(Loc:Nat, int))) doesn't work
-	--- probably not what i wrote above.  looks like it's heating nextvar, and when it cools, it's cooling down a :: 
-	
+		
 	rule [lib-printf-%d]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, int))
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%d(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, int))
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("d")
 		[structural] 
 	rule [lib-printf-%d]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vpair(tv(D:Int, int), V:Value) :: ?) 
+		< k > printf-%d(Len:Nat, Loc:Nat, vpair(tv(D:Int, int), V:Value) :: ?) 
 			=> writeToFD(1, Rat2String(D:Int, 10))
-			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
+		[structural] 
+	
+	rule [lib-printf-%u-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%u(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("u")
+		[structural] 
+	rule [lib-printf-%u]:
+		< k > printf-%u(Len:Nat, Loc:Nat, vpair(tv(D:Int, unsigned-int), V:Value) :: ?) 
+			=> writeToFD(1, Rat2String(D:Int, 10))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural]
+		
+	rule [lib-printf-%l]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C})
+			=> printf-%l(Len:Nat, Loc:Nat, L:List{C})
+		...</ k >
+		if N:Nat ==Bool asciiCharString("l")
+		[structural]
+		
+	rule [lib-printf-prepare-%l]:
+		< k > (.K => read(Loc:Nat, char)) ~> printf-%l(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
+		[structural]
+		
+	rule [lib-printf-%ll]:
+		< k > tv(N:Nat, ?) ~> printf-%l(Len:Nat, Loc:Nat, L:List{C})
+			=> printf-%ll(Len:Nat, Loc:Nat, L:List{C})
+		...</ k >
+		if N:Nat ==Bool asciiCharString("l")
+		[structural]
+		
+	rule [lib-printf-prepare-%ll]:
+		< k > (.K => read(Loc:Nat, char)) ~> printf-%ll(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
+		[structural]
+		
+	rule [lib-printf-%llu-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%ll(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%llu(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-long-long-int))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("u")
+		[structural]
+		
+	rule [lib-printf-%lld-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%ll(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%lld(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, long-long-int))
+		...</ k >
 		if N:Nat ==Bool asciiCharString("d")
-		[structural] 
-	
-	rule [lib-printf-%u]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, unsigned-int))
-		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("u")
-		[structural] 
-	rule [lib-printf-%u]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vpair(tv(D:Int, unsigned-int), V:Value) :: ?) 
-			=> writeToFD(1, Rat2String(D:Int, 10))
-			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
-		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("u")
-		[structural] 
-		
-	rule [lib-printf-%llu]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, unsigned-long-long-int))
-		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)) (sNat(Offset:Nat) |-> piece(N:Nat, 8)) (sNat(sNat(Offset:Nat)) |-> piece(N':Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("l")
-		andBool N':Nat ==Bool asciiCharString("u")
 		[structural]
 		
 	rule [lib-printf-%llu]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vpair(tv(D:Int, unsigned-long-long-int), V:Value) :: ?) 
+		< k > printf-%ll(Len:Nat, Loc:Nat, vpair(tv(D:Int, unsigned-long-long-int), V:Value) :: ?) 
 			=> writeToFD(1, Rat2String(D:Int, 10))
-			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), sNat(sNat(sNat(sym(Block:Nat) +Nat Offset:Nat))), V:Value) 
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value)
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)) (sNat(Offset:Nat) |-> piece(N:Nat, 8)) (sNat(sNat(Offset:Nat)) |-> piece(N':Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("l")
-		andBool N':Nat ==Bool asciiCharString("u")
+		[structural]
+	rule [lib-printf-%lld]:
+		< k > printf-%lld(Len:Nat, Loc:Nat, vpair(tv(D:Int, long-long-int), V:Value) :: ?) 
+			=> writeToFD(1, Rat2String(D:Int, 10))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value)
+		...</ k >
 		[structural]
 		
-	rule [lib-printf-%lld]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, long-long-int))
+	rule [lib-printf-%c-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?))) 
+			=> printf-%c(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, int))
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)) (sNat(Offset:Nat) |-> piece(N:Nat, 8)) (sNat(sNat(Offset:Nat)) |-> piece(N':Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("l")
-		andBool N':Nat ==Bool asciiCharString("d")
-		[structural]
-	rule [lib-printf-%lld]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vpair(tv(D:Int, long-long-int), V:Value) :: ?) 
-			=> writeToFD(1, Rat2String(D:Int, 10))
-			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), sNat(sNat(sNat(sym(Block:Nat) +Nat Offset:Nat))), V:Value) 
-		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)) (sNat(Offset:Nat) |-> piece(N:Nat, 8)) (sNat(sNat(Offset:Nat)) |-> piece(N':Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("l")
-		andBool N':Nat ==Bool asciiCharString("d")
-		[structural]	
-	
-	rule [lib-printf-%c]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?))) 
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, int))
-		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("c") 
 		[structural] 
 	--- need to cast to unsigned-char
 	rule [lib-printf-%c]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vpair(tv(C:Nat, int), V:Value) :: ?)) 
+		< k > printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, int), V:Value) :: ?)) 
 			=> writeToFD(1, C:Nat) 
-			~> printf-aux(Len:Nat +Nat 1, sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			~> printf-aux(Len:Nat +Nat 1, Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("c") 
 		[structural] 
 	
-	rule [lib-printf-%f]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?))) 
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, double))
+	rule [lib-printf-%f-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?))) 
+			=> printf-%f(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, double))
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("f") orBool N:Nat ==Bool asciiCharString("g") 
 		[structural] 
 	rule [lib-printf-%f]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vpair(tv(D:Float, double), V:Value) :: ?)) 
+		< k > printf-%f(Len:Nat, Loc:Nat, (vpair(tv(D:Float, double), V:Value) :: ?)) 
 			=> writeToFD(1, Float2String(D:Float)) 
-			~> printf-aux(Len:Nat +Nat lengthString(Float2String(D:Float)), sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			~> printf-aux(Len:Nat +Nat lengthString(Float2String(D:Float)), Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("f") orBool N:Nat ==Bool asciiCharString("g") 
 		[structural] 
+		
+		
+	op addPrintfString : -> K
 	
-	rule [lib-printf-%s]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?))) 
-			=> printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, pointerType(unsigned-char))) 
+	rule [lib-printf-%s-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?))) 
+			=> printf-%s(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, pointerType(unsigned-char))) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
 		if N:Nat ==Bool asciiCharString("s") 
 		[structural] 
 	rule [lib-printf-%s]:
-		< k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, (vpair(tv(S:Nat, pointerType(unsigned-char)), V:Value) :: ?)) 
+		< k > printf-%s(Len:Nat, Loc:Nat, (vpair(tv(S:Nat, pointerType(unsigned-char)), V:Value) :: ?)) 
 			=> printf-string(0, S:Nat)
-			~> printf-aux(Len:Nat, sNat(sym(Block:Nat) +Nat Offset:Nat), V:Value) 
+			~> addPrintfString
+			~> printf-aux(Len:Nat, Loc:Nat, V:Value) 
 		...</ k >
-		< mem >... Block:Nat |-> memblock(?, (? (Offset:Nat |-> piece(N:Nat, 8)))) ...</ mem >
-		if N:Nat ==Bool asciiCharString("s") 
 		[structural] 
 
 	rule [lib-printf-%s-done]:
-		< k > tv(Len':Nat, int) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
+		< k > tv(Len':Nat, int) ~> addPrintfString ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
 			=> printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{C}) 
 		...</ k >
 		[structural] 
