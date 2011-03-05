@@ -1,84 +1,3 @@
---- ! 6.4.4.3 An identifier declared as an enumeration constant has type int.
-
-***(
-
-maybe say something like
-< k > label(?,, arrayType(T:Type) => pointerType(T:Type) ,, ?)
-breaks toEval-aux
-***)
-
-
-
---- why isn't K ~> K proper?
---- arithmetic on a void * pointer
---- argument of function type
---- need one past array
---- 6.7.5.3:11 if, in a parameter declaration, an identifier can be treated either as a typedef name or as a parameter name, it shall be taken as a typedef name
---- switch with only one case?
---- casting from unsigned long long int to int is super slow
---- pr34099.c checks if anding unknown with 0 is 0.  need to add named unknowns and better interpret
-
---- pr44828.c demonstrates slow conversion between large nums to small signed types
-
-***(
- a beaut
-  int a = 0;
-  int *p;
-  size_t b;
-  b = (size_t)(p = &(int []){0, 1, 2}[++a]);
-  if (a != 1 || *p != 1 || *(int *)b != 1)
-    abort ();
-***)
-
-***(
---- fixme
-union U
-{
-  int i, j[4];
-} u = {};
-
-what are j bits?  spec says padding bits are zeroed, but doesn't say about bits not in first id
-***)
-
-
---- fixme not handling this
---- N1494 6.7.2.1:13 An unnamed member of structure type with no tag is called an anonymous structure; an unnamed member of union type with no tag is called an anonymous union. The members of an anonymous struct or union are considered to be members of the containing structure or union. This applies recursively if the containing structure or union is also an anonymous structure or union
-
---- take address of builtins
-
---- extern inside block that shadows variable in a function that shadows global extern
-
---- c1x 6.7.9:5 If the declaration of an identifier has block scope, and the identifier has external or internal linkage, the declaration shall have no initializer for the identifier
---- this means you can't have initializers for static variables??
-
----C99 6.7.8:10 If an object has static duration ... if it has pointer type, it is NULL, if it is arithmetic, 0, aggregate, recursively these, union, first member by these
-
---- switch on enum :(
-
---- § 6.6.3/2
-
-    --- Flowing off the end of a function is equivalent to a return with no value; this results in undefined behavior in a value-returning function
-
---- § 3.6.1/5
-
-    --- If control reaches the end of main without encountering a return statement, the effect is that of executing
-    --- return 0;
-
-
---- enums should probably be handled more generically so that they can be evaluated anywhere
-
-***( 
-not handling this type:
-static union {
-  unsigned char buf[MAX_LENGTH];
-  long long align_int;
-  long double align_fp;
-} u1, u2;
-
-("Field").KProperLabel(unsigned-char,,("_`[_`]").KProperLabel("Id"(buf),,("_+_").KProperLabel(("_+_").KProperLabel(("_+_").KProperLabel(("sizeof").KProperLabel(long-long-int),,("_*_").KProperLabel(("tv").KResultLabel(8,,unsigned-long-int),,("sizeof").KProperLabel(long-long-int))),,("sizeof").KProperLabel(long-long-int)),,("tv").KResultLabel(2,,unsigned-long-int)))) 
-***)
-
---- FIXME serious bug with void spawn(int (*)(int), int, ...) where the int overwrites the pointer (i think) because of #NoName
 
 ---zzz set print attribute on 
 kmod INCOMING-MODULES is
@@ -86,8 +5,7 @@ kmod INCOMING-MODULES is
 	including C-SYNTAX 
 	including C-CONFIGURATION 
 	including K-CONTEXTS 
-	including K-PROPER 
-	--- including K-QUOTED-LABELS 
+	including K-PROPER
 endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
@@ -243,14 +161,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	--- Types
 	op typedDeclaration : Type Id -> Type --- would rather this be KResult, but can't get the subsorting to work
 	
-	--- op testing : -> Set [memo] 
-	--- eq testing =  Set(
-		--- l('arrayType),, 
-		--- l('bitfieldType),, 
-		--- l('functionType)
-	--- ) 
-	
-	
 	sort Type 
 	sort Value 
 	sort List{Type} 
@@ -353,56 +263,11 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op append : Nat Nat Value -> K --- appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
 	op deleteBlock : Nat -> K --- deletes the base object from memory, given a location
 	op deleteSizedBlock : Nat Nat -> K --- deletes the base object from memory, given a location and it size (as a check)
+	
+	
+	op isConcreteNumber : Int -> Bool 
+	op _in_ : K List -> Bool 
 endkm
-
-
-kmod FIXED-WIDTH-SYNTAX is
-	including K
-
-	sort FWInt
-	subsort FWInt < K
-	
-	op smint : Int Nat -> FWInt --- numerical value, bit width
-	op umint : Int Nat -> FWInt --- numerical value, bit width
-	
-	op getmint : K -> Int
-	
-	macro getmint(smint(I:Int, ?)) = I:Int
-	macro getmint(umint(N:Nat, ?)) = N:Nat
-	
-	op overflow : -> FWInt
-	--- op uoverflow : K -> FWInt --- I don't know of any systems where this is a problem
-	op soverflow : K -> FWInt
-	op divideByZero : -> FWInt
-	
-	op _+Int[_]_ : K Nat K -> FWInt --- operand, width, operand
-	op _*Int[_]_ : K Nat K -> FWInt
-	op _/Int[_]_ : K Nat K -> FWInt
-	op _%Int[_]_ : K Nat K -> FWInt
-	op _-Int[_]_ : K Nat K -> FWInt
-	op -Int[_]_ : Nat K -> FWInt
-	
-	op _&Int[_]_ : K Nat K -> FWInt
-	op _|Int[_]_ : K Nat K -> FWInt
-	op _xorInt[_]_ : K Nat K -> FWInt
-	op ~Int[_]_ : Nat K -> FWInt
-	
-	op _>>Int[_]_ : K Nat K -> FWInt
-	op _<<Int[_]_ : K Nat K -> FWInt
-
-	op umin : Nat -> Nat
-	op umax : Nat -> Nat
-	op usize : Nat -> NzNat
-	
-	op smin : Nat -> Int
-	op smax : Nat -> Nat
-	op ssize : Nat -> NzNat
-	
-	macro umin(_) = 0
-	macro umax(N:Nat) = (2 ^Nat N:Nat) -Int 1
-	macro usize(N:Nat) = 2 ^Nat N:Nat
-endkm
-
 
 kmod C-SETTINGS is
 	including INCOMING-MODULES 
@@ -488,50 +353,7 @@ kmod C-SETTINGS is
 	eq min(enumType(?)) = min(int) 
 	eq max(enumType(?)) = max(int) 
 	
-	--- — number of bits for smallest object that is not a bit-field (byte)
-	--- CHAR_BIT 8
-	--- — minimum value for an object of type signed char
-	--- SCHAR_MIN -127 // -(27 - 1)
-	--- — maximum value for an object of type signed char
-	--- SCHAR_MAX +127 // 27 - 1
-	--- — maximum value for an object of type unsigned char
-	--- UCHAR_MAX 255 // 28 - 1
-	--- — minimum value for an object of type char
-	--- CHAR_MIN see below
-	--- — maximum value for an object of type char
-	--- CHAR_MAX see below
-	--- — maximum number of bytes in a multibyte character, for any supported locale
-	--- MB_LEN_MAX 1
-	--- — minimum value for an object of type short int
-	--- SHRT_MIN -32767 // -(215 - 1)
-	--- — maximum value for an object of type short int
-	--- SHRT_MAX +32767 // 215 - 1
-	--- — maximum value for an object of type unsigned short int
-	--- USHRT_MAX 65535 // 216 - 1
-	--- — minimum value for an object of type int
-	--- INT_MIN -32767 // -(215 - 1)
-	--- — maximum value for an object of type int
-	--- INT_MAX +32767 // 215 - 1
-	--- — maximum value for an object of type unsigned int
-	--- UINT_MAX 65535 // 216 - 1
-	--- — minimum value for an object of type long int
-	--- LONG_MIN -2147483647 // -(231 - 1)
-	--- — maximum value for an object of type long int
-	--- LONG_MAX +2147483647 // 231 - 1
-	--- — maximum value for an object of type unsigned long int
-	--- ULONG_MAX 4294967295 // 232 - 1
-	--- — minimum value for an object of type long long int
-	--- LLONG_MIN -9223372036854775807 // -(263 - 1)
-	--- — maximum value for an object of type long long int
-	--- LLONG_MAX +9223372036854775807 // 263 - 1
-	--- — maximum value for an object of type unsigned long long int
-	--- ULLONG_MAX 18446744073709551615 // 264 - 1
-	
 	op rank : Type -> Int 
-	
-	--- fixme, this is kind of cheating as it will promote bitfields smaller than int to int leave others unchanged
-	--- ceq rank(bitfieldType(?, N:Nat)) = 0 
-		--- if N:Nat < numBits(int) 
 		
 	eq rank(bool) = 0 
 	eq rank(char) = 1 
@@ -563,130 +385,10 @@ kmod C-SETTINGS is
 	***)
 endkm
 
-kmod SEMANTIC-HELPERS is 
-	including COMMON-SEMANTIC-SYNTAX 
-	including C-SETTINGS 
-	
-	op isConcreteNumber : Int -> Bool 
-	eq isConcreteNumber(sym(?) +Nat ?) = false 
-	eq isConcreteNumber(bito(?) +Nat ?) = false 
-	ceq isConcreteNumber(I:Int) = true
-		if  I:Int <=Int 0 orBool I:Int >Int 0 
-	
-	--- this should probably go in the k prelude
-	op _in_ : K List -> Bool 
-	eq K:K in (ListItem(K:K) ?) = true 
-	eq K:K in (.).List = false 
-	ceq K:K in (ListItem(K':K) L:List) = K:K in L:List
-		if K:K =/=Bool K':K 
-	
-	
-	rule [discard]:
-		< k > V:Value ~> discard => .K ...</ k >
-		[structural] 
-	
-	---- derived
-	eq bitsToBytes(N:Nat) = absInt(ceilingRat(N:Nat /Rat numBitsPerByte)) 
-		
-	eq numBytes(unsigned-char) = numBytes(signed-char) 
-	eq numBytes(unsigned-short-int) = numBytes(short-int) 
-	eq numBytes(unsigned-int) = numBytes(int) 
-	eq numBytes(unsigned-long-int) = numBytes(long-int) 
-	eq numBytes(unsigned-long-long-int) = numBytes(long-long-int) 
-	
-	ceq numBits(T:Type) = numBytes(T:Type) *Nat numBitsPerByte 
-		if getKLabel(T:Type) =/=Bool 'bitfieldType
-	eq numBits(bitfieldType(?, N:Nat)) = N:Nat 
-
-	eq min(bool) = 0 
-	eq max(bool) = 1 
-	
-	eq min(signed-char) = -Int (2 ^Nat absInt(_-Int_(numBits(signed-char), 1))) 
-	eq max(signed-char) = _-Int_(2 ^Nat absInt(_-Int_(numBits(signed-char), 1)), 1) 
-	eq min(short-int) = -Int (2 ^Nat absInt(_-Int_(numBits(short-int), 1))) 
-	eq max(short-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(short-int), 1)), 1) 
-	eq min(int) = -Int (2 ^Nat absInt(_-Int_(numBits(int), 1))) 
-	eq max(int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(int), 1)), 1) 
-	eq min(long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-int), 1))) 
-	eq max(long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-int), 1)), 1) 
-	eq min(long-long-int) = -Int (2 ^Nat absInt(_-Int_(numBits(long-long-int), 1))) 
-	eq max(long-long-int) = _-Int_(2 ^Nat absInt(_-Int_(numBits(long-long-int), 1)), 1) 
-	
-	eq min(unsigned-char) = 0 
-	eq max(unsigned-char) = _-Int_(2 ^Nat absInt(numBits(unsigned-char)), 1) 
-	eq min(unsigned-short-int) = 0 
-	eq max(unsigned-short-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-short-int)), 1) 
-	eq min(unsigned-int) = 0 
-	eq max(unsigned-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-int)), 1) 
-	eq min(unsigned-long-int) = 0 
-	eq max(unsigned-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-int)), 1) 
-	eq min(unsigned-long-long-int) = 0 
-	eq max(unsigned-long-long-int) = _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) 
-	
-	
-	eq stringToChar(C:Char) = C:Char 
-	eq asciiCharString(S:String) = asciiString(stringToChar(S:String)) 
-	rule [firstChar]:
-		firstChar(S:String) => substrString(S:String, 0, 1)
-		[structural] 
-	rule [nthChar]:
-		nthChar(S:String, N:Nat) => substrString(S:String, N:Nat, 1)
-		[structural] 
-	rule [charToAscii]:
-		charToAscii(C:Char) => asciiString(C:Char)
-		[structural] 
-	rule [butFirstChar]:
-		butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))
-		[structural] 
-		
-	eq N:Nat to N:Nat = .List{K} 
-	ceq N:Nat to N':Nat = (N:Nat,,((N:Nat +Nat 1) to N':Nat))
-		if N:Nat <Nat N':Nat 
-
-	--- Note: it only makes sense to memo this if the sets are just used to represent categories
-	eq S:Set SetItem(K:K) contains K:K = true 
-	ceq S:Set SetItem(K1:K) contains K2:K = S:Set contains K2:K 
-		if K1:K =/=Bool K2:K 
-	eq (.).Set contains K:K = false 
-
-	eq hasIntegerType(T:Type) = hasUnsignedIntegerType(T:Type) orBool hasSignedIntegerType(T:Type) 
-	
-	ceq hasUnsignedIntegerType(T:Type) = true
-		if (unsignedIntegerTypes contains T:Type) 
-
-	ceq hasUnsignedIntegerType(T:Type) = false 
-		if getKLabel(T:Type) =/=Bool 'bitfieldType
-		andBool setOfTypes contains l(getKLabel(T:Type)) 
-	ceq hasUnsignedIntegerType(bitfieldType(T:Type, ?)) = true 
-		if hasUnsignedIntegerType(T:Type) ==Bool true 
-	ceq hasUnsignedIntegerType(bitfieldType(T:Type, ?)) = false 
-		if hasUnsignedIntegerType(T:Type) ==Bool false 
-	
-	ceq hasSignedIntegerType(T:Type) = true
-		if (signedIntegerTypes contains T:Type) 
-	eq hasSignedIntegerType(enumType(?)) = true --- choice fixme
-	ceq hasSignedIntegerType(T:Type) = false 
-		if getKLabel(T:Type) =/=Bool 'bitfieldType
-		andBool setOfTypes contains l(getKLabel(T:Type)) 
-	ceq hasSignedIntegerType(bitfieldType(T:Type, ?)) = true 
-		if hasSignedIntegerType(T:Type) ==Bool true 
-	ceq hasSignedIntegerType(bitfieldType(T:Type, ?)) = false 
-		if hasSignedIntegerType(T:Type) ==Bool false 
-
-	ceq min(bitfieldType(T:Type, N:Nat)) = 0
-		if hasUnsignedIntegerType(T:Type) 
-	ceq max(bitfieldType(T:Type, N:Nat)) = _-Int_(2 ^Nat absInt(N:Nat), 1)
-		if hasUnsignedIntegerType(T:Type) 
-	
-	ceq min(bitfieldType(T:Type, N:Nat)) = -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
-		if hasSignedIntegerType(T:Type) 
-	ceq max(bitfieldType(T:Type, N:Nat)) = _-Int_(2 ^Nat absInt(_-Int_(N:Nat, 1)), 1) 
-		if hasSignedIntegerType(T:Type) 
-endkm
+load common-c-sized-operations
 
 kmod COMMON-INCLUDE is
 	including INCOMING-MODULES 
-	including SEMANTIC-HELPERS 
 	including C-SETTINGS 
 	including COMMON-SEMANTIC-SYNTAX
 	including FIXED-WIDTH-SYNTAX
@@ -714,31 +416,6 @@ kmod C-SEMANTICS-MISC is
 	
 	--- ---C99 6.5.3.2 90) ... It is always true that if E is a function designator or an lvalue that is a valid operand of the u of the unary & operator, *&E is a function designator or an lvalue equal to E
 
-	eq calculateLength(Nil) = 0 
-	eq calculateLength(T:Type :: L:List{Type}) = calculateLength(T:Type) + calculateLength(L:List{Type}) 
-	eq calculateLength(typedDeclaration(T:Type, ?)) = bitSizeofType(T:Type) 
-	
-	op extractField-pre : List{K} Type K K -> K [metadata "strict(3 4)"] 
-	op extractField-aux : List{K} Type Nat Nat List{K} -> K 
-	
-	--- figureOffset(loc(0, 0), calcStructSize-aux(L1:List{KResult}, 0), T:Type)
-	rule [extractField-from-struct-start]:
-		< k > extractField(L:List{K}, structType(S:Id), F:Id)
-			=> extractField-pre(L:List{K}, T:Type, calculateLength(L:List{Type}), bitSizeofType(T:Type)) ...</ k >
-		< structs >... S:Id |-> (L:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		[structural] 
-		
-	rule [extractField-from-union-start]:
-		< k > extractField(L:List{K}, unionType(S:Id), F:Id)
-			=> extractField-pre(L:List{K}, T:Type, tv(0, unsigned-long-int), bitSizeofType(T:Type)) ...</ k >
-		< structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		[structural] 
-		
-	rule
-		< k > extractField-pre(L:List{K}, T:Type, tv(Offset:Nat, ?), tv(Len:Nat, ?))
-			=> concretize(T:Type, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Nat, Len:Nat)))
-		...</ k >
-		[structural] 
 				
 	rule [writeToFD-char]:
 		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
@@ -808,279 +485,8 @@ kmod C-SEMANTICS-MISC is
 	ceq N:Nat +Nat bito(M:Nat) = N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
 		if M:Nat >=Nat numBitsPerByte 
 	
-	--- this maintains byte order
-	op fillToBytes-aux : K List{K} -> K 
-	eq fillToBytes(dataList(L:List{K})) = fillToBytes-aux(dataList(L:List{K}), .List{K}) 
-	ceq fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat))), L':List{K}) 
-		= fillToBytes-aux(dataList(L:List{K}), (piece(N:Nat, Len:Nat),, L':List{K}))
-		if Len:Nat ==Bool numBitsPerByte 
-	
-	ceq fillToBytes-aux(dataList(piece(N:Nat, Len:Nat)), L':List{K})
-		= fillToBytes-aux(dataList((piece(0, 1),, piece(N:Nat, Len:Nat))), L':List{K})
-		if Len:Nat <Nat numBitsPerByte 
-		
-	ceq fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat),, piece(N':Nat, Len':Nat))), L':List{K}) 
-		= fillToBytes-aux(dataList((L:List{K},, piece(_bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)), Len:Nat +Nat Len':Nat))), L':List{K})
-		if Len:Nat +Nat Len':Nat <=Nat numBitsPerByte 
-				
-	eq fillToBytes-aux(dataList(.List{K}), L:List{K})
-		= dataList(L:List{K}) 
-		
-	--- coallesce bitranges that are adjacent
-	ceq _bit::_(piece(bitRange(N:Nat, sNat(To:Nat), To':Nat), Len:Nat), piece(bitRange(N:Nat, From:Nat, To:Nat), Len':Nat)) 
-		= piece(bitRange(N:Nat, From:Nat, To':Nat), Len:Nat +Nat Len':Nat) 
-		if Len:Nat +Nat Len':Nat <=Nat numBitsPerByte 
-	
-	eq piece(N:Nat bit:: N':Nat, Len:Nat) bit:: piece(N'':Nat, Len':Nat)
-		= piece(N:Nat bit:: N':Nat bit:: piece(N'':Nat, Len':Nat), Len:Nat +Nat Len':Nat) 
-
-	eq piece(N'':Nat, Len':Nat) bit:: piece(N:Nat bit:: N':Nat, Len:Nat)
-		= piece(piece(N'':Nat, Len':Nat) bit:: N:Nat bit:: N':Nat, Len:Nat +Nat Len':Nat) 
-
-	ceq bitRange(N:Nat bit:: piece(?, Len:Nat), Pos:Nat, Pos:Nat)
-		= bitRange(N:Nat, absInt(Pos:Nat -Int Len:Nat), absInt(Pos:Nat -Int Len:Nat))
-		if Pos:Nat >Nat 0
-		andBool Pos:Nat -Int Len:Nat >=Int 0 
-		
-	eq bitRange(? bit:: piece(N:Nat, 1), 0, 0) = piece(N:Nat, 1) 
-	eq bitRange(piece(N:Nat, 1), 0, 0) = piece(N:Nat, 1) 
-		
-	ceq bitRange(piece(bitRange(N:Nat, Start:Nat, End:Nat), Len:Nat), 0, 0)
-		= bitRange(piece(bitRange(N:Nat, Start:Nat, Start:Nat), 1), 0, 0) 
-		if Start:Nat +Nat Len:Nat ==Bool sNat(End:Nat) 
-	
-	ceq bitRange(N:Nat, Pos:Nat, Pos:Nat) = 1 &Nat (N:Nat >>Nat Pos:Nat)
-		if N:Nat >=Nat 0 
-	ceq bitRange(piece(N:Nat, 1), Pos:Nat, Pos:Nat) = 1 &Nat (N:Nat >>Nat Pos:Nat)
-		if N:Nat >=Nat 0 
-		
-	ceq bitRange(N:Nat, 0, To:Nat) = N:Nat
-		if sNat(To:Nat) ==Bool numBitsPerByte 
-	
-	ceq bitRange(? bit:: piece(N:Nat, Len:Nat), Start:Nat, End:Nat) 
-		= bitRange(piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
-		if sNat(End:Nat) <=Nat Len:Nat 
-	
-	eq bitRange(piece(N:Nat, sNat(End:Nat)), 0, End:Nat)
-		= piece(N:Nat, sNat(End:Nat)) 
-	eq bitRange(? bit:: piece(N:Nat, sNat(End:Nat)), 0, End:Nat)
-		= piece(N:Nat, sNat(End:Nat)) 
-		
-	ceq bitRange(piece(N:Nat, Len:Nat), Pos:Nat, Pos:Nat) = (N:Nat >>Nat Pos:Nat) &Nat 1
-		if N:Nat >=Nat 0 
 		
 	eq Identifier("___missing_field_name") = #NoName 
-endkm
-
-kmod FIXED-UNSIGNED-ARITHMETIC is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-unsigned-addition-normal]:
-		umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		if Result:Nat <=Nat umax(W:Nat)
-		where Result:Nat = (N:Nat +Nat N':Nat)
-	rule [fixed-unsigned-addition-overflow]:
-		umint(N:Nat, W:Nat) +Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat %Nat usize(W:Nat), W:Nat)
-		if Result:Nat >Nat umax(W:Nat)
-		where Result:Nat = (N:Nat +Nat N':Nat)
-		
-	rule [fixed-unsigned-multiplication-normal]:
-		umint(N:Nat, W:Nat) *Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		if Result:Nat <=Nat umax(W:Nat)
-		where Result:Nat = (N:Nat *Nat N':Nat)
-	rule [fixed-unsigned-multiplication-overflow]:
-		umint(N:Nat, W:Nat) *Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat %Nat usize(W:Nat), W:Nat)
-		if Result:Nat >Nat umax(W:Nat)
-		where Result:Nat = (N:Nat *Nat N':Nat)
-		
-	rule [fixed-unsigned-division-normal]:
-		umint(N:Nat, W:Nat) /Int[W:Nat] umint(N':NzNat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (N:Nat /Nat N':NzNat)
-	rule [fixed-unsigned-division-divz]:
-		umint(?, W:Nat) /Int[W:Nat] umint(0, W:Nat) => divideByZero
-		
-	rule [fixed-unsigned-modulo-normal]:
-		umint(N:Nat, W:Nat) %Int[W:Nat] umint(N':NzNat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (N:Nat %Nat N':NzNat)
-	rule [fixed-unsigned-modulo-divz]:
-		umint(?, W:Nat) %Int[W:Nat] umint(0, W:Nat) => divideByZero
-		
-	rule [fixed-unsigned-subtraction-normal]:
-		umint(N:Nat, W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) => umint(absInt(Result:Int), W:Nat)
-		if Result:Int >=Int umin(W:Nat)
-		where Result:Int = (N:Nat -Int N':Nat)
-	rule [fixed-unsigned-subtraction-underflow]:
-		umint(N:Nat, W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) 
-		=> umint(N:Nat +Nat usize(W:Nat), W:Nat) -Int[W:Nat] umint(N':Nat, W:Nat) 
-		if Result:Int <Int umin(W:Nat)
-		where Result:Int = (N:Nat -Int N':Nat)
-endkm
-
-kmod FIXED-SIGNED-ARITHMETIC is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-signed-addition-normal]:
-		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int +Int N':Int)
-		
-	rule [fixed-signed-multiplication-normal]:
-		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int *Int N':Int)
-		
-	rule [fixed-signed-division-normal]:
-		smint(N:Int, W:Nat) /Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int /Int N':NzInt)
-	rule [fixed-signed-division-divz]:
-		smint(?, W:Nat) /Int[W:Nat] smint(0, W:Nat) => divideByZero
-		
-	rule [fixed-signed-modulo-normal]:
-		smint(N:Int, W:Nat) %Int[W:Nat] smint(N':NzInt, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int %Int N':NzInt)
-	rule [fixed-signed-modulo-divz]:
-		smint(?, W:Nat) %Int[W:Nat] smint(0, W:Nat) => divideByZero --- why do i have to do this?
-		
-	rule [fixed-signed-subtraction-normal]:
-		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		if Result:Int <=Int smax(W:Nat) andBool Result:Int >=Int smin(W:Nat)
-		where Result:Int = (N:Int -Int N':Int)
-		
-	rule [fixed-unsigned-negation-normal]:
-		-Int[W:Nat] smint(N:Int, W:Nat) => smint(absInt(Result:Int), W:Nat)
-		if Result:Int >=Int smin(W:Nat) andBool Result:Int <=Int smax(W:Nat)
-		where Result:Int = (-Int N:Int)
-endkm
-
-kmod FIXED-UNSIGNED-BITWISE is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-unsigned-bitwise-and]:
-		umint(N:Nat, W:Nat) &Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (N:Nat &Nat N':Nat)
-	rule [fixed-unsigned-bitwise-or]:
-		umint(N:Nat, W:Nat) |Int[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (N:Nat |Nat N':Nat)
-	rule [fixed-unsigned-bitwise-xor]:
-		umint(N:Nat, W:Nat) xorInt[W:Nat] umint(N':Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (N:Nat xorNat N':Nat)
-	rule [fixed-unsigned-bitwise-negation]:
-		~Int[W:Nat] umint(N:Nat, W:Nat) => umint(Result:Nat, W:Nat)
-		where Result:Nat = (~Int N:Nat)
-		
-	--- can shift by signed or unsigned of any non-negative width
-	rule [fixed-unsigned-shift-right-1]:
-		umint(N:Nat, W:Nat) >>Int[W:Nat] umint(N':Nat, ?) => umint(Result:Nat, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Nat = (N:Nat >>Nat N':Nat)
-	rule [fixed-unsigned-shift-left-1]:
-		umint(N:Nat, W:Nat) <<Int[W:Nat] umint(N':Nat, ?) => umint(Result:Nat, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Nat = (N:Nat <<Nat N':Nat)
-	rule [fixed-unsigned-shift-right-2]:
-		umint(N:Nat, W:Nat) >>Int[W:Nat] smint(N':Nat, ?) => umint(Result:Nat, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Nat = (N:Nat >>Nat N':Nat)
-	rule [fixed-unsigned-shift-left-2]:
-		umint(N:Nat, W:Nat) <<Int[W:Nat] smint(N':Nat, ?) => umint(Result:Nat, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Nat = (N:Nat <<Nat N':Nat)
-endkm
-
-kmod FIXED-SIGNED-BITWISE is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-signed-bitwise-and]:
-		smint(N:Int, W:Nat) &Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int &Int N':Int)
-	rule [fixed-signed-bitwise-or]:
-		smint(N:Int, W:Nat) |Int[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int |Int N':Int)
-	rule [fixed-signed-bitwise-xor]:
-		smint(N:Int, W:Nat) xorInt[W:Nat] smint(N':Int, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (N:Int xorInt N':Int)
-	rule [fixed-signed-bitwise-negation]:
-		~Int[W:Nat] smint(N:Int, W:Nat) => smint(Result:Int, W:Nat)
-		where Result:Int = (~Int N:Int)
-		
-	--- can shift by signed or unsigned of any non-negative width
-	rule [fixed-signed-shift-right-1]:
-		smint(N:Int, W:Nat) >>Int[W:Nat] umint(N':Nat, ?) => smint(Result:Int, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Int = (N:Int >>Int N':Nat)
-	rule [fixed-signed-shift-left-1]:
-		smint(N:Int, W:Nat) <<Int[W:Nat] umint(N':Nat, ?) => smint(Result:Int, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Int = (N:Int <<Int N':Nat)
-	rule [fixed-signed-shift-right-2]:
-		smint(N:Int, W:Nat) >>Int[W:Nat] smint(N':Nat, ?) => smint(Result:Int, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Int = (N:Int >>Int N':Nat)
-	rule [fixed-signed-shift-left-2]:
-		smint(N:Int, W:Nat) <<Int[W:Nat] smint(N':Nat, ?) => smint(Result:Int, W:Nat)
-		if N':Nat <Nat W:Nat
-		where Result:Int = (N:Int <<Int N':Nat)
-endkm
-
-kmod FIXED-UNSIGNED-DEFAULT is
-	including FIXED-UNSIGNED-ARITHMETIC
-	including FIXED-UNSIGNED-BITWISE
-endkm
-
-kmod FIXED-SIGNED-DEFAULT is
-	including FIXED-SIGNED-ARITHMETIC
-	including FIXED-SIGNED-BITWISE
-endkm
-	
-kmod FIXED-C-STYLE-ARITHMETIC is
-	including FIXED-WIDTH-SYNTAX
-	including FIXED-UNSIGNED-ARITHMETIC
-	including FIXED-SIGNED-ARITHMETIC
-	
-	rule [fixed-signed-addition-overflow]:
-		smint(N:Int, W:Nat) +Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int +Int N':Int)
-
-	rule [fixed-signed-multiplication-overflow]:
-		smint(N:Int, W:Nat) *Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int *Int N':Int)
-		
-	rule [fixed-signed-subtraction-overflow]:
-		smint(N:Int, W:Nat) -Int[W:Nat] smint(N':Int, W:Nat) => overflow
-		if Result:Int >Int smax(W:Nat) orBool Result:Int <Int smin(W:Nat)
-		where Result:Int = (N:Int -Int N':Int)
-		
-	rule [fixed-unsigned-negation-overflow]:
-		-Int[W:Nat] smint(N:Int, W:Nat) => overflow
-		if Result:Int <Int smin(W:Nat) orBool Result:Int >Int smax(W:Nat)
-		where Result:Int = (-Int N:Int)
-endkm
-
-
-kmod FIXED-C-STYLE-BITWISE is
-	including FIXED-WIDTH-SYNTAX
-	including FIXED-UNSIGNED-BITWISE
-	including FIXED-SIGNED-BITWISE
-	--- could add checks for shift problems
-endkm
-
-kmod FIXED-C-STYLE-TWOS-COMPLEMENT is
-	including FIXED-WIDTH-SYNTAX
-	
-	rule [fixed-unsigned-negation-normal]:
-		-Int[W:Nat] umint(N:Nat, W:Nat) => umint(absInt(Result:Int +Int usize(W:Nat)) %Nat usize(W:Nat), W:Nat)
-		where Result:Int = (-Int N:Nat)
-endkm
-	
-kmod FIXED-C-STYLE is
-	including FIXED-C-STYLE-ARITHMETIC
-	including FIXED-C-STYLE-BITWISE
-	
-	macro smin(N:Nat) = -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
-	macro smax(N:Nat) = (2 ^Nat absInt(N:Nat -Int 1)) -Int 1
-	macro ssize(N:Nat) = 2 ^Nat N:Nat
 endkm
 
 load common-c-conversions
@@ -1090,6 +496,7 @@ load common-c-standard-lib
 load common-c-typing
 load common-c-memory
 load common-c-declarations
+load common-c-helpers
 
 kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
@@ -1098,6 +505,7 @@ kmod COMMON-C-SEMANTICS is
 	including FIXED-C-STYLE
 	including FIXED-C-STYLE-TWOS-COMPLEMENT 
 	
+	including COMMON-C-HELPERS
 	including COMMON-C-TYPING 
 	including COMMON-C-DECLARATIONS 
 	including COMMON-C-MEMORY 

@@ -1,5 +1,3 @@
---- problem with sym(n) being different, so goto variables mess up.  maybe just generate it based on surrounding block?
-
 kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	op loopMarked : -> Statement 
@@ -494,14 +492,7 @@ kmod COMMON-SEMANTICS-GOTO is
 ***)
 
 	--- c1x 6.8.5:4 Code jumped over is not executed. In particular, the controlling expression of a for or while statement is not evaluated before entering the loop body, nor is clause-1 of a for statement
-	---- dowhile and while, are basically the same here
-	--- rule
-		--- < computation > (. => S:K ~> loopMarked) ~> For(ForNum:Nat, E1:K, (Control:K => (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi)), E3:K, S:K) ~> (. => popLoop) ~> K:K </ computation >
-		--- < computationTail > Tail:K </ computationTail >
-		--- < nestingDepthGoto > N:Nat => sNat(N:Nat) </ nestingDepthGoto >
-		--- < blockHistoryGoto > (. => ListItem(ForNum:Nat)) ListItem(Num:Nat) ...</ blockHistoryGoto >
-		--- < loopStackGoto > (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</ loopStackGoto >
-		--- [structural] 
+
 		
 	---- should do this with a split
 	rule
@@ -531,17 +522,6 @@ kmod COMMON-SEMANTICS-GOTO is
 			</ gotoCalculation >
 		)
 		[structural] 
-		
-	--- rule
-		--- < computation > (. => S:K ~> loopMarked) ~> DoWhile(E:K, S:K) ~> (. => popLoop) ~> K:K </ computation >
-		--- < computationTail > Tail:K </ computationTail >
-		--- < blockHistoryGoto > ListItem(Num:Nat) ...</ blockHistoryGoto >
-		--- < loopStackGoto > (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</ loopStackGoto >
-		--- [structural] 
-		
-	--- rule
-		--- < computation > (loopMarked ~> DoWhile(E:K, S:K) => .K) ~> popLoop ~> K:K </ computation >
-		--- [structural] 
 		
 	rule
 		< gotoCalculation >
@@ -676,14 +656,6 @@ kmod COMMON-SEMANTICS-RETURN is
 		...</ blockStack >
 		[structural] 
 
-	--- --- this is used for threads
-	--- rule [return-nostack]: 
-		--- < k > [L:KLabel(?) ~> ? => .K] </ k >
-		--- < callStack > .List </ callStack >
-		--- if L:KLabel ==Bool 'return`;
-		--- orBool L:KLabel ==Bool 'return_;
-		--- [structural] 
-
 	--- this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
 	rule [return]: 
 		< control >
@@ -801,22 +773,11 @@ kmod COMMON-C-STATEMENTS is
 		if Num':Nat =/=Bool Num:Nat
 		[structural] 
 	
-	--- rule [break]:
-		--- < k > Break ~> ? => K:K </ k >
-		--- --- < loopStack > ListItem(K:K) => (.).List ...</ loopStack >
-		--- < blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		--- < loopStack > ListItem(kpair(Num:Nat, K:K)) => (.).List ...</ loopStack >
-		--- [metadata "computational rule"] --- nondet
 	rule [break]:
 		< k > Break => popLoop ...</ k >
 		--- < xmessages >... (. => "Break encountered, turning into popLoop") </ xmessages >
 		[structural] 
-		
-	--- rule [break]:
-		--- < k > Break ~> ? => K:K </ k >
-		--- < loopStack > ListItem(K:K) => (.).List ...</ loopStack >
-		--- [metadata "computational rule"] --- nondet
-	
+
 	rule [continue]:
 		< k > Continue ~> ((L:KLabel)(?) => .) ...</ k >
 		if L:KLabel =/=Bool 'loopMarked

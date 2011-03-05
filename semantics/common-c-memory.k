@@ -21,14 +21,6 @@ kmod COMMON-SEMANTICS-READING is
 	eq getBitOffset(? +Nat bito(M:Nat)) = M:Nat 
 	eq getBitOffset(?) = 0 [owise] 
 	
-			
-	--- 1100 1100
-
-***(
-	('extractBitsFromList).KProperLabel(('dataList).KResultLabel(kList("wklist_")(BaseValue piece(204, 8)(.List{K}),,BaseValue piece(7, 8)(.List{K}),,BaseValue piece(0, 8)(.List{K}),,BaseValue piece(0, 8)(.List{K}),,BaseValue piece(0, 8)(.List{K}))),,BaseValue 0(.List{K}),,BaseValue 40(.List{K}))
-***)
-	--- 0100 0000
-	
 	op extractBitsFromList : K Nat Nat List{K} -> K --- datalist, offset in bits into list, number of bits to extract, accumulator
 	eq extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
 		= extractBitsFromList(dataList(explodeToBits(L:List{K})), N:Nat, M:Nat, .List{K}) 
@@ -89,9 +81,6 @@ kmod COMMON-SEMANTICS-READING is
 	eq concretize(structType(S:Id), dataList(L:List{K})) = tv(L:List{K}, structType(S:Id)) 
 	eq concretize(unionType(S:Id), dataList(L:List{K})) = tv(L:List{K}, unionType(S:Id)) 
 
-	---  -13 == 1110011
-	---   51 == 0110011
-	---  115 == 1110011
 	--- FIXME assuming bytes?
 	op joinIntegerBytes : Type List{K} K -> K 
 	eq joinIntegerBytes(T:Type, L:List{K}) = joinIntegerBytes(T:Type, L:List{K}, piece(0, 0)) 
@@ -156,15 +145,15 @@ kmod COMMON-SEMANTICS-READING is
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
 		andBool Offset:Nat <Nat Size:Nat
-		[structural] 
-	rule
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
-		< mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
-		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		andBool notBool($hasMapping(M:Map, Offset:Nat))
-		andBool Offset:Nat <Nat Size:Nat
-		[structural] 
+		[structural]
+	--- rule
+		--- < k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
+		--- < mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
+		--- < locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		--- if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
+		--- andBool notBool($hasMapping(M:Map, Offset:Nat))
+		--- andBool Offset:Nat <Nat Size:Nat
+		--- [structural] 
 endkm
 
 kmod COMMON-SEMANTICS-WRITING is
@@ -185,14 +174,8 @@ kmod COMMON-SEMANTICS-WRITING is
 	
 	rule
 		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
-		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
-		[structural] 
-		
-		
-	
-	--- problem is that we're not reading the bytes in the same order we're writing them
-	--- 0000 0000  0011 is turning into 0011 0000 0000 
-		
+		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
+		[structural]		
 		
 	op writeBytes : Nat K -> K [metadata "strict(2)"] 
 	op writeBitfield : Nat Type K -> K [metadata "strict(3)"] 
@@ -293,14 +276,9 @@ kmod COMMON-SEMANTICS-WRITING is
 	ceq joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, piece(M:Nat, 1),, L:List{K})), dataList(R:List{K}))
 		= joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), sNat(Len:Nat)),, L:List{K})), dataList(R:List{K}))
 		if Len:Nat <Nat numBitsPerByte 
-		--- andBool N:Nat >=Nat 0
-		--- andBool M:Nat >=Nat 0 
 	ceq joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, L:List{K})), dataList(R:List{K}))
 		= joinBitsToBytes-aux(dataList(L:List{K}), dataList((R:List{K},, piece(N:Nat, Len:Nat))))
 		if Len:Nat ==Bool numBitsPerByte 
-	--- ceq joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, L:List{K})), dataList(R:List{K}))
-		--- = joinBitsToBytes-aux(dataList(L:List{K}), dataList((piece(N:Nat, Len:Nat),, R:List{K})))
-		--- if Len:Nat ==Bool numBitsPerByte 
 	eq joinBitsToBytes-aux(dataList(.List{K}), dataList(R:List{K}))
 		= dataList(R:List{K}) 
 	
@@ -308,7 +286,6 @@ kmod COMMON-SEMANTICS-WRITING is
 	eq explodeToBits((K:K,, L:NeList{K})) = (explodeToBits(K:K),, explodeToBits(L:NeList{K})) 
 	eq explodeToBits(piece(N:Nat, sNat(Len:Nat)))
 		= splinter(N:Nat, sNat(Len:Nat)) 
-		--- = (explodeToBits(piece(N:Nat >>Nat 1, Len:Nat)),, piece(N:Nat &Nat 1, 1)) 
 	eq explodeToBits(piece(N:Nat, 0)) = .List{K} 
 	eq explodeToBits(.List{K}) = .List{K} 
 	
@@ -408,8 +385,7 @@ kmod COMMON-SEMANTICS-WRITING is
 	ceq lowestByte(I:Int, T:Type) = piece(I:Int &Int byteMaskSet, numBitsPerByte)
 		if hasIntegerType(T:Type) 
 	
-	op byteMaskSet : -> Nat 
-	--- FIXME why does this parse?
+	op byteMaskSet : -> Nat
 	eq byteMaskSet = (2 ^Nat numBitsPerByte) -Int 1 
 		
 	eq isByteLoc(? +Nat bito(?)) = false 

@@ -3,16 +3,19 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op assign : K K -> K 
 	op compoundLiteral : Nat -> Id
 	
-	op ktoNat : K -> Nat
-	eq ktoNat(N:Nat) = N:Nat
-	op arith : Type K -> K
-	eq arith(T:Type, umint(N:Nat, ?)) = tv(N:Nat, T:Type)
-	eq arith(T:Type, smint(I:Int, ?)) = tv(I:Int, T:Type)
-	op fix : Int K -> K --- num, type
-	ceq fix(I:Int, T:Type) = umint(I:Int, ktoNat(bitSizeofType(T:Type)))
-		if hasUnsignedIntegerType(T:Type)
-	ceq fix(I:Int, T:Type) = smint(I:Int, ktoNat(bitSizeofType(T:Type)))
-		if hasSignedIntegerType(T:Type)
+	op applyType : K Type -> K
+	macro applyType(I:Int, T:Type) = tv(I:Int, T:Type)
+	
+	--- op ktoNat : K -> Nat
+	--- eq ktoNat(N:Nat) = N:Nat
+	--- op arith : Type K -> K
+	--- eq arith(T:Type, umint(N:Nat, ?)) = tv(N:Nat, T:Type)
+	--- eq arith(T:Type, smint(I:Int, ?)) = tv(I:Int, T:Type)
+	--- op fix : Int K -> K --- num, type
+	--- ceq fix(I:Int, T:Type) = umint(I:Int, ktoNat(bitSizeofType(T:Type)))
+		--- if hasUnsignedIntegerType(T:Type)
+	--- ceq fix(I:Int, T:Type) = smint(I:Int, ktoNat(bitSizeofType(T:Type)))
+		--- if hasSignedIntegerType(T:Type)
 endkm
 
 --- i'm just playing around here
@@ -181,13 +184,7 @@ kmod COMMON-SEMANTICS-IDENTIFIERS is
 		
 	---C99 6.3.2.1:3 Except when it is the operand of the sizeof operator or the unary & operator, or is a string literal used to initialize an array, an expression that has type "array of type" is converted to an expression with type "pointer to type" that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined
 	
-	--- fixme i wish i didn't have to make this a pointertype directly.  
-	--- rule [lookup-array]:
-		--- < k > X:Id => tv(Loc:Nat, T:Type) ...</ k >
-		--- < env >... X:Id |-> Loc:Nat ...</ env >
-		--- < types >... X:Id |-> T:Type ...</ types >
-		--- if hasArrayType(T:Type)
-		--- [structural] 
+	--- fixme i wish i didn't have to make this a pointertype directly.
 	rule [lookup-array]:
 		< k > X:Id => tv(Loc:Nat, pointerType(innerType(T:Type))) ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
@@ -200,7 +197,7 @@ kmod COMMON-SEMANTICS-IDENTIFIERS is
 		< k > X:Id => tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type}))) ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
 		< types >... X:Id |-> functionType(T:Type, L:List{Type}) ...</ types >
-		[structural] 
+		[structural]
 		
 	rule [lookup-builtin-function]:
 		< k > X:Id => tv(functionPrototype(X:Id, functionType(T:Type, L:List{Type})), functionType(T:Type, L:List{Type})) ...</ k >
@@ -244,8 +241,7 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		
 	op resetNestingDepth : -> K 
 	rule
-		< k > resetNestingDepth => .K ...</ k > 
-		--- < nestingDepth > ? => 1 </ nestingDepth >
+		< k > resetNestingDepth => .K ...</ k >
 		[structural] 
 
 	rule [builtin-application]:
@@ -296,7 +292,7 @@ kmod COMMON-SEMANTICS-LITERALS is
 	rule [const-string-found]:
 		< k > StringLiteral(S:String) => tv(N:Nat, pointerType(T:Type)) ...</ k >
 		< statics >... S:String |-> tv(N:Nat, arrayType(T:Type, ?)) ...</ statics >
-		[structural] 
+		[structural]
 	
 	---c99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
 ***(
@@ -764,7 +760,8 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
 		
-	rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T:Type, (I1:Int +Int I2:Int))
+		
+	rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T:Type, _+Int_(I1:Int,I2:Int))
 		if hasIntegerType(T:Type)
 		andBool hasBeenPromoted(T:Type)
 		[structural] 
@@ -868,21 +865,12 @@ kmod COMMON-SEMANTICS-DEREFERENCE is
 		[structural] 
 		
 	
-	--- fixme these are both pretty fishy
-	--- rule < k > *(tv(Loc:Nat, pointerType(arrayType(T:Type, N:Nat)))) 
-		--- => tv(Loc:Nat, arrayType(T:Type, N:Nat)) 
-	--- ...</ k > [structural] 
+	--- fixme this is pretty fishy
 	rule < k > *(tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type})))) 
-		=> tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type}))) 
-	...</ k > [structural] 
+			=> tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type}))) 
+		...</ k > 
+		[structural] 
 	
-	--- FIXME this rule is super dangerous because if the value ends up inside any helper operator, it will match
-	--- rule KL:KLabel((?,, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))),, ?))
-		--- if KL:KLabel =/=Bool 'SizeofExpression
-		--- andBool KL:KLabel =/=Bool 'SizeofType
-		--- andBool KL:KLabel =/=Bool '&_
-		--- 
-		
 	--- matching the sym in order to catch instances of dereferencing a non-pointer
 	rule [deref]:
 		< k > *(tv(sym(Block:Nat) +Nat Offset:Nat, pointerType(T:Type))) 
@@ -990,7 +978,7 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 			~> discard
 			~> tv(V:BaseValue, T:Type)
 		...</ k >
-		[structural] 
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-SEQUENCING is

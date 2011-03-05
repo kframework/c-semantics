@@ -7,7 +7,7 @@ K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
 K-PL-BUILTINS = $(K_MAUDE_BASE)/pl-builtins
 K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
-ALL_K_FILES = common-c-syntax.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
+ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
 dynamic-c-semantics.k dynamic-c-configuration.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out

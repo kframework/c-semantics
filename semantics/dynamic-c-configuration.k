@@ -41,6 +41,8 @@ kmod C-CONFIGURATION is
 					< callStack > .List </ callStack > --- stack of "control" cells
 					< control >
 						< k > .K </ k >
+						< buffer > (.).List </ buffer >
+						< blocked > false </ blocked >
 						< blockStack > .List </ blockStack > --- stack of "local" cells
 						< local >
 							--- maps from Ids

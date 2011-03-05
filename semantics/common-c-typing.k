@@ -60,9 +60,8 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 		[structural]	
 endkm
 
---- fixme tool comment what would it take to have different kinds of values in different cells?
 kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
+	including COMMON-SEMANTICS-TYPE-INCLUDE
 
 	op waitingOnDeclType : -> K 
 	rule [type-Cast-heat]:
@@ -364,11 +363,7 @@ endkm
 
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
-	
-	
-	--- op preBitfieldType : Nat -> Type 
-	--- op preArrayType : Nat -> Type 
-	--- op prePointerType : -> Type 
+
 	op structDefType : Id List{Type} -> Type 
 	
 	op BitFieldType : K K -> K [metadata "strict"] 
@@ -380,7 +375,6 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< k > StructRef(X:Id) => structType(X:Id) ...</ k >
 		[structural] 
 		
-
 	eq BitFieldType(T:Type, tv(N:Nat, ?)) = bitfieldType(T:Type, N:Nat) 
 	
 	op makeArrayType : Nat -> KLabel 
@@ -390,7 +384,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	eq ArrayType(T:Type, tv(N:Nat, ?)) = pushTypeDown(T:Type, makeArrayType(N:Nat)) 
 	eq ArrayType(T:Type, emptyValue) = pushTypeDown(T:Type, 'incompleteArrayType) 
 	eq PointerType(T:Type) = pushTypeDown(T:Type, 'pointerType) 
-	--- fixme I'm assuming functiontype is always below a prototype 
+	--- fixme I'm assuming functiontype is always below a prototype in the ast
 	eq FunctionType(T:Type) = T:Type 
 	eq Prototype(T:Type, L:List{Type}, false) = pushTypeDown(T:Type, makeFunctionType(L:List{Type})) 
 	eq Prototype(T:Type, L:List{Type}, true) = pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) 
@@ -476,14 +470,12 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< k > StructDef(X:Id, L:List{Type})
 			=> addAggregate(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
 			~> giveType(X:Id, structType(X:Id))
-			--- ~> structType(X:Id)
 		...</ k >
 		[structural] 
 	rule
 		< k > UnionDef(X:Id, L:List{Type})
 			=> addAggregate(X:Id, L:List{Type})
 			~> giveType(X:Id, unionType(X:Id))
-			--- ~> structType(X:Id)
 		...</ k >
 		[structural] 
 
@@ -747,17 +739,6 @@ kmod COMMON-C-TYPING is
 		< structs > M:Map => M:Map[L:List{Type} / X:Id] </ structs >
 		[structural] 
 		
-	--- fixme doesn't work if types are qualified
-	--- fixme this could mess up sizes or any union guarantees
-	--- better to do this at lookup to preserve union
-	--- rule
-		--- < structs >... S:Id |-> L:List{Type}  ? |-> (? :: (typedDeclaration(structType(S:Id), #NoName) => L:List{Type}) :: ?) ...</ structs >
-		--- 
-	--- rule
-		--- < structs >... S:Id |-> L:List{Type}  ? |-> (? :: (typedDeclaration(unionType(S:Id), #NoName) => L:List{Type}) :: ?) ...</ structs >
-		--- 
-
-	
 	ceq isAType T:Type = true
 		if setOfTypes contains l(getKLabel(T:Type)) 
 	eq isAType T:BaseType = true 

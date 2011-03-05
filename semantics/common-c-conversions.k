@@ -441,12 +441,6 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
 		[structural] 
 	
-	--- --- fixme 6.3.2.3 not handling this correctly
-	--- rule
-		--- < k > cast(T:Type, tv(loc(N:Nat, M:Nat), T':Type)) => tv(loc(N:Nat, M:Nat), T:Type) ...</ k >
-		--- if hasIntegerType(T:Type) andBool hasIntegerType(T':Type)
-		--- [structural] 
-	
 	--- fixme might lose potential of finding errors if we use 0?
 	--- choice implementation defined behavior
 	rule
@@ -460,19 +454,9 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural] 
 		
-	--- rule
-		--- cast(pointerType(T:Type), functionPrototype(
-		--- [structural] 
-	--- cast(pointerType(functionType(void, .List{K})), tv((, functionPrototype(abort, functionType(void, .List{K})), ), functionType(void, .List{K})))
-		
 	rule
 		cast(arrayType(T:Type, N:Nat), tv(N':Nat, T':Type)) => tv(N':Nat, arrayType(T:Type, N:Nat))
 		[structural] 
-
-	--- fixme there should only be casts to scalars, but these are generated when assigning to array types
-	--- rule
-		--- < k > cast((arrayType(T:Type, N:Nat) => pointerType(T:Type)), ?) ...</ k >
-		--- [structural] 
 		
 	rule
 		cast(?, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
@@ -487,38 +471,6 @@ kmod COMMON-SEMANTICS-CAST is
 			=> tv(N:Nat, T:Type)
 		if hasIntegerType(T:Type)
 		[structural] 
-		
-	--- rule
-		--- < k > cast(T:Type, tv(N:Nat, pointerType(?)))
-			--- => tv(N:Nat, T:Type)
-		--- ...</ k >
-		--- if hasIntegerType(T:Type)
-		--- --- andBool notBool(N:Nat ==Bool 0 andBool M:Nat ==Bool 0)
-		--- [structural] 
-	
-	--- --- fixme
-	--- rule
-		--- < k > [cast(T:Type, tv(loc(N:Nat, M:Nat), pointerType(T':Type))) => tv(loc(N:Nat, M:Nat), T:Type)] ...</ k > 
-		--- if hasIntegerType(T:Type)
-		--- andBool notBool(N:Nat ==Bool 0 andBool M:Nat ==Bool 0)
-		--- [structural] 
-	--- --- fixme maybe only for void?
-	--- rule
-		--- < k > [cast(T:Type, tv(N:Nat, pointerType(T':Type))) => cast(T:Type, tv(N:Nat, unsigned-long-int))] ...</ k > 
-		--- if hasIntegerType(T:Type)
-		--- andBool N:Nat >Nat 0
-		--- [structural] 
-	
-	--- --- fixme special rules for null pointer
-	--- rule
-		--- < k > [cast(pointerType(T:Type), tv(0, T':Type)) => tv(loc(0, 0), pointerType(T:Type))] ...</ k >
-		--- if hasIntegerType(T':Type)
-		--- [structural] 
-	--- --- fixme
-	--- rule
-		--- < k > [cast(T:Type, tv(loc(0, 0), pointerType(T':Type))) => tv(0, T:Type)] ...</ k > 
-		--- if hasIntegerType(T:Type)
-		--- [structural] 
 		
 	--- fixme
 	--- possibly not true with other endiannesses
