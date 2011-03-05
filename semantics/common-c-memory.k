@@ -3,13 +3,15 @@ kmod COMMON-MEMORY-INCLUDE is
 	
 	--- returns the bytes in the order in which they are in memory
 	op extractBytesFromMem : Nat Nat -> K --- loc, size in bytes
-	
 	op encodedPointer : Int -> Nat 
 	op encodedFloat : Float -> Nat 
-	
 	op explodeToBits : List{K} -> List{K} 
-	
 	op reverseList : List{K} -> List{K} 
+	op bwrite : Nat K -> ListItem
+	op locations : List -> Set
+	
+	eq locations(.List) = .Set
+	eq locations(bwrite(Loc:Nat, ?) L:List) = SetItem(Loc:Nat) locations(L:List)
 endkm
 
 kmod COMMON-SEMANTICS-READING is
@@ -137,23 +139,24 @@ kmod COMMON-SEMANTICS-READING is
 		< k > extractBytesFromMem-aux(?, 0, Aux:List{KResult}) => dataList(values(Aux:List{KResult})) ...</ k >
 		[structural] 
 	
-	op rawData : BaseValue Nat -> KResult 
 	--- FIXME make sure it's a byte
-	rule
+	rule [read-byte]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => V:K ...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		< buffer > Mem:List </ buffer >
 		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
 		andBool Offset:Nat <Nat Size:Nat
+		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		[structural]
-	--- rule
-		--- < k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
-		--- < mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
-		--- < locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		--- if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		--- andBool notBool($hasMapping(M:Map, Offset:Nat))
-		--- andBool Offset:Nat <Nat Size:Nat
-		--- [structural] 
+		
+	rule [read-byte-buffer]:
+		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
+		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		< buffer >...  bwrite(Loc:Nat, V:K) Mem:List </ buffer >
+		if notBool Loc:Nat in Locs:Bag
+		andBool notBool Loc:Nat in locations(Mem:List)
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-WRITING is
@@ -304,16 +307,22 @@ kmod COMMON-SEMANTICS-WRITING is
 			=> writeByte(sym(Block:Nat) +Nat Offset:Nat, V:K)
 			~> writeBytes(sym(Block:Nat) +Nat sNat(Offset:Nat), dataList(L:List{K}))
 		...</ k >
+		[structural]
+	rule [write-buffer]:
+		< k > writeByte(Loc:Nat, V:K) => .K ...</ k >
+		< buffer >... (.List => bwrite(Loc:Nat, V:K)) </ buffer >
+		< locsWrittenTo > Locs:Bag (.Bag => BagItem(Loc:Nat)) </ locsWrittenTo >
+		if notBool Loc:Nat in Locs:Bag
 		[structural] 
-	rule
-		< k > writeByte(sym(Block:Nat) +Nat Offset:Nat, V:K) => . ...</ k >
+		
+	rule [write-memory]:
+		< blocked > false </ blocked >
+		< buffer > (bwrite(sym(Block:Nat) +Nat Offset:Nat, V:K) => .List) ...</ buffer >
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
-		< locsWrittenTo > Locs:Bag ((.).Bag => BagItem(sym(Block:Nat) +Nat Offset:Nat)) </ locsWrittenTo >
 		if Offset:Nat <Nat Len:Nat
-		andBool notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		[structural] 
+		[structural]
 	rule
-		< k > writeBytes(?, dataList(.List{K})) => . ...</ k >
+		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
 		[structural] 
 		
 	--- this general rule is useful for unknowns, abstracts, etc
@@ -411,10 +420,10 @@ kmod COMMON-C-MEMORY-MISC is
 	
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >
-		< mem >... Block:Nat |-> memblock(Len:Nat, ?) => (.).Map ...</ mem >
+		< mem >... Block:Nat |-> memblock(Len:Nat, ?) => .Map ...</ mem >
 		[structural] 
 	
-	rule [delete-loc]:
+	rule [delete-block]:
 		< k > deleteBlock(sym(Block:Nat) +Nat ?) => .K ...</ k >
 		< mem >... Block:Nat |-> ? => .Map ...</ mem >
 		[structural] 
