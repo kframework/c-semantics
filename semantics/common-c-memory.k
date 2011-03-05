@@ -146,10 +146,29 @@ kmod COMMON-SEMANTICS-READING is
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
 		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		andBool Offset:Nat <Nat Size:Nat --- theoretically redundant
+		andBool Offset:Nat <Nat Size:Nat
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		[structural]
 		--- [metadata "computational"]
+		
+	rule [read-byte-lazy]:
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
+		< mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
+		< buffer > Mem:List </ buffer >
+		if Offset:Nat <Nat Size:Nat
+		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
+		andBool notBool$hasMapping(M:Map, Offset:Nat)
+		[structural]
+		--- [metadata "computational"]
+		
+	rule
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
+		< mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
+		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
+		andBool notBool($hasMapping(M:Map, Offset:Nat))
+		andBool Offset:Nat <Nat Size:Nat
+		[structural] 
 		
 	rule [read-byte-buffer]:
 		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
@@ -177,9 +196,14 @@ kmod COMMON-SEMANTICS-WRITING is
 		< mem >... Loc:Nat |-> ? ...</ mem >
 		[structural] 
 	
-	rule
+	--- rule
+		--- < k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
+		--- < mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
+		--- [structural]	
+
+	rule [alloc-lazy]:
 		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
-		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
+		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
 		[structural]		
 		
 	op writeBytes : Nat K -> K [metadata "strict(2)"] 
