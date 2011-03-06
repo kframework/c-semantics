@@ -60,9 +60,8 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	
 c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-#@sed -i'' -e '2i\
-#load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-#echo adds a newline
+	@sed -i.bak -e '2i\
+	load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
 semantics: c-total.maude

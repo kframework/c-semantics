@@ -6,6 +6,7 @@ FILENAMESHIFT=0
 #trap cleanup SIGHUP SIGINT SIGTERM
 dumpFlag=
 oflag=
+modelFlag=
 tabs="\t\t\t"
 usage="Usage: %s: [options] file... [options]\n"
 usage+="Options:\n"
@@ -20,9 +21,10 @@ function addOption {
 }
 
 addOption "-c" "Compile and assemble, but do not link"
+#addOption "-m" "Performs state space search instead of interpretation"
 addOption "-d" "Does not delete intermediate files"
 addOption "-o <file>" "Place the output into <file>"
-addOption "-s" "Does not link against the standard library"
+addOption "-n" "Does not link against the standard library"
 addOption "-v" "Prints version information"
 addOption "-w" "Does not print warning messages"
 addOption "-l <name>" "Ignored"
@@ -54,7 +56,7 @@ function usage {
 }
 
 function getoptsFunc {
-	while getopts ':cdl:o:vsw' OPTION
+	while getopts ':cdl:mo:vsw' OPTION
 	do
 		case $OPTION in
 		c)	compileOnlyFlag="-c"
@@ -62,6 +64,8 @@ function getoptsFunc {
 		d)	dumpFlag="-d"
 			;;
 		l)	;;
+		m)	modelFlag="-m"
+			;;
 		o)	oflag=1
 			oval="$OPTARG"
 			;;
@@ -158,7 +162,7 @@ do
 	set -o errexit
 
 	set +o errexit
-	$myDirectory/compileProgram.sh $warnFlag $dumpFlag $inputFile
+	$myDirectory/compileProgram.sh $warnFlag $dumpFlag $modelFlag $inputFile
 	if [ "$?" -ne 0 ]; then
 		die "compilation failed" 3
 	fi
@@ -194,17 +198,9 @@ if [ ! "$compileOnlyFlag" ]; then
 	fi
 	echo "load $myDirectory/c-total" > $baseMaterial
 	echo "load $linkTemp" >> $baseMaterial
-	runner='$FSL_C_RUNNER'
-	mStart="echo > $runner"
-	freshFilename='`mktemp -t fsl-c.XXXXXXXXXXX`'
-	term="eval\\(linked-program, \\(\`for i in \$0 \"\$@\"; do echo \"String \\\"\$i\\\"(.List{K}),,\" ; done\` .List{K}\\), \\\"\$stdin\\\"\\)"
-	exec="echo erew in C-program-linked : $term . >> $runner"
-	mDebug="echo break select debug . >> $runner; echo set break on . >> $runner"
-	maude="maude -no-wrap -no-banner \$0 $runner"
-	debug="$mStart; $mDebug; echo erew in C-program-linked : \\($term\\) . >> $runner"
-	run="$mStart; $exec; echo q >> $runner"
-	prelude="--- &> /dev/null; if [ -t 0 ]; then stdin=\"\"; else stdin=\$(cat); fi; FSL_C_RUNNER=$freshFilename"
-	echo "$prelude; if [ \$DEBUG ]; then $debug; $maude -ansi-color; else $run; $maude | perl $myDirectory/wrapper.pl \$PLAIN; fi; retval=\$?; rm -f $runner; exit \$retval" > $programTemp
+	
+	# no more polyglot :(  now we use a script that copies all the maude to its own file
+	cat $myDirectory/programRunner.sh > $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
 	if [ ! "$dumpFlag" ]; then
 		rm -f $linkTemp

@@ -5,6 +5,7 @@ PEDANTRY_OPTIONS="-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std
 GCC_OPTIONS="-std=c99 -nostdlib -nodefaultlibs -U __GNUC__"
 myDirectory=`dirname "$0"`
 filename=
+stateSearch=
 function die {
 	cleanup
 	echo "Something went wrong while parsing the program."
@@ -39,10 +40,12 @@ dflag=
 nowarn=0
 usage="Usage: %s: [-d] inputFileName\n"
 
-while getopts 'dw' OPTION
+while getopts 'dmw' OPTION
 do
 	case $OPTION in
 	d)	dflag=1
+		;;
+	m)	stateSearch=1
 		;;
 	w)	nowarn=1
 		;;
