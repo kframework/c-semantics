@@ -200,7 +200,8 @@ if [ ! "$compileOnlyFlag" ]; then
 	echo "load $linkTemp" >> $baseMaterial
 	
 	# no more polyglot :(  now we use a script that copies all the maude to its own file
-	cat $myDirectory/programRunner.sh > $programTemp
+	sed "s?EXTERN_WRAPPER?$myDirectory/wrapper.pl?g" $myDirectory/programRunner.sh > $programTemp
+	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
 	if [ ! "$dumpFlag" ]; then
 		rm -f $linkTemp

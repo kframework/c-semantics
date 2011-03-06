@@ -2,6 +2,10 @@
 # DEBUG
 # PLAIN
 
+# these are compile time settings and are set by the compile script using this file as a template
+WRAPPER=EXTERN_WRAPPER
+
+# actual start of script
 if [ -t 0 ]; then
 	stdin=""; 
 else
@@ -30,7 +34,7 @@ if [ $DEBUG ]; then
 else 
 	echo $EVAL_LINE >> $FSL_C_RUNNER_FILE
 	echo q >> $FSL_C_RUNNER_FILE
-	maude -no-wrap -no-banner $JUST_MAUDE_FILE $FSL_C_RUNNER_FILE | perl /home/grosu/celliso2/c-semantics/dist/wrapper.pl $PLAIN
+	maude -no-wrap -no-banner $JUST_MAUDE_FILE $FSL_C_RUNNER_FILE | perl $WRAPPER $PLAIN
 fi
 retval=$?
 rm -f $FSL_C_RUNNER_FILE
