@@ -421,7 +421,10 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	op printf-%ll : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%llu : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%lld : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%llx : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%llX : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%x : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-%X : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%d : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%f : K K List{C} -> K [strict(3)] --- K not nat, for context bug
 	op printf-%u : K K List{C} -> K [strict(3)] --- K not nat, for context bug
@@ -515,8 +518,15 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%x(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
 		...</ k >
-		if N:Nat ==Bool asciiCharString("x") orBool N:Nat ==Bool asciiCharString("X")
+		if N:Nat ==Bool asciiCharString("x")
 		[structural]
+	rule [lib-printf-%X]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%X(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("X")
+		[structural]
+		
 	rule [lib-printf-%x]:
 		< k > printf-%x(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
 			=> writeToFD(1, (if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
@@ -597,6 +607,13 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > (.K => read(Loc:Nat, char)) ~> printf-%ll(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
 		[structural]
 		
+	rule [lib-printf-%llx-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%ll(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%llx(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-long-long-int))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("x")
+		[structural]
+		
 	rule [lib-printf-%llu-arg]:
 		< k > tv(N:Nat, ?) ~> printf-%ll(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%llu(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-long-long-int))
@@ -612,7 +629,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		[structural]
 		
 	rule [lib-printf-%llu]:
-		< k > printf-%ll(Len:Nat, Loc:Nat, vpair(tv(D:Int, unsigned-long-long-int), V:Value) :: ?) 
+		< k > printf-%llu(Len:Nat, Loc:Nat, vpair(tv(D:Int, unsigned-long-long-int), V:Value) :: ?) 
 			=> writeToFD(1, Rat2String(D:Int, 10))
 			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value)
 		...</ k >
@@ -621,6 +638,19 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > printf-%lld(Len:Nat, Loc:Nat, vpair(tv(D:Int, long-long-int), V:Value) :: ?) 
 			=> writeToFD(1, Rat2String(D:Int, 10))
 			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value)
+		...</ k >
+		[structural]
+	rule [lib-printf-%llx]:
+		< k > printf-%llx(Len:Nat, Loc:Nat, vpair(tv(D:Int, unsigned-long-long-int), V:Value) :: ?) 
+			=> writeToFD(1, (if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
+				"0" +String Rat2String(D:Int, 16)
+			else 
+				Rat2String(D:Int, 16)
+			fi)) ~> printf-aux(Len:Nat +Nat lengthString((if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
+				"0" +String Rat2String(D:Int, 16)
+			else 
+				Rat2String(D:Int, 16)
+			fi)), Loc:Nat, V:Value)
 		...</ k >
 		[structural]
 		

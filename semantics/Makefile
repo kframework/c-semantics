@@ -1,6 +1,7 @@
 #K_MAUDE_BASE ?= ..
 K_COMPILE_BASE = tools/kompile.pl
 SCRIPTS_DIR = ../scripts
+INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 
 K_MAUDE = $(K_MAUDE_BASE)/$(K_COMPILE_BASE)
 K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
@@ -60,8 +61,7 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	
 c-total.maude: c-compiled.maude $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-	@sed -i.bak -e '2i\
-	load $(K_PL_MODEL_CHECKER)' c-compiled.maude
+	@$(INSERT_LINE) 2 c-compiled.maude "load $(K_PL_MODEL_CHECKER)"
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
 semantics: c-total.maude
