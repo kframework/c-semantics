@@ -26,7 +26,7 @@ FILES_TO_DIST = \
 	$(wildcard $(SEMANTICS_DIR)/includes/*) \
 	$(wildcard $(SEMANTICS_DIR)/lib/*)
 	
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix kcompile gcc-output kcompile-bench benchmark dist fast-test dist-make check-input
+.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix semantics gcc-output benchmark dist fast-test dist-make check-input
 
 all: dist
 
@@ -50,7 +50,7 @@ $(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
 #@if [ `which gzexe 2> /dev/null` ]; then gzexe $(OUTPUT_FILTER); fi
 #@rm -f $(OUTPUT_FILTER_DIR)/filterOutput~
 
-$(DIST_DIR)/dist.done: check-vars Makefile filter cparser kcompile $(FILES_TO_DIST)
+$(DIST_DIR)/dist.done: check-vars Makefile filter cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
@@ -75,7 +75,7 @@ cparser:
 	@make -C $(PARSER_DIR)
 	@strip $(PARSER)
 
-kcompile: check-vars
+semantics: check-vars
 	@make -C $(SEMANTICS_DIR) semantics
 
 benchmark: profile.csv
