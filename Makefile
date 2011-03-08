@@ -21,6 +21,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/compile.sh \
 	$(SCRIPTS_DIR)/compileProgram.sh \
 	$(SCRIPTS_DIR)/xmlToK.pl \
+	$(SCRIPTS_DIR)/graphSearch.pl \
 	$(SCRIPTS_DIR)/programRunner.sh \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(SEMANTICS_DIR)/includes/*) \

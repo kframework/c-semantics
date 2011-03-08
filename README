@@ -1,3 +1,7 @@
+Install Perl
+	- Install perl 
+	- install XML::Twig (probably using either cpan or ppm)
+
 Install Maude:
 	- go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on your machine
 	
