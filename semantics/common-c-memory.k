@@ -161,22 +161,13 @@ kmod COMMON-SEMANTICS-READING is
 		[structural]
 		--- [metadata "computational"]
 		
-	rule
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
-		< mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
-		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		andBool notBool($hasMapping(M:Map, Offset:Nat))
-		andBool Offset:Nat <Nat Size:Nat
-		[structural] 
-		
 	rule [read-byte-buffer]:
 		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:Nat in Locs:Bag
 		andBool notBool Loc:Nat in locations(Mem:List)
-		[metadata "computational"] --- for speed in interpretation
+		[metadata "computational"] --- for speed in interpretation; forces local buffer to be flushed before a read
 		--- [structural]
 endkm
 
@@ -340,13 +331,15 @@ kmod COMMON-SEMANTICS-WRITING is
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(Loc:Nat)) </ locsWrittenTo >
 		if notBool Loc:Nat in Locs:Bag
 		[structural] 
+		--- [metadata "computational"]
 		
-	rule [write-byte-memory]:
+	rule [commit-byte]:
 		< blocked > false </ blocked >
 		< buffer > (bwrite(sym(Block:Nat) +Nat Offset:Nat, V:K) => .List) ...</ buffer >
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
 		if Offset:Nat <Nat Len:Nat
 		[structural]
+		--- [metadata "computational"]
 	rule
 		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
 		[structural] 
