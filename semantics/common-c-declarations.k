@@ -1285,7 +1285,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	rule
 		< k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
 		[structural] 
-	rule < k > fillEnums(K:K) => fillEnums(K:K, 0) ...</ k > 
+	rule 
+		< k > fillEnums(K:K) => fillEnums(K:K, 0) ...</ k > 
+		[structural]
 	rule
 		< k > fillEnums(EnumDef(X:Id, EnumItemLoc(EnumItem(E:Id, emptyValue), Loc:K) :: L:List{C}), K:K) 
 			=> EnumItemLoc(declare(typedDeclaration(int, E:Id), SingleInit(K:K)), Loc:K)

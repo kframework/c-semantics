@@ -91,7 +91,7 @@ while (my $line = <STDIN>) {
 }
 
 for my $node (keys %states) {
-	$g->add_node($node, label => $states{$node});
+	$g->add_node($node, label => "$node\n${states{$node}}");
 }
 
 for my $from (keys %arcs) {

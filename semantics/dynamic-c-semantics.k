@@ -69,6 +69,7 @@ kmod DYNAMIC-C-SEMANTICS is
 	op syntaxNat : Nat -> K
 	eq syntaxNat(N:Nat) = Constant(IntLiteral(NoSuffix(DecimalConstant(N:Nat))))
 	
+	
 	eq eval(K:K) = eval(K:K, .List{K}, "")
 	eq eval(Program(P:List{C}), L:List{K}, Input:String) = 
 		< T >
@@ -84,9 +85,10 @@ kmod DYNAMIC-C-SEMANTICS is
 						< currentFunction > File-Scope </ currentFunction >
 						< currentProgramLoc > UnknownCabsLoc </ currentProgramLoc >
 					...</ control >
+					< threadId > 0 </ threadId >
 				...</ thread >
 			</ threads >
-			< nextLoc > sym(1) +Nat 0 </ nextLoc >
+			< nextLoc > sym(threadId(0) +Nat 0) +Nat 0 </ nextLoc >
 			< nextFile > 3 </ nextFile >
 			< openFiles >
 				0 |-> "stdin" --- stdin

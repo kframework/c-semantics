@@ -10,7 +10,6 @@ kmod C-CONFIGURATION is
 			< gtypes > .Map </ gtypes >
 			< gstructs > .Map </ gstructs >
 			< mem > .Map </ mem >
-			< nextLoc > 0 </ nextLoc >
 			< freshNat > 0 </ freshNat >
 			< nextThreadId > 1 </ nextThreadId >
 			< nextFile > 0 </ nextFile >
@@ -38,6 +37,7 @@ kmod C-CONFIGURATION is
 			< threads >
 				< thread * >
 					< threadId > 0 </ threadId >
+					< nextLoc > 0 </ nextLoc > --- should be initialized with a pair (threadId, 0)
 					< callStack > .List </ callStack > --- stack of "control" cells
 					< buffer > (.).List </ buffer >
 					< blocked > false </ blocked >

@@ -250,8 +250,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		< k > application(functionPrototype(X:Id, T:Type), L:List{C})
 			=> application(functionObject(X:Id, T:Type, handleBuiltin(X:Id, T:Type)), L:List{C})
 		...</ k >
-		--- [structural] 
-		[metadata "computational"] --- nondet
+		[structural] 
+		---[metadata "computational"] --- nondet
 		
 		
 	rule [function-application]:

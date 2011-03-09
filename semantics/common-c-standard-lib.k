@@ -731,6 +731,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		
 	rule [thrd_create-finish]:
 		< thread >
+			< nextLoc > ?:Nat </ nextLoc >
 			< threadId > ?:Nat </ threadId >
 			C:Bag 
 			< callStack > ?:List </ callStack >
@@ -741,6 +742,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		</ thread >
 		(.Bag =>
 		< thread >
+			< nextLoc > sym(threadId(ThreadId:Nat) +Nat 0) +Nat 0 </ nextLoc >
 			< threadId > ThreadId:Nat </ threadId >
 			C:Bag
 			< callStack > .List </ callStack > 
