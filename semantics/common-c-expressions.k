@@ -219,7 +219,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 			=> application(readFunction(Loc:Nat), L:List{Type}) 
 		...</ k >
 		if hasFunctionType(T:Type)
-		[metadata "computational"] 
+		[structural]
+		--- [metadata "computational"] 
 		
 	rule [function-application-builtin-pre]:
 		< k > Call(tv(functionPrototype(X:Id, T:Type), T:Type), L:List{Type})
@@ -227,7 +228,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		...</ k >
 		if hasFunctionType(T:Type)
 		andBool builtinIdentifiers contains X:Id
-		[metadata "computational"] 
+		[structural]
+		--- [metadata "computational"] 
 
 	op populateFromGlobal : -> K 
 	--- fixme: this must be a rule because of the rules associated with declaring local and bound variables
@@ -248,7 +250,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		< k > application(functionPrototype(X:Id, T:Type), L:List{C})
 			=> application(functionObject(X:Id, T:Type, handleBuiltin(X:Id, T:Type)), L:List{C})
 		...</ k >
-		[structural] 
+		--- [structural] 
+		[metadata "computational"] --- nondet
 		
 		
 	rule [function-application]:
@@ -265,6 +268,7 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		...</ control >)
 		< callStack > (.).List => List(< stackFrame > C:Bag < continuation > K:K </ continuation > < currentTranslationUnit > OldTu:K </ currentTranslationUnit > </ stackFrame >) ...</ callStack >
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
+		--- [structural]
 		[metadata "computational"] --- nondet
 endkm
 

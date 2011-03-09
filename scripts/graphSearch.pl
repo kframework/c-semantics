@@ -18,6 +18,7 @@ my %arcs = ();
 
 my $state = "start";
 my $currentStateNumber;
+my $currentStateDestination;
 my $currentState = "";
 my $currentRule = "";
 my $currentRuleName;
@@ -31,7 +32,7 @@ while (my $line = <STDIN>) {
 		# keep reading (and throwing away) until we hit a state
 		if ($line =~ m/^state (\d+)/) {
 			$currentStateNumber = $1;
-			$g->add_node($currentStateNumber);
+			$states{$currentStateNumber} = "";
 			$state = "state";
 		}
 		next;
@@ -43,8 +44,21 @@ while (my $line = <STDIN>) {
 		if ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
 			$state = "arc";
 			# meant to continue to next case
+		} elsif ($line =~ m/^state (\d+)/) {
+			$currentStateNumber = $1;
+			$states{$currentStateNumber} = "";
+			$state = "state";
+			next;
 		} else {
 			$currentState .= $line;
+			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
+				my $currentOutput = $1;
+				$states{$currentStateNumber} = $currentOutput;
+			}
+			if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output > /) {
+				my $currentOutput = $1;
+				$states{$currentStateNumber} = $currentOutput;
+			}			
 			next;
 		}
 	}
@@ -54,32 +68,41 @@ while (my $line = <STDIN>) {
 		# keep reading until we hit a state or arc
 		if ($line =~ m/^state (\d+)/) {
 			$currentStateNumber = $1;
-			$g->add_node($currentStateNumber);
+			$states{$currentStateNumber} = "";
 			$state = "state";
 		} elsif ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
 			my $arcNumber = $1;
-			my $stateDestination = $2;
+			$currentStateDestination = $2;
 			$currentRule = $3;
 			#$g->add_edge($currentStateNumber => $stateDestination);
-			@currentArc = ($currentStateNumber, $stateDestination);
-			$arcs{@currentArc} = "";
+			#@currentArc = ($currentStateNumber, $stateDestination);
+			$arcs{$currentStateNumber}{$currentStateDestination} = "";
 			$state = "arc";
 			$currentRuleName = "";
 		} else {
 			$currentRule .= $line;
-			if ($line =~ m/label ([\w-]).*\] \.\)$/) {
+			if ($line =~ m/label ([\w-]+).*\] \.\)$/) {
 				$currentRuleName = $1;
+				$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
 			}
 		}
 		next;
 	}
 }
 
-for my ($from, $to) (keys %arcs)
-	$g->add_edge($from => $to);
+for my $node (keys %states) {
+	$g->add_node($node, label => $states{$node});
 }
 
-print $g->as_png;
+for my $from (keys %arcs) {
+	for my $to (keys %{$arcs{$from}}) {
+		#print "$from, $to\n";
+		#push(@{$HoA{$key}}, $value);
+		$g->add_edge($from => $to, label => $arcs{$from}{$to});
+	}
+}
+
+print $g->as_text;
 
 
 

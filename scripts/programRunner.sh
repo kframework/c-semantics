@@ -61,12 +61,18 @@ if [ $DEBUG ]; then
 	$MAUDE_COMMAND
 elif [ $SEARCH ]; then
 	SEARCH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`.png
+	GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 	$MAUDE_COMMAND > $SEARCH_OUTPUT_FILE
 	cat $SEARCH_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER > $GRAPH_OUTPUT_FILE
 	if [ "$?" -eq 0 ]; then
-		cp $SEARCH_OUTPUT_FILE search.txt
-		display $GRAPH_OUTPUT_FILE
+		set -e # start to fail on error
+		cp $SEARCH_OUTPUT_FILE tmpSearchResults.txt
+		cp $GRAPH_OUTPUT_FILE tmpSearchResults.dot
+		dot -Tps2 $GRAPH_OUTPUT_FILE > $SEARCH_OUTPUT_FILE # reusing temp file
+		cp $SEARCH_OUTPUT_FILE tmpSearchResults.ps
+		ps2pdf $SEARCH_OUTPUT_FILE tmpSearchResults.pdf
+		acroread tmpSearchResults.pdf &
+		set +e #stop failing on error
 	fi
 	rm -f $SEARCH_OUTPUT_FILE
 	rm -f $GRAPH_OUTPUT_FILE

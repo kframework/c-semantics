@@ -750,7 +750,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			</ control >
 		</ thread >)
 		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:Nat] </ threadStatus >
-		[structural] 
+		[metadata "computational"] 
 		
 	rule [thrd_current]:
 		< k > prepareBuiltin((Identifier("thrd_current")), Nil) 
@@ -780,7 +780,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		< detachingMap > Detaching:Map </ detachingMap >
 		if $hasMapping(Joining:Map, ThreadId:Nat)
 		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
-		[structural]
+		[metadata "computational"] 
 	
 	--- at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd_join-success]:
@@ -794,7 +794,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< k > V:Value </ k >
 			< threadId > ThreadId:Nat </ threadId >
 		...</ thread >
-		[structural]
+		[metadata "computational"]
 
 	op testAndSet : K K K -> K [strict(1)]
 	rule [test-and-set-start]:
