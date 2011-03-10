@@ -13,6 +13,7 @@ fi
 # these are compile time settings and are set by the compile script using this file as a template
 WRAPPER=EXTERN_WRAPPER
 SEARCH_GRAPH_WRAPPER=EXTERN_SEARCH_GRAPH_WRAPPER
+IO_SERVER=EXTERN_IO_SERVER
 IOFLAG=EXTERN_COMPILED_WITH_IO
 
 # actual start of script
@@ -81,9 +82,17 @@ elif [ $SEARCH ]; then
 	rm -f $SEARCH_OUTPUT_FILE
 	rm -f $GRAPH_OUTPUT_FILE
 else
+	if [ $IOFLAG ]; then
+		perl $IO_SERVER &> tmpIOServerOutput.log &
+		PERL_SERVER_PID=$!
+	fi
 	$MAUDE_COMMAND | perl $WRAPPER $PLAIN
 fi
 RETVAL=$?
+if [ $IOFLAG ]; then
+	#echo "killing $PERL_SERVER_PID"
+	kill -s SIGINT $PERL_SERVER_PID &> /dev/null
+fi
 rm -f $FSL_C_RUNNER_FILE
 rm -f $JUST_MAUDE_FILE
 exit $RETVAL

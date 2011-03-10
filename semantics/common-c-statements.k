@@ -335,13 +335,13 @@ kmod COMMON-SEMANTICS-GOTO is
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "Goto: skipping variable declaration " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		--- < xmessages >... (. => "Goto: skipping variable declaration " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		--- [metadata "computational"] 
 		
-	op getString : K -> String 
-	eq getString(Identifier(S:String)) = S:String 
+	op getIdString : K -> String 
+	eq getIdString(Identifier(S:String)) = S:String 
 	
 	op enableInits : -> K 
 	
@@ -358,7 +358,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
 		< shouldInit > ? => false </ shouldInit >
-		--- < xmessages >... (. => "Goto: couldn't find variable " +String getString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		--- < xmessages >... (. => "Goto: couldn't find variable " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		--- [metadata "computational"] 

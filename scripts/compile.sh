@@ -202,6 +202,7 @@ if [ ! "$compileOnlyFlag" ]; then
 		| sed "s?EXTERN_WRAPPER?$myDirectory/wrapper.pl?g" \
 		| sed "s?EXTERN_SEARCH_GRAPH_WRAPPER?$myDirectory/graphSearch.pl?g" \
 		| sed "s?EXTERN_COMPILED_WITH_IO?$ioFlag?g" \
+		| sed "s?EXTERN_IO_SERVER?$myDirectory/fileserver.pl?g" \
 		> $programTemp
 	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp

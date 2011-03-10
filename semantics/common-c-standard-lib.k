@@ -8,8 +8,6 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	including COMMON-INCLUDE
 	including SOCKET-BUILTIN-MODULE
 	including TCP-INTERFACE-BUILTIN-MODULE
-	--- including PL-SOCKET 
-	--- including PL-TCP-INTERFACE 
 	
 	op vararg : K -> Value [strict hybrid] 
 	op nextvarg : Nat Type -> C 
@@ -173,94 +171,76 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	--- rule [abort-is-debug]:
 		--- < k > [abort => debug] ...</ k >
 	--- 
-	--- rule [abort-is-value]:
-		--- < k > Identifier("abort") => builtin(Identifier("abort")) ...</ k >
-		--- 
 	rule [abort]:
 		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ? => tv(134, int) </ k >
 		
 	--------------------------------------------
-	--- rule [sqrt-is-value]:
-		--- < k > Identifier("sqrt") => builtin(Identifier("sqrt")) ...</ k >
-		--- [structural] 
 	rule [sqrt]:
-		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) => tv(sqrtFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) 
+			=> tv(sqrtFloat(F:Float), double) 
+		...</ k >
 		[structural]
 	--------------------------------------------
-	--- rule [log-is-value]:
-		--- < k > Identifier("log") => builtin(Identifier("log")) ...</ k >
-		--- [structural] 
 	rule [log]:
-		< k > prepareBuiltin((Identifier("log")), tv(F:Float, double)) => tv(logFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("log")), tv(F:Float, double)) 
+			=> tv(logFloat(F:Float), double) 
+		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- rule [exp-is-value]:
-		--- < k > Identifier("exp") => builtin(Identifier("exp")) ...</ k >
-		--- [structural] 
 	rule [exp]:
-		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, double)) => tv(expFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, double)) 
+			=> tv(expFloat(F:Float), double) 
+		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- rule [atan-is-value]:
-		--- < k > Identifier("atan") => builtin(Identifier("atan")) ...</ k >
-		--- [structural] 
 	rule [atan]:
-		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, double)) => tv(atanFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, double)) 
+			=> tv(atanFloat(F:Float), double) 
+		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- rule [asin-is-value]:
-		--- < k > Identifier("asin") => builtin(Identifier("asin")) ...</ k >
-		--- [structural] 
 	rule [asin]:
-		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, double)) => tv(asinFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, double)) 
+			=> tv(asinFloat(F:Float), double) 
+		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- rule [atan2-is-value]:
-		--- < k > Identifier("atan2") => builtin(Identifier("atan2")) ...</ k >
-		--- [structural] 
 	rule [atan2]:
-		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, double) :: tv(F':Float, double))) => tv(atanFloat(F:Float, F':Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, double) :: tv(F':Float, double))) 
+			=> tv(atanFloat(F:Float, F':Float), double) 
+		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- rule [tan-is-value]:
-		--- < k > Identifier("tan") => builtin(Identifier("tan")) ...</ k >
-	--- [structural] 
 	rule [tan]:
-		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, double)) => tv(tanFloat(F:Float), double) ...</ k >
+		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, double)) 
+			=> tv(tanFloat(F:Float), double) 
+		...</ k >
 	[structural] 
 	--------------------------------------------
-	--- rule [floor-is-value]:
-		--- < k > Identifier("floor") => builtin(Identifier("floor")) ...</ k >
-	--- [structural] 
 	rule [floor]:
-		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, double)) => tv(floorFloat(F:Float), double) ...</ k >
-	[structural] 
+		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, double)) 
+			=> tv(floorFloat(F:Float), double) 
+		...</ k >
+		[structural] 
 	--------------------------------------------
-	--- rule [cos-is-value]:
-		--- < k > Identifier("cos") => builtin(Identifier("cos")) ...</ k >
-	--- [structural] 
 	rule [cos]:
-		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, double)) => tv(cosFloat(F:Float), double) ...</ k >
-	[structural] 
+		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, double))
+			=> tv(cosFloat(F:Float), double) 
+		...</ k >
+		[structural] 
 	--------------------------------------------
-	--- rule [fmod-is-value]:
-		--- < k > Identifier("fmod") => builtin(Identifier("fmod")) ...</ k >
-	--- [structural] 
 	rule [fmod]:
-		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, double) :: tv(F':Float, double))) => tv(F:Float %Float F':Float, double) ...</ k >
-	[structural] 
+		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, double) :: tv(F':Float, double))) 
+			=> tv(F:Float %Float F':Float, double) 
+		...</ k >
+		[structural] 
 	--------------------------------------------
-	--- rule [sin-is-value]:
-		--- < k > Identifier("sin") => builtin(Identifier("sin")) ...</ k >
-	--- [structural] 
 	rule [sin]:
-		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, double)) => tv(sinFloat(F:Float), double) ...</ k >
-	[structural] 
+		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, double)) 
+			=> tv(sinFloat(F:Float), double) 
+		...</ k >
+		[structural] 
 	--------------------------------------------
-	--- rule [malloc-is-value]:
-		--- < k > Identifier("malloc") => builtin(Identifier("malloc")) ...</ k >
-	--- [structural] 
-
 	rule [malloc]:
 		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
 			=> alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
@@ -268,13 +248,10 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		if T:Type ==Bool cfg:sizeut
-	[structural] 
+		[structural] 
 	--------------------------------------------
 	--- Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	
-	--- rule [rand-is-value]:
-		--- < k > Identifier("rand") => builtin(Identifier("rand")) ...</ k >
-	--- [structural] 
 	--- unsignedIntegerTypes contains T:Type
 	--- (2 ^Nat absInt(numBits(int)))
 	--- fixme should use RAND_MAX
@@ -283,23 +260,15 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(int), int)
 		...</ k >
 		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
-	[structural] 
+		[structural] 
 	--------------------------------------------
-	--- rule [free-is-value]:
-		--- < k > Identifier("free") => builtin(Identifier("free")) ...</ k >
-	--- [structural] 
-	
 	rule [free]:
 		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, pointerType(?))) 
 			=> deleteSizedBlock(Loc:Nat, Len:Nat) ~> skipval 
 		...</ k >
 		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
-	[structural] 
+		[structural] 
 	--------------------------------------------
-	--- rule [calloc-is-value]:
-		--- < k > Identifier("calloc") => builtin(Identifier("calloc")) ...</ k >
-	--- [structural] 
-	
 	rule [calloc]:
 		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
 			=> alloc(Loc:Nat, (N:Nat *Nat Size:Nat)) 
@@ -308,113 +277,86 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		< malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-	[structural] 
+		[structural] 
 	--------------------------------------------
-	--- rule [putchar-is-value]:
-		--- < k > Identifier("putchar") => builtin(Identifier("putchar")) ...</ k >
-	--- [structural] 
 	--- fixme doesn't cast to int
 	rule [putchar]:
-		< k > prepareBuiltin((Identifier("putchar")), tv(N:Nat, ?)) => writeToFD(1, N:Nat) ~> tv(N:Nat, int) ...</ k >
-	[structural] 
+		< k > prepareBuiltin((Identifier("putchar")), tv(N:Nat, ?)) 
+			=> writeToFD(1, N:Nat) ~> tv(N:Nat, int) 
+		...</ k >
+		[structural] 
 	-----------------------------------------
-	--- rule [fslPutc-is-value]:
-		--- < k > Identifier("fslPutc") => builtin(Identifier("fslPutc")) ...</ k >
-	--- [structural] 
 	--- fixme doesn't cast to int
 	rule [fslPutc]:
 		< k > prepareBuiltin((Identifier("fslPutc")), (tv(N:Nat, ?) :: tv(H:Nat, ?))) 
 			=> writeToFD(H:Nat, N:Nat) 
 			~> tv(N:Nat, int)
 		...</ k >
-	[structural] 
-	--- --------------------------------------------
-	--- rule [getchar-is-value]:
-		--- < k > [getchar => builtin(getchar)] ...</ k >
-	--- [structural] 
-	--- --- fixme doesn't cast to int
-	--- rule [getchar]:
-		--- < k > [prepareBuiltin((getchar), Nil) => readFromFD(0)] ...</ k >
-	--- [structural] 
-	--- --------------------------------------------
-	--- rule [fslFGetC-is-value]:
-		--- < k > [fslFGetC => builtin(fslFGetC)] ...</ k >
-	--- [structural] 
-	--- --- fixme doesn't cast to int
-	--- rule [fslFGetC]:
-		--- < k > [prepareBuiltin((fslFGetC), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?))) => readFromFD(FD:Nat, Offset:Nat)] ...</ k >
-	--- [structural] 
+		[structural] 
 	--------------------------------------------
-	--- rule [fslCloseFile-is-value]:
-		--- < k > Identifier("fslCloseFile") => builtin(Identifier("fslCloseFile")) ...</ k >
-	--- [structural] 
+	--- fixme doesn't cast to int
+	rule [getchar]:
+		< k > prepareBuiltin((Identifier("getchar")), Nil) => readFromFD(0) ...</ k >
+		[structural]
+	--------------------------------------------
+	--- fixme doesn't cast to int
+	rule [fslFGetC]:
+		< k > prepareBuiltin((Identifier("fslFGetC")), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?)))
+			=> readFromFD(FD:Nat, Offset:Nat) 
+		...</ k >
+		[structural] 
+	--------------------------------------------
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("fslCloseFile")), tv(FD:Nat, int)) => tv(0, int) ...</ k >
 		< openFiles >... FD:Nat |-> ? => .Map ...</ openFiles >
-	[structural] 
-	--- --------------------------------------------
-	--- rule [fslOpenFile-is-value]:
-		--- < k > [fslOpenFile => builtin(fslOpenFile)] ...</ k >
-	--- [structural] 
-	--- rule [fslOpenFile]:
-		--- < k > [prepareBuiltin((fslOpenFile), (Loc:Value :: tv(FD:Nat, int))) 
-		--- => fsl-open-file(getString(Loc:Value), FD:Nat)] ...</ k >
-	--- [structural] 
+		[structural] 
+	--------------------------------------------
+	rule [fslOpenFile]:
+		< k > prepareBuiltin((Identifier("fslOpenFile")), (Loc:Value :: tv(FD:Nat, int)))
+			=> fsl-open-file(getString(Loc:Value), FD:Nat) 
+		...</ k >
+		[structural] 
 	
-	--- op fsl-open-file-aux : String Nat String -> K 
+	op fsl-open-file-aux : String Nat String -> K 
 	
-	--- rule [fslOpenFile]:
-		--- < k > [fsl-open-file(str(S:String), FD:Nat) => fsl-open-file-aux(S:String, FD:Nat, readFile(S:String))] ...</ k >
-	--- [structural] 
+	rule [fslOpenFile]:
+		< k > fsl-open-file(str(S:String), FD:Nat) 
+			=> fsl-open-file-aux(S:String, FD:Nat, readFile(S:String))
+		...</ k >
+		[structural] 
 
+	rule [fslOpenFile]:
+		< k > fsl-open-file-aux(Name:String, FD:Nat, Data:String) => tv(0, int) ...</ k >
+		< openFiles > M:Map => M:Map[Name:String / FD:Nat] </ openFiles >
+		< files > M':Map => M':Map[Data:String / Name:String] </ files >
+		if Data:String =/=Bool errorTCPSyntax
+		andBool lengthString(Data:String) >=Nat 0
+		[structural]
+
+	op fsl-open-file : K Nat -> K [strict(1)]
+	op getString : K -> K
+	op getString-aux : K String -> K [strict(1)]
+	eq getString(K:K) = getString-aux(K:K, "")
+	op str : String -> Value
+	
+	rule [getString-pre]:
+		< k > (. => read(Loc:Nat, char)) 
+			~> getString-aux(tv((Loc:Nat => sNat(Loc:Nat)), pointerType(T:Type)), S:String) 
+		...</ k >
+		[structural] 
 		
-	--- rule [fslOpenFile]:
-		--- < k > [fsl-open-file-aux(Name:String, FD:Nat, Data:String) => tv(0, int)] ...</ k >
-		--- < openFiles > [M:Map => M:Map[Name:String / FD:Nat]] </ openFiles >
-		--- < files > [M':Map => M':Map[Data:String / Name:String]] </ files >
-		--- if Data:String =/=Bool errorTCPSyntax
-		--- andBool lengthString(Data:String) >=Nat 0
-	--- [structural] 
-
-	
-	--- op fsl-open-file : K Nat -> K [metadata "strict(1)"] 
-	--- op getString : K -> K 
-	--- op getString : K String -> K [metadata "strict(1)"] 
-	--- eq getString(K:K) = getString(K:K, "") 
-	--- op str : String -> Value 
-	--- rule [getString]:
-		--- < k > [getString(tv(Loc:Nat, pointerType(T:Type)), S:String) 
-		--- => getString(tv(sNat(Loc:Nat), pointerType(T:Type)), S:String +String charString(N:Nat))] ...</ k >
-		--- < mem >... Loc:Nat |-> piece(N:Nat, 8) ...</ mem >
-	--- if N:Nat =/=Bool 0 
-	--- [structural] 
-	--- rule [getString]:
-		--- < k > [getString(tv(Loc:Nat, pointerType(?)), S:String) => str(S:String)] ...</ k >
-		--- < mem >... Loc:Nat |-> piece(0, 8) ...</ mem >
-	--- [structural] .	
-	--- -----------------------------------------
-	--- fixme: let's get rid of this asap, ok?
-	--- rule [lib-printf-is-value]:
-		--- < k > Identifier("printf") => builtin(Identifier("printf")) ...</ k >
-	--- [structural] 
-	
-
---- #define va_start(ap, pN)	\
----x ((ap) = ((va_list) (&pN) + __va_argsiz(pN)))
---- /*
- --- * End processing of variable argument list. In this case we do nothing
- --- */
---- #define va_end(ap)	((void)0)
---- /*
- --- * Increment ap to the next argument in the list while returing a
- --- * pointer to what ap pointed to first, which is of type t
- --- *
- --- * We cast to void* and then to t* because this avoids a warning about
- --- * increasing the alignment requirement
- --- */
---- #define va_arg(ap, t)					\
-	 ---x (((ap) = (ap) + __va_argsiz(t)),		\
-	  ---x *((t*) (void*) ((ap) - __va_argsiz(t))))	
+	rule [getString]:
+		< k > tv(N:Nat, ?) ~> getString-aux(tv(Loc:Nat, pointerType(T:Type)), S:String) 
+			=> getString-aux(tv(Loc:Nat, pointerType(T:Type)), S:String +String charString(N:Nat)) 
+		...</ k >
+		if N:Nat =/=Bool 0 
+		[structural] 
+	rule [getString-done]:
+		< k > tv(0, ?) ~> getString-aux(tv(Loc:Nat, pointerType(?)), S:String) 
+			=> str(S:String) 
+		...</ k >
+		[structural]
+	-----------------------------------------	
 	
 	op printf-aux : Nat Nat List{C} -> K 
 	op printf-string : Nat Nat -> K 

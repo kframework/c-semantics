@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 $^W = 1; # turn on warnings
 #use sigtrap 'handler' => \&INT_handler, 'INT';
-#$SIG{'INT'} = 'INT_handler'; # handle control-c
+$SIG{'INT'} = 'INT_handler'; # handle control-c
 $| = 1; # autoflush to console
 
 use strict;
@@ -64,7 +64,9 @@ sub handleConnection {
 		my $filename = $1;
 		my $data = $2;
 		print "request to write: $filename\n";
-		print $sock handle_write($1, $2);
+		my $retmsg = handle_write($1, $2);
+		print "return message: $retmsg\n";
+		print $sock $retmsg;
 	} else {
 		print "Didn't know how to handle request: $request\n";
 		print $sock errmsg($UNKNOWN);
@@ -104,30 +106,8 @@ sub succmsg {
 	return "###SUCC###$msg";
 }
 
-# sub tryCVC3 {
-	# my ($query) = @_;
-	# my($chld_out, $chld_in);
-	# print "trying cvc3\n";
-	# $PID = open2($chld_out, $chld_in, 'cvc3', '-lang', 'smtlib', '-timeout', '1');
-	# print $chld_in "$query";
-	# close($chld_in);
-	# $SIG{ALRM} = sub { print "CVC3 timed out\n"; kill 9 => $PID; };
-	# ualarm($TIMEOUT);
-	# my $result = <$chld_out>;
-	# alarm 0;
-	# waitpid $PID, 0;
-	# if (defined($result)){
-		# print "cvc3 got $result\n";
-	# } else {
-		# print "cvc3 failed\n";
-		# $result = 'sat';
-	# }
-	# return ($result);
-# }
-
-
-# sub INT_handler {
-	# print "\n caught $SIG{INT}",@_,"\n";
-	# close($sock);
-	# kill 6, $$;
-# }
+sub INT_handler {
+	print "\n caught $SIG{INT}",@_,"\n";
+	close($sock);
+	exit
+}

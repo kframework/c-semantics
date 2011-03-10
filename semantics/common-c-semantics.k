@@ -426,30 +426,30 @@ kmod C-SEMANTICS-MISC is
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => S:String +String S':String) ...</ files >
 		[structural] 
-	--- rule [readFromFD-char]:
-		--- < k > [readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)]  ...</ k >
-		--- < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		--- < files >... Filename:String |-> [S:String => butFirstChar(S:String)] ...</ files >
-		--- if S:String =/=Bool ""
-		--- [structural] 
+	rule [readFromFD-char]:
+		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)  ...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
+		if S:String =/=Bool ""
+		[structural] 
 		
-	--- rule
-		--- < k > [readFromFD(FD:Nat, Offset:Nat) => tv(charToAscii(nthChar(S:String, Offset:Nat)), int)]  ...</ k >
-		--- < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		--- < files >... Filename:String |-> S:String ...</ files >
-		--- if lengthString(S:String) >Nat Offset:Nat
-		--- [structural] 
-	--- rule
-		--- < k > [readFromFD(FD:Nat, Offset:Nat) => tv(-1, int)]  ...</ k >
-		--- < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		--- < files >... Filename:String |-> S:String ...</ files >
-		--- if lengthString(S:String) <=Nat Offset:Nat
-		--- [structural] 
+	rule
+		< k > readFromFD(FD:Nat, Offset:Nat) 
+			=> tv(charToAscii(nthChar(S:String, Offset:Nat)), int)
+		...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> S:String ...</ files >
+		if lengthString(S:String) >Nat Offset:Nat
+		[structural] 
+	rule
+		< k > readFromFD(FD:Nat, Offset:Nat) => tv(-1, int)  ...</ k >
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> S:String ...</ files >
+		if lengthString(S:String) <=Nat Offset:Nat
+		[structural] 
 
 	eq listToK(K:K) = klistToK(getList{K}(K:K)) 
-	eq klistToK((K:K,, L:List{K})) = K:K ~> klistToK(L:List{K}) 
-	--- eq klistToK((K:K)) = K:K 
-	--- eq klistToK(.) = . 
+	eq klistToK((K:K,, L:List{K})) = K:K ~> klistToK(L:List{K})
 	eq klistToK(.List{K}) = .K
 	
 	eq CabsLoc("cabs loc unknown", -10, -10, 0) = UnknownCabsLoc 

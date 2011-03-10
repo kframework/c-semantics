@@ -2,11 +2,12 @@
 mod TCP-SYNTAX-BUILTIN-MODULE is
 	including SOCKET-BUILTIN-MODULE .
 	
-	op error : -> [String] .
+	op error : -> String .
 	op containedRequest : Configuration -> [String] .
 	op toSend : String -> Msg .
 	op start : Nat -> Configuration .
 	op tcpRequest : String -> [String] .
+	op errorTCPSyntax : -> String .
 endm
 
 mod TCP-CLIENT-BUILTIN-MODULE is
@@ -84,15 +85,21 @@ mod TCP-INTERFACE-BUILTIN-MODULE is
 		
 	rl tcpRequest(S:String) => containedRequest(start(counter) toSend(S:String +String "###EOMTCP###" +String "\r\n")) .
 	
-	op readFile : String -> [String] .
-	op writeFile : String -> [String] .
-	op check : String -> [String] .
+	op readFile : String -> String .
+	op writeFile : String -> String .
+	op check : String -> String .
 	
 	eq readFile(S:String) = check(tcpRequest("###READFILE###" +String S:String)) .
 	eq writeFile(S:String) = check(tcpRequest("###WRITEFILE###" +String S:String)) .
 			
 	ceq check(S:String) = substrString(S:String, lengthString("###SUCC###"), lengthString(S:String))
 		if substrString(S:String, 0, lengthString("###SUCC###")) ==Bool "###SUCC###" .
+		
+	ceq check(S:String) = errorTCPSyntax
+		if substrString(S:String, 0, lengthString("###ERR###")) ==Bool "###ERR###" .
+		
+	--- ceq check(S:String) = errorTCPSyntax
+		--- if substrString(S:String, 0, 0) =/=Bool "" .
 
 	
 endm
