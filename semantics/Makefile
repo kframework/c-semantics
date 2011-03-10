@@ -5,13 +5,14 @@ INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 
 K_MAUDE = $(K_MAUDE_BASE)/$(K_COMPILE_BASE)
 K_PRELUDE = $(K_MAUDE_BASE)/k-prelude
+K_SOCKETS = $(K_MAUDE_BASE)/socket
 K-PL-BUILTINS = $(K_MAUDE_BASE)/pl-builtins
 K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
-K_BASE_FILES = $(K_PRELUDE).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
+K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 
 ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
-dynamic-c-semantics.k dynamic-c-configuration.k
+dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
 K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
@@ -48,7 +49,7 @@ c-syntax.k: Makefile
 	@printf "`cat c-syntax.template`" > c-syntax.k	
 	
 c.k: c-syntax.k c-maude.template Makefile
-	@printf "`cat c-maude.template`" $(K_PRELUDE) dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
+	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
 c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
@@ -64,6 +65,8 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 	@$(INSERT_LINE) 2 c-compiled.maude "load $(K_PL_MODEL_CHECKER)"
+	@$(INSERT_LINE) 3 c-compiled.maude "load $(K_SOCKETS)"
+	@$(INSERT_LINE) 4 c-compiled.maude "load maudeLib/TCPSupport"
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
 semantics: c-total.maude

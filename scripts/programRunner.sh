@@ -13,6 +13,7 @@ fi
 # these are compile time settings and are set by the compile script using this file as a template
 WRAPPER=EXTERN_WRAPPER
 SEARCH_GRAPH_WRAPPER=EXTERN_SEARCH_GRAPH_WRAPPER
+IOFLAG=EXTERN_COMPILED_WITH_IO
 
 # actual start of script
 if [ -t 0 ]; then

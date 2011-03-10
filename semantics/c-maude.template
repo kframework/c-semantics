@@ -1,4 +1,5 @@
-load %s
+%s
+%s
 
 ---load programs-gen
 load c-syntax

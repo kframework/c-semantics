@@ -1,11 +1,13 @@
 --- when adding a new builtin library function, don't forget to register it in common-c-semantics in the "builtinIdentifiers" set
 
-
+load maudeLib/TCPSupport
 
 ------------------------------------------------
 ---- C standard library
 kmod COMMON-C-STANDARD-LIBRARY is
-	including COMMON-INCLUDE 
+	including COMMON-INCLUDE
+	including SOCKET-BUILTIN-MODULE
+	including TCP-INTERFACE-BUILTIN-MODULE
 	--- including PL-SOCKET 
 	--- including PL-TCP-INTERFACE 
 	

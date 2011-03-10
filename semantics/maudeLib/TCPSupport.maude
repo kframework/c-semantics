@@ -1,10 +1,6 @@
-in socket .
-in pl-builtins .
-
-
 --- syntax used by the tcp interface and the tcp backend
-mod TCP-SYNTAX is
-	including SOCKET .
+mod TCP-SYNTAX-BUILTIN-MODULE is
+	including SOCKET-BUILTIN-MODULE .
 	
 	op error : -> [String] .
 	op containedRequest : Configuration -> [String] .
@@ -13,13 +9,12 @@ mod TCP-SYNTAX is
 	op tcpRequest : String -> [String] .
 endm
 
-mod TCP-CLIENT is
-	including TCP-SYNTAX .
+mod TCP-CLIENT-BUILTIN-MODULE is
+	including TCP-SYNTAX-BUILTIN-MODULE .
 	
 	sort TCPState .
 		
 	op Client : -> Cid .
-	---op aClient : -> Oid .
 	op cnum : Nat -> Oid .
 	
 	ops idle connecting sending receiving haveAnswer closing connected finished : -> TCPState [ctor] .
@@ -80,39 +75,24 @@ mod TCP-CLIENT is
 		<>
 		< cnum(N) : Client | state: connecting >
 		createClientTcpSocket(socketManager, cnum(N), "localhost", 7077) .
-		
-	----rl containedRequest(M) => containedRequest(M start) .
 endm
 
-mod TCP-INTERFACE is
-	including TCP-SYNTAX .
-	including TCP-CLIENT .
-	including COUNTER .
-	
-	---op tcpRequest : String -> [String] .
-	---vars S S' : String .
-	---var N : Nat .
-	---rl tcpRequest(S) => containedRequest(start(counter) toSend(S + "###EOMTCP###" + "\r\n")) .
-	
-	rl tcpRequest(S:String) => containedRequest(start(counter) toSend(S:String + "###EOMTCP###" + "\r\n")) .
+mod TCP-INTERFACE-BUILTIN-MODULE is
+	including TCP-SYNTAX-BUILTIN-MODULE .
+	including TCP-CLIENT-BUILTIN-MODULE .
+	including PL-COUNTER .
+		
+	rl tcpRequest(S:String) => containedRequest(start(counter) toSend(S:String +String "###EOMTCP###" +String "\r\n")) .
 	
 	op readFile : String -> [String] .
 	op writeFile : String -> [String] .
 	op check : String -> [String] .
 	
-	eq readFile(S:String) = check(tcpRequest("###READFILE###" + S:String)) .
-	eq writeFile(S:String) = check(tcpRequest("###WRITEFILE###" + S:String)) .
+	eq readFile(S:String) = check(tcpRequest("###READFILE###" +String S:String)) .
+	eq writeFile(S:String) = check(tcpRequest("###WRITEFILE###" +String S:String)) .
 			
-	ceq check(S:String) = substr(S:String, length("###SUCC###"), length(S:String))
-		if substr(S:String, 0, length("###SUCC###")) == "###SUCC###" .
+	ceq check(S:String) = substrString(S:String, lengthString("###SUCC###"), lengthString(S:String))
+		if substrString(S:String, 0, lengthString("###SUCC###")) ==Bool "###SUCC###" .
 
 	
 endm
----set print attribute on .
----red metaErewrite(upModule('TCP-INTERFACE, false), 'tcpRequest['"(= 5 5)\n".String,'s_^8['0.Zero]], unbounded, 1) .
----red metaErewrite(upModule('TCP-INTERFACE, false), 'tcpRequest['"(= 2 4)\n".String,'s_^8['0.Zero]], unbounded, 1) .
-
----erew tcpRequest("xxx") .
----erew readFile("trial.txt") .
-
----q

@@ -1,5 +1,3 @@
-
----zzz set print attribute on 
 kmod INCOMING-MODULES is
 	including K 
 	including C-SYNTAX 

@@ -4,9 +4,6 @@ set -o nounset
 newFilenames=
 FILENAMESHIFT=0
 #trap cleanup SIGHUP SIGINT SIGTERM
-dumpFlag=
-oflag=
-modelFlag=
 tabs="\t\t\t"
 usage="Usage: %s: [options] file... [options]\n"
 usage+="Options:\n"
@@ -21,26 +18,32 @@ function addOption {
 }
 
 addOption "-c" "Compile and assemble, but do not link"
-#addOption "-m" "Performs state space search instead of interpretation"
 addOption "-d" "Does not delete intermediate files"
-addOption "-o <file>" "Place the output into <file>"
+addOption "-i" "Include support for runtime file io"
+addOption "-l <name>" "Ignored"
 addOption "-n" "Does not link against the standard library"
+addOption "-o <file>" "Place the output into <file>"
 addOption "-v" "Prints version information"
 addOption "-w" "Does not print warning messages"
-addOption "-l <name>" "Ignored"
 
+compileOnlyFlag=
+dumpFlag=
+inputFile=
+ioFlag=
+libFlag=
+modelFlag=
+oflag=
 oval=
 warnFlag=
+
 myDirectory=`dirname $0`
-inputFile=
-compileOnlyFlag=
 username=`id -un`
 baseMaterial=`mktemp -t $username-fsl-c-base.XXXXXXXXXXX`
 programTemp=`mktemp -t $username-fsl-c-prog.XXXXXXXXXXX`
 linkTemp=`mktemp -t $username-fsl-c-link.XXXXXXXXXXX`
 stdlib="$myDirectory/lib/clib.o"
 baseName=
-libFlag=
+
 function die {
 	cleanup
 	echo "$1" >&2
@@ -56,28 +59,23 @@ function usage {
 }
 
 function getoptsFunc {
-	while getopts ':cdl:mo:vsw' OPTION
+	while getopts ':cdil:mo:vsw' OPTION
 	do
 		case $OPTION in
-		c)	compileOnlyFlag="-c"
-			;;
-		d)	dumpFlag="-d"
-			;;
+		c)	compileOnlyFlag="-c";;
+		d)	dumpFlag="-d";;
+		i)	ioFlag=1;;
 		l)	;;
-		m)	modelFlag="-m"
-			;;
+		m)	modelFlag="-m";;
 		o)	oflag=1
 			oval="$OPTARG"
 			;;
 		v)	printf "kcc version 0.0.1"
 			exit 0
 			;;
-		w)	warnFlag="-w"
-			;;
-		s)	libFlag="-s"
-			;;
-		?)	usage
-			;;
+		w)	warnFlag="-w";;
+		s)	libFlag="-s";;
+		?)	usage;;
 	  esac
 	done
 }
@@ -203,6 +201,7 @@ if [ ! "$compileOnlyFlag" ]; then
 	cat $myDirectory/programRunner.sh \
 		| sed "s?EXTERN_WRAPPER?$myDirectory/wrapper.pl?g" \
 		| sed "s?EXTERN_SEARCH_GRAPH_WRAPPER?$myDirectory/graphSearch.pl?g" \
+		| sed "s?EXTERN_COMPILED_WITH_IO?$ioFlag?g" \
 		> $programTemp
 	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
