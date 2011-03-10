@@ -441,7 +441,6 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
 		[structural] 
 	
-	--- fixme might lose potential of finding errors if we use 0?
 	--- choice implementation defined behavior
 	rule
 		cast(pointerType(T:Type), tv(N:Nat, T':Type)) => tv(N:Nat, pointerType(T:Type))

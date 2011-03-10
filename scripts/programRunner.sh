@@ -60,6 +60,10 @@ MAUDE_COMMAND="maude -no-wrap -no-banner $COLOR_FLAG $JUST_MAUDE_FILE $FSL_C_RUN
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
 if [ $DEBUG ]; then
+	if [ $IOFLAG ]; then
+		perl $IO_SERVER &> tmpIOServerOutput.log &
+		PERL_SERVER_PID=$!
+	fi
 	$MAUDE_COMMAND
 elif [ $SEARCH ]; then
 	SEARCH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`

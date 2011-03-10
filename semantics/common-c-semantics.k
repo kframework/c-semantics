@@ -431,22 +431,28 @@ kmod C-SEMANTICS-MISC is
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
 		if S:String =/=Bool ""
-		[structural] 
+		[structural]
+	rule [readFromFD-char]:
+		< k > readFromFD(FD:Nat) => tv(-1, int) ...</ k > --- -1 should be EOF
+		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
+		if S:String ==Bool ""
+		[structural]
 		
-	rule
-		< k > readFromFD(FD:Nat, Offset:Nat) 
-			=> tv(charToAscii(nthChar(S:String, Offset:Nat)), int)
-		...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> S:String ...</ files >
-		if lengthString(S:String) >Nat Offset:Nat
-		[structural] 
-	rule
-		< k > readFromFD(FD:Nat, Offset:Nat) => tv(-1, int)  ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> S:String ...</ files >
-		if lengthString(S:String) <=Nat Offset:Nat
-		[structural] 
+	--- rule
+		--- < k > readFromFD(FD:Nat, Offset:Nat) 
+			--- => tv(charToAscii(nthChar(S:String, Offset:Nat)), int)
+		--- ...</ k >
+		--- < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		--- < files >... Filename:String |-> S:String ...</ files >
+		--- if lengthString(S:String) >Nat Offset:Nat
+		--- [structural] 
+	--- rule
+		--- < k > readFromFD(FD:Nat, Offset:Nat) => tv(-1, int)  ...</ k >
+		--- < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
+		--- < files >... Filename:String |-> S:String ...</ files >
+		--- if lengthString(S:String) <=Nat Offset:Nat
+		--- [structural] 
 
 	eq listToK(K:K) = klistToK(getList{K}(K:K)) 
 	eq klistToK((K:K,, L:List{K})) = K:K ~> klistToK(L:List{K})

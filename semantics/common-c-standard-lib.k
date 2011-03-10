@@ -294,15 +294,14 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural] 
 	--------------------------------------------
-	--- fixme doesn't cast to int
 	rule [getchar]:
 		< k > prepareBuiltin((Identifier("getchar")), Nil) => readFromFD(0) ...</ k >
 		[structural]
 	--------------------------------------------
-	--- fixme doesn't cast to int
 	rule [fslFGetC]:
 		< k > prepareBuiltin((Identifier("fslFGetC")), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?)))
-			=> readFromFD(FD:Nat, Offset:Nat) 
+			=> readFromFD(FD:Nat) 
+			--- => tv(120, int)
 		...</ k >
 		[structural] 
 	--------------------------------------------
@@ -329,8 +328,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > fsl-open-file-aux(Name:String, FD:Nat, Data:String) => tv(0, int) ...</ k >
 		< openFiles > M:Map => M:Map[Name:String / FD:Nat] </ openFiles >
 		< files > M':Map => M':Map[Data:String / Name:String] </ files >
-		if Data:String =/=Bool errorTCPSyntax
-		andBool lengthString(Data:String) >=Nat 0
+		if lengthString(Data:String) >=Nat 0 --- if it's a real string
 		[structural]
 
 	op fsl-open-file : K Nat -> K [strict(1)]
@@ -487,7 +485,12 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	
 	--- fixme might be messing things up elsewhere
 	op pointerToString : Nat -> String 
-	eq pointerToString(sym(N:Nat) +Nat M:Nat) = "[sym(" +String Rat2String(N:Nat, 10) +String ") + " +String Rat2String(M:Nat, 10) +String "]" 
+	eq pointerToString(sym(N:Nat) +Nat M:Nat) = "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
+	op subPointerToString : Nat -> String
+	--- eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
+	eq subPointerToString(threadId(N:Nat) +Nat N':Nat) = "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
+	
+	
 	eq pointerToString(NullPointer) = "NullPointer" 
 		
 	rule [lib-printf-%p]:

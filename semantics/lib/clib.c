@@ -196,10 +196,10 @@ int feof ( FILE * stream ) {
 }
 
 int fgetc(FILE* stream){
-	int retval = fslFGetC(stream->handle, stream->offset);
-	if (retval >= 0) {
-		stream->offset++;
-	} else {
+	int retval = fslFGetC(stream->handle, 0); // offset is not being used
+	if (retval < 0) {
+		// stream->offset++;
+	// } else {
 		stream->eof = 1;
 	}
 	//printf("read %x\n", retval);

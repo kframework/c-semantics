@@ -10,7 +10,7 @@ int main(void) {
 	int myChar;
 	while((myChar = fgetc (fp)) != EOF) {
 		//putc(myChar, stdout);
-		putchar(myChar);
+		//putchar(myChar);
 	}
 	fclose(fp);
 	fp = fopen("trial.txt", "r");

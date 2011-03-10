@@ -707,22 +707,39 @@ endkm
 kmod COMMON-SEMANTICS-ARITHMETIC is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 		
-	--- FIXME needs to check offset > 0 
-	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I2:Int, T:Type)
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(I2:Int, T:Type) * sizeofType(T':Type)))
+		
+	---c1x 6.5.6 For addition, either both operands shall have arithmetic type, or one operand shall be a pointer to a complete object type and the other shall have integer type.
+	
+	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(N:Nat, T:Type)
+				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
 		...</ k >
 		if hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		andBool T':Type =/=Bool unsigned-char
-		[structural] 
+		[structural]
+	--- need to force the scalar argument to be positive, otherwise C's type system winds up messing up when multiplying by size of type size_t
+	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I:Int, T:Type)
+				=> tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
+		...</ k >
+		if hasIntegerType(T:Type)
+		andBool T':Type =/=Bool unsigned-char
+		andBool I:Int <Int 0
+		[structural]
 	--- same as above, but swap arguments
-	rule < k > tv(I2:Int, T:Type) + tv(Loc:Nat, pointerType(T':Type))
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(I2:Int, T:Type) * sizeofType(T':Type)))
+	rule < k > tv(N:Nat, T:Type) + tv(Loc:Nat, pointerType(T':Type))
+				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
 		...</ k >
 		if hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		andBool T':Type =/=Bool unsigned-char
-		[structural] 
+		[structural]
+	rule < k > tv(I:Int, T:Type) + tv(Loc:Nat, pointerType(T':Type))
+				=> tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
+		...</ k >
+		if hasIntegerType(T:Type)
+		andBool T':Type =/=Bool unsigned-char
+		andBool I:Int <Int 0
+		[structural]
 		
 	rule < k > tv(Loc:Nat, pointerType(unsigned-char)) + tv(I2:Int, T:Type) 
 			=> tv(Loc:Nat +Int I2:Int, pointerType(unsigned-char))
@@ -730,10 +747,18 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		if hasIntegerType(T:Type)
 		[structural] 
 		
-	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(I2:Int, T:Type)
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) - (tv(I2:Int, T:Type) * sizeofType(T':Type)))
+	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(N:Nat, T:Type)
+				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) - (tv(N:Nat, T:Type) * sizeofType(T':Type)))
 		...</ k >
 		if hasIntegerType(T:Type)
+		andBool T':Type =/=Bool void
+		andBool T':Type =/=Bool unsigned-char
+		[structural]
+	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(I:Int, T:Type)
+				=> tv(Loc:Nat, pointerType(T':Type)) + tv((-Int I:Int), T:Type)
+		...</ k >
+		if hasIntegerType(T:Type)
+		andBool I:Int <Int 0
 		andBool T':Type =/=Bool void
 		andBool T':Type =/=Bool unsigned-char
 		[structural] 
