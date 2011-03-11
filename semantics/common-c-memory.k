@@ -317,8 +317,7 @@ kmod COMMON-SEMANTICS-WRITING is
 		= splinter-aux(N:Nat, Len:Nat, sNat(Pos:Nat)),, piece(bitRange(N:Nat, Pos:Nat, Pos:Nat), 1)
 		if Pos:Nat <Nat Len:Nat 
 	
-		
-	op writeByte : Nat K -> K 
+
 	rule
 		< k > writeBytes(sym(Block:Nat) +Nat Offset:Nat, dataList((V:K,, L:List{K})))
 			=> writeByte(sym(Block:Nat) +Nat Offset:Nat, V:K)

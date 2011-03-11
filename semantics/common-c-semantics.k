@@ -95,6 +95,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op read : K K -> K [metadata "strict(2)"] --- location, type
 	op write : K K -> K [metadata "strict(2)"] --- location, value
+	op writeByte : Nat K -> K 
 
 	op isTypeCompatible : K K -> Bool 
 	

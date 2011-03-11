@@ -12,34 +12,40 @@ static jmp_buf x;
 static jmp_buf buf;
  
 void f() {
+	printf("in f\n");
     longjmp(x,5);
+	printf("secret code\n");
 }
 
 void second(void) {
-    puts("second");         // prints
+    printf("second\n");         // prints
     longjmp(buf,1);             // jumps back to where setjmp was called - making setjmp now return 1
 }
 
 void first(void) {
     second();
-    puts("first");          // does not print
+    printf("first\n");          // does not print
 }
 
 void test1() {
 	int i = 0;
 	i = setjmp(x);
+	printf("after jump\n");
     if ( ! i ) {
+		printf("calling f\n");
         f();
+		printf("zzz\n");
     } else {
         printf("error code = %d\n", i);
     }
+	printf("xxx\n");
 }
 
 void test2(void){
 	if ( ! setjmp(buf) ) {
         first();                // when executed, setjmp returns 0
     } else {                    // when longjmp jumps back, setjmp returns 1
-        puts("test2");         // prints
+        printf("test2\n");         // prints
     }
 }
 

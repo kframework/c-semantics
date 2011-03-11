@@ -12,7 +12,7 @@
 k: show
 
 env: show
-
+localAddresses: show
 buffer: show
 
 # cell-style:

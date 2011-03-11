@@ -51,51 +51,73 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > handleBuiltin(F:Id, functionType(Return:Type, L:List{Type}))
 			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
 		...</ k >
-	[structural] 
+		--- if F:Id =/=Bool Identifier("longjmp")
+		[structural] 
 
-	--- op builtin : Id -> Value 
-	
-	--- rule [debug-is-value]:
-		--- < k > [debug => builtin(debug)] ...</ k >
-	--- [structural] 
 	--- rule [debug]:
 		--- < k > [prepareBuiltin((debug), ?) => skipval] ...</ k >
 	--- [structural] 
-	--- --------------------------------------------
-	--- rule [setjmp-is-value]:
-		--- < k > [setjmp => builtin(setjmp)] ...</ k >
-	--- [structural] 
-	
-	--- --- The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
-	--- --- fixme check bounds
-	--- op Bag : Bag -> K 
-	--- rule [setjmp]:
-		--- < thread > 
-			--- B:Bag
-			--- < k > [prepareBuiltin((setjmp), tv(loc(Block:Nat, Offset:Nat), pointerType(structType(?)))) => tv(0, int)] ~> K:K </ k >
-		--- </ thread >
-		--- < mem >... Block:Nat |-> memblock(?, [M:Map => M:Map[Bag(B:Bag < k > K:K </ k >) / Offset:Nat]]) ...</ mem >
-	--- [structural] 
-	--- --------------------------------------------
-	--- rule [longjmp-is-value]:
-		--- < k > [longjmp => builtin(longjmp)] ...</ k >
-	--- [structural] 
-
-	--- rule [longjmp]:
-		--- < thread >
-		--- [?
-		--- < k > prepareBuiltin((longjmp), (tv(loc(Block:Nat, Offset:Nat), pointerType(structType(?))):: tv(I:Int, int))) ~> ? </ k >
-		--- => B:Bag
-		--- < k > tv(if I:Int ==Bool 0 then 1 else I:Int fi, int) ~> K:K </ k >
-		--- ]
-		--- </ thread >
-		--- < mem >... Block:Nat |-> memblock(?, (? Offset:Nat |-> [Bag(B:Bag < k > K:K </ k >) => piece(unknown(Fresh:Nat), 8)])) ...</ mem >
-		--- < freshNat > [Fresh:Nat => sNat(Fresh:Nat)] </ freshNat >
-	--- [structural] 
 	--------------------------------------------
-	
-	--- < k > printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, vararg(tv(Loc:Nat, ?)))
-			--- => printf-%(Len:Nat, sym(Block:Nat) +Nat Offset:Nat, nextvarg(Loc:Nat, unsigned-int))
+	--- The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
+	--- fixme check bounds
+	--- fixme obviously need to rework configuration to make this easy
+	op Bag : Bag -> K 
+	rule [setjmp]:
+		< thread > 
+			Thread:Bag
+			< buffer > .List </ buffer >  --- don't save buffer in bag
+			< nextLoc > NextLoc:Nat </ nextLoc > --- don't save nextLoc in bag
+			< control >
+				Control:Bag
+				< local > 
+					Local:Bag 
+					< localAddresses > Locals:Set => .Set </ localAddresses > --- since we're coming back here, don't want to delete memory yet
+				</ local >
+				< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, pointerType(structType(?)))) 
+						=> writeByte(Loc:Nat, Bag(
+							Thread:Bag
+							< control >
+								Control:Bag
+								< local > Local:Bag < localAddresses > Locals:Set </ localAddresses > </ local >
+								< k > K:K </ k >
+							</ control >
+						))
+						~> tv(0, int)
+					) 
+					~> K:K 
+				</ k >
+			</ control >
+		</ thread >
+		[structural] 
+	--------------------------------------------
+	rule [longjmp]:
+		< thread > 
+			< nextLoc > NextLoc:Nat </ nextLoc > --- keep the nextLoc
+			< buffer > .List </ buffer >
+			((
+			?
+			< control >
+				?
+				< k > prepareBuiltin(Identifier("longjmp"), (tv(sym(Block:Nat) +Nat Offset:Nat, pointerType(structType(?))):: tv(I:Int, int))) ~> ? </ k >
+			</ control >)
+			=> 
+			(Thread:Bag
+			< control >
+				Control:Bag
+				< k > if I:Int ==Bool 0 then tv(1, int) else tv(I:Int, int) fi ~> K:K </ k >
+			</ control>)
+		) </ thread >
+		< mem >...
+			Block:Nat |-> memblock(?, (? Offset:Nat |-> (Bag(
+				Thread:Bag
+				< control >
+					Control:Bag
+					< k > K:K </ k >
+				</ control >
+			) => piece(unknown(numBitsPerByte), numBitsPerByte)))) 
+		...</ mem >
+		[structural] 
+	--------------------------------------------
 	
 	--- op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
 	
