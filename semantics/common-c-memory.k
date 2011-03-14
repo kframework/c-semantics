@@ -3,12 +3,13 @@ kmod COMMON-MEMORY-INCLUDE is
 	
 	--- returns the bytes in the order in which they are in memory
 	op extractBytesFromMem : Nat Nat -> K --- loc, size in bytes
-	op encodedPointer : Int -> Nat 
-	op encodedFloat : Float -> Nat 
-	op explodeToBits : List{K} -> List{K} 
-	op reverseList : List{K} -> List{K} 
+	op encodedPointer : Int -> Nat
+	op encodedFloat : Float -> Nat
+	op explodeToBits : List{K} -> List{K}
+	op reverseList : List{K} -> List{K}
 	op bwrite : Nat K -> ListItem
 	op locations : List -> Set
+	op read-aux : K K K -> K
 	
 	eq locations(.List) = .Set
 	eq locations(bwrite(Loc:Nat, ?) L:List) = SetItem(Loc:Nat) locations(L:List)
@@ -41,21 +42,22 @@ kmod COMMON-SEMANTICS-READING is
 		< k > extractBitsFromList(?, 0, 0, Done:List{K}) => dataList(Done:List{K}) ...</ k >
 		[structural] 
 	
-	op read : K K K -> K 
-	context read(?, ?, value(`[HOLE`]:K)) 
-	ceq read(Loc:Nat, T:Type) = read(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
-		if notBool(hasFunctionType(T:Type)) 
+	
+	context read-aux(?, ?, value(`[HOLE`]:K)) 
+	ceq read(Loc:Nat, T:Type) = read-aux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
+		if notBool(hasFunctionType(T:Type))
 	
 	rule
 		< k > readFunction(Loc:Nat) => extractByteFromMem(Loc:Nat) ...</ k >
 		[structural]
 
+
 	
-	rule
-		< k > read(Loc:Nat, T:Type, bitSize:Nat)
+	rule [read]:
+		< k > read-aux(Loc:Nat, T:Type, bitSize:Nat)
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc:Nat, bitSize:Nat))) 
 		...</ k >
-		[structural] 
+		[metadata "computational"] 
 		
 	op joinIntegerBytes : Type List{K} -> K 
 	ceq concretize(T:Type, dataList(L:List{K})) = joinIntegerBytes(T:Type, L:List{K})
@@ -203,9 +205,9 @@ kmod COMMON-SEMANTICS-WRITING is
 	op splitBytes : Value -> K 
 	op calculateNewBytes : Nat K K -> K [metadata "strict(3)"] 
 	
-	op write : K Value K -> K [metadata "strict(2)"] 
+	op write-aux : K Value K -> K [metadata "strict(2)"] 
 	ceq write(K:K, tv(V:List{K}, T:Type)) 
-		= write(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
+		= write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
 	--- FIXME should check types
 	rule
@@ -214,23 +216,57 @@ kmod COMMON-SEMANTICS-WRITING is
 		...</ k >
 		if hasFunctionType(T:Type)
 		[structural]
-	context write(?, ?, value(`[HOLE`]))
-	rule
-		< k > write(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
+	context write-aux(?, ?, value(`[HOLE`]))
+	
+	
+	op datarace : Nat Nat Nat Nat -> K 
+	--- fixme possible to miss dataraces with bitfields
+	rule [read-write-race]:
+		< T >... 
+		< k > read-aux(Loc:Nat, ?, bitSize:Nat) ...</ k >
+		< k > write-aux(Loc':Nat, ?, bitSize':Nat) ...</ k >
+		...</ T >
+		=> < dataraceCell > datarace(Loc:Nat, bitSize:Nat, Loc':Nat, bitSize':Nat) </ dataraceCell >
+		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(bitSize:Nat))
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(bitSize':Nat))
+		[metadata "computational"]
+		
+	rule [write-write-race]:
+		< T >...
+		< k > write-aux(Loc:Nat, ?, bitSize:Nat) ...</ k >
+		< k > write-aux(Loc':Nat, ?, bitSize':Nat) ...</ k >
+		...</ T >
+		=> < dataraceCell > datarace(Loc:Nat, bitSize:Nat, Loc':Nat, bitSize':Nat) </ dataraceCell >
+		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(bitSize:Nat))
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(bitSize':Nat))
+		[metadata "computational"]
+	
+	rule [write]:
+		< k > write-aux(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
 			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:Type)
-		[structural] 
-	rule
-		< k > write(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
+		[metadata "computational"]
+	
+	
+	rule [write-struct]:
+		< k > write-aux(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
 			=> writeBytes(Loc:Nat, dataList((V:K,, V':K,, L:List{K})))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:Type)
-		[structural] 
+		[metadata "computational"]
 		
 	eq bitoffset(? +Nat bito(N:Nat)) = N:Nat 
 	eq bitoffset(?) = 0 [owise] 
@@ -250,24 +286,24 @@ kmod COMMON-SEMANTICS-WRITING is
 		if I:Int <Int 0 
 	eq justBits-aux(N:Nat, bitfieldType(T:Type, sNat(Len:Nat))) = N:Nat +Nat (1 <<Nat Len:Nat) 
 	
-	rule
-		< k > write(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
-			=> write(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
+	rule [massage-bitfield]:
+		< k > write-aux(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
+			=> write-aux(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
 		...</ k >
 		if (bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:Type))
 		andBool I:Int <Int 0
-		[structural] 
+		[structural]
 	
-	rule
-		< k > write(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
+	rule [write-bitfield]:
+		< k > write-aux(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
 			=> writeBitfield(Loc:Nat, T:Type, calculateNewBytes(bitoffset(Loc:Nat), piece(N:Nat, bitSize:Nat), extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat)))))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:Type)
-		[structural] 
+		[metadata "computational"]
 		
 	rule
 		< k > writeBitfield(Loc:Nat, ?, dataList(L:List{K}))
