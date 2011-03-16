@@ -47,12 +47,21 @@ kmod DYNAMIC-C-SEMANTICS is
 	op callMain : Nat Id -> K
 	op callMain-aux : K Nat Id -> K [strict(1)]
 	
-	rule < k > callMain(N:Nat, X:Id) 
-		=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id)
-	...</ k >
-	< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
-	< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
-	[structural]
+	op startMainThread : -> K --- used only to start main thread
+	rule 
+		< k > startMainThread => .K ...</ k > 
+		< nextLoc > ? => sym(threadId(Fresh:Nat) +Nat 0) +Nat 0 </ nextLoc >
+		< threadId > 0 => Fresh:Nat </threadId> --- requires we be in "prethread" state 0
+		< nextThreadId > Fresh:Nat => sNat(Fresh:Nat) </ nextThreadId >
+		[structural]
+	
+	rule < k > callMain(N:Nat, X:Id)
+			=> startMainThread --- acts as if we are creating a new thread
+			~> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id)
+		...</ k >
+		< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
+		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
+		[structural]
 	
 	--- FIXME i think these are slightly different
 	--- fixme void isn't supposed to have a name
@@ -112,7 +121,7 @@ kmod DYNAMIC-C-SEMANTICS is
 	
 	rule [terminate]:
 		(< T >... < threads >... < thread >... 
-			< threadId > 0 </ threadId >
+			< threadId > 1 </ threadId > --- main's thread, not the global "thread"
 			< k > V:Value </ k >
 		...</ thread > ...</ threads > ...</ T >
 			=> < resultValue > V:Value </ resultValue >)

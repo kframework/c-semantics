@@ -36,6 +36,7 @@ kmod C-CONFIGURATION is
 			@latex("\\kBR")
 			<threads>
 				<thread multiplicity="*">
+					--- < parentThreadId > 0 </ parentThreadId >
 					<threadId> 0 </threadId>
 					<nextLoc> 0 </nextLoc> --- should be initialized with a pair (threadId, 0)
 					<callStack> .List </callStack> --- stack of "control" cells
@@ -67,7 +68,7 @@ kmod C-CONFIGURATION is
 						@latex("\\kBR")
 						<locsWrittenTo> .Bag </locsWrittenTo>
 						<holds> .Map </holds>
-						<type multiplicity="*"> .K </type> --- used for typing expressions
+						<type multiplicity="?"> .K </type> --- used for typing expressions
 						<declarationTypeHolder> .K </declarationTypeHolder> --- holds the innermost type while we unroll the type around it
 						
 						--- general information
@@ -76,7 +77,7 @@ kmod C-CONFIGURATION is
 						<currentProgramLoc> .K </currentProgramLoc>
 						@latex("\\kBR")
 						<calculateGotoMap>
-							<gotoCalculation multiplicity="*">
+							<gotoCalculation multiplicity="?">
 								<computation> .K </computation>
 								<computationTail> .K </computationTail>
 								<declarationStack> .List </declarationStack>
@@ -103,5 +104,6 @@ kmod C-CONFIGURATION is
 		<input> "" </input>
 		<output> "" </output>
 		<resultValue> .K </resultValue>
+		<errorCell multiplicity="?"> .K </errorCell>
 
 endkm

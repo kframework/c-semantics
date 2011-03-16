@@ -4,7 +4,6 @@ kmod COMMON-C-CONFIGURATION is
 	op k : -> CellLabel
 	op stackFrame : -> CellLabel
 	op continuation : -> CellLabel
-	op dataraceCell : -> CellLabel
 	
 	subsort Id Int String Float Bool Rat < K
 	subsort String < Builtins

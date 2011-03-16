@@ -50,13 +50,19 @@ kmod COMMON-SEMANTICS-READING is
 	rule
 		< k > readFunction(Loc:Nat) => extractByteFromMem(Loc:Nat) ...</ k >
 		[structural]
-
-
 	
-	rule [read]:
-		< k > read-aux(Loc:Nat, T:Type, bitSize:Nat)
-			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc:Nat, bitSize:Nat))) 
+	rule [read-thread-local]:
+		< k > read-aux(Loc, T:Type, bitSize:Nat)
+			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
 		...</ k >
+		<threadId> Id:Nat </threadId>
+		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
+		[structural]
+	rule [read]: --- read global or shared data
+		< k > read-aux(Loc, T:Type, bitSize:Nat)
+			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
+		...</ k >
+		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"] 
 		
 	op joinIntegerBytes : Type List{K} -> K 
@@ -151,7 +157,6 @@ kmod COMMON-SEMANTICS-READING is
 		andBool Offset:Nat <Nat Size:Nat
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		[structural]
-		--- [metadata "computational"]
 		
 	rule [read-byte-lazy]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
@@ -161,7 +166,6 @@ kmod COMMON-SEMANTICS-READING is
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		andBool notBool$hasMapping(M:Map, Offset:Nat)
 		[structural]
-		--- [metadata "computational"]
 		
 	rule [read-byte-buffer]:
 		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
@@ -221,52 +225,104 @@ kmod COMMON-SEMANTICS-WRITING is
 	
 	op datarace : Nat Nat Nat Nat -> K 
 	--- fixme possible to miss dataraces with bitfields
+	--- rule [read-write-race]:
+		--- < T >... 
+			--- < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k >
+			--- < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k >
+		--- ...</ T >
+		--- => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		--- if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		--- orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		--- where Start1 = Loc:Nat
+		--- and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
+		--- and Start2 = Loc':Nat
+		--- and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
+		--- [metadata "computational"]
+		
 	rule [read-write-race]:
-		< T >... 
-		< k > read-aux(Loc:Nat, ?, bitSize:Nat) ...</ k >
-		< k > write-aux(Loc':Nat, ?, bitSize':Nat) ...</ k >
-		...</ T >
-		=> < dataraceCell > datarace(Loc:Nat, bitSize:Nat, Loc':Nat, bitSize':Nat) </ dataraceCell >
+		< T > 
+			? 
+			< threads > 
+				?
+				< thread > ? < control > ? < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
+				< thread > ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </ thread >
+			</ threads > 
+		</ T >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
 		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
 		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
 		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(bitSize:Nat))
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(bitSize':Nat))
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational"]
 		
+	--- rule [write-write-race]:
+		--- < T > ? <threads> ?
+			--- <thread> ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </thread>
+			--- <thread> ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </thread>
+		--- </threads> </ T >
+		--- => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		--- if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		--- orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		--- where Start1 = Loc:Nat
+		--- and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
+		--- and Start2 = Loc':Nat
+		--- and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
+		--- [metadata "computational"]
+		
 	rule [write-write-race]:
-		< T >...
-		< k > write-aux(Loc:Nat, ?, bitSize:Nat) ...</ k >
-		< k > write-aux(Loc':Nat, ?, bitSize':Nat) ...</ k >
-		...</ T >
-		=> < dataraceCell > datarace(Loc:Nat, bitSize:Nat, Loc':Nat, bitSize':Nat) </ dataraceCell >
+		< T > 
+			? 
+			< threads > 
+				?
+				< thread > ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
+				< thread > ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </ thread >
+			</ threads > 
+		</ T >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
 		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
 		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
 		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(bitSize:Nat))
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(bitSize':Nat))
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational"]
 	
-	rule [write]:
-		< k > write-aux(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
+	op write-specific : Nat Value Nat -> K
+	
+	rule [write-thread-local]:
+		< k > write-aux(Loc, tv(V:K, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(V:K, T:Type), bitSize:Nat)
+		...</ k >
+		<threadId> Id:Nat </threadId>
+		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
+		[structural]
+	rule [write]: --- write global or shared data
+		< k > write-aux(Loc, tv(V:K, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(V:K, T:Type), bitSize:Nat)
+		...</ k >
+		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational"] 		
+	
+	rule [write-normal]:
+		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
 			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:Type)
-		[metadata "computational"]
+		[structural]
 	
 	
 	rule [write-struct]:
-		< k > write-aux(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
+		< k > write-specific(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
 			=> writeBytes(Loc:Nat, dataList((V:K,, V':K,, L:List{K})))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:Type)
-		[metadata "computational"]
+		[structural]
 		
 	eq bitoffset(? +Nat bito(N:Nat)) = N:Nat 
 	eq bitoffset(?) = 0 [owise] 
@@ -287,8 +343,8 @@ kmod COMMON-SEMANTICS-WRITING is
 	eq justBits-aux(N:Nat, bitfieldType(T:Type, sNat(Len:Nat))) = N:Nat +Nat (1 <<Nat Len:Nat) 
 	
 	rule [massage-bitfield]:
-		< k > write-aux(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
-			=> write-aux(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
+		< k > write-specific(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
+			=> write-specific(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
 		...</ k >
 		if (bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))
@@ -297,13 +353,13 @@ kmod COMMON-SEMANTICS-WRITING is
 		[structural]
 	
 	rule [write-bitfield]:
-		< k > write-aux(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
+		< k > write-specific(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
 			=> writeBitfield(Loc:Nat, T:Type, calculateNewBytes(bitoffset(Loc:Nat), piece(N:Nat, bitSize:Nat), extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat)))))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:Type)
-		[metadata "computational"]
+		[structural]
 		
 	rule
 		< k > writeBitfield(Loc:Nat, ?, dataList(L:List{K}))

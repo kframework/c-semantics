@@ -11,8 +11,11 @@ my $g = GraphViz->new();
 	# size="10,7.5";
 # ';
 
-my %states = ();
-my %arcs = ();
+my %states = (); # stateId => stateLabel
+my %arcs = (); # startArcId => endArcId => arcLabel
+
+my %errorStates = (); # stateId => errorKind
+my %goodFinal = (); # stateId => ""
 
 # Literal braces, vertical bars and angle brackets must be escaped.
 
@@ -55,10 +58,16 @@ while (my $line = <STDIN>) {
 				my $currentOutput = $1;
 				$states{$currentStateNumber} = $currentOutput;
 			}
-			if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output > /) {
+			if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output >/) {
 				my $currentOutput = $1;
+				$goodFinal{$currentStateNumber} = "";
 				$states{$currentStateNumber} = $currentOutput;
-			}			
+			}
+			if ($line =~ m/< errorCell > (.*) <\/ errorCell >/) {
+				my $currentOutput = $1;
+				#print STDERR "setting bad state\n";
+				$errorStates{$currentStateNumber} = "";
+			}				
 			next;
 		}
 	}
@@ -91,7 +100,9 @@ while (my $line = <STDIN>) {
 }
 
 for my $node (keys %states) {
-	$g->add_node($node, label => "$node\n${states{$node}}");
+	my $attribs = getAttribs($node);
+	$attribs->{'label'} = "$node\n${states{$node}}";
+	$g->add_node($node, %$attribs);
 }
 
 for my $from (keys %arcs) {
@@ -104,6 +115,20 @@ for my $from (keys %arcs) {
 
 print $g->as_text;
 
+
+sub getAttribs {
+	my ($nodeId) = (@_);
+	my $attribs = {};
+	if (exists($errorStates{$nodeId})) {
+		$attribs->{"fillcolor"} = "red";
+		$attribs->{"style"} = "filled";
+	}
+	if (exists($goodFinal{$nodeId})) {
+		$attribs->{"fillcolor"} = "green";
+		$attribs->{"style"} = "filled";
+	}
+	return $attribs;
+}
 
 
 	# $state = substr($line, 0, strpos($line, ","));

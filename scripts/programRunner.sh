@@ -68,8 +68,9 @@ if [ $DEBUG ]; then
 elif [ $SEARCH ]; then
 	SEARCH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 	GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	$MAUDE_COMMAND > $SEARCH_OUTPUT_FILE
 	echo "Performing the search..."
+	$MAUDE_COMMAND > $SEARCH_OUTPUT_FILE
+	echo "Examining the output..."
 	cat $SEARCH_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER > $GRAPH_OUTPUT_FILE
 	if [ "$?" -eq 0 ]; then
 		set -e # start to fail on error

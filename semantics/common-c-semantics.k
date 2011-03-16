@@ -397,6 +397,16 @@ endkm
 kmod C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
+	ceq sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat = true
+		if M:Nat <Nat M':Nat
+	ceq sym(N:Nat) +Nat M:Nat <=Nat sym(N:Nat) +Nat M':Nat = true
+		if M:Nat <=Nat M':Nat
+	ceq sym(N:Nat) +Nat M:Nat >Nat sym(N:Nat) +Nat M':Nat = true
+		if M:Nat >Nat M':Nat
+	ceq sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat = true
+		if M:Nat >=Nat M':Nat
+		
+	
 	eq inc(sym(N:Nat) +Nat M:Nat) = sym(N:Nat +Nat 1) +Nat M:Nat 
 	eq sNat(sym(N:Nat) +Nat M:Nat) = sym(N:Nat) +Nat (M:Nat +Nat 1) 
 	ceq I:Int +Int (N:Nat +Nat sym(M:Nat))
@@ -417,28 +427,33 @@ kmod C-SEMANTICS-MISC is
 	--- ---C99 6.5.3.2 90) ... It is always true that if E is a function designator or an lvalue that is a valid operand of the u of the unary & operator, *&E is a function designator or an lvalue equal to E
 
 				
+	--- fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
 		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => S:String +String charString(N:Nat %Nat 256)) ...</ files >
-		[structural] 
+		[structural]
+		--- [metadata "computational"]
 	rule [writeToFD-string]:
 		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => S:String +String S':String) ...</ files >
-		[structural] 
+		[structural]
+		--- [metadata "computational"]
 	rule [readFromFD-char]:
 		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)  ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
 		if S:String =/=Bool ""
 		[structural]
+		--- [metadata "computational"]
 	rule [readFromFD-char]:
 		< k > readFromFD(FD:Nat) => tv(-1, int) ...</ k > --- -1 should be EOF
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
 		if S:String ==Bool ""
 		[structural]
+		--- [metadata "computational"]
 		
 	--- rule
 		--- < k > readFromFD(FD:Nat, Offset:Nat) 

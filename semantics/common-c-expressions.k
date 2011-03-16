@@ -250,8 +250,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		< k > application(functionPrototype(X:Id, T:Type), L:List{C})
 			=> application(functionObject(X:Id, T:Type, handleBuiltin(X:Id, T:Type)), L:List{C})
 		...</ k >
-		[structural] 
-		---[metadata "computational"] --- nondet
+		[structural]
+		--- [metadata "computational"] --- nondet
 		
 		
 	rule [function-application]:
@@ -268,8 +268,8 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		...</ control >)
 		< callStack > (.).List => List(< stackFrame > C:Bag < continuation > K:K </ continuation > < currentTranslationUnit > OldTu:K </ currentTranslationUnit > </ stackFrame >) ...</ callStack >
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
-		--- [structural]
-		[metadata "computational"] --- nondet
+		[structural]
+		--- [metadata "computational"] --- nondet
 endkm
 
 kmod COMMON-SEMANTICS-ARRAY-SUBSCRIPTING is
