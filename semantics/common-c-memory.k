@@ -299,7 +299,7 @@ kmod COMMON-SEMANTICS-WRITING is
 		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
 		[structural]
 	rule [write]: --- write global or shared data
-		< k > write-aux(Loc, tv(V:K, T:Type), bitSize:Nat)
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(V:K, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
