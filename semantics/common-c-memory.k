@@ -292,8 +292,8 @@ kmod COMMON-SEMANTICS-WRITING is
 	op write-specific : Nat Value Nat -> K
 	
 	rule [write-thread-local]:
-		< k > write-aux(Loc, tv(V:K, T:Type), bitSize:Nat)
-			=> write-specific(Loc, tv(V:K, T:Type), bitSize:Nat)
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		<threadId> Id:Nat </threadId>
 		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
