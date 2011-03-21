@@ -64,6 +64,12 @@ kmod COMMON-SEMANTICS-READING is
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"] 
+	rule [read-allocated]: --- read data of "allocated" duration
+		< k > read-aux(Loc, T:Type, bitSize:Nat)
+			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
+		...</ k >
+		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational"] 
 		
 	op joinIntegerBytes : Type List{K} -> K 
 	ceq concretize(T:Type, dataList(L:List{K})) = joinIntegerBytes(T:Type, L:List{K})
@@ -303,7 +309,13 @@ kmod COMMON-SEMANTICS-WRITING is
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
-		[metadata "computational"] 		
+		[metadata "computational"]
+	rule [write-allocated]: --- write data of "allocated" duration
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+		...</ k >
+		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational"]
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)

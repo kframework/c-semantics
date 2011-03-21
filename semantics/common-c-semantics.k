@@ -104,6 +104,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bitloc : Nat Nat Nat -> Nat 
 	op inc : Nat -> Nat 
 	op threadId : Nat -> Nat --- used for symbolic locations based on threadid
+	op allocatedDuration : -> Nat --- fake threadid for above when location is of allocated duration
+		
 	op initialize : Id Type K -> K 
 	op memblock : Nat Map -> K --- length and an array from offsets to bytes
 	

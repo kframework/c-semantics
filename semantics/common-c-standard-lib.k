@@ -263,14 +263,45 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural] 
 	--------------------------------------------
+
 	rule [malloc]:
 		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
-			=> alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
+			=> alloc(Loc, N:Nat) ~> tv(Loc, pointerType(void)) 
 		...</ k >
-		< malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< malloced >... .Map => Loc |-> N:Nat ...</ malloced >
+		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
 		if T:Type ==Bool cfg:sizeut
-		[structural] 
+		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
+		[structural]
+	--- rule [malloc]:
+		--- < k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
+			--- => alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
+		--- ...</ k >
+		--- < malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
+		--- < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		--- if T:Type ==Bool cfg:sizeut
+		--- [structural]
+	--------------------------------------------
+	op calloc-aux : -> K
+	rule [calloc]:
+		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
+			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Nat Size:Nat, cfg:sizeut))
+			~> calloc-aux
+		...</ k >
+		[structural]
+	rule [calloc-aux]:
+		< k > (.K => zeroBlock(Loc:Nat)) ~> tv(Loc:Nat, pointerType(void)) ~> (calloc-aux => .K) ...</ k >
+		[structural]
+		
+	--- rule [calloc]:
+		--- < k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
+			--- => alloc(Loc:Nat, (N:Nat *Nat Size:Nat)) 
+			--- ~> zeroBlock(Loc:Nat)
+			--- ~> tv(Loc:Nat, pointerType(void)) 
+		--- ...</ k >
+		--- < malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
+		--- < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		--- [structural]
 	--------------------------------------------
 	--- Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	
@@ -289,16 +320,6 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			=> deleteSizedBlock(Loc:Nat, Len:Nat) ~> skipval 
 		...</ k >
 		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
-		[structural] 
-	--------------------------------------------
-	rule [calloc]:
-		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
-			=> alloc(Loc:Nat, (N:Nat *Nat Size:Nat)) 
-			~> zeroBlock(Loc:Nat)
-			~> tv(Loc:Nat, pointerType(void)) 
-		...</ k >
-		< malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		[structural] 
 	--------------------------------------------
 	--- fixme doesn't cast to int

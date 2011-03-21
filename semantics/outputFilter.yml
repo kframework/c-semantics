@@ -9,7 +9,9 @@
   # text-style:
     # foreground: dullred
 	
-k: show
+k:
+  keep: 4
+  keep-chars: 131
 
 env: show
 localAddresses: show
@@ -43,9 +45,9 @@ xmessages: show
 # localVariables: show
 type: show
 files: show
-computation:
-  keep: 4
-  keep-chars: 131
+# computation:
+  # keep: 4
+  # keep-chars: 131
 currentTranslationUnit: show
 currentFunction: show
 currentProgramLoc: show
@@ -66,7 +68,8 @@ statics: show
 # thread:
   # cell-style:
 
-mem: show
+#mem: show
+threadId: show
 
 # show
 # text-style:

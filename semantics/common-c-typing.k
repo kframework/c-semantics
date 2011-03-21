@@ -552,6 +552,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< type > tv(?, T:Type) => T:Type ...</ type >
 		[structural] 
+	
+	rule
+		< type > SizeofExpression(?) => cfg:sizeut ...</ type >
+		[structural] 
 
 	rule
 		< type > arrayType(T:Type, ?)[T':Type] => T:Type ...</ type >
