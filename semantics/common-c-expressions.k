@@ -281,21 +281,44 @@ endkm
 kmod COMMON-SEMANTICS-LITERALS is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	--- +1 for terminating 0
-	--- alloc(Loc:Nat, lengthString(S:String) +Nat 1) ~> 
+	op makeStringReadOnly : String Nat -> K
+	
+	--- here we start with a local address, put the string in memory, then change the address to be readonly
+	
 	rule [const-string-notfound]:
-		< k > (. => allocString(Loc:Nat, S:String +String "\0"))
+		< k > (.K => 
+				allocString(Loc:Nat, S:String +String "\0")
+				--- ~> makeStringReadOnly(S:String, Loc:Nat)
+			)
 			~> StringLiteral(S:String)
 		...</ k >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		< statics > M:Map (. => S:String |-> tv(Loc:Nat, arrayType(char, lengthString(S:String) +Nat 1))) </ statics >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
+		< statics > 
+			M:Map
+			(. => S:String |-> tv(Loc:Nat, arrayType(char, lengthString(S:String) +Nat 1))) 
+		</ statics >
 		if notBool($hasMapping(M:Map, S:String))
-		[structural] 
+		[structural]
+	
+	--- rule [make-string-readonly]:
+		--- < k > makeStringReadOnly(S:String, OldLoc) => .K ...</ k >
+		--- < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		--- < mem >... (Block:Nat => threadId(readOnly) +Nat Fresh:Nat) |-> memblock(Size:Nat, ?) ...</ mem >
+		--- < statics >
+			--- M:Map
+			--- (. => S:String |-> tv(NewLoc, arrayType(char, StrLen))) 
+		--- </ statics >
+		--- if notBool($hasMapping(M:Map, S:String))
+		--- andBool Size:Nat ==Bool StrLen
+		--- where NewLoc = sym(threadId(readOnly) +Nat Fresh:Nat) +Nat 0
+		--- and OldLoc = sym(Block:Nat) +Nat Offset:Nat
+		--- and StrLen = lengthString(S:String) +Nat 1
+		--- [structural] 
 		
 	--- fixme should make type const
 	rule [const-string-found]:
-		< k > StringLiteral(S:String) => tv(N:Nat, pointerType(T:Type)) ...</ k >
-		< statics >... S:String |-> tv(N:Nat, arrayType(T:Type, ?)) ...</ statics >
+		< k > StringLiteral(S:String) => tv(Loc:Nat, pointerType(T:Type)) ...</ k >
+		< statics >... S:String |-> tv(Loc:Nat, arrayType(T:Type, ?)) ...</ statics >
 		[structural]
 	
 	---c99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented

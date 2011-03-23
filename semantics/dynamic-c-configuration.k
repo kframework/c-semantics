@@ -11,7 +11,7 @@ kmod C-CONFIGURATION is
 			<gstructs> .Map </gstructs>
 			<mem> .Map </mem>
 			<freshNat> 0 </freshNat>
-			<nextThreadId> 1 </nextThreadId>
+			<nextThreadId> 2 </nextThreadId> --- 0 is global, 1 is main
 			<nextFile> 0 </nextFile>
 			<malloced> .Map </malloced>
 			<statics> .Map </statics>
@@ -33,6 +33,7 @@ kmod C-CONFIGURATION is
 			<declarationOrder> .Map </declarationOrder>
 			--- <messages> .List </messages>
 			--- <formula> .K </formula>
+			<nextSharedLoc> 0 </nextSharedLoc>
 			@latex("\\kBR")
 			<threads>
 				<thread multiplicity="*">

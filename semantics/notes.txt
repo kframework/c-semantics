@@ -1,3 +1,6 @@
+problem re threads and string literals.  what addresses do they get?  are they shareable?
+
+
 --- ! 6.4.4.3 An identifier declared as an enumeration constant has type int.
 
 ***(

@@ -389,7 +389,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:Nat / kpair(X:Id, BlockNum:Nat)])) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:Nat) ...</ blockHistory >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		if hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
@@ -402,7 +402,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:Nat / kpair(X:Id, BlockNum:Nat)])) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:Nat) ...</ blockHistory >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		if hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
@@ -1130,7 +1130,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			~> initialize(X:Id, T:Type, K:K)
 			~> recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, Tu:K)
 		...</ k >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
 		[structural] 
 			
@@ -1138,7 +1138,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< k > resolveExternal(X:Id, Tu:K, Units:Bag, declarationObject(T:Type, DefTu:K, K:K))
 			=> resolveExternal-aux(X:Id, Tu:K, Units:Bag, declarationObject(T:Type, DefTu:K, K:K), Loc:Nat, figureInitializer(X:Id, T:Type, K:K))
 		...</ k >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		[structural] 
 	rule
 		< k > ( .K
@@ -1247,7 +1247,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > Defs:Map </ externalDefinitions >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< externalLocations > Locs:Map => Locs:Map[Loc:Nat / X:Id] </ externalLocations >
 		if notBool $hasMapping(Locs:Map, X:Id)
 		andBool notBool hasFunctionType(T:Type)

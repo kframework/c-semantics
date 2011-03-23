@@ -69,6 +69,12 @@ kmod COMMON-SEMANTICS-READING is
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
 		...</ k >
 		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational"]
+	rule [read-readonly]: --- read data that is readonly (e.g., string literals)
+		< k > read-aux(Loc, T:Type, bitSize:Nat)
+			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
+		...</ k >
+		where Loc = sym(threadId(readOnly) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"] 
 		
 	op joinIntegerBytes : Type List{K} -> K 

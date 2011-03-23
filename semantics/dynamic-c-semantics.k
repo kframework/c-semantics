@@ -48,16 +48,16 @@ kmod DYNAMIC-C-SEMANTICS is
 	op callMain-aux : K Nat Id -> K [strict(1)]
 	
 	op startMainThread : -> K --- used only to start main thread
-	rule 
-		< k > startMainThread => .K ...</ k > 
-		< nextLoc > ? => sym(threadId(Fresh:Nat) +Nat 0) +Nat 0 </ nextLoc >
-		< threadId > 0 => Fresh:Nat </threadId> --- requires we be in "prethread" state 0
-		< nextThreadId > Fresh:Nat => sNat(Fresh:Nat) </ nextThreadId >
-		[structural]
+	--- rule 
+		--- < k > startMainThread => .K ...</ k > 
+		--- < nextLoc > ? => sym(threadId(Fresh:Nat) +Nat 0) +Nat 0 </ nextLoc >
+		--- < threadId > 0 => Fresh:Nat </threadId> --- requires we be in "prethread" state 0
+		--- < nextThreadId > Fresh:Nat => sNat(Fresh:Nat) </ nextThreadId >
+		--- [structural]
 	
 	rule < k > callMain(N:Nat, X:Id)
-			=> startMainThread --- acts as if we are creating a new thread
-			~> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id)
+			=> --- startMainThread --- acts as if we are creating a new thread
+			callMain-aux(typeof(Identifier("main")), N:Nat, X:Id)
 		...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
@@ -94,10 +94,11 @@ kmod DYNAMIC-C-SEMANTICS is
 						< currentFunction > File-Scope </ currentFunction >
 						< currentProgramLoc > UnknownCabsLoc </ currentProgramLoc >
 					...</ control >
-					< threadId > 0 </ threadId >
+					< threadId > 1 </ threadId >
+					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
 				...</ thread >
 			</ threads >
-			< nextLoc > sym(threadId(0) +Nat 0) +Nat 0 </ nextLoc >
+			<nextSharedLoc> sym(threadId(0) +Nat 0) +Nat 0 </nextSharedLoc>
 			< nextFile > 3 </ nextFile >
 			< openFiles >
 				0 |-> "stdin" --- stdin
