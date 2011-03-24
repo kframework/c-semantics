@@ -40,17 +40,13 @@ dflag=
 nowarn=0
 usage="Usage: %s: [-d] inputFileName\n"
 
-while getopts 'dmw' OPTION
+while getopts 'mvw' OPTION
 do
 	case $OPTION in
-	d)	dflag=1
-		;;
-	m)	stateSearch=1
-		;;
-	w)	nowarn=1
-		;;
-	?)	die "`printf \"$usage\" $(basename $0)`" 2
-		;;
+	m)	stateSearch=1;;
+	v)	dflag=1;;
+	w)	nowarn=1;;
+	?)	die "`printf \"$usage\" $(basename $0)`" 2;;
   esac
 done
 shift $(($OPTIND - 1))

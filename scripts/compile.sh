@@ -18,13 +18,17 @@ function addOption {
 }
 
 addOption "-c" "Compile and assemble, but do not link"
-addOption "-d" "Does not delete intermediate files"
+#addOption "-d" "Compile with semantic profiling"
 addOption "-i" "Include support for runtime file io"
 addOption "-l <name>" "Ignored"
 addOption "-n" "Does not link against the standard library"
 addOption "-o <file>" "Place the output into <file>"
-addOption "-v" "Prints version information"
+addOption "-v" "Does not delete intermediate files"
+#addOption "-v" "Prints version information"
 addOption "-w" "Does not print warning messages"
+
+usage+="\nThere are additional options available at runtime.  Try running your compiled program with HELP set (HELP=1 ./a.out) to see these.\n"
+
 
 compileOnlyFlag=
 dumpFlag=
@@ -59,22 +63,23 @@ function usage {
 }
 
 function getoptsFunc {
-	while getopts ':cdil:mo:vsw' OPTION
+	while getopts ':cil:mo:svw' OPTION
 	do
 		case $OPTION in
 		c)	compileOnlyFlag="-c";;
-		d)	dumpFlag="-d";;
+		#d)	
 		i)	ioFlag=1;;
 		l)	;;
 		m)	modelFlag="-m";;
 		o)	oflag=1
 			oval="$OPTARG"
 			;;
-		v)	printf "kcc version 0.0.1"
-			exit 0
-			;;
-		w)	warnFlag="-w";;
 		s)	libFlag="-s";;
+		v)	dumpFlag="-v";;
+			# printf "kcc version 0.0.1"
+			# exit 0
+			# ;;
+		w)	warnFlag="-w";;
 		?)	usage;;
 	  esac
 	done
@@ -203,6 +208,7 @@ if [ ! "$compileOnlyFlag" ]; then
 		| sed "s?EXTERN_SEARCH_GRAPH_WRAPPER?$myDirectory/graphSearch.pl?g" \
 		| sed "s?EXTERN_COMPILED_WITH_IO?$ioFlag?g" \
 		| sed "s?EXTERN_IO_SERVER?$myDirectory/fileserver.pl?g" \
+		| sed "s?EXTERN_SCRIPTS_DIR?$myDirectory?g" \
 		> $programTemp
 	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
