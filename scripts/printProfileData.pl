@@ -58,7 +58,7 @@ sub printData {
 	") or die $dbh->errstr;
 	$sth->execute();
 	# Fragment, Initial Tries, Resolve Tries, 
-	print "Rule, Count, Kind, Matches, Rewrites\n";
+	print "Suite, Rule, Count, Kind, Matches, Rewrites\n";
 	while (my $hash_ref = $sth->fetchrow_hashref) {
 		my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
 		$rule =~ tr{\n}{ }; # turn newlines into spaces
@@ -75,7 +75,7 @@ sub printData {
 		# my $resolveTries = $hash_ref->{resolveTries};
 		# my $successes = $hash_ref->{successes};
 		# my $failures = $hash_ref->{failures};
-		print "$suite, \"$rule\", $count, $kind, $matches, $rewrites\n";
+		print "\"$suite\", \"$rule\", $count, $kind, $matches, $rewrites\n";
 		# $fragment, $initialTries, $resolveTries, 
 	}
 	$dbh->disconnect();

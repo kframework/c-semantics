@@ -20,12 +20,12 @@ function addOption {
 addOption "-c" "Compile and assemble, but do not link"
 #addOption "-d" "Compile with semantic profiling"
 addOption "-i" "Include support for runtime file io"
-addOption "-l <name>" "Ignored"
-addOption "-n" "Does not link against the standard library"
+addOption "-l <name>" "This option is completely ignored"
+addOption "-s" "Do not link against the standard library"
 addOption "-o <file>" "Place the output into <file>"
-addOption "-v" "Does not delete intermediate files"
+addOption "-v" "Do not delete intermediate files"
 #addOption "-v" "Prints version information"
-addOption "-w" "Does not print warning messages"
+addOption "-w" "Do not print warning messages"
 
 usage+="\nThere are additional options available at runtime.  Try running your compiled program with HELP set (HELP=1 ./a.out) to see these.\n"
 

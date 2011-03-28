@@ -246,7 +246,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op kpair : K K -> K 
 	op promote : K -> K 
-	op extractField : List{K} Type Id -> K 
+	op extractField : List{K} K Id -> K --- bytes of struct, type, field id
 	op allocString : Nat String -> K 
 	op sequencePoint : -> K 
 	

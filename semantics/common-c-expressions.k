@@ -6,6 +6,10 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op applyType : K Type -> K
 	macro applyType(I:Int, T:Type) = tv(I:Int, T:Type)
 	
+	op try-lvalue : K -> K
+	op lvalue : K K -> Value
+	op rvalue : K K -> Value
+	
 	--- op ktoNat : K -> Nat
 	--- eq ktoNat(N:Nat) = N:Nat
 	--- op arith : Type K -> K
@@ -465,36 +469,11 @@ and ll or LL
 			tv(I:Int, no-type)
 		fi
 		[structural] 
-		
-		
-		
-	--- FloatLiteral(L(HexFloatConstant(256, 46117495616, 2)))
-	
-	--- op _^Rat_ : NzRat Int -> NzRat [ditto] 
-	--- op _^Rat_ : Rat Int -> Rat [ditto] 
-	--- ceq R:NzRat ^Rat I:Int = 1 /Rat (R:NzRat ^Rat absInt(I:Int))
-		--- if I:Int <Int 0 
-	--- ceq 0 ^Rat I:Int = 0
-		--- if I:Int <Int 0 
-	
-	--- FIXME
-	--- eq HexFloatConstant(?, ?, ?, F:Float) = DecimalFloatConstant(F:Float) 
-	
-	--- ceq HexFloatConstant(SigWhole:Nat, SigFrac:NzNat, Exp:Int) 
-		--- = DecimalFloatConstant(Rat2Float((SigWhole:Nat +Rat (1 /Rat SigFrac:NzNat)) *Rat (2 ^Rat Exp:Int)))
-		--- if SigFrac:NzNat =/=Bool 0 
-		
-	--- ceq HexFloatConstant(SigWhole:Nat, SigFrac:Nat, Exp:Int) = DecimalFloatConstant(Rat2Float(SigWhole:Nat *Rat (2 ^Rat Exp:Int)))
-		--- if SigFrac:Nat ==Bool 0 
 	
 	---C99 6.4.4.2:4 An unsuffixed floating constant has type double. If suffixed by the letter f or F, it has type float. If suffixed by the letter l or L, it has type long double
 	---FIXME
 	
 	op reducedFloat : Float -> K
-	--- eq DecimalFloatConstant(WholePart:Int, FracPart:Int, ExpPart:Int) 
-		--- = reducedFloat(Rat2Float(WholePart:Int +Rat (1 /Rat FracPart:Int)) *Float (10.0 ^Float Int2Float(ExpPart:Int)))
-	--- eq HexFloatConstant(WholePart:Int, FracPart:Int, ExpPart:Int) 
-		--- = reducedFloat(Rat2Float(WholePart:Int +Rat (1 /Rat FracPart:Int)) *Float (2.0 ^Float Int2Float(ExpPart:Int)))
 	eq DecimalFloatConstant(?, ?, F:Float) = reducedFloat(F:Float)
 	eq HexFloatConstant(?, ?, F:Float) = reducedFloat(F:Float)
 	
@@ -510,8 +489,8 @@ endkm
 kmod COMMON-SEMANTICS-ASSIGNMENT is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	context assign(*([HOLE]), ?) 
-	context assign(?, [HOLE]) 
+	context assign(*([HOLE]), ?)
+	context assign(?, [HOLE])
 	
 	rule [for-assignment]: < k > E1:Expression := E2:Expression => assign(*(&(E1:Expression)),  E2:Expression) ...</ k > 
 		[structural] 
@@ -869,6 +848,15 @@ kmod COMMON-SEMANTICS-MEMBERS is
 
 	op toEval : K -> K 
 	op toEval-aux : K K -> K [metadata "strict(2)"] 
+	op toEval-value : K -> K 
+	context toEval-value(`[HOLE`]:K . ?)
+	
+	--- context ([HOLE] => try-lvalue([HOLE])) . ?
+	
+	
+	--- because of things like s().f, can't just use the address of left argument
+	--- because of things like s.f when f is a field with array type, can't just use the value of the left argument
+	
 	
 	rule [dot]:
 		< k > K:K . F:Id => toEval(K:K . F:Id) ...</ k >
@@ -879,12 +867,8 @@ kmod COMMON-SEMANTICS-MEMBERS is
 		
 	rule
 		< k > toEval-aux(K:K, arrayType(T:Type, N:Nat)) => &(K:K) ...</ k >
-		[structural] 
-	--- rule
-		--- < k > toEval-aux(K:K, arrayType(T:Type, N:Nat)) => cast(arrayType(T:Type, N:Nat), &(K:K)) ...</ k >
-		--- [structural] 
-	op toEval-value : K -> K 
-	context toEval-value(`[HOLE`]:K . ?) 
+		[structural]
+		
 	rule
 		< k > toEval-aux(K:K, T:Type) => toEval-value(K:K) ...</ k >
 		if notBool hasArrayType(T:Type)
@@ -894,6 +878,26 @@ kmod COMMON-SEMANTICS-MEMBERS is
 			=> extractField(L:List{K}, T:Type, F:Id) 
 		...</ k >
 		[structural]
+		
+	--- rule [dot-array]:
+		--- < k > tv(L:List{K}, T:Type) . F:Id
+			--- => &(tv(L:List{K}, T:Type) . F:Id)
+		--- ...</ k >
+		--- if hasArrayType(T:Type)
+		--- [structural]
+		
+	--- rule [dot-struct]:
+		--- < k > tv(L:List{K}, structType(S:Id)) . F:Id
+			--- => extractField(L:List{K}, structType(S:Id), F:Id)
+		--- ...</ k >
+		--- < structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		--- [structural]
+	--- rule [dot-union]:
+		--- < k > tv(L:List{K}, unionType(S:Id)) . F:Id
+			--- => extractField(L:List{K}, unionType(S:Id), F:Id)
+		--- ...</ k >
+		--- < structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		--- [structural]
 
 					
 	---C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the "address-of" operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS
