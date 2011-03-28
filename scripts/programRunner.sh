@@ -64,7 +64,7 @@ if [ $PROFILE ]; then
 	echo "show profile ." >> $FSL_C_RUNNER_FILE
 fi
 
-if [ !$DEBUG ]; then
+if [ ! $DEBUG ]; then
 	echo "q" >> $FSL_C_RUNNER_FILE
 fi 
 

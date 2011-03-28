@@ -958,7 +958,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (. => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
 		< savedInitialization >... . => Computation(K:K := K':K) </ savedInitialization > 
-		if (isABaseType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		if (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		andBool notBool hasStructType(T':Type)
 		andBool notBool hasUnionType(T':Type)
 		[structural] 
@@ -1058,7 +1058,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		if notBool hasCharType(T:Type)
-		andBool (isABaseType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural] 
 endkm
 

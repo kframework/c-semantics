@@ -115,15 +115,60 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op UnknownCabsLoc : -> K 
 	
 	--- Basic types
-	ops bool : -> BaseType 
-	ops void bool char short-int int long-int long-long-int : -> BaseType 
-	ops float double long-double : -> BaseType 
-	ops signed-char unsigned-char : -> BaseType 
-	ops unsigned-short-int unsigned-int unsigned-long-int unsigned-long-long-int : -> BaseType 
-	op no-type : -> BaseType 
+	ops bool : -> Type 
+	ops void bool char short-int int long-int long-long-int : -> Type 
+	ops float double long-double : -> Type 
+	ops signed-char unsigned-char : -> Type 
+	ops unsigned-short-int unsigned-int unsigned-long-int unsigned-long-long-int : -> Type 
+	op no-type : -> Type
+	
+	op isBasicType : K -> Bool
+	rule isBasicType(K:K) => if (
+		K:K ==Bool bool
+		orBool K:K ==Bool void
+		orBool K:K ==Bool char
+		orBool K:K ==Bool short-int
+		orBool K:K ==Bool int
+		orBool K:K ==Bool long-int
+		orBool K:K ==Bool long-long-int
+		orBool K:K ==Bool float
+		orBool K:K ==Bool double
+		orBool K:K ==Bool long-double
+		orBool K:K ==Bool signed-char
+		orBool K:K ==Bool unsigned-char
+		orBool K:K ==Bool unsigned-short-int
+		orBool K:K ==Bool unsigned-int
+		orBool K:K ==Bool unsigned-long-int
+		orBool K:K ==Bool unsigned-long-long-int
+		orBool K:K ==Bool no-type
+		orBool getKLabel(K:K) ==Bool 'enumType
+		) then true else false fi
+		[structural]
+	--- rule isBasicType(K:K) => false
+		--- if notBool(
+			--- K:K ==Bool bool
+			--- orBool K:K ==Bool void
+			--- orBool K:K ==Bool char
+			--- orBool K:K ==Bool short-int
+			--- orBool K:K ==Bool int
+			--- orBool K:K ==Bool long-int
+			--- orBool K:K ==Bool long-long-int
+			--- orBool K:K ==Bool float
+			--- orBool K:K ==Bool double
+			--- orBool K:K ==Bool long-double
+			--- orBool K:K ==Bool signed-char
+			--- orBool K:K ==Bool unsigned-char
+			--- orBool K:K ==Bool unsigned-short-int
+			--- orBool K:K ==Bool unsigned-int
+			--- orBool K:K ==Bool unsigned-long-int
+			--- orBool K:K ==Bool unsigned-long-long-int
+			--- orBool K:K ==Bool no-type
+			--- orBool getKLabel(K:K) ==Bool 'enumType
+		--- )
+		--- [structural]
 	
 	--- Composite types
-	op enumType : Id -> BaseType [ctor] 
+	op enumType : Id -> Type [ctor] 
 	op arrayType : Type Nat -> Type [ctor] 
 	op incompleteArrayType : Type -> Type [ctor] 
 	op flexibleArrayType : Type -> Type [ctor] 
@@ -132,7 +177,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op pointerType : Type -> Type [ctor] 
 	op structType : Id -> Type [ctor] 
 	op unionType : Id -> Type [ctor] 
-	op qualifiedType : Type K -> Type [ctor] 
+	op qualifiedType : Type K -> Type [ctor]
+	--- op t : Type Set -> Type
+	--- tv(5, t(pointerType(t(int)), const))
+	
 	
 	op unqualifyType : K -> Type --- takes a type, but sometimes things like maps give K
 	
@@ -146,13 +194,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	sort BaseValue 
 
 	subsort Nat Int Float < BaseValue 
-	subsort BaseValue < C 
-	--- subsort BaseValue < Builtins 
+	subsort BaseValue < C
 	op dataList : List{K} -> KResult 
 	subsort Value < KResult K 
-	subsort Type < KResult K 
-	sort BaseType 
-	subsort BaseType < Type Builtins 
+	subsort Type < KResult K
 	
 	op sizeofType : K -> K [metadata "strict"] --- generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [metadata "strict"] 
@@ -229,7 +274,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op hasCharType : Type -> Bool 
 	--- fixme make sure i use this everywhere instead of T:BaseType
-	op isABaseType_ : K -> Bool 
+	--- op isABaseType_ : K -> Bool 
 	op hasPointerType : Type -> Bool 
 	op hasArrayType : Type -> Bool 
 	op hasBoolType : Type -> Bool 

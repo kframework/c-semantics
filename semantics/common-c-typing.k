@@ -401,7 +401,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	
 	eq pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) = K:KLabel(T:Type) 
 	
-	eq pushTypeDown(T:BaseType, K:KLabel) = K:KLabel(T:BaseType) 
+	rule pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
+		if isBasicType(T:Type)
+		[structural]
 	
 	eq makeArrayType(N:Nat)(T:Type) = arrayType(T:Type, N:Nat) 
 	eq makeFunctionType(L:List{Type})(T:Type) = functionType(T:Type, L:List{Type}) 
@@ -489,7 +491,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		NameAndType(X:Id, T:Type) => typedDeclaration(T:Type, X:Id)
 		[structural] 
 		
-	eq extractActualType(T:BaseType) = T:BaseType 
+	rule extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
 	eq extractActualType(enumType(X:Id)) = enumType(X:Id) 
 	eq extractActualType(structType(X:Id)) = structType(X:Id) 
 	eq extractActualType(unionType(X:Id)) = unionType(X:Id) 
@@ -745,13 +747,10 @@ kmod COMMON-C-TYPING is
 		
 	ceq isAType T:Type = true
 		if setOfTypes contains l(getKLabel(T:Type)) 
-	eq isAType T:BaseType = true 
+	rule isAType T:Type => true if isBasicType(T:Type) [structural]
 	ceq isAType K:K = false
 		if notBool setOfTypes contains l(getKLabel(K:K))
-		andBool notBool isABaseType K:K 
-		
-	eq isABaseType T:BaseType = true 
-	eq isABaseType ? = false [owise] 
+		andBool notBool isBasicType(K:K)
 			
 
 	--- FIXME most of these don't take into consideration modifiers

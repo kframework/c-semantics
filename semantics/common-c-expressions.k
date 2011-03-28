@@ -153,7 +153,7 @@ kmod COMMON-SEMANTICS-SIZEOF is
 	eq bitSizeofType(arrayType(T:Type, N:Nat)) = bitSizeofType(T:Type) * N:Nat 
 	eq bitSizeofType(flexibleArrayType(T:Type)) = 0 
 	eq bitSizeofType(functionType(?, ?)) = numBitsPerByte 
-	eq bitSizeofType(T:BaseType) = numBits(T:BaseType) 
+	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
 	eq bitSizeofType(pointerType(?)) = cfg:ptrsize *Nat numBitsPerByte 
 	eq bitSizeofType(typedDeclaration(T:Type, ?)) = bitSizeofType(T:Type) 
 	eq bitSizeofType(bitfieldType(?, N:Nat)) = N:Nat 
