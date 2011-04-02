@@ -535,16 +535,14 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 		[structural] 
 	--- C99 6.5.16.1:2 In simple assignment (=), the value of the right operand is converted to the type of the assignment expression and replaces the value stored in the object designated by the left operand
 	rule
-		< k > assign(*(tv(Loc:Nat, pointerType(T:Type))), (tv(V:List{K}, T':Type) 
-			=> cast(unqualifyType(T:Type), tv(V:List{K}, T':Type))))
+		< k > assign(
+			*(tv(Loc:Nat, pointerType(T:Type)))
+			, (tv(V:List{K}, T':Type) => cast(unqualifyType(T:Type), tv(V:List{K}, T':Type)))
+		)
 		...</ k >
 		if unqualifyType(T:Type) =/=Bool T':Type
 		andBool notBool hasArrayType(T:Type)
-		[structural] 
-	--- rule
-		--- < k > assign(*(tv(Loc:Nat, pointerType((arrayType(T:Type, ?) => pointerType(T:Type))))), ?)
-		--- ...</ k >
-		--- [structural] 
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-BITWISE is

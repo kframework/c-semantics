@@ -1,3 +1,16 @@
+can get rid of some of the arithmetic rules by orienting addition and subtraction
+perhaps can do the same for casting?
+
+would be nice to have a shorthand for 
+f(a, b, c) => g(a, b, c)
+other than
+('f => 'g)(a,, b,, c)
+[f => g](a, b, c)
+(f => g)(a, b, c)
+{f => g}(a, b, c)
+
+
+
 problem re threads and string literals.  what addresses do they get?  are they shareable?
 
 

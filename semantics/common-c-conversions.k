@@ -88,7 +88,9 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		[structural] 
 	
 	--- fixme these could be done more cleanly
-	--- long-double
+
+	---C99 6.3.1.8
+	--- First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
 	rule
 		< k > L:KLabel(tv(V:BaseValue, long-double),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, long-double),, cast(long-double, tv(V':BaseValue, T':Type))) 
@@ -103,7 +105,8 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		if isArithBinConversionOp(L:KLabel)
 		andBool long-double =/=Bool T:Type
 		[structural] 
-	--- double
+		
+	--- Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
 	rule
 		< k > L:KLabel(tv(V:BaseValue, double),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, double),, cast(double, tv(V':BaseValue, T':Type))) 
@@ -120,7 +123,8 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool long-double =/=Bool T:Type
 		andBool double =/=Bool T:Type
 		[structural] 
-	--- float
+		
+	--- Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
 	rule
 		< k > L:KLabel(tv(V:BaseValue, float),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, float),, cast(float, tv(V':BaseValue, T':Type))) 
@@ -139,29 +143,9 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool double =/=Bool T:Type
 		andBool float =/=Bool T:Type
 		[structural] 
-	--- ---C99 6.3.1.8
-	--- --- First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
-	--- --- rule
-		--- --- < k > [arithConversion(tv(V1:BaseValue, long-double), tv(V2:BaseValue, T2:Type)) => 
-		--- --- converted(tv(V1:BaseValue, long-double), tv(V2:BaseValue, long-double))] ...</ k >
-		--- --- 
-		
-	--- --- Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
-	--- --- rule
-		--- --- < k > [arithConversion(tv(V1:BaseValue, double), tv(V2:BaseValue, T2:Type)) => 
-		--- --- converted(tv(V1:BaseValue, double), tv(V2:BaseValue, double))] ...</ k >
-		--- --- if T2:Type =/=Bool long-double
-		--- --- 
-		
-	--- --- Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
-	--- --- rule
-		--- --- < k > [arithConversion(tv(V1:BaseValue, float), tv(V2:BaseValue, T2:Type)) => 
-		--- --- converted(tv(V1:BaseValue, float), tv(V2:BaseValue, float))] ...</ k >
-		--- --- if T2:Type =/=Bool long-double
-		--- --- andBool T2:Type =/=Bool double
-		--- --- 
-		
-	--- --- Otherwise, the integer promotions are performed on both operands ..
+
+	
+	--- Otherwise, the integer promotions are performed on both operands ..
 	
 	---C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
 	---C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
@@ -524,52 +508,12 @@ kmod COMMON-C-CONVERSIONS is
 		if N:Nat <=Nat Len:Nat 
 		
 	eq (N:Nat bit:: piece(?, 1)) >>Nat 1 = N:Nat 
-	--- FIXME this seems ominously perilous
-	--- ceq N:Nat |Nat unknown(M:Nat) = unknown(M:Nat)
-		--- if absInt(Float2Int(logFloat(Int2Float(N:Nat)) /Float logFloat(2.0))) <=Nat M:Nat 
-	--- eq unknown(N:Nat) |Nat unknown(N':Nat) = unknown(maxNat(N:Nat, N':Nat)) 
-	--- eq unknown(N:Nat) &Nat unknown(N':Nat) = unknown(maxNat(N:Nat, N':Nat)) 
-	--- eq unknown(N:Nat) <<Nat M:Nat = unknown(N:Nat +Nat M:Nat) --- too conservative
-	--- eq unknown(0) = 0 
-	--- eq 0 |Nat N:Nat = N:Nat 
-	--- eq 1 &Nat unknown(Len:Nat) = unknown(1) 
-	--- eq 0 &Nat unknown(Len:Nat) = 0 
-	--- eq (N:Nat <<Nat 1) >>Nat 1 = N:Nat 
-	
-	--- op bitlist : Nat List{K} -> Nat 
-	--- op unknownBit : -> K 
-	--- op nTimes : Nat K -> List{K} 
-	--- eq nTimes(sNat(N:Nat), K:K) = (K:K,, nTimes(N:Nat, K:K)) 
-	--- eq nTimes(0, K:K) = .List{K} 
-	
-	--- eq unknown(Len:Nat) = bitlist(Len:Nat, nTimes(Len:Nat, unknownBit)) 
-	--- eq unknown(Len:Nat) = bitlist(Len:Nat, innerUnknown(Len:Nat)) 
-	--- eq bitlist(sNat(Len:Nat), L:List{K}) >>Nat N:Nat = eq bitlist(Len:Nat, dropLowest
-	--- bitlist(8, (('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}),,('unknownBit).KProperLabel(.List{K}))) >>Nat 1 
-	
+
 	--- fixme not sure about this
 	--- interpret is used to "cast" values read from memory
 	--- shouldn't need to do the < min one since values start positive
 	op interpret-aux : Type K -> K 
-	--- op bitFlatten : K -> Nat 
-	--- op bitUnflatten : K -> Nat 
-	--- op collapseBits : K K -> K 
-	--- rule 
-		--- < k > interpret(T:Type, N:Int >>Nat M:Nat)
-			--- => interpret-aux(T:Type, I:Int)
-		--- ...</ k >
-		--- if I:Int <=Int 0 orBool I:Int >=Int 0
-		--- [structural] 
-	--- rule 
-		--- < k > interpret(T:Type, N:Nat)
-			--- => interpret-aux(T:Type, bitUnflatten(bitFlatten(N:Nat)))
-		--- ...</ k >
-		--- [structural] 
-	--- rule < k > collapseBits(bitlist(0, .List{K}), N:Nat) ~> interpret(T:Type, HOLE) => interpret-aux(T:Type, N:Nat) ...</ k > [structural] 
 	
-	
-	--- eq collapseBits(bitlist(sNat(N:Nat), (M:Nat,, L:List{K})), N:Nat) = collapseBits(bitlist(N:Nat, L:List{K}), (N:Nat <<Nat 1) |Nat M:Nat) 
-	--- eq interpret(T:Type, piece(N:Nat, ?)) = interpret-aux(T:Type, N:Nat) 
 	ceq interpret(T:Type, piece(N:Nat, ?)) = interpret-aux(T:Type, N:Nat)
 		if N:Nat >=Nat 0 
 	
@@ -591,10 +535,6 @@ kmod COMMON-C-CONVERSIONS is
 	
 	rule arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
 		[structural]
-		
-	--- --- fixme there should be a more controlled way of doing this
-	--- --- it's also wrong
-	--- rule [tv(I:Int, bitfieldType(T:Type, N:Nat)) => tv(I:Int, T:Type)] [structural] 
 		
 	--- c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	--- e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
