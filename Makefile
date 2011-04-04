@@ -9,7 +9,7 @@ DIST_DIR = dist
 
 
 OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
-OUTPUT_FILTER = $(OUTPUT_FILTER_DIR)/filterOutput
+OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
 FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 #VPATH = programs
 
