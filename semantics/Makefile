@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -26,24 +26,26 @@ all: semantics
 pdf: common-pdf-modules
 #c-expressions.pdf
 
-# these are fake in order to set the modules correctly
-common-c-%-fake: PDF_MODULES=`grep -o '^kmod.* is' common-c-$*.k | grep -o ' .* '`
-common-c-%-fake: c-%.pdf
-	@true
-
-# this is used to start all of the common files
-common-pdf-modules: common-c-statements-fake common-c-expressions-fake common-c-memory-fake
-
-c-%.pdf: c.k $(ALL_K_FILES) Makefile
+%.pdf: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
+%.pdf: c.k %.k
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	@$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\geometry{papersize={17in,11in},textwidth=16.75in,textheight=10in}\\begin{document}|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={17in,11in},textwidth=16.75in,textheight=10in}\\begin{document}|' temp-c-$*.tex
 	@echo "Compiling latex..."
-	@pdflatex temp-c-$*.tex 1> temp.pdflatex.out
+	@if ! pdflatex -halt-on-error -interaction=nonstopmode temp-c-$*.tex 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
+
+# pdf-dynamic-c: PDF_FILES=dynamic-c-semantics.k
+# pdf-dynamic-c: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES)`
+# pdf-dynamic-c: dynamic-c-semantics.k
+
+# make 
+	
+# this is used to start all of the common files
+common-pdf-modules: dynamic-c-semantics.pdf common-c-statements.pdf common-c-expressions.pdf common-c-memory.pdf
 	
 c-syntax.k: Makefile
 	@printf "`cat c-syntax.template`" > c-syntax.k	
@@ -53,7 +55,8 @@ c.k: c-syntax.k c-maude.template Makefile
 	
 c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
-	@time ($(K_MAUDE) c.k -u -language C)
+#@echo "executing \"$(K_MAUDE) c.k -u -language C\""
+	@$(K_MAUDE) c.k -u -language C
 	@echo "Done".
 	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)

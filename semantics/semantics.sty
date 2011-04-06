@@ -1,0 +1,27 @@
+\usepackage{textcomp} % helps listings
+\usepackage{listings}
+\usepackage[T1]{fontenc} % so listings double quotes are straight
+
+% configuration
+\lstset{language=C}
+\lstset{columns=fullflexible,upquote=true,texcl=true,escapechar=\@,tabsize=2}
+
+\newcommand{\cinline}[1]{\lstinline`#1`}
+\newcommand{\clisting}[1]{\lstinline`#1`}
+% \lstnewenvironment{clisting}{%\small
+  % % \filbreak % try adding for samepage
+  % \lstset{
+    % language=C,
+    % tabsize=2,
+    % %frame=single,
+    % %framexrightmargin=-.02\textwidth,
+    % %framexleftmargin=-.02\textwidth,
+    % columns=fullflexible,
+    % %mathescape=true,
+    % upquote=true,
+	% texcl=true,
+  % }% \filbreak % try adding for samepage
+% }{}
+
+
+\newcommand{\source}[1]{\textbf{#1}\\}

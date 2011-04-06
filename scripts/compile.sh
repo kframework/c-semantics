@@ -99,7 +99,7 @@ function setNewFilenames {
 			newFilenames=
 			return
 		fi
-		((FILENAMESHIFT++))
+		((FILENAMESHIFT+=1))
 		#echo "file=$1"
 		newFilenames="$newFilenames $1"
 		shift 1

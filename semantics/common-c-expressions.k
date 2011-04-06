@@ -6,9 +6,9 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op applyType : K Type -> K
 	macro applyType(I:Int, T:Type) = tv(I:Int, T:Type)
 	
-	op try-lvalue : K -> K
-	op lvalue : K K -> Value
-	op rvalue : K K -> Value
+	--- op try-lvalue : K -> K
+	--- op lvalue : K K -> Value
+	--- op rvalue : K K -> Value
 	
 	--- op ktoNat : K -> Nat
 	--- eq ktoNat(N:Nat) = N:Nat
