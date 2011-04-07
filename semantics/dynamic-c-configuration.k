@@ -15,25 +15,31 @@ kmod C-CONFIGURATION is
 			<nextFile> 0 </nextFile>
 			<malloced> .Map </malloced>
 			<statics> .Map </statics>
-			@latex("\\kBR")
-			<internalLocations> .Map </internalLocations>
-			<externalLocations> .Map </externalLocations>
+			@latex("\\kBR")			
 			<openFiles> .Map </openFiles>
-			
 			<programText> .Map </programText>
-			<externalDefinitions> .Map </externalDefinitions>
-			<internalDefinitions> .Map </internalDefinitions>
 			@latex("\\kBR")
-			<declarations> .Set </declarations>
-			<preLinkage> .Map </preLinkage>
-			<preTypes> .Map </preTypes>
-			
-			<translationUnits> .Bag </translationUnits>
-			<functionTranslationUnits> .Map </functionTranslationUnits>
-			<declarationOrder> .Map </declarationOrder>
-			--- <messages> .List </messages>
-			--- <formula> .K </formula>
+			--- <staticSemantics multiplicity="?" color="cyan">
+				<translationUnits> .Bag </translationUnits>
+				<declarationOrder> .Map </declarationOrder>
+				<externalDefinitions> .Map </externalDefinitions>
+				<internalDefinitions> .Map </internalDefinitions>
+				<internalLocations> .Map </internalLocations>
+				<externalLocations> .Map </externalLocations>
+				<preLinkage> .Map </preLinkage>
+				<preTypes> .Map </preTypes>
+				<declarations> .Set </declarations>
+			--- </staticSemantics>
+			<functionTranslationUnits> .Map </functionTranslationUnits> --- map from current tu to (map from id to where function was defined)
 			<nextSharedLoc> 0 </nextSharedLoc>
+			@latex("\\kBR")
+			<threadInformation>
+				<threadStatus> .Map </threadStatus>
+				<joiningMap> .Map </joiningMap>
+				<detachingMap> .Map </detachingMap>
+			</threadInformation>
+			<compoundLiteralMap> .Map </compoundLiteralMap>
+			<unfinishedComputation> .K </unfinishedComputation> --- this is here to make it easy to check if we've terminated.  it disappears when we terminate			
 			@latex("\\kBR")
 			<threads>
 				<thread multiplicity="*">
@@ -43,6 +49,7 @@ kmod C-CONFIGURATION is
 					<callStack> .List </callStack> --- stack of "control" cells
 					<buffer> (.).List </buffer>
 					<blocked> false </blocked>
+					@latex("\\kBR")
 					<control>
 						<k> .K </k>
 						<blockStack> .List </blockStack> --- stack of "local" cells
@@ -90,14 +97,6 @@ kmod C-CONFIGURATION is
 					</control>
 				</thread>
 			</threads>
-			@latex("\\kBR")
-			<threadInformation>
-				<threadStatus> .Map </threadStatus>
-				<joiningMap> .Map </joiningMap>
-				<detachingMap> .Map </detachingMap>
-			</threadInformation>
-			<compoundLiteralMap> .Map </compoundLiteralMap>
-			<unfinishedComputation> .K </unfinishedComputation> --- this is here to make it easy to check if we've terminated.  it disappears when we terminate
 		</T>
 		@latex("\\kBR")
 		<xmessages> .K </xmessages>

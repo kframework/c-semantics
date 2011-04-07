@@ -1088,11 +1088,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	op resolve : K -> K 
 	rule
 		< k > (. => resolve(Tu:K)) ~> resolveReferences ...</ k >
-		< translationUnits >... BagItem(Tu:K) => . ...</ translationUnits >
+		< translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
 		[structural] 
+		
+	/* this is what I want, but it doesn't compile
 	rule
-		< k > resolveReferences => . ...</ k >
-		< translationUnits > (.).Bag </ translationUnits >
+		< k > resolveReferences => .K ...</ k >
+		(< staticSemantics >...
+			< translationUnits > .Bag </ translationUnits >
+		...</ staticSemantics >) => .Bag
+		[structural]
+	*/
+	rule
+		< k > resolveReferences => .K ...</ k >
+		--- < staticSemantics >...
+			< translationUnits > .Bag </ translationUnits >
+		--- ...</ staticSemantics >
 		[structural] 
 		
 	op resolveInternal : Id K K -> K 
