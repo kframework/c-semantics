@@ -50,7 +50,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 			~> bind-aux(Loc:Nat, L:List{C}, P:List{Type}) 
 		...</ k > 
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool hasArrayType(T:Type)
 		[structural] 
 		
@@ -544,7 +544,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareOnly(X:Id, T:Type, external)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
@@ -576,7 +576,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareOnly(X:Id, T:Type, internal)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
@@ -591,7 +591,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
@@ -612,7 +612,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareAndDefine(X:Id, T:Type, K:K, external)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< externalDefinitions > Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:Type), Tu:K, K:K)) </ externalDefinitions >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
@@ -625,7 +625,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareAndDefine(X:Id, T:Type, K:K, internal)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< internalDefinitions >... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:Type), Tu:K, K:K) / X:Id])) ...</ internalDefinitions >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
@@ -640,7 +640,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool X:Id in Vars:List --- again, this should be needed statically, but not dynamically
 		[structural] 
 	rule --- this happens when we jump before a variable declaration with an initialization in the same block
@@ -1072,7 +1072,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			=> listToK(L:List{C})
 		...</ k >
 		< currentTranslationUnit > ? => Name:String </ currentTranslationUnit >
-		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK((.).List) / Name:String] </ declarationOrder >
+		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </ declarationOrder >
 		< internalLocations > ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </ internalLocations >
 		< functionTranslationUnits > Funs:Map => Funs:Map[Map(.) / Name:String] </ functionTranslationUnits > 
 		< translationUnits >... . => BagItem(Name:String) ...</ translationUnits >
@@ -1162,7 +1162,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< preLinkage >... Tu':K |-> Map((? (X:Id |-> external => .))) ...</ preLinkage >
 		[structural] 
 	rule
-		< k > resolveExternal-aux(X:Id, Tu:K, (.).Bag, declarationObject(?, DefTu:K, ?), Loc:Nat, initializerValue(X:Id, T:Type, K:K))
+		< k > resolveExternal-aux(X:Id, Tu:K, .Bag, declarationObject(?, DefTu:K, ?), Loc:Nat, initializerValue(X:Id, T:Type, K:K))
 			=> allocateType(Loc:Nat, T:Type)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:Type)
@@ -1281,7 +1281,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< k > resolve(Tu:K) => . ...</ k >
 		< preLinkage >... Tu:K |-> Map(.) ...</ preLinkage >
 		< internalDefinitions >... Tu:K |-> Map(.) ...</ internalDefinitions >
-		< declarationOrder >... Tu:K |-> ListToK((.).List) ...</ declarationOrder >
+		< declarationOrder >... Tu:K |-> ListToK(.List) ...</ declarationOrder >
 		[structural] 
 				
 	--- need to worry about things that don't have definitions that may override externs

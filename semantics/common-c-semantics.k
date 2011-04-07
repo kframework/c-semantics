@@ -325,7 +325,7 @@ kmod C-SETTINGS is
 	eq IdentifierSet((S:String,, L:List{K})) = SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) 
 	op builtinIdentifiers : -> Set [memo] 
 	
-	--- fixme bug why can't i use (.).List{K} here?
+	--- fixme bug why can't i use .List{K} here?
 	eq builtinIdentifiers = IdentifierSet((
 		"abort"
 		,, "asin"
@@ -467,7 +467,7 @@ kmod C-SEMANTICS-MISC is
 		
 	rule
 		< k > sequencePoint => .K ...</ k >
-		< locsWrittenTo > ? => (.).Bag </ locsWrittenTo >
+		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
 		[structural] 
 		
 	--- ---C99 6.5.3.2 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)

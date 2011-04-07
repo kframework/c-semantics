@@ -15,9 +15,6 @@ kmod C-CONFIGURATION is
 			<nextFile> 0 </nextFile>
 			<malloced> .Map </malloced>
 			<statics> .Map </statics>
-			@latex("\\kBR")			
-			<openFiles> .Map </openFiles>
-			<programText> .Map </programText>
 			@latex("\\kBR")
 			--- <staticSemantics multiplicity="?" color="cyan">
 				<translationUnits> .Bag </translationUnits>
@@ -30,16 +27,17 @@ kmod C-CONFIGURATION is
 				<preTypes> .Map </preTypes>
 				<declarations> .Set </declarations>
 			--- </staticSemantics>
-			<functionTranslationUnits> .Map </functionTranslationUnits> --- map from current tu to (map from id to where function was defined)
-			<nextSharedLoc> 0 </nextSharedLoc>
 			@latex("\\kBR")
+			<functionTranslationUnits> .Map </functionTranslationUnits> --- map from current tu to (map from id to where function was defined)			
+			<nextSharedLoc> 0 </nextSharedLoc>
 			<threadInformation>
 				<threadStatus> .Map </threadStatus>
 				<joiningMap> .Map </joiningMap>
 				<detachingMap> .Map </detachingMap>
 			</threadInformation>
+			<openFiles> .Map </openFiles>
+			<programText> .Map </programText>
 			<compoundLiteralMap> .Map </compoundLiteralMap>
-			<unfinishedComputation> .K </unfinishedComputation> --- this is here to make it easy to check if we've terminated.  it disappears when we terminate			
 			@latex("\\kBR")
 			<threads>
 				<thread multiplicity="*">

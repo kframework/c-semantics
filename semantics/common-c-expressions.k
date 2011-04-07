@@ -270,7 +270,7 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 			< currentFunction > X:Id </ currentFunction >
 			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		...</ control >)
-		< callStack > (.).List => List(< stackFrame > C:Bag < continuation > K:K </ continuation > < currentTranslationUnit > OldTu:K </ currentTranslationUnit > </ stackFrame >) ...</ callStack >
+		< callStack > .List => List(< stackFrame > C:Bag < continuation > K:K </ continuation > < currentTranslationUnit > OldTu:K </ currentTranslationUnit > </ stackFrame >) ...</ callStack >
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
 		[structural]
 		--- [metadata "computational"] --- nondet

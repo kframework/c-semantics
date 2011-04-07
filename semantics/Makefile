@@ -32,7 +32,7 @@ pdf: common-pdf-modules
 	@echo "Creating latex..."
 	@$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.5in}\\begin{document}|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}\\begin{document}|' temp-c-$*.tex
 	@mv temp-c-$*.tex $@
 	
 %.pdf: %.tex semantics.sty
