@@ -7,5 +7,5 @@ int* f(void){
 int main(void){
 	int* p = f();
 	int y = *p;
-	return y;
+	return 0;
 }

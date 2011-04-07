@@ -14,5 +14,6 @@ int main(void){
 	int retval;
 	thrd_create(&threadId, f, NULL);
 	thrd_join(threadId, &retval); // thread f is now dead
-	return *sneaky;
+	*sneaky;
+	return 0;
 }

@@ -110,7 +110,7 @@ sub performTest {
 	$kccRunOutput =~ s/^VOLATILE.*//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {
-		if (index($kccRunOutput, "unfinishedComputation") == -1) {
+		if ($kccRunRetval == 0) {
 			my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
 			return reportFailure($testName, $timer, "Failure---Program seemed to run to completion\n$encodedOut\n");
 		} else {
