@@ -26,15 +26,18 @@ all: semantics
 pdf: common-pdf-modules
 #c-expressions.pdf
 
-%.pdf: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
-%.pdf: c.k %.k
+%.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
+%.tex: $(K_MAUDE) c.k %.k
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
 	@$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={17in,11in},textwidth=16.75in,textheight=10in}\\begin{document}|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.5in}\\begin{document}|' temp-c-$*.tex
+	@mv temp-c-$*.tex $@
+	
+%.pdf: %.tex semantics.sty
 	@echo "Compiling latex..."
-	@if ! pdflatex -halt-on-error -interaction=nonstopmode temp-c-$*.tex 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
+	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
 
@@ -45,7 +48,7 @@ pdf: common-pdf-modules
 # make 
 	
 # this is used to start all of the common files
-common-pdf-modules: dynamic-c-semantics.pdf common-c-statements.pdf common-c-expressions.pdf common-c-memory.pdf
+common-pdf-modules: dynamic-c-configuration.pdf dynamic-c-semantics.pdf common-c-statements.pdf common-c-expressions.pdf common-c-memory.pdf
 	
 c-syntax.k: Makefile
 	@printf "`cat c-syntax.template`" > c-syntax.k	

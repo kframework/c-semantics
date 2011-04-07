@@ -2,9 +2,28 @@
 \usepackage{listings}
 \usepackage[T1]{fontenc} % so listings double quotes are straight
 
+% overrides
+\renewcommand{\ellipses}{\mathrel{\cdots}}
+\renewcommand{\mall}[3]{\left\langle{#3}\right\rangle_{\sf #2}}
+\renewcommand{\kall}{\mall}
+\renewcommand{\kprefix}{\mprefix}
+\renewcommand{\ksuffix}{\msuffix}
+\renewcommand{\kmiddle}{\mmiddle}
+
+% \left(\rule{0cm}{2cm}\right.
+
+% \makeatletter
+% \newcommand{\vast}{\bBigg@{4}}
+% \newcommand{\Vast}{\bBigg@{5}}
+% \makeatother
+
+
+
 % configuration
 \lstset{language=C}
 \lstset{columns=fullflexible,upquote=true,texcl=true,escapechar=\@,tabsize=2}
+\lstset{basicstyle=\ttfamily}
+
 
 \newcommand{\cinline}[1]{\lstinline`#1`}
 \newcommand{\clisting}[1]{\lstinline`#1`}
