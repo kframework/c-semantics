@@ -85,6 +85,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op value : K -> K 
 	eq value(tv(V:List{K}, ?)) = V:List{K} 
 	
+	op sizeofLocation : K -> K
 	op type : K -> Type 
 	eq type(tv(?, T:Type)) = T:Type 
 	
@@ -299,8 +300,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op min : Type -> Int [memo]
 	op max : Type -> Int [memo]
-	op storeNew_atLoc_ : K Nat -> K [metadata "strict(1)"] 
-	op store_atLoc_ : K Nat -> K [metadata "strict(1)"] 
 	op alloc : K K -> K --- should be K K 
 	
 	--- these are also used by compound literals
@@ -360,6 +359,10 @@ kmod C-SETTINGS is
 		,, "thrd_detach"
 		,, "thrd_join"
 		,, "__test_and_set"
+		,, "__va_inc"
+		,, "__va_start"
+		,, "__va_end"
+		,, "__va_copy"
 	)) 
 	
 	--- S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either

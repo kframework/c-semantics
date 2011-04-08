@@ -58,10 +58,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		< k > (. => isTypeCompatible(T:Type, T':Type)) ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
-
-		
-	op bindVariadic : K List{KResult} -> K 
-	op bindVariadic-pre : K List{K} -> K 
+	
 	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments
 	op promoteList : List{C} -> List{K} 
 	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (promote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
@@ -79,38 +76,40 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
 		[structural] 
 		
-
-	eq promoteList(Nil) = .List{K} 
-	--- fixme report bug: this context doesn't work
-	--- op bindVariadic : Nat List{K} -> K 
+	op bindVariadic : K List{KResult} -> K 
+	op bindVariadic-pre : K List{K} -> K 
+	eq promoteList(Nil) = .List{K}
 	
-	rule [bind-variadic-start]:
+	rule [bind-variadic-pre]:
 		< k > bind-aux(Loc:Nat, L:List{C}, variadic)
 			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
 		...</ k >
 		[structural] 
-		
-***(
-	<k> ('debug) ~> ('bindVariadic-pre)((0 +Nat sym(41)), kList("wklist_")(('tv)(2, int), ('tv)(6 +Nat sym34, ('arrayType)(signed-char, 3)), ('tv)(2, int), ('tv)(2, unsigned-long-int))) ~> ('handleBuiltin)(printf, ('functionType)(int, ('_::_).KHybridLabel(('typedDeclaration)(('pointerType)(signed-char), format), ('variadic)))) ~> ('Return)(('emptyValue)) </k>
-***)
-		
+
 	rule [bind-variadic-start]:
-		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) => bindVariadic(Loc:Nat, L:List{KResult}) ...</ k > 
-		[structural] 
+		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) 
+			=> bindVariadic(Loc:Nat, L:List{KResult})
+		...</ k >
+		[structural]
 	
+	--- fixme don't forget to get rid of append
+	
+	--- this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
 	rule [bind-variadic]:
-		< k > (. => bitSizeofType(type(V:Value))) ~> bindVariadic(?, (V:Value,, ?:List{KResult})) ...</ k > 
-		[structural] 
+		< k > (.K 
+				=> allocateType(Loc:Nat, Type)
+				~> Computation(*(tv(Loc:Nat, pointerType(Type))) := V:Value)
+			) 
+			~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
+		...</ k >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		where Type = type(V:Value)
+		[structural]
 	
 	rule [bind-variadic-done]:
 		< k > bindVariadic(?, .List{K}) => sequencePoint ...</ k > 
-		[structural] 
-
-	rule [bind-variadic-withSize]:
-		< k > (tv(Len:Nat, ?) => append(Loc:Nat, Len:Nat /Nat numBitsPerByte, V:Value)) 
-			~> bindVariadic(Loc:Nat, ((V:Value => .List{K}),, L:List{KResult}))
-		...</ k > 
-		[structural] 
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
