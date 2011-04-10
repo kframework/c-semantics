@@ -120,8 +120,23 @@ kmod COMMON-SEMANTICS-READING is
 		if Len:Nat ==Bool numBitsPerByte
 		andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
 		
-	eq concretize(structType(S:Id), dataList(L:List{K})) = tv(L:List{K}, structType(S:Id)) 
-	eq concretize(unionType(S:Id), dataList(L:List{K})) = tv(L:List{K}, unionType(S:Id)) 
+	rule
+		concretize(T:Type, dataList(L:List{K})) 
+			=> tv(L:List{K}, T:Type) 
+		if hasStructType(T:Type)
+		[structural]
+	rule concretize(T:Type, dataList(L:List{K})) 
+			=> tv(L:List{K}, T:Type)
+		if hasUnionType(T:Type)
+		[structural]
+	
+	// this happens in expressions like f().a[5], since == *(f().a + 5)
+	// might be dangerous in that it hides other problems, like f().a;
+	// rule 
+		// concretize(T:Type, dataList(L:List{K})) 
+			// => tv(L:List{K}, T:Type)
+		// if hasArrayType(T:Type)
+		// [structural]
 
 	--- FIXME assuming bytes?
 	op joinIntegerBytes : Type List{K} K -> K 

@@ -38,6 +38,15 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		if hasFunctionType(T:Type)
 		andBool (L:KLabel ==Bool 'reval orBool L:KLabel ==Bool 'peval)
 		[structural]
+
+	// is this one necessary?  why do we create lvalues that are function types?
+	rule
+		< k > L:KLabel(lv(V:List{K}, T:Type))
+			=> tv(V:List{K}, pointerType(T:Type))
+		...</ k >
+		if hasFunctionType(T:Type)
+		andBool (L:KLabel ==Bool 'reval orBool L:KLabel ==Bool 'peval)
+		[structural]
 		
 	rule
 		< k > peval(lv(V:List{K}, T:Type))
@@ -996,6 +1005,14 @@ kmod COMMON-SEMANTICS-REFERENCE is
 		< k > &(lv(Loc:Nat, T:Type))
 			=> tv(Loc:Nat, pointerType(T:Type))
 		...</ k >
+		[structural]
+		
+	// fixme possibly can get rid of things like this if we make sure functions are always tv or lv
+	rule [ref-function]:
+		< k > &(tv(Loc:Nat, T:Type))
+			=> tv(Loc:Nat, pointerType(T:Type))
+		...</ k >
+		if hasFunctionType(T:Type)
 		[structural] 
 	
 	// rule [address-of-arrow-struct]:

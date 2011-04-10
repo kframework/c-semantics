@@ -131,7 +131,8 @@ kmod COMMON-SEMANTICS-SWITCH is
 		< k > tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural] 
 		
-	op tryCase : K Value K -> K [metadata "strict(1)"] --- K to be evaluated, val it should be, casehelper
+	op tryCase : K Value K -> K --- K to be evaluated, val it should be, casehelper
+	context tryCase(([HOLE] => reval([HOLE])), _, _)
 	rule
 		< k > (. => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:Value, Map((? ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .))))
 		...</ k >
