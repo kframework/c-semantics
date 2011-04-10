@@ -1,18 +1,4 @@
-/* Copyright 2002 Free Software Foundation, Inc.
-
-   Tests correct signedness of operations on bitfields; in particular
-   that integer promotions are done correctly, including the case when
-   casts are present.
-
-   The C front end was eliding the cast of an unsigned bitfield to
-   unsigned as a no-op, when in fact it forces a conversion to a
-   full-width unsigned int. (At the time of writing, the C++ front end
-   has a different bug; it erroneously promotes the uncast unsigned
-   bitfield to an unsigned int).
-
-   Source: Neil Booth, 25 Jan 2002, based on PR 3325 (and 3326, which
-   is a different manifestation of the same bug).
-*/
+// This test is based on a test from the GCC C torture tests.
 #include <stdio.h>
 
 int main(void) {

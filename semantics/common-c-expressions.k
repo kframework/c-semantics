@@ -14,6 +14,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	op lv : List{K} Type -> Value
 	
+	rule reval(skipval) => skipval [structural]
+	
 	rule
 		< k > reval(tv(L:List{K}, T:Type)) 
 			=> tv(L:List{K}, T:Type) 
@@ -495,21 +497,23 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 		// [structural]
 	
 	// 6.5.16
-	op compoundAssignment : KLabel K K -> K [metadata "strict(2 3)"] 
-	// rule
-		// < k > L:KLabel(E1:Expression,, E2:Expression) 
-			// => compoundAssignment(L:KLabel, &(E1:Expression), E2:Expression) 
-		// ...</ k >
-		// if Set(
-			// l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			// l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		// ) contains l(L:KLabel)
-		// [structural] 
+	op compoundAssignment : KLabel K K -> K
+	context compoundAssignment(_, ([HOLE] => peval([HOLE])), _)
+	context compoundAssignment(_, _, ([HOLE] => reval([HOLE])))
+	rule
+		< k > L:KLabel(E1:Expression,, E2:Expression)
+			=> compoundAssignment(L:KLabel, E1:Expression, E2:Expression) 
+		...</ k >
+		if Set(
+			l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
+			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
+		) contains l(L:KLabel)
+		[structural] 
 
 	op getInnerOperator : KLabel -> KLabel 
 	rule
 		< k > compoundAssignment(L:KLabel, V:Value, V':Value) 
-			=> *(V:Value) := getInnerOperator(L:KLabel)(*(V:Value),, V':Value) 
+			=> V:Value := getInnerOperator(L:KLabel)(reval(V:Value),, V':Value) 
 		...</ k >
 		[structural] 
 
@@ -1033,12 +1037,6 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 	eq -- E:Expression = E:Expression -= tv(1, int) 
 
 	op postOpRef : K KLabel -> K 
-	// context postOpRef(*([HOLE]), ?) 
-
-	// rule [make-postinc-ref]: < k > E:Expression ++ => postOpRef(*(&(E:Expression)), '_++) ...</ k > 
-		// [structural] 
-	// rule [make-postdec-ref]: < k > E:Expression -- => postOpRef(*(&(E:Expression)), '_--) ...</ k > 
-		// [structural] 
 
 	op postInc : K K Type -> K [metadata "strict(2)"]
 	op postDec : K K Type -> K [metadata "strict(2)"]
@@ -1054,17 +1052,6 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 			=> postDec(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
 		...</ k >
 		[structural] 
-	
-	// rule [post-increment-start]:
-		// < k > postOpRef(*(tv(Loc:Nat, pointerType(T:Type))), '_++)
-			// => postInc(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
-		// ...</ k >
-		// [structural] 
-	// rule [post-decrement-start]:
-		// < k > postOpRef(*(tv(Loc:Nat, pointerType(T:Type))), '_--)
-			// => postDec(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
-		// ...</ k >
-		// [structural] 
 
 	rule [post-increment]:
 		< k > postInc(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
@@ -1084,10 +1071,10 @@ endkm
 kmod COMMON-SEMANTICS-SEQUENCING is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	// rule < k > Comma(K:C :: K':C :: L:List{C}) => Computation(K:C) ~> Comma(K':C :: L:List{C}) ...</ k >
-		// [structural] 
-	// rule < k > Comma(K:C) => K:C ...</ k >
-		// [structural] 
+	rule < k > Comma(K:C :: K':C :: L:List{C}) => Computation(K:C) ~> Comma(K':C :: L:List{C}) ...</ k >
+		[structural]
+	rule < k > Comma(K:C) => K:C ...</ k >
+		[structural]
 endkm
 
 kmod COMMON-C-EXPRESSIONS is

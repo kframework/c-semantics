@@ -48,7 +48,8 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) --- assumes variadic args are placed in incremental blocks
 	eq idsFromDeclList(Nil) = Nil
 	
-	op incSymbolic : K -> K [strict]
+	op incSymbolic : K -> K
+	context incSymbolic(([HOLE] => reval([HOLE])))
 	eq incSymbolic(tv(Loc:Nat, T:Type)) = tv(inc(Loc:Nat), T:Type)
 		
 	rule
@@ -830,21 +831,30 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]
 	
-	op va-inc-aux : K K K -> K [strict(3)]
+	op va-inc-aux : K K K -> K // [strict(3)]
+	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
 	--- fixme can do lots of checks here too
+	
+	// this doesn't work because when we read apLoc, the object has already changed
+	// rule
+		// < k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+				// => Computation(*(ApLoc:Value) := incSymbolic(ApLoc:Value))
+				// ~> ApLoc:Value
+		// ...</ k >
+		// [structural]
+	
 	rule
 		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
 				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
 		...</ k >
 		[structural]
-		
+				
 	rule
 		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
 			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
 			~> Ap:Value
 		...</ k >
-		[structural]	 
-				
+		[structural]				
 		
 	--- fixme can do lots of checks here too
 	rule

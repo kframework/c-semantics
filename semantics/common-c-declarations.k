@@ -34,12 +34,33 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	--- — one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
 	--- — both types are pointers to qualified or unqualified versions of a character type or void
 	
-	// rule [bind-coerce-array]:
-		// bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((arrayType(T:Type, ?) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
-		// [structural] 
-	// rule [bind-coerce-incompleteArray]:
-		// bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((incompleteArrayType(T:Type) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
-		// [structural] 
+	rule [bind-coerce-array]:
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type}
+				:: typedDeclaration(
+					(arrayType(T:Type, ?) => pointerType(T:Type))
+					, X:Id
+				)
+				:: ?:List{Type}
+			)
+		)
+		[structural] 
+	rule [bind-coerce-incompleteArray]:
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type} 
+				:: typedDeclaration(
+					(incompleteArrayType(T:Type) => pointerType(T:Type))
+					, X:Id
+				) 
+				:: ?:List{Type})
+		)
+		[structural] 
 		
 	rule [bind-one]:
 		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
@@ -936,7 +957,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	eq innerType(qualifiedType(T:Type, ?)) = innerType(T:Type) 
 	eq innerType(pointerType(T:Type)) = T:Type
 
-	context buildDesignator(AtIndexInit(`[HOLE`]:K, ?)) 
+	context buildDesignator(AtIndexInit(([HOLE] => reval([HOLE])), ?)) 
 	rule
 		< k > buildDesignator(AtIndexInit(tv(N:Nat, ?), More:K)) 
 			=> buildDesignator(More:K)
