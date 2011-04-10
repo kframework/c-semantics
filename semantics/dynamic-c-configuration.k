@@ -10,11 +10,12 @@ kmod C-CONFIGURATION is
 			<gtypes> .Map </gtypes>
 			<gstructs> .Map </gstructs>
 			<mem> .Map </mem>
+			<functions> .Map </functions>
 			<freshNat> 0 </freshNat>
 			<nextThreadId> 2 </nextThreadId> --- 0 is global, 1 is main
 			<nextFile> 0 </nextFile>
 			<malloced> .Map </malloced>
-			<statics> .Map </statics>
+			<stringLiterals> .Map </stringLiterals>
 			@latex("\\kBR")
 			--- <staticSemantics multiplicity="?" color="cyan">
 				<translationUnits> .Bag </translationUnits>

@@ -16,13 +16,11 @@ If they are declared, the parameters to the main function shall obey the followi
 	
 	rule incomingArguments(L:List{K}) => incomingArguments-aux(L:List{K}, 0) [structural]
 	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
-			=> (Identifier("#incomingArgumentsArray")[N:Nat] := StringLiteral(S:String))
-			~> discard
+			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := StringLiteral(S:String))
 			~> incomingArguments-aux(L:List{K}, sNat(N:Nat))
 		[structural]
 	rule incomingArguments-aux(.List{K}, N:Nat) 
-			=> (Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
-			~> discard
+			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
 		[structural]
 
 /*@ \source{C99 5.1.2.2.1:1}

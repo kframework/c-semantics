@@ -10,6 +10,8 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	including TCP-INTERFACE-BUILTIN-MODULE
 	
 	op vararg : K -> Value [strict hybrid] 
+	rule reval(vararg(K:K)) => vararg(K:K) [structural]
+	
 	op nextvarg : Nat Type -> C 
 	--- fixme had to make this K because of the context bug
 	op nextvarg-aux : K Type K K -> C --- offset, type, length
@@ -18,9 +20,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	
 	op C : K -> C 
 	eq C(K:K) = K:K 
-	--- op stupidList : List{C} -> Value 
-	--- op makeStupidList : -> K 
-	--- mb context vararg(value(`[HOLE`]:K)) 
+	
 	op debug : -> K 
 	op vpair : K K -> C [hybrid strict] 
 	rule
@@ -32,12 +32,11 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat, Len:Nat)
 			=> vpair(read(Loc:Nat, T:Type), vararg(tv(inc(Loc:Nat), pointerType(void))))
 		...</ k >
-		[structural] 
-		
-	--- eq L:List{Type} ~> makeStupidList = stupidList(L:List{Type}) 
-	--- eq .List{K} :: stupidList(L':List{C}) = L':List{C} 
+		[structural]
 	
-	op prepareBuiltin : Id List{C} -> K [strict(2)] 
+	op prepareBuiltin : Id List{C} -> K
+	context prepareBuiltin(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
+	
 	op idsFromDeclList : List{C} -> List{C} 
 	
 	ceq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
@@ -49,7 +48,8 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) --- assumes variadic args are placed in incremental blocks
 	eq idsFromDeclList(Nil) = Nil
 	
-	op incSymbolic : K -> K [strict]
+	op incSymbolic : K -> K
+	context incSymbolic(([HOLE] => reval([HOLE])))
 	eq incSymbolic(tv(Loc:Nat, T:Type)) = tv(inc(Loc:Nat), T:Type)
 		
 	rule
@@ -831,21 +831,30 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]
 	
-	op va-inc-aux : K K K -> K [strict(3)]
+	op va-inc-aux : K K K -> K // [strict(3)]
+	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
 	--- fixme can do lots of checks here too
+	
+	// this doesn't work because when we read apLoc, the object has already changed
+	// rule
+		// < k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+				// => Computation(*(ApLoc:Value) := incSymbolic(ApLoc:Value))
+				// ~> ApLoc:Value
+		// ...</ k >
+		// [structural]
+	
 	rule
 		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
 				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
 		...</ k >
 		[structural]
-		
+				
 	rule
 		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
 			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
 			~> Ap:Value
 		...</ k >
-		[structural]	 
-				
+		[structural]				
 		
 	--- fixme can do lots of checks here too
 	rule

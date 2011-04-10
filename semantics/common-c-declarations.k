@@ -35,10 +35,31 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	--- — both types are pointers to qualified or unqualified versions of a character type or void
 	
 	rule [bind-coerce-array]:
-		bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((arrayType(T:Type, ?) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type}
+				:: typedDeclaration(
+					(arrayType(T:Type, ?) => pointerType(T:Type))
+					, X:Id
+				)
+				:: ?:List{Type}
+			)
+		)
 		[structural] 
 	rule [bind-coerce-incompleteArray]:
-		bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((incompleteArrayType(T:Type) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type} 
+				:: typedDeclaration(
+					(incompleteArrayType(T:Type) => pointerType(T:Type))
+					, X:Id
+				) 
+				:: ?:List{Type})
+		)
 		[structural] 
 		
 	rule [bind-one]:
@@ -59,7 +80,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k > 
 		[structural] 
 	
-	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments
 	op promoteList : List{C} -> List{K} 
 	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (promote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
@@ -80,6 +100,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	op bindVariadic-pre : K List{K} -> K 
 	eq promoteList(Nil) = .List{K}
 	
+	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
 		< k > bind-aux(Loc:Nat, L:List{C}, variadic)
 			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
@@ -255,11 +276,19 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > zeroStruct(Name:K, Nil) => .K ...</ k >
 		[structural] 
 		
+	// rule
+		// < k > zeroType(Name:K, T:Type) => initFunction(Name:K, tv(NullPointer, T:Type)) ...</ k >
+		// if hasFunctionType(T:Type)
+		// orBool hasPointerType(T:Type)
+		// [structural]
 	rule
 		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
-		if hasFunctionType(T:Type) 
-		orBool hasPointerType(T:Type)
-		[structural] 
+		if hasPointerType(T:Type)
+		[structural]
+	rule
+		< k > zeroType(Name:K, T:Type) => .K ...</ k >
+		if hasFunctionType(T:Type)
+		[structural]
 		
 	rule
 		< k > zeroType(Name:K, arrayType(T:Type, sNat(Len:Nat))) 
@@ -717,7 +746,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	--- FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(Computation(X:Id := tv(functionObject(X:Id, unqualifyType(T:Type), Block:K), T:Type))))
+			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, functionObject(X:Id, unqualifyType(T:Type), Block:K))))
 			~> calculateGotoMap(X:Id, Block:K)
 		...</ k >
 		if hasFunctionType(T:Type)
@@ -926,8 +955,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	eq innerType(arrayType(T:Type, ?)) = T:Type 
 	eq innerType(incompleteArrayType(T:Type)) = T:Type 
 	eq innerType(qualifiedType(T:Type, ?)) = innerType(T:Type) 
+	eq innerType(pointerType(T:Type)) = T:Type
 
-	context buildDesignator(AtIndexInit(`[HOLE`]:K, ?)) 
+	context buildDesignator(AtIndexInit(([HOLE] => reval([HOLE])), ?)) 
 	rule
 		< k > buildDesignator(AtIndexInit(tv(N:Nat, ?), More:K)) 
 			=> buildDesignator(More:K)
@@ -1285,6 +1315,30 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 				
 	--- need to worry about things that don't have definitions that may override externs
 	--- want to make it so env is always correct local env, so need to have a set of global envs, one for each tu
+	
+	
+	
+	
+	rule [initialize-function]:
+		< k > initFunction(tv(Loc:Nat, T:Type), Fun:Value) => .K ...</ k >
+		< functions > M:Map => M:Map[Fun:Value / Loc:Nat] </ functions >
+		if hasFunctionType(T:Type)
+		andBool notBool $hasMapping(M:Map, Loc:Nat)
+		[structural]
+		
+	rule
+		< k > readFunction(Loc:Nat) => Fun:Value  ...</ k >
+		< functions >... Loc:Nat |-> Fun:Value ...</ functions >
+		[structural]
+		
+	// rule
+		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
+			// => writeByte(Loc:Nat, V:K)
+		// ...</ k >
+		// if hasFunctionType(T:Type)
+		// [structural]
+	
+	
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is

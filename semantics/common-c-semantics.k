@@ -8,27 +8,16 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES 
+
+	op initFunction : K K -> K [strict]
 	
-	sort Formula 
-	subsort Formula < K 
-	
-	op True : -> Formula 
-	op False : -> Formula 
-	op _/\_ : Formula Formula -> Formula 
-	op _\/_ : Formula Formula -> Formula 
-	
-	op List : BagItem -> ListItem 
+	op ListItem : BagItem -> ListItem
 	op ListToK : List -> K 
 	op Map : Map -> K 
 	op piece : Nat Nat -> Nat 
-	op trueUnknown : -> Nat [ctor] 
 	
 	op unknown : Nat -> Nat [ctor] 
 	
-	--- fixme could presumably have more of these to simulate behavior, but you usually don't know what.  for example, 1 & unknown = unknown
-	--- eq 1 |Int piece(unknown(Len:Nat), Len:Nat)) = 1 .  --- bad, bitwise
-	
-	op unknownF : -> Float [ctor] 
 	op skipval : -> KResult 
 	op debugK : -> K 
 	op discard : -> K 
@@ -238,6 +227,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value 
+	--- op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
@@ -250,7 +240,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op asciiCharString : String -> Nat 
 	
 	op _to_ : Nat Nat -> List{K} 
-	op cast : K K -> K [metadata "strict"] --- as described in 6.3
+	op cast : K K -> K [strict(1)] --- as described in 6.3 --- totype, fromvalue
+	context cast(_, ([HOLE] => reval([HOLE])))
 	op arithInterpret : Type BaseValue -> K --- interpret the result of arithmetic as in 6.5.4
 	op interpret : Type K -> K --- interpret the values of reading from mem
 	op leftShiftInterpret : Type BaseValue K -> K 

@@ -131,7 +131,8 @@ kmod COMMON-SEMANTICS-SWITCH is
 		< k > tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural] 
 		
-	op tryCase : K Value K -> K [metadata "strict(1)"] --- K to be evaluated, val it should be, casehelper
+	op tryCase : K Value K -> K --- K to be evaluated, val it should be, casehelper
+	context tryCase(([HOLE] => reval([HOLE])), _, _)
 	rule
 		< k > (. => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:Value, Map((? ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .))))
 		...</ k >
@@ -651,7 +652,7 @@ kmod COMMON-SEMANTICS-RETURN is
 	rule [fetch-all-locals]:
 		< k > Return(V:Value) ...</ k >
 		< localAddresses > .Set => Addresses:Set </ localAddresses >
-		< blockStack > List(< stackFrame > 
+		< blockStack > ListItem(< stackFrame > 
 			?
 			< localAddresses > Addresses:Set </ localAddresses >
 			</ stackFrame >)
@@ -678,7 +679,7 @@ kmod COMMON-SEMANTICS-RETURN is
 		</ control >
 		< gtypes >... Tu:K |-> Map((? (F:Id |-> functionType(T:Type, ?)))) ...</ gtypes >
 		< callStack >
-			List(
+			ListItem(
 				< stackFrame >
 					C:Bag
 					< continuation > K:K </ continuation >
@@ -706,7 +707,7 @@ kmod COMMON-SEMANTICS-BLOCKS is
 			< nestingDepth > N:Nat => sNat(N:Nat) </ nestingDepth >
 		</ local >
 		< blockStack > .List 
-			=> List(< stackFrame > C:Bag 
+			=> ListItem(< stackFrame > C:Bag 
 			< nestingDepth > N:Nat </ nestingDepth > 
 			< localVariables > Vars:List </ localVariables >
 			< localAddresses > Addresses:Set </ localAddresses >
@@ -728,7 +729,7 @@ kmod COMMON-SEMANTICS-BLOCKS is
 			(< localAddresses > .Set </ localAddresses > => .Bag)
 		</ local >
 		--- < xmessages >... (. => "Popblock: popping " +String toString(Num:Nat) +String " to return to " +String toString(NewNum:Nat)) </ xmessages >
-		< blockStack > List(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => .List ...</ blockStack >
+		< blockStack > ListItem(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => .List ...</ blockStack >
 		[structural] 
 	
 	

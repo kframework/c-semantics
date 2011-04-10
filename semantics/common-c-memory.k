@@ -24,22 +24,44 @@ kmod COMMON-SEMANTICS-READING is
 	eq getBitOffset(? +Nat bito(M:Nat)) = M:Nat 
 	eq getBitOffset(?) = 0 [owise] 
 	
-	op extractBitsFromList : K Nat Nat List{K} -> K --- datalist, offset in bits into list, number of bits to extract, accumulator
-	eq extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
-		= extractBitsFromList(dataList(explodeToBits(L:List{K})), N:Nat, M:Nat, .List{K}) 
+	op extractBitsFromList-aux : K Nat Nat List{K} -> K --- datalist, offset in bits into list, number of bits to extract, accumulator
+	rule extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
+		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:Nat, M:Nat, .List{K})
+		// if M:Nat =/=Bool 10
+		[structural]
 	rule
-		< k > extractBitsFromList(dataList((piece(?, 1),, L:List{K})), sNat(Offset:Nat), NumBits:Nat, .List{K})
-			=> extractBitsFromList(dataList(L:List{K}), Offset:Nat, NumBits:Nat, .List{K})
+		< k > extractBitsFromList-aux(dataList((piece(?, 1),, L:List{K})), sNat(Offset:Nat), NumBits:Nat, .List{K})
+			=> extractBitsFromList-aux(dataList(L:List{K}), Offset:Nat, NumBits:Nat, .List{K})
 		...</ k >
 		[structural] 
 	rule
-		< k > extractBitsFromList(dataList((piece(N:Nat, 1),, L:List{K})), 0, sNat(NumBits:Nat), Done:List{K})
-			=> extractBitsFromList(dataList(L:List{K}), 0, NumBits:Nat, (Done:List{K},, piece(N:Nat, 1)))
+		< k > extractBitsFromList-aux(dataList((piece(N:Nat, 1),, L:List{K})), 0, sNat(NumBits:Nat), Done:List{K})
+			=> extractBitsFromList-aux(dataList(L:List{K}), 0, NumBits:Nat, (Done:List{K},, piece(N:Nat, 1)))
 		...</ k >
 		[structural] 
+	/*
+	('extractBitsFromList-aux)(('dataList)(kList("wklist_")(
+		piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 6, 6), 1)
+		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 5, 5), 1)
+		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 4, 4), 1)
+		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 3, 3), 1)
+		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 2, 2), 1)
+		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 1, 1), 1)
+		, piece(bitRange(unknown8, 1, 1), 1)
+		, piece(1, 1)
+		, piece(0, 1)
+		, piece(0, 1)
+		, piece(1, 1)
+		, piece(1, 1)
+		, piece(0, 1)
+		, piece(1, 1)
+		, piece(0, 1)
+		, piece(1, 1)
+	)), 7, 10, kList("wklist_"))
+	*/
 
 	rule
-		< k > extractBitsFromList(?, 0, 0, Done:List{K}) => dataList(Done:List{K}) ...</ k >
+		< k > extractBitsFromList-aux(?, 0, 0, Done:List{K}) => dataList(Done:List{K}) ...</ k >
 		[structural] 
 	
 	
@@ -47,9 +69,7 @@ kmod COMMON-SEMANTICS-READING is
 	ceq read(Loc:Nat, T:Type) = read-aux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type))
 	
-	rule
-		< k > readFunction(Loc:Nat) => extractByteFromMem(Loc:Nat) ...</ k >
-		[structural]
+	
 	
 	rule [read-thread-local]:
 		< k > read-aux(Loc, T:Type, bitSize:Nat)
@@ -100,8 +120,23 @@ kmod COMMON-SEMANTICS-READING is
 		if Len:Nat ==Bool numBitsPerByte
 		andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
 		
-	eq concretize(structType(S:Id), dataList(L:List{K})) = tv(L:List{K}, structType(S:Id)) 
-	eq concretize(unionType(S:Id), dataList(L:List{K})) = tv(L:List{K}, unionType(S:Id)) 
+	rule
+		concretize(T:Type, dataList(L:List{K})) 
+			=> tv(L:List{K}, T:Type) 
+		if hasStructType(T:Type)
+		[structural]
+	rule concretize(T:Type, dataList(L:List{K})) 
+			=> tv(L:List{K}, T:Type)
+		if hasUnionType(T:Type)
+		[structural]
+	
+	// this happens in expressions like f().a[5], since == *(f().a + 5)
+	// might be dangerous in that it hides other problems, like f().a;
+	// rule 
+		// concretize(T:Type, dataList(L:List{K})) 
+			// => tv(L:List{K}, T:Type)
+		// if hasArrayType(T:Type)
+		// [structural]
 
 	--- FIXME assuming bytes?
 	op joinIntegerBytes : Type List{K} K -> K 
@@ -131,16 +166,20 @@ kmod COMMON-SEMANTICS-READING is
 	eq floorLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat 
 	eq floorLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
 	
+	// ('extractBitsFromMem)((1 +Nat bito(7) +Nat sym(0 +Nat threadId(0))), 10)
 	rule
 		< k > extractBitsFromMem(Loc:Nat, Size:Nat)
-			=> extractBitsFromList(extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(Size:Nat)), getBitOffset(Loc:Nat), Size:Nat) 
+			=> extractBitsFromList(
+				extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(Size:Nat +Nat getBitOffset(Loc:Nat)))
+				, getBitOffset(Loc:Nat)
+				, Size:Nat
+			)
 		...</ k >
-		--- if floorLoc(Loc:Nat) ==Bool Loc:Nat
 		[structural] 
 	
-	context extractBytesFromMem-aux(?, ?, (?,, `[HOLE`]:K,, ?)) 
-	--- this next op should use Nats, but the context doesn't allow it.  See issue 54
-	op extractBytesFromMem-aux : K K List{K} -> K --- loc, size in bytes, aux list
+	context extractBytesFromMem-aux(?, ?, (?,, [HOLE],, ?)) 
+	// this next op should use Nats, but the context doesn't allow it.  See issue 54
+	op extractBytesFromMem-aux : K K List{K} -> K // loc, size in bytes, aux list
 	
 	rule
 		< k > extractBytesFromMem(Loc:Nat, Size:Nat) => extractBytesFromMem-aux(Loc:Nat, Size:Nat, .List{K}) ...</ k >
@@ -176,7 +215,7 @@ kmod COMMON-SEMANTICS-READING is
 		< buffer > Mem:List </ buffer >
 		if Offset:Nat <Nat Size:Nat
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
-		andBool notBool$hasMapping(M:Map, Offset:Nat)
+		andBool notBool $hasMapping(M:Map, Offset:Nat)
 		[structural]
 		
 	rule [read-byte-buffer]:
@@ -226,12 +265,12 @@ kmod COMMON-SEMANTICS-WRITING is
 		= write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
 	--- FIXME should check types
-	rule
-		< k > write(Loc:Nat, tv(V:K, T:Type)) 
-			=> writeByte(Loc:Nat, V:K) 
-		...</ k >
-		if hasFunctionType(T:Type)
-		[structural]
+	// rule
+		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
+			// => writeByte(Loc:Nat, V:K) 
+		// ...</ k >
+		// if hasFunctionType(T:Type)
+		// [structural]
 	context write-aux(?, ?, value(`[HOLE`]))
 	
 	
@@ -544,12 +583,12 @@ kmod COMMON-C-MEMORY-MISC is
 		[structural]
 	
 	--- used for variadic functions
-	rule [append-existing]:
-		< k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
-			=> write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
-		...</ k >
-		< mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
-		[structural] 	
+	// rule [append-existing]:
+		// < k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
+			// => write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
+		// ...</ k >
+		// < mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
+		// [structural] 	
 	
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >

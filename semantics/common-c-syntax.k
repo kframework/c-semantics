@@ -12,15 +12,18 @@ kmod COMMON-C-SYNTAX is
 	including PL-ID
 	including K
 	
-	op AttributeWrapper : K List{C} -> C --- new
 	
-	--- The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
+	op reval : K -> K [strict]
+	op peval : K -> K [strict]
+	op AttributeWrapper : K List{C} -> C // new
 	
-	--- Sorts directly from CABS
+	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
+	
+	// Sorts directly from CABS
 	sort CabsLoc
 	sort TypeSpecifier
 	sort Storage
-	--- sort FunSpecifier --- not used, even by cabs
+	// sort FunSpecifier // not used, even by cabs
 	sort CVSpecifier
 	sort SpecifierElem
 	sort Specifier
@@ -39,15 +42,15 @@ kmod COMMON-C-SYNTAX is
 	sort PureStatement
 	sort PureEnumItem
 	sort ForClause
-	--- sort BinaryOperator --- not used by us
-	--- sort UnaryOperator --- not used by us
+	// sort BinaryOperator // not used by us
+	// sort UnaryOperator // not used by us
 	sort Expression
 	sort Constant
 	sort InitExpression
 	sort InitWhat
-	--- sort Attribute
+	// sort Attribute
 	
-	--- Additional sorts
+	// Additional sorts
 	sort Program
 	sort TranslationUnit
 	sort IntConstant
@@ -60,28 +63,16 @@ kmod COMMON-C-SYNTAX is
 	subsort Id < C
 	op Nil : -> List{C}
 	subsort C < List{C}
+	// fixme, can't figure out how to right this with the new contexts
 	op _::_ : List{C} List{C} -> List{C} [hybrid strict assoc id: Nil]
-	
-	--- sort Type
-	--- sort Value
-	--- sort List{CResult}
-	--- subsort List{CResult} < KResult
-	--- subsort List{CResult} < List{C}
-	--- subsort Value < List{CResult}
-	--- --- subsort Type < List{CResult}
-	--- op _::_ : List{CResult} List{CResult} -> List{CResult} [ditto metadata "ditto"]
-	--- --- op Nil : -> List{CResult} [ditto metadata "ditto"]
-	
+	// context '_::_(_,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _)
+		
 	subsort SpecifierElem < KResult
-	--- sort List{SpecifierElem} 
-	--- subsort List{SpecifierElem} < KResult
-	--- op _::_ : List{SpecifierElem} List{SpecifierElem} -> List{SpecifierElem} [assoc id: Nil]
-	--- op Nil : -> List{SpecifierElem}
 	
 	subsort CabsLoc < C
 	subsort TypeSpecifier < C
 	subsort Storage < C
-	--- subsort FunSpecifier < C
+	// subsort FunSpecifier < C
 	subsort CVSpecifier < C
 	subsort SpecifierElem < C
 	subsort Specifier < C
@@ -100,13 +91,13 @@ kmod COMMON-C-SYNTAX is
 	subsort PureStatement < C
 	subsort PureEnumItem < C
 	subsort ForClause < C
-	--- subsort BinaryOperator < C
-	--- subsort UnaryOperator < C
+	// subsort BinaryOperator < C
+	// subsort UnaryOperator < C
 	subsort Expression < C
 	subsort Constant < C
 	subsort InitExpression < C
 	subsort InitWhat < C
-	--- subsort Attribute < C
+	// subsort Attribute < C
 	subsort Program < C
 	subsort TranslationUnit < C
 	subsort IntConstant < C
@@ -114,20 +105,20 @@ kmod COMMON-C-SYNTAX is
 	subsort FieldName < C
 	subsort PureDefinition < C
 
---- -----------------------------------------------------------------------------
---- Below, I give the declaration as found in cabs.ml first, followed by the K version
+// -------------------------------------------------
+// Below, I give the declaration as found in cabs.ml first, followed by the K version
 	
-***(
+/*
 type cabsloc = {
 		lineno : int;
 		filename: string;
 		byteno: int;
 		ident : int;
 	}
-***)
+*/
 	op CabsLoc : String Int Int Int -> CabsLoc
 	
-***(
+/*
 type typeSpecifier = (* Merge all specifiers into one type *)
 	Tvoid                             (* Type specifier ISO 6.7.2 *)
 	| Tchar
@@ -141,10 +132,10 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tsigned
 	| Tunsigned
 	| Tnamed of string
-***)
+*/
 	ops Void Char Bool Short Int Long Float Double Signed Unsigned : -> TypeSpecifier [ctor]
 	op Named : Id -> TypeSpecifier [ctor]
-***(
+/*
 	(* each of the following three kinds of specifiers contains a field 
 	* or item list iff it corresponds to a definition (as opposed to
 	* a forward declaration or simple reference to the type); they
@@ -155,35 +146,35 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tenum of string * enum_item list option * attribute list
 	| TtypeofE of expression                      (* GCC __typeof__ *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
-***)	
-	op StructRef : Id -> TypeSpecifier [ctor] --- new
-	op StructDef : Id List{C} -> TypeSpecifier [strict(2) ctor] --- new
-	op UnionRef : Id -> TypeSpecifier [ctor] --- new
-	op UnionDef : Id List{C} -> TypeSpecifier [strict(2) ctor] --- new
-	op EnumRef : Id -> TypeSpecifier [ctor] --- new
-	op EnumDef : Id List{C} -> TypeSpecifier [ctor] --- new
+*/	
+	op StructRef : Id -> TypeSpecifier [ctor] // new
+	op StructDef : Id List{C} -> TypeSpecifier [strict(2) ctor] // new
+	op UnionRef : Id -> TypeSpecifier [ctor] // new
+	op UnionDef : Id List{C} -> TypeSpecifier [strict(2) ctor] // new
+	op EnumRef : Id -> TypeSpecifier [ctor] // new
+	op EnumDef : Id List{C} -> TypeSpecifier [ctor] // new
 	op TypeofExpression : K -> TypeSpecifier [ctor]
 	op TypeofType : K K -> TypeSpecifier [ctor]
 
-***(
+/*
 and storage =
 	NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
-***)
+*/
 	ops NoStorage Auto Static Extern Register ThreadLocal : -> Storage [ctor]
 	
-***(
+/*
 and funspec = 
 	INLINE | VIRTUAL | EXPLICIT
-***)
-	--- Not sure what this is from, maybe C++?  It's not used elsewhere in cabs.
+*/
+	// Not sure what this is from, maybe C++?  It's not used elsewhere in cabs.
 	
-***(
+/*
 and cvspec =
 	CV_CONST | CV_VOLATILE | CV_RESTRICT
-***)
+*/
 	ops Const Volatile Restrict : -> CVSpecifier
 	
-***(
+/*
 and spec_elem =
 	SpecTypedef          
 	| SpecCV of cvspec            (* const/volatile *)
@@ -192,22 +183,22 @@ and spec_elem =
 	| SpecInline
 	| SpecType of typeSpecifier
 	| SpecPattern of string       (* specifier pattern variable *)
-***)
+*/
 	op SpecTypedef : -> SpecifierElem
-	--- the following are because I flattened SpecifierElem
+	// the following are because I flattened SpecifierElem
 	subsort CVSpecifier < SpecifierElem
-	--- subsort Attribute < SpecifierElem
+	// subsort Attribute < SpecifierElem
 	subsort Storage < SpecifierElem
 	op Inline : -> SpecifierElem
 	subsort TypeSpecifier < SpecifierElem
 	op SpecPattern : Id -> SpecifierElem
 	
-***(
+/*
 	and specifier = spec_elem list
-***)
+*/
 	op Specifier : List{C} -> Specifier [strict]
 	
-***(
+/*
 and decl_type =
 	| JUSTBASE		(* Prints the declared name *)
 	| PARENTYPE of attribute list * decl_type * attribute list
@@ -226,10 +217,11 @@ and decl_type =
 	| PROTO of decl_type * single_name list * bool 
 			(* Prints "decl (args[, ...])".
 			 * decl is never a PTR.*)
-***)
+*/
 	op JustBase : -> K
 	op FunctionType : K -> DeclType [strict]
-	op ArrayType : K K -> DeclType [strict(1 2)]
+	op ArrayType : K K -> DeclType [strict(1)]
+	context ArrayType(_, ([HOLE] => reval([HOLE])))
 	op PointerType : K -> DeclType [strict]
 	op Prototype : K List{C} Bool -> DeclType [strict(1 2)]
 	
@@ -237,63 +229,63 @@ and decl_type =
 	op Variadic : -> K
 	
 	
-***(
+/*
 and name_group = specifier * name list
-***)
+*/
 	op NameGroup : K List{C} -> NameGroup [strict(1 2)]
 	
-***(
+/*
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
-***)
+*/
 	op FieldGroup : K List{C} -> FieldGroup [strict(1)]
-	op FieldName : K -> FieldName --- new
-	op BitFieldName : K K -> FieldName --- new
+	op FieldName : K -> FieldName // new
+	op BitFieldName : K K -> FieldName // new
 	
-***(
+/*
 	(* like name_group, except the declared variables are allowed to have initializers *)
 	(* e.g.: int x=1, y=2; *)
 and init_name_group = specifier * init_name list
-***)
+*/
 	op InitNameGroup : K List{C} -> InitNameGroup [strict(1)]
 	
-***(
+/*
 	(* The decl_type is in the order in which they are printed. Only the name of
 	 * the declared identifier is pulled out. The attributes are those that are
 	 * printed after the declarator *)
 	(* e.g: in "int *x", "*x" is the declarator; "x" will be pulled out as *)
 	(* the string, and decl_type will be PTR([], JUSTBASE) *)
 and name = string * decl_type * attribute list * cabsloc
-***)
+*/
 	op Name : Id K -> Name
-	op AnonymousName : K -> Name --- new, argument is type
-	op #NoName : -> Id --- new
-	op Identifier : String -> Id --- new	
-	op NameLoc : K K -> Name --- new
+	op AnonymousName : K -> Name // new, argument is type
+	op #NoName : -> Id // new
+	op Identifier : String -> Id // new	
+	op NameLoc : K K -> Name // new
 	
 	macro AnonymousName(K:K) = Name(#NoName, K:K)
 	
-***(
+/*
 	(* A variable declarator ("name") with an initializer *)
 and init_name = name * init_expression
-***)
-	op InitName : K K -> InitName [strict(2)]
+*/
+	op InitName : K K -> InitName
+	context InitName(_, ([HOLE] => reval([HOLE])))
 	
-***(
+/*
 	(* Single names are for declarations that cannot come in groups, like
 	 * function parameters and functions *)
 and single_name = specifier * name
-***)
+*/
 	op SingleName : K K -> SingleName [strict(1)]
 	
-***(
+/*
 and enum_item = string * expression * cabsloc
-***)
-	--- op EnumItem : Id K -> PureEnumItem [strict(2)]
+*/
 	op EnumItem : Id K -> PureEnumItem
-	op EnumItemLoc : K K -> EnumItem --- new
+	op EnumItemLoc : K K -> EnumItem // new
 		
-***(
+/*
 	(*
 	** Declaration definition (at toplevel)
 	*)
@@ -310,7 +302,7 @@ and enum_item = string * expression * cabsloc
 	 | TRANSFORMER of definition * definition list * cabsloc
 	 (* expression transformer: source and destination *)
 	 | EXPRTRANSFORMER of expression * expression * cabsloc
-***)
+*/
 	op FunctionDefinition : K K -> PureDefinition [strict(1)]
 	op DeclarationDefinition : K -> PureDefinition
 	op Typedef : K -> PureDefinition
@@ -321,18 +313,18 @@ and enum_item = string * expression * cabsloc
 	op Transformer : K List{C} -> PureDefinition
 	op ExpressionTransformer : K K -> PureDefinition
 	
-	op DefinitionLoc : K K -> Definition --- new
-	op DefinitionLocRange : K K K -> Definition --- new
+	op DefinitionLoc : K K -> Definition // new
+	op DefinitionLocRange : K K K -> Definition // new
 
-***(
+/*
 (* the string is a file name, and then the list of toplevel forms *)
 and file = string * definition list
-***)
-	--- name, code, source
-	op TranslationUnit : String List{C} String -> TranslationUnit --- new
-	op Program : List{C} -> Program --- new
+*/
+	// name, code, source
+	op TranslationUnit : String List{C} String -> TranslationUnit // new
+	op Program : List{C} -> Program // new
 
-***(
+/*
 	(* A block contains a list of local label declarations ( GCC's ({ __label__ 
 	 * l1, l2; ... }) ) , a list of definitions and a list of statements  *)
 and block = 
@@ -340,10 +332,10 @@ and block =
 	  battrs: attribute list;
 	  bstmts: statement list
 	} 
-***)
+*/
 	op Block : Nat List{C} List{C} -> Block
 	
-***(
+/*
 	(* GCC asm directives have lots of extra information to guide the optimizer *)
 and asm_details =
 	{ aoutputs: (string option * string * expression) list; 
@@ -353,82 +345,85 @@ and asm_details =
 	aclobbers: string list 
 	(* clobbered registers *)
 	}
-***)
-	--- TODO
+*/
+	// TODO
 
-***(
+/*
 and statement =
 	NOP of cabsloc
 	| COMPUTATION of expression * cabsloc
 	| BLOCK of block * cabsloc
 	| SEQUENCE of statement * statement * cabsloc
-***)
+*/
 	op Nop : -> PureStatement
 	op Computation : K -> PureStatement
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
-***(
+/*
 	| IF of expression * statement * statement * cabsloc
 	| WHILE of expression * statement * cabsloc
 	| DOWHILE of expression * statement * cabsloc
 	| FOR of for_clause * expression * expression * statement * cabsloc
-***)
-	op IfThenElse : K K K -> PureStatement [strict(1)] 
+*/
+	op IfThenElse : K K K -> PureStatement
+	context IfThenElse(([HOLE] => reval([HOLE])), _, _)
 	op While : K K -> PureStatement
 	op DoWhile : K K -> PureStatement
-	op For : Nat K K K K -> PureStatement --- id, ...
-***(
+	op For : Nat K K K K -> PureStatement // id, ...
+/*
 	| BREAK of cabsloc
 	| CONTINUE of cabsloc
 	| RETURN of expression * cabsloc
-***)
+*/
 	op Break : -> PureStatement
 	op Continue : -> PureStatement
-	op Return : K -> PureStatement [strict]
-***(
+	op Return : K -> PureStatement
+	context Return(([HOLE] => reval([HOLE])))
+/*
 	| SWITCH of expression * statement * cabsloc
 	| CASE of expression * statement * cabsloc
 	| CASERANGE of expression * expression * statement * cabsloc
 	| DEFAULT of statement * cabsloc
-***)
-	op Switch : Nat K K -> PureStatement [strict(2)] --- unique switch id
-	op Case : Nat Nat K K -> PureStatement --- unique switch id, unique case id, exp, statement
-	op CaseRange : K K K -> PureStatement --- gcc extension
-	op Default : Nat K -> PureStatement --- unique switch id, statement
-***(
+*/
+	op Switch : K K K -> PureStatement // unique switch id
+	context Switch(_, ([HOLE] => reval([HOLE])), _)
+	op Case : Nat Nat K K -> PureStatement // unique switch id, unique case id, exp, statement
+	op CaseRange : K K K -> PureStatement // gcc extension
+	op Default : Nat K -> PureStatement // unique switch id, statement
+/*
 	| LABEL of string * statement * cabsloc
 	| GOTO of string * cabsloc
 	| COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
 	| DEFINITION of definition (*definition or declaration of a variable or type*)
-***)
+*/
 	op Label : Id K -> PureStatement
-	op Goto : K -> PureStatement --- Id
+	op Goto : K -> PureStatement // Id
 	op CompGoto : K -> PureStatement
-	op LocalDefinition : K -> PureStatement  --- renamed from "DEFINITION"
-***(
+	op LocalDefinition : K -> PureStatement  // renamed from "DEFINITION"
+/*
 	| ASM of attribute list * (* typically only volatile and const *)
 		  string list * (* template *)
 		  asm_details option * (* extra details to guide GCC's optimizer *)
 		  cabsloc
 	| TRY_EXCEPT of block * expression * block * cabsloc
 	| TRY_FINALLY of block * block * cabsloc
-***)
-	--- TODO not handling Asm
+*/
+	// TODO not handling Asm
 	op TryExcept : K K K -> PureStatement
 	op TryFinally : K K -> PureStatement
 	
-	--- this wraps all statements with their location in the original file
-	op StatementLoc : K K -> Statement --- new
+	// this wraps all statements with their location in the original file
+	op StatementLoc : K K -> Statement // new
 	
-***(
+/*
 and for_clause = 
 	FC_EXP of expression
 	| FC_DECL of definition
-***)
+*/
 	op ForClauseExpression : K -> ForClause
 	op ForClauseDeclaration : K -> ForClause
 	
-***(
+/*
 and binary_operator =
 	ADD | SUB | MUL | DIV | MOD
 	| AND | OR
@@ -440,37 +435,43 @@ and binary_operator =
   
 and expression =
 	NOTHING
-***)
+*/
 	op NothingExpression : -> Expression
-***(
+/*
 	| UNARY of unary_operator * expression
 
 and unary_operator =
 	MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
 	| PREINCR | PREDECR | POSINCR | POSDECR
-***)
-	op -_ : K -> Expression [strict prec 22]
-	op +_ : K -> Expression [strict prec 22]
-	op !_ : K -> Expression [strict prec 22]
-	op ~_ : K -> Expression [strict prec 22]
-	op *_ : K -> Expression [strict prec 22]
-	op &_ : K -> Expression [prec 22]
+*/
+	op -_ : K -> Expression [prec 22]
+	context -_(([HOLE] => reval([HOLE])))
+	op +_ : K -> Expression [prec 22]
+	context +_(([HOLE] => reval([HOLE])))
+	op !_ : K -> Expression [prec 22]
+	context !_(([HOLE] => reval([HOLE])))
+	op ~_ : K -> Expression [prec 22]
+	context ~_(([HOLE] => reval([HOLE])))
+	op *_ : K -> Expression [prec 22]
+	context *_(([HOLE] => reval([HOLE])))
+	op &_ : K -> Expression [prec 22 strict]
 	op ++_ : K -> Expression [prec 22]
 	op --_ : K -> Expression [prec 22]
 	op _++ : K -> Expression
+	context _++(([HOLE] => peval([HOLE])))
 	op _-- : K -> Expression
+	context _--(([HOLE] => peval([HOLE])))
 	
-	--- all these macros are temporary while I adjust the semantics to the new grammar
-	
-	op Negative : K -> Expression [strict]
+	// all these macros are temporary while I adjust the semantics to the new grammar
+	op Negative : K -> Expression
 	macro Negative(K:K) = - K:K
-	op Positive : K -> Expression [strict]
+	op Positive : K -> Expression
 	macro Positive(K:K) = + K:K
-	op LogicalNot : K -> Expression [strict]
+	op LogicalNot : K -> Expression
 	macro LogicalNot(K:K) = ! K:K
-	op BitwiseNot : K -> Expression [strict]
+	op BitwiseNot : K -> Expression
 	macro BitwiseNot(K:K) = ~ K:K
-	op Dereference : K -> Expression [strict]
+	op Dereference : K -> Expression
 	macro Dereference(K:K) = * K:K
 	op Reference : K -> Expression
 	macro Reference(K:K) = & K:K
@@ -483,68 +484,117 @@ and unary_operator =
 	op PostDecrement : K -> Expression
 	macro PostDecrement(K:K) = K:K --
 
-***(
+/*
 	| LABELADDR of string  (* GCC's && Label *)
-***)
-	--- TODO not handling && Label
-***(
+*/
+	// TODO not handling && Label
+/*
 	| BINARY of binary_operator * expression * expression
-***)
-	ops _*_ _/_ _%_ : K K -> Expression [prec 31 gather(E e) strict]
-	ops _+_ _-_ : K K -> Expression [prec 33 gather(E e) strict]
-	ops _<<_ : K K -> Expression [prec 35 gather(E e) strict]
-	ops _>>_ : K K -> Expression [prec 35 gather(E e) strict]
-	ops _<_ _<=_ : K K -> Expression [prec 37 gather(E e) strict]
-	ops _>_ _>=_ : K K -> Expression [prec 37 gather(E e) strict]
-	ops _==_ _!=_ : K K -> Expression [prec 39 gather(E e) strict]
-	op _&_ : K K -> Expression [prec 41 gather(E e) strict]
-	op _^_ : K K -> Expression [prec 43 gather(E e) strict]
-	op _|_ : K K -> Expression [prec 45 gather(E e) strict]
-	op _&&_ : K K -> Expression [prec 47 gather(E e) strict(1)]
-	op _||_ : K K -> Expression [prec 49 gather(E e) strict(1)]
+*/
+	ops _*_ _/_ _%_ : K K -> Expression [prec 31 gather(E e)]
+	context _*_(([HOLE] => reval([HOLE])), _)
+	context _*_(_, ([HOLE] => reval([HOLE])))
+	context _/_(([HOLE] => reval([HOLE])), _)
+	context _/_(_, ([HOLE] => reval([HOLE])))
+	context _%_(([HOLE] => reval([HOLE])), _)
+	context _%_(_, ([HOLE] => reval([HOLE])))
 	
-	ops Multiply : K K -> Expression [strict]
+	ops _+_ _-_ : K K -> Expression [prec 33 gather(E e)]
+	context _+_(([HOLE] => reval([HOLE])), _)
+	context _+_(_, ([HOLE] => reval([HOLE])))
+	context _-_(([HOLE] => reval([HOLE])), _)
+	context _-_(_, ([HOLE] => reval([HOLE])))
+	
+	ops _<<_ : K K -> Expression [prec 35 gather(E e)]
+	context _<<_(([HOLE] => reval([HOLE])), _)
+	context _<<_(_, ([HOLE] => reval([HOLE])))
+	
+	ops _>>_ : K K -> Expression [prec 35 gather(E e)]
+	context _>>_(([HOLE] => reval([HOLE])), _)
+	context _>>_(_, ([HOLE] => reval([HOLE])))
+	
+	ops _<_ _<=_ : K K -> Expression [prec 37 gather(E e)]
+	context _<_(([HOLE] => reval([HOLE])), _)
+	context _<_(_, ([HOLE] => reval([HOLE])))
+	context _<=_(([HOLE] => reval([HOLE])), _)
+	context _<=_(_, ([HOLE] => reval([HOLE])))
+	
+	ops _>_ _>=_ : K K -> Expression [prec 37 gather(E e)]
+	context _>_(([HOLE] => reval([HOLE])), _)
+	context _>_(_, ([HOLE] => reval([HOLE])))
+	context _>=_(([HOLE] => reval([HOLE])), _)
+	context _>=_(_, ([HOLE] => reval([HOLE])))
+	
+	ops _==_ _!=_ : K K -> Expression [prec 39 gather(E e)]
+	context _==_(([HOLE] => reval([HOLE])), _)
+	context _==_(_, ([HOLE] => reval([HOLE])))
+	context _!=_(([HOLE] => reval([HOLE])), _)
+	context _!=_(_, ([HOLE] => reval([HOLE])))
+	
+	op _&_ : K K -> Expression [prec 41 gather(E e)]
+	context _&_(([HOLE] => reval([HOLE])), _)
+	context _&_(_, ([HOLE] => reval([HOLE])))
+	
+	op _^_ : K K -> Expression [prec 43 gather(E e)]
+	context _^_(([HOLE] => reval([HOLE])), _)
+	context _^_(_, ([HOLE] => reval([HOLE])))
+	
+	op _|_ : K K -> Expression [prec 45 gather(E e)]
+	context _|_(([HOLE] => reval([HOLE])), _)
+	context _|_(_, ([HOLE] => reval([HOLE])))
+	
+	op _&&_ : K K -> Expression [prec 47 gather(E e)]
+	context _&&_(([HOLE] => reval([HOLE])), _)
+	
+	op _||_ : K K -> Expression [prec 49 gather(E e)]
+	context _||_(([HOLE] => reval([HOLE])), _)
+	
+	// all these macros are temporary while I adjust the semantics to the new grammar
+	ops Multiply : K K -> Expression
 	macro Multiply(K1:K, K2:K) = K1:K * K2:K
-	ops Divide : K K -> Expression [strict]
+	ops Divide : K K -> Expression
 	macro Divide(K1:K, K2:K) = K1:K / K2:K
-	ops Modulo : K K -> Expression [strict]
+	ops Modulo : K K -> Expression
 	macro Modulo(K1:K, K2:K) = K1:K % K2:K
-	ops Plus : K K -> Expression [strict]
+	ops Plus : K K -> Expression
 	macro Plus(K1:K, K2:K) = K1:K + K2:K
-	ops Minus : K K -> Expression [strict]
+	ops Minus : K K -> Expression
 	macro Minus(K1:K, K2:K) = K1:K - K2:K
-	ops LeftShift : K K -> Expression [strict]
+	ops LeftShift : K K -> Expression
 	macro LeftShift(K1:K, K2:K) = K1:K << K2:K
-	ops RightShift : K K -> Expression [strict]
+	ops RightShift : K K -> Expression
 	macro RightShift(K1:K, K2:K) = K1:K >> K2:K
-	ops LessThan : K K -> Expression [strict]
+	ops LessThan : K K -> Expression
 	macro LessThan(K1:K, K2:K) = K1:K < K2:K
-	ops LessThanOrEqual : K K -> Expression [strict]
+	ops LessThanOrEqual : K K -> Expression
 	macro LessThanOrEqual(K1:K, K2:K) = K1:K <= K2:K
-	ops GreaterThan : K K -> Expression [strict]
+	ops GreaterThan : K K -> Expression
 	macro GreaterThan(K1:K, K2:K) = K1:K > K2:K
-	ops GreaterThanOrEqual : K K -> Expression [strict]
+	ops GreaterThanOrEqual : K K -> Expression
 	macro GreaterThanOrEqual(K1:K, K2:K) = K1:K >= K2:K
-	ops Equality : K K -> Expression [strict]
+	ops Equality : K K -> Expression
 	macro Equality(K1:K, K2:K) = K1:K == K2:K
-	ops NotEquality : K K -> Expression [strict]
+	ops NotEquality : K K -> Expression
 	macro NotEquality(K1:K, K2:K) = K1:K != K2:K
-	op BitwiseAnd : K K -> Expression [strict]
+	op BitwiseAnd : K K -> Expression
 	macro BitwiseAnd(K1:K, K2:K) = K1:K & K2:K
-	op BitwiseXor : K K -> Expression [strict]
+	op BitwiseXor : K K -> Expression
 	macro BitwiseXor(K1:K, K2:K) = K1:K ^ K2:K
-	op BitwiseOr : K K -> Expression [strict]
+	op BitwiseOr : K K -> Expression
 	macro BitwiseOr(K1:K, K2:K) = K1:K | K2:K
-	op LogicalAnd : K K -> Expression [strict(1)]
+	op LogicalAnd : K K -> Expression
 	macro LogicalAnd(K1:K, K2:K) = K1:K && K2:K
-	op LogicalOr : K K -> Expression [strict(1)]
+	op LogicalOr : K K -> Expression
 	macro LogicalOr(K1:K, K2:K) = K1:K || K2:K
 		
 	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _&=_ _^=_ _|=_ : K K -> Expression [prec 53]
 	ops _>>=_ : K K -> Expression [prec 53]
-	op _:=_ : K K -> Expression [prec 53 strict(2)]
+	op _:=_ : K K -> Expression [prec 53]
+	context _:=_(([HOLE] => peval([HOLE])), _)
+	context _:=_(_, ([HOLE] => reval([HOLE])))
 	
-	op Assign : K K -> Expression [strict(2)]
+	// all these macros are temporary while I adjust the semantics to the new grammar
+	op Assign : K K -> Expression
 	macro Assign(K1:K, K2:K) = K1:K := K2:K
 	ops AssignMultiply : K K -> Expression
 	macro AssignMultiply(K1:K, K2:K) = K1:K *= K2:K
@@ -567,72 +617,84 @@ and unary_operator =
 	ops AssignRightShift : K K -> Expression
 	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
 	
-***(
+/*
 	| QUESTION of expression * expression * expression
-***)
-	op _?_:_ : K K K -> Expression [strict(1) prec 51 gather(e & E)]
-	op Conditional : K K K -> Expression [strict(1)]
+*/
+	op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
+	context _?_:_(([HOLE] => reval([HOLE])), _, _)
+	
+	// all these macros are temporary while I adjust the semantics to the new grammar
+	op Conditional : K K K -> Expression
 	macro Conditional(K1:K, K2:K, K3:K) = K1:K ? K2:K : K3:K
-***(
+/*
 	(* A CAST can actually be a constructor expression *)
 	| CAST of (specifier * decl_type) * init_expression
-***)
-	op Cast : K K K -> Expression [strict(1 3)]
-	op CompoundLiteral : Nat K K K -> Expression [strict(2)] --- new --- comp-lit id, spec, decl, init
-***(
+*/
+	op Cast : K K K -> Expression [strict(1)]
+	context Cast(_, _, ([HOLE] => reval([HOLE])))
+	
+	op CompoundLiteral : K K K K -> Expression [strict(2)] // new // comp-lit id, spec, decl, init
+/*
 	(* There is a special form of CALL in which the function called is
 	   __builtin_va_arg and the second argument is sizeof(T). This 
 	   should be printed as just T *)
 	| CALL of expression * expression list
-***)
-	op Call : K List{C} -> Expression [strict]
-***(
+*/
+
+	op Call : K List{C} -> Expression
+	context Call(([HOLE] => reval([HOLE])), _)
+	// context Call(_, (`[HOLE`]:List{C} => reval(`[HOLE`]:List{C})))
+	context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
+/*
 	| COMMA of expression list
-***)
+*/
 	op Comma : List{C} -> Expression
-***(
+/*
 	| CONSTANT of constant
 	| PAREN of expression
 	| VARIABLE of string
-***)
-	op Constant : K -> Expression [strict]
-	--- for paren, just putting parentheses
+*/
+	op Constant : K -> Expression
+	context Constant(([HOLE] => reval([HOLE])))
+	// for paren, just putting parentheses
 	subsort Id < Expression
-***(
+/*
 	| EXPR_SIZEOF of expression
 	| TYPE_SIZEOF of specifier * decl_type
 	| EXPR_ALIGNOF of expression
 	| TYPE_ALIGNOF of specifier * decl_type
-***)
+*/
 	op SizeofExpression : K -> Expression
 	op SizeofType : K K -> Expression [strict(1)]
 	op AlignofExpression : K -> Expression
 	op AlignofType : K K -> Expression
-***(
+/*
 	| INDEX of expression * expression
-***)
+*/
 	op _`[_`] : K K -> Expression
 	op ArrayIndex : K K -> Expression
 	macro ArrayIndex(K1:K, K2:K) = K1:K[K2:K]
-	--- op ArrayIndex : K K -> Expression
-***(
+	// op ArrayIndex : K K -> Expression
+/*
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
-***)
+*/
 	op Dot : K Id -> Expression
 	macro Dot(K:K, X:Id) = K:K . X:Id
-	op _._ : K Id -> Expression --- [strict(1)]
-	op Arrow : K Id -> Expression [strict(1)]
+	op _._ : K Id -> Expression
+	context _._(([HOLE] => peval([HOLE])), _)
+	op Arrow : K Id -> Expression
 	macro Arrow(K:K, X:Id) = K:K -> X:Id
-	op _->_ : K Id -> Expression [strict(1)]
-***(
+	op _->_ : K Id -> Expression
+	context _->_(([HOLE] => reval([HOLE])), _:Id)
+/*
 	| GNU_BODY of block
 	| EXPR_PATTERN of string     (* pattern variable, and name *)
-***)
+*/
 	op GnuBody : K -> Expression
 	op ExpressionPattern : String -> Expression
 	
-***(
+/*
 and constant =
 	| CONST_INT of string   (* the textual representation *)
 	| CONST_FLOAT of string (* the textual representaton *)
@@ -640,21 +702,21 @@ and constant =
 	| CONST_WCHAR of int64 list
 	| CONST_STRING of string
 	| CONST_WSTRING of int64 list 
-***)
-	op DecimalConstant : K -> IntConstant --- new
-	op OctalConstant : K -> IntConstant --- new
-	op HexConstant : K -> IntConstant --- new --- expected to be string
+*/
+	op DecimalConstant : K -> IntConstant // new
+	op OctalConstant : K -> IntConstant // new
+	op HexConstant : K -> IntConstant // new // expected to be string
 	
-	op DecimalFloatConstant : String Int Float -> IntConstant --- new; significand, exponent, approx
-	op HexFloatConstant : String Int Float -> IntConstant --- new; significand, exponent, approx
+	op DecimalFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
+	op HexFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
 	
-	op U : K -> Constant --- new
-	op L : K -> Constant --- new
-	op F : K -> Constant --- new
-	op LL : K -> Constant --- new
-	op UL : K -> Constant --- new
-	op ULL : K -> Constant --- new
-	op NoSuffix : K -> Constant --- new
+	op U : K -> Constant // new
+	op L : K -> Constant // new
+	op F : K -> Constant // new
+	op LL : K -> Constant // new
+	op UL : K -> Constant // new
+	op ULL : K -> Constant // new
+	op NoSuffix : K -> Constant // new
 	
 	op IntLiteral : K -> Constant
 	op FloatLiteral : K -> Constant
@@ -664,33 +726,32 @@ and constant =
 	op WStringLiteral : String -> Constant
 	
 
-***(
+/*
 and init_expression =
   | NO_INIT
   | SINGLE_INIT of expression
   | COMPOUND_INIT of (initwhat * init_expression) list
-***)
-	op NoInit : -> KResult --- InitExpression
+*/
+	op NoInit : -> KResult // InitExpression
 	op SingleInit : K -> InitExpression [hybrid strict]
 	op CompoundInit : List{C} -> InitExpression [hybrid strict]
-	op InitFragment : K K -> InitFragment --- new; (initwhat * init_expression)
+	op InitFragment : K K -> InitFragment // new; (initwhat * init_expression)
 	
-***(
+/*
 and initwhat =
 	NEXT_INIT
 	| INFIELD_INIT of string * initwhat
 	| ATINDEX_INIT of expression * initwhat
 	| ATINDEXRANGE_INIT of expression * expression
-***)
+*/
 	op NextInit : -> KResult
 	op InFieldInit : Id K -> KResult
 	op AtIndexInit : K K -> KResult
-	op AtIndexRangeInit : K K -> KResult --- nonstandard
-	
+	op AtIndexRangeInit : K K -> KResult // nonstandard
 
 	
-***(
+/*
 and attribute = string * expression list
-***)
+*/
 	op Attribute : String List{C} -> C
 endkm
