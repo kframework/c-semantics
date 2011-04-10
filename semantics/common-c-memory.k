@@ -47,9 +47,7 @@ kmod COMMON-SEMANTICS-READING is
 	ceq read(Loc:Nat, T:Type) = read-aux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type))
 	
-	rule
-		< k > readFunction(Loc:Nat) => extractByteFromMem(Loc:Nat) ...</ k >
-		[structural]
+	
 	
 	rule [read-thread-local]:
 		< k > read-aux(Loc, T:Type, bitSize:Nat)
@@ -176,7 +174,7 @@ kmod COMMON-SEMANTICS-READING is
 		< buffer > Mem:List </ buffer >
 		if Offset:Nat <Nat Size:Nat
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
-		andBool notBool$hasMapping(M:Map, Offset:Nat)
+		andBool notBool $hasMapping(M:Map, Offset:Nat)
 		[structural]
 		
 	rule [read-byte-buffer]:
@@ -226,12 +224,12 @@ kmod COMMON-SEMANTICS-WRITING is
 		= write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
 	--- FIXME should check types
-	rule
-		< k > write(Loc:Nat, tv(V:K, T:Type)) 
-			=> writeByte(Loc:Nat, V:K) 
-		...</ k >
-		if hasFunctionType(T:Type)
-		[structural]
+	// rule
+		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
+			// => writeByte(Loc:Nat, V:K) 
+		// ...</ k >
+		// if hasFunctionType(T:Type)
+		// [structural]
 	context write-aux(?, ?, value(`[HOLE`]))
 	
 	
@@ -534,17 +532,22 @@ kmod COMMON-C-MEMORY-MISC is
 
 	--- used by calloc
 	rule
-		< k > zeroBlock(sym(Block:Nat) +Nat 0) => . ...</ k >
+		< k > zeroBlock(sym(Block:Nat) +Nat 0) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(Len:Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
+		[structural]
+		
+	rule
+		< k > sizeofLocation(sym(Block:Nat) +Nat ?) => tv(Len:Nat, cfg:sizeut) ...</ k >
+		< mem >... Block:Nat |-> memblock(Len:Nat, ?) ...</ mem >
 		[structural]
 	
 	--- used for variadic functions
-	rule [append-existing]:
-		< k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
-			=> write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
-		...</ k >
-		< mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
-		[structural] 	
+	// rule [append-existing]:
+		// < k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
+			// => write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
+		// ...</ k >
+		// < mem >... Block:Nat |-> memblock((OldLen:Nat => OldLen:Nat +Nat Len:Nat), M:Map) ...</ mem >
+		// [structural] 	
 	
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >
@@ -556,18 +559,6 @@ kmod COMMON-C-MEMORY-MISC is
 		< k > deleteBlock(sym(Block:Nat) +Nat ?) => .K ...</ k >
 		< mem >... Block:Nat |-> ? => .Map ...</ mem >
 		< buffer > .List </ buffer >
-		[structural] 
-	
-	rule [storeNew]:
-		< k > storeNew tv(V:K, T:Type) atLoc Loc:Nat 
-			=> alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
-			~> write(Loc:Nat, tv(V:K, T:Type)) 
-		...</ k >
-		[structural] 
-	rule [storeAt]:
-		< k > store tv(V:K, T:Type) atLoc Loc:Nat 
-			=> write(Loc:Nat, tv(V:K, T:Type)) 
-		...</ k >
 		[structural] 
 	
 	--- c99 6.5:2 If a side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object, the behavior is undefined. If there are multiple allowable orderings of the subexpressions of an expression, the behavior is undefined if such an unsequenced side effect occurs in any of the orderings

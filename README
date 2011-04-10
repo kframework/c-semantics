@@ -1,25 +1,51 @@
+Please let us know if you had to do any extra steps to install!
+Send an e-mail to k-user@cs.uiuc.edu with questions.
+
 Install Perl
-	- Install perl 
-	- install XML::Twig (probably using either cpan or ppm)
+	- Perl is used for many of the scripts in both C and K
+	- Install perl modules (probably using either cpan or ppm)
+		- XML::Twig
+		- XML::DOM
+		- XML::LibXML::Reader
+		- Regexp::Common
+		- Tree::Nary
 
 Install Maude:
 	- go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on your machine
-	
-Install K:
-	- go to http://code.google.com/p/k-framework/ and check out the K Semantic Framework from http://code.google.com/p/k-framework/source/checkout
-	- Check that the installation of K works by running their 'make test' command in their /examples directory
+	- K requires at least version 2.5
 
+Install Ocaml (http://caml.inria.fr/):
+	- OCaml is used in the C parser
+	
+Install GHC (http://www.haskell.org/ghc/):
+	- Necessary for the K Output Filter, which the C interpreter uses.
+	- The GHC prereqs needed by this tool are available in k-framework/tools/OutputFilter/OutputFilter.cabal
+	- If you'd like to avoid installing GHC, you may be able to use a precompiled static binary (so far only linux_64 available) by saying:
+		OUTPUT_FILTER=../k-framework/tools/OutputFilter/static-bin/linux_64/filterOutput make
+		or similar if your static binary is in another place, when you do the "make" below.
+	
+Set up K:
+	- go to http://code.google.com/p/k-framework/ and check out the K Semantic Framework from http://code.google.com/p/k-framework/source/checkout
+	- Check that all K prereqs are met by running:
+		- 'make test' command in their k-framework/examples directory
+		- 'make test' command in their k-framework/regressionTests directory
+
+Optional Install:
+	- You may want to install graphviz, for generating images of the state space when searching programs.
+		
 Build our tool:
 	- set K_MAUDE_BASE to the full (non-relative) path in which you installed the K framework.  e.g., export K_MAUDE_BASE=~/k-framework/trunk
 	- run "make" in our main directory, the directory of this README
+	- if building the OutputFilter fails due to lack of prerequisites, just go to the k-framework/tools/OutputFilter/ directory and run "cabal install", then retry the build of C
 
 Interpret a program:
 	- dist/kcc program.c
 	- ./a.out
 	
-	Take a look at 'kcc -h' for some options.
+	Take a look at 'kcc -h' for some compile-time options.  After compiling a program, running "HELP=1 ./a.out" will display some "runtime" options, including SEARCH and PROFILE.
 	
-Generate pdf versions of the semantics:
+	
+Generate pdf versions of the semantics (INCOMPLETE):
 	- run 'make pdf'
 	- Currently this creates only a few pdfs in the /semantics directory.  They are still rough, but should help understanding the semantics
 	

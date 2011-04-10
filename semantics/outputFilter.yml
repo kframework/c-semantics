@@ -11,7 +11,7 @@
 	
 k:
   keep: 4
-  keep-chars: 131
+  keep-chars: 800
 
 env: show
 localAddresses: show

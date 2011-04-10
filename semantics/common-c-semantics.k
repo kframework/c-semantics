@@ -8,27 +8,16 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES 
+
+	op initFunction : K K -> K [strict]
 	
-	sort Formula 
-	subsort Formula < K 
-	
-	op True : -> Formula 
-	op False : -> Formula 
-	op _/\_ : Formula Formula -> Formula 
-	op _\/_ : Formula Formula -> Formula 
-	
-	op List : BagItem -> ListItem 
+	op ListItem : BagItem -> ListItem
 	op ListToK : List -> K 
 	op Map : Map -> K 
 	op piece : Nat Nat -> Nat 
-	op trueUnknown : -> Nat [ctor] 
 	
 	op unknown : Nat -> Nat [ctor] 
 	
-	--- fixme could presumably have more of these to simulate behavior, but you usually don't know what.  for example, 1 & unknown = unknown
-	--- eq 1 |Int piece(unknown(Len:Nat), Len:Nat)) = 1 .  --- bad, bitwise
-	
-	op unknownF : -> Float [ctor] 
 	op skipval : -> KResult 
 	op debugK : -> K 
 	op discard : -> K 
@@ -85,6 +74,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op value : K -> K 
 	eq value(tv(V:List{K}, ?)) = V:List{K} 
 	
+	op sizeofLocation : K -> K
 	op type : K -> Type 
 	eq type(tv(?, T:Type)) = T:Type 
 	
@@ -299,8 +289,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op min : Type -> Int [memo]
 	op max : Type -> Int [memo]
-	op storeNew_atLoc_ : K Nat -> K [metadata "strict(1)"] 
-	op store_atLoc_ : K Nat -> K [metadata "strict(1)"] 
 	op alloc : K K -> K --- should be K K 
 	
 	--- these are also used by compound literals
@@ -325,7 +313,7 @@ kmod C-SETTINGS is
 	eq IdentifierSet((S:String,, L:List{K})) = SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) 
 	op builtinIdentifiers : -> Set [memo] 
 	
-	--- fixme bug why can't i use (.).List{K} here?
+	--- fixme bug why can't i use .List{K} here?
 	eq builtinIdentifiers = IdentifierSet((
 		"abort"
 		,, "asin"
@@ -360,6 +348,10 @@ kmod C-SETTINGS is
 		,, "thrd_detach"
 		,, "thrd_join"
 		,, "__test_and_set"
+		,, "__va_inc"
+		,, "__va_start"
+		,, "__va_end"
+		,, "__va_copy"
 	)) 
 	
 	--- S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
@@ -467,7 +459,7 @@ kmod C-SEMANTICS-MISC is
 		
 	rule
 		< k > sequencePoint => .K ...</ k >
-		< locsWrittenTo > ? => (.).Bag </ locsWrittenTo >
+		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
 		[structural] 
 		
 	--- ---C99 6.5.3.2 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)

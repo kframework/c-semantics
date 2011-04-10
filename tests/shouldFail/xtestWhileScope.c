@@ -6,5 +6,6 @@ int main(void){
 		i++;
 		p = &x;
 	}
-	return *p;
+	*p;
+	return 0;
 }

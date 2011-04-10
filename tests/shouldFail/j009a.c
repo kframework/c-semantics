@@ -6,5 +6,5 @@ int main(void){
 		p = &x;
 	} // the memory for x should not be accessible now
 	int y = *p;
-	return y;
+	return 0;
 }

@@ -41,7 +41,7 @@ kmod COMMON-SEMANTICS-WHILE is
 			=> loopMarked ~> While(B:Expression, S:Statement) ~> popLoop
 		</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		< loopStack > (.).List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
+		< loopStack > .List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
 		[structural] 
 	rule [while]:
 		< k > loopMarked ~> While(B:Expression, S:Statement)
@@ -58,7 +58,7 @@ kmod COMMON-SEMANTICS-DO-WHILE is
 			=> loopMarked ~> DoWhile(B:Expression, S:Statement) ~> popLoop
 		</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		< loopStack > (.).List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
+		< loopStack > .List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
 		[structural] 
 	rule [do-while]:
 		< k > loopMarked ~> DoWhile(B:Expression, S:Statement)
@@ -352,7 +352,7 @@ kmod COMMON-SEMANTICS-GOTO is
 	
 	rule
 		< k > (. => Decl:K ~> enableInits) ~> addVariablesForBlock(TargetBlock:Nat, 
-				((ListItem(frozenDeclaration(?, TargetBlock:Nat, Decl:K)) => (.).List) ?)
+				((ListItem(frozenDeclaration(?, TargetBlock:Nat, Decl:K)) => .List) ?)
 			)
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
@@ -365,7 +365,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		
 	--- fixme this is wrong
 	rule
-		< k > addVariablesForBlock(?, (.).List) => .K ...</ k >
+		< k > addVariablesForBlock(?, .List) => .K ...</ k >
 		[structural] 
 				
 	op getIdOfDeclaration : K -> K 
@@ -387,13 +387,13 @@ kmod COMMON-SEMANTICS-GOTO is
 		[structural] 
 		
 	rule
-		(< gotoCalculation > < computation > .K </ computation > ...</ gotoCalculation >) => (.).Bag
+		(< gotoCalculation > < computation > .K </ computation > ...</ gotoCalculation >) => .Bag
 		[structural] 
 
 
 	rule
 		< k > waitingOnGotoMap => .K ...</ k >
-		< calculateGotoMap > (.).Bag </ calculateGotoMap >
+		< calculateGotoMap > .Bag </ calculateGotoMap >
 		< currentFunction > ? => File-Scope </ currentFunction >
 		[structural] 
 
@@ -408,13 +408,13 @@ kmod COMMON-SEMANTICS-GOTO is
 	rule
 		< computation > Block(Num:Nat, ?, L:List{C}) => listToK(L:List{C}) ...</ computation > 
 		< blockHistoryGoto > . => ListItem(Num:Nat) ...</ blockHistoryGoto >
-		--- < declarationStack >... (.).List => ListItem(.K) </ declarationStack >
+		--- < declarationStack >... .List => ListItem(.K) </ declarationStack >
 		[structural] 
 		
 	rule
 		< computation > popBlock => .K ...</ computation >
 		< nestingDepthGoto > sNat(N:Nat) => N:Nat </ nestingDepthGoto >
-		< blockHistoryGoto > (?:ListItem => (.).List) ListItem(Num:Nat) ...</ blockHistoryGoto >
+		< blockHistoryGoto > (?:ListItem => .List) ListItem(Num:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
 	rule [StatementLoc]:
@@ -455,21 +455,21 @@ kmod COMMON-SEMANTICS-GOTO is
 	--- fixme would like to combine the below rules
 	rule
 		< computation > DeclarationDefinition(InitNameGroup(T:K, K:C)) => .K ...</ computation >
-		< declarationStack >... (.).List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, DeclarationDefinition(InitNameGroup(T:K, K:C)))) </ declarationStack >
+		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, DeclarationDefinition(InitNameGroup(T:K, K:C)))) </ declarationStack >
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
 	rule
 		< computation > OnlyTypedef(K:K) => .K ...</ computation >
-		< declarationStack >... (.).List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, OnlyTypedef(K:K))) </ declarationStack >
+		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, OnlyTypedef(K:K))) </ declarationStack >
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
 	rule
 		< computation > Typedef(K:K) => .K ...</ computation >
-		< declarationStack >... (.).List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, Typedef(K:K))) </ declarationStack >
+		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, Typedef(K:K))) </ declarationStack >
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
@@ -645,17 +645,17 @@ kmod COMMON-SEMANTICS-RETURN is
 
 	rule [return-clean-local]:
 		< k > (. => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
-		< localAddresses >... SetItem(Loc:Nat) => (.).Set ...</ localAddresses >	
+		< localAddresses >... SetItem(Loc:Nat) => .Set ...</ localAddresses >	
 		[structural] 
 		
 	rule [fetch-all-locals]:
 		< k > Return(V:Value) ...</ k >
-		< localAddresses > (.).Set => Addresses:Set </ localAddresses >
-		< blockStack > List(< stackFrame > 
+		< localAddresses > .Set => Addresses:Set </ localAddresses >
+		< blockStack > ListItem(< stackFrame > 
 			?
 			< localAddresses > Addresses:Set </ localAddresses >
 			</ stackFrame >)
-			=> (.).List
+			=> .List
 		...</ blockStack >
 		[structural] 
 
@@ -668,22 +668,22 @@ kmod COMMON-SEMANTICS-RETURN is
 				~> K:K
 			</ k >
 			--- these cells get replaced by the ones in C:Bag, so we can delete them when we match them
-			(< local >... < localAddresses > (.).Set </ localAddresses > ...</ local > => (.).Bag)
+			(< local >... < localAddresses > .Set </ localAddresses > ...</ local > => .Bag)
 			--- i can't say the below line alone, but i want to :(
-			--- (< localAddresses > (.).Set </ localAddresses > => (.).Bag)
-			(< currentFunction > F:Id </ currentFunction > => (.).Bag)
-			(< currentTranslationUnit > Tu:K </ currentTranslationUnit > => (.).Bag)
-			(< blockStack > (.).List </ blockStack > => (.).Bag)
+			--- (< localAddresses > .Set </ localAddresses > => .Bag)
+			(< currentFunction > F:Id </ currentFunction > => .Bag)
+			(< currentTranslationUnit > Tu:K </ currentTranslationUnit > => .Bag)
+			(< blockStack > .List </ blockStack > => .Bag)
 			(? => C:Bag)
 		</ control >
 		< gtypes >... Tu:K |-> Map((? (F:Id |-> functionType(T:Type, ?)))) ...</ gtypes >
 		< callStack >
-			List(
+			ListItem(
 				< stackFrame >
 					C:Bag
 					< continuation > K:K </ continuation >
 				</ stackFrame >
-			) => (.).List
+			) => .List
 		...</ callStack >
 		[structural] 
 endkm
@@ -701,12 +701,12 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		< k > pushBlock => .K ...</ k >
 		< local >
 			C:Bag
-			< localVariables > Vars:List => (.).List </ localVariables >
-			< localAddresses > Addresses:Set => (.).Set </ localAddresses >
+			< localVariables > Vars:List => .List </ localVariables >
+			< localAddresses > Addresses:Set => .Set </ localAddresses >
 			< nestingDepth > N:Nat => sNat(N:Nat) </ nestingDepth >
 		</ local >
-		< blockStack > (.).List 
-			=> List(< stackFrame > C:Bag 
+		< blockStack > .List 
+			=> ListItem(< stackFrame > C:Bag 
 			< nestingDepth > N:Nat </ nestingDepth > 
 			< localVariables > Vars:List </ localVariables >
 			< localAddresses > Addresses:Set </ localAddresses >
@@ -716,7 +716,7 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		
 	rule [pop-block-free-memory]:
 		< k > (. => deleteBlock(Loc:Nat)) ~> popBlock ...</ k >
-		< localAddresses >... (SetItem(Loc:Nat) => (.).Set) ...</ localAddresses >
+		< localAddresses >... (SetItem(Loc:Nat) => .Set) ...</ localAddresses >
 		[structural] 
 		
 	--- this can be simplified without the debugging info
@@ -724,17 +724,17 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		< k > popBlock => .K ...</ k >
 		< local > 
 			(? => C:Bag)
-			(< blockHistory > ListItem(Num:Nat) ...</ blockHistory > => (< blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory >)) ***( (.).Bag ***)
-			(< localAddresses > (.).Set </ localAddresses > => (.).Bag)
+			(< blockHistory > ListItem(Num:Nat) ...</ blockHistory > => (< blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory >)) ***( .Bag ***)
+			(< localAddresses > .Set </ localAddresses > => .Bag)
 		</ local >
 		--- < xmessages >... (. => "Popblock: popping " +String toString(Num:Nat) +String " to return to " +String toString(NewNum:Nat)) </ xmessages >
-		< blockStack > List(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => (.).List ...</ blockStack >
+		< blockStack > ListItem(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => .List ...</ blockStack >
 		[structural] 
 	
 	
 	rule [dissolve-block]:
 		< k > Block(BlockNum:Nat, ?, Statements:List{C}) => listToK(Statements:List{C}) ...</ k >
-		< blockHistory > (.).List => ListItem(BlockNum:Nat) ...</ blockHistory >
+		< blockHistory > .List => ListItem(BlockNum:Nat) ...</ blockHistory >
 		--- < xmessages >... (. => "Real block: pushing " +String toString(BlockNum:Nat)) </ xmessages >
 		[structural] 
 endkm
@@ -764,7 +764,7 @@ kmod COMMON-C-STATEMENTS is
 	rule [popLoop]:
 		< k > popLoop ~> ? => K:K </ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		< loopStack > ListItem(kpair(Num:Nat, K:K)) => (.).List ...</ loopStack >
+		< loopStack > ListItem(kpair(Num:Nat, K:K)) => .List ...</ loopStack >
 		--- < xmessages >... (. => "Poplooping in " +String toString(Num:Nat)) </ xmessages >
 		[structural] 
 

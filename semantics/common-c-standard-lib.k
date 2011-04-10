@@ -10,32 +10,33 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	including TCP-INTERFACE-BUILTIN-MODULE
 	
 	op vararg : K -> Value [strict hybrid] 
+	rule reval(vararg(K:K)) => vararg(K:K) [structural]
+	
 	op nextvarg : Nat Type -> C 
 	--- fixme had to make this K because of the context bug
-	op nextvarg-aux : K Type K -> C --- offset, type, length
+	op nextvarg-aux : K Type K K -> C --- offset, type, length
+	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?) 
+	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
+	
 	op C : K -> C 
 	eq C(K:K) = K:K 
-	--- op stupidList : List{C} -> Value 
-	--- op makeStupidList : -> K 
-	context nextvarg-aux(?, ?, value(`[HOLE`]:K)) 
-	--- mb context vararg(value(`[HOLE`]:K)) 
+	
 	op debug : -> K 
 	op vpair : K K -> C [hybrid strict] 
 	rule
-		< k > nextvarg(Loc:Nat, T:Type) 
-			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)))
+		< k > nextvarg(Loc:Nat, T:Type)
+			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
 		...</ k >
-		[structural] 
+		[structural]
 	rule
-		< k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat)
-			=> vpair(read(Loc:Nat, T:Type), vararg(tv(Loc:Nat +Nat Len:Nat, pointerType(unsigned-char))))
+		< k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat, Len:Nat)
+			=> vpair(read(Loc:Nat, T:Type), vararg(tv(inc(Loc:Nat), pointerType(void))))
 		...</ k >
-		[structural] 
-		
-	--- eq L:List{Type} ~> makeStupidList = stupidList(L:List{Type}) 
-	--- eq .List{K} :: stupidList(L':List{C}) = L':List{C} 
+		[structural]
 	
-	op prepareBuiltin : Id List{C} -> K [strict(2)] 
+	op prepareBuiltin : Id List{C} -> K
+	context prepareBuiltin(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
+	
 	op idsFromDeclList : List{C} -> List{C} 
 	
 	ceq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
@@ -44,8 +45,11 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	eq idsFromDeclList(L:List{C} :: typedDeclaration(void, X:Id)) 
 		= idsFromDeclList(L:List{C}) 
 	eq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: variadic)
-		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(cast(pointerType(unsigned-char), &(X:Id)) + byteSizeofType(T:Type)) 
-	eq idsFromDeclList(Nil) = Nil 
+		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) --- assumes variadic args are placed in incremental blocks
+	eq idsFromDeclList(Nil) = Nil
+	
+	op incSymbolic : K -> K [strict]
+	eq incSymbolic(tv(Loc:Nat, T:Type)) = tv(inc(Loc:Nat), T:Type)
 		
 	rule
 		< k > handleBuiltin(F:Id, functionType(Return:Type, L:List{Type}))
@@ -527,7 +531,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 				Rat2String(D:Int, 16)
 			fi)), Loc:Nat, V:Value) 
 		...</ k >
-		[structural] 
+		[structural]
 	
 	--- fixme might be messing things up elsewhere
 	op pointerToString : Nat -> String 
@@ -807,4 +811,59 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			~> Retval:Value
 		...</ k >
 		[structural]
+		
+	--------------------------------------------
+	--- Stdarg.h
+	--------------------------------------------
+		--- ,, "__va_inc"
+		--- ,, "__va_start"
+		--- ,, "__va_end"
+		--- ,, "__va_copy"
+		
+	// va_list __va_start(va_list* ap, void* pN);
+	--- fixme can add lots of checks here
+	--- tool fixme, change Value to K and unquote error
+	rule
+		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
+				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
+				~> skipval
+		...</ k >
+		[structural]
+	
+	op va-inc-aux : K K K -> K [strict(3)]
+	--- fixme can do lots of checks here too
+	rule
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
+		...</ k >
+		[structural]
+		
+	rule
+		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
+			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
+			~> Ap:Value
+		...</ k >
+		[structural]	 
+				
+		
+	--- fixme can do lots of checks here too
+	rule
+		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
+				=> Computation(*(ApLoc:Value) := Other:Value)
+				~> skipval
+		...</ k >
+		[structural]
+		
+	--- fixme can do lots of checks here too
+	--- tool fixme, shouldn't let me compile empty rule
+	--- rule
+		--- < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
+				--- ~> skipval
+		--- ...</ k >
+		--- [structural]
+	rule
+		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
+				=> skipval
+		...</ k >
+		[structural] 
 endkm

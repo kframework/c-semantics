@@ -1,5 +1,6 @@
 int main(void){
-	char x, y;
-	x == y;
+	int p;
+	p;
+	
 	return 0;
 }

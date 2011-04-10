@@ -34,12 +34,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	--- — one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
 	--- — both types are pointers to qualified or unqualified versions of a character type or void
 	
-	rule [bind-coerce-array]:
-		bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((arrayType(T:Type, ?) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
-		[structural] 
-	rule [bind-coerce-incompleteArray]:
-		bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((incompleteArrayType(T:Type) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
-		[structural] 
+	// rule [bind-coerce-array]:
+		// bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((arrayType(T:Type, ?) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
+		// [structural] 
+	// rule [bind-coerce-incompleteArray]:
+		// bind-aux(?, L:List{C}, (?:List{Type} :: typedDeclaration((incompleteArrayType(T:Type) => pointerType(T:Type)), X:Id) :: ?:List{Type}))
+		// [structural] 
 		
 	rule [bind-one]:
 		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
@@ -50,7 +50,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 			~> bind-aux(Loc:Nat, L:List{C}, P:List{Type}) 
 		...</ k > 
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool hasArrayType(T:Type)
 		[structural] 
 		
@@ -58,11 +58,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		< k > (. => isTypeCompatible(T:Type, T':Type)) ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
-
-		
-	op bindVariadic : K List{KResult} -> K 
-	op bindVariadic-pre : K List{K} -> K 
-	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments
+	
 	op promoteList : List{C} -> List{K} 
 	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (promote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
@@ -79,38 +75,41 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
 		[structural] 
 		
-
-	eq promoteList(Nil) = .List{K} 
-	--- fixme report bug: this context doesn't work
-	--- op bindVariadic : Nat List{K} -> K 
+	op bindVariadic : K List{KResult} -> K 
+	op bindVariadic-pre : K List{K} -> K 
+	eq promoteList(Nil) = .List{K}
 	
-	rule [bind-variadic-start]:
+	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
+	rule [bind-variadic-pre]:
 		< k > bind-aux(Loc:Nat, L:List{C}, variadic)
 			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
 		...</ k >
 		[structural] 
-		
-***(
-	<k> ('debug) ~> ('bindVariadic-pre)((0 +Nat sym(41)), kList("wklist_")(('tv)(2, int), ('tv)(6 +Nat sym34, ('arrayType)(signed-char, 3)), ('tv)(2, int), ('tv)(2, unsigned-long-int))) ~> ('handleBuiltin)(printf, ('functionType)(int, ('_::_).KHybridLabel(('typedDeclaration)(('pointerType)(signed-char), format), ('variadic)))) ~> ('Return)(('emptyValue)) </k>
-***)
-		
+
 	rule [bind-variadic-start]:
-		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) => bindVariadic(Loc:Nat, L:List{KResult}) ...</ k > 
-		[structural] 
+		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) 
+			=> bindVariadic(Loc:Nat, L:List{KResult})
+		...</ k >
+		[structural]
 	
+	--- fixme don't forget to get rid of append
+	
+	--- this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
 	rule [bind-variadic]:
-		< k > (. => bitSizeofType(type(V:Value))) ~> bindVariadic(?, (V:Value,, ?:List{KResult})) ...</ k > 
-		[structural] 
+		< k > (.K 
+				=> allocateType(Loc:Nat, Type)
+				~> Computation(*(tv(Loc:Nat, pointerType(Type))) := V:Value)
+			) 
+			~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
+		...</ k >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		where Type = type(V:Value)
+		[structural]
 	
 	rule [bind-variadic-done]:
 		< k > bindVariadic(?, .List{K}) => sequencePoint ...</ k > 
-		[structural] 
-
-	rule [bind-variadic-withSize]:
-		< k > (tv(Len:Nat, ?) => append(Loc:Nat, Len:Nat /Nat numBitsPerByte, V:Value)) 
-			~> bindVariadic(Loc:Nat, ((V:Value => .List{K}),, L:List{KResult}))
-		...</ k > 
-		[structural] 
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
@@ -256,11 +255,19 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > zeroStruct(Name:K, Nil) => .K ...</ k >
 		[structural] 
 		
+	// rule
+		// < k > zeroType(Name:K, T:Type) => initFunction(Name:K, tv(NullPointer, T:Type)) ...</ k >
+		// if hasFunctionType(T:Type)
+		// orBool hasPointerType(T:Type)
+		// [structural]
 	rule
 		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
-		if hasFunctionType(T:Type) 
-		orBool hasPointerType(T:Type)
-		[structural] 
+		if hasPointerType(T:Type)
+		[structural]
+	rule
+		< k > zeroType(Name:K, T:Type) => .K ...</ k >
+		if hasFunctionType(T:Type)
+		[structural]
 		
 	rule
 		< k > zeroType(Name:K, arrayType(T:Type, sNat(Len:Nat))) 
@@ -544,7 +551,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareOnly(X:Id, T:Type, external)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
@@ -576,7 +583,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareOnly(X:Id, T:Type, internal)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
@@ -591,7 +598,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
@@ -612,7 +619,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareAndDefine(X:Id, T:Type, K:K, external)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< externalDefinitions > Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:Type), Tu:K, K:K)) </ externalDefinitions >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
@@ -625,7 +632,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareAndDefine(X:Id, T:Type, K:K, internal)
 			=> .K
 		...</ k >
-		< declarations >... (.).Set => SetItem(X:Id) ...</ declarations >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
 		< internalDefinitions >... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:Type), Tu:K, K:K) / X:Id])) ...</ internalDefinitions >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
@@ -640,7 +647,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		< localAddresses >... (.).Set => SetItem(Loc:Nat) ...</ localAddresses >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
 		if notBool X:Id in Vars:List --- again, this should be needed statically, but not dynamically
 		[structural] 
 	rule --- this happens when we jump before a variable declaration with an initialization in the same block
@@ -718,7 +725,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	--- FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(Computation(X:Id := tv(functionObject(X:Id, unqualifyType(T:Type), Block:K), T:Type))))
+			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, functionObject(X:Id, unqualifyType(T:Type), Block:K))))
 			~> calculateGotoMap(X:Id, Block:K)
 		...</ k >
 		if hasFunctionType(T:Type)
@@ -927,6 +934,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	eq innerType(arrayType(T:Type, ?)) = T:Type 
 	eq innerType(incompleteArrayType(T:Type)) = T:Type 
 	eq innerType(qualifiedType(T:Type, ?)) = innerType(T:Type) 
+	eq innerType(pointerType(T:Type)) = T:Type
 
 	context buildDesignator(AtIndexInit(`[HOLE`]:K, ?)) 
 	rule
@@ -1072,7 +1080,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			=> listToK(L:List{C})
 		...</ k >
 		< currentTranslationUnit > ? => Name:String </ currentTranslationUnit >
-		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK((.).List) / Name:String] </ declarationOrder >
+		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </ declarationOrder >
 		< internalLocations > ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </ internalLocations >
 		< functionTranslationUnits > Funs:Map => Funs:Map[Map(.) / Name:String] </ functionTranslationUnits > 
 		< translationUnits >... . => BagItem(Name:String) ...</ translationUnits >
@@ -1088,11 +1096,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	op resolve : K -> K 
 	rule
 		< k > (. => resolve(Tu:K)) ~> resolveReferences ...</ k >
-		< translationUnits >... BagItem(Tu:K) => . ...</ translationUnits >
+		< translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
 		[structural] 
+		
+	/* this is what I want, but it doesn't compile
 	rule
-		< k > resolveReferences => . ...</ k >
-		< translationUnits > (.).Bag </ translationUnits >
+		< k > resolveReferences => .K ...</ k >
+		(< staticSemantics >...
+			< translationUnits > .Bag </ translationUnits >
+		...</ staticSemantics >) => .Bag
+		[structural]
+	*/
+	rule
+		< k > resolveReferences => .K ...</ k >
+		--- < staticSemantics >...
+			< translationUnits > .Bag </ translationUnits >
+		--- ...</ staticSemantics >
 		[structural] 
 		
 	op resolveInternal : Id K K -> K 
@@ -1151,7 +1170,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< preLinkage >... Tu':K |-> Map((? (X:Id |-> external => .))) ...</ preLinkage >
 		[structural] 
 	rule
-		< k > resolveExternal-aux(X:Id, Tu:K, (.).Bag, declarationObject(?, DefTu:K, ?), Loc:Nat, initializerValue(X:Id, T:Type, K:K))
+		< k > resolveExternal-aux(X:Id, Tu:K, .Bag, declarationObject(?, DefTu:K, ?), Loc:Nat, initializerValue(X:Id, T:Type, K:K))
 			=> allocateType(Loc:Nat, T:Type)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:Type)
@@ -1270,11 +1289,35 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< k > resolve(Tu:K) => . ...</ k >
 		< preLinkage >... Tu:K |-> Map(.) ...</ preLinkage >
 		< internalDefinitions >... Tu:K |-> Map(.) ...</ internalDefinitions >
-		< declarationOrder >... Tu:K |-> ListToK((.).List) ...</ declarationOrder >
+		< declarationOrder >... Tu:K |-> ListToK(.List) ...</ declarationOrder >
 		[structural] 
 				
 	--- need to worry about things that don't have definitions that may override externs
 	--- want to make it so env is always correct local env, so need to have a set of global envs, one for each tu
+	
+	
+	
+	
+	rule [initialize-function]:
+		< k > initFunction(tv(Loc:Nat, T:Type), Fun:Value) => .K ...</ k >
+		< functions > M:Map => M:Map[Fun:Value / Loc:Nat] </ functions >
+		if hasFunctionType(T:Type)
+		andBool notBool $hasMapping(M:Map, Loc:Nat)
+		[structural]
+		
+	rule
+		< k > readFunction(Loc:Nat) => Fun:Value  ...</ k >
+		< functions >... Loc:Nat |-> Fun:Value ...</ functions >
+		[structural]
+		
+	// rule
+		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
+			// => writeByte(Loc:Nat, V:K)
+		// ...</ k >
+		// if hasFunctionType(T:Type)
+		// [structural]
+	
+	
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is

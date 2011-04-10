@@ -1,89 +1,27 @@
-/*
- * stdarg.h
- *
- * Provides facilities for stepping through a list of function arguments of
- * an unknown number and type.
- *
- * NOTE: Gcc should provide stdarg.h, and I believe their version will work
- *       with crtdll. If necessary I think you can replace this with the GCC
- *       stdarg.h (or is it vararg.h).
- *
- * Note that the type used in va_arg is supposed to match the actual type
- * *after default promotions*. Thus, va_arg (..., short) is not valid.
- *
- * This file is part of the Mingw32 package.
- *
- * Contributors:
- *  Created by Colin Peters <colin@bird.fu.is.saga-u.ac.jp>
- *
- *  THIS SOFTWARE IS NOT COPYRIGHTED
- *
- *  This source code is offered for use in the public domain. You may
- *  use, modify or distribute it freely.
- *
- *  This code is distributed in the hope that it will be useful but
- *  WITHOUT ANY WARRANTY. ALL WARRANTIES, EXPRESS OR IMPLIED ARE HEREBY
- *  DISCLAMED. This includes but is not limited to warranties of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
- * $Revision: 1.1.1.1 $
- * $Author: brandon6684 $
- * $Date: 2001/12/18 22:53:51 $
- *
- */
-/* Appropriated for Reactos Crtdll by Ariadne */
+#include <stdlib.h>
+typedef void* va_list;
 
-#ifndef _STDARG_H_
-#define _STDARG_H_
-
-#ifndef	_VA_LIST
-#define _VA_LIST
-typedef char* va_list;
-//#endif
-
-
-/*
- * Amount of space required in an argument list (ie. the stack) for an
- * argument of type t.
- */
-// #define __va_argsiz(t)	 (((sizeof(t) + sizeof(int) - 1) / sizeof(int)) * sizeof(int))
-// above is for aligned things
-
+/* The va_arg macro expands to an expression that has the specified type and the value of the next argument in the call. The parameter ap shall have been initialized by the va_start or va_copy macro (without an intervening invocation of the va_end macro for the same ap). Each invocation of the va_arg macro modifies ap so that the values of successive arguments are returned in turn. The parameter type shall be a type name specified such that the type of a pointer to an object that has the specified type can be obtained simply by postfixing a * to type. If there is no actual next argument, or if type is not compatible with the type of the actual next argument (as promoted according to the default argument promotions), the behavior is undefined, except for the following cases:
+* one type is a signed integer type, the other type is the corresponding unsigned integer type, and the value is representable in both types;
+* one type is pointer to void and the other is a pointer to a character type.
+*/ 
+// type va_arg(va_list ap, type);
 #define __va_argsiz(t)	((sizeof(t)))
+va_list __va_inc(va_list* ap, size_t size); // increments the ap, and returns the current vararg
+#define va_arg(ap, t) \
+	(*((t*)(__va_inc((&(ap)), (__va_argsiz(t))))))
 
-/*
- * Start variable argument list processing by setting AP to point to the
- * argument after pN.
- */
-/*
- * For a simple minded compiler this should work (it works in GNU too for
- * vararg lists that don't follow shorts and such).
- */
-#define va_start(ap, pN)	\
-	((ap) = ((va_list) (&pN) + __va_argsiz(pN)))
+// void va_start(va_list ap, parmN);
+void __va_start(va_list* ap, void* pN);
+#define va_start(ap, pN) \
+	(__va_start((&(ap)), ((void*)(&(pN)))))
 
+// void va_end(va_list ap);
+void __va_end(va_list* ap);
+#define va_end(ap) \
+	(__va_end(&(ap)))
 
-/*
- * End processing of variable argument list. In this case we do nothing.
- */
-#define va_end(ap)	((void)0)
-
-
-/*
- * Increment ap to the next argument in the list while returing a
- * pointer to what ap pointed to first, which is of type t.
- *
- * We cast to void* and then to t* because this avoids a warning about
- * increasing the alignment requirement.
- */
-
-#define va_arg(ap, t)					\
-	 (((ap) = (ap) + __va_argsiz(t)),		\
-	  *((t*) (void*) ((ap) - __va_argsiz(t))))
-	  
-	  
-#define va_copy(dst, src) ((void)((dst) = (src)))
-
-#endif /* Not RC_INVOKED */
-
-#endif /* not _STDARG_H_ */
+// void va_copy(va_list dest, va_list src);
+void __va_copy(va_list* dst, va_list src);
+#define va_copy(dst, src) \
+	(__va_copy((&(dst)), (src)))
