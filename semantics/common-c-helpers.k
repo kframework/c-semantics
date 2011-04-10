@@ -95,12 +95,14 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		< k > extractField(L:List{K}, structType(S:Id), F:Id)
 			=> extractField-pre(L:List{K}, T:Type, calculateLength(L:List{Type}), bitSizeofType(T:Type)) ...</ k >
 		< structs >... S:Id |-> (L:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		if notBool hasArrayType(T:Type)
 		[structural]
 		
 	rule [extractField-from-union-start]:
 		< k > extractField(L:List{K}, unionType(S:Id), F:Id)
 			=> extractField-pre(L:List{K}, T:Type, tv(0, unsigned-long-int), bitSizeofType(T:Type)) ...</ k >
 		< structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		if notBool hasArrayType(T:Type)
 		[structural]
 		
 	rule

@@ -3,6 +3,15 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op assign : K K -> K 
 	op compoundLiteral : Nat -> Id
 	
+	
+	op lvGetOffset : K K Type -> K 
+	op tvGetOffset : K K Type -> K 
+	context lvGetOffset(?, value(`[HOLE`]:K), ?) 
+	context tvGetOffset(?, value(`[HOLE`]:K), ?)
+	eq lvGetOffset(N:Nat, M:Nat, T:Type) = lv(N:Nat +Nat bito(M:Nat), T:Type) 
+	eq tvGetOffset(N:Nat, M:Nat, T:Type) = tv(N:Nat +Nat bito(M:Nat), T:Type) 
+	
+	
 	op lv : List{K} Type -> Value
 	
 	rule
@@ -31,6 +40,14 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	rule
 		< k > peval(lv(V:List{K}, T:Type))
 			=> lv(V:List{K}, T:Type)
+		...</ k >
+		if notBool hasArrayType(T:Type)
+		andBool notBool hasFunctionType(T:Type)
+		[structural]
+		
+	rule
+		< k > peval(tv(V:List{K}, T:Type))
+			=> tv(V:List{K}, T:Type)
 		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
@@ -828,13 +845,12 @@ endkm
 kmod COMMON-SEMANTICS-MEMBERS is 
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	// rule [arrow-struct]:
-		// < k > tv(Base:Int, pointerType(T:Type)) -> F:Id 
-			// => *(tv(Base:Int, pointerType(T:Type))) . F:Id 
-		// ...</ k >
-		// if hasStructType(T:Type)
-		// orBool hasUnionType(T:Type)
-		// [structural] 
+	rule [arrow-struct]:
+		< k > tv(Loc:Nat, pointerType(T:Type)) -> F:Id 
+			=> *(tv(Loc:Nat, pointerType(T:Type))) . F:Id 
+		...</ k >
+		if hasStructType(T:Type) orBool hasUnionType(T:Type)
+		[structural] 
 
 	op toEval : K -> K 
 	op toEval-aux : K K -> K [metadata "strict(2)"] 
@@ -843,6 +859,40 @@ kmod COMMON-SEMANTICS-MEMBERS is
 	
 	// because of things like s().f, can't just use the address of left argument
 	// because of things like s.f when f is a field with array type, can't just use the value of the left argument
+	
+	// rule
+		// < k > lv(Loc:Nat, L:KLabel(S:Id)) . F:Id
+			// => lvGetOffset(Loc:Nat, value(calculateLength(L1:List{Type})), T:Type)
+		// ...</ k > // :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}
+		// < structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		// if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
+		// [structural]
+		
+	// fixme tool bug, can't use L:KLabel
+	rule
+		< k > lv(Loc:Nat, structType(S:Id)) . F:Id
+			=> lvGetOffset(Loc:Nat, value(calculateLength(L1:List{Type})), T:Type)
+		...</ k >
+		< structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		// if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
+		[structural]
+	rule
+		< k > lv(Loc:Nat, unionType(S:Id)) . F:Id
+			=> lv(Loc:Nat, T:Type)
+		...</ k >
+		< structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		[structural]
+		
+	rule
+		< k > tv(L:List{K}, T:Type) . F:Id
+			=> extractField(L:List{K}, T:Type, F:Id)
+		...</ k >
+		[structural]
+	
+	// < k > &(tv(Loc:Nat, pointerType(structType(S:Id))) -> X:Id)
+			// => getOffset(Loc:Nat, value(calculateLength(L1:List{Type})), fixPointerType(T:Type))
+		// ...</ k >
+		// < structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, X:Id) :: ?) ...</ structs >
 	
 	// rule [dot]:
 		// < k > K:K . F:Id => toEval(K:K . F:Id) ...</ k >
@@ -944,9 +994,6 @@ kmod COMMON-SEMANTICS-REFERENCE is
 		...</ k >
 		[structural] 
 	
-	op getOffset : K K Type -> K 
-	
-	context getOffset(?, value(`[HOLE`]:K), ?) 
 	// rule [address-of-arrow-struct]:
 		// < k > &(tv(Loc:Nat, pointerType(structType(S:Id))) -> X:Id)
 			// => getOffset(Loc:Nat, value(calculateLength(L1:List{Type})), fixPointerType(T:Type))
@@ -959,8 +1006,6 @@ kmod COMMON-SEMANTICS-REFERENCE is
 		// ...</ k >
 		// < structs >... S:Id |-> (? :: typedDeclaration(T:Type, X:Id) :: ?) ...</ structs >
 		// [structural] 
-		
-	eq getOffset(N:Nat, M:Nat, T:Type) = tv(N:Nat +Nat bito(M:Nat), T:Type) 
 		
 	// rule [address-of-dot]:
 		// < k > &(E:Expression . X:Id) => &(&(E:Expression) -> X:Id) ...</ k >
@@ -995,9 +1040,21 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 	// rule [make-postdec-ref]: < k > E:Expression -- => postOpRef(*(&(E:Expression)), '_--) ...</ k > 
 		// [structural] 
 
-	// op postInc : K K Type -> K [metadata "strict(2)"] 
-	// op postDec : K K Type -> K [metadata "strict(2)"] 
+	op postInc : K K Type -> K [metadata "strict(2)"]
+	op postDec : K K Type -> K [metadata "strict(2)"]
 
+	
+	rule [post-increment-start]:
+		< k > lv(Loc:Nat, T:Type)++
+			=> postInc(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
+		...</ k >
+		[structural]
+	rule [post-decrement-start]:
+		< k > lv(Loc:Nat, T:Type)--
+			=> postDec(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
+		...</ k >
+		[structural] 
+	
 	// rule [post-increment-start]:
 		// < k > postOpRef(*(tv(Loc:Nat, pointerType(T:Type))), '_++)
 			// => postInc(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
@@ -1009,21 +1066,19 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 		// ...</ k >
 		// [structural] 
 
-	// rule [post-increment]:
-		// < k > postInc(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
-			// => *(tv(Loc:Nat, pointerType(T:Type))) := tv(V:BaseValue, T:Type) + tv(1, int)
-			// ~> discard
-			// ~> tv(V:BaseValue, T:Type)
-		// ...</ k >
-		// [structural] 
+	rule [post-increment]:
+		< k > postInc(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
+			=> Computation(lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) + tv(1, int))
+			~> tv(V:BaseValue, T:Type)
+		...</ k >
+		[structural] 
 		
-	// rule [post-decrement]:
-		// < k > postDec(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
-			// => *(tv(Loc:Nat, pointerType(T:Type))) := tv(V:BaseValue, T:Type) - tv(1, int)
-			// ~> discard
-			// ~> tv(V:BaseValue, T:Type)
-		// ...</ k >
-		// [structural]
+	rule [post-decrement]:
+		< k > postDec(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
+			=> Computation(lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) - tv(1, int))
+			~> tv(V:BaseValue, T:Type)
+		...</ k >
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-SEQUENCING is

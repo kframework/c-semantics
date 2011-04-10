@@ -458,7 +458,9 @@ and unary_operator =
 	op ++_ : K -> Expression [prec 22]
 	op --_ : K -> Expression [prec 22]
 	op _++ : K -> Expression
+	context _++(([HOLE] => peval([HOLE])))
 	op _-- : K -> Expression
+	context _--(([HOLE] => peval([HOLE])))
 	
 	// all these macros are temporary while I adjust the semantics to the new grammar
 	op Negative : K -> Expression
@@ -664,7 +666,6 @@ and unary_operator =
 */
 	op SizeofExpression : K -> Expression
 	op SizeofType : K K -> Expression [strict(1)]
-	context  SizeofType(([HOLE] => reval([HOLE])), _)
 	op AlignofExpression : K -> Expression
 	op AlignofType : K K -> Expression
 /*
@@ -681,6 +682,7 @@ and unary_operator =
 	op Dot : K Id -> Expression
 	macro Dot(K:K, X:Id) = K:K . X:Id
 	op _._ : K Id -> Expression
+	context _._(([HOLE] => peval([HOLE])), _)
 	op Arrow : K Id -> Expression
 	macro Arrow(K:K, X:Id) = K:K -> X:Id
 	op _->_ : K Id -> Expression
