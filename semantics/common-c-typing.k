@@ -483,7 +483,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 
 	--- the K will resolve to a type, so throw it away
 	rule
-		< k > OnlyTypedef(K:K) => Computation(K:K) ...</ k >
+		< k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
 		[structural] 
 		
 			
