@@ -15,11 +15,9 @@ kmod COMMON-SEMANTICS-IF-THEN is
 	rule [if-then-else-true]:
 		< k > IfThenElse(tv(1, int), S:K, ?) => sequencePoint ~> S:K ...</ k >
 		[structural]
-		--- [metadata "computational"] --- nondet
 	rule [if-then-else-false]:
 		< k > IfThenElse(tv(0, int), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
-		--- [metadata "computational"] --- nondet
 		
 	rule [if-then-else]:
 		< k > IfThenElse(tv(V:BaseValue, T:Type), S:K, S':K)
@@ -339,7 +337,6 @@ kmod COMMON-SEMANTICS-GOTO is
 		--- < xmessages >... (. => "Goto: skipping variable declaration " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
-		--- [metadata "computational"] 
 		
 	op getIdString : K -> String 
 	eq getIdString(Identifier(S:String)) = S:String 
@@ -362,7 +359,6 @@ kmod COMMON-SEMANTICS-GOTO is
 		--- < xmessages >... (. => "Goto: couldn't find variable " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
-		--- [metadata "computational"] 
 		
 	--- fixme this is wrong
 	rule
@@ -759,7 +755,8 @@ kmod COMMON-C-STATEMENTS is
 		[structural] 
 
 	--- dissolve expression statements that are finished evaluating
-	rule [expression-statement]: < k > Computation(K:K) => K:K ~> discard ~> sequencePoint ...</ k > 
+	rule [expression-statement]:
+		< k > Computation(V:Value) => sequencePoint ...</ k > 
 		[structural] 
 	
 	rule [popLoop]:

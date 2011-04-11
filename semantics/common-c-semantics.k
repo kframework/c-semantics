@@ -11,6 +11,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op initFunction : K K -> K [strict]
 	
+	op checkValidLoc : K -> K
+	op checkDerefLoc : K -> K
 	op ListItem : BagItem -> ListItem
 	op ListToK : List -> K 
 	op Map : Map -> K 
@@ -44,6 +46,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op fillToBytes : K -> K [metadata "strict(1)"] 
 	
 	op floorLoc : Nat -> Nat --- loc with possible bit offset returning base byte	
+	op ceilingLoc : Nat -> Nat --- loc with possible bit offset returning upperbounded byte	
 	op readFunction : Nat -> K 
 	
 	ceq _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 

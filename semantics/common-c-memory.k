@@ -98,35 +98,41 @@ kmod COMMON-SEMANTICS-READING is
 		[metadata "computational"] 
 		
 	op joinIntegerBytes : Type List{K} -> K 
-	ceq concretize(T:Type, dataList(L:List{K})) = joinIntegerBytes(T:Type, L:List{K})
+	rule < k > concretize(T:Type, dataList(L:List{K})) => joinIntegerBytes(T:Type, L:List{K}) ...</ k >
 		if hasIntegerType(T:Type) 
-		--- andBool isConcreteList(L:List{K}) 
 		andBool notBool hasBitfieldType(T:Type) 
-	ceq concretize(T:Type, dataList(L:List{K})) = joinIntegerBytes(T:Type, reverseList(L:List{K}))
+		[structural]
+	rule < k > concretize(T:Type, dataList(L:List{K})) => joinIntegerBytes(T:Type, reverseList(L:List{K})) ...</ k >
 		if hasIntegerType(T:Type) 
-		--- andBool isConcreteList(L:List{K}) 
 		andBool hasBitfieldType(T:Type) 
+		[structural]
 		
 	--- FIXME very unsafe, not checking size of list or its contents
-	ceq concretize(T:Type, dataList((piece(encodedFloat(F:Float), Len:Nat),, L:List{K}))) 
-		= tv(F:Float, T:Type)
+	rule < k > concretize(T:Type, dataList((piece(encodedFloat(F:Float), Len:Nat),, L:List{K}))) 
+			=> tv(F:Float, T:Type)
+		...</ k >
 		if hasFloatType(T:Type)
 		andBool Len:Nat ==Bool numBitsPerByte 
-		--- andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
+		[structural]
+
 	--- fixme should also check sizes are appropriate
 	--- fixme very unsafe as is.  doesn't care if other bytes were overwritten
-	ceq concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, L:List{K}))) 
-		= tv(N:Nat, pointerType(T:Type))
+	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, L:List{K}))) 
+			=> checkValidLoc(N:Nat)
+			~> tv(N:Nat, pointerType(T:Type))
+		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
 		andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
+		[structural]
 		
-	rule
-		concretize(T:Type, dataList(L:List{K})) 
+	rule < k > concretize(T:Type, dataList(L:List{K})) 
 			=> tv(L:List{K}, T:Type) 
+		...</ k >
 		if hasStructType(T:Type)
 		[structural]
-	rule concretize(T:Type, dataList(L:List{K})) 
+	rule < k > concretize(T:Type, dataList(L:List{K})) 
 			=> tv(L:List{K}, T:Type)
+		...</ k >
 		if hasUnionType(T:Type)
 		[structural]
 	
@@ -165,6 +171,11 @@ kmod COMMON-SEMANTICS-READING is
 	
 	eq floorLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat 
 	eq floorLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
+	
+	eq ceilingLoc(NullPointer) = NullPointer
+	eq ceilingLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat)
+		= sym(N:Nat) +Nat absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Nat R:Nat
+	eq ceilingLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
 	
 	// ('extractBitsFromMem)((1 +Nat bito(7) +Nat sym(0 +Nat threadId(0))), 10)
 	rule
@@ -625,6 +636,33 @@ kmod COMMON-C-MEMORY-MISC is
 		< k > writeString(Loc:Nat, "") 
 			=> .K
 		...</ k >
+		[structural]
+	
+	op checkValidLoc-aux : K -> K
+	
+	rule
+		< k > checkValidLoc(Loc:Nat) => checkValidLoc-aux(ceilingLoc(Loc:Nat)) ...</ k >
+		[structural]
+	rule
+		< k > checkDerefLoc(Loc:Nat) => checkValidLoc(Loc:Nat) ...</ k >
+		if Loc:Nat =/=Bool NullPointer
+		[structural]
+	
+	rule [check-valid-loc]:
+		< k > checkValidLoc-aux(NullPointer) => .K ...</ k >
+		[structural]
+	// fixme could additionally use the type to check whether that type is valid for that pointer
+	rule [check-valid-loc]:
+		< k > checkValidLoc-aux(sym(BASE) +Nat Offset:Nat) => .K ...</ k >
+		< mem >... BASE |-> memblock(Len:Nat, ?) ...</ mem >
+		<threadId> MyThreadId:Nat </threadId>
+		if (PtrThreadId:Nat ==Bool MyThreadId:Nat 
+			orBool PtrThreadId:Nat ==Bool 0
+			orBool PtrThreadId:Nat ==Bool allocatedDuration
+			) // my thread, global memory, or allocated (malloced) memory
+		andBool Offset:Nat <=Nat sNat(Len:Nat) // we're allowed to address one past
+		andBool Offset:Nat >=Nat 0
+		where BASE = threadId(PtrThreadId:Nat) +Nat N:Nat
 		[structural]
 endkm
 

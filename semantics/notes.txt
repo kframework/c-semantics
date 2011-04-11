@@ -1,3 +1,5 @@
+should add checks for valid pointer anywhere one can be created, e.g., casting
+
 can get rid of some of the arithmetic rules by orienting addition and subtraction
 perhaps can do the same for casting?
 
