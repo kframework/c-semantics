@@ -23,15 +23,15 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
-		andBool notBool hasPointerType(T:Type)
+		// andBool notBool hasPointerType(T:Type)
 		[structural]
-	rule [check-rvalue-pointer]:
-		< k > reval(tv(Loc:Nat, T:Type))
-			=> checkValidLoc(Loc:Nat)
-			~> tv(Loc:Nat, T:Type)
-		...</ k >
-		if hasPointerType(T:Type)
-		[structural]
+	// rule [check-rvalue-pointer]:
+		// < k > reval(tv(Loc:Nat, T:Type))
+			// => checkValidLoc(Loc:Nat)
+			// ~> tv(Loc:Nat, T:Type)
+		// ...</ k >
+		// if hasPointerType(T:Type)
+		// [structural]
 		
 	rule
 		< k > L:KLabel(tv(L:List{K}, T:Type))
@@ -47,15 +47,15 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
-		andBool notBool hasPointerType(T:Type)
+		// andBool notBool hasPointerType(T:Type)
 		[structural]
-	rule [check-pvalue-pointer]:
-		< k > peval(tv(Loc:Nat, T:Type))
-			=> checkValidLoc(Loc:Nat)
-			~> tv(Loc:Nat, T:Type)
-		...</ k >
-		if hasPointerType(T:Type)
-		[structural]	
+	// rule [check-pvalue-pointer]:
+		// < k > peval(tv(Loc:Nat, T:Type))
+			// => checkValidLoc(Loc:Nat)
+			// ~> tv(Loc:Nat, T:Type)
+		// ...</ k >
+		// if hasPointerType(T:Type)
+		// [structural]	
 		
 	// is this one necessary?  why do we create lvalues that are function types?
 	rule

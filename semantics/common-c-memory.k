@@ -118,8 +118,8 @@ kmod COMMON-SEMANTICS-READING is
 	--- fixme should also check sizes are appropriate
 	--- fixme very unsafe as is.  doesn't care if other bytes were overwritten
 	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, L:List{K}))) 
-			=> checkValidLoc(N:Nat)
-			~> tv(N:Nat, pointerType(T:Type))
+			// => checkValidLoc(N:Nat)
+			=> tv(N:Nat, pointerType(T:Type))
 		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
 		andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
