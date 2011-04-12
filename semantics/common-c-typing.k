@@ -1,11 +1,11 @@
---- FIXME need to automatically pad structs
+// FIXME need to automatically pad structs
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
 	op addAggregate : Id List{Type} -> K 
 	op canonicalizeType : Bag -> K 
 	op isAType_ : K -> Bool 
-	op extractActualType : Type -> Type --- rules that use specifier should be careful to use extractActualType if going to be used in a typed name
+	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
 	op evalToType : -> K 
 		
 	op typeStrictBinaryOperators : -> Set [memo] 
@@ -32,7 +32,7 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	op giveGlobalType : K Type -> K 
 	op giveLocalType : K Type -> K 
 	
-	--- FIXME these are here until I decide how to handle qualified types
+	// FIXME these are here until I decide how to handle qualified types
 	eq qualifiedType(T:Type, Volatile) = T:Type 
 	eq qualifiedType(T:Type, Restrict) = T:Type 
 	eq qualifiedType(T:Type, Const) = T:Type 
@@ -166,7 +166,7 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		< type > T:Type ~> Call(HOLE, L:List{C}) => Call(T:Type, L:List{C}) ...</ type >
 		if isAType(T:Type)
 		[structural] 
-	--- mb context Call(?:K,, (?,, `[HOLE`]:K,, ?)) 
+	// mb context Call(?:K,, (?,, `[HOLE`]:K,, ?)) 
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
@@ -178,7 +178,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		< k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
 		[structural] 
 		
-	--- specifier, modifier, storage
+	// specifier, modifier, storage
 	rule
 		< k > canonicalizeType((B:Bag (BagItem(T:K) => .Bag)), ?, (? (.Bag => BagItem(T:K))), ?, ?) ...</ k >
 		if false
@@ -288,18 +288,18 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 		
-	--- FIXME what good is this?
+	// FIXME what good is this?
 	eq BagItem(SpecTypedef) = .Bag 
-	--- fixme ignoring inlines since they shouldn't change the semantics?
+	// fixme ignoring inlines since they shouldn't change the semantics?
 	eq BagItem(Inline) = .Bag 
-	--- fixme should save these for later use
+	// fixme should save these for later use
 	eq BagItem(AttributeValue(?, ?)) = .Bag 
 
 	rule 
 		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
 		if B:Bag =/=Bool .Bag
 		[structural] 
-	--- fixme not sure where this is specified, but if i say "static x;" i think it means int
+	// fixme not sure where this is specified, but if i say "static x;" i think it means int
 	rule 
 		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(BagItem(Int))), .Bag, ?, ?) ...</ k >
 		[structural] 
@@ -309,7 +309,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 	op canonicalizeSpecifier : Bag -> K 
-	--- C99 6.7.2:2
+	// C99 6.7.2:2
 	eq canonicalizeSpecifier(BagItem(Void)) = void 
 	eq canonicalizeSpecifier(BagItem(Bool)) = bool 
 	eq canonicalizeSpecifier(BagItem(Char)) = char 
@@ -384,7 +384,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	eq ArrayType(T:Type, tv(N:Nat, ?)) = pushTypeDown(T:Type, makeArrayType(N:Nat)) 
 	eq ArrayType(T:Type, emptyValue) = pushTypeDown(T:Type, 'incompleteArrayType) 
 	eq PointerType(T:Type) = pushTypeDown(T:Type, 'pointerType) 
-	--- fixme I'm assuming functiontype is always below a prototype in the ast
+	// fixme I'm assuming functiontype is always below a prototype in the ast
 	eq FunctionType(T:Type) = T:Type 
 	eq Prototype(T:Type, L:List{Type}, false) = pushTypeDown(T:Type, makeFunctionType(L:List{Type})) 
 	eq Prototype(T:Type, L:List{Type}, true) = pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) 
@@ -429,7 +429,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op fillBitHoles : List{Type} -> List{Type} 
 	op fillBitHoles : Nat List{Type} -> List{Type} 
 	eq fillBitHoles(Nil) = Nil 
-	--- if we haven't seen bitfields
+	// if we haven't seen bitfields
 	ceq fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
 		= typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
 	if notBool hasBitfieldType(T:Type) 
@@ -438,7 +438,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		= fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
 	if hasBitfieldType(T:Type) 
 	
-	--- if we have seen bitfields
+	// if we have seen bitfields
 	ceq fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
 		= typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
 		:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
@@ -460,7 +460,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	eq typedDeclaration(bitfieldType(?, N:Nat), #NoName) :: typedDeclaration(bitfieldType(?, N':Nat), #NoName) 
 		= typedDeclaration(bitfieldType(unsigned-int, N:Nat +Nat N':Nat), #NoName) 
 	
-	--- fixme chould check for some struct contraints here
+	// fixme chould check for some struct contraints here
 	op incompleteToFlexibleArrayMember : List{Type} -> List{Type} 
 	ceq incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
 		= typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
@@ -481,7 +481,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		...</ k >
 		[structural] 
 
-	--- the K will resolve to a type, so throw it away
+	// the K will resolve to a type, so throw it away
 	rule
 		< k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
 		[structural] 
@@ -572,7 +572,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		if hasIntegerType(T':Type)
 		[structural] 
 
-	--- c99 6.4.5
+	// c99 6.4.5
 	rule
 		< type > Constant(StringLiteral(S:String)) => arrayType(char, lengthString(S:String) +Nat 1) </ type >
 		[structural] 
@@ -606,7 +606,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< structs >... S:Id |-> (? :: typedDeclaration(T:Type, F:Id) :: ?) ...</ structs >
 		[structural] 
 
-	--- internal numbers, not literals
+	// internal numbers, not literals
 	rule < type > N:Nat => cfg:largestUnsigned ...</ type > 
 		[structural] 
 
@@ -619,7 +619,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	rule [type-compound-literal]:
 		< type > CompoundLiteral(?, Specifier:K, DeclType:K, ?)
-			=> Cast(Specifier:K, DeclType:K, emptyValue)  --- sort of hackish, assumes cast will evaluate to type
+			=> Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
 		...</ type >
 		[structural] 
 	
@@ -716,7 +716,7 @@ kmod COMMON-C-TYPING is
 		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
 	
-	--- op cast : K K -> K [metadata "strict"] 
+	// op cast : K K -> K [metadata "strict"] 
 	rule 
 		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
 		[structural] 
@@ -724,7 +724,7 @@ kmod COMMON-C-TYPING is
 	op addGlobalAggregate : Id List{Type} -> K 
 	op addLocalAggregate : Id List{Type} -> K 
 	
-	--- fixme looks like i don't actually need global and local, although possibly with vlas in structs?
+	// fixme looks like i don't actually need global and local, although possibly with vlas in structs?
 	rule
 		< k > addAggregate(X:Id, L:List{Type}) 
 			=> if (F:Id ==Bool File-Scope) then 
@@ -753,7 +753,7 @@ kmod COMMON-C-TYPING is
 		andBool notBool isBasicType(K:K)
 			
 
-	--- FIXME most of these don't take into consideration modifiers
+	// FIXME most of these don't take into consideration modifiers
 
 	eq hasFloatType(float) = true 
 	eq hasFloatType(double) = true 

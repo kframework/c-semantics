@@ -6,7 +6,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTIC-SYNTAX
 	including C-SETTINGS
 	
-	--- this maintains byte order
+	// this maintains byte order
 	op fillToBytes-aux : K List{K} -> K
 	rule fillToBytes(dataList(L:List{K})) => fillToBytes-aux(dataList(L:List{K}), .List{K}) [structural]
 	rule fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat))), L':List{K})
@@ -28,7 +28,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		=> dataList(L:List{K})
 		[structural]
 		
-	--- coallesce bitranges that are adjacent
+	// coallesce bitranges that are adjacent
 	rule _bit::_(piece(bitRange(N:Nat, sNat(To:Nat), To':Nat), Len:Nat), piece(bitRange(N:Nat, From:Nat, To:Nat), Len':Nat))
 		=> piece(bitRange(N:Nat, From:Nat, To':Nat), Len:Nat +Nat Len':Nat)
 		if Len:Nat +Nat Len':Nat <=Nat numBitsPerByte
@@ -90,7 +90,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	op extractField-pre : List{K} Type K K -> K [metadata "strict(3 4)"]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
 	
-	--- figureOffset(loc(0, 0), calcStructSize-aux(L1:List{KResult}, 0), T:Type)
+	// figureOffset(loc(0, 0), calcStructSize-aux(L1:List{KResult}, 0), T:Type)
 	rule [extractField-from-struct-start]:
 		< k > extractField(L:List{K}, structType(S:Id), F:Id)
 			=> extractField-pre(L:List{K}, T:Type, calculateLength(L:List{Type}), bitSizeofType(T:Type)) ...</ k >
@@ -117,7 +117,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		if  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
 	
-	--- this should probably go in the k prelude
+	// this should probably go in the k prelude
 
 	rule K:K in (ListItem(K:K) ?) => true [structural]
 	rule K:K in .List => false [structural]
@@ -129,7 +129,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		< k > V:Value ~> discard => .K ...</ k >
 		[structural]
 	
-	---- derived
+	//- derived
 	rule bitsToBytes(N:Nat) => absInt(ceilingRat(N:Nat /Rat numBitsPerByte)) [structural]
 		
 	rule numBytes(unsigned-char) => numBytes(signed-char) [structural]
@@ -189,7 +189,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		if N:Nat <Nat N':Nat
 		[structural]
 
-	--- Note: it only makes sense to memo this if the sets are just used to represent categories
+	// Note: it only makes sense to memo this if the sets are just used to represent categories
 	rule S:Set SetItem(K:K) contains K:K => true [structural]
 	rule S:Set SetItem(K1:K) contains K2:K => S:Set contains K2:K
 		if K1:K =/=Bool K2:K
@@ -218,7 +218,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule hasSignedIntegerType(T:Type) => true
 		if (signedIntegerTypes contains T:Type)
 		[structural]
-	rule hasSignedIntegerType(enumType(?)) => true [structural] --- choice fixme
+	rule hasSignedIntegerType(enumType(?)) => true [structural] // choice fixme
 	rule hasSignedIntegerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'bitfieldType
 		andBool setOfTypes contains l(getKLabel(T:Type))

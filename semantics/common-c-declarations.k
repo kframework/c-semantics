@@ -1,7 +1,7 @@
 kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	including COMMON-INCLUDE 
-	op figureInitializer-aux : Id Type K -> K [metadata "strict(3)"] --- id, type, initializer
-	op declarationObject : Type K K -> K --- type, translation unit it was defined in, definition
+	op figureInitializer-aux : Id Type K -> K [metadata "strict(3)"] // id, type, initializer
+	op declarationObject : Type K K -> K // type, translation unit it was defined in, definition
 	
 	op external : -> K 
 	op internal : -> K 
@@ -14,8 +14,8 @@ endkm
 kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 
-	--- empty binding
-	--- fixme not really a sequence point
+	// empty binding
+	// fixme not really a sequence point
 	
 	op bind-aux : Nat List{C} List{Type} -> K 
 	rule
@@ -30,9 +30,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 		
-	--- n1494 6.5.2.2:6 If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (, ...) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
-	--- — one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
-	--- — both types are pointers to qualified or unqualified versions of a character type or void
+	// n1494 6.5.2.2:6 If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (, ...) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
+	// — one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
+	// — both types are pointers to qualified or unqualified versions of a character type or void
 	
 	rule [bind-coerce-array]:
 		bind-aux(
@@ -100,7 +100,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 	op bindVariadic-pre : K List{K} -> K 
 	eq promoteList(Nil) = .List{K}
 	
-	--- the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
+	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
 		< k > bind-aux(Loc:Nat, L:List{C}, variadic)
 			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
@@ -113,9 +113,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k >
 		[structural]
 	
-	--- fixme don't forget to get rid of append
+	// fixme don't forget to get rid of append
 	
-	--- this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
+	// this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
 	rule [bind-variadic]:
 		< k > (.K 
 				=> allocateType(Loc:Nat, Type)
@@ -136,12 +136,12 @@ endkm
 kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 
-	--- c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes of this subclause unnamed members of objects of structure and union type do not participate in initialization.  Unnamed members of structure objects have indeterminate value even after initialization
-	--- c99 6.7.8:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static storage duration is not initialized explicitly, then:
-	--- — if it has pointer type, it is initialized to a null pointer;
-	--- — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
-	--- if it is an aggregate, every member is initialized (recursively) according to these rules;
-	--- — if it is a union, the first named member is initialized (recursively) according to these rules
+	// c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes of this subclause unnamed members of objects of structure and union type do not participate in initialization.  Unnamed members of structure objects have indeterminate value even after initialization
+	// c99 6.7.8:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static storage duration is not initialized explicitly, then:
+	// — if it has pointer type, it is initialized to a null pointer;
+	// — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
+	// if it is an aggregate, every member is initialized (recursively) according to these rules;
+	// — if it is a union, the first named member is initialized (recursively) according to these rules
 
 	op defineType : K -> K [metadata "strict"] 
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
@@ -151,14 +151,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
 		[structural] 
 	
-	--- aggregates
+	// aggregates
 	rule
 		< k > figureInitializer(X:Id, T:Type, CompoundInit(L:List{C}))
 			=> giveType(X:Id, T:Type)
 			~> figureInitializer-aux(X:Id, T:Type, startInitializer(T:Type, X:Id, CompoundInit(L:List{C})))
 		...</ k >
 		if (hasAggregateType(T:Type) orBool hasUnionType(T:Type)) 
-		---andBool notBool hasIncompleteType(T:Type)
+		//andBool notBool hasIncompleteType(T:Type)
 		[structural] 
 	rule
 		< k > figureInitializer(X:Id, arrayType(T:Type, Len:Nat), SingleInit(Constant(StringLiteral(S:String)))) 
@@ -179,7 +179,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		[structural] 
 		
-	--- this comes from function declarations.  should probably adjust this
+	// this comes from function declarations.  should probably adjust this
 	rule
 		< k > figureInitializer(X:Id, T:Type, initializer(K:K))
 			=> figureInitializer-aux(X:Id, T:Type, initializer(K:K))
@@ -190,17 +190,17 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > figureInitializer-aux(X:Id, T:Type, initializer(K:K))
 			=> initializerValue(X:Id, T:Type, K:K)
 		...</ k >
-		if notBool hasIncompleteType(T:Type) --- I'd like to get rid of this cleanly
+		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		[structural] 
 	
-	--- base types
+	// base types
 	rule
 		< k > figureInitializer(X:Id, T:Type, SingleInit(K:K))
 			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(X:Id := K:K)))
 		...</ k >
 		if notBool hasArrayType(T:Type)
 		[structural] 
-	--- c1x 6.7.8:11
+	// c1x 6.7.8:11
 	rule
 		< k > figureInitializer(X:Id, T:Type, CompoundInit(InitFragment(NextInit, SingleInit(K:K))))
 			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(X:Id := K:K)))
@@ -218,7 +218,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	op initialize-aux : Id Type K -> K 
 		
-	--- c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
+	// c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
 	rule
 		< k > initialize(X:Id, T:Type, K:K)
 			=> if (F:Id ==Bool File-Scope) then zero(X:Id) else (.) fi 
@@ -246,11 +246,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	op zeroStruct : K List{C} -> K 
 	
-	--- c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
-	--- — if it has pointer type, it is initialized to a null pointer;
-	--- — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
-	--- — if it is an aggregate, every member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
-	--- — if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
+	// c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
+	// — if it has pointer type, it is initialized to a null pointer;
+	// — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
+	// — if it is an aggregate, every member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
+	// — if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	
 	rule
 		< k > zeroType(Name:K, structType(S:Id)) 
@@ -314,17 +314,17 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op declareExternalVariable : Id Type K -> K 
 	op declareInternalVariable : Id Type K -> K 
 	
-	--- function definition
+	// function definition
 	rule
 		< k > declare(typedDeclaration(T:Type, X:Id), K:K) 
 			=> declareFunction(X:Id, T:Type, K:K)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
-		if notBool hasIncompleteType(T:Type) --- I'd like to get rid of this cleanly
+		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		[structural] 
 		
-	--- fixme there are still no nested functions though, right?
+	// fixme there are still no nested functions though, right?
 	rule
 		< k > declare(typedDeclaration(T:Type, X:Id), NoInit) 
 			=> addToEnv(X:Id, Loc:Nat)
@@ -332,7 +332,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< externalLocations >... X:Id |-> Loc:Nat ...</ externalLocations > 
 		< currentFunction > F:K </ currentFunction >
-		if notBool hasIncompleteType(T:Type) --- I'd like to get rid of this cleanly
+		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
 		[structural] 
@@ -341,7 +341,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareExternalVariable(X:Id, T:Type, K:K)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
-		--- if notBool hasIncompleteType(T:Type) --- I'd like to get rid of this cleanly
+		// if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		if notBool hasFunctionType(T:Type)
 		[structural] 
 	rule
@@ -349,15 +349,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareInternalVariable(X:Id, T:Type, K:K)
 		...</ k >
 		< currentFunction > F:K </ currentFunction >
-		--- if notBool hasIncompleteType(T:Type) --- I'd like to get rid of this cleanly
+		// if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		if notBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
 		[structural] 
 		
-	---- external variables
-	--- feature request : nice to have MapList
+	//- external variables
+	// feature request : nice to have MapList
 	
-	--- function definition
+	// function definition
 	rule
 		< k > declareFunction(X:Id, T:Type, K:K)
 			=> declareWithLinkage(X:Id, T:Type, K:K, external)
@@ -373,7 +373,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool hasStaticType(T:Type)
 		[structural] 
 		
-	--- fixme not handling internal prototypes
+	// fixme not handling internal prototypes
 	rule
 		< k > declareFunction(X:Id, T:Type, K:K)
 			=> declareWithLinkage(X:Id, T:Type, K:K, internal)
@@ -384,11 +384,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 		
 	
-	op declareWithLinkage : Id Type K K -> K --- id, type, possible init, linkage (external, internal, noLinkage)
+	op declareWithLinkage : Id Type K K -> K // id, type, possible init, linkage (external, internal, noLinkage)
 	
-	---- internal variables
+	//- internal variables
 	
-	--- fixme need to look for bad use
+	// fixme need to look for bad use
 	rule
 		< k > declareInternalVariable(X:Id, T:Type, K:K)
 			=> declareWithLinkage(X:Id, T:Type, K:K, noLinkage)
@@ -444,22 +444,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< shouldInit > ? => OldShouldValue:Bool </ shouldInit >
 		[structural] 
 		
-	--- statics should only be initialized once.  if we've already seen it, we still need to calculate type, but don't init
-	--- rule
-		--- < k > declareInternalVariable(X:Id, T:Type, K:K)
-			--- => defineAndInit(X:Id, unqualifyType(T:Type), figureInitializer(X:Id, unqualifyType(T:Type), K:K), Loc:Nat)
-			--- ~> restoreShouldInit(OldShouldValue:Bool)
-		--- ...</ k >
-		--- < internalLocations >... Tu:K |-> Map((? kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</ internalLocations >
-		--- < blockHistory > ListItem(BlockNum:Nat) ...</ blockHistory >
-		--- < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		--- < shouldInit > OldShouldValue:Bool => false </ shouldInit >
-		--- if hasStaticType(T:Type)
-		--- andBool notBool hasExternType(T:Type)
-		--- andBool K:K =/=Bool NoInit
-		--- [structural] 
+	// statics should only be initialized once.  if we've already seen it, we still need to calculate type, but don't init
+	// rule
+		// < k > declareInternalVariable(X:Id, T:Type, K:K)
+			// => defineAndInit(X:Id, unqualifyType(T:Type), figureInitializer(X:Id, unqualifyType(T:Type), K:K), Loc:Nat)
+			// ~> restoreShouldInit(OldShouldValue:Bool)
+		// ...</ k >
+		// < internalLocations >... Tu:K |-> Map((? kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</ internalLocations >
+		// < blockHistory > ListItem(BlockNum:Nat) ...</ blockHistory >
+		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		// < shouldInit > OldShouldValue:Bool => false </ shouldInit >
+		// if hasStaticType(T:Type)
+		// andBool notBool hasExternType(T:Type)
+		// andBool K:K =/=Bool NoInit
+		// [structural] 
 		
-	--- this is essentially defineandinit, but that checks if type has been seen for allocation
+	// this is essentially defineandinit, but that checks if type has been seen for allocation
 	op reseenStatic : Id Type K Nat -> K [metadata "strict(3)"] 
 	rule
 		< k > declareInternalVariable(X:Id, T:Type, K:K)
@@ -493,7 +493,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 	
-	---- external variables
+	//- external variables
 	rule
 		< k > declareExternalVariable(X:Id, T:Type, K:K)
 			=> declareWithLinkage(X:Id, T:Type, K:K, external)
@@ -546,28 +546,28 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool L:K =/=Bool noLinkage
 		[structural] 
 		
-	--- fixme this terribly needs to be refactored.  I'm duplicating the above two rules so I don't add locals to the declaration order
+	// fixme this terribly needs to be refactored.  I'm duplicating the above two rules so I don't add locals to the declaration order
 	rule
 		< k > declareWithLinkage(X:Id, T:Type, NoInit, L:K) => declareOnly(X:Id, T:Type, L:K) ...</ k >
-		--- < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		if L:K ==Bool noLinkage
 		[structural] 
 	rule
 		< k > declareWithLinkage(X:Id, T:Type, K:K, L:K) => declareAndDefine(X:Id, T:Type, K:K, L:K) ...</ k >
-		--- < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		if K:K =/=Bool NoInit
 		andBool L:K ==Bool noLinkage
 		[structural] 
 	
-	--- extern functions are no different than functions
-	--- fixme dangerous if someone marks it as static and extern.  can't tell
+	// extern functions are no different than functions
+	// fixme dangerous if someone marks it as static and extern.  can't tell
 	ceq qualifiedType(T:Type, Extern) = T:Type
 		if hasFunctionType(T:Type) 
 	
-	--- fixme clean these up, they are so redundant
-	--- fixme unqualifying these is probably unsafe
+	// fixme clean these up, they are so redundant
+	// fixme unqualifying these is probably unsafe
 	rule
 		< k > declareOnly(X:Id, T:Type, external)
 			=> .K
@@ -581,7 +581,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			)
 			andBool (
 				notBool $hasMapping(Types:Map, X:Id)
-				--- orBool Types:Map(X:Id) ==Bool prototype(T:Type)
+				// orBool Types:Map(X:Id) ==Bool prototype(T:Type)
 				orBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
 			)
 		[structural] 
@@ -599,7 +599,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			andBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
 		[structural]
 	
-	--- fixme haven't thought about this much, is it right?
+	// fixme haven't thought about this much, is it right?
 	rule
 		< k > declareOnly(X:Id, T:Type, internal)
 			=> .K
@@ -623,9 +623,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
-		andBool notBool X:Id in Vars:List --- this should be here statically, but not dynamically
+		andBool notBool X:Id in Vars:List // this should be here statically, but not dynamically
 		[structural]
-	rule --- same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
+	rule // same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
 		< k > declareOnly(X:Id, T:Type, noLinkage)
 			=> .K
 		...</ k >
@@ -635,7 +635,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool hasExternType(T:Type)
 		[structural] 
 	
-	--- exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
+	// exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
 	rule
 		< k > declareAndDefine(X:Id, T:Type, K:K, external)
 			=> .K
@@ -669,9 +669,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
 		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		if notBool X:Id in Vars:List --- again, this should be needed statically, but not dynamically
+		if notBool X:Id in Vars:List // again, this should be needed statically, but not dynamically
 		[structural] 
-	rule --- this happens when we jump before a variable declaration with an initialization in the same block
+	rule // this happens when we jump before a variable declaration with an initialization in the same block
 		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
 			=> justInit(figureInitializer(X:Id, T:Type, K:K))
 		...</ k >
@@ -699,7 +699,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> allocateTypeIfAbsent(Loc:Nat, T:Type)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:Type)
-			--- ~> initialize(X:Id, T:Type, K:K)
+			// ~> initialize(X:Id, T:Type, K:K)
 		...</ k >
 		< shouldInit > false </ shouldInit >
 		[structural]
@@ -742,8 +742,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	op defineUsingOldDeclaration : Type Id K -> K 
 	
-	--- op defineFunctionUsingOldDeclaration : Type Id K -> K 
-	--- FIXME check prototypes
+	// op defineFunctionUsingOldDeclaration : Type Id K -> K 
+	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
 			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, functionObject(X:Id, unqualifyType(T:Type), Block:K))))
@@ -821,7 +821,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< structs >... S:Id |-> typedDeclaration(T:Type, F:Id) :: ? ...</ structs > 
 		[structural] 
 		
-	--- fixme should i worry about basetype here?
+	// fixme should i worry about basetype here?
 	rule [init-next-array-element]:
 		< currentSubObject > 
 			(next ListItem(te(K:K[N:Nat], T:Type)) => ListItem(te(K:K[sNat(N:Nat)], T:Type)))
@@ -841,7 +841,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			(next ListItem(te(K:K[N:Nat], T:Type)) => ListItem(te(K:K[sNat(N:Nat)], T:Type))) 
 			ListItem(te(K:K, incompleteArrayType(?)))
 		...</ currentSubObject >
-		---< incompleteLength > N':Nat => maxNat(sNat(N:Nat), N':Nat) </ incompleteLength >
+		//< incompleteLength > N':Nat => maxNat(sNat(N:Nat), N':Nat) </ incompleteLength >
 		[structural] 
 	
 	rule [init-next-struct-element]:
@@ -896,17 +896,17 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule
 		< k > fillInitializer(CompoundInit(L:List{C})) 
 			=> fillInitializer(L:List{C})
-			--- ~> debug
+			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:Type)) Remainder:ListItem)
 		...</ k >
 		< currentSubObject > (?:List => .) ListItem(te(K:K, T:Type)) (Remainder:ListItem => .) </ currentSubObject >
 		< currentObject > (. => ListItem(te(K:K, T:Type))) ...</ currentObject >
 		if hasAggregateType(T:Type) orBool hasUnionType(T:Type)
-		[metadata "computational"] --- fixme computational to make sure all the other equations have applied first
+		[metadata "computational"] // fixme computational to make sure all the other equations have applied first
 	rule
 		< k > finishCompoundInit(L:List) => 
 			. 
-			--- debug
+			// debug
 		...</ k >
 		< currentObject > (ListItem(te(K:K, T:Type)) => .) ...</ currentObject >
 		< currentSubObject > (? => L:List) </ currentSubObject >
@@ -915,7 +915,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	context fillInitializer(InitFragment(`[HOLE`]:K, ?)) 
 	op buildDesignator : K -> K 
 	
-	--- note that these clear the current subobject cell, because it will be repopulated when building the designator
+	// note that these clear the current subobject cell, because it will be repopulated when building the designator
 	rule
 		< k > fillInitializer(InitFragment(InFieldInit(F:Id, K':K), Exp:K))
 			=> fillInitializer(InitFragment(buildDesignator(InFieldInit(F:Id, K':K)), Exp:K))
@@ -924,7 +924,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > ?:List => block ListItem(te(K:K, T:Type)) </ currentSubObject >
 		if hasStructType(T:Type) orBool hasUnionType(T:Type)
 		[structural] 
-	--- fixme does this need to worry about incompleteLength?
+	// fixme does this need to worry about incompleteLength?
 	rule
 		< k > fillInitializer(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
 			=> fillInitializer(InitFragment(buildDesignator(AtIndexInit(Index:K, K':K)), Exp:K))
@@ -935,8 +935,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	
-	--- fixme these are also too restrictive on type.  if we try to assign an int to a long-int field, it will fail
-	--- i don't think this is true anymore
+	// fixme these are also too restrictive on type.  if we try to assign an int to a long-int field, it will fail
+	// i don't think this is true anymore
 	rule
 		< k > buildDesignator(InFieldInit(F:Id, More:K)) 
 			=> buildDesignator(More:K)
@@ -970,7 +970,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	op getTopArrayUse : K -> Nat 
 	eq getTopArrayUse(X:Id) = 0 
-	eq getTopArrayUse(X:Id[N:Nat]) = sNat(N:Nat) --- +1 for length instead of index
+	eq getTopArrayUse(X:Id[N:Nat]) = sNat(N:Nat) // +1 for length instead of index
 	eq getTopArrayUse(K:K . F:Id) = getTopArrayUse(K:K) 
 	eq getTopArrayUse((K:K[N:Nat])[?]) = getTopArrayUse(K:K[N:Nat]) 
 	eq getTopArrayUse((K:K . F:Id)[?]) = getTopArrayUse(K:K) 
@@ -981,7 +981,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > (. => typeof(K:K)) ~> initializeSingleInit(K:K) ...</ k >
 		[structural] 
 	
-	--- fixme want to exclude strings, but not normal arrays
+	// fixme want to exclude strings, but not normal arrays
 	rule
 		< k > T':Type ~> initializeSingleInit(K':K) => . ...</ k >
 		< currentSubObject > (. => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
@@ -992,12 +992,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool notBool hasUnionType(T':Type)
 		[structural] 
 		
-	--- this is used to have an aggregate on the RHS of a compound init
-	--- fixme want to exclude strings, but not normal arrays
+	// this is used to have an aggregate on the RHS of a compound init
+	// fixme want to exclude strings, but not normal arrays
 	op initFromAggregateRHS : K Type -> K 
 	rule
 		< k > T:Type ~> initializeSingleInit(K:K) => initFromAggregateRHS(K:K, T:Type) ...</ k >
-		--- if hasAggregateType(T:Type) 		
+		// if hasAggregateType(T:Type) 		
 		if hasStructType(T:Type)
 		orBool hasUnionType(T:Type)
 		[structural] 
@@ -1020,7 +1020,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if T:Type =/=Bool T':Type
 		[structural] 
 		
-	--- fixme unsafe, might have started to initialize other things
+	// fixme unsafe, might have started to initialize other things
 	rule
 		< k > initFromStructRHS(K':K, structType(S:Id), ?)
 			=> .K
@@ -1073,14 +1073,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if S:String =/=Bool ""
 		andBool hasCharType(T:Type)
 		[structural] 
-	--- fixme not sure what happens in the case of   char *x = "";
+	// fixme not sure what happens in the case of   char *x = "";
 	rule
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => . ...</ k >
-		--- if hasCharType(T:Type)
+		// if hasCharType(T:Type)
 		[structural] 
 		
-	--- this rule assumes all unrollings have already occurred, so it needs to be a rule
-	--- alternatively, i've added the condition below which might be enough
+	// this rule assumes all unrollings have already occurred, so it needs to be a rule
+	// alternatively, i've added the condition below which might be enough
 	rule
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> initializeSingleInit(Constant(StringLiteral(S:String)))
@@ -1130,16 +1130,16 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	*/
 	rule
 		< k > resolveReferences => .K ...</ k >
-		--- < staticSemantics >...
+		// < staticSemantics >...
 			< translationUnits > .Bag </ translationUnits >
-		--- ...</ staticSemantics >
+		// ...</ staticSemantics >
 		[structural] 
 		
 	op resolveInternal : Id K K -> K 
 	op resolveExternal : Id K Bag K -> K 
 	op resolveExternal-aux : Id K Bag K Nat K -> K [metadata "strict(6)"] 
 	
-	op recordFunctionTranslationUnitInformation : K Type K K -> K --- name, type, context, where defined
+	op recordFunctionTranslationUnitInformation : K Type K K -> K // name, type, context, where defined
 	rule
 		< k > recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, DefTu:K) => . ...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</ functionTranslationUnits >
@@ -1150,9 +1150,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		if notBool hasFunctionType(T:Type)
 		[structural] 
 	
-	--- fixme
-	--- should be adding to env after figuring initializer
-	--- should be changing env to be correct env before figuring initializer
+	// fixme
+	// should be adding to env after figuring initializer
+	// should be changing env to be correct env before figuring initializer
 	op allocateWithInit : K Nat -> K [metadata "strict"] 
 	op noAllocateWithInit : K Nat -> K [metadata "strict"] 
 	op resolveInternal-aux : Id K K K -> K [metadata "strict(4)"] 
@@ -1212,7 +1212,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< preLinkage >... Tu:K |-> Map((? X:Id |-> internal)) ...</ preLinkage >
 		[structural] 
 	
-	--- 
+	// 
 	rule
 		< k > (. => resolveInternal(X:Id, Tu:K, K:K)) ~> resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .))) ...</ preLinkage >
@@ -1220,7 +1220,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
 		[structural] 
 		
-	--- static variable without an initializer
+	// static variable without an initializer
 	rule
 		< k > (. => resolveInternal(X:Id, Tu:K, declarationObject(unqualifyType(T:Type), Tu:K, initializer(zero(X:Id))))) ~> resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .))) ...</ preLinkage >
@@ -1244,7 +1244,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	eq toString(Num:Nat) = Int2String(Num:Nat) 
 	eq Rat2String(sym(N:Nat), M:NzNat) = "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" 
 	
-	--- fixme this means we've declared it twice (like a prototype maybe?), but already handled it.  happening with getc in clib.c
+	// fixme this means we've declared it twice (like a prototype maybe?), but already handled it.  happening with getc in clib.c
 	rule
 		< k > resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map(Linkage:Map) ...</ preLinkage >
@@ -1256,11 +1256,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		andBool notBool $hasMapping(IntDefs:Map, X:Id)
 		[structural] 
 	
-	--- function prototypes
+	// function prototypes
 	rule
 		< k > (. => 
 				giveType(X:Id, T:Type)
-				~> recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, Tu:K)  --- fixme fake Tu
+				~> recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, Tu:K)  // fixme fake Tu
 			)
 			~> resolve(Tu:K) 
 		...</ k >
@@ -1273,7 +1273,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		andBool notBool $hasMapping(Defs:Map, X:Id)
 		[structural] 
 		
-	--- c1x 6.9.2:2 A declaration of an identifier for an object that has file scope without an initializer, and without a storage-class specifier or with the storage-class specifier static, constitutes a tentative definition. If a translation unit contains one or more tentative definitions for an identifier, and the translation unit contains no external definition for that identifier, then the behavior is exactly as if the translation unit contains a file scope declaration of that identifier, with the composite type as of the end of the translation unit, with an initializer equal to 0
+	// c1x 6.9.2:2 A declaration of an identifier for an object that has file scope without an initializer, and without a storage-class specifier or with the storage-class specifier static, constitutes a tentative definition. If a translation unit contains one or more tentative definitions for an identifier, and the translation unit contains no external definition for that identifier, then the behavior is exactly as if the translation unit contains a file scope declaration of that identifier, with the composite type as of the end of the translation unit, with an initializer equal to 0
 	rule
 		< k > (. 
 			=> allocateType(Loc:Nat, unqualifyType(T:Type))
@@ -1313,8 +1313,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< declarationOrder >... Tu:K |-> ListToK(.List) ...</ declarationOrder >
 		[structural] 
 				
-	--- need to worry about things that don't have definitions that may override externs
-	--- want to make it so env is always correct local env, so need to have a set of global envs, one for each tu
+	// need to worry about things that don't have definitions that may override externs
+	// want to make it so env is always correct local env, so need to have a set of global envs, one for each tu
 	
 	
 	

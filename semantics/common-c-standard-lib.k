@@ -1,9 +1,9 @@
---- when adding a new builtin library function, don't forget to register it in common-c-semantics in the "builtinIdentifiers" set
+// when adding a new builtin library function, don't forget to register it in common-c-semantics in the "builtinIdentifiers" set
 
 load maudeLib/TCPSupport
 
-------------------------------------------------
----- C standard library
+////////////////////////////////
+//- C standard library
 kmod COMMON-C-STANDARD-LIBRARY is
 	including COMMON-INCLUDE
 	including SOCKET-BUILTIN-MODULE
@@ -13,8 +13,8 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	
 	op nextvarg : Nat Type -> C 
-	--- fixme had to make this K because of the context bug
-	op nextvarg-aux : K Type K K -> C --- offset, type, length
+	// fixme had to make this K because of the context bug
+	op nextvarg-aux : K Type K K -> C // offset, type, length
 	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?) 
 	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
 	
@@ -45,7 +45,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	eq idsFromDeclList(L:List{C} :: typedDeclaration(void, X:Id)) 
 		= idsFromDeclList(L:List{C}) 
 	eq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: variadic)
-		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) --- assumes variadic args are placed in incremental blocks
+		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) // assumes variadic args are placed in incremental blocks
 	eq idsFromDeclList(Nil) = Nil
 	
 	op incSymbolic : K -> K
@@ -56,27 +56,27 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > handleBuiltin(F:Id, functionType(Return:Type, L:List{Type}))
 			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
 		...</ k >
-		--- if F:Id =/=Bool Identifier("longjmp")
+		// if F:Id =/=Bool Identifier("longjmp")
 		[structural] 
 
-	--- rule [debug]:
-		--- < k > [prepareBuiltin((debug), ?) => skipval] ...</ k >
-	--- [structural] 
-	--------------------------------------------
-	--- The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
-	--- fixme check bounds
-	--- fixme obviously need to rework configuration to make this easy
+	// rule [debug]:
+		// < k > [prepareBuiltin((debug), ?) => skipval] ...</ k >
+	// [structural] 
+	////////////////////////////--
+	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
+	// fixme check bounds
+	// fixme obviously need to rework configuration to make this easy
 	op Bag : Bag -> K 
 	rule [setjmp]:
 		< thread > 
 			Thread:Bag
-			< buffer > .List </ buffer >  --- don't save buffer in bag
-			< nextLoc > NextLoc:Nat </ nextLoc > --- don't save nextLoc in bag
+			< buffer > .List </ buffer >  // don't save buffer in bag
+			< nextLoc > NextLoc:Nat </ nextLoc > // don't save nextLoc in bag
 			< control >
 				Control:Bag
 				< local > 
 					Local:Bag 
-					< localAddresses > Locals:Set => .Set </ localAddresses > --- since we're coming back here, don't want to delete memory yet
+					< localAddresses > Locals:Set => .Set </ localAddresses > // since we're coming back here, don't want to delete memory yet
 				</ local >
 				< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, pointerType(structType(?)))) 
 						=> writeByte(Loc:Nat, Bag(
@@ -94,10 +94,10 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			</ control >
 		</ thread >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [longjmp]:
 		< thread > 
-			< nextLoc > NextLoc:Nat </ nextLoc > --- keep the nextLoc
+			< nextLoc > NextLoc:Nat </ nextLoc > // keep the nextLoc
 			< buffer > .List </ buffer >
 			((
 			?
@@ -122,152 +122,152 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			) => piece(unknown(numBitsPerByte), numBitsPerByte)))) 
 		...</ mem >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	
-	--- op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
+	// op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
 	
-	--- rule [spawn-begin]:
-		--- < k > prepareBuiltin((Identifier("spawn")), (Fun:Value :: tv(Len:Nat, ?) :: L:List{C})) => spawn-aux(Fun:Value, Len:Nat, L:List{C}, Nil) ...</ k >
-		--- [structural]
+	// rule [spawn-begin]:
+		// < k > prepareBuiltin((Identifier("spawn")), (Fun:Value :: tv(Len:Nat, ?) :: L:List{C})) => spawn-aux(Fun:Value, Len:Nat, L:List{C}, Nil) ...</ k >
+		// [structural]
 		
-	--- rule [spawn-args1]:
-		--- < k > spawn-aux(Fun:Value, sNat(Len:Nat), vararg(tv(Loc:Nat, ?)), L:List{C}) 
-			--- => spawn-aux(Fun:Value, Len:Nat, nextvarg(Loc:Nat, int), L:List{C})
-		--- ...</ k >
-		--- [structural]
+	// rule [spawn-args1]:
+		// < k > spawn-aux(Fun:Value, sNat(Len:Nat), vararg(tv(Loc:Nat, ?)), L:List{C}) 
+			// => spawn-aux(Fun:Value, Len:Nat, nextvarg(Loc:Nat, int), L:List{C})
+		// ...</ k >
+		// [structural]
 		
-	--- rule [spawn-args2]:
-		--- < k > spawn-aux(Fun:Value, Len:Nat, (vpair(tv(D:Int, int), V:Value) :: ?), L:List{C}) 
-			--- => spawn-aux(Fun:Value, Len:Nat, V:Value, (L:List{C} :: tv(D:Int, int)))
-		--- ...</ k >
-		--- [structural]
+	// rule [spawn-args2]:
+		// < k > spawn-aux(Fun:Value, Len:Nat, (vpair(tv(D:Int, int), V:Value) :: ?), L:List{C}) 
+			// => spawn-aux(Fun:Value, Len:Nat, V:Value, (L:List{C} :: tv(D:Int, int)))
+		// ...</ k >
+		// [structural]
 	
-	--- rule [spawn]:
-		--- < thread > 
-			--- C:Bag 
-			--- < callStack > ?:List </ callStack >
-			--- < control >
-				--- C':Bag
-				--- < k > spawn-aux(Fun:Value, 0, ?, L:List{C}) => skipval ...</ k > 
-			--- </ control >
-		--- </ thread >
-		--- (.Bag => 
-		--- < thread > 
-			--- C:Bag
-			--- < callStack > .List </ callStack > 
-			--- < control >
-				--- C':Bag
-				--- < k > Call(Fun:Value, L:List{C}) ~> discard </ k > 
-			--- </ control >
-		--- </ thread >)
-		--- [structural] 
-	--- --------------------------------------------
-	--- rule [lock]:
-		--- < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		--- < busy > Busy:Bag (.Bag => BagItem(Loc:Nat)) </ busy >
-		--- < holds >... .Map => Loc:Nat |-> 0 ...</ holds >
-		--- if notBool Loc:Nat in Busy:Bag
-		--- [metadata "computational"]
-	--- rule [lock]:
-		--- < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		--- < holds >... Loc:Nat |-> (N:Nat => sNat(N:Nat)) ...</ holds >
-		--- [metadata "computational"]
-	--- --------------------------------------------
-	--- rule [unlock]:
-		--- < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		--- < busy >... BagItem(Loc:Nat) => .Bag ...</ busy >
-		--- < holds >... Loc:Nat |-> 0 => .Map ...</ holds >
-		--- [structural] 
-	--- rule [unlock]:
-		--- < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
-		--- < holds >... Loc:Nat |-> (sNat(N:Nat) => N:Nat) ...</ holds >
-		--- [structural] 
-	--- --------------------------------------------
-	--- rule [sync]:
-		--- < threads >
-			--- < thread >...
-				--- < k > prepareBuiltin(Identifier("sync"), Nil) => skipval ...</ k > 
-			--- ...</ thread >
-		--- </ threads >
-		--- [structural] 
-	--------------------------------------------
+	// rule [spawn]:
+		// < thread > 
+			// C:Bag 
+			// < callStack > ?:List </ callStack >
+			// < control >
+				// C':Bag
+				// < k > spawn-aux(Fun:Value, 0, ?, L:List{C}) => skipval ...</ k > 
+			// </ control >
+		// </ thread >
+		// (.Bag => 
+		// < thread > 
+			// C:Bag
+			// < callStack > .List </ callStack > 
+			// < control >
+				// C':Bag
+				// < k > Call(Fun:Value, L:List{C}) ~> discard </ k > 
+			// </ control >
+		// </ thread >)
+		// [structural] 
+	// ////////////////////////////--
+	// rule [lock]:
+		// < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		// < busy > Busy:Bag (.Bag => BagItem(Loc:Nat)) </ busy >
+		// < holds >... .Map => Loc:Nat |-> 0 ...</ holds >
+		// if notBool Loc:Nat in Busy:Bag
+		// [metadata "computational"]
+	// rule [lock]:
+		// < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		// < holds >... Loc:Nat |-> (N:Nat => sNat(N:Nat)) ...</ holds >
+		// [metadata "computational"]
+	// ////////////////////////////--
+	// rule [unlock]:
+		// < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		// < busy >... BagItem(Loc:Nat) => .Bag ...</ busy >
+		// < holds >... Loc:Nat |-> 0 => .Map ...</ holds >
+		// [structural] 
+	// rule [unlock]:
+		// < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
+		// < holds >... Loc:Nat |-> (sNat(N:Nat) => N:Nat) ...</ holds >
+		// [structural] 
+	// ////////////////////////////--
+	// rule [sync]:
+		// < threads >
+			// < thread >...
+				// < k > prepareBuiltin(Identifier("sync"), Nil) => skipval ...</ k > 
+			// ...</ thread >
+		// </ threads >
+		// [structural] 
+	////////////////////////////--
 	rule [exit]:
 		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, int)) ~> ? => tv(I:Int, int) </ k >
 		[structural] 
-	--------------------------------------------
-	--- rule [abort-is-debug]:
-		--- < k > [abort => debug] ...</ k >
-	--- 
+	////////////////////////////--
+	// rule [abort-is-debug]:
+		// < k > [abort => debug] ...</ k >
+	// 
 	rule [abort]:
 		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ? => tv(134, int) </ k >
 		
-	--------------------------------------------
+	////////////////////////////--
 	rule [sqrt]:
 		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) 
 			=> tv(sqrtFloat(F:Float), double) 
 		...</ k >
 		[structural]
-	--------------------------------------------
+	////////////////////////////--
 	rule [log]:
 		< k > prepareBuiltin((Identifier("log")), tv(F:Float, double)) 
 			=> tv(logFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [exp]:
 		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, double)) 
 			=> tv(expFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [atan]:
 		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, double)) 
 			=> tv(atanFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [asin]:
 		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, double)) 
 			=> tv(asinFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [atan2]:
 		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, double) :: tv(F':Float, double))) 
 			=> tv(atanFloat(F:Float, F':Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [tan]:
 		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, double)) 
 			=> tv(tanFloat(F:Float), double) 
 		...</ k >
 	[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [floor]:
 		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, double)) 
 			=> tv(floorFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [cos]:
 		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, double))
 			=> tv(cosFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [fmod]:
 		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, double) :: tv(F':Float, double))) 
 			=> tv(F:Float %Float F':Float, double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [sin]:
 		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, double)) 
 			=> tv(sinFloat(F:Float), double) 
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 
 	rule [malloc]:
 		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
@@ -278,15 +278,15 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		if T:Type ==Bool cfg:sizeut
 		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
 		[structural]
-	--- rule [malloc]:
-		--- < k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
-			--- => alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
-		--- ...</ k >
-		--- < malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
-		--- < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		--- if T:Type ==Bool cfg:sizeut
-		--- [structural]
-	--------------------------------------------
+	// rule [malloc]:
+		// < k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
+			// => alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
+		// ...</ k >
+		// < malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
+		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		// if T:Type ==Bool cfg:sizeut
+		// [structural]
+	////////////////////////////--
 	op calloc-aux : -> K
 	rule [calloc]:
 		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
@@ -298,66 +298,66 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > (.K => zeroBlock(Loc:Nat)) ~> tv(Loc:Nat, pointerType(void)) ~> (calloc-aux => .K) ...</ k >
 		[structural]
 		
-	--- rule [calloc]:
-		--- < k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
-			--- => alloc(Loc:Nat, (N:Nat *Nat Size:Nat)) 
-			--- ~> zeroBlock(Loc:Nat)
-			--- ~> tv(Loc:Nat, pointerType(void)) 
-		--- ...</ k >
-		--- < malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
-		--- < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		--- [structural]
-	--------------------------------------------
-	--- Returns a pseudo-random integral number in the range 0 to RAND_MAX
+	// rule [calloc]:
+		// < k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?))) 
+			// => alloc(Loc:Nat, (N:Nat *Nat Size:Nat)) 
+			// ~> zeroBlock(Loc:Nat)
+			// ~> tv(Loc:Nat, pointerType(void)) 
+		// ...</ k >
+		// < malloced >... .Map => Loc:Nat |-> (N:Nat *Nat Size:Nat) ...</ malloced >
+		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		// [structural]
+	////////////////////////////--
+	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	
-	--- unsignedIntegerTypes contains T:Type
-	--- (2 ^Nat absInt(numBits(int)))
-	--- fixme should use RAND_MAX
+	// unsignedIntegerTypes contains T:Type
+	// (2 ^Nat absInt(numBits(int)))
+	// fixme should use RAND_MAX
 	rule [rand]:
 		< k > prepareBuiltin((Identifier("rand")), Nil) 
 			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(int), int)
 		...</ k >
 		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [free]:
 		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, pointerType(?))) 
 			=> deleteSizedBlock(Loc:Nat, Len:Nat) ~> skipval 
 		...</ k >
 		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
 		[structural] 
-	--------------------------------------------
-	--- fixme doesn't cast to int
+	////////////////////////////--
+	// fixme doesn't cast to int
 	rule [putchar]:
 		< k > prepareBuiltin((Identifier("putchar")), tv(N:Nat, ?)) 
 			=> writeToFD(1, N:Nat) ~> tv(N:Nat, int) 
 		...</ k >
 		[structural] 
-	-----------------------------------------
-	--- fixme doesn't cast to int
+	//////////////////////////--
+	// fixme doesn't cast to int
 	rule [fslPutc]:
 		< k > prepareBuiltin((Identifier("fslPutc")), (tv(N:Nat, ?) :: tv(H:Nat, ?))) 
 			=> writeToFD(H:Nat, N:Nat) 
 			~> tv(N:Nat, int)
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [getchar]:
 		< k > prepareBuiltin((Identifier("getchar")), Nil) => readFromFD(0) ...</ k >
 		[structural]
-	--------------------------------------------
+	////////////////////////////--
 	rule [fslFGetC]:
 		< k > prepareBuiltin((Identifier("fslFGetC")), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?)))
 			=> readFromFD(FD:Nat) 
-			--- => tv(120, int)
+			// => tv(120, int)
 		...</ k >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("fslCloseFile")), tv(FD:Nat, int)) => tv(0, int) ...</ k >
 		< openFiles >... FD:Nat |-> ? => .Map ...</ openFiles >
 		[structural] 
-	--------------------------------------------
+	////////////////////////////--
 	rule [fslOpenFile]:
 		< k > prepareBuiltin((Identifier("fslOpenFile")), (Loc:Value :: tv(FD:Nat, int)))
 			=> fsl-open-file(getString(Loc:Value), FD:Nat) 
@@ -376,7 +376,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > fsl-open-file-aux(Name:String, FD:Nat, Data:String) => tv(0, int) ...</ k >
 		< openFiles > M:Map => M:Map[Name:String / FD:Nat] </ openFiles >
 		< files > M':Map => M':Map[Data:String / Name:String] </ files >
-		if lengthString(Data:String) >=Nat 0 --- if it's a real string
+		if lengthString(Data:String) >=Nat 0 // if it's a real string
 		[structural]
 
 	op fsl-open-file : K Nat -> K [strict(1)]
@@ -402,33 +402,33 @@ kmod COMMON-C-STANDARD-LIBRARY is
 			=> str(S:String) 
 		...</ k >
 		[structural]
-	-----------------------------------------	
+	//////////////////////////--	
 	
 	op printf-aux : Nat Nat List{C} -> K 
 	op printf-string : Nat Nat -> K 
-	op printf-% : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%l : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%ll : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%llu : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%lld : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%llx : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%llX : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%x : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%X : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%d : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%f : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%u : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%s : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%c : K K List{C} -> K [strict(3)] --- K not nat, for context bug
-	op printf-%p : K K List{C} -> K [strict(3)] --- K not nat, for context bug
+	op printf-% : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%l : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%ll : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%llu : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%lld : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%llx : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%llX : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%x : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%X : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%d : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%f : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%u : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%s : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%c : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-%p : K K List{C} -> K [strict(3)] // K not nat, for context bug
 	
 	
-	---C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
-	--- on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
-	--- fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
+	//C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
+	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
+	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
 		< k > prepareBuiltin((Identifier("printf")), (tv(Loc:Nat, pointerType(?)) :: L:List{C})) => printf-aux(0, Loc:Nat, L:List{C}) ...</ k >
-		--- [structural]
+		// [structural]
 		[metadata "computational"] 
 		
 		
@@ -452,7 +452,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > (.K => read(Loc:Nat, char)) ~> printf-aux(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
 		[structural]
 	
-	---fixme why do i have to have the 0--255 check?
+	//fixme why do i have to have the 0--255 check?
 	rule [printf-normal]:
 		< k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
 			=> writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) 
@@ -467,7 +467,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< k > tv(0, ?) ~> printf-aux(Len:Nat, ?, ?) => tv(Len:Nat, int) ...</ k >
 		[structural] 
 		
-	--- fixme technically unsafe
+	// fixme technically unsafe
 	rule [printf-null]:
 		< k > printf-aux(0, sym(0) +Nat 0, Nil) => writeToFD(1, "(null)") ~> tv(6, int) ...</ k >
 		[structural] 
@@ -490,7 +490,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		if N:Nat ==Bool asciiCharString("%") 
 		[structural]
 		
-	--- fixme ignoring 0 flag for now
+	// fixme ignoring 0 flag for now
 	rule [printf-0]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
 			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
@@ -498,7 +498,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		if N:Nat ==Bool asciiCharString("0") 
 		[structural] 
 		
-	--- ignoring num width
+	// ignoring num width
 	rule [printf-width]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
 			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
@@ -534,11 +534,11 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural]
 	
-	--- fixme might be messing things up elsewhere
+	// fixme might be messing things up elsewhere
 	op pointerToString : Nat -> String 
 	eq pointerToString(sym(N:Nat) +Nat M:Nat) = "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
 	op subPointerToString : Nat -> String
-	--- eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
+	// eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
 	eq subPointerToString(threadId(N:Nat) +Nat N':Nat) = "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
 	
 	
@@ -658,7 +658,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		if N:Nat ==Bool asciiCharString("c") 
 		[structural] 
-	--- need to cast to unsigned-char
+	// need to cast to unsigned-char
 	rule [printf-%c]:
 		< k > printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, int), V:Value) :: ?)) 
 			=> writeToFD(1, C:Nat) 
@@ -702,9 +702,9 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural] 
 		
-	--------------------------------------------
-	--- Threads
-	--------------------------------------------
+	////////////////////////////--
+	// Threads
+	////////////////////////////--
 	ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Nat
 	macro thrd-success = tv(0, int)
 	macro thrd-error = tv(1, int)
@@ -715,9 +715,9 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	ops threadRunning threadClosed : -> K
 	ops threadJoining : Nat -> K
 	
-	op threadId : Nat Nat -> Nat --- parent, new
+	op threadId : Nat Nat -> Nat // parent, new
 	op spawn-aux : Nat Value Value -> K
-	--- threadId(MyId:Nat, Fresh:Nat)
+	// threadId(MyId:Nat, Fresh:Nat)
 	rule [thrd_create-start]:
 		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value)) 
 			=> Computation((* ThreadIdPointer:Value) := tv(Fresh:Nat, int))
@@ -726,9 +726,9 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		<threadId> MyId:Nat </threadId>
 		< nextThreadId > Fresh:Nat => sNat(Fresh:Nat) </ nextThreadId >
 		[structural]
-***(
+/*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
-***)
+*/
 		
 	rule [thrd_create]:
 		< thread >
@@ -785,7 +785,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
 		[metadata "computational"] 
 	
-	--- at this point, we've already "locked" the join/detach.  This is the blocking part
+	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd_join]:
 		< thread >...
 			< k > join-aux(ThreadId:Nat, ResultPointer:Value)
@@ -813,17 +813,17 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]
 		
-	--------------------------------------------
-	--- Stdarg.h
-	--------------------------------------------
-		--- ,, "__va_inc"
-		--- ,, "__va_start"
-		--- ,, "__va_end"
-		--- ,, "__va_copy"
+	////////////////////////////--
+	// Stdarg.h
+	////////////////////////////--
+		// ,, "__va_inc"
+		// ,, "__va_start"
+		// ,, "__va_end"
+		// ,, "__va_copy"
 		
 	// va_list __va_start(va_list* ap, void* pN);
-	--- fixme can add lots of checks here
-	--- tool fixme, change Value to K and unquote error
+	// fixme can add lots of checks here
+	// tool fixme, change Value to K and unquote error
 	rule
 		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
 				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
@@ -833,7 +833,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 	
 	op va-inc-aux : K K K -> K // [strict(3)]
 	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
-	--- fixme can do lots of checks here too
+	// fixme can do lots of checks here too
 	
 	// this doesn't work because when we read apLoc, the object has already changed
 	// rule
@@ -856,7 +856,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]				
 		
-	--- fixme can do lots of checks here too
+	// fixme can do lots of checks here too
 	rule
 		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
 				=> Computation(*(ApLoc:Value) := Other:Value)
@@ -864,13 +864,13 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]
 		
-	--- fixme can do lots of checks here too
-	--- tool fixme, shouldn't let me compile empty rule
-	--- rule
-		--- < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
-				--- ~> skipval
-		--- ...</ k >
-		--- [structural]
+	// fixme can do lots of checks here too
+	// tool fixme, shouldn't let me compile empty rule
+	// rule
+		// < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
+				// ~> skipval
+		// ...</ k >
+		// [structural]
 	rule
 		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
 				=> skipval

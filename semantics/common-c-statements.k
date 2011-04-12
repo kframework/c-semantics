@@ -1,7 +1,7 @@
 kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	op loopMarked : -> Statement 
-	op genLabel : Nat K -> K --- switchid, value (tv or 'Default)
+	op genLabel : Nat K -> K //  switchid, value (tv or 'Default)
 	op popLoop : -> K 
 	op popBlock : -> K 
 	op pushBlock : -> K 
@@ -74,19 +74,19 @@ kmod COMMON-SEMANTICS-FOR is
 	rule
 		< k > addToHistory(Num:Nat) => .K ...</ k >
 		< blockHistory > . => ListItem(Num:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "Adding " +String toString(Num:Nat) +String " to history") </ xmessages >
+		//  < xmessages >... (. => "Adding " +String toString(Num:Nat) +String " to history") </ xmessages >
 		[structural] 
 	
-	--- fixme should these blocks be here?
-	--- fixme fishy interaction with continue i think
+	//  fixme should these blocks be here?
+	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		< k > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement) ~> K:K
 			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi), Post:K, S:Statement) ~> popLoop)
 		</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > . => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
-		--- < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
-		--- < xmessages >... (. => "For: loop in " +String toString(Num:Nat) +String ", creating " +String toString(ForNum:Nat)) </ xmessages >
+		//  < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		//  < xmessages >... (. => "For: loop in " +String toString(Num:Nat) +String ", creating " +String toString(ForNum:Nat)) </ xmessages >
 		[structural] 
 		
 	rule [for]:
@@ -94,17 +94,17 @@ kmod COMMON-SEMANTICS-FOR is
 			=> IfThenElse(Control:K, (S:Statement ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement)), Nop)
 		...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "For: finished a loop, in " +String toString(Num:Nat) +String ", looping...") </ xmessages >
+		//  < xmessages >... (. => "For: finished a loop, in " +String toString(Num:Nat) +String ", looping...") </ xmessages >
 		[structural] 
 endkm
 
 kmod COMMON-SEMANTICS-SWITCH is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	
-	--- fixme shouldn't there be sequence points here?
-	--- fixme not doing promoting or conversion
+	//  fixme shouldn't there be sequence points here?
+	//  fixme not doing promoting or conversion
 	
-	op handleSwitch : Nat K -> K [metadata "strict(2)"] --- switch num, promoted value of controlling exp, int value of exp
+	op handleSwitch : Nat K -> K [metadata "strict(2)"] //  switch num, promoted value of controlling exp, int value of exp
 	op handleSwitch-aux : K Value K -> K 
 	
 	rule
@@ -119,17 +119,17 @@ kmod COMMON-SEMANTICS-SWITCH is
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</ gotoMap >
 		[structural] 
 		
-	--- fixme feature can't do this :(
-	--- mb context handleSwitch-aux(?, ?, ?, Map((? (genLabel(?, `[HOLE`]:K) |-> ?)))) 
-	--- mb context handleSwitch-aux(`[HOLE`]:K, ?, ?, ?) 
+	//  fixme feature can't do this :(
+	//  mb context handleSwitch-aux(?, ?, ?, Map((? (genLabel(?, `[HOLE`]:K) |-> ?)))) 
+	//  mb context handleSwitch-aux(`[HOLE`]:K, ?, ?, ?) 
 	
-	--- match found in value and type, goto it
-	--- don't need to erase the rest of K since we're GOTOing
+	//  match found in value and type, goto it
+	//  don't need to erase the rest of K since we're GOTOing
 	rule
 		< k > tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural] 
 		
-	op tryCase : K Value K -> K --- K to be evaluated, val it should be, casehelper
+	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
 	context tryCase(([HOLE] => reval([HOLE])), _, _)
 	rule
 		< k > (. => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:Value, Map((? ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .))))
@@ -137,14 +137,14 @@ kmod COMMON-SEMANTICS-SWITCH is
 		if Exp:K =/=Bool l('Default)
 		[structural] 
 		
-	--- if all that's left is a default, do it
+	//  if all that's left is a default, do it
 	rule
 		< k > handleSwitch-aux(SN:Nat, ?, Map((genLabel(SN:Nat, l('Default)) |-> ?))) 
 			=> Goto(genLabel(SN:Nat, l('Default)))
 		...</ k >
 		[structural] 
 	
-	--- if there's nothing left, no case matches
+	//  if there's nothing left, no case matches
 	rule
 		< k > handleSwitch-aux(?, ?, Map(.Map)) => .K ...</ k >
 		[structural] 
@@ -179,11 +179,11 @@ endkm
 kmod COMMON-SEMANTICS-GOTO is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	
-	--- fixme CONFIRM It seems there are no sequence points for a goto
+	//  fixme CONFIRM It seems there are no sequence points for a goto
 	
---- c1x 6.2.4:6 For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached
+//  c1x 6.2.4:6 For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached
 		
-***(
+/*
 	things I have to keep track of:
 		in goto map:
 			remaining computation
@@ -196,9 +196,9 @@ kmod COMMON-SEMANTICS-GOTO is
 		
 	When we goto, we need to take the variables on the goto path and subtract the variables we've already allocated in the real history.  Then we need to declare the remaining variables
 		
-***)
+*/
 
-	***( 
+	/* 
 		To do the actual goto:
 			- Case 1: We are in the same block as the target
 				1. We might be jumping forwards or backwards, across declarations, so we need to figure out which variables should be left alone, allocated but not initialized, or deallocated
@@ -215,13 +215,13 @@ kmod COMMON-SEMANTICS-GOTO is
 		
 		The variables mentioned above are meant to be those with automatic storage duration.  Variables with external or static storage duration have their own rules
 				
-	***)
+	*/
 
 	op processGoto : K -> K 
 	op processGotoDown : K -> K 
-	op gotoObject : Nat List K List List -> K --- nestingDepth, block history, continuation, loop stack, decl stack
-	op frozenDeclaration : Nat Nat K -> K --- nestingDepth, currentBlock, decl
-	op processGotoSameBlock : List List -> K --- declaration stack, actual local variables
+	op gotoObject : Nat List K List List -> K //  nestingDepth, block history, continuation, loop stack, decl stack
+	op frozenDeclaration : Nat Nat K -> K //  nestingDepth, currentBlock, decl
+	op processGotoSameBlock : List List -> K //  declaration stack, actual local variables
 	rule
 		< k > Goto(Label:K) ~> ? => processGoto(GotoInfo:K) </ k >
 		< currentFunction > F:Id </ currentFunction >
@@ -229,7 +229,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map((? (Label:K |-> GotoInfo:K))) ...</ gotoMap >
 		[structural] 
 		
-	---- first case, when we're in the same block
+	// - first case, when we're in the same block
 	rule
 		< k > L:KLabel(gotoObject(Depth:Nat, (ListItem(CurrentBlock:Nat) BlockHistory:List), K:K, LoopStack:List, DeclStack:List)) ~> ? 
 			=> addVariablesForBlock(CurrentBlock:Nat, DeclStack:List)
@@ -239,34 +239,34 @@ kmod COMMON-SEMANTICS-GOTO is
 		< blockHistory > ListItem(CurrentBlock:Nat) BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
 		< localVariables > Vars:List </ localVariables >
-		--- < xmessages >... (. => "Gotoing: in same block " +String toString(CurrentBlock:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Gotoing: in same block " +String toString(CurrentBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
 		
-	---- second case, we're in a different block
+	// - second case, we're in a different block
 	
-	--- as long as there are entries in the actual block history that differ from the target block history, we need to pop
+	//  as long as there are entries in the actual block history that differ from the target block history, we need to pop
 	rule
 		< k > (. => popBlock) 
 			~> processGoto(gotoObject(TargetDepth:Nat, TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:Nat) ActualHistory:List </ blockHistory >
-		--- < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
 		if notBool BlockNum:Nat in TargetBlockHistory:List
 		[structural] 
 		
-	--- same
+	//  same
 	rule
 		< k > (. => popBlock) 
 			~> processGoto(gotoObject(TargetDepth:Nat, Prefix:List ListItem(BlockNum:Nat) TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:Nat) ActualHistory:List </ blockHistory >
-		--- < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
 		if TargetBlockHistory:List =/=Bool ActualHistory:List
 		[structural] 
 			
-	--- once we share a history, we start to push
+	//  once we share a history, we start to push
 	rule
 		< k > processGoto(gotoObject(TargetDepth:Nat, (Prefix:List ListItem(TargetBlock:Nat) ActualHistory:List), K:K, LoopStack:List, DeclStack:List))
 			=> addVariablesForBlock(CurrentBlock:Nat, DeclStack:List)
@@ -274,7 +274,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		...</ k >
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:Nat) ActualHistory:List </ blockHistory >
-		--- < xmessages >... (. => "Gotoing: Have common history, handling " +String toString(CurrentBlock:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Gotoing: Have common history, handling " +String toString(CurrentBlock:Nat)) </ xmessages >
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
 		[structural] 
 		
@@ -287,12 +287,12 @@ kmod COMMON-SEMANTICS-GOTO is
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (? ListItem(TargetBlock:Nat) ActualHistory:List), ?, ?, DeclStack:List))
 		...</ k >
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
-		< blockHistory > ActualHistory:List </ blockHistory > --- (. => ListItem(TargetBlock:Nat)) 
-		--- < xmessages >... (. => "Gotoing: Have common history, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
+		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:Nat)) 
+		//  < xmessages >... (. => "Gotoing: Have common history, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
 		[structural] 
 	
-	--- We've made it to the block above the target
+	//  We've made it to the block above the target
 	rule
 		< k > L:KLabel(gotoObject(sNat(Depth:Nat), 
 				(ListItem(TargetBlock:Nat) BlockHistory:List),
@@ -308,14 +308,14 @@ kmod COMMON-SEMANTICS-GOTO is
 		< nestingDepth > Depth:Nat </ nestingDepth >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
-		--- < xmessages >... (. => "Gotoing: above target, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Gotoing: above target, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
 		
 	op addVariablesForBlock : Nat List -> K 
 	
-	--- skip variables from other blocks
+	//  skip variables from other blocks
 	rule
 		< k > addVariablesForBlock(TargetBlock:Nat, 
 				((ListItem(frozenDeclaration(?, BlockNum:Nat, ?)) => .) DeclStack:List)
@@ -325,8 +325,8 @@ kmod COMMON-SEMANTICS-GOTO is
 		if BlockNum:Nat =/=Bool TargetBlock:Nat
 		[structural] 
 		
-	--- fixme computational to let transforms finish		
-	--- skip variables in the real history
+	//  fixme computational to let transforms finish		
+	//  skip variables in the real history
 	rule
 		< k > addVariablesForBlock(TargetBlock:Nat,
 				((ListItem(frozenDeclaration(?, TargetBlock:Nat, Decl:K)) => .) DeclStack:List)
@@ -334,7 +334,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "Goto: skipping variable declaration " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		//  < xmessages >... (. => "Goto: skipping variable declaration " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
@@ -356,11 +356,11 @@ kmod COMMON-SEMANTICS-GOTO is
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
 		< shouldInit > ? => false </ shouldInit >
-		--- < xmessages >... (. => "Goto: couldn't find variable " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
+		//  < xmessages >... (. => "Goto: couldn't find variable " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
-	--- fixme this is wrong
+	//  fixme this is wrong
 	rule
 		< k > addVariablesForBlock(?, .List) => .K ...</ k >
 		[structural] 
@@ -405,7 +405,7 @@ kmod COMMON-SEMANTICS-GOTO is
 	rule
 		< computation > Block(Num:Nat, ?, L:List{C}) => listToK(L:List{C}) ...</ computation > 
 		< blockHistoryGoto > . => ListItem(Num:Nat) ...</ blockHistoryGoto >
-		--- < declarationStack >... .List => ListItem(.K) </ declarationStack >
+		//  < declarationStack >... .List => ListItem(.K) </ declarationStack >
 		[structural] 
 		
 	rule
@@ -419,7 +419,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 
-	---- fixme i hate that i have to do this twice.  once here, once in the dynamic semantics
+	// - fixme i hate that i have to do this twice.  once here, once in the dynamic semantics
 	rule
 		< computation > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ computation >
 		[structural] 
@@ -428,7 +428,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 		
-	--- eq getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) = getIdOfName(K:C) 
+	//  eq getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) = getIdOfName(K:C) 
 		
 	rule
 		< computation > DeclarationDefinition(InitNameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
@@ -449,7 +449,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		...</ computation >
 		[structural] 
 		
-	--- fixme would like to combine the below rules
+	//  fixme would like to combine the below rules
 	rule
 		< computation > DeclarationDefinition(InitNameGroup(T:K, K:C)) => .K ...</ computation >
 		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, DeclarationDefinition(InitNameGroup(T:K, K:C)))) </ declarationStack >
@@ -483,18 +483,18 @@ kmod COMMON-SEMANTICS-GOTO is
 		orBool L:KLabel ==Bool 'CompGoto
 		[structural] 
 		
-***(
-	op Sequence : K K -> PureStatement --- still don't know what this is
-	--- gcc specific
+/*
+	op Sequence : K K -> PureStatement //  still don't know what this is
+	//  gcc specific
 	op CaseRange : K K K -> PureStatement
 	op TryExcept : K K K -> PureStatement
 	op TryFinally : K K -> PureStatement	
-***)
+*/
 
-	--- c1x 6.8.5:4 Code jumped over is not executed. In particular, the controlling expression of a for or while statement is not evaluated before entering the loop body, nor is clause-1 of a for statement
+	//  c1x 6.8.5:4 Code jumped over is not executed. In particular, the controlling expression of a for or while statement is not evaluated before entering the loop body, nor is clause-1 of a for statement
 
 		
-	---- should do this with a split
+	// - should do this with a split
 	rule
 		< gotoCalculation >
 			< computation > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) => .K) ~> K:K </ computation >
@@ -604,14 +604,14 @@ kmod COMMON-SEMANTICS-GOTO is
 		if notBool $hasMapping(M:Map, Target:Id)
 		[structural]
 		
-	--- pushBlock ~> addToHistory(sym(Fresh:Nat)) ~> 
-	--- (Case(SwitchNum:Nat, CaseNum:Nat, tv(I:Int, T:Type), S:K) => S:K)
+	//  pushBlock ~> addToHistory(sym(Fresh:Nat)) ~> 
+	//  (Case(SwitchNum:Nat, CaseNum:Nat, tv(I:Int, T:Type), S:K) => S:K)
 	rule
 		< computation > (Case(SwitchNum:Nat, CaseNum:Nat, Val:K, S:K) => S:K) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
 		< loopStackGoto > LoopStack:List </ loopStackGoto >
 		< declarationStack > DeclStack:List </ declarationStack >
-		--- < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		//  < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map(
 			(M:Map => (M:Map[caseHelper(CaseNum:Nat) / genLabel(SwitchNum:Nat, Val:K)])[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / caseHelper(CaseNum:Nat)])
 		) ...</ gotoMap >
@@ -620,14 +620,14 @@ kmod COMMON-SEMANTICS-GOTO is
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
 		if notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, Val:K))
-		--- andBool hasIntegerType(T:Type)
+		//  andBool hasIntegerType(T:Type)
 		[structural] 
 	rule
 		< computation > (Default(SwitchNum:Nat, S:K) => S:K) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
 		< loopStackGoto > LoopStack:List </ loopStackGoto >
 		< declarationStack > DeclStack:List </ declarationStack >
-		--- < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		//  < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / genLabel(SwitchNum:Nat, l('Default))])) ...</ gotoMap >
 		< currentFunction > F:Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
@@ -656,7 +656,7 @@ kmod COMMON-SEMANTICS-RETURN is
 		...</ blockStack >
 		[structural] 
 
-	--- this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
+	//  this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
 	rule [return]: 
 		< control >
 			< k > Return(V:Value) ~> ? 
@@ -664,10 +664,10 @@ kmod COMMON-SEMANTICS-RETURN is
 				~> cast(T:Type, V:Value) 
 				~> K:K
 			</ k >
-			--- these cells get replaced by the ones in C:Bag, so we can delete them when we match them
+			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
 			(< local >... < localAddresses > .Set </ localAddresses > ...</ local > => .Bag)
-			--- i can't say the below line alone, but i want to :(
-			--- (< localAddresses > .Set </ localAddresses > => .Bag)
+			//  i can't say the below line alone, but i want to :(
+			//  (< localAddresses > .Set </ localAddresses > => .Bag)
 			(< currentFunction > F:Id </ currentFunction > => .Bag)
 			(< currentTranslationUnit > Tu:K </ currentTranslationUnit > => .Bag)
 			(< blockStack > .List </ blockStack > => .Bag)
@@ -716,15 +716,15 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		< localAddresses >... (SetItem(Loc:Nat) => .Set) ...</ localAddresses >
 		[structural] 
 		
-	--- this can be simplified without the debugging info
+	//  this can be simplified without the debugging info
 	rule [pop-block]:
 		< k > popBlock => .K ...</ k >
 		< local > 
 			(? => C:Bag)
-			(< blockHistory > ListItem(Num:Nat) ...</ blockHistory > => (< blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory >)) ***( .Bag ***)
+			(< blockHistory > ListItem(Num:Nat) ...</ blockHistory > => (< blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory >)) /* .Bag */
 			(< localAddresses > .Set </ localAddresses > => .Bag)
 		</ local >
-		--- < xmessages >... (. => "Popblock: popping " +String toString(Num:Nat) +String " to return to " +String toString(NewNum:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Popblock: popping " +String toString(Num:Nat) +String " to return to " +String toString(NewNum:Nat)) </ xmessages >
 		< blockStack > ListItem(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => .List ...</ blockStack >
 		[structural] 
 	
@@ -732,7 +732,7 @@ kmod COMMON-SEMANTICS-BLOCKS is
 	rule [dissolve-block]:
 		< k > Block(BlockNum:Nat, ?, Statements:List{C}) => listToK(Statements:List{C}) ...</ k >
 		< blockHistory > .List => ListItem(BlockNum:Nat) ...</ blockHistory >
-		--- < xmessages >... (. => "Real block: pushing " +String toString(BlockNum:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Real block: pushing " +String toString(BlockNum:Nat)) </ xmessages >
 		[structural] 
 endkm
 
@@ -750,11 +750,11 @@ kmod COMMON-C-STATEMENTS is
 	rule Nop => . 
 		[structural] 
 
-	--- skip labels
+	//  skip labels
 	rule [skip-label]: < k > Label(L:Id, K:K) => K:K ...</ k >
 		[structural] 
 
-	--- dissolve expression statements that are finished evaluating
+	//  dissolve expression statements that are finished evaluating
 	rule [expression-statement]:
 		< k > Computation(V:Value) => sequencePoint ...</ k > 
 		[structural] 
@@ -763,20 +763,20 @@ kmod COMMON-C-STATEMENTS is
 		< k > popLoop ~> ? => K:K </ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num:Nat, K:K)) => .List ...</ loopStack >
-		--- < xmessages >... (. => "Poplooping in " +String toString(Num:Nat)) </ xmessages >
+		//  < xmessages >... (. => "Poplooping in " +String toString(Num:Nat)) </ xmessages >
 		[structural] 
 
 	rule [popLoop]:
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':Nat, ?)) ...</ loopStack >
-		--- < xmessages >... (. => "Adding a popBlock to get rid of " +String toString(Num:Nat) +String ".  Looking for " +String toString(Num':Nat)) </ xmessages >
+		//  < xmessages >... (. => "Adding a popBlock to get rid of " +String toString(Num:Nat) +String ".  Looking for " +String toString(Num':Nat)) </ xmessages >
 		if Num':Nat =/=Bool Num:Nat
 		[structural] 
 	
 	rule [break]:
 		< k > Break => popLoop ...</ k >
-		--- < xmessages >... (. => "Break encountered, turning into popLoop") </ xmessages >
+		//  < xmessages >... (. => "Break encountered, turning into popLoop") </ xmessages >
 		[structural] 
 
 	rule [continue]:
@@ -785,19 +785,19 @@ kmod COMMON-C-STATEMENTS is
 		andBool L:KLabel =/=Bool 'popBlock
 		andBool L:KLabel =/=Bool 'pushBlock
 		andBool L:KLabel =/=Bool 'popLoop
-		[structural] --- nondet
+		[structural] //  nondet
 	rule [continue]:
 		< k > Continue ~> popBlock 
 			=> popBlock
 			~> Continue
 		...</ k >
-		[structural] --- nondet
+		[structural] //  nondet
 
 	rule [continue-done]:
 		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?, ?, ?, Post:K, ?) ...</ k >
-		[structural] --- nondet
+		[structural] //  nondet
 	rule [continue-done]:
 		< k > (Continue => .) ~> loopMarked ~> L:KLabel(?) ...</ k >
 		if L:KLabel =/=Bool 'For
-		[structural] --- nondet		
+		[structural] //  nondet		
 endkm

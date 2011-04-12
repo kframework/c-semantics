@@ -1,8 +1,8 @@
 kmod COMMON-MEMORY-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	--- returns the bytes in the order in which they are in memory
-	op extractBytesFromMem : Nat Nat -> K --- loc, size in bytes
+	// returns the bytes in the order in which they are in memory
+	op extractBytesFromMem : Nat Nat -> K // loc, size in bytes
 	op encodedPointer : Int -> Nat
 	op encodedFloat : Float -> Nat
 	op explodeToBits : List{K} -> List{K}
@@ -18,13 +18,13 @@ endkm
 kmod COMMON-SEMANTICS-READING is
 	including COMMON-MEMORY-INCLUDE 
 	
-	op extractBitsFromMem : Nat Nat -> K --- loc, size in bits
+	op extractBitsFromMem : Nat Nat -> K // loc, size in bits
 	op extractByteFromMem : Nat -> K 
 	op getBitOffset : Nat -> Nat 
 	eq getBitOffset(? +Nat bito(M:Nat)) = M:Nat 
 	eq getBitOffset(?) = 0 [owise] 
 	
-	op extractBitsFromList-aux : K Nat Nat List{K} -> K --- datalist, offset in bits into list, number of bits to extract, accumulator
+	op extractBitsFromList-aux : K Nat Nat List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
 		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:Nat, M:Nat, .List{K})
 		// if M:Nat =/=Bool 10
@@ -78,19 +78,19 @@ kmod COMMON-SEMANTICS-READING is
 		<threadId> Id:Nat </threadId>
 		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
 		[structural]
-	rule [read]: --- read global or shared data
+	rule [read]: // read global or shared data
 		< k > read-aux(Loc, T:Type, bitSize:Nat)
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"] 
-	rule [read-allocated]: --- read data of "allocated" duration
+	rule [read-allocated]: // read data of "allocated" duration
 		< k > read-aux(Loc, T:Type, bitSize:Nat)
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
 		...</ k >
 		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"]
-	rule [read-readonly]: --- read data that is readonly (e.g., string literals)
+	rule [read-readonly]: // read data that is readonly (e.g., string literals)
 		< k > read-aux(Loc, T:Type, bitSize:Nat)
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
 		...</ k >
@@ -107,7 +107,7 @@ kmod COMMON-SEMANTICS-READING is
 		andBool hasBitfieldType(T:Type) 
 		[structural]
 		
-	--- FIXME very unsafe, not checking size of list or its contents
+	// FIXME very unsafe, not checking size of list or its contents
 	rule < k > concretize(T:Type, dataList((piece(encodedFloat(F:Float), Len:Nat),, L:List{K}))) 
 			=> tv(F:Float, T:Type)
 		...</ k >
@@ -115,8 +115,8 @@ kmod COMMON-SEMANTICS-READING is
 		andBool Len:Nat ==Bool numBitsPerByte 
 		[structural]
 
-	--- fixme should also check sizes are appropriate
-	--- fixme very unsafe as is.  doesn't care if other bytes were overwritten
+	// fixme should also check sizes are appropriate
+	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
 	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, L:List{K}))) 
 			// => checkValidLoc(N:Nat)
 			=> tv(N:Nat, pointerType(T:Type))
@@ -144,11 +144,11 @@ kmod COMMON-SEMANTICS-READING is
 		// if hasArrayType(T:Type)
 		// [structural]
 
-	--- FIXME assuming bytes?
+	// FIXME assuming bytes?
 	op joinIntegerBytes : Type List{K} K -> K 
 	eq joinIntegerBytes(T:Type, L:List{K}) = joinIntegerBytes(T:Type, L:List{K}, piece(0, 0)) 
 	
-	--- fixme may want to consider restricting further, or loosening
+	// fixme may want to consider restricting further, or loosening
 	ceq joinIntegerBytes(T:Type, piece(unknown(Len:Nat), Len:Nat), piece(0, 0))
 		= tv(piece(unknown(Len:Nat), Len:Nat), T:Type)
 		if Len:Nat ==Bool numBitsPerByte
@@ -158,7 +158,7 @@ kmod COMMON-SEMANTICS-READING is
 		= joinIntegerBytes(T:Type, L:List{K}, piece(_bit::_(piece(N':Nat, Len':Nat), piece(N:Nat, Len:Nat)), Len:Nat +Nat Len':Nat))
 		if Len:Nat ==Bool numBitsPerByte
 		andBool N':Nat >=Nat 0 
-		--- andBool N:Nat >=Nat 0 
+		// andBool N:Nat >=Nat 0 
 	ceq joinIntegerBytes(T:Type, .List{K}, piece(N:Nat, Len:Nat)) 
 		= interpret(T:Type, piece(N:Nat, Len:Nat)) 
 		if N:Nat >=Nat 0 
@@ -209,7 +209,7 @@ kmod COMMON-SEMANTICS-READING is
 		< k > extractBytesFromMem-aux(?, 0, Aux:List{KResult}) => dataList(values(Aux:List{KResult})) ...</ k >
 		[structural] 
 	
-	--- FIXME make sure it's a byte
+	// FIXME make sure it's a byte
 	rule [read-byte]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => V:K ...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
@@ -235,8 +235,8 @@ kmod COMMON-SEMANTICS-READING is
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:Nat in Locs:Bag
 		andBool notBool Loc:Nat in locations(Mem:List)
-		[metadata "computational"] --- for speed in interpretation; forces local buffer to be flushed before a read
-		--- [structural]
+		[metadata "computational"] // for speed in interpretation; forces local buffer to be flushed before a read
+		// [structural]
 endkm
 
 kmod COMMON-SEMANTICS-WRITING is
@@ -255,10 +255,10 @@ kmod COMMON-SEMANTICS-WRITING is
 		< mem >... Loc:Nat |-> ? ...</ mem >
 		[structural] 
 	
-	--- rule
-		--- < k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
-		--- < mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
-		--- [structural]	
+	// rule
+		// < k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
+		// < mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
+		// [structural]	
 
 	rule [alloc-lazy]:
 		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
@@ -275,7 +275,7 @@ kmod COMMON-SEMANTICS-WRITING is
 	ceq write(K:K, tv(V:List{K}, T:Type)) 
 		= write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
-	--- FIXME should check types
+	// FIXME should check types
 	// rule
 		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
 			// => writeByte(Loc:Nat, V:K) 
@@ -286,20 +286,20 @@ kmod COMMON-SEMANTICS-WRITING is
 	
 	
 	op datarace : Nat Nat Nat Nat -> K 
-	--- fixme possible to miss dataraces with bitfields
-	--- rule [read-write-race]:
-		--- < T >... 
-			--- < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k >
-			--- < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k >
-		--- ...</ T >
-		--- => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		--- if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		--- orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		--- where Start1 = Loc:Nat
-		--- and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
-		--- and Start2 = Loc':Nat
-		--- and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
-		--- [metadata "computational"]
+	// fixme possible to miss dataraces with bitfields
+	// rule [read-write-race]:
+		// < T >... 
+			// < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k >
+			// < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k >
+		// ...</ T >
+		// => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		// if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		// orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		// where Start1 = Loc:Nat
+		// and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
+		// and Start2 = Loc':Nat
+		// and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
+		// [metadata "computational"]
 		
 	rule [read-write-race]:
 		< T > 
@@ -319,19 +319,19 @@ kmod COMMON-SEMANTICS-WRITING is
 		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational"]
 		
-	--- rule [write-write-race]:
-		--- < T > ? <threads> ?
-			--- <thread> ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </thread>
-			--- <thread> ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </thread>
-		--- </threads> </ T >
-		--- => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		--- if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		--- orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		--- where Start1 = Loc:Nat
-		--- and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
-		--- and Start2 = Loc':Nat
-		--- and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
-		--- [metadata "computational"]
+	// rule [write-write-race]:
+		// < T > ? <threads> ?
+			// <thread> ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </thread>
+			// <thread> ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </thread>
+		// </threads> </ T >
+		// => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		// if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		// orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		// where Start1 = Loc:Nat
+		// and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
+		// and Start2 = Loc':Nat
+		// and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
+		// [metadata "computational"]
 		
 	rule [write-write-race]:
 		< T > 
@@ -360,13 +360,13 @@ kmod COMMON-SEMANTICS-WRITING is
 		<threadId> Id:Nat </threadId>
 		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
 		[structural]
-	rule [write]: --- write global or shared data
+	rule [write]: // write global or shared data
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
 		[metadata "computational"]
-	rule [write-allocated]: --- write data of "allocated" duration
+	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
@@ -490,7 +490,7 @@ kmod COMMON-SEMANTICS-WRITING is
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(Loc:Nat)) </ locsWrittenTo >
 		if notBool Loc:Nat in Locs:Bag
 		[structural] 
-		--- [metadata "computational"]
+		// [metadata "computational"]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >
@@ -498,12 +498,12 @@ kmod COMMON-SEMANTICS-WRITING is
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
 		if Offset:Nat <Nat Len:Nat
 		[structural]
-		--- [metadata "computational"]
+		// [metadata "computational"]
 	rule
 		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
 		[structural] 
 		
-	--- this general rule is useful for unknowns, abstracts, etc
+	// this general rule is useful for unknowns, abstracts, etc
 	rule splitBytes(tv(N:Nat, T:Type))
 		=> dataList(piece(N:Nat, numBitsPerByte))
 		if hasCharType(T:Type)
@@ -582,7 +582,7 @@ endkm
 kmod COMMON-C-MEMORY-MISC is
 	including COMMON-MEMORY-INCLUDE 
 
-	--- used by calloc
+	// used by calloc
 	rule
 		< k > zeroBlock(sym(Block:Nat) +Nat 0) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(Len:Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
@@ -593,7 +593,7 @@ kmod COMMON-C-MEMORY-MISC is
 		< mem >... Block:Nat |-> memblock(Len:Nat, ?) ...</ mem >
 		[structural]
 	
-	--- used for variadic functions
+	// used for variadic functions
 	// rule [append-existing]:
 		// < k > append(sym(Block:Nat) +Nat 0, Len:Nat, V:Value) 
 			// => write(sym(Block:Nat) +Nat OldLen:Nat, V:Value)
@@ -604,7 +604,7 @@ kmod COMMON-C-MEMORY-MISC is
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:Nat) +Nat ?, Len:Nat) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(Len:Nat, ?) => .Map ...</ mem >
-		< buffer > .List </ buffer > --- fixme could make this more relaxed by checking of block is in buffer, not just empty
+		< buffer > .List </ buffer > // fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
 	rule [delete-block]:
@@ -613,8 +613,8 @@ kmod COMMON-C-MEMORY-MISC is
 		< buffer > .List </ buffer >
 		[structural] 
 	
-	--- c99 6.5:2 If a side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object, the behavior is undefined. If there are multiple allowable orderings of the subexpressions of an expression, the behavior is undefined if such an unsequenced side effect occurs in any of the orderings
-	--- i take this to mean that if i write to a location twice or read from a location after being written to, then it is a problem
+	// c99 6.5:2 If a side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object, the behavior is undefined. If there are multiple allowable orderings of the subexpressions of an expression, the behavior is undefined if such an unsequenced side effect occurs in any of the orderings
+	// i take this to mean that if i write to a location twice or read from a location after being written to, then it is a problem
 		
 	op writeString : Nat String -> K 
 	rule [alloc-string]:

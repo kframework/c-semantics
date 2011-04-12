@@ -16,12 +16,12 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool hasArrayType(T:Type)
 		[structural] 
 	
-	--- "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
-	--- "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
-	--- there is another set of promotions called "default argument promotions" used when calling functions where the type information is not complete.  This is equivalent to integer promotions + (float => double) 
+	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
+	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
+	// there is another set of promotions called "default argument promotions" used when calling functions where the type information is not complete.  This is equivalent to integer promotions + (float => double) 
 	
-	--- op arithConversion : KLabel K K -> K [metadata "strict"] 
-	op arithConversion-int : KLabel K K -> K --- [metadata "strict"] 
+	// op arithConversion : KLabel K K -> K [metadata "strict"] 
+	op arithConversion-int : KLabel K K -> K // [metadata "strict"] 
 	op isArithBinOp : KLabel -> Bool 
 	op isArithBinConversionOp : KLabel -> Bool 
 	op arithBinOps : -> Set [memo] 
@@ -87,10 +87,10 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool rank(T':Type) >=Int rank(int)
 		[structural] 
 	
-	--- fixme these could be done more cleanly
+	// fixme these could be done more cleanly
 
-	---C99 6.3.1.8
-	--- First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
+	//C99 6.3.1.8
+	// First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
 	rule
 		< k > L:KLabel(tv(V:BaseValue, long-double),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, long-double),, cast(long-double, tv(V':BaseValue, T':Type))) 
@@ -106,7 +106,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool long-double =/=Bool T:Type
 		[structural] 
 		
-	--- Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
+	// Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
 	rule
 		< k > L:KLabel(tv(V:BaseValue, double),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, double),, cast(double, tv(V':BaseValue, T':Type))) 
@@ -124,7 +124,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool double =/=Bool T:Type
 		[structural] 
 		
-	--- Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
+	// Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
 	rule
 		< k > L:KLabel(tv(V:BaseValue, float),, tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, float),, cast(float, tv(V':BaseValue, T':Type))) 
@@ -145,10 +145,10 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		[structural] 
 
 	
-	--- Otherwise, the integer promotions are performed on both operands ..
+	// Otherwise, the integer promotions are performed on both operands ..
 	
-	---C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
-	---C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
+	//C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
+	//C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
 	rule
 		promote(tv(V:BaseValue, T:Type)) => tv(V:BaseValue, int)
 		if hasIntegerType(T:Type)
@@ -170,7 +170,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool min(int) <=Int min(bitfieldType(T:Type, Len:Nat))
 		andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))
 		[structural] 
-	--- fixme unclear what 6.3.1.1:3 means
+	// fixme unclear what 6.3.1.1:3 means
 	rule
 		promote(tv(V:BaseValue, T:Type)) => cast(unsigned-int, tv(V:BaseValue, T:Type))
 		if hasIntegerType(T:Type)
@@ -193,9 +193,9 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		promote(tv(F:Float, float)) => tv(F:Float, double)
 		[structural] 
 	
-	--- Then the following rules are applied to the promoted operands:
+	// Then the following rules are applied to the promoted operands:
 	
-	--- If both operands have the same type, then no further conversion is needed
+	// If both operands have the same type, then no further conversion is needed
 	rule
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T:Type)) 
 			=> L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T:Type))
@@ -207,7 +207,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 	ceq maxType(T:Type, T':Type) = T':Type
 		if rank(T':Type) >=Int rank(T:Type) 
 			
-	--- Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
+	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
 	rule
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(cast(maxType(T:Type, T':Type), tv(V:BaseValue, T:Type)),, cast(maxType(T:Type, T':Type), tv(V':BaseValue, T':Type)))
@@ -220,7 +220,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		)
 		[structural] 
 		
-	--- Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
+	// Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
 	rule
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(cast(T':Type, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, T':Type))
@@ -240,7 +240,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool rank(T:Type) >=Int rank(T':Type)
 		[structural] 
 		
-	--- Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
+	// Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
 	rule
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(tv(V:BaseValue, T:Type),, cast(T:Type, tv(V':BaseValue, T':Type)))
@@ -264,7 +264,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool max(T':Type) >=Int max(T:Type)
 		[structural] 
 		
-	--- Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
+	// Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
 	rule
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
 			=> L:KLabel(cast(correspondingUnsignedType(T:Type), tv(V:BaseValue, T:Type)),, cast(correspondingUnsignedType(T:Type), tv(V':BaseValue, T':Type)))
@@ -298,20 +298,20 @@ endkm
 kmod COMMON-SEMANTICS-CAST is 
 	including COMMON-INCLUDE 
 	
-	---- switch assumes casts can happen anywhere
+	//- switch assumes casts can happen anywhere
 	
-	--- rule ['Cast(T:Type,, E:Expression) => cast(T:Type, E:Expression)] [structural] 
+	// rule ['Cast(T:Type,, E:Expression) => cast(T:Type, E:Expression)] [structural] 
 	rule 
 		cast(void, ?) => skipval
 		[structural] 
 		
-	--- fixme not sure about this, doesn't concretize, and in turn interpret, assume things about the list?
+	// fixme not sure about this, doesn't concretize, and in turn interpret, assume things about the list?
 	rule
 		cast(T:Type, tv(L:List{K}, structType(?)))
 			=> concretize(T:Type, dataList(L:List{K}))
 		[structural] 
 	
-	--- fixme just temporarily, until we handle qualifiers properly
+	// fixme just temporarily, until we handle qualifiers properly
 	rule
 		cast(T:Type, tv(L:List{K}, T':Type)) => cast(T:Type, tv(L:List{K}, unqualifyType(T':Type)))
 		if hasStaticType(T':Type)
@@ -321,8 +321,8 @@ kmod COMMON-SEMANTICS-CAST is
 		cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
 		[structural] 
 	
-	---c99 6.3.1.2:1 to _Bool
-	--- fixme worried about qualifiers
+	//c99 6.3.1.2:1 to _Bool
+	// fixme worried about qualifiers
 	rule
 		cast(T:Type, tv(I:Int, T':Type)) => if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
 		if hasBoolType(T:Type)
@@ -334,7 +334,7 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool notBool hasIntegerType(T':Type)
 		[structural] 
 	
-	---c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
+	//c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
 	rule
 		cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)
 		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
@@ -343,7 +343,7 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool notBool hasBoolType (T:Type)
 		[structural] 
 		
-	---c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
+	//c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
 	rule
 		cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))
 		if hasUnsignedIntegerType(T:Type)
@@ -360,8 +360,8 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool notBool hasBoolType (T:Type)
 		[structural] 
 	
-	---c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
-	--- choice
+	//c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
+	// choice
 	rule
 		cast(T:Type, tv(I:Int, T':Type)) 
 			=> cast(T:Type, tv(I:Int %Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
@@ -372,7 +372,7 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 	rule
 		cast(T:Type, tv(I:Int, T':Type))
-			--- => cast(T:Type, tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
+			// => cast(T:Type, tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
 			=> tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T:Type)
 		if I:Int <Int min(T:Type)
 		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
@@ -382,7 +382,7 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 	rule
 		cast(T:Type, tv(I:Int, T':Type)) 
-			--- => cast(T:Type, tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T':Type)) 
+			// => cast(T:Type, tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T':Type)) 
 			=> tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T:Type)
 		if I:Int >Int max(T:Type)
 		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
@@ -392,8 +392,8 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 
 	
-	---C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
-	--- fixme
+	//C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
+	// fixme
 	rule
 		cast(T:Type, tv(V:Float, double)) => cast(T:Type, tv(truncRat(Float2Rat(V:Float)), long-long-int))
 		if hasIntegerType(T:Type)
@@ -410,7 +410,7 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool notBool hasBoolType (T:Type)
 		[structural] 
 	
-	---C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined
+	//C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined
 
 	rule
 		cast(T':Type, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), T':Type)
@@ -418,14 +418,14 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
 		[structural] 
 	
-	--- fixme all floats same precision
+	// fixme all floats same precision
 	rule
 		cast(T':Type, tv(F:Float, T:Type)) => tv(F:Float, T':Type)
 		if (T:Type ==Bool float orBool T:Type ==Bool double orBool T:Type ==Bool long-double)
 		andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
 		[structural] 
 	
-	--- choice implementation defined behavior
+	// choice implementation defined behavior
 	rule
 		cast(pointerType(T:Type), tv(N:Nat, T':Type)) => tv(N:Nat, pointerType(T:Type))
 		if hasIntegerType(T':Type)
@@ -448,17 +448,17 @@ kmod COMMON-SEMANTICS-CAST is
 		cast(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
 		[structural] 
 	
-	--- fixme needs to check size
+	// fixme needs to check size
 	rule
 		cast(T:Type, tv(N:Nat, pointerType(?)))
 			=> tv(N:Nat, T:Type)
 		if hasIntegerType(T:Type)
 		[structural] 
 		
-	--- fixme
-	--- possibly not true with other endiannesses
-	--- choice
-	--- needs to handle alignment
+	// fixme
+	// possibly not true with other endiannesses
+	// choice
+	// needs to handle alignment
 	rule
 		cast(pointerType(T:Type), tv(N:Nat, pointerType(?))) => tv(N:Nat, pointerType(T:Type))
 		[structural] 
@@ -470,10 +470,10 @@ kmod COMMON-C-CONVERSIONS is
 	including COMMON-SEMANTICS-CAST 
 	including COMMON-SEMANTICS-PROMOTIONS 
 	
-	--- this seems implementation defined at best
-	--- eq bitfieldType(enumType(X:Id), N:Nat) = bitfieldType(int, N:Nat) 
+	// this seems implementation defined at best
+	// eq bitfieldType(enumType(X:Id), N:Nat) = bitfieldType(int, N:Nat) 
 	
-	--- fixme generalize this should be done generically
+	// fixme generalize this should be done generically
 	rule < k > *(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
 		[structural] 
 	rule < k > *(tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type)))) ...</ k > 
@@ -488,30 +488,30 @@ kmod COMMON-C-CONVERSIONS is
 	rule < k > _+_(?, tv(Loc:Nat, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
 		[structural]
 
-	--- eq bitFlatten(N:Nat |Nat M:Nat) = bitFlatten(N:Nat) |Nat bitFlatten(M:Nat) 
-	--- eq bitFlatten(N:Nat &Nat M:Nat) = bitFlatten(N:Nat) &Nat bitFlatten(M:Nat) 
-	--- eq bitFlatten(N:Nat <<Nat M:Nat) = bitFlatten(N:Nat) <<Nat M:Nat 
-	--- eq bitFlatten(N:Nat >>Nat M:Nat) = bitFlatten(N:Nat) >>Nat M:Nat 
-	--- eq bitFlatten(unknown(Len:Nat)) = bitlist(Len:Nat, nTimes(Len:Nat, unknownBit)) 
-	--- eq bitFlatten(0) = bitlist(1, 0) 
-	--- eq bitFlatten(1) = bitlist(1, 1) 
+	// eq bitFlatten(N:Nat |Nat M:Nat) = bitFlatten(N:Nat) |Nat bitFlatten(M:Nat) 
+	// eq bitFlatten(N:Nat &Nat M:Nat) = bitFlatten(N:Nat) &Nat bitFlatten(M:Nat) 
+	// eq bitFlatten(N:Nat <<Nat M:Nat) = bitFlatten(N:Nat) <<Nat M:Nat 
+	// eq bitFlatten(N:Nat >>Nat M:Nat) = bitFlatten(N:Nat) >>Nat M:Nat 
+	// eq bitFlatten(unknown(Len:Nat)) = bitlist(Len:Nat, nTimes(Len:Nat, unknownBit)) 
+	// eq bitFlatten(0) = bitlist(1, 0) 
+	// eq bitFlatten(1) = bitlist(1, 1) 
 	
-	--- eq bitUnflatten(bitlist(1, N:Nat)) = N:Nat 
-	--- eq bitUnflatten(bitlist(sNat(sNat(Len:Nat)), N:Nat)) = N:Nat 
-	--- ceq bitFlatten(N:Nat) = (bitFlatten(N:Nat >>Nat 1) <<Nat 1) |Nat bitlist(1, N:Nat &Nat 1)
-		--- if N:Nat >Int 1 
+	// eq bitUnflatten(bitlist(1, N:Nat)) = N:Nat 
+	// eq bitUnflatten(bitlist(sNat(sNat(Len:Nat)), N:Nat)) = N:Nat 
+	// ceq bitFlatten(N:Nat) = (bitFlatten(N:Nat >>Nat 1) <<Nat 1) |Nat bitlist(1, N:Nat &Nat 1)
+		// if N:Nat >Int 1 
 	
-	--- ceq bitFlatten(I:Int) = I:Int
-		--- if I:Int >=Int 0 orBool I:Int <=Int 0 
+	// ceq bitFlatten(I:Int) = I:Int
+		// if I:Int >=Int 0 orBool I:Int <=Int 0 
 	
 	ceq unknown(Len:Nat) >>Nat N:Nat = unknown(absInt(Len:Nat -Int N:Nat))
 		if N:Nat <=Nat Len:Nat 
 		
 	eq (N:Nat bit:: piece(?, 1)) >>Nat 1 = N:Nat 
 
-	--- fixme not sure about this
-	--- interpret is used to "cast" values read from memory
-	--- shouldn't need to do the < min one since values start positive
+	// fixme not sure about this
+	// interpret is used to "cast" values read from memory
+	// shouldn't need to do the < min one since values start positive
 	op interpret-aux : Type K -> K 
 	
 	ceq interpret(T:Type, piece(N:Nat, ?)) = interpret-aux(T:Type, N:Nat)
@@ -536,8 +536,8 @@ kmod COMMON-C-CONVERSIONS is
 	rule arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
 		[structural]
 		
-	--- c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
-	--- e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
+	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
+	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
 	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Int, T:Type)) => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
 		if hasUnsignedIntegerType(T:Type)
 		[structural] 
@@ -546,18 +546,18 @@ kmod COMMON-C-CONVERSIONS is
 		andBool I:Int <=Int (2 ^Nat absInt(numBits(T:Type)))
 		[structural] 
 		
-	--- c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined
+	// c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined
 	rule rightShiftInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
 		if hasIntegerType(T:Type)
 		[structural] 
 	
-	--- fixme
+	// fixme
 	rule arithInterpret(T:Type, F:Float) => tv(F:Float, T:Type)
 		if (T:Type ==Bool double)
 		orBool T:Type ==Bool float
 		orBool T:Type ==Bool long-double
 		[structural] 
-	--- signed arithmetic isn't supposed to overflow
+	// signed arithmetic isn't supposed to overflow
 	rule
 		arithInterpret(T:Type, I:Int) => 
 		tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
