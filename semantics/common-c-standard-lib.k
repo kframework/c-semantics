@@ -18,17 +18,17 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?) 
 	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
 	
-	op C : K -> C 
-	eq C(K:K) = K:K 
+	// op C : K -> C 
+	// eq C(K:K) = K:K 
 	
 	op debug : -> K 
 	op vpair : K K -> C [hybrid strict] 
-	rule
+	rule [nextvarg-start]:
 		< k > nextvarg(Loc:Nat, T:Type)
 			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
 		...</ k >
 		[structural]
-	rule
+	rule [nextvarg]:
 		< k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat, Len:Nat)
 			=> vpair(read(Loc:Nat, T:Type), vararg(tv(inc(Loc:Nat), pointerType(void))))
 		...</ k >
@@ -39,20 +39,31 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	
 	op idsFromDeclList : List{C} -> List{C} 
 	
-	ceq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
-		= idsFromDeclList(L:List{C}) :: X:Id
+	rule [idsFromDeclList-one]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
+			=> idsFromDeclList(L:List{C}) :: X:Id
 		if T:Type =/=Bool void 
-	eq idsFromDeclList(L:List{C} :: typedDeclaration(void, X:Id)) 
-		= idsFromDeclList(L:List{C}) 
-	eq idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: variadic)
-		= idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id)))) // assumes variadic args are placed in incremental blocks
-	eq idsFromDeclList(Nil) = Nil
+		[structural]
+	rule [idsFromDeclList-void]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(void, X:Id)) 
+			=> idsFromDeclList(L:List{C}) 
+		[structural]
+	rule [idsFromDeclList-vararg]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: variadic)
+			=> idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
+			:: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id))))
+			// assumes variadic args are placed in incremental blocks
+		[structural]
+	rule [idsFromDeclList-done]:
+		idsFromDeclList(Nil) => Nil [structural]
 	
 	op incSymbolic : K -> K
 	context incSymbolic(([HOLE] => reval([HOLE])))
-	eq incSymbolic(tv(Loc:Nat, T:Type)) = tv(inc(Loc:Nat), T:Type)
+	rule [incSymbolic]: 
+		incSymbolic(tv(Loc:Nat, T:Type)) => tv(inc(Loc:Nat), T:Type) 
+		[structural]
 		
-	rule
+	rule [prepareBuiltin]:
 		< k > handleBuiltin(F:Id, functionType(Return:Type, L:List{Type}))
 			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
 		...</ k >
@@ -358,7 +369,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		< openFiles >... FD:Nat |-> ? => .Map ...</ openFiles >
 		[structural] 
 	////////////////////////////--
-	rule [fslOpenFile]:
+	rule [fslOpenFile-pre]:
 		< k > prepareBuiltin((Identifier("fslOpenFile")), (Loc:Value :: tv(FD:Nat, int)))
 			=> fsl-open-file(getString(Loc:Value), FD:Nat) 
 		...</ k >
@@ -366,7 +377,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	
 	op fsl-open-file-aux : String Nat String -> K 
 	
-	rule [fslOpenFile]:
+	rule [fslOpenFile-aux]:
 		< k > fsl-open-file(str(S:String), FD:Nat) 
 			=> fsl-open-file-aux(S:String, FD:Nat, readFile(S:String))
 		...</ k >
@@ -382,7 +393,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	op fsl-open-file : K Nat -> K [strict(1)]
 	op getString : K -> K
 	op getString-aux : K String -> K [strict(1)]
-	eq getString(K:K) = getString-aux(K:K, "")
+	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
 	op str : String -> Value
 	
 	rule [getString-pre]:
@@ -507,13 +518,13 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		andBool N:Nat <=Int asciiCharString("9")
 		[structural] 
 	
-	rule [printf-%x]:
+	rule [printf-%x-arg]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%x(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
 		...</ k >
 		if N:Nat ==Bool asciiCharString("x")
 		[structural]
-	rule [printf-%X]:
+	rule [printf-%X-arg]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%X(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
 		...</ k >
@@ -536,15 +547,34 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	
 	// fixme might be messing things up elsewhere
 	op pointerToString : Nat -> String 
-	eq pointerToString(sym(N:Nat) +Nat M:Nat) = "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
+	rule [pointerToString]:
+		pointerToString(sym(N:Nat) +Nat M:Nat) 
+			=> "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
+		[structural]
 	op subPointerToString : Nat -> String
+	
+	// allocatedDuration
+	
 	// eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
-	eq subPointerToString(threadId(N:Nat) +Nat N':Nat) = "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
+	rule [subPointerToString-auto]:
+		subPointerToString(threadId(N:Nat) +Nat N':Nat) 
+			=> "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
+		if N:Nat =/=Bool allocatedDuration
+		[structural]
+	rule [sub-pointerToString-allocated]:
+		subPointerToString(threadId(allocatedDuration) +Nat N':Nat) 
+			=> "threadId(allocatedDuration) +Nat " +String Rat2String(N':Nat, 10)
+		[structural]
+	rule [sub-pointerToString-readOnly]:
+		subPointerToString(threadId(readOnly) +Nat N':Nat) 
+			=> "threadId(readOnly) +Nat " +String Rat2String(N':Nat, 10)
+		[structural]
 	
 	
-	eq pointerToString(NullPointer) = "NullPointer" 
+	rule [pointerToString-done]:
+		pointerToString(NullPointer) => "NullPointer" [structural]
 		
-	rule [printf-%p]:
+	rule [printf-%p-arg]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%p(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, pointerType(void)))
 		...</ k >
@@ -557,7 +587,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural] 
 		
-	rule [printf-%d]:
+	rule [printf-%d-arg]:
 		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
 			=> printf-%d(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, int))
 		...</ k >
@@ -824,7 +854,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 	// va_list __va_start(va_list* ap, void* pN);
 	// fixme can add lots of checks here
 	// tool fixme, change Value to K and unquote error
-	rule
+	rule [va_start]:
 		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
 				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
 				~> skipval
@@ -843,13 +873,13 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		// ...</ k >
 		// [structural]
 	
-	rule
+	rule [va_inc-start]:
 		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
 				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
 		...</ k >
 		[structural]
 				
-	rule
+	rule [va_inc]:
 		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
 			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
 			~> Ap:Value
@@ -857,7 +887,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[structural]				
 		
 	// fixme can do lots of checks here too
-	rule
+	rule [va_copy]:
 		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
 				=> Computation(*(ApLoc:Value) := Other:Value)
 				~> skipval
@@ -871,7 +901,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 				// ~> skipval
 		// ...</ k >
 		// [structural]
-	rule
+	rule [va_end]:
 		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
 				=> skipval
 		...</ k >

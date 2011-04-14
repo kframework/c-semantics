@@ -414,7 +414,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		< blockHistoryGoto > (?:ListItem => .List) ListItem(Num:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
-	rule [StatementLoc]:
+	rule [StatementLoc-computation]:
 		< computation > StatementLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
@@ -423,7 +423,7 @@ kmod COMMON-SEMANTICS-GOTO is
 	rule
 		< computation > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ computation >
 		[structural] 
-	rule [DefinitionLoc]:
+	rule [DefinitionLoc-computation]:
 		< computation > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
@@ -766,7 +766,7 @@ kmod COMMON-C-STATEMENTS is
 		//  < xmessages >... (. => "Poplooping in " +String toString(Num:Nat)) </ xmessages >
 		[structural] 
 
-	rule [popLoop]:
+	rule [popLoop-popBlock]:
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':Nat, ?)) ...</ loopStack >
@@ -786,14 +786,14 @@ kmod COMMON-C-STATEMENTS is
 		andBool L:KLabel =/=Bool 'pushBlock
 		andBool L:KLabel =/=Bool 'popLoop
 		[structural] //  nondet
-	rule [continue]:
+	rule [continue-through-pop]:
 		< k > Continue ~> popBlock 
 			=> popBlock
 			~> Continue
 		...</ k >
 		[structural] //  nondet
 
-	rule [continue-done]:
+	rule [continue-done-for]:
 		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?, ?, ?, Post:K, ?) ...</ k >
 		[structural] //  nondet
 	rule [continue-done]:

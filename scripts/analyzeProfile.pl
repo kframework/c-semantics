@@ -14,6 +14,7 @@ my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","","");
 $dbh->do("CREATE TABLE if not exists data (
 	runName NOT NULL
 	, runNum INTEGER NOT NULL
+	, ruleName NOT NULL
 	, rule NOT NULL
 	, type NOT NULL
 	, kind NOT NULL
@@ -31,11 +32,11 @@ $dbh->do("PRAGMA synchronous = OFF");
 my $runNum = getMaxRunNumFor($runName) + 1;
 
 
-my $sql = "INSERT INTO data (runName, runNum, rule, type, kind, rewrites, matches) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?)";
+my $sql = "INSERT INTO data (runName, runNum, ruleName, rule, type, kind, rewrites, matches) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?)";
 my $insertOpHandle = $dbh->prepare($sql);
 # $sql = "INSERT INTO data (rule, type, kind, rewrites, matches) VALUES (?, ?, ?, ?, ?)";
 my $insertEqHandle = $insertOpHandle;
-$sql = "INSERT INTO data (runName, runNum, rule, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO data (runName, runNum, ruleName, rule, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 my $insertCeqHandle = $dbh->prepare($sql);
 # $sql = "UPDATE data SET count = count + 1, rewrites = rewrites + ?, matches = matches + ? where rule = ? AND type = ? AND kind = ?";
 # my $updateOpHandle = $dbh->prepare($sql);
@@ -69,6 +70,9 @@ while(<MYINPUTFILE>) {
 	} elsif ($line =~ m/^crl /){
 		handleCeq($line, *MYINPUTFILE, 'crl');
 	} else {
+		# < files > ?16:Map </ files > [label terminate metadata "computational location(dynamic-c-semantics.k:100-109)"] .
+# rewrites: 1 (0.00067079%)
+
 		#print "--------------------\n$line\n--------------------\n";
 	}
 }
@@ -80,10 +84,11 @@ $dbh->disconnect;
 sub handleOp {
 	my ($line, $file) = @_;
 	my $rule = substr($line, 3);
+	my $ruleName = "";
 	$line = <$file>;
 	if ($line =~ m/built-in eq rewrites: (\d+) \(/){
 		my $rewrites = $1;
-		my $retval = $insertOpHandle->execute($rule, 'op', 'builtin', $rewrites, $rewrites);
+		my $retval = $insertOpHandle->execute($ruleName, $rule, 'op', 'builtin', $rewrites, $rewrites);
 		# if (!$retval) {
 			# $updateOpHandle->execute($rewrites, $rewrites, $rule, 'op', 'builtin');
 		# }
@@ -93,23 +98,24 @@ sub handleOp {
 sub handleEq {
 	my ($line, $file, $type) = @_;
 	my $rule = $line;
+	my $ruleName = "";
 	my $kind = 'macro';
 	while (<$file>){
 		$line = $_;
 		chomp($line);
 		if ($line =~ m/^rewrites: (\d+) \(/){
 			my $rewrites = $1;
-			my $retval = $insertEqHandle->execute($rule, $type, $kind, $rewrites, $rewrites);
+			my $retval = $insertEqHandle->execute($ruleName, $rule, $type, $kind, $rewrites, $rewrites);
 			# if (!$retval) {
 				# $updateEqHandle->execute($rewrites, $rewrites, $rule, $type, $kind);
 			# }
 			return;
 		} if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
-			$rule = $1;
+			$ruleName = $1;
 			# print "$1\n"
-		} if ($line =~ m/structural rule/) {
+		} if ($line =~ m/structural/) {
 			$kind = 'structural';
-		} if ($line =~ m/computational rule/) {
+		} if ($line =~ m/computational/) {
 			$kind = 'computational';
 		} else {
 			$rule .= "$line\n";
@@ -120,6 +126,7 @@ sub handleCeq {
 	my ($line, $file, $type) = @_;
 	my $rule = $line;
 	my $kind = "macro";
+	my $ruleName = "";
 	while (<$file>){
 		$line = $_;
 		chomp($line);
@@ -136,20 +143,20 @@ sub handleCeq {
 			my $successes = $4;
 			my $failures = $5;
 			
-			my $retval = $insertCeqHandle->execute($rule, $type, $kind, $rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures);
+			my $retval = $insertCeqHandle->execute($ruleName, $rule, $type, $kind, $rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures);
 			# if (!$retval) {
 				# $updateCeqHandle->execute($rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures, $rule, $type, $kind);
 			# }
 			return;
 		} 
 		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
-			$rule = $1;
+			$ruleName = $1;
 			# print "$1\n"
 		} 
-		if ($line =~ m/structural rule/) {
+		if ($line =~ m/structural/) {
 			$kind = 'structural';
 		} 
-		if ($line =~ m/computational rule/) {
+		if ($line =~ m/computational/) {
 			$kind = 'computational';
 		} else {
 			$rule .= "$line\n";

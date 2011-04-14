@@ -110,6 +110,7 @@ elif [ $PROFILE ]; then
 	cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
 	echo "Analyzing results..."
 	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
+	cat $INTERMEDIATE_OUTPUT_FILE
 	# perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
 	echo "Results added to maudeProfileDBfile.sqlite.  Access with $SCRIPTS_DIR/printProfileData.pl"
 	echo "Done."

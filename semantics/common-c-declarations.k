@@ -22,7 +22,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		< k > bind(L:List{C}, L':List{Type}) => bind-aux(NullPointer, L:List{C}, L':List{Type}) ...</ k > 
 		[structural] 
 	
-	rule [bind-empty]:
+	rule [bind-empty-void]:
 		< k > bind-aux(?, Nil, typedDeclaration(void, ?)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
@@ -75,7 +75,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		if notBool hasArrayType(T:Type)
 		[structural] 
 		
-	rule [bind-one]:
+	rule [bind-one-check-type]:
 		< k > (. => isTypeCompatible(T:Type, T':Type)) ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
@@ -855,7 +855,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if F':Id =/=Bool #NoName
 		[structural] 
 	 
-	rule [init-next-struct-element]:
+	rule [init-next-struct-element-noname]:
 		< currentSubObject >
 			next ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, structType(S:Id)))
 			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, structType(S:Id)))
@@ -873,7 +873,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			S:Id |-> ? :: typedDeclaration(T:Type, F:Id)
 		...</ structs > 
 		[structural] 
-	rule [init-next-struct-element-done]:
+	rule [init-next-struct-element-done-noname]:
 		< currentSubObject >
 			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >

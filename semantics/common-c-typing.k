@@ -90,39 +90,39 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		< type > T:Type ~> & HOLE => & T:Type ...</ type >
 		[structural] 
 		
-	rule [type-ternary-heat]:
+	rule [type-ternary-heat-left]:
 		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
 		if notBool isAType(K2:K)
 		[structural] 
-	rule [type-ternary-cool]:
+	rule [type-ternary-cool-left]:
 		< type > T:Type ~> K1:K ? HOLE : K3:K => K1:K ? T:Type : K3:K ...</ type >
 		if isAType(T:Type)
 		[structural] 
-	rule [type-ternary-heat]:
+	rule [type-ternary-heat-right]:
 		< type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : HOLE ...</ type >
 		if notBool isAType(K3:K)
 		[structural] 
-	rule [type-ternary-cool]:
+	rule [type-ternary-cool-right]:
 		< type > T:Type ~> K1:K ? K2:K : HOLE => K1:K ? K2:K : T:Type ...</ type >
 		if isAType(T:Type)
 		[structural] 
 		
-	rule [type-bin-arith-heat]:
+	rule [type-bin-arith-heat-left]:
 		< type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(HOLE,, K':K) ...</ type >
 		if notBool isAType(K:K)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
-	rule [type-bin-arith-cool]:
+	rule [type-bin-arith-cool-left]:
 		< type > T:Type ~> L:KLabel(HOLE,, K:K) => L:KLabel(T:Type,, K:K) ...</ type >
 		if isAType(T:Type)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
-	rule [type-bin-arith-heat]:
+	rule [type-bin-arith-heat-right]:
 		< type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, HOLE) ...</ type >
 		if notBool isAType(K':K)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
-	rule [type-bin-arith-cool]:
+	rule [type-bin-arith-cool-right]:
 		< type > T:Type ~> L:KLabel(K:K,, HOLE) => L:KLabel(K:K,, T:Type) ...</ type >
 		if isAType(T:Type)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
@@ -581,10 +581,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< types >... K:K |-> T:Type ...</ types >
 		[structural] 
 
-	rule [type-call]:
+	rule [type-call-func]:
 		< type > Call(functionType(T:Type, ?), L:List{C}) => T:Type ...</ type >
 		[structural] 
-	rule [type-call]:
+	rule [type-call-func-ptr]:
 		< type > Call(pointerType(functionType(T:Type, ?)), ?) => T:Type ...</ type >
 		[structural] 
 		 		
@@ -613,7 +613,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule [type-deref-type]:
 		< type > *(pointerType(T:Type)) => T:Type ...</ type >
 		[structural] 
-	rule [type-deref-type]:
+	rule [type-deref-array-type]:
 		< type > *(arrayType(T:Type, ?)) => T:Type ...</ type >
 		[structural] 
 

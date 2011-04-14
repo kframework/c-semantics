@@ -648,7 +648,7 @@ kmod COMMON-C-MEMORY-MISC is
 		if Loc:Nat =/=Bool NullPointer
 		[structural]
 	
-	rule [check-valid-loc]:
+	rule [check-valid-loc-null]:
 		< k > checkValidLoc-aux(NullPointer) => .K ...</ k >
 		[structural]
 	// fixme could additionally use the type to check whether that type is valid for that pointer

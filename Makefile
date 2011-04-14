@@ -15,6 +15,7 @@ FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 
 FILES_TO_DIST = \
 	$(SEMANTICS_DIR)/c-total.maude \
+	$(SEMANTICS_DIR)/libraryRules.txt \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/slurp.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \
@@ -67,6 +68,24 @@ $(DIST_DIR)/dist.done: check-vars Makefile filter cparser semantics $(FILES_TO_D
 	@mv $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
+	@echo "Done."
+	@echo "Testing kcc..."
+	@echo "int main(void) {}" > $(DIST_DIR)/tmpSemanticCalibration.c
+	@$(DIST_DIR)/kcc -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c
+	@$(DIST_DIR)/tmpSemanticCalibration.out
+	@echo "Done."
+	@echo "Calibrating the semantic profiler..."
+	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
+	@PROFILE=1 $(DIST_DIR)/tmpSemanticCalibration.out &> /dev/null
+	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
+	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true
+	@echo "Done."
+	@echo "Reticulating splines..."
+# heheh
+	@echo "Done."
+	@echo "Cleaning up..."
+	@rm $(DIST_DIR)/tmpSemanticCalibration.c
+	@rm $(DIST_DIR)/tmpSemanticCalibration.out
 	@echo "Done."
 	@touch $(DIST_DIR)/dist.done
 

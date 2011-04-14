@@ -492,7 +492,7 @@ kmod C-SEMANTICS-MISC is
 		if S:String =/=Bool ""
 		[structural]
 		// [metadata "computational"]
-	rule [readFromFD-char]:
+	rule [readFromFD-char-eof]:
 		< k > readFromFD(FD:Nat) => tv(-1, int) ...</ k > // -1 should be EOF
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
@@ -528,15 +528,15 @@ kmod C-SEMANTICS-MISC is
 		< k > DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L1:CabsLoc </ currentProgramLoc >
 		[structural] 
-	rule [DefinitionLoc]:
+	rule [DefinitionLoc-k]:
 		< k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
-	rule [StatementLoc]:
+	rule [StatementLoc-k]:
 		< k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
-	rule [EnumItemLoc]:
+	rule [EnumItemLoc-k]:
 		< k > EnumItemLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 

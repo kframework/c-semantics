@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak duplicateLabels.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -56,11 +56,20 @@ c-syntax.k: Makefile
 c.k: c-syntax.k c-maude.template Makefile
 	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
-c-compiled.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
+c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@$(K_MAUDE) c.k -u -language C
+	@mv c-compiled.maude c-compiled.maude.tmp
 	@echo "Done".
+
+c-compiled.maude: c-compiled.maude.tmp
+	@grep -o '^ \(eq\|ceq\|rl\|crl\) .* label [^ ][^ ]* ' c-compiled.maude.tmp | grep -o ' label [^ ][^ ]*' | grep -o '[^ ]*$$' | sort | uniq -d > duplicateLabels.txt
+	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
+	@mv c-compiled.maude.tmp c-compiled.maude
+	
+libraryRules.txt: common-c-standard-lib.k Makefile
+	@grep -o 'rule \[[^] ][^] ]*\]:' common-c-standard-lib.k | grep -o '\[[^] ][^] ]*\]' | grep -o '[^][][^][]*' | sort | uniq > libraryRules.txt
 	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Checking the C definition..."
@@ -75,9 +84,9 @@ c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 	@$(INSERT_LINE) 4 c-compiled.maude "load maudeLib/TCPSupport"
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
-semantics: c-total.maude
+semantics: c-total.maude libraryRules.txt
 
 clean:
-	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp
+	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp 
 
 force: ;

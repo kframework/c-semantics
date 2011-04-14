@@ -40,16 +40,6 @@ exit 0;
 # }
 
 
-# sub cleanDuplicates {
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(T).CellLabel', 'T') WHERE rule like '%(T).CellLabel%'");
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(k).CellLabel', 'k') WHERE rule like '%(k).CellLabel%'");
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(type).CellLabel', 'type') WHERE rule like '%(type).CellLabel%'");
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(env).CellLabel', 'env') WHERE rule like '%(env).CellLabel%'");
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(buffer).CellLabel', 'buffer') WHERE rule like '%(buffer).CellLabel%'");
-	# $dbh->do("UPDATE data SET rule = replace(rule, '(mem).CellLabel', 'mem') WHERE rule like '%(mem).CellLabel%'");
-	# $dbh->disconnect();
-# }
-
 sub printData {
 	my $sth = $dbh->prepare("
 	SELECT a.runName, a.runNum, a.rule, a.kind,
