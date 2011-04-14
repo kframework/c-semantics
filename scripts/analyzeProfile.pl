@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use strict;
 use DBI;
 my $RULE_LENGTH = 20;
@@ -5,46 +6,36 @@ my $numArgs = $#ARGV + 1;
 my $printFileInfo = 0;
 my $shouldPrint = 0;
 my $filename = $ARGV[0];
+my $runName = $ARGV[1];
+#print "$filename\n";
 # terrible hack :(
 my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","","");
-# {PrintError => 0}
-if ($numArgs == 2) {
-	my $flag = $ARGV[1];
-	if ($flag eq "-c") {
-		$printFileInfo = 1;
-	}
-	if ($flag eq "-p") {
-		$shouldPrint = 1;
-	}
-}
-if ($numArgs == 3) {
-	my $flag = $ARGV[1];
-	if ($flag eq "-c") {
-		$printFileInfo = 1;
-	}
-	if ($flag eq "-p") {
-		$shouldPrint = 1;
-	}
-	$flag = $ARGV[2];
-	if ($flag eq "-c") {
-		$printFileInfo = 1;
-	}
-	if ($flag eq "-p") {
-		$shouldPrint = 1;
-	}
-}
-if ($shouldPrint) { printData(); exit 0; }
-if ($printFileInfo) {printFileInfo(); exit 0; }
 # if ($shouldClean) { $dbh->do("DROP TABLE IF EXISTS data;");}
-$dbh->do("CREATE TABLE if not exists data (file NOT NULL, rule NOT NULL, type NOT NULL, kind NOT NULL, rewrites BIGINT NOT NULL, matches BIGINT, fragment NULL DEFAULT NULL, initialTries NULL DEFAULT NULL, resolveTries NULL DEFAULT NULL, successes NULL DEFAULT NULL, failures NULL DEFAULT NULL, PRIMARY KEY (file, rule))");
+$dbh->do("CREATE TABLE if not exists data (
+	runName NOT NULL
+	, runNum INTEGER NOT NULL
+	, rule NOT NULL
+	, type NOT NULL
+	, kind NOT NULL
+	, rewrites BIGINT NOT NULL
+	, matches BIGINT
+	, fragment NULL DEFAULT NULL
+	, initialTries NULL DEFAULT NULL
+	, resolveTries NULL DEFAULT NULL
+	, successes NULL DEFAULT NULL
+	, failures NULL DEFAULT NULL
+	, PRIMARY KEY (runName, runNum, rule)
+)");
 $dbh->do("PRAGMA default_synchronous = OFF");
 $dbh->do("PRAGMA synchronous = OFF");
+my $runNum = getMaxRunNumFor($runName) + 1;
 
-my $sql = "INSERT INTO data (file, rule, type, kind, rewrites, matches) VALUES ('$filename', ?, ?, ?, ?, ?)";
+
+my $sql = "INSERT INTO data (runName, runNum, rule, type, kind, rewrites, matches) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?)";
 my $insertOpHandle = $dbh->prepare($sql);
 # $sql = "INSERT INTO data (rule, type, kind, rewrites, matches) VALUES (?, ?, ?, ?, ?)";
 my $insertEqHandle = $insertOpHandle;
-$sql = "INSERT INTO data (file, rule, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) VALUES ('$filename', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO data (runName, runNum, rule, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 my $insertCeqHandle = $dbh->prepare($sql);
 # $sql = "UPDATE data SET count = count + 1, rewrites = rewrites + ?, matches = matches + ? where rule = ? AND type = ? AND kind = ?";
 # my $updateOpHandle = $dbh->prepare($sql);
@@ -150,12 +141,15 @@ sub handleCeq {
 				# $updateCeqHandle->execute($rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures, $rule, $type, $kind);
 			# }
 			return;
-		} if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
+		} 
+		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
 			$rule = $1;
 			# print "$1\n"
-		} if ($line =~ m/structural rule/) {
+		} 
+		if ($line =~ m/structural rule/) {
 			$kind = 'structural';
-		} if ($line =~ m/computational rule/) {
+		} 
+		if ($line =~ m/computational rule/) {
 			$kind = 'computational';
 		} else {
 			$rule .= "$line\n";
@@ -163,70 +157,14 @@ sub handleCeq {
 	}
 }
 
-
-sub printData {
-# SELECT a.file, a.rule, a.type, a.kind, SUM(a.rewrites), 
-		# SUM(a.matches), SUM(a.fragment), SUM(a.initialTries), 
-		# SUM(a.resolveTries), SUM(a.successes), SUM(a.failures)
+sub getMaxRunNumFor {
+	my ($runName) = (@_);
 	my $sth = $dbh->prepare("
-	SELECT count(a.file) as count, a.rule, a.kind, 
-	sum(a.rewrites) as rewrites, SUM(a.matches) as matches
-	FROM data a
-	WHERE a.type != 'op' AND a.kind != 'macro'
-	GROUP BY a.rule
-	--- , a.type, a.kind
-	--- ORDER BY a.matches DESC
+		SELECT max(runNum) as maxNum
+		FROM data a
+		WHERE runName like '$runName'
 	") or die $dbh->errstr;
 	$sth->execute();
-	# Fragment, Initial Tries, Resolve Tries, 
-	print "Rule, Count, Kind, Matches, Rewrites\n";
-	while (my $hash_ref = $sth->fetchrow_hashref) {
-		my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
-		$rule =~ tr{\n}{ }; # turn newlines into spaces
-		$rule =~ s/["]/""/g; # escape quotes
-		# my $file = $hash_ref->{file};
-		# my $type = $hash_ref->{type};
-		my $count = $hash_ref->{count};
-		my $kind = $hash_ref->{kind};
-		my $rewrites = $hash_ref->{rewrites};
-		my $matches = $hash_ref->{matches};
-		# my $fragment = $hash_ref->{fragment};
-		# my $initialTries = $hash_ref->{initialTries};
-		# my $resolveTries = $hash_ref->{resolveTries};
-		# my $successes = $hash_ref->{successes};
-		# my $failures = $hash_ref->{failures};
-		print "\"$rule\", $count, $kind, $matches, $rewrites\n";
-		# $fragment, $initialTries, $resolveTries, 
-	}
-	$dbh->disconnect();
-}
-
-sub printFileInfo {
-	my $sth = $dbh->prepare("
-	SELECT a.file, count(a.rule) as count,
-	sum(a.rewrites) as rewrites, SUM(a.matches) as matches
-	FROM data a
-	WHERE a.type != 'op' AND a.kind != 'macro'
-	GROUP BY a.file
-	ORDER BY a.file
-	--- , a.type, a.kind
-	--- ORDER BY a.matches DESC
-	") or die $dbh->errstr;
-	$sth->execute();
-	# Fragment, Initial Tries, Resolve Tries, 
-	print "File, Count, Rewrites, Matches\n";
-	while (my $hash_ref = $sth->fetchrow_hashref) {
-		my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
-		$rule =~ tr{\n}{ }; # turn newlines into spaces
-		$rule =~ s/["]/""/g; # escape quotes
-		my $file = $hash_ref->{file};
-		# my $type = $hash_ref->{type};
-		my $count = $hash_ref->{count};
-		# my $kind = $hash_ref->{kind};
-		my $rewrites = $hash_ref->{rewrites};
-		my $matches = $hash_ref->{matches};
-		print "$file, $count, $rewrites, $matches\n";
-		# $fragment, $initialTries, $resolveTries, 
-	}
-	$dbh->disconnect();
-}
+	my $hash_ref = $sth->fetchrow_hashref or die "Problem figuring max run for '$runName'";
+	return $hash_ref->{maxNum};
+} 

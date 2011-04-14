@@ -17,6 +17,7 @@ SEARCH_GRAPH_WRAPPER=EXTERN_SEARCH_GRAPH_WRAPPER
 IO_SERVER=EXTERN_IO_SERVER
 IOFLAG=EXTERN_COMPILED_WITH_IO
 SCRIPTS_DIR=EXTERN_SCRIPTS_DIR
+PROGRAM_NAME=EXTERN_IDENTIFIER
 
 # actual start of script
 if [ -t 0 ]; then
@@ -108,8 +109,9 @@ elif [ $PROFILE ]; then
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
 	cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
 	echo "Analyzing results..."
-	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE
-	perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
+	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
+	# perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
+	echo "Results added to maudeProfileDBfile.sqlite.  Access with $SCRIPTS_DIR/printProfileData.pl"
 	echo "Done."
 	rm -f $INTERMEDIATE_OUTPUT_FILE
 else

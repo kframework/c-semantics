@@ -8,6 +8,8 @@ tabs="\t\t\t"
 usage="Usage: %s: [options] file... [options]\n"
 usage+="Options:\n"
 
+mainFileName=
+
 function addOption {
 	len=${#1}
 	padding=$((25 - len))
@@ -102,6 +104,9 @@ function setNewFilenames {
 		((FILENAMESHIFT+=1))
 		#echo "file=$1"
 		newFilenames="$newFilenames $1"
+		if [ -z "$mainFileName" ]; then
+			mainFileName=`basename $1 .c`
+		fi
 		shift 1
 	done
 	#echo "inner newFilenames=$newFilenames"
@@ -209,6 +214,7 @@ if [ ! "$compileOnlyFlag" ]; then
 		| sed "s?EXTERN_COMPILED_WITH_IO?$ioFlag?g" \
 		| sed "s?EXTERN_IO_SERVER?$myDirectory/fileserver.pl?g" \
 		| sed "s?EXTERN_SCRIPTS_DIR?$myDirectory?g" \
+		| sed "s?EXTERN_IDENTIFIER?$mainFileName?g" \
 		> $programTemp
 	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
