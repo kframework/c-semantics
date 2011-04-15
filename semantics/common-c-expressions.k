@@ -528,34 +528,65 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 	op compoundAssignment : KLabel K K -> K
 	context compoundAssignment(_, ([HOLE] => peval([HOLE])), _)
 	context compoundAssignment(_, _, ([HOLE] => reval([HOLE])))
-	rule
-		< k > L:KLabel(E1:Expression,, E2:Expression)
-			=> compoundAssignment(L:KLabel, E1:Expression, E2:Expression) 
-		...</ k >
-		if Set(
-			l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		) contains l(L:KLabel)
-		[structural] 
+	// rule
+		// < k > L:KLabel(E1:Expression,, E2:Expression)
+			// => compoundAssignment(L:KLabel, E1:Expression, E2:Expression) 
+		// ...</ k >
+		// if Set(
+			// l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
+			// l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
+		// ) contains l(L:KLabel)
+		// [structural] 
+		
+	rule [compoundAssignment-mult]:
+		< k > E1:Expression *= E2:Expression => compoundAssignment('_*_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-div]:
+		< k > E1:Expression /= E2:Expression => compoundAssignment('_/_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-modulo]:
+		< k > E1:Expression %= E2:Expression => compoundAssignment('_%_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-plus]:
+		< k > E1:Expression += E2:Expression => compoundAssignment('_+_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-minus]:
+		< k > E1:Expression -= E2:Expression => compoundAssignment('_-_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-left-shift]:
+		< k > E1:Expression <<= E2:Expression => compoundAssignment('_<<_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-right-shift]:
+		< k > E1:Expression >>= E2:Expression => compoundAssignment('_>>_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-bitwise-and]:
+		< k > E1:Expression &= E2:Expression => compoundAssignment('_&_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-bitwise-xor]:
+		< k > E1:Expression ^= E2:Expression => compoundAssignment('_^_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
+	rule [compoundAssignment-bitwise-or]:
+		< k > E1:Expression |= E2:Expression => compoundAssignment('_|_, E1:Expression, E2:Expression) ...</ k >
+		[structural]
 
-	op getInnerOperator : KLabel -> KLabel 
+	// op getInnerOperator : KLabel -> KLabel
 	rule
 		< k > compoundAssignment(L:KLabel, V:Value, V':Value) 
-			=> V:Value := getInnerOperator(L:KLabel)(reval(V:Value),, V':Value) 
+			=> V:Value := L:KLabel(V:Value,, V':Value) 
 		...</ k >
 		[structural] 
 
-	rule getInnerOperator('_*=_) => '_*_ [structural]
-	rule getInnerOperator('_/=_) => '_/_ [structural]
-	rule getInnerOperator('_%=_) => '_%_ [structural]
-	rule getInnerOperator('_+=_) => '_+_ [structural]
-	rule getInnerOperator('_-=_) => '_-_ [structural]
+	// rule getInnerOperator('_*=_) => '_*_ [structural]
+	// rule getInnerOperator('_/=_) => '_/_ [structural]
+	// rule getInnerOperator('_%=_) => '_%_ [structural]
+	// rule getInnerOperator('_+=_) => '_+_ [structural]
+	// rule getInnerOperator('_-=_) => '_-_ [structural]
 	
-	rule getInnerOperator('_<<=_) => '_<<_ [structural]
-	rule getInnerOperator('_>>=_) => '_>>_ [structural]
-	rule getInnerOperator('_&=_) => '_&_ [structural]
-	rule getInnerOperator('_^=_) => '_^_ [structural]
-	rule getInnerOperator('_|=_) => '_|_ [structural]
+	// rule getInnerOperator('_<<=_) => '_<<_ [structural]
+	// rule getInnerOperator('_>>=_) => '_>>_ [structural]
+	// rule getInnerOperator('_&=_) => '_&_ [structural]
+	// rule getInnerOperator('_^=_) => '_^_ [structural]
+	// rule getInnerOperator('_|=_) => '_|_ [structural]
 
 	// rule [assign]:
 		// < k > assign(*(tv(Loc:Nat, pointerType(T:Type))), tv(V:List{K}, T':Type)) 
@@ -1003,11 +1034,11 @@ kmod COMMON-SEMANTICS-REFERENCE is
 	
 	// context &([HOLE] -> X:Id) 
 	
-	op fixPointerType : Type -> Type 
-	rule fixPointerType(T:Type) => pointerType(T:Type)
-		if notBool(hasArrayType(T:Type))
-		[structural]
-	rule fixPointerType(arrayType(T:Type, ?)) => pointerType(T:Type) [structural]
+	// op fixPointerType : Type -> Type 
+	// rule fixPointerType(T:Type) => pointerType(T:Type)
+		// if notBool(hasArrayType(T:Type))
+		// [structural]
+	// rule fixPointerType(arrayType(T:Type, ?)) => pointerType(T:Type) [structural]
 	
 	/*@ \source{C1X 6.5.3.2:3}
 	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator. Otherwise, the result is a pointer to the object or function designated by its operand

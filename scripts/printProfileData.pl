@@ -5,39 +5,10 @@ my $RULE_LENGTH = 300;
 my $numArgs = $#ARGV + 1;
 # terrible hack :(
 my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","",""); #maudeProfileDBfile.sqlite
-# {PrintError => 0}
-# if ($numArgs == 0) {
+
 printData();
 $dbh->disconnect;
 exit 0;
-# }
-
-# if ($numArgs == 1) {
-	# my $flag = $ARGV[0];
-	# if ($flag eq "-labels") {
-		# printLabels(); exit 0;
-	# }
-	# if ($flag eq "-common") {
-		# # print "printing common rules\n";
-		# printCommonRules(); exit 0;
-	# }
-	# if ($flag eq "-c") {
-		# printFileInfo(); exit 0;
-	# }
-	# if ($flag eq "-p") {
-		# printData(); exit 0;
-	# }
-	# if ($flag eq "-lib") {
-		# printLib(); exit 0;
-	# }
-	# if ($flag eq "-count") {
-		# printCount(); exit 0;
-	# }
-	# if ($flag eq "-clean") {
-		# cleanDuplicates(); exit 0;
-	# }
-	
-# }
 
 sub printField {
 	my ($s) = (@_);

@@ -28,8 +28,22 @@ $dbh->do("CREATE TABLE if not exists data (
 	, resolveTries NULL DEFAULT NULL
 	, successes NULL DEFAULT NULL
 	, failures NULL DEFAULT NULL
-	, PRIMARY KEY (runName, runNum, rule)
+	, PRIMARY KEY (runName, runNum, locationFile, locationFrom, locationTo, kind)
 )");
+# $dbh->do("CREATE INDEX if not exists index_runName on data (
+	# runName
+	# , runNum
+# )");
+$dbh->do("CREATE INDEX if not exists index_rule on data (
+	locationFile
+	, locationFrom
+	, locationTo
+	, kind
+)");
+# $dbh->do("CREATE INDEX if not exists index_matches on data (
+	# matches
+# )");
+
 $dbh->do("PRAGMA default_synchronous = OFF");
 $dbh->do("PRAGMA synchronous = OFF");
 my $runNum = getMaxRunNumFor($runName) + 1;

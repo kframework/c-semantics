@@ -525,27 +525,33 @@ kmod COMMON-SEMANTICS-WRITING is
 		[structural] 
 		
 	// this general rule is useful for unknowns, abstracts, etc
-	rule splitBytes(tv(N:Nat, T:Type))
-		=> dataList(piece(N:Nat, numBitsPerByte))
+	rule [splitBytes-char]:
+		splitBytes(tv(N:Nat, T:Type))
+			=> dataList(piece(N:Nat, numBitsPerByte))
 		if hasCharType(T:Type)
 		[structural] 
-	rule splitBytes(tv(I:Int, T:Type)) 
-		=> splitIntegerBytes(I:Int, T:Type, value(byteSizeofType(T:Type)))
+	rule [splitBytes-int]:
+		splitBytes(tv(I:Int, T:Type)) 
+			=> splitIntegerBytes(I:Int, T:Type, value(byteSizeofType(T:Type)))
 		if hasIntegerType(T:Type)
 		andBool (I:Int >=Int 0 orBool I:Int <=Int 0)
 		[structural] 
-	rule splitBytes(tv(F:Float, T:Type)) 
-		=> splitFloatBytes(F:Float, T:Type, value(byteSizeofType(T:Type)))
+	rule [splitBytes-float]:
+		splitBytes(tv(F:Float, T:Type)) 
+			=> splitFloatBytes(F:Float, T:Type, value(byteSizeofType(T:Type)))
 		if hasFloatType(T:Type)
 		[structural] 
-	rule splitBytes(tv(I:Int, pointerType(T:Type))) 
-		=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
+	rule [splitBytes-pointer]:
+		splitBytes(tv(I:Int, pointerType(T:Type))) 
+			=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
 		[structural] 
-	rule splitBytes(tv(I:Int, arrayType(T:Type, ?))) 
-		=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
+	rule [splitBytes-array]:
+		splitBytes(tv(I:Int, arrayType(T:Type, ?))) 
+			=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
 		[structural] 
-	rule splitBytes(tv(L:List{K}, T:Type)) 
-		=> splitStructBytes(dataList(L:List{K}), T:Type, value(byteSizeofType(T:Type)))
+	rule [splitBytes-struct]:
+		splitBytes(tv(L:List{K}, T:Type)) 
+			=> splitStructBytes(dataList(L:List{K}), T:Type, value(byteSizeofType(T:Type)))
 		if hasStructType(T:Type)
 		[structural] 
 	

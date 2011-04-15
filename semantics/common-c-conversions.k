@@ -1,20 +1,20 @@
 kmod COMMON-SEMANTICS-PROMOTIONS is
 	including COMMON-INCLUDE 
 	
-	rule
-		< k > L:KLabel(tv(L':List{K}, T:Type),, V:Value)
-			=> L:KLabel(cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)),, V:Value) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool hasArrayType(T:Type)
-		[structural] 
-	rule
-		< k > L:KLabel(V:Value,, tv(L':List{K}, T:Type))
-			=> L:KLabel(V:Value,, cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)))
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool hasArrayType(T:Type)
-		[structural] 
+	// rule
+		// < k > L:KLabel(tv(L':List{K}, T:Type),, V:Value)
+			// => L:KLabel(cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)),, V:Value) 
+		// ...</ k >
+		// if isArithBinConversionOp(L:KLabel)
+		// andBool hasArrayType(T:Type)
+		// [structural] 
+	// rule
+		// < k > L:KLabel(V:Value,, tv(L':List{K}, T:Type))
+			// => L:KLabel(V:Value,, cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)))
+		// ...</ k >
+		// if isArithBinConversionOp(L:KLabel)
+		// andBool hasArrayType(T:Type)
+		// [structural] 
 	
 	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
 	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
@@ -326,10 +326,10 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 	
 	// fixme just temporarily, until we handle qualifiers properly
-	rule
-		cast(T:Type, tv(L:List{K}, T':Type)) => cast(T:Type, tv(L:List{K}, unqualifyType(T':Type)))
-		if hasStaticType(T':Type)
-		[structural] 
+	// rule
+		// cast(T:Type, tv(L:List{K}, T':Type)) => cast(T:Type, tv(L:List{K}, unqualifyType(T':Type)))
+		// if hasStaticType(T':Type)
+		// [structural] 
 	
 	rule
 		cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
@@ -455,12 +455,12 @@ kmod COMMON-SEMANTICS-CAST is
 		cast(arrayType(T:Type, N:Nat), tv(N':Nat, T':Type)) => tv(N':Nat, arrayType(T:Type, N:Nat))
 		[structural] 
 		
-	rule
-		cast(?, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
-		[structural] 
-	rule
-		cast(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
-		[structural] 
+	// rule
+		// cast(?, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
+		// [structural] 
+	// rule
+		// cast(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
+		// [structural] 
 	
 	// fixme needs to check size
 	rule
@@ -485,19 +485,19 @@ kmod COMMON-C-CONVERSIONS is
 	including COMMON-SEMANTICS-PROMOTIONS 
 
 	// fixme generalize this should be done generically
-	rule < k > *(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
-		[structural] 
-	rule < k > *(tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type)))) ...</ k > 
-		[structural] 
+	// rule < k > *(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
+		// [structural] 
+	// rule < k > *(tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type)))) ...</ k > 
+		// [structural] 
 		
-	rule < k > _+_(tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))), ?) ...</ k > 
-		[structural] 
-	rule < k > _+_(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type)))) ...</ k > 
-		[structural] 
-	rule < k > _+_(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))), ?) ...</ k > 
-		[structural] 
-	rule < k > _+_(?, tv(Loc:Nat, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
-		[structural]
+	// rule < k > _+_(tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))), ?) ...</ k > 
+		// [structural] 
+	// rule < k > _+_(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type)))) ...</ k > 
+		// [structural] 
+	// rule < k > _+_(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))), ?) ...</ k > 
+		// [structural] 
+	// rule < k > _+_(?, tv(Loc:Nat, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
+		// [structural]
 	
 	rule unknown(Len:Nat) >>Nat N:Nat => unknown(absInt(Len:Nat -Int N:Nat))
 		if N:Nat <=Nat Len:Nat 
