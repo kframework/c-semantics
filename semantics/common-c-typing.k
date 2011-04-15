@@ -9,21 +9,23 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	op evalToType : -> K 
 		
 	op typeStrictBinaryOperators : -> Set [memo] 
-	eq typeStrictBinaryOperators = Set(
+	rule typeStrictBinaryOperators => Set(
 		l('_*_),, l('_/_),, l('_%_),,
 		l('_+_),, l('_-_),,
 		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
 		l('_&_),, l('_|_),, l('_^_),,
 		l('_`[_`])
 	)
+	[structural]
 	
 	op typeStrictLeftBinaryOperators : -> Set [memo] 
-	eq typeStrictLeftBinaryOperators = Set(
+	rule typeStrictLeftBinaryOperators => Set(
 		l('_<<_),, l('_>>_),,
 		l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
 		l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_),,
 		l('_++),, l('_--),, l('--_),, l('++_)
 	) 
+	[structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
@@ -33,11 +35,11 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	op giveLocalType : K Type -> K 
 	
 	// FIXME these are here until I decide how to handle qualified types
-	eq qualifiedType(T:Type, Volatile) = T:Type 
-	eq qualifiedType(T:Type, Restrict) = T:Type 
-	eq qualifiedType(T:Type, Const) = T:Type 
-	eq qualifiedType(T:Type, Auto) = T:Type 
-	eq qualifiedType(T:Type, Register) = T:Type 
+	rule qualifiedType(T:Type, Volatile) => T:Type [structural]
+	rule qualifiedType(T:Type, Restrict) => T:Type [structural]
+	rule qualifiedType(T:Type, Const) => T:Type [structural]
+	rule qualifiedType(T:Type, Auto) => T:Type [structural]
+	rule qualifiedType(T:Type, Register) => T:Type [structural]
 	
 	
 	rule
@@ -289,11 +291,11 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		
 		
 	// FIXME what good is this?
-	eq BagItem(SpecTypedef) = .Bag 
+	rule BagItem(SpecTypedef) => .Bag [structural]
 	// fixme ignoring inlines since they shouldn't change the semantics?
-	eq BagItem(Inline) = .Bag 
+	rule BagItem(Inline) => .Bag [structural]
 	// fixme should save these for later use
-	eq BagItem(AttributeValue(?, ?)) = .Bag 
+	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
 
 	rule 
 		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
@@ -310,55 +312,55 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		
 	op canonicalizeSpecifier : Bag -> K 
 	// C99 6.7.2:2
-	eq canonicalizeSpecifier(BagItem(Void)) = void 
-	eq canonicalizeSpecifier(BagItem(Bool)) = bool 
-	eq canonicalizeSpecifier(BagItem(Char)) = char 
-	eq canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) = signed-char 
-	eq canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) = unsigned-char 
+	rule canonicalizeSpecifier(BagItem(Void)) => void [structural]
+	rule canonicalizeSpecifier(BagItem(Bool)) => bool [structural]
+	rule canonicalizeSpecifier(BagItem(Char)) => char [structural]
+	rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => signed-char [structural]
+	rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => unsigned-char [structural]
 	
-	eq canonicalizeSpecifier(BagItem(Double)) = double 
-	eq canonicalizeSpecifier(BagItem(Float)) = float 
-	eq canonicalizeSpecifier(BagItem(Long) BagItem(Double)) = long-double 
+	rule canonicalizeSpecifier(BagItem(Double)) => double [structural]
+	rule canonicalizeSpecifier(BagItem(Float)) => float [structural]
+	rule canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => long-double [structural]
 	
-	ceq canonicalizeSpecifier(B:Bag) = short-int
+	rule canonicalizeSpecifier(B:Bag) => short-int
 		if B:Bag ==Bool BagItem(Short)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short)
 		orBool B:Bag ==Bool BagItem(Short) BagItem(Int)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short) BagItem(Int) 
-		
-	ceq canonicalizeSpecifier(B:Bag) = unsigned-short-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => unsigned-short-int
 		if B:Bag ==Bool BagItem(Unsigned) BagItem(Short)
 		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Short) BagItem(Int) 
-	
-	ceq canonicalizeSpecifier(B:Bag) = int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => int
 		if B:Bag ==Bool BagItem(Int)
 		orBool B:Bag ==Bool BagItem(Signed)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Int) 
-		
-	ceq canonicalizeSpecifier(B:Bag) = unsigned-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => unsigned-int
 		if B:Bag ==Bool BagItem(Unsigned)
 		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Int) 
-
-	ceq canonicalizeSpecifier(B:Bag) = long-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => long-int
 		if B:Bag ==Bool BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Long) BagItem(Int)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Int) 
-		
-	ceq canonicalizeSpecifier(B:Bag) = unsigned-long-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => unsigned-long-int
 		if B:Bag ==Bool BagItem(Unsigned) BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Int) 
-	
-	ceq canonicalizeSpecifier(B:Bag) = long-long-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => long-long-int
 		if B:Bag ==Bool BagItem(Long) BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Long) BagItem(Long) BagItem(Int)
 		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int) 
-	
-	ceq canonicalizeSpecifier(B:Bag) = unsigned-long-long-int
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => unsigned-long-long-int
 		if B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long)
 		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
-		
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
@@ -375,38 +377,38 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< k > StructRef(X:Id) => structType(X:Id) ...</ k >
 		[structural] 
 		
-	eq BitFieldType(T:Type, tv(N:Nat, ?)) = bitfieldType(T:Type, N:Nat) 
+	rule BitFieldType(T:Type, tv(N:Nat, ?)) => bitfieldType(T:Type, N:Nat) [structural]
 	
 	op makeArrayType : Nat -> KLabel 
 	op makeFunctionType : List{Type} -> KLabel 
 	op pushTypeDown : Type KLabel -> Type 
 	
-	eq ArrayType(T:Type, tv(N:Nat, ?)) = pushTypeDown(T:Type, makeArrayType(N:Nat)) 
-	eq ArrayType(T:Type, emptyValue) = pushTypeDown(T:Type, 'incompleteArrayType) 
-	eq PointerType(T:Type) = pushTypeDown(T:Type, 'pointerType) 
+	rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
+	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, 'incompleteArrayType) [structural]
+	rule PointerType(T:Type) => pushTypeDown(T:Type, 'pointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
-	eq FunctionType(T:Type) = T:Type 
-	eq Prototype(T:Type, L:List{Type}, false) = pushTypeDown(T:Type, makeFunctionType(L:List{Type})) 
-	eq Prototype(T:Type, L:List{Type}, true) = pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) 
+	rule FunctionType(T:Type) => T:Type [structural]
+	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
+	rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) [structural]
 	
-	eq pushTypeDown(arrayType(T:Type, N:Nat), K:KLabel) = arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat) 
-	eq pushTypeDown(incompleteArrayType(T:Type), K:KLabel) = incompleteArrayType(pushTypeDown(T:Type, K:KLabel)) 
-	eq pushTypeDown(pointerType(T:Type), K:KLabel) = pointerType(pushTypeDown(T:Type, K:KLabel)) 
-	eq pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) = qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) 
-	eq pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) = functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) 
-	eq pushTypeDown(flexibleArrayType(T:Type), K:KLabel) = flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) 
-	eq pushTypeDown(structType(X:Id), K:KLabel) = K:KLabel(structType(X:Id)) 
-	eq pushTypeDown(unionType(X:Id), K:KLabel) = K:KLabel(unionType(X:Id)) 
-	eq pushTypeDown(enumType(X:Id), K:KLabel) = K:KLabel(enumType(X:Id)) 
+	rule pushTypeDown(arrayType(T:Type, N:Nat), K:KLabel) => arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat) [structural]
+	rule pushTypeDown(incompleteArrayType(T:Type), K:KLabel) => incompleteArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule pushTypeDown(pointerType(T:Type), K:KLabel) => pointerType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) => qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) [structural]
+	rule pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) => functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) [structural]
+	rule pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule pushTypeDown(structType(X:Id), K:KLabel) => K:KLabel(structType(X:Id)) [structural]
+	rule pushTypeDown(unionType(X:Id), K:KLabel) => K:KLabel(unionType(X:Id)) [structural]
+	rule pushTypeDown(enumType(X:Id), K:KLabel) => K:KLabel(enumType(X:Id)) [structural]
 	
-	eq pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) = K:KLabel(T:Type) 
+	rule pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) => K:KLabel(T:Type) [structural]
 	
 	rule pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
 		if isBasicType(T:Type)
 		[structural]
 	
-	eq makeArrayType(N:Nat)(T:Type) = arrayType(T:Type, N:Nat) 
-	eq makeFunctionType(L:List{Type})(T:Type) = functionType(T:Type, L:List{Type}) 
+	rule makeArrayType(N:Nat)(T:Type) => arrayType(T:Type, N:Nat) [structural]
+	rule makeFunctionType(L:List{Type})(T:Type) => functionType(T:Type, L:List{Type}) [structural]
 			
 	
 	rule 
@@ -428,45 +430,52 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	op fillBitHoles : List{Type} -> List{Type} 
 	op fillBitHoles : Nat List{Type} -> List{Type} 
-	eq fillBitHoles(Nil) = Nil 
+	rule fillBitHoles(Nil) => Nil [structural]
 	// if we haven't seen bitfields
-	ceq fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		= typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
-	if notBool hasBitfieldType(T:Type) 
+	rule fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+		=> typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
+		if notBool hasBitfieldType(T:Type) 
+		[structural]
 	
-	ceq fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		= fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
-	if hasBitfieldType(T:Type) 
+	rule fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+		=> fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
+		if hasBitfieldType(T:Type) 
+		[structural]
 	
 	// if we have seen bitfields
-	ceq fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		= typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
+	rule fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+		=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
 		:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
-	if notBool hasBitfieldType(T:Type) 
+		if notBool hasBitfieldType(T:Type) 
+		[structural]
 	
-	ceq fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id) :: L:List{Type})) 
-		= typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id)
+	rule fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id) :: L:List{Type})) 
+		=> typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id)
 		:: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
 		if N':Nat =/=Bool 0 
+		[structural]
 		
-	ceq fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
-		= typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
+	rule fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
+		=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
 		:: fillBitHoles(L:List{Type})
 		if N':Nat ==Bool 0 
 	
-	eq fillBitHoles(N:Nat, Nil) = typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
+	rule fillBitHoles(N:Nat, Nil) => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
+		[structural]
 
 	
-	eq typedDeclaration(bitfieldType(?, N:Nat), #NoName) :: typedDeclaration(bitfieldType(?, N':Nat), #NoName) 
-		= typedDeclaration(bitfieldType(unsigned-int, N:Nat +Nat N':Nat), #NoName) 
+	rule typedDeclaration(bitfieldType(?, N:Nat), #NoName) :: typedDeclaration(bitfieldType(?, N':Nat), #NoName) 
+		=> typedDeclaration(bitfieldType(unsigned-int, N:Nat +Nat N':Nat), #NoName) 
+		[structural]
 	
 	// fixme chould check for some struct contraints here
 	op incompleteToFlexibleArrayMember : List{Type} -> List{Type} 
-	ceq incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
-		= typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
+	rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
+		=> typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
 		if notBool hasIncompleteType(T:Type) 
-	eq incompleteToFlexibleArrayMember(typedDeclaration(incompleteArrayType(T:Type), X:Id)) = typedDeclaration(flexibleArrayType(T:Type), X:Id) 
-	eq incompleteToFlexibleArrayMember(Nil) = Nil 
+		[structural]
+	rule incompleteToFlexibleArrayMember(typedDeclaration(incompleteArrayType(T:Type), X:Id)) => typedDeclaration(flexibleArrayType(T:Type), X:Id) [structural]
+	rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
 	
 	rule
 		< k > StructDef(X:Id, L:List{Type})
@@ -492,18 +501,18 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural] 
 		
 	rule extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
-	eq extractActualType(enumType(X:Id)) = enumType(X:Id) 
-	eq extractActualType(structType(X:Id)) = structType(X:Id) 
-	eq extractActualType(unionType(X:Id)) = unionType(X:Id) 
-	eq extractActualType(arrayType(T:Type, N:Nat)) = arrayType(extractActualType(T:Type), N:Nat) 
-	eq extractActualType(incompleteArrayType(T:Type)) = incompleteArrayType(extractActualType(T:Type)) 
-	eq extractActualType(flexibleArrayType(T:Type)) = flexibleArrayType(extractActualType(T:Type)) 
-	eq extractActualType(bitfieldType(T:Type, N:Nat)) = bitfieldType(extractActualType(T:Type), N:Nat)
-	eq extractActualType(functionType(T:Type, List:List{Type})) = functionType(extractActualType(T:Type), List:List{Type}) 
-	eq extractActualType(pointerType(T:Type)) = pointerType(extractActualType(T:Type)) 
-	eq extractActualType(qualifiedType(T:Type, K:K)) = qualifiedType(extractActualType(T:Type), K:K) 
-	eq extractActualType(prototype(T:Type)) = prototype(extractActualType(T:Type)) 
-	eq extractActualType(typedefType(?, T:Type)) = extractActualType(T:Type) 
+	rule extractActualType(enumType(X:Id)) => enumType(X:Id) [structural]
+	rule extractActualType(structType(X:Id)) => structType(X:Id) [structural]
+	rule extractActualType(unionType(X:Id)) => unionType(X:Id) [structural]
+	rule extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
+	rule extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
+	rule extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
+	rule extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat)[structural]
+	rule extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
+	rule extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
+	rule extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
+	rule extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
+	rule extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
 		
 	op NameAndType : K K -> K [metadata "strict(2)"] 
 	
@@ -523,7 +532,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
 		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
 		[structural] 
-	eq FieldName(K:K) = K:K 
+	rule FieldName(K:K) => K:K [structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
@@ -673,49 +682,64 @@ kmod COMMON-C-TYPING is
 	including COMMON-SEMANTICS-TYPE-INTERPRETATION 
 	including COMMON-SEMANTICS-TYPE-EXPRESSIONS 
 	
-	eq isTypeCompatible(T:Type, T:Type) 
-		= true 
-	ceq isTypeCompatible(T:Type, T':Type) 
-		= true 
+	rule isTypeCompatible(T:Type, T:Type) 
+		=> true 
+		[structural]
+	rule isTypeCompatible(T:Type, T':Type) 
+		=> true 
 		if hasIntegerType(T:Type)
 		andBool hasIntegerType(T':Type) 
-	eq isTypeCompatible(pointerType(?), pointerType(?))
-		= true 
-	ceq isTypeCompatible(pointerType(?), T:Type)
-		= true
+		[structural]
+	rule isTypeCompatible(pointerType(?), pointerType(?))
+		=> true 
+		[structural]
+	rule isTypeCompatible(pointerType(?), T:Type)
+		=> true
 		if hasIntegerType(T:Type) 
-	ceq isTypeCompatible(T:Type, pointerType(?))
-		= true
-		if hasIntegerType(T:Type) 
+		[structural]
+	rule isTypeCompatible(T:Type, pointerType(?))
+		=> true
+		if hasIntegerType(T:Type)
+		[structural]
 		
-	eq isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
-		= isTypeCompatible(T:Type, T':Type) 
-	eq isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
-		= isTypeCompatible(T:Type, T':Type) 
+	rule isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
+		=> isTypeCompatible(T:Type, T':Type) 
+		[structural]
+	rule isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
+		=> isTypeCompatible(T:Type, T':Type) 
+		[structural]
 
-	eq isTypeCompatible(T:Type, arrayType(T':Type, ?))
-		= isTypeCompatible(T:Type, pointerType(T':Type)) 
-	eq isTypeCompatible(arrayType(T:Type, ?), T':Type)
-		= isTypeCompatible(pointerType(T:Type), T':Type) 
+	rule isTypeCompatible(T:Type, arrayType(T':Type, ?))
+		=> isTypeCompatible(T:Type, pointerType(T':Type)) 
+		[structural]
+	rule isTypeCompatible(arrayType(T:Type, ?), T':Type)
+		=> isTypeCompatible(pointerType(T:Type), T':Type) 
+		[structural]
 	
-	eq isTypeCompatible(T:Type, incompleteArrayType(T':Type))
-		= isTypeCompatible(T:Type, pointerType(T':Type)) 
-	eq isTypeCompatible(incompleteArrayType(T:Type), T':Type)
-		= isTypeCompatible(pointerType(T:Type), T':Type) 
+	rule isTypeCompatible(T:Type, incompleteArrayType(T':Type))
+		=> isTypeCompatible(T:Type, pointerType(T':Type)) 
+		[structural]
+	rule isTypeCompatible(incompleteArrayType(T:Type), T':Type)
+		=> isTypeCompatible(pointerType(T:Type), T':Type) 
+		[structural]
 
-	eq isTypeCompatible(functionType(T1:Type, typedDeclaration(void, ?)), functionType(T2:Type, Nil))
-		= isTypeCompatible(T1:Type, T2:Type) 
-	eq isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, typedDeclaration(void, ?)))
-		= isTypeCompatible(T1:Type, T2:Type) 
-	eq isTypeCompatible(functionType(T1:Type, (T':Type :: L:List{Type})), functionType(T2:Type, (T'':Type :: L':List{Type})))
-		= isTypeCompatible(functionType(T1:Type, L:List{Type}), functionType(T2:Type, L':List{Type}))
+	rule isTypeCompatible(functionType(T1:Type, typedDeclaration(void, ?)), functionType(T2:Type, Nil))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, typedDeclaration(void, ?)))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule isTypeCompatible(functionType(T1:Type, (T':Type :: L:List{Type})), functionType(T2:Type, (T'':Type :: L':List{Type})))
+		=> isTypeCompatible(functionType(T1:Type, L:List{Type}), functionType(T2:Type, L':List{Type}))
 		andBool isTypeCompatible(T':Type, T'':Type) 
-	eq isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, Nil))
-		= isTypeCompatible(T1:Type, T2:Type) 
-	ceq isTypeCompatible(T:Type, T':Type) = true
+		[structural]
+	rule isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, Nil))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule isTypeCompatible(T:Type, T':Type) => true
 		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
-	
+		[structural]
 	// op cast : K K -> K [metadata "strict"] 
 	rule 
 		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
@@ -745,108 +769,127 @@ kmod COMMON-C-TYPING is
 		< structs > M:Map => M:Map[L:List{Type} / X:Id] </ structs >
 		[structural] 
 		
-	ceq isAType T:Type = true
+	rule isAType T:Type => true
 		if setOfTypes contains l(getKLabel(T:Type)) 
+		[structural]
 	rule isAType T:Type => true if isBasicType(T:Type) [structural]
-	ceq isAType K:K = false
+	rule isAType K:K => false
 		if notBool setOfTypes contains l(getKLabel(K:K))
-		andBool notBool isBasicType(K:K)
+		andBool notBool isBasicType(K:K) [structural]
 			
 
 	// FIXME most of these don't take into consideration modifiers
 
-	eq hasFloatType(float) = true 
-	eq hasFloatType(double) = true 
-	eq hasFloatType(long-double) = true 
-	ceq hasFloatType(T:Type) = false
+	rule hasFloatType(float) => true [structural]
+	rule hasFloatType(double) => true [structural]
+	rule hasFloatType(long-double) => true [structural]
+	rule hasFloatType(T:Type) => false
 		if T:Type =/=Bool float
 		andBool T:Type =/=Bool double
 		andBool T:Type =/=Bool long-double
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
+		[structural]
 	
-	eq hasCharType(char) = true 
-	eq hasCharType(unsigned-char) = true 
-	eq hasCharType(signed-char) = true 
-	ceq hasCharType(T:Type) = false
+	rule hasCharType(char) => true [structural]
+	rule hasCharType(unsigned-char) => true [structural]
+	rule hasCharType(signed-char) => true [structural]
+	rule hasCharType(T:Type) => false
 		if T:Type =/=Bool char
 		andBool T:Type =/=Bool unsigned-char
 		andBool T:Type =/=Bool signed-char
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 	
-	eq hasPointerType(pointerType(?)) = true 
-	eq hasPointerType(qualifiedType(T:Type, ?)) = hasPointerType(T:Type) 
-	ceq hasPointerType(T:Type) = false
+	rule hasPointerType(pointerType(?)) => true [structural]
+	rule hasPointerType(qualifiedType(T:Type, ?)) => hasPointerType(T:Type) [structural]
+	rule hasPointerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'pointerType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 	
-	eq hasTypedefType(typedefType(?, ?)) = true 
-	eq hasTypedefType(qualifiedType(T:Type, ?)) = hasTypedefType(T:Type) 
-	ceq hasTypedefType(T:Type) = false
+	rule hasTypedefType(typedefType(?, ?)) => true [structural]
+	rule hasTypedefType(qualifiedType(T:Type, ?)) => hasTypedefType(T:Type) [structural]
+	rule hasTypedefType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'typedefType 
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 	
-	eq hasBoolType(bool) = true 
-	eq hasBoolType(qualifiedType(T:Type, ?)) = hasBoolType(T:Type) 
-	ceq hasBoolType(T:Type) = false
+	rule hasBoolType(bool) => true [structural]
+	rule hasBoolType(qualifiedType(T:Type, ?)) => hasBoolType(T:Type) [structural]
+	rule hasBoolType(T:Type) => false
 		if T:Type =/=Bool bool 
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 	
-	eq hasArrayType(arrayType(?, ?)) = true 
-	eq hasArrayType(incompleteArrayType(?)) = true 
-	eq hasArrayType(qualifiedType(T:Type, ?)) = hasArrayType(T:Type) 
-	ceq hasArrayType(T:Type) = false
+	rule hasArrayType(arrayType(?, ?)) => true [structural]
+	rule hasArrayType(incompleteArrayType(?)) => true [structural]
+	rule hasArrayType(qualifiedType(T:Type, ?)) => hasArrayType(T:Type) [structural]
+	rule hasArrayType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'arrayType 
 		andBool getKLabel(T:Type) =/=Bool 'incompleteArrayType 
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 		
-	eq hasAggregateType(T:Type) = hasArrayType(T:Type) orBool hasStructType(T:Type) 
+	rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
 		
-	eq hasStructType(structType(?)) = true 
-	eq hasStructType(qualifiedType(T:Type, ?)) = hasStructType(T:Type) 
-	ceq hasStructType(T:Type) = false
+	rule hasStructType(structType(?)) => true [structural]
+	rule hasStructType(qualifiedType(T:Type, ?)) => hasStructType(T:Type) [structural]
+	rule hasStructType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'structType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 		
-	eq hasUnionType(unionType(?)) = true 
-	eq hasUnionType(qualifiedType(T:Type, ?)) = hasUnionType(T:Type) 
-	ceq hasUnionType(T:Type) = false
+	rule hasUnionType(unionType(?)) => true [structural]
+	rule hasUnionType(qualifiedType(T:Type, ?)) => hasUnionType(T:Type) [structural]
+	rule hasUnionType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'unionType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 
-	eq hasIncompleteType(incompleteArrayType(?)) = true 
-	eq hasIncompleteType(qualifiedType(T:Type, ?)) = hasIncompleteType(T:Type) 
-	ceq hasIncompleteType(T:Type) = false
+	rule hasIncompleteType(incompleteArrayType(?)) => true [structural]
+	rule hasIncompleteType(qualifiedType(T:Type, ?)) => hasIncompleteType(T:Type) [structural]
+	rule hasIncompleteType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'incompleteArrayType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 		
-	eq hasExternType(qualifiedType(T:Type, K:K)) = if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
-	ceq hasExternType(T:Type) = false
+	rule hasExternType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
+		[structural]
+	rule hasExternType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 		
-	eq hasStaticType(qualifiedType(T:Type, K:K)) = if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
-	ceq hasStaticType(T:Type) = false
+	rule hasStaticType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
+		[structural]
+	rule hasStaticType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 		
-	eq hasBitfieldType(bitfieldType(?, ?)) = true 
-	ceq hasBitfieldType(T:Type) = false
+	rule hasBitfieldType(bitfieldType(?, ?)) => true [structural]
+	rule hasBitfieldType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'bitfieldType
+		[structural]
 		
-	eq hasFunctionType(functionType(?, ?)) = true 
-	eq hasFunctionType(prototype(T:Type)) = hasFunctionType(T:Type) 
-	eq hasFunctionType(qualifiedType(T:Type, ?)) = hasFunctionType(T:Type) 
-	ceq hasFunctionType(T:Type) = false
+	rule hasFunctionType(functionType(?, ?)) => true [structural]
+	rule hasFunctionType(prototype(T:Type)) => hasFunctionType(T:Type) [structural]
+	rule hasFunctionType(qualifiedType(T:Type, ?)) => hasFunctionType(T:Type) [structural]
+	rule hasFunctionType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'functionType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
 		andBool getKLabel(T:Type) =/=Bool 'prototype 
+		[structural]
 		
-	eq hasFunctionPointerType(pointerType(functionType(?, ?))) = true 
-	ceq hasFunctionPointerType(T:Type) = false
+	rule hasFunctionPointerType(pointerType(functionType(?, ?))) => true [structural]
+	rule hasFunctionPointerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'pointerType 
-	ceq hasFunctionPointerType(pointerType(T:Type)) = false
+		[structural]
+	rule hasFunctionPointerType(pointerType(T:Type)) => false
 		if getKLabel(T:Type) =/=Bool 'functionType 
+		[structural]
 		
 		
-	eq unqualifyType(qualifiedType(T:Type, ?)) = T:Type 
-	ceq unqualifyType(T:Type) = T:Type
+	rule unqualifyType(qualifiedType(T:Type, ?)) => T:Type [structural]
+	rule unqualifyType(T:Type) => T:Type
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
 endkm

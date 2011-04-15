@@ -11,6 +11,8 @@ if [ $HELP ]; then
 	exit
 fi
 
+THIS_FILE="$0"
+
 # these are compile time settings and are set by the compile script using this file as a template
 WRAPPER=EXTERN_WRAPPER
 SEARCH_GRAPH_WRAPPER=EXTERN_SEARCH_GRAPH_WRAPPER
@@ -29,13 +31,15 @@ username=`id -un`
 FSL_C_RUNNER_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 
 # create a file consisting of just the maude (the tail of this script)
-END_OF_SCRIPT=`sed -n '/-------------------\/------------------/=' $0`
+END_OF_SCRIPT=`sed -n '/-------------------\/------------------/=' $THIS_FILE`
 END_OF_SCRIPT=$((END_OF_SCRIPT + 1)) # skip the marking line itself
 JUST_MAUDE_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-tail -n+$END_OF_SCRIPT $0 > $JUST_MAUDE_FILE
-
+tail -n+$END_OF_SCRIPT $THIS_FILE > $JUST_MAUDE_FILE
+if [ $PROFILE_CALIBRATION ]; then
+	THIS_FILE="" # for the calibration, we want the filename to be as short as possible
+fi
 # now start building up variables that represent ways to run the program
-COMMAND_LINE_ARGUMENTS=`for i in $0 "$@"; do echo "String \"$i\"(.List{K}),," ; done`
+COMMAND_LINE_ARGUMENTS=`for i in $THIS_FILE "$@"; do echo "String \"$i\"(.List{K}),," ; done`
 START_TERM="eval(linked-program, ($COMMAND_LINE_ARGUMENTS .List{K}), \"$stdin\")"
 
 EVAL_LINE="erew in C-program-linked : $START_TERM ."
@@ -103,6 +107,8 @@ elif [ $SEARCH ]; then
 elif [ $PROFILE ]; then
 	if [ -f "maudeProfileDBfile.sqlite" ]; then
 		echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
+	else
+		cp $SCRIPTS_DIR/maudeProfileDBfile.calibration.sqlite maudeProfileDBfile.sqlite
 	fi
 	INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 	echo "Running the program..."
@@ -110,7 +116,7 @@ elif [ $PROFILE ]; then
 	cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
 	echo "Analyzing results..."
 	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
-	cat $INTERMEDIATE_OUTPUT_FILE
+	# cat $INTERMEDIATE_OUTPUT_FILE
 	# perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
 	echo "Results added to maudeProfileDBfile.sqlite.  Access with $SCRIPTS_DIR/printProfileData.pl"
 	echo "Done."

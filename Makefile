@@ -71,12 +71,14 @@ $(DIST_DIR)/dist.done: check-vars Makefile filter cparser semantics $(FILES_TO_D
 	@echo "Done."
 	@echo "Testing kcc..."
 	@echo "int main(void) {}" > $(DIST_DIR)/tmpSemanticCalibration.c
-	@$(DIST_DIR)/kcc -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c
+	@$(DIST_DIR)/kcc -s -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c
 	@$(DIST_DIR)/tmpSemanticCalibration.out
 	@echo "Done."
 	@echo "Calibrating the semantic profiler..."
+# done so that an empty file gets copied by the analyzeProfile.pl wrapper
+	@echo > $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
-	@PROFILE=1 $(DIST_DIR)/tmpSemanticCalibration.out &> /dev/null
+	@PROFILE=1 PROFILE_CALIBRATION=1 $(DIST_DIR)/tmpSemanticCalibration.out &> /dev/null
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true
 	@echo "Done."

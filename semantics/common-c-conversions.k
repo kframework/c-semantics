@@ -27,29 +27,39 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 	op arithBinOps : -> Set [memo] 
 	op arithBinConversionOps : -> Set [memo] 
 
-	eq arithBinOps = arithBinConversionOps Set(l('_<<_),, l('_>>_)) 
-	eq arithBinConversionOps = Set(
+	rule [arithBinOps]:
+		arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
+	rule [arithBinConversionOps]:
+		arithBinConversionOps => Set(
 		l('_*_),, l('_/_),, l('_%_),,
 		l('_+_),, l('_-_),,
 		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
 		l('_==_),, l('_!=_),,
 		l('_&_),, l('_|_),, l('_^_)
-	) 
+	) [structural]
 	
-	eq isArithBinOp(KL:KLabel) = if arithBinOps contains l(KL:KLabel) then true else false fi 
-	eq isArithBinConversionOp(KL:KLabel) = if arithBinConversionOps contains l(KL:KLabel)  then true else false fi 
+	rule [checkArithBinOp]:
+		isArithBinOp(KL:KLabel) => if arithBinOps contains l(KL:KLabel) then true else false fi 
+		[structural]
+	rule [checkArithBinConversionOp]:
+		isArithBinConversionOp(KL:KLabel) => if arithBinConversionOps contains l(KL:KLabel) then true else false fi [structural]
 
 	op arithUnaryOps : -> Set [memo] 
-	eq arithUnaryOps = Set(l('-_),, l('+_),, l('~_)) 
+	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
 	op isArithUnaryOp : KLabel -> Bool 
-	eq isArithUnaryOp(KL:KLabel) = if arithUnaryOps contains l(KL:KLabel) then true else false fi 
+	rule [checkArithUnaryOp]: 
+		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
-	ceq hasBeenPromoted(T:Type) = true
+	rule [hasBeenPromoted-true]:
+		hasBeenPromoted(T:Type) => true
 		if rank(T:Type) >=Int rank(int)
 		andBool notBool hasBitfieldType(T:Type) 
-	ceq hasBeenPromoted(T:Type) = false
+		[structural]
+	rule [hasBeenPromoted-false]:
+		hasBeenPromoted(T:Type) => false
 		if rank(T:Type) <Int rank(int)
-		orBool hasBitfieldType(T:Type) 
+		orBool hasBitfieldType(T:Type)
+		[structural]
 	
 	rule
 		< k > L:KLabel((tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type)))) ...</ k > 
@@ -196,16 +206,20 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 	// Then the following rules are applied to the promoted operands:
 	
 	// If both operands have the same type, then no further conversion is needed
-	rule
+	rule [arithConversion-int-done]:
 		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T:Type)) 
 			=> L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T:Type))
 		...</ k >
 		[structural] 
 		
-	ceq maxType(T:Type, T':Type) = T:Type
+	rule [maxType-left]:
+		maxType(T:Type, T':Type) => T:Type
 		if rank(T:Type) >=Int rank(T':Type) 
-	ceq maxType(T:Type, T':Type) = T':Type
+		[structural]
+	rule [maxType-right]:
+		maxType(T:Type, T':Type) => T':Type
 		if rank(T':Type) >=Int rank(T:Type) 
+		[structural]
 			
 	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
 	rule
@@ -289,9 +303,9 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		
 	op correspondingUnsignedType : Type -> Type 
 	
-	eq correspondingUnsignedType(int) = unsigned-int 
-	eq correspondingUnsignedType(long-int) = unsigned-long-int 
-	eq correspondingUnsignedType(long-long-int) = unsigned-long-long-int 
+	rule correspondingUnsignedType(int) => unsigned-int [structural]
+	rule correspondingUnsignedType(long-int) => unsigned-long-int [structural]
+	rule correspondingUnsignedType(long-long-int) => unsigned-long-long-int [structural]
 	
 endkm
 
@@ -469,10 +483,7 @@ kmod COMMON-C-CONVERSIONS is
 	including COMMON-INCLUDE 
 	including COMMON-SEMANTICS-CAST 
 	including COMMON-SEMANTICS-PROMOTIONS 
-	
-	// this seems implementation defined at best
-	// eq bitfieldType(enumType(X:Id), N:Nat) = bitfieldType(int, N:Nat) 
-	
+
 	// fixme generalize this should be done generically
 	rule < k > *(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
 		[structural] 
@@ -487,53 +498,44 @@ kmod COMMON-C-CONVERSIONS is
 		[structural] 
 	rule < k > _+_(?, tv(Loc:Nat, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
 		[structural]
-
-	// eq bitFlatten(N:Nat |Nat M:Nat) = bitFlatten(N:Nat) |Nat bitFlatten(M:Nat) 
-	// eq bitFlatten(N:Nat &Nat M:Nat) = bitFlatten(N:Nat) &Nat bitFlatten(M:Nat) 
-	// eq bitFlatten(N:Nat <<Nat M:Nat) = bitFlatten(N:Nat) <<Nat M:Nat 
-	// eq bitFlatten(N:Nat >>Nat M:Nat) = bitFlatten(N:Nat) >>Nat M:Nat 
-	// eq bitFlatten(unknown(Len:Nat)) = bitlist(Len:Nat, nTimes(Len:Nat, unknownBit)) 
-	// eq bitFlatten(0) = bitlist(1, 0) 
-	// eq bitFlatten(1) = bitlist(1, 1) 
 	
-	// eq bitUnflatten(bitlist(1, N:Nat)) = N:Nat 
-	// eq bitUnflatten(bitlist(sNat(sNat(Len:Nat)), N:Nat)) = N:Nat 
-	// ceq bitFlatten(N:Nat) = (bitFlatten(N:Nat >>Nat 1) <<Nat 1) |Nat bitlist(1, N:Nat &Nat 1)
-		// if N:Nat >Int 1 
-	
-	// ceq bitFlatten(I:Int) = I:Int
-		// if I:Int >=Int 0 orBool I:Int <=Int 0 
-	
-	ceq unknown(Len:Nat) >>Nat N:Nat = unknown(absInt(Len:Nat -Int N:Nat))
+	rule unknown(Len:Nat) >>Nat N:Nat => unknown(absInt(Len:Nat -Int N:Nat))
 		if N:Nat <=Nat Len:Nat 
+		[structural]
 		
-	eq (N:Nat bit:: piece(?, 1)) >>Nat 1 = N:Nat 
+	rule (N:Nat bit:: piece(?, 1)) >>Nat 1 => N:Nat 
+		[structural]
 
 	// fixme not sure about this
 	// interpret is used to "cast" values read from memory
 	// shouldn't need to do the < min one since values start positive
 	op interpret-aux : Type K -> K 
 	
-	ceq interpret(T:Type, piece(N:Nat, ?)) = interpret-aux(T:Type, N:Nat)
+	rule [interpret-start]:
+		interpret(T:Type, piece(N:Nat, ?)) => interpret-aux(T:Type, N:Nat)
 		if N:Nat >=Nat 0 
+		[structural]
 	
-	rule interpret-aux(T:Type, I:Int) => tv(I:Int, T:Type)
+	rule [interpret-done]:
+		interpret-aux(T:Type, I:Int) => tv(I:Int, T:Type)
 		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
 		andBool hasIntegerType(T:Type)
 		[structural] 
-	rule
+	rule [interpret-too-big]:
 		interpret-aux(T:Type, I:Int) => interpret-aux(T:Type, _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))))
 		if I:Int >Int max(T:Type)
 		andBool hasIntegerType(T:Type)
 		andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))) >=Int min(T:Type)
 		[structural] 
 		
-	rule arithInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
+	rule [arithInterpret-done]:
+		arithInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
 		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
 		andBool hasIntegerType(T:Type)
 		[structural] 
 	
-	rule arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
+	rule [arithInterpret-bignum]:
+		arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
 		[structural]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
@@ -571,7 +573,7 @@ kmod COMMON-C-CONVERSIONS is
 		andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
 		[structural] 
 
-	eq integerTypes = signedIntegerTypes unsignedIntegerTypes 
-	eq unsignedIntegerTypes = Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) 
-	eq signedIntegerTypes = Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int,, bignum) 
+	rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
+	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
+	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int,, bignum) [structural]
 endkm

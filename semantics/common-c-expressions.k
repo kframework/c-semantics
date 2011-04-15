@@ -8,8 +8,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op tvGetOffset : K K Type -> K 
 	context lvGetOffset(?, value(`[HOLE`]:K), ?) 
 	context tvGetOffset(?, value(`[HOLE`]:K), ?)
-	eq lvGetOffset(N:Nat, M:Nat, T:Type) = lv(N:Nat +Nat bito(M:Nat), T:Type) 
-	eq tvGetOffset(N:Nat, M:Nat, T:Type) = tv(N:Nat +Nat bito(M:Nat), T:Type) 
+	rule lvGetOffset(N:Nat, M:Nat, T:Type) => lv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
+	rule tvGetOffset(N:Nat, M:Nat, T:Type) => tv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
 	
 	
 	op lv : List{K} Type -> Value
@@ -155,12 +155,12 @@ endkm
 kmod COMMON-SEMANTICS-SIZEOF is
 	including COMMON-INCLUDE 
 	
-	eq sizeofType(T:Type) = cast(cfg:sizeut, byteSizeofType(T:Type)) 
+	rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
 	op byteSizeofTypeAux : K -> K [metadata "strict"] 
-	eq byteSizeofType(T:Type) = byteSizeofTypeAux(bitSizeofType(T:Type)) 
-	ceq byteSizeofTypeAux(tv(N:Nat, T:Type)) = tv(bitsToBytes(N:Nat), T:Type)
+	rule byteSizeofType(T:Type) => byteSizeofTypeAux(bitSizeofType(T:Type)) [structural]
+	rule byteSizeofTypeAux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
 		if T:Type ==Bool cfg:largestUnsigned 
-	
+		[structural]
 	rule
 		< k > SizeofExpression(E:Expression) => sizeofType(typeof(E:Expression)) ...</ k >
 		[structural] 
@@ -169,12 +169,13 @@ kmod COMMON-SEMANTICS-SIZEOF is
 		[structural] 
 	
 	op bitSizeofList : List{Type} -> K 
-	eq bitSizeofList(T:Type :: L:List{Type}) = bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
-	eq bitSizeofList(Nil) = 0 
+	rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
+		[structural]
+	rule bitSizeofList(Nil) => 0 [structural]
 	
 	op maxBitSizeofList : List{Type} -> K 
 	op maxBitSizeofList-aux : List{Type} Nat -> K 
-	eq maxBitSizeofList(L:List{Type}) = maxBitSizeofList-aux(L:List{Type}, 0) 
+	rule maxBitSizeofList(L:List{Type}) => maxBitSizeofList-aux(L:List{Type}, 0) [structural]
 	rule
 		< k > maxBitSizeofList-aux(T:Type :: L:List{Type}, N:Nat) 
 			=> bitSizeofType(T:Type) ~> maxBitSizeofList-aux(L:List{Type}, N:Nat) 
@@ -187,15 +188,15 @@ kmod COMMON-SEMANTICS-SIZEOF is
 		< k > maxBitSizeofList-aux(Nil, N:Nat) => N:Nat ...</ k >
 		[structural] 
 	
-	eq bitSizeofType(arrayType(T:Type, N:Nat)) = bitSizeofType(T:Type) * N:Nat 
-	eq bitSizeofType(flexibleArrayType(T:Type)) = 0 
-	eq bitSizeofType(functionType(?, ?)) = numBitsPerByte 
+	rule bitSizeofType(arrayType(T:Type, N:Nat)) => bitSizeofType(T:Type) * N:Nat [structural]
+	rule bitSizeofType(flexibleArrayType(T:Type)) => 0 [structural]
+	rule bitSizeofType(functionType(?, ?)) => numBitsPerByte [structural]
 	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
-	eq bitSizeofType(pointerType(?)) = cfg:ptrsize *Nat numBitsPerByte 
-	eq bitSizeofType(typedDeclaration(T:Type, ?)) = bitSizeofType(T:Type) 
-	eq bitSizeofType(bitfieldType(?, N:Nat)) = N:Nat 
-	eq bitSizeofType(qualifiedType(T:Type, ?)) = bitSizeofType(T:Type) 
-	// eq bitSizeofType(prototype(T:Type)) = bitSizeofType(T:Type) 
+	rule bitSizeofType(pointerType(?)) => cfg:ptrsize *Nat numBitsPerByte [structural]
+	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(bitfieldType(?, N:Nat)) => N:Nat [structural]
+	rule bitSizeofType(qualifiedType(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+
 	rule
 		< k > bitSizeofType(structType(X:Id)) => bitSizeofList(L:List{Type}) ...</ k >
 		< structs >... X:Id |-> L:List{Type} ...</ structs >
@@ -383,10 +384,10 @@ and ll or LL
 	//c99 6.2.5:4 ... There may also be impleme
 	
 	// c1x 6.4.4.4:10
-	eq CharLiteral(N:Nat) = tv(N:Nat, int) 
-	eq IntLiteral(V:Value) = V:Value 
-	eq FloatLiteral(V:Value) = V:Value 
-	eq Constant(V:Value) = V:Value 
+	rule CharLiteral(N:Nat) => tv(N:Nat, int) [structural]
+	rule IntLiteral(V:Value) => V:Value [structural]
+	rule FloatLiteral(V:Value) => V:Value [structural]
+	rule Constant(V:Value) => V:Value [structural]
 	// rule < k > N:Nat => tv(N:Nat, bignum) ...</ k > // for internal computations
 	rule < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k > 
 		[structural] // for internal computations
@@ -400,18 +401,20 @@ and ll or LL
 		[structural] 
 		
 	op simplifyForHex : String -> String 
-	ceq simplifyForHex(S:String) = simplifyForHex(butFirstChar(S:String))
+	rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
 		if firstChar(S:String) ==Bool "0"
 		andBool lengthString(S:String) >Nat 1 
-	ceq simplifyForHex(S:String) = S:String
+		[structural]
+	rule simplifyForHex(S:String) => S:String
 		if firstChar(S:String) =/=Bool "0" 
 		orBool lengthString(S:String) ==Bool 1 
+		[structural]
 		
 		
 	op hexOrOctalConstant : K -> K 
-	eq HexConstant(S:String) = hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) 
+	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural]
 	// eq HexConstant(I:Int) = hexOrOctalConstant(I:Int)
-	eq OctalConstant(N:Nat) = hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) // truncRat is just for sorts
+	rule OctalConstant(N:Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) [structural] // truncRat is just for sorts
 	// eq OctalConstant(I:Int) = hexOrOctalConstant(I:Int)
 	
 	rule NoSuffix(hexOrOctalConstant(I:Int)) =>
@@ -497,8 +500,8 @@ and ll or LL
 	//FIXME
 	
 	op reducedFloat : Float -> K
-	eq DecimalFloatConstant(?, ?, F:Float) = reducedFloat(F:Float)
-	eq HexFloatConstant(?, ?, F:Float) = reducedFloat(F:Float)
+	rule DecimalFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
+	rule HexFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
 	
 	rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, double)
 		[structural] 
@@ -542,17 +545,17 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 		...</ k >
 		[structural] 
 
-	eq getInnerOperator('_*=_) = '_*_ 
-	eq getInnerOperator('_/=_) = '_/_ 
-	eq getInnerOperator('_%=_) = '_%_ 
-	eq getInnerOperator('_+=_) = '_+_ 
-	eq getInnerOperator('_-=_) = '_-_ 
+	rule getInnerOperator('_*=_) => '_*_ [structural]
+	rule getInnerOperator('_/=_) => '_/_ [structural]
+	rule getInnerOperator('_%=_) => '_%_ [structural]
+	rule getInnerOperator('_+=_) => '_+_ [structural]
+	rule getInnerOperator('_-=_) => '_-_ [structural]
 	
-	eq getInnerOperator('_<<=_) = '_<<_ 
-	eq getInnerOperator('_>>=_) = '_>>_ 
-	eq getInnerOperator('_&=_) = '_&_ 
-	eq getInnerOperator('_^=_) = '_^_ 
-	eq getInnerOperator('_|=_) = '_|_ 
+	rule getInnerOperator('_<<=_) => '_<<_ [structural]
+	rule getInnerOperator('_>>=_) => '_>>_ [structural]
+	rule getInnerOperator('_&=_) => '_&_ [structural]
+	rule getInnerOperator('_^=_) => '_^_ [structural]
+	rule getInnerOperator('_|=_) => '_|_ [structural]
 
 	// rule [assign]:
 		// < k > assign(*(tv(Loc:Nat, pointerType(T:Type))), tv(V:List{K}, T':Type)) 
@@ -661,11 +664,12 @@ kmod COMMON-SEMANTICS-BOOLEAN-ARITHMETIC is
 		[structural] 
 		
 	op isUnknown : K -> Bool 
-	eq isUnknown(piece(?, ?)) = true 
-	eq isUnknown(sym(?) +Nat ?) = false 
-	eq isUnknown(bito(?) +Nat ?) = false 
-	ceq isUnknown(I:Int) = false
-		if  I:Int <=Int 0 orBool I:Int >Int 0 
+	rule isUnknown(piece(?, ?)) => true [structural]
+	rule isUnknown(sym(?) +Nat ?) => false [structural]
+	rule isUnknown(bito(?) +Nat ?) => false [structural]
+	rule isUnknown(I:Int) => false
+		if  I:Int <=Int 0 orBool I:Int >Int 0
+		[structural]
 	
 	//- comparison of pointers
 	// fixme could check 6.5.8:2
@@ -1000,9 +1004,10 @@ kmod COMMON-SEMANTICS-REFERENCE is
 	// context &([HOLE] -> X:Id) 
 	
 	op fixPointerType : Type -> Type 
-	ceq fixPointerType(T:Type) = pointerType(T:Type)
-		if notBool(hasArrayType(T:Type)) 
-	eq fixPointerType(arrayType(T:Type, ?)) = pointerType(T:Type) 
+	rule fixPointerType(T:Type) => pointerType(T:Type)
+		if notBool(hasArrayType(T:Type))
+		[structural]
+	rule fixPointerType(arrayType(T:Type, ?)) => pointerType(T:Type) [structural]
 	
 	/*@ \source{C1X 6.5.3.2:3}
 	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator. Otherwise, the result is a pointer to the object or function designated by its operand
@@ -1064,11 +1069,11 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 	/*@ \source{c1x 6.5.3.1:2}
 	The value of the operand of the prefix \cinline{++} operator is incremented. The result is the new value of the operand after incrementation. The expression \cinline{++E} is equivalent to \cinline{(E+=1)}. See the discussions of additive operators and compound assignment for information on constraints, types, side effects, and conversions and the effects of operations on pointers
 	*/
-	eq ++ E:Expression = E:Expression += tv(1, int)
+	rule ++ E:Expression => E:Expression += tv(1, int) [structural]
 	/*@ \source{c1x 6.5.3.1:3}
 	The prefix \cinline{--} operator is analogous to the prefix \cinline{++} operator, except that the value of the operand is decremented
 	*/
-	eq -- E:Expression = E:Expression -= tv(1, int) 
+	rule -- E:Expression => E:Expression -= tv(1, int) [structural]
 
 	op postOpRef : K KLabel -> K 
 
@@ -1131,5 +1136,5 @@ kmod COMMON-C-EXPRESSIONS is
 	including COMMON-SEMANTICS-INCREMENT-AND-DECREMENT 
 	including COMMON-SEMANTICS-SEQUENCING 
 	
-	eq NothingExpression = emptyValue 
+	rule NothingExpression => emptyValue [structural]
 endkm

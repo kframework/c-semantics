@@ -14,8 +14,8 @@ K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_
 ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
-LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak duplicateLabels.txt
+LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak duplicateLabels.txt libraryRules.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 

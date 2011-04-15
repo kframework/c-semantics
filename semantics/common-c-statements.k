@@ -68,8 +68,8 @@ endkm
 kmod COMMON-SEMANTICS-FOR is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	
-	eq ForClauseDeclaration(K:K) = K:K 
-	eq ForClauseExpression(K:K) = Computation(K:K) 
+	rule ForClauseDeclaration(K:K) => K:K [structural]
+	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
 	
 	rule
 		< k > addToHistory(Num:Nat) => .K ...</ k >
@@ -339,7 +339,7 @@ kmod COMMON-SEMANTICS-GOTO is
 		[structural]
 		
 	op getIdString : K -> String 
-	eq getIdString(Identifier(S:String)) = S:String 
+	rule getIdString(Identifier(S:String)) => S:String [structural]
 	
 	op enableInits : -> K 
 	
@@ -367,10 +367,10 @@ kmod COMMON-SEMANTICS-GOTO is
 				
 	op getIdOfDeclaration : K -> K 
 	op getIdOfName : K -> K 
-	eq getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) = getIdOfName(K:C) 
-	eq getIdOfName(InitName(K:K, ?)) = getIdOfName(K:K) 
-	eq getIdOfName(SingleName(?, K:K)) = getIdOfName(K:K) 
-	eq getIdOfName(Name(X:Id, ?)) = X:Id 
+	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) => getIdOfName(K:C) [structural]
+	rule getIdOfName(InitName(K:K, ?)) => getIdOfName(K:K) [structural]
+	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K)[structural] 
+	rule getIdOfName(Name(X:Id, ?)) => X:Id [structural]
 	
 	op waitingOnGotoMap : -> K 
 	rule 

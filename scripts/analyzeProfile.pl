@@ -16,6 +16,9 @@ $dbh->do("CREATE TABLE if not exists data (
 	, runNum INTEGER NOT NULL
 	, ruleName NOT NULL
 	, rule NOT NULL
+	, locationFile NOT NULL
+	, locationFrom NOT NULL
+	, locationTo NOT NULL
 	, type NOT NULL
 	, kind NOT NULL
 	, rewrites BIGINT NOT NULL
@@ -31,19 +34,49 @@ $dbh->do("PRAGMA default_synchronous = OFF");
 $dbh->do("PRAGMA synchronous = OFF");
 my $runNum = getMaxRunNumFor($runName) + 1;
 
-
-my $sql = "INSERT INTO data (runName, runNum, ruleName, rule, type, kind, rewrites, matches) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?)";
+my $sql = "
+	INSERT OR REPLACE INTO 
+		data (runName, runNum, ruleName, rule, locationFile, locationFrom, locationTo, type, kind, rewrites, matches) 
+		VALUES (
+			'$runName'
+			, $runNum
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ? - COALESCE((SELECT rewrites FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT matches FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+		)
+	";
 my $insertOpHandle = $dbh->prepare($sql);
 # $sql = "INSERT INTO data (rule, type, kind, rewrites, matches) VALUES (?, ?, ?, ?, ?)";
 my $insertEqHandle = $insertOpHandle;
-$sql = "INSERT INTO data (runName, runNum, ruleName, rule, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) VALUES ('$runName', $runNum, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "
+	INSERT INTO 
+		data (runName, runNum, ruleName, rule, locationFile, locationFrom, locationTo, type, kind, rewrites, matches, fragment, initialTries, resolveTries, successes, failures) 
+		VALUES (
+			'$runName'
+			, $runNum
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ?
+			, ? - COALESCE((SELECT rewrites FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT matches FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT fragment FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT initialTries FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT resolveTries FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT successes FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+			, ? - COALESCE((SELECT failures FROM data WHERE runName == 'tmpSemanticCalibration' AND runNum == 1 AND rule = ?), 0)
+		)
+	";
 my $insertCeqHandle = $dbh->prepare($sql);
-# $sql = "UPDATE data SET count = count + 1, rewrites = rewrites + ?, matches = matches + ? where rule = ? AND type = ? AND kind = ?";
-# my $updateOpHandle = $dbh->prepare($sql);
-# # $sql = "UPDATE data SET rewrites = rewrites + ?, matches = matches + ? where rule = ? AND type = ? and kind = ?";
-# my $updateEqHandle = $updateOpHandle;
-# $sql = "UPDATE data SET count = count + 1, rewrites = rewrites + ?, matches = matches + ?, fragment = fragment + ?, initialTries = initialTries + ?, resolveTries = resolveTries + ?, successes = successes + ?, failures = failures + ? where rule = ? AND type = ?";
-# my $updateCeqHandle = $dbh->prepare($sql);
 				
 #print "Using $filename as input file\n";
 open(MYINPUTFILE, "<$filename");
@@ -88,7 +121,7 @@ sub handleOp {
 	$line = <$file>;
 	if ($line =~ m/built-in eq rewrites: (\d+) \(/){
 		my $rewrites = $1;
-		my $retval = $insertOpHandle->execute($ruleName, $rule, 'op', 'builtin', $rewrites, $rewrites);
+		my $retval = $insertOpHandle->execute($ruleName, $rule, "", "", "", 'op', 'builtin', $rewrites, $rule, $rewrites, $rule);
 		# if (!$retval) {
 			# $updateOpHandle->execute($rewrites, $rewrites, $rule, 'op', 'builtin');
 		# }
@@ -100,32 +133,43 @@ sub handleEq {
 	my $rule = $line;
 	my $ruleName = "";
 	my $kind = 'macro';
+	my $locationFile = "";
+	my $locationFrom = "";
+	my $locationTo = "";
 	while (<$file>){
 		$line = $_;
 		chomp($line);
 		if ($line =~ m/^rewrites: (\d+) \(/){
 			my $rewrites = $1;
-			my $retval = $insertEqHandle->execute($ruleName, $rule, $type, $kind, $rewrites, $rewrites);
+			my $retval = $insertEqHandle->execute($ruleName, $rule, $locationFile, $locationFrom, $locationTo, $type, $kind, $rewrites, $rule, $rewrites, $rule);
 			# if (!$retval) {
 				# $updateEqHandle->execute($rewrites, $rewrites, $rule, $type, $kind);
 			# }
 			return;
-		} if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
+		} 
+		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
 			$ruleName = $1;
-			# print "$1\n"
-		} if ($line =~ m/structural/) {
-			$kind = 'structural';
-		} if ($line =~ m/computational/) {
-			$kind = 'computational';
-		} else {
-			$rule .= "$line\n";
 		}
+		if ($line =~ m/location\(([^\)]+):(\d+)-(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $3;
+		}
+		if ($line =~ m/structural/) {
+			$kind = 'structural';
+		} elsif ($line =~ m/computational/) {
+			$kind = 'computational';
+		} 
+		$rule .= "$line\n";
 	}
 }
 sub handleCeq {
 	my ($line, $file, $type) = @_;
 	my $rule = $line;
 	my $kind = "macro";
+	my $locationFile = "";
+	my $locationFrom = "";
+	my $locationTo = "";
 	my $ruleName = "";
 	while (<$file>){
 		$line = $_;
@@ -143,24 +187,23 @@ sub handleCeq {
 			my $successes = $4;
 			my $failures = $5;
 			
-			my $retval = $insertCeqHandle->execute($ruleName, $rule, $type, $kind, $rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures);
-			# if (!$retval) {
-				# $updateCeqHandle->execute($rewrites, $matches, $fragment, $initialTries, $resolveTries, $successes, $failures, $rule, $type, $kind);
-			# }
+			my $retval = $insertCeqHandle->execute($ruleName, $rule, $locationFile, $locationFrom, $locationTo, $type, $kind, $rewrites, $rule, $matches, $rule, $fragment, $rule, $initialTries, $rule, $resolveTries, $rule, $successes, $rule, $failures, $rule);
 			return;
 		} 
 		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
 			$ruleName = $1;
-			# print "$1\n"
-		} 
+		}
+		if ($line =~ m/location\(([^\)]+):(\d+)-(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $3;
+		}
 		if ($line =~ m/structural/) {
 			$kind = 'structural';
-		} 
-		if ($line =~ m/computational/) {
+		} elsif ($line =~ m/computational/) {
 			$kind = 'computational';
-		} else {
-			$rule .= "$line\n";
 		}
+		$rule .= "$line\n";
 	}
 }
 
@@ -175,3 +218,5 @@ sub getMaxRunNumFor {
 	my $hash_ref = $sth->fetchrow_hashref or die "Problem figuring max run for '$runName'";
 	return $hash_ref->{maxNum};
 } 
+
+

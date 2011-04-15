@@ -30,7 +30,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op sym : Nat -> Nat 
 	op byteo : Nat -> Nat 
 	op bito : Nat -> Nat 
-	eq bito(0) = 0 // FIXME need to check this is okay in all circumstances
+	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	op bitoffset : Nat -> Nat 
 	op byteoffset : Nat -> Nat 
 	op declare : K K -> K [metadata "strict(1)"] 
@@ -49,11 +49,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op ceilingLoc : Nat -> Nat // loc with possible bit offset returning upperbounded byte	
 	op readFunction : Nat -> K 
 	
-	ceq _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
-		= piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
+	rule _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
+		=> piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
 		if N:Nat >=Nat 0 andBool N':Nat >=Nat 0 
-	eq _bit::_(piece(0, 0), N:Nat) = N:Nat 
-	eq piece(piece(N:Nat, Len:Nat), Len:Nat) = piece(N:Nat, Len:Nat) 
+		[structural] 
+	rule _bit::_(piece(0, 0), N:Nat) => N:Nat [structural] 
+	rule piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) [structural] 
 	
 	op innerType : Type -> Type
 	
@@ -64,7 +65,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unnamed : Nat -> Id 
 	
 	op NullPointerConstant : -> Nat 
-	eq NullPointerConstant = 0 
+	rule NullPointerConstant => 0 [structural]
 	op NullPointer : -> Nat 
 	
 	op emptyValue : -> Value 
@@ -75,11 +76,11 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op zeroBlock : Nat -> K 
 		
 	op value : K -> K 
-	eq value(tv(V:List{K}, ?)) = V:List{K} 
+	rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
 	
 	op sizeofLocation : K -> K
 	op type : K -> Type 
-	eq type(tv(?, T:Type)) = T:Type 
+	rule type(tv(?, T:Type)) => T:Type [structural]
 	
 	op allocateType : Nat Type -> K 
 	op allocateTypeIfAbsent : Nat Type -> K 
@@ -218,13 +219,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	op setOfTypes : -> Set [memo] 
-	eq setOfTypes = Set(
+	rule setOfTypes => Set(
 		l('arrayType),, 
 		l('bitfieldType),, 
 		l('functionType),, 
 		l('pointerType),, l('structType),, l('unionType),, 
 		l('qualifiedType)
-	)
+	) [structural]
 	
 	//ceq TranslationUnit(S:String, L:List{C}, S':String) = TranslationUnit(S:String, L:List{C}, "") if S':String =/=Bool ""
 	
@@ -315,11 +316,11 @@ kmod C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
 
 	op IdentifierSet : List{K} -> Set 
-	eq IdentifierSet((S:String,, L:List{K})) = SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) 
+	rule IdentifierSet((S:String,, L:List{K})) => SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) [structural]
 	op builtinIdentifiers : -> Set [memo] 
 	
 	// fixme bug why can't i use .List{K} here?
-	eq builtinIdentifiers = IdentifierSet((
+	rule builtinIdentifiers => IdentifierSet((
 		"abort"
 		,, "asin"
 		,, "atan"
@@ -357,7 +358,7 @@ kmod C-SETTINGS is
 		,, "__va_start"
 		,, "__va_end"
 		,, "__va_copy"
-	)) 
+	)) [structural]
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
@@ -368,54 +369,54 @@ kmod C-SETTINGS is
 	op numBytes : Type -> Nat [memo] 
 	op numBits : Type -> Nat [memo] 
 
-	eq numBitsPerByte = 8 
+	rule numBitsPerByte => 8 [structural]
 	
-	eq numBytes(bool) = 1 
-	eq numBytes(signed-char) = 1 
-	eq numBytes(short-int) = 2 
-	eq numBytes(int) = 4 
-	eq numBytes(long-int) = 4 
-	eq numBytes(long-long-int) = 8 
+	rule numBytes(bool) => 1 [structural]
+	rule numBytes(signed-char) => 1 [structural]
+	rule numBytes(short-int) => 2 [structural]
+	rule numBytes(int) => 4 [structural]
+	rule numBytes(long-int) => 4 [structural]
+	rule numBytes(long-long-int) => 8 [structural]
 	
-	eq numBytes(float) = 4 
-	eq numBytes(double) = 8 
-	eq numBytes(long-double) = 16 
+	rule numBytes(float) => 4 [structural]
+	rule numBytes(double) => 8 [structural]
+	rule numBytes(long-double) => 16 [structural]
 	
-	eq numBytes(enumType(X:Id)) = numBytes(int) 
+	rule numBytes(enumType(X:Id)) => numBytes(int) [structural]
 	
 	op cfg:sizeut : -> Type 
-	eq cfg:sizeut = unsigned-long-int 
+	rule cfg:sizeut => unsigned-long-int [structural]
 	
 	op cfg:largestUnsigned : -> Type 
-	eq cfg:largestUnsigned = unsigned-long-long-int 
+	rule cfg:largestUnsigned => unsigned-long-long-int [structural]
 
 	op cfg:ptrsize : -> Nat 
-	eq cfg:ptrsize = 4 
+	rule cfg:ptrsize => 4 [structural]
 	
 	op cfg:ptrdiffut : -> Type 
-	eq cfg:ptrdiffut = int 
+	rule cfg:ptrdiffut => int [structural]
 	
-	eq min(enumType(?)) = min(int) 
-	eq max(enumType(?)) = max(int) 
+	rule min(enumType(?)) => min(int) [structural]
+	rule max(enumType(?)) => max(int) [structural]
 	
 	op rank : Type -> Int 
 		
-	eq rank(bool) = 0 
-	eq rank(char) = 1 
-	eq rank(signed-char) = 1 
-	eq rank(unsigned-char) = 1 
-	eq rank(short-int) = 2 
-	eq rank(unsigned-short-int) = 2 
-	eq rank(int) = 3 
-	eq rank(unsigned-int) = 3 
-	eq rank(long-int) = 4 
-	eq rank(unsigned-long-int) = 4 
-	eq rank(long-long-int) = 5 
-	eq rank(unsigned-long-long-int) = 5 
+	rule rank(bool) => 0 [structural]
+	rule rank(char) => 1 [structural]
+	rule rank(signed-char) => 1 [structural]
+	rule rank(unsigned-char) => 1 [structural]
+	rule rank(short-int) => 2 [structural]
+	rule rank(unsigned-short-int) => 2 [structural]
+	rule rank(int) => 3 [structural]
+	rule rank(unsigned-int) => 3 [structural]
+	rule rank(long-int) => 4 [structural]
+	rule rank(unsigned-long-int) => 4 [structural]
+	rule rank(long-long-int) => 5 [structural]
+	rule rank(unsigned-long-long-int) => 5 [structural]
 	
-	eq rank(bignum) = 100 // used for internal calculation.  should be bigger than all other ranks
+	rule rank(bignum) => 100 [structural] // used for internal calculation.  should be bigger than all other ranks
 	
-	eq rank(enumType(?)) = rank(int) 
+	rule rank(enumType(?)) => rank(int) [structural]
 	//C99 6.3.1.1
 	
 	/*
@@ -442,25 +443,31 @@ endkm
 kmod C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
-	ceq sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat = true
+	rule sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat <Nat M':Nat
-	ceq sym(N:Nat) +Nat M:Nat <=Nat sym(N:Nat) +Nat M':Nat = true
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat <=Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat <=Nat M':Nat
-	ceq sym(N:Nat) +Nat M:Nat >Nat sym(N:Nat) +Nat M':Nat = true
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat >Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat >Nat M':Nat
-	ceq sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat = true
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat >=Nat M':Nat
+		[structural]
 		
 	
-	eq inc(sym(N:Nat) +Nat M:Nat) = sym(N:Nat +Nat 1) +Nat M:Nat 
-	eq sNat(sym(N:Nat) +Nat M:Nat) = sym(N:Nat) +Nat (M:Nat +Nat 1) 
-	ceq I:Int +Int (N:Nat +Nat sym(M:Nat))
-		= absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
+	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural]
+	rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural]
+	rule I:Int +Int (N:Nat +Nat sym(M:Nat))
+		=> absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
 		if N:Nat +Int I:Int >=Int 0 
+		[structural]
 		
-	ceq (N:Nat +Nat sym(M:Nat)) -Int I:Int
-		= absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
+	rule (N:Nat +Nat sym(M:Nat)) -Int I:Int
+		=> absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
 		if N:Nat -Int I:Int >=Int 0 
+		[structural]
 		
 	rule
 		< k > sequencePoint => .K ...</ k >
@@ -515,11 +522,11 @@ kmod C-SEMANTICS-MISC is
 		// if lengthString(S:String) <=Nat Offset:Nat
 		// [structural] 
 
-	eq listToK(K:K) = klistToK(getList{K}(K:K)) 
-	eq klistToK((K:K,, L:List{K})) = K:K ~> klistToK(L:List{K})
-	eq klistToK(.List{K}) = .K
+	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
+	rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
+	rule klistToK(.List{K}) => .K [structural]
 	
-	eq CabsLoc("cabs loc unknown", -10, -10, 0) = UnknownCabsLoc 
+	rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 	
 	
 	// TODO nicely handle loc range instead of ignoring L2
@@ -545,14 +552,15 @@ kmod C-SEMANTICS-MISC is
 		< k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >
 		[structural]
 		
-	eq AttributeWrapper(K:K, ?) = K:K 
-	eq NameLoc(K:K, ?) = K:K 
+	rule AttributeWrapper(K:K, ?) => K:K [structural]
+	rule NameLoc(K:K, ?) => K:K [structural]
 	
-	ceq N:Nat +Nat bito(M:Nat) = N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
+	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
 		if M:Nat >=Nat numBitsPerByte 
+		[structural]
 	
 		
-	eq Identifier("___missing_field_name") = #NoName 
+	rule Identifier("___missing_field_name") => #NoName [structural]
 endkm
 
 load common-c-conversions

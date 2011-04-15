@@ -81,10 +81,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	op promoteList : List{C} -> List{K} 
-	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (promote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
+	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (promote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
 		orBool T:Type ==Bool float 
-	ceq promoteList((tv(V:List{K}, T:Type) :: L:List{C})) = (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
+		[structural]
+	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
 		if (notBool(hasIntegerType(T:Type)) 
 			andBool notBool T:Type ==Bool float
 			andBool notBool hasArrayType(T:Type)
@@ -92,13 +93,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		orBool rank(T:Type) >=Int rank(int)
 		orBool T:Type ==Bool double 
 		orBool T:Type ==Bool long-double
+		[structural]
 		
 	rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
 		[structural] 
 		
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 
-	eq promoteList(Nil) = .List{K}
+	rule promoteList(Nil) => .List{K} [structural]
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
@@ -208,13 +210,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		[structural] 
 		
-	eq DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
-		= DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
+	rule DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
+		=> DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
 		~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
-	eq DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) = declare(SingleName(T:Type, Name:K), Exp:K) 
+		[structural]
+	rule DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) => declare(SingleName(T:Type, Name:K), Exp:K) [structural]
 			
-	eq Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) = Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) 
-	eq Typedef(NameGroup(T:Type, Name:C)) = defineType(SingleName(T:Type, Name:C)) 
+	rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
+	rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
 		
 	op initialize-aux : Id Type K -> K 
 		
@@ -563,8 +566,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// extern functions are no different than functions
 	// fixme dangerous if someone marks it as static and extern.  can't tell
-	ceq qualifiedType(T:Type, Extern) = T:Type
+	rule qualifiedType(T:Type, Extern) => T:Type
 		if hasFunctionType(T:Type) 
+		[structural]
 	
 	// fixme clean these up, they are so redundant
 	// fixme unqualifying these is probably unsafe
@@ -952,10 +956,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (block => .) ...</ currentSubObject >
 		[structural] 
 		
-	eq innerType(arrayType(T:Type, ?)) = T:Type 
-	eq innerType(incompleteArrayType(T:Type)) = T:Type 
-	eq innerType(qualifiedType(T:Type, ?)) = innerType(T:Type) 
-	eq innerType(pointerType(T:Type)) = T:Type
+	rule innerType(arrayType(T:Type, ?)) => T:Type [structural]
+	rule innerType(incompleteArrayType(T:Type)) => T:Type [structural]
+	rule innerType(qualifiedType(T:Type, ?)) => innerType(T:Type) [structural]
+	rule innerType(pointerType(T:Type)) => T:Type [structural]
 
 	context buildDesignator(AtIndexInit(([HOLE] => reval([HOLE])), ?)) 
 	rule
@@ -969,11 +973,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op popInit : -> K
 	
 	op getTopArrayUse : K -> Nat 
-	eq getTopArrayUse(X:Id) = 0 
-	eq getTopArrayUse(X:Id[N:Nat]) = sNat(N:Nat) // +1 for length instead of index
-	eq getTopArrayUse(K:K . F:Id) = getTopArrayUse(K:K) 
-	eq getTopArrayUse((K:K[N:Nat])[?]) = getTopArrayUse(K:K[N:Nat]) 
-	eq getTopArrayUse((K:K . F:Id)[?]) = getTopArrayUse(K:K) 
+	rule getTopArrayUse(X:Id) => 0 [structural]
+	rule getTopArrayUse(X:Id[N:Nat]) => sNat(N:Nat) [structural] // +1 for length instead of index
+	rule getTopArrayUse(K:K . F:Id) => getTopArrayUse(K:K) [structural]
+	rule getTopArrayUse((K:K[N:Nat])[?]) => getTopArrayUse(K:K[N:Nat]) [structural]
+	rule getTopArrayUse((K:K . F:Id)[?]) => getTopArrayUse(K:K) [structural]
 	
 	op initializeSingleInit : K -> K 
 		
@@ -1239,10 +1243,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		if notBool $hasMapping(ExtDefs:Map, X:Id)
 		[structural] 
 
-	eq toString(Identifier(S:String)) = S:String 
-	eq toString(S:String) = S:String 
-	eq toString(Num:Nat) = Int2String(Num:Nat) 
-	eq Rat2String(sym(N:Nat), M:NzNat) = "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" 
+	rule toString(Identifier(S:String)) => S:String [structural]
+	rule toString(S:String) => S:String [structural]
+	rule toString(Num:Nat) => Int2String(Num:Nat) [structural]
+	rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
 	
 	// fixme this means we've declared it twice (like a prototype maybe?), but already handled it.  happening with getc in clib.c
 	rule
@@ -1258,7 +1262,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	// function prototypes
 	rule
-		< k > (. => 
+		< k > (.K => 
 				giveType(X:Id, T:Type)
 				~> recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, Tu:K)  // fixme fake Tu
 			)

@@ -42,7 +42,7 @@ exit 0;
 
 sub printData {
 	my $sth = $dbh->prepare("
-	SELECT a.runName, a.runNum, a.rule, a.kind,
+	SELECT a.runName, a.runNum, a.ruleName, a.rule, a.kind,
 	sum(a.rewrites) as rewrites, SUM(a.matches) as matches
 	FROM data a
 	--- WHERE a.type != 'op' AND a.kind != 'macro'
@@ -54,13 +54,14 @@ sub printData {
 	") or die $dbh->errstr;
 	$sth->execute();
 	# Fragment, Initial Tries, Resolve Tries, 
-	print "Suite, Rule, Count, Kind, Matches, Rewrites\n";
+	print "RunName, RunNum, RuleName, Rule, Count, Kind, Matches, Rewrites\n";
 	while (my $hash_ref = $sth->fetchrow_hashref) {
 		my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
 		$rule =~ tr{\n}{ }; # turn newlines into spaces
 		$rule =~ s/["]/""/g; # escape quotes
 		my $runName = $hash_ref->{runName};
 		my $runNum = $hash_ref->{runNum};
+		my $ruleName = $hash_ref->{ruleName};
 		# my $type = $hash_ref->{type};
 		my $count = $hash_ref->{count};
 		my $kind = $hash_ref->{kind};
@@ -72,7 +73,7 @@ sub printData {
 		# my $resolveTries = $hash_ref->{resolveTries};
 		# my $successes = $hash_ref->{successes};
 		# my $failures = $hash_ref->{failures};
-		print "$runName, $runNum, \"$rule\", $count, $kind, $matches, $rewrites\n";
+		print "$runName, $runNum, $ruleName, \"$rule\", $count, $kind, $matches, $rewrites\n";
 		# $fragment, $initialTries, $resolveTries, 
 	}
 }
