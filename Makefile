@@ -15,7 +15,6 @@ FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 
 FILES_TO_DIST = \
 	$(SEMANTICS_DIR)/c-total.maude \
-	$(SEMANTICS_DIR)/libraryRules.txt \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/slurp.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \
@@ -78,6 +77,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile filter cparser semantics $(FILES_TO_D
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
 	@echo > $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
+	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(SEMANTICS_DIR)/c-compiled.maude
 	@PROFILE=1 PROFILE_CALIBRATION=1 $(DIST_DIR)/tmpSemanticCalibration.out &> /dev/null
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true

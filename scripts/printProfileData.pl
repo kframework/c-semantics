@@ -39,41 +39,62 @@ exit 0;
 	
 # }
 
+sub printField {
+	my ($s) = (@_);
+	print "\t\"$s\"";
+}
 
 sub printData {
 	my $sth = $dbh->prepare("
-	SELECT a.runName, a.runNum, a.ruleName, a.rule, a.kind,
-	sum(a.rewrites) as rewrites, SUM(a.matches) as matches
-	FROM data a
-	--- WHERE a.type != 'op' AND a.kind != 'macro'
-	WHERE a.kind == 'macro' AND (
-	a.rule LIKE '%structural%' or a.rule LIKE '%computational%')
-	GROUP BY a.runName, a.runNum, a.rule
-	--- , a.type, a.kind
-	--- ORDER BY a.matches DESC
+	SELECT 
+		--- data.runName
+		rules.ruleName
+		, data.rule
+		, rules.kind
+		--- , SUM(data.matches) as matches
+		--- , SUM(data.rewrites) as rewrites
+		, SUM(IFNULL(data.matches, 0)) as matches
+		, SUM(IFNULL(data.rewrites, 0)) as rewrites
+		, rules.locationFile
+		, rules.locationFrom
+		, rules.locationTo
+	FROM rules
+	LEFT OUTER JOIN (
+		SELECT * FROM data WHERE runName NOT LIKE 'tmpSemanticCalibration'
+	) data ON
+		data.locationFile = rules.locationFile
+		AND data.locationFrom = rules.locationFrom
+		AND data.locationTo = rules.locationTo
+	--- WHERE data.runName NOT LIKE 'tmpSemanticCalibration'
+	--- WHERE rules.isLibrary = 0
+	GROUP BY 
+		rules.locationFile
+		, rules.locationFrom
+		, rules.locationTo
+	ORDER BY
+		matches DESC
 	") or die $dbh->errstr;
+
 	$sth->execute();
 	# Fragment, Initial Tries, Resolve Tries, 
-	print "RunName, RunNum, RuleName, Rule, Count, Kind, Matches, Rewrites\n";
+	print "RuleName\tLocation\tLineFrom\tLineTo\tKind\tMatches\tRewrites\tRule\n";
 	while (my $hash_ref = $sth->fetchrow_hashref) {
 		my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
-		$rule =~ tr{\n}{ }; # turn newlines into spaces
-		$rule =~ s/["]/""/g; # escape quotes
-		my $runName = $hash_ref->{runName};
-		my $runNum = $hash_ref->{runNum};
-		my $ruleName = $hash_ref->{ruleName};
-		# my $type = $hash_ref->{type};
-		my $count = $hash_ref->{count};
-		my $kind = $hash_ref->{kind};
-		my $rewrites = $hash_ref->{rewrites};
-		my $matches = $hash_ref->{matches};
-		#my $suite = $hash_ref->{suite};
-		# my $fragment = $hash_ref->{fragment};
-		# my $initialTries = $hash_ref->{initialTries};
-		# my $resolveTries = $hash_ref->{resolveTries};
-		# my $successes = $hash_ref->{successes};
-		# my $failures = $hash_ref->{failures};
-		print "$runName, $runNum, $ruleName, \"$rule\", $count, $kind, $matches, $rewrites\n";
+		$rule =~ s/[\n\t\r]/ /g; # turn newlines into spaces
+		#$rule =~ s/["]/""/g; # escape quotes
+		$rule =~ s/["]//g; # remove quotes
+		$rule =~ s/[']//g; # remove quotes
+		# print "\"$hash_ref->{runName}\"";
+		print "\"$hash_ref->{ruleName}\"";
+		# printField $hash_ref->{ruleName};
+		printField $hash_ref->{locationFile};
+		printField $hash_ref->{locationFrom};
+		printField $hash_ref->{locationTo};
+		printField $hash_ref->{kind};
+		printField $hash_ref->{matches};
+		printField $hash_ref->{rewrites};
+		printField $rule;
+		print "\n";
 		# $fragment, $initialTries, $resolveTries, 
 	}
 }

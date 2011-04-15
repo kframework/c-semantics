@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak duplicateLabels.txt libraryRules.txt
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak duplicateLabels.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -50,10 +50,10 @@ pdf: common-pdf-modules
 # this is used to start all of the common files
 common-pdf-modules: dynamic-c-configuration.pdf dynamic-c-semantics.pdf common-c-statements.pdf common-c-expressions.pdf common-c-memory.pdf
 	
-c-syntax.k: Makefile
+c-syntax.k:
 	@printf "`cat c-syntax.template`" > c-syntax.k	
 	
-c.k: c-syntax.k c-maude.template Makefile
+c.k: c-syntax.k c-maude.template
 	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
 c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
@@ -61,15 +61,15 @@ c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FIL
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@$(K_MAUDE) c.k -u -language C
 	@mv c-compiled.maude c-compiled.maude.tmp
+	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
+	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
+	@$(INSERT_LINE) 4 c-compiled.maude.tmp "load maudeLib/TCPSupport"
 	@echo "Done".
 
 c-compiled.maude: c-compiled.maude.tmp
 	@grep -o '^ \(eq\|ceq\|rl\|crl\) .* label [^ ][^ ]* ' c-compiled.maude.tmp | grep -o ' label [^ ][^ ]*' | grep -o '[^ ]*$$' | sort | uniq -d > duplicateLabels.txt
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
-	
-libraryRules.txt: common-c-standard-lib.k Makefile
-	@grep -o 'rule \[[^] ][^] ]*\]:' common-c-standard-lib.k | grep -o '\[[^] ][^] ]*\]' | grep -o '[^][][^][]*' | sort | uniq > libraryRules.txt
 	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Checking the C definition..."
@@ -79,12 +79,9 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-	@$(INSERT_LINE) 2 c-compiled.maude "load $(K_PL_MODEL_CHECKER)"
-	@$(INSERT_LINE) 3 c-compiled.maude "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 4 c-compiled.maude "load maudeLib/TCPSupport"
 	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
-semantics: c-total.maude libraryRules.txt
+semantics: c-total.maude
 
 clean:
 	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp 
