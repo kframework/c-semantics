@@ -130,15 +130,40 @@ sub handleOp {
 }
 sub handleEq {
 	my ($line, $file, $type) = @_;
-	my $rule = $line;
+	my $rule = "";
+	#$line;
 	my $ruleName = "";
 	my $kind = 'macro';
 	my $locationFile = "";
 	my $locationFrom = "";
 	my $locationTo = "";
-	while (<$file>){
+	$_ = "$line\n";
+	do {
 		$line = $_;
 		chomp($line);
+		$rule .= "$line\n";
+		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
+			$ruleName = $1;
+		}
+		if ($line =~ m/location\(([^:]+):(\d+)-(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $3;
+		}
+		if ($line =~ m/location\(([^:]+):(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $2;
+		}
+		if ($line =~ m/structural/) {
+			$kind = 'structural';
+		} elsif ($line =~ m/computational/) {
+			$kind = 'computational';
+		} elsif ($line =~ m/cooling/) {
+			$kind = 'cooling';
+		} elsif ($line =~ m/heating/) {
+			$kind = 'heating';
+		}
 		if ($line =~ m/^rewrites: (\d+) \(/){
 			my $rewrites = $1;
 			my $retval = $insertEqHandle->execute($ruleName, $rule, $locationFile, $locationFrom, $locationTo, $type, $kind, $rewrites, $rule, $rewrites, $rule);
@@ -147,33 +172,46 @@ sub handleEq {
 			# }
 			return;
 		} 
-		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
-			$ruleName = $1;
-		}
-		if ($line =~ m/location\(([^\)]+):(\d+)-(\d+)\)/) {
-			$locationFile = $1;
-			$locationFrom = $2;
-			$locationTo = $3;
-		}
-		if ($line =~ m/structural/) {
-			$kind = 'structural';
-		} elsif ($line =~ m/computational/) {
-			$kind = 'computational';
-		} 
-		$rule .= "$line\n";
-	}
+	} while (<$file>);
 }
 sub handleCeq {
 	my ($line, $file, $type) = @_;
-	my $rule = $line;
+	my $rule = "";
 	my $kind = "macro";
 	my $locationFile = "";
 	my $locationFrom = "";
 	my $locationTo = "";
 	my $ruleName = "";
-	while (<$file>){
-		$line = $_;
+	$_ = "$line\n";
+	do {
+		$line = $_;		
 		chomp($line);
+		$rule .= "$line\n";
+		
+		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
+			$ruleName = $1;
+		} 
+		#roperLabel(Kcxt:KResult)) ~> Rest:K </ k > [metadata "cooling location(common-c-memory.k:70)"] .
+		if ($line =~ m/location\(([^:]+):(\d+)-(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $3;
+		}
+		if ($line =~ m/location\(([^:]+):(\d+)\)/) {
+			$locationFile = $1;
+			$locationFrom = $2;
+			$locationTo = $2;
+		}
+		if ($line =~ m/structural/) {
+			$kind = 'structural';
+		} elsif ($line =~ m/computational/) {
+			$kind = 'computational';
+		} elsif ($line =~ m/cooling/) {
+			$kind = 'cooling';
+		} elsif ($line =~ m/heating/) {
+			$kind = 'heating';
+		}
+		
 		if ($line =~ m/^lhs matches: (\d+)	rewrites: (\d+) \(/){
 			my $matches = $1;
 			my $rewrites = $2;
@@ -189,22 +227,8 @@ sub handleCeq {
 			
 			my $retval = $insertCeqHandle->execute($ruleName, $rule, $locationFile, $locationFrom, $locationTo, $type, $kind, $rewrites, $rule, $matches, $rule, $fragment, $rule, $initialTries, $rule, $resolveTries, $rule, $successes, $rule, $failures, $rule);
 			return;
-		} 
-		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ # labeled equation
-			$ruleName = $1;
 		}
-		if ($line =~ m/location\(([^\)]+):(\d+)-(\d+)\)/) {
-			$locationFile = $1;
-			$locationFrom = $2;
-			$locationTo = $3;
-		}
-		if ($line =~ m/structural/) {
-			$kind = 'structural';
-		} elsif ($line =~ m/computational/) {
-			$kind = 'computational';
-		}
-		$rule .= "$line\n";
-	}
+	} while (<$file>);
 }
 
 sub getMaxRunNumFor {

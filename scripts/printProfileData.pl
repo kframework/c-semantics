@@ -65,12 +65,14 @@ sub printData {
 		data.locationFile = rules.locationFile
 		AND data.locationFrom = rules.locationFrom
 		AND data.locationTo = rules.locationTo
+		AND data.kind = rules.kind
 	--- WHERE data.runName NOT LIKE 'tmpSemanticCalibration'
 	--- WHERE rules.isLibrary = 0
 	GROUP BY 
 		rules.locationFile
 		, rules.locationFrom
 		, rules.locationTo
+		, rules.kind
 	ORDER BY
 		matches DESC
 	") or die $dbh->errstr;
