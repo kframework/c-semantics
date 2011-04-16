@@ -124,9 +124,8 @@ kmod COMMON-SEMANTICS-READING is
 			=> tv(N:Nat, pointerType(T:Type))
 		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
-		andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
+		// andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
 		[structural]
-		
 	rule < k > concretize(T:Type, dataList(L:List{K})) 
 			=> tv(L:List{K}, T:Type) 
 		...</ k >

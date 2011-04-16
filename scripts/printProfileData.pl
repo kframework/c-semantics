@@ -16,34 +16,54 @@ sub printField {
 }
 
 sub printData {
+	# my $sth = $dbh->prepare("
+	# SELECT 
+		# --- data.runName
+		# rules.ruleName
+		# , data.rule
+		# , rules.kind
+		# --- , SUM(data.matches) as matches
+		# --- , SUM(data.rewrites) as rewrites
+		# , SUM(IFNULL(data.matches, 0)) as matches
+		# , SUM(IFNULL(data.rewrites, 0)) as rewrites
+		# , rules.locationFile
+		# , rules.locationFrom
+		# , rules.locationTo
+	# FROM rules
+	# LEFT OUTER JOIN (
+		# SELECT * FROM data WHERE runName NOT LIKE 'tmpSemanticCalibration'
+	# ) data ON
+		# data.locationFile = rules.locationFile
+		# AND data.locationFrom = rules.locationFrom
+		# AND data.locationTo = rules.locationTo
+		# AND data.kind = rules.kind
+	# --- WHERE data.runName NOT LIKE 'tmpSemanticCalibration'
+	# --- WHERE rules.isLibrary = 0
+	# GROUP BY 
+		# rules.locationFile
+		# , rules.locationFrom
+		# , rules.locationTo
+		# , rules.kind
+	# ORDER BY
+		# matches DESC
+	# ") or die $dbh->errstr;
 	my $sth = $dbh->prepare("
 	SELECT 
-		--- data.runName
-		rules.ruleName
-		, data.rule
-		, rules.kind
-		--- , SUM(data.matches) as matches
-		--- , SUM(data.rewrites) as rewrites
-		, SUM(IFNULL(data.matches, 0)) as matches
-		, SUM(IFNULL(data.rewrites, 0)) as rewrites
-		, rules.locationFile
-		, rules.locationFrom
-		, rules.locationTo
-	FROM rules
-	LEFT OUTER JOIN (
-		SELECT * FROM data WHERE runName NOT LIKE 'tmpSemanticCalibration'
-	) data ON
-		data.locationFile = rules.locationFile
-		AND data.locationFrom = rules.locationFrom
-		AND data.locationTo = rules.locationTo
-		AND data.kind = rules.kind
-	--- WHERE data.runName NOT LIKE 'tmpSemanticCalibration'
-	--- WHERE rules.isLibrary = 0
+		ruleName
+		, rule
+		, kind
+		, SUM(matches) as matches
+		, SUM(rewrites) as rewrites
+		, locationFile
+		, locationFrom
+		, locationTo
+	FROM data
+	WHERE runName NOT LIKE 'tmpSemanticCalibration'
 	GROUP BY 
-		rules.locationFile
-		, rules.locationFrom
-		, rules.locationTo
-		, rules.kind
+		locationFile
+		, locationFrom
+		, locationTo
+		, kind
 	ORDER BY
 		matches DESC
 	") or die $dbh->errstr;
