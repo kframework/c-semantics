@@ -27,7 +27,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/programRunner.sh \
 	$(SCRIPTS_DIR)/fileserver.pl \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
-	$(SCRIPTS_DIR)/printProfileData.pl \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(SEMANTICS_DIR)/includes/*) \
 	$(wildcard $(SEMANTICS_DIR)/lib/*)
