@@ -572,7 +572,7 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 	// op getInnerOperator : KLabel -> KLabel
 	rule
 		< k > compoundAssignment(L:KLabel, V:Value, V':Value) 
-			=> V:Value := L:KLabel(V:Value,, V':Value) 
+			=> V:Value := L:KLabel(reval(V:Value),, V':Value) 
 		...</ k >
 		[structural] 
 
