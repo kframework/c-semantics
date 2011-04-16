@@ -15,6 +15,8 @@ FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 
 FILES_TO_DIST = \
 	$(SEMANTICS_DIR)/c-total.maude \
+	$(wildcard $(SCRIPTS_DIR)/*.sql) \
+	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/slurp.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \

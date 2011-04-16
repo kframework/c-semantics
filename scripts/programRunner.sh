@@ -118,7 +118,9 @@ elif [ $PROFILE ]; then
 	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
 	# cat $INTERMEDIATE_OUTPUT_FILE
 	# perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
-	echo "Results added to maudeProfileDBfile.sqlite.  Access with $SCRIPTS_DIR/printProfileData.pl"
+	echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
+	echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
+	echo "See $SCRIPTS_DIR/*.sql for some other example queries."
 	echo "Done."
 	rm -f $INTERMEDIATE_OUTPUT_FILE
 else
