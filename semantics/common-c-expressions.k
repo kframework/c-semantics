@@ -18,9 +18,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	
 	rule
-		< k > reval(tv(L:List{K}, T:Type))
+		reval(tv(L:List{K}, T:Type))
 			=> tv(L:List{K}, T:Type)
-		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		// andBool notBool hasPointerType(T:Type)
@@ -42,9 +41,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		[structural]
 
 	rule
-		< k > peval(tv(V:List{K}, T:Type))
+		peval(tv(V:List{K}, T:Type))
 			=> tv(V:List{K}, T:Type)
-		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		// andBool notBool hasPointerType(T:Type)
@@ -72,10 +70,9 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		if hasArrayType(T:Type)
 		[structural]
 	rule
-		< k > peval(lv(Loc:Nat, T:Type))
+		peval(lv(Loc:Nat, T:Type))
 			// => checkValidLoc(Loc:Nat)
 			=> lv(Loc:Nat, T:Type)
-		...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		[structural]

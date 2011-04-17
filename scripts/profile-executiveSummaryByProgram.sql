@@ -9,4 +9,4 @@ WHERE
 GROUP BY 
 	runName
 ORDER BY
-	matches DESC
+	numRules DESC
