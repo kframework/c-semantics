@@ -31,8 +31,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		
 		
 	// n1494 6.5.2.2:6 If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (, ...) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
-	// — one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
-	// — both types are pointers to qualified or unqualified versions of a character type or void
+	// -- one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
+	// -- both types are pointers to qualified or unqualified versions of a character type or void
 	
 	rule [bind-coerce-array]:
 		bind-aux(
@@ -140,10 +140,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 
 	// c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes of this subclause unnamed members of objects of structure and union type do not participate in initialization.  Unnamed members of structure objects have indeterminate value even after initialization
 	// c99 6.7.8:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static storage duration is not initialized explicitly, then:
-	// — if it has pointer type, it is initialized to a null pointer;
-	// — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
+	// -- if it has pointer type, it is initialized to a null pointer;
+	// -- if it has arithmetic type, it is initialized to (positive or unsigned) zero;
 	// if it is an aggregate, every member is initialized (recursively) according to these rules;
-	// — if it is a union, the first named member is initialized (recursively) according to these rules
+	// -- if it is a union, the first named member is initialized (recursively) according to these rules
 
 	op defineType : K -> K [strict] 
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
@@ -250,10 +250,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op zeroStruct : K List{C} -> K 
 	
 	// c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
-	// — if it has pointer type, it is initialized to a null pointer;
-	// — if it has arithmetic type, it is initialized to (positive or unsigned) zero;
-	// — if it is an aggregate, every member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
-	// — if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
+	// -- if it has pointer type, it is initialized to a null pointer;
+	// -- if it has arithmetic type, it is initialized to (positive or unsigned) zero;
+	// -- if it is an aggregate, every member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
+	// -- if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	
 	rule
 		< k > zeroType(Name:K, structType(S:Id)) 

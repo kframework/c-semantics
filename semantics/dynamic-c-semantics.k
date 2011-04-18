@@ -14,10 +14,8 @@ If they are declared, the parameters to the main function shall obey the followi
 	op incomingArguments : List{K} -> K
 	op incomingArguments-aux : List{K} Nat -> K
 	
-	rule incomingArguments(L:List{K}) => 
-		// fixme this is kind of sketch.  I'm putting this in memory after resolution has taken place
-			DeclarationDefinition(InitNameGroup(Specifier(Char), (InitName(AttributeWrapper(NameLoc(Name(Identifier("#incomingArgumentsArray"), AttributeWrapper(PointerType(AttributeWrapper(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))), Nil)), Nil)), UnknownCabsLoc), Nil), NoInit)))) 
-			~> incomingArguments-aux(L:List{K}, 0) 
+	rule incomingArguments(L:List{K}) 
+			=> incomingArguments-aux(L:List{K}, 0) 
 		[structural]
 	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := StringLiteral(S:String))
@@ -70,7 +68,7 @@ or equivalent;9) or in some other implementation-defined manner
 				< thread >
 					< control >
 						< k > listToK(P:List{C})
-							// ~> DeclarationDefinition(InitNameGroup(Specifier(Char), (InitName(AttributeWrapper(NameLoc(Name(Identifier("#incomingArgumentsArray"), AttributeWrapper(PointerType(AttributeWrapper(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))), Nil)), Nil)), UnknownCabsLoc), Nil), NoInit))))
+							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(NameLoc(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))))), UnknownCabsLoc), NoInit)))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
