@@ -57,7 +57,9 @@ while(<MYINPUTFILE>) {
 			$isLibrary = 1;
 		}
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(super cooling).*\]\.\s*$/){
+		$kind = $1;
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){
 		$kind = $1;
 	} else {
 		$kind = 'macro';

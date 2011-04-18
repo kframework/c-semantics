@@ -18,8 +18,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	
 	rule
-		reval(tv(L:List{K}, T:Type))
-			=> tv(L:List{K}, T:Type)
+		< k > reval(tv(L:List{K}, T:Type))
+			=> tv(L:List{K}, T:Type) ...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		// andBool notBool hasPointerType(T:Type)
@@ -41,8 +41,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		[structural]
 
 	rule
-		peval(tv(V:List{K}, T:Type))
-			=> tv(V:List{K}, T:Type)
+		< k > peval(tv(V:List{K}, T:Type))
+			=> tv(V:List{K}, T:Type) ...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		// andBool notBool hasPointerType(T:Type)
@@ -70,9 +70,9 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		if hasArrayType(T:Type)
 		[structural]
 	rule
-		peval(lv(Loc:Nat, T:Type))
+		< k > peval(lv(Loc:Nat, T:Type))
 			// => checkValidLoc(Loc:Nat)
-			=> lv(Loc:Nat, T:Type)
+			=> lv(Loc:Nat, T:Type) ...</ k >
 		if notBool hasArrayType(T:Type)
 		andBool notBool hasFunctionType(T:Type)
 		[structural]
@@ -89,7 +89,7 @@ endkm
 kmod COMMON-SEMANTICS-COMPOUND-LITERAL is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	op handleCompoundLiteral : K -> K [metadata "strict"] 
+	op handleCompoundLiteral : K -> K [strict] 
 	
 	// comes back from figureInit as initializerValue(id, type, inits)
 	rule
@@ -153,7 +153,7 @@ kmod COMMON-SEMANTICS-SIZEOF is
 	including COMMON-INCLUDE 
 	
 	rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
-	op byteSizeofTypeAux : K -> K [metadata "strict"] 
+	op byteSizeofTypeAux : K -> K [strict] 
 	rule byteSizeofType(T:Type) => byteSizeofTypeAux(bitSizeofType(T:Type)) [structural]
 	rule byteSizeofTypeAux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
 		if T:Type ==Bool cfg:largestUnsigned 
@@ -257,7 +257,7 @@ endkm
 kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 
-	op application : K List{C} -> K [metadata "strict(1)"] 
+	op application : K List{C} -> K [strict(1)] 
 	
 	// this must enforce arguments are evaluated
 	// using List{Type} until I fix syntax types
@@ -839,7 +839,7 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		if hasIntegerType(T:Type)
 		[structural]
 		
-	op computePointerDifference : Int Int K -> K [metadata "strict(3)"] // ptr1, ptr2, size of ptr type
+	op computePointerDifference : Int Int K -> K [strict(3)] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type)) 
 		=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:Type))
 		[structural] 
@@ -914,7 +914,7 @@ kmod COMMON-SEMANTICS-MEMBERS is
 		[structural] 
 
 	op toEval : K -> K 
-	op toEval-aux : K K -> K [metadata "strict(2)"] 
+	op toEval-aux : K K -> K [strict(2)] 
 	op toEval-value : K -> K 
 	// context toEval-value(`[HOLE`]:K . ?)
 	
@@ -1105,8 +1105,8 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 
 	op postOpRef : K KLabel -> K 
 
-	op postInc : K K Type -> K [metadata "strict(2)"]
-	op postDec : K K Type -> K [metadata "strict(2)"]
+	op postInc : K K Type -> K [strict(2)]
+	op postDec : K K Type -> K [strict(2)]
 
 	
 	rule [post-increment-start]:

@@ -9,8 +9,8 @@ SELECT
 	, locationTo
 FROM data
 WHERE 
-	runName NOT LIKE 'tmpSemanticCalibration'
-	AND (kind LIKE 'structural' OR kind LIKE 'computational')
+	kind LIKE 'structural' 
+	OR kind LIKE 'computational'
 GROUP BY 
 	rule
 ORDER BY

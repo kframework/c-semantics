@@ -174,7 +174,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op canonicalizeType : Bag K Bag Bag Bag -> K [metadata "strict(2)"] 
+	op canonicalizeType : Bag K Bag Bag Bag -> K [strict(2)] 
 		
 	rule
 		< k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
@@ -368,7 +368,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 
 	op structDefType : Id List{Type} -> Type 
 	
-	op BitFieldType : K K -> K [metadata "strict"] 
+	op BitFieldType : K K -> K [seqstrict] 
 	
 	rule
 		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
@@ -514,7 +514,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
 	rule extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
 		
-	op NameAndType : K K -> K [metadata "strict(2)"] 
+	op NameAndType : K K -> K [strict(2)] 
 	
 	rule
 		SingleName(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
@@ -740,7 +740,6 @@ kmod COMMON-C-TYPING is
 		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
 		[structural]
-	// op cast : K K -> K [metadata "strict"] 
 	rule 
 		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
 		[structural] 

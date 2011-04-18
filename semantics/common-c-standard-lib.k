@@ -9,7 +9,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	including SOCKET-BUILTIN-MODULE
 	including TCP-INTERFACE-BUILTIN-MODULE
 	
-	op vararg : K -> Value [strict hybrid] 
+	op vararg : K -> C [strict hybrid] 
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	
 	op nextvarg : Nat Type -> C 

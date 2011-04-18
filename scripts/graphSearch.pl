@@ -94,6 +94,13 @@ while (my $line = <STDIN>) {
 				$currentRuleName = $1;
 				$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
 			}
+			if ($line =~ m/metadata .*heating/) {
+				if ($line =~ m/freezer\("\(([^\)]+)\)\./) {
+					$currentRuleName = $1;
+				}
+				$currentRuleName .= ' heat';
+				$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+			}
 		}
 		next;
 	}

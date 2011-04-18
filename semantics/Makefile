@@ -59,7 +59,7 @@ c.k: c-syntax.k c-maude.template
 c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@$(K_MAUDE) c.k -u -language C
+	@time $(K_MAUDE) c.k -u -language C
 	@mv c-compiled.maude c-compiled.maude.tmp
 	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -73,7 +73,7 @@ c-compiled.maude: c-compiled.maude.tmp
 	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Checking the C definition..."
-	@time ($(K_MAUDE) c.k -u -lint -language C)
+	@time $(K_MAUDE) c.k -u -lint -language C
 	@rm -f c-compiled.maude
 	@echo "Done".
 	

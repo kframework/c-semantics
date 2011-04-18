@@ -20,8 +20,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
 	// there is another set of promotions called "default argument promotions" used when calling functions where the type information is not complete.  This is equivalent to integer promotions + (float => double) 
 	
-	// op arithConversion : KLabel K K -> K [metadata "strict"] 
-	op arithConversion-int : KLabel K K -> K // [metadata "strict"] 
+	op arithConversion-int : KLabel K K -> K
 	op isArithBinOp : KLabel -> Bool 
 	op isArithBinConversionOp : KLabel -> Bool 
 	op arithBinOps : -> Set [memo] 

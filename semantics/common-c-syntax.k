@@ -11,11 +11,18 @@ kmod COMMON-C-SYNTAX is
 	including PL-RANDOM
 	including PL-ID
 	including K
+	including K-PROPER
 	
-	
+	// these are semantic
+	// op reval : K -> K // [strict]
+	// op peval : K -> K // [strict]
 	op reval : K -> K [strict]
 	op peval : K -> K [strict]
+	
+	// the rest are syntactic
+	sort C
 	op AttributeWrapper : K List{C} -> C // new
+	//syntax C ::= `AttributeWrapper ( K , List{C} ) // new
 	
 	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
 	
@@ -58,21 +65,21 @@ kmod COMMON-C-SYNTAX is
 	sort FieldName
 	sort PureDefinition
 	
-	sort C
+	// sort C
 	sort List{C}
 	subsort Id < C
 	op Nil : -> List{C}
 	subsort C < List{C}
 	// fixme, can't figure out how to right this with the new contexts
-	op _::_ : List{C} List{C} -> List{C} [hybrid strict assoc id: Nil]
-	// context '_::_(_,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _)
+	op _::_ : List{C} List{C} -> List{C} [hybrid seqstrict assoc id: Nil]
+	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
+	// moved heating/cooling to common-c-semantics.k
 		
 	subsort SpecifierElem < KResult
 	
 	subsort CabsLoc < C
 	subsort TypeSpecifier < C
 	subsort Storage < C
-	// subsort FunSpecifier < C
 	subsort CVSpecifier < C
 	subsort SpecifierElem < C
 	subsort Specifier < C
@@ -91,13 +98,10 @@ kmod COMMON-C-SYNTAX is
 	subsort PureStatement < C
 	subsort PureEnumItem < C
 	subsort ForClause < C
-	// subsort BinaryOperator < C
-	// subsort UnaryOperator < C
 	subsort Expression < C
 	subsort Constant < C
 	subsort InitExpression < C
 	subsort InitWhat < C
-	// subsort Attribute < C
 	subsort Program < C
 	subsort TranslationUnit < C
 	subsort IntConstant < C
@@ -116,7 +120,9 @@ type cabsloc = {
 		ident : int;
 	}
 */
+	// sort CabsLoc
 	op CabsLoc : String Int Int Int -> CabsLoc
+	// syntax CabsLoc ::= `CabsLoc ( String , Int , Int , Int )
 	
 /*
 type typeSpecifier = (* Merge all specifiers into one type *)
@@ -223,7 +229,7 @@ and decl_type =
 	op ArrayType : K K -> DeclType [strict(1)]
 	context ArrayType(_, ([HOLE] => reval([HOLE])))
 	op PointerType : K -> DeclType [strict]
-	op Prototype : K List{C} Bool -> DeclType [strict(1 2)]
+	op Prototype : K List{C} Bool -> DeclType [seqstrict(1 2)]
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -232,7 +238,7 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K List{C} -> NameGroup [strict(1 2)]
+	op NameGroup : K List{C} -> NameGroup [seqstrict(1 2)]
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -463,28 +469,6 @@ and unary_operator =
 	op _-- : K -> Expression
 	context _--(([HOLE] => peval([HOLE])))
 	
-	// all these macros are temporary while I adjust the semantics to the new grammar
-	op Negative : K -> Expression
-	macro Negative(K:K) = - K:K
-	op Positive : K -> Expression
-	macro Positive(K:K) = + K:K
-	op LogicalNot : K -> Expression
-	macro LogicalNot(K:K) = ! K:K
-	op BitwiseNot : K -> Expression
-	macro BitwiseNot(K:K) = ~ K:K
-	op Dereference : K -> Expression
-	macro Dereference(K:K) = * K:K
-	op Reference : K -> Expression
-	macro Reference(K:K) = & K:K
-	op PreIncrement : K -> Expression
-	macro PreIncrement(K:K) = ++ K:K
-	op PreDecrement : K -> Expression
-	macro PreDecrement(K:K) = -- K:K
-	op PostIncrement : K -> Expression
-	macro PostIncrement(K:K) = K:K ++
-	op PostDecrement : K -> Expression
-	macro PostDecrement(K:K) = K:K --
-
 /*
 	| LABELADDR of string  (* GCC's && Label *)
 */
@@ -549,79 +533,18 @@ and unary_operator =
 	
 	op _||_ : K K -> Expression [prec 49 gather(E e)]
 	context _||_(([HOLE] => reval([HOLE])), _)
-	
-	// all these macros are temporary while I adjust the semantics to the new grammar
-	ops Multiply : K K -> Expression
-	macro Multiply(K1:K, K2:K) = K1:K * K2:K
-	ops Divide : K K -> Expression
-	macro Divide(K1:K, K2:K) = K1:K / K2:K
-	ops Modulo : K K -> Expression
-	macro Modulo(K1:K, K2:K) = K1:K % K2:K
-	ops Plus : K K -> Expression
-	macro Plus(K1:K, K2:K) = K1:K + K2:K
-	ops Minus : K K -> Expression
-	macro Minus(K1:K, K2:K) = K1:K - K2:K
-	ops LeftShift : K K -> Expression
-	macro LeftShift(K1:K, K2:K) = K1:K << K2:K
-	ops RightShift : K K -> Expression
-	macro RightShift(K1:K, K2:K) = K1:K >> K2:K
-	ops LessThan : K K -> Expression
-	macro LessThan(K1:K, K2:K) = K1:K < K2:K
-	ops LessThanOrEqual : K K -> Expression
-	macro LessThanOrEqual(K1:K, K2:K) = K1:K <= K2:K
-	ops GreaterThan : K K -> Expression
-	macro GreaterThan(K1:K, K2:K) = K1:K > K2:K
-	ops GreaterThanOrEqual : K K -> Expression
-	macro GreaterThanOrEqual(K1:K, K2:K) = K1:K >= K2:K
-	ops Equality : K K -> Expression
-	macro Equality(K1:K, K2:K) = K1:K == K2:K
-	ops NotEquality : K K -> Expression
-	macro NotEquality(K1:K, K2:K) = K1:K != K2:K
-	op BitwiseAnd : K K -> Expression
-	macro BitwiseAnd(K1:K, K2:K) = K1:K & K2:K
-	op BitwiseXor : K K -> Expression
-	macro BitwiseXor(K1:K, K2:K) = K1:K ^ K2:K
-	op BitwiseOr : K K -> Expression
-	macro BitwiseOr(K1:K, K2:K) = K1:K | K2:K
-	op LogicalAnd : K K -> Expression
-	macro LogicalAnd(K1:K, K2:K) = K1:K && K2:K
-	op LogicalOr : K K -> Expression
-	macro LogicalOr(K1:K, K2:K) = K1:K || K2:K
-		
+			
 	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _&=_ _^=_ _|=_ : K K -> Expression [prec 53]
 	ops _>>=_ : K K -> Expression [prec 53]
 	op _:=_ : K K -> Expression [prec 53]
 	context _:=_(([HOLE] => peval([HOLE])), _)
 	context _:=_(_, ([HOLE] => reval([HOLE])))
 	
-	// all these macros are temporary while I adjust the semantics to the new grammar
-	op Assign : K K -> Expression
-	macro Assign(K1:K, K2:K) = K1:K := K2:K
-	ops AssignMultiply : K K -> Expression
-	macro AssignMultiply(K1:K, K2:K) = K1:K *= K2:K
-	ops AssignDivide : K K -> Expression
-	macro AssignDivide(K1:K, K2:K) = K1:K /= K2:K
-	ops AssignModulo : K K -> Expression
-	macro AssignModulo(K1:K, K2:K) = K1:K %= K2:K
-	ops AssignPlus : K K -> Expression
-	macro AssignPlus(K1:K, K2:K) = K1:K += K2:K
-	ops AssignMinus : K K -> Expression
-	macro AssignMinus(K1:K, K2:K) = K1:K -= K2:K
-	ops AssignBitwiseAnd : K K -> Expression
-	macro AssignBitwiseAnd(K1:K, K2:K) = K1:K &= K2:K
-	ops AssignBitwiseXor : K K -> Expression
-	macro AssignBitwiseXor(K1:K, K2:K) = K1:K ^= K2:K
-	ops AssignBitwiseOr : K K -> Expression
-	macro AssignBitwiseOr(K1:K, K2:K) = K1:K |= K2:K
-	ops AssignLeftShift : K K -> Expression
-	macro AssignLeftShift(K1:K, K2:K) = K1:K <<= K2:K
-	ops AssignRightShift : K K -> Expression
-	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
-	
 /*
 	| QUESTION of expression * expression * expression
 */
 	op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
+	// syntax Expression ::= K ? K : K [prec 51 gather(e & E)]
 	context _?_:_(([HOLE] => reval([HOLE])), _, _)
 	
 	// all these macros are temporary while I adjust the semantics to the new grammar
@@ -644,7 +567,6 @@ and unary_operator =
 
 	op Call : K List{C} -> Expression
 	context Call(([HOLE] => reval([HOLE])), _)
-	// context Call(_, (`[HOLE`]:List{C} => reval(`[HOLE`]:List{C})))
 	context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
 /*
 	| COMMA of expression list
@@ -680,12 +602,8 @@ and unary_operator =
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
 */
-	op Dot : K Id -> Expression
-	macro Dot(K:K, X:Id) = K:K . X:Id
 	op _._ : K Id -> Expression
 	context _._(([HOLE] => peval([HOLE])), _)
-	op Arrow : K Id -> Expression
-	macro Arrow(K:K, X:Id) = K:K -> X:Id
 	op _->_ : K Id -> Expression
 	context _->_(([HOLE] => reval([HOLE])), _:Id)
 /*
@@ -755,4 +673,106 @@ and initwhat =
 and attribute = string * expression list
 */
 	op Attribute : String List{C} -> C
+	
+	
+	
+	
+	
+	
+
+	/*@ The below macros simply transform the prefix AST names to the infix/mixfix names we use from now on */
+
+	op Negative : K -> Expression
+	macro Negative(K:K) = - K:K
+	op Positive : K -> Expression
+	macro Positive(K:K) = + K:K
+	op LogicalNot : K -> Expression
+	macro LogicalNot(K:K) = ! K:K
+	op BitwiseNot : K -> Expression
+	macro BitwiseNot(K:K) = ~ K:K
+	op Dereference : K -> Expression
+	macro Dereference(K:K) = * K:K
+	op Reference : K -> Expression
+	macro Reference(K:K) = & K:K
+	op PreIncrement : K -> Expression
+	macro PreIncrement(K:K) = ++ K:K
+	op PreDecrement : K -> Expression
+	macro PreDecrement(K:K) = -- K:K
+	op PostIncrement : K -> Expression
+	macro PostIncrement(K:K) = K:K ++
+	op PostDecrement : K -> Expression
+	macro PostDecrement(K:K) = K:K --
+
+	ops Multiply : K K -> Expression
+	macro Multiply(K1:K, K2:K) = K1:K * K2:K
+	ops Divide : K K -> Expression
+	macro Divide(K1:K, K2:K) = K1:K / K2:K
+	ops Modulo : K K -> Expression
+	macro Modulo(K1:K, K2:K) = K1:K % K2:K
+	ops Plus : K K -> Expression
+	macro Plus(K1:K, K2:K) = K1:K + K2:K
+	ops Minus : K K -> Expression
+	macro Minus(K1:K, K2:K) = K1:K - K2:K
+	ops LeftShift : K K -> Expression
+	macro LeftShift(K1:K, K2:K) = K1:K << K2:K
+	ops RightShift : K K -> Expression
+	macro RightShift(K1:K, K2:K) = K1:K >> K2:K
+	ops LessThan : K K -> Expression
+	macro LessThan(K1:K, K2:K) = K1:K < K2:K
+	ops LessThanOrEqual : K K -> Expression
+	macro LessThanOrEqual(K1:K, K2:K) = K1:K <= K2:K
+	ops GreaterThan : K K -> Expression
+	macro GreaterThan(K1:K, K2:K) = K1:K > K2:K
+	ops GreaterThanOrEqual : K K -> Expression
+	macro GreaterThanOrEqual(K1:K, K2:K) = K1:K >= K2:K
+	ops Equality : K K -> Expression
+	macro Equality(K1:K, K2:K) = K1:K == K2:K
+	ops NotEquality : K K -> Expression
+	macro NotEquality(K1:K, K2:K) = K1:K != K2:K
+	op BitwiseAnd : K K -> Expression
+	macro BitwiseAnd(K1:K, K2:K) = K1:K & K2:K
+	op BitwiseXor : K K -> Expression
+	macro BitwiseXor(K1:K, K2:K) = K1:K ^ K2:K
+	op BitwiseOr : K K -> Expression
+	macro BitwiseOr(K1:K, K2:K) = K1:K | K2:K
+	op LogicalAnd : K K -> Expression
+	macro LogicalAnd(K1:K, K2:K) = K1:K && K2:K
+	op LogicalOr : K K -> Expression
+	macro LogicalOr(K1:K, K2:K) = K1:K || K2:K
+	
+
+	op Assign : K K -> Expression
+	macro Assign(K1:K, K2:K) = K1:K := K2:K
+	ops AssignMultiply : K K -> Expression
+	macro AssignMultiply(K1:K, K2:K) = K1:K *= K2:K
+	ops AssignDivide : K K -> Expression
+	macro AssignDivide(K1:K, K2:K) = K1:K /= K2:K
+	ops AssignModulo : K K -> Expression
+	macro AssignModulo(K1:K, K2:K) = K1:K %= K2:K
+	ops AssignPlus : K K -> Expression
+	macro AssignPlus(K1:K, K2:K) = K1:K += K2:K
+	ops AssignMinus : K K -> Expression
+	macro AssignMinus(K1:K, K2:K) = K1:K -= K2:K
+	ops AssignBitwiseAnd : K K -> Expression
+	macro AssignBitwiseAnd(K1:K, K2:K) = K1:K &= K2:K
+	ops AssignBitwiseXor : K K -> Expression
+	macro AssignBitwiseXor(K1:K, K2:K) = K1:K ^= K2:K
+	ops AssignBitwiseOr : K K -> Expression
+	macro AssignBitwiseOr(K1:K, K2:K) = K1:K |= K2:K
+	ops AssignLeftShift : K K -> Expression
+	macro AssignLeftShift(K1:K, K2:K) = K1:K <<= K2:K
+	ops AssignRightShift : K K -> Expression
+	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
+	
+	op Dot : K Id -> Expression
+	macro Dot(K:K, X:Id) = K:K . X:Id
+	op Arrow : K Id -> Expression
+	macro Arrow(K:K, X:Id) = K:K -> X:Id
+	
+	
+	
+	
+	
+	
+	
 endkm

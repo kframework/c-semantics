@@ -9,7 +9,7 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES 
 
-	op initFunction : K K -> K [strict]
+	op initFunction : K K -> K [seqstrict]
 	
 	op checkValidLoc : K -> K
 	op checkDerefLoc : K -> K
@@ -33,7 +33,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	op bitoffset : Nat -> Nat 
 	op byteoffset : Nat -> Nat 
-	op declare : K K -> K [metadata "strict(1)"] 
+	op declare : K K -> K [strict(1)] 
 	op enumItem : Id Value -> Value 
 	op resolveReferences : -> K 
 	
@@ -43,7 +43,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op bitRange : Nat Nat Nat -> Nat // original number, from, to inclusive
 	
-	op fillToBytes : K -> K [metadata "strict(1)"] 
+	op fillToBytes : K -> K [strict] 
 	
 	op floorLoc : Nat -> Nat // loc with possible bit offset returning base byte	
 	op ceilingLoc : Nat -> Nat // loc with possible bit offset returning upperbounded byte	
@@ -60,7 +60,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op AttributeValue : String List{C} -> KResult 
 	
-	op extractBitsFromList : K Nat Nat -> K [metadata "strict(1)"] // data, offset, size in bits
+	op extractBitsFromList : K Nat Nat -> K [strict(1)] // data, offset, size in bits
 	op typedef : Id -> Id 
 	op unnamed : Nat -> Id 
 	
@@ -87,8 +87,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op giveType : Id Type -> K 
 	op addToEnv : Id Nat -> K 
 	
-	op read : K K -> K [metadata "strict(2)"] // location, type
-	op write : K K -> K [metadata "strict(2)"] // location, value
+	op read : K K -> K [strict(2)] // location, type
+	op write : K K -> K [strict(2)] // location, value
 	op writeByte : Nat K -> K 
 
 	op isTypeCompatible : K K -> Bool 
@@ -193,9 +193,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	subsort Value < KResult K 
 	subsort Type < KResult K
 	
-	op sizeofType : K -> K [metadata "strict"] // generates a tv(size, cfg:sizeut)
-	op bitSizeofType : K -> K [metadata "strict"] 
-	op byteSizeofType : K -> K [metadata "strict"] 
+	op sizeofType : K -> K [strict] // generates a tv(size, cfg:sizeut)
+	op bitSizeofType : K -> K [strict] 
+	op byteSizeofType : K -> K [strict] 
 	op bitsToBytes : Nat -> Nat 
 	op HOLE : -> Expression 
 	op l : KLabel -> K [metadata "builtin wrapper"] 
@@ -215,7 +215,35 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op Nil : -> List{Type} [ditto] 
 	
 	
-	op DeclType : K K -> K [metadata "strict(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+		
+	// op myFreezer : KLabel -> K
+	
+	// rule < k > reval(K:KProper) => K:KProper ~> myFreezer('reval) ...</ k > [structural]
+	// rule < k > peval(K:KProper) => K:KProper ~> myFreezer('peval) ...</ k > [structural]
+	// rule < k > K:KResult ~> myFreezer(L:KLabel) => L:KLabel(K:KResult) ...</ k > [structural]
+	
+	
+	// op myListFreezer : -> KLabel
+	// op myList : K List{Type} List{C} -> K
+	// rule 
+		// < k > C:C :: L:List{C} => myList(.K, Nil, (C:C :: L:List{C})) ...</ k > 
+		// [structural]
+	// rule 
+		// < k > myList(.K, L:List{Type}, Nil) => L:List{Type} ...</ k >
+		// [structural]
+
+	// rule 
+		// < k > (.K => K:K) ~> myList((K:K => .K), ?, ?) ...</ k >
+		// [structural]
+	// rule 
+		// < k > (T:Type => .K) ~> myList(.K, (L:List{Type} => (L:List{Type} :: T:Type)), ?) ...</ k >
+		// [structural]
+	// rule 
+		// < k > myList((.K => C:C), ?, (C:C => Nil) :: L:List{C}) ...</ k >
+		// [structural]
+	
+	
+	op DeclType : K K -> K [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	
 	
 	op setOfTypes : -> Set [memo] 
@@ -232,7 +260,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value 
 	// op lv : List{K} Type -> Value
-	op concretize : Type K -> K [metadata "strict(2)"] 
+	op concretize : Type K -> K [strict(2)] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
 	
@@ -299,7 +327,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	// these are also used by compound literals
 	op initializerValue : Id Type K -> KResult 
-	op figureInitializer : Id K K -> K [metadata "strict(2)"] // id, type, initializer
+	op figureInitializer : Id K K -> K [strict(2)] // id, type, initializer
 	
 		
 	op append : Nat Nat Value -> K // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions

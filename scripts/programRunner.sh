@@ -84,26 +84,27 @@ if [ $DEBUG ]; then
 	fi
 	$MAUDE_COMMAND
 elif [ $SEARCH ]; then
-	INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	#INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	#GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
+	GRAPH_OUTPUT_FILE=tmpSearchResults.dot
 	echo "Performing the search..."
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
 	echo "Examining the output..."
 	cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER > $GRAPH_OUTPUT_FILE
 	if [ "$?" -eq 0 ]; then
 		set -e # start to fail on error
-		cp $INTERMEDIATE_OUTPUT_FILE tmpSearchResults.txt
-		cp $GRAPH_OUTPUT_FILE tmpSearchResults.dot
+		#cp $INTERMEDIATE_OUTPUT_FILE tmpSearchResults.txt
+		#cp $GRAPH_OUTPUT_FILE tmpSearchResults.dot
 		echo "Generating the graph..."
-		dot -Tps2 $GRAPH_OUTPUT_FILE > $INTERMEDIATE_OUTPUT_FILE # reusing temp file
-		cp $INTERMEDIATE_OUTPUT_FILE tmpSearchResults.ps
-		ps2pdf $INTERMEDIATE_OUTPUT_FILE tmpSearchResults.pdf
+		dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps
+		ps2pdf tmpSearchResults.ps tmpSearchResults.pdf
 		echo "Done."
 		#acroread tmpSearchResults.pdf &
 		set +e #stop failing on error
 	fi
-	rm -f $INTERMEDIATE_OUTPUT_FILE
-	rm -f $GRAPH_OUTPUT_FILE
+	#rm -f $INTERMEDIATE_OUTPUT_FILE
+	#rm -f $GRAPH_OUTPUT_FILE
 elif [ $PROFILE ]; then
 	if [ -f "maudeProfileDBfile.sqlite" ]; then
 		echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."

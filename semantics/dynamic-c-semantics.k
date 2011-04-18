@@ -14,7 +14,11 @@ If they are declared, the parameters to the main function shall obey the followi
 	op incomingArguments : List{K} -> K
 	op incomingArguments-aux : List{K} Nat -> K
 	
-	rule incomingArguments(L:List{K}) => incomingArguments-aux(L:List{K}, 0) [structural]
+	rule incomingArguments(L:List{K}) => 
+		// fixme this is kind of sketch.  I'm putting this in memory after resolution has taken place
+			DeclarationDefinition(InitNameGroup(Specifier(Char), (InitName(AttributeWrapper(NameLoc(Name(Identifier("#incomingArgumentsArray"), AttributeWrapper(PointerType(AttributeWrapper(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))), Nil)), Nil)), UnknownCabsLoc), Nil), NoInit)))) 
+			~> incomingArguments-aux(L:List{K}, 0) 
+		[structural]
 	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := StringLiteral(S:String))
 			~> incomingArguments-aux(L:List{K}, sNat(N:Nat))
@@ -32,11 +36,11 @@ or equivalent;9) or in some other implementation-defined manner
 */
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
-	op callMain : Nat Id -> K
-	op callMain-aux : K Nat Id -> K [strict(1)]
+	op callMain : Nat Id K -> K
+	op callMain-aux : K Nat Id K -> K [strict(1)]
 	
-	rule < k > callMain(N:Nat, X:Id)
-			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id)
+	rule < k > callMain(N:Nat, X:Id, Args:K)
+			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
 		...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
@@ -45,20 +49,19 @@ or equivalent;9) or in some other implementation-defined manner
 	// FIXME i think these are slightly different
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
-	rule callMain-aux(functionType(int, typedDeclaration(void, ?)), N:Nat, X:Id) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(functionType(int, Nil), N:Nat, X:Id) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(incompleteArrayType(pointerType(T:Type)), ?))), N:Nat, X:Id)
-		=> Call(Identifier("main"), N:Nat :: X:Id)
+	rule callMain-aux(functionType(int, typedDeclaration(void, ?)), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(functionType(int, Nil), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(incompleteArrayType(pointerType(T:Type)), ?))), N:Nat, X:Id, Args:K)
+		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
 		if T:Type ==Bool char
 		[structural]
-	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(pointerType(pointerType(T:Type)), ?))), N:Nat, X:Id)
-		=> Call(Identifier("main"), N:Nat :: X:Id)
+	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(pointerType(pointerType(T:Type)), ?))), N:Nat, X:Id, Args:K)
+		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
 		if T:Type ==Bool char
 		[structural]
 
 	op syntaxNat : Nat -> K
 	rule syntaxNat(N:Nat) => Constant(IntLiteral(NoSuffix(DecimalConstant(N:Nat)))) [structural]
-	
 	
 	rule eval(K:K) => eval(K:K, .List{K}, "") [structural]
 	rule eval(Program(P:List{C}), L:List{K}, Input:String) =>
@@ -67,10 +70,10 @@ or equivalent;9) or in some other implementation-defined manner
 				< thread >
 					< control >
 						< k > listToK(P:List{C})
-							~> DeclarationDefinition(InitNameGroup(Specifier(Char), (InitName(AttributeWrapper(NameLoc(Name(Identifier("#incomingArgumentsArray"), AttributeWrapper(PointerType(AttributeWrapper(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))), Nil)), Nil)), UnknownCabsLoc), Nil), NoInit))))
-							~> resolveReferences							
-							~> incomingArguments(L:List{K})
-							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"))
+							// ~> DeclarationDefinition(InitNameGroup(Specifier(Char), (InitName(AttributeWrapper(NameLoc(Name(Identifier("#incomingArgumentsArray"), AttributeWrapper(PointerType(AttributeWrapper(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))), Nil)), Nil)), UnknownCabsLoc), Nil), NoInit))))
+							~> resolveReferences					
+							// ~> incomingArguments(L:List{K})
+							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
 						</ k >
 						< currentFunction > File-Scope </ currentFunction >
 						< currentProgramLoc > UnknownCabsLoc </ currentProgramLoc >

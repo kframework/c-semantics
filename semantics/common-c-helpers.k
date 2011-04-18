@@ -87,7 +87,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule calculateLength(T:Type :: L:List{Type}) => calculateLength(T:Type) + calculateLength(L:List{Type}) [structural]
 	rule calculateLength(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 	
-	op extractField-pre : List{K} Type K K -> K [metadata "strict(3 4)"]
+	op extractField-pre : List{K} Type K K -> K [seqstrict(3 4)]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
 	
 	// figureOffset(loc(0, 0), calcStructSize-aux(L1:List{KResult}, 0), T:Type)

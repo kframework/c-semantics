@@ -271,13 +271,13 @@ kmod COMMON-SEMANTICS-WRITING is
 		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
 		[structural]		
 		
-	op writeBytes : Nat K -> K [metadata "strict(2)"] 
-	op writeBitfield : Nat Type K -> K [metadata "strict(3)"] 
+	op writeBytes : Nat K -> K [strict(2)] 
+	op writeBitfield : Nat Type K -> K [strict(3)] 
 	op isByteLoc : Nat -> Bool 
 	op splitBytes : Value -> K 
-	op calculateNewBytes : Nat K K -> K [metadata "strict(3)"] 
+	op calculateNewBytes : Nat K K -> K [strict(3)] 
 	
-	op write-aux : K Value K -> K [metadata "strict(2)"] 
+	op write-aux : K Value K -> K [strict(2)] 
 	rule write(K:K, tv(V:List{K}, T:Type)) 
 		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
