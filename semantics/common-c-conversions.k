@@ -364,6 +364,13 @@ kmod COMMON-SEMANTICS-CAST is
 		// andBool notBool hasBoolType (T:Type)
 		// [structural]
 	// duplicated these rules to avoid side condition
+	
+	rule [cast-ubitfield-of-small]:
+		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
+			=> cast(bitfieldType(T:Type, Len:Nat), tv(I:Int +Int max(bitfieldType(T:Type, Len:Nat)) +Int 1, T':Type))
+		if I:Int <Int min(bitfieldType(T:Type, Len:Nat))
+		andBool hasIntegerType(T':Type)
+		andBool hasUnsignedIntegerType(T:Type)
 	rule [cast-uchar-of-small]:
 		cast(unsigned-char, tv(I:Int, T':Type)) 
 			=> cast(unsigned-char, tv(I:Int +Int max(unsigned-char) +Int 1, T':Type))
@@ -404,6 +411,12 @@ kmod COMMON-SEMANTICS-CAST is
 		// andBool hasIntegerType(T':Type)
 		// andBool notBool hasBoolType (T:Type)
 		// [structural] 
+	rule [cast-ubitfield-of-big]:
+		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(bitfieldType(T:Type, Len:Nat)) +Int 1), bitfieldType(T:Type, Len:Nat))
+		if I:Int >Int max(bitfieldType(T:Type, Len:Nat))
+		andBool hasIntegerType(T':Type)
+		andBool hasUnsignedIntegerType(T:Type)
 	rule [cast-uchar-of-big]:
 		cast(unsigned-char, tv(I:Int, T':Type)) 
 			=> tv(I:Int %Int (max(unsigned-char) +Int 1), unsigned-char)
@@ -446,7 +459,12 @@ kmod COMMON-SEMANTICS-CAST is
 		// andBool hasIntegerType(T':Type)
 		// andBool notBool hasBoolType (T:Type)
 		// [structural]
-
+	rule [cast-sbitfield-of-huge]:
+		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
+			=> cast(bitfieldType(T:Type, Len:Nat), tv(I:Int %Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat))))
+		andBool hasIntegerType(T':Type)
+		andBool hasSignedIntegerType(T:Type)
 	rule [cast-schar-of-huge]:
 		cast(signed-char, tv(I:Int, T':Type)) 
 			=> cast(signed-char, tv(I:Int %Int (2 ^Nat absInt(numBits(signed-char))), T':Type)) 
