@@ -106,17 +106,23 @@ kmod COMMON-SEMANTICS-READING is
 	
 		
 	op joinIntegerBytes : Type List{K} -> K 
-	rule < k > concretize(T:Type, dataList(L:List{K})) => joinIntegerBytes(T:Type, L:List{K}) ...</ k >
+	rule 
+		< k > concretize(T:Type, dataList(L:List{K})) 
+			=> joinIntegerBytes(T:Type, L:List{K}) 
+		...</ k >
 		if hasIntegerType(T:Type) 
 		andBool notBool hasBitfieldType(T:Type) 
 		[structural]
-	rule < k > concretize(T:Type, dataList(L:List{K})) => joinIntegerBytes(T:Type, reverseList(L:List{K})) ...</ k >
-		if hasIntegerType(T:Type) 
-		andBool hasBitfieldType(T:Type) 
+	rule 
+		< k > concretize(bitfieldType(T:Type, Len:Nat), dataList(L:List{K})) 
+			=> joinIntegerBytes(bitfieldType(T:Type, Len:Nat), reverseList(L:List{K})) 
+		...</ k >
+		//if // hasIntegerType(T:Type) // redundant
+		//hasBitfieldType(T:Type) 
 		[structural]
 		
 	// FIXME very unsafe, not checking size of list or its contents
-	rule < k > concretize(T:Type, dataList((piece(encodedFloat(F:Float), Len:Nat),, L:List{K}))) 
+	rule < k > concretize(T:Type, dataList((piece(encodedFloat(F:Float), Len:Nat),, ?))) 
 			=> tv(F:Float, T:Type)
 		...</ k >
 		if hasFloatType(T:Type)
@@ -125,22 +131,21 @@ kmod COMMON-SEMANTICS-READING is
 
 	// fixme should also check sizes are appropriate
 	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
-	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, L:List{K}))) 
+	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, ?))) 
 			// => checkValidLoc(N:Nat)
 			=> tv(N:Nat, pointerType(T:Type))
 		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
-		// andBool lengthList{K}(L:List{K}) ==Bool cfg:ptrsize -Int 1 
 		[structural]
-	rule < k > concretize(T:Type, dataList(L:List{K})) 
-			=> tv(L:List{K}, T:Type) 
+	rule < k > concretize(structType(S:Id), dataList(L:List{K})) 
+			=> tv(L:List{K}, structType(S:Id)) 
 		...</ k >
-		if hasStructType(T:Type)
+		// if hasStructType(T:Type)
 		[structural]
-	rule < k > concretize(T:Type, dataList(L:List{K})) 
-			=> tv(L:List{K}, T:Type)
+	rule < k > concretize(unionType(S:Id), dataList(L:List{K})) 
+			=> tv(L:List{K}, unionType(S:Id))
 		...</ k >
-		if hasUnionType(T:Type)
+		// if hasUnionType(T:Type)
 		[structural]
 	
 	// this happens in expressions like f().a[5], since == *(f().a + 5)
@@ -152,27 +157,32 @@ kmod COMMON-SEMANTICS-READING is
 		// [structural]
 
 	// FIXME assuming bytes?
-	op joinIntegerBytes : Type List{K} K -> K 
-	rule joinIntegerBytes(T:Type, L:List{K}) => joinIntegerBytes(T:Type, L:List{K}, piece(0, 0)) [structural]
+	op joinIntegerBytes-aux : Type List{K} K -> K 
+	rule [joinIntegerBytes-start]:
+		joinIntegerBytes(T:Type, L:List{K}) 
+			=> joinIntegerBytes-aux(T:Type, L:List{K}, piece(0, 0)) 
+		[structural]
 	
 	// fixme may want to consider restricting further, or loosening
-	rule joinIntegerBytes(T:Type, piece(unknown(Len:Nat), Len:Nat), piece(0, 0))
-		=> tv(piece(unknown(Len:Nat), Len:Nat), T:Type)
-		if Len:Nat ==Bool numBitsPerByte
-		andBool hasCharType(T:Type)
+	rule [joinIntegerBytes-unknown-char]:
+		joinIntegerBytes-aux(T:Type, piece(unknown(Len:Nat), Len:Nat), piece(0, 0))
+			=> tv(piece(unknown(Len:Nat), Len:Nat), T:Type)
+		if hasCharType(T:Type)
 		[structural]
 	
-	rule joinIntegerBytes(T:Type, (L:List{K},, piece(N:Nat, Len:Nat)), piece(N':Nat, Len':Nat))
-		=> joinIntegerBytes(T:Type, L:List{K}, piece(_bit::_(piece(N':Nat, Len':Nat), piece(N:Nat, Len:Nat)), Len:Nat +Nat Len':Nat))
-		if Len:Nat ==Bool numBitsPerByte
-		andBool N':Nat >=Nat 0 
+	rule [joinIntegerBytes-step]:
+		joinIntegerBytes-aux(T:Type, (L:List{K},, piece(N:Nat, Len:Nat)), piece(N':Nat, Len':Nat))
+			=> joinIntegerBytes-aux(T:Type, L:List{K}, piece(_bit::_(piece(N':Nat, Len':Nat), piece(N:Nat, Len:Nat)), Len:Nat +Nat Len':Nat))
+		if N':Nat >=Nat 0 // guard is here to make sure it's an actual piece
 		[structural]
-	rule joinIntegerBytes(T:Type, .List{K}, piece(N:Nat, Len:Nat)) 
-		=> interpret(T:Type, piece(N:Nat, Len:Nat)) 
-		if N:Nat >=Nat 0 
+	rule [joinIntegerBytes-done]:
+		joinIntegerBytes-aux(T:Type, .List{K}, piece(N:Nat, Len:Nat)) 
+			=> interpret(T:Type, piece(N:Nat, Len:Nat)) 
+		if N:Nat >=Nat 0 // guard is here to make sure it's an actual piece
 		[structural]
 	op isConcreteList : List{K} -> Bool 
-	rule isConcreteList((N:Nat,, L:List{K})) => isConcreteList(L:List{K})
+	rule 
+		isConcreteList((N:Nat,, L:List{K})) => isConcreteList(L:List{K})
 		if isConcreteNumber(N:Nat) 
 		[structural]
 	rule isConcreteList(.List{K}) => true [structural]
@@ -205,7 +215,9 @@ kmod COMMON-SEMANTICS-READING is
 	op extractBytesFromMem-aux : K K List{K} -> K // loc, size in bytes, aux list
 	
 	rule
-		< k > extractBytesFromMem(Loc:Nat, Size:Nat) => extractBytesFromMem-aux(Loc:Nat, Size:Nat, .List{K}) ...</ k >
+		< k > extractBytesFromMem(Loc:Nat, Size:Nat) 
+			=> extractBytesFromMem-aux(Loc:Nat, Size:Nat, .List{K}) 
+		...</ k >
 		[structural] 
 		
 	rule
@@ -218,12 +230,14 @@ kmod COMMON-SEMANTICS-READING is
 	rule values((tv(K:K, ?),, L:List{KResult})) => (K:K,, values(L:List{KResult})) [structural]
 	rule values(.List{K}) => .List{K} [structural]
 	rule
-		< k > extractBytesFromMem-aux(?, 0, Aux:List{KResult}) => dataList(values(Aux:List{KResult})) ...</ k >
+		< k > extractBytesFromMem-aux(?, 0, Aux:List{KResult}) 
+			=> dataList(values(Aux:List{KResult})) 
+		...</ k >
 		[structural] 
 	
 	// FIXME make sure it's a byte
 	rule [read-byte]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => V:K ...</ k >
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => tv(V:K, no-type) ...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
@@ -233,8 +247,12 @@ kmod COMMON-SEMANTICS-READING is
 		[structural]
 		
 	rule [read-byte-lazy]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => piece(unknown(numBitsPerByte), numBitsPerByte) ...</ k >
-		< mem >... Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) ...</ mem >
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) 
+			=> tv(piece(unknown(numBitsPerByte), numBitsPerByte), no-type)
+		...</ k >
+		< mem >... 
+			Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
+		...</ mem >
 		< buffer > Mem:List </ buffer >
 		if Offset:Nat <Nat Size:Nat
 		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
@@ -242,7 +260,7 @@ kmod COMMON-SEMANTICS-READING is
 		[structural]
 		
 	rule [read-byte-buffer]:
-		< k > extractByteFromMem(Loc:Nat) => V:K ...</ k >
+		< k > extractByteFromMem(Loc:Nat) => tv(V:K, no-type) ...</ k >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:Nat in Locs:Bag
@@ -439,7 +457,16 @@ kmod COMMON-SEMANTICS-WRITING is
 	
 	rule [write-bitfield]:
 		< k > write-specific(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
-			=> writeBitfield(Loc:Nat, T:Type, calculateNewBytes(bitoffset(Loc:Nat), piece(N:Nat, bitSize:Nat), extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat)))))
+			=> writeBitfield(
+				Loc:Nat
+				, T:Type
+				, calculateNewBytes(
+					bitoffset(Loc:Nat)
+					, piece(N:Nat, bitSize:Nat)
+					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat))
+					)
+				)
+			)
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))

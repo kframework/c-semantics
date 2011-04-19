@@ -8,24 +8,31 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	// this maintains byte order
 	op fillToBytes-aux : K List{K} -> K
-	rule fillToBytes(dataList(L:List{K})) => fillToBytes-aux(dataList(L:List{K}), .List{K}) [structural]
-	rule fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat))), L':List{K})
-		=> fillToBytes-aux(dataList(L:List{K}), (piece(N:Nat, Len:Nat),, L':List{K}))
+	rule [fillToBytes-start]:
+		fillToBytes(dataList(L:List{K})) 
+			=> fillToBytes-aux(dataList(L:List{K}), .List{K}) 
+		[structural]
+	rule [fillToBytes-foundByte]:
+		fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat))), L':List{K})
+			=> fillToBytes-aux(dataList(L:List{K}), (piece(N:Nat, Len:Nat),, L':List{K}))
 		if Len:Nat ==Bool numBitsPerByte
 		[structural]
 	
-	rule fillToBytes-aux(dataList(piece(N:Nat, Len:Nat)), L':List{K})
-		=> fillToBytes-aux(dataList((piece(0, 1),, piece(N:Nat, Len:Nat))), L':List{K})
+	rule [fillToBytes-addBit]:
+		fillToBytes-aux(dataList(piece(N:Nat, Len:Nat)), L':List{K})
+			=> fillToBytes-aux(dataList((piece(0, 1),, piece(N:Nat, Len:Nat))), L':List{K})
 		if Len:Nat <Nat numBitsPerByte
 		[structural]
 		
-	rule fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat),, piece(N':Nat, Len':Nat))), L':List{K})
-		=> fillToBytes-aux(dataList((L:List{K},, piece(_bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)), Len:Nat +Nat Len':Nat))), L':List{K})
+	rule [fillToBytes-combineBits]:
+		fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat),, piece(N':Nat, Len':Nat))), L':List{K})
+			=> fillToBytes-aux(dataList((L:List{K},, piece(_bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)), Len:Nat +Nat Len':Nat))), L':List{K})
 		if Len:Nat +Nat Len':Nat <=Nat numBitsPerByte
 		[structural]
 				
-	rule fillToBytes-aux(dataList(.List{K}), L:List{K})
-		=> dataList(L:List{K})
+	rule [fillToBytes-done]:
+		fillToBytes-aux(dataList(.List{K}), L:List{K})
+			=> dataList(L:List{K})
 		[structural]
 		
 	// coallesce bitranges that are adjacent
