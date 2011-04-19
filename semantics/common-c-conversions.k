@@ -337,18 +337,16 @@ kmod COMMON-SEMANTICS-CAST is
 	//c99 6.3.1.2:1 to _Bool
 	// fixme worried about qualifiers
 	rule
-		cast(T:Type, tv(I:Int, T':Type)) => if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
-		if hasBoolType(T:Type)
-		andBool hasIntegerType(T':Type)
+		cast(bool, tv(I:Int, T:Type)) => if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
+		if hasIntegerType(T:Type)
 		[structural] 
 	rule
-		cast(T:Type, tv(I:Int, T':Type)) => cast(bool, tv(0, int) == tv(I:Int, T':Type))
-		if hasBoolType (T:Type)
-		andBool notBool hasIntegerType(T':Type)
+		cast(bool, tv(I:Int, T:Type)) => cast(bool, tv(0, int) == tv(I:Int, T:Type))
+		if notBool hasIntegerType(T:Type)
 		[structural] 
 	
 	//c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
-	rule
+	rule [cast-integer-no-value-change]:
 		cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)
 		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
 		andBool hasIntegerType(T':Type)
@@ -357,35 +355,133 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 		
 	//c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
-	rule
-		cast(T:Type, tv(I:Int, T':Type)) => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))
-		if hasUnsignedIntegerType(T:Type)
-		andBool I:Int <Int min(T:Type)
+	// rule [cast-unsigned-of-small]:
+		// cast(T:Type, tv(I:Int, T':Type)) 
+			// => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))
+		// if hasUnsignedIntegerType(T:Type)
+		// andBool I:Int <Int min(T:Type)
+		// andBool hasIntegerType(T':Type)
+		// andBool notBool hasBoolType (T:Type)
+		// [structural]
+	// duplicated these rules to avoid side condition
+	rule [cast-uchar-of-small]:
+		cast(unsigned-char, tv(I:Int, T':Type)) 
+			=> cast(unsigned-char, tv(I:Int +Int max(unsigned-char) +Int 1, T':Type))
+		if I:Int <Int min(unsigned-char)
 		andBool hasIntegerType(T':Type)
-		andBool notBool hasBoolType (T:Type)
-		[structural] 
+		[structural]
+	rule [cast-usint-of-small]:
+		cast(unsigned-short-int, tv(I:Int, T':Type)) 
+			=> cast(unsigned-short-int, tv(I:Int +Int max(unsigned-short-int) +Int 1, T':Type))
+		if I:Int <Int min(unsigned-short-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-uint-of-small]:
+		cast(unsigned-int, tv(I:Int, T':Type)) 
+			=> cast(unsigned-int, tv(I:Int +Int max(unsigned-int) +Int 1, T':Type))
+		if I:Int <Int min(unsigned-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ulong-of-small]:
+		cast(unsigned-long-int, tv(I:Int, T':Type)) 
+			=> cast(unsigned-long-int, tv(I:Int +Int max(unsigned-long-int) +Int 1, T':Type))
+		if I:Int <Int min(unsigned-long-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ullong-of-small]:
+		cast(unsigned-long-long-int, tv(I:Int, T':Type)) 
+			=> cast(unsigned-long-long-int, tv(I:Int +Int max(unsigned-long-long-int) +Int 1, T':Type))
+		if I:Int <Int min(unsigned-long-long-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
 		
-	rule
-		cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
-		if hasUnsignedIntegerType(T:Type)
-		andBool I:Int >Int max(T:Type)
+	
+	// rule [cast-unsigned-of-big]:
+		// cast(T:Type, tv(I:Int, T':Type)) 
+			// => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
+		// if hasUnsignedIntegerType(T:Type)
+		// andBool I:Int >Int max(T:Type)
+		// andBool hasIntegerType(T':Type)
+		// andBool notBool hasBoolType (T:Type)
+		// [structural] 
+	rule [cast-uchar-of-big]:
+		cast(unsigned-char, tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(unsigned-char) +Int 1), unsigned-char)
+		if I:Int >Int max(unsigned-char)
 		andBool hasIntegerType(T':Type)
-		andBool notBool hasBoolType (T:Type)
-		[structural] 
+		[structural]
+	rule [cast-usint-of-big]:
+		cast(unsigned-short-int, tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(unsigned-short-int) +Int 1), unsigned-short-int)
+		if I:Int >Int max(unsigned-short-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-uint-of-big]:
+		cast(unsigned-int, tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(unsigned-int) +Int 1), unsigned-int)
+		if I:Int >Int max(unsigned-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ulong-of-big]:
+		cast(unsigned-long-int, tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(unsigned-long-int) +Int 1), unsigned-long-int)
+		if I:Int >Int max(unsigned-long-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ullong-of-big]:
+		cast(unsigned-long-long-int, tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(unsigned-long-long-int) +Int 1), unsigned-long-long-int)
+		if I:Int >Int max(unsigned-long-long-int)
+		andBool hasIntegerType(T':Type)
+		[structural]
+
 	
 	//c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
 	// choice
-	rule
-		cast(T:Type, tv(I:Int, T':Type)) 
-			=> cast(T:Type, tv(I:Int %Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
-		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(T:Type)))
-		andBool hasSignedIntegerType(T:Type)
+	// rule [cast-signed-of-huge]:
+		// cast(T:Type, tv(I:Int, T':Type)) 
+			// => cast(T:Type, tv(I:Int %Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
+		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(T:Type)))
+		// andBool hasSignedIntegerType(T:Type)
+		// andBool hasIntegerType(T':Type)
+		// andBool notBool hasBoolType (T:Type)
+		// [structural]
+
+	rule [cast-schar-of-huge]:
+		cast(signed-char, tv(I:Int, T':Type)) 
+			=> cast(signed-char, tv(I:Int %Int (2 ^Nat absInt(numBits(signed-char))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(signed-char)))
 		andBool hasIntegerType(T':Type)
-		andBool notBool hasBoolType (T:Type)
-		[structural] 
-	rule
+		[structural]
+	rule [cast-sint-of-huge]:
+		cast(short-int, tv(I:Int, T':Type)) 
+			=> cast(short-int, tv(I:Int %Int (2 ^Nat absInt(numBits(short-int))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(short-int)))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-int-of-huge]:
+		cast(int, tv(I:Int, T':Type)) 
+			=> cast(int, tv(I:Int %Int (2 ^Nat absInt(numBits(int))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(int)))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-long-of-huge]:
+		cast(long-int, tv(I:Int, T':Type)) 
+			=> cast(long-int, tv(I:Int %Int (2 ^Nat absInt(numBits(long-int))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(long-int)))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-llong-of-huge]:
+		cast(long-long-int, tv(I:Int, T':Type))
+			=> cast(long-long-int, tv(I:Int %Int (2 ^Nat absInt(numBits(long-long-int))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(long-long-int)))
+		andBool hasIntegerType(T':Type)
+		[structural]
+		
+		
+		
+	rule [cast-signed-of-small]:
 		cast(T:Type, tv(I:Int, T':Type))
-			// => cast(T:Type, tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
 			=> tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T:Type)
 		if I:Int <Int min(T:Type)
 		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
@@ -393,9 +489,8 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool hasIntegerType(T':Type)
 		andBool notBool hasBoolType (T:Type)
 		[structural] 
-	rule
+	rule [cast-signed-of-big]:
 		cast(T:Type, tv(I:Int, T':Type)) 
-			// => cast(T:Type, tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T':Type)) 
 			=> tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T:Type)
 		if I:Int >Int max(T:Type)
 		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
@@ -425,10 +520,22 @@ kmod COMMON-SEMANTICS-CAST is
 	
 	//C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined
 
-	rule
-		cast(T':Type, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), T':Type)
+	// rule [cast-int-to-floating]:
+		// cast(T':Type, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), T':Type)
+		// if hasIntegerType(T:Type)
+		// andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
+		// [structural]
+	rule [cast-int-to-float]:
+		cast(float, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), float)
 		if hasIntegerType(T:Type)
-		andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
+		[structural] 
+	rule [cast-int-to-double]:
+		cast(double, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), double)
+		if hasIntegerType(T:Type)
+		[structural] 
+	rule [cast-int-to-long-double]:
+		cast(long-double, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), long-double)
+		if hasIntegerType(T:Type)
 		[structural] 
 	
 	// fixme all floats same precision
