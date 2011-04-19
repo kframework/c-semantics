@@ -73,31 +73,37 @@ kmod COMMON-SEMANTICS-READING is
 	
 	
 	
+	op read-actual : K K K -> K
+	
+	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
+	*/
 	rule [read-thread-local]:
-		< k > read-aux(Loc, T:Type, bitSize:Nat)
-			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
-		...</ k >
+		< k > ('read-aux => 'read-actual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		<threadId> Id:Nat </threadId>
-		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
 		[structural]
-	rule [read]: // read global or shared data
-		< k > read-aux(Loc, T:Type, bitSize:Nat)
-			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
-		...</ k >
-		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
+	rule [read-shared]: // read global or shared data
+		< k > ('read-aux => 'read-actual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational"] 
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > read-aux(Loc, T:Type, bitSize:Nat)
-			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
-		...</ k >
-		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		< k > ('read-aux => 'read-actual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational"]
 	rule [read-readonly]: // read data that is readonly (e.g., string literals)
-		< k > read-aux(Loc, T:Type, bitSize:Nat)
-			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc, bitSize:Nat))) 
-		...</ k >
-		where Loc = sym(threadId(readOnly) +Nat N:Nat) +Nat Offset:Nat
+		< k > ('read-aux => 'read-actual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational"] 
+	
+	rule [read]:
+		< k > read-actual(Loc:Nat, T:Type, bitSize:Nat)
+			=> concretize(T:Type, extractBytesFromMem(Loc:Nat, bitsToBytes(bitSize:Nat)))
+		...</ k >
+		if notBool hasBitfieldType(T:Type)
+		[structural]
+	rule [read-bitfield]:
+		< k > read-actual(Loc:Nat, T:Type, bitSize:Nat)
+			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc:Nat, bitSize:Nat))) 
+		...</ k >
+		if hasBitfieldType(T:Type)
+		[structural]
+	
 		
 	op joinIntegerBytes : Type List{K} -> K 
 	rule < k > concretize(T:Type, dataList(L:List{K})) => joinIntegerBytes(T:Type, L:List{K}) ...</ k >

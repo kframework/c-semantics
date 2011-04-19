@@ -603,7 +603,7 @@ kmod COMMON-SEMANTICS-ASSIGNMENT is
 	// C99 6.5.16.1:2 In simple assignment (=), the value of the right operand is converted to the type of the assignment expression and replaces the value stored in the object designated by the left operand
 	rule
 		< k >
-			lv(Loc:Nat, T:Type)
+			lv(?, T:Type)
 			:=
 			(tv(V:List{K}, T':Type) => cast(unqualifyType(T:Type), tv(V:List{K}, T':Type)))
 		...</ k >
