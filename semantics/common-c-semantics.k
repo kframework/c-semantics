@@ -194,7 +194,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	subsort Type < KResult K
 	
 	op sizeofType : K -> K [strict] // generates a tv(size, cfg:sizeut)
-	op bitSizeofType : K -> K [strict] 
+	op bitSizeofType : K -> K [strict] // needs to be heated to top of K for struct and union types
 	op byteSizeofType : K -> K [strict] 
 	op bitsToBytes : Nat -> Nat 
 	op HOLE : -> Expression 
@@ -312,6 +312,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op hasStaticType : Type -> Bool 
 	op hasIncompleteType : Type -> Bool 
 	op hasTypedefType : Type -> Bool 
+	
+	op aggregateInfo : List{C} Map Map -> K // first map is for type, second map is for offset
+	op getFieldOffset : Id K -> Nat // these expect an aggregateInfo term as second argument
+	op getFieldType : Id K -> Type
+	rule getFieldOffset(F:Id, aggregateInfo(?, ?, (? F:Id |-> N:Nat))) => N:Nat [structural]
+	rule getFieldType(F:Id, aggregateInfo(?, ?, (? F:Id |-> T:Type))) => T:Type [structural]
 	
 	op kpair : K K -> K 
 	op promote : K -> K 

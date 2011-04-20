@@ -91,29 +91,35 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 	
 	rule calculateLength(Nil) => 0 [structural]
-	rule calculateLength(T:Type :: L:List{Type}) => calculateLength(T:Type) + calculateLength(L:List{Type}) [structural]
-	rule calculateLength(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+	rule calculateLength(T:Type :: L:List{Type}) 
+		=> bitSizeofType(T:Type) + calculateLength(L:List{Type}) 
+		[structural]
+	// rule calculateLength(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 	
-	op extractField-pre : List{K} Type K K -> K [seqstrict(3 4)]
+	op extractField-pre : List{K} Type Nat K -> K [strict(4)]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
 	
-	// figureOffset(loc(0, 0), calcStructSize-aux(L1:List{KResult}, 0), T:Type)
-	rule [extractField-from-struct-start]:
-		< k > extractField(L:List{K}, structType(S:Id), F:Id)
-			=> extractField-pre(L:List{K}, T:Type, calculateLength(L:List{Type}), bitSizeofType(T:Type)) ...</ k >
-		< structs >... S:Id |-> (L:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		// if notBool hasArrayType(T:Type)
+	// fixme could speed things up by caching bitsizeoftype as well
+	rule [extractField-start]:
+		< k > extractField(L:List{K}, L:KLabel(S:Id), F:Id)
+			=> extractField-pre(L:List{K}, T:Type, Offset:Nat, bitSizeofType(T:Type)) 
+		...</ k >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat)) 
+		...</ structs >
+		if L:KLabel ==Bool 'unionType
+		orBool L:KLabel ==Bool 'structType
 		[structural]
-		
-	rule [extractField-from-union-start]:
-		< k > extractField(L:List{K}, unionType(S:Id), F:Id)
-			=> extractField-pre(L:List{K}, T:Type, tv(0, unsigned-long-int), bitSizeofType(T:Type)) ...</ k >
-		< structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		// if notBool hasArrayType(T:Type)
-		[structural]
+
+	// rule [extractField-from-union-start]:
+		// < k > extractField(L:List{K}, unionType(S:Id), F:Id)
+			// => extractField-pre(L:List{K}, T:Type, tv(0, unsigned-long-int), bitSizeofType(T:Type)) ...</ k >
+		// < structs >... S:Id |-> aggregateInfo((? F:Id |-> T:Type), ?) ...</ structs >
+		// // if notBool hasArrayType(T:Type)
+		// [structural]
 		
 	rule
-		< k > extractField-pre(L:List{K}, T:Type, tv(Offset:Nat, ?), tv(Len:Nat, ?))
+		< k > extractField-pre(L:List{K}, T:Type, Offset:Nat, tv(Len:Nat, ?))
 			=> concretize(T:Type, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Nat, Len:Nat)))
 		...</ k >
 		[structural]

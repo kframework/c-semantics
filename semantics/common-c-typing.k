@@ -2,7 +2,9 @@
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	op addAggregate : Id List{Type} -> K 
+	//op addAggregate : Id List{Type} -> K 
+	op addStruct : Id List{Type} -> K 
+	op addUnion : Id List{Type} -> K 
 	op canonicalizeType : Bag -> K 
 	op isAType_ : K -> Bool 
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
@@ -479,13 +481,13 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	
 	rule
 		< k > StructDef(X:Id, L:List{Type})
-			=> addAggregate(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
+			=> addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
 			~> giveType(X:Id, structType(X:Id))
 		...</ k >
 		[structural] 
 	rule
 		< k > UnionDef(X:Id, L:List{Type})
-			=> addAggregate(X:Id, L:List{Type})
+			=> addUnion(X:Id, L:List{Type})
 			~> giveType(X:Id, unionType(X:Id))
 		...</ k >
 		[structural] 
@@ -599,20 +601,28 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		 		
 	rule [type-struct-dot]:
 		< type > structType(S:Id) . F:Id => T:Type ...</ type >
-		< structs >... S:Id |-> (? :: typedDeclaration(T:Type, F:Id) :: ?) ...</ structs >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
 		[structural] 
 	rule [type-union-dot]:
 		< type > unionType(S:Id) . F:Id => T:Type ...</ type >
-		< structs >... S:Id |-> (? :: typedDeclaration(T:Type, F:Id) :: ?) ...</ structs >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
 		[structural] 
 		
 	rule [type-struct-arrow]:
 		< type > pointerType(structType(S:Id)) -> F:Id => T:Type ...</ type >
-		< structs >... S:Id |-> (? :: typedDeclaration(T:Type, F:Id) :: ?) ...</ structs >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
 		[structural] 
 	rule [type-union-arrow]:
 		< type > pointerType(unionType(S:Id)) -> F:Id => T:Type ...</ type >
-		< structs >... S:Id |-> (? :: typedDeclaration(T:Type, F:Id) :: ?) ...</ structs >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
 		[structural] 
 
 	// internal numbers, not literals
@@ -744,28 +754,85 @@ kmod COMMON-C-TYPING is
 		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
 		[structural] 
 			
-	op addGlobalAggregate : Id List{Type} -> K 
-	op addLocalAggregate : Id List{Type} -> K 
+	op addGlobalAggregate : Id K -> K 
+	op addLocalAggregate : Id K -> K 
 	
-	// fixme looks like i don't actually need global and local, although possibly with vlas in structs?
+	op addStruct-aux : Id List{Type} K Map Map List{Type} -> K [strict(3)]
+	op addUnion-aux : Id List{Type} Map Map List{Type} -> K
 	rule
-		< k > addAggregate(X:Id, L:List{Type}) 
+		< k > addStruct(S:Id, L:List{Type}) 
+			=> addStruct-aux(S:Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addStruct-aux(
+				S:Id
+				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				, V:Value
+				, Types:Map
+				, Offsets:Map
+				, L':List{Type}
+			) 
+			=> addStruct-aux(S:Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:Id], Offsets:Map[value(V:Value) / Field:Id], L':List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addStruct-aux(S:Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
 			=> if (F:Id ==Bool File-Scope) then 
-				(addGlobalAggregate(X:Id, L:List{Type})) 
+				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
 			else
-				(addLocalAggregate(X:Id, L:List{Type}))
+				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
 			fi
 		...</ k >
 		< currentFunction > F:Id </ currentFunction >
+		[structural]
+		
+		
+	rule
+		< k > addUnion(S:Id, L:List{Type}) 
+			=> addUnion-aux(S:Id, L:List{Type}, .Map, .Map, L:List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addUnion-aux(
+				S:Id
+				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				, Types:Map
+				, Offsets:Map
+				, L':List{Type}
+			) 
+			=> addUnion-aux(S:Id, L:List{Type}, Types:Map[T:Type / Field:Id], Offsets:Map[0 / Field:Id], L':List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addUnion-aux(S:Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
+			=> if (F:Id ==Bool File-Scope) then 
+				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+			else
+				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+			fi
+		...</ k >
+		< currentFunction > F:Id </ currentFunction >
+		[structural]
+	// fixme looks like i don't actually need global and local, although possibly with vlas in structs?
+	// rule
+		// < k > addAggregate-aux(X:Id, L:List{Type}) 
+			// => if (F:Id ==Bool File-Scope) then 
+				// (addGlobalAggregate(X:Id, L:List{Type})) 
+			// else
+				// (addLocalAggregate(X:Id, L:List{Type}))
+			// fi
+		// ...</ k >
+		// < currentFunction > F:Id </ currentFunction >
+		// [structural] 
+	rule
+		< k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
+		< structs > M':Map => M':Map[K:K / X:Id] </ structs >
+		< gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
 		[structural] 
 	rule
-		< k > addGlobalAggregate(X:Id, L:List{Type}) => . ...</ k >
-		< structs > M':Map => M':Map[L:List{Type} / X:Id] </ structs >
-		< gstructs > M:Map => M:Map[L:List{Type} / X:Id] </ gstructs >
-		[structural] 
-	rule
-		< k > addLocalAggregate(X:Id, L:List{Type}) => . ...</ k >
-		< structs > M:Map => M:Map[L:List{Type} / X:Id] </ structs >
+		< k > addLocalAggregate(X:Id, K:K) => . ...</ k >
+		< structs > M:Map => M:Map[K:K / X:Id] </ structs >
 		[structural] 
 		
 	rule isAType T:Type => true

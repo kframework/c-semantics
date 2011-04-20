@@ -6,10 +6,10 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	op lvGetOffset : K K Type -> K 
 	op tvGetOffset : K K Type -> K 
-	context lvGetOffset(?, value(`[HOLE`]:K), ?) 
-	context tvGetOffset(?, value(`[HOLE`]:K), ?)
-	rule lvGetOffset(N:Nat, M:Nat, T:Type) => lv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
-	rule tvGetOffset(N:Nat, M:Nat, T:Type) => tv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
+	// context lvGetOffset(?, value(`[HOLE`]:K), ?) 
+	// context tvGetOffset(?, value(`[HOLE`]:K), ?)
+	// rule lvGetOffset(N:Nat, M:Nat, T:Type) => lv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
+	// rule tvGetOffset(N:Nat, M:Nat, T:Type) => tv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
 	
 	
 	op lv : List{K} Type -> Value
@@ -195,13 +195,13 @@ kmod COMMON-SEMANTICS-SIZEOF is
 	rule bitSizeofType(qualifiedType(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 
 	rule
-		< k > bitSizeofType(structType(X:Id)) => bitSizeofList(L:List{Type}) ...</ k >
-		< structs >... X:Id |-> L:List{Type} ...</ structs >
+		< k > bitSizeofType(structType(S:Id)) => bitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
 		[structural] 
 	rule
-		< k > bitSizeofType(unionType(X:Id)) => maxBitSizeofList(L:List{Type}) ...</ k >
-		< structs >... X:Id |-> L:List{Type} ...</ structs >
-		[structural] 
+		< k > bitSizeofType(unionType(S:Id)) => maxBitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		[structural]
 	
 	// //C99 6.2.6.1:26 ... Each unqualified type has several qualified versions of its type,40) corresponding to the combinations of one, two, or all three of the const, volatile, and restrict qualifiers. The qualified or unqualified versions of a type are distinct types that belong to the same type category and have the same representation and alignment requirements. ..
 	// eq sizeofType(qualifiedType(T:Type, ?)) = sizeofType(T:Type) .	
@@ -932,17 +932,31 @@ kmod COMMON-SEMANTICS-MEMBERS is
 	// fixme tool bug, can't use L:KLabel
 	rule
 		< k > lv(Loc:Nat, structType(S:Id)) . F:Id
-			=> lvGetOffset(Loc:Nat, value(calculateLength(L1:List{Type})), T:Type)
+			=> lv(Loc:Nat +Nat bito(Offset:Nat), T:Type)
 		...</ k >
-		< structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		// if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat))
+		...</ structs >
+		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
 	rule
 		< k > lv(Loc:Nat, unionType(S:Id)) . F:Id
-			=> lv(Loc:Nat, T:Type)
+			=> lv(Loc:Nat +Nat bito(Offset:Nat), T:Type)
 		...</ k >
-		< structs >... S:Id |-> (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat))
+		...</ structs >
+		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
+	// rule
+		// < k > lv(Loc:Nat, unionType(S:Id)) . F:Id
+			// => lv(Loc:Nat +Nat , T:Type)
+		// ...</ k >
+		// < structs >... 
+			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat))
+			// (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) 
+		// ...</ structs >
+		// [structural]
 		
 	rule
 		< k > tv(L:List{K}, T:Type) . F:Id

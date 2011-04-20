@@ -79,7 +79,7 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-	@echo | cat c-compiled.maude c-syntax.maude - common-c-configuration.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
+	@cat c-compiled.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
 
 semantics: c-total.maude
 

@@ -257,16 +257,18 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	rule
 		< k > zeroType(Name:K, structType(S:Id)) 
-			=> zeroStruct(Name:K, Fields:List{C})
+			=> zeroStruct(Name:K, Fields:List{Type})
 		...</ k >
-		< structs >... S:Id |-> Fields:List{C} ...</ structs > 
+		< structs >... S:Id |-> aggregateInfo(Fields:List{Type}, ?, ?) ...</ structs > 
 		[structural] 
 		
 	rule
 		< k > zeroType(Name:K, unionType(S:Id)) 
 			=> zeroType(Name:K . F:Id, T:Type)
 		...</ k >
-		< structs >... S:Id |-> (typedDeclaration(T:Type, F:Id) :: ?) ...</ structs > 
+		< structs >... 
+			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?) 
+		...</ structs > 
 		[structural] 
 		
 	rule
@@ -815,14 +817,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			ListItem(te(K:K, structType(S:Id)))
 			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >
-		< structs >... S:Id |-> typedDeclaration(T:Type, F:Id) :: ? ...</ structs > 
+		< structs >... 
+			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?)
+		...</ structs > 
 		[structural] 
+		
+	// fixme these are terrible!
 	rule
 		< currentSubObject > 
 			ListItem(te(K:K, unionType(S:Id)))
 			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, unionType(S:Id)))
 		...</ currentSubObject >
-		< structs >... S:Id |-> typedDeclaration(T:Type, F:Id) :: ? ...</ structs > 
+		< structs >... 
+			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?) 
+		...</ structs > 
 		[structural] 
 		
 	// fixme should i worry about basetype here?
@@ -854,7 +862,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >
 		< structs >...
-			S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(T':Type, F':Id) :: ? 
+			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(T':Type, F':Id) :: ?), ?, ?)
 		...</ structs > 
 		if F':Id =/=Bool #NoName
 		[structural] 
@@ -865,7 +873,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >
 		< structs >...
-			S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName) :: typedDeclaration(T':Type, F':Id) :: ? 
+			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName) :: typedDeclaration(T':Type, F':Id) :: ?), ?, ?)
 		...</ structs >
 		[structural] 
 		
@@ -874,7 +882,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >
 		< structs >...
-			S:Id |-> ? :: typedDeclaration(T:Type, F:Id)
+			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id)), ?, ?)
 		...</ structs > 
 		[structural] 
 	rule [init-next-struct-element-done-noname]:
@@ -882,7 +890,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, structType(S:Id)))
 		...</ currentSubObject >
 		< structs >...
-			S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName)
+			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName)), ?, ?)
 		...</ structs > 
 		[structural] 
 		
@@ -946,7 +954,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> buildDesignator(More:K)
 		...</ k >
 		< currentSubObject > block (. => ListItem(te(K:K . F:Id, T:Type))) ListItem('te(K:K,, KL:KLabel(S:Id))) ...</ currentSubObject >
-		< structs >... S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: ? ...</ structs >
+		< structs >... 
+			// S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: ? 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
 		if KL:KLabel ==Bool 'structType 
 		orBool KL:KLabel ==Bool 'unionType
 		[structural] 
@@ -1006,15 +1017,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		orBool hasUnionType(T:Type)
 		[structural] 
 		
-	op initFromStructRHS : K Type List{C} -> K 
+	op initFromStructRHS : K Type -> K 
 	rule
 		< k > initFromAggregateRHS(K:K, structType(S:Id)) 
-			=> initFromStructRHS(K:K, structType(S:Id), L:List{Type}) 
+			=> initFromStructRHS(K:K, structType(S:Id)) 
 		...</ k >
 		< currentSubObject > . => findStruct(structType(S:Id)) ...</ currentSubObject >
-		< structs >...
-			S:Id |-> L:List{Type}
-		...</ structs >
 		[structural] 
 		
 	op findStruct : Type -> ListItem 
@@ -1026,7 +1034,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	// fixme unsafe, might have started to initialize other things
 	rule
-		< k > initFromStructRHS(K':K, structType(S:Id), ?)
+		< k > initFromStructRHS(K':K, structType(S:Id))
 			=> .K
 		...</ k >
 		< currentSubObject > findStruct(structType(S:Id)) ListItem(te(K:K, structType(S:Id))) => next ...</ currentSubObject >
