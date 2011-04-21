@@ -376,7 +376,7 @@ MD5_CTX *mdContext;
   int i;
 
   for (i = 0; i < 16; i++)
-    printf ("%02x", mdContext->digest[i]);
+    printf ("%x", mdContext->digest[i]);
 }
 
 /* size of test block */

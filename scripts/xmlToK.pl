@@ -123,8 +123,8 @@ if ($filename eq ""){
 $filename = decode_base64($filename);
 
 print "mod C-program-$filename is including C .\n";
-print "op 'program-$filename : -> KLabel .\n";
-print "eq _`(_`)(('program-$filename).KLabel,.List`{K`}) = ";
+# print "op 'program-$filename : -> KLabel .\n";
+print "eq TranslationUnitName(\"$filename\")(.List`{K`}) = ";
 print xmlToK($root);
 print " .\n";
 print "endm\n";

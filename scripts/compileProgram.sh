@@ -54,6 +54,7 @@ shift $(($OPTIND - 1))
 if [ ! "$1" ]; then
 	die "filename expected" 3
 fi
+trueFilename="$1"
 filename=`basename "$1" .c`
 escapedFilename=`echo -n $filename | tr "_" "-"`
 directoryname=`dirname "$1"`/
@@ -78,7 +79,7 @@ if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen
 fi
 set +o errexit
-$myDirectory/cparser --xml $filename.pre.gen 2> $filename.warnings.log 1> $filename.gen.parse.tmp
+$myDirectory/cparser --xml $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp
 if [ "$?" -ne 0 ]; then 
 	rm -f $filename.gen.parse.tmp
 	msg="Error running C parser: `cat $filename.warnings.log`"

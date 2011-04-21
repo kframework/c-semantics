@@ -6,6 +6,7 @@ open Big_int
 let counter = ref 0
 let currentSwitchId = ref 0
 let switchStack = ref [0]
+let realFilename = ref ""
 
 let rec trim s =
   let l = String.length s in 
@@ -116,13 +117,17 @@ let printList f x =
 	
 (* this is where the recursive printer starts *)
 	
-let rec cabsToXML ((filename, defs) : file) (sourceCode : string) = 
+let rec cabsToXML ((filename, defs) : file) (sourceCode : string) (myRealFilename : string) = 
 (* encoding="utf-8"  *)
+	realFilename := myRealFilename;
 	"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" ^
 	printTranslationUnit filename sourceCode defs
 			
 and printTranslationUnit (filename : string) (sourceCode : string) defs =
-	let filenameCell = (printCell "Filename" [] (printRawString filename)) in	
+	let filenameCell = (printCell "Filename" [] 
+		(* (printRawString filename) *)
+		(printRawString !realFilename)
+		) in	
 	wrap (filenameCell :: (printDefs defs) :: (printSource sourceCode) :: []) "TranslationUnit" 
 	
 and printSource (sourceCode : string) =
@@ -182,7 +187,10 @@ and printCabsLoc a =
 		:: []
 	in*)
 	let contents = 
-		(printCell "Filename" [] (printRawString a.filename))
+		(printCell "Filename" [] 
+		(* (printRawString a.filename) *)
+		(printRawString !realFilename)
+		)
 		^ (printCell "Lineno" [] (printRawInt a.lineno))
 		^ (printCell "Byteno" [] (printRawInt a.byteno))
 		^ (printCell "Ident" [] (printRawInt a.ident)) in

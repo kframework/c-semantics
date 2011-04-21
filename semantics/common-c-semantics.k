@@ -626,4 +626,6 @@ kmod COMMON-C-SEMANTICS is
 	
 	op eval : K -> Bag 
 	op eval : K List{K} String -> Bag
+	
+	op TranslationUnitName : String -> KLabel
 endkm

@@ -67,6 +67,7 @@ let noscores s =
 
 let fileContents : string ref = ref ""
 
+
 let parse_helper fname =
   let cabs = F.parse_to_cabs fname in
   cabs
@@ -77,7 +78,7 @@ let parseOneFile (fname: string) =
   (*let cil = F.parse fname () in *)
   let cabs = parse_helper fname in
   cabs
-  
+let trueFilename : string ref = ref ""
   
 let rec processOneFile (cabs: Cabs.file) =
 	fileContents := "";
@@ -93,14 +94,16 @@ let rec processOneFile (cabs: Cabs.file) =
 		with e ->                      (* some unexpected exception occurs *)
 			close_in_noerr ic;           (* emergency closing *)
 		);
-		let programName = "program-" ^ (Filename.basename (replace "." "-" (noscores (replace ".pre.gen" "" inputFilename)))) in
+		let inputFilename = 
+			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
+		let programName = "TranslationUnitName(\"" ^ inputFilename ^ "\")" in
 		(* printf "%s\n" programName; *)
 		let data = 
 			if (!isXML) then (
-				(cabsToXML cabs !fileContents)
-			) else (					
+				(cabsToXML cabs !fileContents inputFilename)
+			) else (
 				let maude = (cabsToString cabs !fileContents) in
-					("op " ^ programName ^ " : -> Program ." ^ "\n") ^
+					(* ("op " ^ programName ^ " : -> Program ." ^ "\n") ^ *)
 					("eq " ^ programName ^ " = (" ^ maude ^ ") .\n")
 			) in
 		printf "%s\n" data; 
@@ -131,7 +134,7 @@ let theMain () =
   (*********** COMMAND LINE ARGUMENTS *****************)
   (* Construct the arguments for the features configured from the Makefile *)
   let blankLine = ("", Arg.Unit (fun _ -> ()), "") in
-    
+  
   let argDescr =
         [ 
           (* "--out", Arg.String (openFile "output" 
@@ -139,6 +142,8 @@ let theMain () =
               " the name of the output AST."; *)
 		  "--xml", Arg.Set isXML,
               " output should be in XML format";
+		"--trueName", Arg.String (fun x -> trueFilename := x),
+			"filename The original name of the file"
         ]
         @ F.args in
 	begin

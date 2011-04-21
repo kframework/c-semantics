@@ -28,7 +28,7 @@ void f1(struct baz *p) {
 	if (p->b)
 		printf("p->b != 0!\n");
 	p->a = 0x3; p->b = 0xf;
-	printf("p->a = 0x%02x, p->b = 0x%02x\n", p->a, p->b);
+	printf("p->a = 0x%x, p->b = 0x%x\n", p->a, p->b);
 }
 void f2(struct baz *p) {
 	p->a = (i==0);
