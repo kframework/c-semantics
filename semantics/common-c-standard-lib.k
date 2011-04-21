@@ -439,8 +439,7 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
 		< k > prepareBuiltin((Identifier("printf")), (tv(Loc:Nat, pointerType(?)) :: L:List{C})) => printf-aux(0, Loc:Nat, L:List{C}) ...</ k >
-		// [structural]
-		[metadata "computational"] 
+		[structural]
 		
 		
 	rule [printf-prepare-string]:
@@ -533,16 +532,35 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		
 	rule [printf-%x]:
 		< k > printf-%x(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
-			=> writeToFD(1, (if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
-				"0" +String Rat2String(D:Int, 16)
-			else 
-				Rat2String(D:Int, 16)
-			fi)) ~> printf-aux(Len:Nat +Nat lengthString((if (lengthString(Rat2String(D:Int, 16)) ==Bool 1) then
-				"0" +String Rat2String(D:Int, 16)
-			else 
-				Rat2String(D:Int, 16)
-			fi)), Loc:Nat, V:Value) 
+			=> writeToFD(1, Rat2String(D:Int, 16))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
 		...</ k >
+		[structural]
+	rule [printf-%X]:
+		< k > printf-%X(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
+			=> writeToFD(1, toUpperCase(Rat2String(D:Int, 16)))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural]
+		
+	op toUpperCase : String -> String
+	op toUpperCase : Char -> Char
+	rule toUpperCase(S:String) 
+		=> toUpperCase(firstChar(S:String)) +String toUpperCase(butFirstChar(S:String))
+		if S:String =/=Bool ""
+		[structural]
+	rule toUpperCase("") => "" [structural]
+		
+	rule toUpperCase(C:Char)
+		=> C:Char
+		if asciiString(C:Char) <Nat asciiString("a") 
+		orBool asciiString(C:Char) >Nat asciiString("z")
+		[structural]
+	rule toUpperCase(C:Char)
+		=> charString(absInt(asciiString(C:Char) -Int Difference))
+		if asciiString(C:Char) >=Nat asciiString("a") 
+		andBool asciiString(C:Char) <=Nat asciiString("z")
+		where Difference = (asciiString("a") -Int asciiString("A"))
 		[structural]
 	
 	// fixme might be messing things up elsewhere

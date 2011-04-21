@@ -80,16 +80,16 @@ kmod COMMON-SEMANTICS-READING is
 	rule [read-thread-local]:
 		< k > ('read-aux => 'read-actual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		<threadId> Id:Nat </threadId>
-		[structural]
+		[structural metadata "nd=(true)"]
 	rule [read-shared]: // read global or shared data
 		< k > ('read-aux => 'read-actual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational"] 
+		[metadata "computational nd=(true)"] 
 	rule [read-allocated]: // read data of "allocated" duration
 		< k > ('read-aux => 'read-actual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational"]
+		[metadata "computational nd=(true)"]
 	rule [read-readonly]: // read data that is readonly (e.g., string literals)
 		< k > ('read-aux => 'read-actual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational"] 
+		[metadata "computational nd=(true)"] 
 	
 	rule [read]:
 		< k > read-actual(Loc:Nat, T:Type, bitSize:Nat)
@@ -390,19 +390,19 @@ kmod COMMON-SEMANTICS-WRITING is
 		...</ k >
 		<threadId> Id:Nat </threadId>
 		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
-		[structural]
+		[structural metadata " nd=(true)"]
 	rule [write]: // write global or shared data
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
-		[metadata "computational"]
+		[metadata "computational nd=(true)"]
 	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
-		[metadata "computational"]
+		[metadata "computational nd=(true)"]
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)

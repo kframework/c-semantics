@@ -9,7 +9,7 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including INCOMING-MODULES 
 
-	op initFunction : K K -> K [seqstrict]
+	op initFunction : K K -> K [strict]
 	
 	op checkValidLoc : K -> K
 	op checkDerefLoc : K -> K
@@ -503,10 +503,10 @@ kmod C-SEMANTICS-MISC is
 		if N:Nat -Int I:Int >=Int 0 
 		[structural]
 		
-	rule
+	rule [sequencePoint]:
 		< k > sequencePoint => .K ...</ k >
 		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
-		[structural] 
+		[structural metadata "nd=(true)"]
 		
 	// //C99 6.5.3.2 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)
 	
@@ -605,6 +605,7 @@ load common-c-typing
 load common-c-memory
 load common-c-declarations
 load common-c-helpers
+load common-c-errors
 
 kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
@@ -621,6 +622,7 @@ kmod COMMON-C-SEMANTICS is
 	including COMMON-C-EXPRESSIONS 
 	including COMMON-C-CONVERSIONS 
 	including COMMON-C-STANDARD-LIBRARY 
+	including COMMON-C-ERRORS
 	
 	op eval : K -> Bag 
 	op eval : K List{K} String -> Bag

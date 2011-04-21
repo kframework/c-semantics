@@ -1165,8 +1165,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	// fixme
 	// should be adding to env after figuring initializer
 	// should be changing env to be correct env before figuring initializer
-	op allocateWithInit : K Nat -> K [seqstrict] 
-	op noAllocateWithInit : K Nat -> K [seqstrict] 
+	op allocateWithInit : K Nat -> K [strict] 
+	op noAllocateWithInit : K Nat -> K [strict] 
 	op resolveInternal-aux : Id K K K -> K [strict(4)] 
 	rule
 		< k > resolveInternal(X:Id, Tu:K, declarationObject(T:Type, Tu:K, K:K))

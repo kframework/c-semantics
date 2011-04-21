@@ -11,7 +11,7 @@ K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 
-ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
+ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-errors.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.aux temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log

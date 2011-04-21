@@ -71,7 +71,8 @@ kmod COMMON-C-SYNTAX is
 	op Nil : -> List{C}
 	subsort C < List{C}
 	// fixme, can't figure out how to right this with the new contexts
-	op _::_ : List{C} List{C} -> List{C} [hybrid seqstrict assoc id: Nil]
+	// this is only used when doing nondeterministic stuff, so it's okay
+	op _::_ : List{C} List{C} -> List{C} [hybrid strict assoc id: Nil]
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 		
@@ -227,9 +228,9 @@ and decl_type =
 	op JustBase : -> K
 	op FunctionType : K -> DeclType [strict]
 	op ArrayType : K K -> DeclType [strict(1)]
-	context ArrayType(_, ([HOLE] => reval([HOLE])))
+	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	op PointerType : K -> DeclType [strict]
-	op Prototype : K List{C} Bool -> DeclType [seqstrict(1 2)]
+	op Prototype : K List{C} Bool -> DeclType [strict(1 2)]
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -238,7 +239,7 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K List{C} -> NameGroup [seqstrict(1 2)]
+	op NameGroup : K List{C} -> NameGroup [strict(1 2)]
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -276,7 +277,7 @@ and name = string * decl_type * attribute list * cabsloc
 and init_name = name * init_expression
 */
 	op InitName : K K -> InitName
-	context InitName(_, ([HOLE] => reval([HOLE])))
+	context InitName(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 /*
 	(* Single names are for declarations that cannot come in groups, like
@@ -477,56 +478,56 @@ and unary_operator =
 	| BINARY of binary_operator * expression * expression
 */
 	ops _*_ _/_ _%_ : K K -> Expression [prec 31 gather(E e)]
-	context _*_(([HOLE] => reval([HOLE])), _)
-	context _*_(_, ([HOLE] => reval([HOLE])))
-	context _/_(([HOLE] => reval([HOLE])), _)
-	context _/_(_, ([HOLE] => reval([HOLE])))
-	context _%_(([HOLE] => reval([HOLE])), _)
-	context _%_(_, ([HOLE] => reval([HOLE])))
+	context _*_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _*_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _/_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _/_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _%_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _%_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _+_ _-_ : K K -> Expression [prec 33 gather(E e)]
-	context _+_(([HOLE] => reval([HOLE])), _)
-	context _+_(_, ([HOLE] => reval([HOLE])))
-	context _-_(([HOLE] => reval([HOLE])), _)
-	context _-_(_, ([HOLE] => reval([HOLE])))
+	context _+_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _+_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _-_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _-_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _<<_ : K K -> Expression [prec 35 gather(E e)]
-	context _<<_(([HOLE] => reval([HOLE])), _)
-	context _<<_(_, ([HOLE] => reval([HOLE])))
+	context _<<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _<<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _>>_ : K K -> Expression [prec 35 gather(E e)]
-	context _>>_(([HOLE] => reval([HOLE])), _)
-	context _>>_(_, ([HOLE] => reval([HOLE])))
+	context _>>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _>>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _<_ _<=_ : K K -> Expression [prec 37 gather(E e)]
-	context _<_(([HOLE] => reval([HOLE])), _)
-	context _<_(_, ([HOLE] => reval([HOLE])))
-	context _<=_(([HOLE] => reval([HOLE])), _)
-	context _<=_(_, ([HOLE] => reval([HOLE])))
+	context _<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _<=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _<=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _>_ _>=_ : K K -> Expression [prec 37 gather(E e)]
-	context _>_(([HOLE] => reval([HOLE])), _)
-	context _>_(_, ([HOLE] => reval([HOLE])))
-	context _>=_(([HOLE] => reval([HOLE])), _)
-	context _>=_(_, ([HOLE] => reval([HOLE])))
+	context _>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _>=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _>=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	ops _==_ _!=_ : K K -> Expression [prec 39 gather(E e)]
-	context _==_(([HOLE] => reval([HOLE])), _)
-	context _==_(_, ([HOLE] => reval([HOLE])))
-	context _!=_(([HOLE] => reval([HOLE])), _)
-	context _!=_(_, ([HOLE] => reval([HOLE])))
+	context _==_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _==_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _!=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _!=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	op _&_ : K K -> Expression [prec 41 gather(E e)]
-	context _&_(([HOLE] => reval([HOLE])), _)
-	context _&_(_, ([HOLE] => reval([HOLE])))
+	context _&_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _&_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	op _^_ : K K -> Expression [prec 43 gather(E e)]
-	context _^_(([HOLE] => reval([HOLE])), _)
-	context _^_(_, ([HOLE] => reval([HOLE])))
+	context _^_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _^_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	op _|_ : K K -> Expression [prec 45 gather(E e)]
-	context _|_(([HOLE] => reval([HOLE])), _)
-	context _|_(_, ([HOLE] => reval([HOLE])))
+	context _|_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _|_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 	op _&&_ : K K -> Expression [prec 47 gather(E e)]
 	context _&&_(([HOLE] => reval([HOLE])), _)
@@ -537,8 +538,8 @@ and unary_operator =
 	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _&=_ _^=_ _|=_ : K K -> Expression [prec 53]
 	ops _>>=_ : K K -> Expression [prec 53]
 	op _:=_ : K K -> Expression [prec 53]
-	context _:=_(([HOLE] => peval([HOLE])), _)
-	context _:=_(_, ([HOLE] => reval([HOLE])))
+	context _:=_(([HOLE] => peval([HOLE])), _) [metadata "nd=(true)"]
+	context _:=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
 /*
 	| QUESTION of expression * expression * expression
@@ -546,10 +547,7 @@ and unary_operator =
 	op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
 	// syntax Expression ::= K ? K : K [prec 51 gather(e & E)]
 	context _?_:_(([HOLE] => reval([HOLE])), _, _)
-	
-	// all these macros are temporary while I adjust the semantics to the new grammar
-	op Conditional : K K K -> Expression
-	macro Conditional(K1:K, K2:K, K3:K) = K1:K ? K2:K : K3:K
+
 /*
 	(* A CAST can actually be a constructor expression *)
 	| CAST of (specifier * decl_type) * init_expression
@@ -566,8 +564,8 @@ and unary_operator =
 */
 
 	op Call : K List{C} -> Expression
-	context Call(([HOLE] => reval([HOLE])), _)
-	context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
+	context Call(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "nd=(true)"]
 /*
 	| COMMA of expression list
 */
@@ -595,8 +593,6 @@ and unary_operator =
 	| INDEX of expression * expression
 */
 	op _`[_`] : K K -> Expression
-	op ArrayIndex : K K -> Expression
-	macro ArrayIndex(K1:K, K2:K) = K1:K[K2:K]
 	// op ArrayIndex : K K -> Expression
 /*
 	| MEMBEROF of expression * string
@@ -681,7 +677,14 @@ and attribute = string * expression list
 	
 
 	/*@ The below macros simply transform the prefix AST names to the infix/mixfix names we use from now on */
-
+	
+	// all these macros are temporary while I adjust the semantics to the new grammar
+	op Conditional : K K K -> Expression
+	macro Conditional(K1:K, K2:K, K3:K) = K1:K ? K2:K : K3:K
+	
+	op ArrayIndex : K K -> Expression
+	macro ArrayIndex(K1:K, K2:K) = K1:K[K2:K]
+	
 	op Negative : K -> Expression
 	macro Negative(K:K) = - K:K
 	op Positive : K -> Expression

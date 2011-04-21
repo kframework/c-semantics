@@ -3,87 +3,25 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op assign : K K -> K 
 	op compoundLiteral : Nat -> Id
 	
-	
 	op lvGetOffset : K K Type -> K 
 	op tvGetOffset : K K Type -> K 
-	// context lvGetOffset(?, value(`[HOLE`]:K), ?) 
-	// context tvGetOffset(?, value(`[HOLE`]:K), ?)
-	// rule lvGetOffset(N:Nat, M:Nat, T:Type) => lv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
-	// rule tvGetOffset(N:Nat, M:Nat, T:Type) => tv(N:Nat +Nat bito(M:Nat), T:Type) [structural]
-	
-	
 	op lv : List{K} Type -> Value
 	
 	rule reval(skipval) => skipval [structural]
-	
-	
-	rule
-		< k > reval(tv(L:List{K}, T:Type))
-			=> tv(L:List{K}, T:Type) ...</ k >
-		if notBool hasArrayType(T:Type)
-		andBool notBool hasFunctionType(T:Type)
-		// andBool notBool hasPointerType(T:Type)
-		[structural]
-	// rule [check-rvalue-pointer]:
-		// < k > reval(tv(Loc:Nat, T:Type))
-			// => checkValidLoc(Loc:Nat)
-			// ~> tv(Loc:Nat, T:Type)
-		// ...</ k >
-		// if hasPointerType(T:Type)
-		// [structural]
 		
-	rule
-		< k > L:KLabel(tv(L:List{K}, T:Type))
-			=> tv(L:List{K}, pointerType(T:Type))
-		...</ k >
-		if hasFunctionType(T:Type)
-		andBool (L:KLabel ==Bool 'reval orBool L:KLabel ==Bool 'peval)
-		[structural]
+	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
+	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	rule peval(lv(Loc:Nat, T:Type)) => lv(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 
-	rule
-		< k > peval(tv(V:List{K}, T:Type))
-			=> tv(V:List{K}, T:Type) ...</ k >
-		if notBool hasArrayType(T:Type)
-		andBool notBool hasFunctionType(T:Type)
-		// andBool notBool hasPointerType(T:Type)
-		[structural]
-	// rule [check-pvalue-pointer]:
-		// < k > peval(tv(Loc:Nat, T:Type))
-			// => checkValidLoc(Loc:Nat)
-			// ~> tv(Loc:Nat, T:Type)
-		// ...</ k >
-		// if hasPointerType(T:Type)
-		// [structural]	
+	
+	// are these two necessary?  why do we create lvalues that are function types?
+	rule reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 		
-	// is this one necessary?  why do we create lvalues that are function types?
-	rule
-		< k > L:KLabel(lv(L:List{K}, T:Type))
-			=> tv(L:List{K}, pointerType(T:Type))
-		...</ k >
-		if hasFunctionType(T:Type)
-		andBool (L:KLabel ==Bool 'reval orBool L:KLabel ==Bool 'peval)
-		[structural]
-	rule
-		< k > reval(lv(Loc:Nat, T:Type))
-			=> tv(Loc:Nat, pointerType(innerType(T:Type)))
-		...</ k > 
-		if hasArrayType(T:Type)
-		[structural]
-	rule
-		< k > peval(lv(Loc:Nat, T:Type))
-			// => checkValidLoc(Loc:Nat)
-			=> lv(Loc:Nat, T:Type) ...</ k >
-		if notBool hasArrayType(T:Type)
-		andBool notBool hasFunctionType(T:Type)
-		[structural]
-	rule
-		< k > reval(lv(Loc:Nat, T:Type))
-			// => checkValidLoc(Loc:Nat)
-			=> read(Loc:Nat, T:Type)
-		...</ k >
-		if notBool hasArrayType(T:Type)
-		andBool notBool hasFunctionType(T:Type)
-		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-COMPOUND-LITERAL is

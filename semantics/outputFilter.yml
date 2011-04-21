@@ -13,9 +13,11 @@ k:
   keep: 4
   keep-chars: 800
 
-env: show
+env: hide
 localAddresses: show
 buffer: show
+
+errorCell: show
 
 # cell-style:
     # background: dullcyan

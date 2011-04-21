@@ -107,23 +107,27 @@ elif [ $SEARCH ]; then
 	#rm -f $GRAPH_OUTPUT_FILE
 elif [ $PROFILE ]; then
 	if [ -f "maudeProfileDBfile.sqlite" ]; then
-		echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
+		true
+		#echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
 	else
 		cp $SCRIPTS_DIR/maudeProfileDBfile.calibration.sqlite maudeProfileDBfile.sqlite
 	fi
 	INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	echo "Running the program..."
+	#echo "Running the program..."
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
 	cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
-	echo "Analyzing results..."
+	#echo "Analyzing results..."
+	cat $INTERMEDIATE_OUTPUT_FILE | perl $WRAPPER $PLAIN
+	RETVAL=$?
 	perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
 	# cat $INTERMEDIATE_OUTPUT_FILE
 	# perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
-	echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
-	echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
-	echo "See $SCRIPTS_DIR/*.sql for some other example queries."
-	echo "Done."
+	#echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
+	#echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
+	#echo "See $SCRIPTS_DIR/*.sql for some other example queries."
+	#echo "Done."
 	rm -f $INTERMEDIATE_OUTPUT_FILE
+	exit $RETVAL
 else
 	if [ $IOFLAG ]; then
 		perl $IO_SERVER &> tmpIOServerOutput.log &
