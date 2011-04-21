@@ -668,7 +668,8 @@ kmod COMMON-SEMANTICS-RETURN is
 			(< local >... < localAddresses > .Set </ localAddresses > ...</ local > => .Bag)
 			//  i can't say the below line alone, but i want to :(
 			//  (< localAddresses > .Set </ localAddresses > => .Bag)
-			(< currentFunction > F:Id </ currentFunction > => .Bag)
+			< currentFunction > (F:Id => CurrFun:K) </ currentFunction >
+			< currentProgramLoc > ? => CurrLoc:K </ currentProgramLoc >
 			(< currentTranslationUnit > Tu:K </ currentTranslationUnit > => .Bag)
 			(< blockStack > .List </ blockStack > => .Bag)
 			(? => C:Bag)
@@ -679,6 +680,8 @@ kmod COMMON-SEMANTICS-RETURN is
 				< stackFrame >
 					C:Bag
 					< continuation > K:K </ continuation >
+					< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+					< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
 				</ stackFrame >
 			) => .List
 		...</ callStack >

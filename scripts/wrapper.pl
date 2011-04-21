@@ -16,6 +16,15 @@ my $retval = -1;
 my $reduced = 0;
 my $haveResult = 0;
 my $buffer = "";
+my $haveError = 0;
+
+my $errorCell = "";
+my $finalComp = "";
+
+my $myFunc = "";
+my $myFile = "";
+my $myLine = "";
+
 # my $kCell = "";
 # my $typeCell = "";
 # my $ignoreThis = 0;
@@ -46,36 +55,28 @@ while (my $line = <STDIN>) {
 	} elsif ($state eq "success"){
 		if ($line =~ m/< input > .* <\/ input >/){
 			$reduced = 1;
-		# } elsif ($line =~ m/< callStack > List\(/){
-			# $ignoreThis = 1;
-		# } elsif ($line =~ m/<\/ callStack >/){
-			# $ignoreThis = 0;
-		# } elsif ($line =~ m/< blockStack > List\(/){
-			# $ignoreThis = 1;
-		# } elsif ($line =~ m/<\/ blockStack >/){
-			# $ignoreThis = 0;
-		# } elsif ($line =~ m/< genv >/){
-			# $ignoreThis = 1;
-		# } elsif ($line =~ m/<\/ genv >/){
-			# $ignoreThis = 0;
-		# } elsif ($line =~ m/< gtypes >/){
-			# $ignoreThis = 1;
-		# } elsif ($line =~ m/<\/ gtypes >/){
-			# $ignoreThis = 0;
-		# } elsif ($line =~ m/< loopStack >/){
-			# $ignoreThis = 1;
-		# } elsif ($line =~ m/<\/ loopStack >/){
-			# $ignoreThis = 0;
-		# } elsif ($line =~ m/(< (k|\(k\)\.CellLabel) > .* <\/ \2 >)/){
-		# } elsif ($line =~ m/(< k > .*)$/){
-			# $kCell = $1;
-		# } elsif ($line =~ m/(< type > .*)$/){
-			# $typeCell = $1;
 		} elsif ($line =~ m/< output > String "(.*)"\(\.List{K}\) <\/ output >/){
 			my $output = $1;
 			$output =~ s/\%/\%\%/g;
 			$output =~ s/\\\\/\\\\\\\\/g;
 			print substr(`printf "x$output"`, 1);
+		} elsif ($line =~ m/< errorCell > String "(.*)"\(\.List{K}\) <\/ errorCell >/){
+			$haveError = 1;
+			my $output = $1;
+			$output =~ s/\%/\%\%/g;
+			$output =~ s/\\\\/\\\\\\\\/g;
+			$errorCell = substr(`printf "x$output"`, 1);
+		} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
+			$myFunc = $1;
+		} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat \d+\(\.List\{K\}\),,Rat \d+\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			$myFile = $1;
+			$myLine = $2;
+		} elsif ($line =~ m/< finalComputation > (.*) <\/ finalComputation >/){
+			$haveError = 1;
+			$finalComp = $1;
+		} elsif ($line =~ m/< k > (.*) <\/ k >/){
+			$haveError = 1;
+			$finalComp = $1;
 		} elsif ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/){
 			$haveResult = 1;
 			$retval = $1;
@@ -91,26 +92,33 @@ if ($reduced == 0||$haveResult == 0) {
 	if ($plainOutput) {
 		print "$buffer\n";
 	} else {
-		my ($fh, $filename) = tempfile();
+		print "=============================================================\n";
+		print "ERROR! KCC encountered an error while executing this program.\n";
+		my $baseName = fileparse($myFile);
+		my $template = "kcc-dump-$baseName-XXXXXXXXXX";
+		my ($fh, $filename) = tempfile($template, SUFFIX => '.kdump');
 		print $fh "$buffer\n";
-		print `$distDir/$outputFilter $filename $distDir/outputFilter.yml`;
+		#my $filterOut =  `$distDir/$outputFilter $filename $distDir/outputFilter.yml`;
+		if ($errorCell ne "") {
+			print "=============================================================\n";
+			print "$errorCell\n";
+		}
+		print "=============================================================\n";
+		print "File: $myFile\n";
+		print "Function: $myFunc\n";
+		print "Line: $myLine\n";
+		if ($finalComp ne "") {
+			print "=============================================================\n";
+			print "Final Computation:\n";
+			print substr($finalComp, 0, 1000);
+			print "\n";
+		}
+			
+		# < currentFunction > Id File-Scope(.List{K}) </ currentFunction >
+		# < currentProgramLoc > ('CabsLoc).KProperLabel(String "challenge01.prepre.gen"(.List{K}),,Rat 1(.List{K}),,Rat 96(.List{K}),,Rat 1(.List{K})) 
+		
+		print "\nFull report can be found in $filename\n";
 		close $fh;
 	}
-	# print "-------------------------------------\n";
-	# # $kCell =~ s/\(.List{K}\)//g;
-	# # $kCell =~ s/Rat //g;
-	# # $kCell =~ s/Base-Type //g;
-	# # $kCell =~ s/Id ([^\)\(,]+)/Id\(\1\)/g;
-	# # $kCell =~ s/\(([^\)]*)\)\.(?:KProperLabel|KResultLabel)(\)| )/\1\2/g;
-	# #$kCell =~ s/\("_\*_"\)\.KProperLabel\(([^,\(\)]+),,([^,\(\)]+)\)/\1 * \2/g;
-	# # my @lines = split(/ ~> /, $kCell);
-	# # @lines = @lines[0..5];
-	# # $kCell = join(" ~>\n", @lines);
-	# print "\n$kCell\n";
-	
-	# # my @lines = split(/ ~> /, $typeCell);
-	# # @lines = @lines[0..2];
-	# # $typeCell = join(" ~>\n", @lines);
-	# print "\n$typeCell\n";
 }
 exit $retval;

@@ -8,9 +8,9 @@ DIST_DIR = dist
 # K_MAUDE_BASE ?= .
 
 
-OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
-OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
-FILTER = $(SEMANTICS_DIR)/outputFilter.yml
+#OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
+#OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
+#FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 #VPATH = programs
 
 FILES_TO_DIST = \
@@ -43,25 +43,25 @@ endif
 
 dist: check-vars $(DIST_DIR)/dist.done
 
-filter: $(OUTPUT_FILTER)
+#filter: $(OUTPUT_FILTER)
 
 pdf: check-vars
 	@make -C $(SEMANTICS_DIR) pdf
 
-$(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
-	@make -C $(OUTPUT_FILTER_DIR)
-	@strip $(OUTPUT_FILTER)
+# $(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
+# @make -C $(OUTPUT_FILTER_DIR)
+# @strip $(OUTPUT_FILTER)
 #@if [ `which strip 2> /dev/null` ]; then strip $(OUTPUT_FILTER); fi
 #@if [ `which gzexe 2> /dev/null` ]; then gzexe $(OUTPUT_FILTER); fi
 #@rm -f $(OUTPUT_FILTER_DIR)/filterOutput~
 
-$(DIST_DIR)/dist.done: check-vars Makefile filter cparser semantics $(FILES_TO_DIST)
+$(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp $(OUTPUT_FILTER) $(DIST_DIR)
-	@cp $(FILTER) $(DIST_DIR)
+#@cp $(OUTPUT_FILTER) $(DIST_DIR)
+#@cp $(FILTER) $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/clib.c $(DIST_DIR)/lib
 #@ln -s -f compile.sh $(DIST_DIR)/kcc
@@ -115,4 +115,4 @@ clean:
 	make -C gcc-test clean
 	make -C tests clean
 	rm -rf $(DIST_DIR)
-	rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out
+	rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre

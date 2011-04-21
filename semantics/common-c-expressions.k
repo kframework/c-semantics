@@ -241,15 +241,31 @@ kmod COMMON-SEMANTICS-FUNCTION-CALLS is
 		(< control >
 			< k > application(functionObject(X:Id, functionType(R:Type, P:List{Type}), B:K), L:List{Type}) ~> K:K </ k >
 			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-		C:Bag
+			< currentFunction > CurrFun:K </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+			C:Bag
 		</ control >
 		=>
 		< control >
-			< k > sequencePoint ~> populateFromGlobal ~> resetNestingDepth ~> bind(L:List{Type}, P:List{Type}) ~> B:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi) </ k >
+			< k > sequencePoint 
+				~> populateFromGlobal 
+				~> resetNestingDepth 
+				~> bind(L:List{Type}, P:List{Type}) 
+				~> B:K 
+				~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi) 
+			</ k >
 			< currentFunction > X:Id </ currentFunction >
 			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 		...</ control >)
-		< callStack > .List => ListItem(< stackFrame > C:Bag < continuation > K:K </ continuation > < currentTranslationUnit > OldTu:K </ currentTranslationUnit > </ stackFrame >) ...</ callStack >
+		< callStack > .List => ListItem(
+			< stackFrame > C:Bag 
+				< continuation > K:K </ continuation > 
+				< currentTranslationUnit > OldTu:K </ currentTranslationUnit > 
+				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+			</ stackFrame >
+		) ...</ callStack >
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
 		[structural]
 endkm

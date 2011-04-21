@@ -19,30 +19,33 @@ endkm
 kmod COMMON-C-ERRORS is
 	including COMMON-SEMANTICS-ERRORS-INCLUDE
 
-	op Error : String Id K String -> K
-	rule Error(Name:String, F:Id, Loc:K, Msg:String)  => 
-		"Error: " +String Name:String +String "\n"
-		+String printFunction(F:Id)
-		+String printLoc(Loc:K)
-		+String Msg:String +String "\n"
+	op Error : String String -> K
+	rule Error(Name:String, Msg:String)  => 
+		//"=====================================================\n"
+		//+String "ERROR! KCC encountered an error while executing this program.\n"
+		"Error: " 
+		+String Name:String 
+		+String "\n"
+		+String "Description: " 
+		+String Msg:String
 		[structural]
 		
-	op printFunction : Id -> String
-	rule printFunction(Identifier(F:String)) => 
-		"Function: " +String F:String +String "\n"
-		[structural]
+	// op printFunction : Id -> String
+	// rule printFunction(Identifier(F:String)) => 
+		// "Function: " +String F:String +String "\n"
+		// [structural]
 		
-	op printLoc : K -> String
-	rule printLoc(CabsLoc(File:String, LineNo:Int, Offset:Int, ?)) => 
-		"File: " +String File:String +String "\n"
-		+String "Line: " +String Int2String(LineNo:Int) +String "\n"
-		+String "ByteOffset: " +String Int2String(Offset:Int) +String "\n"		
-		[structural]
-	rule printLoc(UnknownCabsLoc) => 
-		"File: Unknown\n"
-		+String "Line: Unknown\n"
-		+String "ByteOffset: Unknown\n"
-		[structural]	
+	// op printLoc : K -> String
+	// rule printLoc(CabsLoc(File:String, LineNo:Int, ?, ?)) => 
+		// "File: " +String File:String +String "\n"
+		// +String "Line: " +String Int2String(LineNo:Int) +String "\n"
+		// //+String "ByteOffset: " +String Int2String(Offset:Int) +String "\n"		
+		// [structural]
+	// rule printLoc(UnknownCabsLoc) => 
+		// "File: Unknown\n"
+		// +String "Line: Unknown\n"
+		// +String "ByteOffset: Unknown\n"
+		// [structural]
 		
 		
 	// rule 
@@ -63,13 +66,19 @@ kmod COMMON-C-ERRORS is
 		
 	rule 
 		< T >...
-			< k > cast(T:Type, emptyValue) ...</ k > 
+			< k > cast(T:Type, emptyValue) ~> K:K </ k >
 			<currentFunction> F:Id </currentFunction>
 			<currentProgramLoc> Loc:K </currentProgramLoc>
 		...</ T >
-		=> < errorCell > Error("00001", F:Id, Loc:K, "Trying to cast void to some other type.  This may be caused by failing to return a value from a function that is supposed to return a value.") </ errorCell >
-		//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
+		=> < finalComputation > Err </ finalComputation >
+		< errorCell > Error("00001", "Trying to cast void to some other type.") </ errorCell >
+		<currentFunction> F:Id </currentFunction>
+		<currentProgramLoc> Loc:K </currentProgramLoc>
 		if T:Type =/=Bool void
+		where Err = cast(T:Type, emptyValue) ~> K:K 
 		[structural]
+		
+	
+	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 
 endkm

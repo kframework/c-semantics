@@ -17,6 +17,8 @@ env: hide
 localAddresses: show
 buffer: show
 
+computation: show
+
 errorCell: show
 
 # cell-style:

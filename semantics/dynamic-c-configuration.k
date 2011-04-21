@@ -104,5 +104,6 @@ kmod C-CONFIGURATION is
 		<output> "" </output>
 		<resultValue> .K </resultValue>
 		<errorCell multiplicity="?"> .K </errorCell>
+		<finalComputation multiplicity="?"> .K </finalComputation>
 
 endkm
