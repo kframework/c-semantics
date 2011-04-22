@@ -50,7 +50,8 @@ kmod C-CONFIGURATION is
 					<blocked> false </blocked>
 					@latex("\\kBR")
 					<control>
-						<k color="red"> .K </k>
+						<k color="red" multiplicity="?"> .K </k>
+						<finalComputation multiplicity="?"> .K </finalComputation>
 						<blockStack> .List </blockStack> // stack of "local" cells
 						<local>
 							// maps from Ids
@@ -104,6 +105,5 @@ kmod C-CONFIGURATION is
 		<output> "" </output>
 		<resultValue> .K </resultValue>
 		<errorCell multiplicity="?"> .K </errorCell>
-		<finalComputation multiplicity="?"> .K </finalComputation>
 
 endkm

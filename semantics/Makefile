@@ -48,18 +48,18 @@ pdf: common-pdf-modules
 # make 
 	
 # this is used to start all of the common files
-common-pdf-modules: dynamic-c-configuration.pdf dynamic-c-semantics.pdf common-c-statements.pdf common-c-expressions.pdf common-c-memory.pdf
+common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf 
 	
 c-syntax.k:
 	@printf "`cat c-syntax.template`" > c-syntax.k	
 	
-c.k: c-syntax.k c-maude.template
+c.k: c-syntax.k c-maude.template Makefile
 	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
 c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@time $(K_MAUDE) c.k -nd -u -language C
+	@time $(K_MAUDE) c.k -u -language C
 	@mv c-compiled.maude c-compiled.maude.tmp
 	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"

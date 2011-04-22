@@ -88,6 +88,7 @@ elif [ $SEARCH ]; then
 	#GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 	INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
 	GRAPH_OUTPUT_FILE=tmpSearchResults.dot
+	echo "If you did not compile the semantics specifically for this feature, you will only see non-linear behaviors in concurrent programs.  See the README for more information."
 	echo "Performing the search..."
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
 	echo "Examining the output..."
