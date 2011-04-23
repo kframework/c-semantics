@@ -20,6 +20,7 @@ IO_SERVER=EXTERN_IO_SERVER
 IOFLAG=EXTERN_COMPILED_WITH_IO
 SCRIPTS_DIR=EXTERN_SCRIPTS_DIR
 PROGRAM_NAME=EXTERN_IDENTIFIER
+ND_FLAG=EXTERN_ND_FLAG
 
 # actual start of script
 if [ -t 0 ]; then
@@ -88,19 +89,22 @@ elif [ $SEARCH ]; then
 	#GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 	INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
 	GRAPH_OUTPUT_FILE=tmpSearchResults.dot
-	echo "If you did not compile the semantics specifically for this feature, you will only see non-linear behaviors in concurrent programs.  See the README for more information."
+	if [ ! 1 = "$ND_FLAG" ]; then
+		echo "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space."
+	fi
 	echo "Performing the search..."
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
+	echo "Generated $INTERMEDIATE_OUTPUT_FILE."
 	echo "Examining the output..."
 	cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER > $GRAPH_OUTPUT_FILE
+	echo "Generated $GRAPH_OUTPUT_FILE."
 	if [ "$?" -eq 0 ]; then
 		set -e # start to fail on error
-		#cp $INTERMEDIATE_OUTPUT_FILE tmpSearchResults.txt
-		#cp $GRAPH_OUTPUT_FILE tmpSearchResults.dot
 		echo "Generating the graph..."
 		dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps
+		echo "Generated tmpSearchResults.ps."
 		ps2pdf tmpSearchResults.ps tmpSearchResults.pdf
-		echo "Done."
+		echo "Generated tmpSearchResults.pdf."
 		#acroread tmpSearchResults.pdf &
 		set +e #stop failing on error
 	fi

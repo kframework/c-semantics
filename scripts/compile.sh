@@ -23,6 +23,7 @@ addOption "-c" "Compile and assemble, but do not link"
 #addOption "-d" "Compile with semantic profiling"
 addOption "-i" "Include support for runtime file io"
 addOption "-l <name>" "This option is completely ignored"
+addOption "-n" "Allows exploring nondetermism"
 addOption "-s" "Do not link against the standard library"
 addOption "-o <file>" "Place the output into <file>"
 addOption "-v" "Do not delete intermediate files"
@@ -41,6 +42,7 @@ modelFlag=
 oflag=
 oval=
 warnFlag=
+nondetFlag=
 
 myDirectory=`dirname $0`
 username=`id -un`
@@ -65,7 +67,7 @@ function usage {
 }
 
 function getoptsFunc {
-	while getopts ':cil:mo:svw' OPTION
+	while getopts ':cil:mo:nsvw' OPTION
 	do
 		case $OPTION in
 		c)	compileOnlyFlag="-c";;
@@ -76,6 +78,7 @@ function getoptsFunc {
 		o)	oflag=1
 			oval="$OPTARG"
 			;;
+		n)	nondetFlag=1;;
 		s)	libFlag="-s";;
 		v)	dumpFlag="-v";;
 			# printf "kcc version 0.0.1"
@@ -204,7 +207,11 @@ if [ ! "$compileOnlyFlag" ]; then
 	if [ ! "$dumpFlag" ]; then
 		rm -f $compiledPrograms
 	fi
-	echo "load $myDirectory/c-total" > $baseMaterial
+	if [ 1 = "$nondetFlag" ]; then 
+		echo "load $myDirectory/c-total-nd" > $baseMaterial
+	else 
+		echo "load $myDirectory/c-total" > $baseMaterial
+	fi 
 	echo "load $linkTemp" >> $baseMaterial
 	
 	# no more polyglot :(  now we use a script that copies all the maude to its own file
@@ -215,6 +222,7 @@ if [ ! "$compileOnlyFlag" ]; then
 		| sed "s?EXTERN_IO_SERVER?$myDirectory/fileserver.pl?g" \
 		| sed "s?EXTERN_SCRIPTS_DIR?$myDirectory?g" \
 		| sed "s?EXTERN_IDENTIFIER?$mainFileName?g" \
+		| sed "s?EXTERN_ND_FLAG?$nondetFlag?g" \
 		> $programTemp
 	echo >> $programTemp
 	cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp

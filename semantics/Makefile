@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak c-compiled.maude.tmp.bak duplicateLabels.txt
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak c-compiled-nd.maude.bak duplicateLabels.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -59,7 +59,7 @@ c.k: c-syntax.k c-maude.template Makefile
 c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@time $(K_MAUDE) c.k -u -language C
+	@time -p $(K_MAUDE) c.k -u -language C
 	@mv c-compiled.maude c-compiled.maude.tmp
 	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -71,17 +71,35 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 	
+c-compiled-nd.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
+	@echo "Compiling the C definition with nondeterminism..."
+#@echo "executing \"$(K_MAUDE) c.k -u -language C\""
+	@time -p $(K_MAUDE) c.k -nd -u -language C
+	@mv c-compiled.maude c-compiled-nd.maude
+	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
+	@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
+	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
+	@echo "Done".
+	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Checking the C definition..."
-	@time $(K_MAUDE) c.k -u -lint -language C
+	@$(K_MAUDE) c.k -u -lint -language C
 	@rm -f c-compiled.maude
 	@echo "Done".
 	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
 	@cat c-compiled.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
+	
+c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
+	@cat c-compiled-nd.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total-nd.maude
 
-semantics: c-total.maude
+semantics: c-total.maude c-total-nd.maude
+
+fast-nd: c-total.maude
+	@cp c-total.maude c-total-nd.maude
+
+semantics-fast: c-total.maude fast-nd
 
 clean:
 	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp 

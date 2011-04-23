@@ -15,6 +15,7 @@ DIST_DIR = dist
 
 FILES_TO_DIST = \
 	$(SEMANTICS_DIR)/c-total.maude \
+	$(SEMANTICS_DIR)/c-total-nd.maude \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
@@ -33,7 +34,11 @@ FILES_TO_DIST = \
 	
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix semantics gcc-output benchmark dist fast-test dist-make check-input
 
+all: WHICH_SEMANTICS="semantics"
 all: dist
+
+fast: WHICH_SEMANTICS="semantics-fast"
+fast: dist
 
 check-vars: 
 ifeq ($(K_MAUDE_BASE),)
@@ -43,28 +48,16 @@ endif
 
 dist: check-vars $(DIST_DIR)/dist.done
 
-#filter: $(OUTPUT_FILTER)
-
 pdf: check-vars
 	@make -C $(SEMANTICS_DIR) pdf
-
-# $(OUTPUT_FILTER): check-vars $(wildcard $(OUTPUT_FILTER_DIR)/*.hs)
-# @make -C $(OUTPUT_FILTER_DIR)
-# @strip $(OUTPUT_FILTER)
-#@if [ `which strip 2> /dev/null` ]; then strip $(OUTPUT_FILTER); fi
-#@if [ `which gzexe 2> /dev/null` ]; then gzexe $(OUTPUT_FILTER); fi
-#@rm -f $(OUTPUT_FILTER_DIR)/filterOutput~
 
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-#@cp $(OUTPUT_FILTER) $(DIST_DIR)
-#@cp $(FILTER) $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/clib.c $(DIST_DIR)/lib
-#@ln -s -f compile.sh $(DIST_DIR)/kcc
 	@mv $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
@@ -99,15 +92,11 @@ force: ;
 
 cparser:
 	@make -C $(PARSER_DIR)
-	@strip $(PARSER)
+	@-strip $(PARSER)
 
 semantics: check-vars
-	@make -C $(SEMANTICS_DIR) semantics
-
-benchmark: profile.csv
-
-profile.csv: profile.log
-	perl analyzeProfile.pl > profile.csv
+#@echo $(WHICH_SEMANTICS)
+	@make $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR) semantics
 
 clean:
 	make -C $(PARSER_DIR) clean
