@@ -1,4 +1,4 @@
-
+// this file is not actually being used; it is experimental
 kmod FIXED-WIDTH-SYNTAX is
 	including K
 	subsort Nat Int < K

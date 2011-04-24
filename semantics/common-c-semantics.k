@@ -255,8 +255,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 		l('qualifiedType)
 	) [structural]
 	
-	//ceq TranslationUnit(S:String, L:List{C}, S':String) = TranslationUnit(S:String, L:List{C}, "") if S':String =/=Bool ""
-	
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value 
 	// op lv : List{K} Type -> Value
@@ -606,7 +604,7 @@ kmod C-SEMANTICS-MISC is
 		[structural]
 		
 	rule AttributeWrapper(K:K, ?) => K:K [structural]
-	rule NameLoc(K:K, ?) => K:K [structural]
+	// rule NameLoc(K:K, ?) => K:K [structural]
 	
 	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
 		if M:Nat >=Nat numBitsPerByte 

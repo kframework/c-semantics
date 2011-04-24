@@ -134,7 +134,8 @@ and printSource (sourceCode : string) =
 	printCell "SourceCode" [] (printRawString sourceCode)
 	
 and printDefs defs =
-	printList printDef defs
+	(* printList printDef defs *)
+	List.fold_left (fun aux arg -> printCell "StmtCons" [] (aux ^ (printDef arg))) (printNop) defs
 	
 and printDef def =
 	match def with
@@ -205,7 +206,8 @@ and printCabsLoc a =
 and hasInformation l =
 	l.lineno <> -10
 and printNameLoc s l =
-	if (hasInformation l) then (wrap (s :: (printCabsLoc l) :: []) "NameLoc") else (s)
+	(* if (hasInformation l) then (wrap (s :: (printCabsLoc l) :: []) "NameLoc") else (s) *)
+	s
 and printIdentifier a =
 	printCell "Identifier" [] (printRawString a)
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)

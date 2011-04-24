@@ -75,7 +75,9 @@ kmod COMMON-C-SYNTAX is
 	op _::_ : List{C} List{C} -> List{C} [hybrid strict assoc id: Nil]
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
-		
+	
+	op StmtCons : K K -> K
+	
 	subsort SpecifierElem < KResult
 	
 	subsort CabsLoc < C
@@ -268,7 +270,7 @@ and name = string * decl_type * attribute list * cabsloc
 	op AnonymousName : K -> Name // new, argument is type
 	op #NoName : -> Id // new
 	op Identifier : String -> Id // new	
-	op NameLoc : K K -> Name // new
+	// op NameLoc : K K -> Name // new
 	
 	macro AnonymousName(K:K) = Name(#NoName, K:K)
 	
@@ -329,7 +331,7 @@ and enum_item = string * expression * cabsloc
 and file = string * definition list
 */
 	// name, code, source
-	op TranslationUnit : String List{C} String -> TranslationUnit // new
+	op TranslationUnit : String K String -> TranslationUnit // new
 	op Program : List{C} -> Program // new
 
 /*

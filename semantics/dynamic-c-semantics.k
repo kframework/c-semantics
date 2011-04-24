@@ -68,7 +68,7 @@ or equivalent;9) or in some other implementation-defined manner
 				< thread >
 					< control >
 						< k > listToK(P:List{C})
-							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(NameLoc(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))))), UnknownCabsLoc), NoInit)))
+							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))))), NoInit)))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))

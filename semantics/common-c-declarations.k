@@ -1119,8 +1119,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	op canonicalizeTranslationUnitVariables : -> K 
 	rule
-		< k > TranslationUnit(Name:String, L:List{C}, P:String) 
-			=> listToK(L:List{C})
+		< k > TranslationUnit(Name:String, K:K, P:String) 
+			=> klistToK(eraseKLabel('StmtCons, K:K))
 		...</ k >
 		< currentTranslationUnit > ? => Name:String </ currentTranslationUnit >
 		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </ declarationOrder >
