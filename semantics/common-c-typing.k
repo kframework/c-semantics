@@ -692,6 +692,11 @@ kmod COMMON-C-TYPING is
 	including COMMON-SEMANTICS-TYPE-INTERPRETATION 
 	including COMMON-SEMANTICS-TYPE-EXPRESSIONS 
 	
+	rule [ExpressionLoc-type]:
+		< type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
+		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		[structural] 
+	
 	rule isTypeCompatible(T:Type, T:Type) 
 		=> true 
 		[structural]
