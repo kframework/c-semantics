@@ -160,8 +160,8 @@ and printDef def =
 and printDefinitionLoc a l =
 	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "DefinitionLoc") else (a)
 and printExpressionLoc a l =
-	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "ExpressionLoc") else (a)
-	(* a *)
+	(* if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "ExpressionLoc") else (a) *)
+	a
 and printDefinitionLocRange a b c =
 	wrap (a :: (printCabsLoc b) :: (printCabsLoc c) :: []) "DefinitionLocRange"		
 and printSingleName (a, b) = 
