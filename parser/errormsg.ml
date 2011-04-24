@@ -42,143 +42,15 @@
 let debugFlag  = ref false              (* If set then print debugging info *)
 *)
 let verboseFlag = ref false
-(*
-let colorFlag = ref false
-*)
+
 (**** Error reporting ****)  
 exception Error
 let s (d : 'a) = raise Error
 
 let hadErrors = ref false
-(*
-let errorContext = ref []
-let pushContext f = errorContext := f :: (!errorContext)
-let popContext () = 
-  match !errorContext with 
-    _ :: t -> errorContext := t
-  | [] -> s (eprintf "Bug: cannot pop error context")
 
-
-let withContext ctx f x = 
-  pushContext ctx;
-  try
-    let res = f x in
-    popContext ();
-    res
-  with e -> begin
-    popContext ();
-    raise e
-  end
-  
-                                        (* Make sure that showContext calls 
-                                         * each f with its appropriate 
-                                         * errorContext as it was when it was 
-                                         * pushed *)
-let showContext () = 
-  let rec loop = function
-      [] -> ()
-    | f :: rest -> (errorContext := rest; (* Just in case f raises an error *)
-                    ignore (eprintf "  Context : %t@!" f);
-                    loop rest)
-  in
-  let old = !errorContext in
-  try 
-    loop old;
-    errorContext := old
-  with e -> begin
-    errorContext := old;
-    raise e
-  end
-
-let contextMessage (name: string) (d: doc) = 
-  ignore (eprintf "%s: %a@!" name insert d);
-  showContext ()
-
-let warnFlag = ref false
-*)
 let logChannel : out_channel ref = ref stderr
-(*
-let redEscStr = "\027[31;1m"
-let greenEscStr = "\027[32;1m"
-let yellowEscStr = "\027[33;1m"
-let blueEscStr = "\027[34m"
-let purpleEscStr = "\027[35m"
-let cyanEscStr = "\027[36m"
-let whiteEscStr = "\027[37m"
-let resetEscStr = "\027[m"
 
-let bug (fmt : ('a,unit,doc,unit) format4) : 'a = 
-  let f d =  
-    hadErrors := true;
-    if !colorFlag then output_string !logChannel greenEscStr;
-    contextMessage "Bug" d;
-    if !colorFlag then output_string !logChannel resetEscStr;
-    flush !logChannel
-  in
-  Pretty.gprintf f fmt
-
-let error (fmt : ('a,unit,doc,unit) format4) : 'a =
-  let f d =
-    hadErrors := true;
-    if !colorFlag then output_string !logChannel redEscStr;
-    contextMessage "Error" d;
-    if !colorFlag then output_string !logChannel resetEscStr;
-    flush !logChannel
-  in
-  Pretty.gprintf f fmt
-
-let unimp (fmt : ('a,unit,doc,unit) format4) : 'a = 
-  let f d = hadErrors := true; contextMessage "Unimplemented" d; 
-    flush !logChannel
-  in
-  Pretty.gprintf f fmt
-
-let warn (fmt : ('a,unit,doc,unit) format4) : 'a = 
-  let f d =
-    if !colorFlag then output_string !logChannel yellowEscStr;
-    contextMessage "Warning" d;
-    if !colorFlag then output_string !logChannel resetEscStr;
-    flush !logChannel
-  in
-  Pretty.gprintf f fmt
-
-let warnOpt (fmt : ('a,unit,doc,unit) format4) : 'a = 
-    let f d = 
-      if !warnFlag then begin
-        if !colorFlag then output_string !logChannel yellowEscStr;
-        contextMessage "Warning" d;
-        if !colorFlag then output_string !logChannel resetEscStr;
-      end;
-      flush !logChannel in
-    Pretty.gprintf f fmt
-
-*)(*
-let log (s) : unit = 
-  let f d = output_string !logChannel d; flush !logChannel in
-  f s; ()
-
-
-let log (fmt : ('a,unit,doc,unit) format4) : 'a = 
-  let f d = fprint !logChannel 80 d; flush !logChannel in
-  Pretty.gprintf f fmt
-  
-let logg (fmt : ('a,unit,doc,unit) format4) : 'a =
-  let f d = fprint !logChannel 10000000 d; flush !logChannel in
-  Pretty.gprintf f fmt
-
-let null (fmt : ('a,unit,doc,unit) format4) : 'a =
-  let f d = () in
-  Pretty.gprintf f fmt
-
-
-let theLexbuf = ref (Lexing.from_string "")
-
-let fail format = Pretty.gprintf (fun x -> Pretty.fprint stderr 80 x; 
-                                           raise (Failure "")) format
-
-
-
-  *)  
 (***** Handling parsing errors ********)
 type parseinfo =
     { mutable  linenum: int      ; (* Current line *)
@@ -188,6 +60,8 @@ type parseinfo =
       mutable hfile   : string   ; (* High-level file *)
       mutable hline   : int;       (* High-level line *)
       lexbuf          : Lexing.lexbuf;
+	  mutable offsetFix : int; (* subtract this from buffer pos to get real pos *)
+	  mutable savedOffset : int; (* when including a file, save old offset here *)
       inchan          : in_channel option; (* None, if from a string *)
       mutable   num_errors : int;  (* Errors so far *)
     }  
@@ -197,17 +71,14 @@ let dummyinfo =
       fileName  = "" ;
       lexbuf    = Lexing.from_string "";
       inchan    = None;
+	  offsetFix = 0;
+	  savedOffset = 0;
       hfile     = "";
       hline     = 0;
       num_errors = 0;
     }
 
 let current = ref dummyinfo
-
-let setHLine (l: int) : unit =
-    !current.hline <- l
-let setHFile (f: string) : unit =
-    !current.hfile <- f
     
 let rem_quotes str = String.sub str 1 ((String.length str) - 2)
 
@@ -257,25 +128,14 @@ let startParsing ?(useBasename=true) (fname: string) =
       fileName = 
         cleanFileName (if useBasename then Filename.basename fname else fname);
       lexbuf = lexbuf; inchan = Some inchan;
+	  offsetFix = 0;
+	  savedOffset = 0;
       hfile = ""; hline = 0;
       num_errors = 0 } in
 
   current := i;
   lexbuf
-(*
-let startParsingFromString ?(file="<string>") ?(line=1) (str: string) = 
-  let lexbuf = Lexing.from_string str in
-  let i = 
-    { linenum = line; linestart = line - 1;
-      fileName = file;
-      hfile = ""; hline = 0;
-      lexbuf = lexbuf; 
-      inchan = None;
-      num_errors = 0 }
-  in
-  current := i;
-  lexbuf
-*)
+
 let finishParsing () = 
   let i = !current in
   (match i.inchan with Some c -> close_in c | _ -> ());
@@ -287,17 +147,18 @@ let newline () =
   let i = !current in
   i.linenum <- 1 + i.linenum;
   i.linestart <- Lexing.lexeme_start i.lexbuf
-(*
-let newHline () = 
-  let i = !current in
-  i.hline <- 1 + i.hline
-*)
+
 let setCurrentLine (i: int) = 
   !current.linenum <- i
 
 let setCurrentFile (n: string) = 
   !current.fileName <- cleanFileName n
-
+ (*
+let setOffsetFix (i: int) = 
+  !current.offsetFix <- i
+let saveOffset = 
+  !current.savedOffset <- !current.offsetFix
+*)
 
 let max_errors = 20  (* Stop after 20 errors *)
 
@@ -333,35 +194,7 @@ let parse_error (msg: string) : 'a =
   raise Parsing.Parse_error
 
 (* More parsing support functions: line, file, char count *)
-let getPosition () : int * string * int = 
-  let i = !current in 
-  i.linenum, i.fileName, Lexing.lexeme_start i.lexbuf
-(*
-
-let getHPosition () = 
-  !current.hline, !current.hfile
-
-(** Type for source-file locations *)
-type location = 
-    { file: string; (** The file name *)
-      line: int;    (** The line number *)
-      hfile: string; (** The high-level file name, or "" if not present *)
-      hline: int;    (** The high-level line number, or 0 if not present *)
-    } 
-
-let d_loc () l = 
-  text (l.file ^ ":" ^ string_of_int l.line)
-    
-let d_hloc () (l: location) = 
-  dprintf "%s:%d%a" l.file l.line
-    insert (if l.hline > 0 then dprintf " (%s:%d)" l.hfile l.hline else nil)
-
-let locUnknown = { file = ""; hfile = ""; line = -1; hline = -1 }
-
-let getLocation () = 
-  let hl, hf = getHPosition () in
-  let l, f, c = getPosition () in
-  { hfile = hf; hline = hl;
-    file = f; line = l } 
-
-*)
+let getPosition () : int * string * int * int = 
+	let i = !current in
+	let offset = Lexing.lexeme_start i.lexbuf in
+  i.linenum, i.fileName, offset, (offset - i.linestart)

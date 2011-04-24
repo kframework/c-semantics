@@ -117,8 +117,8 @@ kmod COMMON-C-SYNTAX is
 type cabsloc = {
 		lineno : int;
 		filename: string;
-		byteno: int;
-		ident : int;
+		lineOffsetStart: int;
+		lineOffsetEnd : int;
 	}
 */
 	// sort CabsLoc
@@ -444,6 +444,9 @@ and binary_operator =
 and expression =
 	NOTHING
 */
+
+	op ExpressionLoc : K K -> Expression // new
+
 	op NothingExpression : -> Expression
 /*
 	| UNARY of unary_operator * expression

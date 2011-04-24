@@ -573,6 +573,10 @@ kmod C-SEMANTICS-MISC is
 		< k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+	rule [ExpressionLoc-k]:
+		< k > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		[structural] 
 	rule [StatementLoc-k]:
 		< k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >

@@ -195,12 +195,7 @@ and block =
     } *)
 and printCabsLoc a = 
 	wrap (("\"" ^ a.filename ^ "\"") :: (string_of_int a.lineno) :: (string_of_int a.byteno) :: (string_of_int a.ident) :: []) "CabsLoc"
-(*
-type cabsloc = {
 
- byteno: int;
- ident : int;
-}	*)
 and printNameLoc s l =
 	wrap (s :: (printCabsLoc l) :: []) "NameLoc"
 and printIdentifier a =

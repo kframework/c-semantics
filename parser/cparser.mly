@@ -64,7 +64,9 @@ let getComments () =
 let cabslu = {lineno = -10; 
 	      filename = "cabs loc unknown"; 
 	      byteno = -10;
-              ident = 0;}
+              ident = 0;
+			  lineOffsetStart = 0; 
+			  }
 
 (* cabsloc -> cabsloc *)
 (*
@@ -464,9 +466,11 @@ maybecomma:
 
 primary_expression:                     /*(* 6.5.1. *)*/
 |		IDENT
-		        {VARIABLE (fst $1), snd $1}
+				/* { VARIABLE (fst $1) } */
+		        /* {LOCEXP ((VARIABLE (fst $1)), (snd $1)) } */
+		        {LOCEXP (VARIABLE (fst $1), snd $1), snd $1 }
 |        	constant
-		        {CONSTANT (fst $1), snd $1}
+		        {LOCEXP (CONSTANT (fst $1), snd $1), snd $1 }
 |		paren_comma_expression  
 		        {PAREN (smooth_expression (fst $1)), snd $1}
 |		LPAREN block RPAREN

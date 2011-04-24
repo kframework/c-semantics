@@ -51,6 +51,7 @@ type cabsloc = {
  filename: string;
  byteno: int;
  ident : int;
+ lineOffsetStart : int;
 }
 
 type typeSpecifier = (* Merge all specifiers into one type *)
@@ -261,6 +262,7 @@ and unary_operator =
 
 and expression =
     NOTHING
+  | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
   | LABELADDR of string  (* GCC's && Label *)
   | BINARY of binary_operator * expression * expression

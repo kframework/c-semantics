@@ -32,7 +32,7 @@ all: cparser
 clexer.ml: clexer.mll
 	@$(OCAML_LEX) clexer.mll
 
-cparser.ml cparser.mli: cparser.mly
+cparser.ml cparser.mli: cparser.mly cabs.cmi cabshelper.cmi
 	@$(OCAML_YACC) cparser.mly
 
 lexerhack.cmx lexerhack.cmi: errormsg.cmi

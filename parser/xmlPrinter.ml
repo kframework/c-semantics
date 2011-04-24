@@ -159,6 +159,8 @@ and printDef def =
 			
 and printDefinitionLoc a l =
 	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "DefinitionLoc") else (a)
+and printExpressionLoc a l =
+	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "ExpressionLoc") else (a)
 and printDefinitionLocRange a b c =
 	wrap (a :: (printCabsLoc b) :: (printCabsLoc c) :: []) "DefinitionLocRange"		
 and printSingleName (a, b) = 
@@ -192,15 +194,13 @@ and printCabsLoc a =
 		(printRawString !realFilename)
 		)
 		^ (printCell "Lineno" [] (printRawInt a.lineno))
-		^ (printCell "Byteno" [] (printRawInt a.byteno))
-		^ (printCell "Ident" [] (printRawInt a.ident)) in
+		(* ^ (printCell "Byteno" [] (printRawInt a.byteno))
+		^ (printCell "Ident" [] (printRawInt a.ident)) *)
+		^ (printCell "OffsetStart" [] (printRawInt a.lineOffsetStart))
+		^ (printCell "OffsetEnd" [] (printRawInt 0))
+		in
 	printCell "CabsLoc" [] contents
-(*
-type cabsloc = {
 
- byteno: int;
- ident : int;
-}	*)
 and hasInformation l =
 	l.lineno <> -10
 and printNameLoc s l =
@@ -432,6 +432,7 @@ and printIntLiteral i =
 	
 and printExpression exp =
 	match exp with
+	| LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
 	| BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2
 	| NOTHING -> printCell "NothingExpression" [] ""

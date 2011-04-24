@@ -24,6 +24,8 @@ my $finalComp = "";
 my $myFunc = "";
 my $myFile = "";
 my $myLine = "";
+my $myOffsetStart = "";
+my $myOffsetEnd = "";
 
 # my $kCell = "";
 # my $typeCell = "";
@@ -68,9 +70,11 @@ while (my $line = <STDIN>) {
 			$errorCell = substr(`printf "x$output"`, 1);
 		} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 			$myFunc = $1;
-		} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat \d+\(\.List\{K\}\),,Rat \d+\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+		} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 			$myFile = $1;
 			$myLine = $2;
+			$myOffsetStart = $3;
+			$myOffsetEnd = $4;
 		} elsif ($line =~ m/< finalComputation > (.*) <\/ finalComputation >/){
 			$haveError = 1;
 			$finalComp = $1;
@@ -107,6 +111,7 @@ if ($reduced == 0||$haveResult == 0) {
 		print "File: $myFile\n";
 		print "Function: $myFunc\n";
 		print "Line: $myLine\n";
+		print "Possible offset into line: $myOffsetStart\n";
 		if ($finalComp ne "") {
 			print "=============================================================\n";
 			print "Final Computation:\n";
