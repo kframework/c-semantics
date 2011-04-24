@@ -418,6 +418,11 @@ kmod COMMON-SEMANTICS-GOTO is
 		< computation > StatementLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+	// rule [StatementLoc-computation]:
+		// < computation > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ computation >
+		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
+		// if N:Nat =/=Bool 268
+		// [structural] 
 
 	// - fixme i hate that i have to do this twice.  once here, once in the dynamic semantics
 	rule
@@ -427,6 +432,11 @@ kmod COMMON-SEMANTICS-GOTO is
 		< computation > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+	// rule [DefinitionLoc-computation]:
+		// < computation > DefinitionLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ computation >
+		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
+		// if N:Nat =/=Bool 268
+		// [structural]
 		
 	//  eq getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) = getIdOfName(K:C) 
 		

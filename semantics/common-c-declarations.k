@@ -153,6 +153,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
 		[structural] 
 	
+	rule
+		< k > figureInitializer(X:Id, T:Type, DefinitionLoc(K:K, L:K)) 
+			=> DefinitionLoc(.K, L:K)
+			~> figureInitializer(X:Id, T:Type, K:K) 
+		...</ k >
+		[structural]
+		
+	
 	// aggregates
 	rule
 		< k > figureInitializer(X:Id, T:Type, CompoundInit(L:List{C}))
@@ -192,8 +200,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > figureInitializer-aux(X:Id, T:Type, initializer(K:K))
 			=> initializerValue(X:Id, T:Type, K:K)
 		...</ k >
+		//< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
 		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
-		[structural] 
+		[structural]
 	
 	// base types
 	rule
@@ -343,9 +352,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	rule
 		< k > declare(typedDeclaration(T:Type, X:Id), K:K)
-			=> declareExternalVariable(X:Id, T:Type, K:K)
+			=> declareExternalVariable(X:Id, T:Type, if K:K ==Bool NoInit then NoInit else DefinitionLoc(K:K, L:CabsLoc) fi)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
+		< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
 		// if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		if notBool hasFunctionType(T:Type)
 		[structural] 

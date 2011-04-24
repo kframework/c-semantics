@@ -572,7 +572,12 @@ kmod C-SEMANTICS-MISC is
 	rule [DefinitionLoc-k]:
 		< k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
+		[structural]
+	// rule [DefinitionLoc-k]:
+		// < k > DefinitionLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ k >
+		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
+		// if N:Nat =/=Bool 268
+		// [structural]
 	rule [ExpressionLoc-k]:
 		< k > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
@@ -581,6 +586,11 @@ kmod C-SEMANTICS-MISC is
 		< k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+	// rule [StatementLoc-k]:
+		// < k > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ k >
+		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
+		// if N:Nat =/=Bool 268
+		// [structural] 
 	rule [EnumItemLoc-k]:
 		< k > EnumItemLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
