@@ -111,7 +111,7 @@ if ($reduced == 0||$haveResult == 0) {
 		print "File: $myFile\n";
 		print "Function: $myFunc\n";
 		print "Line: $myLine\n";
-		print "Possible offset into line: $myOffsetStart\n";
+		#print "Possible offset into line: $myOffsetStart\n";
 		if ($finalComp ne "") {
 			print "=============================================================\n";
 			print "Final Computation:\n";
