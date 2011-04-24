@@ -160,8 +160,8 @@ and printDef def =
 and printDefinitionLoc a l =
 	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "DefinitionLoc") else (a)
 and printExpressionLoc a l =
-	(* if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "ExpressionLoc") else (a) *)
-	a
+	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "ExpressionLoc") else (a)
+	(* a *)
 and printDefinitionLocRange a b c =
 	wrap (a :: (printCabsLoc b) :: (printCabsLoc c) :: []) "DefinitionLocRange"		
 and printSingleName (a, b) = 
@@ -615,7 +615,10 @@ and printBlockLabels a =
 and printAttribute (a, b) =
 	wrap ((printRawString a) :: (printExpressionList b) :: []) "Attribute"
 and printEnumItem (str, expression, cabsloc) =
-	wrap ((wrap ((printIdentifier str) :: (printExpression expression) :: []) "EnumItem") :: (printCabsLoc cabsloc) :: []) "EnumItemLoc"
+	match expression with
+	| NOTHING -> wrap ((printIdentifier str) :: []) "EnumItem"
+	| expression -> wrap ((printIdentifier str) :: (printExpression expression) :: []) "EnumItemInit"
+	
 and printSpecifier a =
 	wrap (printSpecElemList a :: []) "Specifier"
 and printSpecElemList a =

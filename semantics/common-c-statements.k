@@ -414,10 +414,10 @@ kmod COMMON-SEMANTICS-GOTO is
 		< blockHistoryGoto > (?:ListItem => .List) ListItem(Num:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
-	rule [StatementLoc-computation]:
-		< computation > StatementLoc(K:K, L:CabsLoc) => K:K ...</ computation >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
+	// rule [StatementLoc-computation]:
+		// < computation > StatementLoc(K:K, L:CabsLoc) => K:K ...</ computation >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural] 
 	// rule [StatementLoc-computation]:
 		// < computation > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ computation >
 		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
@@ -425,11 +425,15 @@ kmod COMMON-SEMANTICS-GOTO is
 		// [structural] 
 
 	// - fixme i hate that i have to do this twice.  once here, once in the dynamic semantics
-	rule
-		< computation > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ computation >
-		[structural] 
+	// rule
+		// < computation > LocalDefinition(CodeLoc(K:K, Loc:K)) => CodeLoc(K:K, Loc:K) ...</ computation >
+		// [structural] 
+	// rule [DefinitionLoc-computation]:
+		// < computation > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ computation >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural] 
 	rule [DefinitionLoc-computation]:
-		< computation > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ computation >
+		< computation > CodeLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 	// rule [DefinitionLoc-computation]:

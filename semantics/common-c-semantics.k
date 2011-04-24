@@ -565,12 +565,17 @@ kmod C-SEMANTICS-MISC is
 	
 	// TODO nicely handle loc range instead of ignoring L2
 	// fixme feature i'd like to say ? instead of k, but context transformers don't work that way
-	rule
-		< k > DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L1:CabsLoc </ currentProgramLoc >
-		[structural] 
-	rule [DefinitionLoc-k]:
-		< k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
+	// rule
+		// < k > DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L1:CabsLoc </ currentProgramLoc >
+		// [structural] 
+	rule ExpressionLoc(K:K, ?) => K:K [structural]
+	// rule [DefinitionLoc-k]:
+		// < k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural]
+	rule [CodeLoc-k]:
+		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural]
 	// rule [DefinitionLoc-k]:
@@ -578,23 +583,23 @@ kmod C-SEMANTICS-MISC is
 		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
 		// if N:Nat =/=Bool 268
 		// [structural]
-	rule [ExpressionLoc-k]:
-		< k > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
-	rule [StatementLoc-k]:
-		< k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
+	// rule [ExpressionLoc-k]:
+		// < k > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural] 
+	// rule [StatementLoc-k]:
+		// < k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural] 
 	// rule [StatementLoc-k]:
 		// < k > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ k >
 		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
 		// if N:Nat =/=Bool 268
 		// [structural] 
-	rule [EnumItemLoc-k]:
-		< k > EnumItemLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
+	// rule [EnumItemLoc-k]:
+		// < k > EnumItemLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural] 
 		
 	rule [Attributes]:
 		< k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >

@@ -82,6 +82,7 @@ my $handlers = {
 	FunctionSpecifier => sub { $_->erase; },
 	Specifiers => sub { $_->erase; },
 	TypeSpecifier => sub { $_->erase; },
+	LocalDefinition => sub { $_->erase; },
 };
 
 

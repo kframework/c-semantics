@@ -149,13 +149,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
 	context Typedef(NameGroup(`[HOLE`]:K, ?)) 
 	
-	rule
-		< k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
-		[structural] 
+	// rule
+		// < k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
+		// [structural] 
 	
 	rule
-		< k > figureInitializer(X:Id, T:Type, DefinitionLoc(K:K, L:K)) 
-			=> DefinitionLoc(.K, L:K)
+		< k > figureInitializer(X:Id, T:Type, CodeLoc(K:K, L:K)) 
+			=> CodeLoc(.K, L:K)
 			~> figureInitializer(X:Id, T:Type, K:K) 
 		...</ k >
 		[structural]
@@ -352,7 +352,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	rule
 		< k > declare(typedDeclaration(T:Type, X:Id), K:K)
-			=> declareExternalVariable(X:Id, T:Type, if K:K ==Bool NoInit then NoInit else DefinitionLoc(K:K, L:CabsLoc) fi)
+			=> declareExternalVariable(X:Id, T:Type, if K:K ==Bool NoInit then NoInit else CodeLoc(K:K, L:CabsLoc) fi)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
 		< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
@@ -1367,28 +1367,28 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op fillEnums : K -> K 
-	op fillEnums : K K -> K 
+	op fillEnums-aux : K K -> K 
 	rule
 		< k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
 		[structural] 
 	rule 
-		< k > fillEnums(K:K) => fillEnums(K:K, 0) ...</ k > 
+		< k > fillEnums(K:K) => fillEnums-aux(K:K, 0) ...</ k > 
 		[structural]
 	rule
-		< k > fillEnums(EnumDef(X:Id, EnumItemLoc(EnumItem(E:Id, emptyValue), Loc:K) :: L:List{C}), K:K) 
-			=> EnumItemLoc(declare(typedDeclaration(int, E:Id), SingleInit(K:K)), Loc:K)
-			~> fillEnums(EnumDef(X:Id, L:List{C}), K:K + tv(1, int))
+		< k > fillEnums-aux(EnumDef(X:Id, EnumItem(E:Id) :: L:List{C}), K:K) 
+			=> declare(typedDeclaration(int, E:Id), SingleInit(K:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), K:K + tv(1, int))
 		...</ k >
 		[structural] 
 	rule
-		< k > fillEnums(EnumDef(X:Id, EnumItemLoc(EnumItem(E:Id, Exp:K), Loc:K) :: L:List{C}), ?) 
-			=> EnumItemLoc(declare(typedDeclaration(int, E:Id), SingleInit(Exp:K)), Loc:K)
-			~> fillEnums(EnumDef(X:Id, L:List{C}), Exp:K + 1)
+		< k > fillEnums-aux(EnumDef(X:Id, EnumItemInit(E:Id, Exp:K) :: L:List{C}), ?)
+			=> declare(typedDeclaration(int, E:Id), SingleInit(Exp:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + 1)
 		...</ k >
 		if Exp:K =/=Bool NothingExpression
 		[structural] 
 	rule
-		< k > fillEnums(EnumDef(X:Id, Nil), ?) => .K ...</ k > 
+		< k > fillEnums-aux(EnumDef(X:Id, Nil), ?) => .K ...</ k > 
 		[structural] 
 endkm
 

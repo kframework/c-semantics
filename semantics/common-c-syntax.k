@@ -289,8 +289,9 @@ and single_name = specifier * name
 /*
 and enum_item = string * expression * cabsloc
 */
-	op EnumItem : Id K -> PureEnumItem
-	op EnumItemLoc : K K -> EnumItem // new
+	op EnumItem : Id -> PureEnumItem // this one has no init
+	op EnumItemInit : Id K -> PureEnumItem // this one has an init
+	//op EnumItemLoc : K K -> EnumItem // new
 		
 /*
 	(*
@@ -322,7 +323,7 @@ and enum_item = string * expression * cabsloc
 	
 	op DefinitionLoc : K K -> Definition // new
 	op DefinitionLocRange : K K K -> Definition // new
-
+	
 /*
 (* the string is a file name, and then the list of toplevel forms *)
 and file = string * definition list
@@ -407,7 +408,7 @@ and statement =
 	op Label : Id K -> PureStatement
 	op Goto : K -> PureStatement // Id
 	op CompGoto : K -> PureStatement
-	op LocalDefinition : K -> PureStatement  // renamed from "DEFINITION"
+	// op LocalDefinition : K -> PureStatement  // renamed from "DEFINITION"
 /*
 	| ASM of attribute list * (* typically only volatile and const *)
 		  string list * (* template *)
@@ -675,6 +676,12 @@ and attribute = string * expression list
 	
 	
 	
+	op CodeLoc : K K -> K
+	macro DefinitionLoc(K:K, L:K) = CodeLoc(K:K, L:K)
+	macro StatementLoc(K:K, L:K) = CodeLoc(K:K, L:K)
+	// macro ExpressionLoc(K:K, L:K) = CodeLoc(K:K, L:K)	
+	macro DefinitionLocRange(K:K, ?, L:K) = CodeLoc(K:K, L:K)
+	// macro EnumItemLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	
 	
 	
