@@ -97,7 +97,7 @@ kmod COMMON-C-ERRORS is
 		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
 		< mem >... Block:Nat |-> memblock(Size:Nat, ?) ...</ mem >
 		(.Bag => < errorCell > Error("00002", "Reading outside the bounds of an object.") </ errorCell >)
-		if Offset:Nat >=Int Size:Nat
+		if Offset:Nat >=Nat Size:Nat
 		[structural]
 		
 	rule [err00003]:
@@ -112,36 +112,69 @@ kmod COMMON-C-ERRORS is
 		// if Loc:Int >=Int 0 // if it can compare to 0, then it is not a symbolic location
 		// [structural]
 		
-	rule [err00005a]:
+	rule [err00005]:
 		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat ?) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > Error("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
 		if notBool $hasMapping(M:Map, Block:Nat)
 		[structural]
-		
-	rule [err00005b]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Nat ?) ...</ k => finalComputation >
-		< mem > M:Map</ mem >
-		(.Bag => < errorCell > Error("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
-		if notBool $hasMapping(M:Map, Block:Nat)
-		[structural]
 	
-	rule [err00006a]:
+	rule [err00006]:
 		< k => finalComputation > joinIntegerBytes-aux(T:Type, (?:List{K},, piece(unknown(Len:Nat), Len:Nat)), ?:K) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00006", "Reading uninitialized memory.") </ errorCell >)
 		if notBool hasCharType(T:Type)
-		[structural]	
-	
-	rule [err00006b]:
-		< k => finalComputation > concretize(pointerType(?), dataList((piece(unknown(Len:Nat), Len:Nat),, ?))) ...</ k => finalComputation >
-		(.Bag => < errorCell > Error("00006", "Reading uninitialized memory.") </ errorCell >)
+		[structural]
+		
+	rule [err00007]:
+		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Nat ?) ...</ k => finalComputation >
+		< mem > M:Map </ mem >
+		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
+		if notBool $hasMapping(M:Map, Block:Nat)
 		[structural]
 	
-	rule [err00006c]:
+	rule [err00008]:
+		< k => finalComputation > concretize(pointerType(?), dataList((piece(unknown(Len:Nat), Len:Nat),, ?))) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00008", "Reading uninitialized memory.") </ errorCell >)
+		[structural]
+	
+	rule [err00009]:
 		< k => finalComputation > concretize(T:Type, dataList((piece(unknown(Len:Nat), Len:Nat),, ?))) ...</ k => finalComputation >
-		(.Bag => < errorCell > Error("00006", "Reading uninitialized memory.") </ errorCell >)
+		(.Bag => < errorCell > Error("00009", "Reading uninitialized memory.") </ errorCell >)
 		if hasFloatType(T:Type)
 		[structural]
+		
+	rule [err00010]:
+		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
+		< mem >... Block:Nat |-> memblock(Size:Nat, ?) ...</ mem >
+		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
+		if Offset:Nat >Nat Size:Nat
+		[structural]
+		
+		
+	rule [err00011]:
+		< k => finalComputation > tv(?, T:Type) < tv(?, T':Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00011", "Directly comparing an integer type with a pointer type.") </ errorCell >)
+		if (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
+		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		[structural]
+	rule [err00012]:
+		< k => finalComputation > tv(?, T:Type) <= tv(?, T':Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00012", "Directly comparing an integer type with a pointer type.") </ errorCell >)
+		if (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
+		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		[structural] 
+	rule [err00013]:
+		< k => finalComputation > tv(?, T:Type) > tv(?, T':Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00013", "Directly comparing an integer type with a pointer type.") </ errorCell >)
+		if (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
+		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		[structural] 
+	rule [err00014]:
+		< k => finalComputation > tv(?, T:Type) >= tv(?, T':Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00014", "Directly comparing an integer type with a pointer type.") </ errorCell >)
+		if (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
+		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		[structural] 
 		
 	
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---

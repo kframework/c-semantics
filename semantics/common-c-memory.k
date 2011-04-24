@@ -724,8 +724,7 @@ kmod COMMON-C-MEMORY-MISC is
 			orBool PtrThreadId:Nat ==Bool 0
 			orBool PtrThreadId:Nat ==Bool allocatedDuration
 			) // my thread, global memory, or allocated (malloced) memory
-		andBool Offset:Nat <=Nat sNat(Len:Nat) // we're allowed to address one past
-		andBool Offset:Nat >=Nat 0
+		andBool Offset:Nat <=Nat Len:Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Nat) +Nat N:Nat
 		[structural]
 endkm
