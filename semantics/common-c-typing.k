@@ -9,7 +9,13 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	op isAType_ : K -> Bool 
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
 	op evalToType : -> K 
-		
+	
+	op typeStrictUnaryOperators : -> Set [memo] 
+	rule typeStrictUnaryOperators => Set(
+		l('-_),, l('+_),, l('*_),, l('&_)
+	)
+	[structural]
+	
 	op typeStrictBinaryOperators : -> Set [memo] 
 	rule typeStrictBinaryOperators => Set(
 		l('_*_),, l('_/_),, l('_%_),,
@@ -86,14 +92,6 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		< type > T:Type ~> HOLE -> F:Id => T:Type -> F:Id ...</ type >
 		[structural] 
 		
-	rule [type-address-heat]:
-		< type > & K:K => K:K ~> & HOLE ...</ type >
-		if notBool isAType(K:K)
-		[structural] 
-	rule [type-address-cool]:
-		< type > T:Type ~> & HOLE => & T:Type ...</ type >
-		[structural] 
-		
 	rule [type-ternary-heat-left]:
 		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
 		if notBool isAType(K2:K)
@@ -132,6 +130,16 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
 		
+	rule [type-unary-arith-heat]:
+		< type > L:KLabel(K:K) => K:K ~> L:KLabel(HOLE) ...</ type >
+		if notBool isAType(K:K)
+		andBool typeStrictUnaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-unary-arith-cool]:
+		< type > T:Type ~> L:KLabel(HOLE) => L:KLabel(T:Type) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictUnaryOperators contains l(L:KLabel)
+		[structural] 
 		
 	rule [type-bin-left-arith-heat]:
 		< type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(HOLE,, Args:List{K}) ...</ type >
@@ -152,15 +160,7 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 	rule [type-dot-cool]:
 		< type > T:Type ~> HOLE . X:Id => T:Type . X:Id ...</ type >
 		if isAType(T:Type)
-		[structural] 
-	rule [type-deref-cool]:
-		< type > T:Type ~> *(HOLE) => *(T:Type) ...</ type >
-		if isAType(T:Type)
-		[structural] 
-	rule [type-deref-heat]:
-		< type > *(K:K) => K:K ~> *(HOLE) ...</ type >
-		if notBool isAType(K:K)
-		[structural] 
+		[structural]
 		
 	rule [type-call-heat]:
 		< type > Call(K:K, L:List{C}) => K:K ~> Call(HOLE, L:List{C}) ...</ type >
@@ -681,6 +681,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule 
 		< type > L:KLabel(T:Type,, ?:List{K}) => T:Type ...</ type >
 		if typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural]
+	rule 
+		< type > L:KLabel(T:Type) => T:Type ...</ type >
+		if typeStrictUnaryOperators contains l(L:KLabel)
 		[structural]
 endkm
 
