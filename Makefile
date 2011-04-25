@@ -43,8 +43,12 @@ fast: dist
 check-vars: 
 ifeq ($(K_MAUDE_BASE),)
 	@echo "Error: Please set K_MAUDE_BASE to the full path of your K installation."
+	@echo "Make sure you do NOT include a trailing slash\"
 	@exit 1
 endif
+	@echo Looking for maude...
+	@echo | maude > /dev/null
+	@echo Found.
 
 dist: check-vars $(DIST_DIR)/dist.done
 
