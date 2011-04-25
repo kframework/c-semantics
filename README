@@ -5,7 +5,7 @@ Send an e-mail to Chucky Ellison (celliso2@illinois.edu) with questions/comments
 -----------------------------------------------------------------------
 Install Perl
 	- You almost definitely will have this installed if you use linux or mac; otherwise, use your package manager to install it
-	- Windows perl can be found here: http://www.activestate.com/activeperl 
+	- Windows perl can be found here: http://www.activestate.com/activeperl
 	- Perl is used for many of the scripts in both the C tool and in K
 	- Install perl modules (probably using either ppm in windows, or cpan elsewhere)
 		- XML::Twig
