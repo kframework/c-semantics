@@ -56,6 +56,7 @@ Bye.
 -----------------------------------------------------------------------	
 Install K:
 	- Go to http://code.google.com/p/k-framework/ and check out the K Semantic Framework from http://code.google.com/p/k-framework/source/checkout
+	- You'll definitely want to download the most recent version from SVN instead of using the Downloads link.
 	- The requirements given above in this file should satisfy any requirements of K, but you can look at their readme for details.
 	- Try the following examples:
 	
