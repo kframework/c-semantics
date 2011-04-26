@@ -122,8 +122,8 @@ kmod COMMON-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > types((T1:Type,, T2:Type)) ~> E:K ? E1:Expression : E2:Expression
 			=> IfThenElse(E:K, E1:Expression, E2:Expression) 
 		...</ k >
-		if (hasPointerType(T1:Type) orBool hasArrayType(T1:Type))
-		andBool (hasPointerType(T2:Type) orBool hasArrayType(T2:Type))
+		if (hasPointerType(T1:Type) orBool hasArrayType(T1:Type) orBool hasFunctionType(T1:Type))
+		andBool (hasPointerType(T2:Type) orBool hasArrayType(T2:Type) orBool hasFunctionType(T2:Type))
 		[structural]
 		
 	// this should take care of the void/struct cases
