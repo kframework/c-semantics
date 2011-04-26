@@ -422,7 +422,7 @@ kmod C-SETTINGS is
 	rule numBytes(enumType(X:Id)) => numBytes(int) [structural]
 	
 	op cfg:sizeut : -> Type 
-	rule cfg:sizeut => unsigned-long-int [structural]
+	rule cfg:sizeut => unsigned-int [structural]
 	
 	op cfg:largestUnsigned : -> Type 
 	rule cfg:largestUnsigned => unsigned-long-long-int [structural]

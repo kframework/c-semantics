@@ -129,6 +129,16 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		// andBool double =/=Bool T:Type
 		// andBool float =/=Bool T:Type
 		// [structural] 
+	rule
+		usualArithmeticConversion-aux(float, T:Type) => float
+		if long-double =/=Bool T:Type
+		andBool double =/=Bool T:Type
+		[structural] 
+	rule
+		usualArithmeticConversion-aux(T:Type, float) => float
+		if long-double =/=Bool T:Type
+		andBool double =/=Bool T:Type
+		[structural] 
 
 	
 	// Otherwise, the integer promotions are performed on both operands ..

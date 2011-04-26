@@ -26,7 +26,7 @@ loop:
 	if (n>0) { 
 		goto loop;
 	}
-	puts("Done!");
+	printf("Done!\n");
 	return 0;
 }
 
@@ -37,7 +37,7 @@ int sneaky(void){
 		
 		if (loopGuard != 0){
 	sneaky:
-			puts("sneaky");
+			printf("sneaky\n");
 			loopGuard = 1;
 		} else {
 			loopGuard = 0;
@@ -71,7 +71,7 @@ int another(void){
 		printf("%d, ", another);
 		another--;
 	}
-	puts("");
+	printf("\n");
 	goto repeatedLabel;
 	repeatedLabel:
 	return 0;

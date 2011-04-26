@@ -90,19 +90,21 @@ sub performTest {
 	
 	my $kccCompileOutput = `$kcc -o $kccFilename $allFiles 2>&1`;
 	my $kccCompileRetval = $?;
+	my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
 	if ($kccCompileRetval) {
 		if ($shouldFail) {
 			return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
 		} else {
-			return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$kccCompileOutput");
+			return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$encodedOut");
 		}
 	}
 	
 	my $gccCompileOutput = `$gcc -o $gccFilename $allFiles 2>&1`;
 	my $gccCompileRetval = $?;
+	$encodedOut = HTML::Entities::encode_entities($gccCompileOutput);
 	if ($gccCompileRetval) {
 		if (!$shouldFail) {
-			return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$gccCompileOutput");
+			return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$encodedOut");
 		}
 	}
 	

@@ -108,7 +108,10 @@ kmod COMMON-SEMANTICS-SWITCH is
 	op handleSwitch-aux : K Value K -> K 
 	
 	rule
-		< k > Switch(SN:Nat, tv(V:BaseValue, T:Type), ?) => sequencePoint ~> handleSwitch(SN:Nat, promote(tv(V:BaseValue, T:Type))) ...</ k >
+		< k > Switch(SN:Nat, tv(V:BaseValue, T:Type), ?) 
+			=> sequencePoint 
+			~> handleSwitch(SN:Nat, cast(promote(T:Type), tv(V:BaseValue, T:Type))) 
+		...</ k >
 		if hasIntegerType(T:Type)
 		[structural] 
 		

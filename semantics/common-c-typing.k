@@ -698,7 +698,6 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< type > L:KLabel(T:Type) => promote(T:Type) ...</ type > 
 		if isArithUnaryOp(L:KLabel)
-		andBool notBool hasBeenPromoted(T:Type)
 		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		[structural]
 	
