@@ -60,7 +60,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool hasIntegerType(T:Type)
 		[structural]
 	rule
-		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)),, ?) ...</ k > 
+		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type))),, ?) ...</ k > 
 		if isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
