@@ -14,7 +14,7 @@ int f (int x, int y) {
 	static int r;
 	r++;
 	extern int c;
-	myvar v = 2.3;
+	myvar v = 1.8;
 	printf("  2z = %d\n", z);
 	printf("  2w = %d\n", w);
 	printf("  2r = %d\n", r);

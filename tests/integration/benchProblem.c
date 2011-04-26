@@ -23,7 +23,7 @@ int main()
    bench as described in the text.  Copyright (c) Tao Pang 1997. */
 {
 int n,i;
-double xl,h,h2,y0,x0,xd,rho,g,d,e,e0,f0;
+long double xl,h,h2,y0,x0,xd,rho,g,d,e,e0,f0;
 double b[NMAX],x[NMAX],y[NMAX],w[NMAX],u[NMAX];
 
 n = NMAX;
