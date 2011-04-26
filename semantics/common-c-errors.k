@@ -176,6 +176,15 @@ kmod COMMON-C-ERRORS is
 		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
 		[structural] 
 		
+	rule [err00015]:
+		< k => finalComputation > arithInterpret(T:Type, I:Int) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00015", "Signed overflow.") </ errorCell >)
+		if hasSignedIntegerType(T:Type)
+		andBool notBool (min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int)
+		[structural] 	
+		
+		// ('arithInterpret).KProperLabel(('int).KResultLabel(.List{K}),,Rat 2147483648(.List{K}))
+		
 	
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 

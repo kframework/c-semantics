@@ -550,6 +550,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		(< type > T:Type </ type > => .Bag)
 		if isAType T:Type
 		[structural] 
+
+	rule
+		< type > emptyValue => void ...</ type > 
+		[structural] 
 		
 	rule
 		< type > functionObject(?, T:Type, ?) => T:Type ...</ type >
