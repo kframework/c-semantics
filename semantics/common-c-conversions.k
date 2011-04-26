@@ -1,28 +1,21 @@
 kmod COMMON-SEMANTICS-PROMOTIONS is
 	including COMMON-INCLUDE 
 	
-	// rule
-		// < k > L:KLabel(tv(L':List{K}, T:Type),, V:Value)
-			// => L:KLabel(cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)),, V:Value) 
-		// ...</ k >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool hasArrayType(T:Type)
-		// [structural] 
-	// rule
-		// < k > L:KLabel(V:Value,, tv(L':List{K}, T:Type))
-			// => L:KLabel(V:Value,, cast(pointerType(innerType(T:Type)), tv(L':List{K}, T:Type)))
-		// ...</ k >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool hasArrayType(T:Type)
-		// [structural] 
-	
 	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
 	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
 	// there is another set of promotions called "default argument promotions" used when calling functions where the type information is not complete.  This is equivalent to integer promotions + (float => double) 
 	
-	op arithConversion-int : KLabel K K -> K
+	
+	op usualArithmeticConversion-aux : K K -> K
+	
+	rule usualArithmeticConversion(T:Type, T':Type)
+			=> usualArithmeticConversion-aux(promote(T:Type), promote(T':Type))
+		[structural]
+		
+
+	// op arithConversion-int : KLabel K K -> K
 	op isArithBinOp : KLabel -> Bool 
-	op isArithBinConversionOp : KLabel -> Bool 
+
 	op arithBinOps : -> Set [memo] 
 	op arithBinConversionOps : -> Set [memo] 
 
@@ -45,7 +38,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 
 	op arithUnaryOps : -> Set [memo] 
 	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
-	op isArithUnaryOp : KLabel -> Bool 
+
 	rule [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
@@ -61,155 +54,150 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		[structural]
 	
 	rule
-		< k > L:KLabel((tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type)))) ...</ k > 
+		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
 		if isArithUnaryOp(L:KLabel)
-		andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
+		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
-		[structural] 
+		[structural]
+	// rule
+		// < k > L:KLabel((tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))),, ?) ...</ k > 
+		// if isArithBinOp(L:KLabel)
+		// andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
+		// andBool hasIntegerType(T:Type)
+		// [structural] 
+	// rule
+		// < k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type)))) ...</ k > 
+		// if isArithBinOp(L:KLabel)
+		// andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
+		// andBool hasIntegerType(T:Type)
+		// [structural] 
+	// rule
+		// arithConversion-int(?, tv(?, (enumType(?) => int)), ?)
+		// [structural] 
+	// rule
+		// arithConversion-int(?, ?, tv(?, (enumType(?) => int)))
+		// [structural] 
 	rule
-		< k > L:KLabel((tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))),, ?) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
-		andBool hasIntegerType(T:Type)
-		[structural] 
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
-		andBool hasIntegerType(T:Type)
-		[structural] 
-	rule
-		arithConversion-int(?, tv(?, (enumType(?) => int)), ?)
-		[structural] 
-	rule
-		arithConversion-int(?, ?, tv(?, (enumType(?) => int)))
-		[structural] 
-	rule
-		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type)) 
-			=> arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type))
+		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type))
+			=> L:KLabel(cast(finalType, tv(V:BaseValue, T:Type)),, cast(finalType, tv(V':BaseValue, T':Type)))
 		...</ k >
 		if isArithBinConversionOp(L:KLabel)
-		andBool T:Type =/=Bool T':Type
-		andBool hasIntegerType(T:Type)
-		andBool hasIntegerType(T':Type)
-		andBool rank(T:Type) >=Int rank(int)
-		andBool rank(T':Type) >=Int rank(int)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		andBool (
+			T:Type =/=Bool T':Type
+			orBool notBool hasBeenPromoted(T:Type) 
+			orBool notBool hasBeenPromoted(T':Type)
+		)
+		where finalType = usualArithmeticConversion(T:Type, T':Type)
 		[structural] 
-	
+		
+
 	// fixme these could be done more cleanly
 
 	//C99 6.3.1.8
 	// First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
-	rule
-		< k > L:KLabel(tv(V:BaseValue, long-double),, tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(tv(V:BaseValue, long-double),, cast(long-double, tv(V':BaseValue, T':Type))) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T':Type
-		[structural] 
-	rule
-		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, long-double)) 
-			=> L:KLabel(cast(long-double, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, long-double)) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T:Type
-		[structural] 
+	rule usualArithmeticConversion-aux(long-double, ?) => long-double [structural]
+	rule usualArithmeticConversion-aux(?, long-double) => long-double [structural] 
 		
 	// Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
 	rule
-		< k > L:KLabel(tv(V:BaseValue, double),, tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(tv(V:BaseValue, double),, cast(double, tv(V':BaseValue, T':Type))) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T':Type
-		andBool double =/=Bool T':Type
+		usualArithmeticConversion-aux(double, T:Type) => double
+		if long-double =/=Bool T:Type
 		[structural] 
 	rule
-		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, double)) 
-			=> L:KLabel(cast(double, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, double)) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T:Type
-		andBool double =/=Bool T:Type
+		usualArithmeticConversion-aux(T:Type, double) => double
+		if long-double =/=Bool T:Type
 		[structural] 
 		
-	// Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
-	rule
-		< k > L:KLabel(tv(V:BaseValue, float),, tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(tv(V:BaseValue, float),, cast(float, tv(V':BaseValue, T':Type))) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T':Type
-		andBool double =/=Bool T':Type
-		andBool float =/=Bool T':Type
-		[structural] 
-	rule
-		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, float)) 
-			=> L:KLabel(cast(float, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, float)) 
-		...</ k >
-		if isArithBinConversionOp(L:KLabel)
-		andBool long-double =/=Bool T:Type
-		andBool double =/=Bool T:Type
-		andBool float =/=Bool T:Type
-		[structural] 
+	// // Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
+	// rule
+		// < k > L:KLabel(tv(V:BaseValue, float),, tv(V':BaseValue, T':Type)) 
+			// => L:KLabel(tv(V:BaseValue, float),, cast(float, tv(V':BaseValue, T':Type))) 
+		// ...</ k >
+		// if isArithBinConversionOp(L:KLabel)
+		// andBool long-double =/=Bool T':Type
+		// andBool double =/=Bool T':Type
+		// andBool float =/=Bool T':Type
+		// [structural] 
+	// rule
+		// < k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, float)) 
+			// => L:KLabel(cast(float, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, float)) 
+		// ...</ k >
+		// if isArithBinConversionOp(L:KLabel)
+		// andBool long-double =/=Bool T:Type
+		// andBool double =/=Bool T:Type
+		// andBool float =/=Bool T:Type
+		// [structural] 
 
 	
 	// Otherwise, the integer promotions are performed on both operands ..
 	
 	//C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
 	//C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
+
+	rule argPromote(float) => double [structural]
+	rule argPromote(double) => double [structural]
+	rule argPromote(long-double) => long-double [structural]
+	rule argPromote(T:Type) => promote(T:Type)
+		if hasIntegerType(T:Type)
+		[structural]
+	
+	rule promote(T:Type) => T:Type
+		if hasFloatType(T:Type)
+		[structural]
+	
 	rule
-		promote(tv(V:BaseValue, T:Type)) => tv(V:BaseValue, int)
+		promote(T:Type) => int
 		if hasIntegerType(T:Type)
 		andBool rank(T:Type) <=Int rank(int)
 		andBool min(int) <=Int min(T:Type) 
 		andBool max(int) >=Int max(T:Type)		
-		[structural] 
+		[structural]
 
 	rule
-		promote(tv(V:BaseValue, T:Type)) => tv(V:BaseValue, T:Type)
+		promote(T:Type) => T:Type
 		if hasIntegerType(T:Type)
 		andBool rank(T:Type) >Int rank(int)
 		andBool notBool hasBitfieldType(T:Type)
 		[structural]
 
 	rule
-		promote(tv(V:BaseValue, bitfieldType(T:Type, Len:Nat))) => tv(V:BaseValue, int)
+		promote(bitfieldType(T:Type, Len:Nat)) => int
 		if (T:Type ==Bool bool orBool T:Type ==Bool int orBool T:Type ==Bool unsigned-int)
 		andBool min(int) <=Int min(bitfieldType(T:Type, Len:Nat))
 		andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))
 		[structural] 
 	// fixme unclear what 6.3.1.1:3 means
+
 	rule
-		promote(tv(V:BaseValue, T:Type)) => cast(unsigned-int, tv(V:BaseValue, T:Type))
+		promote(T:Type) => unsigned-int
 		if hasIntegerType(T:Type)
 		andBool rank(T:Type) <=Int rank(int)
 		andBool notBool (
 			min(int) <=Int min(T:Type) 
 			andBool max(int) >=Int max(T:Type)		
 		)
-		[structural] 
+		[structural]
+
 	rule
-		promote(tv(V:BaseValue, bitfieldType(T:Type, Len:Nat))) => cast(unsigned-int, tv(V:BaseValue, T:Type))
+		promote(bitfieldType(T:Type, Len:Nat)) => unsigned-int
 		if (T:Type ==Bool bool orBool T:Type ==Bool int orBool T:Type ==Bool unsigned-int)
 		andBool notBool (
 			min(int) <=Int min(bitfieldType(T:Type, Len:Nat))
 			andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))	
 		)
-		[structural] 
+		[structural]		
 	
-	rule
-		promote(tv(F:Float, float)) => tv(F:Float, double)
-		[structural] 
+	// this only happens for argument promotions
+	// rule
+		// promote(tv(F:Float, float)) => tv(F:Float, double)
+		// [structural]
 	
 	// Then the following rules are applied to the promoted operands:
 	
 	// If both operands have the same type, then no further conversion is needed
-	rule [arithConversion-int-done]:
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T:Type)) 
-			=> L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T:Type))
-		...</ k >
-		[structural] 
+	rule [arithConversion-int-done]: usualArithmeticConversion-aux(T:Type, T:Type) => T:Type [structural]
 		
 	rule [maxType-left]:
 		maxType(T:Type, T':Type) => T:Type
@@ -219,34 +207,31 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		maxType(T:Type, T':Type) => T':Type
 		if rank(T':Type) >=Int rank(T:Type) 
 		[structural]
-			
+
+	op hasSameSignedness : Type Type -> Bool [memo]
+	rule hasSameSignedness(T:Type, T':Type)
+		=> (hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
+			orBool (hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
+		[structural]
+		
 	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(cast(maxType(T:Type, T':Type), tv(V:BaseValue, T:Type)),, cast(maxType(T:Type, T':Type), tv(V':BaseValue, T':Type)))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => maxType(T:Type, T':Type)
 		if T:Type =/=Bool T':Type
-		andBool (
-			(hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
-			orBool
-			(hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
-		)
-		[structural] 
+		andBool hasSameSignedness(T:Type, T':Type)
+		[structural]
+	
 		
 	// Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(cast(T':Type, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, T':Type))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
 		andBool hasUnsignedIntegerType(T':Type) 
 		andBool rank(T':Type) >=Int rank(T:Type)
 		[structural] 
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(tv(V:BaseValue, T:Type),, cast(T:Type, tv(V':BaseValue, T':Type)))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 
 		andBool hasSignedIntegerType(T':Type) 
@@ -255,9 +240,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		
 	// Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(tv(V:BaseValue, T:Type),, cast(T:Type, tv(V':BaseValue, T':Type)))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
 		andBool hasUnsignedIntegerType(T':Type) 
@@ -266,9 +249,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool max(T:Type) >=Int max(T':Type)
 		[structural] 
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(cast(T':Type, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, T':Type))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 
 		andBool hasSignedIntegerType(T':Type) 
@@ -279,9 +260,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		
 	// Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(cast(correspondingUnsignedType(T:Type), tv(V:BaseValue, T:Type)),, cast(correspondingUnsignedType(T:Type), tv(V':BaseValue, T':Type)))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T:Type)
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
 		andBool hasUnsignedIntegerType(T':Type) 
@@ -289,9 +268,7 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool (min(T:Type) >Int min(T':Type) orBool max(T:Type) <Int max(T':Type))
 		[structural] 
 	rule
-		< k > arithConversion-int(L:KLabel, tv(V:BaseValue, T:Type), tv(V':BaseValue, T':Type)) 
-			=> L:KLabel(cast(correspondingUnsignedType(T':Type), tv(V:BaseValue, T:Type)),, cast(correspondingUnsignedType(T':Type), tv(V':BaseValue, T':Type)))
-		...</ k >
+		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T':Type)
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 
 		andBool hasSignedIntegerType(T':Type) 

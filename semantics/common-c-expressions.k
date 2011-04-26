@@ -73,18 +73,53 @@ kmod COMMON-SEMANTICS-BOOLEAN is
 			=> E1:K ? (E:Expression ? tv(1, int) : tv(0, int)) : tv(0, int)
 		...</ k >
 		[structural] 
-	
-	// FIXME the types of these results are wrong.  The correct behavior is quite complicated.  see 6.5.15
 
-	rule
-		< k > E:K ? E1:Expression : E2:Expression 
-			=> IfThenElse(E:K, E1:Expression, E2:Expression) 
-		...</ k >
-		[structural]
 		
 	// c1x 6.5.3.3:5 The expression !E is equivalent to (0==E)
 	rule !(E:K) => tv(0, int) == E:K
 		[structural] 
+endkm
+
+kmod COMMON-SEMANTICS-CONDITIONAL-EXPRESSION is
+	including COMMON-INCLUDE 
+	// FIXME the types of these results are wrong.  The correct behavior is quite complicated.  see 6.5.15
+
+	op getTypes : List{K} -> K
+	op types : List{K} -> K
+	context types((?,, `[HOLE`]:K,, ?))
+	op convertedType : K -> K [strict]
+	
+	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
+	
+	op wrapWithTypeOf : List{K} -> List{K}
+	rule wrapWithTypeOf((K:K,, L:List{K})) => (typeof(K:K),, wrapWithTypeOf(L:List{K})) [structural]
+	rule wrapWithTypeOf(.List{K}) => .List{K} [structural]
+	
+	
+	 // eq <_>_</_>((k).CellLabel, _~>_(_`(_`)(('types).KProperLabel, Kcxt:KProper), Rest:K), (k).CellLabel) 
+	 // = <_>_</_>((k).CellLabel, _~>_(Kcxt:KProper, _`(_`)(freezer(("('types).KProperLabel(`[HOLE`]:K)").String), (.List`{K`}).List`{KResult`}), Rest:K), (k).CellLabel) 
+	 // [ metadata "heating" ]. 
+	 
+	// rule
+		// < k > E:K ? E1:Expression : E2:Expression 
+			// => IfThenElse(E:K, E1:Expression, E2:Expression) 
+		// ...</ k >
+		// [structural]
+	rule
+		< k > (.K => getTypes((E1,, E2))) ~> E:K ? E1:Expression : E2:Expression ...</ k >
+		[structural]
+		
+	rule
+		< k > (types((T1:Type,, T2:Type)) => convertedType(usualArithmeticConversion(T1:Type, T2:Type)))
+			~> E:K ? E1:Expression : E2:Expression 
+		...</ k >
+		[structural]
+	rule
+		< k > convertedType(T:Type) ~> E:K ? E1:Expression : E2:Expression 
+			=> IfThenElse(E:K, cast(T:Type, E1:Expression), cast(T:Type, E2:Expression)) 
+		...</ k >
+		[structural]
+		
 endkm
 
 kmod COMMON-SEMANTICS-SIZEOF is
@@ -1117,6 +1152,7 @@ kmod COMMON-C-EXPRESSIONS is
 
 	including COMMON-SEMANTICS-COMPOUND-LITERAL 
 	including COMMON-SEMANTICS-BOOLEAN 
+	including COMMON-SEMANTICS-CONDITIONAL-EXPRESSION
 	including COMMON-SEMANTICS-SIZEOF 
 	including COMMON-SEMANTICS-IDENTIFIERS 
 	including COMMON-SEMANTICS-FUNCTION-CALLS 

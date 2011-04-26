@@ -570,18 +570,40 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > SizeofExpression(?) => cfg:sizeut ...</ type >
 		[structural] 
 
+	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
+		[structural] 
+	// rule
+		// < type > arrayType(T:Type, ?)[T':Type] => T:Type ...</ type >
+		// if hasIntegerType(T':Type)
+		// [structural] 
+	// rule
+		// < type > pointerType(T:Type)[T':Type] => T:Type ...</ type >
+		// if hasIntegerType(T':Type)
+		// [structural] 
 	rule
-		< type > arrayType(T:Type, ?)[T':Type] => T:Type ...</ type >
+		< type > pointerType(T:Type) + T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)
 		[structural] 
 	rule
-		< type > pointerType(T:Type)[T':Type] => T:Type ...</ type >
+		< type > T':Type + pointerType(T:Type) => pointerType(T:Type) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > pointerType(T:Type) - T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)
 		[structural] 
 	rule
 		< type > arrayType(T:Type, ?) + T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)
 		[structural] 
+	rule
+		< type > T':Type + arrayType(T:Type, ?) => pointerType(T:Type) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > arrayType(T:Type, ?) - T':Type => pointerType(T:Type) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural]
 
 	// c99 6.4.5
 	rule
@@ -652,18 +674,39 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		) contains l(L:KLabel)
 		[structural]
 	
+	// rule 
+		// < type > L:KLabel(T:Type,, T':Type) => maxType(T:Type, T':Type) ...</ type >
+		// if typeStrictBinaryOperators contains l(L:KLabel)
+		// andBool hasIntegerType(T:Type)
+		// andBool hasIntegerType(T':Type)
+		// [structural] 
 	rule 
-		< type > L:KLabel(T:Type,, T':Type) => maxType(T:Type, T':Type) ...</ type >
-		if typeStrictBinaryOperators contains l(L:KLabel)
-		andBool hasIntegerType(T:Type)
-		andBool hasIntegerType(T':Type)
+		< type > L:KLabel(T:Type,, T':Type) => usualArithmeticConversion(T:Type, T':Type) ...</ type >
+		if isArithBinConversionOp(L:KLabel)
+		andBool isAType(T:Type)
+		andBool isAType(T':Type)
+		// andBool hasIntegerType(T:Type)
+		// andBool hasIntegerType(T':Type)
 		[structural] 
 		
 	rule 
-		< type > ?:K ? T:Type : T':Type => maxType(T:Type, T':Type) ...</ type >
-		if hasIntegerType(T:Type)
-		andBool hasIntegerType(T':Type)
-		[structural] 
+		< type > ?:K ? T:Type : T':Type => usualArithmeticConversion(T:Type, T':Type) ...</ type >
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		[structural]
+
+	rule
+		< type > L:KLabel(T:Type) => promote(T:Type) ...</ type > 
+		if isArithUnaryOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		[structural]
+	
+	rule 
+		< type > L:KLabel(T:Type,, ?:List{K}) => promote(T:Type) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural]
 		
 	rule
 		< type > L:KLabel(?:K,, ?:K) => int ...</ type >
@@ -678,14 +721,6 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		if isAType(T:Type)
 		[structural]
 		
-	rule 
-		< type > L:KLabel(T:Type,, ?:List{K}) => T:Type ...</ type >
-		if typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural]
-	rule 
-		< type > L:KLabel(T:Type) => T:Type ...</ type >
-		if typeStrictUnaryOperators contains l(L:KLabel)
-		[structural]
 endkm
 
 kmod COMMON-C-TYPING is
