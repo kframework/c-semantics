@@ -1,6 +1,6 @@
 // string.h
 #define NULL ((void *)0)
-typedef unsigned long int size_t; // this needs to correspond to cfg:sizeut
+typedef unsigned int size_t; // this needs to correspond to cfg:sizeut
 size_t strlen(char *str);
 int strcmp(const char *str1, const char *str2);
 char* strcpy(char* s1, const char* s2);

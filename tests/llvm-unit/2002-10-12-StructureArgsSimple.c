@@ -8,7 +8,7 @@ void print(struct vec2 S) {
 
 int main() {
 	struct vec2 U;
-	U.X = .5; U.Y = 1.2;
+	U.X = .5; U.Y = 1.3;
 	print(U);
 	return 0;
 }

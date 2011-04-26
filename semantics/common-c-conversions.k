@@ -111,24 +111,6 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		[structural] 
 		
 	// // Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
-	// rule
-		// < k > L:KLabel(tv(V:BaseValue, float),, tv(V':BaseValue, T':Type)) 
-			// => L:KLabel(tv(V:BaseValue, float),, cast(float, tv(V':BaseValue, T':Type))) 
-		// ...</ k >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool long-double =/=Bool T':Type
-		// andBool double =/=Bool T':Type
-		// andBool float =/=Bool T':Type
-		// [structural] 
-	// rule
-		// < k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, float)) 
-			// => L:KLabel(cast(float, tv(V:BaseValue, T:Type)),, tv(V':BaseValue, float)) 
-		// ...</ k >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool long-double =/=Bool T:Type
-		// andBool double =/=Bool T:Type
-		// andBool float =/=Bool T:Type
-		// [structural] 
 	rule
 		usualArithmeticConversion-aux(float, T:Type) => float
 		if long-double =/=Bool T:Type
@@ -299,8 +281,6 @@ kmod COMMON-SEMANTICS-CAST is
 	including COMMON-INCLUDE 
 	
 	//- switch assumes casts can happen anywhere
-	
-	// rule ['Cast(T:Type,, E:Expression) => cast(T:Type, E:Expression)] [structural] 
 	rule 
 		cast(void, ?) => skipval
 		[structural] 
@@ -562,9 +542,10 @@ kmod COMMON-SEMANTICS-CAST is
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural] 
 		
-	rule
-		cast(arrayType(T:Type, N:Nat), tv(N':Nat, T':Type)) => tv(N':Nat, arrayType(T:Type, N:Nat))
-		[structural] 
+	// can't cast to array types
+	// rule
+		// cast(arrayType(T:Type, N:Nat), tv(N':Nat, T':Type)) => tv(N':Nat, arrayType(T:Type, N:Nat))
+		// [structural] 
 		
 	// rule
 		// cast(?, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))))

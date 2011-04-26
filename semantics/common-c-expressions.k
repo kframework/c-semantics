@@ -11,11 +11,12 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 		
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+
 	rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
 	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
 	rule peval(lv(Loc:Nat, T:Type)) => lv(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 
 	
 	// are these two necessary?  why do we create lvalues that are function types?
@@ -121,8 +122,7 @@ kmod COMMON-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > types((T1:Type,, T2:Type)) ~> E:K ? E1:Expression : E2:Expression
 			=> IfThenElse(E:K, E1:Expression, E2:Expression) 
 		...</ k >
-		if T1:Type =/=Bool T2:Type
-		andBool (hasPointerType(T1:Type) orBool hasArrayType(T1:Type))
+		if (hasPointerType(T1:Type) orBool hasArrayType(T1:Type))
 		andBool (hasPointerType(T2:Type) orBool hasArrayType(T2:Type))
 		[structural]
 		
@@ -131,6 +131,7 @@ kmod COMMON-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T:Type,, T:Type)) => convertedType(T:Type))
 			~> E:K ? E1:Expression : E2:Expression
 		...</ k >
+		if notBool hasArrayType(T:Type)
 		[structural]
 	rule
 		< k > convertedType(T:Type) ~> E:K ? E1:Expression : E2:Expression 

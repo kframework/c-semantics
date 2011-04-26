@@ -12,7 +12,7 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	
 	op typeStrictUnaryOperators : -> Set [memo] 
 	rule typeStrictUnaryOperators => Set(
-		l('-_),, l('+_),, l('*_),, l('&_)
+		l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
 	)
 	[structural]
 	
@@ -593,6 +593,9 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		if hasIntegerType(T':Type)
 		[structural] 
 	rule
+		< type > pointerType(T:Type) - pointerType(T':Type) => cfg:ptrdiffut ...</ type >
+		[structural]
+	rule
 		< type > arrayType(T:Type, ?) + T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)
 		[structural] 
@@ -612,6 +615,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< type > K:K => T:Type ...</ type >
 		< types >... K:K |-> T:Type ...</ types >
+		[structural] 
+		
+	rule
+		< type > Comma(L:List{C} :: K:C) => K:C ...</ type >
 		[structural] 
 
 	rule [type-call-func]:
@@ -683,16 +690,26 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule 
 		< type > L:KLabel(T:Type,, T':Type) => usualArithmeticConversion(T:Type, T':Type) ...</ type >
 		if isArithBinConversionOp(L:KLabel)
-		andBool isAType(T:Type)
-		andBool isAType(T':Type)
-		// andBool hasIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
 		[structural] 
 		
 	rule 
 		< type > ?:K ? T:Type : T':Type => usualArithmeticConversion(T:Type, T':Type) ...</ type >
 		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		[structural]
+	rule 
+		< type > ?:K ? T:Type : T:Type => T:Type ...</ type >
+		if isAType(T:Type)
+		andBool notBool hasArrayType(T:Type)
+		[structural]
+		
+	rule < type > ?:K ? (arrayType(T:Type, ?) => pointerType(T:Type)) : ? ...</ type > [structural]
+	rule < type > ?:K ? ?:K : (arrayType(T:Type, ?) => pointerType(T:Type)) ...</ type > [structural]
+		
+	rule // not safe, could be incompatible types
+		< type > ?:K ? pointerType(T:Type) : pointerType(T':Type) => pointerType(T:Type) ...</ type >
 		[structural]
 
 	rule
@@ -703,8 +720,19 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	
 	rule 
 		< type > L:KLabel(T:Type,, ?:List{K}) => promote(T:Type) ...</ type >
-		if isAType(T:Type)
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural]
+		
+	rule 
+		< type > L:KLabel(T:Type) => T:Type ...</ type >
+		if hasPointerType(T:Type)
+		andBool (
+			L:KLabel ==Bool ('_++)
+			orBool L:KLabel ==Bool ('_--)
+			orBool L:KLabel ==Bool ('--_)
+			orBool L:KLabel ==Bool ('++_)
+		)
 		[structural]
 		
 	rule
