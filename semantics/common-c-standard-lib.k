@@ -21,7 +21,6 @@ kmod COMMON-C-STANDARD-LIBRARY is
 	// op C : K -> C 
 	// eq C(K:K) = K:K 
 	
-	op debug : -> K 
 	op vpair : K K -> C [hybrid strict] 
 	rule [nextvarg-start]:
 		< k > nextvarg(Loc:Nat, T:Type)
@@ -70,9 +69,9 @@ kmod COMMON-C-STANDARD-LIBRARY is
 		// if F:Id =/=Bool Identifier("longjmp")
 		[structural] 
 
-	// rule [debug]:
-		// < k > [prepareBuiltin((debug), ?) => skipval] ...</ k >
-	// [structural] 
+	rule [debug]:
+		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
+		[metadata "computational"]
 	////////////////////////////--
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds

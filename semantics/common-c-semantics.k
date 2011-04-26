@@ -23,12 +23,11 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unknown : Nat -> Nat [ctor] 
 	
 	op skipval : -> KResult 
-	op debugK : -> K 
+	op debug : -> K 
 	op discard : -> K 
 	op File-Scope : -> Id [ctor] 
 	op unnamedBitField : -> Id [ctor] 
 	op bignum : -> Type 
-	op debug : -> K 
 	op sym : Nat -> Nat 
 	op byteo : Nat -> Nat 
 	op bito : Nat -> Nat 
@@ -364,7 +363,7 @@ kmod C-SETTINGS is
 		,, "atan2"
 		,, "calloc"
 		,, "cos"
-		,, "debug"
+		,, "__debug"
 		,, "exit"
 		,, "exp"
 		,, "floor"

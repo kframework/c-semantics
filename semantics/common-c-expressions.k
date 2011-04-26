@@ -1144,14 +1144,16 @@ kmod COMMON-SEMANTICS-INCREMENT-AND-DECREMENT is
 
 	rule [post-increment]:
 		< k > postInc(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
-			=> Computation(lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) + tv(1, int))
+			=> lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) + tv(1, int)
+			~> discard
 			~> tv(V:BaseValue, T:Type)
 		...</ k >
 		[structural] 
 		
 	rule [post-decrement]:
 		< k > postDec(Loc:Nat, tv(V:BaseValue, T:Type), T:Type)
-			=> Computation(lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) - tv(1, int))
+			=> lv(Loc:Nat, T:Type) := tv(V:BaseValue, T:Type) - tv(1, int)
+			~> discard
 			~> tv(V:BaseValue, T:Type)
 		...</ k >
 		[structural]
