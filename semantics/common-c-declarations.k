@@ -81,7 +81,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	op promoteList : List{C} -> List{K} 
-	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (argPromote(tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
+	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (cast(argPromote(T:Type), tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
 		orBool T:Type ==Bool float 
 		[structural]

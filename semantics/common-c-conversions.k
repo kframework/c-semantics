@@ -59,18 +59,18 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
 		[structural]
-	// rule
-		// < k > L:KLabel((tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type))),, ?) ...</ k > 
-		// if isArithBinOp(L:KLabel)
-		// andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
-	// rule
-		// < k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => promote(tv(V:BaseValue, T:Type)))) ...</ k > 
-		// if isArithBinOp(L:KLabel)
-		// andBool (rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type))
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
+	rule
+		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)),, ?) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool hasIntegerType(T:Type)
+		[structural] 
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool hasIntegerType(T:Type)
+		[structural] 
 	// rule
 		// arithConversion-int(?, tv(?, (enumType(?) => int)), ?)
 		// [structural] 
