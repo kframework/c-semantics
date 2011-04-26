@@ -99,8 +99,8 @@ cparser:
 	@-strip $(PARSER)
 
 semantics: check-vars
-#@echo $(WHICH_SEMANTICS)
-	@make $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR) semantics
+	@rm -f $(SEMANTICS_DIR)/c-total-nd.maude
+	@make $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
 
 clean:
 	make -C $(PARSER_DIR) clean

@@ -1,6 +1,7 @@
 #include "fsl-header.h"
-typedef __SIZE_TYPE__ size_t;
-extern size_t strlen (const char *s);
+#include <string.h>
+//typedef __SIZE_TYPE__ size_t;
+//extern size_t strlen (const char *s);
 
 typedef struct A {
   int a, b;

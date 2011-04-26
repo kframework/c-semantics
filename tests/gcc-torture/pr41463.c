@@ -44,7 +44,7 @@ foo (union tree_node *p, int i)
 }
 
 extern void abort (void);
-extern void *malloc (__SIZE_TYPE__);
+extern void *malloc (size_t);
 
 int
 main()

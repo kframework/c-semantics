@@ -24,7 +24,7 @@ foo (struct VEC_char_base *p, int i)
 }
 
 extern void abort (void);
-extern void *malloc (__SIZE_TYPE__);
+extern void *malloc (size_t);
 
 int
 main()

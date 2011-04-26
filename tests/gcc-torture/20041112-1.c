@@ -4,7 +4,7 @@
 
 extern void abort(void);
 
-typedef __SIZE_TYPE__ size_t;
+//typedef __SIZE_TYPE__ size_t;
 
 int global;
 

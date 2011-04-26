@@ -101,10 +101,10 @@ sub performTest {
 	
 	my $gccCompileOutput = `$gcc -o $gccFilename $allFiles 2>&1`;
 	my $gccCompileRetval = $?;
-	$encodedOut = HTML::Entities::encode_entities($gccCompileOutput);
+	#$encodedOut = HTML::Entities::encode_entities($gccCompileOutput);
 	if ($gccCompileRetval) {
 		if (!$shouldFail) {
-			return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$encodedOut");
+			return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$gccCompileOutput");
 		}
 	}
 	
