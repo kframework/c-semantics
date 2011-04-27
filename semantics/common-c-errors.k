@@ -191,6 +191,30 @@ kmod COMMON-C-ERRORS is
 		if Loc:Nat in Locs:Bag
 		[structural] 
 		
+	rule [err00017]:
+		< k => finalComputation > tv(I1:Int, T:Type) / tv(0, T:Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00017", "Division by 0.") </ errorCell >)
+		if hasIntegerType(T:Type)
+		andBool hasBeenPromoted(T:Type)
+		[structural]
+	
+	rule [err00018]:
+		< k => finalComputation > tv(I1:Int, T:Type) % tv(0, T:Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00018", "Modulus by 0.") </ errorCell >)
+		if hasIntegerType(T:Type)
+		andBool hasBeenPromoted(T:Type)
+		[structural]
+		
+	rule [err00019]:
+		< k => finalComputation > tv(I1:Int, T:Type) % tv(I2:Int, T:Type) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00018", "Signed overflow.") </ errorCell >)
+		if hasIntegerType(T:Type)
+		andBool notBool (min(T:Type) <=Int I1:Int /Int I2:Int andBool max(T:Type) >=Int I1:Int /Int I2:Int)
+		andBool hasBeenPromoted(T:Type)
+		andBool I2:Int =/=Bool 0
+		[structural]
+
+		
 	
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 
