@@ -584,6 +584,8 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		// < type > pointerType(T:Type)[T':Type] => T:Type ...</ type >
 		// if hasIntegerType(T':Type)
 		// [structural] 
+	rule 
+		< type > arithInterpret(T:Type, ?) => T:Type ...</ type >
 	rule
 		< type > pointerType(T:Type) + T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)

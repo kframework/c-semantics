@@ -887,6 +887,7 @@ kmod COMMON-SEMANTICS-ARITHMETIC is
 		[structural] 
 	rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int %Int I2:Int) 
 		if hasIntegerType(T:Type)
+		andBool min(T:Type) <=Int I1:Int /Int I2:Int andBool max(T:Type) >=Int I1:Int /Int I2:Int
 		andBool hasBeenPromoted(T:Type)
 		andBool I2:Int =/=Bool 0
 		[structural] 
