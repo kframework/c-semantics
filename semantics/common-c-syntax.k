@@ -576,6 +576,7 @@ and unary_operator =
 	| COMMA of expression list
 */
 	op Comma : List{C} -> Expression
+	context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "nd=(true)"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression

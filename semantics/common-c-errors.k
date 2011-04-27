@@ -183,7 +183,13 @@ kmod COMMON-C-ERRORS is
 		andBool notBool (min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int)
 		[structural] 	
 		
-		// ('arithInterpret).KProperLabel(('int).KResultLabel(.List{K}),,Rat 2147483648(.List{K}))
+		
+	rule [err00016]:
+		< k => finalComputation > writeByte(Loc:Nat, ?) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </ errorCell >)
+		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		if Loc:Nat in Locs:Bag
+		[structural] 
 		
 	
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---

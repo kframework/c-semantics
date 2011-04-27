@@ -40,6 +40,10 @@ all: dist
 fast: WHICH_SEMANTICS="semantics-fast"
 fast: dist
 
+nd: WHICH_SEMANTICS="semantics-nd"
+nd: dist
+
+
 check-vars: 
 ifeq ($(K_MAUDE_BASE),)
 	@echo "Error: Please set K_MAUDE_BASE to the full path of your K installation."
@@ -99,7 +103,7 @@ cparser:
 	@-strip $(PARSER)
 
 semantics: check-vars
-	@rm -f $(SEMANTICS_DIR)/c-total-nd.maude
+#@rm -f $(SEMANTICS_DIR)/c-total-nd.maude
 	@make $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
 
 clean:

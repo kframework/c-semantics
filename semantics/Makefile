@@ -99,7 +99,13 @@ semantics: c-total.maude c-total-nd.maude
 fast-nd: c-total.maude
 	@cp c-total.maude c-total-nd.maude
 
+fast-normal: c-total-nd.maude
+	@cp c-total-nd.maude c-total.maude
+
+	
 semantics-fast: c-total.maude fast-nd
+
+semantics-nd: c-total-nd.maude fast-normal
 
 clean:
 	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp 
