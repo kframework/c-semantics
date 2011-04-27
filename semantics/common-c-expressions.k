@@ -1163,7 +1163,7 @@ kmod COMMON-SEMANTICS-SEQUENCING is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
 	// again with stupid sorting problem
-	rule < k > Comma(T:Type :: K':C :: L:List{C}) => Comma(K':C :: L:List{C}) ...</ k >
+	rule < k > Comma(T:Type :: K':C :: L:List{C}) => sequencePoint ~> Comma(K':C :: L:List{C}) ...</ k >
 		[structural]
 	
 	// rule < k > Comma(K:C :: K':C :: L:List{C}) => Computation(K:C) ~> Comma(K':C :: L:List{C}) ...</ k >
