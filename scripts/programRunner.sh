@@ -5,6 +5,7 @@ if [ $HELP ]; then
 	echo "PLAIN --- prints out entire output without filtering it"
 	echo "SEARCH --- searches for all possible behaviors instead of interpreting"
 	echo "PROFILE --- performs semantic profiling using this program"
+	echo "GRAPH --- to be used with SEARCH=1; generates a graph of the state space"
 	echo "E.g., DEBUG=1 $0"
 	echo
 	echo "This message was displayed because the variable HELP was set.  Use HELP= $0 to turn off"
@@ -96,9 +97,10 @@ elif [ $SEARCH ]; then
 	$MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
 	echo "Generated $INTERMEDIATE_OUTPUT_FILE."
 	echo "Examining the output..."
-	cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER > $GRAPH_OUTPUT_FILE
+	cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER $GRAPH_OUTPUT_FILE
 	echo "Generated $GRAPH_OUTPUT_FILE."
-	if [ "$?" -eq 0 ]; then
+	if [ $GRAPH ]; then
+#		if [ "$?" -eq 0 ]; then
 		set -e # start to fail on error
 		echo "Generating the graph..."
 		dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps

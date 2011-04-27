@@ -1,6 +1,12 @@
 use strict;
 use GraphViz;
 
+my $numArgs = $#ARGV + 1;
+if ($numArgs != 1) {
+	die "You need to supply an argument that is the output filename for the dot code\n";
+}
+my $outFilename = $ARGV[0];
+
 my $g = GraphViz->new();
 
 # echo 'digraph {
@@ -27,11 +33,37 @@ my $currentRule = "";
 my $currentRuleName;
 my @currentArc;
 
+my @solutions;
+
 while (my $line = <STDIN>) {
 	chomp($line);
-	
+		
 	# handle start state
 	if ($state eq "start") {
+		if ($line =~ m/^Solution (\d+) /) {
+			my $numSolutions = $1;
+			push(@solutions, {});
+			$solutions[-1]->{'num'} = $numSolutions;
+			#print STDERR $numSolutions . "\n";
+		}
+		if ($line =~ m/< errorCell > String "(.*)"\(\.List\{K\}\) <\/ errorCell >/) {
+			$solutions[-1]->{'error'} = $1;
+		}
+		if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output >/) {
+			$solutions[-1]->{'output'} = $1;
+		}
+		if ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/) {
+			$solutions[-1]->{'retval'} = $1;
+		}
+		if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
+			$solutions[-1]->{'output'} = $1;
+		}
+		if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			$solutions[-1]->{'file'} = $1;
+			$solutions[-1]->{'line'} = $2;
+			# $myOffsetStart = $3;
+			# $myOffsetEnd = $4;
+		}
 		# keep reading (and throwing away) until we hit a state
 		if ($line =~ m/^state (\d+)/) {
 			$currentStateNumber = $1;
@@ -120,8 +152,32 @@ for my $from (keys %arcs) {
 	}
 }
 
-print $g->as_text;
+open(DOTOUTPUT, ">$outFilename");
+print DOTOUTPUT $g->as_text;
+close(DOTOUTPUT);
+#@solutions = reverse(@solutions);
+print "========================================================================\n";
+print scalar(@solutions) . " solutions found\n"; 
+for my $solution (@solutions) {
 
+	print "------------------------------------------------------------------------\n";
+	print "Solution $solution->{'num'}\n";
+	if (defined($solution->{'retval'})) {
+		print "Program completed successfully\n"; 
+		print "Return value: " . getString($solution->{'retval'}) . "\n";
+	} else {
+		print "Program got stuck\n";
+		print "File: " . getString($solution->{'file'}) . "\n";
+		print "Line: " . getString($solution->{'line'}) . "\n";
+	}
+	if (defined ($solution->{'error'})) {
+		print getString($solution->{'error'}) . "\n";
+	}
+	print "Output:\n" . getString($solution->{'output'}) . "\n";
+	
+}
+print "========================================================================\n";
+print scalar(@solutions) . " solutions found\n"; 
 
 sub getAttribs {
 	my ($nodeId) = (@_);
@@ -137,7 +193,13 @@ sub getAttribs {
 	return $attribs;
 }
 
-
+sub getString {
+	my ($s) = (@_);
+	
+	$s =~ s/\%/\%\%/g;
+	$s =~ s/\\\\/\\\\\\\\/g;
+	return substr(`printf "x$s"`, 1);
+}
 	# $state = substr($line, 0, strpos($line, ","));
 	# echo "\"$state\" [label=\"";
 	# preg_match("/state ([0-9]+)$/", $state, $matches);

@@ -207,7 +207,7 @@ kmod COMMON-C-ERRORS is
 		
 	rule [err00019]:
 		< k => finalComputation > tv(I1:Int, T:Type) % tv(I2:Int, T:Type) ...</ k => finalComputation >
-		(.Bag => < errorCell > Error("00018", "Signed overflow.") </ errorCell >)
+		(.Bag => < errorCell > Error("00019", "Signed overflow.") </ errorCell >)
 		if hasIntegerType(T:Type)
 		andBool notBool (min(T:Type) <=Int I1:Int /Int I2:Int andBool max(T:Type) >=Int I1:Int /Int I2:Int)
 		andBool hasBeenPromoted(T:Type)
