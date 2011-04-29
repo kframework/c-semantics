@@ -4,6 +4,12 @@ PARSER_DIR = parser
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 
+define TEST_C_PROGRAM
+#include <stdio.h> 
+int main(void) {printf("x");}
+
+endef
+
 # this should be defined by the user
 # K_MAUDE_BASE ?= .
 
@@ -59,6 +65,7 @@ dist: check-vars $(DIST_DIR)/dist.done
 pdf: check-vars
 	@make -C $(SEMANTICS_DIR) pdf
 
+export TEST_C_PROGRAM
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
@@ -71,9 +78,15 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
 	@echo "Done."
 	@echo "Testing kcc..."
-	@echo "int main(void) {}" > $(DIST_DIR)/tmpSemanticCalibration.c
+	@echo "$$TEST_C_PROGRAM" > $(DIST_DIR)/tmpSemanticCalibration.c
+	@echo -n "x" > $(DIST_DIR)/tmpSemanticCalibration.expectedOut
+#cat $(DIST_DIR)/tmpSemanticCalibration.c
 	@$(DIST_DIR)/kcc -s -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c
-	@$(DIST_DIR)/tmpSemanticCalibration.out
+	@$(DIST_DIR)/tmpSemanticCalibration.out > $(DIST_DIR)/tmpSemanticCalibration.txt || if [ "$$?" ]; then true; else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false; fi
+	@echo "Return value is correct."
+#@|| if [ $$? ]; then true else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false
+	@if diff $(DIST_DIR)/tmpSemanticCalibration.txt $(DIST_DIR)/tmpSemanticCalibration.expectedOut &> /dev/null; then true; else echo "There was a problem with the test.  I expected \"x\", but I got \"`cat $(DIST_DIR)/tmpSemanticCalibration.txt`\""; false; fi
+	@echo "Output is correct."
 	@echo "Done."
 	@echo "Calibrating the semantic profiler..."
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
@@ -90,6 +103,8 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@echo "Cleaning up..."
 	@rm $(DIST_DIR)/tmpSemanticCalibration.c
 	@rm $(DIST_DIR)/tmpSemanticCalibration.out
+	@rm $(DIST_DIR)/tmpSemanticCalibration.txt
+	@rm $(DIST_DIR)/tmpSemanticCalibration.expectedOut
 	@echo "Done."
 	@touch $(DIST_DIR)/dist.done
 

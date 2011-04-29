@@ -538,10 +538,13 @@ kmod COMMON-SEMANTICS-WRITING is
 		...</ k >
 		[structural]
 	rule [write-byte-buffer]:
-		< k > writeByte(Loc:Nat, V:K) => .K ...</ k >
-		< buffer >... (.List => bwrite(Loc:Nat, V:K)) </ buffer >
-		< locsWrittenTo > Locs:Bag (.Bag => BagItem(Loc:Nat)) </ locsWrittenTo >
-		if notBool Loc:Nat in Locs:Bag
+		< k > writeByte(LOC, V:K) => .K ...</ k >
+		< buffer >... (.List => bwrite(LOC, V:K)) </ buffer >
+		< mem >... Block:Nat |-> memblock(Len:Nat, ?) ...</ mem >		
+		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
+		if notBool LOC in Locs:Bag
+		andBool Offset:Nat <Nat Len:Nat
+		where LOC = sym(Block:Nat) +Nat Offset:Nat
 		[structural] 
 		// [metadata "computational"]
 		

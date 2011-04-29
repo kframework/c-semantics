@@ -1,3 +1,8 @@
+#trap 'exit 0' SIGHUP
+#trap 'kill -s HUP 0' EXIT
+trap 'kill -s HUP `ps -o pid= --ppid $$` &> /dev/null' EXIT
+#trap 'echo "caught exit" 1>&2; echo "caught exit"' EXIT
+
 # possibly output usage
 if [ $HELP ]; then
 	echo "Here are some configuration variables you can set to affect how this program is run:"

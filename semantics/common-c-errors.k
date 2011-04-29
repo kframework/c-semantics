@@ -213,7 +213,13 @@ kmod COMMON-C-ERRORS is
 		andBool hasBeenPromoted(T:Type)
 		andBool I2:Int =/=Bool 0
 		[structural]
-
+		
+	rule [err00020]:
+		< k => finalComputation > writeByte(sym(Block:Nat) +Nat Offset:Nat, ?) ...</ k => finalComputation >
+		< mem >... Block:Nat |-> memblock(Len:Nat, ?) ...</ mem >		
+		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
+		if notBool Offset:Nat <Nat Len:Nat
+		[structural] 
 		
 	
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
