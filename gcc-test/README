@@ -128,13 +128,14 @@ bf64-1.c: bitfield
 bitfld-3.c: bitfield
 cbrt.c: reading float as integer
 
+
+
 potential:
 941014-2.c: ptr as int arith
 pr23467.c: ptr arith
 
 recopy:
-920501-1.c
-921208-2.c
+20020404-1.c
 
 actual error:
 921110-1.c

@@ -1,7 +1,9 @@
-#trap 'exit 0' SIGHUP
-#trap 'kill -s HUP 0' EXIT
-trap 'kill -s HUP `ps -o pid= --ppid $$` &> /dev/null' EXIT
-#trap 'echo "caught exit" 1>&2; echo "caught exit"' EXIT
+#!/usr/bin/env bash
+# trap 'exit 0' SIGHUP
+# trap 'kill -s HUP 0' EXIT
+trap 'kill -s SIGHUP `ps -o pid= --ppid $$` &> /dev/null' EXIT
+# PIDS=`ps -o pid= --ppid $$`; if [ "$?" = "0" ]; then echo $PIDS; else echo failure; fi
+# trap 'echo "caught exit" 1>&2; echo "caught exit"' EXIT
 
 # possibly output usage
 if [ $HELP ]; then
@@ -50,8 +52,14 @@ COMMAND_LINE_ARGUMENTS=`for i in $THIS_FILE "$@"; do echo "String \"$i\"(.List{K
 START_TERM="eval(linked-program, ($COMMAND_LINE_ARGUMENTS .List{K}), \"$stdin\")"
 
 EVAL_LINE="erew in C-program-linked : $START_TERM ."
-SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag ."$'\n'
+SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag .
+"
 SEARCH_LINE+="show search graph ."
+
+# SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag ."
+# SEARCH_LINE=`echo $SEARCH_LINE`
+# SEARCH_LINE="$SEARCH_LINE show search graph ."
+# echo $SEARCH_LINE
 
 echo > $FSL_C_RUNNER_FILE
 
