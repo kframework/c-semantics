@@ -35,7 +35,6 @@ or equivalent;9) or in some other implementation-defined manner
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	op callMain : Nat Id K -> K
-	op callMain-aux : K Nat Id K -> K [strict(1)]
 	
 	rule < k > callMain(N:Nat, X:Id, Args:K)
 			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)

@@ -286,10 +286,12 @@ kmod COMMON-SEMANTICS-CAST is
 		[structural] 
 		
 	// fixme not sure about this, doesn't concretize, and in turn interpret, assume things about the list?
-	rule
-		cast(T:Type, tv(L:List{K}, structType(?)))
-			=> concretize(T:Type, dataList(L:List{K}))
-		[structural] 
+	// rule
+		// cast(T:Type, tv(L:List{K}, structType(?)))
+			// => concretize(T:Type, dataList(L:List{K}))
+		// [structural] 
+		
+	// fixme are we missing a case for casting union types?  or casting to struct types?
 	
 	// fixme just temporarily, until we handle qualifiers properly
 	// rule

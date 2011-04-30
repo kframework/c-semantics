@@ -221,7 +221,87 @@ kmod COMMON-C-ERRORS is
 		if notBool Offset:Nat <Nat Len:Nat
 		[structural] 
 		
+	rule [err00021]:
+		< k => finalComputation > Identifier(S:String) ...</ k => finalComputation >
+		< env > M:Map </ env >
+		(.Bag => < errorCell > Error("00021", "Trying to look up identifier  " +String S:String +String " , but no such identifier is in scope.") </ errorCell >)
+		if notBool $hasMapping(M:Map, Identifier(S:String))
+		[structural]
+		
+	rule [err00022]:
+		< k => finalComputation > leftShiftInterpret(T:Type, I:Int, tv(E1:Int, T:Type)) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00022", "Trying to left-shift a negative signed value.") </ errorCell >)
+		if hasSignedIntegerType(T:Type)
+		andBool E1:Int <Int 0
+		[structural]
+		
+	rule [err00023]:
+		< k => finalComputation > leftShiftInterpret(T:Type, I:Int, tv(E1:Nat, T:Type)) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </ errorCell >)
+		if hasSignedIntegerType(T:Type)
+		andBool notBool (I:Int <=Int (2 ^Nat absInt(numBits(T:Type))))
+		[structural]
+		
+	rule [err00025]:
+		< k => finalComputation > callMain-aux(functionType(T:Type, ?), ?, ?, ?) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
+		if T:Type =/=Bool int
+		[structural]
+	rule [err00026]:
+		< k => finalComputation > 
+			callMain-aux(functionType(int, (typedDeclaration(T:Type, ?) :: ?:List{Type})), ?, ?, ?) 
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
+		if T:Type =/=Bool int andBool T:Type =/=Bool void
+		[structural]
+		
+	op isArgvType : Type -> Bool
 	
+	rule isArgvType(T:Type) => false
+		if notBool (
+			getKLabel(T:Type) ==Bool 'incompleteArrayType 
+			orBool getKLabel(T:Type) ==Bool 'incompleteArrayType
+		)
+		[structural]
+		
+	rule isArgvType(incompleteArrayType(T:Type)) => false
+		if notBool getKLabel(T:Type) ==Bool 'pointerType
+		[structural]
+	rule isArgvType(incompleteArrayType(pointerType(T:Type))) => false
+		if T:Type =/=Bool char
+		[structural]
+		
+	rule isArgvType(pointerType(T:Type)) => false
+		if notBool getKLabel(T:Type) ==Bool 'pointerType
+		[structural]
+	rule isArgvType(pointerType(pointerType(T:Type))) => false
+		if T:Type =/=Bool char
+		[structural]
+	
+	rule [err00027]:
+		< k => finalComputation >
+			callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(T:Type, ?))), ?, ?, ?) 
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
+		if notBool isArgvType(T:Type)
+		[structural]
+	rule [err00028]:
+		< k => finalComputation >
+			callMain-aux(functionType(int, (?:Type :: ?:Type :: ?:Type :: ?:List{Type})), ?, ?, ?) 
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
+		[structural]
+	rule [err00029]:
+		< k => finalComputation > 
+			callMain-aux(functionType(int, (typedDeclaration(T:Type, ?))), ?, ?, ?)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
+		if T:Type =/=Bool void
+		[structural]
+		
+
+		
+		
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 
 endkm
