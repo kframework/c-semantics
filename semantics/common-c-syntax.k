@@ -366,8 +366,8 @@ and statement =
 	| SEQUENCE of statement * statement * cabsloc
 */
 	op Nop : -> PureStatement
-	op Computation : K -> PureStatement
-	context Computation(([HOLE] => reval([HOLE])))
+	op Computation : K -> PureStatement [strict]
+	// context Computation(([HOLE] => reval([HOLE])))
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
 /*

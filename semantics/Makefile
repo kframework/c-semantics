@@ -56,7 +56,7 @@ c-syntax.k:
 c.k: c-syntax.k c-maude.template Makefile
 	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
 	
-c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
+c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@time -p $(K_MAUDE) c.k -u -language C
@@ -71,7 +71,7 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 	
-c-compiled-nd.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
+c-compiled-nd.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@time -p $(K_MAUDE) c.k -nd -u -language C

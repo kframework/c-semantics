@@ -8,7 +8,7 @@ filename=
 stateSearch=
 function die {
 	cleanup
-	echo "Something went wrong while parsing the program."
+	echo "Something went wrong while compiling the program."
 	echo "$1" >&2
 	exit $2
 }

@@ -132,8 +132,8 @@ kmod COMMON-SEMANTICS-READING is
 	// fixme should also check sizes are appropriate
 	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
 	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, ?))) 
-			// => checkValidLoc(N:Nat)
-			=> tv(N:Nat, pointerType(T:Type))
+			=> checkValidLoc(N:Nat)
+			~> tv(N:Nat, pointerType(T:Type))
 		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
 		[structural]
@@ -406,6 +406,7 @@ kmod COMMON-SEMANTICS-WRITING is
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
+			// => checkPossiblePointer(tv(V:K, T:Type))
 			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
@@ -707,6 +708,15 @@ kmod COMMON-C-MEMORY-MISC is
 	
 	op checkValidLoc-aux : K -> K
 	
+	// rule
+		// < k > checkPossiblePointer(tv(V:K, T:Type)) => .K ...</ k >
+		// if notBool hasPointerType(T:Type)
+		// [structural]
+	// rule
+		// < k > checkPossiblePointer(tv(V:K, pointerType(?))) => .K ...</ k >
+		// if notBool hasPointerType(T:Type)
+		// [structural]
+	
 	rule
 		< k > checkValidLoc(Loc:Nat) => checkValidLoc-aux(ceilingLoc(Loc:Nat)) ...</ k >
 		[structural]
@@ -726,6 +736,7 @@ kmod COMMON-C-MEMORY-MISC is
 		if (PtrThreadId:Nat ==Bool MyThreadId:Nat 
 			orBool PtrThreadId:Nat ==Bool 0
 			orBool PtrThreadId:Nat ==Bool allocatedDuration
+			orBool PtrThreadId:Nat ==Bool readOnly
 			) // my thread, global memory, or allocated (malloced) memory
 		andBool Offset:Nat <=Nat Len:Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Nat) +Nat N:Nat

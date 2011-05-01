@@ -7,22 +7,36 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op tvGetOffset : K K Type -> K 
 	op lv : List{K} Type -> Value
 	
-	rule reval(skipval) => skipval [structural]
-		
+	// fixme Whoah!  What about char types?  What is this about?
+	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
+	
+	
+	rule reval(skipval) => skipval [structural]		
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
-	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-
-	rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
 	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	
+	/*@ \source{C1X 6.3.2.1:2} Except when it is the operand of the \cinline{sizeof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue)
+	*/ 
+	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	rule peval(lv(Loc:Nat, T:Type)) => lv(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 
 	
-	// are these two necessary?  why do we create lvalues that are function types?
+	/*@ \source{C1X 6.3.2.1:3} Except when it is the operand of the \cinline{sizeof} operator or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
+	*/
+	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	rule peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	// should never get to the situation where we have tv(..., arrayType)
+	
+	
+	/*@ \source{C1X 6.3.2.1:4} A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''
+	*/
+	// these come from f(a, b, c)
+	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
+	// these come from things like (*f)(a, b, c)
 	rule reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	rule peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-		
+	
 endkm
 
 kmod COMMON-SEMANTICS-COMPOUND-LITERAL is
@@ -202,8 +216,7 @@ endkm
 
 kmod COMMON-SEMANTICS-IDENTIFIERS is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
-	
-	// 6.3.2.1:2 Except when it is the operand of the sizeof operator, the unary & operator, the ++ operator, the -- operator, or the left operand of the . operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue)
+
 
 	// generic lookup
 	// rule [lookup]:
@@ -219,7 +232,7 @@ kmod COMMON-SEMANTICS-IDENTIFIERS is
 		if notBool hasFunctionType(T:Type)
 		[structural]
 		
-	//C99 6.3.2.1:3 Except when it is the operand of the sizeof operator or the unary & operator, or is a string literal used to initialize an array, an expression that has type "array of type" is converted to an expression with type "pointer to type" that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined
+
 	
 	// fixme i wish i didn't have to make this a pointertype directly.
 	// rule [lookup-array]:
@@ -229,7 +242,7 @@ kmod COMMON-SEMANTICS-IDENTIFIERS is
 		// if hasArrayType(T:Type)
 		// [structural] 
 		
-	//C99 6.3.2.1:4 A function designator is an expression that has function type.  Except when it is the operand of the sizeof operator or the unary & operator, a function designator with type "function returning T" is converted to an expression that has type "pointer to a function returning T"
+
 	rule [lookup-closure]:
 		< k > X:Id => tv(Loc:Nat, T:Type) ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
