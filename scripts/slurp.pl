@@ -27,8 +27,8 @@ sub slurpFindFile {
 	} elsif (-e catfile($incomingPath, $baseName)) {
 		return slurpRead($incomingPath, $baseName);
 	} else {
-		print "Couldn't find file " . catfile($path, $baseName) . "\n";
-		print "Couldn't find file " . catfile($incomingPath, $baseName) . "\n";
+		print STDERR "Couldn't find file " . catfile($path, $baseName) . "\n";
+		print STDERR "Couldn't find file " . catfile($incomingPath, $baseName) . "\n";
 		die "Couldn't fine any files\n";
 	}
 

@@ -99,7 +99,11 @@ my $linkTemp = "mod C-program-linked is including C .\n";
 if (! $args->{'-s'}) {
 	push(@compiledPrograms, $stdlib);
 }
-$linkTemp .= linker(@compiledPrograms);
+my $linkingResults = linker(@compiledPrograms);
+if ($linkingResults eq ""){
+	die "Nothing returned from linker\n";
+}
+$linkTemp .= $linkingResults;
 $linkTemp .= "endm\n";
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $compiledPrograms
@@ -126,7 +130,12 @@ push(@temporaryFiles, $programTemp);
 $programRunner = performSpecializations($programRunner);
 
 print $programTemp "$programRunner\n\n";
-print $programTemp slurp(@baseMaterialFiles);
+
+my $slurpingResults = slurp(@baseMaterialFiles);
+if ($slurpingResults eq ""){
+	die "Nothing returned from slurper\n";
+}
+print $programTemp $slurpingResults;
 print $programTemp $linkTemp;
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp
@@ -137,10 +146,11 @@ if ($numFilesChanged != 1) {
 	die "Call to chmod $programTemp failed\n";
 }
 #print "closing $programTemp\n";
-#close($programTemp);
+close($programTemp);
 
 rename($programTemp, $oval);
 
+exit();
 # ===================================================================
 
 sub performSpecializations {

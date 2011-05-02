@@ -81,8 +81,8 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@echo "$$TEST_C_PROGRAM" > $(DIST_DIR)/tmpSemanticCalibration.c
 	@echo -n "x" > $(DIST_DIR)/tmpSemanticCalibration.expectedOut
 #cat $(DIST_DIR)/tmpSemanticCalibration.c
-	@$(DIST_DIR)/kcc -s -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c
-	@$(DIST_DIR)/tmpSemanticCalibration.out > $(DIST_DIR)/tmpSemanticCalibration.txt || if [ "$$?" ]; then true; else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false; fi
+	@if $(DIST_DIR)/kcc -s -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c; then true; else echo "There was a problem when compiling the test program.  The return value was $$?"; false; fi
+	@if $(DIST_DIR)/tmpSemanticCalibration.out > $(DIST_DIR)/tmpSemanticCalibration.txt; then true; else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false; fi
 	@echo "Return value is correct."
 #@|| if [ $$? ]; then true else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false
 	@if diff $(DIST_DIR)/tmpSemanticCalibration.txt $(DIST_DIR)/tmpSemanticCalibration.expectedOut &> /dev/null; then true; else echo "There was a problem with the test.  I expected \"x\", but I got \"`cat $(DIST_DIR)/tmpSemanticCalibration.txt`\""; false; fi
