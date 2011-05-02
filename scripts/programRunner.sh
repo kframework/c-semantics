@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # trap 'exit 0' SIGHUP
 # trap 'kill -s HUP 0' EXIT
-trap 'kill -s SIGHUP `ps -o pid= --ppid $$` &> /dev/null' EXIT
+# trap 'kill -s SIGHUP `ps -o pid= --ppid $$` &> /dev/null' EXIT
 # PIDS=`ps -o pid= --ppid $$`; if [ "$?" = "0" ]; then echo $PIDS; else echo failure; fi
 # trap 'echo "caught exit" 1>&2; echo "caught exit"' EXIT
 

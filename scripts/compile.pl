@@ -7,7 +7,7 @@ use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
 
 my $myDirectory = dirname(rel2abs($0));
-my $slurpScript = catfile($myDirectory, 'slurpnew.pl');
+my $slurpScript = catfile($myDirectory, 'slurp.pl');
 my $linkScript = catfile($myDirectory, 'link.pl');
 require $slurpScript;
 require $linkScript;

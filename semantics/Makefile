@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak c-compiled-nd.maude.bak duplicateLabels.txt
+K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak c-compiled.maude.tmp.bak c-compiled-nd.maude.bak duplicateLabels.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -89,10 +89,10 @@ lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 #@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-	@cat c-compiled.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total.maude
+	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > c-total.maude
 	
 c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
-	@cat c-compiled-nd.maude | perl $(SCRIPTS_DIR)/slurp.pl ./ > c-total-nd.maude
+	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > c-total-nd.maude
 
 semantics: c-total.maude c-total-nd.maude
 

@@ -26,7 +26,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/slurp.pl \
-	$(SCRIPTS_DIR)/slurpnew.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \
 	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/compileProgram.sh \
@@ -50,6 +49,7 @@ fast: dist
 nd: WHICH_SEMANTICS="semantics-nd"
 nd: dist
 
+NECESSARY_PERL = XML::Twig XML::DOM XML::LibXML::Reader Regexp::Common Tree::Nary Text::Diff DBI DBD::SQLite Getopt::Declare
 
 check-vars: 
 ifeq ($(K_MAUDE_BASE),)
@@ -60,6 +60,9 @@ endif
 	@echo Looking for maude...
 	@echo | maude > /dev/null
 	@echo Found.
+	@echo "Checking for perl modules..."
+	@for mod in $(NECESSARY_PERL); do if ! perl -M$$mod -e 1 &> /dev/null ; then for modz in $(NECESSARY_PERL); do if ! perl -M$$modz -e 1 &> /dev/null ; then echo "Error: You need to install perl module $$modz"; fi; done; exit 1; fi; done
+	@echo "Found."
 
 dist: check-vars $(DIST_DIR)/dist.done
 
