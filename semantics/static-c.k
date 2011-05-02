@@ -1,4 +1,4 @@
-load /home/grosu/celliso2/k-framework-read-only/k-prelude
+load ../../../../k-prelude
 
 
 ---load programs-gen
