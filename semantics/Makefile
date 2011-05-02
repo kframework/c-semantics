@@ -81,6 +81,19 @@ c-compiled-nd.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILE
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 	
+# static-c.k: c-syntax.k c-maude.template Makefile
+	# @printf "`cat c-maude.template`" "load $(K_PRELUDE)" "" > static-c.k
+	
+static-c-compiled.maude: c-syntax.k static-c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
+	@echo "Compiling the static C definition..."
+	@time -p $(K_MAUDE) static-c.k -u -language C
+#@mv c-compiled.maude c-compiled.maude.tmp
+# @$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
+# @$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
+# @$(INSERT_LINE) 4 c-compiled.maude.tmp "load maudeLib/TCPSupport"
+	@echo "Done".
+
+	
 lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
 	@echo "Checking the C definition..."
 	@$(K_MAUDE) c.k -u -lint -language C
