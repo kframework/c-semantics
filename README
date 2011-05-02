@@ -16,6 +16,7 @@ Install Perl
 		- Text::Diff
 		- DBI
 		- DBD::SQLite
+		- Getopt::Declare
 
 Example/Test:
 [celliso2@fsl3 ~]$ cpan -i XML::DOM
