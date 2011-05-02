@@ -4,7 +4,12 @@ use File::Spec::Functions qw(rel2abs catfile);
 use Getopt::Declare;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
-#require 'link.pl';
+
+my $myDirectory = dirname(rel2abs($0));
+my $slurpScript = catfile($myDirectory, 'slurp.pl');
+my $linkScript = catfile($myDirectory, 'link.pl');
+require $slurpScript;
+require $linkScript;
 
 my @temporaryFiles = ();
  
@@ -35,9 +40,9 @@ END {
 
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-	print "In final cleanup\n";
+	#print "In final cleanup\n";
 	foreach my $file (@temporaryFiles) {
-		print "unlinking $file\n";
+		#print "unlinking $file\n";
 		unlink ($file);
 	}
 	# clean(); # delete normal kompile files
@@ -49,7 +54,7 @@ sub finalCleanup {
 $::VERSION="0.1";
 #use vars qw/$not $re/;
 my $flagCompileOnly;
-my $myDirectory = dirname(rel2abs($0));
+
 my @compiledPrograms = ();
 
 my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
@@ -59,51 +64,49 @@ my $dumpFlag;
 my $modelFlag;
 
 my $spec = q(#
--c		Compile and assemble, but do not link
+  -c		Compile and assemble, but do not link
 		{ $::flagCompileOnly = '-c' }
--i		Include support for runtime file io
--n		Allows exploring nondetermism
--s		Do not link against the standard library
--o <file>	Place the output into <file>
+  -i		Include support for runtime file io
+  -n		Allows exploring nondetermism
+  -s		Do not link against the standard library
+  -o <file>	Place the output into <file>
 #-verbose	Do not delete intermediate files
--w		Do not print warning messages
-<files>...	.c files to be compiled [required]
+  -w		Do not print warning messages
+  <files>...	.c files to be compiled [required]
 		{ defer { foreach (@files) { compile($_); } } }
 		
 There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
 );
 
  #[mutex: -case -CASE -Case -CaSe]
-
-my $args = Getopt::Declare->new($spec);
+my @arr = ('-BUILD');
+my $args = Getopt::Declare->new($spec,  \@arr);
+if (!$args->parse()) {
+	#$args->usage(1);
+	#exit(0);
+	exit(1);
+}
 
 if ($args->{'-c'}) {
 	exit(0); # compilation was already handled during parsing, so we can exit
 }
+# otherwise, we're compiling an executable
 
 my $oval = $args->{'-o'} || 'a.out';
 
-my $linkTemp = File::Temp->new( TEMPLATE => 'tmp-kcc-link-XXXXXXXXXXX', SUFFIX => '.maude' );
-push(@temporaryFiles, $linkTemp);
+my $linkTemp = "mod C-program-linked is including C .\n";
 
-print $linkTemp 'mod C-program-linked is including C .\n';
-
-my $linker = catfile($myDirectory, 'link.pl');
-if ($args->{'-s'}) {
-	system("perl $linker @compiledPrograms >> $linkTemp") == 0
-		or die "Compilation failed: $?";
-} else {
-	system("perl $linker @compiledPrograms $stdlib >> $linkTemp") == 0
-		or die "Compilation failed: $?";
+if (! $args->{'-s'}) {
+	push(@compiledPrograms, $stdlib);
 }
-print $linkTemp "endm\n";
-
+$linkTemp .= linker(@compiledPrograms);
+$linkTemp .= "endm\n";
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $compiledPrograms
 # fi
 
-my $baseMaterial = File::Temp->new( TEMPLATE => 'tmp-kcc-base-XXXXXXXXXXX', SUFFIX => '.maude' );
-push(@temporaryFiles, $baseMaterial);
+#my $baseMaterial = File::Temp->new( TEMPLATE => 'tmp-kcc-base-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK=>0 );
+#push(@temporaryFiles, $baseMaterial);
 
 my $semanticsFile;
 if ($args->{'-n'}) {
@@ -111,26 +114,54 @@ if ($args->{'-n'}) {
 } else {
 	$semanticsFile = catfile($myDirectory, 'c-total');
 }
-print $baseMaterial "load $semanticsFile\n";
-print $baseMaterial "load $linkTemp\n";
+my @baseMaterialFiles = ($semanticsFile);
 
-# # no more polyglot :(  now we use a script that copies all the maude to its own file
-# cat $myDirectory/programRunner.sh \
-	# | sed "s?EXTERN_WRAPPER?$myDirectory/wrapper.pl?g" \
-	# | sed "s?EXTERN_SEARCH_GRAPH_WRAPPER?$myDirectory/graphSearch.pl?g" \
-	# | sed "s?EXTERN_COMPILED_WITH_IO?$ioFlag?g" \
-	# | sed "s?EXTERN_IO_SERVER?$myDirectory/fileserver.pl?g" \
-	# | sed "s?EXTERN_SCRIPTS_DIR?$myDirectory?g" \
-	# | sed "s?EXTERN_IDENTIFIER?$mainFileName?g" \
-	# | sed "s?EXTERN_ND_FLAG?$nondetFlag?g" \
-	# > $programTemp
-# echo >> $programTemp
-# cat $baseMaterial | perl $myDirectory/slurp.pl >> $programTemp
+open(FILE, catfile($myDirectory, 'programRunner.sh')) or die "Couldn't open file: $!";
+my $programRunner = join("", <FILE>);
+close(FILE);
+
+my $programTemp = File::Temp->new( TEMPLATE => 'tmp-kcc-prog-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $programTemp);
+
+$programRunner = performSpecializations($programRunner);
+
+print $programTemp "$programRunner\n\n";
+print $programTemp slurp(@baseMaterialFiles);
+print $programTemp $linkTemp;
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp
 # fi
-# chmod u+x $programTemp
-# mv $programTemp $oval
+
+my $numFilesChanged = chmod(0755, $programTemp);
+if ($numFilesChanged != 1) {
+	die "Call to chmod $programTemp failed\n";
+}
+#print "closing $programTemp\n";
+#close($programTemp);
+
+rename($programTemp, $oval);
+
+# ===================================================================
+
+sub performSpecializations {
+	my ($file) = (@_);
+	
+	my $wrapper = catfile($myDirectory, 'wrapper.pl');
+	my $search = catfile($myDirectory, 'graphSearch.pl');
+	my $ioserver = catfile($myDirectory, 'fileserver.pl');
+	my $ioFlag = $args->{'-i'};
+	my $mainFileName = $args->{'<files>'}[0];
+	my $nondetFlag = $args->{'-s'};
+	
+	$file =~ s?EXTERN_WRAPPER?$wrapper?g;
+	$file =~ s?EXTERN_SEARCH_GRAPH_WRAPPER?$search?g;
+	$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
+	$file =~ s?EXTERN_IO_SERVER?$ioserver?g;
+	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
+	$file =~ s?EXTERN_ND_FLAG?$nondetFlag?g;
+	return $file;
+}
 
 
 sub compile {

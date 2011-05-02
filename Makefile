@@ -3,7 +3,7 @@ SCRIPTS_DIR = scripts
 PARSER_DIR = parser
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-
+#svnversion
 define TEST_C_PROGRAM
 #include <stdio.h> 
 int main(void) {printf("x");}
@@ -27,7 +27,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/slurp.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \
-	$(SCRIPTS_DIR)/compile.sh \
+	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/compileProgram.sh \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
@@ -73,7 +73,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/clib.c $(DIST_DIR)/lib
-	@mv $(DIST_DIR)/compile.sh $(DIST_DIR)/kcc
+	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
 	@echo "Done."

@@ -1,41 +1,59 @@
 use strict;
 use File::Basename;
-my $numArgs = $#ARGV + 1;
-my $startingDir = './';
-if ($numArgs > 0) {
-	$startingDir = $ARGV[0];
+use File::Spec::Functions qw(rel2abs catfile);
+
+sub slurp {
+	my (@base) = (@_);
+	my $retval = "";
+	if (scalar(@base) == 0) {
+		die "No files passed to slurp\n";
+	}
+	foreach my $file (@base) {
+		$retval .= slurpFindFile('./', $file);
+	}
+	return $retval;
 }
 
-slurp(*STDIN, $startingDir);
-print "\n";
-sub slurp {
-	my ($file, $path) = (@_);
-	#print "path = $path\n";
-	while (my $line = <$file>){
-		chomp($line);
-		if ($line =~ m/^\s*load\s*"?([^\s"]*)"?\s*$/) {
-			#print "------\n";
-			#print "$line\n";
-			#print "$1\n";
-			my ($filename,$dirname,$suffix) = fileparse($1,".maude");
-			#print "$filename, $dirname, $suffix\n";
+sub slurpFindFile {
+	my ($incomingPath, $incomingFile) = (@_);
+	
+	my ($baseName, $path, $suffix) = fileparse($incomingFile, '.maude');
+	if ($suffix eq "") {
+		$suffix = ".maude";
+	}
+	$baseName = "$baseName$suffix";
+	if (-e catfile($path, $baseName)) {
+		return slurpRead($path, $baseName);
+	} elsif (-e catfile($incomingPath, $baseName)) {
+		return slurpRead($incomingPath, $baseName);
+	} else {
+		print "Couldn't find file " . catfile($path, $baseName) . "\n";
+		print "Couldn't find file " . catfile($incomingPath, $baseName) . "\n";
+		die "Couldn't fine any files\n";
+	}
 
-			$filename = "$dirname$filename.maude";
-			#print "trying $filename...\n";
-			if (!(-e $filename)) {
-				$filename = "$path$filename";
-				$dirname = $path;
-			}
-			#print "file = $filename\n";
-			#print "dirname = $dirname\n";
-			my $newFile;
-			open($newFile, $filename) or die "Couldn't open file $filename\n";
-			slurp($newFile, $dirname);
+	#my ($filename, $dirname, $suffix) = fileparse($file, ".maude");
+	
+}
+
+sub slurpRead {
+	my ($path, $filename) = (@_);
+	my $file = catfile($path, $filename);
+	my $retval = "";
+	#print "opening $filename\n";
+	open(NEWFILE, $file) or die "Couldn't open file $file\n";
+	while (my $line = <NEWFILE>) {
+		chomp($line);
+		#print "$line\n";
+		if ($line =~ m/^\s*load\s*"?([^\s"]*)"?\s*$/) {
+			$retval .= slurpFindFile($path, $1);
 		} else {
-			print "$line\n";
+			$retval .= "$line\n";
 		}
 	}
-	print "\n";
-	#print "done with $file\n";
+	close(NEWFILE);
+	return "$retval\n";
+
 }
 
+1;
