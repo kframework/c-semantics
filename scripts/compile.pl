@@ -4,6 +4,7 @@ use File::Spec::Functions qw(rel2abs catfile);
 use Getopt::Declare;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
+use File::Copy;
 
 my $myDirectory = dirname(rel2abs($0));
 my $slurpScript = catfile($myDirectory, 'slurpnew.pl');
@@ -53,7 +54,6 @@ sub finalCleanup {
  
 $::VERSION="0.1";
 #use vars qw/$not $re/;
-my $flagCompileOnly;
 
 my @compiledPrograms = ();
 
@@ -65,7 +65,6 @@ my $modelFlag;
 
 my $spec = q(#
   -c		Compile and assemble, but do not link
-		{ $::flagCompileOnly = '-c' }
   -i		Include support for runtime file io
   -n		Allows exploring nondetermism
   -s		Do not link against the standard library
@@ -101,7 +100,7 @@ if (! $args->{'-s'}) {
 }
 my $linkingResults = linker(@compiledPrograms);
 if ($linkingResults eq ""){
-	die "Nothing returned from linker\n";
+	die "Nothing returned from linker";
 }
 $linkTemp .= $linkingResults;
 $linkTemp .= "endm\n";
@@ -133,7 +132,7 @@ print $programTemp "$programRunner\n\n";
 
 my $slurpingResults = slurp(@baseMaterialFiles);
 if ($slurpingResults eq ""){
-	die "Nothing returned from slurper\n";
+	die "Nothing returned from slurper";
 }
 print $programTemp $slurpingResults;
 print $programTemp $linkTemp;
@@ -143,12 +142,13 @@ print $programTemp $linkTemp;
 
 my $numFilesChanged = chmod(0755, $programTemp);
 if ($numFilesChanged != 1) {
-	die "Call to chmod $programTemp failed\n";
+	die "Call to chmod $programTemp failed";
 }
 #print "closing $programTemp\n";
 close($programTemp);
 
-rename($programTemp, $oval);
+#rename($programTemp, $oval);
+move("$programTemp", $oval) or die "Failed to move the generated program to its destination $oval: $!";
 
 exit();
 # ===================================================================
@@ -192,11 +192,12 @@ sub compile {
 	if (! -e "program-$baseName-compiled.maude") {
 		die "Expected to find program-$baseName-compiled.maude, but did not";
 	}
-	rename("program-$baseName-compiled.maude", $localOval);
+	move("program-$baseName-compiled.maude", $localOval) or die "Failed to rename the compiled program to the local output file $localOval";
 	push(@compiledPrograms, $localOval);
-	if ($flagCompileOnly) {
+	if ($args->{'-c'}) {
 		if ($args->{'-o'}) {
-			rename($localOval, $args->{'-o'});
+			move($localOval, $args->{'-o'}) or die "Failed to move the generated program to its destination $oval: $!";
+			#rename($localOval, $args->{'-o'});
 		}
 	}	
 }
