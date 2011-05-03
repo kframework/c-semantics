@@ -61,7 +61,7 @@ endif
 	@echo | maude > /dev/null
 	@echo Found.
 	@echo "Checking for perl modules..."
-	@for mod in $(NECESSARY_PERL); do if ! perl -M$$mod -e 1 &> /dev/null ; then for modz in $(NECESSARY_PERL); do if ! perl -M$$modz -e 1 &> /dev/null ; then echo "Error: You need to install perl module $$modz"; fi; done; exit 1; fi; done
+	@perl $(SCRIPTS_DIR)/checkForModules.pl
 	@echo "Found."
 
 dist: check-vars $(DIST_DIR)/dist.done
