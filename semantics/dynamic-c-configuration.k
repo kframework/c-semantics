@@ -5,17 +5,17 @@ kmod C-CONFIGURATION is
 	configuration 
 		<T> 
 			// <busy> .Bag </busy>
-			<gotoMap> .Map </gotoMap>
-			<genv> .Map </genv>
-			<gtypes> .Map </gtypes>
-			<gstructs> .Map </gstructs>
+			<gotoMap color="lightgray"> .Map </gotoMap>
+			<genv color="lightgray"> .Map </genv>
+			<gtypes color="lightgray"> .Map </gtypes>
+			<gstructs color="lightgray"> .Map </gstructs>
 			<mem color="red"> .Map </mem>
-			<functions> .Map </functions>
+			<functions color="lightgray"> .Map </functions>
 			<freshNat color="green"> 0 </freshNat>
 			<nextThreadId color="green"> 2 </nextThreadId> // 0 is global, 1 is main
 			<nextFile color="green"> 0 </nextFile>
-			<malloced> .Map </malloced>
-			<stringLiterals> .Map </stringLiterals>
+			<malloced color="lightgray"> .Map </malloced>
+			<stringLiterals color="lightgray"> .Map </stringLiterals>
 			@latex("\\kBR")
 			// <staticSemantics multiplicity="?" color="cyan">
 				<translationUnits color="cyan"> .Bag </translationUnits>
@@ -29,59 +29,59 @@ kmod C-CONFIGURATION is
 				<declarations color="cyan"> .Set </declarations>
 			// </staticSemantics>
 			@latex("\\kBR")
-			<functionTranslationUnits> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
+			<functionTranslationUnits color="lightgray"> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
 			<nextSharedLoc color="green"> 0 </nextSharedLoc>
 			<threadInformation color="yellow">
 				<threadStatus color="yellow"> .Map </threadStatus>
 				<joiningMap color="yellow"> .Map </joiningMap>
 				<detachingMap color="yellow"> .Map </detachingMap>
 			</threadInformation>
-			<openFiles> .Map </openFiles>
+			<openFiles color="lightgray"> .Map </openFiles>
 			<programText color="black"> .Map </programText>
-			<compoundLiteralMap> .Map </compoundLiteralMap>
+			<compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
 			@latex("\\kBR")
-			<threads>
-				<thread multiplicity="*">
+			<threads color="yellow">
+				<thread multiplicity="*" color="yellow">
 					// < parentThreadId > 0 </ parentThreadId >
 					<threadId color="yellow"> 0 </threadId>
 					<nextLoc color="green"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
-					<callStack> .List </callStack> // stack of "control" cells
-					<buffer> .List </buffer>
-					<blocked> false </blocked>
+					<callStack color="violet"> .List </callStack> // stack of "control" cells
+					<buffer color="lightgray"> .List </buffer>
+					<blocked color="lightgray"> false </blocked>
 					@latex("\\kBR")
 					<control>
 						<k color="red" multiplicity="?"> .K </k>
-						<finalComputation multiplicity="?"> .K </finalComputation>
-						<blockStack> .List </blockStack> // stack of "local" cells
+						<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
+						<blockStack color="violet"> .List </blockStack> // stack of "local" cells
 						<local>
 							// maps from Ids
 							<env color="red"> .Map </env>
-							<types> .Map </types>
-							<structs> .Map </structs>
+							<types color="lightgray"> .Map </types>
+							<structs color="lightgray"> .Map </structs>
 
 							// information about the block we're in
-							<nestingDepth> 0 </nestingDepth>
-							<blockHistory> .List </blockHistory>
-							<localVariables> .List </localVariables> // used to make sure we don't declare a variable twice in the same scope
-							<localAddresses> .Set </localAddresses> // used to deallocate memory on leaving a block
+							<nestingDepth color="lightgray"> 0 </nestingDepth>
+							<blockHistory color="lightgray"> .List </blockHistory>
+							<localVariables color="lightgray"> .List </localVariables> // used to make sure we don't declare a variable twice in the same scope
+							<localAddresses color="lightgray"> .Set </localAddresses> // used to deallocate memory on leaving a block
 						</local>
 						@latex("\\kBR")
-						<shouldInit> true </shouldInit> // used to control initialization when gotoing
+						<shouldInit color="lightgray"> true </shouldInit> // used to control initialization when gotoing
 						// used to figure initializers
 						<currentObject color="cyan"> .List </currentObject>
 						<currentSubObject color="cyan"> .List </currentSubObject>
 						<incompleteLength color="cyan"> 0 </incompleteLength>
 						<savedInitialization color="cyan"> .K </savedInitialization>
-						<loopStack> .List </loopStack>
+						<loopStack color="violet"> .List </loopStack>
 						@latex("\\kBR")
-						<locsWrittenTo> .Bag </locsWrittenTo>
+						<locsWrittenTo color="lightgray"> .Bag </locsWrittenTo>
 						<holds color="yellow"> .Map </holds>
 						<type multiplicity="?" color="cyan"> .K </type> // used for typing expressions
 						<declarationTypeHolder color="cyan"> .K </declarationTypeHolder> // holds the innermost type while we unroll the type around it
 						
 						// general information
-						<currentTranslationUnit> "" </currentTranslationUnit>
-						<currentFunction> .K </currentFunction>
+						<currentTranslationUnit color="lightgray"> "" </currentTranslationUnit>
+						<currentFunction color="lightgray"> .K </currentFunction>
 						<currentProgramLoc color="black"> .K </currentProgramLoc>
 						@latex("\\kBR")
 						<calculateGotoMap color="cyan">

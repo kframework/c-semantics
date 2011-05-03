@@ -4,11 +4,7 @@ PARSER_DIR = parser
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 #svnversion
-define TEST_C_PROGRAM
-#include <stdio.h> 
-int main(void) {printf("x");}
 
-endef
 
 # this should be defined by the user
 # K_MAUDE_BASE ?= .
@@ -82,33 +78,19 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
 	@echo "Done."
 	@echo "Testing kcc..."
-	@echo "$$TEST_C_PROGRAM" > $(DIST_DIR)/tmpSemanticCalibration.c
-	@echo -n "x" > $(DIST_DIR)/tmpSemanticCalibration.expectedOut
-#cat $(DIST_DIR)/tmpSemanticCalibration.c
-	@if $(DIST_DIR)/kcc -o $(DIST_DIR)/tmpSemanticCalibration.out $(DIST_DIR)/tmpSemanticCalibration.c; then true; else echo "There was a problem when compiling the test program.  The return value was $$?"; false; fi
-	@if $(DIST_DIR)/tmpSemanticCalibration.out > $(DIST_DIR)/tmpSemanticCalibration.txt; then true; else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false; fi
-	@echo "Return value is correct."
-#@|| if [ $$? ]; then true else echo "There was a problem with the test.  I expected a return value 0, but got $$?"; false
-	@if diff $(DIST_DIR)/tmpSemanticCalibration.txt $(DIST_DIR)/tmpSemanticCalibration.expectedOut &> /dev/null; then true; else echo "There was a problem with the test.  I expected \"x\", but I got \"`cat $(DIST_DIR)/tmpSemanticCalibration.txt`\""; false; fi
-	@echo "Output is correct."
+	@perl $(SCRIPTS_DIR)/testInstall.pl $(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c $(DIST_DIR)/testProgram.compiled
 	@echo "Done."
 	@echo "Calibrating the semantic profiler..."
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
 	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
 	@echo > maudeProfileDBfile.sqlite
 	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(SEMANTICS_DIR)/c-compiled.maude
-# @PROFILE=1 PROFILE_CALIBRATION=1 $(DIST_DIR)/tmpSemanticCalibration.out &> /dev/null
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true
 	@echo "Done."
-	@echo "Reticulating splines..."
-# heheh
-	@echo "Done."
 	@echo "Cleaning up..."
-	@rm $(DIST_DIR)/tmpSemanticCalibration.c
-	@rm $(DIST_DIR)/tmpSemanticCalibration.out
-	@rm $(DIST_DIR)/tmpSemanticCalibration.txt
-	@rm $(DIST_DIR)/tmpSemanticCalibration.expectedOut
+	@rm -f $(DIST_DIR)/testProgram.c
+	@rm -f $(DIST_DIR)/testProgram.compiled
 	@echo "Done."
 	@touch $(DIST_DIR)/dist.done
 
