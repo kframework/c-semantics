@@ -1,21 +1,18 @@
-%s
-%s
+load k-includes
 
----load programs-gen
 load c-syntax
 load common-c-configuration
-load %s
+load dynamic-c-configuration
 load common-c-semantics
-load %s
+load dynamic-c-semantics
 
 kmod C-SEMANTICS is
 	including C-SYNTAX
 	including C-CONFIGURATION
 	including COMMON-C-SEMANTICS
-	including %s
+	including DYNAMIC-C-SEMANTICS
 endkm
 
 kmod C is 
-	---including C-PROGRAM
 	including C-SEMANTICS 
 endkm

@@ -1,7 +1,5 @@
-load ../../../../k-prelude
+load k-includes
 
-
----load programs-gen
 load c-syntax
 load common-c-configuration
 load static-c-configuration
@@ -13,6 +11,6 @@ kmod C-SEMANTICS is
 	including STATIC-C-SEMANTICS
 endkm
 
-kmod C is 
+kmod STATIC-C is 
 	including C-SEMANTICS 
 endkm

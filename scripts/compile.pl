@@ -7,9 +7,9 @@ use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
 
 my $myDirectory = dirname(rel2abs($0));
-my $slurpScript = catfile($myDirectory, 'slurp.pl');
+#my $slurpScript = catfile($myDirectory, 'slurp.pl');
 my $linkScript = catfile($myDirectory, 'link.pl');
-require $slurpScript;
+#require $slurpScript;
 require $linkScript;
 
 my @temporaryFiles = ();
@@ -130,11 +130,11 @@ $programRunner = performSpecializations($programRunner);
 
 print $programTemp "$programRunner\n\n";
 
-my $slurpingResults = slurp(@baseMaterialFiles);
-if ($slurpingResults eq ""){
-	die "Nothing returned from slurper";
-}
-print $programTemp $slurpingResults;
+# my $slurpingResults = slurp(@baseMaterialFiles);
+# if ($slurpingResults eq ""){
+	# die "Nothing returned from slurper";
+# }
+# print $programTemp $slurpingResults;
 print $programTemp $linkTemp;
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp

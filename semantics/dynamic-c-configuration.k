@@ -100,10 +100,10 @@ kmod C-CONFIGURATION is
 		</T>
 		@latex("\\kBR")
 		<xmessages color="black"> .K </xmessages>
-		<files> .Map </files> // filenames to strings
-		<input> "" </input>
-		<output> "" </output>
-		<resultValue> .K </resultValue>
-		<errorCell multiplicity="?"> .K </errorCell>
+		<files color="lightgray"> .Map </files> // filenames to strings
+		<input color="lightgray"> "" </input>
+		<output color="lightgray"> "" </output>
+		<resultValue color="red"> .K </resultValue>
+		<errorCell multiplicity="?" color="black"> .K </errorCell>
 
 endkm

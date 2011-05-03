@@ -15,7 +15,7 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude kcompile_* c-syntax.k c.k c-compiled.maude.bak c-compiled.maude.tmp.bak c-compiled-nd.maude.bak duplicateLabels.txt
+K_CLEAN_FILES = *.maude kcompile_* c-compiled.maude.bak c-compiled.maude.tmp.bak c-compiled-nd.maude.bak duplicateLabels.txt k-includes.k
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -26,8 +26,15 @@ all: semantics
 pdf: common-pdf-modules
 #c-expressions.pdf
 
+k-includes.k:
+	@echo > k-includes.k
+	@echo "load $(K_PRELUDE)" >> k-includes.k
+	@echo "load $(K_SOCKETS)" >> k-includes.k
+
+c.k: k-includes.k
+
 %.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
-%.tex: $(K_MAUDE) c.k %.k
+%.tex: $(K_MAUDE) c.k k-includes.k %.k Makefile
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
 	@$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
@@ -40,23 +47,11 @@ pdf: common-pdf-modules
 	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
-
-# pdf-dynamic-c: PDF_FILES=dynamic-c-semantics.k
-# pdf-dynamic-c: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES)`
-# pdf-dynamic-c: dynamic-c-semantics.k
-
-# make 
 	
 # this is used to start all of the common files
 common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf 
 	
-c-syntax.k:
-	@printf "`cat c-syntax.template`" > c-syntax.k	
-	
-c.k: c-syntax.k c-maude.template Makefile
-	@printf "`cat c-maude.template`" "load $(K_PRELUDE)" "load $(K_SOCKETS)" dynamic-c-configuration dynamic-c-semantics DYNAMIC-C-SEMANTICS > c.k
-	
-c-compiled.maude.tmp: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
+c-compiled.maude.tmp: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@time -p $(K_MAUDE) c.k -u -language C
@@ -71,41 +66,29 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 	
-c-compiled-nd.maude: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
+c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
-#@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@time -p $(K_MAUDE) c.k -nd -u -language C
 	@mv c-compiled.maude c-compiled-nd.maude
 	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
-	
-# static-c.k: c-syntax.k c-maude.template Makefile
-	# @printf "`cat c-maude.template`" "load $(K_PRELUDE)" "" > static-c.k
-	
-static-c-compiled.maude: c-syntax.k static-c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
+
+static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
 	@echo "Compiling the static C definition..."
-	@time -p $(K_MAUDE) static-c.k -u -language C
-#@mv c-compiled.maude c-compiled.maude.tmp
-# @$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
-# @$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
-# @$(INSERT_LINE) 4 c-compiled.maude.tmp "load maudeLib/TCPSupport"
+	@time -p $(K_MAUDE) static-c.k -u -language STATIC-C
 	@echo "Done".
 
 	
-lint: c.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES)
-	@echo "Checking the C definition..."
-	@$(K_MAUDE) c.k -u -lint -language C
-	@rm -f c-compiled.maude
-	@echo "Done".
+static-c-total.maude: static-c-compiled.maude $(K_BASE_FILES) Makefile
+	@echo "static-c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
-#@sed -i '2 i load $(K_PL_MODEL_CHECKER)' c-compiled.maude
-	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > c-total.maude
+	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 	
 c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
-	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > c-total-nd.maude
+	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
 semantics: c-total.maude c-total-nd.maude
 
@@ -115,7 +98,6 @@ fast-nd: c-total.maude
 fast-normal: c-total-nd.maude
 	@cp c-total-nd.maude c-total.maude
 
-	
 semantics-fast: c-total.maude fast-nd
 
 semantics-nd: c-total-nd.maude fast-normal

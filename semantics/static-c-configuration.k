@@ -4,7 +4,6 @@ kmod C-CONFIGURATION is
 	op nextFile : -> CellLabel
 	configuration 
 		<T> 
-			// <busy> .Bag </busy>
 			<gotoMap> .Map </gotoMap>
 			<genv> .Map </genv>
 			<gtypes> .Map </gtypes>

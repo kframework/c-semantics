@@ -39,14 +39,19 @@ fi
 username=`id -un`
 FSL_C_RUNNER_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 
-# create a file consisting of just the maude (the tail of this script)
+JUST_MAUDE_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+cp $SCRIPTS_DIR/c-total.maude $JUST_MAUDE_FILE
+if [ $SEARCH ]; then
+	cp $SCRIPTS_DIR/c-total-nd.maude $JUST_MAUDE_FILE
+else
+	cp $SCRIPTS_DIR/c-total.maude $JUST_MAUDE_FILE
+fi
+# create a file consisting of just the program (the tail of this script)
 END_OF_SCRIPT=`sed -n '/-------------------\/------------------/=' $THIS_FILE`
 END_OF_SCRIPT=$((END_OF_SCRIPT + 1)) # skip the marking line itself
-JUST_MAUDE_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-tail -n+$END_OF_SCRIPT $THIS_FILE > $JUST_MAUDE_FILE
-if [ $PROFILE_CALIBRATION ]; then
-	THIS_FILE="" # for the calibration, we want the filename to be as short as possible
-fi
+
+tail -n+$END_OF_SCRIPT $THIS_FILE >> $JUST_MAUDE_FILE
+
 # now start building up variables that represent ways to run the program
 COMMAND_LINE_ARGUMENTS=`for i in $THIS_FILE "$@"; do echo "String \"$i\"(.List{K}),," ; done`
 START_TERM="eval(linked-program, ($COMMAND_LINE_ARGUMENTS .List{K}), \"$stdin\")"
