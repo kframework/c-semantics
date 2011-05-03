@@ -31,9 +31,7 @@ my $myOffsetEnd = "";
 # my $typeCell = "";
 # my $ignoreThis = 0;
 while (my $line = <STDIN>) {
-	# if (!$ignoreThis){
 	$buffer .= $line;
-	# }
 	chomp($line);
 	$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
 	#print "$line\n";
