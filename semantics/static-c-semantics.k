@@ -2983,7 +2983,7 @@ or equivalent;9) or in some other implementation-defined manner
 		(.Bag => < input > S1:String </ input >	< output > S2:String </ output >)
 	
 	
-	
+	rule reval(emptyValue) => emptyValue [structural]
 	
 	// including FIXED-C-STYLE
 	// including FIXED-C-STYLE-TWOS-COMPLEMENT 

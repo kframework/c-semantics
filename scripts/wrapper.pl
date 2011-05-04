@@ -33,24 +33,24 @@ my $myOffsetEnd = "";
 while (my $line = <STDIN>) {
 	$buffer .= $line;
 	chomp($line);
-	$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
+	#$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
 	#print "$line\n";
 	if ($state eq "start"){
-		if ($line =~ m/^erewrite in /){
+		if ($line =~ m/^rewrites: /){
 			$state = "rewrite";
 			#printf "REWRITE\n";
 		}
 	} elsif ($state eq "rewrite"){
-		$line = <STDIN>;
-		$buffer .= $line;
-		$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
+		#$line = <STDIN>;
+		#$buffer .= $line;
+		#$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
 		#print "$line\n";
 		if ($line =~ m/^result NeBag:/){
 			$state = "success";
 			#printf "SUCCESS\n";
 		} else {
 			$state = "failure";
-			printf "FAILURE\n";
+			print "FAILURE\n";
 		}
 	} elsif ($state eq "success"){
 		if ($line =~ m/< input > .* <\/ input >/){

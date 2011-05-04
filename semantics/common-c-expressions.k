@@ -11,7 +11,8 @@ kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
 	
 	
-	rule reval(skipval) => skipval [structural]		
+	rule reval(skipval) => skipval [structural]
+	rule reval(emptyValue) => emptyValue [structural]
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	
@@ -1187,7 +1188,7 @@ kmod COMMON-SEMANTICS-SEQUENCING is
 endkm
 
 kmod COMMON-C-EXPRESSIONS is
-	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE 
+	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	including COMMON-SEMANTICS-COMPOUND-LITERAL 
 	including COMMON-SEMANTICS-BOOLEAN 

@@ -63,11 +63,6 @@ SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag .
 "
 SEARCH_LINE+="show search graph ."
 
-# SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag ."
-# SEARCH_LINE=`echo $SEARCH_LINE`
-# SEARCH_LINE="$SEARCH_LINE show search graph ."
-# echo $SEARCH_LINE
-
 echo > $FSL_C_RUNNER_FILE
 
 # first, set up the runner file with the right commands and set any variables
@@ -95,18 +90,19 @@ if [ ! $DEBUG ]; then
 	echo "q" >> $FSL_C_RUNNER_FILE
 fi 
 echo $STATIC_MAUDE_DEFINITION
-DYNAMIC_MAUDE_INPUT=dynamic-maude-input.txt #`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+STATIC_MAUDE_OUTPUT=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+DYNAMIC_MAUDE_INPUT=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
 
 STATIC_MAUDE_COMMAND="maude -no-wrap -no-banner $COLOR_FLAG $STATIC_MAUDE_DEFINITION $STATIC_MAUDE_INPUT $FSL_C_RUNNER_FILE"
-DYNAMIC_MAUDE_COMMAND="maude -no-wrap -no-banner $COLOR_FLAG $DYNAMIC_MAUDE_DEFINITION $DYNAMIC_MAUDE_INPUT"
+DYNAMIC_MAUDE_COMMAND="maude -no-wrap -no-banner $COLOR_FLAG $DYNAMIC_MAUDE_DEFINITION $DYNAMIC_MAUDE_INPUT $FSL_C_RUNNER_FILE"
 
-$STATIC_MAUDE_COMMAND > static-output.txt
-echo "erew (" > dynamic-maude-input.txt
-tail --lines=+5 static-output.txt | head --lines=-1 >> dynamic-maude-input.txt
-echo ") ." >> dynamic-maude-input.txt
-echo "q" >> dynamic-maude-input.txt
+$STATIC_MAUDE_COMMAND > STATIC_MAUDE_OUTPUT
+echo "erew (" > DYNAMIC_MAUDE_INPUT
+tail --lines=+5 STATIC_MAUDE_OUTPUT | head --lines=-1 >> DYNAMIC_MAUDE_INPUT
+echo ") ." >> DYNAMIC_MAUDE_INPUT
+echo "q" >> DYNAMIC_MAUDE_INPUT
 $DYNAMIC_MAUDE_COMMAND | cat - > dynamic-output.txt
-#perl $WRAPPER $PLAIN
+cat dynamic-output.txt | perl $WRAPPER $PLAIN
 
 # # now we can actually run maude on the runner file we built
 # # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want

@@ -26,8 +26,6 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
 sub interruptHandler {
-	# my ($val) = (@_);
-	# print "$val\n";
 	finalCleanup(); # call single cleanup point
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
@@ -41,14 +39,9 @@ END {
 
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-	#print "In final cleanup\n";
 	foreach my $file (@temporaryFiles) {
-		#print "unlinking $file\n";
 		unlink ($file);
 	}
-	# clean(); # delete normal kompile files
-	#	clean() if !$verbose;
-	#unlink($maude_xml_file); # we don't want to put this in clean, since clean gets called before the xml file is used
 }
  
  
@@ -119,7 +112,7 @@ if ($args->{'-n'}) {
 }
 my @baseMaterialFiles = ($semanticsFile);
 
-open(FILE, catfile($myDirectory, 'programRunner.sh')) or die "Couldn't open file: $!";
+open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
 my $programRunner = join("", <FILE>);
 close(FILE);
 
@@ -134,8 +127,9 @@ print $programTemp "$programRunner\n\n";
 # if ($slurpingResults eq ""){
 	# die "Nothing returned from slurper";
 # }
+
 # print $programTemp $slurpingResults;
-print $programTemp $linkTemp;
+print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkTemp\nENDOFCOMPILEDPROGRAM\n }\n";
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp
 # fi

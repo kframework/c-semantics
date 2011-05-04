@@ -77,7 +77,7 @@ c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE)
 
 static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
 	@echo "Compiling the static C definition..."
-	@time -p $(K_MAUDE) static-c.k -u -language STATIC-C
+	@time -p $(K_MAUDE) static-c.k -u -language C
 	@echo "Done".
 
 	

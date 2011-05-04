@@ -11,6 +11,6 @@ kmod C-SEMANTICS is
 	including STATIC-C-SEMANTICS
 endkm
 
-kmod STATIC-C is 
+kmod C is 
 	including C-SEMANTICS 
 endkm
