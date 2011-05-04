@@ -5,8 +5,9 @@ use Getopt::Declare;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
-my $THIS_FILE="$0";
+my $thisFile = "$0";
 my @temporaryFiles = ();
+
 
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
@@ -43,25 +44,28 @@ sub finalCleanup {
 if (defined($ENV{'HELP'})) {
 	print "Here are some configuration variables you can set to affect how this program is run:\n";
 	print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
+	print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
-	print "E.g., DEBUG=1 $THIS_FILE\n";
+	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
-	print "This message was displayed because the variable HELP was set.  Use HELP= $THIS_FILE to turn off\n";
+	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
 	exit(1);
 }
 
 # these are compile time settings and are set by the compile script using this file as a template
-my $WRAPPER="EXTERN_WRAPPER";
-my $SEARCH_GRAPH_WRAPPER="EXTERN_SEARCH_GRAPH_WRAPPER";
 my $IO_SERVER="EXTERN_IO_SERVER";
 my $IOFLAG="EXTERN_COMPILED_WITH_IO";
 my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME="EXTERN_IDENTIFIER";
 my $ND_FLAG="EXTERN_ND_FLAG";
 
+my $wrapperScript = catfile($SCRIPTS_DIR, 'wrapper.pl');
+require $wrapperScript;
+my $graphScript = catfile($SCRIPTS_DIR, 'graphSearch.pl');
+require $graphScript;
 
 my $stdin="";
 # actual start of script
@@ -72,20 +76,21 @@ if ( -t STDIN ) {
 }
 my $username=`id -un`;
 
-my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileRunner);
+my $fileStaticRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $fileStaticRunner);
+my $fileDynamicRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+#open my $fileDynamicRunner, ">fileDynamicRunner.maude";
+push(@temporaryFiles, $fileDynamicRunner);
 my $fileStaticInput = File::Temp->new( TEMPLATE => 'tmp-kcc-static-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 push(@temporaryFiles, $fileStaticInput);
-my $fileDynamicInput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileDynamicInput);
-my $fileDynamicOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-out-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileDynamicOutput);
+# my $fileDynamicInput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+# push(@temporaryFiles, $fileDynamicInput);
 
 my $fileStaticMaudeDefinition = catfile($SCRIPTS_DIR, 'static-c-total.maude');
 my $fileDynamicMaudeDefinition;
 
 if (defined($ENV{'SEARCH'})) {
-	$fileDynamicMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");;
+	$fileDynamicMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
 } else {
 	$fileDynamicMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
 }
@@ -93,155 +98,214 @@ if (defined($ENV{'SEARCH'})) {
 # create a file consisting of just the program (the tail of this script)
 print $fileStaticInput linkedProgram();
 
-
 my $commandLineArguments = "";
-for my $arg ($THIS_FILE, @ARGV) {	
+for my $arg ($thisFile, @ARGV) {	
 	$commandLineArguments .= "String \"$arg\"(.List{K}),, ";
 }
 my $startTerm = "eval(linked-program, ($commandLineArguments .List{K}), \"$stdin\")";
 
-print $fileStaticInput "rew $startTerm .\n";
-print $fileStaticInput "q\n";
+# print $fileStaticInput "rew $startTerm .\n";
+# print $fileStaticInput "q\n";
 
-# EVAL_LINE="erew in C-program-linked : $START_TERM ."
-# SEARCH_LINE="search in C-program-linked : $START_TERM =>! B:Bag .
-# "
-# SEARCH_LINE+="show search graph ."
+my $evalLine = "rew in C-program-linked : $startTerm .";
 
-# echo > $FSL_C_RUNNER_FILE
 
-# # first, set up the runner file with the right commands and set any variables
+# first, set up the runner file with the right commands and set any variables
 
-# if [ $PROFILE ]; then
-	# echo "set profile on ." >> $FSL_C_RUNNER_FILE
-# fi
+if (defined($ENV{'PROFILE'})) {
+	print $fileStaticRunner "set profile on .\n";
+	print $fileDynamicRunner "set profile on .\n";
+}
 
-# if [ $DEBUG ]; then 
-	# echo "break select debug ." >> $FSL_C_RUNNER_FILE
-	# echo "set break on ." >> $FSL_C_RUNNER_FILE
-	# echo "$EVAL_LINE" >> $FSL_C_RUNNER_FILE
-	# COLOR_FLAG="-ansi-color"
-# elif [ $SEARCH ]; then
-	# echo "$SEARCH_LINE" >> $FSL_C_RUNNER_FILE
-# else 
-	# echo "$EVAL_LINE" >> $FSL_C_RUNNER_FILE
-# fi
+if (defined($ENV{'STATIC_DEBUG'})) {
+	print $fileStaticRunner "break select debug .\n";
+	print $fileStaticRunner "set break on .\n";
+}
+if (defined($ENV{'DEBUG'})) {
+	print "Debugging\n";
+	print $fileDynamicRunner "break select debug .\n";
+	print $fileDynamicRunner "set break on .\n";
+}
+print $fileStaticRunner "$evalLine\n";
 
-# if [ $PROFILE ]; then
-	# echo "show profile ." >> $FSL_C_RUNNER_FILE
-# fi
-
-# if [ ! $DEBUG ]; then
-	print $fileRunner "q\n";
-# fi 
-# echo $STATIC_MAUDE_DEFINITION
-# STATIC_MAUDE_OUTPUT=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-# DYNAMIC_MAUDE_INPUT=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+if (defined($ENV{'PROFILE'})) {
+	print $fileStaticRunner "show profile .\n";
+}
+if (! defined($ENV{'STATIC_DEBUG'})) {
+	print $fileStaticRunner "q\n";
+}
 
 my $staticMaudeCommand = "maude -no-wrap -no-banner $fileStaticMaudeDefinition " 
 	. rel2abs($fileStaticInput)
-	. " " . rel2abs($fileRunner);
-my $dynamicMaudeCommand = "maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicInput $fileRunner";
-#print "executing $staticMaudeCommand\n";
+	. " " . rel2abs($fileStaticRunner);
+
+if (defined($ENV{'STATIC_DEBUG'})) {
+	exit runDebugger($staticMaudeCommand);
+}
+# here, we know we're not debugging the static semantics
 my $staticMaudeOutput = `$staticMaudeCommand`;
-#print "$staticMaudeOutput\n";
-my @staticOutput = split(/\n/, $staticMaudeOutput);
-shift(@staticOutput);
-shift(@staticOutput);
-shift(@staticOutput);
-shift(@staticOutput);
-pop(@staticOutput);
-print $fileDynamicInput "erew (\n";
-print $fileDynamicInput join("\n", @staticOutput);
-print $fileDynamicInput ") .\n";
-print $fileDynamicInput "q\n";
-#print "executing dynamic semantics\n";
-system("$dynamicMaudeCommand > $fileDynamicOutput") == 0
-		or die "Dynamic execution failed: $?";		
-#print "executed dynamic semantics\n";
-open P, "cat $fileDynamicOutput | perl $WRAPPER |" or die "Error running compiled program!";
-my @data=<P>;
-close P;
-my $returnValue = $? >> 8;
-print join("", @data);
-exit($returnValue);
+my $dynamicInput = processStaticOutput($staticMaudeOutput);
+my $dynamicMaudeCommand = "maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
+#print $fileDynamicRunner "mod C-program-linked is including C .\n";
+#print $fileDynamicRunner "op linked-program : -> K .\n";
+#print $fileDynamicRunner "eq linked-program = ($dynamicInput) .\n";
+#print $fileDynamicRunner "endm\n";
+if (defined($ENV{'SEARCH'})) {
+	print $fileDynamicRunner "search $dynamicInput =>! B:Bag .\n";
+	print $fileDynamicRunner "show search graph .\n"
+} else {
+	print $fileDynamicRunner "erew $dynamicInput .\n";
+}
+if (defined($ENV{'PROFILE'})) {
+	print $fileDynamicRunner "show profile .\n";
+}
+if (! defined($ENV{'DEBUG'})) {
+	print $fileDynamicRunner "q\n";
+}
 
-# $DYNAMIC_MAUDE_COMMAND | cat - > dynamic-output.txt
-# cat dynamic-output.txt | perl $WRAPPER $PLAIN
+# now we can actually run maude on the runner file we built
+# maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
 
-# # # now we can actually run maude on the runner file we built
-# # # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-# # if [ $DEBUG ]; then
+if (defined($ENV{'DEBUG'})) {
+	#io
+	exit runDebugger($dynamicMaudeCommand);
+} elsif (defined($ENV{'SEARCH'})) {
+	my $intermediateOutputFile = "tmpSearchResults.txt";
+	my $graphOutputFile = "tmpSearchResults.dot";
+	if ($ND_FLAG) {
+		print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
+	}
+	print "Performing the search...\n";
+	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
+	open(my $fh, ">$intermediateOutputFile");
+	print $fh join("", @dynamicOutput);
+	close($fh);
+	print "Generated $intermediateOutputFile\n";
+	print "Examining the output...\n";
+	my $graphOutput = graphSearch($graphOutputFile, @dynamicOutput);
+	print "$graphOutput\n";
+	print "Generated $graphOutputFile.\n";
+	
+	if (defined($ENV{'GRAPH'})) {
+		print "Generating graph...\n";
+		system("dot -Tps2 $graphOutputFile > tmpSearchResults.ps") == 0 or die "Running dot failed: $?";
+		print "Generated tmpSearchResults.ps.\n";
+		system("ps2pdf tmpSearchResults.ps tmpSearchResults.pdf") == 0 or die "Running ps2pdf failed: $?";
+		print "Generated tmpSearchResults.pdf\n";
+	}
+} elsif (defined($ENV{'PROFILE'})) {
+} else {
+	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
+	if ($returnValue != 0) {
+		die "Dynamic execution failed: $returnValue";
+	}	
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @dynamicOutput);
+	print $finalOutput;
+	exit($finalReturnValue);
+}
+
+# runs a command and returns a pair (return value, output)
+sub runProgram {
+	my ($command) = (@_);
+	open P, "$command |" or die "Error running \"$command\"!";
+	my @data=<P>;
+	close P;
+	my $returnValue = $? >> 8;
+	
+	return ($returnValue, @data);
+}
+
+
+# if [ $DEBUG ]; then
 	# # if [ $IOFLAG ]; then
 		# # perl $IO_SERVER &> tmpIOServerOutput.log &
 		# # PERL_SERVER_PID=$!
 	# # fi
-	# # $DYNAMIC_MAUDE_COMMAND
-# # elif [ $SEARCH ]; then
-	# # #INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# # #GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# # INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
-	# # GRAPH_OUTPUT_FILE=tmpSearchResults.dot
-	# # if [ ! 1 = "$ND_FLAG" ]; then
-		# # echo "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space."
-	# # fi
-	# # echo "Performing the search..."
-	# # $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
-	# # echo "Generated $INTERMEDIATE_OUTPUT_FILE."
-	# # echo "Examining the output..."
-	# # cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER $GRAPH_OUTPUT_FILE
-	# # echo "Generated $GRAPH_OUTPUT_FILE."
-	# # if [ $GRAPH ]; then
-# # #		if [ "$?" -eq 0 ]; then
-		# # set -e # start to fail on error
-		# # echo "Generating the graph..."
-		# # dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps
-		# # echo "Generated tmpSearchResults.ps."
-		# # ps2pdf tmpSearchResults.ps tmpSearchResults.pdf
-		# # echo "Generated tmpSearchResults.pdf."
-		# # #acroread tmpSearchResults.pdf &
-		# # set +e #stop failing on error
-	# # fi
-	# # #rm -f $INTERMEDIATE_OUTPUT_FILE
-	# # #rm -f $GRAPH_OUTPUT_FILE
-# # elif [ $PROFILE ]; then
-	# # if [ -f "maudeProfileDBfile.sqlite" ]; then
-		# # true
-		# # #echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
-	# # else
-		# # cp $SCRIPTS_DIR/maudeProfileDBfile.calibration.sqlite maudeProfileDBfile.sqlite
-	# # fi
-	# # INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# # #echo "Running the program..."
-	# # $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
-	# # cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
-	# # #echo "Analyzing results..."
-	# # cat $INTERMEDIATE_OUTPUT_FILE | perl $WRAPPER $PLAIN
-	# # RETVAL=$?
-	# # perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
-	# # # cat $INTERMEDIATE_OUTPUT_FILE
-	# # # perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
-	# # #echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
-	# # #echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
-	# # #echo "See $SCRIPTS_DIR/*.sql for some other example queries."
-	# # #echo "Done."
-	# # rm -f $INTERMEDIATE_OUTPUT_FILE
-	# # exit $RETVAL
-# # else
-	# # if [ $IOFLAG ]; then
-		# # perl $IO_SERVER &> tmpIOServerOutput.log &
-		# # PERL_SERVER_PID=$!
-	# # fi
-	# # $DYNAMIC_MAUDE_COMMAND | perl $WRAPPER $PLAIN
-# # fi
-# # RETVAL=$?
-# # if [ $IOFLAG ]; then
-	# # #echo "killing $PERL_SERVER_PID"
-	# # kill -s SIGINT $PERL_SERVER_PID &> /dev/null
-# # fi
-# # rm -f $FSL_C_RUNNER_FILE
-# # rm -f $STATIC_MAUDE_INPUT
+	# $DYNAMIC_MAUDE_COMMAND
+# elif [ $SEARCH ]; then
+	# #INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	# #GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	# INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
+	# GRAPH_OUTPUT_FILE=tmpSearchResults.dot
+	# if [ ! 1 = "$ND_FLAG" ]; then
+		# echo "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space."
+	# fi
+	# echo "Performing the search..."
+	# $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
+	# echo "Generated $INTERMEDIATE_OUTPUT_FILE."
+	# echo "Examining the output..."
+	# cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER $GRAPH_OUTPUT_FILE
+	# echo "Generated $GRAPH_OUTPUT_FILE."
+	# if [ $GRAPH ]; then
+# #		if [ "$?" -eq 0 ]; then
+		# set -e # start to fail on error
+		# echo "Generating the graph..."
+		# dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps
+		# echo "Generated tmpSearchResults.ps."
+		# ps2pdf tmpSearchResults.ps tmpSearchResults.pdf
+		# echo "Generated tmpSearchResults.pdf."
+		# #acroread tmpSearchResults.pdf &
+		# set +e #stop failing on error
+	# fi
+	# #rm -f $INTERMEDIATE_OUTPUT_FILE
+	# #rm -f $GRAPH_OUTPUT_FILE
+# elif [ $PROFILE ]; then
+	# if [ -f "maudeProfileDBfile.sqlite" ]; then
+		# true
+		# #echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
+	# else
+		# cp $SCRIPTS_DIR/maudeProfileDBfile.calibration.sqlite maudeProfileDBfile.sqlite
+	# fi
+	# INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
+	# #echo "Running the program..."
+	# $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
+	# cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
+	# #echo "Analyzing results..."
+	# cat $INTERMEDIATE_OUTPUT_FILE | perl $WRAPPER $PLAIN
+	# RETVAL=$?
+	# perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
+	# # cat $INTERMEDIATE_OUTPUT_FILE
+	# # perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
+	# #echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
+	# #echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
+	# #echo "See $SCRIPTS_DIR/*.sql for some other example queries."
+	# #echo "Done."
+	# rm -f $INTERMEDIATE_OUTPUT_FILE
+	# exit $RETVAL
+# else
+	# if [ $IOFLAG ]; then
+		# perl $IO_SERVER &> tmpIOServerOutput.log &
+		# PERL_SERVER_PID=$!
+	# fi
+	# $DYNAMIC_MAUDE_COMMAND | perl $WRAPPER $PLAIN
+# fi
+# RETVAL=$?
+# if [ $IOFLAG ]; then
+	# #echo "killing $PERL_SERVER_PID"
+	# kill -s SIGINT $PERL_SERVER_PID &> /dev/null
+# fi
+# rm -f $FSL_C_RUNNER_FILE
+# rm -f $STATIC_MAUDE_INPUT
 # exit $RETVAL
 
+
+
+sub runDebugger {
+	my ($command) = (@_);
+	print "Running $command\n";
+	exec($command);
+}
+
+
+sub processStaticOutput {
+	my ($str) = (@_);
+	my @staticOutput = split(/\n/, $str);
+	shift(@staticOutput);
+	shift(@staticOutput);
+	shift(@staticOutput);
+	shift(@staticOutput);
+	pop(@staticOutput);
+	return join("\n", @staticOutput);
+}
 # more stuff is added during compilation
 

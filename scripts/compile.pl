@@ -150,15 +150,11 @@ exit();
 sub performSpecializations {
 	my ($file) = (@_);
 	
-	my $wrapper = catfile($myDirectory, 'wrapper.pl');
-	my $search = catfile($myDirectory, 'graphSearch.pl');
 	my $ioserver = catfile($myDirectory, 'fileserver.pl');
 	my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-s'};
 	
-	$file =~ s?EXTERN_WRAPPER?$wrapper?g;
-	$file =~ s?EXTERN_SEARCH_GRAPH_WRAPPER?$search?g;
 	$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
 	$file =~ s?EXTERN_IO_SERVER?$ioserver?g;
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
