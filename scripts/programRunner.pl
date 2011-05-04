@@ -7,6 +7,7 @@ use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
 my $thisFile = "$0";
 my @temporaryFiles = ();
+my $PERL_SERVER_PID = 0;
 
 
 # here we trap control-c (and others) so we can clean up when that happens
@@ -36,6 +37,10 @@ END {
 sub finalCleanup {
 	foreach my $file (@temporaryFiles) {
 		unlink ($file);
+	}
+	if ($PERL_SERVER_PID > 0) {
+		my $ret = kill(2, $PERL_SERVER_PID);
+		#print "killed $ret\n";
 	}
 }
  
@@ -128,9 +133,9 @@ if (defined($ENV{'DEBUG'})) {
 }
 print $fileStaticRunner "$evalLine\n";
 
-if (defined($ENV{'PROFILE'})) {
-	print $fileStaticRunner "show profile .\n";
-}
+# if (defined($ENV{'PROFILE'})) {
+	# print $fileStaticRunner "show profile .\n";
+# }
 if (! defined($ENV{'STATIC_DEBUG'})) {
 	print $fileStaticRunner "q\n";
 }
@@ -144,6 +149,7 @@ if (defined($ENV{'STATIC_DEBUG'})) {
 }
 # here, we know we're not debugging the static semantics
 my $staticMaudeOutput = `$staticMaudeCommand`;
+
 my $dynamicInput = processStaticOutput($staticMaudeOutput);
 my $dynamicMaudeCommand = "maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
 #print $fileDynamicRunner "mod C-program-linked is including C .\n";
@@ -165,7 +171,6 @@ if (! defined($ENV{'DEBUG'})) {
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-
 if (defined($ENV{'DEBUG'})) {
 	#io
 	exit runDebugger($dynamicMaudeCommand);
@@ -194,7 +199,40 @@ if (defined($ENV{'DEBUG'})) {
 		print "Generated tmpSearchResults.pdf\n";
 	}
 } elsif (defined($ENV{'PROFILE'})) {
+
+	if (! -e "maudeProfileDBfile.sqlite") {
+		copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), "maudeProfileDBfile.sqlite");
+	}
+	my $intermediateOutputFile = File::Temp->new( TEMPLATE => 'tmp-kcc-intermediate-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	push(@temporaryFiles, $intermediateOutputFile);
+	
+	my ($returnValue) = runProgram("$dynamicMaudeCommand > $intermediateOutputFile");
+	if ($returnValue != 0) {
+		die "Dynamic execution failed: $returnValue";
+	}	
+	copy($intermediateOutputFile, "tmpProfileResults.txt");
+	open (my $fh, "<$intermediateOutputFile");
+	my @dynamicOutput = <$fh>;
+	close($fh);
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @dynamicOutput);
+	print $finalOutput;
+	my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
+	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
+	exit($finalReturnValue);
 } else {
+
+	if ($IOFLAG) {
+		$PERL_SERVER_PID = fork();
+		die "unable to fork: $!" unless defined($PERL_SERVER_PID);
+		if (!$PERL_SERVER_PID) {  # child
+			exec("perl $IO_SERVER &> tmpIOServerOutput.log");
+			die "unable to exec: $!";
+		}
+	}
+	# if [ $IOFLAG ]; then
+		# perl $IO_SERVER &> tmpIOServerOutput.log &
+		# PERL_SERVER_PID=$!
+	# fi
 	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
