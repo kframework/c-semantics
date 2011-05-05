@@ -1,183 +1,196 @@
 use strict;
-use GraphViz;
-
-my $numArgs = $#ARGV + 1;
-if ($numArgs != 1) {
-	die "You need to supply an argument that is the output filename for the dot code\n";
-}
-my $outFilename = $ARGV[0];
-
-my $g = GraphViz->new();
-
-# echo 'digraph {
-	# page="8.5,11";
-	# margin="0.25";
-	# orientation="landscape";
-	# ratio="compress";
-	# size="10,7.5";
-# ';
 
 my %states = (); # stateId => stateLabel
 my %arcs = (); # startArcId => endArcId => arcLabel
-
 my %errorStates = (); # stateId => errorKind
 my %goodFinal = (); # stateId => ""
-
-# Literal braces, vertical bars and angle brackets must be escaped.
-
-my $state = "start";
-my $currentStateNumber;
-my $currentStateDestination;
-my $currentState = "";
-my $currentRule = "";
-my $currentRuleName;
-my @currentArc;
-
-my @solutions;
-
-while (my $line = <STDIN>) {
-	chomp($line);
-		
-	# handle start state
-	if ($state eq "start") {
-		if ($line =~ m/^Solution (\d+) /) {
-			my $numSolutions = $1;
-			push(@solutions, {});
-			$solutions[-1]->{'num'} = $numSolutions;
-			#print STDERR $numSolutions . "\n";
-		}
-		if ($line =~ m/< errorCell > String "(.*)"\(\.List\{K\}\) <\/ errorCell >/) {
-			$solutions[-1]->{'error'} = $1;
-		}
-		if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output >/) {
-			$solutions[-1]->{'output'} = $1;
-		}
-		if ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/) {
-			$solutions[-1]->{'retval'} = $1;
-		}
-		if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
-			$solutions[-1]->{'output'} = $1;
-		}
-		if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
-			$solutions[-1]->{'file'} = $1;
-			$solutions[-1]->{'line'} = $2;
-			# $myOffsetStart = $3;
-			# $myOffsetEnd = $4;
-		}
-		# keep reading (and throwing away) until we hit a state
-		if ($line =~ m/^state (\d+)/) {
-			$currentStateNumber = $1;
-			$states{$currentStateNumber} = "";
-			$state = "state";
-		}
-		next;
-	}
 	
-	# handle state state
-	if ($state eq "state") {
-		# keep reading until we hit an arc
-		if ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
-			$state = "arc";
-			# meant to continue to next case
-		} elsif ($line =~ m/^state (\d+)/) {
-			$currentStateNumber = $1;
-			$states{$currentStateNumber} = "";
-			$state = "state";
-			next;
-		} else {
-			$currentState .= $line;
-			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
-				my $currentOutput = $1;
-				$states{$currentStateNumber} = $currentOutput;
+	
+sub graphSearch {
+	require GraphViz;
+	my ($outFilename, @input) = (@_);
+	my $retval = "";
+	# my $numArgs = $#ARGV + 1;
+	# if ($numArgs != 1) {
+		# die "You need to supply an argument that is the output filename for the dot code\n";
+	# }
+	# my $outFilename = $ARGV[0];
+
+	my $g = GraphViz->new();
+
+	# echo 'digraph {
+		# page="8.5,11";
+		# margin="0.25";
+		# orientation="landscape";
+		# ratio="compress";
+		# size="10,7.5";
+	# ';
+
+
+	# Literal braces, vertical bars and angle brackets must be escaped.
+
+	my $state = "start";
+	my $currentStateNumber;
+	my $currentStateDestination;
+	my $currentState = "";
+	my $currentRule = "";
+	my $currentRuleName;
+	my @currentArc;
+
+	my @solutions;
+
+	for my $line (@input) {
+	#while (my $line = <STDIN>) {
+		chomp($line);
+			
+		# handle start state
+		if ($state eq "start") {
+			if ($line =~ m/^Solution (\d+) /) {
+				$state = "solution";
+			}
+		}
+		
+		if ($state eq "solution") {
+			if ($line =~ m/^Solution (\d+) /) {
+				my $numSolutions = $1;
+				push(@solutions, {});
+				$solutions[-1]->{'num'} = $numSolutions;
+			}
+			if ($line =~ m/< errorCell > String "(.*)"\(\.List\{K\}\) <\/ errorCell >/) {
+				$solutions[-1]->{'error'} = $1;
 			}
 			if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output >/) {
-				my $currentOutput = $1;
-				$goodFinal{$currentStateNumber} = "";
-				$states{$currentStateNumber} = $currentOutput;
+				$solutions[-1]->{'output'} = $1;
 			}
-			if ($line =~ m/< errorCell > (.*) <\/ errorCell >/) {
-				my $currentOutput = $1;
-				#print STDERR "setting bad state\n";
-				$errorStates{$currentStateNumber} = "";
-			}				
+			if ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/) {
+				$solutions[-1]->{'retval'} = $1;
+			}
+			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
+				$solutions[-1]->{'output'} = $1;
+			}
+			if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+				$solutions[-1]->{'file'} = $1;
+				$solutions[-1]->{'line'} = $2;
+				# $myOffsetStart = $3;
+				# $myOffsetEnd = $4;
+			}
+			# keep reading (and throwing away) until we hit a state
+			if ($line =~ m/^state (\d+)/) {
+				$currentStateNumber = $1;
+				$states{$currentStateNumber} = "";
+				$state = "state";
+			}
+			next;
+		}
+		
+		# handle state state
+		if ($state eq "state") {
+			# keep reading until we hit an arc
+			if ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
+				$state = "arc";
+				# meant to continue to next case
+			} elsif ($line =~ m/^state (\d+)/) {
+				$currentStateNumber = $1;
+				$states{$currentStateNumber} = "";
+				$state = "state";
+				next;
+			} else {
+				$currentState .= $line;
+				if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> String "(.*)"\(\.List\{K\}\)/) {
+					my $currentOutput = $1;
+					$states{$currentStateNumber} = $currentOutput;
+				}
+				if ($line =~ m/< output > String "(.*)"\(\.List\{K\}\) <\/ output >/) {
+					my $currentOutput = $1;
+					$goodFinal{$currentStateNumber} = "";
+					$states{$currentStateNumber} = $currentOutput;
+				}
+				if ($line =~ m/< errorCell > (.*) <\/ errorCell >/) {
+					my $currentOutput = $1;
+					#print STDERR "setting bad state\n";
+					$errorStates{$currentStateNumber} = "";
+				}				
+				next;
+			}
+		}
+		
+		# handle arc state
+		if ($state eq "arc") {
+			# keep reading until we hit a state or arc
+			if ($line =~ m/^state (\d+)/) {
+				$currentStateNumber = $1;
+				$states{$currentStateNumber} = "";
+				$state = "state";
+			} elsif ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
+				my $arcNumber = $1;
+				$currentStateDestination = $2;
+				$currentRule = $3;
+				#$g->add_edge($currentStateNumber => $stateDestination);
+				#@currentArc = ($currentStateNumber, $stateDestination);
+				$arcs{$currentStateNumber}{$currentStateDestination} = "";
+				$state = "arc";
+				$currentRuleName = "";
+			} else {
+				$currentRule .= $line;
+				if ($line =~ m/label ([\w-]+).*\] \.\)$/) {
+					$currentRuleName = $1;
+					$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+				}
+				if ($line =~ m/metadata .*heating/) {
+					if ($line =~ m/freezer\("\(([^\)]+)\)\./) {
+						$currentRuleName = $1;
+					}
+					$currentRuleName .= ' heat';
+					$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+				}
+			}
 			next;
 		}
 	}
-	
-	# handle arc state
-	if ($state eq "arc") {
-		# keep reading until we hit a state or arc
-		if ($line =~ m/^state (\d+)/) {
-			$currentStateNumber = $1;
-			$states{$currentStateNumber} = "";
-			$state = "state";
-		} elsif ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
-			my $arcNumber = $1;
-			$currentStateDestination = $2;
-			$currentRule = $3;
-			#$g->add_edge($currentStateNumber => $stateDestination);
-			#@currentArc = ($currentStateNumber, $stateDestination);
-			$arcs{$currentStateNumber}{$currentStateDestination} = "";
-			$state = "arc";
-			$currentRuleName = "";
-		} else {
-			$currentRule .= $line;
-			if ($line =~ m/label ([\w-]+).*\] \.\)$/) {
-				$currentRuleName = $1;
-				$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
-			}
-			if ($line =~ m/metadata .*heating/) {
-				if ($line =~ m/freezer\("\(([^\)]+)\)\./) {
-					$currentRuleName = $1;
-				}
-				$currentRuleName .= ' heat';
-				$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
-			}
+
+	for my $node (keys %states) {
+		my $attribs = getAttribs($node);
+		$attribs->{'label'} = "$node\n${states{$node}}";
+		$g->add_node($node, %$attribs);
+	}
+
+	for my $from (keys %arcs) {
+		for my $to (keys %{$arcs{$from}}) {
+			#print "$from, $to\n";
+			#push(@{$HoA{$key}}, $value);
+			$g->add_edge($from => $to, label => $arcs{$from}{$to});
 		}
-		next;
 	}
-}
 
-for my $node (keys %states) {
-	my $attribs = getAttribs($node);
-	$attribs->{'label'} = "$node\n${states{$node}}";
-	$g->add_node($node, %$attribs);
-}
+	open(DOTOUTPUT, ">$outFilename");
+	print DOTOUTPUT $g->as_text;
+	close(DOTOUTPUT);
+	#@solutions = reverse(@solutions);
+	$retval .= "========================================================================\n";
+	$retval .= scalar(@solutions) . " solutions found\n"; 
+	for my $solution (@solutions) {
 
-for my $from (keys %arcs) {
-	for my $to (keys %{$arcs{$from}}) {
-		#print "$from, $to\n";
-		#push(@{$HoA{$key}}, $value);
-		$g->add_edge($from => $to, label => $arcs{$from}{$to});
+		$retval .= "------------------------------------------------------------------------\n";
+		$retval .= "Solution $solution->{'num'}\n";
+		if (defined($solution->{'retval'})) {
+			$retval .= "Program completed successfully\n"; 
+			$retval .= "Return value: " . getString($solution->{'retval'}) . "\n";
+		} else {
+			$retval .= "Program got stuck\n";
+			$retval .= "File: " . getString($solution->{'file'}) . "\n";
+			$retval .= "Line: " . getString($solution->{'line'}) . "\n";
+		}
+		if (defined ($solution->{'error'})) {
+			$retval .= getString($solution->{'error'}) . "\n";
+		}
+		$retval .= "Output:\n" . getString($solution->{'output'}) . "\n";
+		
 	}
-}
-
-open(DOTOUTPUT, ">$outFilename");
-print DOTOUTPUT $g->as_text;
-close(DOTOUTPUT);
-#@solutions = reverse(@solutions);
-print "========================================================================\n";
-print scalar(@solutions) . " solutions found\n"; 
-for my $solution (@solutions) {
-
-	print "------------------------------------------------------------------------\n";
-	print "Solution $solution->{'num'}\n";
-	if (defined($solution->{'retval'})) {
-		print "Program completed successfully\n"; 
-		print "Return value: " . getString($solution->{'retval'}) . "\n";
-	} else {
-		print "Program got stuck\n";
-		print "File: " . getString($solution->{'file'}) . "\n";
-		print "Line: " . getString($solution->{'line'}) . "\n";
-	}
-	if (defined ($solution->{'error'})) {
-		print getString($solution->{'error'}) . "\n";
-	}
-	print "Output:\n" . getString($solution->{'output'}) . "\n";
+	$retval .= "========================================================================\n";
+	$retval .= scalar(@solutions) . " solutions found\n"; 
 	
+	return $retval;
 }
-print "========================================================================\n";
-print scalar(@solutions) . " solutions found\n"; 
 
 sub getAttribs {
 	my ($nodeId) = (@_);
@@ -261,3 +274,4 @@ sub getString {
 	# if ($arcs > 0) echo ";\n";
 # } 
 # echo "}\n";
+1;

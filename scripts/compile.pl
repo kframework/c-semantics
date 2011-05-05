@@ -26,8 +26,6 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
 sub interruptHandler {
-	# my ($val) = (@_);
-	# print "$val\n";
 	finalCleanup(); # call single cleanup point
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
@@ -41,14 +39,9 @@ END {
 
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-	#print "In final cleanup\n";
 	foreach my $file (@temporaryFiles) {
-		#print "unlinking $file\n";
 		unlink ($file);
 	}
-	# clean(); # delete normal kompile files
-	#	clean() if !$verbose;
-	#unlink($maude_xml_file); # we don't want to put this in clean, since clean gets called before the xml file is used
 }
  
  
@@ -56,6 +49,7 @@ $::VERSION="0.1";
 #use vars qw/$not $re/;
 
 my @compiledPrograms = ();
+my @shouldBeDeleted = ();
 
 my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
 
@@ -99,6 +93,7 @@ if (! $args->{'-s'}) {
 	push(@compiledPrograms, $stdlib);
 }
 my $linkingResults = linker(@compiledPrograms);
+unlink(@shouldBeDeleted);
 if ($linkingResults eq ""){
 	die "Nothing returned from linker";
 }
@@ -119,7 +114,7 @@ if ($args->{'-n'}) {
 }
 my @baseMaterialFiles = ($semanticsFile);
 
-open(FILE, catfile($myDirectory, 'programRunner.sh')) or die "Couldn't open file: $!";
+open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
 my $programRunner = join("", <FILE>);
 close(FILE);
 
@@ -134,8 +129,9 @@ print $programTemp "$programRunner\n\n";
 # if ($slurpingResults eq ""){
 	# die "Nothing returned from slurper";
 # }
+
 # print $programTemp $slurpingResults;
-print $programTemp $linkTemp;
+print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkTemp\nENDOFCOMPILEDPROGRAM\n }\n";
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp
 # fi
@@ -156,15 +152,11 @@ exit();
 sub performSpecializations {
 	my ($file) = (@_);
 	
-	my $wrapper = catfile($myDirectory, 'wrapper.pl');
-	my $search = catfile($myDirectory, 'graphSearch.pl');
 	my $ioserver = catfile($myDirectory, 'fileserver.pl');
 	my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-s'};
 	
-	$file =~ s?EXTERN_WRAPPER?$wrapper?g;
-	$file =~ s?EXTERN_SEARCH_GRAPH_WRAPPER?$search?g;
 	$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
 	$file =~ s?EXTERN_IO_SERVER?$ioserver?g;
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
@@ -199,7 +191,9 @@ sub compile {
 			move($localOval, $args->{'-o'}) or die "Failed to move the generated program to its destination $oval: $!";
 			#rename($localOval, $args->{'-o'});
 		}
-	}	
+	} else {
+		push(@shouldBeDeleted, $localOval);
+	}
 }
 
 __END__

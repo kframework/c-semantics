@@ -3,8 +3,6 @@ use strict;
 use DBI;
 my $RULE_LENGTH = 20;
 my $numArgs = $#ARGV + 1;
-my $printFileInfo = 0;
-my $shouldPrint = 0;
 my $filename = $ARGV[0];
 my $runName = $ARGV[1];
 #print "$filename\n";
