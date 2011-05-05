@@ -1,13 +1,13 @@
-kmod INCOMING-MODULES is
-	including K 
+kmod COMMON-INCOMING-MODULES is
+	including K
 	including C-SYNTAX 
-	including C-CONFIGURATION 
+	including COMMON-C-CONFIGURATION 
 	including K-CONTEXTS 
 	including K-PROPER
 endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
-	including INCOMING-MODULES 
+	including COMMON-INCOMING-MODULES 
 
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
@@ -214,39 +214,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	subsort Value < List{Type} 
 	op _::_ : List{Type} List{Type} -> List{Type} [ditto metadata "ditto"] 
 	op Nil : -> List{Type} [ditto] 
-	
-	
 		
-	// op myFreezer : KLabel -> K
-	
-	// rule < k > reval(K:KProper) => K:KProper ~> myFreezer('reval) ...</ k > [structural]
-	// rule < k > peval(K:KProper) => K:KProper ~> myFreezer('peval) ...</ k > [structural]
-	// rule < k > K:KResult ~> myFreezer(L:KLabel) => L:KLabel(K:KResult) ...</ k > [structural]
-	
-	
-	// op myListFreezer : -> KLabel
-	// op myList : K List{Type} List{C} -> K
-	// rule 
-		// < k > C:C :: L:List{C} => myList(.K, Nil, (C:C :: L:List{C})) ...</ k > 
-		// [structural]
-	// rule 
-		// < k > myList(.K, L:List{Type}, Nil) => L:List{Type} ...</ k >
-		// [structural]
-
-	// rule 
-		// < k > (.K => K:K) ~> myList((K:K => .K), ?, ?) ...</ k >
-		// [structural]
-	// rule 
-		// < k > (T:Type => .K) ~> myList(.K, (L:List{Type} => (L:List{Type} :: T:Type)), ?) ...</ k >
-		// [structural]
-	// rule 
-		// < k > myList((.K => C:C), ?, (C:C => Nil) :: L:List{C}) ...</ k >
-		// [structural]
-	
-	
 	op DeclType : K K -> K [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-	
-	
+		
 	op setOfTypes : -> Set [memo] 
 	rule setOfTypes => Set(
 		l('arrayType),, 
@@ -347,8 +317,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op _in_ : K List -> Bool 
 endkm
 
-kmod C-SETTINGS is
-	including INCOMING-MODULES 
+kmod COMMON-C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
 
 	op IdentifierSet : List{K} -> Set 
@@ -467,16 +436,14 @@ kmod C-SETTINGS is
 	*/
 endkm
 
-load common-c-sized-operations
+// load common-c-sized-operations
 
 kmod COMMON-INCLUDE is
-	including INCOMING-MODULES 
-	including C-SETTINGS 
 	including COMMON-SEMANTIC-SYNTAX
-	including FIXED-WIDTH-SYNTAX
+	including COMMON-C-SETTINGS
 endkm
 
-kmod C-SEMANTICS-MISC is
+kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
 	rule sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat => true
@@ -491,7 +458,6 @@ kmod C-SEMANTICS-MISC is
 	rule sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat >=Nat M':Nat
 		[structural]
-		
 	
 	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural]
 	rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural]
@@ -504,149 +470,48 @@ kmod C-SEMANTICS-MISC is
 		=> absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
 		if N:Nat -Int I:Int >=Int 0 
 		[structural]
-		
-	rule [sequencePoint]:
-		< k > sequencePoint => .K ...</ k >
-		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
-		[structural metadata "nd=(true)"]
-		
-	// //C99 6.5.3.2 (p79) footnote 90) Thus, &*E == E; &(E1[E2]) == (E1 + E2)
-	
-	// //C99 6.5.3.2 90) ... It is always true that if E is a function designator or an lvalue that is a valid operand of the u of the unary & operator, *&E is a function designator or an lvalue equal to E
-
-				
-	// fixme these should be computational, unless I handle that at a higher level
-	rule [writeToFD-char]:
-		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => S:String +String charString(N:Nat %Nat 256)) ...</ files >
-		[structural]
-		// [metadata "computational"]
-	rule [writeToFD-string]:
-		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => S:String +String S':String) ...</ files >
-		[structural]
-		// [metadata "computational"]
-	rule [readFromFD-char]:
-		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)  ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
-		if S:String =/=Bool ""
-		[structural]
-		// [metadata "computational"]
-	rule [readFromFD-char-eof]:
-		< k > readFromFD(FD:Nat) => tv(-1, int) ...</ k > // -1 should be EOF
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
-		if S:String ==Bool ""
-		[structural]
-		// [metadata "computational"]
-		
-	// rule
-		// < k > readFromFD(FD:Nat, Offset:Nat) 
-			// => tv(charToAscii(nthChar(S:String, Offset:Nat)), int)
-		// ...</ k >
-		// < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		// < files >... Filename:String |-> S:String ...</ files >
-		// if lengthString(S:String) >Nat Offset:Nat
-		// [structural] 
-	// rule
-		// < k > readFromFD(FD:Nat, Offset:Nat) => tv(-1, int)  ...</ k >
-		// < openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		// < files >... Filename:String |-> S:String ...</ files >
-		// if lengthString(S:String) <=Nat Offset:Nat
-		// [structural] 
 
 	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
 	rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
 	rule klistToK(.List{K}) => .K [structural]
 	
 	rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
-	
-	
-	// TODO nicely handle loc range instead of ignoring L2
-	// fixme feature i'd like to say ? instead of k, but context transformers don't work that way
-	// rule
-		// < k > DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc) => K:K ...</ k >
-		// < currentProgramLoc > ? => L1:CabsLoc </ currentProgramLoc >
-		// [structural] 
+
 	rule ExpressionLoc(K:K, ?) => K:K [structural]
-	// rule [DefinitionLoc-k]:
-		// < k > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural]
+
 	rule [CodeLoc-k]:
 		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural]
-	// rule [DefinitionLoc-k]:
-		// < k > DefinitionLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ k >
-		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
-		// if N:Nat =/=Bool 268
-		// [structural]
-	// rule [ExpressionLoc-k]:
-		// < k > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
-	// rule [StatementLoc-k]:
-		// < k > StatementLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
-	// rule [StatementLoc-k]:
-		// < k > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ k >
-		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
-		// if N:Nat =/=Bool 268
-		// [structural] 
-	// rule [EnumItemLoc-k]:
-		// < k > EnumItemLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
 		
 	rule [Attributes]:
 		< k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >
 		[structural]
 		
 	rule AttributeWrapper(K:K, ?) => K:K [structural]
-	// rule NameLoc(K:K, ?) => K:K [structural]
 	
 	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
 		if M:Nat >=Nat numBitsPerByte 
 		[structural]
 	
-		
 	rule Identifier("___missing_field_name") => #NoName [structural]
 endkm
 
-load common-c-conversions
 load common-c-expressions
-load common-c-statements
-load common-c-standard-lib
-load common-c-typing
-load common-c-memory
-load common-c-declarations
 load common-c-helpers
-load common-c-errors
 
 kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
-	including C-SEMANTICS-MISC 
-	
-	including FIXED-C-STYLE
-	including FIXED-C-STYLE-TWOS-COMPLEMENT 
-	
+	including COMMON-C-SEMANTICS-MISC
+
 	including COMMON-C-HELPERS
-	including COMMON-C-TYPING 
-	including COMMON-C-DECLARATIONS 
-	including COMMON-C-MEMORY 
-	including COMMON-C-STATEMENTS 
-	including COMMON-C-EXPRESSIONS 
-	including COMMON-C-CONVERSIONS 
-	including COMMON-C-STANDARD-LIBRARY 
-	including COMMON-C-ERRORS
+	including COMMON-C-EXPRESSIONS
 	
 	op eval : K -> Bag 
 	op eval : K List{K} String -> Bag
+	op callMain : Nat Id K -> K
+	op incomingArguments : List{K} -> K
 	
 	op TranslationUnitName : String -> KLabel
+		
 endkm

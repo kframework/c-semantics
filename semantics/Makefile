@@ -16,9 +16,11 @@ COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
 COMPILE_STATIC_C = $(K_MAUDE) static-c.k -u -language C
 
 
-
-ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-errors.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
-dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
+COMMON_C_FILES = k-includes.k c-syntax.k \
+common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k
+DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k 
+STATIC_C_FILES = static-c.k static-c-semantics.k static-c-configuration.k
+ALL_K_FILES = $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(STATIC_C_FILES) maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude kcompile_* \
@@ -59,7 +61,7 @@ c.k: k-includes.k
 # this is used to start all of the common files
 common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf 
 	
-c-compiled.maude.tmp: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
+c-compiled.maude.tmp: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
@@ -74,7 +76,7 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 	
-c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
+c-compiled-nd.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
 	@mv c-compiled.maude c-compiled-nd.maude
@@ -83,7 +85,7 @@ c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE)
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 
-static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) static-c-semantics.k static-c-configuration.k
+static-c-compiled.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(STATIC_C_FILES)
 	@echo "Compiling the static C definition..."
 	@if time -p true &> /dev/null; then time -p $(COMPILE_STATIC_C); else $(COMPILE_STATIC_C); fi
 	@echo "Done".

@@ -1,5 +1,9 @@
-kmod COMMON-SEMANTICS-PROMOTIONS is
-	including COMMON-INCLUDE 
+kmod DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE is
+	including DYNAMIC-INCLUDE 
+endkm
+
+kmod DYNAMIC-SEMANTICS-PROMOTIONS is
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
 	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
 	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
@@ -277,8 +281,8 @@ kmod COMMON-SEMANTICS-PROMOTIONS is
 	
 endkm
 
-kmod COMMON-SEMANTICS-CAST is 
-	including COMMON-INCLUDE 
+kmod DYNAMIC-SEMANTICS-CAST is 
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
 	//- switch assumes casts can happen anywhere
 	rule 
@@ -573,10 +577,9 @@ kmod COMMON-SEMANTICS-CAST is
 
 endkm
 
-kmod COMMON-C-CONVERSIONS is
-	including COMMON-INCLUDE 
-	including COMMON-SEMANTICS-CAST 
-	including COMMON-SEMANTICS-PROMOTIONS 
+kmod DYNAMIC-C-CONVERSIONS is
+	including DYNAMIC-SEMANTICS-CAST 
+	including DYNAMIC-SEMANTICS-PROMOTIONS 
 
 	// fixme generalize this should be done generically
 	// rule < k > *(tv(?, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 

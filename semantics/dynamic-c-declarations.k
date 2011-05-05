@@ -1,5 +1,5 @@
-kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
-	including COMMON-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE is
+	including DYNAMIC-INCLUDE 
 	op figureInitializer-aux : Id Type K -> K [strict(3)] // id, type, initializer
 	op declarationObject : Type K K -> K // type, translation unit it was defined in, definition
 	
@@ -11,8 +11,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	op startInitializer : Type Id K -> K 
 endkm
 
-kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 
 	// empty binding
 	// fixme not really a sequence point
@@ -135,8 +135,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-BINDING is
 		[structural]
 endkm
 
-kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 
 	// c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes of this subclause unnamed members of objects of structure and union type do not participate in initialization.  Unnamed members of structure objects have indeterminate value even after initialization
 	// c99 6.7.8:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static storage duration is not initialized explicitly, then:
@@ -769,8 +769,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op te : K Type -> K 
 	op getInitializer : -> K 
@@ -1114,8 +1114,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 endkm
 
 
-kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op canonicalizeTranslationUnitVariables : -> K 
 	rule
@@ -1363,8 +1363,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 endkm
 
-kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op fillEnums : K -> K 
 	op fillEnums-aux : K K -> K 
@@ -1392,12 +1392,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 		[structural] 
 endkm
 
-kmod COMMON-C-DECLARATIONS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+kmod DYNAMIC-C-DECLARATIONS is
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 	
-	including COMMON-SEMANTICS-DECLARATIONS-BINDING 
-	including COMMON-SEMANTICS-DECLARATIONS-GENERAL 
-	including COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
-	including COMMON-SEMANTICS-DECLARATIONS-ENUMS 
-	including COMMON-SEMANTICS-DECLARATIONS-RESOLUTION 
+	including DYNAMIC-SEMANTICS-DECLARATIONS-BINDING 
+	including DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL 
+	including DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
+	including DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS 
+	including DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION 
 endkm

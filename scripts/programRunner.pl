@@ -154,9 +154,18 @@ if (defined($ENV{'STATIC_DEBUG'})) {
 close($fileStaticInput);
 close($fileStaticRunner);
 
-my $staticMaudeOutput = `$staticMaudeCommand`;
+my @staticMaudeOutput = `$staticMaudeCommand`;
+if (defined($ENV{'STATIC'})) {
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @staticMaudeOutput);
+	print $finalOutput;
+	exit($finalReturnValue);
+}
+
 # print "finished running static stuff\n";
-my $dynamicInput = processStaticOutput($staticMaudeOutput);
+my $dynamicInput = processStaticOutput(join("", @staticMaudeOutput));
+if ($dynamicInput eq "") {
+	die "There was a problem running the static semantics.  The wrapper provided no results.  This is very likely a bug in the tool, so please report it.";
+}
 my $dynamicMaudeCommand = "true; maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
 #print $fileDynamicRunner "mod C-program-linked is including C .\n";
 #print $fileDynamicRunner "op linked-program : -> K .\n";

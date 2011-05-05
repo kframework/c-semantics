@@ -1,5 +1,5 @@
-kmod COMMON-MEMORY-INCLUDE is
-	including COMMON-INCLUDE 
+kmod DYNAMIC-MEMORY-INCLUDE is
+	including DYNAMIC-INCLUDE 
 	
 	// returns the bytes in the order in which they are in memory
 	op extractBytesFromMem : Nat Nat -> K // loc, size in bytes
@@ -15,8 +15,8 @@ kmod COMMON-MEMORY-INCLUDE is
 	rule locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
 endkm
 
-kmod COMMON-SEMANTICS-READING is
-	including COMMON-MEMORY-INCLUDE 
+kmod DYNAMIC-SEMANTICS-READING is
+	including DYNAMIC-MEMORY-INCLUDE 
 	
 	op extractBitsFromMem : Nat Nat -> K // loc, size in bits
 	op extractByteFromMem : Nat -> K 
@@ -269,8 +269,8 @@ kmod COMMON-SEMANTICS-READING is
 		// [structural]
 endkm
 
-kmod COMMON-SEMANTICS-WRITING is
-	including COMMON-MEMORY-INCLUDE 
+kmod DYNAMIC-SEMANTICS-WRITING is
+	including DYNAMIC-MEMORY-INCLUDE 
 	context alloc(?, value(`[HOLE`]:K)) 
 
 	rule allocateType(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
@@ -655,8 +655,8 @@ kmod COMMON-SEMANTICS-WRITING is
 	eq isByteLoc(?) = true [owise] 
 endkm
 
-kmod COMMON-C-MEMORY-MISC is
-	including COMMON-MEMORY-INCLUDE 
+kmod DYNAMIC-C-MEMORY-MISC is
+	including DYNAMIC-MEMORY-INCLUDE 
 
 	// used by calloc
 	rule
@@ -743,9 +743,9 @@ kmod COMMON-C-MEMORY-MISC is
 		[structural]
 endkm
 
-kmod COMMON-C-MEMORY is
-	including COMMON-MEMORY-INCLUDE 
-	including COMMON-C-MEMORY-MISC 
-	including COMMON-SEMANTICS-WRITING 
-	including COMMON-SEMANTICS-READING 
+kmod DYNAMIC-C-MEMORY is
+	including DYNAMIC-MEMORY-INCLUDE 
+	including DYNAMIC-C-MEMORY-MISC 
+	including DYNAMIC-SEMANTICS-WRITING 
+	including DYNAMIC-SEMANTICS-READING 
 endkm

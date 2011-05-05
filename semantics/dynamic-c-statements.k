@@ -1,5 +1,5 @@
-kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
-	including COMMON-INCLUDE 
+kmod DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
+	including DYNAMIC-INCLUDE 
 	op loopMarked : -> Statement 
 	op genLabel : Nat K -> K //  switchid, value (tv or 'Default)
 	op popLoop : -> K 
@@ -9,8 +9,8 @@ kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	op caseHelper : Nat -> K 
 endkm 
  
-kmod COMMON-SEMANTICS-IF-THEN is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-IF-THEN is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 		
 	rule [if-then-else-true]:
 		< k > IfThenElse(tv(1, int), S:K, ?) => sequencePoint ~> S:K ...</ k >
@@ -31,8 +31,8 @@ kmod COMMON-SEMANTICS-IF-THEN is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-WHILE is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-WHILE is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	rule [while-mark]:
 		< k > While(B:Expression, S:Statement) ~> K:K
@@ -48,8 +48,8 @@ kmod COMMON-SEMANTICS-WHILE is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-DO-WHILE is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-DO-WHILE is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	rule [do-while-mark]:
 		< k > DoWhile(B:Expression, S:Statement) ~> K:K
@@ -65,8 +65,8 @@ kmod COMMON-SEMANTICS-DO-WHILE is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-FOR is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-FOR is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	rule ForClauseDeclaration(K:K) => K:K [structural]
 	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
@@ -98,8 +98,8 @@ kmod COMMON-SEMANTICS-FOR is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-SWITCH is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-SWITCH is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
@@ -179,8 +179,8 @@ kmod COMMON-SEMANTICS-SWITCH is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-GOTO is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-GOTO is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	//  fixme CONFIRM It seems there are no sequence points for a goto
 	
@@ -654,8 +654,8 @@ kmod COMMON-SEMANTICS-GOTO is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-RETURN is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-RETURN is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 
 	rule [return-clean-local]:
 		< k > (. => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
@@ -705,8 +705,8 @@ kmod COMMON-SEMANTICS-RETURN is
 		[structural] 
 endkm
 
-kmod COMMON-SEMANTICS-BLOCKS is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+kmod DYNAMIC-SEMANTICS-BLOCKS is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	rule 
 		< k > BlockStatement(Block:K)
@@ -756,16 +756,16 @@ kmod COMMON-SEMANTICS-BLOCKS is
 		[structural] 
 endkm
 
-kmod COMMON-C-STATEMENTS is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
-	including COMMON-SEMANTICS-IF-THEN 
-	including COMMON-SEMANTICS-FOR 
-	including COMMON-SEMANTICS-WHILE 
-	including COMMON-SEMANTICS-SWITCH 
-	including COMMON-SEMANTICS-GOTO 
-	including COMMON-SEMANTICS-RETURN 
-	including COMMON-SEMANTICS-BLOCKS 
-	including COMMON-SEMANTICS-DO-WHILE 
+kmod DYNAMIC-C-STATEMENTS is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+	including DYNAMIC-SEMANTICS-IF-THEN 
+	including DYNAMIC-SEMANTICS-FOR 
+	including DYNAMIC-SEMANTICS-WHILE 
+	including DYNAMIC-SEMANTICS-SWITCH 
+	including DYNAMIC-SEMANTICS-GOTO 
+	including DYNAMIC-SEMANTICS-RETURN 
+	including DYNAMIC-SEMANTICS-BLOCKS 
+	including DYNAMIC-SEMANTICS-DO-WHILE 
 	
 	rule Nop => . 
 		[structural] 

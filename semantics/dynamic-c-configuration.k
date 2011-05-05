@@ -1,7 +1,8 @@
-kmod C-CONFIGURATION is
+load common-c-configuration
+
+kmod DYNAMIC-C-CONFIGURATION is
 	including C-SYNTAX
 	including COMMON-C-CONFIGURATION
-	op nextFile : -> CellLabel
 	configuration 
 		<T> 
 			// <busy> .Bag </busy>

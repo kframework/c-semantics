@@ -4,8 +4,8 @@ load maudeLib/TCPSupport
 
 ////////////////////////////////
 //- C standard library
-kmod COMMON-C-STANDARD-LIBRARY is
-	including COMMON-INCLUDE
+kmod DYNAMIC-C-STANDARD-LIBRARY is
+	including DYNAMIC-INCLUDE
 	including SOCKET-BUILTIN-MODULE
 	including TCP-INTERFACE-BUILTIN-MODULE
 	

@@ -3,8 +3,7 @@ kmod COMMON-SEMANTICS-HELPERS-INCLUDE is
 endkm
 
 kmod COMMON-SEMANTICS-HELPERS-MISC is
-	including COMMON-SEMANTIC-SYNTAX
-	including C-SETTINGS
+	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
 	// this maintains byte order
 	op fillToBytes-aux : K List{K} -> K
@@ -258,8 +257,51 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 endkm
 
-kmod COMMON-C-HELPERS is
+kmod COMMON-C-BITSIZE is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
+	op bitSizeofList : List{Type} -> K 
+	rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
+		[structural]
+	rule bitSizeofList(Nil) => 0 [structural]
+	
+	op maxBitSizeofList : List{Type} -> K 
+	op maxBitSizeofList-aux : List{Type} Nat -> K 
+	rule maxBitSizeofList(L:List{Type}) => maxBitSizeofList-aux(L:List{Type}, 0) [structural]
+	rule
+		< k > maxBitSizeofList-aux(T:Type :: L:List{Type}, N:Nat) 
+			=> bitSizeofType(T:Type) ~> maxBitSizeofList-aux(L:List{Type}, N:Nat) 
+		...</ k >
+		[structural] 
+	rule
+		< k > (tv(N':Nat, ?) => .) ~> maxBitSizeofList-aux(L:List{Type}, (N:Nat => maxNat(N:Nat, N':Nat))) ...</ k >
+		[structural] 
+	rule
+		< k > maxBitSizeofList-aux(Nil, N:Nat) => N:Nat ...</ k >
+		[structural] 
+	
+	rule bitSizeofType(arrayType(T:Type, N:Nat)) => bitSizeofType(T:Type) * N:Nat [structural]
+	rule bitSizeofType(flexibleArrayType(T:Type)) => 0 [structural]
+	rule bitSizeofType(functionType(?, ?)) => numBitsPerByte [structural]
+	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
+	rule bitSizeofType(pointerType(?)) => cfg:ptrsize *Nat numBitsPerByte [structural]
+	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(bitfieldType(?, N:Nat)) => N:Nat [structural]
+	rule bitSizeofType(qualifiedType(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+
+	rule
+		< k > bitSizeofType(structType(S:Id)) => bitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		[structural] 
+	rule
+		< k > bitSizeofType(unionType(S:Id)) => maxBitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		[structural]
+endkm
+
+
+kmod COMMON-C-HELPERS is
+	including COMMON-SEMANTICS-HELPERS-INCLUDE
+	including COMMON-C-BITSIZE
 	including COMMON-SEMANTICS-HELPERS-MISC
 endkm

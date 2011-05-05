@@ -41,8 +41,9 @@ sub maudeOutputWrapper {
 			#$buffer .= $line;
 			#$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
 			#print "$line\n";
-			if ($line =~ m/^result NeBag:/){
+			if ($line =~ m/^result (?:NeBag|Bag): (.*)$/){
 				$state = "success";
+				$realOutput .= $1;
 				#printf "SUCCESS\n";
 			} else {
 				$state = "failure";
@@ -89,7 +90,7 @@ sub maudeOutputWrapper {
 		$realOutput .= "$buffer\n";
 	} elsif ($reduced == 0 || $haveResult == 0) {
 		#print "$buffer\n";
-		$realOutput .= "=============================================================\n";
+		$realOutput .= "\n=============================================================\n";
 		$realOutput .= "ERROR! KCC encountered an error while executing this program.\n";
 		my $baseName = fileparse($myFile);
 		my $template = "kcc-dump-$baseName-XXXXXXXXXX";

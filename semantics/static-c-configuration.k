@@ -1,7 +1,8 @@
-kmod C-CONFIGURATION is
+load common-c-configuration
+
+kmod STATIC-C-CONFIGURATION is
 	including C-SYNTAX
 	including COMMON-C-CONFIGURATION
-	op nextFile : -> CellLabel
 	configuration 
 		<T> 
 			<gotoMap> .Map </gotoMap>

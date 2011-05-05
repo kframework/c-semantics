@@ -28,7 +28,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/compileProgram.sh \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
-	$(SCRIPTS_DIR)/programRunner.sh \
 	$(SCRIPTS_DIR)/programRunner.pl \
 	$(SCRIPTS_DIR)/fileserver.pl \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
@@ -66,7 +65,7 @@ endif
 dist: check-vars $(DIST_DIR)/dist.done
 
 pdf: check-vars
-	@make -C $(SEMANTICS_DIR) pdf
+	@$(MAKE) -C $(SEMANTICS_DIR) pdf
 
 export TEST_C_PROGRAM
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
@@ -98,22 +97,22 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@touch $(DIST_DIR)/dist.done
 
 test: dist
-	@make -C tests
+	@$(MAKE) -C tests
 	
 force: ;
 
 cparser:
-	@make -C $(PARSER_DIR)
+	@$(MAKE) -C $(PARSER_DIR)
 	@-strip $(PARSER)
 
 semantics: check-vars
 #@rm -f $(SEMANTICS_DIR)/c-total-nd.maude
-	@make $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
+	@$(MAKE) $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
 
 clean:
-	make -C $(PARSER_DIR) clean
-	make -C $(SEMANTICS_DIR) clean
-	make -C gcc-test clean
-	make -C tests clean
+	$(MAKE) -C $(PARSER_DIR) clean
+	$(MAKE) -C $(SEMANTICS_DIR) clean
+	$(MAKE) -C gcc-test clean
+	$(MAKE) -C tests clean
 	rm -rf $(DIST_DIR)
 	rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre
