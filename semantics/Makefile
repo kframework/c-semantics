@@ -11,6 +11,12 @@ K_PL_MODEL_CHECKER = $(K_MAUDE_BASE)/k-model-checker
 
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 
+COMPILE_C = $(K_MAUDE) c.k -u -language C
+COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
+COMPILE_STATIC_C = $(K_MAUDE) static-c.k -u -language C
+
+
+
 ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k common-c-errors.k common-c-configuration.k common-c-semantics.k common-c-standard-lib.k common-c-expressions.k common-c-memory.k common-c-statements.k common-c-conversions.k common-c-typing.k common-c-declarations.k \
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
@@ -54,7 +60,7 @@ common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics
 c-compiled.maude.tmp: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@time -p $(K_MAUDE) c.k -u -language C
+	@if time &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
 	@mv c-compiled.maude c-compiled.maude.tmp
 	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -68,7 +74,7 @@ c-compiled.maude: c-compiled.maude.tmp
 	
 c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
-	@time -p $(K_MAUDE) c.k -nd -u -language C
+	@if time &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
 	@mv c-compiled.maude c-compiled-nd.maude
 	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
@@ -77,7 +83,7 @@ c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE)
 
 static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
 	@echo "Compiling the static C definition..."
-	@time -p $(K_MAUDE) static-c.k -u -language C
+	@if time &> /dev/null; then time -p $(COMPILE_STATIC_C); else $(COMPILE_STATIC_C); fi
 	@echo "Done".
 
 	

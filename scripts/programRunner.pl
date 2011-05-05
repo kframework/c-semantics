@@ -36,7 +36,7 @@ END {
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
 	foreach my $file (@temporaryFiles) {
-		unlink ($file);
+		#unlink ($file);
 	}
 	if ($PERL_SERVER_PID > 0) {
 		my $ret = kill(2, $PERL_SERVER_PID);
@@ -127,7 +127,7 @@ if (defined($ENV{'STATIC_DEBUG'})) {
 	print $fileStaticRunner "set break on .\n";
 }
 if (defined($ENV{'DEBUG'})) {
-	print "Debugging\n";
+	#print "Debugging\n";
 	print $fileDynamicRunner "break select debug .\n";
 	print $fileDynamicRunner "set break on .\n";
 }
@@ -140,7 +140,8 @@ if (! defined($ENV{'STATIC_DEBUG'})) {
 	print $fileStaticRunner "q\n";
 }
 
-my $staticMaudeCommand = "maude -no-wrap -no-banner $fileStaticMaudeDefinition " 
+# I had to add this strange true; thing to get it to work in windows.  no idea why...
+my $staticMaudeCommand = "true; maude -no-wrap -no-banner $fileStaticMaudeDefinition " 
 	. rel2abs($fileStaticInput)
 	. " " . rel2abs($fileStaticRunner);
 
@@ -148,10 +149,15 @@ if (defined($ENV{'STATIC_DEBUG'})) {
 	exit runDebugger($staticMaudeCommand);
 }
 # here, we know we're not debugging the static semantics
-my $staticMaudeOutput = `$staticMaudeCommand`;
+# print "Running static stuff\n";
+# print "Running $staticMaudeCommand\n";
+close($fileStaticInput);
+close($fileStaticRunner);
 
+my $staticMaudeOutput = `$staticMaudeCommand`;
+# print "finished running static stuff\n";
 my $dynamicInput = processStaticOutput($staticMaudeOutput);
-my $dynamicMaudeCommand = "maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
+my $dynamicMaudeCommand = "true; maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
 #print $fileDynamicRunner "mod C-program-linked is including C .\n";
 #print $fileDynamicRunner "op linked-program : -> K .\n";
 #print $fileDynamicRunner "eq linked-program = ($dynamicInput) .\n";
@@ -171,6 +177,7 @@ if (! defined($ENV{'DEBUG'})) {
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
+close($fileDynamicRunner);
 if (defined($ENV{'DEBUG'})) {
 	#io
 	exit runDebugger($dynamicMaudeCommand);
@@ -233,7 +240,9 @@ if (defined($ENV{'DEBUG'})) {
 		# perl $IO_SERVER &> tmpIOServerOutput.log &
 		# PERL_SERVER_PID=$!
 	# fi
+	#print "going to run dynamic stuff\n";
 	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
+	#print "finished running dynamic stuff\n";
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	

@@ -47,14 +47,15 @@ fast: dist
 nd: WHICH_SEMANTICS="semantics-nd"
 nd: dist
 
-NECESSARY_PERL = XML::Twig XML::DOM XML::LibXML::Reader Regexp::Common Tree::Nary Text::Diff DBI DBD::SQLite Getopt::Declare
-
 check-vars: 
 ifeq ($(K_MAUDE_BASE),)
-	@echo "Error: Please set K_MAUDE_BASE to the full path of your K installation."
-	@echo "Make sure you do NOT include a trailing slash\"
+	@echo "ERROR: Please set K_MAUDE_BASE to the full path of your K installation."
+	@echo "Make sure you do NOT include a trailing slash\\"
+	@echo "One way to do this is to type 'export K_MAUDE_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
+	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing"; false; fi
+	@if ! gcc-4 -v &> /dev/null; then echo "WARNING: You don't seem to have gcc-4 installed, which will probably prevent you from installing certain perl modules.  Continuing anyway..."; fi
 	@echo Looking for maude...
 	@echo | maude > /dev/null
 	@echo Found.
@@ -85,7 +86,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@echo "Calibrating the semantic profiler..."
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
 	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
-	@echo > maudeProfileDBfile.sqlite
+	@touch maudeProfileDBfile.sqlite
 	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(SEMANTICS_DIR)/c-compiled.maude
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true
