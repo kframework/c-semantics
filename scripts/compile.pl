@@ -49,6 +49,7 @@ $::VERSION="0.1";
 #use vars qw/$not $re/;
 
 my @compiledPrograms = ();
+my @shouldBeDeleted = ();
 
 my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
 
@@ -92,6 +93,7 @@ if (! $args->{'-s'}) {
 	push(@compiledPrograms, $stdlib);
 }
 my $linkingResults = linker(@compiledPrograms);
+unlink(@shouldBeDeleted);
 if ($linkingResults eq ""){
 	die "Nothing returned from linker";
 }
@@ -189,7 +191,9 @@ sub compile {
 			move($localOval, $args->{'-o'}) or die "Failed to move the generated program to its destination $oval: $!";
 			#rename($localOval, $args->{'-o'});
 		}
-	}	
+	} else {
+		push(@shouldBeDeleted, $localOval);
+	}
 }
 
 __END__

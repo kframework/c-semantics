@@ -55,7 +55,7 @@ ifeq ($(K_MAUDE_BASE),)
 	@exit 1
 endif
 	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing"; false; fi
-	@if ! gcc-4 -v &> /dev/null; then echo "WARNING: You don't seem to have gcc-4 installed, which will probably prevent you from installing certain perl modules.  Continuing anyway..."; fi
+#@if ! gcc-4 -v &> /dev/null; then echo "WARNING: You don't seem to have gcc-4 installed, which will probably prevent you from installing certain perl modules.  Continuing anyway..."; fi
 	@echo Looking for maude...
 	@echo | maude > /dev/null
 	@echo Found.

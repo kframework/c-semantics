@@ -36,11 +36,11 @@ END {
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
 	foreach my $file (@temporaryFiles) {
-		#unlink ($file);
+		close($file);
+		unlink ($file);
 	}
 	if ($PERL_SERVER_PID > 0) {
 		my $ret = kill(2, $PERL_SERVER_PID);
-		#print "killed $ret\n";
 	}
 }
  

@@ -21,7 +21,9 @@ ALL_K_FILES = common-c-syntax.k common-c-sized-operations.k common-c-helpers.k c
 dynamic-c-semantics.k dynamic-c-configuration.k maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude kcompile_* c-compiled.maude.bak c-compiled.maude.tmp.bak c-compiled-nd.maude.bak duplicateLabels.txt k-includes.k
+K_CLEAN_FILES = *.maude kcompile_* \
+c-compiled.maude.tmp.bak c-compiled-nd.maude.bak static-c.k.bak \
+duplicateLabels.txt k-includes.k
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -60,7 +62,7 @@ common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics
 c-compiled.maude.tmp: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@if time &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
+	@if time -p true &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
 	@mv c-compiled.maude c-compiled.maude.tmp
 	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -74,19 +76,18 @@ c-compiled.maude: c-compiled.maude.tmp
 	
 c-compiled-nd.maude: c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
-	@if time &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
+	@if time -p true &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
 	@mv c-compiled.maude c-compiled-nd.maude
 	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 	@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 
-static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) $(INSERT_LINE) static-c-semantics.k static-c-configuration.k
+static-c-compiled.maude: c-syntax.k static-c.k k-includes.k $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(ALL_K_FILES) static-c-semantics.k static-c-configuration.k
 	@echo "Compiling the static C definition..."
-	@if time &> /dev/null; then time -p $(COMPILE_STATIC_C); else $(COMPILE_STATIC_C); fi
+	@if time -p true &> /dev/null; then time -p $(COMPILE_STATIC_C); else $(COMPILE_STATIC_C); fi
 	@echo "Done".
 
-	
 static-c-total.maude: static-c-compiled.maude $(K_BASE_FILES) Makefile
 	@echo "static-c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 	
@@ -96,7 +97,7 @@ c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
-semantics: c-total.maude c-total-nd.maude
+semantics: c-total.maude c-total-nd.maude static-c-total.maude
 
 fast-nd: c-total.maude
 	@cp c-total.maude c-total-nd.maude
