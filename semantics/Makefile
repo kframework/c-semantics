@@ -17,9 +17,9 @@ COMPILE_STATIC_C = $(K_MAUDE) static-c.k -u -language C
 
 
 COMMON_C_FILES = k-includes.k c-syntax.k \
-common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k
+common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
 DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k 
-STATIC_C_FILES = static-c.k static-c-semantics.k static-c-configuration.k
+STATIC_C_FILES = static-c.k static-c-semantics.k static-c-configuration.k static-c-statements.k static-c-declarations.k static-c-typing.k
 ALL_K_FILES = $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(STATIC_C_FILES) maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux

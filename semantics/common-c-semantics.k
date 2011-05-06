@@ -438,9 +438,16 @@ endkm
 
 // load common-c-sized-operations
 
-kmod COMMON-INCLUDE is
+kmod COMMON-NOHELPER-INCLUDE is
 	including COMMON-SEMANTIC-SYNTAX
 	including COMMON-C-SETTINGS
+endkm
+
+load common-c-helpers
+
+kmod COMMON-INCLUDE is
+	including COMMON-NOHELPER-INCLUDE
+	including COMMON-C-HELPERS
 endkm
 
 kmod COMMON-C-SEMANTICS-MISC is
@@ -497,15 +504,19 @@ kmod COMMON-C-SEMANTICS-MISC is
 	rule Identifier("___missing_field_name") => #NoName [structural]
 endkm
 
+load common-c-statements
 load common-c-expressions
-load common-c-helpers
+load common-c-declarations
+load common-c-typing
 
 kmod COMMON-C-SEMANTICS is
 	including COMMON-INCLUDE 
+	
 	including COMMON-C-SEMANTICS-MISC
-
-	including COMMON-C-HELPERS
 	including COMMON-C-EXPRESSIONS
+	including COMMON-C-STATEMENTS
+	including COMMON-C-DECLARATIONS
+	including COMMON-C-TYPING
 	
 	op eval : K -> Bag 
 	op eval : K List{K} String -> Bag

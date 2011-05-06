@@ -16,10 +16,17 @@ kmod STATIC-C-SEMANTICS-MISC is
 	including STATIC-INCLUDE
 endkm
 
-//load static-expression-syntax
+load static-c-statements
+load static-c-declarations
+load static-c-typing
 
 kmod STATIC-C-SEMANTICS is
 	including COMMON-C-SEMANTICS
+	including STATIC-INCLUDE
+	
+	including STATIC-C-STATEMENTS
+	including STATIC-C-DECLARATIONS
+	including STATIC-C-TYPING
 	
 	op syntaxNat : Nat -> K
 	rule syntaxNat(N:Nat) => Constant(IntLiteral(NoSuffix(DecimalConstant(N:Nat)))) [structural]

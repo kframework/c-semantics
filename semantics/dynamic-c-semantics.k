@@ -56,7 +56,8 @@ load dynamic-c-errors
 
 kmod DYNAMIC-C-SEMANTICS is
 	including COMMON-C-SEMANTICS
-
+	including DYNAMIC-INCLUDE
+	
 	including DYNAMIC-C-SEMANTICS-MISC
 	including DYNAMIC-C-EXPRESSIONS
 	including DYNAMIC-C-ERRORS

@@ -1,9 +1,16 @@
 kmod COMMON-SEMANTICS-HELPERS-INCLUDE is
-	including COMMON-INCLUDE
+	including COMMON-NOHELPER-INCLUDE
 endkm
 
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
+	
+	op getIdOfDeclaration : K -> K 
+	op getIdOfName : K -> K 
+	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) => getIdOfName(K:C) [structural]
+	rule getIdOfName(InitName(K:K, ?)) => getIdOfName(K:K) [structural]
+	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K)[structural] 
+	rule getIdOfName(Name(X:Id, ?)) => X:Id [structural]
 	
 	// this maintains byte order
 	op fillToBytes-aux : K List{K} -> K
