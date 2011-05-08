@@ -10,14 +10,14 @@ kmod COMMON-C-CONFIGURATION is
 	op currentProgramLoc : -> CellLabel 
 	op structs : -> CellLabel
 	
+	ops gotoMap gotoCalculation currentFunction computation : -> CellLabel
+	ops currentTranslationUnit calculateGotoMap nestingDepthGoto blockHistoryGoto declarationStack : -> CellLabel
+	ops computationTail loopStackGoto externalLocations internalLocations : -> CellLabel
+	ops blockHistory shouldInit nextSharedLoc preLinkage declarationOrder declarations preTypes : -> CellLabel
+	ops nextLoc localVariables externalDefinitions internalDefinitions : -> CellLabel
+	ops localAddresses incompleteLength genv env control savedInitialization typedBody currentObject currentSubObject callStack functionTranslationUnits translationUnits gtypes functions programText types type freshNat declarationTypeHolder gstructs  : -> CellLabel
 	
-	subsort Id Int String Float Bool Rat < K
-	subsort String < Builtins
 	
-	subsort C < K
-	subsort List{C} < K
-	
-	// this is just temporary
 	configuration 
 		<T> 
 			// <busy> .Bag </busy>
@@ -67,6 +67,7 @@ kmod COMMON-C-CONFIGURATION is
 					@latex("\\kBR")
 					<control>
 						<k color="red" multiplicity="?"> .K </k>
+						< typedBody > .K </ typedBody >
 						<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
 						<blockStack color="violet"> .List </blockStack> // stack of "local" cells
 						<local>
@@ -121,5 +122,11 @@ kmod COMMON-C-CONFIGURATION is
 		<output color="lightgray"> "" </output>
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
+	
+	subsort Id Int String Float Bool Rat < K
+	subsort String < Builtins
+	
+	subsort C < K
+	subsort List{C} < K
 	
 endkm

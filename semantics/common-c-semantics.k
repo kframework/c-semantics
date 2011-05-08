@@ -12,6 +12,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
 	op initFunction : K K -> K [strict]
+	op populateFromGlobal : -> K 
 	
 	op checkValidLoc : K -> K
 	op checkDerefLoc : K -> K

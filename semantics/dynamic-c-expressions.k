@@ -246,19 +246,13 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		[structural]
 		// [metadata "computational"] 
 
-	op populateFromGlobal : -> K 
-	// fixme: this must be a rule because of the rules associated with declaring local and bound variables
+
 	rule [populateFromGlobal]:
 		< k > populateFromGlobal => .K ...</ k >
 		< genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > ? => G:Map </ env >
 		< gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > ? => GT:Map </ types >
 		< gstructs > GS:Map </ gstructs > < structs > ? => GS:Map </ structs >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		[structural] 
-		
-	op resetNestingDepth : -> K 
-	rule
-		< k > resetNestingDepth => .K ...</ k >
 		[structural] 
 
 	rule [builtin-application]:
@@ -278,8 +272,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		=>
 		< control >
 			< k > sequencePoint 
-				~> populateFromGlobal 
-				~> resetNestingDepth 
+				~> populateFromGlobal
 				~> bind(L:List{Type}, P:List{Type}) 
 				~> B:K 
 				~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi) 

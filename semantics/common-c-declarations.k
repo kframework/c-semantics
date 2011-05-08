@@ -9,6 +9,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	
 	op initializer : K -> KResult 
 	op startInitializer : Type Id K -> K 
+	
+			
+	op processFunctionBody : K -> K
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
@@ -548,11 +551,66 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, functionObject(X:Id, unqualifyType(T:Type), Block:K))))
+			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, processFunctionBody(functionObject(X:Id, unqualifyType(T:Type), Block:K)))))
 			~> calculateGotoMap(X:Id, Block:K)
 		...</ k >
 		if hasFunctionType(T:Type)
 		[structural] 
+
+endkm
+
+kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
+	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+	op typingBody : Id Type K -> K
+	
+	rule
+		(< control >
+			< k > processFunctionBody(functionObject(X:Id, T:Type, Block:K)) ~> K:K </ k >
+			< typedBody > ?:K </ typedBody >
+			< currentFunction > CurrFun:K </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+			C:Bag
+		</ control >
+		=>
+		< control >
+			< k > typingBody(X:Id, T:Type, Block:K) 
+				~> K:K
+			</ k >
+			< typedBody > Block:K </ typedBody >
+			< currentFunction > X:Id </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		...</ control >)
+		< callStack > .List => ListItem(
+			< stackFrame > C:Bag
+				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+			</ stackFrame >
+		) ...</ callStack >
+		[structural]
+		
+	// this rule is here temporarily to test
+	rule
+		(< control >
+			< k > typingBody(X:Id, T:Type, Block:K) ~> K:K </ k >
+			< typedBody > ?:K </ typedBody >
+			< currentFunction > ?:K </ currentFunction >
+			< currentProgramLoc > ?:K </ currentProgramLoc >
+		...</ control >
+		=>
+		< control > C:Bag
+			< k > functionObject(X:Id, T:Type, Block:K) ~> K:K </ k >
+			< typedBody > .K </ typedBody >
+			< currentFunction > CurrFun:K </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		</ control >)
+		< callStack > ListItem(
+			< stackFrame > C:Bag
+				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+			</ stackFrame >
+		) => .List ...</ callStack >
+		[structural] 
+		
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
@@ -1175,6 +1233,7 @@ kmod COMMON-C-DECLARATIONS is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	including COMMON-SEMANTICS-DECLARATIONS-GENERAL 
+	including COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY
 	including COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
 	including COMMON-SEMANTICS-DECLARATIONS-ENUMS 
 	including COMMON-SEMANTICS-DECLARATIONS-RESOLUTION 
