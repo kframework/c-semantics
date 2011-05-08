@@ -49,7 +49,7 @@ sub finalCleanup {
 if (defined($ENV{'HELP'})) {
 	print "Here are some configuration variables you can set to affect how this program is run:\n";
 	print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
-	print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
+	#print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
@@ -81,115 +81,71 @@ if ( -t STDIN ) {
 }
 my $username=`id -un`;
 
-my $fileStaticRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileStaticRunner);
-my $fileDynamicRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-#open my $fileDynamicRunner, ">fileDynamicRunner.maude";
-push(@temporaryFiles, $fileDynamicRunner);
-my $fileStaticInput = File::Temp->new( TEMPLATE => 'tmp-kcc-static-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileStaticInput);
+my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $fileRunner);
+# my $fileDynamicRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+# #open my $fileDynamicRunner, ">fileDynamicRunner.maude";
+# push(@temporaryFiles, $fileDynamicRunner);
+my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $fileInput);
 # my $fileDynamicInput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 # push(@temporaryFiles, $fileDynamicInput);
 
-my $fileStaticMaudeDefinition = catfile($SCRIPTS_DIR, 'static-c-total.maude');
-my $fileDynamicMaudeDefinition;
+#my $fileStaticMaudeDefinition = catfile($SCRIPTS_DIR, 'static-c-total.maude');
+my $fileMaudeDefinition;
 
 if (defined($ENV{'SEARCH'})) {
-	$fileDynamicMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
+	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
 } else {
-	$fileDynamicMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
+	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
 }
 
 # create a file consisting of just the program (the tail of this script)
-print $fileStaticInput linkedProgram();
+print $fileInput linkedProgram();
+close($fileInput);
 
+# first, set up the runner file with the right commands and set any variables
 my $commandLineArguments = "";
 for my $arg ($thisFile, @ARGV) {	
 	$commandLineArguments .= "String \"$arg\"(.List{K}),, ";
 }
 my $startTerm = "eval(linked-program, ($commandLineArguments .List{K}), \"$stdin\")";
-
-# print $fileStaticInput "rew $startTerm .\n";
-# print $fileStaticInput "q\n";
-
-my $evalLine = "rew in C-program-linked : $startTerm .";
-
-
-# first, set up the runner file with the right commands and set any variables
+my $evalLine = "erew in C-program-linked : $startTerm .\n";
+my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
 
 if (defined($ENV{'PROFILE'})) {
-	print $fileStaticRunner "set profile on .\n";
-	print $fileDynamicRunner "set profile on .\n";
-}
-
-if (defined($ENV{'STATIC_DEBUG'})) {
-	print $fileStaticRunner "break select debug .\n";
-	print $fileStaticRunner "set break on .\n";
+	print $fileRunner "set profile on .\n";
+	print $fileRunner "set profile on .\n";
 }
 if (defined($ENV{'DEBUG'})) {
-	#print "Debugging\n";
-	print $fileDynamicRunner "break select debug .\n";
-	print $fileDynamicRunner "set break on .\n";
+	print $fileRunner "break select debug .\n";
+	print $fileRunner "set break on .\n";
 }
-print $fileStaticRunner "$evalLine\n";
-
-# if (defined($ENV{'PROFILE'})) {
-	# print $fileStaticRunner "show profile .\n";
-# }
-if (! defined($ENV{'STATIC_DEBUG'})) {
-	print $fileStaticRunner "q\n";
-}
-
-# I had to add this strange true; thing to get it to work in windows.  no idea why...
-my $staticMaudeCommand = "true; maude -no-wrap -no-banner $fileStaticMaudeDefinition " 
-	. rel2abs($fileStaticInput)
-	. " " . rel2abs($fileStaticRunner);
-
-if (defined($ENV{'STATIC_DEBUG'})) {
-	exit runDebugger($staticMaudeCommand);
-}
-# here, we know we're not debugging the static semantics
-# print "Running static stuff\n";
-# print "Running $staticMaudeCommand\n";
-close($fileStaticInput);
-close($fileStaticRunner);
-
-my @staticMaudeOutput = `$staticMaudeCommand`;
-if (defined($ENV{'STATIC'})) {
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @staticMaudeOutput);
-	print $finalOutput;
-	exit($finalReturnValue);
-}
-
-# print "finished running static stuff\n";
-my $dynamicInput = processStaticOutput(join("", @staticMaudeOutput));
-if ($dynamicInput eq "") {
-	die "There was a problem running the static semantics.  The wrapper provided no results.  This is very likely a bug in the tool, so please report it.";
-}
-my $dynamicMaudeCommand = "true; maude -no-wrap -no-banner $fileDynamicMaudeDefinition $fileDynamicRunner";
-#print $fileDynamicRunner "mod C-program-linked is including C .\n";
-#print $fileDynamicRunner "op linked-program : -> K .\n";
-#print $fileDynamicRunner "eq linked-program = ($dynamicInput) .\n";
-#print $fileDynamicRunner "endm\n";
 if (defined($ENV{'SEARCH'})) {
-	print $fileDynamicRunner "search $dynamicInput =>! B:Bag .\n";
-	print $fileDynamicRunner "show search graph .\n"
+	print $fileRunner $searchLine;
+	print $fileRunner "show search graph .\n"
 } else {
-	print $fileDynamicRunner "erew $dynamicInput .\n";
+	print $fileRunner $evalLine;
 }
 if (defined($ENV{'PROFILE'})) {
-	print $fileDynamicRunner "show profile .\n";
+	print $fileRunner "show profile .\n";
 }
 if (! defined($ENV{'DEBUG'})) {
-	print $fileDynamicRunner "q\n";
+	print $fileRunner "q\n";
 }
+close($fileRunner);
+
+
+# I had to add this strange true; thing to get it to work in windows.  no idea why...
+my $maudeCommand = "true; maude -no-wrap -no-banner $fileMaudeDefinition " 
+	. rel2abs($fileInput)
+	. " " . rel2abs($fileRunner);
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-close($fileDynamicRunner);
 if (defined($ENV{'DEBUG'})) {
 	#io
-	exit runDebugger($dynamicMaudeCommand);
+	exit runDebugger($maudeCommand);
 } elsif (defined($ENV{'SEARCH'})) {
 	my $intermediateOutputFile = "tmpSearchResults.txt";
 	my $graphOutputFile = "tmpSearchResults.dot";
@@ -197,7 +153,7 @@ if (defined($ENV{'DEBUG'})) {
 		print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
 	}
 	print "Performing the search...\n";
-	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
+	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
 	open(my $fh, ">$intermediateOutputFile");
 	print $fh join("", @dynamicOutput);
 	close($fh);
@@ -215,14 +171,13 @@ if (defined($ENV{'DEBUG'})) {
 		print "Generated tmpSearchResults.pdf\n";
 	}
 } elsif (defined($ENV{'PROFILE'})) {
-
 	if (! -e "maudeProfileDBfile.sqlite") {
 		copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), "maudeProfileDBfile.sqlite");
 	}
 	my $intermediateOutputFile = File::Temp->new( TEMPLATE => 'tmp-kcc-intermediate-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 	push(@temporaryFiles, $intermediateOutputFile);
 	
-	my ($returnValue) = runProgram("$dynamicMaudeCommand > $intermediateOutputFile");
+	my ($returnValue) = runProgram("$maudeCommand > $intermediateOutputFile");
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
@@ -236,7 +191,6 @@ if (defined($ENV{'DEBUG'})) {
 	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
 	exit($finalReturnValue);
 } else {
-
 	if ($IOFLAG) {
 		$PERL_SERVER_PID = fork();
 		die "unable to fork: $!" unless defined($PERL_SERVER_PID);
@@ -245,13 +199,7 @@ if (defined($ENV{'DEBUG'})) {
 			die "unable to exec: $!";
 		}
 	}
-	# if [ $IOFLAG ]; then
-		# perl $IO_SERVER &> tmpIOServerOutput.log &
-		# PERL_SERVER_PID=$!
-	# fi
-	#print "going to run dynamic stuff\n";
-	my ($returnValue, @dynamicOutput) = runProgram($dynamicMaudeCommand);
-	#print "finished running dynamic stuff\n";
+	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	

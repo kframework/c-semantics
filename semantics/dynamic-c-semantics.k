@@ -91,6 +91,44 @@ If they are declared, the parameters to the main function shall obey the followi
 	rule incomingArguments-aux(.List{K}, N:Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
 		[structural]
+		
+		
+	op syntaxNat : Nat -> K
+	rule syntaxNat(N:Nat) => Constant(IntLiteral(NoSuffix(DecimalConstant(N:Nat)))) [structural]
+	
+	rule eval(K:K) => eval(K:K, .List{K}, "") [structural]
+	rule eval(Program(P:List{C}), L:List{K}, Input:String) =>
+		< T >
+			< threads >
+				< thread >
+					< control >
+						< k > listToK(P:List{C})
+							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))))), NoInit)))
+							~> resolveReferences					
+							// ~> incomingArguments(L:List{K})
+							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
+						</ k >
+						< currentFunction > File-Scope </ currentFunction >
+						< currentProgramLoc > UnknownCabsLoc </ currentProgramLoc >
+					...</ control >
+					< threadId > 1 </ threadId >
+					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
+				...</ thread >
+			</ threads >
+			<nextSharedLoc> sym(threadId(0) +Nat 0) +Nat 0 </nextSharedLoc>
+			< nextFile > 3 </ nextFile >
+			< openFiles >
+				0 |-> "stdin" // stdin
+				1 |-> "stdout" // stdout
+				2 |-> "stdout" // stderr
+			</ openFiles >
+		...</ T >
+		< files > 
+			"stdin" |-> Input:String
+			"stdout" |-> ""
+		</ files >
+		< xmessages > .K </ xmessages >
+		[structural]
 
 /*@ \source{C99 5.1.2.2.1:1}
 The function called at program startup is named main. The implementation declares no prototype for this function. It shall be defined with a return type of int and with no parameters:

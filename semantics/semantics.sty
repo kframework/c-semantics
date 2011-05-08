@@ -11,6 +11,8 @@
 \renewcommand{\kconfig}[1]{\par\ensuremath{#1}}
 \renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}\bigskip}
 
+\newcommand{\mycomment}[1]{#1}
+
 \renewcommand{\kcell}[5]{
 \begin{tabular}{@{}c@{}}
 \vtop{
@@ -132,4 +134,4 @@
 % }{}
 
 
-\newcommand{\source}[1]{\textbf{#1}\\}
+\newcommand{\source}[2][]{\ifthenelse{\equal{#1}{}}{}{(\textbf{#1})} \textbf{#2}\\}

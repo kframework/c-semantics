@@ -13,14 +13,12 @@ K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_
 
 COMPILE_C = $(K_MAUDE) c.k -u -language C
 COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
-COMPILE_STATIC_C = $(K_MAUDE) static-c.k -u -language C
 
 
 COMMON_C_FILES = k-includes.k c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
-DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k 
-STATIC_C_FILES = static-c.k static-c-semantics.k static-c-configuration.k static-c-statements.k static-c-declarations.k static-c-typing.k
-ALL_K_FILES = $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(STATIC_C_FILES) maudeLib/TCPSupport.maude
+DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k
+ALL_K_FILES = $(COMMON_C_FILES) $(DYNAMIC_C_FILES) maudeLib/TCPSupport.maude
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude kcompile_* \
@@ -85,21 +83,13 @@ c-compiled-nd.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 
-static-c-compiled.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(STATIC_C_FILES)
-	@echo "Compiling the static C definition..."
-	@if time -p true &> /dev/null; then time -p $(COMPILE_STATIC_C); else $(COMPILE_STATIC_C); fi
-	@echo "Done".
-
-static-c-total.maude: static-c-compiled.maude $(K_BASE_FILES) Makefile
-	@echo "static-c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
-	
 c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
 	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 	
 c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
-semantics: c-total.maude c-total-nd.maude static-c-total.maude
+semantics: c-total.maude c-total-nd.maude
 
 fast-nd: c-total.maude
 	@cp c-total.maude c-total-nd.maude
@@ -107,9 +97,9 @@ fast-nd: c-total.maude
 fast-normal: c-total-nd.maude
 	@cp c-total-nd.maude c-total.maude
 
-semantics-fast: c-total.maude static-c-total.maude fast-nd
+semantics-fast: c-total.maude fast-nd
 
-semantics-nd: c-total-nd.maude static-c-total.maude fast-normal
+semantics-nd: c-total-nd.maude fast-normal
 
 clean:
 	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp 
