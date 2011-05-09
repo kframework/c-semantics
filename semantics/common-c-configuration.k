@@ -67,7 +67,8 @@ kmod COMMON-C-CONFIGURATION is
 					@latex("\\kBR")
 					<control>
 						<k color="red" multiplicity="?"> .K </k>
-						< typedBody > .K </ typedBody >
+						<statick> .K </statick>
+						<newk> .K </newk>
 						<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
 						<blockStack color="violet"> .List </blockStack> // stack of "local" cells
 						<local>

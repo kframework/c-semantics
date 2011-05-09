@@ -561,22 +561,24 @@ endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
-	op typingBody : Id Type K -> K
+	op typingBody : Id Type K -> K // third argument is just for now, as a hack
 	
 	rule
 		(< control >
-			< k > processFunctionBody(functionObject(X:Id, T:Type, Block:K)) ~> K:K </ k >
-			< typedBody > ?:K </ typedBody >
+			< k > processFunctionBody(functionObject(X:Id, T:Type, Body:K)) ~> K:K </ k >
+			< statick > ?:K </ statick >
+			< newk > ?:K </ newk >
 			< currentFunction > CurrFun:K </ currentFunction >
 			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 			C:Bag
 		</ control >
 		=>
 		< control >
-			< k > typingBody(X:Id, T:Type, Block:K) 
+			< k > typingBody(X:Id, T:Type, Body:K) 
 				~> K:K
 			</ k >
-			< typedBody > Block:K </ typedBody >
+			< statick > Body:K </ statick >
+			< newk > .K </ newk >
 			< currentFunction > X:Id </ currentFunction >
 			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 		...</ control >)
@@ -584,32 +586,102 @@ kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 			< stackFrame > C:Bag
 				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
 				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+				< statick > .K </ statick >
+				< newk > .K </ newk >
 			</ stackFrame >
 		) ...</ callStack >
 		[structural]
 		
-	// this rule is here temporarily to test
+		
 	rule
-		(< control >
-			< k > typingBody(X:Id, T:Type, Block:K) ~> K:K </ k >
-			< typedBody > ?:K </ typedBody >
-			< currentFunction > ?:K </ currentFunction >
-			< currentProgramLoc > ?:K </ currentProgramLoc >
-		...</ control >
-		=>
-		< control > C:Bag
-			< k > functionObject(X:Id, T:Type, Block:K) ~> K:K </ k >
-			< typedBody > .K </ typedBody >
-			< currentFunction > CurrFun:K </ currentFunction >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		</ control >)
-		< callStack > ListItem(
-			< stackFrame > C:Bag
-				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+		< control >
+			< k > typingBody(X:Id, T:Type, Body:K) 
+				=> functionObject(X:Id, T:Type, Body:K)
+			...</ k >
+			//< statick > .K </ statick > // this should be here, but commented out in order to run while working on it
+			// < newk > Body:K => .K </ newk >
+			// < newk > ?:K => .K </ newk >
+			< currentFunction > X:Id => OldFunc:K </ currentFunction >
+			< currentProgramLoc > ? => OldLoc:K </ currentProgramLoc >
+			(?:Bag => C:Bag)
+		</ control >
+		<callStack> ListItem(
+			< stackFrame >
+				< stackCurrentFunction > OldFunc:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > OldLoc:K </ stackCurrentProgramLoc >
+				C:Bag
 			</ stackFrame >
-		) => .List ...</ callStack >
+		) => .List
+		</callStack>
+		[structural]
+	
+	// op popTypeBlockStack : Nat List{C} -> K
+	// rule 
+		// < typeBody > Block(Num:Nat, Attrs:List{C}, L:List{C}) 
+			// => listToK(L:List{C})
+			// ~> popTypeBlockStack(Num:Nat, Attrs:List{C})
+		// ...</ typeBody >
+		// < blockStack > .List => ListToK() ...</ blockStack >
+		// [structural]
+		
+	op groupBlock : Nat List{C} -> K
+	
+	rule
+		< statick > Block(BlockNum:Nat, Attrs:List{C}, Body:List{C}) 
+			=> listToK(Body:List{C})
+			~> groupBlock(BlockNum:Nat, Attrs:List{C})
+		...</ statick >
+		< newk > K:K => .K </ newk >
+		< blockStack > .List => ListItem(K:K) ...</ blockStack >
+		[structural]
+		
+	rule [groupBlock]:
+		< statick > groupBlock(BlockNum:Nat, Attrs:List{C}) => .K ...</ statick >
+		< newk > Block:C
+			=> Block(BlockNum:Nat, Attrs:List{C}, Block:C :: Nil) 
+			~> K:K
+		</ newk >
+		< blockStack > ListItem(K:K) => .List ...</ blockStack >
+		[structural]
+		
+	rule [codeloc-statick]:
+		< statick > CodeLoc(K:K, L:CabsLoc) => K:K ...</ statick >
+		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+	rule 
+		< statick > L:KLabel(Args:List{K}) => .K ...</ statick >
+		if false
+		orBool L:KLabel ==Bool 'Nop
+		orBool L:KLabel ==Bool 'Computation
+		orBool L:KLabel ==Bool 'Break
+		orBool L:KLabel ==Bool 'Continue
+		orBool L:KLabel ==Bool 'Return
+		orBool L:KLabel ==Bool 'Goto
+		orBool L:KLabel ==Bool 'CompGoto
+		[structural]
+	
+	// this rule is here temporarily to test
+	// rule
+		// (< control >
+			// < k > typingBody(X:Id, T:Type, Block:K) ~> K:K </ k >
+			// < typeBody > ?:K </ typeBody >
+			// < currentFunction > ?:K </ currentFunction >
+			// < currentProgramLoc > ?:K </ currentProgramLoc >
+		// ...</ control >
+		// =>
+		// < control > C:Bag
+			// < k > functionObject(X:Id, T:Type, Block:K) ~> K:K </ k >
+			// < typeBody > .K </ typeBody >
+			// < currentFunction > CurrFun:K </ currentFunction >
+			// < currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		// </ control >)
+		// < callStack > ListItem(
+			// < stackFrame > C:Bag
+				// < stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				// < stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+			// </ stackFrame >
+		// ) => .List ...</ callStack >
+		// [structural] 
 		
 endkm
 
