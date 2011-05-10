@@ -15,6 +15,10 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 	rule [if-then-else-false]:
 		< k > IfThenElse(tv(0, int), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
+	rule
+		< k > IfThenElse((V:Value => simplifyTruth(V:Value)), ?, ?) ...</ k >
+		if isNotTruthValue(V:Value)
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-WHILE is

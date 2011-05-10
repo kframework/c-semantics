@@ -5,6 +5,19 @@ endkm
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
+	op simplifyTruth : K -> K
+	rule simplifyTruth(K:K) => K:K != tv(0, int)
+	
+	
+	op isNotTruthValue : Value -> Bool
+	rule isNotTruthValue(tv(V:BaseValue, T:Type)) 
+		=> T:Type =/=Bool int
+		orBool (
+			V:BaseValue =/=Bool 0
+			andBool V:BaseValue =/=Bool 1 
+		)
+		[structural]
+	
 	op getIdOfDeclaration : K -> K 
 	op getIdOfName : K -> K 
 	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) => getIdOfName(K:C) [structural]

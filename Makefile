@@ -62,7 +62,6 @@ dist: check-vars $(DIST_DIR)/dist.done
 pdf: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) pdf
 
-export TEST_C_PROGRAM
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes

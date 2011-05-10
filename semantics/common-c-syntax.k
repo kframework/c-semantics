@@ -377,7 +377,7 @@ and statement =
 	| FOR of for_clause * expression * expression * statement * cabsloc
 */
 	op IfThenElse : K K K -> PureStatement
-	context IfThenElse(([HOLE] => simplifyTruth(reval([HOLE]))), _, _)
+	context IfThenElse(([HOLE] => reval([HOLE])), _, _)
 	op While : K K -> PureStatement
 	op DoWhile : K K -> PureStatement
 	op For : Nat K K K K -> PureStatement // id, ...
@@ -535,13 +535,12 @@ and unary_operator =
 	context _|_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _|_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	op simplifyTruth : K -> K
 	
 	op _&&_ : K K -> Expression [prec 47 gather(E e)]
-	context _&&_(([HOLE] => simplifyTruth(reval([HOLE]))), _) [metadata "nd=(true)"]
+	context _&&_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	
 	op _||_ : K K -> Expression [prec 49 gather(E e)]
-	context _||_(([HOLE] => simplifyTruth(reval([HOLE]))), _) [metadata "nd=(true)"]
+	context _||_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 			
 	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _&=_ _^=_ _|=_ : K K -> Expression [prec 53]
 	ops _>>=_ : K K -> Expression [prec 53]

@@ -88,11 +88,10 @@ endkm
 kmod DYNAMIC-SEMANTICS-BOOLEAN is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
-	/*@ Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.
+	/* Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.
 	*/
 	
-	rule simplifyTruth(K:K) => K:K != tv(0, int)
-	
+		
 	/*@ \source[n1570]{\para{6.5.13}{3--4}}
 	The \cinline{&&} operator shall yield 1 if both of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
 	
@@ -109,6 +108,10 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 			~> simplifyTruth(E:K)
 		...</ k >
 		[structural]
+	rule
+		< k > (V:Value => simplifyTruth(V:Value)) && ? ...</ k >
+		if isNotTruthValue(V:Value)
+		[structural]	
 				
 	/*@ \source[n1570]{\para{6.5.14}{3--4}}
 	The \cinline{||} operator shall yield 1 if either of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
@@ -125,7 +128,11 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		< k > tv(1, int) || E:K
 			=> tv(1, int)
 		...</ k >
-		[structural]	
+		[structural]
+	rule
+		< k > (V:Value => V:Value != tv(0, int)) || ? ...</ k >
+		if isNotTruthValue(V:Value)
+		[structural]
 
 		
 	// c1x 6.5.3.3:5 The expression !E is equivalent to (0==E)
