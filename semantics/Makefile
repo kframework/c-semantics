@@ -34,7 +34,16 @@ all: semantics
 pdf: common-pdf-modules
 #c-expressions.pdf
 
-k-includes.k:
+
+check-vars: 
+ifeq ($(K_MAUDE_BASE),)
+	@echo "ERROR: Please set K_MAUDE_BASE to the full path of your K installation."
+	@echo "Make sure you do NOT include a trailing slash\\"
+	@echo "One way to do this is to type 'export K_MAUDE_BASE=/path/to/k/framework', and then rerun 'make'"
+	@exit 1
+endif
+
+k-includes.k: check-vars
 	@echo > k-includes.k
 	@echo "load $(K_PRELUDE)" >> k-includes.k
 	@echo "load $(K_SOCKETS)" >> k-includes.k
@@ -42,12 +51,13 @@ k-includes.k:
 c.k: k-includes.k
 
 %.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
-%.tex: $(K_MAUDE) c.k k-includes.k %.k Makefile
+%.tex: $(K_MAUDE) c.k k-includes.k %.k Makefile check-vars
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	@$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}\\begin{document}|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
+#\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}
 	@mv temp-c-$*.tex $@
 	
 %.pdf: %.tex semantics.sty
@@ -59,7 +69,7 @@ c.k: k-includes.k
 # this is used to start all of the common files
 common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf 
 	
-c-compiled.maude.tmp: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c-compiled.maude.tmp: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) check-vars
 	@echo "Compiling the C definition..."
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
@@ -74,7 +84,7 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 	
-c-compiled-nd.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c-compiled-nd.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) check-vars
 	@echo "Compiling the C definition with nondeterminism..."
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
 	@mv c-compiled.maude c-compiled-nd.maude
@@ -83,10 +93,10 @@ c-compiled-nd.maude: $(K_MAUDE_BASE)/k-prelude.maude $(K_MAUDE) $(COMMON_C_FILES
 	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 
-c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile
+c-total.maude: c-compiled.maude $(K_BASE_FILES) Makefile check-vars
 	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 	
-c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile
+c-total-nd.maude: c-compiled-nd.maude $(K_BASE_FILES) Makefile check-vars
 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
 semantics: c-total.maude c-total-nd.maude

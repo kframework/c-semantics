@@ -3,6 +3,8 @@
 \usepackage[T1]{fontenc} % so listings double quotes are straight
 \usepackage{graphicx}
 \usepackage{etex}
+\usepackage{courier}
+
 
 % overrides
 \renewcommand{\ellipses}{\mathrel{\cdots}}
@@ -13,111 +15,110 @@
 
 \newcommand{\mycomment}[1]{#1}
 
-\renewcommand{\kcell}[5]{
-\begin{tabular}{@{}c@{}}
-\vtop{
-\vskip-1ex
-\hbox{
-\begin{tikzpicture}
-\node[draw=#1!50!black
-	,font=\small % this is the font of the text in the body
-	,line width=1pt
-	,name=cell
-	,shape=rounded rectangle
-	,/pgf/rounded rectangle arc length=180
-	,/pgf/rounded rectangle east arc=#5
-	,/pgf/rounded rectangle west arc=#4
-	,fill=#1!20
-	,minimum height=3.8ex
-	,minimum width=3em
-	,node distance=1pt
-]
-{#3};
-\draw[shift=(cell.north east)]
-	plot coordinates{(-.1pt,-.5pt)} 
-	node[name=ce, minimum size=.01pt, inner sep=0pt]{};
-\draw[shift=(cell.north west)]
-	plot coordinates{(.1pt,-.5pt)} 
-	node[name=cw, minimum size=.01pt, inner sep=0pt]{};
-\draw[color=#1!20,line width=1.2pt](cw.east)--(ce.west);
-\draw[shift=(cell.north west)]
-	plot coordinates{(0,-1.05pt)}
-	node[name=label
-		,font=\small % this is the font of the label
-		,inner sep=0pt
-		,anchor=south west
-		,shape=rounded rectangle
-		,/pgf/rounded rectangle arc length=180
-		,/pgf/rounded rectangle east arc=convex
-		,/pgf/rounded rectangle west arc=convex
-		,fill=#1!20
-		,draw=#1!20
-		,line width=1pt
-		,minimum width=2em
-		,minimum height=2.5ex
-		,draw=#1!50!black
-	]
-	{#2};
-\draw[shift=(label.south east)]
-	plot coordinates{(-.1pt,.5pt)} 
-	node[name=le, minimum size=.01pt, inner sep=0pt]{};
-\draw[shift=(label.south west)]
-	plot coordinates{(.1pt,.5pt)} 
-	node[name=lw, minimum size=.01pt, inner sep=0pt]{};
-\draw[color=#1!20, line width=1.2pt](lw.east)--(le.west);
-\draw[color=#1!50!black, line width=1pt](le.west) -- (ce.east);
-\ifthenelse{\equal{#4}{none}}{%
-\draw[fill
-	,color=#1!50!black
-	,decorate
-	,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
-	(cell.south west)--(cell.north west);%
-}{
-}
-\ifthenelse{\equal{#5}{none}}{%
-\draw[fill
-	,color=#1!50!black
-	,decorate
-	,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
-	(cell.north east)--(cell.south east);%
-}{
-}
-\end{tikzpicture}%
-}
-\vskip2ex}
-\end{tabular}
-}
-
-% \renewcommand{\mallLarge}[3]{%
-	% \newdimen\height%
-	% \setbox0=\hbox{{#3}}%
-	% \height=\ht0 \advance\height by \dp0%
-	% {\resizebox{0.5cm}{\the\height}{\ensuremath{\langle}}}%
-		% \begin{array}{c}#3\end{array}%
-	% {\resizebox{0.5cm}{\the\height}{\ensuremath{\rangle}}}_{{\sf #2}}%
+% \renewcommand{\kcell}[5]{
+% \begin{tabular}{@{}c@{}}
+% \vtop{
+% \vskip-1ex
+% \hbox{
+% \begin{tikzpicture}
+% \node[draw=#1!50!black
+	% ,font=\small % this is the font of the text in the body
+	% ,line width=1pt
+	% ,name=cell
+	% ,shape=rounded rectangle
+	% ,/pgf/rounded rectangle arc length=180
+	% ,/pgf/rounded rectangle east arc=#5
+	% ,/pgf/rounded rectangle west arc=#4
+	% ,fill=#1!20
+	% ,minimum height=3.8ex
+	% ,minimum width=3em
+	% ,node distance=1pt
+% ]
+% {#3};
+% \draw[shift=(cell.north east)]
+	% plot coordinates{(-.1pt,-.5pt)} 
+	% node[name=ce, minimum size=.01pt, inner sep=0pt]{};
+% \draw[shift=(cell.north west)]
+	% plot coordinates{(.1pt,-.5pt)} 
+	% node[name=cw, minimum size=.01pt, inner sep=0pt]{};
+% \draw[color=#1!20,line width=1.2pt](cw.east)--(ce.west);
+% \draw[shift=(cell.north west)]
+	% plot coordinates{(0,-1.05pt)}
+	% node[name=label
+		% ,font=\small % this is the font of the label
+		% ,inner sep=0pt
+		% ,anchor=south west
+		% ,shape=rounded rectangle
+		% ,/pgf/rounded rectangle arc length=180
+		% ,/pgf/rounded rectangle east arc=convex
+		% ,/pgf/rounded rectangle west arc=convex
+		% ,fill=#1!20
+		% ,draw=#1!20
+		% ,line width=1pt
+		% ,minimum width=2em
+		% ,minimum height=2.5ex
+		% ,draw=#1!50!black
+	% ]
+	% {#2};
+% \draw[shift=(label.south east)]
+	% plot coordinates{(-.1pt,.5pt)} 
+	% node[name=le, minimum size=.01pt, inner sep=0pt]{};
+% \draw[shift=(label.south west)]
+	% plot coordinates{(.1pt,.5pt)} 
+	% node[name=lw, minimum size=.01pt, inner sep=0pt]{};
+% \draw[color=#1!20, line width=1.2pt](lw.east)--(le.west);
+% \draw[color=#1!50!black, line width=1pt](le.west) -- (ce.east);
+% \ifthenelse{\equal{#4}{none}}{%
+% \draw[fill
+	% ,color=#1!50!black
+	% ,decorate
+	% ,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
+	% (cell.south west)--(cell.north west);%
+% }{
 % }
-% \renewcommand{\kall}{\mall}
-% \renewcommand{\kprefix}{\mprefix}
-% \renewcommand{\ksuffix}{\msuffix}
-% \renewcommand{\kmiddle}{\mmiddle}
-
-% \left(\rule{0cm}{2cm}\right.
-
-\makeatletter
-\newcommand{\vast}{\bBigg@{4}}
-\newcommand{\Vast}{\bBigg@{5}}
-\makeatother
+% \ifthenelse{\equal{#5}{none}}{%
+% \draw[fill
+	% ,color=#1!50!black
+	% ,decorate
+	% ,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
+	% (cell.north east)--(cell.south east);%
+% }{
+% }
+% \end{tikzpicture}%
+% }
+% \vskip2ex}
+% \end{tabular}
+% }
 
 
 
 % configuration
+\lstdefinelanguage{k}{
+	morekeywords={xxxx,zzzz},
+	columns=fullflexible,
+	upquote=true,
+	texcl=true,
+	escapechar=\@,
+	tabsize=2,
+	basicstyle=\ttfamily,
+}
+
+	
+	% 
+	% % sensitive=false,
+	% % morecomment=[l]{//},
+	% % morecomment=[s]{/*}{*/},
+	% % morestring=[b]",
+
 \lstset{language=C}
 \lstset{columns=fullflexible,upquote=true,texcl=true,escapechar=\@,tabsize=2}
 \lstset{basicstyle=\ttfamily}
 
-
 \newcommand{\cinline}[1]{\lstinline`#1`}
 \newcommand{\clisting}[1]{\lstinline`#1`}
+% 
+\newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
+
 % \lstnewenvironment{clisting}{%\small
   % % \filbreak % try adding for samepage
   % \lstset{
@@ -134,4 +135,15 @@
 % }{}
 
 
-\newcommand{\source}[2][]{\ifthenelse{\equal{#1}{}}{}{(\textbf{#1})} \textbf{#2}\\}
+\newcommand{\source}[2][]{%
+	\paragraph[]{%
+		\ifthenelse{\equal{#1}{}}{}{%
+			(#1) %
+		}%
+		#2%
+	}%
+}
+
+\newcommand{\para}[2]{%
+	\S#1\thinspace \P#2%
+}

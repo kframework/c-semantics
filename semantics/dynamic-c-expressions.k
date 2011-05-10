@@ -16,20 +16,23 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	
-	/*@ \source{C1X 6.3.2.1:2} Except when it is the operand of the \cinline{sizeof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue)
+	/*@ \source[n1570]{\para{6.3.2.1}{2}} 
+	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
 	*/ 
-	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule reval(lv(Loc:Nat, T:Type)) => read(Loc:Nat, unqualifyType(T:Type)) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	rule peval(lv(Loc:Nat, T:Type)) => lv(Loc:Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 
 	
-	/*@ \source{C1X 6.3.2.1:3} Except when it is the operand of the \cinline{sizeof} operator or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
+	/*@ \source[n1570]{\para{6.3.2.1}{3}} 
+	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	*/
 	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
 	rule peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
 	// should never get to the situation where we have tv(..., arrayType)
 	
 	
-	/*@ \source{C1X 6.3.2.1:4} A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''
+	/*@ \source[n1570]{\para{6.3.2.1}{4}} 
+	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
 	*/
 	// these come from f(a, b, c)
 	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
@@ -45,6 +48,12 @@ kmod DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	
 	op handleCompoundLiteral : K -> K [strict] 
 	
+	/*@ \source[n1570]{\para{6.5.2.5}{3}}
+	A postfix expression that consists of a parenthesized type name followed by a brace-enclosed list of initializers is a compound literal. It provides an unnamed object whose value is given by the initializer list.
+	*/
+	
+	/*@ We use \kinline{compoundLiteral(N:Nat)} here as the identifier of the compound literal. 
+	*/
 	// comes back from figureInit as initializerValue(id, type, inits)
 	rule
 		< k > CompoundLiteral(N:Nat, T:Type, K:K, Init:K)
@@ -72,23 +81,51 @@ kmod DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 			~> initialize(X:Id, T:Type, Init:K)
 			~> X:Id
 		...</ k >
-		< compoundLiteralMap >... X:Id |-> Loc:Nat </ compoundLiteralMap >
+		< compoundLiteralMap >... X:Id |-> Loc:Nat ...</ compoundLiteralMap >
 		[structural] 
 endkm
 
 kmod DYNAMIC-SEMANTICS-BOOLEAN is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
+	/*@ Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.
+	*/
+	
+	rule simplifyTruth(K:K) => K:K != tv(0, int)
+	
+	/*@ \source[n1570]{\para{6.5.13}{3--4}}
+	The \cinline{&&} operator shall yield 1 if both of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
+	
+	Unlike the bitwise binary \cinline{&} operator, the \cinline{&&} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares equal to 0, the second operand is not evaluated.
+	*/	
 	rule
-		< k > E1:K || E:Expression
-			=> E1:K ? tv(1, int) : (E:Expression ? tv(1, int) : tv(0, int))
+		< k > tv(0, int) && E:K 
+			=> tv(0, int) 
 		...</ k >
-		[structural] 
+		[structural]
 	rule
-		< k > E1:K && E:Expression 
-			=> E1:K ? (E:Expression ? tv(1, int) : tv(0, int)) : tv(0, int)
+		< k > tv(1, int) && E:K
+			=> sequencePoint
+			~> simplifyTruth(E:K)
 		...</ k >
-		[structural] 
+		[structural]
+				
+	/*@ \source[n1570]{\para{6.5.14}{3--4}}
+	The \cinline{||} operator shall yield 1 if either of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
+
+	Unlike the bitwise \cinline{|} operator, the \cinline{||} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares unequal to 0, the second operand is not evaluated.
+	*/
+	rule
+		< k > tv(0, int) || E:K 
+			=> sequencePoint
+			~> simplifyTruth(E:K)
+		...</ k >
+		[structural]
+	rule
+		< k > tv(1, int) || E:K
+			=> tv(1, int)
+		...</ k >
+		[structural]	
 
 		
 	// c1x 6.5.3.3:5 The expression !E is equivalent to (0==E)

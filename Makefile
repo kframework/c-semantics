@@ -46,20 +46,16 @@ nd: WHICH_SEMANTICS="semantics-nd"
 nd: dist
 
 check-vars: 
+	@if ! ocaml -version &> /dev/null; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 ifeq ($(K_MAUDE_BASE),)
 	@echo "ERROR: Please set K_MAUDE_BASE to the full path of your K installation."
 	@echo "Make sure you do NOT include a trailing slash\\"
 	@echo "One way to do this is to type 'export K_MAUDE_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
-	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing"; false; fi
-#@if ! gcc-4 -v &> /dev/null; then echo "WARNING: You don't seem to have gcc-4 installed, which will probably prevent you from installing certain perl modules.  Continuing anyway..."; fi
-	@echo Looking for maude...
-	@echo | maude > /dev/null
-	@echo Found.
-	@echo "Checking for perl modules..."
+	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
+	@if ! maude --version &> /dev/null; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
-	@echo "Found."
 
 dist: check-vars $(DIST_DIR)/dist.done
 

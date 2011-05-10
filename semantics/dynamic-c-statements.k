@@ -15,17 +15,6 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 	rule [if-then-else-false]:
 		< k > IfThenElse(tv(0, int), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
-		
-	rule [if-then-else]:
-		< k > IfThenElse(tv(V:BaseValue, T:Type), S:K, S':K)
-			=> IfThenElse(tv(V:BaseValue, T:Type) != tv(0, int), S:K, S':K) 
-		...</ k >
-		if T:Type =/=Bool int
-		orBool (
-			V:BaseValue =/=Bool 0
-			andBool V:BaseValue =/=Bool 1 
-		)
-		[structural] 
 endkm
 
 kmod DYNAMIC-SEMANTICS-WHILE is
