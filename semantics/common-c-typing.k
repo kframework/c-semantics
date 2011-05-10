@@ -1030,7 +1030,14 @@ kmod COMMON-C-TYPING is
 		if getKLabel(T:Type) =/=Bool 'functionType 
 		[structural]
 		
+	/*@ \source[n1570]{\para{6.2.5}{18}}
+	Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
+	*/
+	rule hasArithmeticType(T:Type) => hasIntegerType(T:Type) orBool hasFloatType(T:Type)
+		[structural]
 		
+		
+			
 	rule unqualifyType(qualifiedType(T:Type, ?)) => T:Type [structural]
 	rule unqualifyType(T:Type) => T:Type
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 

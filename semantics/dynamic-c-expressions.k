@@ -134,15 +134,16 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		if isNotTruthValue(V:Value)
 		[structural]
 
-		
-	// c1x 6.5.3.3:5 The expression !E is equivalent to (0==E)
+	
+	/*@ \source[n1570]{\para{6.5.3.3}{5}}
+	The result of the logical negation operator \cinline{!} is 0 if the value of its operand compares unequal to 0, 1 if the value of its operand compares equal to 0. The result has type \cinline{int}.  The expression \cinline{!E} is equivalent to \cinline{(0==E)}.
+	*/
 	rule !(E:K) => tv(0, int) == E:K
-		[structural] 
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE 
-	// FIXME the types of these results are wrong.  The correct behavior is quite complicated.  see 6.5.15
 
 	op getTypes : List{K} -> K
 	op types : List{K} -> K
@@ -152,49 +153,83 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
 	
 	op wrapWithTypeOf : List{K} -> List{K}
-	rule wrapWithTypeOf((K:K,, L:List{K})) => (typeof(K:K),, wrapWithTypeOf(L:List{K})) [structural]
+	rule wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K})) [structural]
 	rule wrapWithTypeOf(.List{K}) => .List{K} [structural]
 	
+	op retype : K -> K [strict]
 	
-	 // eq <_>_</_>((k).CellLabel, _~>_(_`(_`)(('types).KProperLabel, Kcxt:KProper), Rest:K), (k).CellLabel) 
-	 // = <_>_</_>((k).CellLabel, _~>_(Kcxt:KProper, _`(_`)(freezer(("('types).KProperLabel(`[HOLE`]:K)").String), (.List`{K`}).List`{KResult`}), Rest:K), (k).CellLabel) 
-	 // [ metadata "heating" ]. 
-	 
-	// rule
-		// < k > E:K ? E1:Expression : E2:Expression 
-			// => IfThenElse(E:K, E1:Expression, E2:Expression) 
-		// ...</ k >
-		// [structural]
+	// fixme, not handling qualifiers correctly
+	rule 
+		retype(T:Type) => pointerType(innerType(T:Type)) 
+		if hasArrayType(T:Type)
+		[structural]
+	rule 
+		retype(T:Type) => pointerType(T:Type) 
+		if hasFunctionType(T:Type)
+		[structural]
+	rule 
+		retype(T:Type) => T:Type 
+		if notBool (hasArrayType(T:Type) orBool hasFunctionType(T:Type))
+		[structural]	
+	/*@ \source[n1570]{\para{6.5.15}{4}}
+	The first operand is evaluated; there is a sequence point between its evaluation and the evaluation of the second or third operand (whichever is evaluated). The second operand is evaluated only if the first compares unequal to 0; the third operand is evaluated only if the first compares equal to 0; the result is the value of the second or third operand (whichever is evaluated), converted to the type described below.
+	*/
+
+	
 	rule
-		< k > (.K => getTypes((E1,, E2))) ~> E:K ? E1:Expression : E2:Expression ...</ k >
+		< k > (.K => getTypes((E1,, E2))) ~> E:K ? E1:K : E2:K ...</ k >
 		[structural]
 		
+	/*@ \source[n1570]{\para{6.5.15}{5}}
+	If both the second and third operands have arithmetic type, the result type that would be determined by the usual arithmetic conversions, were they applied to those two operands, is the type of the result. If both the operands have structure or union type, the result has that type. If both operands have void type, the result has void type.
+	*/
 	rule
 		< k > (types((T1:Type,, T2:Type)) => convertedType(usualArithmeticConversion(T1:Type, T2:Type)))
-			~> E:K ? E1:Expression : E2:Expression 
+			~> E:K ? E1:K : E2:K 
 		...</ k >
 		if T1:Type =/=Bool T2:Type
-		andBool (hasIntegerType(T1:Type) orBool hasFloatType(T1:Type))
-		andBool (hasIntegerType(T2:Type) orBool hasFloatType(T2:Type))
+		andBool hasArithmeticType(T1:Type)
+		andBool hasArithmeticType(T2:Type)
 		[structural]
-	rule
-		< k > types((T1:Type,, T2:Type)) ~> E:K ? E1:Expression : E2:Expression
-			=> IfThenElse(E:K, E1:Expression, E2:Expression) 
+		
+	/*@ \source[n1570]{\para{6.5.15}{6}}
+	\broken{If both the second and third operands are pointers or one is a null pointer constant and the other is a pointer, the result type is a pointer to a type qualified with all the type qualifiers of the types referenced by both operands. Furthermore, if both operands are pointers to compatible types or to differently qualified versions of compatible types, the result type is a pointer to an appropriately qualified version of the composite type}; if one operand is a null pointer constant, the result has the type of the other operand; \broken{otherwise, one operand is a pointer to void or a qualified version of void, in which case the result type is a pointer to an appropriately qualified version of void.}
+	*/
+	// fixme, this is too relaxed; could be any integer zero.  need static semantics to handle this properly
+	rule [conditional-left-is-null]:
+		< k > (types((T1:Type,, T2:Type)) => convertedType(T2:Type))
+			~> E:K ? tv(0, T1:Type) : E2:K
 		...</ k >
-		if (hasPointerType(T1:Type) orBool hasArrayType(T1:Type) orBool hasFunctionType(T1:Type))
-		andBool (hasPointerType(T2:Type) orBool hasArrayType(T2:Type) orBool hasFunctionType(T2:Type))
+		if hasIntegerType(T1:Type)
+		andBool hasPointerType(T2:Type)
+		[structural]
+	rule [conditional-right-is-null]:
+		< k > (types((T1:Type,, T2:Type)) => convertedType(T1:Type))
+			~> E:K ? E1:K : tv(0, T2:Type)
+		...</ k >
+		if hasIntegerType(T2:Type)
+		andBool hasPointerType(T1:Type)
+		[structural]
+		
+	// fixme, this is wrong
+	rule
+		< k > (types((T1:Type,, T2:Type)) => convertedType(T1:Type))
+			~> E:K ? E1:K : E2:K
+		...</ k >
+		if hasPointerType(T1:Type)
+		andBool hasPointerType(T2:Type)
 		[structural]
 		
 	// this should take care of the void/struct cases
 	rule
 		< k > (types((T:Type,, T:Type)) => convertedType(T:Type))
-			~> E:K ? E1:Expression : E2:Expression
+			~> E:K ? E1:K : E2:K
 		...</ k >
-		if notBool hasArrayType(T:Type)
+		if notBool hasPointerType(T:Type)
 		[structural]
 	rule
-		< k > convertedType(T:Type) ~> E:K ? E1:Expression : E2:Expression 
-			=> IfThenElse(E:K, cast(T:Type, E1:Expression), cast(T:Type, E2:Expression)) 
+		< k > convertedType(T:Type) ~> E:K ? E1:K : E2:K 
+			=> IfThenElse(E:K, cast(T:Type, E1:K), cast(T:Type, E2:K)) 
 		...</ k >
 		[structural]
 		
@@ -203,10 +238,14 @@ endkm
 kmod DYNAMIC-SEMANTICS-SIZEOF is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE 
 	
+	/*@ \source[n1570]{\para{6.5.3.4}{2}}
+	The \cinline{sizeof} operator yields the size (in bytes) of its operand, which may be an expression or the parenthesized name of a type. The size is determined from the type of the operand. The result is an integer. If the type of the operand is a variable length array type, the operand is evaluated; otherwise, the operand is not evaluated and the result is an integer constant.
+	*/
+	
 	rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
-	op byteSizeofTypeAux : K -> K [strict] 
-	rule byteSizeofType(T:Type) => byteSizeofTypeAux(bitSizeofType(T:Type)) [structural]
-	rule byteSizeofTypeAux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
+	op byteSizeofType-aux : K -> K [strict] 
+	rule byteSizeofType(T:Type) => byteSizeofType-aux(bitSizeofType(T:Type)) [structural]
+	rule byteSizeofType-aux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
 		if T:Type ==Bool cfg:largestUnsigned 
 		[structural]
 	rule
@@ -215,40 +254,20 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	rule
 		< k > SizeofType(T:Type, K:K) => sizeofType(DeclType(T:Type, K:K)) ...</ k >
 		[structural] 
-	
-	// //C99 6.2.6.1:26 ... Each unqualified type has several qualified versions of its type,40) corresponding to the combinations of one, two, or all three of the const, volatile, and restrict qualifiers. The qualified or unqualified versions of a type are distinct types that belong to the same type category and have the same representation and alignment requirements. ..
-	// eq sizeofType(qualifiedType(T:Type, ?)) = sizeofType(T:Type) .	
-
 endkm
 
 kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE 
-
-
-	// generic lookup
-	// rule [lookup]:
-		// < k > X:Id => read(Loc:Nat, T:Type) ...</ k >
-		// < env >... X:Id |-> Loc:Nat ...</ env >
-		// < types >... X:Id |-> T:Type ...</ types >
-		// if notBool(hasArrayType(T:Type)) andBool notBool(hasFunctionType(T:Type))
-		// [structural]
+	
+	/*@ \source[n1570]{\para{6.5.1}{2}}
+	An identifier is a primary expression, provided it has been declared as designating an object (in which case it is an lvalue) or a function (in which case it is a function designator).
+	*/
 	rule [lookup]:
 		< k > X:Id => lv(Loc:Nat, T:Type) ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
 		< types >... X:Id |-> T:Type ...</ types >
 		if notBool hasFunctionType(T:Type)
 		[structural]
-		
-
-	
-	// fixme i wish i didn't have to make this a pointertype directly.
-	// rule [lookup-array]:
-		// < k > X:Id => tv(Loc:Nat, pointerType(innerType(T:Type))) ...</ k >
-		// < env >... X:Id |-> Loc:Nat ...</ env >
-		// < types >... X:Id |-> T:Type ...</ types >
-		// if hasArrayType(T:Type)
-		// [structural] 
-		
 
 	rule [lookup-closure]:
 		< k > X:Id => tv(Loc:Nat, T:Type) ...</ k >
@@ -263,7 +282,7 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 		< types >... X:Id |-> T:Type ...</ types >
 		if hasFunctionType(T:Type)
 		andBool notBool $hasMapping(Env:Map, X:Id)
-		[structural] 
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
@@ -367,40 +386,46 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		< stringLiterals >... S:String |-> V:Value ...</ stringLiterals >
 		[structural]
 	
-	//c99 6.4.4.1:5 The type of an integer constant is the first of the corresponding list in which its value can be represented
-/*
-											Octal or Hexadecimal 
-Suffix			Decimal Constant			Constant
----------------------------------------------------------------------
-none			int							int
-				long int					unsigned int
-				long long int				long int
-											unsigned long int
-											long long int
-											unsigned long long int
----------------------------------------------------------------------
-u or U			unsigned int 				unsigned int
-				unsigned long int 			unsigned long int
-				unsigned long long int 		unsigned long long int
----------------------------------------------------------------------
-l or L			long int 					long int
-				long long int 				unsigned long int
-											long long int
-											unsigned long long int
----------------------------------------------------------------------
-Both u or U		unsigned long int 			unsigned long int
-and l or L 		unsigned long long int 		unsigned long long int
----------------------------------------------------------------------
-ll or LL 		long long int				long long int
-											unsigned long long int
----------------------------------------------------------------------
-Both u or U		unsigned long long int 		unsigned long long int
-and ll or LL
----------------------------------------------------------------------
+	/*@ \source[n1570]{\para{6.4.4.1}{5}}
+	The type of an integer constant is the first of the corresponding list in which its value can be represented.
+\begin{tabular}{@{}lll@{}}
+\toprule
+Suffix		&	Decimal Constant	&		Octal or Hexadecimal Constant  \\
+\midrule
+none	&		\cinline{int}						&	\cinline{int} \\
+		&		\cinline{long int}				&	\cinline{unsigned int} \\
+		&		\cinline{long long int}			&	\cinline{long int} \\
+		&								&	\cinline{unsigned long int} \\
+		&								&	\cinline{long long int} \\
+		&								&	\cinline{unsigned long long int} \\
+\midrule
+\cinline{u} or \cinline{U}	&		\cinline{unsigned int} 			&	\cinline{unsigned int} \\
+		&		\cinline{unsigned long int} 		&	\cinline{unsigned long int} \\
+		&		\cinline{unsigned long long int} 	&	\cinline{unsigned long long int} \\
+\midrule
+\cinline{l} or \cinline{L}	&		\cinline{long int} 				&	\cinline{long int} \\
+		&		\cinline{long long int} 			&	\cinline{unsigned long int} \\
+		&								&	\cinline{long long int} \\
+		&								&	\cinline{unsigned long long int} \\
+\midrule
+Both \cinline{u} or \cinline{U} and \cinline{l} or \cinline{L}	&	\cinline{unsigned long int} 		&	\cinline{unsigned long int} \\
+						&	\cinline{unsigned long long int} 	&	\cinline{unsigned long long int} \\
+\midrule
+\cinline{ll} or \cinline{LL} 	&	\cinline{long long int}			&	\cinline{long long int} \\
+			&							&	\cinline{unsigned long long int} \\
+\midrule
+Both \cinline{u} or \cinline{U} or and \cinline{ll} or \cinline{LL}	&	\cinline{unsigned long long int} 	&	\cinline{unsigned long long int} \\
+\bottomrule
+\end{tabular}
 */
-	//c99 6.4.4.1:6 If an integer constant cannot be represented by any type in its list, it may have an extended integer type, if the extended integer type can represent its value. If all of the types in the list for the constant are signed, the extended integer type shall be signed. If all of the types in the list for the constant are unsigned, the extended integer type shall be unsigned. If the list contains both signed and unsigned types, the extended integer type may be signed or unsigned. If an integer constant cannot be represented by any type in its list and has no extended integer type, then the integer constant has no type
-	//c99 6.2.5:4 ... There may also be impleme
+	/*@ \source[n1570]{\para{6.4.4.1}{6}}
+	If an integer constant cannot be represented by any type in its list, it may have an extended integer type, if the extended integer type can represent its value. If all of the types in the list for the constant are signed, the extended integer type shall be signed. If all of the types in the list for the constant are unsigned, the extended integer type shall be unsigned. If the list contains both signed and unsigned types, the extended integer type may be signed or unsigned. If an integer constant cannot be represented by any type in its list and has no extended integer type, then the integer constant has no type.
+	*/
 	
+	
+	/*@ \source[n1570]{\para{6.4.4.4}{10}}
+	An integer character constant has type \cinline{int}. The value of an integer character constant containing a single character that maps to a single-byte execution character is the numerical value of the representation of the mapped character interpreted as an integer. The value of an integer character constant containing more than one character (e.g., \cinline{'ab'}), or containing a character or escape sequence that does not map to a single-byte execution character, is implementation-defined. If an integer character constant contains a single character or escape sequence, its value is the one that results when an object with type \cinline{char} whose value is that of the single character or escape sequence is converted to type \cinline{int}.
+	*/
 	// c1x 6.4.4.4:10
 	rule CharLiteral(N:Nat) => tv(N:Nat, int) [structural]
 	rule IntLiteral(V:Value) => V:Value [structural]
