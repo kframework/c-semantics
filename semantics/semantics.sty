@@ -111,11 +111,18 @@
 	% % morestring=[b]",
 
 \lstset{language=C}
-\lstset{columns=fullflexible,upquote=true,texcl=true,escapechar=\@,tabsize=2}
+\lstset{
+	columns=fullflexible,
+	upquote=true,
+	texcl=true,
+	escapechar=\@,
+	mathescape=true,
+	tabsize=2}
 \lstset{basicstyle=\ttfamily}
 
 \newcommand{\cinline}[1]{\lstinline`#1`}
 \newcommand{\clisting}[1]{\lstinline`#1`}
+\newcommand{\cdisplay}[1]{\lstinline`#1`}
 % 
 \newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
 

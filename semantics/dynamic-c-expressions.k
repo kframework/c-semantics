@@ -6,6 +6,7 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op lvGetOffset : K K Type -> K
 	op tvGetOffset : K K Type -> K
 	op lv : List{K} Type -> Value
+
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
@@ -35,8 +36,8 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
 	*/
 	// these come from f(a, b, c)
-	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-	rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
+	// rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	// rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
 	// these come from things like (*f)(a, b, c)
 	rule reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	rule peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
@@ -266,18 +267,10 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 		< k > X:Id => lv(Loc:Nat, T:Type) ...</ k >
 		< env >... X:Id |-> Loc:Nat ...</ env >
 		< types >... X:Id |-> T:Type ...</ types >
-		if notBool hasFunctionType(T:Type)
-		[structural]
-
-	rule [lookup-closure]:
-		< k > X:Id => tv(Loc:Nat, T:Type) ...</ k >
-		< env >... X:Id |-> Loc:Nat ...</ env >
-		< types >... X:Id |-> T:Type ...</ types >
-		if hasFunctionType(T:Type)
 		[structural]
 		
 	rule [lookup-builtin-function]:
-		< k > X:Id => tv(functionPrototype(X:Id, T:Type), T:Type) ...</ k >
+		< k > X:Id => lv(functionPrototype(X:Id, T:Type), T:Type) ...</ k >
 		< env > Env:Map </ env >
 		< types >... X:Id |-> T:Type ...</ types >
 		if hasFunctionType(T:Type)
@@ -289,25 +282,32 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	op application : K List{C} -> K [strict(1)]
+	/*@ \source[n1570]{\para{6.5.2.2}{3}}
+	A postfix expression followed by parentheses \cinline{()} containing a possibly empty, comma-separated list of expressions is a function call. The postfix expression denotes the called function. The list of expressions specifies the arguments to the function.
+	*/
 	
-	// this must enforce arguments are evaluated
-	// using List{Type} until I fix syntax types
+	/*@ \source[n1570]{\para{6.5.2.2}{6}}
+	\broken{If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (\cinline{, ...}) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
+	\begin{itemize}
+	\item one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
+	\item both types are pointers to qualified or unqualified versions of a character type or void.
+	\end{itemize}
+	}
+	*/
+	
 	rule [function-application-pre]:
 		< k > Call(tv(Loc:Nat, pointerType(T:Type)), L:List{Type})
 			=> application(readFunction(Loc:Nat), L:List{Type})
 		...</ k >
 		if hasFunctionType(T:Type)
 		[structural]
-		// [metadata "computational"]
 		
 	rule [function-application-builtin-pre]:
 		< k > Call(tv(functionPrototype(X:Id, T:Type), pointerType(T:Type)), L:List{Type})
 			=> application(functionPrototype(X:Id, T:Type), L:List{Type})
 		...</ k >
-		// if hasFunctionType(T:Type)
-		// andBool builtinIdentifiers contains X:Id
+		if hasFunctionType(T:Type)
 		[structural]
-		// [metadata "computational"]
 
 
 	rule [populateFromGlobal]:
@@ -358,6 +358,10 @@ endkm
 
 kmod DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+	
+	/*@ \source[n1570]{\para{6.5.2.1}{2}}
+	A postfix expression followed by an expression in square brackets \cinline{[]} is a subscripted designation of an element of an array object. The definition of the subscript operator \cinline{[]} is that \cinline{E1[E2]} is identical to \cinline{(*((E1)+(E2)))}. Because of the conversion rules that apply to the binary \cinline{+} operator, if \cinline{E1} is an array object (equivalently, a pointer to the initial element of an array object) and \cinline{E2} is an integer, \cinline{E1[E2]} designates the \cinline{E2}-th element of \cinline{E1} (counting from zero).
+	*/
 	rule < k > E1:K[E2:K] => *(E1:K + E2:K) ...</ k >
 		[structural]
 endkm
@@ -681,7 +685,7 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 		[structural]
 
 	/*@ \source[n1570]{\para{6.5.3.3}{4}}
-	The result of the \cinline{~} operator is the bitwise complement of its (promoted) operand (that is, each bit in the result is set if and only if the corresponding bit in the converted operand is not set). The integer promotions are performed on the operand, and the result has the promoted type. If the promoted type is an unsigned type, the expression \cinline{~E} is equivalent to the maximum value representable in that type minus \cinline{E}.
+	The result of the \cinline{\~} operator is the bitwise complement of its (promoted) operand (that is, each bit in the result is set if and only if the corresponding bit in the converted operand is not set). The integer promotions are performed on the operand, and the result has the promoted type. If the promoted type is an unsigned type, the expression \cinline{\~E} is equivalent to the maximum value representable in that type minus \cinline{E}.
 	*/
 	rule ~ tv(I:Int, T:Type) => arithInterpret(T:Type, ~Int I:Int)
 		if isPromotedInteger(T:Type)
@@ -991,29 +995,11 @@ endkm
 kmod DYNAMIC-SEMANTICS-MEMBERS is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	rule [arrow-struct]:
-		< k > tv(Loc:Nat, pointerType(T:Type)) -> F:Id
-			=> *(tv(Loc:Nat, pointerType(T:Type))) . F:Id
-		...</ k >
-		if hasStructType(T:Type) orBool hasUnionType(T:Type)
-		[structural]
-
-	op toEval : K -> K
-	op toEval-aux : K K -> K [strict(2)]
-	op toEval-value : K -> K
-	// context toEval-value(`[HOLE`]:K . ?)
+	/*@ \source[n1570]{\para{6.5.2.3}{3}}
+	A postfix expression followed by the \cinline{.} operator and an identifier designates a member of a structure or union object. The value is that of the named member, and is an lvalue if the first expression is an lvalue. \broken{If the first expression has qualified type, the result has the so-qualified version of the type of the designated member.}
+	*/
 	
-	// because of things like s().f, can't just use the address of left argument
-	// because of things like s.f when f is a field with array type, can't just use the value of the left argument
-	
-	// rule
-		// < k > lv(Loc:Nat, L:KLabel(S:Id)) . F:Id
-			// => lvGetOffset(Loc:Nat, value(calculateLength(L1:List{Type})), T:Type)
-		// ...</ k > // :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}
-		// < structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type}) ...</ structs >
-		// if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
-		// [structural]
-		
+			
 	// fixme tool bug, can't use L:KLabel
 	rule
 		< k > lv(Loc:Nat, structType(S:Id)) . F:Id
@@ -1033,181 +1019,76 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 		...</ structs >
 		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
-	// rule
-		// < k > lv(Loc:Nat, unionType(S:Id)) . F:Id
-			// => lv(Loc:Nat +Nat , T:Type)
-		// ...</ k >
-		// < structs >...
-			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat))
-			// (?:List{Type} :: typedDeclaration(T:Type, F:Id) :: ?:List{Type})
-		// ...</ structs >
-		// [structural]
 		
 	rule
 		< k > tv(L:List{K}, T:Type) . F:Id
 			=> extractField(L:List{K}, T:Type, F:Id)
 		...</ k >
 		[structural]
-	
-	// < k > &(tv(Loc:Nat, pointerType(structType(S:Id))) -> X:Id)
-			// => getOffset(Loc:Nat, value(calculateLength(L1:List{Type})), fixPointerType(T:Type))
-		// ...</ k >
-		// < structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, X:Id) :: ?) ...</ structs >
-	
-	// rule [dot]:
-		// < k > K:K . F:Id => toEval(K:K . F:Id) ...</ k >
-		// [structural]
-	// rule
-		// < k > toEval(K:K) => toEval-aux(K:K, typeof(K:K))  ...</ k >
-		// [structural]
 		
-	// rule
-		// < k > toEval-aux(K:K, arrayType(T:Type, N:Nat)) => &(K:K) ...</ k >
-		// [structural]
 		
-	// rule
-		// < k > toEval-aux(K:K, T:Type) => toEval-value(K:K) ...</ k >
-		// if notBool hasArrayType(T:Type)
-		// [structural]
-	// rule
-		// < k > toEval-value(tv(L:List{K}, T:Type) . F:Id)
-			// => extractField(L:List{K}, T:Type, F:Id)
-		// ...</ k >
-		// [structural]
-
-					
-	//C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the "address-of" operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS
-		
-  	//C99 6.5.2.3:4 86) If &E is a valid pointer expression (where & is the "address-of" operator, which generates a pointer to its operand), the expression (&E)->MOS is the same as E.MOS
+	/*@ \source[n1570]{\para{6.5.2.3}{4}}
+	A postfix expression followed by the \cinline{->} operator and an identifier designates a member of a structure or union object. The value is that of the named member of the object to which the first expression points, and is an lvalue. \broken{If the first expression is a pointer to a qualified type, the result has the so-qualified version of the type of the designated member.}
+	*/
+	rule [arrow-struct]:
+		< k > tv(Loc:Nat, pointerType(T:Type)) -> F:Id
+			=> *(tv(Loc:Nat, pointerType(T:Type))) . F:Id
+		...</ k >
+		if hasStructType(T:Type) orBool hasUnionType(T:Type)
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-DEREFERENCE is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	/*@ \source{C99 6.5.3.2:4}
-	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type "pointer to type", the result has type "type". If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined
+	/*@ \source[n1570]{\para{6.5.3.2}{4}}
+	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
 	*/
-	//xxx also see 6.3.2.1:3 for why i made the result a pointerType
-	//- fixme this seems wrong
-	// rule < k > *(tv(Loc:Nat, pointerType(arrayType(T:Type, N:Nat))))
-			// => tv(Loc:Nat, arrayType(T:Type, N:Nat))
-		// ...</ k >
-		// [structural]
-	// rule < k > *(tv(Loc:Nat, pointerType(incompleteArrayType(T:Type))))
-			// => tv(Loc:Nat, incompleteArrayType(T:Type))
-		// ...</ k >
-		// [structural]
-		
-	
-	// // fixme this is pretty fishy
-	// rule < k > *(tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type}))))
-			// => tv(Loc:Nat, pointerType(functionType(T:Type, L:List{Type})))
-		// ...</ k >
-		// [structural]
-	
-	// // matching the sym in order to catch instances of dereferencing a non-pointer
-	// rule [deref]:
-		// < k > *(tv(sym(Block:Nat) +Nat Offset:Nat, pointerType(T:Type)))
-			// => read(sym(Block:Nat) +Nat Offset:Nat, T:Type)
-		// ...</ k >
-		// if notBool hasArrayType(T:Type)
-		// andBool notBool hasFunctionType(T:Type)
-		// [structural]
-		
-		
 	rule [deref]:
 		< k > *(tv(Loc:Nat, T:Type))
 			=> checkDerefLoc(Loc:Nat)
 			~> lv(Loc:Nat, innerType(T:Type))
 		...</ k >
 		if hasPointerType(T:Type)
-		andBool innerType(T:Type) =/=Bool void
+		andBool notBool innerType(T:Type) ==Bool void
 		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-REFERENCE is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	// context &([HOLE] -> X:Id)
-	
-	// op fixPointerType : Type -> Type
-	// rule fixPointerType(T:Type) => pointerType(T:Type)
-		// if notBool(hasArrayType(T:Type))
-		// [structural]
-	// rule fixPointerType(arrayType(T:Type, ?)) => pointerType(T:Type) [structural]
-	
-	/*@ \source{C1X 6.5.3.2:3}
-	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator. Otherwise, the result is a pointer to the object or function designated by its operand
+	/*@ \source[n1570]{\para{6.5.3.2}{3}}
+	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. \broken{If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator.} Otherwise, the result is a pointer to the object or function designated by its operand.
 	*/
 	
-	// rule &(*(E:K)) => E:K
-		// [structural]
-	// rule &(E1:K[E2:K]) => E1:K + E2:K
-		// [structural]
-	// rule [ref]:
-		// < k > &(X:Id) => tv(Loc:Nat, pointerType(T:Type)) ...</ k >
-		// < env >... X:Id |-> Loc:Nat ...</ env >
-		// < types >... X:Id |-> T:Type ...</ types >
-		// [structural]
+	//rule &(*(E:K)) => E:K [structural]
 		
 	rule [ref]:
 		< k > &(lv(Loc:Nat, T:Type))
 			=> tv(Loc:Nat, pointerType(T:Type))
 		...</ k >
 		[structural]
-		
-	// fixme possibly can get rid of things like this if we make sure functions are always tv or lv
-	rule [ref-function]:
-		< k > &(tv(Loc:Nat, T:Type))
-			=> tv(Loc:Nat, pointerType(T:Type))
-		...</ k >
-		if hasFunctionType(T:Type)
-		[structural]
-	
-	// rule [address-of-arrow-struct]:
-		// < k > &(tv(Loc:Nat, pointerType(structType(S:Id))) -> X:Id)
-			// => getOffset(Loc:Nat, value(calculateLength(L1:List{Type})), fixPointerType(T:Type))
-		// ...</ k >
-		// < structs >... S:Id |-> (L1:List{Type} :: typedDeclaration(T:Type, X:Id) :: ?) ...</ structs >
-		// [structural]
-	// rule [address-of-arrow-union]:
-		// < k > &(tv(Loc:Nat, pointerType(unionType(S:Id))) -> X:Id)
-			// => getOffset(Loc:Nat, 0, fixPointerType(T:Type))
-		// ...</ k >
-		// < structs >... S:Id |-> (? :: typedDeclaration(T:Type, X:Id) :: ?) ...</ structs >
-		// [structural]
-		
-	// rule [address-of-dot]:
-		// < k > &(E:K . X:Id) => &(&(E:K) -> X:Id) ...</ k >
-		// [structural]
-		
-	// fixme is there any more general way to do this?  it seems awful awkward
-	// rule [address-of-compound]:
-		// < k > & CompoundLiteral(N:Nat, Spec:K, Decl:K, Init:K)
-			// => Computation(CompoundLiteral(N:Nat, Spec:K, Decl:K, Init:K))
-			// ~> & compoundLiteral(N:Nat)
-		// ...</ k >
-		// [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-INCREMENT-AND-DECREMENT is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	/*@ \source{c1x 6.5.3.1:2}
-	The value of the operand of the prefix \cinline{++} operator is incremented. The result is the new value of the operand after incrementation. The expression \cinline{++E} is equivalent to \cinline{(E+=1)}. See the discussions of additive operators and compound assignment for information on constraints, types, side effects, and conversions and the effects of operations on pointers
+	/*@ \source[n1570]{\para{6.5.3.1}{2}}
+	The value of the operand of the prefix \cinline{++} operator is incremented. The result is the new value of the operand after incrementation. The expression \cinline{++E} is equivalent to \cinline{(E+=1)}. See the discussions of additive operators and compound assignment for information on constraints, types, side effects, and conversions and the effects of operations on pointers.
 	*/
 	rule ++ E:K => E:K += tv(1, int) [structural]
-	/*@ \source{c1x 6.5.3.1:3}
-	The prefix \cinline{--} operator is analogous to the prefix \cinline{++} operator, except that the value of the operand is decremented
+	/*@ \source[n1570]{\para{6.5.3.1}{3}}
+	The prefix \cinline{--} operator is analogous to the prefix \cinline{++} operator, except that the value of the operand is decremented.
 	*/
 	rule -- E:K => E:K -= tv(1, int) [structural]
 
 	op postOpRef : K KLabel -> K
-
 	op postInc : K K Type -> K [strict(2)]
 	op postDec : K K Type -> K [strict(2)]
-
 	
+	/*@ \source[n1570]{\para{6.5.2.4}{2}}
+	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
+	*/	
 	rule [post-increment-start]:
 		< k > lv(Loc:Nat, T:Type)++
 			=> postInc(Loc:Nat, read(Loc:Nat, T:Type), T:Type)
@@ -1239,12 +1120,11 @@ endkm
 kmod DYNAMIC-SEMANTICS-SEQUENCING is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	// again with stupid sorting problem
+	/*@ \source[n1570]{\para{6.5.17}{2}}
+	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
+	*/
 	rule < k > Comma(T:Type :: K':C :: L:List{C}) => sequencePoint ~> Comma(K':C :: L:List{C}) ...</ k >
 		[structural]
-	
-	// rule < k > Comma(K:C :: K':C :: L:List{C}) => Computation(K:C) ~> Comma(K':C :: L:List{C}) ...</ k >
-		// [structural]
 	rule < k > Comma(K:C) => K:C ...</ k >
 		[structural]
 endkm

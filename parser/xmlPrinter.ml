@@ -527,17 +527,19 @@ and getBinaryOperator op =
 and printSeq _ _ =
 	"Seq"
 and printIf exp s1 s2 =
-	wrap ((printExpression exp) :: (printStatement s1) :: (printStatement s2) :: []) "IfThenElse"
+	wrap ((printExpression exp) :: (newBlockStatement s1) :: (newBlockStatement s2) :: []) "IfThenElse"
 	
 and makeBlockStatement stat =
 	{ blabels = []; battrs = []; bstmts = stat :: []}
+and newBlockStatement s =
+	printBlockStatement (makeBlockStatement s)	
 and printWhile exp stat =
-	wrap ((printExpression exp) :: (printStatement stat) :: []) "While"
+	wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "While"
 and printDoWhile exp stat =
-	wrap ((printExpression exp) :: (printStatement stat) :: []) "DoWhile"
+	wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "DoWhile"
 and printFor fc1 exp2 exp3 stat =
 	let newForIdCell = printCell "ForId" [] (printRawInt ((counter := (!counter + 1)); !counter)) in
-	wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (printStatement stat) :: []) "For"
+	wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For"
 and printForClause fc = 
 	match fc with
 	| FC_EXP exp1 -> wrap ((printExpression exp1) :: []) "ForClauseExpression"
@@ -553,7 +555,7 @@ and printSwitch exp stat =
 	switchStack := newSwitchId :: !switchStack;
 	currentSwitchId := newSwitchId;
 	let idCell = printCell "SwitchId" [] (printRawInt newSwitchId) in
-	let retval = wrap (idCell :: (printExpression exp) :: (printStatement stat) :: []) "Switch" in
+	let retval = wrap (idCell :: (printExpression exp) :: (newBlockStatement stat) :: []) "Switch" in
 	(* printCell "Switch" [Attrib ("id", string_of_int newSwitchId)] (printList (fun x -> x) ((printExpression exp) :: (printStatement stat) :: [])) in *)
 	switchStack := List.tl !switchStack;
 	currentSwitchId := List.hd !switchStack;

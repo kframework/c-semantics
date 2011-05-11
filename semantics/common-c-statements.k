@@ -155,17 +155,6 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		orBool L:KLabel ==Bool 'CompGoto
 		[structural] 
 		
-/*
-	op Sequence : K K -> PureStatement //  still don't know what this is
-	//  gcc specific
-	op CaseRange : K K K -> PureStatement
-	op TryExcept : K K K -> PureStatement
-	op TryFinally : K K -> PureStatement	
-*/
-
-	//  c1x 6.8.5:4 Code jumped over is not executed. In particular, the controlling expression of a for or while statement is not evaluated before entering the loop body, nor is clause-1 of a for statement
-
-		
 	// - should do this with a split
 	rule
 		< gotoCalculation >
@@ -311,10 +300,12 @@ kmod COMMON-C-STATEMENTS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	including COMMON-SEMANTICS-PROCESS-LABELS
 	
-	rule Nop => . 
+	rule Nop => .K
 		[structural] 
 
-	//  skip labels
+	/*@ \source[n1570]{\para{6.8.1}{4}}
+	Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
+	*/
 	rule [skip-label]: < k > Label(L:Id, K:K) => K:K ...</ k >
 		[structural] 	
 endkm

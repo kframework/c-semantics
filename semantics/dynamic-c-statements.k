@@ -9,6 +9,14 @@ endkm
 kmod DYNAMIC-SEMANTICS-IF-THEN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 		
+	/*@ \source[n1570]{\para{6.8}{4}}
+	\ldots There is a sequence point between the evaluation of a full expression and the evaluation of the next full expression to be evaluated.
+	*/
+		
+	/*@ \source[n1570]{\para{6.4.4.4}{10}}
+	In both forms, the first substatement is executed if the expression compares unequal to 0. In the \cinline{else} form, the second substatement is executed if the expression compares equal to 0. If the first substatement is reached via a label, the second substatement is not executed.
+	*/
+
 	rule [if-then-else-true]:
 		< k > IfThenElse(tv(1, int), S:K, ?) => sequencePoint ~> S:K ...</ k >
 		[structural]
@@ -23,6 +31,10 @@ endkm
 
 kmod DYNAMIC-SEMANTICS-WHILE is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+	
+	/*@ \source[n1570]{\para{6.8.5.1}{1}}
+	The evaluation of the controlling expression takes place before each execution of the loop body.
+	*/
 	
 	rule [while-mark]:
 		< k > While(B:Expression, S:Statement) ~> K:K
@@ -41,6 +53,10 @@ endkm
 kmod DYNAMIC-SEMANTICS-DO-WHILE is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
+	/*@\source[n1570]{\para{6.8.5.2}{1}}
+	The evaluation of the controlling expression takes place after each execution of the loop body.
+	*/
+	
 	rule [do-while-mark]:
 		< k > DoWhile(B:Expression, S:Statement) ~> K:K
 			=> loopMarked ~> DoWhile(B:Expression, S:Statement) ~> popLoop
@@ -58,6 +74,15 @@ endkm
 kmod DYNAMIC-SEMANTICS-FOR is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
+	/*@ \source[n1570]{\para{6.8.5.2}{1}}
+	The statement 
+	\cdisplay{for ( $\mathit{clause-1}$ ; $\mathit{expression-2}$ ; $\mathit{expression-3}$ $\mathit{statement}$ )}
+	 behaves as follows: The expression $\mathit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\mathit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\mathit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\mathit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
+
+	\source[n1570]{\para{6.8.5.2}{1}}
+Both $\mathit{clause-1}$ and $\mathit{expression-3}$ can be omitted. An omitted $\mathit{expression-2}$ is replaced by a nonzero constant.
+	*/
+	
 	rule ForClauseDeclaration(K:K) => K:K [structural]
 	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
 	
@@ -67,7 +92,6 @@ kmod DYNAMIC-SEMANTICS-FOR is
 		//  < xmessages >... (. => "Adding " +String toString(Num:Nat) +String " to history") </ xmessages >
 		[structural] 
 	
-	//  fixme should these blocks be here?
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		< k > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement) ~> K:K

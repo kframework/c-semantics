@@ -367,7 +367,7 @@ and statement =
 */
 	op Nop : -> PureStatement
 	op Computation : K -> PureStatement [strict]
-	// context Computation(([HOLE] => reval([HOLE])))
+	context Computation(([HOLE] => reval([HOLE]))) // not sure why i had this commented out before...
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
 /*

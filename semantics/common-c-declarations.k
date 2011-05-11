@@ -551,7 +551,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(initFunction(X:Id, processFunctionBody(functionObject(X:Id, unqualifyType(T:Type), Block:K)))))
+			=> declareFunction(X:Id, T:Type, initializer(initFunction(&(X:Id), processFunctionBody(functionObject(X:Id, unqualifyType(T:Type), Block:K)))))
 			~> calculateGotoMap(X:Id, Block:K)
 		...</ k >
 		if hasFunctionType(T:Type)
@@ -1258,7 +1258,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	
 	rule [initialize-function]:
-		< k > initFunction(tv(Loc:Nat, T:Type), Fun:Value) => .K ...</ k >
+		< k > initFunction(tv(Loc:Nat, pointerType(T:Type)), Fun:Value) => .K ...</ k >
 		< functions > M:Map => M:Map[Fun:Value / Loc:Nat] </ functions >
 		if hasFunctionType(T:Type)
 		andBool notBool $hasMapping(M:Map, Loc:Nat)
