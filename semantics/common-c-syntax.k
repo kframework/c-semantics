@@ -641,8 +641,8 @@ and constant =
 	op ULL : K -> Constant // new
 	op NoSuffix : K -> Constant // new
 	
-	op IntLiteral : K -> Constant
-	op FloatLiteral : K -> Constant
+	//op IntLiteral : K -> Constant
+	//op FloatLiteral : K -> Constant
 	op CharLiteral : Int -> Constant
 	op WCharLiteral : Int -> Constant
 	op StringLiteral : String -> Constant

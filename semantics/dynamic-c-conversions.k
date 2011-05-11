@@ -56,6 +56,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		if rank(T:Type) <Int rank(int)
 		orBool hasBitfieldType(T:Type)
 		[structural]
+	rule isPromotedInteger(T:Type) => hasIntegerType(T:Type) andBool hasBeenPromoted(T:Type) [structural]
 	
 	rule
 		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 

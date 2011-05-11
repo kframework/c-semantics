@@ -149,7 +149,7 @@ if (defined($ENV{'DEBUG'})) {
 } elsif (defined($ENV{'SEARCH'})) {
 	my $intermediateOutputFile = "tmpSearchResults.txt";
 	my $graphOutputFile = "tmpSearchResults.dot";
-	if ($ND_FLAG) {
+	if (! $ND_FLAG) {
 		print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
 	}
 	print "Performing the search...\n";

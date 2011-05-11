@@ -95,7 +95,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op isTypeCompatible : K K -> Bool 
 	
-	op hasBeenPromoted : Type -> Bool 
+	op hasBeenPromoted : Type -> Bool
+	op isPromotedInteger : Type -> Bool
+	
 	
 	op bitloc : Nat Nat Nat -> Nat 
 	op inc : Nat -> Nat 

@@ -83,6 +83,8 @@ my $handlers = {
 	Specifiers => sub { $_->erase; },
 	TypeSpecifier => sub { $_->erase; },
 	LocalDefinition => sub { $_->erase; },
+	IntLiteral => sub { $_->erase; },
+	FloatLiteral => sub { $_->erase; },
 };
 
 

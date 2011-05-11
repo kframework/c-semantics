@@ -39,10 +39,10 @@ FILES_TO_DIST = \
 all: WHICH_SEMANTICS="semantics"
 all: dist
 
-fast: WHICH_SEMANTICS="semantics-fast"
+fast: WHICH_SEMANTICS="fast"
 fast: dist
 
-nd: WHICH_SEMANTICS="semantics-nd"
+nd: WHICH_SEMANTICS="nd"
 nd: dist
 
 check-vars: 
