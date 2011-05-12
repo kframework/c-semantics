@@ -58,15 +58,15 @@ kmod DYNAMIC-SEMANTICS-DO-WHILE is
 	*/
 	
 	rule [do-while-mark]:
-		< k > DoWhile(B:Expression, S:Statement) ~> K:K
-			=> loopMarked ~> DoWhile(B:Expression, S:Statement) ~> popLoop
+		< k > DoWhile(B:K, S:K) ~> K:K
+			=> loopMarked ~> DoWhile(B:K, S:K) ~> popLoop
 		</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > .List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
 		[structural] 
 	rule [do-while]:
-		< k > loopMarked ~> DoWhile(B:Expression, S:Statement)
-			=> S:Statement ~> IfThenElse(B:Expression, (loopMarked ~> DoWhile(B:Expression, S:Statement)), Nop)
+		< k > loopMarked ~> DoWhile(B:K, S:K)
+			=> S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
 		...</ k >
 		[structural] 
 endkm
@@ -76,20 +76,18 @@ kmod DYNAMIC-SEMANTICS-FOR is
 	
 	/*@ \source[n1570]{\para{6.8.5.2}{1}}
 	The statement 
-	\cdisplay{for ( $\mathit{clause-1}$ ; $\mathit{expression-2}$ ; $\mathit{expression-3}$ $\mathit{statement}$ )}
-	 behaves as follows: The expression $\mathit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\mathit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\mathit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\mathit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
+	\cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ; $\textit{expression-3}$ ) $\textit{statement}$ }
+	 behaves as follows: The expression $\textit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\textit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\textit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\textit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
 
 	\source[n1570]{\para{6.8.5.2}{1}}
-Both $\mathit{clause-1}$ and $\mathit{expression-3}$ can be omitted. An omitted $\mathit{expression-2}$ is replaced by a nonzero constant.
+Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted $\textit{expression-2}$ is replaced by a nonzero constant.
 	*/
 	
-	rule ForClauseDeclaration(K:K) => K:K [structural]
 	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
 	
 	rule
 		< k > addToHistory(Num:Nat) => .K ...</ k >
-		< blockHistory > . => ListItem(Num:Nat) ...</ blockHistory >
-		//  < xmessages >... (. => "Adding " +String toString(Num:Nat) +String " to history") </ xmessages >
+		< blockHistory > .List => ListItem(Num:Nat) ...</ blockHistory >
 		[structural] 
 	
 	//  fixme fishy interaction with continue i think
@@ -98,9 +96,7 @@ Both $\mathit{clause-1}$ and $\mathit{expression-3}$ can be omitted. An omitted 
 			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi), Post:K, S:Statement) ~> popLoop)
 		</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		< loopStack > . => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
-		//  < freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
-		//  < xmessages >... (. => "For: loop in " +String toString(Num:Nat) +String ", creating " +String toString(ForNum:Nat)) </ xmessages >
+		< loopStack > .List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
 		[structural] 
 		
 	rule [for]:
@@ -108,7 +104,6 @@ Both $\mathit{clause-1}$ and $\mathit{expression-3}$ can be omitted. An omitted 
 			=> IfThenElse(Control:K, (S:Statement ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement)), Nop)
 		...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		//  < xmessages >... (. => "For: finished a loop, in " +String toString(Num:Nat) +String ", looping...") </ xmessages >
 		[structural] 
 endkm
 
@@ -118,8 +113,15 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
-	op handleSwitch : Nat K -> K [metadata "strict(2)"] //  switch num, promoted value of controlling exp, int value of exp
+	op handleSwitch : Nat K -> K [strict(2)] //  switch num, promoted value of controlling exp, int value of exp
 	op handleSwitch-aux : K Value K -> K 
+	
+	/*@ \source[n1570]{\para{6.8.5.2}{4}}
+	A \cinline{switch} statement causes control to jump to, into, or past the statement that is the switch body, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
+	
+	\source[n1570]{\para{6.8.5.2}{5}}
+	The integer promotions are performed on the controlling expression. The constant expression in each \cinline{case} label is converted to the promoted type of the controlling expression. If a converted value matches that of the promoted controlling expression, control jumps to the statement following the matched \cinline{case} label. Otherwise, if there is a default label, control jumps to the labeled statement. If no converted \cinline{case} constant expression matches and there is no \cinline{default} label, no part of the switch body is executed.
+	*/
 	
 	rule
 		< k > Switch(SN:Nat, tv(V:BaseValue, T:Type), ?) 
@@ -144,7 +146,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  don't need to erase the rest of K since we're GOTOing
 	rule
 		< k > tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
-		[structural] 
+		[structural]
 		
 	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
 	context tryCase(([HOLE] => reval([HOLE])), _, _)
@@ -196,10 +198,14 @@ endkm
 kmod DYNAMIC-SEMANTICS-GOTO is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
+	/*@ \source[n1570]{\para{6.8.6.1}{2}}
+	A \cinline{goto} statement causes an unconditional jump to the statement prefixed by the named label in the enclosing function.
+	*/
+	
 	//  fixme CONFIRM It seems there are no sequence points for a goto
 	
-//  c1x 6.2.4:6 For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached
-		
+/*@ \source[n1570]{\para{6.2.4}{6}} For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached.
+*/
 /*
 	things I have to keep track of:
 		in goto map:
@@ -255,7 +261,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< blockHistory > ListItem(CurrentBlock:Nat) BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
 		< localVariables > Vars:List </ localVariables >
-		//  < xmessages >... (. => "Gotoing: in same block " +String toString(CurrentBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
@@ -268,7 +273,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			~> processGoto(gotoObject(TargetDepth:Nat, TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:Nat) ActualHistory:List </ blockHistory >
-		//  < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
 		if notBool BlockNum:Nat in TargetBlockHistory:List
 		[structural] 
 		
@@ -278,7 +282,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			~> processGoto(gotoObject(TargetDepth:Nat, Prefix:List ListItem(BlockNum:Nat) TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:Nat) ActualHistory:List </ blockHistory >
-		//  < xmessages >... (. => "Gotoing: popping to find common history, " +String toString(BlockNum:Nat)) </ xmessages >
 		if TargetBlockHistory:List =/=Bool ActualHistory:List
 		[structural] 
 			
@@ -290,7 +293,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		...</ k >
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:Nat) ActualHistory:List </ blockHistory >
-		//  < xmessages >... (. => "Gotoing: Have common history, handling " +String toString(CurrentBlock:Nat)) </ xmessages >
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
 		[structural] 
 		
@@ -304,7 +306,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		...</ k >
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:Nat)) 
-		//  < xmessages >... (. => "Gotoing: Have common history, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
 		[structural] 
 	
@@ -324,7 +325,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< nestingDepth > Depth:Nat </ nestingDepth >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
-		//  < xmessages >... (. => "Gotoing: above target, pushing " +String toString(TargetBlock:Nat)) </ xmessages >
 		if L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
@@ -341,7 +341,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		if BlockNum:Nat =/=Bool TargetBlock:Nat
 		[structural] 
 		
-	//  fixme computational to let transforms finish		
 	//  skip variables in the real history
 	rule
 		< k > addVariablesForBlock(TargetBlock:Nat,
@@ -350,7 +349,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
-		//  < xmessages >... (. => "Goto: skipping variable declaration " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
@@ -372,7 +370,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
 		< shouldInit > ? => false </ shouldInit >
-		//  < xmessages >... (. => "Goto: couldn't find variable " +String getIdString(getIdOfDeclaration(Decl:K))) </ xmessages >
 		if notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
@@ -386,6 +383,14 @@ endkm
 kmod DYNAMIC-SEMANTICS-RETURN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 
+	
+	/*@ \source[n1570]{\para{6.8.6.4}{2}}
+	A \cinline{return} statement terminates execution of the current function and returns control to its caller. A function may have any number of \cinline{return} statements.
+	
+	\source[n1570]{\para{6.8.6.4}{3}}
+	If a \cinline{return} statement with an expression is executed, the value of the expression is returned to the caller as the value of the function call expression. If the expression has a type different from the return type of the function in which it appears, the value is converted as if by assignment to an object having the return type of the function.
+	*/
+	
 	rule [return-clean-local]:
 		< k > (. => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
 		< localAddresses >... SetItem(Loc:Nat) => .Set ...</ localAddresses >	
@@ -412,8 +417,6 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 			</ k >
 			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
 			(< local >... < localAddresses > .Set </ localAddresses > ...</ local > => .Bag)
-			//  i can't say the below line alone, but i want to :(
-			//  (< localAddresses > .Set </ localAddresses > => .Bag)
 			< currentFunction > (F:Id => CurrFun:K) </ currentFunction >
 			< currentProgramLoc > ? => CurrLoc:K </ currentProgramLoc >
 			(< currentTranslationUnit > Tu:K </ currentTranslationUnit > => .Bag)
@@ -447,15 +450,11 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 		< k > pushBlock => .K ...</ k >
 		< local >
 			C:Bag
-			< localVariables > Vars:List => .List </ localVariables >
-			< localAddresses > Addresses:Set => .Set </ localAddresses >
 			< nestingDepth > N:Nat => sNat(N:Nat) </ nestingDepth >
 		</ local >
 		< blockStack > .List 
 			=> ListItem(< stackFrame > C:Bag 
 			< nestingDepth > N:Nat </ nestingDepth > 
-			< localVariables > Vars:List </ localVariables >
-			< localAddresses > Addresses:Set </ localAddresses >
 			</ stackFrame >)
 		...</ blockStack >
 		[structural] 
@@ -470,18 +469,18 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 		< k > popBlock => .K ...</ k >
 		< local > 
 			(? => C:Bag)
-			(< blockHistory > ListItem(Num:Nat) ...</ blockHistory > => (< blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory >)) /* .Bag */
 			(< localAddresses > .Set </ localAddresses > => .Bag)
 		</ local >
-		//  < xmessages >... (. => "Popblock: popping " +String toString(Num:Nat) +String " to return to " +String toString(NewNum:Nat)) </ xmessages >
-		< blockStack > ListItem(< stackFrame > C:Bag < blockHistory > ListItem(NewNum:Nat) L:List </ blockHistory > </ stackFrame >) => .List ...</ blockStack >
+		< blockStack > ListItem(< stackFrame > C:Bag </ stackFrame >) => .List ...</ blockStack >
 		[structural] 
 	
 	
+	/*@ \source[n1570]{\para{6.8}{3}}
+	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (including storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
+	*/
 	rule [dissolve-block]:
 		< k > Block(BlockNum:Nat, ?, Statements:List{C}) => listToK(Statements:List{C}) ...</ k >
 		< blockHistory > .List => ListItem(BlockNum:Nat) ...</ blockHistory >
-		//  < xmessages >... (. => "Real block: pushing " +String toString(BlockNum:Nat)) </ xmessages >
 		[structural] 
 endkm
 
@@ -496,7 +495,10 @@ kmod DYNAMIC-C-STATEMENTS is
 	including DYNAMIC-SEMANTICS-BLOCKS 
 	including DYNAMIC-SEMANTICS-DO-WHILE 
 	
-	//  dissolve expression statements that are finished evaluating
+	
+	/*@ \source[n1570]{\para{6.8.3}{2}}
+	The expression in an expression statement is evaluated as a void expression for its side effects.
+	*/
 	rule [expression-statement]:
 		< k > Computation(V:Value) => sequencePoint ...</ k > 
 		[structural] 
@@ -505,41 +507,44 @@ kmod DYNAMIC-C-STATEMENTS is
 		< k > popLoop ~> ? => K:K </ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num:Nat, K:K)) => .List ...</ loopStack >
-		//  < xmessages >... (. => "Poplooping in " +String toString(Num:Nat)) </ xmessages >
 		[structural] 
 
 	rule [popLoop-popBlock]:
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':Nat, ?)) ...</ loopStack >
-		//  < xmessages >... (. => "Adding a popBlock to get rid of " +String toString(Num:Nat) +String ".  Looking for " +String toString(Num':Nat)) </ xmessages >
 		if Num':Nat =/=Bool Num:Nat
 		[structural] 
 	
-	rule [break]:
-		< k > Break => popLoop ...</ k >
-		//  < xmessages >... (. => "Break encountered, turning into popLoop") </ xmessages >
-		[structural] 
-
+	/*@ \source[n1570]{\para{6.8.6.2}{2}}
+	A continue statement causes a jump to the loop-continuation portion of the smallest enclosing iteration statement; that is, to the end of the loop body. \ldots
+	*/
 	rule [continue]:
 		< k > Continue ~> ((L:KLabel)(?) => .) ...</ k >
 		if L:KLabel =/=Bool 'loopMarked
 		andBool L:KLabel =/=Bool 'popBlock
 		andBool L:KLabel =/=Bool 'pushBlock
 		andBool L:KLabel =/=Bool 'popLoop
-		[structural] //  nondet
+		[structural]
 	rule [continue-through-pop]:
 		< k > Continue ~> popBlock 
 			=> popBlock
 			~> Continue
 		...</ k >
-		[structural] //  nondet
+		[structural]
 
 	rule [continue-done-for]:
 		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?, ?, ?, Post:K, ?) ...</ k >
-		[structural] //  nondet
+		[structural]
 	rule [continue-done]:
 		< k > (Continue => .) ~> loopMarked ~> L:KLabel(?) ...</ k >
 		if L:KLabel =/=Bool 'For
-		[structural] //  nondet		
+		[structural]
+		
+	/*@ \source[n1570]{\para{6.8.6.3}{2}}
+	A break statement terminates execution of the smallest enclosing switch or iteration statement.
+	*/
+	rule [break]:
+		< k > Break => popLoop ...</ k >
+		[structural] 
 endkm

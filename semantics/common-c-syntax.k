@@ -432,7 +432,7 @@ and for_clause =
 	| FC_DECL of definition
 */
 	op ForClauseExpression : K -> ForClause
-	op ForClauseDeclaration : K -> ForClause
+	//op ForClauseDeclaration : K -> ForClause
 	
 /*
 and binary_operator =

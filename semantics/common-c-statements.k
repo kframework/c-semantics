@@ -300,6 +300,9 @@ kmod COMMON-C-STATEMENTS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	including COMMON-SEMANTICS-PROCESS-LABELS
 	
+	/*@ \source[n1570]{\para{6.8.3}{3}}
+	A null statement (consisting of just a semicolon) performs no operations.
+	*/
 	rule Nop => .K
 		[structural] 
 

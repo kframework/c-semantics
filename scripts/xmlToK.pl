@@ -85,6 +85,7 @@ my $handlers = {
 	LocalDefinition => sub { $_->erase; },
 	IntLiteral => sub { $_->erase; },
 	FloatLiteral => sub { $_->erase; },
+	ForClauseDeclaration => sub { $_->erase; },
 };
 
 
