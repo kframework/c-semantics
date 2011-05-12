@@ -450,11 +450,15 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 		< k > pushBlock => .K ...</ k >
 		< local >
 			C:Bag
+			< localVariables > Vars:List => .List </ localVariables >
+			< localAddresses > Addresses:Set => .Set </ localAddresses >
 			< nestingDepth > N:Nat => sNat(N:Nat) </ nestingDepth >
 		</ local >
 		< blockStack > .List 
 			=> ListItem(< stackFrame > C:Bag 
 			< nestingDepth > N:Nat </ nestingDepth > 
+			< localVariables > Vars:List </ localVariables >
+			< localAddresses > Addresses:Set </ localAddresses >
 			</ stackFrame >)
 		...</ blockStack >
 		[structural] 
@@ -471,7 +475,10 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 			(? => C:Bag)
 			(< localAddresses > .Set </ localAddresses > => .Bag)
 		</ local >
-		< blockStack > ListItem(< stackFrame > C:Bag </ stackFrame >) => .List ...</ blockStack >
+		< blockStack > ListItem(
+			< stackFrame > C:Bag </ stackFrame >
+		) => .List 
+		...</ blockStack >
 		[structural] 
 	
 	

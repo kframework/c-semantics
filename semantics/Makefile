@@ -1,5 +1,5 @@
 #K_MAUDE_BASE ?= ..
-K_COMPILE_BASE = tools/kompile.pl
+K_COMPILE_BASE = tools/kompile
 SCRIPTS_DIR = ../scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 
