@@ -55,12 +55,14 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< output > String "(.*)"\(\.List{K}\) <\/ output >/){
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
+				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$realOutput .= substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< errorCell > String "(.*)"\(\.List{K}\) <\/ errorCell >/){
 				$haveError = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
+				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$realOutput = substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {

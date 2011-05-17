@@ -59,6 +59,10 @@ Install K:
 	- Go to http://code.google.com/p/k-framework/ and check out the K Semantic Framework from http://code.google.com/p/k-framework/source/checkout
 	- You'll definitely want to download the most recent version from SVN instead of using the Downloads link.
 	- The requirements given above in this file should satisfy any requirements of K, but you can look at their readme for details.
+	- Set K_BASE to the full (non-relative) path in which you installed the K framework.
+	-- E.g., run "export K_BASE=~/k-framework/trunk"
+	-- We suggest you make this change "stick" by adding it to your login script.  E.g., if you use the bash shell on linux, you can make this change stay by adding the line "export K_MAUDE_BASE=~/k-framework/trunk" to your ~/.bashrc file.
+	-- Do NOT include a trailing '/'
 	- Try the following examples:
 	
 Example/Test:
@@ -78,10 +82,6 @@ Example/Test:
 
 -----------------------------------------------------------------------	
 Build our C tool:
-	- Set K_MAUDE_BASE to the full (non-relative) path in which you installed the K framework.  Note, do NOT use the path where you installed Maude itself, but instead the path where you installed K. 
-	- E.g., run "export K_MAUDE_BASE=~/k-framework/trunk"
-	- We suggest you make this change "stick" by adding it to your login script.  E.g., if you use the bash shell on linux, you can make this change stay by adding the line "export K_MAUDE_BASE=~/k-framework/trunk" to your ~/.bashrc file.
-	- Do NOT include a trailing '/'
 	- Run "make" in our main directory, the directory of this README
 	- This should take between 1 and 5 minutes on non-windows machines, and up to 10 minutes on windows.
 	- The "make" process creates a "dist" directory which you can copy elsewhere to install the C tool, or simply leave it where it is.  Either way, you will probably want to add it to your path like you did for Maude above. PATH=/path/to/c-semantics/dist:$PATH

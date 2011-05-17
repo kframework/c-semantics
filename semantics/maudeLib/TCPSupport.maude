@@ -3,9 +3,9 @@ mod TCP-SYNTAX-BUILTIN-MODULE is
 	including SOCKET-BUILTIN-MODULE .
 	
 	op error : -> String .
-	op containedRequest : Configuration -> [String] .
-	op toSend : String -> Msg .
-	op start : Nat -> Configuration .
+	op containedRequest : Socket-Configuration -> [String] .
+	op toSend : String -> Socket-Msg .
+	op start : Nat -> Socket-Configuration .
 	op tcpRequest : String -> [String] .
 	op errorTCPSyntax : -> String .
 endm
@@ -15,21 +15,21 @@ mod TCP-CLIENT-BUILTIN-MODULE is
 	
 	sort TCPState .
 		
-	op Client : -> Cid .
-	op cnum : Nat -> Oid .
+	op Client : -> Socket-Cid .
+	op cnum : Nat -> Socket-Oid .
 	
 	ops idle connecting sending receiving haveAnswer closing connected finished : -> TCPState [ctor] .
 	
-	op state:_ : TCPState -> Attribute [ctor] .
-	op answer:_ : String -> Attribute [ctor] .
-	op connectedTo:_ : Oid -> Attribute [ctor] .
+	op state:_ : TCPState -> Socket-Attribute [ctor] .
+	op answer:_ : String -> Socket-Attribute [ctor] .
+	op connectedTo:_ : Socket-Oid -> Socket-Attribute [ctor] .
 	
 		
-	vars Me Server : Oid .
-	var A : AttributeSet .
+	vars Me Server : Socket-Oid .
+	var A : Socket-AttributeSet .
 	var S : String .
-	var M : Msg .
-	var C : Configuration .
+	var M : Socket-Msg .
+	var C : Socket-Configuration .
 	var N : Nat .
 	
 	rl < Me : Client | state: connecting, A > createdSocket(Me, socketManager, Server)

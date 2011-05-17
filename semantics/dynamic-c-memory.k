@@ -9,7 +9,9 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	op reverseList : List{K} -> List{K}
 	op bwrite : Nat K -> ListItem
 	op locations : List -> Set
-	op read-aux : K K K -> K
+	op readAux : K K K -> K
+	// fixme!!! This should be read-aux, but a bug in the K tool...
+	
 	
 	rule locations(.List) => .Set [structural]
 	rule locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
@@ -66,39 +68,39 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural] 
 	
 	
-	context read-aux(?, ?, value(`[HOLE`]:K)) 
-	rule read(Loc:Nat, T:Type) => read-aux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
+	context readAux(?, ?, value(`[HOLE`]:K)) 
+	rule read(Loc:Nat, T:Type) => readAux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type))
 		[structural]
 	
 	
 	
-	op read-actual : K K K -> K
+	op readActual : K K K -> K
 	
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
 	rule [read-thread-local]:
-		< k > ('read-aux => 'read-actual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('readAux => 'readActual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		<threadId> Id:Nat </threadId>
 		[structural metadata "nd=(true)"]
 	rule [read-shared]: // read global or shared data
-		< k > ('read-aux => 'read-actual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('readAux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational nd=(true)"] 
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > ('read-aux => 'read-actual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('readAux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational nd=(true)"]
 	rule [read-readonly]: // read data that is readonly (e.g., string literals)
-		< k > ('read-aux => 'read-actual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('readAux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational nd=(true)"] 
 	
 	rule [read]:
-		< k > read-actual(Loc:Nat, T:Type, bitSize:Nat)
+		< k > readActual(Loc:Nat, T:Type, bitSize:Nat)
 			=> concretize(T:Type, extractBytesFromMem(Loc:Nat, bitsToBytes(bitSize:Nat)))
 		...</ k >
 		if notBool hasBitfieldType(T:Type)
 		[structural]
 	rule [read-bitfield]:
-		< k > read-actual(Loc:Nat, T:Type, bitSize:Nat)
+		< k > readActual(Loc:Nat, T:Type, bitSize:Nat)
 			=> concretize(T:Type, fillToBytes(extractBitsFromMem(Loc:Nat, bitSize:Nat))) 
 		...</ k >
 		if hasBitfieldType(T:Type)
@@ -320,7 +322,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	// fixme possible to miss dataraces with bitfields
 	// rule [read-write-race]:
 		// < T >... 
-			// < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k >
+			// < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k >
 			// < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k >
 		// ...</ T >
 		// => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
@@ -337,7 +339,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			? 
 			< threads > 
 				?
-				< thread > ? < control > ? < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
+				< thread > ? < control > ? < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
 				< thread > ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </ thread >
 			</ threads > 
 		</ T >

@@ -5,6 +5,8 @@ PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 #svnversion
 
+export C_K_BASE ?= $(K_BASE)
+
 
 # this should be defined by the user
 # K_MAUDE_BASE ?= .
@@ -45,14 +47,14 @@ fast: dist
 nd: WHICH_SEMANTICS="nd"
 nd: dist
 
-check-vars: 
-	@if ! ocaml -version &> /dev/null; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
-ifeq ($(K_MAUDE_BASE),)
-	@echo "ERROR: Please set K_MAUDE_BASE to the full path of your K installation."
+check-vars:
+ifeq ($(C_K_BASE),)
+	@echo "ERROR: Please set K_BASE to the full path of your K installation."
 	@echo "Make sure you do NOT include a trailing slash\\"
-	@echo "One way to do this is to type 'export K_MAUDE_BASE=/path/to/k/framework', and then rerun 'make'"
+	@echo "One way to do this is to type 'export K_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
+	@if ! ocaml -version &> /dev/null; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@if ! maude --version &> /dev/null; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl

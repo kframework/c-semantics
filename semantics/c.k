@@ -1,5 +1,3 @@
-load k-includes
-
 load c-syntax
 load dynamic-c-semantics
 
