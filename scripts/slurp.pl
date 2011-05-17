@@ -40,7 +40,7 @@ sub slurpFindFile {
 sub slurpRead {
 	my ($path, $filename) = (@_);
 	my $file = catfile($path, $filename);
-	my $retval = "";
+	my $retval = "--- slurping $filename\n";
 	#print "opening $filename\n";
 	open(my $fh, "<$file") or die "Couldn't open file $file\n";
 	while (my $line = <$fh>) {

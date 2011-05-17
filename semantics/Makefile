@@ -76,9 +76,9 @@ c-compiled.maude.tmp: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES)
 #@echo "executing \"$(K_MAUDE) c.k -u -language C\""
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C); else $(COMPILE_C); fi
 	@mv c-compiled.maude c-compiled.maude.tmp
-	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
+#@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 4 c-compiled.maude.tmp "load maudeLib/TCPSupport"
+	@$(INSERT_LINE) 8 c-compiled.maude.tmp "load maudeLib/TCPSupport"
 	@echo "Done".
 
 c-compiled.maude: c-compiled.maude.tmp
@@ -90,9 +90,9 @@ c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) 
 	@echo "Compiling the C definition with nondeterminism..."
 	@if time -p true &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
 	@mv c-compiled.maude c-compiled-nd.maude
-	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
-	@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 4 c-compiled-nd.maude "load maudeLib/TCPSupport"
+#@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
+#@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
+	@$(INSERT_LINE) 8 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
 
 c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) Makefile 
