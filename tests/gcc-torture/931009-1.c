@@ -1,11 +1,12 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 main ()
 {
   f ();
   exit (0);
 }
 
-void static
+static void
 g (out, size, lo, hi)
      int *out, size, lo, hi;
 {

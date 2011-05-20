@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 union u {
   struct { int i1, i2; } t;
   double d;
@@ -10,7 +11,7 @@ void f (x, v)
   *++x = v;
 }
 
-main()
+int main()
 {
   x[1].t.i1 = x[1].t.i2 = 0;
   v.t.i1 = 1;

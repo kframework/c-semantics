@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* We used to mis-compile this testcase as we did not know that
    &a+offsetof(b,a) was the same as &a.b */
 struct A

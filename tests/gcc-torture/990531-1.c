@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
    unsigned long bad(int reg, unsigned long inWord)
    {
        union {

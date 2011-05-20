@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct __attribute__((__may_alias__)) { short x; } test;
 
 test *p;
@@ -6,7 +7,7 @@ test *p;
 int g(int *a)
 {
  p = (test*)a;
- return p;
+ return 0;
 }
 
 int f()

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 struct Foo {
   int *p;
   int *q;

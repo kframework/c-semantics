@@ -1,10 +1,11 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f (double *ty)
 {
   *ty = -1.0;
 }
 
-main ()
+int main ()
 {
   double foo[6];
   double tx = 0.0, ty, d;

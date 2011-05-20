@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR optimization/8988 */
 /* Contributed by Kevin Easton */
 

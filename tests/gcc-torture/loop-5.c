@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static int ap(int i);
 static void testit(void){
   int ir[4] = {0,1,2,3};

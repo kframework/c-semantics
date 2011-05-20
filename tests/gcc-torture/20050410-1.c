@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int s = 200;
 int __attribute__((noinline))
 foo (void)

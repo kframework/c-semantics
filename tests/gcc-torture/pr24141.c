@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 // reduced testcase, compile with -O2. Also, with --disable-checking
 // gcc produces wrong code.
 

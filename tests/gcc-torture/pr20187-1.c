@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int a = 0x101;
 int b = 0x100;
 

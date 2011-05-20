@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 void abort (void);
 
 static unsigned char magic[] = "\235";

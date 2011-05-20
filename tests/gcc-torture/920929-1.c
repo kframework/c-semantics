@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* REPRODUCED:RUN:SIGNAL MACHINE:sparc OPTIONS: */
 void f(int n)
 {
@@ -7,7 +8,7 @@ double v[n];
 for(i=0;i<n;i++)
 v[i]=0;
 }
-main()
+int main()
 {
 f(100);
 exit(0);

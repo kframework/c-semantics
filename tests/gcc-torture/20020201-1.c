@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Test whether division by constant works properly.  */
 
 extern void abort (void);

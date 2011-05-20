@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f (n)
      unsigned n;
 {
@@ -6,7 +7,7 @@ void f (n)
     abort ();
 }
 
-main ()
+int main ()
 {
   unsigned x = ~0;
   f (x);

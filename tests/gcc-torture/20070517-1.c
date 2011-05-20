@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR rtl-optimization/31691 */
 /* Origin: Chi-Hua Chen <stephaniechc-gccbug@yahoo.com> */
 

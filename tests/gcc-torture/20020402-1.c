@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* derived from PR c/2100 */
 
 extern void abort ();

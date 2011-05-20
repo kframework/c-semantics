@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 
 static int next_buffer = 0;
 void bar (void);

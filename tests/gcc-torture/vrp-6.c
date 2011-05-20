@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 #include <limits.h>
 
 extern void exit (int);

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #if __INT_MAX__ < 32768 || (defined(STACK_SIZE) && STACK_SIZE < 0x12000)
 int main () { exit (0); }
 #else

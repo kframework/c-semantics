@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR rtl-optimization/28982.  Function foo() does the equivalent of:
 
      float tmp_results[NVARS];

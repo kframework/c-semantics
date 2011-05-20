@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct a;
 
 extern int baz (struct a *__restrict x);
@@ -17,7 +18,7 @@ int bar (int x, const struct b *__restrict y, struct b *__restrict z)
 {
   if (y->c.v || y->c.w != 250000 || y->d.v || y->d.w != 250000)
     abort();
-return 0;
+  return 0;
 }
 
 void foo(void)

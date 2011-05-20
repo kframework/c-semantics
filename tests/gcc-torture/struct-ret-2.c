@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct
 {
   unsigned char a __attribute__ ((packed));

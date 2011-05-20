@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Check that MAX_EXPR and MIN_EXPR are working properly.  */
 
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))

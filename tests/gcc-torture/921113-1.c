@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #define STACK_REQUIREMENT (128 * 128 * 4 + 1024)
 #if defined (STACK_SIZE) && STACK_SIZE < STACK_REQUIREMENT
 main () { exit (0); }
@@ -52,7 +53,7 @@ void gitter(int count, vector_t pos[], list_t list, int *nww, vector_t limit[2],
 vector_t pos[1] = {{0., 0.}};
 vector_t limit[2] = {{0.,0.},{1.,1.}};
 
-main()
+int main()
 {
   int nww;
   struct_list list;

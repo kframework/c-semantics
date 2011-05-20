@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef int new_int __attribute__ ((aligned(16)));
 struct S { int x; };
  

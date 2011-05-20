@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct a { unsigned int bitfield : 1; };
 
 unsigned int x;

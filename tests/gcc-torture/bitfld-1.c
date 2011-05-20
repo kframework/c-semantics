@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright 2002 Free Software Foundation, Inc.
 
    Tests correct signedness of operations on bitfields; in particular

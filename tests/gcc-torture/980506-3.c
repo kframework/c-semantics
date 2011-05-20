@@ -1,4 +1,7 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
+
 unsigned char lookup_table [257];
 
 static int 

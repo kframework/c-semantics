@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 main()
 {
   if (wwrite((long long) 0) != 123)

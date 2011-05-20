@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void b (int *);
 void c (int, int);
 void d (int);

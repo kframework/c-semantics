@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static int rule_text_needs_stack_pop = 0;
 static int input_stack_pos = 1;
 

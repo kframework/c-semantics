@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort (void);
 
 #define N	(1 << (sizeof(int) * __CHAR_BIT__ - 2))

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 div1 (signed char x)
 {
   return x / -1;

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Distilled from try_pre_increment in flow.c.  If-conversion inserted
    new instructions at the wrong place on ppc.  */
 

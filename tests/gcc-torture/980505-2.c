@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef unsigned short Uint16;
 typedef unsigned int Uint;
 

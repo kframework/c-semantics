@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int
 g (unsigned long long int *v, int n, unsigned int a[], int b)
 {

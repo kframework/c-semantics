@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct {
   int a, b, c, d, e, f;
 } A;

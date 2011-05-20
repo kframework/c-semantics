@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Origin: PR c/128 from Martin Sebor <sebor@roguewave.com>, adapted
    as a testcase by Joseph Myers <jsm28@cam.ac.uk>.
 */

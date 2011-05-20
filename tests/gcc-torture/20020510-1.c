@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2002  Free Software Foundation.
 
    Test that optimizing ((c>=1) && (c<=127)) into (signed char)c < 0

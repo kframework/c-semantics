@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Extracted from gas.  Incorrectly generated non-pic code at -O0 for
    IA-64, which produces linker errors on some operating systems.  */
 

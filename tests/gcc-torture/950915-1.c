@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 long int a = 100000;
 long int b = 21475;
 

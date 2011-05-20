@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static char *
 begfield (int tab, char *ptr, char *lim, int sword, int schar)
 {

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* On the i960 any arg bigger than 16 bytes causes all subsequent args
    to be passed on the stack.  We test this.  */
 

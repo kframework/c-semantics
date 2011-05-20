@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Verify that we do not lose side effects on a MOD expression.  */
 
 #include <stdlib.h>

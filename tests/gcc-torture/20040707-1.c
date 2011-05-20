@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct s { char c1, c2; };
 void foo (struct s s)
 {

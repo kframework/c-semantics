@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 struct X { int i; };
 
 int __attribute__((noinline))

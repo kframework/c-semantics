@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void link_error (void);
 const double one=1.0;
 main ()

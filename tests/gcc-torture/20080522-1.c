@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* This testcase is to make sure we have i in referenced vars and that we
    properly compute aliasing for the loads and stores.  */
 

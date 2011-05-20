@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 typedef struct gs_imager_state_s {
   struct {
     int half_width;

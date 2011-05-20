@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR target/6997.  Missing (set_attr "cc" "none") in sleu pattern in
    cris.md.  Testcase from hp@axis.com.  */
 

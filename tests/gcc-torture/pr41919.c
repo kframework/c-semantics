@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort (void);
 
 #define assert(x) if(!(x)) abort()

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR middle-end/27260 */
 
 extern void abort (void);

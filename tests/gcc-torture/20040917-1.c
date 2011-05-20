@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* submitted by kenneth zadeck */
 
 static int test_var;

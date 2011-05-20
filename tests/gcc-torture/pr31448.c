@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR middle-end/31448, this used to ICE during expand because
    reduce_to_bit_field_precision was not ready to handle constants. */
 

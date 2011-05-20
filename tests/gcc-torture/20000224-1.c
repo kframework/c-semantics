@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int loop_1 = 100;
 int loop_2 = 7;
 int flag = 0;

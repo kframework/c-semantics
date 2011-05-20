@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct
 {
   short a __attribute__ ((aligned (2),packed));

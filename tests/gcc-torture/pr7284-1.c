@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Signed left-shift is implementation-defined in C89 (and see
    DR#081), not undefined.  Bug 7284 from Al Grant (AlGrant at
    myrealbox.com).  */

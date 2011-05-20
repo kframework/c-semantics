@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Distilled from optimization/863.  */
 
 extern void abort (void);

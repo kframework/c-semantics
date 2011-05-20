@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 double test (const double le, const double ri)
 {
 	double val = ( ri - le ) / ( ri * ( le + 1.0 ) );

@@ -1,4 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
 
 int * foo (int *x, int b)
 {
@@ -10,7 +12,7 @@ int * foo (int *x, int b)
   return x;
 }
 
-main()
+int main()
 {
   int a[5];
 

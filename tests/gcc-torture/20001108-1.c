@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 long long
 signed_poly (long long sum, long x)
 {

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Produced a overflow in ifcvt.c, causing S to contain 0xffffffff7fffffff.  */
 
 int a = 1;

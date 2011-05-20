@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int bar = 0;
 
 void f (p)
@@ -14,7 +15,7 @@ void f (p)
     }
 }
 
-main ()
+int main ()
 {
   int tab[2];
   tab[0] = tab[1] = 0;

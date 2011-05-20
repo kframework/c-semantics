@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #define MASK(N) ((1UL << (N)) - 1)
 #define BITS(N) ((1UL << ((N) - 1)) + 2)
 

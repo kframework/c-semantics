@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 void add_unwind_adjustsp (long);
 void abort (void);
 

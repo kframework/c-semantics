@@ -1,5 +1,6 @@
-#include "fsl-header.h"
-void f (char *p) { }
+void exit(int status);
+void abort(void);
+int f (char *p) { return 0; }
 
 main ()
 {

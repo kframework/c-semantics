@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2002  Free Software Foundation
 
    Check that constant folding of shift operations is working.

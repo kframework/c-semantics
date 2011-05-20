@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 long double C = 5;
 long double U = 1;
 long double Y2 = 11;

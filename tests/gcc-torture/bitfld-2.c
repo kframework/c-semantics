@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Test whether bit field boundaries aren't advanced if bit field type
    has alignment large enough.  */
 extern void abort (void);

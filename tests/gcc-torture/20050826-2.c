@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR rtl-optimization/23560 */
 
 struct rtattr

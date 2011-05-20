@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Make sure that language + abi extensions in passing S interoperate.  */
 
 static long long __attribute__((noinline))

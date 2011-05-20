@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct tiny
 {
   int c;
@@ -19,7 +20,7 @@ void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
     abort ();
 }
 
-main ()
+int main ()
 {
   struct tiny x[3];
   x[0].c = 10;

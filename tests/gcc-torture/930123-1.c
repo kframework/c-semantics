@@ -1,10 +1,11 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f(int *x)
 {
   *x = 0;
 }
 
-main()
+int main()
 {
   int s, c, x;
   char a[] = "c";

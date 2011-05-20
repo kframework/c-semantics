@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR 41750 - IPA-SRA used to pass hash->sgot by value rather than by
    reference.  */
 

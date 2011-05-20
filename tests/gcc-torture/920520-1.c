@@ -1,10 +1,11 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void foo(int *bar)
 {
   *bar = 8;
 }
 
-bugger()
+int bugger()
 {
   int oldDepth, newDepth;
 
@@ -29,7 +30,7 @@ bugger()
   return newDepth - oldDepth;
 }
 
-main()
+int main()
 {
   if (bugger() != 0)
     abort ();

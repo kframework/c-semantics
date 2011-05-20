@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct vc_data {
 	unsigned long	space;
 	unsigned char   vc_palette[16*3];        

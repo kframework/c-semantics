@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 char* doit(int flag)
 {
   return 1 + (flag ? "\0wrong\n" : "\0right\n");

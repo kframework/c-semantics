@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* This testcase failed at -O2 on IA-64, because scheduling did not take
    into account conditional execution when using cselib for alias
    analysis.  */

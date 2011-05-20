@@ -1,4 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
 int v;
 
 char *
@@ -13,7 +15,7 @@ f ()
   return (v == 0 ? g () : "abc");
 }
 
-main ()
+int main ()
 {
   v = 1;
   if (!strcmp (f (), "abc"))

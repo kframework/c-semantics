@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Bad PTA results (incorrect store handling) was causing us to delete
    *na = 0 store.  */
 

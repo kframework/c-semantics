@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 unsigned char g_5;
 
 void func_1 (void)

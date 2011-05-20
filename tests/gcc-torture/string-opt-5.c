@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2000  Free Software Foundation.
 
    Ensure builtin strlen, strcmp, strchr, strrchr and strncpy

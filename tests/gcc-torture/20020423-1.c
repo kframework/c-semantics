@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* PR c/5430 */
 /* Verify that the multiplicative folding code is not fooled
    by the mix between signed variables and unsigned constants. */

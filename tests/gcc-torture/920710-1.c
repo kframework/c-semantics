@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 main()
 {
   if ((double) 18446744073709551615ULL < 1.84467440737095e+19 ||

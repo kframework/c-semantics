@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int array[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 main ()

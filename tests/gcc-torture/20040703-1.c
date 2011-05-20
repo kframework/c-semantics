@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR 16341 */
 
 #define PART_PRECISION (sizeof (cpp_num_part) * 8)

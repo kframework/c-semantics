@@ -1,10 +1,7 @@
-#include "fsl-header.h"
-#include <string.h>
-#include <stdlib.h>
-//typedef __SIZE_TYPE__ size_t;
-//extern void *memcpy (void *__restrict, const void *__restrict, size_t);
-//extern void abort (void);
-//extern void exit (int);
+typedef __SIZE_TYPE__ size_t;
+extern void *memcpy (void *__restrict, const void *__restrict, size_t);
+extern void abort (void);
+extern void exit (int);
 
 typedef struct t
 {

@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Origin: Joseph Myers <jsm28@cam.ac.uk>.  */
 /* Case labels in a switch statement are converted to the promoted
    type of the controlling expression, not an unpromoted version.

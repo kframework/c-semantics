@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 typedef union
 {
   int __lock;

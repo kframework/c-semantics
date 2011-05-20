@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 f (b, c)
      unsigned char *b;
      int c;

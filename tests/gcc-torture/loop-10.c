@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Reduced from PR optimization/5076, PR optimization/2847 */
 
 static int count = 0;

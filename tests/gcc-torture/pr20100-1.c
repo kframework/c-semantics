@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* PR tree-optimization/20100
    Pure function being treated as const.
    Author: Hans-Peter Nilsson.  */

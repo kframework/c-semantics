@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 char line[4] = { '1', '9', '9', '\0' };
 
 int main()

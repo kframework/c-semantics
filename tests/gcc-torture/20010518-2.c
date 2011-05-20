@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Mis-aligned packed structures.  */
 
 typedef struct

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 
 /* Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> 2002-05-27.  */
 

@@ -1,10 +1,7 @@
-#include "fsl-header.h"
-#include <stdlib.h>
 // Origin: abbott@dima.unige.it
 // PR c/5120
-
-// extern void * malloc (__SIZE_TYPE__);
-// extern void * calloc (__SIZE_TYPE__, __SIZE_TYPE__);
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef unsigned int FFelem;
 

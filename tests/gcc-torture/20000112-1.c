@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <string.h>
 
 static int
@@ -11,7 +12,7 @@ special_format (fmt)
           || strchr (fmt, 'n') != 0);
 }
 
-main()
+int main()
 {
   if (special_format ("ee"))
     abort ();

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Checks that pure functions are not treated as const.  */
 
 char *p;

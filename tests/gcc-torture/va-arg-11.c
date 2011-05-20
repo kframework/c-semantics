@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Test va_arg when the result is ignored and only the pointer increment
    side effect is used.  */
 #include <stdarg.h>

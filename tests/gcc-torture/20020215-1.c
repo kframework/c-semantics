@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Test failed on an architecture that:
 
    - had 16-bit registers,

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR middle-end/14470 */
 /* Origin: Lodewijk Voge <lvoge@cs.vu.nl> */
 

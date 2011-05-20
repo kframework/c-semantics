@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort();
 
 #define HOST_WIDE_INT long

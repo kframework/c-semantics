@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort (void);
 
 int stab_xcoff_builtin_type (int typenum)

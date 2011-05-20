@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort ();
 
 int foo(unsigned short x)

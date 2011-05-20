@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f(long i)
 {
   if ((signed char)i < 0 || (signed char)i == 0) 

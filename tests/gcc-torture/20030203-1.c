@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 void f(int);
 int do_layer3(int single)
 {

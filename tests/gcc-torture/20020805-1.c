@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* This testcase was miscompiled on IA-32, because fold-const
    assumed associate_trees is always done on PLUS_EXPR.  */
 

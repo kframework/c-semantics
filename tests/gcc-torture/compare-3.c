@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Copyright (C) 2002 Free Software Foundation.
 
    Test for composite comparison always true/false optimization.

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 extern volatile int ReadyFlag_NotProperlyInitialized;
 
 volatile int ReadyFlag_NotProperlyInitialized=1;

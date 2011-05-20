@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <stdarg.h>
 
 #define VALUE 0x123456789abcdefLL

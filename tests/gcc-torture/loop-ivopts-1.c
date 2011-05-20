@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* From PR 18977.  */
 void foo(float * x);
 

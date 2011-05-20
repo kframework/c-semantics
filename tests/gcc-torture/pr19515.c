@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR 19515 */
 
 typedef union {

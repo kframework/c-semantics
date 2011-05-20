@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* extracted from gdb sources */
 
 typedef unsigned long long CORE_ADDR;

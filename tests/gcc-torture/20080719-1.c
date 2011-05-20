@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef unsigned int u32;
 
 static const u32 deadfish = 0xdeadf155;

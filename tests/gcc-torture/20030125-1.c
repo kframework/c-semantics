@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Verify whether math functions are simplified.  */
 double sin(double);
 double floor(double);

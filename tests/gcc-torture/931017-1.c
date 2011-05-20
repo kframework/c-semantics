@@ -1,18 +1,19 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int v;
 
-main ()
+int main ()
 {
   f ();
   exit (0);
 }
 
-h1 ()
+int h1 ()
 {
   return 0;
 }
 
-h2 (e)
+int h2 (e)
      int *e;
 {
   if (e != &v)
@@ -20,7 +21,7 @@ h2 (e)
   return 0;
 }
 
-g (c)
+int g (c)
      char *c;
 {
   int i;

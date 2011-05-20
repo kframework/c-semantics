@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Test case contributed by Ingo Rohloff <rohloff@in.tum.de>.
    Code distilled from Linux kernel.  */
 

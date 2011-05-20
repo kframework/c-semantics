@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR 3177 */
 /* Produced a SIGILL on ia64 with sibcall from F to G.  We hadn't
    widened the register window to allow for the fourth outgoing

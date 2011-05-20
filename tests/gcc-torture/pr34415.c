@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 const char *__attribute__((noinline))
 foo (const char *p)
 {

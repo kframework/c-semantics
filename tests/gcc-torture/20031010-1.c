@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* A reminder to process ops in generate_expr_as_of_bb exactly once.  */
 
 long __attribute__((noinline))

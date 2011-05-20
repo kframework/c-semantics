@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 int __attribute__((noinline,noclone))
 sort(int L)
 {

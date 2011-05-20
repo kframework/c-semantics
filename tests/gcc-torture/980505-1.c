@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static int f(int) __attribute__((const));
 int main()
 {

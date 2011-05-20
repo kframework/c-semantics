@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static int which_alternative = 3;
 
 static const char *i960_output_ldconst (void);

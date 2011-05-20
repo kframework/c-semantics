@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Origin: PR c/5420 from David Mosberger <davidm@hpl.hp.com>.
    This testcase was miscompiled when tail call optimizing, because a
    compound literal initialization was emitted only in the tail call insn

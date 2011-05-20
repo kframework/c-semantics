@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void big(long long u) { }
 
 void doit(unsigned int a,unsigned int b,char *id)

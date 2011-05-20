@@ -1,8 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR tree-optimization/19828 */
-//typedef __SIZE_TYPE__ size_t;
-#include <string.h>
-#include <stdlib.h>
+typedef __SIZE_TYPE__ size_t;
 extern size_t strlen (const char *s);
 extern int strncmp (const char *s1, const char *s2, size_t n);
 extern void abort (void);

@@ -1,6 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR target/21297 */
-//typedef __SIZE_TYPE__ size_t;
+typedef __SIZE_TYPE__ size_t;
 extern int memcmp (const char *, const char *, size_t);
 extern void abort ();
 

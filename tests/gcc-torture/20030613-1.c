@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR optimization/10955 */
 /* Originator: <heinrich.brand@fujitsu-siemens.com> */
 

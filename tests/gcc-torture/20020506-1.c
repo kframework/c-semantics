@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2002  Free Software Foundation.
 
    Test that (A & C1) op C2 optimizations behave correctly where C1 is

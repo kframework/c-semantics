@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int __attribute__ ((noinline)) foo (short x, unsigned short y)
 {
   return x * y;

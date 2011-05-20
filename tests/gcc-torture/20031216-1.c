@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR optimization/13313 */
 /* Origin: Mike Lerwill <mike@ml-solutions.co.uk> */
 

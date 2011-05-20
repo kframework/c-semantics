@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 short int i = -1;
 const char * const wordlist[207];
 

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Copyright (C) 2000  Free Software Foundation  */
 /* Contributed by Alexandre Oliva <aoliva@cygnus.com> */
 

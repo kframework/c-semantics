@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR rtl-optimization/20290  */
    
 /* We used to mis-optimize the second loop in main on at least ppc and

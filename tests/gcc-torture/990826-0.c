@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /*
 From: niles@fan745.gsfc.nasa.gov
 To: fortran@gnu.org

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 int foo(int i)
 {
   if (((unsigned)(i + 1)) * 4 == 0)

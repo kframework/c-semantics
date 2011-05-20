@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR c/19606
    The C front end used to shorten the type of a division to a type
    that does not preserve the semantics of the original computation.

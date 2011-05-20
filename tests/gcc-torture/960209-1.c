@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct a_struct
 {
   unsigned char a_character;
@@ -34,6 +35,7 @@ f (a, b)
     return 0;
   a_ptr = &an_array[a];
   a_ptr->a_character = (unsigned char) r;
+  return 0;
 }
 
 main ()

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Copyright (C) 2003  Free Software Foundation.
    PR target/13256
    STRICT_LOW_PART was handled incorrectly in delay slots.

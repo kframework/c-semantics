@@ -1,3 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 long long c=2863311530LL,c3=2863311530LL*3;
 main(){if(c*3!=c3)abort();exit(0);}

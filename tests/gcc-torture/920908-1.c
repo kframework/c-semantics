@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* REPRODUCED:RUN:SIGNAL MACHINE:mips OPTIONS: */
 
 #include <stdarg.h>

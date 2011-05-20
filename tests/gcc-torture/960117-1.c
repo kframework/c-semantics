@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static char id_space[2] [32 +1];
 typedef short COUNT;
 
@@ -29,7 +30,7 @@ WORD
 get_id (char c)
 {
   curval.vals.id[0] = c;
-  return curval.vals.id[0];
+  return 0;
 }
 
 WORD

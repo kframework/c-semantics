@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2002 Free Software Foundation.
 
    Test for correctness of composite comparisons.
@@ -36,7 +36,7 @@ int ieq (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int ine (int x, int y, int ok)
@@ -47,7 +47,7 @@ int ine (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int ilt (int x, int y, int ok)
@@ -58,7 +58,7 @@ int ilt (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int ile (int x, int y, int ok)
@@ -69,7 +69,7 @@ int ile (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int igt (int x, int y, int ok)
@@ -80,7 +80,7 @@ int igt (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int ige (int x, int y, int ok)
@@ -91,7 +91,7 @@ int ige (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-return 0;
+  return 0;
 }
 
 int

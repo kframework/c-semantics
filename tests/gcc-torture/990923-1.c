@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #define mask  0xffff0000L
 #define value 0xabcd0000L
 

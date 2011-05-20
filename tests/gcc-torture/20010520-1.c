@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static unsigned int expr_hash_table_size = 1;
 
 int

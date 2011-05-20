@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* The fp-bit.c function __floatunsisf had a latent bug where guard bits
    could be lost leading to incorrect rounding.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */

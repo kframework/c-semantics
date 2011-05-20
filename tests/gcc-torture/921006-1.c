@@ -1,4 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
 /* REPRODUCED:RUN:SIGNAL MACHINE:i386 OPTIONS:-O */
 main()
 {

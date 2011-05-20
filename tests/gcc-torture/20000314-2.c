@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef unsigned long long uint64;
 const uint64 bigconst = 1ULL << 34;
 

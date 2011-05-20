@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Extracted from GDB sources. */
 
 typedef long long bfd_signed_vma;
@@ -85,7 +86,7 @@ bfd_set_section_size (bfd *abfd, asection *sec, bfd_size_type val)
 static boolean
 bfd_set_section_flags (bfd *abfd, asection *sec, flagword flags)
 {
-return false;
+	return false;
 }
 
 static boolean

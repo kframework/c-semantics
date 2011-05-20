@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Source: Neil Booth, from PR # 115.  */
 
 int false()

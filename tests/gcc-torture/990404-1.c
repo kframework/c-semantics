@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 
 int x[10] = { 0,1,2,3,4,5,6,7,8,9};
 

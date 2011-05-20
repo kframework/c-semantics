@@ -1,11 +1,12 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f (double x[2], double y[2])
 {
   if (x == y)
     abort ();
 }
 
-main ()
+int main ()
 {
   struct { int f[3]; double x[1][2]; } tp[4][2];
   int i, j, ki, kj, mi, mj;

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int w[2][2];
 
 void f ()
@@ -11,7 +12,7 @@ void f ()
 	w[i][j] = 1;
 }
 
-main ()
+int main ()
 {
   f ();
   if (w[0][0] != 1 || w[1][1] != 1 || w[1][0] != 0 || w[0][1] != 0)

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 char a[] = "12345";
 char b[] = "12345";
 

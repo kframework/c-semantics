@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
   void f(int i, int j, int radius, int width, int N)
   {
     const int diff   = i-radius;

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #define NG   0x100L
 
 unsigned long flg = 0;

@@ -1,11 +1,10 @@
-#include "fsl-header.h"
 /* Copyright (C) 2003  Free Software Foundation.
 
    Test strcpy optimizations don't evaluate side-effects twice.
       
    Written by Jakub Jelinek, June 23, 2003.  */
 
-//typedef __SIZE_TYPE__ size_t;
+typedef __SIZE_TYPE__ size_t;
 extern char *strcpy (char *, const char *);
 extern int memcmp (const void *, const void *, size_t);
 extern void abort (void);

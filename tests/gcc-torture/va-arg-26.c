@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <stdarg.h>
 
 double f (float f1, float f2, float f3, float f4,

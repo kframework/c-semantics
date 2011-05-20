@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 f()
 {
   return (unsigned char)("\377"[0]);

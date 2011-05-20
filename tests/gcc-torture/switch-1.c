@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2003  Free Software Foundation.
 
    Test that switch statements suitable using case bit tests are
@@ -23,7 +23,7 @@ foo (int x)
 }
 
 int
-main (void)
+main (int argc, char** argv)
 {
   int i, r;
 

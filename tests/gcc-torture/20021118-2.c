@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Originally added to test SH constant pool layout.  t1() failed for
    non-PIC and t2() failed for PIC.  */
 

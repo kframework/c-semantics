@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR rtl-optimization/28096 */
 /* Origin: Jan Stein <jan@gatespacetelematics.com> */
 
@@ -9,7 +9,7 @@ int bar (int a, int b)
 {
   if (b != 1)
     abort ();
-return 0;
+  return 0;
 }
 
 void foo(int, int) __attribute__((noinline));

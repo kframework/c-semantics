@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f(d,x,y,n)
 int*d;
 float*x,*y;
@@ -7,7 +8,7 @@ int n;
   while(n--){*d++=*x++==*y++;}
 }
 
-main()
+int main()
 {
   int r[4];
   float a[]={5,1,3,5};

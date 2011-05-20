@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 struct A { char x[1]; };
 extern void abort (void);
 void __attribute__((noinline,noclone))

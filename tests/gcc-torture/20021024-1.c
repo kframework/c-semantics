@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Origin: PR target/6981 from Mattias Engdegaard <mattias@virtutech.se>.  */
 
 void exit (int);

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int compare(x, y)
 unsigned int x;
 unsigned int y;

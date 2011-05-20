@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #if defined (STACK_SIZE)
 #define DUMMY_SIZE 9
 #else

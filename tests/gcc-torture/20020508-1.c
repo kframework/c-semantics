@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* This tests the rotate patterns that some machines support.  */
 
 #include <limits.h>

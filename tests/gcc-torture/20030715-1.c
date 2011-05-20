@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR optimization/11320 */
 /* Origin: Andreas Schwab <schwab@suse.de> */
 

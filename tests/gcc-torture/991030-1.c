@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 double x = 0x1.fp1;
 int main()
 {

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct s { int a; int b;};
 struct s s1;
 struct s s2 = { 1, 2, };

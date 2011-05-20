@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR c/7102 */
 
 /* Verify that GCC zero-extends integer constants

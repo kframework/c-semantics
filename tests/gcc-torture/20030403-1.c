@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* The non-destructive folder was always emitting >= when folding
    comparisons to signed_max+1.  */
 

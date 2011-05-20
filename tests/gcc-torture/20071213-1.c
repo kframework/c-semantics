@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR target/34281 */
 
 #include <stdarg.h>

@@ -1,4 +1,6 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
 
 struct tag {
   int m1;
@@ -28,6 +30,6 @@ main()
   exit (0);
 }
 
-func1(int *p) { return(*p); }
+int func1(int *p) { return(*p); }
 
 void foo (char *s) {}

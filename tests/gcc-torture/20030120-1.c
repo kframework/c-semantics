@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* On H8/300 port, NOTICE_UPDATE_CC had a bug that causes the final
    pass to remove test insns that should be kept.  */
 

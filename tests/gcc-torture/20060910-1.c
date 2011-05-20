@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR rtl-optimization/28636 */
 /* Origin: Andreas Schwab <schwab@suse.de> */
 

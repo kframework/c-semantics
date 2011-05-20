@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* This file tests shifts in various integral modes.  */
 
 #include <limits.h>

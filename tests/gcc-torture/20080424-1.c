@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR tree-optimization/36008 */
 
 extern void abort (void);

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort (void);
 
 static int inv_J(int a[][2])

@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void abort(void);
 extern void exit (int);
 
 static inline int

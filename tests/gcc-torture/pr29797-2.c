@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort(void);
 
 unsigned long bar(void) { return 32768; }

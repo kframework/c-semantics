@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct trio { int a, b, c; } trio;
 
 int
@@ -7,7 +8,7 @@ bar (int i, int j, int k, trio t)
   if (t.a != 1 || t.b != 2 || t.c != 3 ||
       i != 4 || j != 5 || k != 6)
     abort ();
-return 0;
+  return 0;
 }
 
 int

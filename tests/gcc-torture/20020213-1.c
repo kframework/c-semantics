@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR c/5681
    This testcase failed on IA-32 at -O0, because safe_from_p
    incorrectly assumed it is safe to first write into a.a2 b-1

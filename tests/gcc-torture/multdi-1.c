@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* PR target/9348 */
 
 #define u_l_l unsigned long long

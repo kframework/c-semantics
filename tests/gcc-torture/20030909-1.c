@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 void abort ();
 void exit (int);
 

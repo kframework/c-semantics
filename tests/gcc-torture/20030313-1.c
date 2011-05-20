@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 struct A
 {
   unsigned long p, q, r, s;

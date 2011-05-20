@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 unsigned char x = 50;
 volatile short y = -5;
 

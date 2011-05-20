@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct { long f8:8; long f24:24; } a;
 struct { long f32:32; } b;
 

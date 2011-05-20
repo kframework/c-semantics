@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* This testcase failed on IA-32 at -O and above, because combine attached
    a REG_LABEL note to jump instruction already using JUMP_LABEL.  */
 

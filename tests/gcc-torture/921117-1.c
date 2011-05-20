@@ -1,4 +1,7 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
+#include <string.h>
+
 struct s {
   char text[11];
   int flag;

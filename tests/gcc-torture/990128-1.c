@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 extern int printf (const char *,...);
 
 struct s { struct s *n; } *p;

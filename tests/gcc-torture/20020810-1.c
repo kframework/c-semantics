@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR target/7559
    This testcase was miscompiled on x86-64, because classify_argument
    wrongly computed the offset of nested structure fields.  */

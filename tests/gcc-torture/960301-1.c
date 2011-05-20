@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 struct foo {
   unsigned : 12;
   unsigned field : 4;

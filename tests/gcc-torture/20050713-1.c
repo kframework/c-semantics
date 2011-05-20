@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Test that sibling call is not used if there is an argument overlap.  */
 
 extern void abort (void);

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <stdarg.h>
 
 typedef struct{double x,y;}point;
@@ -33,7 +34,7 @@ static int va2(int nargs,...)
   return 0;
 }
 
-main()
+int main()
 {
 va1(4,pts[0],pts[1],pts[2],pts[3]);
 va2(4,ipts[0],ipts[1],ipts[2],ipts[3]);

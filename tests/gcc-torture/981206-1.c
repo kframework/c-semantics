@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Verify unaligned address aliasing on Alpha EV[45].  */
 
 static unsigned short x, y;

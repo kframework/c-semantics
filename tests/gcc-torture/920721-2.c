@@ -1,3 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f(){}
-main(){int n=2;double x[n];f();exit(0);}
+int main(){int n=2;double x[n];f();exit(0);}

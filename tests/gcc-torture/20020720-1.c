@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Copyright (C) 2002  Free Software Foundation.
 
    Ensure that fabs(x) < 0.0 optimization is working.

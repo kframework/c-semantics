@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int a[2] = { 18, 6 };
 
 int main ()

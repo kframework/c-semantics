@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 extern unsigned long aa[], bb[];
 
 int seqgt (unsigned long a, unsigned short win, unsigned long b);

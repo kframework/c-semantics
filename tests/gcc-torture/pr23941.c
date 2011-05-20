@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 extern void abort (void);
 double d = __FLT_MIN__ / 2.0;
 int main()

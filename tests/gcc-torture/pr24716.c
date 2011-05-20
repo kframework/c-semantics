@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR24716, scalar evolution returning the wrong result
    for pdest.  */
 

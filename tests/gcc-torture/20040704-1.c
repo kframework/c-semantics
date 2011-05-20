@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR 16348: Make sure that condition-first false loops DTRT.  */
 
 extern void abort ();

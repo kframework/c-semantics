@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 f (unsigned char x)
 {
   return (0x50 | (x >> 4)) ^ 0xff;

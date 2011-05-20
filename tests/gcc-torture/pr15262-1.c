@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* PR 15262.
    The alias analyzer only considers relations between pointers and
    symbols.  If two pointers P and Q point to the same symbol S, then
@@ -7,6 +6,8 @@
    
    However, if there are no common symbols between P and Q, TBAA will
    currently miss their alias relationship altogether.  */
+#include <stdlib.h>
+
 struct A
 {
   int t;

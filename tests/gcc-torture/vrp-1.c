@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 
 extern void abort ();
 extern void exit (int);

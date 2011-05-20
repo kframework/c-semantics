@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static inline int bar(void) { return 1; }
 static int mem[3];
 

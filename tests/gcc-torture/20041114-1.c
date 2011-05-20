@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* Verify that
    
    var <= 0 || ((long unsigned) (unsigned) (var - 1) < MAX_UNSIGNED_INT)

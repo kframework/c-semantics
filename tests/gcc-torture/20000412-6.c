@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 unsigned bug (unsigned short value, unsigned short *buffer,
               unsigned short *bufend);
 

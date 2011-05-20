@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Test front-end conversions, optimizer conversions, and run-time
    conversions between different arithmetic types.
 

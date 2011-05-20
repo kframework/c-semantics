@@ -1,11 +1,12 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 float fx (x)
      float x;
 {
   return 1.0 + 3.0 / (2.302585093 * x);
 }
 
-main ()
+int main ()
 {
   float fx (), inita (), initc (), a, b, c;
   a = inita ();

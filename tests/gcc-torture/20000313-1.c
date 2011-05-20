@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 unsigned int buggy (unsigned int *param)
 {
   unsigned int accu, zero = 0, borrow;

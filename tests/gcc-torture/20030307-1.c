@@ -1,4 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
 /* PR optimization/8726 */
 /* Originator: Paul Eggert <eggert@twinsun.com> */
 

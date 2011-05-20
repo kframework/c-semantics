@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* Problem originally visible on ia64.
 
    There is a partial redundancy of "in + 1" that makes GCSE want to
