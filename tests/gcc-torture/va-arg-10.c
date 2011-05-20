@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* This is a modfied version of va-arg-9.c to test va_copy.  */
 
 #include <stdarg.h>

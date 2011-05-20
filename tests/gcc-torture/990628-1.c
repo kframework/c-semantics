@@ -1,5 +1,5 @@
-#include "fsl-header.h"
 #include <stdlib.h>
+#include <string.h>
 
 struct {
     long sqlcode;

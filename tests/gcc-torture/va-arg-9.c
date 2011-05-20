@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* This is a modfied version of va-arg-2.c to test passing a va_list as
    a parameter to another function.  */
 

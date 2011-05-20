@@ -8,7 +8,7 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
-
+	op AnonAggregate : -> K
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
 	op initFunction : K K -> K [strict]
@@ -505,7 +505,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 		if M:Nat >=Nat numBitsPerByte 
 		[structural]
 	
-	rule Identifier("___missing_field_name") => #NoName [structural]
+	rule Identifier("___missing_field_name") => AnonAggregate [structural]
 endkm
 
 load common-c-statements

@@ -1,4 +1,4 @@
-KCC ?= "kcc"
+KCC ?= "./dist/kcc"
 GCC ?= "gcc -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 GCC34 ?= "gcc34 -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 ICC ?= "icc -m32 -O0 -U __GNUC__ -pedantic -std=c99"
@@ -19,7 +19,7 @@ CIL_FLAGS = --outdir results/out.cilcc --tool_exec $(CILCC)
 all: kcc
 
 prepare:
-	cp ../dist/kcc .
+	cp -R ../dist .
 
 default: prepare
 	

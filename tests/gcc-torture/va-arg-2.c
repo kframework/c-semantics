@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* The purpose of this test is to catch edge cases when arguments are passed
    in regs and on the stack.  We test 16 cases, trying to catch multiple
    targets (some use 3 regs for argument passing, some use 12, etc.).
@@ -6,7 +7,7 @@
 
 #include <stdarg.h>
 
-//extern __SIZE_TYPE__ strlen ();
+extern __SIZE_TYPE__ strlen ();
 
 int
 to_hex (unsigned int a)

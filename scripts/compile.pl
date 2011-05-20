@@ -136,15 +136,15 @@ print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkT
 	# rm -f $linkTemp
 # fi
 
-my $numFilesChanged = chmod(0755, $programTemp);
-if ($numFilesChanged != 1) {
-	die "Call to chmod $programTemp failed";
-}
 #print "closing $programTemp\n";
 close($programTemp);
 
 #rename($programTemp, $oval);
 move("$programTemp", $oval) or die "Failed to move the generated program to its destination $oval: $!";
+my $numFilesChanged = chmod(0755, $oval);
+if ($numFilesChanged != 1) {
+	die "Call to chmod $oval failed";
+}
 
 exit();
 # ===================================================================

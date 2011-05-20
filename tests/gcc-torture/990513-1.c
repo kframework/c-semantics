@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <string.h>
 
 void foo (int *BM_tab, int j)

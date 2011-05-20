@@ -527,9 +527,36 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule
 		FieldGroup(K:K, Nil) => Nil
 		[structural] 
+		
+	op shouldFlatten : List{C} -> Type
+	rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
+	// rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
+	// fixme WHY CAN'T I WRITE THIS???
+	
+	// op flattenList : List{C} -> List{C} [strict]
+	// op flattenListAux : List{C} -> List{C} [strict]
+	// rule ('flattenList => 'flattenListAux)(?:List{Type}) [structural]
+	// rule 'flattenListAux(('_::_(Lab:KLabel(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
+		// => 'flattenListAux('_::_(Rem:List{Type}),, (Other:List{Type},, Lab:KLabel(L:List{K}))) 
+		// if Lab:KLabel =/=Bool '_::_
+		// [structural]
+	// rule 'flattenListAux(('_::_('_::_(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
+		// => 'flattenListAux(('_::_(L:List{K},, Rem:List{Type})),, (Other:List{Type})) 
+		// [structural]
+	// rule 'flattenListAux(('_::_(.List{K})),, (Other:List{Type})) 
+		// => Other:List{Type}
+		// [structural]
 	rule
 		FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
-		[structural] 
+		[structural]
+	rule
+		< k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
+			=> shouldFlatten(L:List{Type})
+		...</ k >
+		< structs >...
+			unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
+		...</ structs >
+		[structural]
 	rule
 		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
 		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
@@ -862,8 +889,7 @@ kmod COMMON-C-TYPING is
 			fi
 		...</ k >
 		< currentFunction > F:Id </ currentFunction >
-		[structural]
-		
+		[structural]		
 		
 	rule
 		< k > addUnion(S:Id, L:List{Type}) 

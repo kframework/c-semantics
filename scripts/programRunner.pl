@@ -5,10 +5,17 @@ use Getopt::Declare;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
+# use IO::File;
+use IPC::Open3;
+
 my $thisFile = "$0";
 my @temporaryFiles = ();
 my $PERL_SERVER_PID = 0;
+my $childPid = 0;
 
+setpgrp;
+# END {kill 15, -$$}
+#print "my pid is $$\n";
 
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
@@ -23,6 +30,11 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 
 sub interruptHandler {
 	finalCleanup(); # call single cleanup point
+	# if ($childPid != 0) {
+		# print "killing $childPid\n";
+		# kill 1, $childPid;
+	# }
+	kill 1, -$$;
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
 
@@ -79,7 +91,7 @@ if ( -t STDIN ) {
 } else {
 	$stdin=join("", <STDIN>);
 }
-my $username=`id -un`;
+#my $username=`id -un`;
 
 my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 push(@temporaryFiles, $fileRunner);
@@ -211,13 +223,39 @@ if (defined($ENV{'DEBUG'})) {
 # runs a command and returns a pair (return value, output)
 sub runProgram {
 	my ($command) = (@_);
-	open P, "$command |" or die "Error running \"$command\"!";
+	$childPid = open P, "$command |" or die "Error running \"$command\"!";
+	#print "for $command, pid is $childPid\n";
 	my @data=<P>;
 	close P;
+	$childPid = 0;
+	#print "child is dead\n";
 	my $returnValue = $? >> 8;
 	
 	return ($returnValue, @data);
 }
+
+# sub runProgramSafe {
+	# my ($command) = (@_);
+	# #my @data = `$command`;
+	
+	# use Symbol 'gensym'; 
+	# #my $inputfh;
+	# my $input = gensym;
+	# #open($inputfh, \@input);
+	# my $outputfh;
+	# my $output="";
+	# open($outputfh, '>', \my $output);
+	# #my $errorfh;
+	# my $error = gensym;
+	# #open($errorfh, \@error);
+	# $childPid = open3($input, $outputfh, $error, $command);
+	# waitpid $childPid, 0;
+	# $childPid = 0;
+	# close $outputfh;
+	# print "output:\nxxx\n$output\nxxx\n";
+	
+	# return (0, $output);
+# }
 
 
 # if [ $DEBUG ]; then
