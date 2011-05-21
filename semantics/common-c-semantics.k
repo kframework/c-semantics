@@ -8,7 +8,7 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
-	op AnonAggregate : -> K
+	op AnonAggregate : -> Id
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
 	op initFunction : K K -> K [strict]
