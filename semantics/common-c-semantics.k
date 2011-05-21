@@ -505,7 +505,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 		if M:Nat >=Nat numBitsPerByte 
 		[structural]
 	
-	rule Identifier("___missing_field_name") => AnonAggregate [structural]
+	rule Identifier("___missing_field_name") => #NoName [structural] //AnonAggregate [structural]
 endkm
 
 load common-c-statements
