@@ -23,12 +23,12 @@ all: cparser
 
 # $(IOXML): ioxml/ioXML.ml ioxml/ioXML.mli ioxml/pa_ioXML.ml
 # make -C ioxml all
-		
+
 # xmlPrinter.ml: cabs.ml $(IOXML)
 # camlp5o ioxml/pa_ioXML.cmo pr_o.cmo -sep "\n\n" cabs.ml > xmlPrinter.tmp
 # sed -i '2 i open Cabs' xmlPrinter.tmp
 # mv xmlPrinter.tmp xmlPrinter.ml
-	
+
 clexer.ml: clexer.mll
 	@$(OCAML_LEX) clexer.mll
 

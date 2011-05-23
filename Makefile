@@ -34,7 +34,7 @@ FILES_TO_DIST = \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(SEMANTICS_DIR)/includes/*) \
 	$(wildcard $(SEMANTICS_DIR)/lib/*)
-	
+
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix semantics gcc-output benchmark dist fast-test dist-make check-input
 
 all: WHICH_SEMANTICS="semantics"
@@ -53,9 +53,9 @@ ifeq ($(C_K_BASE),)
 	@echo "One way to do this is to type 'export K_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
-	@if ! ocaml -version &> /dev/null; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
-	@if ! gcc -v &> /dev/null; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
-	@if ! maude --version &> /dev/null; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
+	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
+	@if ! gcc -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
+	@if ! maude --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
 dist: check-vars $(DIST_DIR)/dist.done
@@ -79,11 +79,11 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@echo "Done."
 	@echo "Calibrating the semantic profiler..."
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
-	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak &> /dev/null || true
+	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak > /dev/null 2>&1 || true
 	@touch maudeProfileDBfile.sqlite
 	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(SEMANTICS_DIR)/c-compiled.maude
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
-	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite &> /dev/null || true
+	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite > /dev/null 2>&1 || true
 	@echo "Done."
 	@echo "Cleaning up..."
 	@rm -f $(DIST_DIR)/testProgram.c
@@ -93,7 +93,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 
 test: dist
 	@$(MAKE) -C tests
-	
+
 force: ;
 
 cparser:
