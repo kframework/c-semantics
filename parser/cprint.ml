@@ -82,7 +82,6 @@ let printLn = ref true
 let printLnComment = ref false
 
 let printCounters = ref false
-let printComments = ref false
 
 (*
 ** FrontC Pretty printer
@@ -99,47 +98,4 @@ let current_len = ref 0
 let spaces = ref 0
 let follow = ref 0
 let roll = ref 0
-    
-
-
-(* stub out the old-style manual space functions *)
-(* we may implement some of these later *)
-let new_line () = ()
-let space () = ()
-let indent () = ()
-let unindent () = ()
-let force_new_line () = ()
-let flush () = ()
-let commit () = ()
-
-(* sm: for some reason I couldn't just call print from frontc.... ? *)
-let print_unescaped_string str = print str
-
-
-(*
-** Useful primitives
-*)
-let print_list print_sep print_elt lst = 
-  let _ = List.fold_left
-      (fun com elt ->
-	if com then print_sep ();
-	print_elt elt;
-	true)
-      false
-      lst in
-  ()
-
-let print_commas nl fct lst =
-  print_list (fun () -> print ","; if nl then new_line() else space()) fct lst;
-  print_maybe ","
-	
-let print_string (s:string) =
-  print ("\"" ^ escape_string s ^ "\"")
-
-let print_wstring (s: int64 list ) =
-  print ("L\"" ^ escape_wstring s ^ "\"")
-
-
-let set_tab t = tab := t
-let set_width w = width := w
 

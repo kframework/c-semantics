@@ -79,7 +79,7 @@ if [ ! "$dflag" ]; then
 	rm -f $filename.prepre.gen
 fi
 set +o errexit
-$myDirectory/cparser --xml $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp
+$myDirectory/cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp
 if [ "$?" -ne 0 ]; then 
 	rm -f $filename.gen.parse.tmp
 	msg="Error running C parser: `cat $filename.warnings.log`"

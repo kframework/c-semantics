@@ -143,6 +143,8 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tnamed of string
 */
 	ops Void Char Bool Short Int Long Float Double Signed Unsigned : -> TypeSpecifier [ctor]
+	// op inf : -> Float
+	// macro inf = Infinity
 	op Named : Id -> TypeSpecifier [ctor]
 /*
 	(* each of the following three kinds of specifiers contains a field 
@@ -266,7 +268,7 @@ and init_name_group = specifier * init_name list
 	(* the string, and decl_type will be PTR([], JUSTBASE) *)
 and name = string * decl_type * attribute list * cabsloc
 */
-	op Name : Id K -> Name // first argument is id, second is basetype
+	op Name : K K -> Name // first argument is id, second is basetype
 	op AnonymousName : K -> Name // new, argument is type
 	op #NoName : -> Id // new
 	op Identifier : String -> Id // new	

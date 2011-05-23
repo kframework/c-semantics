@@ -43,19 +43,6 @@ let rec blit (src: 'a t) (srcidx: int)
   with Failure ("hd" | "tl") ->
     raise (Invalid_argument "Longarray.blit")
 
-let rec fill (a: 'a t) (idx: int) (len: int) (elt: 'a) : unit =
-  try
-    match split_idx idx with
-    | None ->
-        let end1, end2 = split_len (idx + len) in
-        Array.fill (List.hd a) idx (end1 - idx) elt;
-        if end2 > 0 then
-          fill (List.tl a) 0 end2 elt
-    | Some idx' ->
-        fill (List.tl a) idx' len elt
-  with Failure ("hd" | "tl") ->
-    raise (Invalid_argument "Longarray.fill")
-
 let rec length (a: 'a t) : int =
   match a with
   | hd :: tl -> Array.length hd + length tl
@@ -77,27 +64,3 @@ let rec set (a: 'a t) (i: int) (elt: 'a) : unit =
   with Failure ("hd" | "tl") ->
     raise (Invalid_argument "(set) index out of bounds")
 
-let rec copy (a: 'a t) : 'a t =
-  match a with
-  | hd :: tl -> Array.copy hd :: copy tl
-  | [] -> []
-
-let rec map (fn: 'a -> 'b) (a: 'a t) : 'b t =
-  match a with
-  | hd :: tl -> Array.map fn hd :: map fn tl
-  | [] -> []
-(*
-let docArray ?(sep = chr ',') (doit: int -> 'a -> doc)
-             () (elements: 'a t) =
-  let len = length elements in
-  if len = 0 then 
-    nil
-  else
-    let rec loop (acc: doc) i =
-      if i >= len then acc else
-      let fi = doit i (get elements i) in (* Make sure this is done first *)
-      loop (acc ++ sep ++ fi) (i + 1)
-    in
-    let f0 = doit 0 (get elements 0) in
-    loop f0 1
-*)

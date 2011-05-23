@@ -518,18 +518,28 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	op NameAndType : K K -> K [strict(2)] 
 	
+	// rule FieldGroup(T:Type, L:List{C}) => fieldGroup-aux(T:Type, L:List{C}, Nil) [structural]
+	// rule fieldGroup-aux(T:Type, (C:C :: C':C :: L:List{C}), L':List{C})
+		// => fieldGroup-aux(T:Type, C':C :: L:List{C}, (L':List{C} :: singleField(T:Type, C:C))) 
+		// [structural]
+	// rule fieldGroup-aux(T:Type, Nil, L':List{C})
+		// => handleFields(L':List{C})
+		// [structural]
+		
+	// rule handleFields(L:List{Type}) => eraseKLabel('_::_, L:List{Type})
+	
 	rule
 		SingleName(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
 		[structural] 
 	rule [Separate-FieldGroups]:
 		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
-		[structural] 
+		[structural]
 	rule
-		FieldGroup(K:K, Nil) => Nil
+		FieldGroup(?:K, Nil) => Nil
 		[structural] 
 		
-	op shouldFlatten : List{C} -> Type
-	rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
+	// op shouldFlatten : List{C} -> Type
+	// rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
 	// rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
 	// fixme WHY CAN'T I WRITE THIS???
 	
@@ -551,7 +561,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	rule
 		< k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
-			=> shouldFlatten(L:List{Type})
+			=> L:List{Type}
 		...</ k >
 		< structs >...
 			unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)

@@ -8,7 +8,7 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
-	op AnonAggregate : -> Id
+	op AnonAggregate : -> K
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
 	op initFunction : K K -> K [strict]
@@ -495,6 +495,20 @@ kmod COMMON-C-SEMANTICS-MISC is
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural]
 		
+		
+	/*@ \source \source[n1570]{\para{6.10.6}{1}}
+	A preprocessing directive of the form
+	\cdisplay{# pragma pp-tokensoptnew-line}
+\broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
+	*/
+	rule [Pragma]:
+		< k > Pragma(?:K) => .K ...</ k >
+		[structural]
+	// fixme, problem in K:  this rule takes 150 seconds to error
+	// rule [Pragma]:
+		// < k > Pragma(?:K) => ? ...</ k >
+		// [structural]
+		
 	rule [Attributes]:
 		< k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >
 		[structural]
@@ -505,7 +519,10 @@ kmod COMMON-C-SEMANTICS-MISC is
 		if M:Nat >=Nat numBitsPerByte 
 		[structural]
 	
-	rule Identifier("___missing_field_name") => #NoName [structural] //AnonAggregate [structural]
+	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
+	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), ?) [structural]
+	rule Identifier("___missing_field_name") => #NoName [structural]
+	// #NoName [structural] 
 endkm
 
 load common-c-statements

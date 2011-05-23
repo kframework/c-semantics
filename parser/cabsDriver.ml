@@ -46,7 +46,6 @@ module F = Frontc
 (* module CK = Check *)
 module E = Errormsg
 open Printf
-open CabsPrinter
 open XmlPrinter
 
 type outfile = 
@@ -98,14 +97,8 @@ let rec processOneFile (cabs: Cabs.file) =
 			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
 		let programName = "TranslationUnitName(\"" ^ inputFilename ^ "\")" in
 		(* printf "%s\n" programName; *)
-		let data = 
-			if (!isXML) then (
-				(cabsToXML cabs !fileContents inputFilename)
-			) else (
-				let maude = (cabsToString cabs !fileContents) in
-					(* ("op " ^ programName ^ " : -> Program ." ^ "\n") ^ *)
-					("eq " ^ programName ^ " = (" ^ maude ^ ") .\n")
-			) in
+		let data = cabsToXML cabs !fileContents inputFilename in
+			
 		printf "%s\n" data; 
 	(* )) *)
 	);
@@ -140,12 +133,11 @@ let theMain () =
           (* "--out", Arg.String (openFile "output" 
                                  (fun oc -> outChannel := Some oc)),
               " the name of the output AST."; *)
-		  "--xml", Arg.Set isXML,
-              " output should be in XML format";
+		  (* "--xml", Arg.Set isXML,
+              " output should be in XML format"; *)
 		"--trueName", Arg.String (fun x -> trueFilename := x),
 			"filename The original name of the file"
-        ]
-        @ F.args in
+        ] in
 	begin
 		(* this point in the code is the program entry point *)
 
