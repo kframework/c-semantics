@@ -19,7 +19,7 @@ if (!$missingPackage) {
 }
 
 # at this point, we're missing at least one package
-print "ERROR: You are missing some required perl modules.  Would you like me to try installing them automatically? (Y/N)";
+print "ERROR: You are missing some required perl modules.  Would you like me to try installing them automatically by running `cpan -i @missingPackages`? (Y/N)";
 my $response = <STDIN>;
 chomp($response);
 if (uc($response) eq 'Y') {

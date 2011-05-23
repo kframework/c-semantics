@@ -1,4 +1,3 @@
-#K_MAUDE_BASE ?= ..
 SCRIPTS_DIR = ../scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 
@@ -13,7 +12,7 @@ K_PL_MODEL_CHECKER = $(C_K_BASE)/core/maude/lib/k-model-checker
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
-COMPILE_C = K_BASE=$(C_K_BASE) perl -d:DProf $(K_MAUDE) c.k -u -language C
+COMPILE_C = K_BASE=$(C_K_BASE) $(K_MAUDE) c.k -u -language C
 COMPILE_C_ND = K_BASE=$(C_K_BASE) $(K_MAUDE) c.k -nd -u -language C
 
 
@@ -71,10 +70,9 @@ c.k: k-includes.k
 # this is used to start all of the common files
 common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf
 
-c-compiled.maude.tmp: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c-compiled.maude.tmp: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@echo "Compiling the C definition..."
-#@echo "executing \"$(K_MAUDE) c.k -u -language C\""
-	@if time -p K_BASE=$(C_K_BASE) true > /dev/null 2>&1; then time -p $(COMPILE_C); else $(COMPILE_C); fi
+	@if [ "$C_K_DEVELOPMENT" ]; then time -p $(COMPILE_C); else $(COMPILE_C); fi
 	@mv c-compiled.maude c-compiled.maude.tmp
 #@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -86,9 +84,9 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 
-c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@echo "Compiling the C definition with nondeterminism..."
-	@if time -p K_BASE=$(C_K_BASE) true &> /dev/null; then time -p $(COMPILE_C_ND); else $(COMPILE_C_ND); fi
+	@if [ "$C_K_DEVELOPMENT" ]; then time -p $(COMPILE_C); else $(COMPILE_C); fi
 	@mv c-compiled.maude c-compiled-nd.maude
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
