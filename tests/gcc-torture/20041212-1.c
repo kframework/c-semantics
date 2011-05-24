@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 /* A function pointer compared with a void pointer should not be canonicalized.
    See PR middle-end/17564.  */
 void *f (void) __attribute__ ((__noinline__));

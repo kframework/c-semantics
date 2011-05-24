@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* PR tree-optimization/19283 */
 
 void abort (void);

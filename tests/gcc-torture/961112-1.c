@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 f (x)
 {
   if (x != 0 || x == 0)

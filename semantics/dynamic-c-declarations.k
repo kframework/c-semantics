@@ -191,12 +191,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zeroStruct(Name:K, Nil) => .K ...</ k >
 		[structural] 
-		
-	// rule
-		// < k > zeroType(Name:K, T:Type) => initFunction(Name:K, tv(NullPointer, T:Type)) ...</ k >
-		// if hasFunctionType(T:Type)
-		// orBool hasPointerType(T:Type)
-		// [structural]
+
 	rule
 		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
 		if hasPointerType(T:Type)

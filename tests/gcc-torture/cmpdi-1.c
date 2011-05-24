@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #define F 140
 #define T 13
 

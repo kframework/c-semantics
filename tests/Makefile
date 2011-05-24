@@ -1,7 +1,3 @@
-COMMAND_PREFIX = nice -n 19
-# i feel like this is in danger of messing up tests
-#COMMAND_PREFIX =
-
 PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests
@@ -31,7 +27,12 @@ all: $(PARSER) test
 
 integration: $(INTEGRATION_TARGETS)
 
-unit: $(UNIT_TARGETS)
+unit: adhoc $(UNIT_TARGETS)
+
+adhoc: results-adhoc.xml
+
+results-adhoc.xml:
+	@perl adhocTests.pl
 
 thirdParty: $(THIRD_PARTY_TARGETS)
 
@@ -41,7 +42,7 @@ csmith: $(CSMITH_TARGETS)
 
 #.INTERMEDIATE: test-%.kcc test-%.gcc output-% retval-%
 #.PRECIOUS: test-%.kcc test-%.gcc output-% retval-% compare-%.pass
-.PHONY: all test clean good shouldFail clean-%
+.PHONY: all test clean good shouldFail clean-% adhoc csmith torture thirdParty integration
 
 test: good
 	@echo "Tests finished running."

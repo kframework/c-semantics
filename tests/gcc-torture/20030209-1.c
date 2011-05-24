@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #ifdef STACK_SIZE
 #if STACK_SIZE < 8*100*100
 #define SKIP

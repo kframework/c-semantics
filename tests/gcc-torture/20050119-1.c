@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* PR c/19342 */
 typedef enum { A, B, C, D } E;
 

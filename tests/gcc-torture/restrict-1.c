@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /*  PR rtl-optimization/16536
     Origin:  Jeremy Denise      <jeremy.denise@libertysurf.fr>
     Reduced: Wolfgang Bangerth  <bangerth@dealii.org>

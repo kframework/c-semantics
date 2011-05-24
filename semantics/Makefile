@@ -1,19 +1,17 @@
 SCRIPTS_DIR = ../scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 
-C_K_BASE ?= $(K_BASE)
-
-K_MAUDE = $(C_K_BASE)/core/kompile
-K_PRELUDE = $(C_K_BASE)/core/maude/lib/k-prelude
-K_SOCKETS = $(C_K_BASE)/core/maude/lib/socket
-K-PL-BUILTINS = $(C_K_BASE)/core/maude/lib/pl-builtins
-K_PL_MODEL_CHECKER = $(C_K_BASE)/core/maude/lib/k-model-checker
+K_MAUDE = $(K_BASE)/core/kompile
+K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
+K_SOCKETS = $(K_BASE)/core/maude/lib/socket
+K-PL-BUILTINS = $(K_BASE)/core/maude/lib/pl-builtins
+K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
 
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
-COMPILE_C = K_BASE=$(C_K_BASE) $(K_MAUDE) c.k -u -language C
-COMPILE_C_ND = K_BASE=$(C_K_BASE) $(K_MAUDE) c.k -nd -u -language C
+COMPILE_C = $(K_MAUDE) c.k -u -language C
+COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
 
 
 COMMON_C_FILES = c-syntax.k \
@@ -37,7 +35,7 @@ pdf: common-pdf-modules
 
 
 check-vars:
-ifeq ($(C_K_BASE),)
+ifeq ($(K_BASE),)
 	@echo "ERROR: Please set K_BASE to the full path of your K installation."
 	@echo "Make sure you do NOT include a trailing slash\\"
 	@echo "One way to do this is to type 'export K_BASE=/path/to/k/framework', and then rerun 'make'"
@@ -55,7 +53,7 @@ c.k: k-includes.k
 %.tex: check-vars $(K_MAUDE) c.k k-includes.k %.k Makefile
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	@K_BASE=$(C_K_BASE) $(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
 	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
 #\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}

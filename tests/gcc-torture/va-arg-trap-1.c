@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Undefined behavior from a call to va_arg with a type other than
    that of the argument passed (in particular, with a type such as
    "float" that can never be the type of an argument passed through

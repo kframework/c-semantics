@@ -69,6 +69,7 @@ gcc.full/921110-1.c
 
 
 grep -L 'void exit\|stdlib' *.c > noExit.txt
+grep -L 'void[[:space:]]\+exit\|stdlib' *.c
 when programs used functions like strcmp or malloc, I included the appropriate headers
 
 921110-1.c:extern int abort();

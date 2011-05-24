@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* Origin: Franz Sirl <Franz.Sirl-kernel@lauterbach.com> */
 
 #include <stdarg.h>
