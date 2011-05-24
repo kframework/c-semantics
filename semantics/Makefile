@@ -72,7 +72,7 @@ common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics
 
 c-compiled.maude.tmp: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@echo "Compiling the C definition..."
-	@if [ "$C_K_DEVELOPMENT" ]; then time -p $(COMPILE_C); else $(COMPILE_C); fi
+	@$(COMPILE_C)
 	@mv c-compiled.maude c-compiled.maude.tmp
 #@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
@@ -86,7 +86,7 @@ c-compiled.maude: c-compiled.maude.tmp
 
 c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@echo "Compiling the C definition with nondeterminism..."
-	@if [ "$C_K_DEVELOPMENT" ]; then time -p $(COMPILE_C); else $(COMPILE_C); fi
+	@$(COMPILE_C_ND)
 	@mv c-compiled.maude c-compiled-nd.maude
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
