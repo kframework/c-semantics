@@ -4,6 +4,13 @@ use File::Basename;
 use Text::Diff;
 use HTML::Entities;
 
+# my $doc = XML::LibXML:Document->new('1.0',$some_encoding);
+# my $element = $doc->createElement($name);
+# $element->appendText($text);
+# $xml_fragment = $element->toString();
+# $xml_document = $doc->toString();
+
+
 my $kcc = "../dist/kcc";
 my $gcc = "gcc -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99";
 
