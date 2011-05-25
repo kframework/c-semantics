@@ -64,7 +64,7 @@ sub maudeOutputWrapper {
 				$output =~ s/\%/\%\%/g;
 				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
-				$realOutput = substr(`printf "x$output"`, 1);
+				$errorCell = substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 				$myFunc = $1;
 			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {

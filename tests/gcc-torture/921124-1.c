@@ -1,5 +1,6 @@
-#include "fsl-header.h"
-f(x, d1, d2, d3)
+void exit(int status);
+void abort(void);
+int f(x, d1, d2, d3)
    double d1, d2, d3;
 {
    return x;
@@ -13,7 +14,7 @@ void g(b,s,x,y,i,j)
     abort();
 }
 
-main()
+int main()
 {
   g("","", 1.0, 2.0, f(3, 0.0, 0.0, 0.0), f(4, 0.0, 0.0, 0.0));
   exit(0);

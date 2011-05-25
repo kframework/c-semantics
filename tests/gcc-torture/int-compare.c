@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 #include <limits.h>
 
 int gt (a, b)
@@ -102,7 +103,7 @@ void f ()
   true (le (INT_MIN, INT_MAX));
 }
 
-main ()
+int main ()
 {
   f ();
   exit (0);

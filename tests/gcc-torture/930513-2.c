@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void sub3 (i)
      const int *i;
 {
@@ -12,7 +13,7 @@ void eq (a, b)
   i++;
 }
 
-main ()
+int main ()
 {
   int i;
 

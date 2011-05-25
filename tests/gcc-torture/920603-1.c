@@ -1,3 +1,4 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 void f(got){if(got!=0xffff)abort();}
-main(){signed char c=-1;unsigned u=(unsigned short)c;f(u);exit(0);}
+int main(){signed char c=-1;unsigned u=(unsigned short)c;f(u);exit(0);}

@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef enum foo E;
 enum foo { e0, e1 };
 
@@ -6,7 +7,7 @@ struct {
   E eval;
 } s;
 
-void p()
+p()
 {
   abort();
 }

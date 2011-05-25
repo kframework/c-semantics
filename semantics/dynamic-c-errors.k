@@ -117,7 +117,7 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00006]:
 		< k => finalComputation > joinIntegerBytes-aux(T:Type, (?:List{K},, piece(unknown(Len:Nat), Len:Nat)), ?:K) ...</ k => finalComputation >
-		(.Bag => < errorCell > Error("00006", "Reading uninitialized memory.") </ errorCell >)
+		(.Bag => < errorCell > Error("00006", "Reading uninitialized memory, or trying to read a pointer or float through an integer type.") </ errorCell >)
 		if notBool hasCharType(T:Type)
 		[structural]
 		

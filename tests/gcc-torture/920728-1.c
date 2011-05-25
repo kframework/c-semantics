@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 typedef struct {int dims[0]; } *A;
 
 int f(unsigned long obj)
@@ -22,4 +23,4 @@ int f(unsigned long obj)
 }
 
 long g(){return 0xff000000L;}
-main (){int x;f(g());exit(0);}
+int main (){int x;f(g());exit(0);}

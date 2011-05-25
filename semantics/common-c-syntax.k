@@ -143,7 +143,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tnamed of string
 */
 	ops Void Char Bool Short Int Long Float Double Signed Unsigned : -> TypeSpecifier [ctor]
-	// op inf : -> Float
+	op inf : -> Float
 	// macro inf = Infinity
 	op Named : Id -> TypeSpecifier [ctor]
 /*

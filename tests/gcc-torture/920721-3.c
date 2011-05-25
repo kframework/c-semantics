@@ -1,4 +1,5 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 static inline fu (unsigned short data)
 {
   return data;
@@ -19,7 +20,7 @@ void rs(i)
 }
 
 
-main()
+int main()
 {
   ru(5);
   rs(5);

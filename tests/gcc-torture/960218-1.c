@@ -1,7 +1,8 @@
-#include "fsl-header.h"
+void exit(int status);
+void abort(void);
 int glob;
 
-g (x)
+int g (x)
 {
   glob = x;
   return 0;

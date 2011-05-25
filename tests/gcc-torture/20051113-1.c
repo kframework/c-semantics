@@ -1,8 +1,5 @@
-#include "fsl-header.h"
-#include <stdio.h>
-#include <string.h>
-// extern void *malloc(__SIZE_TYPE__);
-// extern void *memset(void *, int, __SIZE_TYPE__);
+#include <stdlib.h>
+extern void *memset(void *, int, size_t);
 typedef struct
 {
   short a;  
@@ -56,7 +53,7 @@ long long Sum2 (Struct3 *instrs)
     }
     return count;
 }
-int main() {
+main() {
   Struct3 *p = malloc (sizeof (int) + 3 * sizeof(Union));
   memset(p, 0, sizeof(int) + 3*sizeof(Union));
   p->Count = 3;
