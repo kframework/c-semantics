@@ -228,6 +228,8 @@ let init_lexicon _ =
 		("_NoReturn", fun loc -> NORETURN loc);
 		("_Static_assert", fun loc -> STATIC_ASSERT loc);
 		("_Thread_local", fun loc -> THREAD_LOCAL loc);
+		("__metaType", fun loc -> METATYPE loc);
+		("__metaId", fun loc -> METAID loc);
     ]
 
 (* Mark an identifier as a type name. The old mapping is preserved and will 

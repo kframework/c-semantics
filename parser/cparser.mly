@@ -258,6 +258,7 @@ let transformOffsetOf (speclist, dtype) member =
 
 %token EOF
 %token<Cabs.cabsloc> CHAR INT BOOL DOUBLE FLOAT VOID INT64 INT32
+%token<Cabs.cabsloc> ANYTYPE
 %token<Cabs.cabsloc> ENUM STRUCT TYPEDEF UNION
 %token<Cabs.cabsloc> SIGNED UNSIGNED LONG SHORT
 %token<Cabs.cabsloc> VOLATILE EXTERN STATIC CONST RESTRICT AUTO REGISTER
@@ -306,6 +307,8 @@ let transformOffsetOf (speclist, dtype) member =
 %token<string * Cabs.cabsloc> PRAGMA_LINE
 %token<Cabs.cabsloc> PRAGMA
 %token PRAGMA_EOL
+
+%token<Cabs.cabsloc> METATYPE METAID
 
 /* sm: cabs tree transformation specification keywords */
 %token<Cabs.cabsloc> AT_TRANSFORM AT_TRANSFORMEXPR AT_SPECIFIER AT_EXPR
@@ -510,6 +513,10 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
 		        { CAST($2, COMPOUND_INIT $5), $1 }
+|		METATYPE LPAREN type_name RPAREN
+		        { MetaType ($3, $1), $1 }
+|		METAID LPAREN IDENT RPAREN
+		        { MetaId (fst $3, $1), $1 }
 ;
 
 offsetof_member_designator:	/* GCC extension for __builtin_offsetof */

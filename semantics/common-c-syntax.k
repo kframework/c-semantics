@@ -449,7 +449,8 @@ and binary_operator =
 and expression =
 	NOTHING
 */
-
+	op MetaType : K -> Expression [strict] // new
+	op MetaId : K -> KResult // new
 	op ExpressionLoc : K K -> Expression // new
 
 	op NothingExpression : -> Expression

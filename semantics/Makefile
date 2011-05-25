@@ -47,10 +47,8 @@ endif
 #@echo "load $(K_PRELUDE)" >> k-includes.k
 #@echo "load $(K_SOCKETS)" >> k-includes.k
 
-c.k: k-includes.k
-
 %.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
-%.tex: check-vars $(K_MAUDE) c.k k-includes.k %.k Makefile
+%.tex: check-vars $(K_MAUDE) c.k %.k Makefile
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
 	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out

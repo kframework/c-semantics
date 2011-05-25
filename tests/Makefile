@@ -45,6 +45,7 @@ csmith: $(CSMITH_TARGETS)
 .PHONY: all test clean good shouldFail clean-% adhoc csmith torture thirdParty integration
 
 test: good
+	@$(MAKE) -C ../semantics dynamic-c-expressions.pdf
 	@echo "Tests finished running."
 	
 good: $(GOOD_TARGETS)

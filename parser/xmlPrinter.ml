@@ -435,6 +435,8 @@ and printIntLiteral i =
 	
 and printExpression exp =
 	match exp with
+	| MetaType ((spec, declType), loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: []) "MetaType") loc
+	| MetaId (id, loc) -> printExpressionLoc (wrap ((printIdentifier id) :: []) "MetaId") loc
 	| LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
 	| BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2

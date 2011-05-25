@@ -262,6 +262,8 @@ and unary_operator =
 
 and expression =
     NOTHING
+  | MetaType of type_name * cabsloc
+  | MetaId of string * cabsloc
   | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
   | LABELADDR of string  (* GCC's && Label *)
