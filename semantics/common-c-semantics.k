@@ -196,7 +196,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op dataList : List{K} -> KResult 
 	subsort Value < KResult K 
 	subsort Type < KResult K
-	
+	op K2Nat : K -> Nat
+	rule K2Nat(N:Nat) => N:Nat [structural]
 	op sizeofType : K -> K [strict] // generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [strict] // needs to be heated to top of K for struct and union types
 	op byteSizeofType : K -> K [strict] 

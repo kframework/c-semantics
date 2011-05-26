@@ -329,16 +329,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		[structural] 
 		
 	//c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
-	// rule [cast-unsigned-of-small]:
-		// cast(T:Type, tv(I:Int, T':Type)) 
-			// => cast(T:Type, tv(I:Int +Int max(T:Type) +Int 1, T':Type))
-		// if hasUnsignedIntegerType(T:Type)
-		// andBool I:Int <Int min(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural]
-	// duplicated these rules to avoid side condition
-	
+
 	rule [cast-ubitfield-of-small]:
 		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
 			=> cast(bitfieldType(T:Type, Len:Nat), tv(I:Int +Int max(bitfieldType(T:Type, Len:Nat)) +Int 1, T':Type))
@@ -377,14 +368,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		[structural]
 		
 	
-	// rule [cast-unsigned-of-big]:
-		// cast(T:Type, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
-		// if hasUnsignedIntegerType(T:Type)
-		// andBool I:Int >Int max(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
+
 	rule [cast-ubitfield-of-big]:
 		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
 			=> tv(I:Int %Int (max(bitfieldType(T:Type, Len:Nat)) +Int 1), bitfieldType(T:Type, Len:Nat))
@@ -425,14 +409,6 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	
 	//c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
 	// choice
-	// rule [cast-signed-of-huge]:
-		// cast(T:Type, tv(I:Int, T':Type)) 
-			// => cast(T:Type, tv(I:Int %Int (2 ^Nat absInt(numBits(T:Type))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(T:Type)))
-		// andBool hasSignedIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural]
 	rule [cast-sbitfield-of-huge]:
 		cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
 			=> cast(bitfieldType(T:Type, Len:Nat), tv(I:Int %Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat)))), T':Type)) 
@@ -491,6 +467,14 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		andBool notBool hasBoolType (T:Type)
 		[structural] 
 
+	// I don't think this is safe, since the resulting int could be a trap value	
+	// rule [cast-unknown-char]:
+		// cast(T:Type, tv(piece(unknown(Len:Nat), Len:Nat), T':Type)) 
+			// => tv(unknown(K2Nat(bitSizeofType(T:Type))), T:Type)
+		// if hasIntegerType(T:Type)
+		// andBool hasIntegerType(T':Type)
+		// andBool Len:Nat ==Bool numBitsPerByte
+		// [structural]	
 	
 	//C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
 	// fixme
@@ -635,6 +619,22 @@ kmod DYNAMIC-C-CONVERSIONS is
 	rule [arithInterpret-bignum]:
 		arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
 		[structural]
+		
+	// rule [arithInterpret-unknown]:
+		// arithInterpret(T:Type, unknown(N:Nat)) => tv(unknown(N:Nat), T:Type)
+		// [structural]
+		
+	// // these could be so much better...
+	// rule ~Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
+	// rule N:Nat ^Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
+	// rule N:Nat |Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
+	// rule N:Nat &Int unknown(Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
+	// rule N:Nat &Int unknown(Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
+
+	// rule unknown(Len:Nat) ^Int N:Nat => unknown(Len:Nat) [structural]
+	// rule unknown(Len:Nat) |Int N:Nat => unknown(Len:Nat) [structural]
+	// rule unknown(Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
+	// rule unknown(Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294

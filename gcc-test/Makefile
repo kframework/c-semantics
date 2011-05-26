@@ -4,6 +4,7 @@ GCC34 ?= "gcc34 -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 ICC ?= "icc -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 CLANG ?= "clang -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 CILCC ?= "./cilcc.sh"
+COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __GNUC__"
 
 
 RUNTEST = runtest --tool=gcc
@@ -13,8 +14,9 @@ GCC34_FLAGS = --outdir results/out.gcc34 --tool_exec $(GCC34)
 ICC_FLAGS = --outdir results/out.icc --tool_exec $(ICC)
 CLANG_FLAGS = --outdir results/out.clang --tool_exec $(CLANG)
 CIL_FLAGS = --outdir results/out.cilcc --tool_exec $(CILCC)
+COMPCERT_FLAGS = --outdir results/out.compcert --tool_exec $(COMPCERT)
 
-.PHONY: all prepare default gcc34 clean gcc icc kcc cilcc clang
+.PHONY: all prepare default gcc34 clean gcc icc kcc cilcc clang compcert
 
 all: kcc
 
@@ -28,6 +30,10 @@ gcc: default
 	@-$(RUNTEST) gcc.full/execute.exp $(GCC_FLAGS)
 #echo "test,tool,phase,status,timeout" > gcc.full.csv
 	@cat results/out.gcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc,\3,\1/p' > gcc.full.csv
+compcert: default
+	@mkdir -p results/out.compcert
+	@-$(RUNTEST) gcc.all/execute.exp $(COMPCERT_FLAGS)
+	@cat results/out.compcert/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,compcert,\3,\1/p' > compcert.full.csv
 gcc34: default
 	@mkdir -p results/out.gcc34	
 	@-$(RUNTEST) gcc.full/execute.exp $(GCC34_FLAGS)

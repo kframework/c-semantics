@@ -55,8 +55,6 @@ sub finalCleanup {
 		my $ret = kill(2, $PERL_SERVER_PID);
 	}
 }
- 
-
 
 if (defined($ENV{'HELP'})) {
 	print "Here are some configuration variables you can set to affect how this program is run:\n";
@@ -66,10 +64,16 @@ if (defined($ENV{'HELP'})) {
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
+	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
 	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
 	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
 	exit(1);
+}
+
+if (defined($ENV{'PRINTMAUDE'})) {
+	print linkedProgram();
+	exit(0);
 }
 
 # these are compile time settings and are set by the compile script using this file as a template

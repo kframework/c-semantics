@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 #include <stdbool.h>
 #include <stdlib.h>
 int strcmp (const char*, const char*);
