@@ -230,6 +230,7 @@ let init_lexicon _ =
 		("_Thread_local", fun loc -> THREAD_LOCAL loc);
 		("__metaType", fun loc -> METATYPE loc);
 		("__metaId", fun loc -> METAID loc);
+		("__property", fun loc -> PROPERTY loc);
     ]
 
 (* Mark an identifier as a type name. The old mapping is preserved and will 
@@ -461,7 +462,9 @@ let no_parse_pragma =
 
 
 rule initial =
-	parse 	"/*"			{ let il = comment lexbuf in
+	parse 	
+		(* "/*@" { ATCOMMENT (currentLoc ())} *)
+|"/*"			{ let il = comment lexbuf in
 	                                  let sl = intlist_to_string il in
 					  addComment sl;
                                           addWhite lexbuf;

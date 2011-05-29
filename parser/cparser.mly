@@ -309,6 +309,8 @@ let transformOffsetOf (speclist, dtype) member =
 %token PRAGMA_EOL
 
 %token<Cabs.cabsloc> METATYPE METAID
+%token<Cabs.cabsloc> ATCOMMENT
+%token<Cabs.cabsloc> PROPERTY
 
 /* sm: cabs tree transformation specification keywords */
 %token<Cabs.cabsloc> AT_TRANSFORM AT_TRANSFORMEXPR AT_SPECIFIER AT_EXPR

@@ -60,6 +60,7 @@ my $modelFlag;
 my $spec = q(#
   -c		Compile and assemble, but do not link
   -i		Include support for runtime file io
+  -lm		Ignored
   -n		Allows exploring nondetermism
   -s		Do not link against the standard library
   -o <file>	Place the output into <file>

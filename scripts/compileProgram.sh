@@ -2,7 +2,7 @@
 # CIL_FLAGS="--noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused --envmachine"
 set -o errexit
 PEDANTRY_OPTIONS="-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99"
-GCC_OPTIONS="-std=c99 -nostdlib -nodefaultlibs -U __GNUC__"
+GCC_OPTIONS="-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__"
 myDirectory=`dirname "$0"`
 filename=
 stateSearch=
