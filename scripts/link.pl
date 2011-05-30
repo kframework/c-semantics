@@ -9,6 +9,7 @@ use File::Basename;
 sub linker {
 	my @files = (@_);
 	my @operators;
+	my @formulae;
 	my @programNames;
 	my @programs;
 	my $retval = "";
@@ -20,15 +21,14 @@ sub linker {
 		open(my $newFile, $filename) or die "Couldn't open file $filename\n";
 
 		while (my $line = <$newFile>){
+			# print $line;
 			chomp($line);
-			if ($line =~ m/^mod C-(program-.*) is including/) {
-				# push(@programNames, "$1");
-				next;
-			}
-			if ($line =~ m/^eq(.*?)=/) { # if we have an equation, we're done with operators
-				push(@programNames, $1);
+			if ($line =~ m/^eq Trans(.*?)=/) { # if we have an equation, we're done with operators
+				push(@programNames, "Trans$1");
 				push(@programs, $line);
-				last;
+			}
+			if ($line =~ m/^eq ltls =.*/) { # if we have an equation, we're done with operators
+				push(@formulae, $1);
 			}
 			push(@operators, $line);
 		}

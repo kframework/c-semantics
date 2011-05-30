@@ -140,8 +140,8 @@ if [ "$PROGRAMRET" -ne 0 ]; then
 	die "$msg" 8
 fi
 
-sed -e '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
-mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude
+# sed -e '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
+# mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude
 
-rm -f program-$filename-compiled.maude.tmp
+# rm -f program-$filename-compiled.maude.tmp
 cleanup

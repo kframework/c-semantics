@@ -324,6 +324,17 @@ and enum_item = string * expression * cabsloc
 	op Linkage : String List{C} -> PureDefinition
 	op Transformer : K List{C} -> PureDefinition
 	op ExpressionTransformer : K K -> PureDefinition
+	op LTLAnnotation : K K -> PureDefinition // name, claim
+	
+	// new
+
+	ops LTL-True LTL-False : -> Expression
+	ops LTL-And LTL-Or : K K -> Expression
+	ops LTL-Not : K -> Expression
+	ops LTL-Next: K -> Expression
+	ops LTL-Always : K -> Expression
+	ops LTL-Eventually : K -> Expression
+	ops LTL-Until LTL-Release LTL-Implies LTL-Equiv LTL-WeakUntil : K K -> Expression
 	
 	op DefinitionLoc : K K -> Definition // new
 	op DefinitionLocRange : K K K -> Definition // new

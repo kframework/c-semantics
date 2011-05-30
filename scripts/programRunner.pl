@@ -65,6 +65,7 @@ if (defined($ENV{'HELP'})) {
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
 	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
+	print "LOADMAUDE --- loads this program into maude without executing; only of use to developers\n";
 	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
 	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
@@ -140,13 +141,13 @@ if (defined($ENV{'DEBUG'})) {
 if (defined($ENV{'SEARCH'})) {
 	print $fileRunner $searchLine;
 	print $fileRunner "show search graph .\n"
-} else {
+} elsif (! defined($ENV{'LOADMAUDE'})) {
 	print $fileRunner $evalLine;
 }
 if (defined($ENV{'PROFILE'})) {
 	print $fileRunner "show profile .\n";
 }
-if (! defined($ENV{'DEBUG'})) {
+if (! defined($ENV{'DEBUG'}) and ! defined($ENV{'LOADMAUDE'})) {
 	print $fileRunner "q\n";
 }
 close($fileRunner);
@@ -159,7 +160,7 @@ my $maudeCommand = "true; maude -no-wrap -no-banner $fileMaudeDefinition "
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-if (defined($ENV{'DEBUG'})) {
+if (defined($ENV{'DEBUG'}) or defined($ENV{'LOADMAUDE'})) {
 	#io
 	exit runDebugger($maudeCommand);
 } elsif (defined($ENV{'SEARCH'})) {

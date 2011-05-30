@@ -309,8 +309,10 @@ let transformOffsetOf (speclist, dtype) member =
 %token PRAGMA_EOL
 
 %token<Cabs.cabsloc> METATYPE METAID
-%token<Cabs.cabsloc> ATCOMMENT
+%token<Cabs.cabsloc> BEGINANNOTATION ENDANNOTATION
 %token<Cabs.cabsloc> PROPERTY
+%token LTL ATOM
+%token BACKTICK BACKSLASH
 
 /* sm: cabs tree transformation specification keywords */
 %token<Cabs.cabsloc> AT_TRANSFORM AT_TRANSFORMEXPR AT_SPECIFIER AT_EXPR
@@ -1370,6 +1372,27 @@ pragma:
 | PRAGMA attr SEMICOLON PRAGMA_EOL	{ PRAGMA ($2, $1) }
 | PRAGMA_LINE                           { PRAGMA (VARIABLE (fst $1), 
                                                   snd $1) }
+| PRAGMA LTL ltl_pragma PRAGMA_EOL { $3 }								  
+;
+
+ltl_pragma:
+| IDENT COLON ltl_expression	{ LTL_ANNOTATION ((fst $1), (fst $3), (snd $1)) }
+
+ltl_expression:
+|	TILDE ltl_expression { LTL_NOT (fst $2), snd $2 }
+|	LBRACKET RBRACKET ltl_expression { LTL_ALWAYS (fst $3), snd $3 }
+|	ltl_expression2 { $1 }
+
+ltl_expression2:
+|	ltl_expression2 SLASH BACKSLASH ltl_expression3 { LTL_AND (fst $1, fst $4), snd $4 }
+|	ltl_expression3 {$1}
+
+ltl_expression3:
+|	ltl_expression_last {$1}
+
+ltl_expression_last:
+|	LPAREN ltl_expression RPAREN {$2}
+|	ATOM LPAREN expression RPAREN	{ $3 }
 ;
 
 /* (* We want to allow certain strange things that occur in pragmas, so we 
@@ -1587,6 +1610,9 @@ alignment_specifier:
 | ALIGNAS LPAREN type_name RPAREN {let b, d = $3 in TYPE_ALIGNAS (b, d), $1}
 | ALIGNAS LPAREN unary_expression RPAREN {EXPR_ALIGNAS (fst $3), $1}
 ;
+
+   
+
 
 
 %%

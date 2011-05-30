@@ -15,6 +15,8 @@ binmode STDIN, ":utf8";
 use constant KLIST_IDENTITY => ".List{K}";
 use constant KLIST_SEPARATOR => ",, ";
 
+my $ltl = KLIST_IDENTITY;
+
 # might want to return, say, "'$name"
 sub nameToLabel {
 	my ($name) = (@_);
@@ -128,12 +130,17 @@ if ($filename eq ""){
 #print decode_utf8(xmlToK($root));
 $filename = decode_base64($filename);
 
-print "mod C-program-$filename is including C .\n";
+#print "mod C-program-$filename is including C .\n";
 # print "op 'program-$filename : -> KLabel .\n";
 print "eq TranslationUnitName(\"$filename\")(.List`{K`}) = ";
 print xmlToK($root);
 print " .\n";
-print "endm\n";
+if ($ltl ne KLIST_IDENTITY) {
+	print "op ltls : -> List{K} .\n";
+	print "eq ltls = $ltl .\n";
+}
+
+#print "endm\n";
 
 # this function tries to figure out what kind of a node we're looking at, then delegates the conversion to another function
 sub xmlToK {
@@ -179,8 +186,15 @@ sub elementToK {
 	if ($numElements == 0) {
 		push (@klist, KLIST_IDENTITY);
 	}
-	return nameToLabel($label) . paren(join(KLIST_SEPARATOR, @klist));
-
+	
+	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
+	
+	if ($label eq 'LTLAnnotation') {
+		$ltl .= KLIST_SEPARATOR . $kterm;
+		return "(.).K";
+	}
+	
+	return nameToLabel($label) . $kterm;
 }
 
 sub rawdataToK {

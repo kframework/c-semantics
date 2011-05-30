@@ -157,7 +157,12 @@ and printDef def =
 			printDefinitionLoc (wrap ((printDef a) :: (printDefs b) :: []) "Transformer") c
 		| EXPRTRANSFORMER (a, b, c) ->
 			printDefinitionLoc (wrap ((printExpression a) :: (printExpression b) :: []) "ExprTransformer") c
+		| LTL_ANNOTATION (a, b, c) ->
+			printDefinitionLoc (wrap ((printIdentifier a) :: (printLTLExpression b) :: []) "LTLAnnotation") c
 			
+and printLTLExpression a =
+	let retval = printExpression a in
+	retval
 and printDefinitionLoc a l =
 	if (hasInformation l) then (wrap (a :: (printCabsLoc l) :: []) "DefinitionLoc") else (a)
 and printExpressionLoc a l =
@@ -468,6 +473,9 @@ and printExpression exp =
 	| MEMBEROFPTR (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "Arrow"
 	| GNU_BODY block -> wrap ((printBlock block) :: []) "GnuBody"
 	| EXPR_PATTERN s -> wrap ((printRawString s) :: []) "ExpressionPattern"
+	| LTL_ALWAYS e -> wrap ((printLTLExpression e) :: []) "LTL-Always"
+	| LTL_NOT e -> wrap ((printLTLExpression e) :: []) "LTL-Not"
+	| LTL_AND (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-And"
 and getUnaryOperator op =
 	let name = (
 	match op with

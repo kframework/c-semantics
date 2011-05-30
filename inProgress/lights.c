@@ -6,7 +6,8 @@ state lights[2] = {green, red};
 
 // property(light0) = lights[0]
 // property(light1) = lights[1]
-/*@ __property(safe) = [] ~(lights[0] == red /\ lights[1] == red) */
+// #pragma __ltl property(safe) = [] ~(lights[0] == red /\ lights[1] == red)
+#pragma __ltl safety: [] ~(__atom(lights[0] == red) /\ __atom(lights[1] == red))
 
 void nextState(int light){
 	state other = lights[(light+1)%2];

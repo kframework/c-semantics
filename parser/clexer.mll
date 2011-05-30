@@ -463,7 +463,7 @@ let no_parse_pragma =
 
 rule initial =
 	parse 	
-		(* "/*@" { ATCOMMENT (currentLoc ())} *)
+(* "/*@" { BEGINANNOTATION (currentLoc ())} *)
 |"/*"			{ let il = comment lexbuf in
 	                                  let sl = intlist_to_string il in
 					  addComment sl;
@@ -568,13 +568,16 @@ rule initial =
 |               "__asm"                 { if !Cprint.msvcMode then 
                                              MSASM (msasm lexbuf, currentLoc ()) 
                                           else (ASM (currentLoc ())) }
-
+|		"__ltl"			{LTL}
+|		"__atom"			{ATOM}
 (* If we see __pragma we eat it and the matching parentheses as well *)
 |               "__pragma"              { matchingParsOpen := 0;
                                           let _ = matchingpars lexbuf in 
                                           addWhite lexbuf;
                                           initial lexbuf 
                                         }
+|		'`'		       {BACKTICK}
+|		'\\'		       {BACKSLASH}
 
 (* sm: tree transformation keywords *)
 |               "@transform"            {AT_TRANSFORM (currentLoc ())}

@@ -185,6 +185,7 @@ and definition =
  (* expression transformer: source and destination *)
  | EXPRTRANSFORMER of expression * expression * cabsloc
  | STATIC_ASSERT of expression * constant (* the intention is for the constant to be a string literal *)
+ | LTL_ANNOTATION of string * expression * cabsloc (* name, claim, loc; new by CME for special comments *)
 
 
 
@@ -291,6 +292,15 @@ and expression =
   | GNU_BODY of block
   | EXPR_PATTERN of string     (* pattern variable, and name *)
   | GENERIC of expression * (generic_association list)
+  
+  | LTL_TRUE
+  | LTL_FALSE
+  | LTL_NOT of expression
+  | LTL_AND of expression * expression
+  | LTL_OR of expression * expression
+  | LTL_ALWAYS of expression
+  | LTL_UNTIL of expression * expression
+  | LTL_RELEASE of expression * expression
   
 and generic_association =
 	| GENERIC_PAIR of type_name * expression
