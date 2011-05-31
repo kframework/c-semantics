@@ -62,6 +62,7 @@ if (defined($ENV{'HELP'})) {
 	#print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
+	#print "MODELCHECK --- runs the model checker on #pragma defined properties\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
 	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
@@ -126,7 +127,7 @@ my $commandLineArguments = "";
 for my $arg ($thisFile, @ARGV) {	
 	$commandLineArguments .= "String \"$arg\"(.List{K}),, ";
 }
-my $startTerm = "eval(linked-program, ($commandLineArguments .List{K}), \"$stdin\")";
+my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), \"$stdin\")";
 my $evalLine = "erew in C-program-linked : $startTerm .\n";
 my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
 

@@ -175,10 +175,16 @@ sub compile {
 	}
 	my $inputDirectory = dirname($inputFile);
 	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, '.c');
+	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
+	my $line = <$fh>;
+	close $fh;
+	if ($line =~ /^---kccMarker/) {
+		push(@compiledPrograms, $inputFile);
+		return;
+	}
+	# assume it's a normal input file, so compile it
 	my $localOval = "$baseName.o";
-	
 	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
-	
 	system("$compileProgramScript $warnFlag $dumpFlag $modelFlag $inputFile") == 0
 		or die "Compilation failed: $?";
 
@@ -186,6 +192,7 @@ sub compile {
 		die "Expected to find program-$baseName-compiled.maude, but did not";
 	}
 	move("program-$baseName-compiled.maude", $localOval) or die "Failed to rename the compiled program to the local output file $localOval";
+	
 	push(@compiledPrograms, $localOval);
 	if ($args->{'-c'}) {
 		if ($args->{'-o'}) {

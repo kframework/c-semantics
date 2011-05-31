@@ -10,6 +10,7 @@ K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
+#COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
 COMPILE_C = $(K_MAUDE) c.k -u -language C
 COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
 

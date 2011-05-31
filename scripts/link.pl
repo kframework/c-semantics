@@ -42,8 +42,8 @@ sub linker {
 		$retval .= "$program\n";
 	}
 
-	$retval .= "op linked-program : -> K .\n";
-	$retval .= "eq linked-program = ";
+	$retval .= "op 'linked-program : -> KProperLabel .\n";
+	$retval .= "eq 'linked-program(.List{K}) = ";
 	$retval .= "('Program).KProperLabel(";
 	$retval .= "('_::_).KHybridLabel(";
 	$retval .= printNested(@programNames);

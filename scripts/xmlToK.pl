@@ -132,6 +132,7 @@ $filename = decode_base64($filename);
 
 #print "mod C-program-$filename is including C .\n";
 # print "op 'program-$filename : -> KLabel .\n";
+print "---kccMarker\n";
 print "eq TranslationUnitName(\"$filename\")(.List`{K`}) = ";
 print xmlToK($root);
 print " .\n";
@@ -190,7 +191,7 @@ sub elementToK {
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
-		$ltl .= KLIST_SEPARATOR . $kterm;
+		$ltl .= "'LTLAnnotation" . paren(KLIST_SEPARATOR . $kterm);
 		return "(.).K";
 	}
 	
