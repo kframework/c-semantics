@@ -1,8 +1,8 @@
 KCC ?= "./dist/kcc"
-GCC ?= "gcc -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-GCC34 ?= "gcc34 -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-ICC ?= "icc -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-CLANG ?= "clang -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+GCC ?= "gcc -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+GCC34 ?= "gcc34 -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+ICC ?= "icc -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+CLANG ?= "clang -Wno-tautological-compare -Wno-unused-value -Wno-format-extra-args -Wno-pointer-sign -Wno-switch -Wno-format -Wno-empty-body -m32 -O0 -U __GNUC__ -pedantic -std=c99"
 CILCC ?= "./cilcc.sh"
 COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __GNUC__"
 
@@ -27,7 +27,7 @@ default: prepare
 	
 gcc: default
 	@mkdir -p results/out.gcc
-	@-$(RUNTEST) gcc.full/execute.exp $(GCC_FLAGS)
+	@-$(RUNTEST) gcc.all/execute.exp $(GCC_FLAGS)
 #echo "test,tool,phase,status,timeout" > gcc.full.csv
 	@cat results/out.gcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc,\3,\1/p' > gcc.full.csv
 compcert: default
@@ -36,24 +36,24 @@ compcert: default
 	@cat results/out.compcert/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,compcert,\3,\1/p' > compcert.full.csv
 gcc34: default
 	@mkdir -p results/out.gcc34	
-	@-$(RUNTEST) gcc.full/execute.exp $(GCC34_FLAGS)
+	@-$(RUNTEST) gcc.all/execute.exp $(GCC34_FLAGS)
 	@cat results/out.gcc34/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc34,\3,\1/p' > gcc34.full.csv
 icc: default
 	@mkdir -p results/out.icc
-	@-$(RUNTEST) gcc.full/execute.exp $(ICC_FLAGS)
+	@-$(RUNTEST) gcc.all/execute.exp $(ICC_FLAGS)
 	@cat results/out.icc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,icc,\3,\1/p' > icc.full.csv
 cilcc: default
 	@mkdir -p results/out.cilcc
-	@-$(RUNTEST) gcc.full/execute.exp $(CIL_FLAGS)
+	@-$(RUNTEST) gcc.all/execute.exp $(CIL_FLAGS)
 	@cat results/out.cilcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,cilcc,\3,\1/p' > cilcc.full.csv
+clang: default
+	@mkdir -p results/out.clang
+	@-$(RUNTEST) gcc.all/execute.exp $(CLANG_FLAGS)
+	@cat results/out.clang/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\),:/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,clang,\3,\1/p' > clang.full.csv
 kcc: default
 	@mkdir -p results/out.kcc
 	@-$(RUNTEST) gcc.full/execute.exp $(KCC_FLAGS)
 	@cat results/out.kcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\),:/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,kcc,\3,\1/p' > kcc.full.csv
-clang: default
-	@mkdir -p results/out.clang
-	@-$(RUNTEST) gcc.full/execute.exp $(CLANG_FLAGS)
-	@cat results/out.clang/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\),:/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,clang,\3,\1/p' > clang.full.csv
 	
 spreadsheet:
 # sed "1 d;$$ d" kcc.fast.csv > kcc.fast.csv.tmp

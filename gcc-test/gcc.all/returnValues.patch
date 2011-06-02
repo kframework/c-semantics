@@ -1,0 +1,2193 @@
+diff -rupN old/20000113-1.c new/20000113-1.c
+--- old/20000113-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20000113-1.c	2011-06-02 18:16:57.000000000 -0500
+@@ -4,7 +4,7 @@ struct x { 
+   unsigned x3:3;
+ };
+    
+-foobar (int x, int y, int z)
++void foobar (int x, int y, int z)
+ {
+   struct x a = {x, y, z};
+   struct x b = {x, y, z};
+diff -rupN old/20000412-3.c new/20000412-3.c
+--- old/20000412-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20000412-3.c	2011-06-02 18:22:55.000000000 -0500
+@@ -2,7 +2,7 @@ typedef struct {
+   char y;
+   char x[32];
+ } X;
+-
++int f();
+ int z (void)
+ {
+   X xxx;
+diff -rupN old/20000717-1.c new/20000717-1.c
+--- old/20000717-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20000717-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,6 +5,7 @@ bar (int i, trio t)
+ {
+   if (t.a == t.b || t.a == t.c)
+     abort ();
++  return 0;
+ }
+ 
+ int
+diff -rupN old/20000717-3.c new/20000717-3.c
+--- old/20000717-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20000717-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int c = -1;
+ 
+-foo (p)
++int foo (p)
+      int *p;
+ {
+   int x;
+diff -rupN old/20000717-5.c new/20000717-5.c
+--- old/20000717-5.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20000717-5.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,6 +6,7 @@ bar (int i, int j, int k, trio t)
+   if (t.a != 1 || t.b != 2 || t.c != 3 ||
+       i != 4 || j != 5 || k != 6)
+     abort ();
++  return 0;
+ }
+ 
+ int
+diff -rupN old/20001024-1.c new/20001024-1.c
+--- old/20001024-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20001024-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -16,6 +16,7 @@ int bar (int x, const struct b *__restri
+ {
+   if (y->c.v || y->c.w != 250000 || y->d.v || y->d.w != 250000)
+     abort();
++  return 0;
+ }
+ 
+ void foo(void)
+diff -rupN old/20001130-2.c new/20001130-2.c
+--- old/20001130-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20001130-2.c	2011-06-02 18:16:57.000000000 -0500
+@@ -16,6 +16,7 @@ output_25 (void)
+     case 3:
+       return "st	%1,%0";      
+     }
++  return 0;
+ }
+ 
+ static const char *i960_output_ldconst (void)
+diff -rupN old/20020328-1.c new/20020328-1.c
+--- old/20020328-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20020328-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int b = 0;
+ 
+-func () { }
++void func () { }
+ 
+ void
+ testit(int x)
+diff -rupN old/20020404-1.c new/20020404-1.c
+--- old/20020404-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20020404-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -84,6 +84,7 @@ bfd_set_section_size (bfd *abfd, asectio
+ static boolean
+ bfd_set_section_flags (bfd *abfd, asection *sec, flagword flags)
+ {
++	return false;
+ }
+ 
+ static boolean
+@@ -91,6 +92,7 @@ bfd_set_section_contents (bfd *abfd, ase
+ {
+ 	if (count != (bfd_size_type)0x1eadbeef)
+ 		abort();
++	return false;
+ }
+ 
+ static char hello[] = "hello";
+diff -rupN old/20020819-1.c new/20020819-1.c
+--- old/20020819-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20020819-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-foo ()
++int foo ()
+ {
+   return 0;
+ }
+diff -rupN old/20021118-2.c new/20021118-2.c
+--- old/20021118-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20021118-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -8,6 +8,7 @@ int t1 (float *f, int i,
+   f1 (3.0);
+   f[i] = f[i + 1];
+   f2 (2.5f, 3.5f);
++  return 0;
+ }
+ 
+ int t2 (float *f, int i,
+@@ -19,6 +20,7 @@ int t2 (float *f, int i,
+   f1 (3.0);
+   f[i] = f[i + 1];
+   f2 (2.5f, 3.5f);
++  return 0;
+ }
+ 
+ void f1 (double d)
+diff -rupN old/20031211-2.c new/20031211-2.c
+--- old/20031211-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20031211-2.c	2011-06-02 18:22:55.000000000 -0500
+@@ -2,7 +2,7 @@ struct a
+ {
+   unsigned int bitfield : 3;
+ };
+-
++void foo();
+ int main()
+ {
+   struct a a;
+@@ -12,7 +12,7 @@ int main()
+   exit (0);
+ }
+ 
+-foo(unsigned int z)
++void foo(unsigned int z)
+ {
+   if (z != 3)
+     abort ();
+diff -rupN old/20041019-1.c new/20041019-1.c
+--- old/20041019-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20041019-1.c	2011-06-02 18:16:57.000000000 -0500
+@@ -1,4 +1,4 @@
+-test_store_ccp (int i)
++int test_store_ccp (int i)
+ {
+   int *p, a, b, c;
+ 
+@@ -17,7 +17,7 @@ test_store_ccp (int i)
+ }
+ 
+ 
+-test_store_copy_prop (int i)
++int test_store_copy_prop (int i)
+ {
+   int *p, a, b, c;
+ 
+diff -rupN old/20060930-1.c new/20060930-1.c
+--- old/20060930-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/20060930-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -8,6 +8,7 @@ int bar (int a, int b)
+ {
+   if (b != 1)
+     abort ();
++  return 0;
+ }
+ 
+ void foo(int, int) __attribute__((noinline));
+diff -rupN old/920202-1.c new/920202-1.c
+--- old/920202-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920202-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ static int rule_text_needs_stack_pop = 0;
+ static int input_stack_pos = 1;
+ 
+-f (void)
++int f (void)
+ {
+   rule_text_needs_stack_pop = 1;
+ 
+diff -rupN old/920409-1.c new/920409-1.c
+--- old/920409-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920409-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1 +1 @@
+-x(){signed char c=-1;return c<0;}main(){if(x()!=1)abort();exit(0);}
++int x(){signed char c=-1;return c<0;}main(){if(x()!=1)abort();exit(0);}
+diff -rupN old/920428-1.c new/920428-1.c
+--- old/920428-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920428-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,2 +1,2 @@
+-x(const char*s){char a[1];const char*ss=s;a[*s++]|=1;return(int)ss+1==(int)s;}
++int x(const char*s){char a[1];const char*ss=s;a[*s++]|=1;return(int)ss+1==(int)s;}
+ main(){if(x("")!=1)abort();exit(0);}
+diff -rupN old/920501-8.c new/920501-8.c
+--- old/920501-8.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920501-8.c	2011-06-02 18:16:44.000000000 -0500
+@@ -27,6 +27,7 @@ va (int a, double b, int c, ...)
+ 	   "%d,%f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+ 	   a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p);
+   va_end (ap);
++  return 0;
+ }
+ 
+ main()
+diff -rupN old/920501-9.c new/920501-9.c
+--- old/920501-9.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920501-9.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,7 +6,7 @@ long long proc3(){return 0xaabbccdd12345
+ long long proc4(){return -1LL;}
+ long long proc5(){return 0xaabbccddLL;}
+ 
+-print_longlong(x,buf)
++void print_longlong(x,buf)
+      long long x;
+      char *buf;
+ {
+diff -rupN old/920520-1.c new/920520-1.c
+--- old/920520-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920520-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,9 +1,9 @@
+-foo(int *bar)
++void foo(int *bar)
+ {
+   *bar = 8;
+ }
+ 
+-bugger()
++int bugger()
+ {
+   int oldDepth, newDepth;
+ 
+diff -rupN old/920625-1.c new/920625-1.c
+--- old/920625-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920625-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -13,6 +13,7 @@ static int va1(int nargs,...)
+     if(pts[i].x!=pi.x||pts[i].y!=pi.y)abort();
+   }
+   va_end(args);
++  return 0;
+ }
+ 
+ typedef struct{int x,y;}ipoint;
+@@ -28,6 +29,7 @@ static int va2(int nargs,...)
+     if(ipts[i].x!=pi.x||ipts[i].y!=pi.y)abort();
+   }
+   va_end(args);
++  return 0;
+ }
+ 
+ main()
+diff -rupN old/920711-1.c new/920711-1.c
+--- old/920711-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920711-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,2 +1,2 @@
+-f(long a){return (--a > 0);}
++int f(long a){return (--a > 0);}
+ main(){if(f(0x80000000L)==0)abort();exit(0);}
+diff -rupN old/920721-2.c new/920721-2.c
+--- old/920721-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920721-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,2 +1,2 @@
+-f(){}
++void f(){}
+ main(){int n=2;double x[n];f();exit(0);}
+diff -rupN old/920721-3.c new/920721-3.c
+--- old/920721-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920721-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,17 +1,17 @@
+-static inline fu (unsigned short data)
++static int inline fu (unsigned short data)
+ {
+   return data;
+ }
+-ru(i)
++void ru(i)
+ {
+    if(fu(i++)!=5)abort();
+    if(fu(++i)!=7)abort();
+ }
+-static inline fs (signed short data)
++static int inline fs (signed short data)
+ {
+   return data;
+ }
+-rs(i)
++void rs(i)
+ {
+    if(fs(i++)!=5)abort();
+    if(fs(++i)!=7)abort();
+diff -rupN old/920730-1.c new/920730-1.c
+--- old/920730-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920730-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,24 +1,24 @@
+ /* 920730-1.c */
+ #include <limits.h>
+-f1()
++int f1()
+ {
+ 	int b=INT_MIN;
+ 	return b>=INT_MIN;
+ }
+ 
+-f2()
++int f2()
+ {
+ 	int b=INT_MIN+1;
+ 	return b>= (unsigned)(INT_MAX+2);
+ }
+ 
+-f3()
++int f3()
+ {
+ 	int b=INT_MAX;
+ 	return b>=INT_MAX;
+ }
+ 
+-f4()
++int f4()
+ {
+ 	int b=-1;
+ 	return b>=UINT_MAX;
+diff -rupN old/920812-1.c new/920812-1.c
+--- old/920812-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920812-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,3 +1,3 @@
+ typedef int t;
+-f(t y){switch(y){case 1:return 1;}return 0;}
++int f(t y){switch(y){case 1:return 1;}return 0;}
+ main(){if(f((t)1)!=1)abort();exit(0);}
+diff -rupN old/920908-2.c new/920908-2.c
+--- old/920908-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920908-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -16,7 +16,7 @@ struct T
+ unsigned i:8;
+ unsigned c:24;
+ };
+-f(struct T t)
++int f(struct T t)
+ {
+ struct T s[1];
+ s[0]=t;
+diff -rupN old/920929-1.c new/920929-1.c
+--- old/920929-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/920929-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,5 +1,5 @@
+ /* REPRODUCED:RUN:SIGNAL MACHINE:sparc OPTIONS: */
+-f(int n)
++void f(int n)
+ {
+ int i;
+ double v[n];
+diff -rupN old/921013-1.c new/921013-1.c
+--- old/921013-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921013-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f(d,x,y,n)
++void f(d,x,y,n)
+ int*d;
+ float*x,*y;
+ int n;
+diff -rupN old/921112-1.c new/921112-1.c
+--- old/921112-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921112-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ union u {
+   double d;
+ } x[2], v;
+ 
+-f (x, v)
++void f (x, v)
+      union u *x, v;
+ {
+   *++x = v;
+diff -rupN old/921113-1.c new/921113-1.c
+--- old/921113-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921113-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -13,20 +13,20 @@ typedef struct {
+   float x, y;
+ } vector_t;
+ 
+-w(float x, float y) {}
++void w(float x, float y) {}
+ 
+-f1(float x, float y)
++void f1(float x, float y)
+ {
+   if (x != 0 || y != 0)
+     abort();
+ }
+-f2(float x, float y)
++void f2(float x, float y)
+ {
+   if (x != 1 || y != 1)
+     abort();
+ }
+ 
+-gitter(int count, vector_t pos[], list_t list, int *nww, vector_t limit[2], float r)
++void gitter(int count, vector_t pos[], list_t list, int *nww, vector_t limit[2], float r)
+ {
+   float d;
+   int gitt[128][128];
+diff -rupN old/921123-1.c new/921123-1.c
+--- old/921123-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921123-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f(short *p)
++int f(short *p)
+ {
+   short x = *p;
+   return (--x < 0);
+diff -rupN old/921124-1.c new/921124-1.c
+--- old/921124-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921124-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,10 +1,10 @@
+-f(x, d1, d2, d3)
++int f(x, d1, d2, d3)
+    double d1, d2, d3;
+ {
+    return x;
+ }
+ 
+-g(b,s,x,y,i,j)
++void g(b,s,x,y,i,j)
+      char *b,*s;
+      double x,y;
+ {
+diff -rupN old/921202-1.c new/921202-1.c
+--- old/921202-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921202-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -3,6 +3,14 @@
+ #else
+ #define VLEN ((STACK_SIZE/16) - 1)
+ #endif
++
++void foo ();
++int mpn_mul_1();
++void mpn_print ();
++void mpn_random2();
++int mpn_cmp();
++void exxit();
++
+ main ()
+ {
+   long dx[VLEN];
+@@ -33,9 +41,9 @@ main ()
+     }
+ }
+ 
+-foo (){}
+-mpn_mul_1(){}
+-mpn_print (){}
+-mpn_random2(){}
+-mpn_cmp(){}
+-exxit(){exit(0);}
++void foo (){}
++int mpn_mul_1(){return 0;}
++void mpn_print (){}
++void mpn_random2(){}
++int mpn_cmp(){return 0;}
++void exxit(){exit(0);}
+diff -rupN old/921207-1.c new/921207-1.c
+--- old/921207-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921207-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f()
++int f()
+ {
+   unsigned b = 0;
+ 
+diff -rupN old/921208-2.c new/921208-2.c
+--- old/921208-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921208-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,9 +3,9 @@
+ main () { exit (0); }
+ #else
+ 
+-g(){}
++void g(){}
+ 
+-f()
++void f()
+ {
+   int i;
+   float a[100000];
+diff -rupN old/921218-1.c new/921218-1.c
+--- old/921218-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921218-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f()
++int f()
+ {
+   return (unsigned char)("\377"[0]);
+ }
+diff -rupN old/921218-2.c new/921218-2.c
+--- old/921218-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/921218-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f()
++int f()
+ {
+   long l2;
+   unsigned short us;
+diff -rupN old/930106-1.c new/930106-1.c
+--- old/930106-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930106-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -9,7 +9,7 @@ double g()
+   return 1.0;
+ }
+ 
+-f()
++int f()
+ {
+   char dummy[DUMMY_SIZE];
+   double f1, f2, f3;
+diff -rupN old/930111-1.c new/930111-1.c
+--- old/930111-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930111-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -1,3 +1,4 @@
++int wwrite();
+ main()
+ {
+   if (wwrite((long long) 0) != 123)
+diff -rupN old/930123-1.c new/930123-1.c
+--- old/930123-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930123-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f(int *x)
++void f(int *x)
+ {
+   *x = 0;
+ }
+diff -rupN old/930208-1.c new/930208-1.c
+--- old/930208-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930208-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ typedef union {
+   struct { char b3, b2, b1, b0; } c;
+ } T;
+ 
+-f (T u)
++int f (T u)
+ {
+   ++u.c.b0;
+   ++u.c.b3;
+diff -rupN old/930513-1.c new/930513-1.c
+--- old/930513-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930513-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ #include <stdio.h>
+ char buf[2];
+ 
+-f (fp)
++void f (fp)
+      int (*fp)(char *, const char *, ...);
+ {
+   (*fp)(buf, "%.0f", 5.0);
+diff -rupN old/930513-2.c new/930513-2.c
+--- old/930513-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930513-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,9 +1,9 @@
+-sub3 (i)
++void sub3 (i)
+      const int *i;
+ {
+ }
+ 
+-eq (a, b)
++void eq (a, b)
+ {
+   static int i = 0;
+   if (a != i)
+diff -rupN old/930518-1.c new/930518-1.c
+--- old/930518-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930518-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int bar = 0;
+ 
+-f (p)
++void f (p)
+      int *p;
+ {
+   int foo = 2;
+diff -rupN old/930526-1.c new/930526-1.c
+--- old/930526-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930526-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-inline
++inline void
+ f (x)
+ {
+   int *(p[25]);
+diff -rupN old/930527-1.c new/930527-1.c
+--- old/930527-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930527-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (unsigned char x)
++int f (unsigned char x)
+ {
+   return (0x50 | (x >> 4)) ^ 0xff;
+ }
+diff -rupN old/930529-1.c new/930529-1.c
+--- old/930529-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930529-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-dd (x,d) { return x / d; }
++int dd (x,d) { return x / d; }
+ 
+ main ()
+ {
+diff -rupN old/930603-1.c new/930603-1.c
+--- old/930603-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930603-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -3,7 +3,9 @@ float fx (x)
+ {
+   return 1.0 + 3.0 / (2.302585093 * x);
+ }
+-
++float inita();
++float initc();
++void f();
+ main ()
+ {
+   float fx (), inita (), initc (), a, b, c;
+@@ -19,4 +21,4 @@ main ()
+ 
+ float inita () { return 3.0; }
+ float initc () { return 4.0; }
+-f () {}
++void f () {}
+diff -rupN old/930603-2.c new/930603-2.c
+--- old/930603-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930603-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int w[2][2];
+ 
+-f ()
++void f ()
+ {
+   int i, j;
+ 
+diff -rupN old/930603-3.c new/930603-3.c
+--- old/930603-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930603-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (b, c)
++int f (b, c)
+      unsigned char *b;
+      int c;
+ {
+diff -rupN old/930608-1.c new/930608-1.c
+--- old/930608-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930608-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-double f (double a) {}
++double f (double a) {return 0.0;}
+ double (* const a[]) (double) = {&f};
+ 
+ main ()
+diff -rupN old/930614-1.c new/930614-1.c
+--- old/930614-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930614-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (double *ty)
++void f (double *ty)
+ {
+   *ty = -1.0;
+ }
+diff -rupN old/930621-1.c new/930621-1.c
+--- old/930621-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930621-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -7,7 +7,7 @@ main (void)
+   exit (0);
+ }
+ #else
+-f ()
++int f ()
+ {
+   struct {
+     int x : 18;
+diff -rupN old/930622-1.c new/930622-1.c
+--- old/930622-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930622-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ int a = 1, b;
+ 
+-g () { return 0; }
+-h (x) {}
++int g () { return 0; }
++void h (x) {}
+ 
+ f ()
+ {
+diff -rupN old/930628-1.c new/930628-1.c
+--- old/930628-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930628-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (double x[2], double y[2])
++void f (double x[2], double y[2])
+ {
+   if (x == y)
+     abort ();
+diff -rupN old/930630-1.c new/930630-1.c
+--- old/930630-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930630-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -7,6 +7,7 @@ main (void)
+   exit (0);
+ }
+ #else
++void f();
+ main ()
+ {
+   struct
+@@ -20,7 +21,7 @@ main ()
+   exit (0);
+ }
+ 
+-f (x)
++void f (x)
+      int x;
+ {
+   if (x != 7)
+diff -rupN old/930702-1.c new/930702-1.c
+--- old/930702-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930702-1.c	2011-06-02 18:16:57.000000000 -0500
+@@ -1,7 +1,8 @@
+-fp (double a, int b)
++int fp (double a, int b)
+ {
+   if (a != 33 || b != 11)
+     abort ();
++  return 0;
+ }
+ 
+ main ()
+diff -rupN old/930818-1.c new/930818-1.c
+--- old/930818-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930818-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ static double one = 1.0;
+ 
+-f()
++int f()
+ {
+   int colinear;
+   colinear = (one == 0.0);
+diff -rupN old/930916-1.c new/930916-1.c
+--- old/930916-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930916-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (n)
++void f (n)
+      unsigned n;
+ {
+   if ((int) n >= 0)
+diff -rupN old/930921-1.c new/930921-1.c
+--- old/930921-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930921-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (x)
++int f (x)
+      unsigned x;
+ {
+   return (unsigned) (((unsigned long long) x * 0xAAAAAAAB) >> 32) >> 1;
+diff -rupN old/930929-1.c new/930929-1.c
+--- old/930929-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/930929-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,22 +1,22 @@
+-sub1 (i)
++int sub1 (i)
+      int i;
+ {
+   return i - (5 - i);
+ }
+ 
+-sub2 (i)
++int sub2 (i)
+      int i;
+ {
+   return i + (5 + i);
+ }
+ 
+-sub3 (i)
++int sub3 (i)
+      int i;
+ {
+   return i - (5 + i);
+ }
+ 
+-sub4 (i)
++int sub4 (i)
+      int i;
+ {
+   return i + (5 - i);
+diff -rupN old/931004-10.c new/931004-10.c
+--- old/931004-10.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-10.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,7 +6,7 @@ struct tiny
+   char d;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-11.c new/931004-11.c
+--- old/931004-11.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-11.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct tiny
+   char e;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-12.c new/931004-12.c
+--- old/931004-12.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-12.c	2011-06-02 18:16:44.000000000 -0500
+@@ -7,7 +7,7 @@ struct tiny
+   char e;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-13.c new/931004-13.c
+--- old/931004-13.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-13.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,7 +6,7 @@ struct tiny
+   char f;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-14.c new/931004-14.c
+--- old/931004-14.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-14.c	2011-06-02 18:16:44.000000000 -0500
+@@ -8,7 +8,7 @@ struct tiny
+   char f;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-1.c new/931004-1.c
+--- old/931004-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ struct tiny
+   int c;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-2.c new/931004-2.c
+--- old/931004-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct tiny
+   int c;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-3.c new/931004-3.c
+--- old/931004-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ struct tiny
+   short c;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-4.c new/931004-4.c
+--- old/931004-4.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-4.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct tiny
+   short c;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-5.c new/931004-5.c
+--- old/931004-5.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-5.c	2011-06-02 18:16:44.000000000 -0500
+@@ -4,7 +4,7 @@ struct tiny
+   short d;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-6.c new/931004-6.c
+--- old/931004-6.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-6.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,7 +6,7 @@ struct tiny
+   short d;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-7.c new/931004-7.c
+--- old/931004-7.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-7.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ struct tiny
+   char c;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931004-8.c new/931004-8.c
+--- old/931004-8.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-8.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct tiny
+   char c;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/931004-9.c new/931004-9.c
+--- old/931004-9.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931004-9.c	2011-06-02 18:16:44.000000000 -0500
+@@ -4,7 +4,7 @@ struct tiny
+   char d;
+ };
+ 
+-f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
++void f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
+ {
+   if (x.c != 10)
+     abort();
+diff -rupN old/931009-1.c new/931009-1.c
+--- old/931009-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931009-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -1,10 +1,11 @@
++void f();
+ main ()
+ {
+   f ();
+   exit (0);
+ }
+ 
+-static
++static void
+ g (out, size, lo, hi)
+      int *out, size, lo, hi;
+ {
+@@ -15,7 +16,7 @@ g (out, size, lo, hi)
+ }
+ 
+ 
+-f ()
++void f ()
+ {
+   int a[2];
+ 
+diff -rupN old/931012-1.c new/931012-1.c
+--- old/931012-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931012-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (int b, int c)
++int f (int b, int c)
+ {
+   if (b != 0 && b != 1 && c != 0)
+     b = 0;
+diff -rupN old/931017-1.c new/931017-1.c
+--- old/931017-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931017-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -1,17 +1,17 @@
+ int v;
+-
++void f();
+ main ()
+ {
+   f ();
+   exit (0);
+ }
+ 
+-h1 ()
++int h1 ()
+ {
+   return 0;
+ }
+ 
+-h2 (e)
++int h2 (e)
+      int *e;
+ {
+   if (e != &v)
+@@ -19,7 +19,7 @@ h2 (e)
+   return 0;
+ }
+ 
+-g (c)
++int g (c)
+      char *c;
+ {
+   int i;
+@@ -47,7 +47,7 @@ g (c)
+ }
+ 
+ 
+-f ()
++void f ()
+ {
+   char c;
+   g (&c);
+diff -rupN old/931018-1.c new/931018-1.c
+--- old/931018-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931018-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -1,5 +1,6 @@
+ unsigned int a[0x1000];
+ extern const unsigned long v;
++void f();
+ 
+ main ()
+ {
+@@ -8,7 +9,7 @@ main ()
+   exit (0);
+ }
+ 
+-f (a)
++void f (a)
+      unsigned long a;
+ {
+   if (a != 0xdeadbeefL)
+diff -rupN old/931102-1.c new/931102-1.c
+--- old/931102-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931102-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -6,7 +6,7 @@ typedef union
+     } b;
+ } T;
+ 
+-f (x)
++int f (x)
+      int x;
+ {
+   int num = 0;
+diff -rupN old/931102-2.c new/931102-2.c
+--- old/931102-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931102-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -7,7 +7,7 @@ typedef union
+     } b;
+ } T;
+ 
+-f (x)
++int f (x)
+      int x;
+ {
+   int num = 0;
+diff -rupN old/931208-1.c new/931208-1.c
+--- old/931208-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931208-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f ()
++int f ()
+ {
+   unsigned long x, y = 1;
+ 
+diff -rupN old/931228-1.c new/931228-1.c
+--- old/931228-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/931228-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (x)
++int f (x)
+ {
+   x &= 010000;
+   x &= 007777;
+diff -rupN old/940115-1.c new/940115-1.c
+--- old/940115-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/940115-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (cp, end)
++int f (cp, end)
+      char *cp;
+      char *end;
+ {
+diff -rupN old/940122-1.c new/940122-1.c
+--- old/940122-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/940122-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,14 +1,14 @@
+ char *a = 0;
+ char *b = 0;
+ 
+-g (x)
++void g (x)
+      int x;
+ {
+   if ((!!a) != (!!b))
+     abort ();
+ }
+ 
+-f (x)
++void f (x)
+      int x;
+ {
+   g (x * x);
+diff -rupN old/941021-1.c new/941021-1.c
+--- old/941021-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/941021-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ double glob_dbl;
+ 
+-f (pdbl, value)
++void f (pdbl, value)
+      double *pdbl;
+      double value;
+ {
+diff -rupN old/941101-1.c new/941101-1.c
+--- old/941101-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/941101-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f ()
++int f ()
+ {
+   int var = 7;
+ 
+diff -rupN old/941110-1.c new/941110-1.c
+--- old/941110-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/941110-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (const int x)
++int f (const int x)
+ {
+   int y = 0;
+   y = x ? y : -y;
+diff -rupN old/950221-1.c new/950221-1.c
+--- old/950221-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950221-1.c	2011-06-02 18:16:57.000000000 -0500
+@@ -17,17 +17,19 @@ g1 (a, b)
+      int a;
+      int *b;
+ {
++  return 0;
+ }
+ 
+-g2 (a)
++int g2 (a)
+      long a;
+ {
+   if (a != 0xdeadbeefL)
+     abort ();
+   exit (0);
++  return 0;
+ }
+ 
+-f ()
++void f ()
+ {
+   register char *p, *q;
+   register int i;
+diff -rupN old/950322-1.c new/950322-1.c
+--- old/950322-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950322-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (unsigned char *a)
++int f (unsigned char *a)
+ {
+   int i, j;
+   int x, y;
+diff -rupN old/950426-1.c new/950426-1.c
+--- old/950426-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950426-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -5,6 +5,8 @@ struct tag {
+ } s1, *p1;
+ 
+ int i;
++int func1();
++void foo();
+ 
+ main()
+ {
+@@ -27,6 +29,6 @@ main()
+   exit (0);
+ }
+ 
+-func1(int *p) { return(*p); }
++int func1(int *p) { return(*p); }
+ 
+-foo (char *s) {}
++void foo (char *s) {}
+diff -rupN old/950605-1.c new/950605-1.c
+--- old/950605-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950605-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (c)
++void f (c)
+     unsigned char c;
+ {
+   if (c != 0xFF)
+diff -rupN old/950621-1.c new/950621-1.c
+--- old/950621-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950621-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct s
+   struct s *dummy;
+ };
+ 
+-f (struct s *sp)
++int f (struct s *sp)
+ {
+   return sp && sp->a == -1 && sp->b == -1;
+ }
+diff -rupN old/950809-1.c new/950809-1.c
+--- old/950809-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950809-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ struct S
+   int *sp, fc, *sc, a[2];
+ };
+ 
+-f (struct S *x)
++void f (struct S *x)
+ {
+   int *t = x->sc;
+   int t1 = t[0];
+diff -rupN old/950929-1.c new/950929-1.c
+--- old/950929-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/950929-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-int f (char *p) { }
++int f (char *p) { return 0; }
+ 
+ main ()
+ {
+diff -rupN old/951115-1.c new/951115-1.c
+--- old/951115-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/951115-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,11 +1,11 @@
+ int var = 0;
+ 
+-g ()
++void g ()
+ {
+   var = 1;
+ }
+ 
+-f ()
++void f ()
+ {
+   int f2 = 0;
+ 
+diff -rupN old/951204-1.c new/951204-1.c
+--- old/951204-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/951204-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (char *x)
++void f (char *x)
+ {
+   *x = 'x';
+ }
+diff -rupN old/960116-1.c new/960116-1.c
+--- old/960116-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960116-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-static inline
++static int inline
+ p (int *p)
+ {
+   return !((long) p & 1);
+diff -rupN old/960117-1.c new/960117-1.c
+--- old/960117-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960117-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -28,6 +28,7 @@ WORD
+ get_id (char c)
+ {
+   curval.vals.id[0] = c;
++  return 0;
+ }
+ 
+ WORD
+diff -rupN old/960209-1.c new/960209-1.c
+--- old/960209-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960209-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -33,6 +33,7 @@ f (a, b)
+     return 0;
+   a_ptr = &an_array[a];
+   a_ptr->a_character = (unsigned char) r;
++  return 0;
+ }
+ 
+ main ()
+diff -rupN old/960218-1.c new/960218-1.c
+--- old/960218-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960218-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,12 +1,12 @@
+ int glob;
+ 
+-g (x)
++int g (x)
+ {
+   glob = x;
+   return 0;
+ }
+ 
+-f (x)
++void f (x)
+ {
+   int a = ~x;
+   while (a)
+diff -rupN old/960219-1.c new/960219-1.c
+--- old/960219-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960219-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (int i)
++void f (int i)
+ {
+   if (((1 << i) & 1) == 0)
+     abort ();
+diff -rupN old/960302-1.c new/960302-1.c
+--- old/960302-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960302-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ long a = 1;
+ 
+-foo ()
++int foo ()
+ {
+   switch (a % 2 % 2 % 2 % 2 % 2 % 2 % 2 % 2)
+     {
+diff -rupN old/960327-1.c new/960327-1.c
+--- old/960327-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960327-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,10 +1,10 @@
+ #include <stdio.h>
+-g ()
++int g ()
+ {
+   return '\n';
+ }
+ 
+-f ()
++void f ()
+ {
+   char s[] = "abcedfg012345";
+   char *sp = s + 12;
+diff -rupN old/960402-1.c new/960402-1.c
+--- old/960402-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960402-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (signed long long int x)
++int f (signed long long int x)
+ {
+   return x > 0xFFFFFFFFLL || x < -0x80000000LL;
+ }
+diff -rupN old/960521-1.c new/960521-1.c
+--- old/960521-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960521-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -8,7 +8,7 @@ int n;
+ #else
+ #define BLOCK_SIZE 32768
+ #endif
+-foo ()
++void foo ()
+ {
+   int i;
+   for (i = 0; i < n; i++)
+diff -rupN old/960608-1.c new/960608-1.c
+--- old/960608-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960608-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -7,7 +7,7 @@ typedef struct
+   unsigned char e  : 1;
+ } a_struct;
+ 
+-foo (flags)
++int foo (flags)
+      a_struct *flags;
+ {
+   return (flags->c != 0
+diff -rupN old/960909-1.c new/960909-1.c
+--- old/960909-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/960909-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -13,7 +13,7 @@ ffs (x)
+   return bit;
+ }
+ 
+-f (x)
++void f (x)
+      int x;
+ {
+   int y;
+diff -rupN old/961112-1.c new/961112-1.c
+--- old/961112-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/961112-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (x)
++int f (x)
+ {
+   if (x != 0 || x == 0)
+     return 0;
+diff -rupN old/961122-1.c new/961122-1.c
+--- old/961122-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/961122-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,11 +1,11 @@
+ long long acc;
+ 
+-addhi (short a)
++void addhi (short a)
+ {
+   acc += (long long) a << 32;
+ }
+ 
+-subhi (short a)
++void subhi (short a)
+ {
+   acc -= (long long) a << 32;
+ }
+diff -rupN old/970217-1.c new/970217-1.c
+--- old/970217-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/970217-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-sub (int i, int array[i++])
++int sub (int i, int array[i++])
+ {
+   return i;
+ }
+diff -rupN old/980701-1.c new/980701-1.c
+--- old/980701-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/980701-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-ns_name_skip (unsigned char **x, unsigned char *y)
++int ns_name_skip (unsigned char **x, unsigned char *y)
+ {
+   *x = 0;
+   return 0;
+diff -rupN old/990106-1.c new/990106-1.c
+--- old/990106-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/990106-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-foo(bufp)
++int foo(bufp)
+ char *bufp;
+ {
+     int x = 80;
+diff -rupN old/990525-2.c new/990525-2.c
+--- old/990525-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/990525-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -17,6 +17,7 @@ int func1()
+       abort ();
+     if (test.v[3] != 40)
+       abort ();
++	return 0;
+ }
+ 
+ Test1 func2()
+diff -rupN old/991023-1.c new/991023-1.c
+--- old/991023-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/991023-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ 
+ 
+ int blah;
+-foo()
++int foo()
+ {
+   int i;
+ 
+diff -rupN old/bf-pack-1.c new/bf-pack-1.c
+--- old/bf-pack-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/bf-pack-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -4,7 +4,7 @@ struct foo
+   unsigned long whole:32 __attribute__ ((packed));
+ };
+ 
+-f (struct foo *q)
++void f (struct foo *q)
+ {
+   if (q->half != 0x1234)
+     abort ();
+diff -rupN old/cmpdi-1.c new/cmpdi-1.c
+--- old/cmpdi-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/cmpdi-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ #define F 140
+ #define T 13
+ 
+-feq (x, y)
++int feq (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -11,7 +11,7 @@ feq (x, y)
+     return F;
+ }
+ 
+-fne (x, y)
++int fne (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -21,7 +21,7 @@ fne (x, y)
+     return F;
+ }
+ 
+-flt (x, y)
++int flt (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -31,7 +31,7 @@ flt (x, y)
+     return F;
+ }
+ 
+-fge (x, y)
++int fge (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -41,7 +41,7 @@ fge (x, y)
+     return F;
+ }
+ 
+-fgt (x, y)
++int fgt (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -51,7 +51,7 @@ fgt (x, y)
+     return F;
+ }
+ 
+-fle (x, y)
++int fle (x, y)
+      long long int x;
+      long long int y;
+ {
+@@ -61,7 +61,7 @@ fle (x, y)
+     return F;
+ }
+ 
+-fltu (x, y)
++int fltu (x, y)
+      unsigned long long int x;
+      unsigned long long int y;
+ {
+@@ -71,7 +71,7 @@ fltu (x, y)
+     return F;
+ }
+ 
+-fgeu (x, y)
++int fgeu (x, y)
+      unsigned long long int x;
+      unsigned long long int y;
+ {
+@@ -81,7 +81,7 @@ fgeu (x, y)
+     return F;
+ }
+ 
+-fgtu (x, y)
++int fgtu (x, y)
+      unsigned long long int x;
+      unsigned long long int y;
+ {
+@@ -91,7 +91,7 @@ fgtu (x, y)
+     return F;
+ }
+ 
+-fleu (x, y)
++int fleu (x, y)
+      unsigned long long int x;
+      unsigned long long int y;
+ {
+diff -rupN old/cmpsi-1.c new/cmpsi-1.c
+--- old/cmpsi-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/cmpsi-1.c	2011-06-02 18:22:55.000000000 -0500
+@@ -1,4 +1,5 @@
+-f1 (unsigned int x, unsigned int y)
++void dummy ();
++int f1 (unsigned int x, unsigned int y)
+ {
+   if (x == 0)
+     dummy ();
+@@ -9,7 +10,7 @@ f1 (unsigned int x, unsigned int y)
+   return x;
+ }
+ 
+-f2 (unsigned long int x, unsigned long int y)
++int f2 (unsigned long int x, unsigned long int y)
+ {
+   if (x == 0)
+     dummy ();
+@@ -21,7 +22,7 @@ f2 (unsigned long int x, unsigned long i
+ }
+ 
+ 
+-dummy () {}
++void dummy () {}
+ 
+ main ()
+ {
+diff -rupN old/compare-1.c new/compare-1.c
+--- old/compare-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/compare-1.c	2011-06-02 18:16:57.000000000 -0500
+@@ -35,9 +35,10 @@ int ieq (int x, int y, int ok)
+     }
+   else
+     if (ok) abort ();
++  return 0;
+ }
+ 
+-int ine (int x, int y, int ok)
++void ine (int x, int y, int ok)
+ {
+   if ((x<y) || (x>y))
+     {
+@@ -55,6 +56,7 @@ int ilt (int x, int y, int ok)
+     }
+   else
+     if (ok) abort ();
++  return 0;
+ }
+ 
+ int ile (int x, int y, int ok)
+@@ -65,6 +67,7 @@ int ile (int x, int y, int ok)
+     }
+   else
+     if (ok) abort ();
++  return 0;
+ }
+ 
+ int igt (int x, int y, int ok)
+@@ -75,6 +78,7 @@ int igt (int x, int y, int ok)
+     }
+   else
+     if (ok) abort ();
++  return 0;
+ }
+ 
+ int ige (int x, int y, int ok)
+@@ -85,6 +89,7 @@ int ige (int x, int y, int ok)
+     }
+   else
+     if (ok) abort ();
++  return 0;
+ }
+ 
+ int
+diff -rupN old/conversion.c new/conversion.c
+--- old/conversion.c	2011-06-02 18:16:27.000000000 -0500
++++ new/conversion.c	2011-06-02 18:16:44.000000000 -0500
+@@ -71,7 +71,7 @@ ldnear (long double x, long double y)
+   return t == 0 || x / t > 100000000000000000000000000000000.0;
+ }
+ 
+-test_integer_to_float()
++void test_integer_to_float()
+ {
+   if (u2f(0U) != (float) 0U)				/* 0 */
+     abort();
+@@ -171,7 +171,7 @@ sll2ld(s)
+   return s;
+ }
+ 
+-test_longlong_integer_to_float()
++void test_longlong_integer_to_float()
+ {
+   if (ull2f(0ULL) != (float) 0ULL)			/* 0 */
+     abort();
+@@ -274,7 +274,7 @@ ld2s(long double d)
+   return (int) d;
+ }
+ 
+-test_float_to_integer()
++void test_float_to_integer()
+ {
+   if (f2u(0.0) != 0)
+     abort();
+@@ -435,7 +435,7 @@ ld2sll(long double d)
+   return (long long int) d;
+ }
+ 
+-test_float_to_longlong_integer()
++void test_float_to_longlong_integer()
+ {
+   if (f2ull(0.0) != 0LL)
+     abort();
+diff -rupN old/dbra-1.c new/dbra-1.c
+--- old/dbra-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/dbra-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f1 (a)
++int f1 (a)
+      long a;
+ {
+   int i;
+@@ -10,7 +10,7 @@ f1 (a)
+   return -1;
+ }
+ 
+-f2 (a)
++int f2 (a)
+      long a;
+ {
+   int i;
+@@ -22,7 +22,7 @@ f2 (a)
+   return -1;
+ }
+ 
+-f3 (a)
++int f3 (a)
+      long a;
+ {
+   int i;
+@@ -34,7 +34,7 @@ f3 (a)
+   return -1;
+ }
+ 
+-f4 (a)
++int f4 (a)
+      long a;
+ {
+   int i;
+@@ -46,7 +46,7 @@ f4 (a)
+   return -1;
+ }
+ 
+-f5 (a)
++int f5 (a)
+      long a;
+ {
+   int i;
+@@ -58,7 +58,7 @@ f5 (a)
+   return -1;
+ }
+ 
+-f6 (a)
++int f6 (a)
+      long a;
+ {
+   int i;
+diff -rupN old/divconst-1.c new/divconst-1.c
+--- old/divconst-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/divconst-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -3,7 +3,7 @@ typedef struct
+   unsigned a, b, c, d;
+ } t1;
+ 
+-f (t1 *ps)
++void f (t1 *ps)
+ {
+     ps->a = 10000;
+     ps->b = ps->a / 3;
+diff -rupN old/divmod-1.c new/divmod-1.c
+--- old/divmod-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/divmod-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,39 +1,39 @@
+-div1 (signed char x)
++int div1 (signed char x)
+ {
+   return x / -1;
+ }
+ 
+-div2 (signed short x)
++int div2 (signed short x)
+ {
+   return x / -1;
+ }
+ 
+-div3 (signed char x, signed char y)
++int div3 (signed char x, signed char y)
+ {
+   return x / y;
+ }
+ 
+-div4 (signed short x, signed short y)
++int div4 (signed short x, signed short y)
+ {
+   return x / y;
+ }
+ 
+-mod1 (signed char x)
++int mod1 (signed char x)
+ {
+   return x % -1;
+ }
+ 
+-mod2 (signed short x)
++int mod2 (signed short x)
+ {
+   return x % -1;
+ }
+ 
+-mod3 (signed char x, signed char y)
++int mod3 (signed char x, signed char y)
+ {
+   return x % y;
+ }
+ 
+-mod4 (signed short x, signed short y)
++int mod4 (signed short x, signed short y)
+ {
+   return x % y;
+ }
+diff -rupN old/gofast.c new/gofast.c
+--- old/gofast.c	2011-06-02 18:16:27.000000000 -0500
++++ new/gofast.c	2011-06-02 18:16:44.000000000 -0500
+@@ -49,6 +49,7 @@ fail (char *msg)
+ {
+   fail_count++;
+   fprintf (stderr, "Test failed: %s\n", msg);
++  return 0;
+ }
+ 
+ int
+diff -rupN old/inst-check.c new/inst-check.c
+--- old/inst-check.c	2011-06-02 18:16:27.000000000 -0500
++++ new/inst-check.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ #include <stdarg.h>
+ 
+-f(m)
++int f(m)
+ {
+   int i,s=0;
+   for(i=0;i<m;i++)
+diff -rupN old/int-compare.c new/int-compare.c
+--- old/int-compare.c	2011-06-02 18:16:27.000000000 -0500
++++ new/int-compare.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,21 +1,21 @@
+ #include <limits.h>
+ 
+-gt (a, b)
++int gt (a, b)
+ {
+   return a > b;
+ }
+ 
+-ge (a, b)
++int ge (a, b)
+ {
+   return a >= b;
+ }
+ 
+-lt (a, b)
++int lt (a, b)
+ {
+   return a < b;
+ }
+ 
+-le (a, b)
++int le (a, b)
+ {
+   return a <= b;
+ }
+@@ -34,7 +34,7 @@ false (c)
+     abort();
+ }
+ 
+-f ()
++void f ()
+ {
+   true (gt (2, 1));
+   false (gt (1, 2));
+diff -rupN old/loop-2b.c new/loop-2b.c
+--- old/loop-2b.c	2011-06-02 18:16:27.000000000 -0500
++++ new/loop-2b.c	2011-06-02 18:16:44.000000000 -0500
+@@ -2,7 +2,7 @@
+ 
+ int a[2];
+ 
+-f (int i)
++void f (int i)
+ {
+   for (; i < INT_MAX; i++)
+     {
+diff -rupN old/loop-2.c new/loop-2.c
+--- old/loop-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/loop-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int a[2];
+ 
+-f (b)
++void f (b)
+ {
+   unsigned int i;
+   for (i = 0; i < b; i++)
+diff -rupN old/loop-3b.c new/loop-3b.c
+--- old/loop-3b.c	2011-06-02 18:16:27.000000000 -0500
++++ new/loop-3b.c	2011-06-02 18:16:44.000000000 -0500
+@@ -2,12 +2,12 @@
+ 
+ int n = 0;
+ 
+-g (i)
++void g (i)
+ {
+   n++;
+ }
+ 
+-f (m)
++void f (m)
+ {
+   int i;
+   i = m;
+diff -rupN old/loop-3.c new/loop-3.c
+--- old/loop-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/loop-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -2,12 +2,12 @@
+ 
+ int n = 0;
+ 
+-g (i)
++void g (i)
+ {
+   n++;
+ }
+ 
+-f (m)
++void f (m)
+ {
+   int i;
+   i = m;
+diff -rupN old/loop-3c.c new/loop-3c.c
+--- old/loop-3c.c	2011-06-02 18:16:27.000000000 -0500
++++ new/loop-3c.c	2011-06-02 18:16:44.000000000 -0500
+@@ -2,7 +2,7 @@
+ 
+ void * a[255];
+ 
+-f (m)
++void f (m)
+ {
+   int i;
+   int sh = 0x100;
+diff -rupN old/mayalias-3.c new/mayalias-3.c
+--- old/mayalias-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/mayalias-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,6 +5,7 @@ test *p;
+ int g(int *a)
+ {
+  p = (test*)a;
++ return 0;
+ }
+ 
+ int f()
+diff -rupN old/mod-1.c new/mod-1.c
+--- old/mod-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/mod-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,4 +1,4 @@
+-f (x, y)
++void f (x, y)
+ {
+   if (x % y != 0)
+     abort ();
+diff -rupN old/packed-1.c new/packed-1.c
+--- old/packed-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/packed-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,7 +5,7 @@ struct
+   short i __attribute__ ((packed));
+ } t;
+ 
+-f ()
++void f ()
+ {
+   t.i = x1;
+   if (t.i != 17)
+diff -rupN old/pr15262-2.c new/pr15262-2.c
+--- old/pr15262-2.c	2011-06-02 18:16:27.000000000 -0500
++++ new/pr15262-2.c	2011-06-02 18:16:44.000000000 -0500
+@@ -16,7 +16,7 @@ struct B
+ 
+ float X;
+ 
+-foo (struct B b, struct A *q, float *h)
++int foo (struct B b, struct A *q, float *h)
+ {
+   X += *h;
+   *(b.p) = 3;
+diff -rupN old/pr27671-1.c new/pr27671-1.c
+--- old/pr27671-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/pr27671-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -11,6 +11,7 @@ foo (int a, int b)
+   int c = a ^ b;
+   if (c == a)
+     abort ();
++  return 0;
+ }
+ 
+ int
+diff -rupN old/pr28403.c new/pr28403.c
+--- old/pr28403.c	2011-06-02 18:16:27.000000000 -0500
++++ new/pr28403.c	2011-06-02 18:16:44.000000000 -0500
+@@ -5,6 +5,7 @@ int __attribute__((noinline))
+ foo (int x1, int x2, int x3, int x4, int x5, int x6, int x7, int x8)
+ {
+   global = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8;
++  return 0;
+ }
+ 
+ ull __attribute__((noinline))
+diff -rupN old/pr42231.c new/pr42231.c
+--- old/pr42231.c	2011-06-02 18:16:27.000000000 -0500
++++ new/pr42231.c	2011-06-02 18:16:57.000000000 -0500
+@@ -1,6 +1,6 @@
+ extern void abort (void);
+ 
+-static max;
++static int max;
+ 
+ static void __attribute__((noinline)) storemax (int i)
+ {
+diff -rupN old/scope-1.c new/scope-1.c
+--- old/scope-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/scope-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ int v = 3;
+ 
+-f ()
++void f ()
+ {
+   int v = 4;
+   {
+diff -rupN old/strct-pack-3.c new/strct-pack-3.c
+--- old/strct-pack-3.c	2011-06-02 18:16:27.000000000 -0500
++++ new/strct-pack-3.c	2011-06-02 18:16:44.000000000 -0500
+@@ -4,7 +4,7 @@ typedef struct
+   int f[2] __attribute__ ((aligned (2),packed));
+ } A;
+ 
+-f (ap)
++int f (ap)
+   A *ap;
+ {
+   short i, j = 1;
+diff -rupN old/strct-stdarg-1.c new/strct-stdarg-1.c
+--- old/strct-stdarg-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/strct-stdarg-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -9,7 +9,7 @@ struct tiny
+   char g;
+ };
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   struct tiny x;
+   int i;
+diff -rupN old/strct-varg-1.c new/strct-varg-1.c
+--- old/strct-varg-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/strct-varg-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -2,7 +2,7 @@
+ 
+ struct s { int x, y; };
+ 
+-f (int attr, ...)
++void f (int attr, ...)
+ {
+   struct s va_values;
+   va_list va;
+diff -rupN old/tstdi-1.c new/tstdi-1.c
+--- old/tstdi-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/tstdi-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ #define FALSE 140
+ #define TRUE 13
+ 
+-feq (x)
++int feq (x)
+      long long int x;
+ {
+   if (x == 0)
+@@ -10,7 +10,7 @@ feq (x)
+     return FALSE;
+ }
+ 
+-fne (x)
++int fne (x)
+      long long int x;
+ {
+   if (x != 0)
+@@ -19,7 +19,7 @@ fne (x)
+     return FALSE;
+ }
+ 
+-flt (x)
++int flt (x)
+      long long int x;
+ {
+   if (x < 0)
+@@ -28,7 +28,7 @@ flt (x)
+     return FALSE;
+ }
+ 
+-fge (x)
++int fge (x)
+      long long int x;
+ {
+   if (x >= 0)
+@@ -37,7 +37,7 @@ fge (x)
+     return FALSE;
+ }
+ 
+-fgt (x)
++int fgt (x)
+      long long int x;
+ {
+   if (x > 0)
+@@ -46,7 +46,7 @@ fgt (x)
+     return FALSE;
+ }
+ 
+-fle (x)
++int fle (x)
+      long long int x;
+ {
+   if (x <= 0)
+diff -rupN old/va-arg-1.c new/va-arg-1.c
+--- old/va-arg-1.c	2011-06-02 18:16:27.000000000 -0500
++++ new/va-arg-1.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,7 +1,7 @@
+ #include <stdarg.h>
+ 
+ typedef unsigned long L;
+-f (L p0, L p1, L p2, L p3, L p4, L p5, L p6, L p7, L p8, ...)
++void f (L p0, L p1, L p2, L p3, L p4, L p5, L p6, L p7, L p8, ...)
+ {
+   va_list select;
+ 
+diff -rupN old/va-arg-5.c new/va-arg-5.c
+--- old/va-arg-5.c	2011-06-02 18:16:27.000000000 -0500
++++ new/va-arg-5.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ #include <stdarg.h>
+ 
+-va_double (int n, ...)
++void va_double (int n, ...)
+ {
+   va_list args;
+ 
+@@ -18,7 +18,7 @@ va_double (int n, ...)
+   va_end (args);
+ }
+ 
+-va_long_double (int n, ...)
++void va_long_double (int n, ...)
+ {
+   va_list args;
+ 
+diff -rupN old/va-arg-6.c new/va-arg-6.c
+--- old/va-arg-6.c	2011-06-02 18:16:27.000000000 -0500
++++ new/va-arg-6.c	2011-06-02 18:16:44.000000000 -0500
+@@ -1,6 +1,6 @@
+ #include <stdarg.h>
+ 
+-f (int n, ...)
++void f (int n, ...)
+ {
+   va_list args;
+ 

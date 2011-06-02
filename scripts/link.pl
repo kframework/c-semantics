@@ -27,20 +27,24 @@ sub linker {
 				push(@programNames, "Trans$1");
 				push(@programs, $line);
 			}
-			if ($line =~ m/^eq ltls =.*/) { # if we have an equation, we're done with operators
+			if ($line =~ m/^eq ltls =(.*)/) { # if we have an equation, we're done with operators
 				push(@formulae, $1);
 			}
-			push(@operators, $line);
 		}
 	}
 
-	foreach my $operator (@operators){
-		$retval .= "$operator\n";
-	}
+	# foreach my $operator (@operators){
+		# $retval .= "$operator\n";
+	# }
 
 	foreach my $program (@programs){
 		$retval .= "$program\n";
 	}
+	$retval .= "op 'ltls : -> KProperLabel .\n";
+	$retval .= "op 'formulae : -> KProperLabel .\n";
+	$retval .= "eq 'ltls(.List{K}) = 'formulae(";
+	$retval .= printNested(@formulae);
+	$retval .= ") .\n";
 
 	$retval .= "op 'linked-program : -> KProperLabel .\n";
 	$retval .= "eq 'linked-program(.List{K}) = ";
@@ -54,16 +58,12 @@ sub linker {
 
 sub printNested {
 	my ($name, @rest) = (@_);
-	my $retval = "";
-	
-	$retval .=  "($name),, ";
-	#print @rest;
-	if ($name != @rest) {
-		$retval .= printNested(@rest);
-	} else {
-		$retval .= '.List{K}';
+
+	if (defined($name)) {
+		return "($name),, " . printNested(@rest);
+	} else {#arg
+		return '.List{K}';
 	}
-	return $retval;
 }
 
 # foreach my $name (@programNames){

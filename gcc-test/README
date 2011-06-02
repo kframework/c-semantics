@@ -1,29 +1,32 @@
 We created this test suite by using gcc 4.4.6 and performing the following filters:
 
-mv `grep -l '__builtin_va_arg_pack' *.c` notportable/
-mv `grep -l '__builtin_copysign' *.c` notportable/
-mv `grep -l '__builtin_expect' *.c` notportable/
-mv `grep -l '__builtin_offsetof' *.c` notportable/
+
+
 mv `grep -l '__builtin_memcpy' *.c` notportable/
 mv `grep -l '__builtin_memcmp' *.c` notportable/
-mv `grep -l '__builtin_isinf' *.c` notportable/
 mv `grep -l '__builtin_malloc' *.c` notportable/
 mv `grep -l '__builtin_va_arg' *.c` notportable/
 mv `grep -l '__builtin_va_start' *.c` notportable/
 mv `grep -l '__builtin_va_list' *.c` notportable/
-mv `grep -l '__builtin_alloca' *.c` notportable/
 mv `grep -l '__builtin_memset' *.c` notportable/
+mv `grep -l '__builtin_abs' *.c` notportable/
+mv `grep -l '__builtin_strlen' *.c` notportable/
+mv `grep -l '__builtin_strcpy' *.c` notportable/
+mv `grep -l '__builtin_strcmp' *.c` notportable/
+mv `grep -l '__builtin_offsetof' *.c` notportable/
+
+mv `grep -l '__builtin_va_arg_pack' *.c` notportable/
+mv `grep -l '__builtin_copysign' *.c` notportable/
+mv `grep -l '__builtin_expect' *.c` notportable/
+mv `grep -l '__builtin_isinf' *.c` notportable/
+mv `grep -l '__builtin_alloca' *.c` notportable/
 mv `grep -l '__builtin_signbit' *.c` notportable/
 mv `grep -l '__builtin_return_address' *.c` notportable/
 mv `grep -l '__builtin_ffs' *.c` notportable/
 mv `grep -l '__builtin_types_compatible_p' *.c` notportable/
-mv `grep -l '__builtin_abs' *.c` notportable/
 mv `grep -l '__builtin_prefetch' *.c` notportable/
 mv `grep -l '__builtin_constant_p' *.c` notportable/
 mv `grep -l '__builtin_classify_type' *.c` notportable/
-mv `grep -l '__builtin_strlen' *.c` notportable/
-mv `grep -l '__builtin_strcpy' *.c` notportable/
-mv `grep -l '__builtin_strcmp' *.c` notportable/
 mv `grep -l '__builtin_conjf' *.c` notportable/
 
 need to rename __builtin_abort() to abort() and __builtin_exit(X) to exit(X)

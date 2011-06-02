@@ -285,12 +285,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule 
 		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => .K ...</ k >
 		< mem >... Loc:Nat |-> ? ...</ mem >
-		[structural] 
-	
-	// rule
-		// < k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
-		// < mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map[piece(unknown(numBitsPerByte), numBitsPerByte) / 0 to Len:Nat]) ...</ mem >
-		// [structural]	
+		[structural]
 
 	rule [alloc-lazy]:
 		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
