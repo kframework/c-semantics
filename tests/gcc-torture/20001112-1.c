@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int main ()
 {
   long long i = 1;

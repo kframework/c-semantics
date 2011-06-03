@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct decision
 {
   char enforce_mode;             
@@ -20,7 +19,7 @@ blah:
     goto foo;
 }
 
-main()
+int main()
 {
   struct decision *p = 0;
   clear_modes (p);

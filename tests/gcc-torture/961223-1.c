@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct s {
   double d;
 };
@@ -11,7 +10,7 @@ sub (struct s s)
   return s;
 }
 
-main ()
+int main ()
 {
   struct s t = { 2.0 };
   t = sub (t);

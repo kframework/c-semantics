@@ -38,8 +38,7 @@ again:
   goto again;
 }
 
-int
-main (void)
+int main (void)
 {
   T *t1, *t2;
   int cnt = 0;

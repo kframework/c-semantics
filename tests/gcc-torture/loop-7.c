@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void foo (unsigned int n)
 {
   int i, j = -1;
@@ -14,7 +13,7 @@ void foo (unsigned int n)
     abort ();
 }
 
-main()
+int main()
 {
   foo (64);
   exit (0);

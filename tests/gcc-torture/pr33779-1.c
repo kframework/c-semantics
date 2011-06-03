@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int foo(int i)
 {
   if (((unsigned)(i + 1)) * 4 == 0)

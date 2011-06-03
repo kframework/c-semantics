@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int compare(x, y)
 unsigned int x;
 unsigned int y;
@@ -10,7 +9,7 @@ unsigned int y;
      return 1;
 }
  
-main()
+int main()
 {
  unsigned int i, j, k, l;
  i = 5; j = 2; k=0; l=2;

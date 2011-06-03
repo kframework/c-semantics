@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/45262 */
 
 extern void abort (void);
@@ -15,8 +15,7 @@ bar (unsigned int x)
   return x >> 31 || (-x) >> 31;
 }
 
-int
-main (void)
+int main (void)
 {
   if (foo (1) != 1)
     abort ();

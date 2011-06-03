@@ -9,8 +9,7 @@ foo (int x)
   return 0;
 }
            
-int
-main ()
+int main ()
 {
   foo (-3);
   foo (-99);

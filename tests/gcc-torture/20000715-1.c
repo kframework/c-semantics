@@ -106,8 +106,7 @@ test6(void)
     abort ();
 }
 
-int
-main(){
+int main(){
   test1 ();
   test2 ();
   test3 ();

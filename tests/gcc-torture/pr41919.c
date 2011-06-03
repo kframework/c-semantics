@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 #define assert(x) if(!(x)) abort()

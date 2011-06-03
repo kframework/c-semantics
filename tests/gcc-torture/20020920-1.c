@@ -21,8 +21,7 @@ f ()
   return a;
 }
 
-int
-main (void)
+int main (void)
 {
   struct A a = f ();
   if (a.z != 2 || a.b.x != 0 || a.b.y != 1)

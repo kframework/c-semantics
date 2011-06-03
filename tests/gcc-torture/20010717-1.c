@@ -1,8 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
-int
-main ()
+int main ()
 {
   int i, j;
   unsigned long u, r1, r2;

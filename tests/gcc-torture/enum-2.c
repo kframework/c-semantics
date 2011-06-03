@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Copyright (C) 2000 Free Software Foundation */
 /* by Alexandre Oliva  <aoliva@redhat.com> */
 
@@ -11,8 +10,7 @@ enum foo { FOO, BAR };
    `unsigned' in the comparison below; we must exit the loop when it
    becomes negative. */
 
-int
-main ()
+int main ()
 {
   int i;
   for (i = BAR; i >= FOO; --i)

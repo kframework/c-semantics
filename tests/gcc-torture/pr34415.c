@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 const char *__attribute__((noinline))
 foo (const char *p)
 {
@@ -28,8 +27,7 @@ foo (const char *p)
   return p;
 }
 
-int
-main (void)
+int main (void)
 {
   const char *input = "Bbb:";
   return foo (input) != input + 2;

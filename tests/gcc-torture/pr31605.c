@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void put_field (unsigned int start, unsigned int len)
 {
   int cur_bitshift = ((start + len) % 8) - 8;
@@ -7,8 +6,7 @@ void put_field (unsigned int start, unsigned int len)
     exit (0);
 }
 
-int
-main ()
+int main ()
 {
   put_field (0, 1);
   abort ();

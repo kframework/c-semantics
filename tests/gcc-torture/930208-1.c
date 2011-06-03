@@ -1,18 +1,17 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef union {
   long l;
   struct { char b3, b2, b1, b0; } c;
 } T;
 
-f (T u)
+int f (T u)
 {
   ++u.c.b0;
   ++u.c.b3;
   return (u.c.b1 != 2 || u.c.b2 != 2);
 }
 
-main ()
+int main ()
 {
   T u;
   u.c.b1 = 2;

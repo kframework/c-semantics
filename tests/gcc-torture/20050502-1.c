@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/21330 */
 
 extern void abort (void);
@@ -39,8 +39,7 @@ foo (const char **w, char *x, _Bool y, _Bool z)
    x[i] = 0;
 }
 
-int
-main (void)
+int main (void)
 {
   char buf[64];
   const char *p;

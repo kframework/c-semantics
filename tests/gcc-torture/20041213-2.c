@@ -24,8 +24,7 @@ foo (int i)
     }
 }
 
-int
-main (void)
+int main (void)
 {
   foo (2);
   exit (0);

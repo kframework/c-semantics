@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define NG   0x100L
 
 unsigned long flg = 0;

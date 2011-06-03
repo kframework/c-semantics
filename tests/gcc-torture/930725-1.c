@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
 #include <string.h>
+#include <stdlib.h>
 int v;
 
 char *

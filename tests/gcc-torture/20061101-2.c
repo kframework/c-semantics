@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/28970 */
 /* Origin: Peter Bergner <bergner@vnet.ibm.com> */
 

@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int c = -1;
 
-foo (p)
+int foo (p)
      int *p;
 {
   int x;

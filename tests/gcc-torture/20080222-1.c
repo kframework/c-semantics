@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 struct container
@@ -14,8 +14,7 @@ foo (struct container *p)
   return p->data[4];
 }
 
-int
-main ()
+int main ()
 {
   if (foo ((struct container *) space) != 5)
     abort ();

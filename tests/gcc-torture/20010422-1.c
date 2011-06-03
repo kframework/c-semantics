@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned int foo(unsigned int x)
 {
   if (x < 5)

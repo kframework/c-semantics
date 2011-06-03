@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/20290  */
    
 /* We used to mis-optimize the second loop in main on at least ppc and
@@ -31,8 +31,7 @@ check (unsigned int *l)
       abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   int i;
   unsigned int l[288];

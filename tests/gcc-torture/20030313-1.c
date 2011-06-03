@@ -45,8 +45,7 @@ foo (unsigned long *x, int y)
     abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   unsigned long a[40];
   int b = 0;

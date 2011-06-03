@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR 16348: Make sure that condition-first false loops DTRT.  */
 
 extern void abort ();

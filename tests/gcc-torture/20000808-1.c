@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
   long int p_x, p_y;
 } Point;
@@ -50,8 +49,7 @@ foo ()
   f (p0, p1, p2, p3, p4, p5);
 }
 
-int
-main()
+int main()
 {
   foo();
   exit(0);

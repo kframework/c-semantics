@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 void abort (void);
 
 static unsigned char magic[] = "\235";

@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main ()
+#include <stdlib.h>
+int main ()
 {
   int tmp;
   unsigned long long utmp1, utmp2;

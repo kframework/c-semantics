@@ -1,6 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 /* PR target/21297 */
-typedef __SIZE_TYPE__ size_t;
+//;
 extern int memcmp (const char *, const char *, size_t);
 extern void abort ();
 
@@ -20,8 +21,7 @@ bar (char *x)
   x[i + i + i + i] = '\0';
 }
 
-int
-main (void)
+int main (void)
 {
   char x[] = "IJKLMNOPQR";
   foo (x);

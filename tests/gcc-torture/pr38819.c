@@ -12,8 +12,7 @@ foo (void)
   exit (0);
 }
 
-int
-main (void)
+int main (void)
 {
   int si1 = a;
   int si2 = b;

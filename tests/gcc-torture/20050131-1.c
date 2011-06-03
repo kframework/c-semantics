@@ -10,7 +10,7 @@ foo (int a)
   return a;
 }
 
-main()
+int main()
 {
   if (foo (9) != 10)
     abort ();

@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long double C = 2;
 long double U = 1;
 long double Y2 = 3;
 long double Y1 = 1;
 long double X, Y, Z, T, R, S;
-main ()
+int main ()
 {
   X = (C + U) * Y2;
   Y = C - U - U;

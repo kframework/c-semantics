@@ -1,9 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int x, y;
 
-int
-main()
+int main()
 {
   x = 2;
   y = x;

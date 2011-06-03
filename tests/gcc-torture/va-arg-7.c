@@ -1,3 +1,4 @@
+#include <stdlib.h>
 /* Origin: Franz Sirl <Franz.Sirl-kernel@lauterbach.com> */
 
 #include <stdarg.h>
@@ -21,8 +22,7 @@ debug(int i1, int i2, int i3, int i4, int i5, int i6, int i7,
   va_end (ap);
 }
 
-int
-main(void)
+int main(void)
 {
   debug (1, 2, 3, 4, 5, 6, 7,
 	 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0,

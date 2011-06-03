@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int __attribute__ ((noinline))
 foo ()
 {
@@ -13,8 +12,7 @@ foo ()
   return sum;
 }
 
-int
-main ()
+int main ()
 {
   if (foo () != 28)
     abort ();

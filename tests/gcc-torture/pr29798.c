@@ -1,8 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort ();
 
-int
-main ()
+int main ()
 {
   int i;
   double oldrho;

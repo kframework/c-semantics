@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 static int inv_J(int a[][2])

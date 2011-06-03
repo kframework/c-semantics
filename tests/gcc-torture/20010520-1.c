@@ -1,9 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static unsigned int expr_hash_table_size = 1;
 
-int
-main ()
+int main ()
 {
   int del = 1;
   unsigned int i = 0;

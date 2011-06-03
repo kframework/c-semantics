@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct s { char *p; int t; };
 
 extern void bar (void);

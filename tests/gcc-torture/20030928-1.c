@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <limits.h>
 
 #if INT_MAX <= 32767

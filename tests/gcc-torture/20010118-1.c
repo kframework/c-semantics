@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
   int a, b, c, d, e, f;
 } A;

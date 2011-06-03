@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR 15262.  Similar to pr15262-1.c but with no obvious addresses
    being taken in function foo().  Without IPA, by only looking inside
    foo() we cannot tell for certain whether 'q' and 'b' alias each
@@ -18,7 +17,7 @@ struct B
 
 float X;
 
-foo (struct B b, struct A *q, float *h)
+int foo (struct B b, struct A *q, float *h)
 {
   X += *h;
   *(b.p) = 3;
@@ -26,7 +25,7 @@ foo (struct B b, struct A *q, float *h)
   return *(b.p);
 }
 
-main()
+int main()
 {
   struct A a;
   struct B b;

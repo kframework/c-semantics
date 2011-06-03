@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   short a __attribute__ ((aligned (2),packed));
   short *ap[2]  __attribute__ ((aligned (2),packed));
 } A;
 
-main ()
+int main ()
 {
   short i, j = 1;
   A a, *ap = &a;

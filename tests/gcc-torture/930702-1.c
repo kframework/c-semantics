@@ -1,9 +1,9 @@
-void exit(int status);
-void abort(void);
-void fp (double a, int b)
+#include <stdlib.h>
+int fp (double a, int b)
 {
   if (a != 33 || b != 11)
     abort ();
+  return 0;
 }
 
 int main ()

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   unsigned char a __attribute__ ((packed));
@@ -18,7 +17,7 @@ g (void)
   return 0x1234;
 }
 
-main ()
+int main ()
 {
   three_byte_t three_byte;
 

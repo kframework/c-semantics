@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef long mpt;
 
 int
@@ -21,7 +20,7 @@ f (mpt us, mpt vs)
   return avs;
 }
 
-main ()
+int main ()
 {
   if (f ((mpt) 3, (mpt) 17) != 17)
     abort ();

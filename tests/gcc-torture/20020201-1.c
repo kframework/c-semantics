@@ -9,8 +9,7 @@ unsigned int ix = 21;
 unsigned long lx = 28;
 unsigned long long Lx = 35;
 
-int
-main ()
+int main ()
 {
   unsigned char cy;
   unsigned short sy;

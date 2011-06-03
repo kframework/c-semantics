@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/40057 */
 
 extern void abort (void);
@@ -21,8 +21,7 @@ bar (long long x)
   return -1;
 }
 
-int
-main (void)
+int main (void)
 {
   if (sizeof (long long) != 8)
     return 0;

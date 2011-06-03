@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* submitted by kenneth zadeck */
 
 static int test_var;
@@ -22,7 +21,7 @@ not_inlinable ()
   inlinable();
 }
 
-main ()
+int main ()
 {
   test_var = 10;
   /* Variable test_var should be considered call-clobbered by the call

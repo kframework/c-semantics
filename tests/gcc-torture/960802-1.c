@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long val = 0x5e000000;
 
 long
@@ -29,7 +28,7 @@ f4 ()
   f3 (v);
 }
 
-main ()
+int main ()
 {
   f4 ();
   if (val != 0x5e000132)

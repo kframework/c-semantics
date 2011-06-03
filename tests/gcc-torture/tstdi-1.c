@@ -1,9 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define FALSE 140
 #define TRUE 13
 
-feq (x)
+int feq (x)
      long long int x;
 {
   if (x == 0)
@@ -12,7 +11,7 @@ feq (x)
     return FALSE;
 }
 
-fne (x)
+int fne (x)
      long long int x;
 {
   if (x != 0)
@@ -21,7 +20,7 @@ fne (x)
     return FALSE;
 }
 
-flt (x)
+int flt (x)
      long long int x;
 {
   if (x < 0)
@@ -30,7 +29,7 @@ flt (x)
     return FALSE;
 }
 
-fge (x)
+int fge (x)
      long long int x;
 {
   if (x >= 0)
@@ -39,7 +38,7 @@ fge (x)
     return FALSE;
 }
 
-fgt (x)
+int fgt (x)
      long long int x;
 {
   if (x > 0)
@@ -48,7 +47,7 @@ fgt (x)
     return FALSE;
 }
 
-fle (x)
+int fle (x)
      long long int x;
 {
   if (x <= 0)
@@ -57,7 +56,7 @@ fle (x)
     return FALSE;
 }
 
-main ()
+int main ()
 {
   if (feq (0LL) != TRUE)
     abort ();

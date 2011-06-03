@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define VALUE 0x123456789abcdefLL
 #define AFTER 0x55
 
@@ -103,8 +102,7 @@ test8 (int a, int b, int c, int d, int e, int f, int g, int h, long long value, 
     abort ();
 }
 
-int
-main ()
+int main ()
 {
   test1 (1, VALUE, AFTER);
   test2 (1, 2, VALUE, AFTER);

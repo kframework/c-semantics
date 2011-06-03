@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f (const int x)
+#include <stdlib.h>
+int f (const int x)
 {
   int y = 0;
   y = x ? y : -y;
@@ -10,7 +9,7 @@ f (const int x)
   return y;
 }
 
-main ()
+int main ()
 {
   if (f (0))
     abort ();

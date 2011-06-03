@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct a_struct
 {
   unsigned char a_character;
@@ -38,7 +37,7 @@ f (a, b)
   return 0;
 }
 
-main ()
+int main ()
 {
   if (f (1, 0UL) != 0)
     abort ();

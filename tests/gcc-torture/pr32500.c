@@ -8,8 +8,7 @@ int x;
 void foo(int i) { x = i; }
 void bar(void) { exit(0); }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	int i;
 	int numbers[4] = { 0xdead, 0xbeef, 0x1337, 0x4242 };

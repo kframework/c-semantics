@@ -1,41 +1,40 @@
-void exit(int status);
-void abort(void);
-div1 (signed char x)
+#include <stdlib.h>
+int div1 (signed char x)
 {
   return x / -1;
 }
 
-div2 (signed short x)
+int div2 (signed short x)
 {
   return x / -1;
 }
 
-div3 (signed char x, signed char y)
+int div3 (signed char x, signed char y)
 {
   return x / y;
 }
 
-div4 (signed short x, signed short y)
+int div4 (signed short x, signed short y)
 {
   return x / y;
 }
 
-mod1 (signed char x)
+int mod1 (signed char x)
 {
   return x % -1;
 }
 
-mod2 (signed short x)
+int mod2 (signed short x)
 {
   return x % -1;
 }
 
-mod3 (signed char x, signed char y)
+int mod3 (signed char x, signed char y)
 {
   return x % y;
 }
 
-mod4 (signed short x, signed short y)
+int mod4 (signed short x, signed short y)
 {
   return x % y;
 }
@@ -52,7 +51,7 @@ mod6 (unsigned long x, unsigned long y)
   return x % y;
 }
      
-main ()
+int main ()
 {
   if (div1 (-(1 << 7)) != 1 << 7)
     abort ();

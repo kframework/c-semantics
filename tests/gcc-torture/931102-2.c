@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef union
 {
   long align;
@@ -9,7 +8,7 @@ typedef union
     } b;
 } T;
 
-f (x)
+int f (x)
      int x;
 {
   int num = 0;
@@ -24,7 +23,7 @@ f (x)
   return num;
 }
 
-main ()
+int main ()
 {
   if (f (2) != 1)
     abort ();

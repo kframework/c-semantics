@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Originally added to test SH constant pool layout.  t1() failed for
    non-PIC and t2() failed for PIC.  */
 

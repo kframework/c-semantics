@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 #include <stdarg.h>
 
 extern void abort (void);
@@ -109,8 +109,7 @@ f4 (int i, ...)
   va_end (ap);
 }
 
-int
-main (void)
+int main (void)
 {
   f1 (3, 16.0, 128L, 32.0);
   if (x != 176L)

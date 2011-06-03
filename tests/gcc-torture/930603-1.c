@@ -1,11 +1,12 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 float fx (x)
      float x;
 {
   return 1.0 + 3.0 / (2.302585093 * x);
 }
-
+float inita();
+float initc();
+void f();
 int main ()
 {
   float fx (), inita (), initc (), a, b, c;

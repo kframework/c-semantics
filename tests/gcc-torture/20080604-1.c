@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 struct barstruct { char const* some_string; } x;
 extern void abort (void);
 void __attribute__((noinline))

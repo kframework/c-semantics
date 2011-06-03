@@ -1,10 +1,9 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
   char y;
   char x[32];
 } X;
-
+int f();
 int z (void)
 {
   X xxx;

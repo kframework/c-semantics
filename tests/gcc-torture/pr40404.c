@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 struct S {
   unsigned int ui17 : 17;

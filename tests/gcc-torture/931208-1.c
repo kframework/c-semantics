@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f ()
+#include <stdlib.h>
+int f ()
 {
   unsigned long x, y = 1;
 
@@ -8,7 +7,7 @@ f ()
   return x;
 }
 
-main ()
+int main ()
 {
   if (f () != 498)
     abort ();

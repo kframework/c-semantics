@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct trio { int a, b, c; } trio;
 
 int
@@ -16,7 +15,7 @@ foo (trio t, int i)
   return bar (i, t);
 }
 
-main ()
+int main ()
 {
   trio t = { 1, 2, 3 };
 

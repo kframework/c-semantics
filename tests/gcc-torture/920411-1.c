@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long f (w)
      char *w;
 {
@@ -14,7 +13,7 @@ long f (w)
   return c;
 }
 
-main ()
+int main ()
 {
   int i;
   char a[sizeof (long)];

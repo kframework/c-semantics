@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct F { int i; };
 
 void f1(struct F *x, struct F *y)
@@ -10,7 +9,7 @@ void f1(struct F *x, struct F *y)
       abort ();
 }
 
-main()
+int main()
 {
   struct F x, y;
   x.i = 0;

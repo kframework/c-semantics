@@ -1,6 +1,6 @@
-void exit(int status);
-void abort(void);
-f1 (unsigned int x, unsigned int y)
+#include <stdlib.h>
+void dummy ();
+int f1 (unsigned int x, unsigned int y)
 {
   if (x == 0)
     dummy ();
@@ -11,7 +11,7 @@ f1 (unsigned int x, unsigned int y)
   return x;
 }
 
-f2 (unsigned long int x, unsigned long int y)
+int f2 (unsigned long int x, unsigned long int y)
 {
   if (x == 0)
     dummy ();
@@ -23,9 +23,9 @@ f2 (unsigned long int x, unsigned long int y)
 }
 
 
-dummy () {}
+void dummy () {}
 
-main ()
+int main ()
 {
   /*      0x7ffffff3			0x80000001 */
   f1 ((~(unsigned int) 0 >> 1) - 12, ~(~(unsigned int) 0 >> 1) + 1);

@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 struct S
@@ -14,8 +14,7 @@ struct T
 
 struct T t;
 
-int
-main ()
+int main ()
 {
   struct S *p, *q;
 

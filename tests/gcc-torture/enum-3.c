@@ -13,8 +13,7 @@ enum e { a = INT_MIN };
 
 int *p;
 enum e *q;
-int
-main (void)
+int main (void)
 {
   enum e x = a;
   q = &x;

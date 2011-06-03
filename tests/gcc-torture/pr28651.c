@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 #include <limits.h>
 
 extern void abort (void);
@@ -8,8 +8,7 @@ foo (unsigned int u)
   return (int)(u + 4) < (int)u;
 }
 
-int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   unsigned int u = INT_MAX;
 

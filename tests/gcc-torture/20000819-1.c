@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a[2] = { 2, 0 };
 
 void foo(int *sp, int cnt)

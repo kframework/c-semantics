@@ -1,13 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 inline int
 f (int x)
 {
   return (x + 1);
 }
  
-int
-main (void)
+int main (void)
 {
   int a = 0 ;
  

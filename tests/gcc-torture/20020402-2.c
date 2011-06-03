@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR 3967
 
    local-alloc screwed up consideration of high+lo_sum and created
@@ -224,8 +223,7 @@ InitCache (int sessionId)
   initPte (0, sessionId);
 }
 
-int 
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   InitCache (5);
   return 0;

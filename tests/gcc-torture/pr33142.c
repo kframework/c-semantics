@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int abs(int j);
 extern void abort(void);
 

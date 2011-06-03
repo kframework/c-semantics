@@ -1,4 +1,5 @@
-typedef __SIZE_TYPE__ size_t;
+#include <stddef.h>
+//;
 extern void *memcpy (void *__restrict, const void *__restrict, size_t);
 extern void abort (void);
 extern void exit (int);

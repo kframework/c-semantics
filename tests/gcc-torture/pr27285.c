@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR tree-optimization/27285 */
 
 extern void abort (void);
@@ -33,8 +33,7 @@ foo (struct S *x, struct S *y)
     }
 }
 
-int
-main (void)
+int main (void)
 {
   struct S x = { 0, 25, 0, { 0xaa, 0xbb, 0xcc, 0xdd }};
   struct S y = { 0, 0, 0, { 0 }};

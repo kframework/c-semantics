@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR 41750 - IPA-SRA used to pass hash->sgot by value rather than by
    reference.  */
 
@@ -58,8 +58,7 @@ struct foo_link_info link_info;
 struct foo_link_hash_table hash;
 int abfd;
 
-int
-main ()
+int main ()
 {
   link_info.hash = &hash;
   if (elf64_ia64_check_relocs (&abfd, &link_info) != &abfd)

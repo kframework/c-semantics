@@ -1,10 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* The bit-field below would have a problem if __INT_MAX__ is too
    small.  */
 #if __INT_MAX__ < 2147483647
-int
-main (void)
+int main (void)
 {
   exit (0);
 }
@@ -33,7 +31,7 @@ f(bu i)
   return o;
 }
 
-main()
+int main()
 {
   bu a;
   bu r;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Source: PR 321 modified for test suite by Neil Booth 14 Jan 2001.  */
 
 typedef unsigned long long uint64;
@@ -22,8 +21,7 @@ void alpha_ep_extbl_i_eq_0()
   }
 }
 
-int 
-main(void)
+int main(void)
 {
   if (sizeof (uint64) == 8)
     {

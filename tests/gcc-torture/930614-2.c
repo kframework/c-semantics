@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main ()
+#include <stdlib.h>
+int main ()
 {
   int i, j, k, l;
   float x[8][2][8][2];

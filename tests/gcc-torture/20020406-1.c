@@ -1,7 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
 // Origin: abbott@dima.unige.it
 // PR c/5120
-#include <stdlib.h>
-#include <stdio.h>
+
+extern void * malloc (size_t);
+extern void * calloc (size_t, size_t);
 
 typedef unsigned int FFelem;
 

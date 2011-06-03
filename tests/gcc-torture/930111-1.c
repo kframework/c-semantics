@@ -1,6 +1,6 @@
-void exit(int status);
-void abort(void);
-main()
+#include <stdlib.h>
+int wwrite();
+int main()
 {
   if (wwrite((long long) 0) != 123)
     abort();

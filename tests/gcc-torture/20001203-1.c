@@ -1,4 +1,4 @@
-void abort(void);
+#include <stdlib.h>
 /* Origin: PR c/410 from Jan Echternach
    <jan.echternach@informatik.uni-rostock.de>,
    adapted to a testcase by Joseph Myers <jsm28@cam.ac.uk>.
@@ -15,8 +15,7 @@ foo (void)
   } x = { 2, { 0 } };
 }
 
-int
-main (void)
+int main (void)
 {
   int tmp;
   foo ();

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a[2] = { 18, 6 };
 
 int main ()

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Leaf functions with many arguments.  */
 
 int
@@ -20,8 +19,7 @@ add (int a,
   return a+b+c+d+e+f+g+h+i+j+k+l+m;
 }
 
-int
-main(void)
+int main(void)
 {
   if (add (1,2,3,4,5,6,7,8,9,10,11,12,13) != 91)
     abort ();

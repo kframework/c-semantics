@@ -1,5 +1,5 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
+#include <stddef.h>
 /* The purpose of this test is to catch edge cases when arguments are passed
    in regs and on the stack.  We test 16 cases, trying to catch multiple
    targets (some use 3 regs for argument passing, some use 12, etc.).
@@ -7,7 +7,7 @@ void abort(void);
 
 #include <stdarg.h>
 
-extern __SIZE_TYPE__ strlen ();
+extern size_t strlen ();
 
 int
 to_hex (unsigned int a)
@@ -269,7 +269,7 @@ f15 (int a1, int a2, int a3, int a4, int a5,
   va_end(ap);
 }
 
-main ()
+int main ()
 {
   char *f = "0123456789abcdef";
 

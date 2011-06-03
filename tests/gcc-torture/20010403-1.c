@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void b (int *);
 void c (int, int);
 void d (int);

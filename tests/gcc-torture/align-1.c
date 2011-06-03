@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef int new_int __attribute__ ((aligned(16)));
 struct S { int x; };
  

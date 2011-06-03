@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 extern volatile int ReadyFlag_NotProperlyInitialized;
 
 volatile int ReadyFlag_NotProperlyInitialized=1;
@@ -7,6 +6,6 @@ volatile int ReadyFlag_NotProperlyInitialized=1;
 int main(void)
 {
   if (ReadyFlag_NotProperlyInitialized != 1)
-    __builtin_abort ();
+    abort ();
   return 0;
 }

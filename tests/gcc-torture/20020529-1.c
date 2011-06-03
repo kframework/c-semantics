@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR target/6838 from cato@df.lth.se.
    cris-elf got an ICE with -O2: the insn matching
       (insn 49 48 52 (parallel[ 

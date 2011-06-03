@@ -1,10 +1,9 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/46019 */
 
 extern void abort (void);
 
-int
-main (void)
+int main (void)
 {
   unsigned long long l = 0x40000000000ULL;
   int n;

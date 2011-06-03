@@ -1,4 +1,5 @@
-void exit(int status);
+#include <math.h>
+#include <stdlib.h>
 /* Copyright (C) 2002  Free Software Foundation.
 
    Ensure that fabs(x) < 0.0 optimization is working.
@@ -20,8 +21,7 @@ foo (double x)
     link_error ();
 }
 
-int
-main()
+int main()
 {
   foo (1.0);
   return 0;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 blah (int zzz)
 {
@@ -10,7 +9,7 @@ blah (int zzz)
   return foo;
 }
 
-main()
+int main()
 {
   if (blah (-1) != 1)
     abort ();

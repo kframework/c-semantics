@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void big(long long u) { }
 
 void doit(unsigned int a,unsigned int b,char *id)

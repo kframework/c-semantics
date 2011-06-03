@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
   long int p_x, p_y;
 } Point;
@@ -21,7 +20,7 @@ f (Point basePt, Point pt1, Point pt2)
     return 2;
 }
 
-main ()
+int main ()
 {
   Point b, p1, p2;
   int answer;

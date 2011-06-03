@@ -1,30 +1,29 @@
-void exit(int status);
-void abort(void);
-sub1 (i)
+#include <stdlib.h>
+int sub1 (i)
      int i;
 {
   return i - (5 - i);
 }
 
-sub2 (i)
+int sub2 (i)
      int i;
 {
   return i + (5 + i);
 }
 
-sub3 (i)
+int sub3 (i)
      int i;
 {
   return i - (5 + i);
 }
 
-sub4 (i)
+int sub4 (i)
      int i;
 {
   return i + (5 - i);
 }
 
-main()
+int main()
 {
   if (sub1 (20) != 35)
     abort ();

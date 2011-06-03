@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/29695 */
 
 extern void abort (void);
@@ -59,8 +59,7 @@ f8 (void)
   return (a & 0x80000000) ? -2147483648LL : 0LL;
 }
 
-int
-main (void)
+int main (void)
 {
   if ((char) 128 != -128 || (int) 0x80000000 != -2147483648)
     return 0;

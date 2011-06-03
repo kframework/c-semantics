@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef unsigned long long ULL;
 ULL back;
 ULL hpart, lpart;
@@ -14,7 +13,7 @@ build(long h, long l)
   return back;
 }
 
-main()
+int main()
 {
   if (build(0, 1) != 0x0000000000000001LL)
     abort();

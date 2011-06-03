@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/19579 */
 
 extern void abort (void);
@@ -19,8 +19,7 @@ foo (int i, int j)
   return k;
 }
 
-int
-main (void)
+int main (void)
 {
   if (foo (-2, 0) != -1)
     abort ();

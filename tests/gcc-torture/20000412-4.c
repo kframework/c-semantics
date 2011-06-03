@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
   void f(int i, int j, int radius, int width, int N)
   {
     const int diff   = i-radius;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct x {
 	int a, b;
 } z = { -4028, 4096 };
@@ -11,7 +10,7 @@ int foo(struct x *p, int y)
   return 0;
 }
 
-main()
+int main()
 {
   if (foo (&z, 10))
     abort ();

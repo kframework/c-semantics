@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 double f (float f1, float f2, float f3, float f4,

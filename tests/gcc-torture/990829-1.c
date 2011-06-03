@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 double test (const double le, const double ri)
 {
 	double val = ( ri - le ) / ( ri * ( le + 1.0 ) );

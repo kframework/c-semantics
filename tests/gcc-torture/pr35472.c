@@ -1,6 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 extern void abort (void);
-extern void *memset (void *s, int c, __SIZE_TYPE__ n);
+extern void *memset (void *s, int c, size_t n);
 struct S { int i[16]; };
 struct S *p;
 void __attribute__((noinline))

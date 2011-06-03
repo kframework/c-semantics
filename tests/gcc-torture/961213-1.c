@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 g (unsigned long long int *v, int n, unsigned int a[], int b)
 {
@@ -10,7 +9,7 @@ g (unsigned long long int *v, int n, unsigned int a[], int b)
   return n;
 }
 
-main ()
+int main ()
 {
   int res;
   unsigned int ar[] = { 10, 11, 12, 13, 14 };

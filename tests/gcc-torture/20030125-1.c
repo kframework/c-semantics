@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Verify whether math functions are simplified.  */
 double sin(double);
 double floor(double);
@@ -18,7 +17,7 @@ q1(float a)
 {
 	return floor(a);
 }
-main()
+int main()
 {
 #ifdef __OPTIMIZE__
 	if (t(0)!=0)

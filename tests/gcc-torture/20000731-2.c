@@ -1,7 +1,5 @@
-void exit(int status);
-void abort(void);
-int
-main()
+#include <stdlib.h>
+int main()
 {
     int i = 1;
     int j = 0;

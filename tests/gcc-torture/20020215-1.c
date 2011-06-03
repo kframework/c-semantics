@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Test failed on an architecture that:
 
    - had 16-bit registers,

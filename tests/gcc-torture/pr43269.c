@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int g_21;
 int g_211;
 int g_261;

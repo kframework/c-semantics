@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort(void);
 typedef long GLint;
 void aglChoosePixelFormat (const GLint *);
@@ -26,8 +26,7 @@ aglChoosePixelFormat (const GLint * a)
     abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   find (0);
   return 0;

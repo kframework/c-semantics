@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a = 1;
 int b = -1;
 
 int c = 1;
 int d = 0;
 
-main ()
+int main ()
 {
   double e;
   double f;

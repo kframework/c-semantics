@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f(long i)
 {
   if ((signed char)i < 0 || (signed char)i == 0) 
@@ -8,7 +7,7 @@ void f(long i)
     exit (0);
 }
 
-main()
+int main()
 {
   f(0xffffff01);
 }

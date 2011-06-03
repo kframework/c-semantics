@@ -1,6 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 /* PR tree-optimization/19828 */
-typedef __SIZE_TYPE__ size_t;
+//;
 extern size_t strlen (const char *s);
 extern int strncmp (const char *s1, const char *s2, size_t n);
 extern void abort (void);
@@ -22,8 +23,7 @@ foo (char *x, const char *y, size_t n)
   return 0;
 }
 
-int
-main (void)
+int main (void)
 {
   if (foo ("abcde", (const char *) 0, 3) != 0)
     abort ();

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 char *a = 0;
 char *b = 0;
 
@@ -16,7 +15,7 @@ void f (x)
   g (x * x);
 }
 
-main ()
+int main ()
 {
   f (100);
   exit (0);

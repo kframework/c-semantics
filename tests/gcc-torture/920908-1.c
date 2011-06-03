@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* REPRODUCED:RUN:SIGNAL MACHINE:mips OPTIONS: */
 
 #include <stdarg.h>
@@ -19,7 +18,7 @@ va_end(ap);
 return X;
 }
 
-main()
+int main()
 {
 T X,Y;
 int i;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #if defined (STACK_SIZE)
 #define DUMMY_SIZE 9
 #else
@@ -11,7 +10,7 @@ double g()
   return 1.0;
 }
 
-f()
+int f()
 {
   char dummy[DUMMY_SIZE];
   double f1, f2, f3;
@@ -21,7 +20,7 @@ f()
   return f1 + f2 + f3;
 }
 
-main()
+int main()
 {
   if (f() != 3.0)
     abort();

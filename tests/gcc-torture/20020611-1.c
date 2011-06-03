@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR target/6997.  Missing (set_attr "cc" "none") in sleu pattern in
    cris.md.  Testcase from hp@axis.com.  */
 
@@ -25,7 +24,7 @@ void x ()
 
 unsigned int n = 30;
 
-main ()
+int main ()
 {
   x ();
   if (p != 1 || k != 1)

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 
 struct inode {
 	long long		i_size;
@@ -64,8 +63,7 @@ struct super_block s;
 struct inode i;
 struct file f;
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	s.s_blocksize = 512;
 	s.s_blocksize_bits = 9;

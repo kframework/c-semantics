@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct S
 {
   int *sp, fc, *sc, a[2];
@@ -21,7 +20,7 @@ void f (struct S *x)
   x->sp = t;
 }
 
-main ()
+int main ()
 {
   struct S s;
   static int sc[3] = {2, 3, 4};

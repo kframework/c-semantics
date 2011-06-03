@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR 9700 */
 /* Alpha got the base address for the va_list incorrect when there was
    a structure that was passed partially in registers and partially on

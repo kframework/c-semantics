@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/34490 */
 
 extern void abort (void);
@@ -23,8 +23,7 @@ foo (void)
   return b + 1;
 }
 
-int
-main (void)
+int main (void)
 {
   x = 26;
   if (foo () != 26)

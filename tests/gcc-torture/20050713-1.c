@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Test that sibling call is not used if there is an argument overlap.  */
 
 extern void abort (void);
@@ -45,8 +45,7 @@ baz3 (struct S x, struct S y, struct S z)
   return foo3 (y, z, x);
 }
 
-int
-main (void)
+int main (void)
 {
   struct S a = { 3, 4, 5 }, b = { 6, 7, 8 }, c = { 9, 10, 11 };
 

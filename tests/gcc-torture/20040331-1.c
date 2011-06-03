@@ -2,8 +2,7 @@
 extern void abort (void);
 extern void exit (int);
 
-int
-main (void)
+int main (void)
 {
 #if __INT_MAX__ >= 2147483647
   struct { int count: 31; } s = { 0 };

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Failed on sparc with -mv8plus because sparc.c:set_extends() thought
    erroneously that SImode ASHIFT chops the upper bits, it does not.  */
 

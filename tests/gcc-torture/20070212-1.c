@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 struct f
 {
   int i;

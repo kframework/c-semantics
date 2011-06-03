@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Test against a problem with loop reversal.  */
 static void bug(int size, int tries)
 {

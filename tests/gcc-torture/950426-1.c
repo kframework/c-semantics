@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
 #include <string.h>
+#include <stdlib.h>
 
 struct tag {
   int m1;
@@ -8,8 +7,10 @@ struct tag {
 } s1, *p1;
 
 int i;
+int func1();
+void foo();
 
-main()
+int main()
 {
   s1.m1 = -1;
   p1 = &s1;

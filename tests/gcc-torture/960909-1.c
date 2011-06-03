@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 ffs (x)
      int x;
@@ -24,7 +23,7 @@ void f (x)
     abort ();
 }
 
-main ()
+int main ()
 {
   f (1);
   exit (0);

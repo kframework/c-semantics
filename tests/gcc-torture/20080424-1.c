@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR tree-optimization/36008 */
 
 extern void abort (void);
@@ -24,8 +24,7 @@ foo (int x[][3][3])
     }
 }
 
-int
-main ()
+int main ()
 {
   foo (g);
   return 0;

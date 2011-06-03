@@ -1,11 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
+#include <stddef.h>
 /* This is a modfied version of va-arg-2.c to test passing a va_list as
    a parameter to another function.  */
 
 #include <stdarg.h>
 
-extern __SIZE_TYPE__ strlen (const char *);
+extern size_t strlen (const char *);
 
 int
 to_hex (unsigned int a)
@@ -213,7 +213,7 @@ f15 (int a1, int a2, int a3, int a4, int a5,
   va_end(ap);
 }
 
-main ()
+int main ()
 {
   char *f = "0123456789abcdef";
 

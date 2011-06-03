@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Copyright 2001 Free Software Foundation
    Contributed by Alexandre Oliva <aoliva@redhat.com> */
 

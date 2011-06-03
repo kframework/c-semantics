@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main ()
+#include <stdlib.h>
+int main ()
 {
   static int a[] = {3, 4};
   register int *b;

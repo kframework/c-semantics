@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR optimization/10955 */
 /* Originator: <heinrich.brand@fujitsu-siemens.com> */
 

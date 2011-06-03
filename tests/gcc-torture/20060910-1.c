@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/28636 */
 /* Origin: Andreas Schwab <schwab@suse.de> */
 

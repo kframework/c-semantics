@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct s {
 	unsigned short a;
 	unsigned long b __attribute__ ((packed));

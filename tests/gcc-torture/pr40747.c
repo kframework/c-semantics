@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/40747 */
 
 extern void abort (void);
@@ -9,8 +9,7 @@ foo (int i)
   return (i < 4 && i >= 0) ? i : 4;
 }
 
-int
-main ()
+int main ()
 {
   if (foo (-1) != 4) abort ();
   if (foo (0) != 0) abort ();

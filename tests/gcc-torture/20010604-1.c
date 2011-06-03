@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdbool.h>
 
 int f (int a, int b, int c, _Bool d, _Bool e, _Bool f, char g)

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 
 extern void abort (void);
 extern void link_error (void);

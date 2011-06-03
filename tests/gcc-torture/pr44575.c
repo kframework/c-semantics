@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR target/44575 */
 
 #include <stdarg.h>
@@ -40,8 +39,7 @@ check (int z, ...)
   va_end (ap);
 }
 
-int
-main ()
+int main ()
 {
   a[2].a[2] = -49026;
   check (1, a[2], a[2]);

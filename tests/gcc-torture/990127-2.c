@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void
 fpEq (double x, double y)
 {
@@ -15,7 +14,7 @@ fpTest (double x, double y)
   fpEq (result1, result2);
 }
 
-main ()
+int main ()
 {
   fpTest (35.7, 45.0);
   exit (0);

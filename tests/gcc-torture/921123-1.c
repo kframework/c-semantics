@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
-f(short *p)
+#include <stdlib.h>
+int f(short *p)
 {
   short x = *p;
   return (--x < 0);
 }
 
-main()
+int main()
 {
   short x = -10;
   if (!f(&x))

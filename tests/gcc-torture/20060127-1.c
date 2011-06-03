@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 void abort ();
 
 void
@@ -10,8 +10,7 @@ f (long long a)
 
 long long a = 0x1234567800000000LL;
 
-int
-main ()
+int main ()
 {
   f (a);
   return 0;

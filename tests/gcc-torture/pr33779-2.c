@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int foo(int i)
 {
   return ((int)((unsigned)(i + 1) * 4)) / 4;

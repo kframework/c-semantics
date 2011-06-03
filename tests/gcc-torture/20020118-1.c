@@ -1,4 +1,4 @@
-void abort(void);
+#include <stdlib.h>
 /* This tests an insn length of sign extension on h8300 port.  */
 
 extern void exit (int);
@@ -27,8 +27,7 @@ foo (void)
     }
 }
 
-int
-main ()
+int main ()
 {
   exit (0);
 }

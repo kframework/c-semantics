@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct rtx_def
 {
   int f1 :1;
@@ -22,7 +21,7 @@ f2 ()
   abort ();
 }
 
-main ()
+int main ()
 {
   struct rtx_def foo;
   rtx bar;

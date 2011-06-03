@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 char line[4] = { '1', '9', '9', '\0' };
 
 int main()

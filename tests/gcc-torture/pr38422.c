@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/38422 */
 
 extern void abort (void);
@@ -14,8 +14,7 @@ foo (void)
   s.s *= 2;
 }
 
-int
-main ()
+int main ()
 {
   s.s = 24;
   foo ();

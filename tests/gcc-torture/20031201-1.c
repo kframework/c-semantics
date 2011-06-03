@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Copyright (C) 2003  Free Software Foundation.
    PR target/13256
    STRICT_LOW_PART was handled incorrectly in delay slots.
@@ -51,8 +50,7 @@ f1 (void *port)
   return fail_count != 0 ? 1 : 0;
 }
 
-int
-main ()
+int main ()
 {
   io io0;
   f1 (&io0);

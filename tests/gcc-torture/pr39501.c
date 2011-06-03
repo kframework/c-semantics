@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* { dg-options "-ffast-math" } */
 #define min1(a,b) ((a) < (b) ? (a) : (b))
 #define max1(a,b) ((a) > (b) ? (a) : (b))

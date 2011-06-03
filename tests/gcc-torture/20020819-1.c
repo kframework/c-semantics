@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
-foo ()
+#include <stdlib.h>
+int foo ()
 {
   return 0;
 }
 
-main()
+int main()
 {
   int i, j, k, ccp_bad = 0;
 

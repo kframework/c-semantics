@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct s { int a; int b;};
 struct s s1;
 struct s s2 = { 1, 2, };
@@ -15,8 +14,7 @@ check (a, b)
     abort ();
 }
 
-int
-main ()
+int main ()
 {
   int * p;
   int x;

@@ -15,8 +15,7 @@ foo (short *p)
   return b;
 }
 
-int
-main ()
+int main ()
 {
   short a = 0xff00;
   if (foo (&a) != (long) (short) 0xff00)

@@ -1,6 +1,6 @@
-void exit(int status);
-void abort(void);
-typedef __SIZE_TYPE__ size_t;
+#include <stdlib.h>
+#include <stddef.h>
+//;
 extern size_t strlen (const char *s);
 
 typedef struct A {

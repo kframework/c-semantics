@@ -1,15 +1,13 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* The bit-field below would have a problem if __INT_MAX__ is too
    small.  */
 #if __INT_MAX__ < 2147483647
-int
-main (void)
+int main (void)
 {
   exit (0);
 }
 #else
-f ()
+int f ()
 {
   struct {
     int x : 18;
@@ -22,7 +20,7 @@ f ()
   return foo.y;
 }
 
-main ()
+int main ()
 {
   if (f () != 20)
     abort ();

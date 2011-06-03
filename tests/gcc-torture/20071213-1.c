@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR target/34281 */
 
 #include <stdarg.h>
@@ -45,8 +45,7 @@ f2 (int i, int j, int k, long long int l, ...)
   va_end (ap);
 }
 
-int
-main ()
+int main ()
 {
   f1 (1, 2, 3, 4);
   f2 (5, 6, 7, 8, 9, 10);

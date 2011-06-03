@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
-f (unsigned char x)
+#include <stdlib.h>
+int f (unsigned char x)
 {
   return (0x50 | (x >> 4)) ^ 0xff;
 }
 
-main ()
+int main ()
 {
   if (f (0) != 0xaf)
     abort ();

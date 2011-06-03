@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int array[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
-main ()
+int main ()
 {
   int i, j;
   int *p;

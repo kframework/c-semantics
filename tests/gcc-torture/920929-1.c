@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* REPRODUCED:RUN:SIGNAL MACHINE:sparc OPTIONS: */
 void f(int n)
 {

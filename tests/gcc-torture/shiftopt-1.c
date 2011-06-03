@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright (C) 2002  Free Software Foundation
 
    Check that constant folding of shift operations is working.
@@ -46,8 +46,7 @@ stest (int x)
     link_error ();
 }
 
-int
-main ()
+int main ()
 {
   utest(9);
   utest(0);

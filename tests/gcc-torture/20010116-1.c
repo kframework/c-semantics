@@ -24,8 +24,7 @@ void ok(int i)
   exit (0);
 }
 
-int
-main ()
+int main ()
 {
   Data DataList[4];
   find (DataList + 0, DataList + 4);

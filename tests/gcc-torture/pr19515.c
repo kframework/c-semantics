@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR 19515 */
 
 typedef union {

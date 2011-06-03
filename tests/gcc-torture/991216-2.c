@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 #define VALUE 0x123456789abcdefLL
@@ -27,8 +26,7 @@ test (int n, ...)
   va_end (ap);
 }
 
-int
-main ()
+int main ()
 {
   test (1, VALUE, AFTER);
   test (2, 2, VALUE, AFTER);

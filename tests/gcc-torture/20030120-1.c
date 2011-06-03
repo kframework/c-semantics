@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* On H8/300 port, NOTICE_UPDATE_CC had a bug that causes the final
    pass to remove test insns that should be kept.  */
 
@@ -36,8 +35,7 @@ test3 (unsigned short a)
     return 0;
 }
 
-int
-main ()
+int main ()
 {
   if (test1 (1) != 1)
     abort ();

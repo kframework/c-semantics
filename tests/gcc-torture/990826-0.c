@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /*
 From: niles@fan745.gsfc.nasa.gov
 To: fortran@gnu.org
@@ -11,8 +10,7 @@ X-UIDL: 9c1e40c572e3b306464f703461764cd5
 #include <stdio.h>
 #include <math.h>
 
-int
-main()
+int main()
 {
   if (floor (0.1) != 0.)
     abort ();

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR optimization/10312 */
 /* Originator: Peter van Hoof <p dot van-hoof at qub dot ac dot uk> */
 
@@ -19,8 +18,7 @@ b (int *j)
 {
 }
 
-int
-main ()
+int main ()
 {
   int j;
 

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 short x1 = 17;
 
 struct
@@ -14,7 +13,7 @@ void f ()
     abort ();
 }
 
-main ()
+int main ()
 {
   f ();
   exit (0);

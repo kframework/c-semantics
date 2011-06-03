@@ -1,7 +1,5 @@
-void exit(int status);
-void abort(void);
-int
-main()
+#include <stdlib.h>
+int main()
 {
   double x = 1.0;
   double y = 2.0;

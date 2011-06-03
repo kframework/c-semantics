@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct a;
 
 extern int baz (struct a *__restrict x);

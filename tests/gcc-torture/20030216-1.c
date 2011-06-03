@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void link_error (void);
 const double one=1.0;
-main ()
+int main ()
 {
 #ifdef __OPTIMIZE__
   if ((int) one != 1)

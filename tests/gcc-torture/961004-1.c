@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int k = 0;
 
-main()
+int main()
 {
   int i;
   int j;

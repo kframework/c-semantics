@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   short f:3, g:3, h:10;
@@ -11,7 +10,7 @@ struct
   small s[10];
 } x;
 
-main ()
+int main ()
 {
   int i;
   for (i = 0; i < 10; i++)

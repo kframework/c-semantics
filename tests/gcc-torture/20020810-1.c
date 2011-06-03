@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR target/7559
    This testcase was miscompiled on x86-64, because classify_argument
    wrongly computed the offset of nested structure fields.  */

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
     int v[4];
 } Test1;
@@ -19,7 +18,7 @@ int func1()
       abort ();
     if (test.v[3] != 40)
       abort ();
-    return 0;
+	return 0;
 }
 
 Test1 func2()

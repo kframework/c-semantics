@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   short s __attribute__ ((aligned(2), packed));
@@ -14,7 +13,7 @@ check (TRIAL *t)
   return 0;
 }
 
-main ()
+int main ()
 {
   TRIAL trial;
 

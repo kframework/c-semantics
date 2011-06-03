@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned calc_mp(unsigned mod)
 {
       unsigned a,b,c;

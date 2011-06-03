@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR target/12654
    The Alpha backend tried to do a >= 1024 as (a - 1024) >= 0, which fails
    for very large negative values.  */
@@ -15,8 +15,7 @@ foo (long x)
     abort ();
 }
 
-int
-main ()
+int main ()
 {
   foo (LONG_MIN);
   foo (LONG_MIN + 10000);

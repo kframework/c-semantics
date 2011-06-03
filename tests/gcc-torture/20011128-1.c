@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main()
+#include <stdlib.h>
+int main()
 {
   char blah[33] = "01234567890123456789";
   exit (0);

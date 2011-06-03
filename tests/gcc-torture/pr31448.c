@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR middle-end/31448, this used to ICE during expand because
    reduce_to_bit_field_precision was not ready to handle constants. */
 
@@ -30,9 +29,9 @@ int main(void)
   next = &a;
   f();
   if (next->iIndex != 0xFFFEFEFE)
-    __builtin_abort ();
+    abort ();
   if (next->iIndex1 != 0xFFFEFEFE)
-    __builtin_abort ();
+    abort ();
   return 0;
 }
 

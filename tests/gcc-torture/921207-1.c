@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f()
+#include <stdlib.h>
+int f()
 {
   unsigned b = 0;
 
@@ -9,7 +8,7 @@ f()
 
   return b;
 }
-main()
+int main()
 {
   if (f()!=0)
     abort();

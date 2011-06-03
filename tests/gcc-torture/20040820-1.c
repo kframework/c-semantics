@@ -16,8 +16,7 @@ test (int a, int b)
   check ((a ? 1 : 0) | (b ? 2 : 0));
 }
 
-int
-main (void)
+int main (void)
 {
   test (1, 0);
   exit (0);

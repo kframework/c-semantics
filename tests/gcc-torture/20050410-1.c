@@ -1,13 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int s = 200;
 int __attribute__((noinline))
 foo (void)
 {
   return (signed char) (s - 100) - 5;
 }
-int
-main (void)
+int main (void)
 {
   if (foo () != 95)
     abort ();

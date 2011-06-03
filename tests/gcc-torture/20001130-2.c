@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static int which_alternative = 3;
 
 static const char *i960_output_ldconst (void);
@@ -18,6 +17,7 @@ output_25 (void)
     case 3:
       return "st	%1,%0";      
     }
+  return 0;
 }
 
 static const char *i960_output_ldconst (void)

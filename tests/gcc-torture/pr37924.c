@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR c/37924 */
 
 extern void abort (void);
@@ -20,8 +20,7 @@ test2 (void)
   return ((unsigned int) (b ^ c)) >> 9;
 }
 
-int
-main (void)
+int main (void)
 {
   a = 0;
   if (test1 () != (-1U >> 9))

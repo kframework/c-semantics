@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct s
 {
   int a;
@@ -7,12 +6,12 @@ struct s
   struct s *dummy;
 };
 
-f (struct s *sp)
+int f (struct s *sp)
 {
   return sp && sp->a == -1 && sp->b == -1;
 }
 
-main ()
+int main ()
 {
   struct s x;
   x.a = x.b = -1;

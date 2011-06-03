@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a3[3];
 
 void f(int *a)
@@ -10,8 +9,7 @@ void f(int *a)
     a[i] = 42 / i;
 }
 
-int
-main ()
+int main ()
 {
   f(a3);
 

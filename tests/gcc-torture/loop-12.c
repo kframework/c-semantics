@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Checks that pure functions are not treated as const.  */
 
 char *p;
@@ -18,8 +17,7 @@ void foo (void)
     p++;
 }
 
-int
-main (void)
+int main (void)
 {
   p = "abc\n";
   foo ();

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct vc_data {
 	unsigned long	space;
 	unsigned char   vc_palette[16*3];        

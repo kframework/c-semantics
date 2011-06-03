@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f (b, c)
+#include <stdlib.h>
+int f (b, c)
      unsigned char *b;
      int c;
 {
@@ -22,7 +21,7 @@ f (b, c)
 
   return v;
 }
-main ()
+int main ()
 {
   char buf[4];
   buf[0] = 170; buf[1] = 5;

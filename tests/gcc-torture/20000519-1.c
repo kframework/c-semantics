@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 int
@@ -23,8 +22,7 @@ foo (int a, ...)
   return bar (a, ap);
 }
 
-int
-main ()
+int main ()
 {
   if (foo (1, 2, 3) != 3)
     abort ();

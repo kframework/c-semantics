@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned test(unsigned one , unsigned  bit)
 {
     unsigned val=  bit & 1;

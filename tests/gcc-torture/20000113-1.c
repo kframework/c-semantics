@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct x { 
   unsigned x1:1;
   unsigned x2:2;
   unsigned x3:3;
 };
    
-foobar (int x, int y, int z)
+void foobar (int x, int y, int z)
 {
   struct x a = {x, y, z};
   struct x b = {x, y, z};
@@ -18,7 +17,7 @@ foobar (int x, int y, int z)
   exit (0);
 }
 
-main()
+int main()
 {
   foobar (1, 2, 3);
 }

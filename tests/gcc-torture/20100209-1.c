@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int bar(int foo)
 {
   return (int)(((unsigned long long)(long long)foo) / 8);

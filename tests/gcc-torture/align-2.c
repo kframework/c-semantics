@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Simple alignment checks;
    looking for compiler/assembler alignment disagreements,
    agreement between struct initialization and access.  */

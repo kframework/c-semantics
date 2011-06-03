@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f1 (a)
+#include <stdlib.h>
+int f1 (a)
      long a;
 {
   int i;
@@ -12,7 +11,7 @@ f1 (a)
   return -1;
 }
 
-f2 (a)
+int f2 (a)
      long a;
 {
   int i;
@@ -24,7 +23,7 @@ f2 (a)
   return -1;
 }
 
-f3 (a)
+int f3 (a)
      long a;
 {
   int i;
@@ -36,7 +35,7 @@ f3 (a)
   return -1;
 }
 
-f4 (a)
+int f4 (a)
      long a;
 {
   int i;
@@ -48,7 +47,7 @@ f4 (a)
   return -1;
 }
 
-f5 (a)
+int f5 (a)
      long a;
 {
   int i;
@@ -60,7 +59,7 @@ f5 (a)
   return -1;
 }
 
-f6 (a)
+int f6 (a)
      long a;
 {
   int i;
@@ -73,7 +72,7 @@ f6 (a)
 }
 
 
-main()
+int main()
 {
   if (f1 (5L) != 5)
     abort ();

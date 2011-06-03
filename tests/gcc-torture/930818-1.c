@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static double one = 1.0;
 
-f()
+int f()
 {
   int colinear;
   colinear = (one == 0.0);
@@ -10,7 +9,7 @@ f()
     abort ();
   return colinear;
 }
-main()
+int main()
 {
   if (f()) abort();
   exit (0);

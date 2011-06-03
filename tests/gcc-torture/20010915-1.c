@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
 #include <string.h>
+#include <stdlib.h>
 /* Bug in reorg.c, deleting the "++" in the last loop in main.
    Origin: <hp@axis.com>.  */
 

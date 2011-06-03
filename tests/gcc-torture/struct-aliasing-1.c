@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 struct S { float f; };
 int __attribute__((noinline))
 foo (int *r, struct S *p)

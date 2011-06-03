@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 struct T { int t; int r[8]; };
 struct S { int a; int b; int c[6]; struct T d; };
@@ -9,8 +9,7 @@ foo (struct S *s)
   *s = (struct S) { s->b, s->a, { 0, 0, 0, 0, 0, 0 }, s->d };
 }
 
-int
-main (void)
+int main (void)
 {
   struct S s = { 6, 12, { 1, 2, 3, 4, 5, 6 },
 		 { 7, { 8, 9, 10, 11, 12, 13, 14, 15 } } };

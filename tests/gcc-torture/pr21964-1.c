@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void
 foo (int n, int m)
 {
@@ -11,8 +10,7 @@ foo (int n, int m)
     foo (n++, m - 1);
 }
  
-int
-main (void)
+int main (void)
 {
   foo (0, 4);
 }

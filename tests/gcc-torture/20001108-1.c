@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long long
 signed_poly (long long sum, long x)
 {
@@ -14,8 +13,7 @@ unsigned_poly (unsigned long long sum, unsigned long x)
   return sum;
 }
 
-int
-main (void)
+int main (void)
 {
   if (signed_poly (2LL, -3) != -4LL)
     abort ();

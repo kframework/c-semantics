@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define SIZE 8
 
-main()
+int main()
 {
   int a[SIZE] = {1};
   int i;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Extracted from gas.  Incorrectly generated non-pic code at -O0 for
    IA-64, which produces linker errors on some operating systems.  */
 
@@ -21,8 +20,7 @@ x ()
   return r;
 }
 
-int
-main ()
+int main ()
 {
   return 0;
 }

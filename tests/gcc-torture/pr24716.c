@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR24716, scalar evolution returning the wrong result
    for pdest.  */
 

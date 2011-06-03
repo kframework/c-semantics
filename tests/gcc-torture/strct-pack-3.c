@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   short i __attribute__ ((aligned (2),packed));
   int f[2] __attribute__ ((aligned (2),packed));
 } A;
 
-f (ap)
+int f (ap)
   A *ap;
 {
   short i, j = 1;
@@ -19,7 +18,7 @@ f (ap)
   return i;
 }
 
-main ()
+int main ()
 {
   A a;
   a.f[0] = 100;

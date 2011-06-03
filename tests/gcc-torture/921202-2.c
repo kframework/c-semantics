@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 f(long long x)
 {
@@ -7,7 +6,7 @@ f(long long x)
   return x & 0xff;
 }
 
-main()
+int main()
 {
   if (f(0x0123456789ABCDEFLL) != 0xCD)
     abort();

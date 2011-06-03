@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Program to test gcc's usage of the gofast library.  */
 
 /* The main guiding themes are to make it trivial to add test cases over time
@@ -51,10 +50,10 @@ fail (char *msg)
 {
   fail_count++;
   fprintf (stderr, "Test failed: %s\n", msg);
+  return 0;
 }
 
-int
-main()
+int main()
 {
   if (fp_add (1, 1) != 2) fail ("fp_add 1+1");
   if (fp_sub (3, 2) != 1) fail ("fp_sub 3-2");

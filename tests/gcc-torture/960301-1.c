@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct foo {
   unsigned : 12;
   unsigned field : 4;
@@ -16,7 +15,7 @@ bar (unsigned k)
   return 2;
 }
 
-main ()
+int main ()
 {
   if (bar (1U) != 1)
     abort ();

@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long a = 1;
 
-foo ()
+int foo ()
 {
   switch (a % 2 % 2 % 2 % 2 % 2 % 2 % 2 % 2)
     {
@@ -15,7 +14,7 @@ foo ()
     }
 }
 
-main ()
+int main ()
 {
   if (foo () != 1)
     abort ();

@@ -13,8 +13,7 @@ f (short a)
   return b;
 }
 
-int
-main (void)
+int main (void)
 {
   if (sizeof (short) < 2
       || sizeof (short) >= sizeof (int))

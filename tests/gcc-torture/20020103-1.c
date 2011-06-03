@@ -15,8 +15,7 @@ bar (unsigned long a)
   return a ^ 0xffff0000;
 }
 
-int
-main ()
+int main ()
 {
   if (foo (0) != 0x0000ffff)
     abort ();

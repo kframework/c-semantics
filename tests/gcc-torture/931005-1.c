@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   char x;
@@ -14,7 +13,7 @@ f (s1)
   return s1a;
 }
 
-main ()
+int main ()
 {
   T s1a, s1b;
   s1a.x = 100;

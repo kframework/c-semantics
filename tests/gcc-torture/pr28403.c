@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef unsigned long long ull;
 int global;
 
@@ -17,8 +16,7 @@ bar (ull x)
   return x >> global;
 }
 
-int
-main (void)
+int main (void)
 {
   if (bar (0x123456789abcdefULL) != (0x123456789abcdefULL >> 18))
     abort ();

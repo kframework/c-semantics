@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 f (int a)
 {
   return ((a >= 0 && a <= 10) && ! (a >= 0));
 }
 
-main ()
+int main ()
 {
   if (f (0))
     abort ();

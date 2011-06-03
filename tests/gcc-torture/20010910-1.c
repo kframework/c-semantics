@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Test case contributed by Ingo Rohloff <rohloff@in.tum.de>.
    Code distilled from Linux kernel.  */
 

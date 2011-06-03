@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long
 f (long x)
 {
@@ -27,7 +26,7 @@ long nums[] =
   -1L, 0x7fffffffL, -0x7fffffffL - 1L
 };
 
-main ()
+int main ()
 {
   int i;
 

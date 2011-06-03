@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef enum
 {
   END = -1,
@@ -36,7 +35,7 @@ atom ()
     return 0;
 }
 
-main ()
+int main ()
 {
   tok = 0;
   if (atom () != 1)

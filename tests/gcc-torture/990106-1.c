@@ -1,13 +1,12 @@
-void exit(int status);
-void abort(void);
-foo(bufp)
+#include <stdlib.h>
+int foo(bufp)
 char *bufp;
 {
     int x = 80;
     return (*bufp++ = x ? 'a' : 'b');
 }
 
-main()
+int main()
 {
   char x;
 

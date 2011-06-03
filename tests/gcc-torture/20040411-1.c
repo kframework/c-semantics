@@ -1,5 +1,5 @@
-void exit(int status);
-void abort(void);
+#include <string.h>
+#include <stdlib.h>
 int
 sub1 (int i, int j)
 {
@@ -15,8 +15,7 @@ sub1 (int i, int j)
     return sizeof (c) * 3;
 }
 
-int
-main ()
+int main ()
 {
   if (sub1 (20, 3) != 66 * sizeof (int))
     abort ();

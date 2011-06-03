@@ -39,8 +39,7 @@ foo (enum X x, const void *y)
   return a;
 }
 
-int
-main ()
+int main ()
 {
   long i = 24;
   if (foo (N, &i) != 24)

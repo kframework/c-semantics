@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct {
   int a:4;
   int :4;
@@ -7,7 +6,7 @@ struct {
   int c:4;
 } x = { 2,3,4 };
 
-main ()
+int main ()
 {
   if (x.a != 2)
     abort ();

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR middle-end/13400 */
 /* The following test used to fail at run-time with a write to read-only
    memory, caused by if-conversion converting a conditional write into an

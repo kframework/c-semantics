@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Two of these types will, on current gcc targets, have the same
    mode but have different alias sets.  DOIT tries to get gcse to
    invalidly hoist one of the values out of the loop.  */
@@ -40,8 +39,7 @@ doit(int sel, int n, void *p)
     }
 }
 
-int
-main()
+int main()
 {
   T0 v0; T1 v1; T2 v2;
 

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static int i;
 
 void
@@ -10,7 +9,7 @@ check(x)
     abort();
 }
 
-main()
+int main()
 {
   int *p = &i;
 

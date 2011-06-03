@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct foo { int a, b, c; };
 
 void
@@ -15,8 +14,7 @@ sister (struct foo f, int b, int c)
   brother ((f.b == b), b, c);
 }
 
-int
-main ()
+int main ()
 {
   struct foo f = { 7, 8, 9 };
   sister (f, 1, 2);

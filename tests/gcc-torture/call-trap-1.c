@@ -18,8 +18,7 @@ bar (void)
 {
 }
 
-int
-main (void)
+int main (void)
 {
   ((long (*)(int))bar) (foo ());
   abort ();

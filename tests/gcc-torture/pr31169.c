@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort();
 
 #define HOST_WIDE_INT long

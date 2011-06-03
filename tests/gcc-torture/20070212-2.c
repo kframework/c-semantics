@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int f(int k, int i1, int j1)
 {
   int *f1;

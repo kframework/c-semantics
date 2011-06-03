@@ -1,10 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* The bit-field below would have a problem if __INT_MAX__ is too
    small.  */
 #if __INT_MAX__ < 2147483647
-int
-main (void)
+int main (void)
 {
   exit (0);
 }
@@ -32,8 +30,7 @@ foo (void)
   return 0;
 }
 
-int
-main (void)
+int main (void)
 {
   x.exponent = 1;
   if (foo () != 0)

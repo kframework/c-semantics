@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static int f(int) __attribute__((const));
 int main()
 {

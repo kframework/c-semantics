@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long double
 ll_to_ld (long long n)
 {
@@ -12,7 +11,7 @@ ld_to_ll (long double n)
   return n;
 }
 
-main ()
+int main ()
 {
   long long n;
 

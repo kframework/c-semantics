@@ -1,9 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 
 
 int blah;
-foo()
+int foo()
 {
   int i;
 
@@ -18,7 +17,7 @@ foo()
 }
 
 
-main()
+int main()
 {
   if (foo () != 0xfcc)
     abort ();

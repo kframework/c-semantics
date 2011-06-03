@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void test(long double val, int *eval)
 {
   long double tmp = 1.0l;

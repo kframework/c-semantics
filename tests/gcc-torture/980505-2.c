@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef unsigned short Uint16;
 typedef unsigned int Uint;
 
@@ -15,8 +14,7 @@ Uint f ()
         return count;
 }
 
-int
-main ()
+int main ()
 {
   if (f () != 0x93)
     abort ();

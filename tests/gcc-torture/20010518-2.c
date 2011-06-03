@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Mis-aligned packed structures.  */
 
 typedef struct
@@ -23,8 +22,7 @@ typedef struct
 } __attribute__ ((packed)) a_struct;
 
 
-int
-main(void)
+int main(void)
 {
   volatile a_struct *a;
   volatile a_struct b;

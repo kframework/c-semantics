@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 double
 f(double x)
 {
@@ -12,7 +11,7 @@ Int(double (*f)(double), double a)
   return (*f)(a);
 }
 
-main()
+int main()
 {
   if (Int(&f,2.0) != 4.0)
     abort();

@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f (int i)
 {
   if (((1 << i) & 1) == 0)
     abort ();
 }
 
-main ()
+int main ()
 {
   f (0);
   exit (0);

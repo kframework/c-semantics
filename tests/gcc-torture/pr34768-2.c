@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int x;
 
 int __attribute__((noinline)) foo (void)

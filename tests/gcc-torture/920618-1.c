@@ -1,3 +1,2 @@
-void exit(int status);
-void abort(void);
-main(){if(1.17549435e-38F<=1.1)exit(0);abort();}
+#include <stdlib.h>
+int main(){if(1.17549435e-38F<=1.1)exit(0);abort();}

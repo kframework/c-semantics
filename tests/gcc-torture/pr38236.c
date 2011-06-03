@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 struct X { int i; };
 
 int __attribute__((noinline))

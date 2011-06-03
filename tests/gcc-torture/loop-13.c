@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR opt/7130 */
 #define TYPE long
 
@@ -19,8 +18,7 @@ scale (TYPE *alpha, TYPE *x, int n)
       }
 }
 
-int
-main (void)
+int main (void)
 {
   int i;
   TYPE x[10];

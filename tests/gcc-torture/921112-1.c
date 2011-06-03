@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 union u {
   struct { int i1, i2; } t;
   double d;

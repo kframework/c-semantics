@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR 8639.  */
 
 extern void abort(void);

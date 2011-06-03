@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int i, a[99];
 
 void f (int one)
@@ -14,8 +13,7 @@ g ()
   f (a[i & 0x3f]);
 }
 
-int
-main ()
+int main ()
 {
   a[0] = 1;
   i = 0x40;

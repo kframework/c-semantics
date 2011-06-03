@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <math.h>
 
-main()
+int main()
 {
   volatile double a;
   double c;

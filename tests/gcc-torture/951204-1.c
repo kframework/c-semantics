@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f (char *x)
 {
   *x = 'x';
 }
 
-main ()
+int main ()
 {
   int i;
   char x = '\0';

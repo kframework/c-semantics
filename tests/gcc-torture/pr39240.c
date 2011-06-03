@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR target/39240 */
 
 extern void abort (void);
@@ -87,8 +87,7 @@ signed char bar6 (int x)
 
 volatile unsigned long l6 = (signed char) -4;
 
-int
-main (void)
+int main (void)
 {
   if (bar1 (-10) != l1)
     abort ();

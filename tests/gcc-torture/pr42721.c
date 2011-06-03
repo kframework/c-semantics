@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR c/42721 */
 
 extern void abort (void);
@@ -11,8 +11,7 @@ foo (unsigned long long x, unsigned long long y)
 
 static int a, b;
 
-int
-main (void)
+int main (void)
 {
   unsigned long long c = 1;
   b ^= c && (foo (a, -1ULL) != 1L);

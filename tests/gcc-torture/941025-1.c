@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long f (x, y)
      long x,y;
 {
   return (x > 1) ? y : (y & 1);
 }
 
-main ()
+int main ()
 {
   if (f (2L, 0xdecadeL) != 0xdecadeL)
     abort ();

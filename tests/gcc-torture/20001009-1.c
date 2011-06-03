@@ -1,7 +1,6 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a,b;
-main()
+int main()
 {
   int c=-2;
   int d=0xfe;

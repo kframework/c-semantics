@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 char foo(char bar[])
 {
   return bar[1];

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
    unsigned long bad(int reg, unsigned long inWord)
    {
        union {
@@ -13,7 +12,7 @@ void abort(void);
        return data.word;
    }
 
-main()
+int main()
 {
   /* XXX This test could be generalized.  */
   if (sizeof (long) != 4)

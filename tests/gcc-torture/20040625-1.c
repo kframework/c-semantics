@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* From PR target/16176 */
 struct __attribute__ ((packed)) s { struct s *next; };
 

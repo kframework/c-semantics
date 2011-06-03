@@ -1,5 +1,5 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
+#include <stddef.h>
 /* Extracted from GDB sources. */
 
 typedef long long bfd_signed_vma;

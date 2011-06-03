@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define STACK_REQUIREMENT (128 * 128 * 4 + 1024)
 #if defined (STACK_SIZE) && STACK_SIZE < STACK_REQUIREMENT
-main () { exit (0); }
+int main () { exit (0); }
 #else
 
 typedef struct {

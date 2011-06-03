@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 struct s { int x, y; };
@@ -30,7 +29,7 @@ void f (int attr, ...)
   va_end (va);
 }
 
-main ()
+int main ()
 {
   struct s a, b;
 

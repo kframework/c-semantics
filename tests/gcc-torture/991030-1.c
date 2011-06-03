@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 double x = 0x1.fp1;
 int main()
 {

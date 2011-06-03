@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Test va_arg when the result is ignored and only the pointer increment
    side effect is used.  */
 #include <stdarg.h>
@@ -22,8 +21,7 @@ foo (int a, ...)
   return res;
 }
 
-int
-main (void)
+int main (void)
 {
   if (foo (5, 4, 3, 2, 1, 0))
     abort ();

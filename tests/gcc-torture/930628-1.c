@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f (double x[2], double y[2])
 {
   if (x == y)

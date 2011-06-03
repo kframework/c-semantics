@@ -9,8 +9,7 @@ foo (unsigned long n)
   return (~n >> 3) & 1;
 }
 
-int
-main ()
+int main ()
 {
   if (foo (1 << 3) != 0)
     abort ();

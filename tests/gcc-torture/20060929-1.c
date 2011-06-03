@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR c/29154 */
 
 extern void abort (void);
@@ -23,8 +23,7 @@ baz (int **p, int *q)
   (*p++)++;
 }
 
-int
-main (void)
+int main (void)
 {
   int i = 42, j = 0;
   int *p = &i;

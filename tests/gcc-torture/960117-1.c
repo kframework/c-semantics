@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static char id_space[2] [32 +1];
 typedef short COUNT;
 
@@ -42,7 +41,7 @@ get_tok ()
   return get_id (c);
 }
 
-main ()
+int main ()
 {
   get_tok ();
   exit (0);

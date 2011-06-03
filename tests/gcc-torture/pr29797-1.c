@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort(void);
 
 unsigned int bar(void) { return 32768; }

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR optimization/13260 */
 
 #include <string.h>
@@ -41,8 +40,7 @@ u32 root_nfs_parse_addr(char *name)
  return addr;
 }
 
-int
-main()
+int main()
 {
   static char addr[] = "10.11.12.13:/hello";
   u32 result = root_nfs_parse_addr(addr);

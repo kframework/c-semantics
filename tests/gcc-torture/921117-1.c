@@ -1,7 +1,5 @@
-void exit(int status);
-void abort(void);
 #include <string.h>
-
+#include <stdlib.h>
 struct s {
   char text[11];
   int flag;
@@ -15,7 +13,7 @@ check (struct s p)
   return strcmp (p.text, "0123456789");
 }
 
-main ()
+int main ()
 {
   cell.flag = 99;
   strcpy (cell.text, "0123456789");

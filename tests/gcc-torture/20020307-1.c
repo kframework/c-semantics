@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #define MASK(N) ((1UL << (N)) - 1)
 #define BITS(N) ((1UL << ((N) - 1)) + 2)
 

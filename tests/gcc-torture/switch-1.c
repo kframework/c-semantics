@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright (C) 2003  Free Software Foundation.
 
    Test that switch statements suitable using case bit tests are
@@ -22,8 +22,7 @@ foo (int x)
   return 31;
 }
 
-int
-main (int argc, char** argv)
+int main(void)
 {
   int i, r;
 

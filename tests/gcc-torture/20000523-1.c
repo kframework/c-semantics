@@ -1,7 +1,5 @@
-void exit(int status);
-void abort(void);
-int
-main (void)
+#include <stdlib.h>
+int main (void)
 {
   long long   x;
   int         n;

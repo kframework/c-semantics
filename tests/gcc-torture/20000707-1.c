@@ -18,8 +18,7 @@ bar (struct baz x, int b, int c)
   foo (x.b, b, c);
 }
 
-int
-main ()
+int main ()
 {
   struct baz x = { 3, 4, 5 };
   bar (x, 1, 2);

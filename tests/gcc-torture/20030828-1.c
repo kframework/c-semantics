@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 const int *p;
 
 int bar (void)
@@ -7,7 +6,7 @@ int bar (void)
   return *p + 1;
 }
 
-main ()
+int main ()
 {
   /* Variable 'i' is never used but it's aliased to a global pointer.  The
      alias analyzer was not considering that 'i' may be used in the call to

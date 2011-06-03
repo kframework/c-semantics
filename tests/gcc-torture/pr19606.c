@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR c/19606
    The C front end used to shorten the type of a division to a type
    that does not preserve the semantics of the original computation.
@@ -19,8 +18,7 @@ bar (void)
   return ((unsigned int) (signed int) a) % 5LL;
 }
 
-int
-main (void)
+int main (void)
 {
   int r;
 

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct complex
 {
   float r;
@@ -17,7 +16,7 @@ f (float a, float b)
   return c;
 }
 
-main ()
+int main ()
 {
   struct complex z = f (1.0, 0.0);
 

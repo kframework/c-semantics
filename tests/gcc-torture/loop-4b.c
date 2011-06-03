@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 f()
 {
@@ -14,8 +13,7 @@ f()
   return j;
 }
 
-int
-main ()
+int main ()
 {
   if (f () != 2)
     abort ();

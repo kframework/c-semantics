@@ -1,12 +1,11 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/36137 */
 extern void abort (void);
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-int
-main ()
+int main ()
 {
   unsigned int u;
   int i = -1;

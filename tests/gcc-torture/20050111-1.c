@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/19084, rtl-optimization/19348 */
 
 unsigned int
@@ -20,8 +20,7 @@ bar (unsigned short x)
 
 extern void abort (void);
 
-int
-main (void)
+int main (void)
 {
   if (sizeof (long long) != 8)
     return 0;

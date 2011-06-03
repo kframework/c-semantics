@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* On the i960 any arg bigger than 16 bytes causes all subsequent args
    to be passed on the stack.  We test this.  */
 
@@ -26,7 +25,7 @@ f (big x, char *s, ...)
   va_end (ap);
 }
 
-main ()
+int main ()
 {
   static big x = { "abc" };
 

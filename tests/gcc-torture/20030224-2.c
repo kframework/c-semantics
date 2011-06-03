@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Make sure that we don't free any temp stack slots associated with
    initializing marker before we're finished with them.  */
 

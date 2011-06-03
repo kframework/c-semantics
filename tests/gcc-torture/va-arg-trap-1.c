@@ -28,8 +28,7 @@ bar (int i, ...)
   va_end (ap);
 }
 
-int
-main (void)
+int main (void)
 {
   bar (1, 0);
   abort ();

@@ -1,4 +1,5 @@
-void exit(int status);
+#include <math.h>
+#include <stdlib.h>
 /* PR 6534 */
 /* GCSE unified the two i<0 tests, but if-conversion to ui=abs(i) 
    insertted the code at the wrong place corrupting the i<0 test.  */
@@ -20,8 +21,7 @@ inttostr (long i, char buf[128])
   return p;
 }
 
-int
-main ()
+int main ()
 {
   char buf[128], *p;
 

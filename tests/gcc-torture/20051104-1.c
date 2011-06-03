@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR rtl-optimization/23567 */
 
 struct
@@ -8,8 +7,7 @@ struct
   char *name;
 } s;
 
-int
-main (void)
+int main (void)
 {
   s.len = 0;
   s.name = "";

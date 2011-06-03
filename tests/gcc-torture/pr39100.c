@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Bad PTA results (incorrect store handling) was causing us to delete
    *na = 0 store.  */
 
@@ -45,8 +44,7 @@ foo (CP h, EP x)
   return h;
 }
 
-int
-main (void)
+int main (void)
 {  
   struct C c = { 0, 0, 0 };
   struct E e[2] = { { 0, &e[1] }, { 1, 0 } };
@@ -54,13 +52,13 @@ main (void)
 
   foo (&c, &e[0]);
   if (c.cn != 1 || c.cp != 1)
-    __builtin_abort ();
+    abort ();
   if (c.x != &e[1])
-    __builtin_abort ();
+    abort ();
   if (e[1].n != &e[0])
-    __builtin_abort ();
+    abort ();
   if (e[0].n)
-    __builtin_abort ();
+    abort ();
   return 0;  
 }
 

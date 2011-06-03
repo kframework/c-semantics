@@ -1,8 +1,9 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 /* PR middle-end/27260 */
 
 extern void abort (void);
-extern void *memset (void *, int, __SIZE_TYPE__);
+extern void *memset (void *, int, size_t);
 
 char buf[65];
 
@@ -12,8 +13,7 @@ foo (int x)
   memset (buf, x != 2 ? 1 : 0, 64);
 }
 
-int
-main (void)
+int main (void)
 {
   int i;
   buf[64] = 2;

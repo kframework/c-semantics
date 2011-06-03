@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Copyright (C) 2002 Free Software Foundation.
 
    Test for composite comparison always true/false optimization.
@@ -71,8 +70,7 @@ all_tests (int x, int y)
   test6 (x, y);
 }
 
-int
-main ()
+int main ()
 {
   all_tests (0, 0);
   all_tests (1, 2);

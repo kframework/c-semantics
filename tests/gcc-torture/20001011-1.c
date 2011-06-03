@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort(void);
 extern int strcmp(const char *, const char *);
 

@@ -199,8 +199,7 @@ constant_shift(unsigned long long x, int i)
   return x;
 }
 
-int
-main()
+int main()
 {
   int i;
 

@@ -1,12 +1,10 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* The non-destructive folder was always emitting >= when folding
    comparisons to signed_max+1.  */
 
 #include <limits.h>
 
-int
-main ()
+int main ()
 {
   unsigned long count = 8;
 

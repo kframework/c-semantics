@@ -1,5 +1,5 @@
-void exit(int status);
-void abort(void);
+#include <string.h>
+#include <stdlib.h>
 /* PR rtl-optimization/28982.  Function foo() does the equivalent of:
 
      float tmp_results[NVARS];
@@ -50,8 +50,7 @@ foo (int n)
 
 float input[NITER * NVARS];
 
-int
-main (void)
+int main (void)
 {
   int i;
 

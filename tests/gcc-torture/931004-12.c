@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 struct tiny
@@ -34,7 +33,7 @@ void f (int n, ...)
   va_end (ap);
 }
 
-main ()
+int main ()
 {
   struct tiny x[3];
   x[0].c = 10;

@@ -1,4 +1,4 @@
-void abort(void);
+#include <stdlib.h>
 extern void exit (int);
 
 static inline int

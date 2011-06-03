@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned
 sat_add (unsigned i)
 {
@@ -9,7 +8,7 @@ sat_add (unsigned i)
   return ret;
 }
 
-main ()
+int main ()
 {
   if (sat_add (~0U) != ~0U)
     abort ();

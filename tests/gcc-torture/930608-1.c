@@ -1,9 +1,8 @@
-void exit(int status);
-void abort(void);
-double f (double a) {}
+#include <stdlib.h>
+double f (double a) {return 0.0;}
 double (* const a[]) (double) = {&f};
 
-main ()
+int main ()
 {
   double (*p) ();
   p = &f;

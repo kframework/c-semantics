@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 int __attribute__((noinline,noclone))
 sort(int L)
 {

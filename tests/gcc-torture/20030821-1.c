@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 int
@@ -10,8 +10,7 @@ foo (int x)
   return 0;
 }
 
-int
-main ()
+int main ()
 {
   return foo (0x8000fffe);
 }

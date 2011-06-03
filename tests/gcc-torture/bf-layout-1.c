@@ -1,9 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct { long f8:8; long f24:24; } a;
 struct { long f32:32; } b;
 
-main ()
+int main ()
 {
   if (sizeof (a) != sizeof (b))
     abort ();

@@ -21,8 +21,7 @@ int     *Upgd_minor_ID =
 int     *Upgd_minor_ID1 = 
         (int *) &((Upgrade_items)->uaattrid);
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	if (*Upgd_minor_ID != 2)
 	  abort();

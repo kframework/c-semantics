@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f ()
+#include <stdlib.h>
+int f ()
 {
   int var = 7;
 
@@ -9,7 +8,7 @@ f ()
   return 0;
 }
 
-main ()
+int main ()
 {
   if (f () != 1)
     abort ();

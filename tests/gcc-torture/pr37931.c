@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/37931 */
 
 extern void abort (void);
@@ -9,8 +9,7 @@ foo (int a, unsigned int b)
   return (a | 1) & (b | 1);
 }
 
-int
-main (void)
+int main (void)
 {
   if (foo (6, 0xc6) != 7)
     abort ();

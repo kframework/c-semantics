@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 test ()
 {
@@ -10,7 +9,7 @@ test ()
 }
 
 
-main()
+int main()
 {
   if (test () != 8)
     abort ();

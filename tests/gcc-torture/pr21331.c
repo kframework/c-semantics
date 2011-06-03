@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 void abort (void);
 
 int bar (void) {  return -1;  }
@@ -10,7 +10,7 @@ foo ()
   if (retval == -1)  return 0;
   return 3;  }
 
-main ()
+int main ()
 { if (foo () != 0)  abort ();
   return 0;  }
 

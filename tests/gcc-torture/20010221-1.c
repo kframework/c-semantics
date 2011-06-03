@@ -1,9 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 
 int n = 2;
 
-main ()
+int main ()
 {
   int i, x = 45;
 

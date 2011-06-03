@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* On IRIX 6, PB is passed partially in registers and partially on the
    stack, with an odd number of words in the register part.  Check that
    the long double stack argument (PC) is still accessed properly.  */

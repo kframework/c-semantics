@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 double glob_dbl;
 
 void f (pdbl, value)
@@ -12,7 +11,7 @@ void f (pdbl, value)
   *pdbl = value;
 }
 
-main ()
+int main ()
 {
   f ((void *) 0, 55.1);
 

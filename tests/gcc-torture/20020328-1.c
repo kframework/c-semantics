@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int b = 0;
 
-func () { }
+void func () { }
 
 void
 testit(int x)
@@ -11,8 +10,7 @@ testit(int x)
     abort ();
 }
 
-int
-main()
+int main()
 
 {
   int a = 0;

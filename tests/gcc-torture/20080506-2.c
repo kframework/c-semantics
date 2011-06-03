@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/36013 */
 
 extern void abort (void);
@@ -12,8 +12,7 @@ foo (int **__restrict p, int **__restrict q)
     abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   int a;
   int *p1 = &a, *p2 = &a;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void foo (unsigned int * p)
 {
   if ((signed char)(*p & 0xFF) == 17 || (signed char)(*p & 0xFF) == 18)

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 typedef unsigned long L;
@@ -19,7 +18,7 @@ void f (L p0, L p1, L p2, L p3, L p4, L p5, L p6, L p7, L p8, ...)
   va_end (select);
 }
 
-main ()
+int main ()
 {
   f (1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 0L);
   exit (0);

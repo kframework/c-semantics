@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct a {
 	char a, b;
 	short c;
@@ -334,8 +333,7 @@ h7()
 		(x.b & 0x3ff0) == (y.b & 0x03ff));
 }
 
-int
-main()
+int main()
 {
   if (!a1 ())
     abort ();

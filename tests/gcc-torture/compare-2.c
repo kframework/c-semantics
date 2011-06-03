@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright (C) 2002 Free Software Foundation.
 
    Ensure that the composite comparison optimization doesn't misfire
@@ -15,8 +15,7 @@ foo (int x, int y)
   return (x<=y) && ((unsigned int)x >= (unsigned int)y);
 }
 
-int
-main ()
+int main ()
 {
   if (! foo (-1,0))
     abort ();

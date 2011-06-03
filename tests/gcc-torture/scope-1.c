@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int v = 3;
 
 void f ()
@@ -12,7 +11,7 @@ void f ()
   }
 }
 
-main ()
+int main ()
 {
   f ();
   exit (0);

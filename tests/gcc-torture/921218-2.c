@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f()
+#include <stdlib.h>
+int f()
 {
   long l2;
   unsigned short us;
@@ -11,7 +10,7 @@ f()
   return ul;
 }
 
-main()
+int main()
 {
   if (f()!=(unsigned short)-1)
     abort();

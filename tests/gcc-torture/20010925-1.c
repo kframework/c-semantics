@@ -1,7 +1,8 @@
+#include <stddef.h>
 extern void exit(int);
 extern void abort (void);
 
-extern void * memcpy (void *, const void *, __SIZE_TYPE__);
+extern void * memcpy (void *, const void *, size_t);
 int foo (void *, void *, unsigned int c);
 
 int src[10];

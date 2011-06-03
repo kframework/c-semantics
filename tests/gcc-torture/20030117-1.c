@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int foo (int, int, int);
 int bar (int, int, int);
 

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct {
      double epsilon;
 } material_type;
@@ -12,7 +11,7 @@ material_type foo(double x)
      return m;
 }
 
-main()
+int main()
 {
   int i;
   material_type x;

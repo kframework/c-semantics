@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 double
 foo (void)
 {
@@ -12,8 +11,7 @@ do_sibcall (void)
   (void) foo ();
 }
 
-int
-main (void)
+int main (void)
 {
    double x;
 

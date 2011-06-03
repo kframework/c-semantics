@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* From PR 18977.  */
 void foo(float * x);
 

@@ -1,10 +1,8 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* The bit-field below would have a problem if __INT_MAX__ is too
    small.  */
 #if __INT_MAX__ < 2147483647
-int
-main (void)
+int main (void)
 {
   exit (0);
 }
@@ -18,13 +16,13 @@ struct T
 unsigned i:8;
 unsigned c:24;
 };
-f(struct T t)
+int f(struct T t)
 {
 struct T s[1];
 s[0]=t;
 return(char)s->c;
 }
-main()
+int main()
 {
 struct T t;
 t.i=0xff;

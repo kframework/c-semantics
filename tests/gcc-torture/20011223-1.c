@@ -9,8 +9,7 @@ extern void abort (void);
 
 static int i;
 
-int
-main (void)
+int main (void)
 {
   i = -1;
   switch ((signed char) i) {

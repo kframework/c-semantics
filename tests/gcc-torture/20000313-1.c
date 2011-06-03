@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned int buggy (unsigned int *param)
 {
   unsigned int accu, zero = 0, borrow;

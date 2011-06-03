@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 ts(a)
      int a;
@@ -21,7 +20,7 @@ tu(a)
 }
 
 
-main()
+int main()
 {
   if (ts (0) || tu (0))
     abort ();

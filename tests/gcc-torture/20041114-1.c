@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Verify that
    
    var <= 0 || ((long unsigned) (unsigned) (var - 1) < MAX_UNSIGNED_INT)
@@ -20,8 +20,7 @@ foo (int var)
     link_failure ();
 }
 
-int
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
   foo (v);
   return 0;

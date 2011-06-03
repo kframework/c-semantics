@@ -1,10 +1,9 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct a { unsigned int bitfield : 1; };
 
 unsigned int x;
 
-main()
+int main()
 {
   struct a a = {0};
   x = 0xbeef;

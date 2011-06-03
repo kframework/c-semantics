@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 void va_double (int n, ...)
@@ -38,7 +37,7 @@ void va_long_double (int n, ...)
   va_end (args);
 }
 
-main ()
+int main ()
 {
   va_double (4, 3.141592, 2.71827, 2.2360679, 2.1474836);
   va_long_double (4, 3.141592L, 2.71827L, 2.2360679L, 2.1474836L);

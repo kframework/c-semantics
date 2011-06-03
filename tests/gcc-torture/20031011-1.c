@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Check that MAX_EXPR and MIN_EXPR are working properly.  */
 
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))

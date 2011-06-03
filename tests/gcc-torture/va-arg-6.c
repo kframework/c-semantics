@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdarg.h>
 
 void f (int n, ...)
@@ -30,7 +29,7 @@ void f (int n, ...)
   va_end(args);
 }
 
-main ()
+int main ()
 {
   f (4, 10, 10000000000LL, 11, 3.14L, 12, 13, 20000000000LL, 14, 2.72);
   exit (0);

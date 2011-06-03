@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned short int showbug(unsigned short int *a, unsigned short int *b)
 {
         *a += *b -8;

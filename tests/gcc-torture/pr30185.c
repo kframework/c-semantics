@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR target/30185 */
 
 extern void abort (void);
@@ -13,8 +13,7 @@ foo (S x, S y)
   return z;
 }
 
-int
-main (void)
+int main (void)
 {
   S a, b;
   a.b = 32LL;

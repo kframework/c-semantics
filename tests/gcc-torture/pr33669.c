@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 typedef struct foo_t
@@ -26,8 +26,7 @@ foo (foo_t *const pxp,  long long offset, unsigned int extent)
   return blkoffset;
 }
 
-int
-main ()
+int main ()
 {
   foo_t x;
   long long xx;

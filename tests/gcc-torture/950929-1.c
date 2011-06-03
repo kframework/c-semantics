@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int f (char *p) { return 0; }
 
-main ()
+int main ()
 {
   char c;
   char c2;

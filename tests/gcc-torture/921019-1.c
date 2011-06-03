@@ -1,8 +1,7 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void *foo[]={(void *)&("X"[0])};
 
-main ()
+int main ()
 {
   if (((char*)foo[0])[0] != 'X')
     abort ();

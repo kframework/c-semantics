@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int __attribute__ ((noinline)) foo (short x, unsigned short y)
 {
   return x * y;

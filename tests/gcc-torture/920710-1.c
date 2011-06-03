@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main()
+#include <stdlib.h>
+int main()
 {
   if ((double) 18446744073709551615ULL < 1.84467440737095e+19 ||
       (double) 18446744073709551615ULL > 1.84467440737096e+19)

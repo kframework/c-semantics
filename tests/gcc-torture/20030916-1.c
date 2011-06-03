@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* "i" overflows in f().  Check that x[i] is not treated as a giv.  */
 #include <limits.h>
 

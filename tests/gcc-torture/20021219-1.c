@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR optimization/8988 */
 /* Contributed by Kevin Easton */
 

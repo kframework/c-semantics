@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long double
 f (d, i)
      long double d;
@@ -19,7 +18,7 @@ f (d, i)
   return d;
 }
 
-main ()
+int main ()
 {
   if (! (int) (f (2.0L, 1)))
     abort ();

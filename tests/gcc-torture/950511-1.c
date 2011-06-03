@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-main ()
+#include <stdlib.h>
+int main ()
 {
   unsigned long long xx;
   unsigned long long *x = (unsigned long long *) &xx;

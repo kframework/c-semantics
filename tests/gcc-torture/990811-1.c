@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct s {long a; int b;};
 
 int foo(int x, void *y)

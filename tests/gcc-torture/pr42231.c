@@ -1,7 +1,7 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
-static max;
+static int max;
 
 static void __attribute__((noinline)) storemax (int i)
 {

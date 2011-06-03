@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 char* doit(int flag)
 {
   return 1 + (flag ? "\0wrong\n" : "\0right\n");

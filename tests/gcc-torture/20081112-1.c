@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 #include <limits.h>
 
 extern void abort (void);

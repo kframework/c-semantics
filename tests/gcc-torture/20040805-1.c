@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #if __INT_MAX__ < 32768 || (defined(STACK_SIZE) && STACK_SIZE < 0x12000)
 int main () { exit (0); }
 #else
@@ -23,8 +22,7 @@ foo (int x)
   return x + y;
 }
 
-int
-main ()
+int main ()
 {
   if (foo (100) != 102)
     abort ();

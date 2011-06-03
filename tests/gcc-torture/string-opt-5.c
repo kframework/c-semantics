@@ -1,4 +1,5 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 /* Copyright (C) 2000  Free Software Foundation.
 
    Ensure builtin strlen, strcmp, strchr, strrchr and strncpy
@@ -7,13 +8,13 @@ void exit(int status);
    Written by Jakub Jelinek, 11/7/2000.  */
 
 extern void abort (void);
-extern __SIZE_TYPE__ strlen (const char *);
+extern size_t strlen (const char *);
 extern int strcmp (const char *, const char *);
 extern char *strchr (const char *, int);
 extern char *strrchr (const char *, int);
-extern char *strncpy (char *, const char *, __SIZE_TYPE__);
-extern void *memset (void *, int, __SIZE_TYPE__);
-extern int memcmp (const void *, const void *, __SIZE_TYPE__);
+extern char *strncpy (char *, const char *, size_t);
+extern void *memset (void *, int, size_t);
+extern int memcmp (const void *, const void *, size_t);
 
 int x = 6;
 int y = 1;

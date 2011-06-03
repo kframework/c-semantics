@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct __attribute__((__may_alias__)) { short x; } test;
 
 test *p;
@@ -22,7 +21,7 @@ int f()
 
 int main() {
   if (f() == 10)
-    __builtin_abort();
+    abort();
   return 0;
 }
 

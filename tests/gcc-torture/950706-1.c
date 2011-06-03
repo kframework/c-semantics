@@ -1,12 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int
 f (int n)
 {
   return (n > 0) - (n < 0);
 }
 
-main ()
+int main ()
 {
   if (f (-1) != -1)
     abort ();

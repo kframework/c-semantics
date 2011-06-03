@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 unsigned int
 f1 (int diff)
 {
@@ -24,7 +23,7 @@ f4 (unsigned long long diff)
   return ((unsigned long long) ((signed long long) diff < 0 ? -diff : diff));
 }
 
-main ()
+int main ()
 {
   int i;
   for (i = 0; i <= 10; i++)

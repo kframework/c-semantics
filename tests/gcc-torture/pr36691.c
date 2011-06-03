@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 unsigned char g_5;
 
 void func_1 (void)

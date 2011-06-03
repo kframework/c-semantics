@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR tree-optimization/19060 */
 
 void abort (void);
@@ -16,8 +16,7 @@ foo (long long j)
     abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   foo (10);
   return 0;

@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* PR target/14209.  Bug in cris.md, shrinking access size of
    postincrement.
    Origin: <hp@axis.com>.  */

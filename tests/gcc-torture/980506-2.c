@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static void *self(void *p){ return p; }
 
 int
@@ -15,7 +14,7 @@ f()
   return sp->i+1;
 }
 
-main()
+int main()
 {
   if (f () != 1)
     abort ();

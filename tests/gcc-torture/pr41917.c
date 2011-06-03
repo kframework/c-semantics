@@ -1,11 +1,10 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/41917 */
 
 extern void abort (void);
 unsigned int a = 1;
 
-int
-main (void)
+int main (void)
 {
   unsigned int b, c, d;
 

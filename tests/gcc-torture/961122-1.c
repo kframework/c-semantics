@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 long long acc;
 
 void addhi (short a)
@@ -12,7 +11,7 @@ void subhi (short a)
   acc -= (long long) a << 32;
 }
 
-main ()
+int main ()
 {
   acc = 0xffff00000000ll;
   addhi (1);

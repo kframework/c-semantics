@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 struct rtx_def
 {
   int code;
 };
 
-main()
+int main()
 {
   int tmp[2];
   struct rtx_def *r, s;

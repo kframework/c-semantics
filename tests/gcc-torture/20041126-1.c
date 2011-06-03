@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern int abs (int);
 extern void abort (void);
 
@@ -14,8 +14,7 @@ check (int *p)
       abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   int a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
   int i;

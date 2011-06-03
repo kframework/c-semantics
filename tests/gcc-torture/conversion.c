@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* Test front-end conversions, optimizer conversions, and run-time
    conversions between different arithmetic types.
 
@@ -541,7 +540,7 @@ void test_float_to_longlong_integer()
 }
 #endif
 
-main()
+int main()
 {
   test_integer_to_float();
   test_float_to_integer();

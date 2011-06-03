@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-test_store_ccp (int i)
+#include <stdlib.h>
+int test_store_ccp (int i)
 {
   int *p, a, b, c;
 
@@ -19,7 +18,7 @@ test_store_ccp (int i)
 }
 
 
-test_store_copy_prop (int i)
+int test_store_copy_prop (int i)
 {
   int *p, a, b, c;
 
@@ -38,7 +37,7 @@ test_store_copy_prop (int i)
 }
 
 
-main()
+int main()
 {
   int x;
   

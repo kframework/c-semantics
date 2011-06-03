@@ -15,8 +15,7 @@ f (int n)
 
 volatile int x = 128;
 
-int
-main (void)
+int main (void)
 {
   if (f(x) != -256)
     abort ();

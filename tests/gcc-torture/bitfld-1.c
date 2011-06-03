@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright 2002 Free Software Foundation, Inc.
 
    Tests correct signedness of operations on bitfields; in particular
@@ -17,8 +17,7 @@ void exit(int status);
 
 extern void abort ();
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   struct x { signed int i : 7; unsigned int u : 7; } bit;
 

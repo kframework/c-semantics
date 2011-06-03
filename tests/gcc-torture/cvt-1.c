@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static inline long
 g1 (double x)
 {
@@ -20,7 +19,7 @@ f (long i)
   return g2 (i);
 }
 
-main ()
+int main ()
 {
   if (f (123456789L) != 123456789L)
     abort ();

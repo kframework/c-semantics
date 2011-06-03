@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <limits.h>
 
 int
@@ -13,8 +12,7 @@ sub ()
     return a / INT_MAX / 16;
 }
 
-int
-main ()
+int main ()
 {
   if (sub () != 0)
     abort ();

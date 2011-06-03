@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 struct Foo {
   int *p;
   int *q;

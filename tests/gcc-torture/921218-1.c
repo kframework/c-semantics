@@ -1,11 +1,10 @@
-void exit(int status);
-void abort(void);
-f()
+#include <stdlib.h>
+int f()
 {
   return (unsigned char)("\377"[0]);
 }
 
-main()
+int main()
 {
   if (f() != (unsigned char)(0377))
     abort();

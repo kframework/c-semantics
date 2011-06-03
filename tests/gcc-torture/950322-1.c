@@ -1,6 +1,5 @@
-void exit(int status);
-void abort(void);
-f (unsigned char *a)
+#include <stdlib.h>
+int f (unsigned char *a)
 {
   int i, j;
   int x, y;
@@ -21,7 +20,7 @@ f (unsigned char *a)
 }
 
 
-main ()
+int main ()
 {
   unsigned char a[2];
   a[0] = 8;

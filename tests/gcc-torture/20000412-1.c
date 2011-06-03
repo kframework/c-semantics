@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 short int i = -1;
 const char * const wordlist[207];
 
@@ -10,8 +9,7 @@ foo(void)
   return wordptr;
 }
 
-int
-main()
+int main()
 {
   if (foo() != &wordlist[206])
     abort ();

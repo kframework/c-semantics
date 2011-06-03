@@ -1,7 +1,6 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int v;
-
+void f();
 int main ()
 {
   f ();

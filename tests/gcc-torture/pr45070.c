@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR45070 */
 extern void abort(void);
 

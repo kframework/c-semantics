@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f (int value, int expect)
 {
   if (value != expect)

@@ -1,8 +1,9 @@
-void exit(int status);
+#include <stdlib.h>
+#include <stddef.h>
 /* PR c++/34459 */
 
 extern void abort (void);
-extern void *memset (void *s, int c, __SIZE_TYPE__ n);
+extern void *memset (void *s, int c, size_t n);
 
 struct S
 {
@@ -62,8 +63,7 @@ test3 (void)
   foo (&b, 0);
 }
 
-int
-main (void)
+int main (void)
 {
   test1 ();
   test2 ();

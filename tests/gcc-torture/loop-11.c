@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 static int a[199];
 
 static void
@@ -10,8 +9,7 @@ foo ()
     a[i] = i;
 }
 
-int
-main ()
+int main ()
 {
   int i;
   foo ();

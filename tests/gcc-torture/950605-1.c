@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 void f (c)
     unsigned char c;
 {
@@ -7,7 +6,7 @@ void f (c)
     abort ();
 }
 
-main ()
+int main ()
 {
   f (-1);
   exit (0);

@@ -12,7 +12,7 @@ t*f(t*clas,int size)
   child->size=size;
   return child;
 }
-main()
+int main()
 {
   t foo,*bar;
   memset(&foo,37,sizeof(t));

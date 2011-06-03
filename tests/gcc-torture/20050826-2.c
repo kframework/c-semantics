@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR rtl-optimization/23560 */
 
 struct rtattr
@@ -28,8 +28,7 @@ int inet_check_attr (void *r, struct rtattr **rta)
 
 extern void abort (void);
 
-int
-main (void)
+int main (void)
 {
   struct rtattr rt[2];
   struct rtattr *rta[14];

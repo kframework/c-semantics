@@ -10,8 +10,7 @@ volatile unsigned u = 0x80000081;
 volatile unsigned long u = 0x80000081;
 #endif
 volatile float f1, f2;
-int
-main (void)
+int main (void)
 {
   f1 = (float) u;
   f2 = (float) 0x80000081;

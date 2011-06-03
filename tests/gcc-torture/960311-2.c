@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <stdio.h>
 
 #ifdef DEBUG
@@ -22,7 +21,7 @@ b (unsigned short data)
   if (data & 0x8000) a1();
 }
 
-main ()
+int main ()
 {
   count = 0;
   b (0);

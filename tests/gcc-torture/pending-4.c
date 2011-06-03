@@ -1,13 +1,11 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 
 void dummy (x, y)
      int *x;
      int y;
 {}
 
-int
-main (argc, argv)
+int main (argc, argv)
      int argc;
      char **argv;
 {

@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 extern void abort (void);
 
 unsigned int a, b = 1, c;
@@ -10,8 +10,7 @@ foo (int x)
     abort ();
 }
 
-int
-main ()
+int main ()
 {
   unsigned int d, e;
   for (d = 1; d < 5; d++)

@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright (C) 2002  Free Software Foundation.
 
    Test that (A & C1) op C2 optimizations behave correctly where C1 is
@@ -286,8 +286,7 @@ test8 (unsigned long long l, int set)
     if (!set) abort ();
 }
 
-int
-main ()
+int main ()
 {
   test1 (0, 0);
   test1 (SCHAR_MAX, 0);

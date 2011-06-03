@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* PR middle-end/37103 */
 
 extern void abort (void);
@@ -19,8 +19,7 @@ bar (unsigned short x)
     abort ();
 }
 
-int
-main (void)
+int main (void)
 {
   if (sizeof (int) == sizeof (short))
     return 0;

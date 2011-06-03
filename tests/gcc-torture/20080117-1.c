@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 typedef struct gs_imager_state_s {
   struct {
     int half_width;

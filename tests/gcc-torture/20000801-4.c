@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Origin: PR c/128 from Martin Sebor <sebor@roguewave.com>, adapted
    as a testcase by Joseph Myers <jsm28@cam.ac.uk>.
 */
@@ -17,8 +17,7 @@ foo (void)
 
 char *t;
 
-int
-main (void)
+int main (void)
 {
   {
     char s[] = "x";

@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Copyright (C) 2002 Free Software Foundation.
 
    Test for correctness of composite comparisons.
@@ -39,7 +39,7 @@ int ieq (int x, int y, int ok)
   return 0;
 }
 
-int ine (int x, int y, int ok)
+void ine (int x, int y, int ok)
 {
   if ((x<y) || (x>y))
     {
@@ -47,7 +47,6 @@ int ine (int x, int y, int ok)
     }
   else
     if (ok) abort ();
-  return 0;
 }
 
 int ilt (int x, int y, int ok)
@@ -94,8 +93,7 @@ int ige (int x, int y, int ok)
   return 0;
 }
 
-int
-main ()
+int main ()
 {
   ieq (1, 4, 0);
   ieq (3, 3, 1);

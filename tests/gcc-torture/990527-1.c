@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int sum;
 
 void
@@ -21,8 +20,7 @@ f(int j)
     }
 }
 
-int
-main ()
+int main ()
 {
   f (0);
   if (sum != 81)

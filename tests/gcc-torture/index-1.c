@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a[] =
 {
   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
@@ -14,7 +13,7 @@ f (long n)
   return a[n - 100000];
 }
 
-main ()
+int main ()
 {
   if (f (100030L) != 30)
     abort();

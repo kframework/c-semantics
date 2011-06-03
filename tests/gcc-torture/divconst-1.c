@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 typedef struct
 {
   unsigned a, b, c, d;
@@ -13,7 +12,7 @@ void f (t1 *ps)
     ps->d = ps->c / 3;
 }
 
-main ()
+int main ()
 {
   t1 s;
   f (&s);

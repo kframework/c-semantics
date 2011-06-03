@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 
 #if(__SIZEOF_DOUBLE__==8)
 double d = 1024.0 - 1.0 / 32768.0;

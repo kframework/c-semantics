@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* derived from mozilla source code */
 
 #include <stdarg.h>

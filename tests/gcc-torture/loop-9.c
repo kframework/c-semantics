@@ -1,4 +1,4 @@
-void exit(int status);
+#include <stdlib.h>
 /* Source: Neil Booth, from PR # 115.  */
 
 int false()

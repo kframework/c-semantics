@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 /* This tests the rotate patterns that some machines support.  */
 
 #include <limits.h>
@@ -28,7 +27,7 @@ unsigned long long ull = LL_VALUE;
 int shift1 = SHIFT1;
 int shift2 = SHIFT2;
 
-main ()
+int main ()
 {
   if (ROR (uc, shift1) != ROR (CHAR_VALUE, SHIFT1))
     abort ();

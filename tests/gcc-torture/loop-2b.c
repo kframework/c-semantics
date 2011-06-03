@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 #include <limits.h>
 
 int a[2];
@@ -14,7 +13,7 @@ void f (int i)
     }
 }
 
-main ()
+int main ()
 {
   a[0] = a[1] = 0;
   f (0);

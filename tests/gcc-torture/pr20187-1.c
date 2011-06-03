@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int a = 0x101;
 int b = 0x100;
 
@@ -10,8 +9,7 @@ test (void)
 	  ? 0 : 1);
 }
 
-int
-main (void)
+int main (void)
 {
   return 1 - test ();
 }

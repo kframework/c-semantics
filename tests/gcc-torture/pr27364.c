@@ -1,5 +1,4 @@
-void exit(int status);
-void abort(void);
+#include <stdlib.h>
 int f(unsigned number_of_digits_to_use)
 {
   if (number_of_digits_to_use >1294)
@@ -10,6 +9,6 @@ int f(unsigned number_of_digits_to_use)
 int main(void)
 {
   if (f(11) != 2)
-    __builtin_abort ();
+    abort ();
   exit (0);
 }
