@@ -31,9 +31,9 @@ assertContains("OOB", run("$kcc adhoc/shortArray.c -i -o adhoc.o && ./adhoc.o"),
 
 run("$kcc -c adhoc/twofile-link1.c");
 run("$kcc -c adhoc/twofile-link2.c");
-assertContains("twofiles", run("$kcc twofile-link1.o twofile-link2.o -o adhoc.o && ./adhoc.o"), 'f\(2\, 3\)==7');
+assertContains("twofiles", run("$kcc twofile-link1.o twofile-link2.o -o adhoc.o && ./adhoc.o"), 'f(2, 3)==7');
 
-assertContains("cmdLineArgs", run("$kcc adhoc/sumn.c -o adhoc.o && ./adhoc.o 5"), "sum\(5\)==15");
+assertContains("cmdLineArgs", run("$kcc adhoc/sumn.c -o adhoc.o && ./adhoc.o 5"), "sum(5)==15");
 assertContains("stdin", run("$kcc adhoc/stdin.c -o adhoc.o && echo \"hi.\" | ./adhoc.o"), "hxix.x");
 
 
@@ -60,7 +60,7 @@ sub run {
 sub assertContains {
 	my ($testName, $elapsed, $haystack, $needle) = (@_);
 	
-	if ($haystack =~ /$needle/) {
+	if (index($haystack, $needle) >= 0) {
 		return reportSuccess($testName, $elapsed, "Success");
 	} else {
 		return reportFailure($testName, $elapsed, "Failure---could not find \"$needle\"");
