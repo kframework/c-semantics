@@ -28,9 +28,14 @@ assertContains("nondetSimple", run("$kcc adhoc/nondet.c -o adhoc.o && SEARCH=1 .
 assertContains("nondetABC", run("$kcc adhoc/nondet2.c -o adhoc.o && SEARCH=1 ./adhoc.o"), "6 solutions found");
 assertContains("basicIO", run("$kcc adhoc/io.c -i -o adhoc.o && ./adhoc.o"), "helloworld32");
 assertContains("OOB", run("$kcc adhoc/shortArray.c -i -o adhoc.o && ./adhoc.o"), "Error: 00002");
+
 run("$kcc -c adhoc/twofile-link1.c");
 run("$kcc -c adhoc/twofile-link2.c");
 assertContains("twofiles", run("$kcc twofile-link1.o twofile-link2.o -o adhoc.o && ./adhoc.o"), 'f\(2\, 3\)==7');
+
+assertContains("cmdLineArgs", run("$kcc adhoc/sumn.c -o adhoc.o && ./adhoc.o 5"), "sum\(5\)==15");
+assertContains("stdin", run("$kcc adhoc/stdin.c -o adhoc.o && echo \"hi.\" | ./adhoc.o"), "hxix.x");
+
 
 ###################################
 
