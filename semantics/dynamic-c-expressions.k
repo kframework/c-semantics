@@ -372,21 +372,35 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 	// here we start with a local address, put the string in memory, then change the address to be readonly
 	
 	rule [const-string-notfound]:
-		< k > (.K =>
-				allocString(Loc:Nat, S:String +String "\0")
-			)
-			~> StringLiteral(S:String)
+		< k > (.K => allocString(Loc:Nat, S:String +String "\0"))
+			~> Constant(StringLiteral(S:String))
 		...</ k >
 		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< stringLiterals >
 			M:Map
-			(. => S:String |-> lv(Loc:Nat, arrayType(char, lengthString(S:String) +Nat 1)))
+			(.Map => S:String |-> lv(Loc:Nat, arrayType(char, lengthString(S:String) +Nat 1)))
+		</ stringLiterals >
+		if notBool($hasMapping(M:Map, S:String))
+		[structural]
+		
+	rule [const-wstring-notfound]:
+		< k > (.K => allocWString(Loc:Nat, S:String +String "\0"))
+			~> Constant(WStringLiteral(S:String))
+		...</ k >
+		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
+		< stringLiterals >
+			M:Map
+			(.Map => S:String |-> lv(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat (lengthString(S:String) +Nat 1))))
 		</ stringLiterals >
 		if notBool($hasMapping(M:Map, S:String))
 		[structural]
 		
 	rule [const-string-found]:
-		< k > StringLiteral(S:String) => V:Value ...</ k >
+		< k > Constant(StringLiteral(S:String)) => V:Value ...</ k >
+		< stringLiterals >... S:String |-> V:Value ...</ stringLiterals >
+		[structural]
+	rule [const-wstring-found]:
+		< k > Constant(WStringLiteral(S:String)) => V:Value ...</ k >
 		< stringLiterals >... S:String |-> V:Value ...</ stringLiterals >
 		[structural]
 	
@@ -432,6 +446,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	*/
 	// c1x 6.4.4.4:10
 	rule CharLiteral(N:Nat) => tv(N:Nat, int) [structural]
+	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural]
 	//rule IntLiteral(V:Value) => V:Value [structural]
 	//rule FloatLiteral(V:Value) => V:Value [structural]
 	rule Constant(V:Value) => V:Value [structural]

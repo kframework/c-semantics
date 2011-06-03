@@ -597,7 +597,8 @@ and unary_operator =
 	| VARIABLE of string
 */
 	op Constant : K -> Expression
-	context Constant(([HOLE] => reval([HOLE])))
+	// context Constant(([HOLE] => reval([HOLE])))
+	// string constants aren't revals
 	// for paren, just putting parentheses
 	subsort Id < Expression
 /*

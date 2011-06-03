@@ -300,6 +300,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op argPromote : K -> K
 	op extractField : List{K} K Id -> K // bytes of struct, type, field id
 	op allocString : Nat String -> K 
+	op allocWString : Nat String -> K 
 	op sequencePoint : -> K 
 	
 	op handleBuiltin : Id Type -> K 
@@ -396,6 +397,9 @@ kmod COMMON-C-SETTINGS is
 	
 	op cfg:sizeut : -> Type 
 	rule cfg:sizeut => unsigned-int [structural]
+	
+	op cfg:wcharut : -> Type
+	rule cfg:wcharut => int [structural]
 	
 	op cfg:largestUnsigned : -> Type 
 	rule cfg:largestUnsigned => unsigned-long-long-int [structural]

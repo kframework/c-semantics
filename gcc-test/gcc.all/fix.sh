@@ -261,11 +261,14 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 done
 
 # these aren't bad, just moving them out of the way for my testing
-mkdir -p superSlow
+mkdir -p timedOut
 mv 20011008-3.c memcpy-1.c memcpy-2.c pr43220.c strcmp-1.c strcpy-1.c superSlow/
 # these aren't bad, i just know I fail them
 mkdir -p shouldPass
 mv 20010325-1.c 921110-1.c 970214-2.c struct-cpy-1.c widechar-1.c 970214-1.c 970217-1.c pr42614.c wchar_t-1.c widechar-2.c shouldPass/
+mkdir -p passesButSlow
+mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c pr20621.c passesButSlow/
+
 
 
 rm *.bak
