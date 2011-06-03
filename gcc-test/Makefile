@@ -52,7 +52,7 @@ clang: default
 	@cat results/out.clang/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\),:/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,clang,\3,\1/p' > clang.full.csv
 kcc: default
 	@mkdir -p results/out.kcc
-	@-$(RUNTEST) gcc.full/execute.exp $(KCC_FLAGS)
+	@-$(RUNTEST) gcc.all/execute.exp $(KCC_FLAGS)
 	@cat results/out.kcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\),:/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,kcc,\3,\1/p' > kcc.full.csv
 	
 spreadsheet:

@@ -308,7 +308,7 @@ let transformOffsetOf (speclist, dtype) member =
 %token<Cabs.cabsloc> PRAGMA
 %token PRAGMA_EOL
 
-%token<Cabs.cabsloc> METATYPE METAID
+%token<Cabs.cabsloc> OFFSETOF
 %token<Cabs.cabsloc> BEGINANNOTATION ENDANNOTATION
 %token<Cabs.cabsloc> PROPERTY
 %token LTL ATOM
@@ -517,10 +517,11 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
 		        { CAST($2, COMPOUND_INIT $5), $1 }
-|		METATYPE LPAREN type_name RPAREN
-		        { MetaType ($3, $1), $1 }
-|		METAID LPAREN IDENT RPAREN
-		        { MetaId (fst $3, $1), $1 }
+|		OFFSETOF LPAREN LPAREN type_name RPAREN COMMA LPAREN IDENT RPAREN RPAREN
+		        { OffsetOf ($4, 
+				fst $8, 
+				$1), 
+				$1 }
 ;
 
 offsetof_member_designator:	/* GCC extension for __builtin_offsetof */

@@ -274,3 +274,16 @@ double pow(double x, double y) {
 	return exp(y*log(x));
 	// 	+ 1e-6;
 }
+
+
+// ctype.h
+int isprint(int c){
+	if (c <= 0x1f || c == 0x7f) {
+		return 0;
+	} else {
+		return 1;
+	}
+	return 1;
+}
+
+

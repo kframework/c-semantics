@@ -7,6 +7,7 @@ mkdir -p oldstyle
 mkdir -p unclear
 # mkdir -p stillBroken
 # mkdir -p assumes
+mkdir -p brokenDynamically
 
 echo "Patching declared types and return values..."
 patch -p1 < returnValues.patch
@@ -57,6 +58,9 @@ mv 20001111-1.c notportable/
 # gnustyle field designators
 mv 991228-1.c struct-ini-4.c notportable/
 
+# duplicate definition of library function
+mv 20021127-1.c notportable
+
 # c1x specific
 mv 20000223-1.c align-3.c notportable/
 
@@ -64,7 +68,7 @@ mv 20000223-1.c align-3.c notportable/
 mv 930930-1.c 941014-1.c loop-2c.c loop-2d.c pr15296.c pr22098-1.c pr22098-2.c pr22098-3.c pr36339.c notportable/
 
 # use of less common hosted functions
-mv vfprintf-1.c hosted/
+mv vfprintf-1.c vprintf-1.c 20030626-1.c 20030626-2.c 20070201-1.c pr34456.c string-opt-18.c 920501-8.c 920501-9.c 920726-1.c 930513-1.c 960327-1.c struct-ret-1.c strncmp-1.c hosted/
 
 # nonportable syntax (extra semicolon outside function)
 mv 20050106-1.c notportable/
@@ -75,6 +79,22 @@ sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
 # fixing pr34176.c
 sed -i 's/static count = 0/static int count = 0/g' pr34176.c
 
+# move tests that are undefined for non-statically found things, like overflow
+mv 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 20020508-2.c 20020508-3.c 20010904-1.c 20010904-2.c 20050215-1.c 20071030-1.c 20081117-1.c 920428-1.c 921202-1.c 930126-1.c 930930-2.c 940115-1.c 950704-1.c 950710-1.c 960608-1.c 980526-2.c 980701-1.c 980716-1.c 991118-1.c arith-rand.c arith-rand-ll.c bf64-1.c bf-pack-1.c bf-sign-2.c bitfld-3.c loop-15.c pr17252.c pr22493-1.c pr23047.c pr28289.c pr31448-2.c pr32244-1.c pr34099-2.c pr34099.c pr34971.c pr37882.c pr40386.c pr40493.c pr42691.c pr43629.c pr44555.c stdarg-3.c va-arg-14.c brokenDynamically/
+
+# bad locations
+mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c brokenDynamically/
+
+# overflow
+mv 20030316-1.c 20040409-1.c 20040409-2.c 20040409-3.c 20060110-1.c 20060110-2.c 920711-1.c 920730-1.c 960317-1.c brokenDynamically/
+
+# uninitialized
+mv 20030404-1.c 20100430-1.c brokenDynamically/
+
+# arithmetic on pointers
+mv pr23467.c brokenDynamically/
+
+
 
 echo "Fixing size_t..."
 # replace __SIZE_TYPE__ with size_t
@@ -84,6 +104,14 @@ for f in `grep -L 'wchar\.h\|uchar\.h\|time\.h\|string\.h\|stdio\.h\|stddef\.h\|
 done
 # remove typedefs of size_t that referred to __SIZE_TYPE__
 sed -i 's/typedef[ ]\+size_t[ ]\+size_t/\/\//g' *.c
+
+echo "Fixing wchar_t..."
+sed -i 's/__WCHAR_TYPE__/wchar_t/g' *.c
+for f in `grep -L 'wchar\.h\|stddef\.h\|stdlib\.h' \`grep -l 'wchar_t' *.c\``; do
+	../../scripts/insert.sh 1 $f '#include <stddef.h>'
+done
+# remove typedefs of wchar_t that referred to __WCHAR_TYPE__
+sed -i 's/typedef[ ]\+wchar_t[ ]\+wchar_t/\/\//g' *.c
 
 echo "Moving nonstandard builtins..."
 # remove nonstandard builtins
@@ -169,7 +197,7 @@ done
 
 ## stdio.h
 # printf
-for f in `grep -L 'int[ ]*printf\|stdio.h\.h' \`grep -l 'printf' *.c\``; do
+for f in `grep -L 'int[ ]*printf\|stdio\.h' \`grep -l 'printf' *.c\``; do
 	../../scripts/insert.sh 1 $f '#include <stdio.h>'
 done
 
@@ -231,5 +259,13 @@ sed -i 's/__builtin_offsetof/offsetof/g' *.c
 for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 	../../scripts/insert.sh 1 $f '#include <stddef.h>'
 done
+
+# these aren't bad, just moving them out of the way for my testing
+mkdir -p superSlow
+mv 20011008-3.c memcpy-1.c memcpy-2.c pr43220.c strcmp-1.c strcpy-1.c superSlow/
+# these aren't bad, i just know I fail them
+mkdir -p shouldPass
+mv 20010325-1.c 921110-1.c 970214-2.c struct-cpy-1.c widechar-1.c 970214-1.c 970217-1.c pr42614.c wchar_t-1.c widechar-2.c shouldPass/
+
 
 rm *.bak

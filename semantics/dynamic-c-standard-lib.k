@@ -69,6 +69,23 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// if F:Id =/=Bool Identifier("longjmp")
 		[structural] 
 
+	op offsetOf : K K -> K [strict(1)]
+	rule
+		< k > OffsetOf(T:Type, K:K, F:Id) => offsetOf(DeclType(T:Type, K:K), F:Id) ...</ k >
+		[structural]
+	// fixme should check for bitfield offset
+	rule
+		< k > offsetOf(structType(S:Id), F:Id) 
+			=> tv(bitsToBytes(Offset:Nat), cfg:sizeut)
+		...</ k >
+		< structs >...
+			S:Id |-> aggregateInfo(?, ?, (? F:Id |-> Offset:Nat))
+		...</ structs >
+		[structural]
+	rule < k > offsetOf(unionType(?), ?) => tv(0, cfg:sizeut) ...</ k >
+		[structural]
+	
+
 	rule [debug]:
 		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
 		[metadata "computational"]
