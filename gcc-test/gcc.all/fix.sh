@@ -268,10 +268,8 @@ done
 mkdir -p superSlow
 mv 20011008-3.c memcpy-1.c memcpy-2.c pr43220.c strcmp-1.c strcpy-1.c 960521-1.c superSlow/
 # these aren't bad, i just know I fail them
-#mkdir -p shouldPass
-#mv 20010325-1.c 921110-1.c 970214-2.c struct-cpy-1.c 970214-1.c 970217-1.c pr42614.c shouldPass/
-#mkdir -p fails
-#mv 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c eeprof-1.c pr22061-2.c pushpop_macro.c fails/
+mkdir -p fails
+mv 20010325-1.c 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c 921110-1.c 970217-1.c eeprof-1.c mode-dependent-address.c pr22061-2.c pr42614.c pushpop_macro.c struct-cpy-1.c fails/
 
 mkdir -p passesButSlow
 # really slow, > 15 minutes
