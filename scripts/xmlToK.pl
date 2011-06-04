@@ -171,6 +171,11 @@ sub elementToK {
 		my $ident = 'Identifier' . paren($str);
 		my $id = 'Id' . paren($ident);
 		return $id . paren(KLIST_IDENTITY); 
+	} if ($label eq 'WStringLiteral') {
+		my $rawData = $xso->first_child('RawData');
+		my $str = escapeWString($rawData->text);
+		my $ident = "'WStringLiteral" . paren(paren($str));
+		return $ident;
 	} elsif ($label eq 'Variadic') {
 		return paren("Bool true") . paren(KLIST_IDENTITY);
 	} elsif ($label eq 'NotVariadic') {
@@ -247,18 +252,28 @@ sub escapeString {
 		# print "$char\n";
 	# }
 	return join('', @newArray);
+}
+
+
+sub escapeWString {
+	my ($str) = (@_);
+	my $decoded = decode_base64($str);
+	my $retval = "_`(_`)(kList((\"wklist_\").String), (";
+	utf8::decode($decoded);
+	my @charArray = split(//, $decoded);
+	for my $c (@charArray) {
+		utf8::encode($c);
+		my @charPartArray = split(//, $c);
+		my $single = 0;
+		for my $cp (@charPartArray) {
+			$single = ($single << 8) + ord($cp);
+		}
+		#my @newArray = map(escapeSingleCharacter($_), @charPartArray) ;
+		$retval .= "Rat $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
+	}
 	
-	# my $result = "";
-	# foreach my $char (split //, $str){
-		# if ($char eq '"') {
-			# $result .= '\\"';
-		# } elsif ($char =~ /[a-zA-Z0-9.(){} \/]/) {
-			# $result .= $char;
-		# } else {
-			# $result .= '\\' . ord($char);
-		# }
-	# }
-	# return $result;
+	$retval .= ".List{K}))";
+	return $retval;
 }
 
 sub paren {

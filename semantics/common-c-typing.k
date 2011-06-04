@@ -970,6 +970,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	
 	rule hasCharType(char) => true [structural]
+	rule hasCharType(qualifiedType(T:Type, ?)) => hasCharType(T:Type) [structural]
 	rule hasCharType(unsigned-char) => true [structural]
 	rule hasCharType(signed-char) => true [structural]
 	rule hasCharType(T:Type) => false
@@ -978,6 +979,15 @@ kmod COMMON-C-TYPING is
 		andBool T:Type =/=Bool signed-char
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
+		
+	rule hasWCharType(T:Type) => true 
+		if T:Type ==Bool cfg:wcharut 
+		[structural]
+	rule hasWCharType(T:Type) => false
+		if T:Type =/=Bool cfg:wcharut
+		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		[structural]
+	rule hasWCharType(qualifiedType(T:Type, ?)) => hasWCharType(T:Type) [structural]
 	
 	rule hasPointerType(pointerType(?)) => true [structural]
 	rule hasPointerType(qualifiedType(T:Type, ?)) => hasPointerType(T:Type) [structural]

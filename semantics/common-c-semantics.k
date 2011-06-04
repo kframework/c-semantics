@@ -270,6 +270,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op calculateGotoMap : Id K -> K 
 	
 	op hasCharType : Type -> Bool 
+	op hasWCharType : Type -> Bool 
 	// fixme make sure i use this everywhere instead of T:BaseType
 	// op isABaseType_ : K -> Bool 
 	op hasPointerType : Type -> Bool 
@@ -300,7 +301,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op argPromote : K -> K
 	op extractField : List{K} K Id -> K // bytes of struct, type, field id
 	op allocString : Nat String -> K 
-	op allocWString : Nat String -> K 
+	op allocWString : Nat List{K} -> K 
 	op sequencePoint : -> K 
 	
 	op handleBuiltin : Id Type -> K 

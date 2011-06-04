@@ -383,16 +383,17 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		if notBool($hasMapping(M:Map, S:String))
 		[structural]
 		
+	op wstring : List{K} -> K 
 	rule [const-wstring-notfound]:
-		< k > (.K => allocWString(Loc:Nat, S:String +String "\0"))
-			~> Constant(WStringLiteral(S:String))
+		< k > (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
+			~> Constant(WStringLiteral(S:List{K}))
 		...</ k >
 		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< stringLiterals >
 			M:Map
-			(.Map => S:String |-> lv(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat (lengthString(S:String) +Nat 1))))
+			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat (lengthList{K}(S:List{K}) +Nat 1))))
 		</ stringLiterals >
-		if notBool($hasMapping(M:Map, S:String))
+		if notBool($hasMapping(M:Map, wstring(S:List{K})))
 		[structural]
 		
 	rule [const-string-found]:
@@ -400,8 +401,8 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		< stringLiterals >... S:String |-> V:Value ...</ stringLiterals >
 		[structural]
 	rule [const-wstring-found]:
-		< k > Constant(WStringLiteral(S:String)) => V:Value ...</ k >
-		< stringLiterals >... S:String |-> V:Value ...</ stringLiterals >
+		< k > Constant(WStringLiteral(S:List{K})) => V:Value ...</ k >
+		< stringLiterals >... wstring(S:List{K}) |-> V:Value ...</ stringLiterals >
 		[structural]
 	
 	/*@ \source[n1570]{\para{6.4.4.1}{5}}

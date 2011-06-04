@@ -142,7 +142,16 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tunsigned
 	| Tnamed of string
 */
-	ops Void Char Bool Short Int Long Float Double Signed Unsigned : -> TypeSpecifier [ctor]
+	op Void : -> TypeSpecifier [ctor]
+	op Char : -> TypeSpecifier [ctor]
+	op Bool : -> TypeSpecifier [ctor]
+	op Short : -> TypeSpecifier [ctor]
+	op Int : -> TypeSpecifier [ctor]
+	op Long : -> TypeSpecifier [ctor]
+	op Float : -> TypeSpecifier [ctor]
+	op Double : -> TypeSpecifier [ctor]
+	op Signed : -> TypeSpecifier [ctor]
+	op Unsigned : -> TypeSpecifier [ctor]
 	op inf : -> Float
 	// macro inf = Infinity
 	op Named : Id -> TypeSpecifier [ctor]
@@ -171,7 +180,12 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 and storage =
 	NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
 */
-	ops NoStorage Auto Static Extern Register ThreadLocal : -> Storage [ctor]
+	op NoStorage : -> Storage [ctor]
+	op Auto : -> Storage [ctor]
+	op Static : -> Storage [ctor]
+	op Extern : -> Storage [ctor]
+	op Register : -> Storage [ctor]
+	op ThreadLocal : -> Storage [ctor]
 	
 /*
 and funspec = 
@@ -183,7 +197,9 @@ and funspec =
 and cvspec =
 	CV_CONST | CV_VOLATILE | CV_RESTRICT
 */
-	ops Const Volatile Restrict : -> CVSpecifier
+	op Const : -> CVSpecifier
+	op Volatile : -> CVSpecifier
+	op Restrict : -> CVSpecifier
 	
 /*
 and spec_elem =
@@ -328,13 +344,19 @@ and enum_item = string * expression * cabsloc
 	
 	// new
 
-	ops LTL-True LTL-False : -> Expression
-	ops LTL-And LTL-Or : K K -> Expression
-	ops LTL-Not : K -> Expression
-	ops LTL-Next: K -> Expression
-	ops LTL-Always : K -> Expression
-	ops LTL-Eventually : K -> Expression
-	ops LTL-Until LTL-Release LTL-Implies LTL-Equiv LTL-WeakUntil : K K -> Expression
+	op LTL-True : -> Expression
+	op LTL-False : -> Expression
+	op LTL-And : K K -> Expression
+	op LTL-Or : K K -> Expression
+	op LTL-Not : K -> Expression
+	op LTL-Next : K -> Expression
+	op LTL-Always : K -> Expression
+	op LTL-Eventually : K -> Expression
+	op LTL-Until : K K -> Expression
+	op LTL-Release : K K -> Expression
+	op LTL-Implies : K K -> Expression
+	op LTL-Equiv : K K -> Expression
+	op LTL-WeakUntil : K K -> Expression
 	
 	op DefinitionLoc : K K -> Definition // new
 	op DefinitionLocRange : K K K -> Definition // new
@@ -496,7 +518,9 @@ and unary_operator =
 /*
 	| BINARY of binary_operator * expression * expression
 */
-	ops _*_ _/_ _%_ : K K -> Expression [prec 31 gather(E e)]
+	op _*_ : K K -> Expression [prec 31 gather(E e)]
+	op _/_ : K K -> Expression [prec 31 gather(E e)]
+	op _%_ : K K -> Expression [prec 31 gather(E e)]
 	context _*_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _*_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	context _/_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
@@ -504,33 +528,37 @@ and unary_operator =
 	context _%_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _%_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _+_ _-_ : K K -> Expression [prec 33 gather(E e)]
+	op _+_ : K K -> Expression [prec 33 gather(E e)]
+	op _-_ : K K -> Expression [prec 33 gather(E e)]
 	context _+_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _+_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	context _-_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _-_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _<<_ : K K -> Expression [prec 35 gather(E e)]
+	op _<<_ : K K -> Expression [prec 35 gather(E e)]
 	context _<<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _<<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _>>_ : K K -> Expression [prec 35 gather(E e)]
+	op _>>_ : K K -> Expression [prec 35 gather(E e)]
 	context _>>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _>>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _<_ _<=_ : K K -> Expression [prec 37 gather(E e)]
+	op _<_ : K K -> Expression [prec 37 gather(E e)]
+	op _<=_ : K K -> Expression [prec 37 gather(E e)]
 	context _<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	context _<=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _<=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _>_ _>=_ : K K -> Expression [prec 37 gather(E e)]
+	op _>_ : K K -> Expression [prec 37 gather(E e)]
+	op _>=_ : K K -> Expression [prec 37 gather(E e)]
 	context _>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	context _>=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _>=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	
-	ops _==_ _!=_ : K K -> Expression [prec 39 gather(E e)]
+	op _==_ : K K -> Expression [prec 39 gather(E e)]
+	op _!=_ : K K -> Expression [prec 39 gather(E e)]
 	context _==_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 	context _==_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	context _!=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
@@ -555,8 +583,16 @@ and unary_operator =
 	op _||_ : K K -> Expression [prec 49 gather(E e)]
 	context _||_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
 			
-	ops _*=_ _/=_ _%=_ _+=_ _-=_ _<<=_ _&=_ _^=_ _|=_ : K K -> Expression [prec 53]
-	ops _>>=_ : K K -> Expression [prec 53]
+	op _*=_ : K K -> Expression [prec 53]
+	op _/=_  : K K -> Expression [prec 53]
+	op _%=_  : K K -> Expression [prec 53]
+	op _+=_ : K K -> Expression [prec 53]
+	op _-=_ : K K -> Expression [prec 53]
+	op _<<=_ : K K -> Expression [prec 53]
+	op _&=_ : K K -> Expression [prec 53]
+	op _^=_ : K K -> Expression [prec 53]
+	op _|=_ : K K -> Expression [prec 53]
+	op _>>=_ : K K -> Expression [prec 53]
 	op _:=_ : K K -> Expression [prec 53]
 	context _:=_(([HOLE] => peval([HOLE])), _) [metadata "nd=(true)"]
 	context _:=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
@@ -660,7 +696,7 @@ and constant =
 	op CharLiteral : Int -> Constant
 	op WCharLiteral : Int -> Constant
 	op StringLiteral : String -> Constant
-	op WStringLiteral : String -> Constant
+	op WStringLiteral : List{K} -> Constant
 	
 
 /*
@@ -760,19 +796,19 @@ and attribute = string * expression list
 	macro Equality(K1:K, K2:K) = K1:K == K2:K
 	ops NotEquality : K K -> Expression
 	macro NotEquality(K1:K, K2:K) = K1:K != K2:K
-	op BitwiseAnd : K K -> Expression
+	ops BitwiseAnd : K K -> Expression
 	macro BitwiseAnd(K1:K, K2:K) = K1:K & K2:K
-	op BitwiseXor : K K -> Expression
+	ops BitwiseXor : K K -> Expression
 	macro BitwiseXor(K1:K, K2:K) = K1:K ^ K2:K
-	op BitwiseOr : K K -> Expression
+	ops BitwiseOr : K K -> Expression
 	macro BitwiseOr(K1:K, K2:K) = K1:K | K2:K
-	op LogicalAnd : K K -> Expression
+	ops LogicalAnd : K K -> Expression
 	macro LogicalAnd(K1:K, K2:K) = K1:K && K2:K
-	op LogicalOr : K K -> Expression
+	ops LogicalOr : K K -> Expression
 	macro LogicalOr(K1:K, K2:K) = K1:K || K2:K
 	
 
-	op Assign : K K -> Expression
+	ops Assign : K K -> Expression
 	macro Assign(K1:K, K2:K) = K1:K := K2:K
 	ops AssignMultiply : K K -> Expression
 	macro AssignMultiply(K1:K, K2:K) = K1:K *= K2:K
@@ -795,7 +831,7 @@ and attribute = string * expression list
 	ops AssignRightShift : K K -> Expression
 	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
 	
-	op Dot : K Id -> Expression
+	ops Dot : K Id -> Expression
 	macro Dot(K:K, X:Id) = K:K . X:Id
 	op Arrow : K Id -> Expression
 	macro Arrow(K:K, X:Id) = K:K -> X:Id

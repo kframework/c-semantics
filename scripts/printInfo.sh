@@ -34,15 +34,26 @@ function stats {
 	printf "%35s %35s\n" "`printf "lines: %3d\n" $NUM_LINES1`" "`printf "lines: %3d\n" $NUM_LINES2`"
 }
 
-stats "common-c-syntax.maude" "dynamic-c-configuration.maude"
-stats "common-c-conversions.maude" "common-c-expressions.maude"
-stats "common-c-memory.maude" "common-c-semantics.maude"
-stats "common-c-standard-lib.maude" "common-c-statements.maude"
-stats "common-c-typing.maude" "dynamic-c-semantics.maude"
-stats "common-c-declarations.maude"
+stats "../semantics/.k/common-c-configuration.maude" "../semantics/.k/dynamic-c-configuration.maude"
+stats "../semantics/.k/common-c-declarations.maude" "../semantics/.k/dynamic-c-declarations.maude"
+stats "../semantics/.k/common-c-expressions.maude" "../semantics/.k/dynamic-c-expressions.maude"
+stats "../semantics/.k/common-c-semantics.maude" "../semantics/.k/dynamic-c-semantics.maude"
+stats "../semantics/.k/common-c-statements.maude" "../semantics/.k/dynamic-c-statements.maude"
+stats "../semantics/.k/common-c-typing.maude" "../semantics/.k/dynamic-c-typing.maude"
+stats "../semantics/.k/common-c-syntax.maude" 
+stats "../semantics/.k/common-c-helpers.maude" 
+stats "../semantics/.k/dynamic-c-standard-lib.maude"
+stats "../semantics/.k/dynamic-c-memory.maude" 
+stats "../semantics/.k/dynamic-c-conversions.maude" 
+stats "../semantics/.k/dynamic-c-errors.maude" 
 echo "---------------------------------------------------------------------------"
-printf "Syntactic Ops:     %4d\n" 173
+printf "Syntactic Ops:     %4d\n" `cat ../semantics/.k/common-c-syntax.maude | perl maudeloc.pl | grep "^op " | wc -l`
 printf "Total Rules:       %4d\n" $TOTAL_RULES
 printf "Total Eqns:        %4d\n" $TOTAL_EQUATIONS
 printf "Total Rules+Eqns:  %4d\n" $(($TOTAL_EQUATIONS+$TOTAL_RULES))
 printf "Total Lines:       %4d\n" $TOTAL_LINES
+printf "Compiled eq:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^eq " | wc -l`
+printf "Compiled ceq:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^ceq " | wc -l`
+printf "Compiled rl:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^rl " | wc -l`
+printf "Compiled crl:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^crl " | wc -l`
+printf "Compiled ops:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^op " | wc -l`

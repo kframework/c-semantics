@@ -1,3 +1,5 @@
+# gcc dies on this 20080529-1.c
+
 # use standard functions instead of builtins
 mkdir -p notportable
 mkdir -p hosted
@@ -57,6 +59,8 @@ mv pr19687.c pr28982b.c notportable/
 mv 20001111-1.c notportable/
 # gnustyle field designators
 mv 991228-1.c struct-ini-4.c notportable/
+# implementation defined wide chars
+mv wchar_t-1.c notportable
 
 # duplicate definition of library function
 mv 20021127-1.c notportable
@@ -264,10 +268,10 @@ done
 mkdir -p superSlow
 mv 20011008-3.c memcpy-1.c memcpy-2.c pr43220.c strcmp-1.c strcpy-1.c 960521-1.c superSlow/
 # these aren't bad, i just know I fail them
-mkdir -p shouldPass
-mv 20010325-1.c 921110-1.c 970214-2.c struct-cpy-1.c widechar-1.c 970214-1.c 970217-1.c pr42614.c wchar_t-1.c widechar-2.c shouldPass/
-mkdir -p fails
-mv 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c eeprof-1.c pr22061-2.c pushpop_macro.c fails/
+#mkdir -p shouldPass
+#mv 20010325-1.c 921110-1.c 970214-2.c struct-cpy-1.c 970214-1.c 970217-1.c pr42614.c shouldPass/
+#mkdir -p fails
+#mv 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c eeprof-1.c pr22061-2.c pushpop_macro.c fails/
 
 mkdir -p passesButSlow
 # really slow, > 15 minutes

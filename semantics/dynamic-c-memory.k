@@ -682,7 +682,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	// i take this to mean that if i write to a location twice or read from a location after being written to, then it is a problem
 		
 	op writeString : Nat String -> K
-	op writeWString : Nat String -> K
+	op writeWString : Nat List{K} -> K
 	rule [alloc-string]:
 		< k > allocString(Loc:Nat, S:String)
 			=> allocateType(Loc:Nat, arrayType(char, lengthString(S:String)))
@@ -690,9 +690,9 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		...</ k >
 		[structural]
 	rule [alloc-wstring]:
-		< k > allocWString(Loc:Nat, S:String)
-			=> allocateType(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat lengthString(S:String)))
-			~> writeWString(Loc:Nat, S:String)
+		< k > allocWString(Loc:Nat, S:List{K})
+			=> allocateType(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat lengthList{K}(S:List{K})))
+			~> writeWString(Loc:Nat, S:List{K})
 		...</ k >
 		[structural] 
 		
@@ -704,11 +704,10 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		if S:String =/=Bool ""
 		[structural]
 	rule [write-wstring]:
-		< k > writeWString(Loc:Nat, S:String)
-			=> Computation(*(tv(Loc:Nat, pointerType(cfg:wcharut))) := tv(charToAscii(firstChar(S:String)), cfg:wcharut))
-			~> writeWString(sNat(Loc:Nat), butFirstChar(S:String))
+		< k > writeWString(Loc:Nat, (N:Nat,, S:List{K}))
+			=> Computation(*(tv(Loc:Nat, pointerType(cfg:wcharut))) := tv(N:Nat, cfg:wcharut))
+			~> writeWString(sNat(Loc:Nat), S:List{K})
 		...</ k >
-		if S:String =/=Bool ""
 		[structural] 
 		
 	rule [write-empty-string]:
@@ -717,7 +716,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		...</ k >
 		[structural]
 	rule [write-empty-wstring]:
-		< k > writeWString(Loc:Nat, "") 
+		< k > writeWString(Loc:Nat, .List{K}) 
 			=> .K
 		...</ k >
 		[structural]

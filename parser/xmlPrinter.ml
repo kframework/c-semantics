@@ -49,11 +49,20 @@ let escape_string str =
  * the specified type (either char or wchar_t). *)
 (* CME: actually, this is based on the code in CIL *)
 let rec reduce_multichar : int64 list -> int64 =
-  let radix = 256 in
+  let radix = 8 in
   List.fold_left
     (fun acc -> Int64.add (Int64.shift_left acc radix))
     Int64.zero
 and interpret_character_constant char_list =
+  let value = reduce_multichar char_list in
+  Int64.to_int value
+  
+let rec reduce_multiwchar : int64 list -> int64 =
+  let radix = 32 in
+  List.fold_left
+    (fun acc -> Int64.add (Int64.shift_left acc radix))
+    Int64.zero
+and interpret_wcharacter_constant char_list =
   let value = reduce_multichar char_list in
   Int64.to_int value
 
@@ -318,7 +327,7 @@ and printConstant const =
 	| CONST_INT i -> wrap ((printIntLiteral i) :: []) "IntLiteral"
 	| CONST_FLOAT r -> wrap ((printFloatLiteral r) :: []) "FloatLiteral"
 	| CONST_CHAR c -> wrap [printRawInt (interpret_character_constant c)] "CharLiteral"
-	| CONST_WCHAR c -> wrap [printRawInt (interpret_character_constant c)] "WCharLiteral"
+	| CONST_WCHAR c -> wrap [printRawInt (interpret_wcharacter_constant c)] "WCharLiteral"
 	| CONST_STRING s -> wrap [printRawString s] "StringLiteral"
 	| CONST_WSTRING ws -> wrap [printRawString (string_of_list_of_int64 ws)] "WStringLiteral"
 and splitFloat (xs, i) =

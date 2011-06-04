@@ -55,11 +55,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) <=Nat Len:Nat
+		[structural]
+	rule
+		< k > figureInitializer(X:Id, arrayType(T:Type, Len:Nat), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> figureInitializer(X:Id, arrayType(T:Type, Len:Nat), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
+		...</ k >
+		if hasWCharType(T:Type)
+		andBool 4 *Nat lengthList{K}(S:List{K}) <=Nat Len:Nat
 		[structural] 
 	
 	rule
 		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthString(S:String) +Nat 1)), SingleInit(Constant(StringLiteral(S:String)))) ...</ k >
 		if hasCharType(T:Type)
+		[structural]
+	rule
+		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, 4 *Nat (lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
+		if hasWCharType(T:Type)
 		[structural] 
 		
 	rule
@@ -987,6 +998,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool lengthString(S:String) ==Bool Len:Nat
 		[structural] 
 	rule
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		andBool 4 *Nat lengthList{K}(S:List{K}) ==Bool Len:Nat
+		[structural] 
+	rule
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
@@ -995,13 +1014,27 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool lengthString(S:String) <Int Len:Nat
 		[structural] 
 	rule
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		andBool 4 *Nat lengthList{K}(S:List{K}) <Int Len:Nat
+		[structural] 
+	rule
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
 		if hasCharType(T:Type)
 		[structural] 
-		
+	rule
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		[structural] 	
 	rule
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), char))) 
@@ -1011,10 +1044,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if S:String =/=Bool ""
 		andBool hasCharType(T:Type)
 		[structural] 
+	rule
+		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
+			=> fillInitializer(SingleInit(tv(N:Nat, cfg:wcharut)))
+			~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		[structural]
 	// fixme not sure what happens in the case of   char *x = "";
 	rule
-		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => . ...</ k >
-		// if hasCharType(T:Type)
+		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</ k >
+		[structural]
+	rule
+		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</ k >
 		[structural] 
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
@@ -1027,6 +1070,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if notBool hasCharType(T:Type)
 		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural] 
+	rule
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if notBool hasWCharType(T:Type)
+		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		[structural]
 endkm
 
 
