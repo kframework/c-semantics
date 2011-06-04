@@ -61,7 +61,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> figureInitializer(X:Id, arrayType(T:Type, Len:Nat), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
 		...</ k >
 		if hasWCharType(T:Type)
-		andBool 4 *Nat lengthList{K}(S:List{K}) <=Nat Len:Nat
+		andBool lengthList{K}(S:List{K}) <=Nat Len:Nat
 		[structural] 
 	
 	rule
@@ -69,7 +69,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if hasCharType(T:Type)
 		[structural]
 	rule
-		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, 4 *Nat (lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
+		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthList{K}(S:List{K}) +Nat 1)), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
 		if hasWCharType(T:Type)
 		[structural] 
 		
@@ -1003,7 +1003,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
-		andBool 4 *Nat lengthList{K}(S:List{K}) ==Bool Len:Nat
+		andBool lengthList{K}(S:List{K}) ==Bool Len:Nat
 		[structural] 
 	rule
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
@@ -1019,7 +1019,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
-		andBool 4 *Nat lengthList{K}(S:List{K}) <Int Len:Nat
+		andBool lengthList{K}(S:List{K}) <Int Len:Nat
 		[structural] 
 	rule
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))

@@ -391,7 +391,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< stringLiterals >
 			M:Map
-			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat (lengthList{K}(S:List{K}) +Nat 1))))
+			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Nat 1)))
 		</ stringLiterals >
 		if notBool($hasMapping(M:Map, wstring(S:List{K})))
 		[structural]
