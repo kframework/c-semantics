@@ -1,5 +1,4 @@
 #!/bin/bash
-# CIL_FLAGS="--noWrap --decil --noPrintLn --warnall --strictcheck --nokeepunused --envmachine"
 set -o errexit
 PEDANTRY_OPTIONS="-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99"
 GCC_OPTIONS="-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__"
@@ -16,24 +15,9 @@ function cleanup {
 	rm -f $compilationLog
 }
 
-#echo "Checking readlink version..."
-set +o errexit
-READLINK=`which greadlink 2> /dev/null`
-if [ "$?" -ne 0 ]; then
-	#echo "You don't have greadlink.  I'll look for readlink."
-	READLINK=`which readlink 2> /dev/null`
-	if [ "$?" -ne 0 ]; then
-		die "No readlink/greadlink program found.  Cannot continue." 9
-	fi
-fi
-set -o errexit
-#echo $READLINK
-K_MAUDE_BASE=`$READLINK -f $myDirectory/../../../..`
-#K_PROGRAM_COMPILE="$K_MAUDE_BASE/tools/kcompile-program.sh"
 K_PROGRAM_COMPILE="perl $myDirectory/xmlToK.pl"
 
 set -o nounset
-#trap cleanup SIGHUP SIGINT SIGTERM
 username=`id -un`
 compilationLog=`mktemp -t $username-fsl-c-log.XXXXXXXXXXX`
 dflag=
@@ -96,38 +80,7 @@ if [ ! "$dflag" ]; then
 fi
 mv $filename.gen.parse.tmp $filename.gen.parse
 
-# modelCheck=
-# set +o errexit
-# grep -q 'START MODEL-CHECKING' "$directoryname$filename.c"
-# retval="$?"
-# if [ "$retval" -eq 0 ]; then 
-	# modelCheck=1
-# fi
-# set -o errexit
-
-# echo "load $myDirectory/c-total" > program-$filename-gen.maude
-# echo "mod C-PROGRAM is" >> program-$filename-gen.maude
-# echo "including C-SYNTAX ." >> program-$filename-gen.maude
-# echo "including MATCH-C-SYNTAX ." >> program-$filename-gen.maude
-# echo "including COMMON-C-CONFIGURATION ." >> program-$filename-gen.maude
-# cat $filename.gen.maude >> program-$filename-gen.maude
-# if [ $modelCheck ]; then
-	# startModel=`grep -n "START MODEL-CHECKING" $directoryname$filename.c | sed 's/^\([0-9]*\):.*$/\1/'`
-	# #echo $startModel
-	# startModel=$(($startModel + 1))
-	# endModel=`grep -n "END MODEL-CHECKING" $directoryname$filename.c | sed 's/^\([0-9]*\):.*$/\1/'`
-	# #echo $endModel
-	# endModel=$(($endModel - 1))
-	# #echo "start = $startModel"
-	# #echo "end = $endModel"
-	# modelModule=`sed -n $startModel,${endModel}p $directoryname$filename.c`
-	# echo -e "$modelModule" >> program-$filename-gen.maude
-# fi
-
-# echo -e "endm\n" >> program-$filename-gen.maude
-
 set +o errexit
-# $K_PROGRAM_COMPILE program-$filename-gen.maude C C-PROGRAM program-$escapedFilename > $compilationLog
 cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude
 PROGRAMRET=$?
 set -o errexit
@@ -140,8 +93,4 @@ if [ "$PROGRAMRET" -ne 0 ]; then
 	die "$msg" 8
 fi
 
-# sed -e '1 d' program-$filename-compiled.maude > program-$filename-compiled.maude.tmp
-# mv program-$filename-compiled.maude.tmp program-$filename-compiled.maude
-
-# rm -f program-$filename-compiled.maude.tmp
 cleanup

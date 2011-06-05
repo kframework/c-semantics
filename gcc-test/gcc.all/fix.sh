@@ -4,24 +4,14 @@
 mkdir -p notportable
 mkdir -p hosted
 mkdir -p easilyFixed
-# mkdir -p defaultType
-mkdir -p oldstyle
-mkdir -p unclear
-# mkdir -p stillBroken
-# mkdir -p assumes
 mkdir -p brokenDynamically
 
 echo "Patching declared types and return values..."
 patch -p1 < returnValues.patch
-
-# i am not sure whether these are alright or not
-mv 920603-1.c 920501-1.c 920731-1.c 920612-1.c 920909-1.c 920721-3.c 921208-2.c 930513-2.c 930526-1.c 930529-1.c 930622-1.c 931228-1.c 960218-1.c 961112-1.c inst-check.c int-compare.c loop-2.c loop-3.c loop-3b.c loop-3c.c mod-1.c 921124-1.c unclear/
-
-# uses oldstyle function declarations
-mv 930429-2.c 930719-1.c 950512-1.c 951003-1.c 980605-1.c oldstyle/
+patch -p1 < argTypes.patch
 
 # assumes things about arguments, even though sig is not right
-mv 20051012-1.c notportable/
+mv 921208-2.c 20051012-1.c notportable/
 
 # extension: gnu statement expressions
 mv 20000917-1.c 20001203-2.c 20020206-1.c 20020320-1.c 930406-1.c compndlit-1.c 950906-1.c notportable/
@@ -84,16 +74,25 @@ sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
 sed -i 's/static count = 0/static int count = 0/g' pr34176.c
 
 # move tests that are undefined for non-statically found things, like overflow
-mv 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 20020508-2.c 20020508-3.c 20010904-1.c 20010904-2.c 20050215-1.c 20071030-1.c 20081117-1.c 920428-1.c 921202-1.c 930126-1.c 930930-2.c 940115-1.c 950704-1.c 950710-1.c 960608-1.c 980526-2.c 980701-1.c 980716-1.c 991118-1.c arith-rand.c arith-rand-ll.c bf64-1.c bf-pack-1.c bf-sign-2.c bitfld-3.c loop-15.c pr17252.c pr22493-1.c pr23047.c pr28289.c pr31448-2.c pr32244-1.c pr34099-2.c pr34099.c pr34971.c pr37882.c pr40386.c pr40493.c pr42691.c pr43629.c pr44555.c stdarg-3.c va-arg-14.c brokenDynamically/
+mv 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 20020508-2.c brokenDynamically/
+mv 20020508-3.c 20010904-1.c 20010904-2.c 20050215-1.c 20071030-1.c brokenDynamically/
+mv 20081117-1.c 920428-1.c 921202-1.c 930126-1.c 930930-2.c brokenDynamically/
+mv 940115-1.c 950704-1.c 950710-1.c 960608-1.c 980526-2.c brokenDynamically/
+mv 980701-1.c 980716-1.c 991118-1.c arith-rand.c arith-rand-ll.c brokenDynamically/
+mv bf64-1.c bf-pack-1.c bf-sign-2.c bitfld-3.c loop-15.c brokenDynamically/
+mv pr17252.c pr22493-1.c pr23047.c pr28289.c pr31448-2.c brokenDynamically/
+mv pr32244-1.c pr34099-2.c pr34099.c pr34971.c pr37882.c brokenDynamically/
+mv pr40386.c pr40493.c pr42691.c pr43629.c pr44555.c brokenDynamically/
+mv stdarg-3.c va-arg-14.c brokenDynamically/
 
 # bad locations
 mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c brokenDynamically/
 
 # overflow
-mv 20030316-1.c 20040409-1.c 20040409-2.c 20040409-3.c 20060110-1.c 20060110-2.c 920711-1.c 920730-1.c 960317-1.c brokenDynamically/
+mv 20030316-1.c 20040409-1.c 20040409-2.c 20040409-3.c 20060110-1.c 20060110-2.c 920711-1.c 920730-1.c 960317-1.c loop-3b.c loop-3.c 980605-1.c 920612-1.c brokenDynamically/
 
 # uninitialized
-mv 20030404-1.c 20100430-1.c brokenDynamically/
+mv 20030404-1.c 20100430-1.c 930529-1.c brokenDynamically/
 
 # arithmetic on pointers
 mv pr23467.c brokenDynamically/
@@ -147,11 +146,11 @@ mv `grep -l '__label__' *.c` notportable/
 echo "Moving typeof operators..."
 mv `grep -l 'typeof' *.c` notportable/
 
-echo "Moving alignof operators..."
-mv `grep -l 'alignof' *.c` notportable/
+# echo "Moving alignof operators..."
+# mv `grep -l 'alignof' *.c` notportable/
 
-echo "Moving va_arg_pack operators..."
-mv `grep -l 'va_arg_pack' *.c` notportable/
+# echo "Moving va_arg_pack operators..."
+# mv `grep -l 'va_arg_pack' *.c` notportable/
 
 echo "Moving use of non portable headers..."
 mv `grep -l 'sys/' *.c` notportable/
@@ -264,18 +263,25 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 	../../scripts/insert.sh 1 $f '#include <stddef.h>'
 done
 
-# these aren't bad, just moving them out of the way for my testing
-mkdir -p superSlow
-mv 20011008-3.c memcpy-1.c memcpy-2.c pr43220.c strcmp-1.c strcpy-1.c 960521-1.c superSlow/
-# these aren't bad, i just know I fail them
-mkdir -p fails
-mv 20010325-1.c 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c 921110-1.c 970217-1.c eeprof-1.c mode-dependent-address.c pr22061-2.c pr42614.c pushpop_macro.c struct-cpy-1.c fails/
+# # these aren't bad, just moving them out of the way for my testing
+# mkdir -p superSlow
+# mv 20011008-3.c memcpy-1.c strcmp-1.c strcpy-1.c superSlow/
+# # these aren't bad, i just know I fail them
+# mkdir -p fails
+# mv 20010325-1.c 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c 921110-1.c 970217-1.c eeprof-1.c mode-dependent-address.c pr22061-2.c pr42614.c pushpop_macro.c struct-cpy-1.c fails/
 
-mkdir -p passesButSlow
-# really slow, > 15 minutes
-mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
-# less slow, > 30s
-mv 20030209-1.c 20031012-1.c 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c 920501-2.c 930921-1.c 931018-1.c 950221-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c divcmp-3.c memcpy-bi.c memset-2.c memset-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c pr20621-1.c pr36093.c strlen-1.c va-arg-10.c passesButSlow/
+# fail 17 total
 
+
+# # 34 slow
+# mkdir -p passesButSlow
+# # really slow, > 5 hrs
+# mv pr43220.c memcpy-2.c 960521-1.c passesButSlow/
+# # really slow, > 15 minutes
+# mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
+# # less slow, > 30s
+# mv 20030209-1.c 20031012-1.c 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c 920501-2.c 930921-1.c 931018-1.c 950221-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c divcmp-3.c memcpy-bi.c memset-2.c memset-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c pr20621-1.c pr36093.c strlen-1.c va-arg-10.c passesButSlow/
+# # kind of slow, > 15s
+# mv 20000605-1.c 20030916-1.c 20060905-1.c 20071219-1.c 930614-2.c ashldi-1.c loop-ivopts-2.c lshrdi-1.c pr27260.c loop-11.c string-opt-5.c va-arg-2.c va-arg-9.c passesButSlow/
 
 rm *.bak

@@ -1,8 +1,9 @@
 KCC ?= "./dist/kcc"
-GCC ?= "gcc -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-GCC34 ?= "gcc34 -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-ICC ?= "icc -w -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-CLANG ?= "clang -Wno-tautological-compare -Wno-unused-value -Wno-format-extra-args -Wno-pointer-sign -Wno-switch -Wno-format -Wno-empty-body -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+GCC ?= "gcc -w -m32 -O0 -U __GNUC__ -std=c99"
+GCC34 ?= "gcc34 -w -m32 -O0 -U __GNUC__ -std=c99"
+ICC ?= "icc -w -m32 -O0 -U __GNUC__ -std=c99"
+# CLANG ?= "clang -Wno-tautological-compare -Wno-unused-value -Wno-format-extra-args -Wno-pointer-sign -Wno-switch -Wno-format -Wno-empty-body -m32 -O0 -U __GNUC__ -pedantic -std=c99"
+CLANG ?= "clang -w -m32 -O0 -U __GNUC__ -std=c99"
 CILCC ?= "./cilcc.sh"
 COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __GNUC__"
 
