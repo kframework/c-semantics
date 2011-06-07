@@ -325,25 +325,13 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		[structural]
 		
 	rule [function-application]:
-		(< control >
-			< k > application(functionObject(X:Id, functionType(R:Type, P:List{Type}), B:K), L:List{Type}) ~> K:K </ k >
-			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-			< currentFunction > CurrFun:K </ currentFunction >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-			C:Bag
-		</ control >
-		=>
-		< control >
-			< k > sequencePoint
-				~> populateFromGlobal
-				~> bind(L:List{Type}, P:List{Type})
-				~> B:K
-				~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi)
-			</ k >
-			< currentFunction > X:Id </ currentFunction >
-			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		...</ control >)
+		< k > application(functionObject(X:Id, functionType(R:Type, P:List{Type}), B:K), L:List{Type}) ~> K:K 
+			=> sequencePoint
+			~> populateFromGlobal
+			~> bind(L:List{Type}, P:List{Type})
+			~> B:K
+			~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi)
+		</ k >
 		< callStack > .List => ListItem(
 			< stackFrame > C:Bag
 				< continuation > K:K </ continuation >
@@ -352,6 +340,18 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
 			</ stackFrame >
 		) ...</ callStack >
+		(< control >
+			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
+			< currentFunction > CurrFun:K </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+			C:Bag
+		</ control >
+		=>
+		< control >
+			< currentFunction > X:Id </ currentFunction >
+			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		...</ control >)
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
 		[structural]
 endkm
@@ -802,6 +802,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
+		
+	// andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int)
 		
 	op isUnknown : K -> Bool
 	rule isUnknown(piece(?, ?)) => true [structural]

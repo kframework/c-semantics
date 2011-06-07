@@ -263,20 +263,17 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 	../../scripts/insert.sh 1 $f '#include <stddef.h>'
 done
 
-# # these aren't bad, just moving them out of the way for my testing
-# mkdir -p superSlow
-# mv 20011008-3.c memcpy-1.c strcmp-1.c strcpy-1.c superSlow/
 # # these aren't bad, i just know I fail them
 # mkdir -p fails
 # mv 20010325-1.c 20031003-1.c 20040208-1.c 20040208-2.c 20040811-1.c 921110-1.c 970217-1.c eeprof-1.c mode-dependent-address.c pr22061-2.c pr42614.c pushpop_macro.c struct-cpy-1.c fails/
 
-# fail 17 total
+# fail 13 total
 
 
 # # 34 slow
 # mkdir -p passesButSlow
 # # really slow, > 5 hrs
-# mv pr43220.c memcpy-2.c 960521-1.c passesButSlow/
+# mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c memcpy-1.c strcmp-1.c  passesButSlow/
 # # really slow, > 15 minutes
 # mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
 # # less slow, > 30s

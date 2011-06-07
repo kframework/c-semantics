@@ -61,58 +61,60 @@ kmod COMMON-C-CONFIGURATION is
 					// < parentThreadId > 0 </ parentThreadId >
 					<threadId color="yellow"> 0 </threadId>
 					<nextLoc color="green"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
-					<callStack color="violet"> .List </callStack> // stack of "control" cells
 					<buffer color="lightgray"> .List </buffer>
 					<blocked color="lightgray"> false </blocked>
-					@latex("\\kBR")
-					<control>
-						<k color="red" multiplicity="?"> .K </k>
-						<statick> .K </statick>
-						<newk> .K </newk>
-						<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
-						<blockStack color="violet"> .List </blockStack> // stack of "local" cells
-						<local>
-							// maps from Ids
-							<env color="red"> .Map </env>
-							<types color="lightgray"> .Map </types>
-							<structs color="lightgray"> .Map </structs>
+					<k color="red" multiplicity="?"> .K </k>
+					<threadLocal>
+						<callStack color="violet"> .List </callStack> // stack of "control" cells
+						@latex("\\kBR")
+						<control>
+							//<statick> .K </statick>
+							//<newk> .K </newk>
+							<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
+							<blockStack color="violet"> .List </blockStack> // stack of "local" cells
+							<local>
+								// maps from Ids
+								<env color="red"> .Map </env>
+								<types color="lightgray"> .Map </types>
+								<structs color="lightgray"> .Map </structs>
 
-							// information about the block we're in
-							<nestingDepth color="lightgray"> 0 </nestingDepth>
-							<blockHistory color="lightgray"> .List </blockHistory>
-							<localVariables color="lightgray"> .List </localVariables> // used to make sure we don't declare a variable twice in the same scope
-							<localAddresses color="lightgray"> .Set </localAddresses> // used to deallocate memory on leaving a block
-						</local>
-						@latex("\\kBR")
-						<shouldInit color="lightgray"> true </shouldInit> // used to control initialization when gotoing
-						// used to figure initializers
-						<currentObject color="cyan"> .List </currentObject>
-						<currentSubObject color="cyan"> .List </currentSubObject>
-						<incompleteLength color="cyan"> 0 </incompleteLength>
-						<savedInitialization color="cyan"> .K </savedInitialization>
-						<loopStack color="violet"> .List </loopStack>
-						@latex("\\kBR")
-						<locsWrittenTo color="lightgray"> .Bag </locsWrittenTo>
-						<holds color="yellow"> .Map </holds>
-						<type multiplicity="?" color="cyan"> .K </type> // used for typing expressions
-						<declarationTypeHolder color="cyan"> .K </declarationTypeHolder> // holds the innermost type while we unroll the type around it
-						
-						// general information
-						<currentTranslationUnit color="lightgray"> "" </currentTranslationUnit>
-						<currentFunction color="lightgray"> .K </currentFunction>
-						<currentProgramLoc color="black"> .K </currentProgramLoc>
-						@latex("\\kBR")
-						<calculateGotoMap color="cyan">
-							<gotoCalculation multiplicity="?" color="cyan">
-								<computation color="cyan"> .K </computation>
-								<computationTail color="cyan"> .K </computationTail>
-								<declarationStack color="cyan"> .List </declarationStack>
-								<nestingDepthGoto color="cyan"> 0 </nestingDepthGoto>
-								<blockHistoryGoto color="cyan"> .List </blockHistoryGoto>
-								<loopStackGoto color="cyan"> .List </loopStackGoto>
-							</gotoCalculation>
-						</calculateGotoMap>
-					</control>
+								// information about the block we're in
+								<nestingDepth color="lightgray"> 0 </nestingDepth>
+								<blockHistory color="lightgray"> .List </blockHistory>
+								<localVariables color="lightgray"> .List </localVariables> // used to make sure we don't declare a variable twice in the same scope
+								<localAddresses color="lightgray"> .Set </localAddresses> // used to deallocate memory on leaving a block
+							</local>
+							@latex("\\kBR")
+							<shouldInit color="lightgray"> true </shouldInit> // used to control initialization when gotoing
+							// used to figure initializers
+							<currentObject color="cyan"> .List </currentObject>
+							<currentSubObject color="cyan"> .List </currentSubObject>
+							<incompleteLength color="cyan"> 0 </incompleteLength>
+							<savedInitialization color="cyan"> .K </savedInitialization>
+							<loopStack color="violet"> .List </loopStack>
+							@latex("\\kBR")
+							<locsWrittenTo color="lightgray"> .Bag </locsWrittenTo>
+							<holds color="yellow"> .Map </holds>
+							<type multiplicity="?" color="cyan"> .K </type> // used for typing expressions
+							<declarationTypeHolder color="cyan"> .K </declarationTypeHolder> // holds the innermost type while we unroll the type around it
+							
+							// general information
+							<currentTranslationUnit color="lightgray"> "" </currentTranslationUnit>
+							<currentFunction color="lightgray"> .K </currentFunction>
+							<currentProgramLoc color="black"> .K </currentProgramLoc>
+							@latex("\\kBR")
+							<calculateGotoMap color="cyan">
+								<gotoCalculation multiplicity="?" color="cyan">
+									<computation color="cyan"> .K </computation>
+									<computationTail color="cyan"> .K </computationTail>
+									<declarationStack color="cyan"> .List </declarationStack>
+									<nestingDepthGoto color="cyan"> 0 </nestingDepthGoto>
+									<blockHistoryGoto color="cyan"> .List </blockHistoryGoto>
+									<loopStackGoto color="cyan"> .List </loopStackGoto>
+								</gotoCalculation>
+							</calculateGotoMap>
+						</control>
+					</threadLocal>
 				</thread>
 			</threads>
 		</T>

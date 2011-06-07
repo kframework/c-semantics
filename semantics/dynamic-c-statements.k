@@ -409,12 +409,12 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 
 	//  this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
 	rule [return]: 
+		< k > Return(V:Value) ~> ? 
+			=> sequencePoint 
+			~> cast(T:Type, V:Value) 
+			~> K:K
+		</ k >
 		< control >
-			< k > Return(V:Value) ~> ? 
-				=> sequencePoint 
-				~> cast(T:Type, V:Value) 
-				~> K:K
-			</ k >
 			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
 			(< local >... < localAddresses > .Set </ localAddresses > ...</ local > => .Bag)
 			< currentFunction > (F:Id => CurrFun:K) </ currentFunction >
@@ -427,8 +427,8 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 		< callStack >
 			ListItem(
 				< stackFrame >
-					C:Bag
 					< continuation > K:K </ continuation >
+					C:Bag
 					< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
 					< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
 				</ stackFrame >

@@ -334,8 +334,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			? 
 			< threads > 
 				?
-				< thread > ? < control > ? < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
-				< thread > ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </ thread >
+				< thread > ? < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
+				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
 		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
@@ -347,27 +347,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational"]
 		
-	// rule [write-write-race]:
-		// < T > ? <threads> ?
-			// <thread> ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </thread>
-			// <thread> ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </thread>
-		// </threads> </ T >
-		// => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		// if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		// orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		// where Start1 = Loc:Nat
-		// and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
-		// and Start2 = Loc':Nat
-		// and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
-		// [metadata "computational"]
-		
 	rule [write-write-race]:
 		< T > 
 			? 
 			< threads > 
 				?
-				< thread > ? < control > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ control > </ thread >
-				< thread > ? < control > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ control > </ thread >
+				< thread > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
+				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
 		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >

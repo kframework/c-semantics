@@ -562,21 +562,30 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(initFunction(&(X:Id), processFunctionBody(functionObject(X:Id, unqualifyType(T:Type), Block:K)))))
+			=> declareFunction(X:Id, T:Type, initializer(initFunction(&(X:Id), functionObject(X:Id, unqualifyType(T:Type), Block:K))))
 			~> calculateGotoMap(X:Id, Block:K)
 		...</ k >
 		if hasFunctionType(T:Type)
 		[structural] 
-
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	op typingBody : Id Type K -> K // third argument is just for now, as a hack
 	
-	rule
+	/*rule
+		< k > processFunctionBody(functionObject(X:Id, T:Type, Body:K)) 
+			=> typingBody(X:Id, T:Type, Body:K)
+		...</ k >
+		< callStack > .List => ListItem(
+			< stackFrame > C:Bag
+				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+				< statick > .K </ statick >
+				< newk > .K </ newk >
+			</ stackFrame >)
+		...</ callStack >	
 		(< control >
-			< k > processFunctionBody(functionObject(X:Id, T:Type, Body:K)) ~> K:K </ k >
 			< statick > ?:K </ statick >
 			< newk > ?:K </ newk >
 			< currentFunction > CurrFun:K </ currentFunction >
@@ -585,33 +594,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 		</ control >
 		=>
 		< control >
-			< k > typingBody(X:Id, T:Type, Body:K) 
-				~> K:K
-			</ k >
 			< statick > Body:K </ statick >
 			< newk > .K </ newk >
 			< currentFunction > X:Id </ currentFunction >
 			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 		...</ control >)
-		< callStack > .List => ListItem(
-			< stackFrame > C:Bag
-				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
-				< statick > .K </ statick >
-				< newk > .K </ newk >
-			</ stackFrame >
-		) ...</ callStack >
 		[structural]
 		
 		
 	rule
+		
+		< k > typingBody(X:Id, T:Type, Body:K) 
+			=> functionObject(X:Id, T:Type, Body:K)
+		...</ k >
 		< control >
-			< k > typingBody(X:Id, T:Type, Body:K) 
-				=> functionObject(X:Id, T:Type, Body:K)
-			...</ k >
-			//< statick > .K </ statick > // this should be here, but commented out in order to run while working on it
-			// < newk > Body:K => .K </ newk >
-			// < newk > ?:K => .K </ newk >
 			< currentFunction > X:Id => OldFunc:K </ currentFunction >
 			< currentProgramLoc > ? => OldLoc:K </ currentProgramLoc >
 			(?:Bag => C:Bag)
@@ -625,16 +621,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 		) => .List
 		</callStack>
 		[structural]
-	
-	// op popTypeBlockStack : Nat List{C} -> K
-	// rule 
-		// < typeBody > Block(Num:Nat, Attrs:List{C}, L:List{C}) 
-			// => listToK(L:List{C})
-			// ~> popTypeBlockStack(Num:Nat, Attrs:List{C})
-		// ...</ typeBody >
-		// < blockStack > .List => ListToK() ...</ blockStack >
-		// [structural]
-		
+			
 	op groupBlock : Nat List{C} -> K
 	
 	rule
@@ -669,31 +656,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 		orBool L:KLabel ==Bool 'Return
 		orBool L:KLabel ==Bool 'Goto
 		orBool L:KLabel ==Bool 'CompGoto
-		[structural]
-	
-	// this rule is here temporarily to test
-	// rule
-		// (< control >
-			// < k > typingBody(X:Id, T:Type, Block:K) ~> K:K </ k >
-			// < typeBody > ?:K </ typeBody >
-			// < currentFunction > ?:K </ currentFunction >
-			// < currentProgramLoc > ?:K </ currentProgramLoc >
-		// ...</ control >
-		// =>
-		// < control > C:Bag
-			// < k > functionObject(X:Id, T:Type, Block:K) ~> K:K </ k >
-			// < typeBody > .K </ typeBody >
-			// < currentFunction > CurrFun:K </ currentFunction >
-			// < currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		// </ control >)
-		// < callStack > ListItem(
-			// < stackFrame > C:Bag
-				// < stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				// < stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
-			// </ stackFrame >
-		// ) => .List ...</ callStack >
-		// [structural] 
-		
+		[structural]	*/	
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is

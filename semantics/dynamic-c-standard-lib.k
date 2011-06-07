@@ -94,60 +94,47 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	// fixme check bounds
 	// fixme obviously need to rework configuration to make this easy
 	op Bag : Bag -> K 
+	
+	op ignoreLocals : -> K
+	
+	rule [ignoreLocals]:
+		< k > ignoreLocals => .K ...</ k >
+		< localAddresses > Locals:Set => .Set </ localAddresses >
+		[structural]
+		
 	rule [setjmp]:
-		< thread > 
-			Thread:Bag
-			< buffer > .List </ buffer >  // don't save buffer in bag
-			< nextLoc > NextLoc:Nat </ nextLoc > // don't save nextLoc in bag
-			< control >
-				Control:Bag
-				< local > 
-					Local:Bag 
-					< localAddresses > Locals:Set => .Set </ localAddresses > // since we're coming back here, don't want to delete memory yet
-				</ local >
-				< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, pointerType(structType(?)))) 
-						=> writeByte(Loc:Nat, Bag(
-							Thread:Bag
-							< control >
-								Control:Bag
-								< local > Local:Bag < localAddresses > Locals:Set </ localAddresses > </ local >
-								< k > K:K </ k >
-							</ control >
-						))
-						~> tv(0, int)
-					) 
-					~> K:K 
-				</ k >
-			</ control >
-		</ thread >
+		< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, pointerType(structType(Identifier("__jmp_buf_tag"))))) 
+			=> ignoreLocals 
+				~> writeByte(Loc:Nat, Bag(
+					C:Bag
+					< continuation > K:K </ continuation >
+				))
+				~> tv(0, int)
+			)
+			~> K:K 
+		</ k >
+		< threadLocal > 
+			C:Bag
+		</ threadLocal >
 		[structural] 
 	////////////////////////////--
+	op longjmp-aux : K K -> K [strict]
+	rule [longjmp-prepare]:
+		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
+			=> longjmp-aux(reval(*(V:Value)), V':Value)
+		...</ k >
+		[structural]
+	
 	rule [longjmp]:
-		< thread > 
-			< nextLoc > NextLoc:Nat </ nextLoc > // keep the nextLoc
-			< buffer > .List </ buffer >
-			((
-			?
-			< control >
-				?
-				< k > prepareBuiltin(Identifier("longjmp"), (tv(sym(Block:Nat) +Nat Offset:Nat, pointerType(structType(?))):: tv(I:Int, int))) ~> ? </ k >
-			</ control >)
-			=> 
-			(Thread:Bag
-			< control >
-				Control:Bag
-				< k > if I:Int ==Bool 0 then tv(1, int) else tv(I:Int, int) fi ~> K:K </ k >
-			</ control>)
-		) </ thread >
-		< mem >...
-			Block:Nat |-> memblock(?, (? Offset:Nat |-> (Bag(
-				Thread:Bag
-				< control >
-					Control:Bag
-					< k > K:K </ k >
-				</ control >
-			) => piece(unknown(numBitsPerByte), numBitsPerByte)))) 
-		...</ mem >
+		< k > longjmp-aux(tv(Bag(
+					< continuation > K:K </ continuation >
+					C:Bag
+			), structType(Identifier("__jmp_buf_tag"))), tv(I:Int, int)) ~> ? 
+			=> if I:Int ==Bool 0 then tv(1, int) else tv(I:Int, int) fi ~> K:K 
+		</ k >
+		< threadLocal > 
+			? => C:Bag
+		</ threadLocal >
 		[structural] 
 	////////////////////////////--
 	
@@ -799,22 +786,26 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< nextLoc > ?:Nat </ nextLoc >
 			< threadId > ?:Nat </ threadId >
 			C:Bag 
-			< callStack > ?:List </ callStack >
-			< control >
-				C':Bag
-				< k > spawn-aux(ThreadId:Nat, ThreadFuncPointer:Value, ThreadArg:Value) => thrd-success ...</ k > 
-			</ control >
+			< k > spawn-aux(ThreadId:Nat, ThreadFuncPointer:Value, ThreadArg:Value) => thrd-success ...</ k > 
+			< threadLocal >
+				< callStack > ?:List </ callStack >
+				< control >
+					C':Bag
+				</ control >
+			</ threadLocal >
 		</ thread >
 		(.Bag =>
 		< thread >
 			< nextLoc > sym(threadId(ThreadId:Nat) +Nat 0) +Nat 0 </ nextLoc >
 			< threadId > ThreadId:Nat </ threadId >
 			C:Bag
-			< callStack > .List </ callStack > 
-			< control >
-				C':Bag
-				< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) </ k > 
-			</ control >
+			< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) </ k > 
+			< threadLocal >
+				< callStack > .List </ callStack > 
+				< control >
+					C':Bag
+				</ control >
+			</ threadLocal >
 		</ thread >)
 		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:Nat] </ threadStatus >
 		[metadata "computational"] 
