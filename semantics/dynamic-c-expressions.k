@@ -813,14 +813,86 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		if  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
 	
-	rule tv(N:Nat, T:Type) == tv(M:Nat, T':Type)
-		=> makeTruth(N:Nat ==Bool M:Nat)
+	// if they're identical, we know for sure they are the same
+	rule tv(N:Nat, T:Type) == tv(N:Nat, T':Type)
+		=> tv(1, int)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+	rule tv(N:Nat, T:Type) != tv(N:Nat, T':Type)
+		=> tv(0, int)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+	
+	// if one of the pointers is null, it's also straightforward
+	rule tv(NullPointer, T:Type) == tv(N:Nat, T':Type)
+		=> makeTruth(NullPointer ==Bool N:Nat)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+	rule tv(NullPointer, T:Type) != tv(N:Nat, T':Type)
+		=> makeTruth(NullPointer =/=Bool N:Nat)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+	rule tv(N:Nat, T:Type) == tv(NullPointer, T':Type)
+		=> makeTruth(NullPointer ==Bool N:Nat)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+	rule tv(N:Nat, T:Type) != tv(NullPointer, T':Type)
+		=> makeTruth(NullPointer =/=Bool N:Nat)
+		if hasPointerType(T:Type) 
+		andBool hasPointerType(T':Type)
+		[structural]
+		
+	// otherwise, there are a number of cases.  
+	// First, they are part of the same object		
+	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) == tv(sym(Base:Nat) +Nat Offset':Nat, T':Type) 
+			=> makeTruth(Offset:Nat ==Bool Offset':Nat)
+		...</ k >
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
-	rule tv(N:Nat, T:Type) != tv(M:Nat, T':Type)
-		=> makeTruth(N:Nat =/=Bool M:Nat)
+	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) != tv(sym(Base:Nat) +Nat Offset':Nat, T':Type) 
+			=> makeTruth(Offset:Nat =/=Bool Offset':Nat)
+		...</ k >
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
+		
+	// next, they are part of different objects.  
+	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
+	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) == tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
+			=> tv(0, int)
+		...</ k >
+		< mem >... 
+			Base:Nat |-> memblock(Len:Nat, ?) 
+			Base':Nat |-> memblock(Len':Nat, ?) 
+			...</ mem >
+		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		andBool Base:Nat =/=Bool Base':Nat
+		andBool Offset:Nat <Nat Len:Nat
+		andBool Offset':Nat <Nat Len':Nat
+		[structural]
+	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) != tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
+			=> tv(1, int)
+		...</ k >
+		< mem >... 
+			Base:Nat |-> memblock(Len:Nat, ?) 
+			Base':Nat |-> memblock(Len':Nat, ?) 
+			...</ mem >
+		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		andBool Base:Nat =/=Bool Base':Nat
+		andBool Offset:Nat <Nat Len:Nat
+		andBool Offset':Nat <Nat Len':Nat
+		[structural]
+	
+	// otherwise we can't conclude anything
+		
+	// rule tv(N:Nat, T:Type) != tv(M:Nat, T':Type)
+		// => makeTruth(N:Nat =/=Bool M:Nat)
+		// if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		// [structural]
 	//- comparison of ints with pointers
 	// fixme there are further restrictions on pointers
 	rule (tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) == tv(?, T':Type)

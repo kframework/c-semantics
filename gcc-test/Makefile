@@ -1,9 +1,10 @@
 KCC ?= "./dist/kcc"
 GCC ?= "gcc -w -m32 -O0 -U __GNUC__ -std=c99"
+GCCO3 ?= "gcc -w -m32 -O3 -U __GNUC__ -std=c99"
 GCC34 ?= "gcc34 -w -m32 -O0 -U __GNUC__ -std=c99"
 ICC ?= "icc -w -m32 -O0 -U __GNUC__ -std=c99"
 # CLANG ?= "clang -Wno-tautological-compare -Wno-unused-value -Wno-format-extra-args -Wno-pointer-sign -Wno-switch -Wno-format -Wno-empty-body -m32 -O0 -U __GNUC__ -pedantic -std=c99"
-CLANG ?= "clang -w -m32 -O0 -U __GNUC__ -std=c99"
+CLANG ?= "clang -fno-color-diagnostics -w -m32 -O0 -U __GNUC__ -std=c99"
 CILCC ?= "./cilcc.sh"
 COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __GNUC__"
 
@@ -11,6 +12,7 @@ COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __
 RUNTEST = runtest --tool=gcc
 KCC_FLAGS = --outdir results/out.kcc --tool_exec $(KCC)
 GCC_FLAGS = --outdir results/out.gcc --tool_exec $(GCC)
+GCCO3_FLAGS = --outdir results/out.gcco3 --tool_exec $(GCCO3)
 GCC34_FLAGS = --outdir results/out.gcc34 --tool_exec $(GCC34)
 ICC_FLAGS = --outdir results/out.icc --tool_exec $(ICC)
 CLANG_FLAGS = --outdir results/out.clang --tool_exec $(CLANG)
@@ -31,6 +33,11 @@ gcc: default
 	@-$(RUNTEST) gcc.all/execute.exp $(GCC_FLAGS)
 #echo "test,tool,phase,status,timeout" > gcc.full.csv
 	@cat results/out.gcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc,\3,\1/p' > gcc.full.csv
+gcco3: default
+	@mkdir -p results/out.gcc
+	@-$(RUNTEST) gcc.all/execute.exp $(GCCO3_FLAGS)
+#echo "test,tool,phase,status,timeout" > gcc.full.csv
+	@cat results/out.gcco3/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcco3,\3,\1/p' > gcc.full.csv
 compcert: default
 	@mkdir -p results/out.compcert
 	@-$(RUNTEST) gcc.all/execute.exp $(COMPCERT_FLAGS)
