@@ -689,10 +689,11 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		...</ k >
 		if S:String =/=Bool ""
 		[structural]
+	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
 		< k > writeWString(Loc:Nat, (N:Nat,, S:List{K}))
 			=> Computation(*(tv(Loc:Nat, pointerType(cfg:wcharut))) := tv(N:Nat, cfg:wcharut))
-			~> writeWString(sNat(Loc:Nat), S:List{K})
+			~> writeWString(Loc:Nat +Nat 4, S:List{K})
 		...</ k >
 		[structural] 
 		

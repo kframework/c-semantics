@@ -286,21 +286,14 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 
 	rule [malloc]:
 		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
-			=> alloc(Loc, N:Nat) ~> tv(Loc, pointerType(void)) 
+			=> alloc(Loc, N:Nat) 
+			~> tv(Loc, pointerType(void)) 
 		...</ k >
 		< malloced >... .Map => Loc |-> N:Nat ...</ malloced >
 		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
 		if T:Type ==Bool cfg:sizeut
 		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
 		[structural]
-	// rule [malloc]:
-		// < k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type)) 
-			// => alloc(Loc:Nat, N:Nat) ~> tv(Loc:Nat, pointerType(void)) 
-		// ...</ k >
-		// < malloced >... .Map => Loc:Nat |-> N:Nat ...</ malloced >
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// if T:Type ==Bool cfg:sizeut
-		// [structural]
 	////////////////////////////--
 	op calloc-aux : -> K
 	rule [calloc]:

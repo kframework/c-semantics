@@ -653,13 +653,17 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	// c99 6.4.5
 	rule
-		< type > Constant(StringLiteral(S:String)) => arrayType(char, lengthString(S:String) +Nat 1) </ type >
-		[structural] 
+		< type > Constant(StringLiteral(S:String)) => arrayType(char, lengthString(S:String) +Nat 1) ...</ type >
+		[structural]
+	rule
+		< type > Constant(WStringLiteral(L:List{K})) => arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Nat 1) ...</ type >
+		[structural]
+		
 	rule
 		< type > K:K => T:Type ...</ type >
 		< types >... K:K |-> T:Type ...</ types >
 		[structural] 
-		
+			
 	rule
 		< type > Comma(L:List{C} :: K:C) => K:C ...</ type >
 		[structural] 
