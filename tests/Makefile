@@ -2,12 +2,13 @@ PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests
 FAIL_DIRECTORIES = shouldFail
+MUSTFAIL_DIRECTORIES = mustFail
 INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests
 THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-unit
 TORTURE_DIRECTORIES = gcc-torture
 CSMITH_DIRECTORIES = csmith
-ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(TORTURE_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES)
+ALL_DIRECTORIES = $(MUSTFAIL_DIRECTORIES) $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(TORTURE_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES)
 
 #ALL_FILES = $(foreach var, $(GOOD_DIRECTORIES), $(wildcard $(var)/*.c))
 #ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
@@ -15,6 +16,7 @@ ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES) $(INTEGRATION_DIRECTOR
 #ALL_TARGETS = $(foreach var,  $(filter-out $(DONT_RUN), $(ALL_PROGRAMS)), $(dir $(var))compare-$(notdir $(var)).pass)
 GOOD_TARGETS = $(foreach var,  $(GOOD_DIRECTORIES), results-pass-$(var).xml)
 FAIL_TARGETS = $(foreach var,  $(FAIL_DIRECTORIES), results-fail-$(var).xml)
+MUSTFAIL_TARGETS = $(foreach var,  $(MUSTFAIL_DIRECTORIES), results-fail-$(var).xml)
 INTEGRATION_TARGETS = $(foreach var, $(INTEGRATION_DIRECTORIES), results-pass-$(var).xml)
 UNIT_TARGETS = $(foreach var, $(UNIT_DIRECTORIES), results-pass-$(var).xml)
 THIRD_PARTY_TARGETS = $(foreach var, $(THIRD_PARTY_DIRECTORIES), results-pass-$(var).xml)
@@ -27,7 +29,7 @@ all: $(PARSER) test
 
 integration: $(INTEGRATION_TARGETS)
 
-unit: adhoc $(UNIT_TARGETS)
+unit: $(MUSTFAIL_TARGETS) adhoc $(UNIT_TARGETS)
 
 adhoc: results-adhoc.xml
 
