@@ -474,7 +474,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if notBool $hasMapping(Def:Map, X:Id)
+		if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool internal)
 		[structural] 
 	op defineAndInit : Id Type K Nat -> K [strict(3)] 
