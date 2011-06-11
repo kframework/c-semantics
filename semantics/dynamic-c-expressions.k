@@ -269,13 +269,29 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 		< types >... X:Id |-> T:Type ...</ types >
 		[structural]
 		
-	rule [lookup-builtin-function]:
-		< k > X:Id => lv(functionPrototype(X:Id, T:Type), T:Type) ...</ k >
+	rule [lookup-builtin-function-notfound]:
+		< k > (.K 
+				=> addToEnv(X:Id, Loc:Nat)
+				~> initFunction(
+					tv(Loc:Nat, pointerType(T:Type)),
+					functionPrototype(X:Id, T:Type)
+				)
+			)
+			~> X:Id
+		...</ k >
 		< env > Env:Map </ env >
 		< types >... X:Id |-> T:Type ...</ types >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		if hasFunctionType(T:Type)
 		andBool notBool $hasMapping(Env:Map, X:Id)
 		[structural]
+	// rule [lookup-builtin-function]:
+		// < k > X:Id => lv(functionPrototype(X:Id, T:Type), T:Type) ...</ k >
+		// < env > Env:Map </ env >
+		// < types >... X:Id |-> T:Type ...</ types >
+		// if hasFunctionType(T:Type)
+		// andBool notBool $hasMapping(Env:Map, X:Id)
+		// [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is

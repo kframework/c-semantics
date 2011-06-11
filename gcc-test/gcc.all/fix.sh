@@ -266,8 +266,8 @@ done
 # these aren't bad, i just know I fail them
 mkdir -p fails
 mv struct-cpy-1.c 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c fails/
-mv 20040811-1.c 921110-1.c 970217-1.c eeprof-1.c mode-dependent-address.c fails/
-mv pr22061-2.c pr42614.c pushpop_macro.c fails/
+mv 20040811-1.c pushpop_macro.c 970217-1.c eeprof-1.c mode-dependent-address.c fails/
+mv pr22061-2.c pr42614.c fails/
 
 
 # 34 slow
