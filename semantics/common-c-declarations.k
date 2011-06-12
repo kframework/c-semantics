@@ -136,7 +136,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< currentFunction > File-Scope </ currentFunction >
 		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
-		[structural] 
+		[structural]
 		
 	// fixme there are still no nested functions though, right?
 	rule
@@ -149,6 +149,18 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
+		[structural] 
+	// fixme i believe this is for local declarations of external library functions
+	rule
+		< k > declare(typedDeclaration(T:Type, X:Id), NoInit) 
+			=> giveType(X:Id, unqualifyType(T:Type))
+		...</ k >
+		< externalLocations > Locs:Map </ externalLocations > 
+		< currentFunction > F:K </ currentFunction >
+		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
+		andBool hasFunctionType(T:Type)
+		andBool F:K =/=Bool File-Scope
+		andBool notBool $hasMapping(Locs:Map, X:Id)
 		[structural] 
 	rule
 		< k > declare(typedDeclaration(T:Type, X:Id), K:K)

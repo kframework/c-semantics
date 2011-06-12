@@ -72,6 +72,8 @@ mv vfprintf-1.c vprintf-1.c 20030626-1.c 20030626-2.c 20070201-1.c pr34456.c str
 # nonportable syntax (extra semicolon outside function)
 mv 20050106-1.c notportable/
 
+# extension: push/pop macro pragma
+mv pushpop_macro.c notportable/
 
 # fixing 921110-1.c
 sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
@@ -277,8 +279,8 @@ done
 
 # these aren't bad, i just know I fail them
 mkdir -p fails
-mv struct-cpy-1.c 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c fails/
-mv 20040811-1.c pushpop_macro.c 970217-1.c pr22061-2.c fails/
+mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
+mv 20040811-1.c 970217-1.c fails/
 
 
 # 34 slow
