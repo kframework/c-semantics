@@ -278,19 +278,19 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 done
 
 # these aren't bad, i just know I fail them
-mkdir -p fails
-mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
-mv 20040811-1.c 970217-1.c fails/
+# mkdir -p fails
+# mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
+# mv 20040811-1.c 970217-1.c fails/
 
 
-# 34 slow
-mkdir -p passesButSlow
-# really slow, > 5 hrs
-mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c memcpy-1.c strcmp-1.c  passesButSlow/
-# really slow, > 15 minutes
-mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
-# slow, > 2 min
-mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
+# # 34 slow
+# mkdir -p passesButSlow
+# # really slow, > 5 hrs
+# mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c memcpy-1.c strcmp-1.c  passesButSlow/
+# # really slow, > 15 minutes
+# mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
+# # slow, > 2 min
+# mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
 # # less slow, > 30s
 # mv 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c 931018-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c divcmp-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c pr36093.c va-arg-10.c passesButSlow/
 # # kind of slow, > 15s

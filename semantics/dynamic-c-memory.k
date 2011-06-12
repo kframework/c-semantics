@@ -182,13 +182,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 			=> interpret(T:Type, piece(N:Nat, Len:Nat)) 
 		if N:Nat >=Nat 0 // guard is here to make sure it's an actual piece
 		[structural]
-	op isConcreteList : List{K} -> Bool 
-	rule 
-		isConcreteList((N:Nat,, L:List{K})) => isConcreteList(L:List{K})
-		if isConcreteNumber(N:Nat) 
-		[structural]
-	rule isConcreteList(.List{K}) => true [structural]
-
 	
 	rule floorLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat) => sym(N:Nat) +Nat R:Nat [structural]
 	// fixme owise!!!

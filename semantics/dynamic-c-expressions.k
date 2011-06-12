@@ -1136,12 +1136,13 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 	/*@ \source[n1570]{\para{6.5.2.3}{4}}
 	A postfix expression followed by the \cinline{->} operator and an identifier designates a member of a structure or union object. The value is that of the named member of the object to which the first expression points, and is an lvalue. \broken{If the first expression is a pointer to a qualified type, the result has the so-qualified version of the type of the designated member.}
 	*/
-	rule [arrow-struct]:
-		< k > tv(Loc:Nat, pointerType(T:Type)) -> F:Id
-			=> *(tv(Loc:Nat, pointerType(T:Type))) . F:Id
-		...</ k >
-		if hasStructType(T:Type) orBool hasUnionType(T:Type)
-		[structural]
+	macro K:K -> F:Id = (* K:K) . F:Id
+	// rule [arrow-struct]:
+		// < k > tv(Loc:Nat, pointerType(T:Type)) -> F:Id
+			// => *(tv(Loc:Nat, pointerType(T:Type))) . F:Id
+		// ...</ k >
+		// if hasStructType(T:Type) orBool hasUnionType(T:Type)
+		// [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-DEREFERENCE is

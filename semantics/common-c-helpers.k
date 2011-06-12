@@ -130,13 +130,6 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		orBool L:KLabel ==Bool 'structType
 		[structural]
 
-	// rule [extractField-from-union-start]:
-		// < k > extractField(L:List{K}, unionType(S:Id), F:Id)
-			// => extractField-pre(L:List{K}, T:Type, tv(0, unsigned-long-int), bitSizeofType(T:Type)) ...</ k >
-		// < structs >... S:Id |-> aggregateInfo((? F:Id |-> T:Type), ?) ...</ structs >
-		// // if notBool hasArrayType(T:Type)
-		// [structural]
-		
 	rule
 		< k > extractField-pre(L:List{K}, T:Type, Offset:Nat, tv(Len:Nat, ?))
 			=> concretize(T:Type, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Nat, Len:Nat)))
