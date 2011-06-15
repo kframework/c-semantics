@@ -6,7 +6,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
 	op simplifyTruth : K -> K
-	rule simplifyTruth(K:K) => K:K != tv(0, int)
+	rule simplifyTruth(K:K) => K:K != tv(0, int) [structural]
 	
 	
 	op isNotTruthValue : Value -> Bool

@@ -80,29 +80,29 @@ sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
 # fixing pr34176.c
 sed -i 's/static count = 0/static int count = 0/g' pr34176.c
 
-# move tests that are undefined for non-statically found things, like overflow
-mv 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 20020508-2.c brokenDynamically/
-mv 20020508-3.c 20010904-1.c 20010904-2.c 20050215-1.c 20071030-1.c brokenDynamically/
-mv 20081117-1.c 920428-1.c 930126-1.c 930930-2.c va-arg-14.c brokenDynamically/
-mv 940115-1.c 950704-1.c 950710-1.c 960608-1.c 980526-2.c brokenDynamically/
-mv 980701-1.c 980716-1.c 991118-1.c arith-rand.c arith-rand-ll.c brokenDynamically/
-mv bf64-1.c bf-pack-1.c bf-sign-2.c bitfld-3.c loop-15.c brokenDynamically/
-mv pr17252.c pr22493-1.c pr23047.c pr28289.c pr31448-2.c brokenDynamically/
-mv pr32244-1.c pr34099.c stdarg-3.c pr34971.c pr37882.c brokenDynamically/
-mv pr40386.c pr40493.c pr42691.c pr43629.c pr44555.c brokenDynamically/
-# mv  brokenDynamically/
+# implementation-defined bitfield types
+mv 20081117-1.c 930126-1.c 960608-1.c 991118-1.c bf64-1.c bf-pack-1.c bf-sign-2.c bitfld-3.c pr31448-2.c pr32244-1.c pr34099.c pr34971.c pr37882.c brokenDynamically/
+
+# assuming things about representation of floats, or uses floats as other types
+mv 20071030-1.c 930930-2.c stdarg-3.c pr42691.c brokenDynamically/
+
+# assuming things about representation of pointers
+mv 980716-1.c brokenDynamically/
+
+# comparing/subtracting incomparable pointers
+mv 950710-1.c 980701-1.c brokenDynamically/
 
 # bad locations
-mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c brokenDynamically/
+mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 940115-1.c loop-15.c brokenDynamically/
 
 # overflow
-mv 20030316-1.c 20040409-1.c 20040409-2.c 20040409-3.c 20060110-1.c 20060110-2.c 920711-1.c 920730-1.c 960317-1.c loop-3b.c loop-3.c 980605-1.c 920612-1.c brokenDynamically/
+mv 980605-1.c brokenDynamically/
 
 # uninitialized
-mv 20030404-1.c pr34099-2.c 921202-1.c 20100430-1.c 930529-1.c brokenDynamically/
+mv 20030404-1.c pr34099-2.c 921202-1.c 20100430-1.c va-arg-14.c pr43629.c brokenDynamically/
 
-# arithmetic on pointers
-mv pr23467.c brokenDynamically/
+# arithmetic/bit on pointers
+mv pr23467.c 20050215-1.c brokenDynamically/
 
 # caught by valgrind
 # 20030404-1.c 
@@ -110,7 +110,29 @@ mv pr23467.c brokenDynamically/
 # 941014-2.c
 # pr34099-2.c
 
-
+# caught by our tool and by ubc
+mv 20020508-2.c brokenDynamically/
+mv 20020508-3.c brokenDynamically/
+mv 20030316-1.c brokenDynamically/
+mv 20040409-1.c brokenDynamically/
+mv 20040409-2.c brokenDynamically/
+mv 20040409-3.c brokenDynamically/
+mv 20060110-1.c brokenDynamically/
+mv 20060110-2.c brokenDynamically/
+mv 920612-1.c brokenDynamically/
+mv 920711-1.c brokenDynamically/
+mv 920730-1.c brokenDynamically/
+mv 930529-1.c brokenDynamically/
+mv 950704-1.c brokenDynamically/
+mv 960317-1.c brokenDynamically/
+mv 980526-2.c brokenDynamically/
+mv arith-rand.c brokenDynamically/
+mv arith-rand-ll.c brokenDynamically/
+mv loop-3b.c brokenDynamically/
+mv loop-3.c brokenDynamically/
+mv pr22493-1.c brokenDynamically/
+mv pr23047.c brokenDynamically/
+mv pr40386.c brokenDynamically/
 
 
 echo "Fixing size_t..."
@@ -171,6 +193,9 @@ mv `grep -l 'sys/' *.c` notportable/
 
 echo "Moving use of mode attribute..."
 mv `grep -l 'mode[ ]*(' *.c` notportable/
+
+echo "Moving necessary use of aligned attribute..."
+mv 20010904-1.c 20010904-2.c notportable/
 
 echo "Moving programs that use vectors..."
 mv `grep -l 'vector_size' *.c` notportable/
@@ -277,23 +302,46 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 	../../scripts/insert.sh 1 $f '#include <stddef.h>'
 done
 
+
+# i'm unsure about the correctness of these
+mkdir -p unsure
+mv 920428-1.c pr17252.c pr40493.c pr44555.c unsure/
 # these aren't bad, i just know I fail them
-# mkdir -p fails
-# mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
-# mv 20040811-1.c 970217-1.c fails/
+mkdir -p fails
+mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
+mv 20040811-1.c 970217-1.c pr28289.c fails/
 
 
-# # 34 slow
-# mkdir -p passesButSlow
-# # really slow, > 5 hrs
-# mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c memcpy-1.c strcmp-1.c  passesButSlow/
-# # really slow, > 15 minutes
-# mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
-# # slow, > 2 min
-# mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
-# # less slow, > 30s
-# mv 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c 931018-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c divcmp-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c pr36093.c va-arg-10.c passesButSlow/
-# # kind of slow, > 15s
-# mv 20000605-1.c 20030916-1.c 20060905-1.c 20071219-1.c 930614-2.c ashldi-1.c loop-ivopts-2.c lshrdi-1.c pr27260.c loop-11.c string-opt-5.c va-arg-2.c va-arg-9.c passesButSlow/
+# 34 slow
+mkdir -p passesButSlow
+# really slow, > 5 hrs
+mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c passesButSlow/
+mv memcpy-1.c strcmp-1.c passesButSlow/
+# really slow, > 15 minutes
+mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
+# slow, > 2 min
+mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c passesButSlow/
+mv memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
+
+# tier 1
+# less slow, > 30s
+mv 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c passesButSlow/
+mv 931018-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c passesButSlow/
+mv divcmp-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c passesButSlow/
+mv pr36093.c va-arg-10.c passesButSlow/
+# kind of slow, > 15s
+mv 20000605-1.c 20030916-1.c 20060905-1.c 20071219-1.c 930614-2.c passesButSlow/
+mv ashldi-1.c loop-ivopts-2.c lshrdi-1.c pr27260.c loop-11.c passesButSlow/
+mv string-opt-5.c va-arg-2.c va-arg-9.c passesButSlow/
+# kind of slow, > 10s
+mv va-arg-24.c mode-dependent-address.c 20021120-1.c passesButSlow/
+# barely slow, > 5s
+mv 20000224-1.c 20000412-2.c 20000422-1.c 20020402-2.c 20020406-1.c passesButSlow/
+mv 20020506-1.c stdarg-4.c 20040313-1.c 20050502-1.c 20050826-2.c passesButSlow/
+mv 20060412-1.c 20071029-1.c 20080424-1.c 930628-1.c 950612-1.c passesButSlow/
+mv 951204-1.c 980506-3.c 980707-1.c 990128-1.c 990326-1.c passesButSlow/
+mv 990404-1.c 991201-1.c 991216-2.c conversion.c divcmp-1.c passesButSlow/
+mv pr28982a.c switch-1.c pr35472.c pr35800.c pr36034-1.c passesButSlow/
+mv pr36034-2.c pr42512.c passesButSlow/
 
 rm *.bak

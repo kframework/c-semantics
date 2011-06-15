@@ -4,8 +4,8 @@ my %states = (); # stateId => stateLabel
 my %arcs = (); # startArcId => endArcId => arcLabel
 my %errorStates = (); # stateId => errorKind
 my %goodFinal = (); # stateId => ""
-	
-	
+
+
 sub graphSearch {
 	require GraphViz;
 	my ($outFilename, @input) = (@_);
@@ -86,7 +86,7 @@ sub graphSearch {
 		# handle state state
 		if ($state eq "state") {
 			# keep reading until we hit an arc
-			if ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
+			if ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) /) {
 				$state = "arc";
 				# meant to continue to next case
 			} elsif ($line =~ m/^state (\d+)/) {
@@ -121,12 +121,10 @@ sub graphSearch {
 				$currentStateNumber = $1;
 				$states{$currentStateNumber} = "";
 				$state = "state";
-			} elsif ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) $/) {
+			} elsif ($line =~ m/^arc (\d+) ===> state (\d+) \((c?rl) /) {
 				my $arcNumber = $1;
 				$currentStateDestination = $2;
 				$currentRule = $3;
-				#$g->add_edge($currentStateNumber => $stateDestination);
-				#@currentArc = ($currentStateNumber, $stateDestination);
 				$arcs{$currentStateNumber}{$currentStateDestination} = "";
 				$state = "arc";
 				$currentRuleName = "";
@@ -156,8 +154,7 @@ sub graphSearch {
 
 	for my $from (keys %arcs) {
 		for my $to (keys %{$arcs{$from}}) {
-			#print "$from, $to\n";
-			#push(@{$HoA{$key}}, $value);
+			# print "$from, $to\n";
 			$g->add_edge($from => $to, label => $arcs{$from}{$to});
 		}
 	}
