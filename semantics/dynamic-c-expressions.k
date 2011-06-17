@@ -982,74 +982,16 @@ second operand from the first.
 		if hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		[structural]
-		
+	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(I:Int, T:Type)
+			=> addToPointer(Loc:Nat, pointerType(T':Type), -Int I:Int, sizeofType(T':Type)) 
+		...</ k >
+		if hasIntegerType(T:Type)
+		andBool T':Type =/=Bool void
+		[structural]
+			
 	rule < k > addToPointer(Loc:Nat, T:Type, I:Int, tv(Size:Nat, ?))
 			=> tv(Loc:Nat +Int (I:Int *Int Size:Nat), T:Type)
 		...</ k >
-		[structural]
-		
-	// rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(N:Nat, T:Type)
-				// => cast(
-					// pointerType(T':Type), 
-					// cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type)))
-						// + (tv(N:Nat, T:Type) * sizeofType(T':Type))
-				// )
-		// ...</ k >
-		// if hasIntegerType(T:Type)
-		// andBool T':Type =/=Bool void
-		// andBool T':Type =/=Bool unsigned-char
-		// [structural]
-		
-	// need to force the scalar argument to be positive, otherwise C's type system winds up messing up when multiplying by size of type size_t
-	// rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I:Int, T:Type)
-				// => tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
-		// ...</ k >
-		// if hasIntegerType(T:Type)
-		// andBool T':Type =/=Bool unsigned-char
-		// andBool I:Int <Int 0
-		// [structural]
-	// rule < k > tv(I:Int, T:Type) + tv(Loc:Nat, pointerType(T':Type))
-				// => tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
-		// ...</ k >
-		// if hasIntegerType(T:Type)
-		// andBool T':Type =/=Bool unsigned-char
-		// andBool I:Int <Int 0
-		// [structural]
-	// // same as above, but swap arguments
-	// rule < k > tv(N:Nat, T:Type) + tv(Loc:Nat, pointerType(T':Type))
-				// => cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
-		// ...</ k >
-		// if hasIntegerType(T:Type)
-		// andBool T':Type =/=Bool void
-		// andBool T':Type =/=Bool unsigned-char
-		// [structural]
-		
-	// rule < k > tv(Loc:Nat, pointerType(unsigned-char)) + tv(I2:Int, T:Type)
-			// => tv(Loc:Nat +Int I2:Int, pointerType(unsigned-char))
-		// ...</ k >
-		// if hasIntegerType(T:Type)
-		// [structural]
-		
-	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(N:Nat, T:Type)
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) - (tv(N:Nat, T:Type) * sizeofType(T':Type)))
-		...</ k >
-		if hasIntegerType(T:Type)
-		andBool T':Type =/=Bool void
-		andBool T':Type =/=Bool unsigned-char
-		[structural]
-	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(I:Int, T:Type)
-				=> tv(Loc:Nat, pointerType(T':Type)) + tv((-Int I:Int), T:Type)
-		...</ k >
-		if hasIntegerType(T:Type)
-		andBool I:Int <Int 0
-		andBool T':Type =/=Bool void
-		andBool T':Type =/=Bool unsigned-char
-		[structural]
-		
-	rule < k > tv(Loc:Nat, pointerType(unsigned-char)) - tv(I2:Int, T:Type)
-			=> tv(Loc:Nat -Int I2:Int, pointerType(unsigned-char))
-		...</ k >
-		if hasIntegerType(T:Type)
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.5.6}{9}}
