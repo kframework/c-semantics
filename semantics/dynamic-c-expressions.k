@@ -968,42 +968,67 @@ second operand from the first.
 	\source[n1570]{\para{6.5.6}{8}}
 	When an expression that has integer type is added to or subtracted from a pointer, the result has the type of the pointer operand. If the pointer operand points to an element of an array object, and the array is large enough, the result points to an element offset from the original element such that the difference of the subscripts of the resulting and original array elements equals the integer expression. In other words, if the expression \cinline{P} points to the $i$-th element of an array object, the expressions \cinline{(P)+N} (equivalently, \cinline{N+(P)}) and \cinline{(P)-N} (where \cinline{N} has the value $n$) point to, respectively, the $i+n$-th and $i-n$-th elements of the array object, provided they exist. Moreover, if the expression \cinline{P} points to the last element of an array object, the expression \cinline{(P)+1} points one past the last element of the array object, and if the expression \cinline{Q} points one past the last element of an array object, the expression \cinline{(Q)-1} points to the last element of the array object. If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined. If the result points one past the last element of the array object, it shall not be used as the operand of a unary \cinline{*} operator that is evaluated.
 	*/	
-	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(N:Nat, T:Type)
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
-		...</ k >
-		if hasIntegerType(T:Type)
-		andBool T':Type =/=Bool void
-		andBool T':Type =/=Bool unsigned-char
-		[structural]
-	// need to force the scalar argument to be positive, otherwise C's type system winds up messing up when multiplying by size of type size_t
+	
+	op addToPointer : K Type K K -> K [strict(4)]
 	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I:Int, T:Type)
-				=> tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
-		...</ k >
-		if hasIntegerType(T:Type)
-		andBool T':Type =/=Bool unsigned-char
-		andBool I:Int <Int 0
-		[structural]
-	// same as above, but swap arguments
-	rule < k > tv(N:Nat, T:Type) + tv(Loc:Nat, pointerType(T':Type))
-				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
+			=> addToPointer(Loc:Nat, pointerType(T':Type), I:Int, sizeofType(T':Type))
 		...</ k >
 		if hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
-		andBool T':Type =/=Bool unsigned-char
 		[structural]
 	rule < k > tv(I:Int, T:Type) + tv(Loc:Nat, pointerType(T':Type))
-				=> tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
+			=> addToPointer(Loc:Nat, pointerType(T':Type), I:Int, sizeofType(T':Type))
 		...</ k >
 		if hasIntegerType(T:Type)
-		andBool T':Type =/=Bool unsigned-char
-		andBool I:Int <Int 0
+		andBool T':Type =/=Bool void
 		[structural]
 		
-	rule < k > tv(Loc:Nat, pointerType(unsigned-char)) + tv(I2:Int, T:Type)
-			=> tv(Loc:Nat +Int I2:Int, pointerType(unsigned-char))
+	rule < k > addToPointer(Loc:Nat, T:Type, I:Int, tv(Size:Nat, ?))
+			=> tv(Loc:Nat +Int (I:Int *Int Size:Nat), T:Type)
 		...</ k >
-		if hasIntegerType(T:Type)
 		[structural]
+		
+	// rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(N:Nat, T:Type)
+				// => cast(
+					// pointerType(T':Type), 
+					// cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type)))
+						// + (tv(N:Nat, T:Type) * sizeofType(T':Type))
+				// )
+		// ...</ k >
+		// if hasIntegerType(T:Type)
+		// andBool T':Type =/=Bool void
+		// andBool T':Type =/=Bool unsigned-char
+		// [structural]
+		
+	// need to force the scalar argument to be positive, otherwise C's type system winds up messing up when multiplying by size of type size_t
+	// rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I:Int, T:Type)
+				// => tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
+		// ...</ k >
+		// if hasIntegerType(T:Type)
+		// andBool T':Type =/=Bool unsigned-char
+		// andBool I:Int <Int 0
+		// [structural]
+	// rule < k > tv(I:Int, T:Type) + tv(Loc:Nat, pointerType(T':Type))
+				// => tv(Loc:Nat, pointerType(T':Type)) - tv((-Int I:Int), T:Type)
+		// ...</ k >
+		// if hasIntegerType(T:Type)
+		// andBool T':Type =/=Bool unsigned-char
+		// andBool I:Int <Int 0
+		// [structural]
+	// // same as above, but swap arguments
+	// rule < k > tv(N:Nat, T:Type) + tv(Loc:Nat, pointerType(T':Type))
+				// => cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) + (tv(N:Nat, T:Type) * sizeofType(T':Type)))
+		// ...</ k >
+		// if hasIntegerType(T:Type)
+		// andBool T':Type =/=Bool void
+		// andBool T':Type =/=Bool unsigned-char
+		// [structural]
+		
+	// rule < k > tv(Loc:Nat, pointerType(unsigned-char)) + tv(I2:Int, T:Type)
+			// => tv(Loc:Nat +Int I2:Int, pointerType(unsigned-char))
+		// ...</ k >
+		// if hasIntegerType(T:Type)
+		// [structural]
 		
 	rule < k > tv(Loc:Nat, pointerType(T':Type)) - tv(N:Nat, T:Type)
 				=> cast(pointerType(T':Type), cast(pointerType(unsigned-char), tv(Loc:Nat, pointerType(T':Type))) - (tv(N:Nat, T:Type) * sizeofType(T':Type)))

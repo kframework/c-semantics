@@ -1307,7 +1307,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 		< k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
 		[structural] 
 	rule 
-		< k > fillEnums(K:K) => fillEnums-aux(K:K, 0) ...</ k > 
+		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, int)) ...</ k > 
 		[structural]
 	rule
 		< k > fillEnums-aux(EnumDef(X:Id, EnumItem(E:Id) :: L:List{C}), K:K) 
@@ -1318,7 +1318,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	rule
 		< k > fillEnums-aux(EnumDef(X:Id, EnumItemInit(E:Id, Exp:K) :: L:List{C}), ?)
 			=> declare(typedDeclaration(int, E:Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + 1)
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + tv(1, int))
 		...</ k >
 		if Exp:K =/=Bool NothingExpression
 		[structural] 
