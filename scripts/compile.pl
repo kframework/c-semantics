@@ -156,7 +156,7 @@ sub performSpecializations {
 	my $ioserver = catfile($myDirectory, 'fileserver.pl');
 	my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
-	my $nondetFlag = $args->{'-s'};
+	my $nondetFlag = $args->{'-n'} ? 1 : 0;
 	
 	$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
 	$file =~ s?EXTERN_IO_SERVER?$ioserver?g;
