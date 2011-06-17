@@ -26,7 +26,7 @@ my $outputFilename = "results-adhoc.xml";
 
 assertContains("nondetSimple", run("$kcc adhoc/nondet.c -o adhoc.o && SEARCH=1 ./adhoc.o"), "1 solutions found");
 assertContains("nondetABC", run("$kcc adhoc/nondet2.c -o adhoc.o && SEARCH=1 ./adhoc.o"), "6 solutions found");
-assertContains("basicIO", run("$kcc adhoc/io.c -i -o adhoc.o && ./adhoc.o"), "helloworld32");
+# assertContains("basicIO", run("$kcc adhoc/io.c -i -o adhoc.o && ./adhoc.o"), "helloworld32");
 assertContains("OOB", run("$kcc adhoc/shortArray.c -i -o adhoc.o && ./adhoc.o"), "Error: 00002");
 
 run("$kcc -c adhoc/twofile-link1.c");
