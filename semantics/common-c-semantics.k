@@ -8,7 +8,7 @@ endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
-	op AnonAggregate : -> K
+	// op AnonAggregate : -> K
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
 	op initFunction : K K -> K [strict]
@@ -103,7 +103,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op inc : Nat -> Nat 
 	op threadId : Nat -> Nat // used for symbolic locations based on threadid
 	op allocatedDuration : -> Nat // fake threadid for above when location is of allocated duration
-	op readOnly : -> Nat // fake threadid for above when location can't be written to
+	// op readOnly : -> Nat // fake threadid for above when location can't be written to
 		
 	op initialize : Id Type K -> K 
 	op memblock : Nat Map -> K // length and an array from offsets to bytes
@@ -251,7 +251,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op leftShiftInterpret : Type BaseValue K -> K 
 	op rightShiftInterpret : Type BaseValue -> K 
 	
-	op integerTypes : -> Set [memo] 
+	// op integerTypes : -> Set [memo] 
 	op unsignedIntegerTypes : -> Set [memo] 
 	op signedIntegerTypes : -> Set [memo] 
 	op hasIntegerType : Type -> Bool [memo] 
@@ -468,10 +468,10 @@ kmod COMMON-C-SEMANTICS-MISC is
 		if N:Nat +Int I:Int >=Int 0 
 		[structural]
 		
-	rule (N:Nat +Nat sym(M:Nat)) -Int I:Int
-		=> absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
-		if N:Nat -Int I:Int >=Int 0 
-		[structural]
+	// rule (N:Nat +Nat sym(M:Nat)) -Int I:Int
+		// => absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
+		// if N:Nat -Int I:Int >=Int 0 
+		// [structural]
 
 	rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 

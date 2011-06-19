@@ -594,10 +594,10 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		subPointerToString(threadId(allocatedDuration) +Nat N':Nat) 
 			=> "threadId(allocatedDuration) +Nat " +String Rat2String(N':Nat, 10)
 		[structural]
-	rule [sub-pointerToString-readOnly]:
-		subPointerToString(threadId(readOnly) +Nat N':Nat) 
-			=> "threadId(readOnly) +Nat " +String Rat2String(N':Nat, 10)
-		[structural]
+	// rule [sub-pointerToString-readOnly]:
+		// subPointerToString(threadId(readOnly) +Nat N':Nat) 
+			// => "threadId(readOnly) +Nat " +String Rat2String(N':Nat, 10)
+		// [structural]
 	
 	
 	rule [pointerToString-done]:

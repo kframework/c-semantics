@@ -327,7 +327,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Linkage:Map, X:Id)
 		[structural] 
-	rule
+	// not triggering
+	rule [declareExtern-again]:
 		< k > declareExternalVariable(X:Id, T:Type, K:K)
 			=> declareWithLinkage(X:Id, T:Type, K:K, Linkage:Map(X:Id))
 		...</ k >
@@ -553,9 +554,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< env > E:Map => E:Map[Loc:Nat / X:Id] </ env >
 		[structural] 
 			
-	rule
-		< k > DeclarationDefinition(InitNameGroup(T:Type, Nil)) => .K ...</ k >
-		[structural] 
+	// rule
+		// < k > DeclarationDefinition(InitNameGroup(T:Type, Nil)) => .K ...</ k >
+		// [structural] 
 	
 	op defineUsingOldDeclaration : Type Id K -> K 
 	
@@ -563,10 +564,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			=> declareFunction(X:Id, T:Type, initializer(initFunction(&(X:Id), functionObject(X:Id, unqualifyType(T:Type), Block:K))))
-			~> calculateGotoMap(X:Id, Block:K)
+			=> declareFunction(
+				X:Id, 
+				T:Type, 
+				initializer(initFunction(
+					&(X:Id), 
+					functionObject(
+						X:Id, 
+						unqualifyType(T:Type), 
+						BODY
+					)
+				))
+			)
+			~> calculateGotoMap(X:Id, BODY)
 		...</ k >
 		if hasFunctionType(T:Type)
+		where BODY = (Block:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi))
 		[structural] 
 endkm
 
@@ -868,10 +881,18 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (block => .) ...</ currentSubObject >
 		[structural] 
 		
-	rule innerType(arrayType(T:Type, ?)) => T:Type [structural]
-	rule innerType(incompleteArrayType(T:Type)) => T:Type [structural]
-	rule innerType(qualifiedType(T:Type, ?)) => innerType(T:Type) [structural]
-	rule innerType(pointerType(T:Type)) => T:Type [structural]
+	rule [innerType-arrayType]:
+		innerType(arrayType(T:Type, ?)) => T:Type 
+		[structural]
+	rule [innerType-incompleteArrayType]: 
+		innerType(incompleteArrayType(T:Type)) => T:Type 
+		[structural]
+	rule [innerType-qualifiedType]:
+		innerType(qualifiedType(T:Type, ?)) => innerType(T:Type) 
+		[structural]
+	rule [innerType-pointerType]:
+		innerType(pointerType(T:Type)) => T:Type 
+		[structural]
 
 	context buildDesignator(AtIndexInit(([HOLE] => reval([HOLE])), ?)) 
 	rule

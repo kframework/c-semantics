@@ -126,6 +126,8 @@ kmod COMMON-C-CONFIGURATION is
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
 	
+	ops files input output resultValue errorCell xmessages : -> CellLabel
+	
 	subsort Id Int String Float Bool Rat < K
 	subsort String < Builtins
 	

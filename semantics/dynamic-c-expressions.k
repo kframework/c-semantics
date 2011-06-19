@@ -12,10 +12,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
 	
 	
-	rule reval(skipval) => skipval [structural]
-	rule reval(emptyValue) => emptyValue [structural]
-	rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule [reval-skipval]: reval(skipval) => skipval [structural]
+	rule [reval-emptyval]: reval(emptyValue) => emptyValue [structural]
+	rule [reval-tv-normal]: reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule [peval-tv-normal]: peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
 	
 	/*@ \source[n1570]{\para{6.3.2.1}{2}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
@@ -27,8 +27,8 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \source[n1570]{\para{6.3.2.1}{3}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	*/
-	rule reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
-	rule peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	rule [reval-lv-array]: reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
+	rule [peval-lv-array]: peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(innerType(T:Type))) if hasArrayType(T:Type) [structural]
 	// should never get to the situation where we have tv(..., arrayType)
 	
 	
@@ -318,12 +318,12 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		if hasFunctionType(T:Type)
 		[structural]
 		
-	rule [function-application-builtin-pre]:
-		< k > Call(tv(functionPrototype(X:Id, T:Type), pointerType(T:Type)), L:List{Type})
-			=> application(functionPrototype(X:Id, T:Type), L:List{Type})
-		...</ k >
-		if hasFunctionType(T:Type)
-		[structural]
+	// rule [function-application-builtin-pre]:
+		// < k > Call(tv(functionPrototype(X:Id, T:Type), pointerType(T:Type)), L:List{Type})
+			// => application(functionPrototype(X:Id, T:Type), L:List{Type})
+		// ...</ k >
+		// if hasFunctionType(T:Type)
+		// [structural]
 
 
 	rule [populateFromGlobal]:
@@ -346,7 +346,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			~> populateFromGlobal
 			~> bind(L:List{Type}, P:List{Type})
 			~> B:K
-			~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi)
+			//~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi)
 		</ k >
 		< callStack > .List => ListItem(
 			< stackFrame > C:Bag
@@ -783,19 +783,19 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	//- comparison of pointers
 	// fixme could check 6.5.8:2
 	// fixme there are further restrictions on pointers
-	rule tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) < tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
+	rule [ptr-compare-lt]: tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) < tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
 			=> makeTruth(Offset:Nat <Int Offset':Nat)
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
-	rule tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) <= tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
+	rule [ptr-compare-lte]: tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) <= tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
 			=> makeTruth(Offset:Nat <=Int Offset':Nat)
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
-	rule tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) > tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
+	rule [ptr-compare-gt]: tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) > tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
 			=> makeTruth(Offset:Nat >Int Offset':Nat)
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
-	rule tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) >= tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
+	rule [ptr-compare-gte]: tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) >= tv(sym(Base:Nat) +Nat Offset':Nat, T':Type)
 			=> makeTruth(Offset:Nat >=Int Offset':Nat)
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
@@ -822,10 +822,10 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int)
 		
 	op isUnknown : K -> Bool
-	rule isUnknown(piece(?, ?)) => true [structural]
-	rule isUnknown(sym(?) +Nat ?) => false [structural]
-	rule isUnknown(bito(?) +Nat ?) => false [structural]
-	rule isUnknown(I:Int) => false
+	rule [isUnknown-piece]: isUnknown(piece(?, ?)) => true [structural]
+	rule [isUnknown-ptr]: isUnknown(sym(?) +Nat ?) => false [structural]
+	//rule [isUnknown-bito]: isUnknown(bito(?) +Nat ?) => false [structural]
+	rule [isUnknown-int]: isUnknown(I:Int) => false
 		if  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
 	
@@ -878,7 +878,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// next, they are part of different objects.  
 	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
-	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) == tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
+	rule [compare-eq-different-objects]: < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) == tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
 			=> tv(0, int)
 		...</ k >
 		< mem >... 
@@ -890,7 +890,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		andBool Offset:Nat <Nat Len:Nat
 		andBool Offset':Nat <Nat Len':Nat
 		[structural]
-	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) != tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
+	rule [compare-neq-different-objects]: < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:Type) != tv(sym(Base':Nat) +Nat Offset':Nat, T':Type) 
 			=> tv(1, int)
 		...</ k >
 		< mem >... 

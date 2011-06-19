@@ -296,7 +296,45 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 
+
+	op datarace : Nat Nat Nat Nat -> K 
+
+	// fixme possible to miss dataraces with bitfields
+	rule [read-write-race]:
+		< T > 
+			? 
+			< threads > 
+				?
+				< thread > ? < k > read-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
+				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
+			</ threads > 
+		</ T >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
+		[metadata "computational"]
 		
+	rule [write-write-race]:
+		< T > 
+			? 
+			< threads > 
+				?
+				< thread > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
+				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
+			</ threads > 
+		</ T >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
+		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
+		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
+		[metadata "computational"]		
 		
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 

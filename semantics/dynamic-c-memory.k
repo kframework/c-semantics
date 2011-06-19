@@ -9,12 +9,12 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	op reverseList : List{K} -> List{K}
 	op bwrite : Nat K -> ListItem
 	op locations : List -> Set
-	op readAux : K K K -> K
+	op read-aux : K K K -> K
 	// fixme!!! This should be read-aux, but a bug in the K tool...
 	
 	
-	rule locations(.List) => .Set [structural]
-	rule locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
+	rule [locations-none]: locations(.List) => .Set [structural]
+	rule [locations-some]: locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-READING is
@@ -48,8 +48,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural] 
 	
 	
-	context readAux(?, ?, value(`[HOLE`]:K)) 
-	rule read(Loc:Nat, T:Type) => readAux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
+	context read-aux(?, ?, value(`[HOLE`]:K)) 
+	rule read(Loc:Nat, T:Type) => read-aux(Loc:Nat, T:Type, value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type))
 		[structural]
 	
@@ -60,18 +60,18 @@ kmod DYNAMIC-SEMANTICS-READING is
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
 	rule [read-thread-local]:
-		< k > ('readAux => 'readActual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(Id:Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		<threadId> Id:Nat </threadId>
 		[structural metadata "nd=(true)"]
 	rule [read-shared]: // read global or shared data
-		< k > ('readAux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational nd=(true)"] 
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > ('readAux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational nd=(true)"]
-	rule [read-readonly]: // read data that is readonly (e.g., string literals)
-		< k > ('readAux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational nd=(true)"] 
+	// rule [read-readonly]: // read data that is readonly (e.g., string literals)
+		// < k > ('read-aux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		// [metadata "computational nd=(true)"] 
 	
 	rule [read]:
 		< k > readActual(Loc:Nat, T:Type, bitSize:Nat)
@@ -159,12 +159,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 	// fixme owise!!!
 	eq floorLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
 	
-	rule ceilingLoc(NullPointer) => NullPointer [structural]
-	rule ceilingLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat)
+	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [structural]
+	rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat)
 		=> sym(N:Nat) +Nat absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Nat R:Nat
 		[structural]
 	// fixme owise!!!
-	eq ceilingLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
+	eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
 	
 	rule
 		< k > extractBitsFromMem(Loc:Nat, Size:Nat)
@@ -241,12 +241,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 
 	rule allocateType(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
 		[structural] 
-	rule 
+	rule [allocateTypeIfAbsent-absent]:
 		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) ...</ k >
 		< mem > Mem:Map </ mem >
 		if notBool $hasMapping(Mem:Map, Loc:Nat)
 		[structural] 
-	rule 
+	rule [allocateTypeIfAbsent-present]:
 		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => .K ...</ k >
 		< mem >... Loc:Nat |-> ? ...</ mem >
 		[structural]
@@ -277,57 +277,6 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	context write-aux(?, ?, value(`[HOLE`]))
 	
 	
-	op datarace : Nat Nat Nat Nat -> K 
-	// fixme possible to miss dataraces with bitfields
-	// rule [read-write-race]:
-		// < T >... 
-			// < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k >
-			// < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k >
-		// ...</ T >
-		// => < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		// if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		// orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		// where Start1 = Loc:Nat
-		// and End1 = Loc:Nat +Nat (Loc:Nat +Nat bitsToBytes(BitSize:Nat))
-		// and Start2 = Loc':Nat
-		// and End2 = Loc':Nat +Nat (Loc':Nat +Nat bitsToBytes(BitSize':Nat))
-		// [metadata "computational"]
-		
-	rule [read-write-race]:
-		< T > 
-			? 
-			< threads > 
-				?
-				< thread > ? < k > readAux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
-				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
-			</ threads > 
-		</ T >
-		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
-		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
-		[metadata "computational"]
-		
-	rule [write-write-race]:
-		< T > 
-			? 
-			< threads > 
-				?
-				< thread > ? < k > write-aux(Loc:Nat, ?, BitSize:Nat) ...</ k > </ thread >
-				< thread > ? < k > write-aux(Loc':Nat, ?, BitSize':Nat) ...</ k > </ thread >
-			</ threads > 
-		</ T >
-		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
-		if (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
-		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
-		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
-		[metadata "computational"]
 	
 	op write-specific : Nat Value Nat -> K
 	
@@ -528,10 +477,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		splitBytes(tv(I:Int, pointerType(T:Type))) 
 			=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
 		[structural] 
-	rule [splitBytes-array]:
-		splitBytes(tv(I:Int, arrayType(T:Type, ?))) 
-			=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
-		[structural] 
+	// rule [splitBytes-array]:
+		// splitBytes(tv(I:Int, arrayType(T:Type, ?))) 
+			// => splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
+		// [structural] 
 	rule [splitBytes-struct]:
 		splitBytes(tv(L:List{K}, T:Type)) 
 			=> splitStructBytes(dataList(L:List{K}), T:Type, value(byteSizeofType(T:Type)))
@@ -702,7 +651,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		if (PtrThreadId:Nat ==Bool MyThreadId:Nat 
 			orBool PtrThreadId:Nat ==Bool 0
 			orBool PtrThreadId:Nat ==Bool allocatedDuration
-			orBool PtrThreadId:Nat ==Bool readOnly
+			// orBool PtrThreadId:Nat ==Bool readOnly
 			) // my thread, global memory, or allocated (malloced) memory
 		andBool Offset:Nat <=Nat Len:Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Nat) +Nat N:Nat

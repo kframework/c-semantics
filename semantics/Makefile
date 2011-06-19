@@ -52,7 +52,7 @@ endif
 %.tex: check-vars $(K_MAUDE) c.k %.k Makefile
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	@$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
 	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
 #\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}

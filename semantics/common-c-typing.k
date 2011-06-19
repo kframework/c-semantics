@@ -43,11 +43,11 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	op giveLocalType : K Type -> K 
 	
 	// FIXME these are here until I decide how to handle qualified types
-	rule qualifiedType(T:Type, Volatile) => T:Type [structural]
-	rule qualifiedType(T:Type, Restrict) => T:Type [structural]
-	rule qualifiedType(T:Type, Const) => T:Type [structural]
-	rule qualifiedType(T:Type, Auto) => T:Type [structural]
-	rule qualifiedType(T:Type, Register) => T:Type [structural]
+	rule [ignore-volatile]: qualifiedType(T:Type, Volatile) => T:Type [structural]
+	rule [ignore-restrict]: qualifiedType(T:Type, Restrict) => T:Type [structural]
+	rule [ignore-const]: qualifiedType(T:Type, Const) => T:Type [structural]
+	rule [ignore-auto]: qualifiedType(T:Type, Auto) => T:Type [structural]
+	rule [ignore-register]: qualifiedType(T:Type, Register) => T:Type [structural]
 	
 	
 	rule
@@ -84,13 +84,13 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		< type > waitingOnDeclType => T:Type ...</ type >
 		[structural] 
 	
-	rule [type-arrow-heat]:
-		< type > K:K -> F:Id => K:K ~> HOLE -> F:Id ...</ type >
-		if notBool isAType(K:K)
-		[structural] 
-	rule [type-arrow-cool]:
-		< type > T:Type ~> HOLE -> F:Id => T:Type -> F:Id ...</ type >
-		[structural] 
+	// rule [type-arrow-heat]:
+		// < type > K:K -> F:Id => K:K ~> HOLE -> F:Id ...</ type >
+		// if notBool isAType(K:K)
+		// [structural] 
+	// rule [type-arrow-cool]:
+		// < type > T:Type ~> HOLE -> F:Id => T:Type -> F:Id ...</ type >
+		// [structural] 
 		
 	rule [type-ternary-heat-left]:
 		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
@@ -375,9 +375,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule
 		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
 		[structural] 
-	rule
-		< k > StructRef(X:Id) => structType(X:Id) ...</ k >
-		[structural] 
+	// rule
+		// < k > StructRef(X:Id) => structType(X:Id) ...</ k >
+		// [structural] 
 		
 	rule BitFieldType(T:Type, tv(N:Nat, ?)) => bitfieldType(T:Type, N:Nat) [structural]
 	
@@ -502,19 +502,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		NameAndType(X:Id, T:Type) => typedDeclaration(T:Type, X:Id)
 		[structural] 
 		
-	rule extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
-	rule extractActualType(enumType(X:Id)) => enumType(X:Id) [structural]
-	rule extractActualType(structType(X:Id)) => structType(X:Id) [structural]
-	rule extractActualType(unionType(X:Id)) => unionType(X:Id) [structural]
-	rule extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
-	rule extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
-	rule extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
-	rule extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat)[structural]
-	rule extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
-	rule extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
-	rule extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
-	rule extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
-	rule extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
+	rule [extract-basic]: extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
+	rule [extract-enum]: extractActualType(enumType(X:Id)) => enumType(X:Id) [structural]
+	rule [extract-struct]: extractActualType(structType(X:Id)) => structType(X:Id) [structural]
+	rule [extract-union]: extractActualType(unionType(X:Id)) => unionType(X:Id) [structural]
+	rule [extract-array]: extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
+	rule [extract-incompleteArray]: extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
+	rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
+	rule [extract-bitfield]: extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat)[structural]
+	rule [extract-function]: extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
+	rule [extract-pointer]:  extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
+	rule [extract-qualified]: extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
+	rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
+	rule [extract-typedef]: extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
 		
 	op NameAndType : K K -> K [strict(2)] 
 	
@@ -534,9 +534,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [Separate-FieldGroups]:
 		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
 		[structural]
-	rule
-		FieldGroup(?:K, Nil) => Nil
-		[structural] 
+	// rule
+		// FieldGroup(?:K, Nil) => Nil
+		// [structural] 
 		
 	// op shouldFlatten : List{C} -> Type
 	// rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
@@ -559,14 +559,14 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule
 		FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
 		[structural]
-	rule
-		< k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
-			=> L:List{Type}
-		...</ k >
-		< structs >...
-			unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
-		...</ structs >
-		[structural]
+	// rule
+		// < k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
+			// => L:List{Type}
+		// ...</ k >
+		// < structs >...
+			// unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
+		// ...</ structs >
+		// [structural]
 	rule
 		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
 		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
@@ -592,7 +592,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > emptyValue => void ...</ type > 
 		[structural] 
 		
-	rule
+	rule [type-functionObject]:
 		< type > functionObject(?, T:Type, ?) => T:Type ...</ type >
 		[structural] 
 
@@ -671,9 +671,9 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule [type-call-func]:
 		< type > Call(functionType(T:Type, ?), L:List{C}) => T:Type ...</ type >
 		[structural] 
-	rule [type-call-func-ptr]:
-		< type > Call(pointerType(functionType(T:Type, ?)), ?) => T:Type ...</ type >
-		[structural] 
+	// rule [type-call-func-ptr]:
+		// < type > Call(pointerType(functionType(T:Type, ?)), ?) => T:Type ...</ type >
+		// [structural] 
 		 		
 	rule [type-struct-dot]:
 		< type > structType(S:Id) . F:Id => T:Type ...</ type >
@@ -688,22 +688,22 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		...</ structs >
 		[structural] 
 		
-	rule [type-struct-arrow]:
-		< type > pointerType(structType(S:Id)) -> F:Id => T:Type ...</ type >
-		< structs >... 
-			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
-		...</ structs >
-		[structural] 
-	rule [type-union-arrow]:
-		< type > pointerType(unionType(S:Id)) -> F:Id => T:Type ...</ type >
-		< structs >... 
-			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
-		...</ structs >
-		[structural] 
+	// rule [type-struct-arrow]:
+		// < type > pointerType(structType(S:Id)) -> F:Id => T:Type ...</ type >
+		// < structs >... 
+			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		// ...</ structs >
+		// [structural] 
+	// rule [type-union-arrow]:
+		// < type > pointerType(unionType(S:Id)) -> F:Id => T:Type ...</ type >
+		// < structs >... 
+			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		// ...</ structs >
+		// [structural] 
 
 	// internal numbers, not literals
-	rule < type > N:Nat => cfg:largestUnsigned ...</ type > 
-		[structural] 
+	// rule < type > N:Nat => cfg:largestUnsigned ...</ type > 
+		// [structural] 
 
 	rule [type-deref-type]:
 		< type > *(pointerType(T:Type)) => T:Type ...</ type >
@@ -741,21 +741,21 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
 		[structural] 
 		
-	rule 
+	rule [type-ternary-arithmetic]:
 		< type > ?:K ? T:Type : T':Type => usualArithmeticConversion(T:Type, T':Type) ...</ type >
 		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
 		[structural]
-	rule 
+	rule [type-ternary-identical]:
 		< type > ?:K ? T:Type : T:Type => T:Type ...</ type >
 		if isAType(T:Type)
 		andBool notBool hasArrayType(T:Type)
 		[structural]
 		
-	rule < type > ?:K ? (arrayType(T:Type, ?) => pointerType(T:Type)) : ? ...</ type > [structural]
-	rule < type > ?:K ? ?:K : (arrayType(T:Type, ?) => pointerType(T:Type)) ...</ type > [structural]
+	rule [type-ternary-array-left]: < type > ?:K ? (arrayType(T:Type, ?) => pointerType(T:Type)) : ? ...</ type > [structural]
+	rule [type-ternary-array-right]: < type > ?:K ? ?:K : (arrayType(T:Type, ?) => pointerType(T:Type)) ...</ type > [structural]
 		
-	rule // not safe, could be incompatible types
+	rule [type-ternary-pointer]: // not safe, could be incompatible types
 		< type > ?:K ? pointerType(T:Type) : pointerType(T':Type) => pointerType(T:Type) ...</ type >
 		[structural]
 
@@ -837,31 +837,31 @@ kmod COMMON-C-TYPING is
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
 
-	rule isTypeCompatible(T:Type, arrayType(T':Type, ?))
+	rule [typeCompatible-array-right]: isTypeCompatible(T:Type, arrayType(T':Type, ?))
 		=> isTypeCompatible(T:Type, pointerType(T':Type)) 
 		[structural]
-	rule isTypeCompatible(arrayType(T:Type, ?), T':Type)
+	rule [typeCompatible-array-left]: isTypeCompatible(arrayType(T:Type, ?), T':Type)
 		=> isTypeCompatible(pointerType(T:Type), T':Type) 
 		[structural]
 	
-	rule isTypeCompatible(T:Type, incompleteArrayType(T':Type))
+	rule [typeCompatible-incompleteArray-right]: isTypeCompatible(T:Type, incompleteArrayType(T':Type))
 		=> isTypeCompatible(T:Type, pointerType(T':Type)) 
 		[structural]
-	rule isTypeCompatible(incompleteArrayType(T:Type), T':Type)
+	rule [typeCompatible-incompleteArray-left]: isTypeCompatible(incompleteArrayType(T:Type), T':Type)
 		=> isTypeCompatible(pointerType(T:Type), T':Type) 
 		[structural]
 
-	rule isTypeCompatible(functionType(T1:Type, typedDeclaration(void, ?)), functionType(T2:Type, Nil))
+	rule [typeCompatible-function-void-left]: isTypeCompatible(functionType(T1:Type, typedDeclaration(void, ?)), functionType(T2:Type, Nil))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
-	rule isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, typedDeclaration(void, ?)))
+	rule [typeCompatible-function-void--right]: isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, typedDeclaration(void, ?)))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
-	rule isTypeCompatible(functionType(T1:Type, (T':Type :: L:List{Type})), functionType(T2:Type, (T'':Type :: L':List{Type})))
+	rule [typeCompatible-function]: isTypeCompatible(functionType(T1:Type, (T':Type :: L:List{Type})), functionType(T2:Type, (T'':Type :: L':List{Type})))
 		=> isTypeCompatible(functionType(T1:Type, L:List{Type}), functionType(T2:Type, L':List{Type}))
 		andBool isTypeCompatible(T':Type, T'':Type) 
 		[structural]
-	rule isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, Nil))
+	rule [typeCompatible-incompleteArray-nil]: isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, Nil))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
 	rule isTypeCompatible(T:Type, T':Type) => true
@@ -973,29 +973,29 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
 		[structural]
 	
-	rule hasCharType(char) => true [structural]
-	rule hasCharType(qualifiedType(T:Type, ?)) => hasCharType(T:Type) [structural]
-	rule hasCharType(unsigned-char) => true [structural]
-	rule hasCharType(signed-char) => true [structural]
-	rule hasCharType(T:Type) => false
+	rule [hasCharType-char]: hasCharType(char) => true [structural]
+	rule [hasCharType-qualified]: hasCharType(qualifiedType(T:Type, ?)) => hasCharType(T:Type) [structural]
+	rule [hasCharType-unsigned-char]: hasCharType(unsigned-char) => true [structural]
+	rule [hasCharType-signed-char]: hasCharType(signed-char) => true [structural]
+	rule [hasCharType-other]: hasCharType(T:Type) => false
 		if T:Type =/=Bool char
 		andBool T:Type =/=Bool unsigned-char
 		andBool T:Type =/=Bool signed-char
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasWCharType(T:Type) => true 
+	rule [hasWCharType-wchar]: hasWCharType(T:Type) => true 
 		if T:Type ==Bool cfg:wcharut 
 		[structural]
-	rule hasWCharType(T:Type) => false
+	rule [hasWCharType-other]: hasWCharType(T:Type) => false
 		if T:Type =/=Bool cfg:wcharut
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
-	rule hasWCharType(qualifiedType(T:Type, ?)) => hasWCharType(T:Type) [structural]
+	rule [hasWCharType-qualified]: hasWCharType(qualifiedType(T:Type, ?)) => hasWCharType(T:Type) [structural]
 	
-	rule hasPointerType(pointerType(?)) => true [structural]
-	rule hasPointerType(qualifiedType(T:Type, ?)) => hasPointerType(T:Type) [structural]
-	rule hasPointerType(T:Type) => false
+	rule [hasPointerType-pointer]: hasPointerType(pointerType(?)) => true [structural]
+	rule [hasPointerType-qualified]: hasPointerType(qualifiedType(T:Type, ?)) => hasPointerType(T:Type) [structural]
+	rule [hasPointerType-other]: hasPointerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'pointerType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
@@ -1007,17 +1007,17 @@ kmod COMMON-C-TYPING is
 		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		// [structural]
 	
-	rule hasBoolType(bool) => true [structural]
-	rule hasBoolType(qualifiedType(T:Type, ?)) => hasBoolType(T:Type) [structural]
-	rule hasBoolType(T:Type) => false
+	rule [hasBoolType-bool]: hasBoolType(bool) => true [structural]
+	rule [hasBoolType-qualifiedType]: hasBoolType(qualifiedType(T:Type, ?)) => hasBoolType(T:Type) [structural]
+	rule [hasBoolType-other]: hasBoolType(T:Type) => false
 		if T:Type =/=Bool bool 
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule hasArrayType(arrayType(?, ?)) => true [structural]
-	rule hasArrayType(incompleteArrayType(?)) => true [structural]
-	rule hasArrayType(qualifiedType(T:Type, ?)) => hasArrayType(T:Type) [structural]
-	rule hasArrayType(T:Type) => false
+	rule [hasArrayType-array]: hasArrayType(arrayType(?, ?)) => true [structural]
+	rule [hasArrayType-incompleteArray]: hasArrayType(incompleteArrayType(?)) => true [structural]
+	rule [hasArrayType-qualified]: hasArrayType(qualifiedType(T:Type, ?)) => hasArrayType(T:Type) [structural]
+	rule [hasArrayType-other]: hasArrayType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'arrayType 
 		andBool getKLabel(T:Type) =/=Bool 'incompleteArrayType 
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
@@ -1025,16 +1025,16 @@ kmod COMMON-C-TYPING is
 		
 	rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
 		
-	rule hasStructType(structType(?)) => true [structural]
-	rule hasStructType(qualifiedType(T:Type, ?)) => hasStructType(T:Type) [structural]
-	rule hasStructType(T:Type) => false
+	rule [hasStructType-struct]: hasStructType(structType(?)) => true [structural]
+	rule [hasStructType-qualified]: hasStructType(qualifiedType(T:Type, ?)) => hasStructType(T:Type) [structural]
+	rule [hasStructType-other]: hasStructType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'structType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasUnionType(unionType(?)) => true [structural]
-	rule hasUnionType(qualifiedType(T:Type, ?)) => hasUnionType(T:Type) [structural]
-	rule hasUnionType(T:Type) => false
+	rule [hasUnionType-union]: hasUnionType(unionType(?)) => true [structural]
+	rule [hasUnionType-qualified]: hasUnionType(qualifiedType(T:Type, ?)) => hasUnionType(T:Type) [structural]
+	rule [hasUnionType-other]: hasUnionType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'unionType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
@@ -1072,12 +1072,16 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:Type) =/=Bool 'prototype 
 		[structural]
 		
-	rule hasFunctionPointerType(pointerType(functionType(?, ?))) => true [structural]
-	rule hasFunctionPointerType(T:Type) => false
-		if getKLabel(T:Type) =/=Bool 'pointerType 
+	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(pointerType(functionType(?, ?))) => true [structural]
+	rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(qualifiedType(T:Type, ?)) => hasFunctionPointerType(T:Type) [structural]
+	rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(pointerType(qualifiedType(T:Type, ?))) => hasFunctionPointerType(pointerType(T:Type)) [structural]
+	rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(T:Type) => false
+		if getKLabel(T:Type) =/=Bool 'pointerType
+		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
 		[structural]
-	rule hasFunctionPointerType(pointerType(T:Type)) => false
+	rule [hasFunctionPointerType-notFunction]: hasFunctionPointerType(pointerType(T:Type)) => false
 		if getKLabel(T:Type) =/=Bool 'functionType 
+		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.2.5}{18}}

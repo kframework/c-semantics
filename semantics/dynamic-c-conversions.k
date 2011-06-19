@@ -133,10 +133,10 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	//C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
 	//C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
 
-	rule argPromote(float) => double [structural]
-	rule argPromote(double) => double [structural]
-	rule argPromote(long-double) => long-double [structural]
-	rule argPromote(T:Type) => promote(T:Type)
+	rule [argPromote-float]: argPromote(float) => double [structural]
+	rule [argPromote-double]: argPromote(double) => double [structural]
+	rule [argPromote-long-double]: argPromote(long-double) => long-double [structural]
+	rule [argPromote-integer]: argPromote(T:Type) => promote(T:Type)
 		if hasIntegerType(T:Type)
 		[structural]
 	
@@ -276,9 +276,9 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		
 	op correspondingUnsignedType : Type -> Type 
 	
-	rule correspondingUnsignedType(int) => unsigned-int [structural]
-	rule correspondingUnsignedType(long-int) => unsigned-long-int [structural]
-	rule correspondingUnsignedType(long-long-int) => unsigned-long-long-int [structural]
+	rule [correspondingUnsigned-int]: correspondingUnsignedType(int) => unsigned-int [structural]
+	rule [correspondingUnsigned-long-int]: correspondingUnsignedType(long-int) => unsigned-long-int [structural]
+	rule [correspondingUnsigned-long-long-int]: correspondingUnsignedType(long-long-int) => unsigned-long-long-int [structural]
 	
 endkm
 
@@ -581,12 +581,12 @@ kmod DYNAMIC-C-CONVERSIONS is
 	// rule < k > _+_(?, tv(Loc:Nat, (arrayType(T:Type, ?) => pointerType(T:Type)))) ...</ k > 
 		// [structural]
 	
-	rule unknown(Len:Nat) >>Nat N:Nat => unknown(absInt(Len:Nat -Int N:Nat))
-		if N:Nat <=Nat Len:Nat 
-		[structural]
+	// rule unknown(Len:Nat) >>Nat N:Nat => unknown(absInt(Len:Nat -Int N:Nat))
+		// if N:Nat <=Nat Len:Nat 
+		// [structural]
 		
-	rule (N:Nat bit:: piece(?, 1)) >>Nat 1 => N:Nat 
-		[structural]
+	// rule (N:Nat bit:: piece(?, 1)) >>Nat 1 => N:Nat 
+		// [structural]
 
 	// fixme not sure about this
 	// interpret is used to "cast" values read from memory
@@ -625,13 +625,13 @@ kmod DYNAMIC-C-CONVERSIONS is
 		[structural]
 		
 	// these could be so much better...
-	rule ~Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
-	rule N:Nat ^Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
 	rule N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
 	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
 	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
 
-	rule piece(unknown(Len:Nat), Len:Nat) ^Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
 	rule piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
 	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
 	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
@@ -671,7 +671,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 		andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
 		[structural] 
 
-	rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
+	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
 	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
 	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
 endkm
