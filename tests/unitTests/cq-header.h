@@ -135,7 +135,7 @@ struct defs *pd0;
 }
 
 int svtest(int n) {
-   static k;
+   static int k;
    int rc;
    switch (n) {
 
@@ -157,7 +157,7 @@ int svtest(int n) {
    return rc;
 }
 zero(){                 /* Returns a value of zero, possibly */
-   static k;            /* with side effects, as it's called */
+   static int k;            /* with side effects, as it's called */
    int rc;              /* alternately with svtest, above,   */
    k = 2;               /* and has the same internal storage */
    rc = 0;              /* requirements.                     */
