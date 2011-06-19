@@ -113,7 +113,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		=> DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
 		~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
 		[structural]
-	rule DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) => declare(SingleName(T:Type, Name:K), Exp:K) [structural]
+	rule 
+		DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) 
+			=> declare(SingleName(T:Type, Name:K), Exp:K) 
+		[structural]
 			
 	rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
 	rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
@@ -265,26 +268,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Nat))
 		[structural] 
 		
-	op restoreShouldInit : Bool -> K 
-	rule
-		< k > restoreShouldInit(OldShouldValue:Bool) => . ...</ k >
-		< shouldInit > ? => OldShouldValue:Bool </ shouldInit >
-		[structural] 
-		
-	// statics should only be initialized once.  if we've already seen it, we still need to calculate type, but don't init
+	// op restoreShouldInit : Bool -> K 
 	// rule
-		// < k > declareInternalVariable(X:Id, T:Type, K:K)
-			// => defineAndInit(X:Id, unqualifyType(T:Type), figureInitializer(X:Id, unqualifyType(T:Type), K:K), Loc:Nat)
-			// ~> restoreShouldInit(OldShouldValue:Bool)
-		// ...</ k >
-		// < internalLocations >... Tu:K |-> Map((? kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</ internalLocations >
-		// < blockHistory > ListItem(BlockNum:Nat) ...</ blockHistory >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// < shouldInit > OldShouldValue:Bool => false </ shouldInit >
-		// if hasStaticType(T:Type)
-		// andBool notBool hasExternType(T:Type)
-		// andBool K:K =/=Bool NoInit
+		// < k > restoreShouldInit(OldShouldValue:Bool) => . ...</ k >
+		// < shouldInit > ? => OldShouldValue:Bool </ shouldInit >
 		// [structural] 
+		
 		
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
 	op reseenStatic : Id Type K Nat -> K [strict(3)] 
@@ -308,7 +297,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 		
-	rule
+	rule [declareExternInternal]:
 		< k > declareInternalVariable(X:Id, T:Type, NoInit)
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, unqualifyType(T:Type))
@@ -1037,7 +1026,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
 	// alternatively, i've added the condition below which might be enough
-	rule
+	rule [fillinit-string]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> initializeSingleInit(Constant(StringLiteral(S:String)))
 		...</ k >
@@ -1045,7 +1034,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if notBool hasCharType(T:Type)
 		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural] 
-	rule
+	rule [fillinit-wstring]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
 		...</ k >
@@ -1171,7 +1160,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< preLinkage >... Tu:K |-> Map(M:Map) ...</ preLinkage >
 		if notBool $hasMapping(M:Map, X:Id)
 		[structural] 
-	rule
+	rule [resolveExternal-internal]:
 		< k > resolveExternal-aux(X:Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?, ?) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? X:Id |-> internal)) ...</ preLinkage >
 		[structural] 
@@ -1203,10 +1192,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		if notBool $hasMapping(ExtDefs:Map, X:Id)
 		[structural] 
 
-	rule toString(Identifier(S:String)) => S:String [structural]
-	rule toString(S:String) => S:String [structural]
-	rule toString(Num:Nat) => Int2String(Num:Nat) [structural]
-	rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
 	
 	// fixme this means we've declared it twice (like a prototype maybe?), but already handled it.  happening with getc in clib.c
 	rule

@@ -1,3 +1,4 @@
+#include <stdio.h>
 typedef int (*funcptr)(int);
 
 int a(int x, int y){ putchar('a'); return 0; }

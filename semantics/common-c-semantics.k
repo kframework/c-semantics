@@ -28,7 +28,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op discard : -> K 
 	op File-Scope : -> Id [ctor] 
 	op unnamedBitField : -> Id [ctor] 
-	op bignum : -> Type 
+	//op bignum : -> Type 
 	op sym : Nat -> Nat 
 	op byteo : Nat -> Nat 
 	op bito : Nat -> Nat 
@@ -197,7 +197,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	subsort Value < KResult K 
 	subsort Type < KResult K
 	op K2Nat : K -> Nat
-	rule K2Nat(N:Nat) => N:Nat [structural]
 	op sizeofType : K -> K [strict] // generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [strict] // needs to be heated to top of K for struct and union types
 	op byteSizeofType : K -> K [strict] 
@@ -285,14 +284,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op hasExternType : Type -> Bool 
 	op hasStaticType : Type -> Bool 
 	op hasIncompleteType : Type -> Bool 
-	op hasTypedefType : Type -> Bool 
+	// op hasTypedefType : Type -> Bool 
 	op hasArithmeticType : Type -> Bool
 	
 	op aggregateInfo : List{C} Map Map -> K // first map is for type, second map is for offset
 	op getFieldOffset : Id K -> Nat // these expect an aggregateInfo term as second argument
 	op getFieldType : Id K -> Type
-	rule getFieldOffset(F:Id, aggregateInfo(?, ?, (? F:Id |-> N:Nat))) => N:Nat [structural]
-	rule getFieldType(F:Id, aggregateInfo(?, ?, (? F:Id |-> T:Type))) => T:Type [structural]
 	
 	op isArithBinConversionOp : KLabel -> Bool 
 	op isArithUnaryOp : KLabel -> Bool 
@@ -327,50 +324,50 @@ endkm
 kmod COMMON-C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
 
-	op IdentifierSet : List{K} -> Set 
-	rule IdentifierSet((S:String,, L:List{K})) => SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) [structural]
-	op builtinIdentifiers : -> Set [memo] 
+	// op IdentifierSet : List{K} -> Set 
+	// rule IdentifierSet((S:String,, L:List{K})) => SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) [structural]
+	// op builtinIdentifiers : -> Set [memo] 
 	
-	// fixme bug why can't i use .List{K} here?
-	rule builtinIdentifiers => IdentifierSet((
-		"abort"
-		,, "asin"
-		,, "atan"
-		,, "atan2"
-		,, "calloc"
-		,, "cos"
-		,, "__debug"
-		,, "exit"
-		,, "exp"
-		,, "floor"
-		,, "fmod"
-		,, "free"
-		,, "fslCloseFile"
-		,, "fslFGetC"
-		,, "fslOpenFile"
-		,, "fslPutc"
-		,, "getchar"
-		,, "log"
-		,, "longjmp"
-		,, "malloc"
-		,, "printf"
-		,, "putchar"
-		,, "rand"
-		,, "setjmp"
-		,, "sin"
-		,, "sqrt"
-		,, "tan"
-		// <threads.h>
-		,, "thrd_create"
-		,, "thrd_current"
-		,, "thrd_detach"
-		,, "thrd_join"
-		,, "__test_and_set"
-		,, "__va_inc"
-		,, "__va_start"
-		,, "__va_end"
-		,, "__va_copy"
-	)) [structural]
+	// // fixme bug why can't i use .List{K} here?
+	// rule builtinIdentifiers => IdentifierSet((
+		// "abort"
+		// ,, "asin"
+		// ,, "atan"
+		// ,, "atan2"
+		// ,, "calloc"
+		// ,, "cos"
+		// ,, "__debug"
+		// ,, "exit"
+		// ,, "exp"
+		// ,, "floor"
+		// ,, "fmod"
+		// ,, "free"
+		// ,, "fslCloseFile"
+		// ,, "fslFGetC"
+		// ,, "fslOpenFile"
+		// ,, "fslPutc"
+		// ,, "getchar"
+		// ,, "log"
+		// ,, "longjmp"
+		// ,, "malloc"
+		// ,, "printf"
+		// ,, "putchar"
+		// ,, "rand"
+		// ,, "setjmp"
+		// ,, "sin"
+		// ,, "sqrt"
+		// ,, "tan"
+		// // <threads.h>
+		// ,, "thrd_create"
+		// ,, "thrd_current"
+		// ,, "thrd_detach"
+		// ,, "thrd_join"
+		// ,, "__test_and_set"
+		// ,, "__va_inc"
+		// ,, "__va_start"
+		// ,, "__va_end"
+		// ,, "__va_copy"
+	// )) [structural]
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
@@ -417,7 +414,7 @@ kmod COMMON-C-SETTINGS is
 	op rank : Type -> Int 
 		
 	rule rank(bool) => 0 [structural]
-	rule rank(char) => 1 [structural]
+	// rule rank(char) => 1 [structural] // not needed if char is sugar
 	rule rank(signed-char) => 1 [structural]
 	rule rank(unsigned-char) => 1 [structural]
 	rule rank(short-int) => 2 [structural]
@@ -429,7 +426,7 @@ kmod COMMON-C-SETTINGS is
 	rule rank(long-long-int) => 5 [structural]
 	rule rank(unsigned-long-long-int) => 5 [structural]
 	
-	rule rank(bignum) => 100 [structural] // used for internal calculation.  should be bigger than all other ranks
+	// rule rank(bignum) => 100 [structural] // used for internal calculation.  should be bigger than all other ranks
 	
 	rule rank(enumType(?)) => rank(int) [structural]
 	//C99 6.3.1.1
@@ -463,18 +460,6 @@ endkm
 kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
-	rule sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat => true
-		if M:Nat <Nat M':Nat
-		[structural]
-	rule sym(N:Nat) +Nat M:Nat <=Nat sym(N:Nat) +Nat M':Nat => true
-		if M:Nat <=Nat M':Nat
-		[structural]
-	rule sym(N:Nat) +Nat M:Nat >Nat sym(N:Nat) +Nat M':Nat => true
-		if M:Nat >Nat M':Nat
-		[structural]
-	rule sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat => true
-		if M:Nat >=Nat M':Nat
-		[structural]
 	
 	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural]
 	rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural]
@@ -488,10 +473,6 @@ kmod COMMON-C-SEMANTICS-MISC is
 		if N:Nat -Int I:Int >=Int 0 
 		[structural]
 
-	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
-	rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
-	rule klistToK(.List{K}) => .K [structural]
-	
 	rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 
 	rule ExpressionLoc(K:K, ?) => K:K [structural]

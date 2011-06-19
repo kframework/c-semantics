@@ -304,9 +304,9 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		if B:Bag =/=Bool .Bag
 		[structural] 
 	// fixme not sure where this is specified, but if i say "static x;" i think it means int
-	rule 
-		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(BagItem(Int))), .Bag, ?, ?) ...</ k >
-		[structural] 
+	// rule 
+		// < k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(BagItem(Int))), .Bag, ?, ?) ...</ k >
+		// [structural] 
 		
 	rule
 		< k > canonicalizeType(.Bag, T:Type, .Bag, .Bag, .Bag) => T:Type ...</ k >
@@ -1000,12 +1000,12 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule hasTypedefType(typedefType(?, ?)) => true [structural]
-	rule hasTypedefType(qualifiedType(T:Type, ?)) => hasTypedefType(T:Type) [structural]
-	rule hasTypedefType(T:Type) => false
-		if getKLabel(T:Type) =/=Bool 'typedefType 
-		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		[structural]
+	// rule hasTypedefType(typedefType(?, ?)) => true [structural]
+	// rule hasTypedefType(qualifiedType(T:Type, ?)) => hasTypedefType(T:Type) [structural]
+	// rule hasTypedefType(T:Type) => false
+		// if getKLabel(T:Type) =/=Bool 'typedefType 
+		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
+		// [structural]
 	
 	rule hasBoolType(bool) => true [structural]
 	rule hasBoolType(qualifiedType(T:Type, ?)) => hasBoolType(T:Type) [structural]

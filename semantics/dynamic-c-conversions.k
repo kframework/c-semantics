@@ -616,25 +616,25 @@ kmod DYNAMIC-C-CONVERSIONS is
 		andBool hasIntegerType(T:Type)
 		[structural] 
 	
-	rule [arithInterpret-bignum]:
-		arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
-		[structural]
+	// rule [arithInterpret-bignum]:
+		// arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
+		// [structural]
 		
 	rule [arithInterpret-unknown]:
-		arithInterpret(T:Type, unknown(N:Nat)) => tv(unknown(N:Nat), T:Type)
+		arithInterpret(T:Type, piece(unknown(N:Nat), N:Nat)) => tv(piece(unknown(N:Nat), N:Nat), T:Type)
 		[structural]
 		
 	// these could be so much better...
 	rule ~Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
-	rule N:Nat ^Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
-	rule N:Nat |Int unknown(Len:Nat) => unknown(Len:Nat) [structural]
-	rule N:Nat &Int unknown(Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
-	rule N:Nat &Int unknown(Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
+	rule N:Nat ^Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
+	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
 
-	rule unknown(Len:Nat) ^Int N:Nat => unknown(Len:Nat) [structural]
-	rule unknown(Len:Nat) |Int N:Nat => unknown(Len:Nat) [structural]
-	rule unknown(Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
-	rule unknown(Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
+	rule piece(unknown(Len:Nat), Len:Nat) ^Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
+	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
@@ -673,5 +673,5 @@ kmod DYNAMIC-C-CONVERSIONS is
 
 	rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
 	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
-	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int,, bignum) [structural]
+	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
 endkm

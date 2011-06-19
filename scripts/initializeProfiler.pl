@@ -38,6 +38,7 @@ while(<MYINPUTFILE>) {
 	my $kind = "";
 	if ($line =~ m/^\s*(eq|ceq|rl|crl) .*\[.*\]\.\s*$/){
 		$type = $1;
+		#print "Found rule\n";
 	}
 	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.* label ([^ ]*) .*\]\.\s*$/){
 		$ruleName = $1;
@@ -72,8 +73,3 @@ while(<MYINPUTFILE>) {
 		
 	}
 }
-# eq __(<_>_</_>((control).CellLabel, __(?16:Bag, <_>_</_>((local).CellLabel, __(?20:Bag, <_>_</_>((localAddresses).CellLabel, ?21:Set, (localAddresses).CellLabel)), (local).CellLabel), <_>_</_>((k).CellLabel, _~>_(_`(_`)(('bindVariadic).KProperLabel, _`,`,_(?17:K, _`(_`)(kList(("wklist_").String), _`,`,_(V:KResult, ?18:List`{KResult`})))), ?19:K), (k).CellLabel)), (control).CellLabel), <_>_</_>((nextLoc).CellLabel, _`(_`)(Rat_(Loc:Nat), (.List`{K`}).List`{KResult`}), (nextLoc).CellLabel)) = __(<_>_</_>((control).CellLabel, __(?16:Bag, <_>_</_>((local).CellLabel, __(?20:Bag, <_>_</_>((localAddresses).CellLabel, __(?21:Set, SetItem(_`(_`)(Rat_(Loc:Nat), (.List`{K`}).List`{KResult`}))), (localAddresses).CellLabel)), (local).CellLabel), <_>_</_>((k).CellLabel, _~>_(_`(_`)(('allocateType).KProperLabel, _`,`,_(_`(_`)(Rat_(Loc:Nat), (.List`{K`}).List`{KResult`}), _`(_`)(('type).KResultLabel, V:KResult))), _`(_`)(('Computation).KProperLabel, _`(_`)(('_:=_).KProperLabel, _`,`,_(_`(_`)(('*_).KProperLabel, _`(_`)(('tv).KResultLabel, _`,`,_(_`(_`)(kList(("wklist_").String), _`(_`)(Rat_(Loc:Nat), (.List`{K`}).List`{KResult`})), _`(_`)(('pointerType).KResultLabel, _`(_`)(('type).KResultLabel, V:KResult))))), V:KResult))), _`(_`)(('bindVariadic).KProperLabel, _`,`,_(?17:K, _`(_`)(kList(("wklist_").String), ?18:List`{KResult`}))), ?19:K), (k).CellLabel)), (control).CellLabel), <_>_</_>((nextLoc).CellLabel, _`(_`)(Rat_(inc(Loc:Nat)), (.List`{K`}).List`{KResult`}), (nextLoc).CellLabel)) [  label bind-variadic  metadata "location(common-c-declarations.k:121-131) structural"   ].
-
-
-
-

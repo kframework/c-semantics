@@ -75,6 +75,10 @@ mv 20050106-1.c notportable/
 # extension: push/pop macro pragma
 mv pushpop_macro.c notportable/
 
+# these assume floats that are more accurate than the standard requires
+# i'm not sure about this
+# mv 20031003-1.c notportable/
+
 # fixing 921110-1.c
 sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
 # fixing pr34176.c
@@ -87,19 +91,19 @@ mv 20081117-1.c 930126-1.c 960608-1.c 991118-1.c bf64-1.c bf-pack-1.c bf-sign-2.
 mv 20071030-1.c 930930-2.c stdarg-3.c pr42691.c brokenDynamically/
 
 # assuming things about representation of pointers
-mv 980716-1.c brokenDynamically/
+mv 980716-1.c 920428-1.c pr17252.c brokenDynamically/
 
 # comparing/subtracting incomparable pointers
 mv 950710-1.c 980701-1.c brokenDynamically/
 
 # bad locations
-mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 940115-1.c loop-15.c brokenDynamically/
+mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 940115-1.c loop-15.c pr44555.c brokenDynamically/
 
 # overflow
 mv 980605-1.c brokenDynamically/
 
 # uninitialized
-mv 20030404-1.c pr34099-2.c 921202-1.c 20100430-1.c va-arg-14.c pr43629.c brokenDynamically/
+mv 20030404-1.c pr34099-2.c 921202-1.c 20100430-1.c va-arg-14.c pr43629.c pr40493.c 930719-1.c brokenDynamically/
 
 # arithmetic/bit on pointers
 mv pr23467.c 20050215-1.c brokenDynamically/
@@ -220,14 +224,15 @@ echo "Fixing standard library..."
 ## stdlib.h
 # abort
 sed -i 's/__builtin_abort/abort/g' *.c
-sed -i 's/int[ ]\+abort()/void abort(void)/g' *.c
-sed -i 's/int[ ]\+abort(/void abort(/g' *.c
+sed -i 's/int[ ]\+abort[ ]*()/void abort(void)/g' *.c
+sed -i 's/int[ ]\+abort[ ]*(/void abort(/g' *.c
 
 for f in `grep -L 'void[ ]\+abort\|stdlib\.h' *.c`; do
 	../../scripts/insert.sh 1 $f '#include <stdlib.h>'
 done
 # exit
 sed -i 's/__builtin_exit/exit/g' *.c
+sed -i 's/void[ ]\+exit[ ]*()/void exit(int)/g' *.c
 for f in `grep -L 'void[ ]\+exit\|stdlib\.h' *.c`; do
 	../../scripts/insert.sh 1 $f '#include <stdlib.h>'
 done
@@ -303,13 +308,10 @@ for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
 done
 
 
-# i'm unsure about the correctness of these
-mkdir -p unsure
-mv 920428-1.c pr17252.c pr40493.c pr44555.c unsure/
 # these aren't bad, i just know I fail them
-mkdir -p fails
-mv 930719-1.c 20031003-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
-mv 20040811-1.c 970217-1.c pr28289.c fails/
+# mkdir -p fails
+# mv 970217-1.c 20031003-1.c 20040811-1.c 20040208-1.c 20040208-2.c pr22061-2.c fails/
+# mv fails/
 
 
 # 34 slow

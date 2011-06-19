@@ -4,6 +4,20 @@ endkm
 
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
+
+
+	rule sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat => true
+		if M:Nat <Nat M':Nat
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat <=Nat sym(N:Nat) +Nat M':Nat => true
+		if M:Nat <=Nat M':Nat
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat >Nat sym(N:Nat) +Nat M':Nat => true
+		if M:Nat >Nat M':Nat
+		[structural]
+	rule sym(N:Nat) +Nat M:Nat >=Nat sym(N:Nat) +Nat M':Nat => true
+		if M:Nat >=Nat M':Nat
+		[structural]
 	
 	op simplifyTruth : K -> K
 	rule simplifyTruth(K:K) => K:K != tv(0, int) [structural]
@@ -310,6 +324,22 @@ kmod COMMON-C-BITSIZE is
 		< k > bitSizeofType(unionType(S:Id)) => maxBitSizeofList(L:List{Type}) ...</ k >
 		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
 		[structural]
+		
+	rule K2Nat(N:Nat) => N:Nat [structural]
+
+	rule getFieldOffset(F:Id, aggregateInfo(?, ?, (? F:Id |-> N:Nat))) => N:Nat [structural]
+	rule getFieldType(F:Id, aggregateInfo(?, ?, (? F:Id |-> T:Type))) => T:Type [structural]
+
+		
+	rule toString(Identifier(S:String)) => S:String [structural]
+	rule toString(S:String) => S:String [structural]
+	rule toString(Num:Nat) => Int2String(Num:Nat) [structural]
+	rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
+	
+	
+	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
+	rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
+	rule klistToK(.List{K}) => .K [structural]
 endkm
 
 

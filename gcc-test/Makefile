@@ -31,13 +31,14 @@ default: prepare
 gcc: default
 	@mkdir -p results/out.gcc
 	@-$(RUNTEST) gcc.all/execute.exp $(GCC_FLAGS)
-#echo "test,tool,phase,status,timeout" > gcc.full.csv
-	@cat results/out.gcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc,\3,\1/p' > gcc.full.csv
+# echo "test,tool,phase,status,timeout" > gcc.full.csv
+	@cat results/out.gcc/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcc,\3,\1,/p' > gcc.full.csv
+# =COUNTIF(D2:D2;"PASS")
 gcco3: default
 	@mkdir -p results/out.gcc
 	@-$(RUNTEST) gcc.all/execute.exp $(GCCO3_FLAGS)
 #echo "test,tool,phase,status,timeout" > gcc.full.csv
-	@cat results/out.gcco3/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcco3,\3,\1/p' > gcc.full.csv
+	@cat results/out.gcco3/gcc.sum | sed -n 's/^\(.*\):/\1,:/p' | sed '/timed out\./{N;s/WARNING: program timed out\.\n\(.*\):/\1,TIMEOUT:/}' | sed -n 's/^\(.*\): gcc\..*\/\(.*\) \(.*\),/\2,gcco3,\3,\1/p' > gcco3.full.csv
 compcert: default
 	@mkdir -p results/out.compcert
 	@-$(RUNTEST) gcc.all/execute.exp $(COMPCERT_FLAGS)

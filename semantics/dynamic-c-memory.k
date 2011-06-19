@@ -42,27 +42,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 			=> extractBitsFromList-aux(dataList(L:List{K}), 0, NumBits:Nat, (Done:List{K},, piece(N:Nat, 1)))
 		...</ k >
 		[structural] 
-	/*
-	('extractBitsFromList-aux)(('dataList)(kList("wklist_")(
-		piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 6, 6), 1)
-		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 5, 5), 1)
-		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 4, 4), 1)
-		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 3, 3), 1)
-		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 2, 2), 1)
-		, piece(bitRange(piece(bitRange(unknown8, 1, 7), 7), 1, 1), 1)
-		, piece(bitRange(unknown8, 1, 1), 1)
-		, piece(1, 1)
-		, piece(0, 1)
-		, piece(0, 1)
-		, piece(1, 1)
-		, piece(1, 1)
-		, piece(0, 1)
-		, piece(1, 1)
-		, piece(0, 1)
-		, piece(1, 1)
-	)), 7, 10, kList("wklist_"))
-	*/
-
+	
 	rule
 		< k > extractBitsFromList-aux(?, 0, 0, Done:List{K}) => dataList(Done:List{K}) ...</ k >
 		[structural] 
@@ -149,14 +129,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		// if hasUnionType(T:Type)
 		[structural]
-	
-	// this happens in expressions like f().a[5], since == *(f().a + 5)
-	// might be dangerous in that it hides other problems, like f().a;
-	// rule 
-		// concretize(T:Type, dataList(L:List{K})) 
-			// => tv(L:List{K}, T:Type)
-		// if hasArrayType(T:Type)
-		// [structural]
 
 	// FIXME assuming bytes?
 	op joinIntegerBytes-aux : Type List{K} K -> K 
@@ -194,7 +166,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 	// fixme owise!!!
 	eq ceilingLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
 	
-	// ('extractBitsFromMem)((1 +Nat bito(7) +Nat sym(0 +Nat threadId(0))), 10)
 	rule
 		< k > extractBitsFromMem(Loc:Nat, Size:Nat)
 			=> extractBitsFromList(

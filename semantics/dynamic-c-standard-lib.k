@@ -1,5 +1,3 @@
-// when adding a new builtin library function, don't forget to register it in common-c-semantics in the "builtinIdentifiers" set
-
 load maudeLib/TCPSupport
 
 ////////////////////////////////
@@ -214,8 +212,24 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// < k > [abort => debug] ...</ k >
 	// 
 	rule [abort]:
-		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ? => tv(134, int) </ k >
-		
+		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ? 
+			=> printString("Aborted")
+			~> tv(134, int) 
+		</ k >
+	
+	op printString : K -> K
+	
+	rule 
+		< k > printString(S:String)
+			=> writeToFD(1, asciiCharString(firstChar(S:String)))
+			~> printString(butFirstChar(S:String))
+		...</ k >
+		if lengthString(S:String) >Nat 0
+		[structural]
+	rule 
+		< k > printString("") => writeToFD(1, 10) ...</ k >
+		[structural]
+	
 	////////////////////////////--
 	rule [sqrt]:
 		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) 
