@@ -352,8 +352,8 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		if getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
-	op getIdString : K -> String 
-	rule getIdString(Identifier(S:String)) => S:String [structural]
+	// op getIdString : K -> String 
+	// rule getIdString(Identifier(S:String)) => S:String [structural]
 	
 	op enableInits : -> K 
 	

@@ -1049,10 +1049,10 @@ second operand from the first.
 	/*@ \source[n1570]{\para{6.5.3.3}{2}}
 	The result of the unary \cinline{+} operator is the value of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/		
-	rule + tv(I:Int, T:Type) => arithInterpret(T:Type, I:Int)
+	rule [unaryPlus-int]: + tv(I:Int, T:Type) => arithInterpret(T:Type, I:Int)
 		if isPromotedInteger(T:Type)
 		[structural]
-	rule + tv(F:Float, T:Type) => tv(F:Float, T:Type)
+	rule [unaryPlus-float]: + tv(F:Float, T:Type) => tv(F:Float, T:Type)
 		[structural]	
 		
 	/*@ \source[n1570]{\para{6.5.3.3}{3}}

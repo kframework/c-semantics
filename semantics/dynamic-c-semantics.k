@@ -96,8 +96,8 @@ If they are declared, the parameters to the main function shall obey the followi
 	op syntaxNat : Nat -> K
 	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
 	
-	rule eval(K:K) => eval(K:K, .List{K}, "") [structural]
-	rule eval(Program(P:List{C}), L:List{K}, Input:String) =>
+	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "") [structural]
+	rule [eval-input]: eval(Program(P:List{C}), L:List{K}, Input:String) =>
 		< T >
 			< threads >
 				< thread >

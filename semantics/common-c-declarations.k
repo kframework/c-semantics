@@ -968,13 +968,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(SingleInit(K:K)) => initializeSingleInit(K:K) ...</ k >
 		if getKLabel(K:K) =/=Bool 'Constant
 		[structural] 
-	rule
-		< k > fillInitializer(SingleInit(Constant(K:K))) => initializeSingleInit(Constant(K:K)) ...</ k >
-		if getKLabel(K:K) =/=Bool 'StringLiteral
-		andBool getKLabel(K:K) =/=Bool 'WStringLiteral
-		[structural] 
+	// other constants should have the constant label removed as they turn into values locally
+	// rule
+		// < k > fillInitializer(SingleInit(Constant(K:K))) => initializeSingleInit(Constant(K:K)) ...</ k >
+		// if getKLabel(K:K) =/=Bool 'StringLiteral
+		// andBool getKLabel(K:K) =/=Bool 'WStringLiteral
+		// [structural] 
 
-	rule
+	rule [fillInit-string-array-eq]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
 		...</ k >
@@ -982,7 +983,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) ==Bool Len:Nat
 		[structural] 
-	rule
+	rule [fillInit-wstring-array-eq]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
 		...</ k >
@@ -990,7 +991,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) ==Bool Len:Nat
 		[structural] 
-	rule
+	rule [fillInit-string-array-lt]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
@@ -998,7 +999,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) <Int Len:Nat
 		[structural] 
-	rule
+	rule [fillInit-wstring-array-lt]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
@@ -1006,21 +1007,21 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <Int Len:Nat
 		[structural] 
-	rule
+	rule [fillInit-string-char]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
 		if hasCharType(T:Type)
 		[structural] 
-	rule
+	rule [fillInit-wstring-wchar]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
 		[structural] 	
-	rule
+	rule [fillInitAux-string-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), char))) 
 			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
@@ -1029,7 +1030,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if S:String =/=Bool ""
 		andBool hasCharType(T:Type)
 		[structural] 
-	rule
+	rule [fillInitAux-wstring-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
 			=> fillInitializer(SingleInit(tv(N:Nat, cfg:wcharut)))
 			~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
@@ -1038,16 +1039,16 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasWCharType(T:Type)
 		[structural]
 	// fixme not sure what happens in the case of   char *x = "";
-	rule
+	rule [fillInitAux-string-done]:
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</ k >
 		[structural]
-	rule
+	rule [fillInitAux-wstring-done]:
 		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</ k >
 		[structural] 
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
 	// alternatively, i've added the condition below which might be enough
-	rule [fillinit-string]:
+	rule [fillInit-string-notchar]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> initializeSingleInit(Constant(StringLiteral(S:String)))
 		...</ k >
@@ -1055,7 +1056,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if notBool hasCharType(T:Type)
 		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural] 
-	rule [fillinit-wstring]:
+	rule [fillinit-wstring-notwchar]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
 		...</ k >

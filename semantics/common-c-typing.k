@@ -6,7 +6,7 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	op addStruct : Id List{Type} -> K 
 	op addUnion : Id List{Type} -> K 
 	op canonicalizeType : Bag -> K 
-	op isAType_ : K -> Bool 
+	
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
 	op evalToType : -> K 
 	
@@ -205,11 +205,11 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool (getKLabel(T:K) ==Bool 'Named)
 		orBool (getKLabel(T:K) ==Bool 'AttributeValue)
 		[structural] 
-	rule
-		< k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, (? .Bag => BagItem(T:K)), ?) ...</ k >
-		if (T:K ==Bool SpecTypedef)
-		orBool (T:K ==Bool Inline)
-		[structural] 
+	// rule
+		// < k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, (? .Bag => BagItem(T:K)), ?) ...</ k >
+		// if (T:K ==Bool SpecTypedef)
+		// orBool (T:K ==Bool Inline)
+		// [structural] 
 
 	rule
 		< k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, ?, (? .Bag => BagItem(T:K))) ...</ k >
@@ -291,11 +291,11 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		if X:Id =/=Bool Identifier("")
 		[structural] 
 		
-		
+
 	// FIXME what good is this?
 	rule BagItem(SpecTypedef) => .Bag [structural]
-	// fixme ignoring inlines since they shouldn't change the semantics?
-	rule BagItem(Inline) => .Bag [structural]
+	// fixme ignoring inlines
+	rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
 	// fixme should save these for later use
 	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
 
@@ -393,19 +393,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
 	rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) [structural]
 	
-	rule pushTypeDown(arrayType(T:Type, N:Nat), K:KLabel) => arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat) [structural]
-	rule pushTypeDown(incompleteArrayType(T:Type), K:KLabel) => incompleteArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	rule pushTypeDown(pointerType(T:Type), K:KLabel) => pointerType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	rule pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) => qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) [structural]
-	rule pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) => functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) [structural]
-	rule pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	rule pushTypeDown(structType(X:Id), K:KLabel) => K:KLabel(structType(X:Id)) [structural]
-	rule pushTypeDown(unionType(X:Id), K:KLabel) => K:KLabel(unionType(X:Id)) [structural]
-	rule pushTypeDown(enumType(X:Id), K:KLabel) => K:KLabel(enumType(X:Id)) [structural]
+	rule [pushdown-array]: pushTypeDown(arrayType(T:Type, N:Nat), K:KLabel) => arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat) [structural]
+	rule [pushdown-incomplete]: pushTypeDown(incompleteArrayType(T:Type), K:KLabel) => incompleteArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule [pushdown-pointer]: pushTypeDown(pointerType(T:Type), K:KLabel) => pointerType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule [pushdown-qualified]: pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) => qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) [structural]
+	rule [pushdown-function]: pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) => functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) [structural]
+	rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule [pushdown-struct]: pushTypeDown(structType(X:Id), K:KLabel) => K:KLabel(structType(X:Id)) [structural]
+	rule [pushdown-union]: pushTypeDown(unionType(X:Id), K:KLabel) => K:KLabel(unionType(X:Id)) [structural]
+	rule [pushdown-enum]: pushTypeDown(enumType(X:Id), K:KLabel) => K:KLabel(enumType(X:Id)) [structural]
 	
-	rule pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) => K:KLabel(T:Type) [structural]
+	rule [pushdown-typedef]: pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) => K:KLabel(T:Type) [structural]
 	
-	rule pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
+	rule [pushdown-basic]: pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
 		if isBasicType(T:Type)
 		[structural]
 	
@@ -613,14 +613,6 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
 		[structural] 
-	// rule
-		// < type > arrayType(T:Type, ?)[T':Type] => T:Type ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > pointerType(T:Type)[T':Type] => T:Type ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
 	rule 
 		< type > arithInterpret(T:Type, ?) => T:Type ...</ type >
 	rule
@@ -727,13 +719,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
 		) contains l(L:KLabel)
 		[structural]
-	
-	// rule 
-		// < type > L:KLabel(T:Type,, T':Type) => maxType(T:Type, T':Type) ...</ type >
-		// if typeStrictBinaryOperators contains l(L:KLabel)
-		// andBool hasIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// [structural] 
+
 	rule 
 		< type > L:KLabel(T:Type,, T':Type) => usualArithmeticConversion(T:Type, T':Type) ...</ type >
 		if isArithBinConversionOp(L:KLabel)
@@ -810,30 +796,30 @@ kmod COMMON-C-TYPING is
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 	
-	rule isTypeCompatible(T:Type, T:Type) 
+	rule [typeCompatible-identical]: isTypeCompatible(T:Type, T:Type) 
 		=> true 
 		[structural]
-	rule isTypeCompatible(T:Type, T':Type) 
+	rule [typeCompatible-two-ints]: isTypeCompatible(T:Type, T':Type) 
 		=> true 
 		if hasIntegerType(T:Type)
 		andBool hasIntegerType(T':Type) 
 		[structural]
-	rule isTypeCompatible(pointerType(?), pointerType(?))
+	rule [typeCompatible-two-ptr]: isTypeCompatible(pointerType(?), pointerType(?))
 		=> true 
 		[structural]
-	rule isTypeCompatible(pointerType(?), T:Type)
+	rule [typeCompatible-ptr-int]: isTypeCompatible(pointerType(?), T:Type)
 		=> true
 		if hasIntegerType(T:Type) 
 		[structural]
-	rule isTypeCompatible(T:Type, pointerType(?))
+	rule [typeCompatible-int-ptr]: isTypeCompatible(T:Type, pointerType(?))
 		=> true
 		if hasIntegerType(T:Type)
 		[structural]
 		
-	rule isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
+	rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
-	rule isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
+	rule [typeCompatible-prototypes]: isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
 

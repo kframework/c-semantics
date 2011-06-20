@@ -219,7 +219,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op Nil : -> List{Type} [ditto] 
 		
 	op DeclType : K K -> K [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-		
+	op isAType_ : K -> Bool 
 	op setOfTypes : -> Set [memo] 
 	rule setOfTypes => Set(
 		l('arrayType),, 
@@ -473,9 +473,9 @@ kmod COMMON-C-SEMANTICS-MISC is
 		// if N:Nat -Int I:Int >=Int 0 
 		// [structural]
 
-	rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
+	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 
-	rule ExpressionLoc(K:K, ?) => K:K [structural]
+	rule [expression-loc]: ExpressionLoc(K:K, ?) => K:K [structural]
 
 	rule [CodeLoc-k]:
 		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >

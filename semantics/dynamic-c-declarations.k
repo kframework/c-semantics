@@ -88,8 +88,8 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		orBool T:Type ==Bool long-double
 		[structural]
 		
-	rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
-		[structural] 
+	// rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
+		// [structural] 
 		
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 

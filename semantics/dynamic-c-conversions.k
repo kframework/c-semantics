@@ -290,32 +290,20 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(void, ?) => skipval
 		[structural] 
 		
-	// fixme not sure about this, doesn't concretize, and in turn interpret, assume things about the list?
-	// rule
-		// cast(T:Type, tv(L:List{K}, structType(?)))
-			// => concretize(T:Type, dataList(L:List{K}))
-		// [structural] 
-		
-	// fixme are we missing a case for casting union types?  or casting to struct types?
-	
-	// fixme just temporarily, until we handle qualifiers properly
-	// rule
-		// cast(T:Type, tv(L:List{K}, T':Type)) => cast(T:Type, tv(L:List{K}, unqualifyType(T':Type)))
-		// if hasStaticType(T':Type)
-		// [structural] 
-	
 	rule
 		cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
 		[structural] 
 	
 	//c99 6.3.1.2:1 to _Bool
 	// fixme worried about qualifiers
-	rule
-		cast(bool, tv(I:Int, T:Type)) => if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
+	rule [cast-integer-to-bool]:
+		cast(bool, tv(I:Int, T:Type))
+			=> if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
 		if hasIntegerType(T:Type)
-		[structural] 
-	rule
-		cast(bool, tv(I:Int, T:Type)) => cast(bool, tv(0, int) == tv(I:Int, T:Type))
+		[structural]
+	rule [cast-non-integer-to-bool]:
+		cast(bool, tv(L:List{K}, T:Type)) 
+			=> cast(bool, tv(0, int) != tv(L:List{K}, T:Type))
 		if notBool hasIntegerType(T:Type)
 		[structural] 
 	
@@ -532,24 +520,13 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		if hasIntegerType(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural] 
-		
-	// can't cast to array types
-	// rule
-		// cast(arrayType(T:Type, N:Nat), tv(N':Nat, T':Type)) => tv(N':Nat, arrayType(T:Type, N:Nat))
-		// [structural] 
-		
-	// rule
-		// cast(?, tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
-		// [structural] 
-	// rule
-		// cast(?, tv(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
-		// [structural] 
 	
 	// fixme needs to check size
 	rule
 		cast(T:Type, tv(N:Nat, pointerType(?)))
 			=> tv(N:Nat, T:Type)
 		if hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
 		[structural] 
 		
 	// fixme
@@ -625,16 +602,17 @@ kmod DYNAMIC-C-CONVERSIONS is
 		[structural]
 		
 	// these could be so much better...
-	rule ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	rule N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	rule N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
-	rule N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
+	rule [bnot-unknown]: ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	
+	rule [xor-unknown-right]: N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [or-unknown-right]: N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [and-unknown-zero-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
+	rule [and-unknown-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
 
-	rule piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
-	rule piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
-	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
-	rule piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
+	rule [xor-unknown-left]: piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [or-unknown-left]: piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [and-unknown-zero-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
+	rule [and-unknown-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294

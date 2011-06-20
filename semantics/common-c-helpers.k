@@ -245,7 +245,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 
 	rule hasUnsignedIntegerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'bitfieldType
-		andBool setOfTypes contains l(getKLabel(T:Type))
+		andBool (setOfTypes contains l(getKLabel(T:Type)) orBool hasFloatType(T:Type))
 		[structural]
 	rule hasUnsignedIntegerType(bitfieldType(T:Type, ?)) => true
 		if hasUnsignedIntegerType(T:Type) ==Bool true
@@ -260,7 +260,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule hasSignedIntegerType(enumType(?)) => true [structural] // choice fixme
 	rule hasSignedIntegerType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'bitfieldType
-		andBool setOfTypes contains l(getKLabel(T:Type))
+		andBool (setOfTypes contains l(getKLabel(T:Type)) orBool hasFloatType(T:Type))
 		[structural]
 	rule hasSignedIntegerType(bitfieldType(T:Type, ?)) => true
 		if hasSignedIntegerType(T:Type) ==Bool true
