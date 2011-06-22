@@ -39,8 +39,8 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	// rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	// rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
 	// these come from things like (*f)(a, b, c)
-	rule reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-	rule peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule [reval-function]: reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule [peval-function]: peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	
 endkm
 
@@ -1058,10 +1058,10 @@ second operand from the first.
 	/*@ \source[n1570]{\para{6.5.3.3}{3}}
 	The result of the unary \cinline{-} operator is the negative of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/
-	rule - tv(I:Int, T:Type) => arithInterpret(T:Type, -Int I:Int)
+	rule [unaryMinus-int]: - tv(I:Int, T:Type) => arithInterpret(T:Type, -Int I:Int)
 		if isPromotedInteger(T:Type)
 		[structural]
-	rule - tv(F:Float, T:Type) => arithInterpret(T:Type, -Float_(F:Float))
+	rule [unaryMinus-float]: - tv(F:Float, T:Type) => arithInterpret(T:Type, -Float_(F:Float))
 		[structural]
 endkm
 

@@ -330,6 +330,33 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		// [structural]
 	////////////////////////////--
+	
+	// fixme should detect overlaps
+	op strcpy : K K K -> K
+	rule [strcpy-start]:
+		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, ?) :: tv(Src:Nat, ?))) 
+			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
+		...</ k >
+		[structural]
+		
+	rule [strcpy-pre]:
+		< k > (.K => read(Src:Nat, char))
+			~> strcpy(Dest:Nat, (Src:Nat => sNat(Src:Nat)), Orig:Nat)
+		...</ k >
+		[structural]
+	
+	rule [strcpy-some]:
+		< k > (tv(I:Int, T:Type) => write(Dest:Nat, tv(I:Int, T:Type)))
+			~> strcpy((Dest:Nat => sNat(Dest:Nat)), ?:Nat, ?:Nat)
+		...</ k >
+		if I:Int =/=Bool 0
+		[structural]
+	rule [strcpy-done]:
+		< k > tv(0, T:Type) ~> strcpy(Dest:Nat, ?, Orig:Nat)
+			=>  write(Dest:Nat, tv(0, T:Type)) ~> tv(Orig:Nat, pointerType(char))
+		...</ k >
+		[structural]		
+	
 	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	
 	// unsignedIntegerTypes contains T:Type

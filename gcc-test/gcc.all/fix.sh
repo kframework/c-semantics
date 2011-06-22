@@ -314,36 +314,43 @@ done
 # mv fails/
 
 
-# 34 slow
-mkdir -p passesButSlow
-# really slow, > 5 hrs
-mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c passesButSlow/
-mv memcpy-1.c strcmp-1.c passesButSlow/
-# really slow, > 15 minutes
-mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
-# slow, > 2 min
-mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c passesButSlow/
-mv memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
+# # 34 slow
+# mkdir -p passesButSlow
+# # really slow, > 5 hrs
+# # 7
+# mv pr43220.c memcpy-2.c 960521-1.c strcpy-1.c 20011008-3.c passesButSlow/
+# mv memcpy-1.c strcmp-1.c passesButSlow/
+# # really slow, 15m--5hr
+# # 4
+# mv 20050224-1.c 920501-6.c 961017-2.c memset-1.c passesButSlow/
+# # slow, 2m--15m
+# # 10
+# mv 20030209-1.c 20031012-1.c 920501-2.c 930921-1.c 950221-1.c passesButSlow/
+# mv memcpy-bi.c memset-2.c memset-3.c pr20621-1.c strlen-1.c passesButSlow/
 
-# tier 1
-# less slow, > 30s
-mv 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c passesButSlow/
-mv 931018-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c passesButSlow/
-mv divcmp-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c passesButSlow/
-mv pr36093.c va-arg-10.c passesButSlow/
-# kind of slow, > 15s
-mv 20000605-1.c 20030916-1.c 20060905-1.c 20071219-1.c 930614-2.c passesButSlow/
-mv ashldi-1.c loop-ivopts-2.c lshrdi-1.c pr27260.c loop-11.c passesButSlow/
-mv string-opt-5.c va-arg-2.c va-arg-9.c passesButSlow/
-# kind of slow, > 10s
-mv va-arg-24.c mode-dependent-address.c 20021120-1.c passesButSlow/
-# barely slow, > 5s
-mv 20000224-1.c 20000412-2.c 20000422-1.c 20020402-2.c 20020406-1.c passesButSlow/
-mv 20020506-1.c stdarg-4.c 20040313-1.c 20050502-1.c 20050826-2.c passesButSlow/
-mv 20060412-1.c 20071029-1.c 20080424-1.c 930628-1.c 950612-1.c passesButSlow/
-mv 951204-1.c 980506-3.c 980707-1.c 990128-1.c 990326-1.c passesButSlow/
-mv 990404-1.c 991201-1.c 991216-2.c conversion.c divcmp-1.c passesButSlow/
-mv pr28982a.c switch-1.c pr35472.c pr35800.c pr36034-1.c passesButSlow/
-mv pr36034-2.c pr42512.c passesButSlow/
+# # tier 1
+# # less slow, 30s--2m
+# # 17
+# mv 20040629-1.c 20040705-1.c 20040705-2.c 20041011-1.c 20050826-1.c passesButSlow/
+# mv 931018-1.c 990513-1.c 990628-1.c ashrdi-1.c cmpdi-1.c passesButSlow/
+# mv divcmp-3.c nestfunc-4.c p18298.c pr19005.c pr20601-1.c passesButSlow/
+# mv pr36093.c va-arg-10.c passesButSlow/
+# # kind of slow, 15s--30s
+# # 13
+# mv 20000605-1.c 20030916-1.c 20060905-1.c 20071219-1.c 930614-2.c passesButSlow/
+# mv ashldi-1.c loop-ivopts-2.c lshrdi-1.c pr27260.c loop-11.c passesButSlow/
+# mv string-opt-5.c va-arg-2.c va-arg-9.c passesButSlow/
+# # kind of slow, 10s--15s
+# # 3
+# mv va-arg-24.c mode-dependent-address.c 20021120-1.c passesButSlow/
+# # barely slow, 5s--10s  
+# # 32
+# mv 20000224-1.c 20000412-2.c 20000422-1.c 20020402-2.c 20020406-1.c passesButSlow/
+# mv 20020506-1.c stdarg-4.c 20040313-1.c 20050502-1.c 20050826-2.c passesButSlow/
+# mv 20060412-1.c 20071029-1.c 20080424-1.c 930628-1.c 950612-1.c passesButSlow/
+# mv 951204-1.c 980506-3.c 980707-1.c 990128-1.c 990326-1.c passesButSlow/
+# mv 990404-1.c 991201-1.c 991216-2.c conversion.c divcmp-1.c passesButSlow/
+# mv pr28982a.c switch-1.c pr35472.c pr35800.c pr36034-1.c passesButSlow/
+# mv pr36034-2.c pr42512.c passesButSlow/
 
 rm *.bak

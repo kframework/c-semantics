@@ -398,7 +398,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [pushdown-pointer]: pushTypeDown(pointerType(T:Type), K:KLabel) => pointerType(pushTypeDown(T:Type, K:KLabel)) [structural]
 	rule [pushdown-qualified]: pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) => qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) [structural]
 	rule [pushdown-function]: pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) => functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) [structural]
-	rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	// rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
 	rule [pushdown-struct]: pushTypeDown(structType(X:Id), K:KLabel) => K:KLabel(structType(X:Id)) [structural]
 	rule [pushdown-union]: pushTypeDown(unionType(X:Id), K:KLabel) => K:KLabel(unionType(X:Id)) [structural]
 	rule [pushdown-enum]: pushTypeDown(enumType(X:Id), K:KLabel) => K:KLabel(enumType(X:Id)) [structural]
@@ -508,12 +508,12 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-union]: extractActualType(unionType(X:Id)) => unionType(X:Id) [structural]
 	rule [extract-array]: extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
 	rule [extract-incompleteArray]: extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
-	rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
+	// rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
 	rule [extract-bitfield]: extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat)[structural]
 	rule [extract-function]: extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
 	rule [extract-pointer]:  extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
 	rule [extract-qualified]: extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
-	rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
+	// rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
 	rule [extract-typedef]: extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
 		
 	op NameAndType : K K -> K [strict(2)] 
@@ -592,9 +592,9 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > emptyValue => void ...</ type > 
 		[structural] 
 		
-	rule [type-functionObject]:
-		< type > functionObject(?, T:Type, ?) => T:Type ...</ type >
-		[structural] 
+	// rule [type-functionObject]:
+		// < type > functionObject(?, T:Type, ?) => T:Type ...</ type >
+		// [structural] 
 
 	rule
 		< type > T:Type << ? => T:Type ...</ type >

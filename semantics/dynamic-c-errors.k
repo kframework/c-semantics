@@ -295,6 +295,35 @@ kmod DYNAMIC-C-ERRORS is
 		if T:Type =/=Bool void
 		[structural]
 		
+	rule [err00030]:
+		< k => finalComputation > 
+			tv(sym(Base:Nat) +Nat ?, T:Type) < tv(sym(Base':Nat) +Nat ?, T:Type)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
+		if Base:Nat =/=Bool Base':Nat
+		[structural]
+	rule [err00031]:
+		< k => finalComputation > 
+			tv(sym(Base:Nat) +Nat ?, T:Type) > tv(sym(Base':Nat) +Nat ?, T:Type)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
+		if Base:Nat =/=Bool Base':Nat
+		[structural]
+	rule [err00032]:
+		< k => finalComputation > 
+			tv(sym(Base:Nat) +Nat ?, T:Type) <= tv(sym(Base':Nat) +Nat ?, T:Type)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
+		if Base:Nat =/=Bool Base':Nat
+		[structural]
+	rule [err00033]:
+		< k => finalComputation > 
+			tv(sym(Base:Nat) +Nat ?, T:Type) > tv(sym(Base':Nat) +Nat ?, T:Type)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
+		if Base:Nat =/=Bool Base':Nat
+		[structural]
+		
 
 
 	op datarace : Nat Nat Nat Nat -> K 
