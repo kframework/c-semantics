@@ -410,8 +410,26 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	
 	rule makeArrayType(N:Nat)(T:Type) => arrayType(T:Type, N:Nat) [structural]
-	rule makeFunctionType(L:List{Type})(T:Type) => functionType(T:Type, L:List{Type}) [structural]
-			
+	rule makeFunctionType(L:List{Type})(T:Type) => functionType(T:Type, giveNamesToArgs(L:List{Type})) [structural]
+	
+	op giveNamesToArgs : List{Type} -> List{Type}
+	op giveNamesToArgs-aux : Nat List{Type} -> List{Type}
+	
+	rule giveNamesToArgs(L:List{Type}) => giveNamesToArgs-aux(0, L:List{Type}) [structural]
+	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, X:Id) :: giveNamesToArgs-aux(N:Nat, L:List{Type})
+		if X:Id =/=Bool #NoName
+		[structural]
+	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, #NoName(N:Nat)) :: giveNamesToArgs-aux(sNat(N:Nat), L:List{Type})
+		if X:Id ==Bool #NoName
+		[structural]
+	rule giveNamesToArgs-aux(?, variadic)
+		=> variadic
+		[structural]
+	rule giveNamesToArgs-aux(?, Nil)
+		=> Nil
+		[structural]
 	
 	rule 
 		< k > JustBase => T:Type ...</ k >

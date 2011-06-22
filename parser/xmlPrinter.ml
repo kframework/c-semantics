@@ -226,7 +226,8 @@ and printIdentifier a =
 	printCell "Identifier" [] (printRawString a)
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
 	if a = "" then 
-		printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c
+		(* printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c *)
+		printAttr (printNameLoc (wrap ((printCell "AnonymousName" [] "") :: (printDeclType b) :: []) "Name") d) c
 	else 
 		printAttr (printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: []) "Name") d) c
 	

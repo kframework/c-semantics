@@ -69,7 +69,8 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 	rule [bind-one-check-type]:
-		< k > (. => isTypeCompatible(T:Type, T':Type)) ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
+		< k > (. => isTypeCompatible(T:Type, T':Type)) 
+			~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
 	

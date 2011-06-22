@@ -285,12 +285,15 @@ and init_name_group = specifier * init_name list
 and name = string * decl_type * attribute list * cabsloc
 */
 	op Name : K K -> Name // first argument is id, second is basetype
-	op AnonymousName : K -> Name // new, argument is type
+	//op AnonymousName : K -> Name // new, argument is type
+	op AnonymousName : -> K // new, argument is type
 	op #NoName : -> Id // new
+	op #NoName : Nat -> Id // new
 	op Identifier : String -> Id // new	
 	// op NameLoc : K K -> Name // new
 	
-	macro AnonymousName(K:K) = Name(#NoName, K:K)
+	macro AnonymousName = #NoName
+	//macro AnonymousName(K:K) = Name(#NoName, K:K)
 	
 /*
 	(* A variable declarator ("name") with an initializer *)

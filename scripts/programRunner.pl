@@ -59,6 +59,7 @@ sub finalCleanup {
 if (defined($ENV{'HELP'})) {
 	print "Here are some configuration variables you can set to affect how this program is run:\n";
 	print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
+	print "DEBUGON --- debugs a particular semantic rule\n";
 	#print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
@@ -139,6 +140,11 @@ if (defined($ENV{'DEBUG'})) {
 	print $fileRunner "break select debug .\n";
 	print $fileRunner "set break on .\n";
 }
+if (defined($ENV{'DEBUGON'})) {
+	print $fileRunner "break select $ENV{'DEBUGON'} .\n";
+	print $fileRunner "set break on .\n";
+}
+
 if (defined($ENV{'SEARCH'})) {
 	print $fileRunner $searchLine;
 	print $fileRunner "show search graph .\n"
@@ -148,7 +154,7 @@ if (defined($ENV{'SEARCH'})) {
 if (defined($ENV{'PROFILE'})) {
 	print $fileRunner "show profile .\n";
 }
-if (! defined($ENV{'DEBUG'}) and ! defined($ENV{'LOADMAUDE'})) {
+if (! defined($ENV{'DEBUG'}) and ! defined($ENV{'DEBUGON'}) and ! defined($ENV{'LOADMAUDE'})) {
 	print $fileRunner "q\n";
 }
 close($fileRunner);
@@ -161,7 +167,7 @@ my $maudeCommand = "true; maude -no-wrap -no-banner $fileMaudeDefinition "
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-if (defined($ENV{'DEBUG'}) or defined($ENV{'LOADMAUDE'})) {
+if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUDE'})) {
 	#io
 	exit runDebugger($maudeCommand);
 } elsif (defined($ENV{'SEARCH'})) {
