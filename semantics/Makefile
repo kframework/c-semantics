@@ -17,12 +17,11 @@ COMPILE_C_ND = $(K_MAUDE) c.k -nd -u -language C
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
-DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k
-ALL_K_FILES = $(COMMON_C_FILES) $(DYNAMIC_C_FILES) maudeLib/TCPSupport.maude
+DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k dynamic-c-ltl.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude kcompile_* \
-c-compiled.maude.tmp.bak c-compiled-nd.maude.bak static-c.k.bak \
+c-compiled.maude.tmp.bak c-compiled.maude.0 c-compiled.maude.1 c-compiled-nd.maude.bak static-c.k.bak \
 duplicateLabels.txt
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
@@ -67,13 +66,17 @@ endif
 # this is used to start all of the common files
 common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf
 
-c-compiled.maude.tmp: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 	@$(COMPILE_C)
-	@mv c-compiled.maude c-compiled.maude.tmp
-	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load $(K_PL_MODEL_CHECKER)"
-#@$(INSERT_LINE) 3 c-compiled.maude.tmp "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 2 c-compiled.maude.tmp "load maudeLib/TCPSupport"
+	@mv c-compiled.maude c-compiled.maude.0
+
+c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude $(K_PL_MODEL_CHECKER).maude Makefile
+	@cp c-compiled.maude.0 c-compiled.maude.1
+#@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
+#@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
+	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/TCPSupport"
+	@cp c-compiled.maude.1 c-compiled.maude.tmp
 	@echo "Done".
 
 c-compiled.maude: c-compiled.maude.tmp

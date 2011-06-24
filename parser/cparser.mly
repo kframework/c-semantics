@@ -1393,7 +1393,7 @@ ltl_expression3:
 
 ltl_expression_last:
 |	LPAREN ltl_expression RPAREN {$2}
-|	ATOM LPAREN expression RPAREN	{ $3 }
+|	ATOM LPAREN expression RPAREN	{ LTL_ATOM (fst $3), snd $3 }
 ;
 
 /* (* We want to allow certain strange things that occur in pragmas, so we 

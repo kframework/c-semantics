@@ -50,6 +50,7 @@ load dynamic-c-standard-lib
 load dynamic-c-typing
 load dynamic-c-memory
 load dynamic-c-declarations
+load dynamic-c-ltl
 
 // this must be below the others
 load dynamic-c-errors
@@ -67,6 +68,7 @@ kmod DYNAMIC-C-SEMANTICS is
 	including DYNAMIC-C-STATEMENTS 
 	including DYNAMIC-C-CONVERSIONS 
 	including DYNAMIC-C-STANDARD-LIBRARY
+	including DYNAMIC-C-LTL
 	
 /*@ \source{C99 5.1.2.2.1:2}
 If they are declared, the parameters to the main function shall obey the following constraints:

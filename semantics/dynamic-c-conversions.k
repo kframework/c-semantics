@@ -285,6 +285,9 @@ endkm
 kmod DYNAMIC-SEMANTICS-CAST is 
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
+	// op qualify : K -> K
+	// rule qualify(T:Type, K:K) => qualifiedType(T:Type, K:K) [structural]
+	
 	//- switch assumes casts can happen anywhere
 	rule 
 		cast(void, ?) => skipval

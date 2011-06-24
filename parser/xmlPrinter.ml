@@ -484,6 +484,7 @@ and printExpression exp =
 	| EXPR_PATTERN s -> wrap ((printRawString s) :: []) "ExpressionPattern"
 	| LTL_ALWAYS e -> wrap ((printLTLExpression e) :: []) "LTL-Always"
 	| LTL_NOT e -> wrap ((printLTLExpression e) :: []) "LTL-Not"
+	| LTL_ATOM e -> wrap ((printLTLExpression e) :: []) "LTL-Atom"
 	| LTL_AND (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-And"
 and getUnaryOperator op =
 	let name = (

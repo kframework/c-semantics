@@ -1,0 +1,14 @@
+mod MODEL-CHECK-BUILTIN-MODULE is
+	including PL-MODEL-CHECKER .
+	
+	op 'LTL-And :  -> KProperLabel [ metadata "arity 2" ] . 
+	op 'LTL-Or :  -> KProperLabel [ metadata "arity 2" ]. 
+	
+	op state : Bag -> Model-Checker-State .
+	
+	op k2model : K -> Formula .
+	
+	eq k2model('LTL-And(A:K,, B:K)) = k2model(A:K) /\ k2model(B:K) .
+	eq k2model('LTL-Or(A:K,, B:K)) = k2model(A:K) \/ k2model(B:K) .
+
+endm

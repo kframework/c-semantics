@@ -9,7 +9,7 @@ use File::Basename;
 sub linker {
 	my @files = (@_);
 	my @operators;
-	my @formulae;
+	my $formulae;
 	my @programNames;
 	my @programs;
 	my $retval = "";
@@ -23,12 +23,14 @@ sub linker {
 		while (my $line = <$newFile>){
 			# print $line;
 			chomp($line);
-			if ($line =~ m/^eq Trans(.*?)=/) { # if we have an equation, we're done with operators
+			if ($line =~ m/^eq Trans(.*?)=/) {
 				push(@programNames, "Trans$1");
 				push(@programs, $line);
 			}
-			if ($line =~ m/^eq ltls =(.*)/) { # if we have an equation, we're done with operators
-				push(@formulae, $1);
+			# print "$line\n";
+			if ($line =~ m/^eq 'LTLAnnotation(\([^=]*\)) = (.*)\.$/) {
+				print "$1, $2\n";
+				$formulae .= "eq 'LTLAnnotation$1 = $2 .\n";
 			}
 		}
 	}
@@ -40,11 +42,12 @@ sub linker {
 	foreach my $program (@programs){
 		$retval .= "$program\n";
 	}
-	$retval .= "op 'ltls : -> KProperLabel .\n";
+	# $retval .= "op 'ltls : -> KProperLabel .\n";
 	$retval .= "op 'formulae : -> KProperLabel .\n";
-	$retval .= "eq 'ltls(.List{K}) = 'formulae(";
-	$retval .= printNested(@formulae);
-	$retval .= ") .\n";
+	# $retval .= "eq 'ltls(.List{K}) = 'formulae(";
+	# $retval .= printNested(@formulae);
+	# $retval .= ") .\n";
+	$retval .= $formulae;
 
 	$retval .= "op 'linked-program : -> KProperLabel .\n";
 	$retval .= "eq 'linked-program(.List{K}) = ";

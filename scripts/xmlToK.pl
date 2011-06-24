@@ -15,7 +15,7 @@ binmode STDIN, ":utf8";
 use constant KLIST_IDENTITY => ".List{K}";
 use constant KLIST_SEPARATOR => ",, ";
 
-my $ltl = KLIST_IDENTITY;
+my $ltl = "";
 
 # might want to return, say, "'$name"
 sub nameToLabel {
@@ -136,9 +136,10 @@ print "---kccMarker\n";
 print "eq TranslationUnitName(\"$filename\")(.List`{K`}) = ";
 print xmlToK($root);
 print " .\n";
-if ($ltl ne KLIST_IDENTITY) {
-	print "op ltls : -> List{K} .\n";
-	print "eq ltls = $ltl .\n";
+if ($ltl ne "") {
+	# print "op ltls : -> List{K} .\n";
+	# print "eq ltls = $ltl .\n";
+	print $ltl;
 }
 
 #print "endm\n";
@@ -196,7 +197,10 @@ sub elementToK {
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
-		$ltl .= "'LTLAnnotation" . paren(KLIST_SEPARATOR . $kterm);
+		#$ltl .= KLIST_SEPARATOR . " 'LTLAnnotation$kterm";
+		$ltl .= "eq 'LTLAnnotation($klist[0]) = ";
+		shift (@klist);
+		$ltl .= paren(join(KLIST_SEPARATOR, @klist)) . " .\n";
 		return "(.).K";
 	}
 	

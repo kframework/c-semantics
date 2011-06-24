@@ -294,6 +294,7 @@ and expression =
   
   | LTL_TRUE
   | LTL_FALSE
+  | LTL_ATOM of expression
   | LTL_NOT of expression
   | LTL_AND of expression * expression
   | LTL_OR of expression * expression
