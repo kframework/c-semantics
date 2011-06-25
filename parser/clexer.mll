@@ -568,6 +568,7 @@ rule initial =
                                              MSASM (msasm lexbuf, currentLoc ()) 
                                           else (ASM (currentLoc ())) }
 |		"__ltl"			{LTL}
+|		"__ltl_builtin"			{LTL_BUILTIN_TOK}
 |		"__atom"			{ATOM}
 (* If we see __pragma we eat it and the matching parentheses as well *)
 |               "__pragma"              { matchingParsOpen := 0;

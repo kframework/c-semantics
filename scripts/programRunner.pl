@@ -131,7 +131,9 @@ for my $arg ($thisFile, @ARGV) {
 my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), \"\Q$stdin\E\")";
 my $evalLine = "erew in C-program-linked : $startTerm .\n";
 my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
-my $modelLine = "red modelCheck(state($startTerm), 'LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K})) ) .";
+my $modelLine = "red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .";
+#my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .";
+# $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) .\n";
 
 if (defined($ENV{'PROFILE'})) {
 	print $fileRunner "set profile on .\n";
@@ -149,6 +151,8 @@ if (defined($ENV{'DEBUGON'})) {
 if (defined($ENV{'SEARCH'})) {
 	print $fileRunner $searchLine;
 	print $fileRunner "show search graph .\n"
+} elsif (defined($ENV{'MODELCHECK'})) {
+	print $fileRunner $modelLine;
 } elsif (! defined($ENV{'LOADMAUDE'})) {
 	print $fileRunner $evalLine;
 }

@@ -71,7 +71,7 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 	@$(COMPILE_C)
 	@mv c-compiled.maude c-compiled.maude.0
 
-c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude $(K_PL_MODEL_CHECKER).maude Makefile
+c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"

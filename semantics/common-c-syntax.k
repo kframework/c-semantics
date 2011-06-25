@@ -348,6 +348,8 @@ and enum_item = string * expression * cabsloc
 	// new
 
 	op LTL-Atom : K -> Expression 
+	op LTL-Builtin : K -> Expression
+	
 	op LTL-True : -> Expression
 	op LTL-False : -> Expression
 	op LTL-And : K K -> Expression

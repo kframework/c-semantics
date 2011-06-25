@@ -311,7 +311,7 @@ let transformOffsetOf (speclist, dtype) member =
 %token<Cabs.cabsloc> OFFSETOF
 %token<Cabs.cabsloc> BEGINANNOTATION ENDANNOTATION
 %token<Cabs.cabsloc> PROPERTY
-%token LTL ATOM
+%token LTL ATOM LTL_BUILTIN_TOK
 %token BACKTICK BACKSLASH
 
 /* sm: cabs tree transformation specification keywords */
@@ -1382,6 +1382,7 @@ ltl_pragma:
 ltl_expression:
 |	TILDE ltl_expression { LTL_NOT (fst $2), snd $2 }
 |	LBRACKET RBRACKET ltl_expression { LTL_ALWAYS (fst $3), snd $3 }
+|	INF SUP ltl_expression { LTL_EVENTUALLY (fst $3), snd $3 }
 |	ltl_expression2 { $1 }
 
 ltl_expression2:
@@ -1394,6 +1395,7 @@ ltl_expression3:
 ltl_expression_last:
 |	LPAREN ltl_expression RPAREN {$2}
 |	ATOM LPAREN expression RPAREN	{ LTL_ATOM (fst $3), snd $3 }
+|	LTL_BUILTIN_TOK LPAREN IDENT RPAREN	{ LTL_BUILTIN (fst $3), snd $3 }
 ;
 
 /* (* We want to allow certain strange things that occur in pragmas, so we 

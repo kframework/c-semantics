@@ -1,14 +1,21 @@
 mod MODEL-CHECK-BUILTIN-MODULE is
-	including PL-MODEL-CHECKER .
+	including PL-MODEL-CHECKER-BUILTIN-MODULE .
 	
-	op 'LTL-And :  -> KProperLabel [ metadata "arity 2" ] . 
-	op 'LTL-Or :  -> KProperLabel [ metadata "arity 2" ]. 
-	
-	op state : Bag -> Model-Checker-State .
-	
-	op k2model : K -> Formula .
-	
-	eq k2model('LTL-And(A:K,, B:K)) = k2model(A:K) /\ k2model(B:K) .
-	eq k2model('LTL-Or(A:K,, B:K)) = k2model(A:K) \/ k2model(B:K) .
+	--- op state : Bag -> Model-Checker-State .
+	--- op k2model : K -> LTLFormula .
+		
+	--- k2model(LTL-True) = LTLTrue
+	--- k2model(LTL-False) = LTLFalse
+	--- k2model(LTL-And(A:K, B:K)) = k2model(A:K) LTL/\ k2model(B:K)
+	--- k2model(LTL-Or(A:K, B:K)) = k2model(A:K) LTL\/ k2model(B:K)
+	--- k2model(LTL-Not(A:K)) = LTL~ k2model(A:K)
+	--- k2model(LTL-Next(A:K)) = LTLO k2model(A:K)
+	--- k2model(LTL-Always(A:K)) = LTL[] k2model(A:K)
+	--- k2model(LTL-Eventually(A:K)) = LTL<> k2model(A:K)
+	--- k2model(LTL-Until(A:K, B:K)) = k2model(A:K) LTLU k2model(B:K)
+	--- k2model(LTL-Release(A:K, B:K)) = k2model(A:K) LTLR k2model(B:K)
+	--- //rule k2model(LTL-Implies(A:K, B:K)) = k2model(A:K) LTL k2model(B:K)
+	--- // rule k2model(LTL-Equiv(A:K, B:K)) = k2model(A:K) LTL k2model(B:K)
+	--- k2model(LTL-WeakUntil(A:K, B:K)) = k2model(A:K) LTLW k2model(B:K)
 
 endm
