@@ -7,7 +7,6 @@ kmod COMMON-C-SYNTAX is
 	including PL-FLOAT
 	including PL-STRING
 	including PL-CONVERSION
-	including PL-QID
 	including PL-RANDOM
 	including PL-ID
 	including K

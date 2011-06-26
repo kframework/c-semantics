@@ -20,6 +20,7 @@ kmod COMMON-C-CONFIGURATION is
 	
 	configuration 
 		<T> 
+			<modelChecking multiplicity="?"> .K </modelChecking>
 			// <busy> .Bag </busy>
 			<gotoMap color="lightgray"> .Map </gotoMap>
 			<genv color="lightgray"> .Map </genv>

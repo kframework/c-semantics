@@ -14,20 +14,23 @@ kmod DYNAMIC-LTL-BASIC-PREDICATES is
 	
 	macro k2model(LTL-Builtin(Identifier("executing"))) = executing
 	
-	macro state(
+	ceq state(
 		B0:Bag
 		< T > B1:Bag
 			< threads > B2:Bag
 				< thread > B3:Bag
-					< control > B4:Bag
-						< currentFunction >
-							File-Scope
-						</ currentFunction >
-					</ control >
+					< threadLocal > B4:Bag
+						< control > B5:Bag
+							< currentFunction >
+								Fun:K
+							</ currentFunction >
+						</ control >
+					</ threadLocal > 
 				</ thread >
 			</ threads >
 		</ T >
-	) LTL|= executing = false
+	) LTL|= executing = true
+	if Fun:K =/=Bool File-Scope
 endkm
 
 kmod DYNAMIC-C-LTL is
@@ -51,19 +54,40 @@ kmod DYNAMIC-C-LTL is
 	
 	macro k2model(LTL-Atom(A:K)) = expAtom(k2model(A:K))
 	
-	// eq state(
-		// B0:Bag
-		// < T > 
-			// B1:Bag
-			// < threads >
-				// B2:Bag
-				// < thread >
-					// B3:Bag
-					// < k > 'Apply('Closure(Id X:Id(.List{K}),, K0:K,, K1:K),, K3:K) ~> K:K </ k >
-				// </ thread >
-			// </ threads >
-		// </ T >
-	// ) |= expAtom(k2model(A:K)) = true .
+	op checkTruth : Bag -> Bool
 	
+	eq state(
+		B0:Bag
+		< T > B1:Bag
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > ?:K </ k > 
+				</ thread >
+			</ threads >
+		</ T >
+	) LTL|= expAtom(k2model(A:K))
+	=
+	checkTruth(
+		B0:Bag
+		< T > B1:Bag
+			< modelChecking > .K </ modelChecking > // so equations match
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > A:K != tv(0, int) </ k > 
+				</ thread >
+			</ threads >
+		</ T >
+	)
+	
+	macro checkTruth(
+		B0:Bag
+		< T > B1:Bag
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > tv(1, int) </ k > 
+				</ thread >
+			</ threads >
+		</ T >
+	) = true
 	
 endkm

@@ -9,6 +9,9 @@ state lights[2] = {green, red};
 // #pragma __ltl property(safe) = [] ~(lights[0] == red /\ lights[1] == red)
 #pragma __ltl safety: [] ~(__atom(lights[0] == red) /\ __atom(lights[1] == red))
 #pragma __ltl executing: <> __ltl_builtin(executing)
+#pragma __ltl simple: __atom(5)
+#pragma __ltl simple2: __atom(4 + 5 == 9)
+#pragma __ltl var: <> __atom(ticks)
 
 int nextState(int light){
 	state other = lights[(light+1)%2];
