@@ -626,12 +626,14 @@ and unary_operator =
 
 	op Call : K List{C} -> Expression
 	context Call(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "nd=(true)"]
+	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "nd=(true)"]
+	context 'Call(_,, '_::_(?,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, ?)) [metadata "nd=(true)"]
 /*
 	| COMMA of expression list
 */
 	op Comma : List{C} -> Expression
-	context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "nd=(true)"]
+	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "nd=(true)"]
+	context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "nd=(true)"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
