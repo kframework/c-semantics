@@ -32,7 +32,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		[structural]
 	
 	op prepareBuiltin : Id List{C} -> K
-	context prepareBuiltin(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _))
+	context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
 	
 	op idsFromDeclList : List{C} -> List{C} 
 	
