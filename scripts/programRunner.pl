@@ -84,7 +84,7 @@ my $IO_SERVER="EXTERN_IO_SERVER";
 my $IOFLAG="EXTERN_COMPILED_WITH_IO";
 my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME="EXTERN_IDENTIFIER";
-my $ND_FLAG=EXTERN_ND_FLAG;
+# my $ND_FLAG=EXTERN_ND_FLAG;
 
 my $wrapperScript = catfile($SCRIPTS_DIR, 'wrapper.pl');
 require $wrapperScript;
@@ -178,9 +178,9 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 } elsif (defined($ENV{'SEARCH'})) {
 	my $intermediateOutputFile = "tmpSearchResults.txt";
 	my $graphOutputFile = "tmpSearchResults.dot";
-	if (! $ND_FLAG) {
-		print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
-	}
+	# if (! $ND_FLAG) {
+		# print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
+	# }
 	print "Performing the search...\n";
 	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
 	open(my $fh, ">$intermediateOutputFile");

@@ -62,7 +62,7 @@ my $spec = q(#
   -i		Include support for runtime file io
 #-I <dir>	Look for headers in <dir>
   -lm		Ignored
-  -n		Allows exploring nondetermism
+#-n		Allows exploring nondetermism
   -s		Do not link against the standard library
   -o <file>	Place the output into <file>
 #-verbose	Do not delete intermediate files
@@ -108,13 +108,13 @@ $linkTemp .= "endm\n";
 #my $baseMaterial = File::Temp->new( TEMPLATE => 'tmp-kcc-base-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK=>0 );
 #push(@temporaryFiles, $baseMaterial);
 
-my $semanticsFile;
-if ($args->{'-n'}) {
-	$semanticsFile = catfile($myDirectory, 'c-total-nd');
-} else {
-	$semanticsFile = catfile($myDirectory, 'c-total');
-}
-my @baseMaterialFiles = ($semanticsFile);
+# my $semanticsFile;
+# if ($args->{'-n'}) {
+	# $semanticsFile = catfile($myDirectory, 'c-total-nd');
+# } else {
+	# $semanticsFile = catfile($myDirectory, 'c-total');
+# }
+# my @baseMaterialFiles = ($semanticsFile);
 
 open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
 my $programRunner = join("", <FILE>);
