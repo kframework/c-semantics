@@ -6,8 +6,10 @@ K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
 K_SOCKETS = $(K_BASE)/core/maude/lib/socket
 K-PL-BUILTINS = $(K_BASE)/core/maude/lib/pl-builtins
 K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
+K_PL_META_LEVEL = $(K_BASE)/core/maude/lib/pl-meta-level
 
-K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude
+
+K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
@@ -20,9 +22,9 @@ common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressio
 DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k dynamic-c-ltl.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude kcompile_* \
+K_CLEAN_FILES = *.maude .k kcompile_* \
 c-compiled.maude.tmp.bak c-compiled.maude.0 c-compiled.maude.1 c-compiled-nd.maude.bak static-c.k.bak \
-duplicateLabels.txt
+duplicateLabels.txt 
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -73,8 +75,9 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 
 c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
-#@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
+#@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/TCPSupport"
 	@cp c-compiled.maude.1 c-compiled.maude.tmp
 	@echo "Done".
@@ -88,7 +91,8 @@ c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) 
 	@echo "Compiling the C definition with nondeterminism..."
 	@$(COMPILE_C_ND)
 	@mv c-compiled.maude c-compiled-nd.maude
-	@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
+	@$(INSERT_LINE) 2 c-compiled-nd.maude "load maudeLib/modelcheck"
+#@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
 	@$(INSERT_LINE) 2 c-compiled-nd.maude "load maudeLib/TCPSupport"
 	@echo "Done".
@@ -112,6 +116,6 @@ fast: c-total.maude fast-nd
 nd: c-total-nd.maude fast-normal
 
 clean:
-	rm -f $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp
+	rm -rf $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp
 
 force: ;

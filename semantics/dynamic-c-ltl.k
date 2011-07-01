@@ -56,28 +56,28 @@ kmod DYNAMIC-C-LTL is
 	
 	op checkTruth : Bag -> Bool
 	
-	eq state(
-		B0:Bag
-		< T > B1:Bag
-			< threads > B2:Bag
-				< thread > B3:Bag
-					< k > ?:K </ k > 
-				</ thread >
-			</ threads >
-		</ T >
-	) LTL|= expAtom(k2model(A:K))
-	=
-	checkTruth(
-		B0:Bag
-		< T > B1:Bag
-			< modelChecking > .K </ modelChecking > // so equations match
-			< threads > B2:Bag
-				< thread > B3:Bag
-					< k > A:K != tv(0, int) </ k > 
-				</ thread >
-			</ threads >
-		</ T >
-	)
+	// eq state(
+		// B0:Bag
+		// < T > B1:Bag
+			// < threads > B2:Bag
+				// < thread > B3:Bag
+					// < k > ?:K </ k > 
+				// </ thread >
+			// </ threads >
+		// </ T >
+	// ) LTL|= expAtom(k2model(A:K))
+	// =
+	// checkTruth(
+		// B0:Bag
+		// < T > B1:Bag
+			// < modelChecking > .K </ modelChecking > // so equations match
+			// < threads > B2:Bag
+				// < thread > B3:Bag
+					// < k > A:K != tv(0, int) </ k > 
+				// </ thread >
+			// </ threads >
+		// </ T >
+	// )
 	
 	macro checkTruth(
 		B0:Bag
