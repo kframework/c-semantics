@@ -1,6 +1,6 @@
 kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	including COMMON-INCLUDE 
-	op figureInitializer-aux : Id Type K -> K [strict(3)] // id, type, initializer
+	op figureInitializer-aux : Id Type K -> K [metadata "strict=(3)"] // id, type, initializer
 	op declarationObject : Type K K -> K // type, translation unit it was defined in, definition
 	
 	op external : -> K 
@@ -24,7 +24,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// if it is an aggregate, every member is initialized (recursively) according to these rules;
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules
 
-	op defineType : K -> K [strict] 
+	op defineType : K -> K [metadata "strict=()"] 
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
 	context Typedef(NameGroup(`[HOLE`]:K, ?)) 
 	
@@ -276,7 +276,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 		
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
-	op reseenStatic : Id Type K Nat -> K [strict(3)] 
+	op reseenStatic : Id Type K Nat -> K [metadata "strict=(3)"] 
 	rule
 		< k > declareInternalVariable(X:Id, T:Type, K:K)
 			=> reseenStatic(X:Id, unqualifyType(T:Type), figureInitializer(X:Id, unqualifyType(T:Type), K:K), Loc:Nat)
@@ -479,7 +479,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool internal)
 		[structural] 
-	op defineAndInit : Id Type K Nat -> K [strict(3)] 
+	op defineAndInit : Id Type K Nat -> K [metadata "strict=(3)"] 
 	rule
 		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
 			=> defineAndInit(X:Id, T:Type, figureInitializer(X:Id, T:Type, K:K), Loc:Nat)
@@ -496,7 +496,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< localVariables >... ListItem(X:Id) ...</ localVariables >
 		[structural] 
 		
-	op justInit : K -> K [strict(1)]
+	op justInit : K -> K [metadata "strict=(1)"]
 	
 	rule
 		< k > justInit(initializerValue(X:Id, T:Type, K:K)) => initialize(X:Id, T:Type, K:K) ...</ k >
@@ -828,7 +828,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (?:List => .) ListItem(te(K:K, T:Type)) (Remainder:ListItem => .) </ currentSubObject >
 		< currentObject > (. => ListItem(te(K:K, T:Type))) ...</ currentObject >
 		if hasAggregateType(T:Type) orBool hasUnionType(T:Type)
-		[metadata "computational"] // fixme computational to make sure all the other equations have applied first
+		[metadata "computational=()"] // fixme computational to make sure all the other equations have applied first
 	rule
 		< k > finishCompoundInit(L:List) => 
 			. 
@@ -1112,7 +1112,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		
 	op resolveInternal : Id K K -> K 
 	op resolveExternal : Id K Bag K -> K 
-	op resolveExternal-aux : Id K Bag K Nat K -> K [strict(6)] 
+	op resolveExternal-aux : Id K Bag K Nat K -> K [metadata "strict=(6)"] 
 	
 	op recordFunctionTranslationUnitInformation : K Type K K -> K // name, type, context, where defined
 	rule
@@ -1128,9 +1128,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	// fixme
 	// should be adding to env after figuring initializer
 	// should be changing env to be correct env before figuring initializer
-	op allocateWithInit : K Nat -> K [strict] 
-	op noAllocateWithInit : K Nat -> K [strict] 
-	op resolveInternal-aux : Id K K K -> K [strict(4)] 
+	op allocateWithInit : K Nat -> K [metadata "strict=()"] 
+	op noAllocateWithInit : K Nat -> K [metadata "strict=()"] 
+	op resolveInternal-aux : Id K K K -> K [metadata "strict=(4)"] 
 	rule
 		< k > resolveInternal(X:Id, Tu:K, declarationObject(T:Type, Tu:K, K:K))
 			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:Type, Tu:K, K:K), figureInitializer(X:Id, T:Type, K:K))

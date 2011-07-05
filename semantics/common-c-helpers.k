@@ -36,7 +36,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	op getIdOfName : K -> K 
 	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) => getIdOfName(K:C) [structural]
 	rule getIdOfName(InitName(K:K, ?)) => getIdOfName(K:K) [structural]
-	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K)[structural] 
+	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K) [structural] 
 	rule getIdOfName(Name(X:Id, ?)) => X:Id [structural]
 	
 	// this maintains byte order
@@ -129,7 +129,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 	// rule calculateLength(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 	
-	op extractField-pre : List{K} Type Nat K -> K [strict(4)]
+	op extractField-pre : List{K} Type Nat K -> K [metadata "strict=(4)"]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
 	
 	// fixme could speed things up by caching bitsizeoftype as well

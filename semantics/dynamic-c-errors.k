@@ -345,7 +345,7 @@ kmod DYNAMIC-C-ERRORS is
 		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
 		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
-		[metadata "computational"]
+		[metadata "computational=()"]
 		
 	rule [write-write-race]:
 		< T > 
@@ -363,7 +363,7 @@ kmod DYNAMIC-C-ERRORS is
 		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
 		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
-		[metadata "computational"]		
+		[metadata "computational=()"]		
 		
 	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
 

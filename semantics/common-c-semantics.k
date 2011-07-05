@@ -10,8 +10,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	// op AnonAggregate : -> K
 	op usualArithmeticConversion : Type Type -> K
-	op callMain-aux : K Nat Id K -> K [strict(1)] // having to put this out here so errors can see it
-	op initFunction : K K -> K [strict]
+	op callMain-aux : K Nat Id K -> K [metadata "strict=(1)"] // having to put this out here so errors can see it
+	op initFunction : K K -> K [metadata "strict=()"]
 	op populateFromGlobal : -> K 
 	
 	op checkValidLoc : K -> K
@@ -35,7 +35,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	op bitoffset : Nat -> Nat 
 	op byteoffset : Nat -> Nat 
-	op declare : K K -> K [strict(1)] 
+	op declare : K K -> K [metadata "strict=(1)"] 
 	op enumItem : Id Value -> Value 
 	op resolveReferences : -> K 
 	
@@ -45,7 +45,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op bitRange : Nat Nat Nat -> Nat // original number, from, to inclusive
 	
-	op fillToBytes : K -> K [strict] 
+	op fillToBytes : K -> K [metadata "strict=()"] 
 	
 	op floorLoc : Nat -> Nat // loc with possible bit offset returning base byte	
 	op ceilingLoc : Nat -> Nat // loc with possible bit offset returning upperbounded byte	
@@ -62,7 +62,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op AttributeValue : String List{C} -> KResult 
 	
-	op extractBitsFromList : K Nat Nat -> K [strict(1)] // data, offset, size in bits
+	op extractBitsFromList : K Nat Nat -> K [metadata "strict=(1)"] // data, offset, size in bits
 	op typedef : Id -> Id 
 	op unnamed : Nat -> Id 
 	
@@ -89,8 +89,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op giveType : Id Type -> K 
 	op addToEnv : Id Nat -> K 
 	
-	op read : K K -> K [strict(2)] // location, type
-	op write : K K -> K [strict(2)] // location, value
+	op read : K K -> K [metadata "strict=(2)"] // location, type
+	op write : K K -> K [metadata "strict=(2)"] // location, value
 	op writeByte : Nat K -> K 
 
 	op isTypeCompatible : K K -> Bool 
@@ -197,9 +197,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	subsort Value < KResult K 
 	subsort Type < KResult K
 	op K2Nat : K -> Nat
-	op sizeofType : K -> K [strict] // generates a tv(size, cfg:sizeut)
-	op bitSizeofType : K -> K [strict] // needs to be heated to top of K for struct and union types
-	op byteSizeofType : K -> K [strict] 
+	op sizeofType : K -> K [metadata "strict=()"] // generates a tv(size, cfg:sizeut)
+	op bitSizeofType : K -> K [metadata "strict=()"] // needs to be heated to top of K for struct and union types
+	op byteSizeofType : K -> K [metadata "strict=()"] 
 	op bitsToBytes : Nat -> Nat 
 	op HOLE : -> Expression 
 	op l : KLabel -> K [metadata "builtin wrapper"] 
@@ -218,7 +218,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op _::_ : List{Type} List{Type} -> List{Type} [ditto metadata "ditto"] 
 	op Nil : -> List{Type} [ditto] 
 		
-	op DeclType : K K -> K [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	op isAType_ : K -> Bool 
 	op setOfTypes : -> Set [memo] 
 	rule setOfTypes => Set(
@@ -232,7 +232,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value 
 	// op lv : List{K} Type -> Value
-	op concretize : Type K -> K [strict(2)] 
+	op concretize : Type K -> K [metadata "strict=(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
 	
@@ -244,7 +244,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op asciiCharString : String -> Nat 
 	
 	op _to_ : Nat Nat -> List{K} 
-	op cast : K K -> K [strict(1)] // as described in 6.3 // totype, fromvalue
+	op cast : K K -> K [metadata "strict=(1)"] // as described in 6.3 // totype, fromvalue
 	context cast(_, ([HOLE] => reval([HOLE])))
 	op arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
 	op interpret : Type K -> K // interpret the values of reading from mem
@@ -309,7 +309,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	// these are also used by compound literals
 	op initializerValue : Id Type K -> KResult 
-	op figureInitializer : Id K K -> K [strict(2)] // id, type, initializer
+	op figureInitializer : Id K K -> K [metadata "strict=(2)"] // id, type, initializer
 	
 		
 	op append : Nat Nat Value -> K // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions

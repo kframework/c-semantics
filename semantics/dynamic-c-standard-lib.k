@@ -7,7 +7,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	including SOCKET-BUILTIN-MODULE
 	including TCP-INTERFACE-BUILTIN-MODULE
 	
-	op vararg : K -> C [strict hybrid] 
+	op vararg : K -> C [metadata "hybrid=() strict=()"] 
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	
 	op nextvarg : Nat Type -> C 
@@ -19,7 +19,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	// op C : K -> C 
 	// eq C(K:K) = K:K 
 	
-	op vpair : K K -> C [hybrid strict] 
+	op vpair : K K -> C [metadata "hybrid=() strict=()"] 
 	rule [nextvarg-start]:
 		< k > nextvarg(Loc:Nat, T:Type)
 			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
@@ -67,7 +67,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// if F:Id =/=Bool Identifier("longjmp")
 		[structural] 
 
-	op offsetOf : K K -> K [strict(1)]
+	op offsetOf : K K -> K [metadata "strict=(1)"]
 	rule
 		< k > OffsetOf(T:Type, K:K, F:Id) => offsetOf(DeclType(T:Type, K:K), F:Id) ...</ k >
 		[structural]
@@ -86,7 +86,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 
 	rule [debug]:
 		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
-		[metadata "computational"]
+		[metadata "computational=()"]
 	////////////////////////////--
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
@@ -117,7 +117,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		</ threadLocal >
 		[structural] 
 	////////////////////////////--
-	op longjmp-aux : K K -> K [strict]
+	op longjmp-aux : K K -> K [metadata "strict=()"]
 	rule [longjmp-prepare]:
 		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
 			=> longjmp-aux(reval(*(V:Value)), V':Value)
@@ -137,7 +137,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		[structural] 
 	////////////////////////////--
 	
-	// op spawn-aux : Value Nat List{C} List{C} -> K [strict(3)]
+	// op spawn-aux : Value Nat List{C} List{C} -> K [metadata "strict=(3)"]
 	
 	// rule [spawn-begin]:
 		// < k > prepareBuiltin((Identifier("spawn")), (Fun:Value :: tv(Len:Nat, ?) :: L:List{C})) => spawn-aux(Fun:Value, Len:Nat, L:List{C}, Nil) ...</ k >
@@ -180,11 +180,11 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// < busy > Busy:Bag (.Bag => BagItem(Loc:Nat)) </ busy >
 		// < holds >... .Map => Loc:Nat |-> 0 ...</ holds >
 		// if notBool Loc:Nat in Busy:Bag
-		// [metadata "computational"]
+		// [metadata "computational=()"]
 	// rule [lock]:
 		// < k > prepareBuiltin(Identifier("lock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
 		// < holds >... Loc:Nat |-> (N:Nat => sNat(N:Nat)) ...</ holds >
-		// [metadata "computational"]
+		// [metadata "computational=()"]
 	// ////////////////////////////--
 	// rule [unlock]:
 		// < k > prepareBuiltin(Identifier("unlock"), tv(Loc:Nat, pointerType(?))) => skipval ...</ k >
@@ -428,9 +428,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		if lengthString(Data:String) >=Nat 0 // if it's a real string
 		[structural]
 
-	op fsl-open-file : K Nat -> K [strict(1)]
+	op fsl-open-file : K Nat -> K [metadata "strict=(1)"]
 	op getString : K -> K
-	op getString-aux : K String -> K [strict(1)]
+	op getString-aux : K String -> K [metadata "strict=(1)"]
 	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
 	op str : String -> Value
 	
@@ -455,21 +455,21 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	
 	op printf-aux : Nat Nat List{C} -> K 
 	op printf-string : Nat Nat -> K 
-	op printf-% : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%l : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%ll : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%llu : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%lld : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%llx : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%llX : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%x : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%X : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%d : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%f : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%u : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%s : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%c : K K List{C} -> K [strict(3)] // K not nat, for context bug
-	op printf-%p : K K List{C} -> K [strict(3)] // K not nat, for context bug
+	op printf-% : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%l : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%ll : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%llu : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%lld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%llx : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%llX : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%x : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%X : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%d : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%f : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%u : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%s : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%c : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%p : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	
 	
 	//C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
@@ -843,7 +843,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			</ threadLocal >
 		</ thread >)
 		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:Nat] </ threadStatus >
-		[metadata "computational"] 
+		[metadata "computational=()"] 
 		
 	rule [thrd_current]:
 		< k > prepareBuiltin((Identifier("thrd_current")), Nil) 
@@ -873,7 +873,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		< detachingMap > Detaching:Map </ detachingMap >
 		if $hasMapping(Joining:Map, ThreadId:Nat)
 		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
-		[metadata "computational"] 
+		[metadata "computational=()"] 
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd_join]:
@@ -887,9 +887,9 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< k > V:Value </ k >
 			< threadId > ThreadId:Nat </ threadId >
 		...</ thread >
-		[metadata "computational"]
+		[metadata "computational=()"]
 
-	op testAndSet : K K K -> K [strict(1)]
+	op testAndSet : K K K -> K [metadata "strict=(1)"]
 	rule [test-and-set-start]:
 		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:Value :: V:Value)) 
 			=> testAndSet(*(Loc:Value), Loc:Value, V:Value)
@@ -921,7 +921,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		[structural]
 	
-	op va-inc-aux : K K K -> K // [strict(3)]
+	op va-inc-aux : K K K -> K // [metadata "strict=(3)"]
 	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
 	// fixme can do lots of checks here too
 	

@@ -47,7 +47,7 @@ endkm
 kmod DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	op handleCompoundLiteral : K -> K [strict]
+	op handleCompoundLiteral : K -> K [metadata "strict=()"]
 	
 	/*@ \source[n1570]{\para{6.5.2.5}{3}}
 	A postfix expression that consists of a parenthesized type name followed by a brace-enclosed list of initializers is a compound literal. It provides an unnamed object whose value is given by the initializer list.
@@ -149,7 +149,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	op getTypes : List{K} -> K
 	op types : List{K} -> K
 	context types((?,, `[HOLE`]:K,, ?))
-	op convertedType : K -> K [strict]
+	op convertedType : K -> K [metadata "strict=()"]
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
 	
@@ -157,7 +157,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	rule wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K})) [structural]
 	rule wrapWithTypeOf(.List{K}) => .List{K} [structural]
 	
-	op retype : K -> K [strict]
+	op retype : K -> K [metadata "strict=()"]
 	
 	// fixme, not handling qualifiers correctly
 	rule
@@ -244,7 +244,7 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	*/
 	
 	rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
-	op byteSizeofType-aux : K -> K [strict]
+	op byteSizeofType-aux : K -> K [metadata "strict=()"]
 	rule byteSizeofType(T:Type) => byteSizeofType-aux(bitSizeofType(T:Type)) [structural]
 	rule byteSizeofType-aux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
 		if T:Type ==Bool cfg:largestUnsigned
@@ -297,7 +297,7 @@ endkm
 kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	op application : K List{C} -> K [strict(1)]
+	op application : K List{C} -> K [metadata "strict=(1)"]
 	/*@ \source[n1570]{\para{6.5.2.2}{3}}
 	A postfix expression followed by parentheses \cinline{()} containing a possibly empty, comma-separated list of expressions is a function call. The postfix expression denotes the called function. The list of expressions specifies the arguments to the function.
 	*/
@@ -969,7 +969,7 @@ second operand from the first.
 	When an expression that has integer type is added to or subtracted from a pointer, the result has the type of the pointer operand. If the pointer operand points to an element of an array object, and the array is large enough, the result points to an element offset from the original element such that the difference of the subscripts of the resulting and original array elements equals the integer expression. In other words, if the expression \cinline{P} points to the $i$-th element of an array object, the expressions \cinline{(P)+N} (equivalently, \cinline{N+(P)}) and \cinline{(P)-N} (where \cinline{N} has the value $n$) point to, respectively, the $i+n$-th and $i-n$-th elements of the array object, provided they exist. Moreover, if the expression \cinline{P} points to the last element of an array object, the expression \cinline{(P)+1} points one past the last element of the array object, and if the expression \cinline{Q} points one past the last element of an array object, the expression \cinline{(Q)-1} points to the last element of the array object. If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined. If the result points one past the last element of the array object, it shall not be used as the operand of a unary \cinline{*} operator that is evaluated.
 	*/	
 	
-	op addToPointer : K Type K K -> K [strict(4)]
+	op addToPointer : K Type K K -> K [metadata "strict=(4)"]
 	rule < k > tv(Loc:Nat, pointerType(T':Type)) + tv(I:Int, T:Type)
 			=> addToPointer(Loc:Nat, pointerType(T':Type), I:Int, sizeofType(T':Type))
 		...</ k >
@@ -998,7 +998,7 @@ second operand from the first.
 	When two pointers are subtracted, both shall point to elements of the same array object, or one past the last element of the array object; the result is the difference of the subscripts of the two array elements. The size of the result is implementation-defined, and its type (a signed integer type) is \cinline{ptrdiff_t} defined in the \cinline{<stddef.h>} header. If the result is not representable in an object of that type, the behavior is undefined. In other words, if the expressions \cinline{P} and \cinline{Q} point to, respectively, the $i$-th and $j$-th elements of an array object, the expression \cinline{(P)-(Q)} has the value $i-j$ provided the value fits in an object of type \cinline{ptrdiff_t}. Moreover, if the expression P points either to an element of an array object or one past the last element of an array object, and the expression \cinline{Q} points to the last element of the same array object, the expression \cinline{((Q)+1)-(P)} has the same value as \cinline{((Q)-(P))+1} and as \cinline{-((P)-((Q)+1))}, and has the value zero if the expression \cinline{P} points one past the last element of the array object, even though the expression \cinline{(Q)+1} does not point to an element of the array object.
 	*/
 
-	op computePointerDifference : Int Int K -> K [strict(3)] // ptr1, ptr2, size of ptr type
+	op computePointerDifference : Int Int K -> K [metadata "strict=(3)"] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: 
 		tv(I1:Int, pointerType(T:Type)) - tv(I2:Int, pointerType(T:Type))
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:Type))
@@ -1157,8 +1157,8 @@ kmod DYNAMIC-SEMANTICS-INCREMENT-AND-DECREMENT is
 	rule -- E:K => E:K -= tv(1, int) [structural]
 
 	op postOpRef : K KLabel -> K
-	op postInc : K K Type -> K [strict(2)]
-	op postDec : K K Type -> K [strict(2)]
+	op postInc : K K Type -> K [metadata "strict=(2)"]
+	op postDec : K K Type -> K [metadata "strict=(2)"]
 	
 	/*@ \source[n1570]{\para{6.5.2.4}{2}}
 	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.

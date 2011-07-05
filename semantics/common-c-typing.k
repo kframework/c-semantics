@@ -176,7 +176,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op canonicalizeType : Bag K Bag Bag Bag -> K [strict(2)] 
+	op canonicalizeType : Bag K Bag Bag Bag -> K [metadata "strict=(2)"] 
 		
 	rule
 		< k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
@@ -370,7 +370,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 
 	op structDefType : Id List{Type} -> Type 
 	
-	op BitFieldType : K K -> K [seqstrict] 
+	op BitFieldType : K K -> K [metadata "strict=()"] 
 	
 	rule
 		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
@@ -534,7 +534,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	// rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
 	rule [extract-typedef]: extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
 		
-	op NameAndType : K K -> K [strict(2)] 
+	op NameAndType : K K -> K [metadata "strict=(2)"] 
 	
 	// rule FieldGroup(T:Type, L:List{C}) => fieldGroup-aux(T:Type, L:List{C}, Nil) [structural]
 	// rule fieldGroup-aux(T:Type, (C:C :: C':C :: L:List{C}), L':List{C})
@@ -561,8 +561,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	// rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
 	// fixme WHY CAN'T I WRITE THIS???
 	
-	// op flattenList : List{C} -> List{C} [strict]
-	// op flattenListAux : List{C} -> List{C} [strict]
+	// op flattenList : List{C} -> List{C} [metadata "strict=()"]
+	// op flattenListAux : List{C} -> List{C} [metadata "strict=()"]
 	// rule ('flattenList => 'flattenListAux)(?:List{Type}) [structural]
 	// rule 'flattenListAux(('_::_(Lab:KLabel(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
 		// => 'flattenListAux('_::_(Rem:List{Type}),, (Other:List{Type},, Lab:KLabel(L:List{K}))) 
@@ -879,7 +879,7 @@ kmod COMMON-C-TYPING is
 	op addGlobalAggregate : Id K -> K 
 	op addLocalAggregate : Id K -> K 
 	
-	op addStruct-aux : Id List{Type} K Map Map List{Type} -> K [strict(3)]
+	op addStruct-aux : Id List{Type} K Map Map List{Type} -> K [metadata "strict=(3)"]
 	op addUnion-aux : Id List{Type} Map Map List{Type} -> K
 	rule
 		< k > addStruct(S:Id, L:List{Type}) 

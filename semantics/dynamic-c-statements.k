@@ -47,7 +47,8 @@ kmod DYNAMIC-SEMANTICS-WHILE is
 		< k > loopMarked ~> While(B:Expression, S:Statement)
 			=> IfThenElse(B:Expression, (S:Statement ~> loopMarked ~> While(B:Expression, S:Statement)), Nop)
 		...</ k >
-		[structural] 
+		[metadata "computational=()"]
+		// [structural]  // rule so that looping programs see repetition
 endkm
 
 kmod DYNAMIC-SEMANTICS-DO-WHILE is
@@ -68,7 +69,8 @@ kmod DYNAMIC-SEMANTICS-DO-WHILE is
 		< k > loopMarked ~> DoWhile(B:K, S:K)
 			=> S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
 		...</ k >
-		[structural] 
+		[metadata "computational=()"]
+		// [structural]  // rule so that looping programs see repetition
 endkm
 
 kmod DYNAMIC-SEMANTICS-FOR is
@@ -104,7 +106,8 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 			=> IfThenElse(Control:K, (S:Statement ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement)), Nop)
 		...</ k >
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
-		[structural] 
+		[metadata "computational=()"]
+		// [structural] // rule so that looping programs see repetition 
 endkm
 
 kmod DYNAMIC-SEMANTICS-SWITCH is
@@ -113,7 +116,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
-	op handleSwitch : Nat K -> K [strict(2)] //  switch num, promoted value of controlling exp, int value of exp
+	op handleSwitch : Nat K -> K [metadata "strict=(2)"] //  switch num, promoted value of controlling exp, int value of exp
 	op handleSwitch-aux : K Value K -> K 
 	
 	/*@ \source[n1570]{\para{6.8.5.2}{4}}
@@ -249,7 +252,8 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< currentFunction > F:Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map((? (Label:K |-> GotoInfo:K))) ...</ gotoMap >
-		[structural] 
+		[metadata "computational=()"]
+		// [structural]  // rule so that looping programs see repetition
 		
 	// - first case, when we're in the same block
 	rule

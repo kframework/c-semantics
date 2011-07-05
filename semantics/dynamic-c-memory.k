@@ -65,13 +65,13 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural metadata "nd=(true)"]
 	rule [read-shared]: // read global or shared data
 		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational nd=(true)"] 
+		[metadata "computational=() nd=(true)"] 
 	rule [read-allocated]: // read data of "allocated" duration
 		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational nd=(true)"]
+		[metadata "computationalv nd=(true)"]
 	// rule [read-readonly]: // read data that is readonly (e.g., string literals)
 		// < k > ('read-aux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		// [metadata "computational nd=(true)"] 
+		// [metadata "computational=() nd=(true)"] 
 	
 	rule [read]:
 		< k > readActual(Loc:Nat, T:Type, bitSize:Nat)
@@ -231,7 +231,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:Nat in Locs:Bag
 		andBool notBool Loc:Nat in locations(Mem:List)
-		[metadata "computational"] // for speed in interpretation; forces local buffer to be flushed before a read
+		[metadata "computational=()"] // for speed in interpretation; forces local buffer to be flushed before a read
 
 endkm
 
@@ -256,13 +256,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
 		[structural]		
 		
-	op writeBytes : Nat K -> K [strict(2)] 
-	op writeBitfield : Nat Type K -> K [strict(3)] 
+	op writeBytes : Nat K -> K [metadata "strict=(2)"] 
+	op writeBitfield : Nat Type K -> K [metadata "strict=(3)"] 
 	op isByteLoc : Nat -> Bool 
 	op splitBytes : Value -> K 
-	op calculateNewBytes : Nat K K -> K [strict(3)] 
+	op calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
 	
-	op write-aux : K Value K -> K [strict(2)] 
+	op write-aux : K Value K -> K [metadata "strict=(2)"] 
 	rule write(K:K, tv(V:List{K}, T:Type)) 
 		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type)) 
@@ -292,13 +292,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
-		[metadata "computational nd=(true)"]
+		[metadata "computational=() nd=(true)"]
 	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
 		...</ k >
 		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
-		[metadata "computational nd=(true)"]
+		[metadata "computational=() nd=(true)"]
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
@@ -443,7 +443,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool Offset:Nat <Nat Len:Nat
 		where LOC = sym(Block:Nat) +Nat Offset:Nat
 		[structural] 
-		// [metadata "computational"]
+		// [metadata "computational=()"]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >
@@ -451,7 +451,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
 		if Offset:Nat <Nat Len:Nat
 		[structural]
-		// [metadata "computational"]
+		// [metadata "computational=()"]
 	rule
 		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
 		[structural] 

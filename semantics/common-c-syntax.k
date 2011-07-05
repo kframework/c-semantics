@@ -15,8 +15,8 @@ kmod COMMON-C-SYNTAX is
 	// these are semantic
 	// op reval : K -> K // [strict]
 	// op peval : K -> K // [strict]
-	op reval : K -> K [strict]
-	op peval : K -> K [strict]
+	op reval : K -> K [metadata "strict=()"]
+	op peval : K -> K [metadata "strict=()"]
 	
 	// the rest are syntactic
 	sort C
@@ -71,7 +71,7 @@ kmod COMMON-C-SYNTAX is
 	subsort C < List{C}
 	// fixme, can't figure out how to right this with the new contexts
 	// this is only used when doing nondeterministic stuff, so it's okay
-	op _::_ : List{C} List{C} -> List{C} [hybrid strict assoc id: Nil]
+	op _::_ : List{C} List{C} -> List{C} [metadata "hybrid=() strict=()" assoc id: Nil]
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 	
@@ -167,9 +167,9 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
 	op StructRef : Id -> TypeSpecifier [ctor] // new
-	op StructDef : Id List{C} -> TypeSpecifier [strict(2) ctor] // new
+	op StructDef : Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
 	op UnionRef : Id -> TypeSpecifier [ctor] // new
-	op UnionDef : Id List{C} -> TypeSpecifier [strict(2) ctor] // new
+	op UnionDef : Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
 	op EnumRef : Id -> TypeSpecifier [ctor] // new
 	op EnumDef : Id List{C} -> TypeSpecifier [ctor] // new
 	op TypeofExpression : K -> TypeSpecifier [ctor]
@@ -222,7 +222,7 @@ and spec_elem =
 /*
 	and specifier = spec_elem list
 */
-	op Specifier : List{C} -> Specifier [strict]
+	op Specifier : List{C} -> Specifier [metadata "strict=()"]
 	
 /*
 and decl_type =
@@ -245,11 +245,11 @@ and decl_type =
 			 * decl is never a PTR.*)
 */
 	op JustBase : -> K
-	op FunctionType : K -> DeclType [strict]
-	op ArrayType : K K -> DeclType [strict(1)]
+	op FunctionType : K -> DeclType [metadata "strict=()"]
+	op ArrayType : K K -> DeclType [metadata "strict=(1)"]
 	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	op PointerType : K -> DeclType [strict]
-	op Prototype : K List{C} Bool -> DeclType [strict(1 2)]
+	op PointerType : K -> DeclType [metadata "strict=()"]
+	op Prototype : K List{C} Bool -> DeclType [metadata "strict=(1 2)"]
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -258,13 +258,13 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K List{C} -> NameGroup [strict(1 2)]
+	op NameGroup : K List{C} -> NameGroup [metadata "strict=(1 2)"]
 	
 /*
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
 */
-	op FieldGroup : K List{C} -> FieldGroup [strict(1)]
+	op FieldGroup : K List{C} -> FieldGroup [metadata "strict=(1)"]
 	op FieldName : K -> FieldName // new
 	op BitFieldName : K K -> FieldName // new
 	
@@ -273,7 +273,7 @@ and field_group = specifier * (name * expression option) list
 	(* e.g.: int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
-	op InitNameGroup : K List{C} -> InitNameGroup [strict(1)]
+	op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
 	
 /*
 	(* The decl_type is in the order in which they are printed. Only the name of
@@ -306,7 +306,7 @@ and init_name = name * init_expression
 	 * function parameters and functions *)
 and single_name = specifier * name
 */
-	op SingleName : K K -> SingleName [strict(1)]
+	op SingleName : K K -> SingleName [metadata "strict=(1)"]
 	
 /*
 and enum_item = string * expression * cabsloc
@@ -333,7 +333,7 @@ and enum_item = string * expression * cabsloc
 	 (* expression transformer: source and destination *)
 	 | EXPRTRANSFORMER of expression * expression * cabsloc
 */
-	op FunctionDefinition : K K -> PureDefinition [strict(1)]
+	op FunctionDefinition : K K -> PureDefinition [metadata "strict=(1)"]
 	op DeclarationDefinition : K -> PureDefinition
 	op Typedef : K -> PureDefinition
 	op OnlyTypedef : K -> PureDefinition
@@ -406,7 +406,7 @@ and statement =
 	| SEQUENCE of statement * statement * cabsloc
 */
 	op Nop : -> PureStatement
-	op Computation : K -> PureStatement [strict]
+	op Computation : K -> PureStatement [metadata "strict=()"]
 	context Computation(([HOLE] => reval([HOLE]))) // not sure why i had this commented out before...
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
@@ -487,7 +487,7 @@ and binary_operator =
 and expression =
 	NOTHING
 */
-	op OffsetOf : K K K -> Expression [strict(1)]
+	op OffsetOf : K K K -> Expression [metadata "strict=(1)"]
 	op ExpressionLoc : K K -> Expression // new
 
 	op NothingExpression : -> Expression
@@ -508,7 +508,7 @@ and unary_operator =
 	context ~_(([HOLE] => reval([HOLE])))
 	op *_ : K -> Expression [prec 22]
 	context *_(([HOLE] => reval([HOLE])))
-	op &_ : K -> Expression [prec 22 strict]
+	op &_ : K -> Expression [prec 22 metadata "strict=()"]
 	op ++_ : K -> Expression [prec 22]
 	op --_ : K -> Expression [prec 22]
 	op _++ : K -> Expression
@@ -613,10 +613,10 @@ and unary_operator =
 	(* A CAST can actually be a constructor expression *)
 	| CAST of (specifier * decl_type) * init_expression
 */
-	op Cast : K K K -> Expression [strict(1)]
+	op Cast : K K K -> Expression [metadata "strict=(1)"]
 	context Cast(_, _, ([HOLE] => reval([HOLE])))
 	
-	op CompoundLiteral : K K K K -> Expression [strict(2)] // new // comp-lit id, spec, decl, init
+	op CompoundLiteral : K K K K -> Expression [metadata "strict=(2)"] // new // comp-lit id, spec, decl, init
 /*
 	(* There is a special form of CALL in which the function called is
 	   __builtin_va_arg and the second argument is sizeof(T). This 
@@ -651,7 +651,7 @@ and unary_operator =
 	| TYPE_ALIGNOF of specifier * decl_type
 */
 	op SizeofExpression : K -> Expression
-	op SizeofType : K K -> Expression [strict(1)]
+	op SizeofType : K K -> Expression [metadata "strict=(1)"]
 	op AlignofExpression : K -> Expression
 	op AlignofType : K K -> Expression
 /*
@@ -713,8 +713,8 @@ and init_expression =
   | COMPOUND_INIT of (initwhat * init_expression) list
 */
 	op NoInit : -> KResult // InitExpression
-	op SingleInit : K -> InitExpression [hybrid strict]
-	op CompoundInit : List{C} -> InitExpression [hybrid strict]
+	op SingleInit : K -> InitExpression [metadata "hybrid=() strict=()"]
+	op CompoundInit : List{C} -> InitExpression [metadata "hybrid=() strict=()"]
 	op InitFragment : K K -> InitFragment // new; (initwhat * init_expression)
 	
 /*
