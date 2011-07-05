@@ -527,7 +527,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-array]: extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
 	rule [extract-incompleteArray]: extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
 	// rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
-	rule [extract-bitfield]: extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat)[structural]
+	rule [extract-bitfield]: extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat) [structural]
 	rule [extract-function]: extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
 	rule [extract-pointer]:  extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
 	rule [extract-qualified]: extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
