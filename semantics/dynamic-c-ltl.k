@@ -52,8 +52,8 @@ kmod DYNAMIC-C-LTL is
 	macro k2model(LTL-Eventually(A:K)) = LTL<> k2model(A:K)
 	macro k2model(LTL-Until(A:K, B:K)) = k2model(A:K) LTLU k2model(B:K)
 	macro k2model(LTL-Release(A:K, B:K)) = k2model(A:K) LTLR k2model(B:K)
-	// rule k2model(LTL-Implies(A:K, B:K)) = k2model(A:K) LTL k2model(B:K)
-	// rule k2model(LTL-Equiv(A:K, B:K)) = k2model(A:K) LTL k2model(B:K)
+	macro k2model(LTL-Implies(A:K, B:K)) = k2model(A:K) LTL-> k2model(B:K)
+	macro k2model(LTL-Equiv(A:K, B:K)) = k2model(A:K) LTL<-> k2model(B:K)
 	macro k2model(LTL-WeakUntil(A:K, B:K)) = k2model(A:K) LTLW k2model(B:K)
 	
 	macro k2model(LTL-Atom(A:K)) = expAtom(k2model(A:K))

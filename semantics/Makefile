@@ -76,7 +76,8 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 
 c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
-	@$(APPEND_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
+	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/TCPSupport"
@@ -88,14 +89,19 @@ c-compiled.maude: c-compiled.maude.tmp
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 
-c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
 	@$(COMPILE_C_ND)
-	@mv c-compiled.maude c-compiled-nd.maude
-	@$(APPEND_LINE) 2 c-compiled-nd.maude "load maudeLib/modelcheck"
+	@mv c-compiled.maude c-compiled-nd.maude.0
+	
+c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
+	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) 2 c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 2 c-compiled-nd.maude "load maudeLib/TCPSupport"
+	@$(INSERT_LINE) 2 c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
+	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
 	@echo "Done".
 
 c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) Makefile

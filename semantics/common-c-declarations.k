@@ -828,7 +828,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (?:List => .) ListItem(te(K:K, T:Type)) (Remainder:ListItem => .) </ currentSubObject >
 		< currentObject > (. => ListItem(te(K:K, T:Type))) ...</ currentObject >
 		if hasAggregateType(T:Type) orBool hasUnionType(T:Type)
-		[metadata "computational=()"] // fixme computational to make sure all the other equations have applied first
+		[structural]
+		//[metadata "computational=()"] // fixme computational to make sure all the other equations have applied first
 	rule
 		< k > finishCompoundInit(L:List) => 
 			. 

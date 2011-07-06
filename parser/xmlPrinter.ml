@@ -483,6 +483,7 @@ and printExpression exp =
 	| GNU_BODY block -> wrap ((printBlock block) :: []) "GnuBody"
 	| EXPR_PATTERN s -> wrap ((printRawString s) :: []) "ExpressionPattern"
 	| LTL_ALWAYS e -> wrap ((printLTLExpression e) :: []) "LTL-Always"
+	| LTL_IMPLIES (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-Implies"
 	| LTL_EVENTUALLY e -> wrap ((printLTLExpression e) :: []) "LTL-Eventually"
 	| LTL_NOT e -> wrap ((printLTLExpression e) :: []) "LTL-Not"
 	| LTL_ATOM e -> wrap ((printLTLExpression e) :: []) "LTL-Atom"

@@ -2,4 +2,4 @@
 # inserts $2 in the last of file $1
 set -e
 sed -i.bak -e "\$a\\
-$3" $2
+$2" $1

@@ -1380,17 +1380,26 @@ ltl_pragma:
 | IDENT COLON ltl_expression	{ LTL_ANNOTATION ((fst $1), (fst $3), (snd $1)) }
 
 ltl_expression:
-|	TILDE ltl_expression { LTL_NOT (fst $2), snd $2 }
-|	LBRACKET RBRACKET ltl_expression { LTL_ALWAYS (fst $3), snd $3 }
-|	INF SUP ltl_expression { LTL_EVENTUALLY (fst $3), snd $3 }
-|	ltl_expression2 { $1 }
+|	ltl_expression65 {$1}
 
-ltl_expression2:
-|	ltl_expression2 SLASH BACKSLASH ltl_expression3 { LTL_AND (fst $1, fst $4), snd $4 }
-|	ltl_expression3 {$1}
+ltl_expression53:
+|	TILDE ltl_expression53 { LTL_NOT (fst $2), snd $2 }
+|	LBRACKET RBRACKET ltl_expression53 { LTL_ALWAYS (fst $3), snd $3 }
+|	INF SUP ltl_expression53 { LTL_EVENTUALLY (fst $3), snd $3 }
+|	ltl_expression_last { $1 }
 
-ltl_expression3:
-|	ltl_expression_last {$1}
+ltl_expression55:
+|	ltl_expression55 SLASH BACKSLASH ltl_expression53 { LTL_AND (fst $1, fst $4), snd $4 }
+|	ltl_expression53 {$1}
+
+ltl_expression59:
+|	ltl_expression59 BACKSLASH SLASH ltl_expression55 { LTL_OR (fst $1, fst $4), snd $4 }
+|	ltl_expression55 {$1}
+
+ltl_expression65:
+|	ltl_expression59 MINUS SUP ltl_expression65 { LTL_IMPLIES (fst $1, fst $4), snd $4 }
+|	ltl_expression59 {$1}
+
 
 ltl_expression_last:
 |	LPAREN ltl_expression RPAREN {$2}

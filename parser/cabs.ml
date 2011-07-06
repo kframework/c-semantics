@@ -300,6 +300,7 @@ and expression =
   | LTL_AND of expression * expression
   | LTL_OR of expression * expression
   | LTL_ALWAYS of expression
+  | LTL_IMPLIES of expression * expression
   | LTL_EVENTUALLY of expression
   | LTL_UNTIL of expression * expression
   | LTL_RELEASE of expression * expression
