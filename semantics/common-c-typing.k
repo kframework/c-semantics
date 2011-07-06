@@ -478,7 +478,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
 		=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
 		:: fillBitHoles(L:List{Type})
-		if N':Nat ==Bool 0 
+		if N':Nat ==Bool 0
+		[structural]
 	
 	rule fillBitHoles(N:Nat, Nil) => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
 		[structural]
@@ -632,7 +633,8 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
 		[structural] 
 	rule 
-		< type > arithInterpret(T:Type, ?) => T:Type ...</ type >
+		< type > arithInterpret(T:Type, ?) => T:Type ...</ type > 
+		[structural]
 	rule
 		< type > pointerType(T:Type) + T':Type => pointerType(T:Type) ...</ type >
 		if hasIntegerType(T':Type)

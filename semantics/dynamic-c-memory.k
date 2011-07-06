@@ -232,6 +232,14 @@ kmod DYNAMIC-SEMANTICS-READING is
 		if notBool Loc:Nat in Locs:Bag
 		andBool notBool Loc:Nat in locations(Mem:List)
 		[metadata "computational=()"] // for speed in interpretation; forces local buffer to be flushed before a read
+	rule [read-byte-buffer-model]:
+		< modelChecking > ?:K </ modelChecking >
+		< k > extractByteFromMem(Loc:Nat) => tv(V:K, no-type) ...</ k >
+		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
+		if notBool Loc:Nat in Locs:Bag
+		andBool notBool Loc:Nat in locations(Mem:List)
+		[structural]
 
 endkm
 

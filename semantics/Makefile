@@ -1,5 +1,6 @@
 SCRIPTS_DIR = ../scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
+APPEND_LINE = $(SCRIPTS_DIR)/append.sh
 
 K_MAUDE = $(K_BASE)/core/kompile
 K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
@@ -75,7 +76,7 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 
 c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
-	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
+	@$(APPEND_LINE) 2 c-compiled.maude.1 "load maudeLib/modelcheck"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/TCPSupport"
@@ -91,7 +92,7 @@ c-compiled-nd.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) 
 	@echo "Compiling the C definition with nondeterminism..."
 	@$(COMPILE_C_ND)
 	@mv c-compiled.maude c-compiled-nd.maude
-	@$(INSERT_LINE) 2 c-compiled-nd.maude "load maudeLib/modelcheck"
+	@$(APPEND_LINE) 2 c-compiled-nd.maude "load maudeLib/modelcheck"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
 	@$(INSERT_LINE) 2 c-compiled-nd.maude "load maudeLib/TCPSupport"

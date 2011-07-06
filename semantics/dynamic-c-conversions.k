@@ -327,6 +327,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		if I:Int <Int min(bitfieldType(T:Type, Len:Nat))
 		andBool hasIntegerType(T':Type)
 		andBool hasUnsignedIntegerType(T:Type)
+		[structural]
 	rule [cast-uchar-of-small]:
 		cast(unsigned-char, tv(I:Int, T':Type)) 
 			=> cast(unsigned-char, tv(I:Int +Int max(unsigned-char) +Int 1, T':Type))
@@ -366,6 +367,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		if I:Int >Int max(bitfieldType(T:Type, Len:Nat))
 		andBool hasIntegerType(T':Type)
 		andBool hasUnsignedIntegerType(T:Type)
+		[structural]
 	rule [cast-uchar-of-big]:
 		cast(unsigned-char, tv(I:Int, T':Type)) 
 			=> tv(I:Int %Int (max(unsigned-char) +Int 1), unsigned-char)
@@ -406,6 +408,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat))))
 		andBool hasIntegerType(T':Type)
 		andBool hasSignedIntegerType(T:Type)
+		[structural]
 	rule [cast-schar-of-huge]:
 		cast(signed-char, tv(I:Int, T':Type)) 
 			=> cast(signed-char, tv(I:Int %Int (2 ^Nat absInt(numBits(signed-char))), T':Type)) 
