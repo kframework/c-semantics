@@ -90,6 +90,7 @@ if ($args->{'-c'}) {
 my $oval = $args->{'-o'} || 'a.out';
 
 my $linkTemp = "mod C-program-linked is including C .\n";
+$linkTemp .= "including MODEL-CHECK-BUILTIN-MODULE .\n";
 
 if (! $args->{'-s'}) {
 	push(@compiledPrograms, $stdlib);

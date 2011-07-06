@@ -7,6 +7,8 @@ kmod DYNAMIC-C-LTL-INCLUDE is
 	op expAtom : LTLFormula -> Prop
 	
 	op executing : -> Prop
+	
+	op checkTruth : Bag -> Bool
 endkm
 
 kmod DYNAMIC-LTL-BASIC-PREDICATES is
@@ -33,10 +35,12 @@ kmod DYNAMIC-LTL-BASIC-PREDICATES is
 	if Fun:K =/=Bool File-Scope
 endkm
 
+// load maudeLib/modelcheck
+
 kmod DYNAMIC-C-LTL is
 	including DYNAMIC-C-LTL-INCLUDE
 	including DYNAMIC-LTL-BASIC-PREDICATES
-
+	// including MODEL-CHECK-BUILTIN-MODULE
 	
 	macro k2model(LTL-True) = LTLTrue
 	macro k2model(LTL-False) = LTLFalse
@@ -53,31 +57,6 @@ kmod DYNAMIC-C-LTL is
 	macro k2model(LTL-WeakUntil(A:K, B:K)) = k2model(A:K) LTLW k2model(B:K)
 	
 	macro k2model(LTL-Atom(A:K)) = expAtom(k2model(A:K))
-	
-	op checkTruth : Bag -> Bool
-	
-	// eq state(
-		// B0:Bag
-		// < T > B1:Bag
-			// < threads > B2:Bag
-				// < thread > B3:Bag
-					// < k > ?:K </ k > 
-				// </ thread >
-			// </ threads >
-		// </ T >
-	// ) LTL|= expAtom(k2model(A:K))
-	// =
-	// checkTruth(
-		// B0:Bag
-		// < T > B1:Bag
-			// < modelChecking > .K </ modelChecking > // so equations match
-			// < threads > B2:Bag
-				// < thread > B3:Bag
-					// < k > A:K != tv(0, int) </ k > 
-				// </ thread >
-			// </ threads >
-		// </ T >
-	// )
 	
 	macro checkTruth(
 		B0:Bag

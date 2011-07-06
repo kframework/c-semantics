@@ -1,6 +1,31 @@
 mod MODEL-CHECK-BUILTIN-MODULE is
 	including PL-MODEL-CHECKER-BUILTIN-MODULE .
+	including C .
 	
+	eq state(
+		B0:Bag
+		< T > B1:Bag
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > Old:K </ k > 
+				</ thread >
+			</ threads >
+		</ T >
+	) LTL|= expAtom(k2model(A:K))
+	=
+	checkTruth(
+		B0:Bag
+		< T > B1:Bag
+			< modelChecking > (.).K </ modelChecking > --- so equations match
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > '_!=_(A:K,, 'syntaxNat(Rat 0(.List{K}))) </ k > 
+					--- < k > 'syntaxNat(Rat 0(.List{K})) </ k > 
+					--- < k > A:K != tv(0, int) </ k >
+				</ thread >
+			</ threads >
+		</ T >
+	) .
 	--- op state : Bag -> Model-Checker-State .
 	--- op k2model : K -> LTLFormula .
 		

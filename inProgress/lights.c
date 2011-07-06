@@ -11,6 +11,10 @@ state lights[2] = {green, red};
 #pragma __ltl executing: <> __ltl_builtin(executing)
 #pragma __ltl simple: __atom(5)
 #pragma __ltl simple2: __atom(4 + 5 == 9)
+#pragma __ltl bad: __atom(4 + 4 == 9)
+#pragma __ltl zero: __atom(0)
+#pragma __ltl yellow: __atom(yellow)
+
 #pragma __ltl var: <> __atom(ticks)
 
 int nextState(int light){
