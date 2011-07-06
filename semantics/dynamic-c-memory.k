@@ -68,7 +68,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[metadata "computational=() nd=(true)"] 
 	rule [read-allocated]: // read data of "allocated" duration
 		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computationalv nd=(true)"]
+		[metadata "computational=() nd=(true)"]
 	// rule [read-readonly]: // read data that is readonly (e.g., string literals)
 		// < k > ('read-aux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		// [metadata "computational=() nd=(true)"] 
