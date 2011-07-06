@@ -113,7 +113,7 @@ push(@temporaryFiles, $fileInput);
 #my $fileStaticMaudeDefinition = catfile($SCRIPTS_DIR, 'static-c-total.maude');
 my $fileMaudeDefinition;
 
-if (defined($ENV{'SEARCH'})) {
+if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
 } else {
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
