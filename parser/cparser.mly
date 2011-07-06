@@ -1397,7 +1397,7 @@ ltl_expression59:
 |	ltl_expression55 {$1}
 
 ltl_expression65:
-|	ltl_expression59 MINUS SUP ltl_expression65 { LTL_IMPLIES (fst $1, fst $4), snd $4 }
+|	ltl_expression59 ARROW ltl_expression65 { LTL_IMPLIES (fst $1, fst $3), snd $3 }
 |	ltl_expression59 {$1}
 
 

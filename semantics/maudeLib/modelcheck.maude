@@ -1,9 +1,12 @@
+set print attribute on .
 mod MODEL-CHECK-BUILTIN-MODULE is
 	including PL-MODEL-CHECKER-BUILTIN-MODULE .
 	including PL-META-LEVEL-BUILTIN-MODULE .
 	including C .
 	
 	op errorTerm : -> Bag .
+	--- op printTerm : K -> K [strat(0) frozen] .
+	--- eq printTerm(K:K) = K:K [print K:K] .
 	
 	eq state(
 		B0:Bag
@@ -27,7 +30,7 @@ mod MODEL-CHECK-BUILTIN-MODULE is
 							< modelChecking > (.).K </ modelChecking > --- so equations match
 							< threads > B2:Bag
 								< thread > B3:Bag
-									< k > '_!=_(A:K,, 'syntaxNat(Rat 0(.List{K}))) </ k >
+									< k > '_!=_(A:K,, 'syntaxNat(Rat 0(.List{K}))) ~> 'debug(.List{K}) </ k >
 								</ thread >
 							</ threads >
 						</ T >

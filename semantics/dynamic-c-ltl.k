@@ -63,7 +63,7 @@ kmod DYNAMIC-C-LTL is
 		< T > B1:Bag
 			< threads > B2:Bag
 				< thread > B3:Bag
-					< k > tv(1, int) </ k > 
+					< k > tv(1, int) ~> debug </ k > 
 				</ thread >
 			</ threads >
 		</ T >

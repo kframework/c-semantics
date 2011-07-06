@@ -489,6 +489,7 @@ and printExpression exp =
 	| LTL_ATOM e -> wrap ((printLTLExpression e) :: []) "LTL-Atom"
 	| LTL_BUILTIN e -> wrap ((printIdentifier e) :: []) "LTL-Builtin"
 	| LTL_AND (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-And"
+	| LTL_OR (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-Or"
 and getUnaryOperator op =
 	let name = (
 	match op with
