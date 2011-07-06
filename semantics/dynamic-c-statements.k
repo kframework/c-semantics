@@ -47,7 +47,8 @@ kmod DYNAMIC-SEMANTICS-WHILE is
 		< k > loopMarked ~> While(B:Expression, S:Statement)
 			=> IfThenElse(B:Expression, (S:Statement ~> loopMarked ~> While(B:Expression, S:Statement)), Nop)
 		...</ k >
-		[structural] 
+		[metadata "computational"]
+		//[structural] 
 endkm
 
 kmod DYNAMIC-SEMANTICS-DO-WHILE is

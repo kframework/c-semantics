@@ -1,7 +1,7 @@
-#include <stdio.h>
+//#include <stdio.h>
 typedef enum {green, yellow, red} state;
-state lightNS = green;
-state lightEW = red;
+// state lightNS = green;
+// state lightEW = red;
 state lights[2] = {green, red};
 
 // property(light0) = lights[0]
@@ -34,17 +34,17 @@ int nextState(int light){
 	}
 }
 
-void printStates(void){
-	printf("light0 = %d; ", lights[0]);
-	printf("light1 = %d\n", lights[1]);
-}
+// void printStates(void){
+	// printf("light0 = %d; ", lights[0]);
+	// printf("light1 = %d\n", lights[1]);
+// }
 
 int main(void){
 	int ticks = 0;
-	printStates();
+	//printStates();
 	while(ticks++ < 15){
 		nextState(0) + nextState(1);
-		printStates();
+		//printStates();
 	}
 }
 /*@ 
