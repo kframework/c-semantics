@@ -6,7 +6,7 @@ typedef enum {green, yellow, red} state;
 state lightNS = green;
 state lightEW = red;
 // true
-#pragma __ltl safety: [] (__ltl_builtin(executing) -> (~ (__atom(lightNS != red) /\ __atom(lightEW != red))))
+#pragma __ltl safety: [] (__ltl_builtin(executing) -> ( (__atom(lightNS == red) \/ __atom(lightEW == red))))
 #pragma __ltl acolorNS: [] (__ltl_builtin(executing) -> (__atom(lightNS == green) \/ __atom(lightNS == yellow) \/ __atom(lightNS == red)))
 #pragma __ltl acolorEW: [] (__ltl_builtin(executing) -> (__atom(lightEW == green) \/ __atom(lightEW == yellow) \/ __atom(lightEW == red)))
 
@@ -77,7 +77,6 @@ int main(void){
 	// printStates();
 	//while(++ticks < 7){
 	while(1) {
-		changeNS();
-		changeEW();
+		changeNS(); changeEW();
 	}
 }
