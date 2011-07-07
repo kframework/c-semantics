@@ -1386,6 +1386,7 @@ ltl_expression53:
 |	TILDE ltl_expression53 { LTL_NOT (fst $2), snd $2 }
 |	LBRACKET RBRACKET ltl_expression53 { LTL_ALWAYS (fst $3), snd $3 }
 |	INF SUP ltl_expression53 { LTL_EVENTUALLY (fst $3), snd $3 }
+|	IDENT ltl_expression53 { LTL_O (fst $1, fst $2), snd $2 }
 |	ltl_expression_last { $1 }
 
 ltl_expression55:
@@ -1396,9 +1397,14 @@ ltl_expression59:
 |	ltl_expression59 BACKSLASH SLASH ltl_expression55 { LTL_OR (fst $1, fst $4), snd $4 }
 |	ltl_expression55 {$1}
 
-ltl_expression65:
-|	ltl_expression59 ARROW ltl_expression65 { LTL_IMPLIES (fst $1, fst $3), snd $3 }
+/* U, R, W */
+ltl_expression63:
+|	ltl_expression63 IDENT ltl_expression63 { LTL_URW (fst $2, fst $1, fst $3), snd $3 }
 |	ltl_expression59 {$1}
+
+ltl_expression65:
+|	ltl_expression63 ARROW ltl_expression65 { LTL_IMPLIES (fst $1, fst $3), snd $3 }
+|	ltl_expression63 {$1}
 
 
 ltl_expression_last:

@@ -47,8 +47,10 @@ sub graphSearch {
 		if ($state eq "start") {
 			if ($line =~ m/^Solution (\d+) /) {
 				$state = "solution";
+			} elsif ($line =~ m/^No solution./) {
+				$state = "state";
 			}
-		}
+		}		
 		
 		if ($state eq "solution") {
 			if ($line =~ m/^Solution (\d+) /) {

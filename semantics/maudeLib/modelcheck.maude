@@ -27,7 +27,7 @@ mod MODEL-CHECK-BUILTIN-MODULE is
 					upTerm(
 						B0:Bag
 						< T > B1:Bag
-							< modelChecking > (.).K </ modelChecking > --- so equations match
+							--- < modelChecking > (.).K </ modelChecking > --- so equations match
 							< threads > B2:Bag
 								< thread > B3:Bag
 									< k > '_!=_(A:K,, 'syntaxNat(Rat 0(.List{K}))) ~> 'debug(.List{K}) </ k >

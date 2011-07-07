@@ -490,6 +490,10 @@ and printExpression exp =
 	| LTL_BUILTIN e -> wrap ((printIdentifier e) :: []) "LTL-Builtin"
 	| LTL_AND (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-And"
 	| LTL_OR (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-Or"
+	| LTL_URW ("U", e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-Until"
+	| LTL_URW ("R", e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-Release"
+	| LTL_URW ("W", e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTL-WeakUntil"
+	| LTL_O ("O", e) -> wrap ((printLTLExpression e) :: []) "LTL-Next"
 and getUnaryOperator op =
 	let name = (
 	match op with

@@ -68,5 +68,15 @@ kmod DYNAMIC-C-LTL is
 			</ threads >
 		</ T >
 	) = true
+	macro checkTruth(
+		B0:Bag
+		< T > B1:Bag
+			< threads > B2:Bag
+				< thread > B3:Bag
+					< k > tv(0, int) ~> debug </ k > 
+				</ thread >
+			</ threads >
+		</ T >
+	) = false
 	
 endkm

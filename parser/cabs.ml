@@ -302,8 +302,10 @@ and expression =
   | LTL_ALWAYS of expression
   | LTL_IMPLIES of expression * expression
   | LTL_EVENTUALLY of expression
-  | LTL_UNTIL of expression * expression
-  | LTL_RELEASE of expression * expression
+  | LTL_URW of string * expression * expression
+  | LTL_O of string * expression
+(*   | LTL_UNTIL of expression * expression
+  | LTL_RELEASE of expression * expression *)
   
 and generic_association =
 	| GENERIC_PAIR of type_name * expression
