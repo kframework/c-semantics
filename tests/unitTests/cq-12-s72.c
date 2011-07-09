@@ -42,8 +42,8 @@ struct defs *pd0;
         ator gets us a ones complement.                         */
 
    k = 0;
-   for(j=0;j<pd0->ibits;j++) k = (k<<1)|1;
-   if(~k != 0){
+   for(j=0;j<pd0->ibits-1;j++) k = (k<<1)|1;
+   if(~k + k != -1){
      rc = rc+4;
      printf(s72er,4);
    }
