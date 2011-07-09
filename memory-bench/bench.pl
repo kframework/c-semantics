@@ -22,65 +22,85 @@ my $gccCommand = 'gcc -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
 my @compilers = (
 	# [
 		# 'gcc', 
-		# $gccCommand, 
+		# "$gccCommand %s", 
 		# './a.out'
 	# ],
-	[
-		'valgrind', 
-		$gccCommand, 
-		'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
-	],
-	[
-		'valgrind', 
-		$gccCommand, 
-		'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes --tool=ptrcheck ./a.out'
-	],
 	# [
-		# 'UBC', 
-		# 'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior', 
-		# './a.out'
+		# 'valgrind', 
+		# "$gccCommand %s", 
+		# 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
 	# ],
+	# [
+		# 'valgrind', 
+		# "$gccCommand %s", 
+		# 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes --tool=ptrcheck ./a.out'
+	# ],
+	[
+		'UBC', 
+		'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
+		'./a.out'
+	],
 	# [
 		# 'ccured', 
-		# '~/tools/ccured/bin/ccured', 
+		# '~/tools/ccured/bin/ccured %s', 
 		# './a.out'
 	# ],
 	# [
 		# 'fjalar', 
-		# $gccCommand, 
+		# "$gccCommand %s", 
 		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar ./a.out'
 	# ],
-	
+	# [
+		# 'deputy', 
+		# 'deputy --opt=0 -gdwarf-2 -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
+		# './a.out'
+	# ],
+	# [
+		# 'frama-c', 
+		# 'frama-c -val -val-signed-overflow-alarms -slevel 100 %s',
+		# 'true'
+	# ],
 	
 );
 
-opendir (DIR, '.') or die $!;
-while (my $file = readdir(DIR)) {
-	next if !($file =~ m/\.c$/);
-	for my $stuff (@compilers) {
-		my ($name, $compiler, $runner) = @$stuff;
-		unlink('a.out');
-		
-		#####
-		{
-			my ($elapsed, $retval, @output) = run("$compiler $file -o a.out 2>&1");
-			my $length = length(join('', @output));
-			if ($retval != 0) {
-				printf("0\t%-10s\t%-10s\t%-10s\t%-10s\t%-10s\n", $name, $file, 'xxx', $length, $elapsed);
-				next;
-			} else {
-				my ($elapsed, $retval, @output) = run("$runner 2>&1");
+# bench('badArithmetic');
+# bench('badPointers');
+# bench('badMemory');
+bench('gcc.all');
+
+sub bench {
+	my ($dir) = (@_);
+	opendir (DIR, $dir) or die $!;
+	while (my $file = readdir(DIR)) {
+		next if !($file =~ m/\.c$/);
+		for my $stuff (@compilers) {
+			my ($name, $compiler, $runner) = @$stuff;
+			unlink('a.out');
+			
+			#####
+			{
+				my $filename = "$dir/$file";
+				my $compileString = "$compiler 2>&1";
+				$compileString =~ s/%s/$filename/;
+				my ($elapsed, $retval, @output) = run($compileString);
 				my $length = length(join('', @output));
-				printf("1\t%-10s\t%-10s\t%-10s\t%-10s\t%-10s\n", $name, $file, $retval, $length, $elapsed);
+				if ($retval != 0) {
+					printf("%-10s\t0\t%-10s\t%-14s\t%-10s\t%-10s\t%-10s\n", $dir, $name, $file, 'xxx', $length, $elapsed);
+					next;
+				} else {
+					my ($elapsed, $retval, @output) = run("$runner 2>&1");
+					my $length = length(join('', @output));
+					printf("%-10s\t1\t%-10s\t%-14s\t%-10s\t%-10s\t%-10s\n", $dir, $name, $file, $retval, $length, $elapsed);
+				}
 			}
+			
+			#####
+			
 		}
-		
-		#####
-		
+		# print "$file\n";
 	}
-	# print "$file\n";
+	closedir(DIR);
 }
-closedir(DIR);
 
 #run("$kcc adhoc/nondet.c -o && SEARCH=1 ./adhoc.o");
 

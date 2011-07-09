@@ -625,9 +625,11 @@ kmod DYNAMIC-C-CONVERSIONS is
 	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Int, T:Type)) => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
 		if hasUnsignedIntegerType(T:Type)
 		[structural] 
-	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Nat, T:Type)) => interpret-aux(T:Type, I:Int)
+	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Nat, T:Type)) => tv(I:Int, T:Type)
 		if hasSignedIntegerType(T:Type)
-		andBool I:Int <=Int (2 ^Nat absInt(numBits(T:Type)))
+		// andBool I:Int <=Int (2 ^Nat absInt(numBits(T:Type)))
+		andBool I:Int <=Int max(T:Type)
+		andBool I:Int >=Int min(T:Type)
 		[structural] 
 		
 	// c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined

@@ -208,7 +208,7 @@ mv 930408-1.c notportable/
 # extension: anonymous structs
 mv anon-1.c 20030714-1.c notportable/
 # extension: adding void*s
-mv pr17133.c pr21173.c notportable/
+mv pr17133.c pr21173.c badPointers/
 # extension: variable length field
 mv 20040308-1.c 20040423-1.c 20041218-2.c 20070919-1.c notportable/
 # extension: void function can't return void expression
@@ -226,7 +226,7 @@ mv 991228-1.c struct-ini-4.c notportable/
 # implementation defined wide chars
 mv wchar_t-1.c notportable/
 # seems to be doing some kind of instrumentation
-mv eeprof-1.c  notportable/
+mv eeprof-1.c notportable/
 
 # duplicate definition of library function
 mv 20021127-1.c notportable/
@@ -241,7 +241,7 @@ mv 20000223-1.c align-3.c notportable/
 mv 930930-1.c 941014-1.c loop-2c.c loop-2d.c pr22098-1.c pr22098-2.c pr22098-3.c pr36339.c notportable/
 
 # use of less common hosted functions
-mv vfprintf-1.c vprintf-1.c 20030626-1.c 20030626-2.c 20070201-1.c pr34456.c string-opt-18.c 920501-8.c 920501-9.c 920726-1.c 930513-1.c 960327-1.c struct-ret-1.c strncmp-1.c hosted/
+mv vfprintf-1.c vprintf-1.c 20030626-1.c 20030626-2.c 20070201-1.c pr34456.c string-opt-18.c 920501-8.c 920501-9.c 920726-1.c 930513-1.c 960327-1.c struct-ret-1.c strncmp-1.c 980605-1.c hosted/
 
 # nonportable syntax (extra semicolon outside function)
 mv 20050106-1.c notportable/
@@ -268,8 +268,8 @@ mv 950710-1.c 980701-1.c brokenDynamically/
 # bad locations
 mv 20021010-2.c 20041112-1.c 20050125-1.c 960116-1.c loop-2e.c pr34176.c pr39233.c ptr-arith-1.c 941014-2.c 20000622-1.c 20000910-1.c 20001101.c 20010329-1.c 940115-1.c loop-15.c pr44555.c badPointers/
 
-# overflow
-mv 980605-1.c badArithmetic/
+# caught by ubc
+mv 980526-2.c badPointers/
 
 # uninitialized
 mv 20030404-1.c pr34099-2.c 921202-1.c 20100430-1.c va-arg-14.c pr43629.c pr40493.c 930719-1.c badMemory/
@@ -284,32 +284,35 @@ mv pr23467.c 20050215-1.c brokenDynamically/
 # pr34099-2.c
 
 # caught by our tool and by ubc
+
+# left shift, bad result
 mv 20020508-2.c badArithmetic/
+mv 20060110-1.c badArithmetic/
+mv 20060110-2.c badArithmetic/
+
+# left shift, negative
 mv 20020508-3.c badArithmetic/
+mv 960317-1.c badArithmetic/
+mv pr40386.c badArithmetic/
+
+# signed overflow
 mv 20030316-1.c badArithmetic/
 mv 20040409-1.c badArithmetic/
 mv 20040409-2.c badArithmetic/
 mv 20040409-3.c badArithmetic/
-mv 20060110-1.c badArithmetic/
-mv 20060110-2.c badArithmetic/
 mv 920612-1.c badArithmetic/
 mv 920711-1.c badArithmetic/
 mv 920730-1.c badArithmetic/
 mv 930529-1.c badArithmetic/
 mv 950704-1.c badArithmetic/
-mv 960317-1.c badArithmetic/
-mv 980526-2.c badArithmetic/
-mv arith-rand.c badArithmetic/
-mv arith-rand-ll.c badArithmetic/
 mv loop-3b.c badArithmetic/
 mv loop-3.c badArithmetic/
 mv pr22493-1.c badArithmetic/
 mv pr23047.c badArithmetic/
-mv pr40386.c badArithmetic/
 
-
-
-
+# unsure
+mv arith-rand.c badArithmetic/
+mv arith-rand-ll.c badArithmetic/
 
 # these aren't bad, i just know I fail them
 # mkdir -p fails
