@@ -43,14 +43,14 @@ while(<MYINPUTFILE>) {
 	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.* label ([^ ]*) .*\]\.\s*$/){
 		$ruleName = $1;
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location\(([^:]+):(\d+)-(\d+)\).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location=\(([^:]+):(\d+)-(\d+)\).*\]\.\s*$/){
 		$locationFile = $1;
 		$locationFrom = $2;
 		$locationTo = $3;
 		if ($locationFile eq "common-c-standard-lib.k") {
 			$isLibrary = 1;
 		}
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location\(([^:]+):(\d+)\).*\]\.\s*$/){
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location=\(([^:]+):(\d+)\).*\]\.\s*$/){
 		$locationFile = $1;
 		$locationFrom = $2;
 		$locationTo = $2;

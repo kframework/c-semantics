@@ -58,19 +58,21 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural]
 	rule isPromotedInteger(T:Type) => hasIntegerType(T:Type) andBool hasBeenPromoted(T:Type) [structural]
 	
-	rule
-		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
+	rule [promote-unary]:
+		< k > L:KLabel((tv(V:BaseValue, T:Type) 
+			=> cast(promote(T:Type), tv(V:BaseValue, T:Type)))) 
+		...</ k > 
 		if isArithUnaryOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
 		[structural]
-	rule
+	rule [promote-binary-left]:
 		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type))),, ?) ...</ k > 
 		if isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
 		[structural] 
-	rule
+	rule [promote-binary-right]:
 		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
 		if isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
@@ -212,7 +214,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural]
 		
 	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
-	rule
+	rule [arithmeticConversion-same-signedness]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => maxType(T:Type, T':Type)
 		if T:Type =/=Bool T':Type
 		andBool hasSameSignedness(T:Type, T':Type)
@@ -220,14 +222,14 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	
 		
 	// Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
-	rule
+	rule [arithmeticConversion-unsigned-ge-right]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
 		andBool hasUnsignedIntegerType(T':Type) 
 		andBool rank(T':Type) >=Int rank(T:Type)
 		[structural] 
-	rule
+	rule [arithmeticConversion-unsigned-ge-left]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 
@@ -236,7 +238,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 		
 	// Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
-	rule
+	rule [arithmeticConversion-signed-big-left]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
@@ -245,7 +247,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		andBool min(T:Type) <=Int min(T':Type)
 		andBool max(T:Type) >=Int max(T':Type)
 		[structural] 
-	rule
+	rule [arithmeticConversion-signed-big-right]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 
@@ -256,7 +258,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 		
 	// Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
-	rule
+	rule [arithmeticConversion-to-unsigned-left]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T:Type)
 		if T:Type =/=Bool T':Type
 		andBool hasSignedIntegerType(T:Type) 
@@ -264,7 +266,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		andBool rank(T':Type) <Int rank(T:Type)
 		andBool (min(T:Type) >Int min(T':Type) orBool max(T:Type) <Int max(T':Type))
 		[structural] 
-	rule
+	rule [arithmeticConversion-to-unsigned-right]:
 		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T':Type)
 		if T:Type =/=Bool T':Type
 		andBool hasUnsignedIntegerType(T:Type) 

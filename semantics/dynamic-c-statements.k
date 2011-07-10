@@ -272,7 +272,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 	// - second case, we're in a different block
 	
 	//  as long as there are entries in the actual block history that differ from the target block history, we need to pop
-	rule
+	rule [processGoto-pop-differing-1]:
 		< k > (. => popBlock) 
 			~> processGoto(gotoObject(TargetDepth:Nat, TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
@@ -281,7 +281,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		[structural] 
 		
 	//  same
-	rule
+	rule [processGoto-pop-differing-2]:
 		< k > (. => popBlock) 
 			~> processGoto(gotoObject(TargetDepth:Nat, Prefix:List ListItem(BlockNum:Nat) TargetBlockHistory:List, ?, ?, ?))
 		...</ k >

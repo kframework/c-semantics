@@ -8,7 +8,7 @@ use IPC::Open3;
 my $childPid = 0;
 
 my $kcc = "../dist/kcc";
-my $gcc = "gcc -gdwarf-2 -lm -Werror -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99";
+# my $gcc = "gcc -gdwarf-2 -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99";
 
 my $globalTests = "";
 my $globalNumPassed = 0;
@@ -17,42 +17,42 @@ my $globalNumError = 0; # errors are tests that didn't finish running
 my $globalTotalTime = 0;
 
 ###################################
-my $gccCommand = 'gcc -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
+my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
 
 my @compilers = (
 	# [
 		# 'gcc', 
-		# "$gccCommand %s", 
+		# "$gccCommand -Werror %s", 
 		# './a.out'
 	# ],
+	[
+		'kcc', 
+		"kcc -s %s",
+		'./a.out'
+	],
 	# [
 		# 'valgrind', 
 		# "$gccCommand %s", 
 		# 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
 	# ],
 	# [
-		# 'valgrind', 
-		# "$gccCommand %s", 
-		# 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes --tool=ptrcheck ./a.out'
+		# 'UBC', 
+		# 'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
+		# './a.out'
 	# ],
-	[
-		'UBC', 
-		'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
-		'./a.out'
-	],
 	# [
 		# 'ccured', 
 		# '~/tools/ccured/bin/ccured %s', 
 		# './a.out'
 	# ],
-	# [
+	# [ # doesn't seem to find anything
 		# 'fjalar', 
 		# "$gccCommand %s", 
-		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar ./a.out'
+		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar --leak-check=no --xml-output-file=fjalar.out.xml ./a.out'
 	# ],
-	# [
+	# [ # doesn't work well with annotations
 		# 'deputy', 
-		# 'deputy --opt=0 -gdwarf-2 -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
+		# 'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
 		# './a.out'
 	# ],
 	# [
@@ -64,9 +64,9 @@ my @compilers = (
 );
 
 # bench('badArithmetic');
-# bench('badPointers');
-# bench('badMemory');
-bench('gcc.all');
+bench('badPointers');
+bench('badMemory');
+# bench('gcc.all');
 
 sub bench {
 	my ($dir) = (@_);
@@ -85,12 +85,17 @@ sub bench {
 				my ($elapsed, $retval, @output) = run($compileString);
 				my $length = length(join('', @output));
 				if ($retval != 0) {
-					printf("%-10s\t0\t%-10s\t%-14s\t%-10s\t%-10s\t%-10s\n", $dir, $name, $file, 'xxx', $length, $elapsed);
+					printf("%-10s\t0\t%-10s\t%-17s\t%-10d\t%-10s\t%-10s\n", $dir, $name, $file, -1, $length, $elapsed);
 					next;
 				} else {
 					my ($elapsed, $retval, @output) = run("$runner 2>&1");
 					my $length = length(join('', @output));
-					printf("%-10s\t1\t%-10s\t%-14s\t%-10s\t%-10s\t%-10s\n", $dir, $name, $file, $retval, $length, $elapsed);
+					if ($name eq 'ccured') {
+						if ($retval == -1) { $retval = 1; }
+					} elsif ($name eq 'UBC') {
+						if ($length > 0) { $retval = 1; }
+					}
+					printf("%-10s\t1\t%-10s\t%-17s\t%-10d\t%-10s\t%-10s\n", $dir, $name, $file, $retval, $length, $elapsed);
 				}
 			}
 			
@@ -117,15 +122,28 @@ sub bench {
 sub run {
 	my ($command) = (@_);
 	my $timer = [gettimeofday];
-	#print "Running $command\n";
+	# print "Running $command\n";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	my @data=<P>;
 	close P;
-	#my $retval = $? >> 8;
-	my $retval = $?;
+	# my $retval = $? >> 8;
+	my $retval = 0;
+	if ($? == -1) {
+		# print "failed to execute: $!\n";
+		$retval = -1;
+	} elsif ($? & 127) {
+		# $signal = ($? & 127);
+		# $dump = ($? & 128);
+		# $result = '-1';
+		$retval = -1;
+		# printf "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
+	} else {
+		# printf "child exited with value %d\n", $? >> 8;
+		$retval = $? >> 8;
+	}
+	# my $retval = $?;
 	my $elapsed = tv_interval($timer, [gettimeofday]);
 	$childPid = 0;
-	
-	
+		
 	return ($elapsed, $retval, @data);
 }

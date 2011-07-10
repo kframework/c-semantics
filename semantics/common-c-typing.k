@@ -450,38 +450,47 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	op fillBitHoles : List{Type} -> List{Type} 
 	op fillBitHoles : Nat List{Type} -> List{Type} 
-	rule fillBitHoles(Nil) => Nil [structural]
+	rule [fillBitHoles-none]:
+		fillBitHoles(Nil) => Nil 
+		[structural]
 	// if we haven't seen bitfields
-	rule fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		=> typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
+	rule [fillBitHoles-not-bitfield]:
+		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
-	rule fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		=> fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
+	rule [fillBitHoles-bitfield]:
+		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
 		if hasBitfieldType(T:Type) 
 		[structural]
 	
 	// if we have seen bitfields
-	rule fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-		=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
-		:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
+	rule [fillBitHoles-aux-not-bitfield]:
+		fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
+				:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
-	rule fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id) :: L:List{Type})) 
-		=> typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id)
-		:: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
+	rule [fillBitHoles-aux-bitfield-normal]:
+		fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id) :: L:List{Type})) 
+			=> typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id)
+				:: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
 		if N':Nat =/=Bool 0 
 		[structural]
 		
-	rule fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
-		=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
-		:: fillBitHoles(L:List{Type})
+	rule [fillBitHoles-bitfield-zero]:
+		fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
+			=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
+				:: fillBitHoles(L:List{Type})
 		if N':Nat ==Bool 0
 		[structural]
 	
-	rule fillBitHoles(N:Nat, Nil) => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
+	rule [fillBitHoles-done]:
+		fillBitHoles(N:Nat, Nil) 
+			=> typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
 		[structural]
 
 	
@@ -777,7 +786,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]
 		
-	rule 
+	rule [type-inc-dec]:
 		< type > L:KLabel(T:Type) => T:Type ...</ type >
 		if hasPointerType(T:Type)
 		andBool (

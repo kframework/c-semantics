@@ -114,12 +114,12 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 			~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
 		...</ computation >
 		[structural] 
-	rule
-		< computation > Typedef(NameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
-			=> Typedef(NameGroup(T:K, K:C))
-			~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
-		...</ computation >
-		[structural] 
+	// rule
+		// < computation > Typedef(NameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
+			// => Typedef(NameGroup(T:K, K:C))
+			// ~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
+		// ...</ computation >
+		// [structural] 
 		
 	//  fixme would like to combine the below rules
 	rule

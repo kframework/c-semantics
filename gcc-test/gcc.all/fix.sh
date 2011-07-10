@@ -289,6 +289,7 @@ mv pr23467.c 20050215-1.c brokenDynamically/
 mv 20020508-2.c badArithmetic/
 mv 20060110-1.c badArithmetic/
 mv 20060110-2.c badArithmetic/
+mv pr7284-1.c badArithmetic/
 
 # left shift, negative
 mv 20020508-3.c badArithmetic/

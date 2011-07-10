@@ -115,24 +115,24 @@ sub handleEq {
 		$line = $_;
 		chomp($line);
 		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ $ruleName = $1; }
-		if ($line =~ m/location\(([^:]+):(\d+)-(\d+)\)/) {
+		if ($line =~ m/location=\(([^:]+):(\d+)-(\d+)\)/) {
 			$locationFile = $1;
 			$locationFrom = $2;
 			$locationTo = $3;
 		}
-		if ($line =~ m/location\(([^:]+):(\d+)\)/) {
+		if ($line =~ m/location=\(([^:]+):(\d+)\)/) {
 			$locationFile = $1;
 			$locationFrom = $2;
 			$locationTo = $2;
 		}
-		if ($line =~ m/structural/) {
-			$kind = 'structural';
-		} elsif ($line =~ m/computational/) {
-			$kind = 'computational';
-		} elsif ($line =~ m/cooling/) {
-			$kind = 'cooling';
-		} elsif ($line =~ m/heating/) {
-			$kind = 'heating';
+		if ($line =~ m/(super cooling wrapper)/){
+			$kind = $1;
+		} elsif ($line =~ m/(super cooling result)/){
+			$kind = $1;
+		} elsif ($line =~ m/(super cooling)/){
+			$kind = $1;
+		} elsif ($line =~ m/(structural|computational|cooling|heating)/) {
+			$kind = $1;
 		}
 		if ($line =~ m/^rewrites: (\d+) \(/){
 			$rewrites = $1;

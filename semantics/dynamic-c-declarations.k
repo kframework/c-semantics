@@ -75,11 +75,11 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	op promoteList : List{C} -> List{K} 
-	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (cast(argPromote(T:Type), tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
+	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (cast(argPromote(T:Type), tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
 		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
 		orBool T:Type ==Bool float 
 		[structural]
-	rule promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
+	rule [promoteList-promoted]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
 		if (notBool(hasIntegerType(T:Type)) 
 			andBool notBool T:Type ==Bool float
 			andBool notBool hasArrayType(T:Type)

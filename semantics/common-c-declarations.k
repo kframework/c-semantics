@@ -1267,7 +1267,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		andBool notBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
 		[structural] 
-	rule
+	rule [resolve-extern-object-nomapping]:
 		< k > resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? (X:Id |-> external => .))) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((? X:Id |-> T:Type)) ...</ preTypes >

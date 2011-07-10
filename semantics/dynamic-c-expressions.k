@@ -911,21 +911,29 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		// [structural]
 	//- comparison of ints with pointers
 	// fixme there are further restrictions on pointers
-	rule (tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) == tv(?, T':Type)
-		if isPromotedInteger(T:Type) andBool hasPointerType(T':Type)
+	rule [equal-null-left]:
+		(tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) == tv(?, T':Type)
+		if isPromotedInteger(T:Type) 
+		andBool hasPointerType(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
-	rule tv(?, T:Type) == (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
-		if hasPointerType(T:Type) andBool isPromotedInteger(T':Type)
+	rule [equal-null-right]:
+		tv(?, T:Type) == (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
+		if hasPointerType(T:Type) 
+		andBool isPromotedInteger(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	
-	rule (tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) != tv(?, T':Type)
-		if isPromotedInteger(T:Type) andBool hasPointerType(T':Type)
+	rule [nequal-null-left]: 
+		(tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) != tv(?, T':Type)
+		if isPromotedInteger(T:Type) 
+		andBool hasPointerType(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
-	rule tv(?, T:Type) != (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
-		if hasPointerType(T:Type) andBool isPromotedInteger(T':Type)
+	rule [nequal-null-right]: 
+		tv(?, T:Type) != (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
+		if hasPointerType(T:Type) 
+		andBool isPromotedInteger(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	rule
