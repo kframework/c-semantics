@@ -4,11 +4,40 @@ kmod COMMON-INCOMING-MODULES is
 	including COMMON-C-CONFIGURATION 
 	including K-CONTEXTS 
 	including K-PROPER
+	
+	
+	sort Type 
+	sort Value 
+	sort List{Type} 
+	subsort List{Type} < KResult 
+	subsort List{Type} < List{C} 
+	subsort Type < List{Type}
+	subsort Type < List{C} 
+	subsort Value < List{Type} 
+	subsort Type < C 
+	subsort Value < C 
+	sort BaseValue 
+
+	subsort Nat Int Float < BaseValue 
+	subsort BaseValue < C
+	subsort Value < KResult K 
+	subsort Type < KResult K
+	
 endkm
 
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
-	// op AnonAggregate : -> K
+	
+	op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
+	op Nil : -> List{Type} [ditto] 
+		
+	// Types
+	op typedDeclaration : Type Id -> Type // would rather this be KResult, but can't get the subsorting to work
+	
+	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+	op isAType_ : K -> Bool 
+	op setOfTypes : -> Set [memo] 
+	
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K Nat Id K -> K [metadata "strict=(1)"] // having to put this out here so errors can see it
 	op initFunction : K K -> K [metadata "strict=()"]
@@ -32,7 +61,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op sym : Nat -> Nat 
 	op byteo : Nat -> Nat 
 	op bito : Nat -> Nat 
-	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
+
 	op bitoffset : Nat -> Nat 
 	op byteoffset : Nat -> Nat 
 	op declare : K K -> K [metadata "strict=(1)"] 
@@ -51,13 +80,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op ceilingLoc : Nat -> Nat // loc with possible bit offset returning upperbounded byte	
 	op readFunction : Nat -> K 
 	
-	rule _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
-		=> piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
-		if N:Nat >=Nat 0 andBool N':Nat >=Nat 0 
-		[structural] 
-	rule _bit::_(piece(0, 0), N:Nat) => N:Nat [structural] 
-	rule piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) [structural] 
-	
 	op innerType : Type -> Type
 	
 	op AttributeValue : String List{C} -> KResult 
@@ -67,7 +89,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unnamed : Nat -> Id 
 	
 	op NullPointerConstant : -> Nat 
-	rule NullPointerConstant => 0 [structural]
+	
 	op NullPointer : -> Nat 
 	
 	op emptyValue : -> Value 
@@ -78,11 +100,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op zeroBlock : Nat -> K 
 		
 	op value : K -> K 
-	rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
-	
+		
 	op sizeofLocation : K -> K
 	op type : K -> Type 
-	rule type(tv(?, T:Type)) => T:Type [structural]
+	
 	
 	op allocateType : Nat Type -> K 
 	op allocateTypeIfAbsent : Nat Type -> K 
@@ -121,49 +142,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op no-type : -> Type
 	
 	op isBasicType : K -> Bool
-	rule isBasicType(K:K) => if (
-		K:K ==Bool bool
-		orBool K:K ==Bool void
-		orBool K:K ==Bool char
-		orBool K:K ==Bool short-int
-		orBool K:K ==Bool int
-		orBool K:K ==Bool long-int
-		orBool K:K ==Bool long-long-int
-		orBool K:K ==Bool float
-		orBool K:K ==Bool double
-		orBool K:K ==Bool long-double
-		orBool K:K ==Bool signed-char
-		orBool K:K ==Bool unsigned-char
-		orBool K:K ==Bool unsigned-short-int
-		orBool K:K ==Bool unsigned-int
-		orBool K:K ==Bool unsigned-long-int
-		orBool K:K ==Bool unsigned-long-long-int
-		orBool K:K ==Bool no-type
-		orBool getKLabel(K:K) ==Bool 'enumType
-		) then true else false fi
-		[structural]
-	// rule isBasicType(K:K) => false
-		// if notBool(
-			// K:K ==Bool bool
-			// orBool K:K ==Bool void
-			// orBool K:K ==Bool char
-			// orBool K:K ==Bool short-int
-			// orBool K:K ==Bool int
-			// orBool K:K ==Bool long-int
-			// orBool K:K ==Bool long-long-int
-			// orBool K:K ==Bool float
-			// orBool K:K ==Bool double
-			// orBool K:K ==Bool long-double
-			// orBool K:K ==Bool signed-char
-			// orBool K:K ==Bool unsigned-char
-			// orBool K:K ==Bool unsigned-short-int
-			// orBool K:K ==Bool unsigned-int
-			// orBool K:K ==Bool unsigned-long-int
-			// orBool K:K ==Bool unsigned-long-long-int
-			// orBool K:K ==Bool no-type
-			// orBool getKLabel(K:K) ==Bool 'enumType
-		// )
-		// [structural]
+	
 	
 	// Composite types
 	op enumType : Id -> Type [ctor] 
@@ -179,7 +158,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op t : Type Set -> Type
 	// tv(5, t(pointerType(t(int)), const))
 	
-	
 	op unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
 	
 	// these aren't real types, but are values that can appear in type contexts
@@ -187,15 +165,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op typedefType : Id Type -> Type 
 	op variadic : -> Type 
 
-	subsort Type < C 
-	subsort Value < C 
-	sort BaseValue 
-
-	subsort Nat Int Float < BaseValue 
-	subsort BaseValue < C
 	op dataList : List{K} -> KResult 
-	subsort Value < KResult K 
-	subsort Type < KResult K
+	
 	op K2Nat : K -> Nat
 	op sizeofType : K -> K [metadata "strict=()"] // generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [metadata "strict=()"] // needs to be heated to top of K for struct and union types
@@ -204,34 +175,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op HOLE : -> Expression 
 	op l : KLabel -> K [metadata "builtin wrapper"] 
 	op _contains_ : Set K -> Bool [memo] 
-	// Types
-	op typedDeclaration : Type Id -> Type // would rather this be KResult, but can't get the subsorting to work
 	
-	sort Type 
-	sort Value 
-	sort List{Type} 
-	subsort List{Type} < KResult 
-	subsort List{Type} < List{C} 
-	subsort Type < List{Type}
-	subsort Type < List{C} 
-	subsort Value < List{Type} 
-	op _::_ : List{Type} List{Type} -> List{Type} [ditto metadata "ditto"] 
-	op Nil : -> List{Type} [ditto] 
-		
-	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-	op isAType_ : K -> Bool 
-	op setOfTypes : -> Set [memo] 
-	rule setOfTypes => Set(
-		l('arrayType),, 
-		l('bitfieldType),, 
-		l('functionType),, 
-		l('pointerType),, l('structType),, l('unionType),, 
-		l('qualifiedType)
-	) [structural]
+	
+	
 	
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value 
-	// op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
@@ -242,6 +191,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op charToAscii : String -> Nat 
 	op stringToChar : String -> Char 
 	op asciiCharString : String -> Nat 
+	
+	
 	
 	op _to_ : Nat Nat -> List{K} 
 	op cast : K K -> K [metadata "strict=(1)"] // as described in 6.3 // totype, fromvalue

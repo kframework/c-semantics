@@ -653,10 +653,10 @@ kmod DYNAMIC-C-CONVERSIONS is
 		andBool I:Int >Int max(T:Type)
 		[structural] 
 	rule
-		arithInterpret(T:Type, I:Int) => arithInterpret(T:Type, _+Int_(I:Int, (max(T:Type) +Int 1)))
+		arithInterpret(T:Type, I:Int) => arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
 		if hasUnsignedIntegerType(T:Type)
 		andBool I:Int <Int min(T:Type)
-		andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
+		// andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
 		[structural] 
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]

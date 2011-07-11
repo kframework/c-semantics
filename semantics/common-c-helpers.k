@@ -282,6 +282,50 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule max(bitfieldType(T:Type, N:Nat)) => _-Int_(2 ^Nat absInt(_-Int_(N:Nat, 1)), 1)
 		if hasSignedIntegerType(T:Type)
 		[structural]
+		
+		
+	rule NullPointerConstant => 0 [structural]
+	
+	rule _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
+		=> piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
+		if N:Nat >=Nat 0 andBool N':Nat >=Nat 0 
+		[structural] 
+	rule _bit::_(piece(0, 0), N:Nat) => N:Nat [structural] 
+	rule piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) [structural] 
+	rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
+	rule type(tv(?, T:Type)) => T:Type [structural]
+
+	rule isBasicType(K:K) => if (
+		K:K ==Bool bool
+		orBool K:K ==Bool void
+		orBool K:K ==Bool char
+		orBool K:K ==Bool short-int
+		orBool K:K ==Bool int
+		orBool K:K ==Bool long-int
+		orBool K:K ==Bool long-long-int
+		orBool K:K ==Bool float
+		orBool K:K ==Bool double
+		orBool K:K ==Bool long-double
+		orBool K:K ==Bool signed-char
+		orBool K:K ==Bool unsigned-char
+		orBool K:K ==Bool unsigned-short-int
+		orBool K:K ==Bool unsigned-int
+		orBool K:K ==Bool unsigned-long-int
+		orBool K:K ==Bool unsigned-long-long-int
+		orBool K:K ==Bool no-type
+		orBool getKLabel(K:K) ==Bool 'enumType
+		) then true else false fi
+		[structural]
+		
+	rule setOfTypes => Set(
+		l('arrayType),, 
+		l('bitfieldType),, 
+		l('functionType),, 
+		l('pointerType),, l('structType),, l('unionType),, 
+		l('qualifiedType)
+	) [structural]
+	
+	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 endkm
 
 kmod COMMON-C-BITSIZE is
