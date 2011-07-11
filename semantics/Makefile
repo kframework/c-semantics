@@ -62,11 +62,31 @@ endif
 %.pdf: %.tex semantics.sty
 	@echo "Compiling latex..."
 	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
+	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
 
 # this is used to start all of the common files
-common-pdf-modules: common-c-syntax.pdf dynamic-c-semantics.k common-c-semantics.pdf common-c-standard-lib.pdf common-c-expressions.pdf common-c-memory.pdf common-c-statements.pdf common-c-conversions.pdf common-c-typing.pdf common-c-declarations.pdf common-c-helpers.pdf common-c-errors.pdf
+common-pdf-modules: \
+common-c-syntax.pdf \
+common-c-configuration.pdf \
+dynamic-c-configuration.pdf \
+common-c-helpers.pdf \
+common-c-statements.pdf \
+dynamic-c-statements.pdf \
+common-c-expressions.pdf \
+dynamic-c-expressions.pdf \
+common-c-declarations.pdf \
+dynamic-c-declarations.pdf \
+common-c-typing.pdf \
+dynamic-c-typing.pdf \
+dynamic-c-conversions.pdf \
+dynamic-c-memory.pdf \
+dynamic-c-standard-lib.pdf \
+common-c-semantics.pdf \
+dynamic-c-semantics.pdf \
+c.pdf
+# c-syntax.pdf
 
 c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."

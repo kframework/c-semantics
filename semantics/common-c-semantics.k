@@ -483,7 +483,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 		[structural]
 		
 		
-	/*@ \source \source[n1570]{\para{6.10.6}{1}}
+	/*@ \source[n1570]{\para{6.10.6}{1}}
 	A preprocessing directive of the form
 	\cdisplay{# pragma pp-tokensoptnew-line}
 \broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
