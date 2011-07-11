@@ -20,37 +20,37 @@ my $globalTotalTime = 0;
 my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
 
 my @compilers = (
-	# [
-		# 'gcc', 
-		# "$gccCommand -Werror %s", 
-		# './a.out'
-	# ],
 	[
-		'kcc', 
-		"kcc -s %s",
+		'gcc', 
+		"$gccCommand -Werror %s", 
 		'./a.out'
 	],
 	# [
-		# 'valgrind', 
-		# "$gccCommand %s", 
-		# 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
-	# ],
-	# [
-		# 'UBC', 
-		# 'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
+		# 'kcc', 
+		# "kcc -s %s",
 		# './a.out'
 	# ],
-	# [
-		# 'ccured', 
-		# '~/tools/ccured/bin/ccured %s', 
-		# './a.out'
-	# ],
+	[
+		'valgrind', 
+		"$gccCommand %s", 
+		'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
+	],
+	[
+		'UBC', 
+		'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
+		'./a.out'
+	],
+	[
+		'ccured', 
+		'~/tools/ccured/bin/ccured %s', 
+		'./a.out'
+	],
 	# [ # doesn't seem to find anything
 		# 'fjalar', 
 		# "$gccCommand %s", 
 		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar --leak-check=no --xml-output-file=fjalar.out.xml ./a.out'
 	# ],
-	# [ # doesn't work well with annotations
+	# [ # doesn't work well without annotations
 		# 'deputy', 
 		# 'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
 		# './a.out'
@@ -64,9 +64,10 @@ my @compilers = (
 );
 
 # bench('badArithmetic');
-bench('badPointers');
-bench('badMemory');
+# bench('badPointers');
+# bench('badMemory');
 # bench('gcc.all');
+bench('custom');
 
 sub bench {
 	my ($dir) = (@_);

@@ -1040,6 +1040,13 @@ second operand from the first.
 	rule - tv(I1:Int, T:Type) => arithInterpret(T:Type, -Int_(I1:Int))
 		if isPromotedInteger(T:Type)
 		[structural]
+		
+	rule piece(unknown(N:Nat), N:Nat) /Int M:Nat 
+		=> piece(unknown(N:Nat), N:Nat)
+		if M:Nat =/=Bool 0
+		andBool isConcreteNumber(M:Nat)
+		[structural]
+		
 	
 	// floats
 	// fixme

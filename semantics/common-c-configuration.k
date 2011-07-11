@@ -65,8 +65,19 @@ kmod COMMON-C-CONFIGURATION is
 					<buffer color="lightgray"> .List </buffer>
 					<blocked color="lightgray"> false </blocked>
 					<k color="red" multiplicity="?"> .K </k>
+					@latex("\\kBR")
 					<threadLocal>
 						<callStack color="violet"> .List </callStack> // stack of "control" cells
+						<calculateGotoMap color="cyan">
+							<gotoCalculation multiplicity="?" color="cyan">
+								<computation color="cyan"> .K </computation>
+								<computationTail color="cyan"> .K </computationTail>
+								<declarationStack color="cyan"> .List </declarationStack>
+								<nestingDepthGoto color="cyan"> 0 </nestingDepthGoto>
+								<blockHistoryGoto color="cyan"> .List </blockHistoryGoto>
+								<loopStackGoto color="cyan"> .List </loopStackGoto>
+							</gotoCalculation>
+						</calculateGotoMap>
 						@latex("\\kBR")
 						<control>
 							//<statick> .K </statick>
@@ -103,17 +114,6 @@ kmod COMMON-C-CONFIGURATION is
 							<currentTranslationUnit color="lightgray"> "" </currentTranslationUnit>
 							<currentFunction color="lightgray"> .K </currentFunction>
 							<currentProgramLoc color="black"> .K </currentProgramLoc>
-							@latex("\\kBR")
-							<calculateGotoMap color="cyan">
-								<gotoCalculation multiplicity="?" color="cyan">
-									<computation color="cyan"> .K </computation>
-									<computationTail color="cyan"> .K </computationTail>
-									<declarationStack color="cyan"> .List </declarationStack>
-									<nestingDepthGoto color="cyan"> 0 </nestingDepthGoto>
-									<blockHistoryGoto color="cyan"> .List </blockHistoryGoto>
-									<loopStackGoto color="cyan"> .List </loopStackGoto>
-								</gotoCalculation>
-							</calculateGotoMap>
 						</control>
 					</threadLocal>
 				</thread>

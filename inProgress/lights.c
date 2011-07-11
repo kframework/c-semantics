@@ -77,6 +77,6 @@ int main(void){
 	// printStates();
 	//while(++ticks < 7){
 	while(1) {
-		changeNS(); changeEW();
+		changeNS() + changeEW();
 	}
 }
