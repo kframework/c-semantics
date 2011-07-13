@@ -125,11 +125,11 @@ sub handleEq {
 			$locationFrom = $2;
 			$locationTo = $2;
 		}
-		if ($line =~ m/(super cooling wrapper)/){
+		if ($line =~ m/(super-cooling=\(wrapper\))/){
 			$kind = $1;
-		} elsif ($line =~ m/(super cooling result)/){
+		} elsif ($line =~ m/(super-cooling=\(result\))/){
 			$kind = $1;
-		} elsif ($line =~ m/(super cooling)/){
+		} elsif ($line =~ m/(super-cooling)/){
 			$kind = $1;
 		} elsif ($line =~ m/(structural|computational|cooling|heating)/) {
 			$kind = $1;
