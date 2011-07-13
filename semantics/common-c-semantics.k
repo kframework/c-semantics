@@ -173,7 +173,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op byteSizeofType : K -> K [metadata "strict=()"] 
 	op bitsToBytes : Nat -> Nat 
 	op HOLE : -> Expression 
-	op l : KLabel -> K [metadata "builtin wrapper"] 
+	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
 	op _contains_ : Set K -> Bool [memo] 
 	
 	
