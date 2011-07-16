@@ -5,94 +5,19 @@
 \usepackage{etex}
 \usepackage{courier}
 \usepackage{booktabs}
-
+%\usepackage{geometry}
+ 
+%\newgeometry{papersize={16in,8.5in},textwidth=15.75in,textheight=7.7in}
 % overrides
-\renewcommand{\ellipses}{\mathrel{\cdots}}
+\renewcommand{\ellipses}{\mathrel{\cdot\kern-2pt\cdot\kern-2pt\cdot}}
 \renewcommand{\kallLarge}{\ballLarge}
 \renewcommand{\mall}[3]{\left\langle{#3}\right\rangle_{\sf #2}}
-%\renewcommand{\kconfig}[1]{\par\ensuremath{#1}}
 \renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}\bigskip}
 
 \newcommand{\mycomment}[1]{#1}
 \providecommand{\kctor}{}
 \providecommand{\kmemo}{}
 \providecommand{\kstrat}[1]{}
-% \renewcommand{\kcell}[5]{
-% \begin{tabular}{@{}c@{}}
-% \vtop{
-% \vskip-1ex
-% \hbox{
-% \begin{tikzpicture}
-% \node[draw=#1!50!black
-	% ,font=\small % this is the font of the text in the body
-	% ,line width=1pt
-	% ,name=cell
-	% ,shape=rounded rectangle
-	% ,/pgf/rounded rectangle arc length=180
-	% ,/pgf/rounded rectangle east arc=#5
-	% ,/pgf/rounded rectangle west arc=#4
-	% ,fill=#1!20
-	% ,minimum height=3.8ex
-	% ,minimum width=3em
-	% ,node distance=1pt
-% ]
-% {#3};
-% \draw[shift=(cell.north east)]
-	% plot coordinates{(-.1pt,-.5pt)} 
-	% node[name=ce, minimum size=.01pt, inner sep=0pt]{};
-% \draw[shift=(cell.north west)]
-	% plot coordinates{(.1pt,-.5pt)} 
-	% node[name=cw, minimum size=.01pt, inner sep=0pt]{};
-% \draw[color=#1!20,line width=1.2pt](cw.east)--(ce.west);
-% \draw[shift=(cell.north west)]
-	% plot coordinates{(0,-1.05pt)}
-	% node[name=label
-		% ,font=\small % this is the font of the label
-		% ,inner sep=0pt
-		% ,anchor=south west
-		% ,shape=rounded rectangle
-		% ,/pgf/rounded rectangle arc length=180
-		% ,/pgf/rounded rectangle east arc=convex
-		% ,/pgf/rounded rectangle west arc=convex
-		% ,fill=#1!20
-		% ,draw=#1!20
-		% ,line width=1pt
-		% ,minimum width=2em
-		% ,minimum height=2.5ex
-		% ,draw=#1!50!black
-	% ]
-	% {#2};
-% \draw[shift=(label.south east)]
-	% plot coordinates{(-.1pt,.5pt)} 
-	% node[name=le, minimum size=.01pt, inner sep=0pt]{};
-% \draw[shift=(label.south west)]
-	% plot coordinates{(.1pt,.5pt)} 
-	% node[name=lw, minimum size=.01pt, inner sep=0pt]{};
-% \draw[color=#1!20, line width=1.2pt](lw.east)--(le.west);
-% \draw[color=#1!50!black, line width=1pt](le.west) -- (ce.east);
-% \ifthenelse{\equal{#4}{none}}{%
-% \draw[fill
-	% ,color=#1!50!black
-	% ,decorate
-	% ,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
-	% (cell.south west)--(cell.north west);%
-% }{
-% }
-% \ifthenelse{\equal{#5}{none}}{%
-% \draw[fill
-	% ,color=#1!50!black
-	% ,decorate
-	% ,decoration={coil, aspect=0, segment length=.5ex, amplitude=1pt}]
-	% (cell.north east)--(cell.south east);%
-% }{
-% }
-% \end{tikzpicture}%
-% }
-% \vskip2ex}
-% \end{tabular}
-% }
-
-
 
 % configuration
 \lstdefinelanguage{k}{
@@ -104,13 +29,6 @@
 	tabsize=2,
 	basicstyle=\ttfamily,
 }
-
-	
-	% 
-	% % sensitive=false,
-	% % morecomment=[l]{//},
-	% % morecomment=[s]{/*}{*/},
-	% % morestring=[b]",
 
 \lstset{language=C}
 \lstset{
@@ -127,22 +45,6 @@
 \newcommand{\cdisplay}[1]{\lstinline`#1`}
 % 
 \newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
-
-% \lstnewenvironment{clisting}{%\small
-  % % \filbreak % try adding for samepage
-  % \lstset{
-    % language=C,
-    % tabsize=2,
-    % %frame=single,
-    % %framexrightmargin=-.02\textwidth,
-    % %framexleftmargin=-.02\textwidth,
-    % columns=fullflexible,
-    % %mathescape=true,
-    % upquote=true,
-	% texcl=true,
-  % }% \filbreak % try adding for samepage
-% }{}
-
 
 \newcommand{\source}[2][]{%
 	\paragraph[]{%

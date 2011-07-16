@@ -25,11 +25,11 @@ my @compilers = (
 		"$gccCommand -Werror %s", 
 		'./a.out'
 	],
-	# [
-		# 'kcc', 
-		# "kcc -s %s",
-		# './a.out'
-	# ],
+	[
+		'kcc', 
+		"kcc -s %s",
+		'./a.out'
+	],
 	[
 		'valgrind', 
 		"$gccCommand %s", 
@@ -50,16 +50,16 @@ my @compilers = (
 		# "$gccCommand %s", 
 		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar --leak-check=no --xml-output-file=fjalar.out.xml ./a.out'
 	# ],
-	# [ # doesn't work well without annotations
-		# 'deputy', 
-		# 'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
-		# './a.out'
-	# ],
-	# [
-		# 'frama-c', 
-		# 'frama-c -val -val-signed-overflow-alarms -slevel 100 %s',
-		# 'true'
-	# ],
+	[ # doesn't work well without annotations
+		'deputy', 
+		'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
+		'./a.out'
+	],
+	[
+		'frama-c', 
+		'[ ! `frama-c -val -val-signed-overflow-alarms -slevel 100 %s | grep assert` ]',
+		'true'
+	],
 	
 );
 

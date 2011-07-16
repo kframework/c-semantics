@@ -53,10 +53,11 @@ endif
 %.tex: check-vars $(K_MAUDE) c.k %.k Makefile
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	$(K_MAUDE) c.k -l C -style bb -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
 	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
-#\\geometry{papersize={14in,8.5in},textwidth=13.75in,textheight=7.7in}
+# @sed -i 's|\\begin{kdefinition}||' temp-c-$*.tex
+# @sed -i 's|\\end{kdefinition}||' temp-c-$*.tex
 	@mv temp-c-$*.tex $@
 
 %.pdf: %.tex semantics.sty
@@ -66,7 +67,37 @@ endif
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
 
-# this is used to start all of the common files
+all-tex: PDF_FILES=\
+common-c-syntax.k \
+common-c-configuration.k \
+dynamic-c-configuration.k \
+common-c-helpers.k \
+common-c-statements.k \
+dynamic-c-statements.k \
+common-c-expressions.k \
+dynamic-c-expressions.k \
+common-c-declarations.k \
+dynamic-c-declarations.k \
+common-c-typing.k \
+dynamic-c-typing.k \
+dynamic-c-conversions.k \
+dynamic-c-memory.k \
+dynamic-c-standard-lib.k \
+common-c-semantics.k \
+dynamic-c-semantics.k \
+c.k
+all-tex: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES) | grep -o ' .* '`
+all-tex:
+	@rm -f temp-c-$*.tex
+	@echo "Creating latex..."
+	$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
+	@mv temp-c-$*.tex $@
+	
+	
+
+	
 common-pdf-modules: \
 common-c-syntax.pdf \
 common-c-configuration.pdf \
@@ -87,6 +118,8 @@ common-c-semantics.pdf \
 dynamic-c-semantics.pdf \
 c.pdf
 # c-syntax.pdf
+#
+
 
 c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."

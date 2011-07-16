@@ -21,6 +21,9 @@ sed -i 's/typedef int (\*frob)()/typedef void (\*frob)(void)/g' 921110-1.c
 sed -i 's/static count = 0/static int count = 0/g' pr34176.c
 
 
+echo "Fixing restrict..."
+sed -i 's/__restrict__/restrict/g' *.c
+
 echo "Fixing size_t..."
 # replace __SIZE_TYPE__ with size_t
 sed -i 's/__SIZE_TYPE__/size_t/g' *.c

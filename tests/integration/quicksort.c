@@ -82,57 +82,13 @@ int partition(void * base, size_t num_elements, size_t element_size,
 {
     int low = 0, high = num_elements - 1;
     exchange_elements(num_elements - 1, pivotIndex);
-	// num_elements = 16
-	// low = 0
-	// high = -1
-	// pivotIndex = 9
-/*
-	 a) num_elem = 16, pivotIndex = 9, low = 0, high = 15\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 15\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 14\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 13\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 12\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 11\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 10\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 9\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 8\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 7\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 6\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 5\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 4\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 3\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 2\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 1\n
-	 e) num_elem = 16, pivotIndex = 9, low = 0, high = 0\n
-	 
- "Int" 14(.List{K}) |-> "Int" 9(.List{K}) 
-  "Int" 15(.List{K}) |-> "Int" 4(.List{K}) 
-  "Int" 16(.List{K}) |-> "Int" 3(.List{K}) 
-  "Int" 17(.List{K}) |-> "Int" 0(.List{K}) 
-  "Int" 18(.List{K}) |-> "Int" 3(.List{K}) 
-  "Int" 19(.List{K}) |-> "Int" 5(.List{K}) 
-  "Int" 20(.List{K}) |-> "Int" 14(.List{K}) 
-  "Int" 21(.List{K}) |-> "Int" 15(.List{K}) 
-  "Int" 22(.List{K}) |-> "Int" 15(.List{K}) 
-  "Int" 23(.List{K}) |-> "Int" 13(.List{K}) 
-  "Int" 24(.List{K}) |-> "Int" 2(.List{K}) 
-  "Int" 25(.List{K}) |-> "Int" 3(.List{K}) 
-  "Int" 26(.List{K}) |-> "Int" 8(.List{K}) 
-  "Int" 27(.List{K}) |-> "Int" 1(.List{K}) 
-  "Int" 28(.List{K}) |-> "Int" 3(.List{K}) 
-  "Int" 29(.List{K}) |-> "Int" 0(.List{K}) 
 
-*/
     while (1) {
 		while (element_less_than(low, num_elements-1) && low < num_elements-1) {
 			low++;
 		}
 		while ((!element_less_than(high, num_elements-1)) && high > 0) {
-			//printf("a) num_elem = %d, pivotIndex = %d, low = %d, high = %d\n", num_elements, pivotIndex, low, high);
 			high--;
-			// if (high < 0) {
-				// debug(0);
-			// }
 		}
 		if (low >= high) {
 			break;
@@ -169,11 +125,9 @@ int compare_int(const void* left, const void* right) {
 }
 
 int main(void) {
-    //int size = atoi(argv[1]);
 	int size = 8;
     int* a = malloc(sizeof(int)*size);
     int i;
-    //srand(1);
 
     for(i=0; i<size; i++) {
         a[i] = rand() % size;

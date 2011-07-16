@@ -356,6 +356,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
 			</ stackFrame >
 		) ...</ callStack >
+		@latex("\\kBR")
 		(< control >
 			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
 			< currentFunction > CurrFun:K </ currentFunction >
@@ -369,7 +370,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 		...</ control >)
 		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
-		[structural]
+		[structural large]
 endkm
 
 kmod DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is

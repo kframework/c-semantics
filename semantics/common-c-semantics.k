@@ -180,7 +180,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	op bind : List{C} List{Type} -> K 
-	op tv : List{K} Type -> Value 
+	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
 	op concretize : Type K -> K [metadata "strict=(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 

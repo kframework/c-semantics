@@ -97,9 +97,10 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 		< k > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement) ~> K:K
 			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi), Post:K, S:Statement) ~> popLoop)
 		</ k >
+		@latex("\\kBR")
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		< loopStack > .List => ListItem(kpair(Num:Nat, K:K)) ...</ loopStack >
-		[structural] 
+		[structural large] 
 		
 	rule [for]:
 		< k > loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement)
@@ -295,10 +296,11 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			=> addVariablesForBlock(CurrentBlock:Nat, DeclStack:List)
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (Prefix:List ListItem(CurrentBlock:Nat) ActualHistory:List), K:K, LoopStack:List, DeclStack:List))
 		...</ k >
+		@latex("\\kBR")
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:Nat) ActualHistory:List </ blockHistory >
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
-		[structural] 
+		[structural large] 
 		
 	rule
 		< k > ( . 
@@ -308,10 +310,11 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			)
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (? ListItem(TargetBlock:Nat) ActualHistory:List), ?, ?, DeclStack:List))
 		...</ k >
+		@latex("\\kBR")
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:Nat)) 
 		if sNat(ActualDepth:Nat) =/=Bool TargetDepth:Nat
-		[structural] 
+		[structural large] 
 	
 	//  We've made it to the block above the target
 	rule
@@ -427,6 +430,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 			(< blockStack > .List </ blockStack > => .Bag)
 			(? => C:Bag)
 		</ control >
+		@latex("\\kBR")
 		< gtypes >... Tu:K |-> Map((? (F:Id |-> functionType(T:Type, ?)))) ...</ gtypes >
 		< callStack >
 			ListItem(
@@ -438,7 +442,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 				</ stackFrame >
 			) => .List
 		...</ callStack >
-		[structural] 
+		[structural large] 
 endkm
 
 kmod DYNAMIC-SEMANTICS-BLOCKS is

@@ -165,6 +165,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 			< blockHistoryGoto > ListItem(Num:Nat) OldBlockHistory:List </ blockHistoryGoto >
 			< loopStackGoto > OldLoopStack:List </ loopStackGoto >
 		</ gotoCalculation >
+		@latex("\\kBR")
 		(. =>
 			< gotoCalculation > 
 				< computation > S:K </ computation > 
@@ -182,7 +183,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 				< loopStackGoto > ListItem(kpair(Num:Nat, (K:K ~> Tail:K))) OldLoopStack:List </ loopStackGoto >
 			</ gotoCalculation >
 		)
-		[structural] 
+		[structural large] 
 		
 	rule
 		< gotoCalculation >
@@ -274,13 +275,14 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map(
 			(M:Map => (M:Map[caseHelper(CaseNum:Nat) / genLabel(SwitchNum:Nat, Val:K)])[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / caseHelper(CaseNum:Nat)])
 		) ...</ gotoMap >
+		@latex("\\kBR")
 		< currentFunction > F:Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
 		if notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, Val:K))
 		//  andBool hasIntegerType(T:Type)
-		[structural] 
+		[structural large] 
 	rule
 		< computation > (Default(SwitchNum:Nat, S:K) => S:K) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
