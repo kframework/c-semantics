@@ -25,7 +25,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/wrapper.pl \
 	$(SCRIPTS_DIR)/compile.pl \
-	$(SCRIPTS_DIR)/compileProgram.sh \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
 	$(SCRIPTS_DIR)/programRunner.pl \

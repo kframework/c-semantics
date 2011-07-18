@@ -58,18 +58,22 @@ my $cparser = catfile($myDirectory, 'cparser');
 my $warnFlag;
 my $dumpFlag;
 
+my @gccDefines = ();
+my @gccIncludeDirs = ();
 
 my $spec = q(#
-  -c		Compile and assemble, but do not link
-  -i		Include support for runtime file io
-#-I <dir>	Look for headers in <dir>
-  -lm		Ignored
-#-n		Allows exploring nondetermism
-  -s		Do not link against the standard library
-  -o <file>	Place the output into <file>
-#-verbose	Do not delete intermediate files
-  -w		Do not print warning messages
-  <files>...	.c files to be compiled [required]
+  -c				Compile and assemble, but do not link
+  -i				Include support for runtime file io
+  -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
+					{ push(@::gccDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+  -I <dir>			Look for headers in <dir>
+					{ push(@::gccIncludeDirs, " -I$dir "); }
+  -lm				Ignored
+  -s				Do not link against the standard library
+  -o <file>			Place the output into <file>
+#-verbose			Do not delete intermediate files
+  -w				Do not print warning messages
+  <files>...			.c files to be compiled [required]
 		{ defer { foreach (@files) { compile($_); } } }
 		
 There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
@@ -130,12 +134,6 @@ $programRunner = performSpecializations($programRunner);
 
 print $programTemp "$programRunner\n\n";
 
-# my $slurpingResults = slurp(@baseMaterialFiles);
-# if ($slurpingResults eq ""){
-	# die "Nothing returned from slurper";
-# }
-
-# print $programTemp $slurpingResults;
 print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkTemp\nENDOFCOMPILEDPROGRAM\n }\n";
 # if [ ! "$dumpFlag" ]; then
 	# rm -f $linkTemp
@@ -237,7 +235,11 @@ sub compileProgram {
 	if (! -e $fullfilename) {
 		die "$filename.c not found";
 	}
-	my $retval = system("gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log");
+	
+	# print "@::gccDefines\n";
+	my $gccCommand = "gcc $PEDANTRY_OPTIONS $GCC_OPTIONS @::gccDefines @::gccIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+	print "$gccCommand\n";
+	my $retval = system($gccCommand);
 	open FILE, "$filename.warnings.log";
 	my @lines = <FILE>;
 	close FILE;
