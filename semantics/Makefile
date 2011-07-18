@@ -67,7 +67,7 @@ endif
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
 
-all-tex: PDF_FILES=\
+all.tex: PDF_FILES=\
 common-c-syntax.k \
 common-c-configuration.k \
 dynamic-c-configuration.k \
@@ -86,13 +86,13 @@ dynamic-c-standard-lib.k \
 common-c-semantics.k \
 dynamic-c-semantics.k \
 c.k
-all-tex: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES) | grep -o ' .* '`
-all-tex:
+all.tex: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES) | grep -o ' .* '`
+all.tex:
 	@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
 	$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
-	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
+#@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
+#@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
 	@mv temp-c-$*.tex $@
 	
 	

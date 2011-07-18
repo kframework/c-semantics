@@ -52,10 +52,12 @@ my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
 my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
+my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
+my $cparser = catfile($myDirectory, 'cparser');
 
 my $warnFlag;
 my $dumpFlag;
-my $modelFlag;
+
 
 my $spec = q(#
   -c		Compile and assemble, but do not link
@@ -187,8 +189,9 @@ sub compile {
 	# assume it's a normal input file, so compile it
 	my $localOval = "$baseName.o";
 	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
-	system("$compileProgramScript $warnFlag $dumpFlag $modelFlag $inputFile") == 0
-		or die "Compilation failed: $?";
+	compileProgram($warnFlag, $dumpFlag, $inputFile) or die "Compilation failed";
+	# system("$compileProgramScript $warnFlag $dumpFlag $modelFlag $inputFile") == 0
+		# or die "Compilation failed: $?";
 
 	if (! -e "program-$baseName-compiled.maude") {
 		die "Expected to find program-$baseName-compiled.maude, but did not";
@@ -204,6 +207,83 @@ sub compile {
 	} else {
 		push(@shouldBeDeleted, $localOval);
 	}
+}
+
+
+# function die {
+	# cleanup
+	# echo "Something went wrong while compiling the program."
+	# echo "$1" >&2
+	# exit $2
+# }
+# function cleanup {
+	# rm -f $compilationLog
+# }
+
+sub compileProgram {
+	my ($warnFlag, $dumpFlag, $inputFile) = (@_);
+	my $nowarn = $warnFlag;
+	my $dflag = $dumpFlag;
+
+	my $PEDANTRY_OPTIONS = "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
+	my $GCC_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
+	my $K_PROGRAM_COMPILE = "perl $xmlToK";
+	my $compilationLog = File::Temp->new( TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	push(@temporaryFiles, $compilationLog);
+	
+	my $trueFilename = $inputFile;
+	my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
+	my $fullfilename = catfile($directoryname, "$filename.c");
+	if (! -e $fullfilename) {
+		die "$filename.c not found";
+	}
+	my $retval = system("gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log");
+	open FILE, "$filename.warnings.log";
+	my @lines = <FILE>;
+	close FILE;
+	if ($retval) {
+		print STDERR "Error running preprocessor:\n";
+		print STDERR join("\n", @lines);
+		die();
+	}
+	if (! $nowarn) {
+		print join("\n", @lines);
+	}
+	$retval = system("$cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+	open FILE, "$filename.warnings.log";
+	@lines = <FILE>;
+	close FILE;
+	if ($retval) {
+		unlink("$filename.gen.parse.tmp");
+		unlink("$filename.warnings.log");
+		print STDERR "Error running C parser:\n";
+		print STDERR join("\n", @lines);
+		die();		
+	}
+	
+	if (! $nowarn) {
+		print join("\n", @lines);
+	}
+	if (! $dflag) {
+		unlink("$filename.pre.gen");
+		unlink("$filename.warnings.log");
+	}
+	move("$filename.gen.parse.tmp", "$filename.gen.parse") or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
+	
+	my $PROGRAMRET = system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude");
+	open FILE, "$compilationLog" or die "Could not open $compilationLog";
+	@lines = <FILE>;
+	close FILE;
+	if (! $dflag) {
+		unlink("$filename.gen.parse");
+	}
+	if ($PROGRAMRET) {
+		print STDERR "Error compiling program:\n";
+		print STDERR join("\n", @lines);
+		unlink($compilationLog);
+		die();
+	}
+	return 1;
 }
 
 __END__
