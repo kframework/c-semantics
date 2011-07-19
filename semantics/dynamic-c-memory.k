@@ -213,6 +213,17 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural] 
 	
 	// FIXME make sure it's a byte
+	
+	rule [read-byte-fast]:
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
+			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
+			~> assert(Offset:Nat <Nat Size:Nat, 2)
+			~> tv(V:K, no-type)
+		...</ k >
+		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
+		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
+		< buffer > .List </ buffer >
+		[structural]
 	rule [read-byte]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
 			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)

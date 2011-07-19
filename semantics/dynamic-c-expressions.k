@@ -39,8 +39,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	// rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	// rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
 	// these come from things like (*f)(a, b, c)
-	rule [reval-function]: reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-	rule [peval-function]: peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	// rule [reval-function]: reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule [reval-function]: reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]	
+	// rule [peval-function]: peval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
+	rule [peval-function]: peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	
 endkm
 

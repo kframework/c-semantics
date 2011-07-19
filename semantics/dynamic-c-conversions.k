@@ -47,6 +47,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
 	
+	rule hasBeenPromoted(enumType(?)) => true [structural]
 	rule hasBeenPromoted(int) => true [structural]
 	rule hasBeenPromoted(unsigned-int) => true [structural]
 	rule hasBeenPromoted(long-int) => true [structural]
@@ -93,12 +94,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		andBool notBool hasBeenPromoted(T:Type)
 		andBool hasIntegerType(T:Type)
 		[structural] 
-	// rule
-		// arithConversion-int(?, tv(?, (enumType(?) => int)), ?)
-		// [structural] 
-	// rule
-		// arithConversion-int(?, ?, tv(?, (enumType(?) => int)))
-		// [structural] 
+
 	rule
 		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type))
 			=> L:KLabel(cast(finalType, tv(V:BaseValue, T:Type)),, cast(finalType, tv(V':BaseValue, T':Type)))
@@ -108,8 +104,8 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
 		andBool (
 			T:Type =/=Bool T':Type
-			orBool notBool hasBeenPromoted(T:Type) 
-			orBool notBool hasBeenPromoted(T':Type)
+			//orBool notBool hasBeenPromoted(T:Type) 
+			//orBool notBool hasBeenPromoted(T':Type)
 		)
 		where finalType = usualArithmeticConversion(T:Type, T':Type)
 		[structural] 
@@ -163,17 +159,14 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	
 	rule
 		promote(T:Type) => int
-		if hasIntegerType(T:Type)
-		andBool rank(T:Type) <=Int rank(int)
+		if rank(T:Type) <=Int rank(int)
 		andBool min(int) <=Int min(T:Type) 
 		andBool max(int) >=Int max(T:Type)		
 		[structural]
 
 	rule
 		promote(T:Type) => T:Type
-		if hasIntegerType(T:Type)
-		andBool rank(T:Type) >Int rank(int)
-		andBool notBool hasBitfieldType(T:Type)
+		if rank(T:Type) >Int rank(int)
 		[structural]
 
 	rule
@@ -186,8 +179,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 
 	rule
 		promote(T:Type) => unsigned-int
-		if hasIntegerType(T:Type)
-		andBool rank(T:Type) <=Int rank(int)
+		if rank(T:Type) <=Int rank(int)
 		andBool notBool (
 			min(int) <=Int min(T:Type) 
 			andBool max(int) >=Int max(T:Type)		
@@ -202,12 +194,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 			andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))	
 		)
 		[structural]		
-	
-	// this only happens for argument promotions
-	// rule
-		// promote(tv(F:Float, float)) => tv(F:Float, double)
-		// [structural]
-	
+		
 	// Then the following rules are applied to the promoted operands:
 	
 	// If both operands have the same type, then no further conversion is needed
@@ -223,9 +210,10 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural]
 
 	op hasSameSignedness : Type Type -> Bool [memo]
-	rule hasSameSignedness(T:Type, T':Type)
-		=> (hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
-			orBool (hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
+	rule [hasSameSignedness]: 
+		hasSameSignedness(T:Type, T':Type)
+			=> (hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
+		orBool (hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
 		[structural]
 		
 	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank

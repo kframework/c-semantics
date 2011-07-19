@@ -1054,34 +1054,34 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 
-	rule hasIncompleteType(incompleteArrayType(?)) => true [structural]
-	rule hasIncompleteType(qualifiedType(T:Type, ?)) => hasIncompleteType(T:Type) [structural]
-	rule hasIncompleteType(T:Type) => false
+	rule [hasIncompleteType-true]: hasIncompleteType(incompleteArrayType(?)) => true [structural]
+	rule [hasIncompleteType-qualified]: hasIncompleteType(qualifiedType(T:Type, ?)) => hasIncompleteType(T:Type) [structural]
+	rule [hasIncompleteType-false]: hasIncompleteType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'incompleteArrayType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasExternType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
+	rule [hasExternType-qualified]: hasExternType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
 		[structural]
-	rule hasExternType(T:Type) => false
+	rule [hasExternType-false]: hasExternType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasStaticType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
+	rule [hasStaticType-qualified]: hasStaticType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
 		[structural]
-	rule hasStaticType(T:Type) => false
+	rule [hasStaticType-false]: hasStaticType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasBitfieldType(bitfieldType(?, ?)) => true [structural]
-	rule hasBitfieldType(T:Type) => false
+	rule [hasBitfieldType-true]: hasBitfieldType(bitfieldType(?, ?)) => true [structural]
+	rule [hasBitfieldType-false]: hasBitfieldType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'bitfieldType
 		[structural]
 		
-	rule hasFunctionType(functionType(?, ?)) => true [structural]
-	rule hasFunctionType(prototype(T:Type)) => hasFunctionType(T:Type) [structural]
-	rule hasFunctionType(qualifiedType(T:Type, ?)) => hasFunctionType(T:Type) [structural]
-	rule hasFunctionType(T:Type) => false
+	rule [hasFunctionType-true]: hasFunctionType(functionType(?, ?)) => true [structural]
+	rule [hasFunctionType-prototype]: hasFunctionType(prototype(T:Type)) => hasFunctionType(T:Type) [structural]
+	rule [hasFunctionType-qualified]: hasFunctionType(qualifiedType(T:Type, ?)) => hasFunctionType(T:Type) [structural]
+	rule [hasFunctionType-false]: hasFunctionType(T:Type) => false
 		if getKLabel(T:Type) =/=Bool 'functionType
 		andBool getKLabel(T:Type) =/=Bool 'qualifiedType
 		andBool getKLabel(T:Type) =/=Bool 'prototype 

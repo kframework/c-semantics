@@ -333,38 +333,38 @@ kmod COMMON-C-SETTINGS is
 	op numBytes : Type -> Nat [memo] 
 	op numBits : Type -> Nat [memo] 
 
-	rule numBitsPerByte => 8 [structural]
+	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	
-	rule numBytes(bool) => 1 [structural]
-	rule numBytes(signed-char) => 1 [structural]
-	rule numBytes(short-int) => 2 [structural]
-	rule numBytes(int) => 4 [structural]
-	rule numBytes(long-int) => 4 [structural]
-	rule numBytes(long-long-int) => 8 [structural]
+	rule [numBytes-bool]: numBytes(bool) => 1 [structural]
+	rule [numBytes-signed-char]: numBytes(signed-char) => 1 [structural]
+	rule [numBytes-short-int]: numBytes(short-int) => 2 [structural]
+	rule [numBytes-int]: numBytes(int) => 4 [structural]
+	rule [numBytes-long-int]: numBytes(long-int) => 4 [structural]
+	rule [numBytes-long-long-int]: numBytes(long-long-int) => 8 [structural]
 	
-	rule numBytes(float) => 4 [structural]
-	rule numBytes(double) => 8 [structural]
-	rule numBytes(long-double) => 16 [structural]
+	rule [numBytes-float]: numBytes(float) => 4 [structural]
+	rule [numBytes-double]: numBytes(double) => 8 [structural]
+	rule [numBytes-long-double]: numBytes(long-double) => 16 [structural]
 	
-	rule numBytes(enumType(X:Id)) => numBytes(int) [structural]
+	rule [numBytes-enum]: numBytes(enumType(X:Id)) => numBytes(int) [structural]
 	
 	op cfg:sizeut : -> Type 
-	rule cfg:sizeut => unsigned-int [structural]
+	rule [cfg-size-t]: cfg:sizeut => unsigned-int [structural]
 	
 	op cfg:wcharut : -> Type
-	rule cfg:wcharut => int [structural]
+	rule [cfg-wchar-t]: cfg:wcharut => int [structural]
 	
 	op cfg:largestUnsigned : -> Type 
-	rule cfg:largestUnsigned => unsigned-long-long-int [structural]
+	rule [cfg-largestUnsigned]: cfg:largestUnsigned => unsigned-long-long-int [structural]
 
 	op cfg:ptrsize : -> Nat 
-	rule cfg:ptrsize => 4 [structural]
+	rule [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
 	
 	op cfg:ptrdiffut : -> Type 
-	rule cfg:ptrdiffut => int [structural]
+	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => int [structural]
 	
-	rule min(enumType(?)) => min(int) [structural]
-	rule max(enumType(?)) => max(int) [structural]
+	rule [min]: min(enumType(?)) => min(int) [structural]
+	rule [max]: max(enumType(?)) => max(int) [structural]
 	
 	op rank : Type -> Int 
 		
