@@ -679,13 +679,13 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The integer promotions are performed on each of the operands. The type of the result is that of the promoted left operand. If the value of the right operand is negative or is greater than or equal to the width of the promoted left operand, the behavior is undefined
 	*/
 	rule tv(I:Int, T:Type) << tv(N:Nat, T':Type) => leftShiftInterpret(T:Type, I:Int <<Int N:Nat, tv(I:Int, T:Type))
-		if isPromotedInteger(T:Type)
-		andBool isPromotedInteger(T':Type)
+		if hasBeenPromoted(T:Type)
+		andBool hasBeenPromoted(T':Type)
 		andBool N:Nat <Int numBits(T:Type)
 		[structural]
 	rule tv(I:Int, T:Type) >> tv(N:Nat, T':Type) => rightShiftInterpret(T:Type, I:Int >>Int N:Nat)
-		if isPromotedInteger(T:Type)
-		andBool isPromotedInteger(T':Type)
+		if hasBeenPromoted(T:Type)
+		andBool hasBeenPromoted(T':Type)
 		andBool N:Nat <Int numBits(T:Type)
 		[structural]
 				
@@ -696,7 +696,7 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the binary \cinline{&} operator is the bitwise AND of the operands (that is, each bit in the result is set if and only if each of the corresponding bits in the converted operands is set).
 	*/
 	rule tv(I1:Int, T:Type) & tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int &Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	
 	/*@ \source[n1570]{\para{6.5.11}{3--4}}
@@ -705,7 +705,7 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{^} operator is the bitwise exclusive OR of the operands (that is, each bit in the result is set if and only if exactly one of the corresponding bits in the converted operands is set).	
 	*/
 	rule tv(I1:Int, T:Type) ^ tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int xorInt I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.5.12}{3--4}}
@@ -714,14 +714,14 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{|} operator is the bitwise inclusive OR of the operands (that is, each bit in the result is set if and only if at least one of the corresponding bits in the converted operands is set).
 	*/
 	rule tv(I1:Int, T:Type) | tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int |Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 
 	/*@ \source[n1570]{\para{6.5.3.3}{4}}
 	The result of the \cinline{\~} operator is the bitwise complement of its (promoted) operand (that is, each bit in the result is set if and only if the corresponding bit in the converted operand is not set). The integer promotions are performed on the operand, and the result has the promoted type. If the promoted type is an unsigned type, the expression \cinline{\~E} is equivalent to the maximum value representable in that type minus \cinline{E}.
 	*/
 	rule ~ tv(I:Int, T:Type) => arithInterpret(T:Type, ~Int I:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 endkm
 
@@ -746,22 +746,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	rule tv(I1:Int, T:Type) < tv(I2:Int, T:Type)
 			=> makeTruth(I1:Int <Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:Type) <= tv(I2:Int, T:Type)
 			=> makeTruth(I1:Int <=Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:Type) > tv(I2:Int, T:Type)
 			=> makeTruth(I1:Int >Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:Type) >= tv(I2:Int, T:Type)
 			=> makeTruth(I1:Int >=Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule
@@ -808,14 +808,14 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule tv(I1:Int, T:Type) == tv(I2:Int, T:Type)
 		=> makeTruth(I1:Int ==Bool I2:Int)
 		if (
-			isPromotedInteger(T:Type)
+			hasBeenPromoted(T:Type)
 			orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:Type) != tv(I2:Int, T:Type)
 		=> makeTruth(I1:Int =/=Bool I2:Int)
 		if (
-			isPromotedInteger(T:Type)
+			hasBeenPromoted(T:Type)
 			orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
@@ -914,27 +914,27 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
 		(tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) == tv(?, T':Type)
-		if isPromotedInteger(T:Type) 
+		if hasBeenPromoted(T:Type) 
 		andBool hasPointerType(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(?, T:Type) == (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
 		if hasPointerType(T:Type) 
-		andBool isPromotedInteger(T':Type)
+		andBool hasBeenPromoted(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:Nat, T:Type) => tv(NullPointer, T':Type)) != tv(?, T':Type)
-		if isPromotedInteger(T:Type) 
+		if hasBeenPromoted(T:Type) 
 		andBool hasPointerType(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(?, T:Type) != (tv(N:Nat, T':Type) => tv(NullPointer, T:Type))
 		if hasPointerType(T:Type) 
-		andBool isPromotedInteger(T':Type)
+		andBool hasBeenPromoted(T':Type)
 		andBool N:Nat ==Bool NullPointerConstant
 		[structural]
 	rule
@@ -1021,25 +1021,25 @@ second operand from the first.
 		
 		
 	rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T:Type, _+Int_(I1:Int,I2:Int))
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	rule _-_(tv(I1:Int, T:Type), tv(I2:Int, T:Type)) => arithInterpret(T:Type, _-Int_(I1:Int,I2:Int))
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	rule tv(I1:Int, T:Type) * tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int *Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	rule tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int /Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		andBool I2:Int =/=Bool 0
 		[structural]
 	rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T:Type, I1:Int %Int I2:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		andBool min(T:Type) <=Int I1:Int /Int I2:Int andBool max(T:Type) >=Int I1:Int /Int I2:Int
 		andBool I2:Int =/=Bool 0
 		[structural]
 	rule - tv(I1:Int, T:Type) => arithInterpret(T:Type, -Int_(I1:Int))
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 		
 	rule piece(unknown(N:Nat), N:Nat) /Int M:Nat 
@@ -1066,7 +1066,7 @@ second operand from the first.
 	The result of the unary \cinline{+} operator is the value of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/		
 	rule [unaryPlus-int]: + tv(I:Int, T:Type) => arithInterpret(T:Type, I:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	rule [unaryPlus-float]: + tv(F:Float, T:Type) => tv(F:Float, T:Type)
 		[structural]	
@@ -1075,7 +1075,7 @@ second operand from the first.
 	The result of the unary \cinline{-} operator is the negative of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/
 	rule [unaryMinus-int]: - tv(I:Int, T:Type) => arithInterpret(T:Type, -Int I:Int)
-		if isPromotedInteger(T:Type)
+		if hasBeenPromoted(T:Type)
 		[structural]
 	rule [unaryMinus-float]: - tv(F:Float, T:Type) => arithInterpret(T:Type, -Float_(F:Float))
 		[structural]

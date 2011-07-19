@@ -46,17 +46,32 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	rule [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
-	rule [hasBeenPromoted-true]:
-		hasBeenPromoted(T:Type) => true
-		if rank(T:Type) >=Int rank(int)
-		andBool notBool hasBitfieldType(T:Type) 
-		[structural]
-	rule [hasBeenPromoted-false]:
-		hasBeenPromoted(T:Type) => false
-		if rank(T:Type) <Int rank(int)
-		orBool hasBitfieldType(T:Type)
-		[structural]
-	rule isPromotedInteger(T:Type) => hasIntegerType(T:Type) andBool hasBeenPromoted(T:Type) [structural]
+	
+	rule hasBeenPromoted(int) => true [structural]
+	rule hasBeenPromoted(unsigned-int) => true [structural]
+	rule hasBeenPromoted(long-int) => true [structural]
+	rule hasBeenPromoted(unsigned-long-int) => true [structural]
+	rule hasBeenPromoted(long-long-int) => true [structural]
+	rule hasBeenPromoted(unsigned-long-long-int) => true [structural]
+	
+	rule hasBeenPromoted(bool) => false [structural]
+	rule hasBeenPromoted(signed-char) => false [structural]
+	rule hasBeenPromoted(unsigned-char) => false [structural]
+	rule hasBeenPromoted(short-int) => false [structural]
+	rule hasBeenPromoted(unsigned-short-int) => false [structural]
+	
+	rule hasBeenPromoted(bitfieldType(?, ?)) => false [structural]
+	// rule [hasBeenPromoted-true]:
+		// hasBeenPromoted(T:Type) => true
+		// if rank(T:Type) >=Int rank(int)
+		// andBool notBool hasBitfieldType(T:Type) 
+		// [structural]
+	// rule [hasBeenPromoted-false]:
+		// hasBeenPromoted(T:Type) => false
+		// if rank(T:Type) <Int rank(int)
+		// orBool hasBitfieldType(T:Type)
+		// [structural]
+	//rule isPromotedInteger(T:Type) => hasIntegerType(T:Type) andBool hasBeenPromoted(T:Type) [structural]
 	
 	rule [promote-unary]:
 		< k > L:KLabel((tv(V:BaseValue, T:Type) 

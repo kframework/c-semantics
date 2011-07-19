@@ -89,16 +89,25 @@ kmod DYNAMIC-C-ERRORS is
 		if T:Type =/=Bool void
 		[structural]
 		
-	rule [err00002]:
-		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
-		< mem >... Block:Nat |-> memblock(Size:Nat, ?) ...</ mem >
-		(.Bag => < errorCell > Error("00002", "Reading outside the bounds of an object.") </ errorCell >)
-		if Offset:Nat >=Nat Size:Nat
-		[structural]
+	// rule [err00002]:
+		// < k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
+		// < mem >... Block:Nat |-> memblock(Size:Nat, ?) ...</ mem >
+		// (.Bag => < errorCell > Error("00002", "Reading outside the bounds of an object.") </ errorCell >)
+		// if Offset:Nat >=Nat Size:Nat
+		// [structural]
 		
+	// rule [err00003]:
+		// < k => finalComputation > extractByteFromMem(Loc:Nat) ...</ k => finalComputation >
+		// < locsWrittenTo >... BagItem(Loc:Nat) ...</ locsWrittenTo >
+		// (.Bag => < errorCell > Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </ errorCell >)
+		// [structural]
+		
+	rule [err00002]:
+		< k => finalComputation > assert(false, 2) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00002", "Reading outside the bounds of an object.") </ errorCell >)
+		[structural]
 	rule [err00003]:
-		< k => finalComputation > extractByteFromMem(Loc:Nat) ...</ k => finalComputation >
-		< locsWrittenTo >... BagItem(Loc:Nat) ...</ locsWrittenTo >
+		< k => finalComputation > assert(false, 3) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </ errorCell >)
 		[structural]
 	

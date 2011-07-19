@@ -176,7 +176,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		[structural] 
 	
-	context extractBytesFromMem-aux(?, ?, (?,, [HOLE],, ?)) 
+	// context extractBytesFromMem-aux(?, ?, (?,, [HOLE],, ?)) 
 	// this next op should use Nats, but the context doesn't allow it.  See issue 54
 	op extractBytesFromMem-aux : K K List{K} -> K // loc, size in bytes, aux list
 	
@@ -186,11 +186,22 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		[structural] 
 		
+	// rule
+		// < k > extractBytesFromMem-aux(Loc:Nat, sNat(Size:Nat), Aux:List{K})
+			// => extractBytesFromMem-aux(sNat(Loc:Nat), Size:Nat, (Aux:List{K},, extractByteFromMem(Loc:Nat)))
+		// ...</ k >
+		// [structural]
 	rule
 		< k > extractBytesFromMem-aux(Loc:Nat, sNat(Size:Nat), Aux:List{K})
-			=> extractBytesFromMem-aux(sNat(Loc:Nat), Size:Nat, (Aux:List{K},, extractByteFromMem(Loc:Nat)))
+			=> extractByteFromMem(Loc:Nat)
+			~> extractBytesFromMem-aux(sNat(Loc:Nat), Size:Nat, Aux:List{K})
 		...</ k >
-		[structural] 
+		[structural]
+	rule
+		< k > (tv(V:List{K}, T:Type) => .K)
+			~> extractBytesFromMem-aux(?, ?, (Aux:List{K} => (Aux:List{K},, tv(V:List{K}, T:Type))))
+		...</ k >
+		[structural]		
 	
 	op values : List{K} -> List{K} 
 	rule values((tv(K:K, ?),, L:List{KResult})) => (K:K,, values(L:List{KResult})) [structural]
@@ -203,43 +214,39 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	// FIXME make sure it's a byte
 	rule [read-byte]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) => tv(V:K, no-type) ...</ k >
+		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
+			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
+			~> assert(Offset:Nat <Nat Size:Nat, 2)
+			~> tv(V:K, no-type)
+		...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
-		if notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag
-		andBool Offset:Nat <Nat Size:Nat
-		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
+		if notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		[structural]
 		
 	rule [read-byte-lazy]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) 
-			=> tv(piece(unknown(numBitsPerByte), numBitsPerByte), no-type)
+			=> assert(Offset:Nat <Nat Size:Nat, 2)
+			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), no-type)
 		...</ k >
 		< mem >... 
 			Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
 		...</ mem >
 		< buffer > Mem:List </ buffer >
-		if Offset:Nat <Nat Size:Nat
-		andBool notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
+		if notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
 		andBool notBool $hasMapping(M:Map, Offset:Nat)
 		[structural]
 		
 	rule [read-byte-buffer]:
-		< k > extractByteFromMem(Loc:Nat) => tv(V:K, no-type) ...</ k >
+		< k > extractByteFromMem(Loc:Nat) 
+			=> assert(notBool Loc:Nat in Locs:Bag, 3)
+			~> tv(V:K, no-type)
+		...</ k >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
-		if notBool Loc:Nat in Locs:Bag
-		andBool notBool Loc:Nat in locations(Mem:List)
+		if notBool Loc:Nat in locations(Mem:List)
 		[metadata "computational=()"] // for speed in interpretation; forces local buffer to be flushed before a read
-	// rule [read-byte-buffer-model]:
-		// < modelChecking > ?:K </ modelChecking >
-		// < k > extractByteFromMem(Loc:Nat) => tv(V:K, no-type) ...</ k >
-		// < locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		// < buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
-		// if notBool Loc:Nat in Locs:Bag
-		// andBool notBool Loc:Nat in locations(Mem:List)
-		// [structural]
 
 endkm
 

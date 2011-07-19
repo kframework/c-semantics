@@ -326,6 +326,9 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	) [structural]
 	
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
+	
+	
+	rule assert(true, ?) => .K [structural]
 endkm
 
 kmod COMMON-C-BITSIZE is

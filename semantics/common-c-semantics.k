@@ -117,7 +117,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op isTypeCompatible : K K -> Bool 
 	
 	op hasBeenPromoted : Type -> Bool
-	op isPromotedInteger : Type -> Bool
+	// op isPromotedInteger : Type -> Bool
 	
 	
 	op bitloc : Nat Nat Nat -> Nat 
@@ -132,6 +132,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op listToK : K -> K 
 	op klistToK : List{K} -> K 
 	op UnknownCabsLoc : -> K 
+	
+	
+	op assert : Bool Nat -> K // check, error#
+	
 	
 	// Basic types
 	ops bool : -> Type 
