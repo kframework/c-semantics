@@ -1072,7 +1072,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op canonicalizeTranslationUnitVariables : -> K 
-	rule
+	rule [unpack-TranslationUnit]:
 		< k > TranslationUnit(Name:String, K:K, P:String) 
 			=> klistToK(eraseKLabel('StmtCons, K:K))
 		...</ k >

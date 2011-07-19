@@ -67,7 +67,7 @@ sub maudeOutputWrapper {
 				$errorCell = substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 				$myFunc = $1;
-			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 				$myFile = $1;
 				$myLine = $2;
 				$myOffsetStart = $3;
@@ -78,7 +78,7 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< k > (.*) <\/ k >/){
 				$haveError = 1;
 				$finalComp = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/){
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KLabel\(\.List\{K\}\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}
