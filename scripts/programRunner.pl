@@ -30,10 +30,6 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 
 sub interruptHandler {
 	finalCleanup(); # call single cleanup point
-	# if ($childPid != 0) {
-		# print "killing $childPid\n";
-		# kill 1, $childPid;
-	# }
 	kill 1, -$$;
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }

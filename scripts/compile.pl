@@ -238,7 +238,7 @@ sub compileProgram {
 	
 	# print "@::gccDefines\n";
 	my $gccCommand = "gcc $PEDANTRY_OPTIONS $GCC_OPTIONS @::gccDefines @::gccIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
-	print "$gccCommand\n";
+	# print "$gccCommand\n";
 	my $retval = system($gccCommand);
 	open FILE, "$filename.warnings.log";
 	my @lines = <FILE>;
