@@ -58,11 +58,13 @@ while(<MYINPUTFILE>) {
 			$isLibrary = 1;
 		}
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(super-cooling=\(wrapper\)).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(wrapper\)).*\]\.\s*$/){
 		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(super-cooling=\(result\)).*\]\.\s*$/){
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(result\)).*\]\.\s*$/){
 		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(super-cooling).*\]\.\s*$/){
+	}  elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(end\)).*\]\.\s*$/){
+		$kind = $1;
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool).*\]\.\s*$/){
 		$kind = $1;
 	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){
 		$kind = $1;
