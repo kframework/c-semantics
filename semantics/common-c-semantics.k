@@ -145,6 +145,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	ops unsigned-short-int unsigned-int unsigned-long-int unsigned-long-long-int : -> Type 
 	op no-type : -> Type
 	
+	op T : Set Type -> Type
+	
 	op isBasicType : K -> Bool
 	
 	
@@ -278,112 +280,65 @@ endkm
 
 kmod COMMON-C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
-
-	// op IdentifierSet : List{K} -> Set 
-	// rule IdentifierSet((S:String,, L:List{K})) => SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) [structural]
-	// op builtinIdentifiers : -> Set [memo] 
-	
-	// // fixme bug why can't i use .List{K} here?
-	// rule builtinIdentifiers => IdentifierSet((
-		// "abort"
-		// ,, "asin"
-		// ,, "atan"
-		// ,, "atan2"
-		// ,, "calloc"
-		// ,, "cos"
-		// ,, "__debug"
-		// ,, "exit"
-		// ,, "exp"
-		// ,, "floor"
-		// ,, "fmod"
-		// ,, "free"
-		// ,, "fslCloseFile"
-		// ,, "fslFGetC"
-		// ,, "fslOpenFile"
-		// ,, "fslPutc"
-		// ,, "getchar"
-		// ,, "log"
-		// ,, "longjmp"
-		// ,, "malloc"
-		// ,, "printf"
-		// ,, "putchar"
-		// ,, "rand"
-		// ,, "setjmp"
-		// ,, "sin"
-		// ,, "sqrt"
-		// ,, "tan"
-		// // <threads.h>
-		// ,, "thrd_create"
-		// ,, "thrd_current"
-		// ,, "thrd_detach"
-		// ,, "thrd_join"
-		// ,, "__test_and_set"
-		// ,, "__va_inc"
-		// ,, "__va_start"
-		// ,, "__va_end"
-		// ,, "__va_copy"
-	// )) [structural]
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
-	rule char => signed-char 
-		[structural] 
+	// rule char => signed-char 
+		// [structural] 
 
 	op numBitsPerByte : -> NzNat 
 	op numBytes : Type -> Nat [memo] 
 	op numBits : Type -> Nat [memo] 
 
-	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
+	// rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	
-	rule [numBytes-bool]: numBytes(bool) => 1 [structural]
-	rule [numBytes-signed-char]: numBytes(signed-char) => 1 [structural]
-	rule [numBytes-short-int]: numBytes(short-int) => 2 [structural]
-	rule [numBytes-int]: numBytes(int) => 4 [structural]
-	rule [numBytes-long-int]: numBytes(long-int) => 4 [structural]
-	rule [numBytes-long-long-int]: numBytes(long-long-int) => 8 [structural]
+	// rule [numBytes-bool]: numBytes(bool) => 1 [structural]
+	// rule [numBytes-signed-char]: numBytes(signed-char) => 1 [structural]
+	// rule [numBytes-short-int]: numBytes(short-int) => 2 [structural]
+	// rule [numBytes-int]: numBytes(int) => 4 [structural]
+	// rule [numBytes-long-int]: numBytes(long-int) => 4 [structural]
+	// rule [numBytes-long-long-int]: numBytes(long-long-int) => 8 [structural]
 	
-	rule [numBytes-float]: numBytes(float) => 4 [structural]
-	rule [numBytes-double]: numBytes(double) => 8 [structural]
-	rule [numBytes-long-double]: numBytes(long-double) => 16 [structural]
+	// rule [numBytes-float]: numBytes(float) => 4 [structural]
+	// rule [numBytes-double]: numBytes(double) => 8 [structural]
+	// rule [numBytes-long-double]: numBytes(long-double) => 16 [structural]
 	
-	rule [numBytes-enum]: numBytes(enumType(X:Id)) => numBytes(int) [structural]
+	// rule [numBytes-enum]: numBytes(enumType(X:Id)) => numBytes(int) [structural]
 	
 	op cfg:sizeut : -> Type 
-	rule [cfg-size-t]: cfg:sizeut => unsigned-int [structural]
+	// rule [cfg-size-t]: cfg:sizeut => unsigned-int [structural]
 	
 	op cfg:wcharut : -> Type
-	rule [cfg-wchar-t]: cfg:wcharut => int [structural]
+	// rule [cfg-wchar-t]: cfg:wcharut => int [structural]
 	
 	op cfg:largestUnsigned : -> Type 
-	rule [cfg-largestUnsigned]: cfg:largestUnsigned => unsigned-long-long-int [structural]
+	// rule [cfg-largestUnsigned]: cfg:largestUnsigned => unsigned-long-long-int [structural]
 
 	op cfg:ptrsize : -> Nat 
-	rule [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
+	// rule [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
 	
 	op cfg:ptrdiffut : -> Type 
-	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => int [structural]
+	// rule [cfg-ptrdiff-t]: cfg:ptrdiffut => int [structural]
 	
-	rule [min]: min(enumType(?)) => min(int) [structural]
-	rule [max]: max(enumType(?)) => max(int) [structural]
+	// rule [min]: min(enumType(?)) => min(int) [structural]
+	// rule [max]: max(enumType(?)) => max(int) [structural]
 	
 	op rank : Type -> Int 
 		
-	rule rank(bool) => 0 [structural]
-	// rule rank(char) => 1 [structural] // not needed if char is sugar
-	rule rank(signed-char) => 1 [structural]
-	rule rank(unsigned-char) => 1 [structural]
-	rule rank(short-int) => 2 [structural]
-	rule rank(unsigned-short-int) => 2 [structural]
-	rule rank(int) => 3 [structural]
-	rule rank(unsigned-int) => 3 [structural]
-	rule rank(long-int) => 4 [structural]
-	rule rank(unsigned-long-int) => 4 [structural]
-	rule rank(long-long-int) => 5 [structural]
-	rule rank(unsigned-long-long-int) => 5 [structural]
+	// rule rank(bool) => 0 [structural]
+	// // rule rank(char) => 1 [structural] // not needed if char is sugar
+	// rule rank(signed-char) => 1 [structural]
+	// rule rank(unsigned-char) => 1 [structural]
+	// rule rank(short-int) => 2 [structural]
+	// rule rank(unsigned-short-int) => 2 [structural]
+	// rule rank(int) => 3 [structural]
+	// rule rank(unsigned-int) => 3 [structural]
+	// rule rank(long-int) => 4 [structural]
+	// rule rank(unsigned-long-int) => 4 [structural]
+	// rule rank(long-long-int) => 5 [structural]
+	// rule rank(unsigned-long-long-int) => 5 [structural]
 	
-	// rule rank(bignum) => 100 [structural] // used for internal calculation.  should be bigger than all other ranks
-	
-	rule rank(enumType(?)) => rank(int) [structural]
+	// rule rank(enumType(?)) => rank(int) [structural]
 	//C99 6.3.1.1
 	
 	/*
@@ -416,55 +371,50 @@ kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
 	
-	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural]
-	rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural]
-	rule I:Int +Int (N:Nat +Nat sym(M:Nat))
-		=> absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
-		if N:Nat +Int I:Int >=Int 0 
-		[structural]
-		
-	// rule (N:Nat +Nat sym(M:Nat)) -Int I:Int
-		// => absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
-		// if N:Nat -Int I:Int >=Int 0 
+	// rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural]
+	// rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural]
+	// rule I:Int +Int (N:Nat +Nat sym(M:Nat))
+		// => absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
+		// if N:Nat +Int I:Int >=Int 0 
 		// [structural]
 
-	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
+	// rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 
-	rule [expression-loc]: ExpressionLoc(K:K, ?) => K:K [structural]
+	// rule [expression-loc]: ExpressionLoc(K:K, ?) => K:K [structural]
 
-	rule [CodeLoc-k]:
-		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural]
+	// rule [CodeLoc-k]:
+		// < k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
+		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		// [structural]
 		
 		
-	/*@ \source[n1570]{\para{6.10.6}{1}}
-	A preprocessing directive of the form
-	\cdisplay{# pragma pp-tokensoptnew-line}
-\broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
-	*/
-	rule [Pragma]:
-		< k > Pragma(?:K) => .K ...</ k >
-		[structural]
-	// fixme, problem in K:  this rule takes 150 seconds to error
+	// /*@ \source[n1570]{\para{6.10.6}{1}}
+	// A preprocessing directive of the form
+	// \cdisplay{# pragma pp-tokensoptnew-line}
+// \broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
+	// */
 	// rule [Pragma]:
-		// < k > Pragma(?:K) => ? ...</ k >
+		// < k > Pragma(?:K) => .K ...</ k >
+		// [structural]
+	// // fixme, problem in K:  this rule takes 150 seconds to error
+	// // rule [Pragma]:
+		// // < k > Pragma(?:K) => ? ...</ k >
+		// // [structural]
+		
+	// rule [Attributes]:
+		// < k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >
 		// [structural]
 		
-	rule [Attributes]:
-		< k > Attribute(S:String, L:List{C}) => AttributeValue(S:String, L:List{C}) ...</ k >
-		[structural]
-		
-	rule AttributeWrapper(K:K, ?) => K:K [structural]
+	// rule AttributeWrapper(K:K, ?) => K:K [structural]
 	
-	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
-		if M:Nat >=Nat numBitsPerByte 
-		[structural]
+	// rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
+		// if M:Nat >=Nat numBitsPerByte 
+		// [structural]
 	
-	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
-	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), ?) [structural]
-	rule Identifier("___missing_field_name") => #NoName [structural]
-	// #NoName [structural] 
+	// // rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
+	// // rule BitFieldName((Identifier("___missing_field_name") => #NoName), ?) [structural]
+	// rule Identifier("___missing_field_name") => #NoName [structural]
+	// // #NoName [structural] 
 endkm
 
 load common-c-statements
