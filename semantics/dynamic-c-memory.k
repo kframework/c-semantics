@@ -291,7 +291,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op write-aux : K Value K -> K [metadata "strict=(2)"] 
 	rule write(K:K, tv(V:List{K}, T:Type)) 
 		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
-		if notBool(hasFunctionType(T:Type)) 
+		//if notBool(hasFunctionType(T:Type)) 
 		[structural]
 	// FIXME should check types
 	// rule

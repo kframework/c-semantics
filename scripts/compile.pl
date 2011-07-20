@@ -55,15 +55,13 @@ my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
 my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
 my $cparser = catfile($myDirectory, 'cparser');
 
-my $warnFlag;
-my $dumpFlag;
-
 my @gccDefines = ();
 my @gccIncludeDirs = ();
 
 my $spec = q(#
   -c				Compile and assemble, but do not link
   -i				Include support for runtime file io
+  -d				Keep intermediate files
   -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
 					{ push(@::gccDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
   -I <dir>			Look for headers in <dir>
@@ -71,6 +69,7 @@ my $spec = q(#
   -lm				Ignored
   -s				Do not link against the standard library
   -o <file>			Place the output into <file>
+  -p				Profile parsing
 #-verbose			Do not delete intermediate files
   -w				Do not print warning messages
   <files>...			.c files to be compiled [required]
@@ -108,20 +107,6 @@ if ($linkingResults eq ""){
 }
 $linkTemp .= $linkingResults;
 $linkTemp .= "endm\n";
-# if [ ! "$dumpFlag" ]; then
-	# rm -f $compiledPrograms
-# fi
-
-#my $baseMaterial = File::Temp->new( TEMPLATE => 'tmp-kcc-base-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK=>0 );
-#push(@temporaryFiles, $baseMaterial);
-
-# my $semanticsFile;
-# if ($args->{'-n'}) {
-	# $semanticsFile = catfile($myDirectory, 'c-total-nd');
-# } else {
-	# $semanticsFile = catfile($myDirectory, 'c-total');
-# }
-# my @baseMaterialFiles = ($semanticsFile);
 
 open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
 my $programRunner = join("", <FILE>);
@@ -135,14 +120,9 @@ $programRunner = performSpecializations($programRunner);
 print $programTemp "$programRunner\n\n";
 
 print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkTemp\nENDOFCOMPILEDPROGRAM\n }\n";
-# if [ ! "$dumpFlag" ]; then
-	# rm -f $linkTemp
-# fi
 
-#print "closing $programTemp\n";
 close($programTemp);
 
-#rename($programTemp, $oval);
 move("$programTemp", $oval) or die "Failed to move the generated program to its destination $oval: $!";
 my $numFilesChanged = chmod(0755, $oval);
 if ($numFilesChanged != 1) {
@@ -187,7 +167,7 @@ sub compile {
 	# assume it's a normal input file, so compile it
 	my $localOval = "$baseName.o";
 	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
-	compileProgram($warnFlag, $dumpFlag, $inputFile) or die "Compilation failed";
+	compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) or die "Compilation failed";
 	# system("$compileProgramScript $warnFlag $dumpFlag $modelFlag $inputFile") == 0
 		# or die "Compilation failed: $?";
 
@@ -200,7 +180,6 @@ sub compile {
 	if ($args->{'-c'}) {
 		if ($args->{'-o'}) {
 			move($localOval, $args->{'-o'}) or die "Failed to move the generated program to its destination $oval: $!";
-			#rename($localOval, $args->{'-o'});
 		}
 	} else {
 		push(@shouldBeDeleted, $localOval);
@@ -208,24 +187,24 @@ sub compile {
 }
 
 
-# function die {
-	# cleanup
-	# echo "Something went wrong while compiling the program."
-	# echo "$1" >&2
-	# exit $2
-# }
-# function cleanup {
-	# rm -f $compilationLog
-# }
-
 sub compileProgram {
 	my ($warnFlag, $dumpFlag, $inputFile) = (@_);
 	my $nowarn = $warnFlag;
 	my $dflag = $dumpFlag;
+	
+	# print "dflag=$dflag\n";
+	# print "nowarn=$nowarn\n";
 
 	my $PEDANTRY_OPTIONS = "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
 	my $GCC_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
-	my $K_PROGRAM_COMPILE = "perl $xmlToK";
+	
+	my $K_PROGRAM_COMPILE;
+	if ($args->{'-p'}) {
+		$K_PROGRAM_COMPILE = "perl -d:DProf $xmlToK";
+	} else {
+		$K_PROGRAM_COMPILE = "perl $xmlToK";
+	}
+	
 	my $compilationLog = File::Temp->new( TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 	push(@temporaryFiles, $compilationLog);
 	
@@ -284,6 +263,9 @@ sub compileProgram {
 		print STDERR join("\n", @lines);
 		unlink($compilationLog);
 		die();
+	}
+	if ($args->{'-p'}) {
+		print `dprofpp`;
 	}
 	return 1;
 }

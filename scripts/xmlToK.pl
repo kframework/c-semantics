@@ -147,22 +147,17 @@ if ($ltl ne "") {
 # this function tries to figure out what kind of a node we're looking at, then delegates the conversion to another function
 sub xmlToK {
 	my ($xso) = (@_);
-	# if ($xso->contains_only_text()){
-		# return $xso->text;
-	# }
+
 	if (!$xso->is_pcdata()) {
 		return elementToK($xso);
-	} 
-	# elsif ($xso->children_count == 0) {
-	# } elsif ($xso->children_count == 1) {
-		# return KLIST_IDENTITY;
-	# }
+	}
 	return "";
 }
 
 sub elementToK {
 	my ($xso) = (@_);
 	my $label = $xso->name();
+	
 	if ($label eq "RawData") {
 		return rawdataToK($xso);
 	}
@@ -197,7 +192,6 @@ sub elementToK {
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
-		#$ltl .= KLIST_SEPARATOR . " 'LTLAnnotation$kterm";
 		$ltl .= "eq 'LTLAnnotation($klist[0]) = ";
 		shift (@klist);
 		$ltl .= paren(join(KLIST_SEPARATOR, @klist)) . " .\n";
@@ -247,14 +241,8 @@ sub escapeSingleCharacter {
 sub escapeString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	# my $octets = encode("ascii", $str, Encode::FB_CROAK);
-	#my $octets = decode('ascii', $str);
-	#utf8::encode($decoded);
 	my @charArray = split(//, $decoded);
 	my @newArray = map(escapeSingleCharacter($_), @charArray) ;
-	# foreach my $char (@newArray){
-		# print "$char\n";
-	# }
 	return join('', @newArray);
 }
 
@@ -272,7 +260,6 @@ sub escapeWString {
 		for my $cp (@charPartArray) {
 			$single = ($single << 8) + ord($cp);
 		}
-		#my @newArray = map(escapeSingleCharacter($_), @charPartArray) ;
 		$retval .= "Rat $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
 	}
 	
