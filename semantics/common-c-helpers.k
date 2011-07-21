@@ -284,16 +284,16 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 		
-	// rule NullPointerConstant => 0 [structural]
+	rule NullPointerConstant => 0 [structural]
 	
-	// rule _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
-		// => piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
-		// if N:Nat >=Nat 0 andBool N':Nat >=Nat 0 
-		// [structural] 
-	// rule _bit::_(piece(0, 0), N:Nat) => N:Nat [structural] 
-	// rule piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) [structural] 
-	// rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
-	// rule type(tv(?, T:Type)) => T:Type [structural]
+	rule _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
+		=> piece((N:Nat <<Nat Len':Nat) |Nat N':Nat, Len:Nat +Nat Len':Nat)
+		if N:Nat >=Nat 0 andBool N':Nat >=Nat 0 
+		[structural] 
+	rule _bit::_(piece(0, 0), N:Nat) => N:Nat [structural] 
+	rule piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) [structural] 
+	rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
+	rule type(tv(?, T:Type)) => T:Type [structural]
 
 	rule isBasicType('t(?,, K:K)) => if (
 		K:K ==Bool bool
@@ -335,53 +335,53 @@ kmod COMMON-C-BITSIZE is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
 	op bitSizeofList : List{Type} -> K 
-	// rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
-		// [structural]
-	// rule bitSizeofList(Nil) => 0 [structural]
+	rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
+		[structural]
+	rule bitSizeofList(Nil) => 0 [structural]
 	
 	op maxBitSizeofList : List{Type} -> K 
 	op maxBitSizeofList-aux : List{Type} Nat -> K 
-	// rule maxBitSizeofList(L:List{Type}) => maxBitSizeofList-aux(L:List{Type}, 0) [structural]
-	// rule
-		// < k > maxBitSizeofList-aux(T:Type :: L:List{Type}, N:Nat) 
-			// => bitSizeofType(T:Type) ~> maxBitSizeofList-aux(L:List{Type}, N:Nat) 
-		// ...</ k >
-		// [structural] 
-	// rule
-		// < k > (tv(N':Nat, ?) => .) ~> maxBitSizeofList-aux(L:List{Type}, (N:Nat => maxNat(N:Nat, N':Nat))) ...</ k >
-		// [structural] 
-	// rule
-		// < k > maxBitSizeofList-aux(Nil, N:Nat) => N:Nat ...</ k >
-		// [structural] 
+	rule maxBitSizeofList(L:List{Type}) => maxBitSizeofList-aux(L:List{Type}, 0) [structural]
+	rule
+		< k > maxBitSizeofList-aux(T:Type :: L:List{Type}, N:Nat) 
+			=> bitSizeofType(T:Type) ~> maxBitSizeofList-aux(L:List{Type}, N:Nat) 
+		...</ k >
+		[structural] 
+	rule
+		< k > (tv(N':Nat, ?) => .) ~> maxBitSizeofList-aux(L:List{Type}, (N:Nat => maxNat(N:Nat, N':Nat))) ...</ k >
+		[structural] 
+	rule
+		< k > maxBitSizeofList-aux(Nil, N:Nat) => N:Nat ...</ k >
+		[structural] 
 	
-	// rule bitSizeofType(arrayType(T:Type, N:Nat)) => bitSizeofType(T:Type) * N:Nat [structural]
-	// rule bitSizeofType(flexibleArrayType(T:Type)) => 0 [structural]
-	// rule bitSizeofType(functionType(?, ?)) => numBitsPerByte [structural]
-	// rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
-	// rule bitSizeofType(pointerType(?)) => cfg:ptrsize *Nat numBitsPerByte [structural]
-	// rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
-	// rule bitSizeofType(bitfieldType(?, N:Nat)) => N:Nat [structural]
-	// rule bitSizeofType(qualifiedType(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(t(?, arrayType(T:Type, N:Nat))) => bitSizeofType(T:Type) * N:Nat [structural]
+	rule bitSizeofType(t(?, flexibleArrayType(T:Type))) => 0 [structural]
+	rule bitSizeofType(t(?, functionType(?, ?))) => numBitsPerByte [structural]
+	rule bitSizeofType(t(?, pointerType(?))) => cfg:ptrsize *Nat numBitsPerByte [structural]
+	rule bitSizeofType(t(?, bitfieldType(?, N:Nat))) => N:Nat [structural]
+	rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
+	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 
-	// rule
-		// < k > bitSizeofType(structType(S:Id)) => bitSizeofList(L:List{Type}) ...</ k >
-		// < structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
-		// [structural] 
-	// rule
-		// < k > bitSizeofType(unionType(S:Id)) => maxBitSizeofList(L:List{Type}) ...</ k >
-		// < structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
-		// [structural]
+	rule
+		< k > bitSizeofType(t(?, structType(S:Id))) => bitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		[structural] 
+	rule
+		< k > bitSizeofType(t(?, unionType(S:Id))) => maxBitSizeofList(L:List{Type}) ...</ k >
+		< structs >... S:Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		[structural]
 		
-	// rule K2Nat(N:Nat) => N:Nat [structural]
+	rule K2Nat(N:Nat) => N:Nat [structural]
 
-	// rule getFieldOffset(F:Id, aggregateInfo(?, ?, (? F:Id |-> N:Nat))) => N:Nat [structural]
-	// rule getFieldType(F:Id, aggregateInfo(?, ?, (? F:Id |-> T:Type))) => T:Type [structural]
+	rule getFieldOffset(F:Id, aggregateInfo(?, ?, (? F:Id |-> N:Nat))) => N:Nat [structural]
+	rule getFieldType(F:Id, aggregateInfo(?, ?, (? F:Id |-> T:Type))) => T:Type [structural]
 
 		
-	// rule toString(Identifier(S:String)) => S:String [structural]
-	// rule toString(S:String) => S:String [structural]
-	// rule toString(Num:Nat) => Int2String(Num:Nat) [structural]
-	// rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
+	rule toString(Identifier(S:String)) => S:String [structural]
+	rule toString(S:String) => S:String [structural]
+	rule toString(Num:Nat) => Int2String(Num:Nat) [structural]
+	rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
 	
 	
 	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]

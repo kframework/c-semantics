@@ -260,22 +260,22 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	including DYNAMIC-MEMORY-INCLUDE 
 	context alloc(?, value(`[HOLE`]:K)) 
 
-	// rule allocateType(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
-		// [structural] 
-	// rule [allocateTypeIfAbsent-absent]:
-		// < k > allocateTypeIfAbsent(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) ...</ k >
-		// < mem > Mem:Map </ mem >
-		// if notBool $hasMapping(Mem:Map, Loc:Nat)
-		// [structural] 
-	// rule [allocateTypeIfAbsent-present]:
-		// < k > allocateTypeIfAbsent(Loc:Nat, T:Type) => .K ...</ k >
-		// < mem >... Loc:Nat |-> ? ...</ mem >
-		// [structural]
+	rule allocateType(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
+		[structural]
+	rule [allocateTypeIfAbsent-absent]:
+		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) ...</ k >
+		< mem > Mem:Map </ mem >
+		if notBool $hasMapping(Mem:Map, Loc:Nat)
+		[structural] 
+	rule [allocateTypeIfAbsent-present]:
+		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => .K ...</ k >
+		< mem >... Loc:Nat |-> ? ...</ mem >
+		[structural]
 
-	// rule [alloc-lazy]:
-		// < k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
-		// < mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
-		// [structural]		
+	rule [alloc-lazy]:
+		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
+		< mem >... .Map => Block:Nat |-> memblock(Len:Nat, .Map) ...</ mem >
+		[structural]		
 		
 	op writeBytes : Nat K -> K [metadata "strict=(2)"] 
 	op writeBitfield : Nat Type K -> K [metadata "strict=(3)"] 
@@ -284,145 +284,144 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
 	
 	op write-aux : K Value K -> K [metadata "strict=(2)"] 
-	// rule write(K:K, tv(V:List{K}, T:Type)) 
-		// => write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
-		// //if notBool(hasFunctionType(T:Type)) 
-		// [structural]
+	rule write(K:K, tv(V:List{K}, T:Type)) 
+		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
+		[structural]
 	context write-aux(?, ?, value(`[HOLE`]))
 	
 	
 	
 	op write-specific : Nat Value Nat -> K
 	
-	// rule [write-thread-local]:
-		// < k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-			// => write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-		// ...</ k >
-		// <threadId> Id:Nat </threadId>
-		// where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
-		// [structural metadata " nd=(true)"]
-	// rule [write]: // write global or shared data
-		// < k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-			// => write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-		// ...</ k >
-		// where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
-		// [metadata "computational=() nd=(true)"]
-	// rule [write-allocated]: // write data of "allocated" duration
-		// < k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-			// => write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
-		// ...</ k >
-		// where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
-		// [metadata "computational=() nd=(true)"]
+	rule [write-thread-local]:
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+		...</ k >
+		<threadId> Id:Nat </threadId>
+		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
+		[structural metadata " nd=(true)"]
+	rule [write]: // write global or shared data
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+		...</ k >
+		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational=() nd=(true)"]
+	rule [write-allocated]: // write data of "allocated" duration
+		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:Nat)
+		...</ k >
+		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		[metadata "computational=() nd=(true)"]
 	
-	// rule [write-normal]:
-		// < k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
-			// // => checkPossiblePointer(tv(V:K, T:Type))
-			// => writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
-		// ...</ k >
-		// if bitSize:Nat %Nat numBitsPerByte ==Bool 0
-		// andBool isByteLoc(Loc:Nat)
-		// andBool notBool hasBitfieldType(T:Type)
-		// [structural]
+	rule [write-normal]:
+		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
+			// => checkPossiblePointer(tv(V:K, T:Type))
+			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
+		...</ k >
+		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
+		andBool isByteLoc(Loc:Nat)
+		andBool notBool hasBitfieldType(T:Type)
+		[structural]
 	
 	
-	// rule [write-struct]:
-		// < k > write-specific(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
-			// => writeBytes(Loc:Nat, dataList((V:K,, V':K,, L:List{K})))
-		// ...</ k >
-		// if bitSize:Nat %Nat numBitsPerByte ==Bool 0
-		// andBool isByteLoc(Loc:Nat)
-		// andBool notBool hasBitfieldType(T:Type)
-		// [structural]
+	rule [write-struct]:
+		< k > write-specific(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:Type), bitSize:Nat)
+			=> writeBytes(Loc:Nat, dataList((V:K,, V':K,, L:List{K})))
+		...</ k >
+		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
+		andBool isByteLoc(Loc:Nat)
+		andBool notBool hasBitfieldType(T:Type)
+		[structural]
 		
-	// rule bitoffset(? +Nat bito(N:Nat)) => N:Nat [structural]
-	// // fixme owise!!!
-	// eq bitoffset(?) = 0 [owise] 
+	rule bitoffset(? +Nat bito(N:Nat)) => N:Nat [structural]
+	// fixme owise!!!
+	eq bitoffset(?) = 0 [owise] 
 	
-	// // fixme owise!!!
-	// rule byteoffset(N:Nat +Nat bito(?)) => N:Nat [structural]
-	// eq byteoffset(N:Nat) = N:Nat [owise] 
+	// fixme owise!!!
+	rule byteoffset(N:Nat +Nat bito(?)) => N:Nat [structural]
+	eq byteoffset(N:Nat) = N:Nat [owise] 
 		
 	op justBits : Int Type -> Value 
 	op justBits-aux : Int Type -> Value 
-	// rule justBits(I:Int, ?) => I:Int
-		// if I:Int >=Int 0 
-		// [structural]
+	rule justBits(I:Int, ?) => I:Int
+		if I:Int >=Int 0 
+		[structural]
 		
-	// rule justBits(I:Int, T:Type) => justBits-aux(I:Int, T:Type)
-		// if I:Int <Int 0 
-		// [structural]
-	// rule justBits-aux(I:Int, T:Type) => justBits-aux((I:Int +Int max(T:Type) +Int 1), T:Type)
-		// if I:Int <Int 0 
-		// [structural]
-	// rule justBits-aux(N:Nat, bitfieldType(T:Type, sNat(Len:Nat))) => N:Nat +Nat (1 <<Nat Len:Nat) [structural]
+	rule justBits(I:Int, T:Type) => justBits-aux(I:Int, T:Type)
+		if I:Int <Int 0 
+		[structural]
+	rule justBits-aux(I:Int, T:Type) => justBits-aux((I:Int +Int max(T:Type) +Int 1), T:Type)
+		if I:Int <Int 0 
+		[structural]
+	rule justBits-aux(N:Nat, t(?, bitfieldType(T:Type, sNat(Len:Nat)))) => N:Nat +Nat (1 <<Nat Len:Nat) [structural]
 	
-	// rule [massage-bitfield]:
-		// < k > write-specific(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
-			// => write-specific(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
-		// ...</ k >
-		// if (bitSize:Nat %Nat numBitsPerByte =/=Bool 0
-		// orBool notBool(isByteLoc(Loc:Nat))
-		// orBool hasBitfieldType(T:Type))
-		// andBool I:Int <Int 0
-		// [structural]
+	rule [massage-bitfield]:
+		< k > write-specific(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
+			=> write-specific(Loc:Nat, tv(justBits(I:Int, T:Type), T:Type), bitSize:Nat)
+		...</ k >
+		if (bitSize:Nat %Nat numBitsPerByte =/=Bool 0
+		orBool notBool(isByteLoc(Loc:Nat))
+		orBool hasBitfieldType(T:Type))
+		andBool I:Int <Int 0
+		[structural]
 	
-	// rule [write-bitfield]:
-		// < k > write-specific(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
-			// => writeBitfield(
-				// Loc:Nat
-				// , T:Type
-				// , calculateNewBytes(
-					// bitoffset(Loc:Nat)
-					// , piece(N:Nat, bitSize:Nat)
-					// , extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat))
-					// )
-				// )
-			// )
-		// ...</ k >
-		// if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
-		// orBool notBool(isByteLoc(Loc:Nat))
-		// orBool hasBitfieldType(T:Type)
-		// [structural]
+	rule [write-bitfield]:
+		< k > write-specific(Loc:Nat, tv(N:Nat, T:Type), bitSize:Nat)
+			=> writeBitfield(
+				Loc:Nat
+				, T:Type
+				, calculateNewBytes(
+					bitoffset(Loc:Nat)
+					, piece(N:Nat, bitSize:Nat)
+					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat))
+					)
+				)
+			)
+		...</ k >
+		if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
+		orBool notBool(isByteLoc(Loc:Nat))
+		orBool hasBitfieldType(T:Type)
+		[structural]
 		
-	// rule
-		// < k > writeBitfield(Loc:Nat, ?, dataList(L:List{K}))
-			// => writeBytes(byteoffset(Loc:Nat), dataList(L:List{K}))
-		// ...</ k >
-		// [structural] 
+	rule
+		< k > writeBitfield(Loc:Nat, ?, dataList(L:List{K}))
+			=> writeBytes(byteoffset(Loc:Nat), dataList(L:List{K}))
+		...</ k >
+		[structural] 
 		
 	op calculateNewBytes-aux : Nat K K List{K} -> K 
-	// rule calculateNewBytes(Len:Nat, N:Nat, dataList(L:List{K})) => calculateNewBytes-aux(Len:Nat, dataList(explodeToBits(N:Nat)), dataList(explodeToBits(L:List{K})), .List{K})
-		// [structural]
+	rule calculateNewBytes(Len:Nat, N:Nat, dataList(L:List{K})) => calculateNewBytes-aux(Len:Nat, dataList(explodeToBits(N:Nat)), dataList(explodeToBits(L:List{K})), .List{K})
+		[structural]
 	
-	// rule reverseList(.List{K}) => .List{K} [structural]
-	// rule reverseList((K:K,, L:List{K})) => reverseList(L:List{K}),, K:K [structural]
+	rule reverseList(.List{K}) => .List{K} [structural]
+	rule reverseList((K:K,, L:List{K})) => reverseList(L:List{K}),, K:K [structural]
 	
 	op joinBitsToBytes : List{K} -> K 
 	op joinBitsToBytes-aux : K K -> K 
 	
-	// rule calculateNewBytes-aux(sNat(N:Nat), K:K, dataList((piece(Bit:Nat, 1),, L:List{K})), Result:List{K}) 
-		// => calculateNewBytes-aux(N:Nat, K:K, dataList(L:List{K}), (Result:List{K},, piece(Bit:Nat, 1))) 
-		// [structural]
+	rule calculateNewBytes-aux(sNat(N:Nat), K:K, dataList((piece(Bit:Nat, 1),, L:List{K})), Result:List{K}) 
+		=> calculateNewBytes-aux(N:Nat, K:K, dataList(L:List{K}), (Result:List{K},, piece(Bit:Nat, 1))) 
+		[structural]
 	
-	// rule calculateNewBytes-aux(0, dataList((piece(N:Nat, 1),, L:List{K})), dataList((piece(?, 1),, L':List{K})), Result:List{K}) 
-		// => calculateNewBytes-aux(0, dataList(L:List{K}), dataList(L':List{K}), (Result:List{K},, piece(N:Nat, 1))) 
-		// [structural]
-	// rule calculateNewBytes-aux(0, dataList(.List{K}), dataList(L:List{K}), Result:List{K}) 
-		// => joinBitsToBytes((Result:List{K},, L:List{K})) 
-		// [structural]
+	rule calculateNewBytes-aux(0, dataList((piece(N:Nat, 1),, L:List{K})), dataList((piece(?, 1),, L':List{K})), Result:List{K}) 
+		=> calculateNewBytes-aux(0, dataList(L:List{K}), dataList(L':List{K}), (Result:List{K},, piece(N:Nat, 1))) 
+		[structural]
+	rule calculateNewBytes-aux(0, dataList(.List{K}), dataList(L:List{K}), Result:List{K}) 
+		=> joinBitsToBytes((Result:List{K},, L:List{K})) 
+		[structural]
 	
-	// rule joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K})) [structural]
-	// rule joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, piece(M:Nat, 1),, L:List{K})), dataList(R:List{K}))
-		// => joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), sNat(Len:Nat)),, L:List{K})), dataList(R:List{K}))
-		// if Len:Nat <Nat numBitsPerByte 
-		// [structural]
-	// rule joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, L:List{K})), dataList(R:List{K}))
-		// => joinBitsToBytes-aux(dataList(L:List{K}), dataList((R:List{K},, piece(N:Nat, Len:Nat))))
-		// if Len:Nat ==Bool numBitsPerByte 
-		// [structural]
-	// rule joinBitsToBytes-aux(dataList(.List{K}), dataList(R:List{K}))
-		// => dataList(R:List{K}) 
-		// [structural]
+	rule joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K})) [structural]
+	rule joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, piece(M:Nat, 1),, L:List{K})), dataList(R:List{K}))
+		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), sNat(Len:Nat)),, L:List{K})), dataList(R:List{K}))
+		if Len:Nat <Nat numBitsPerByte 
+		[structural]
+	rule joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, L:List{K})), dataList(R:List{K}))
+		=> joinBitsToBytes-aux(dataList(L:List{K}), dataList((R:List{K},, piece(N:Nat, Len:Nat))))
+		if Len:Nat ==Bool numBitsPerByte 
+		[structural]
+	rule joinBitsToBytes-aux(dataList(.List{K}), dataList(R:List{K}))
+		=> dataList(R:List{K}) 
+		[structural]
 	
 	
 	// rule explodeToBits((K:K,, L:NeList{K})) => (explodeToBits(K:K),, explodeToBits(L:NeList{K})) [structural]

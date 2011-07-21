@@ -12,29 +12,29 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	op evalToType : -> K 
 	
 	op typeStrictUnaryOperators : -> Set [memo] 
-	// rule typeStrictUnaryOperators => Set(
-		// l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
-	// )
-	// [structural]
+	rule typeStrictUnaryOperators => Set(
+		l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
+	)
+	[structural]
 	
 	op typeStrictBinaryOperators : -> Set [memo] 
-	// rule typeStrictBinaryOperators => Set(
-		// l('_*_),, l('_/_),, l('_%_),,
-		// l('_+_),, l('_-_),,
-		// l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
-		// l('_&_),, l('_|_),, l('_^_),,
-		// l('_`[_`])
-	// )
-	// [structural]
+	rule typeStrictBinaryOperators => Set(
+		l('_*_),, l('_/_),, l('_%_),,
+		l('_+_),, l('_-_),,
+		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
+		l('_&_),, l('_|_),, l('_^_),,
+		l('_`[_`])
+	)
+	[structural]
 	
 	op typeStrictLeftBinaryOperators : -> Set [memo] 
-	// rule typeStrictLeftBinaryOperators => Set(
-		// l('_<<_),, l('_>>_),,
-		// l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-		// l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_),,
-		// l('_++),, l('_--),, l('--_),, l('++_)
-	// ) 
-	// [structural]
+	rule typeStrictLeftBinaryOperators => Set(
+		l('_<<_),, l('_>>_),,
+		l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
+		l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_),,
+		l('_++),, l('_--),, l('--_),, l('++_)
+	) 
+	[structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
@@ -43,32 +43,32 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	op giveGlobalType : K Type -> K 
 	op giveLocalType : K Type -> K 
 	
-	// // FIXME these are here until I decide how to handle qualified types
-	// rule [ignore-volatile]: qualifiedType(T:Type, Volatile) => T:Type [structural]
-	// rule [ignore-restrict]: qualifiedType(T:Type, Restrict) => T:Type [structural]
-	// rule [ignore-const]: qualifiedType(T:Type, Const) => T:Type [structural]
-	// rule [ignore-auto]: qualifiedType(T:Type, Auto) => T:Type [structural]
-	// rule [ignore-register]: qualifiedType(T:Type, Register) => T:Type [structural]
+	// FIXME these are here until I decide how to handle qualified types
+	rule [ignore-volatile]: qualifiedType(T:Type, Volatile) => T:Type [structural]
+	rule [ignore-restrict]: qualifiedType(T:Type, Restrict) => T:Type [structural]
+	rule [ignore-const]: qualifiedType(T:Type, Const) => T:Type [structural]
+	rule [ignore-auto]: qualifiedType(T:Type, Auto) => T:Type [structural]
+	rule [ignore-register]: qualifiedType(T:Type, Register) => T:Type [structural]
 	
 	
-	// rule
-		// < k > giveType(X:Id, T:Type) => 
-			// if (Fun:Id ==Bool File-Scope) then giveGlobalType(X:Id, T:Type) else giveLocalType(X:Id, T:Type) fi
-			// ...</ k >
-		// < currentFunction > Fun:Id </ currentFunction >
-		// if notBool hasStaticType(T:Type)
-		// [structural] 
+	rule
+		< k > giveType(X:Id, T:Type) => 
+			if (Fun:Id ==Bool File-Scope) then giveGlobalType(X:Id, T:Type) else giveLocalType(X:Id, T:Type) fi
+			...</ k >
+		< currentFunction > Fun:Id </ currentFunction >
+		if notBool hasStaticType(T:Type)
+		[structural] 
 		
-	// rule
-		// < k > giveGlobalType(X:Id, T:Type) => .K ...</ k >
-		// < types > M:Map => M:Map[T:Type / X:Id] </ types >
-		// < gtypes >... Tu:K |-> Map((M':Map => M':Map[T:Type / X:Id])) ...</ gtypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// [structural] 
-	// rule
-		// < k > giveLocalType(X:Id, T:Type) => .K ...</ k >
-		// < types > M:Map => M:Map[T:Type / X:Id] </ types >
-		// [structural]	
+	rule
+		< k > giveGlobalType(X:Id, T:Type) => .K ...</ k >
+		< types > M:Map => M:Map[T:Type / X:Id] </ types >
+		< gtypes >... Tu:K |-> Map((M':Map => M':Map[T:Type / X:Id])) ...</ gtypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		[structural] 
+	rule
+		< k > giveLocalType(X:Id, T:Type) => .K ...</ k >
+		< types > M:Map => M:Map[T:Type / X:Id] </ types >
+		[structural]	
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
@@ -364,10 +364,12 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op makeArrayType : Nat -> KLabel 
 	op makeFunctionType : List{Type} -> KLabel 
 	op pushTypeDown : Type KLabel -> Type 
+	op makePointerType : -> KLabel
+	op makeIncompleteArrayType : -> KLabel
 	
 	rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
 	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, 'incompleteArrayType) [structural]
-	rule PointerType(T:Type) => pushTypeDown(T:Type, 'pointerType) [structural]
+	rule PointerType(T:Type) => pushTypeDown(T:Type, makePointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
 	rule FunctionType(T:Type) => T:Type [structural]
 	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
@@ -391,6 +393,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	
 	rule makeArrayType(N:Nat)(T:Type) => t(.Set, arrayType(T:Type, N:Nat)) [structural]
 	rule makeFunctionType(L:List{Type})(T:Type) => t(.Set, functionType(T:Type, giveNamesToArgs(L:List{Type}))) [structural]
+	rule makePointerType(T:Type) => t(.Set, pointerType(T:Type)) [structural]
+	rule makeIncompleteArrayType(T:Type) => t(.Set, incompleteArrayType(T:Type)) [structural]
 	
 	op giveNamesToArgs : List{Type} -> List{Type}
 	op giveNamesToArgs-aux : Nat List{Type} -> List{Type}
@@ -516,12 +520,10 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id)) [structural]
 	rule [extract-array]: extractActualType(t(S:Set, arrayType(T:Type, N:Nat))) => t(S:Set, arrayType(extractActualType(T:Type), N:Nat)) [structural]
 	rule [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:Type))) => t(S:Set, incompleteArrayType(extractActualType(T:Type))) [structural]
-	// rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
 	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:Nat)) [structural]
 	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{Type}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{Type})) [structural]
 	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
 	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
-	// rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
 	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
 		
 	op NameAndType : K K -> K [metadata "strict=(2)"] 
@@ -838,125 +840,127 @@ kmod COMMON-C-TYPING is
 	
 	op addStruct-aux : Id List{Type} K Map Map List{Type} -> K [metadata "strict=(3)"]
 	op addUnion-aux : Id List{Type} Map Map List{Type} -> K
-	// rule
-		// < k > addStruct(S:Id, L:List{Type}) 
-			// => addStruct-aux(S:Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
-		// ...</ k >
-		// [structural]
-	// rule
-		// < k > addStruct-aux(
-				// S:Id
-				// , (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
-				// , V:Value
-				// , Types:Map
-				// , Offsets:Map
-				// , L':List{Type}
-			// ) 
-			// => addStruct-aux(S:Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:Id], Offsets:Map[value(V:Value) / Field:Id], L':List{Type})
-		// ...</ k >
-		// [structural]
-	// rule
-		// < k > addStruct-aux(S:Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
-			// => if (F:Id ==Bool File-Scope) then 
-				// (addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
-			// else
-				// (addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
-			// fi
-		// ...</ k >
-		// < currentFunction > F:Id </ currentFunction >
-		// [structural]		
+	rule
+		< k > addStruct(S:Id, L:List{Type}) 
+			=> addStruct-aux(S:Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addStruct-aux(
+				S:Id
+				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				, V:Value
+				, Types:Map
+				, Offsets:Map
+				, L':List{Type}
+			) 
+			=> addStruct-aux(S:Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:Id], Offsets:Map[value(V:Value) / Field:Id], L':List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addStruct-aux(S:Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
+			=> if (F:Id ==Bool File-Scope) then 
+				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+			else
+				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+			fi
+		...</ k >
+		< currentFunction > F:Id </ currentFunction >
+		[structural]		
 		
-	// rule
-		// < k > addUnion(S:Id, L:List{Type}) 
-			// => addUnion-aux(S:Id, L:List{Type}, .Map, .Map, L:List{Type})
-		// ...</ k >
-		// [structural]
-	// rule
-		// < k > addUnion-aux(
-				// S:Id
-				// , (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
-				// , Types:Map
-				// , Offsets:Map
-				// , L':List{Type}
-			// ) 
-			// => addUnion-aux(S:Id, L:List{Type}, Types:Map[T:Type / Field:Id], Offsets:Map[0 / Field:Id], L':List{Type})
-		// ...</ k >
-		// [structural]
-	// rule
-		// < k > addUnion-aux(S:Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
-			// => if (F:Id ==Bool File-Scope) then 
-				// (addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
-			// else
-				// (addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
-			// fi
-		// ...</ k >
-		// < currentFunction > F:Id </ currentFunction >
-		// [structural]
+	rule
+		< k > addUnion(S:Id, L:List{Type}) 
+			=> addUnion-aux(S:Id, L:List{Type}, .Map, .Map, L:List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addUnion-aux(
+				S:Id
+				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				, Types:Map
+				, Offsets:Map
+				, L':List{Type}
+			) 
+			=> addUnion-aux(S:Id, L:List{Type}, Types:Map[T:Type / Field:Id], Offsets:Map[0 / Field:Id], L':List{Type})
+		...</ k >
+		[structural]
+	rule
+		< k > addUnion-aux(S:Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
+			=> if (F:Id ==Bool File-Scope) then 
+				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+			else
+				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+			fi
+		...</ k >
+		< currentFunction > F:Id </ currentFunction >
+		[structural]
 
-	// rule
-		// < k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
-		// < structs > M':Map => M':Map[K:K / X:Id] </ structs >
-		// < gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
-		// [structural] 
-	// rule
-		// < k > addLocalAggregate(X:Id, K:K) => . ...</ k >
-		// < structs > M:Map => M:Map[K:K / X:Id] </ structs >
-		// [structural] 
+	rule
+		< k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
+		< structs > M':Map => M':Map[K:K / X:Id] </ structs >
+		< gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
+		[structural] 
+	rule
+		< k > addLocalAggregate(X:Id, K:K) => . ...</ k >
+		< structs > M:Map => M:Map[K:K / X:Id] </ structs >
+		[structural] 
 		
-	// rule isAType T:Type => true
-		// if setOfTypes contains l(getKLabel(T:Type)) 
-		// [structural]
-	// rule isAType T:Type => true if isBasicType(T:Type) [structural]
-	// rule isAType K:K => false
-		// if notBool setOfTypes contains l(getKLabel(K:K))
-		// andBool notBool isBasicType(K:K) [structural]
+	rule isAType t(?, T:SimpleType) => true
+		if setOfTypes contains l(getKLabel(T:SimpleType)) 
+		[structural]
+	rule isAType T:Type => true if isBasicType(T:Type) [structural]
+	rule isAType K:K => false
+		if getKLabel(K:K) =/=Bool 't
+		[structural]
+	rule isAType t(S:Set, T:SimpleType) => false
+		if notBool setOfTypes contains l(getKLabel(T:SimpleType))
+		andBool notBool isBasicType(t(S:Set, T:SimpleType)) 
+		[structural]
 			
 
-	// // FIXME most of these don't take into consideration modifiers
-
-	// rule hasFloatType(float) => true [structural]
-	// rule hasFloatType(double) => true [structural]
-	// rule hasFloatType(long-double) => true [structural]
-	// rule hasFloatType(T:Type) => false
-		// if T:Type =/=Bool float
-		// andBool T:Type =/=Bool double
-		// andBool T:Type =/=Bool long-double
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType
-		// [structural]
+	rule hasFloatType(t(?, float)) => true [structural]
+	rule hasFloatType(t(?, double)) => true [structural]
+	rule hasFloatType(t(?, long-double)) => true [structural]
+	rule hasFloatType(t(?, T:SimpleType)) => false
+		if T:SimpleType =/=Bool float
+		andBool T:SimpleType =/=Bool double
+		andBool T:SimpleType =/=Bool long-double
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		[structural]
 	
-	// rule [hasCharType-char]: hasCharType(char) => true [structural]
-	// rule [hasCharType-qualified]: hasCharType(qualifiedType(T:Type, ?)) => hasCharType(T:Type) [structural]
-	// rule [hasCharType-unsigned-char]: hasCharType(unsigned-char) => true [structural]
-	// rule [hasCharType-signed-char]: hasCharType(signed-char) => true [structural]
-	// rule [hasCharType-other]: hasCharType(T:Type) => false
-		// if T:Type =/=Bool char
-		// andBool T:Type =/=Bool unsigned-char
-		// andBool T:Type =/=Bool signed-char
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasCharType-char]: hasCharType(t(?, char)) => true [structural]
+	rule [hasCharType-qualified]: hasCharType(t(?, qualifiedType(T:Type, ?))) => hasCharType(T:Type) [structural]
+	rule [hasCharType-unsigned-char]: hasCharType(t(?, unsigned-char)) => true [structural]
+	rule [hasCharType-signed-char]: hasCharType(t(?, signed-char)) => true [structural]
+	rule [hasCharType-other]: hasCharType(t(?, T:SimpleType)) => false
+		if T:SimpleType =/=Bool char
+		andBool T:SimpleType =/=Bool unsigned-char
+		andBool T:SimpleType =/=Bool signed-char
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule [hasWCharType-wchar]: hasWCharType(T:Type) => true 
-		// if T:Type ==Bool cfg:wcharut 
-		// [structural]
-	// rule [hasWCharType-other]: hasWCharType(T:Type) => false
-		// if T:Type =/=Bool cfg:wcharut
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
-	// rule [hasWCharType-qualified]: hasWCharType(qualifiedType(T:Type, ?)) => hasWCharType(T:Type) [structural]
+	rule [hasWCharType-wchar]: hasWCharType(t(?, T:SimpleType)) => true 
+		if T:SimpleType ==Bool cfg:wcharut 
+		[structural]
+	rule [hasWCharType-other]: hasWCharType(t(?, T:SimpleType)) => false
+		if T:SimpleType =/=Bool cfg:wcharut
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
+	rule [hasWCharType-qualified]: hasWCharType(t(?, qualifiedType(T:Type, ?))) => hasWCharType(T:Type) [structural]
 	
-	// rule [hasPointerType-pointer]: hasPointerType(pointerType(?)) => true [structural]
-	// rule [hasPointerType-qualified]: hasPointerType(qualifiedType(T:Type, ?)) => hasPointerType(T:Type) [structural]
-	// rule [hasPointerType-other]: hasPointerType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'pointerType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasPointerType-pointer]: hasPointerType(t(?, pointerType(?))) => true [structural]
+	rule [hasPointerType-qualified]: hasPointerType(t(?, qualifiedType(T:Type, ?))) => hasPointerType(T:Type) [structural]
+	rule [hasPointerType-other]: hasPointerType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'pointerType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 	
-	// rule [hasBoolType-bool]: hasBoolType(bool) => true [structural]
-	// rule [hasBoolType-qualifiedType]: hasBoolType(qualifiedType(T:Type, ?)) => hasBoolType(T:Type) [structural]
-	// rule [hasBoolType-other]: hasBoolType(T:Type) => false
-		// if T:Type =/=Bool bool 
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasBoolType-bool]: hasBoolType(t(?, bool)) => true [structural]
+	rule [hasBoolType-qualifiedType]: hasBoolType(t(?, qualifiedType(T:Type, ?))) => hasBoolType(T:Type) [structural]
+	rule [hasBoolType-other]: hasBoolType(t(?, T:SimpleType)) => false
+		if T:SimpleType =/=Bool bool 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 	
 	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?))) => true [structural]
 	rule [hasArrayType-incompleteArray]: hasArrayType(t(?, incompleteArrayType(?))) => true [structural]
@@ -1031,13 +1035,13 @@ kmod COMMON-C-TYPING is
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
 	// Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
 	// */
-	// rule hasArithmeticType(T:Type) => hasIntegerType(T:Type) orBool hasFloatType(T:Type)
-		// [structural]
+	rule hasArithmeticType(T:Type) => hasIntegerType(T:Type) orBool hasFloatType(T:Type)
+		[structural]
 		
 		
 			
-	// rule unqualifyType(qualifiedType(T:Type, ?)) => T:Type [structural]
-	// rule unqualifyType(T:Type) => T:Type
-		// if getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule unqualifyType(t(?:Set, qualifiedType(T:Type, ?))) => T:Type [structural]
+	rule unqualifyType(t(?:Set, T:SimpleType)) => t(.Set, T:SimpleType)
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 endkm

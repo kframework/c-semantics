@@ -245,18 +245,18 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	The \cinline{sizeof} operator yields the size (in bytes) of its operand, which may be an expression or the parenthesized name of a type. The size is determined from the type of the operand. The result is an integer. If the type of the operand is a variable length array type, the operand is evaluated; otherwise, the operand is not evaluated and the result is an integer constant.
 	*/
 	
-	// rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
+	rule sizeofType(T:Type) => cast(cfg:sizeut, byteSizeofType(T:Type)) [structural]
 	op byteSizeofType-aux : K -> K [metadata "strict=()"]
-	// rule byteSizeofType(T:Type) => byteSizeofType-aux(bitSizeofType(T:Type)) [structural]
-	// rule byteSizeofType-aux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
-		// if T:Type ==Bool cfg:largestUnsigned
-		// [structural]
-	// rule
-		// < k > SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</ k >
-		// [structural]
-	// rule
-		// < k > SizeofType(T:Type, K:K) => sizeofType(DeclType(T:Type, K:K)) ...</ k >
-		// [structural]
+	rule byteSizeofType(T:Type) => byteSizeofType-aux(bitSizeofType(T:Type)) [structural]
+	rule byteSizeofType-aux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
+		if T:Type ==Bool cfg:largestUnsigned
+		[structural]
+	rule
+		< k > SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</ k >
+		[structural]
+	rule
+		< k > SizeofType(T:Type, K:K) => sizeofType(DeclType(T:Type, K:K)) ...</ k >
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
@@ -265,28 +265,28 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 	/*@ \source[n1570]{\para{6.5.1}{2}}
 	An identifier is a primary expression, provided it has been declared as designating an object (in which case it is an lvalue) or a function (in which case it is a function designator).
 	*/
-	// rule [lookup]:
-		// < k > X:Id => lv(Loc:Nat, T:Type) ...</ k >
-		// < env >... X:Id |-> Loc:Nat ...</ env >
-		// < types >... X:Id |-> T:Type ...</ types >
-		// [structural]
+	rule [lookup]:
+		< k > X:Id => lv(Loc:Nat, T:Type) ...</ k >
+		< env >... X:Id |-> Loc:Nat ...</ env >
+		< types >... X:Id |-> T:Type ...</ types >
+		[structural]
 		
-	// rule [lookup-builtin-function-notfound]:
-		// < k > (.K 
-				// => addToEnv(X:Id, Loc:Nat)
-				// ~> initFunction(
-					// tv(Loc:Nat, pointerType(T:Type)),
-					// functionPrototype(X:Id, T:Type)
-				// )
-			// )
-			// ~> X:Id
-		// ...</ k >
-		// < env > Env:Map </ env >
-		// < types >... X:Id |-> T:Type ...</ types >
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// if hasFunctionType(T:Type)
-		// andBool notBool $hasMapping(Env:Map, X:Id)
-		// [structural]
+	rule [lookup-builtin-function-notfound]:
+		< k > (.K 
+				=> addToEnv(X:Id, Loc:Nat)
+				~> initFunction(
+					tv(Loc:Nat, t(.Set, pointerType(T:Type))),
+					functionPrototype(X:Id, T:Type)
+				)
+			)
+			~> X:Id
+		...</ k >
+		< env > Env:Map </ env >
+		< types >... X:Id |-> T:Type ...</ types >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		if hasFunctionType(T:Type)
+		andBool notBool $hasMapping(Env:Map, X:Id)
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
@@ -306,58 +306,57 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	}
 	*/
 	
-	// rule [function-application-pre]:
-		// < k > Call(tv(Loc:Nat, pointerType(T:Type)), L:List{Type})
-			// => application(readFunction(Loc:Nat), L:List{Type})
-		// ...</ k >
-		// if hasFunctionType(T:Type)
-		// [structural]
+	rule [function-application-pre]:
+		< k > Call(tv(Loc:Nat, t(?, pointerType(T:Type))), L:List{Type})
+			=> application(readFunction(Loc:Nat), L:List{Type})
+		...</ k >
+		if hasFunctionType(T:Type)
+		[structural]
 
-	// rule [populateFromGlobal]:
-		// < k > populateFromGlobal => .K ...</ k >
-		// < genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > ? => G:Map </ env >
-		// < gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > ? => GT:Map </ types >
-		// < gstructs > GS:Map </ gstructs > < structs > ? => GS:Map </ structs >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// [structural]
+	rule [populateFromGlobal]:
+		< k > populateFromGlobal => .K ...</ k >
+		< genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > ? => G:Map </ env >
+		< gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > ? => GT:Map </ types >
+		< gstructs > GS:Map </ gstructs > < structs > ? => GS:Map </ structs >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		[structural]
 
-	// rule [builtin-application]:
-		// < k > application(functionPrototype(X:Id, T:Type), L:List{Type})
-			// => application(functionObject(X:Id, T:Type, handleBuiltin(X:Id, T:Type)), L:List{Type})
-		// ...</ k >
-		// [structural]
+	rule [builtin-application]:
+		< k > application(functionPrototype(X:Id, T:Type), L:List{Type})
+			=> application(functionObject(X:Id, T:Type, handleBuiltin(X:Id, T:Type)), L:List{Type})
+		...</ k >
+		[structural]
 		
-	// rule [function-application]:
-		// < k > application(functionObject(X:Id, functionType(R:Type, P:List{Type}), B:K), L:List{Type}) ~> K:K 
-			// => sequencePoint
-			// ~> populateFromGlobal
-			// ~> bind(L:List{Type}, P:List{Type})
-			// ~> B:K
-			// //~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi)
-		// </ k >
-		// < callStack > .List => ListItem(
-			// < stackFrame > C:Bag
-				// < continuation > K:K </ continuation >
-				// < currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-				// < stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				// < stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
-			// </ stackFrame >
-		// ) ...</ callStack >
-		// @latex("\\kBR")
-		// (< control >
-			// < currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-			// < currentFunction > CurrFun:K </ currentFunction >
-			// < currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-			// C:Bag
-		// </ control >
-		// =>
-		// < control >
-			// < currentFunction > X:Id </ currentFunction >
-			// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-			// < currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		// ...</ control >)
-		// < functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
-		// [structural large]
+	rule [function-application]:
+		< k > application(functionObject(X:Id, t(?, functionType(R:Type, P:List{Type})), B:K), L:List{Type}) ~> K:K 
+			=> sequencePoint
+			~> populateFromGlobal
+			~> bind(L:List{Type}, P:List{Type})
+			~> B:K
+		</ k >
+		< callStack > .List => ListItem(
+			< stackFrame > C:Bag
+				< continuation > K:K </ continuation >
+				< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
+				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
+				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
+			</ stackFrame >
+		) ...</ callStack >
+		@latex("\\kBR")
+		(< control >
+			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
+			< currentFunction > CurrFun:K </ currentFunction >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+			C:Bag
+		</ control >
+		=>
+		< control >
+			< currentFunction > X:Id </ currentFunction >
+			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		...</ control >)
+		< functionTranslationUnits >... OldTu:K |-> Map((? X:Id |-> Tu:K)) ...</ functionTranslationUnits >
+		[structural large]
 endkm
 
 kmod DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
@@ -450,11 +449,11 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	An integer character constant has type \cinline{int}. The value of an integer character constant containing a single character that maps to a single-byte execution character is the numerical value of the representation of the mapped character interpreted as an integer. The value of an integer character constant containing more than one character (e.g., \cinline{'ab'}), or containing a character or escape sequence that does not map to a single-byte execution character, is implementation-defined. If an integer character constant contains a single character or escape sequence, its value is the one that results when an object with type \cinline{char} whose value is that of the single character or escape sequence is converted to type \cinline{int}.
 	*/
 	// c1x 6.4.4.4:10
-	// rule CharLiteral(N:Nat) => tv(N:Nat, int) [structural]
-	// rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural]
-	// rule Constant(V:Value) => V:Value [structural]
-	// rule < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
-		// [structural] // for internal computations
+	rule CharLiteral(N:Nat) => tv(N:Nat, t(.Set, int)) [structural]
+	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural]
+	rule Constant(V:Value) => V:Value [structural]
+	rule < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
+		[structural] // for internal computations
 		
 	op withinRange : Int SimpleType -> Bool
 	rule withinRange(I:Int, T:SimpleType) => (I:Int <=Int max(t(.Set, T:SimpleType))) andBool (I:Int >=Int min(t(.Set, T:SimpleType))) [structural]
@@ -531,50 +530,50 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		[structural]
 		
 		
-	// rule U(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-int) then tv(I:Int, unsigned-int) else
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi fi
-		// [structural]
-	// rule L(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, long-int) then tv(I:Int, long-int) else
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi
-		// [structural]
-	// rule UL(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi		
-		// [structural]
-	// rule LL(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-			// tv(I:Int, no-type)
-		// fi
-		// [structural]
-	// rule ULL(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi
-		// [structural]
+	rule U(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi fi
+		[structural]
+	rule L(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi
+		[structural]
+	rule UL(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi		
+		[structural]
+	rule LL(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi
+		[structural]
+	rule ULL(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi
+		[structural]
 	
 	/*@ \source[n1570]{\para{6.4.4.2}{4}}
 	An unsuffixed floating constant has type \cinline{double}. If suffixed by the letter \cinline{f} or \cinline{F}, it has type \cinline{float}. If suffixed by the letter \cinline{l} or \cinline{L}, it has type \cinline{long double}.
 	*/
 	
 	op reducedFloat : Float -> K
-	// rule DecimalFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
-	// rule HexFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
+	rule DecimalFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
+	rule HexFloatConstant(?, ?, F:Float) => reducedFloat(F:Float) [structural]
 	
-	// rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, double)
-		// [structural]
-	// rule L(reducedFloat(F:Float)) => tv(F:Float, long-double)
-		// [structural]
-	// rule F(reducedFloat(F:Float)) => tv(F:Float, float)
-		// [structural]
+	rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
+		[structural]
+	rule L(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
+		[structural]
+	rule F(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
+		[structural]
 
 endkm
 
@@ -1106,14 +1105,13 @@ kmod DYNAMIC-SEMANTICS-DEREFERENCE is
 	/*@ \source[n1570]{\para{6.5.3.2}{4}}
 	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
 	*/
-	// rule [deref]:
-		// < k > *(tv(Loc:Nat, T:Type))
-			// => checkDerefLoc(Loc:Nat)
-			// ~> lv(Loc:Nat, innerType(T:Type))
-		// ...</ k >
-		// if hasPointerType(T:Type)
-		// andBool notBool innerType(T:Type) ==Bool void
-		// [structural]
+	rule [deref]:
+		< k > *(tv(Loc:Nat, t(?, pointerType(t(S:Set, T:SimpleType)))))
+			=> checkDerefLoc(Loc:Nat)
+			~> lv(Loc:Nat, t(S:Set, T:SimpleType))
+		...</ k >
+		if notBool T:SimpleType ==Bool void
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-REFERENCE is
@@ -1123,11 +1121,11 @@ kmod DYNAMIC-SEMANTICS-REFERENCE is
 	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. \broken{If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator.} Otherwise, the result is a pointer to the object or function designated by its operand.
 	*/
 
-	// rule [ref]:
-		// < k > &(lv(Loc:Nat, T:Type))
-			// => tv(Loc:Nat, pointerType(T:Type))
-		// ...</ k >
-		// [structural]
+	rule [ref]:
+		< k > &(lv(Loc:Nat, T:Type))
+			=> tv(Loc:Nat, t(.Set, pointerType(T:Type)))
+		...</ k >
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-INCREMENT-AND-DECREMENT is

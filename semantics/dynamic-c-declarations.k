@@ -131,30 +131,30 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	
 	// c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
-	// rule
-		// < k > initialize(X:Id, T:Type, K:K)
-			// => if (F:Id ==Bool File-Scope) then zero(X:Id) else (.) fi 
-			// ~> K:K
-			// ~> sequencePoint
-		// ...</ k >
-		// < currentFunction > F:Id </ currentFunction >
-		// [structural] 
+	rule
+		< k > initialize(X:Id, T:Type, K:K)
+			=> if (F:Id ==Bool File-Scope) then zero(X:Id) else (.) fi 
+			~> K:K
+			~> sequencePoint
+		...</ k >
+		< currentFunction > F:Id </ currentFunction >
+		[structural] 
 
-	// rule
-		// < k > zero(Name:K) => zeroType(Name:K, unqualifyType(T:Type)) ...</ k >
-		// < types >... Name:K |-> T:Type ...</ types >
-		// [structural] 
+	rule
+		< k > zero(Name:K) => zeroType(Name:K, unqualifyType(T:Type)) ...</ k >
+		< types >... Name:K |-> T:Type ...</ types >
+		[structural] 
 		
 	op zeroType : K Type -> K 
 	
-	// rule
-		// < k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0, int)) ...</ k >
-		// if hasIntegerType(T:Type)
-		// [structural] 
-	// rule
-		// < k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0.0, float)) ...</ k >
-		// if hasFloatType(T:Type)
-		// [structural] 
+	rule
+		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0, t(.Set, int))) ...</ k >
+		if hasIntegerType(T:Type)
+		[structural] 
+	rule
+		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0.0, t(.Set, float))) ...</ k >
+		if hasFloatType(T:Type)
+		[structural] 
 		
 	op zeroStruct : K List{C} -> K 
 	
@@ -164,56 +164,56 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	// -- if it is an aggregate, every member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	
-	// rule
-		// < k > zeroType(Name:K, structType(S:Id)) 
-			// => zeroStruct(Name:K, Fields:List{Type})
-		// ...</ k >
-		// < structs >... S:Id |-> aggregateInfo(Fields:List{Type}, ?, ?) ...</ structs > 
-		// [structural] 
+	rule
+		< k > zeroType(Name:K, t(?, structType(S:Id))) 
+			=> zeroStruct(Name:K, Fields:List{Type})
+		...</ k >
+		< structs >... S:Id |-> aggregateInfo(Fields:List{Type}, ?, ?) ...</ structs > 
+		[structural] 
 		
-	// rule
-		// < k > zeroType(Name:K, unionType(S:Id)) 
-			// => zeroType(Name:K . F:Id, T:Type)
-		// ...</ k >
-		// < structs >... 
-			// S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?) 
-		// ...</ structs > 
-		// [structural] 
+	rule
+		< k > zeroType(Name:K, t(?, unionType(S:Id))) 
+			=> zeroType(Name:K . F:Id, T:Type)
+		...</ k >
+		< structs >... 
+			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?) 
+		...</ structs > 
+		[structural] 
 		
-	// rule
-		// < k > zeroStruct(Name:K, (typedDeclaration(T:Type, F:Id) :: L:List{C})) 
-			// => zeroType(Name:K . F:Id, T:Type)
-			// ~> zeroStruct(Name:K, L:List{C}) 
-		// ...</ k >
-		// [structural] 
-	// rule
-		// < k > zeroStruct(Name:K, Nil) => .K ...</ k >
-		// [structural] 
+	rule
+		< k > zeroStruct(Name:K, (typedDeclaration(T:Type, F:Id) :: L:List{C})) 
+			=> zeroType(Name:K . F:Id, T:Type)
+			~> zeroStruct(Name:K, L:List{C}) 
+		...</ k >
+		[structural] 
+	rule
+		< k > zeroStruct(Name:K, Nil) => .K ...</ k >
+		[structural] 
 
-	// rule
-		// < k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
-		// if hasPointerType(T:Type)
-		// [structural]
-	// rule
-		// < k > zeroType(Name:K, T:Type) => .K ...</ k >
-		// if hasFunctionType(T:Type)
-		// [structural]
+	rule
+		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
+		if hasPointerType(T:Type)
+		[structural]
+	rule
+		< k > zeroType(Name:K, T:Type) => .K ...</ k >
+		if hasFunctionType(T:Type)
+		[structural]
 		
-	// rule
-		// < k > zeroType(Name:K, arrayType(T:Type, sNat(Len:Nat))) 
-			// => zeroType(Name:K[Len:Nat], T:Type)
-			// ~> zeroType(Name:K, arrayType(T:Type, Len:Nat)) 
-		// ...</ k >
-		// [structural] 
-	// rule
-		// < k > zeroType(Name:K, arrayType(T:Type, 0)) => .K ...</ k >
-		// [structural] 
+	rule
+		< k > zeroType(Name:K, t(S:Set, arrayType(T:Type, sNat(Len:Nat)))) 
+			=> zeroType(Name:K[Len:Nat], T:Type)
+			~> zeroType(Name:K, t(S:Set, arrayType(T:Type, Len:Nat))) 
+		...</ k >
+		[structural] 
+	rule
+		< k > zeroType(Name:K, t(?, arrayType(T:Type, 0))) => .K ...</ k >
+		[structural] 
 
-	// rule
-		// < k > zeroType(Name:K, flexibleArrayType(T:Type))
-			// => .K
-		// ...</ k >
-		// [structural]
+	rule
+		< k > zeroType(Name:K, t(?, flexibleArrayType(T:Type)))
+			=> .K
+		...</ k >
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
