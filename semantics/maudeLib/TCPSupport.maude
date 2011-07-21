@@ -1,6 +1,6 @@
 --- syntax used by the tcp interface and the tcp backend
-mod TCP-SYNTAX-BUILTIN-MODULE is
-	including SOCKET-BUILTIN-MODULE .
+mod #TCP-SYNTAX is
+	including #SOCKET .
 	
 	op error : -> String .
 	op containedRequest : Socket-Configuration -> [String] .
@@ -10,8 +10,8 @@ mod TCP-SYNTAX-BUILTIN-MODULE is
 	op errorTCPSyntax : -> String .
 endm
 
-mod TCP-CLIENT-BUILTIN-MODULE is
-	including TCP-SYNTAX-BUILTIN-MODULE .
+mod #TCP-CLIENT is
+	including #TCP-SYNTAX .
 	
 	sort TCPState .
 		
@@ -78,10 +78,10 @@ mod TCP-CLIENT-BUILTIN-MODULE is
 		createClientTcpSocket(socketManager, cnum(N), "localhost", 7077) .
 endm
 
-mod TCP-INTERFACE-BUILTIN-MODULE is
-	including TCP-SYNTAX-BUILTIN-MODULE .
-	including TCP-CLIENT-BUILTIN-MODULE .
-	including PL-COUNTER .
+mod #TCP-INTERFACE is
+	including #TCP-SYNTAX .
+	including #TCP-CLIENT .
+	including #COUNTER .
 		
 	rl tcpRequest(S:String) => containedRequest(start(counter) toSend(S:String +String "###EOMTCP###" +String "\r\n")) .
 	

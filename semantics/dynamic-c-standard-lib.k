@@ -4,8 +4,8 @@ load maudeLib/TCPSupport
 //- C standard library
 kmod DYNAMIC-C-STANDARD-LIBRARY is
 	including DYNAMIC-INCLUDE
-	including SOCKET-BUILTIN-MODULE
-	including TCP-INTERFACE-BUILTIN-MODULE
+	including #SOCKET
+	including #TCP-INTERFACE
 	
 	op vararg : K -> C [metadata "hybrid=() strict=()"] 
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]

@@ -1,7 +1,7 @@
 set print attribute on .
-mod MODEL-CHECK-BUILTIN-MODULE is
-	including PL-MODEL-CHECKER-BUILTIN-MODULE .
-	including PL-META-LEVEL-BUILTIN-MODULE .
+mod #MODEL-CHECK is
+	including #MODEL-CHECKER .
+	including #META-LEVEL .
 	including C .
 	
 	op errorTerm : -> Bag .
