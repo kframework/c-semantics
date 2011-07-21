@@ -1,6 +1,6 @@
 kmod DYNAMIC-C-LTL-INCLUDE is
 	including DYNAMIC-INCLUDE 
-	including PL-MODEL-CHECKER-BUILTIN-MODULE
+	including #MODEL-CHECKER-BUILTIN-MODULE
 	
 	op state : Bag -> Model-Checker-State
 	op k2model : K -> LTLFormula

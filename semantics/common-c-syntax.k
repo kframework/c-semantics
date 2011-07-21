@@ -1,14 +1,14 @@
 kmod COMMON-C-SYNTAX is
-	including PL-BOOL
-	including PL-EXT-BOOL
-	including PL-NAT
-	including PL-INT
-	including PL-RAT
-	including PL-FLOAT
-	including PL-STRING
-	including PL-CONVERSION
-	including PL-RANDOM
-	including PL-ID
+	including #BOOL
+	including #EXT-BOOL
+	including #NAT
+	including #INT
+	including #RAT
+	including #FLOAT
+	including #STRING
+	including #CONVERSION
+	including #RANDOM
+	including #ID
 	including K
 	including K-PROPER
 	
