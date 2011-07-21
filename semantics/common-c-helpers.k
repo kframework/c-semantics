@@ -164,48 +164,48 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		// if K:K =/=Bool K':K
 		// [structural]
 	
-	// rule [discard]:
-		// < k > V:Value ~> discard => .K ...</ k >
-		// [structural]
+	rule [discard]:
+		< k > V:Value ~> discard => .K ...</ k >
+		[structural]
 	
-	// //- derived
-	// rule bitsToBytes(N:Nat) => absInt(ceilingRat(N:Nat /Rat numBitsPerByte)) [structural]
+	//- derived
+	rule bitsToBytes(N:Nat) => absInt(ceilingRat(N:Nat /Rat numBitsPerByte)) [structural]
 		
-	// rule numBytes(unsigned-char) => numBytes(signed-char) [structural]
-	// rule numBytes(unsigned-short-int) => numBytes(short-int) [structural]
-	// rule numBytes(unsigned-int) => numBytes(int) [structural]
-	// rule numBytes(unsigned-long-int) => numBytes(long-int) [structural]
-	// rule numBytes(unsigned-long-long-int) => numBytes(long-long-int) [structural]
+	rule numBytes(t(?, unsigned-char)) => numBytes(t(.Set, signed-char)) [structural]
+	rule numBytes(t(?, unsigned-short-int)) => numBytes(t(.Set, short-int)) [structural]
+	rule numBytes(t(?, unsigned-int)) => numBytes(t(.Set, int)) [structural]
+	rule numBytes(t(?, unsigned-long-int)) => numBytes(t(.Set, long-int)) [structural]
+	rule numBytes(t(?, unsigned-long-long-int)) => numBytes(t(.Set, long-long-int)) [structural]
 	
-	// rule numBits(T:Type) => numBytes(T:Type) *Nat numBitsPerByte
-		// if getKLabel(T:Type) =/=Bool 'bitfieldType
-		// [structural]
-	// rule numBits(bitfieldType(?, N:Nat)) => N:Nat [structural]
+	rule numBits(t(S:Set, T:SimpleType)) => numBytes(t(S:Set, T:SimpleType)) *Nat numBitsPerByte
+		if getKLabel(T:SimpleType) =/=Bool 'bitfieldType
+		[structural]
+	rule numBits(t(?, bitfieldType(?, N:Nat))) => N:Nat [structural]
 
-	// rule min(bool) => 0 [structural]
-	// rule max(bool) => 1 [structural]
+	rule min(t(?, bool)) => 0 [structural]
+	rule max(t(?, bool)) => 1 [structural]
 	
-	// rule min(signed-char) => -Int (2 ^Nat absInt(_-Int_(numBits(signed-char), 1))) [structural]
-	// rule max(signed-char) => _-Int_(2 ^Nat absInt(_-Int_(numBits(signed-char), 1)), 1) [structural]
-	// rule min(short-int) => -Int (2 ^Nat absInt(_-Int_(numBits(short-int), 1))) [structural]
-	// rule max(short-int) => _-Int_(2 ^Nat absInt(_-Int_(numBits(short-int), 1)), 1) [structural]
-	// rule min(int) => -Int (2 ^Nat absInt(_-Int_(numBits(int), 1))) [structural]
-	// rule max(int) => _-Int_(2 ^Nat absInt(_-Int_(numBits(int), 1)), 1) [structural]
-	// rule min(long-int) => -Int (2 ^Nat absInt(_-Int_(numBits(long-int), 1))) [structural]
-	// rule max(long-int) => _-Int_(2 ^Nat absInt(_-Int_(numBits(long-int), 1)), 1) [structural]
-	// rule min(long-long-int) => -Int (2 ^Nat absInt(_-Int_(numBits(long-long-int), 1))) [structural]
-	// rule max(long-long-int) => _-Int_(2 ^Nat absInt(_-Int_(numBits(long-long-int), 1)), 1) [structural]
+	rule min(t(?, signed-char)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
+	rule max(t(?, signed-char)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1) [structural]
+	rule min(t(?, short-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
+	rule max(t(?, short-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1) [structural]
+	rule min(t(?, int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1))) [structural]
+	rule max(t(?, int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1)), 1) [structural]
+	rule min(t(?, long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1))) [structural]
+	rule max(t(?, long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1)), 1) [structural]
+	rule min(t(?, long-long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1))) [structural]
+	rule max(t(?, long-long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)), 1) [structural]
 	
-	// rule min(unsigned-char) => 0 [structural]
-	// rule max(unsigned-char) => _-Int_(2 ^Nat absInt(numBits(unsigned-char)), 1) [structural]
-	// rule min(unsigned-short-int) => 0 [structural]
-	// rule max(unsigned-short-int) => _-Int_(2 ^Nat absInt(numBits(unsigned-short-int)), 1) [structural]
-	// rule min(unsigned-int) => 0 [structural]
-	// rule max(unsigned-int) => _-Int_(2 ^Nat absInt(numBits(unsigned-int)), 1) [structural]
-	// rule min(unsigned-long-int) => 0 [structural]
-	// rule max(unsigned-long-int) => _-Int_(2 ^Nat absInt(numBits(unsigned-long-int)), 1) [structural]
-	// rule min(unsigned-long-long-int) => 0 [structural]
-	// rule max(unsigned-long-long-int) => _-Int_(2 ^Nat absInt(numBits(unsigned-long-long-int)), 1) [structural]
+	rule min(t(?, unsigned-char)) => 0 [structural]
+	rule max(t(?, unsigned-char)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-char))), 1) [structural]
+	rule min(t(?, unsigned-short-int)) => 0 [structural]
+	rule max(t(?, unsigned-short-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-short-int))), 1) [structural]
+	rule min(t(?, unsigned-int)) => 0 [structural]
+	rule max(t(?, unsigned-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-int))), 1) [structural]
+	rule min(t(?, unsigned-long-int)) => 0 [structural]
+	rule max(t(?, unsigned-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-int))), 1) [structural]
+	rule min(t(?, unsigned-long-long-int)) => 0 [structural]
+	rule max(t(?, unsigned-long-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-long-int))), 1) [structural]
 	
 	
 	// rule stringToChar(C:Char) => C:Char [structural]
@@ -235,53 +235,53 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		// [structural]
 	// rule .Set contains K:K => false [structural]
 
-	// rule hasIntegerType(T:Type) 
-		// => hasUnsignedIntegerType(T:Type) orBool hasSignedIntegerType(T:Type)
-		// [structural]
+	rule hasIntegerType(T:Type) 
+		=> hasUnsignedIntegerType(T:Type) orBool hasSignedIntegerType(T:Type)
+		[structural]
 	
-	// rule hasUnsignedIntegerType(T:Type) => true
-		// if (unsignedIntegerTypes contains T:Type)
-		// [structural]
+	rule hasUnsignedIntegerType(t(?, T:SimpleType)) => true
+		if (unsignedIntegerTypes contains T:SimpleType)
+		[structural]
 
-	// rule hasUnsignedIntegerType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'bitfieldType
-		// andBool (setOfTypes contains l(getKLabel(T:Type)) orBool hasFloatType(T:Type))
-		// [structural]
-	// rule hasUnsignedIntegerType(bitfieldType(T:Type, ?)) => true
-		// if hasUnsignedIntegerType(T:Type) ==Bool true
-		// [structural]
-	// rule hasUnsignedIntegerType(bitfieldType(T:Type, ?)) => false
-		// if hasUnsignedIntegerType(T:Type) ==Bool false
-		// [structural]
+	rule hasUnsignedIntegerType(t(S:Set, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'bitfieldType
+		andBool (setOfTypes contains l(getKLabel(T:SimpleType)) orBool hasFloatType(t(S:Set, T:SimpleType)))
+		[structural]
+	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?))) => true
+		if hasUnsignedIntegerType(T:Type) ==Bool true
+		[structural]
+	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?))) => false
+		if hasUnsignedIntegerType(T:Type) ==Bool false
+		[structural]
 	
-	// rule hasSignedIntegerType(T:Type) => true
-		// if (signedIntegerTypes contains T:Type)
-		// [structural]
-	// rule hasSignedIntegerType(enumType(?)) => true [structural] // choice fixme
-	// rule hasSignedIntegerType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'bitfieldType
-		// andBool (setOfTypes contains l(getKLabel(T:Type)) orBool hasFloatType(T:Type))
-		// [structural]
-	// rule hasSignedIntegerType(bitfieldType(T:Type, ?)) => true
-		// if hasSignedIntegerType(T:Type) ==Bool true
-		// [structural]
-	// rule hasSignedIntegerType(bitfieldType(T:Type, ?)) => false
-		// if hasSignedIntegerType(T:Type) ==Bool false
-		// [structural]
+	rule hasSignedIntegerType(t(?, T:SimpleType)) => true
+		if (signedIntegerTypes contains T:SimpleType)
+		[structural]
+	rule hasSignedIntegerType(t(?, enumType(?))) => true [structural] // choice fixme
+	rule hasSignedIntegerType(t(S:Set, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'bitfieldType
+		andBool (setOfTypes contains l(getKLabel(T:SimpleType)) orBool hasFloatType(t(S:Set, T:SimpleType)))
+		[structural]
+	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?))) => true
+		if hasSignedIntegerType(T:Type) ==Bool true
+		[structural]
+	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?))) => false
+		if hasSignedIntegerType(T:Type) ==Bool false
+		[structural]
 
-	// rule min(bitfieldType(T:Type, N:Nat)) => 0
-		// if hasUnsignedIntegerType(T:Type)
-		// [structural]
-	// rule max(bitfieldType(T:Type, N:Nat)) => _-Int_(2 ^Nat absInt(N:Nat), 1)
-		// if hasUnsignedIntegerType(T:Type)
-		// [structural]
+	rule min(t(?, bitfieldType(T:Type, N:Nat))) => 0
+		if hasUnsignedIntegerType(T:Type)
+		[structural]
+	rule max(t(?, bitfieldType(T:Type, N:Nat))) => _-Int_(2 ^Nat absInt(N:Nat), 1)
+		if hasUnsignedIntegerType(T:Type)
+		[structural]
 	
-	// rule min(bitfieldType(T:Type, N:Nat)) => -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
-		// if hasSignedIntegerType(T:Type)
-		// [structural]
-	// rule max(bitfieldType(T:Type, N:Nat)) => _-Int_(2 ^Nat absInt(_-Int_(N:Nat, 1)), 1)
-		// if hasSignedIntegerType(T:Type)
-		// [structural]
+	rule min(t(?, bitfieldType(T:Type, N:Nat))) => -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
+		if hasSignedIntegerType(T:Type)
+		[structural]
+	rule max(t(?, bitfieldType(T:Type, N:Nat))) => _-Int_(2 ^Nat absInt(_-Int_(N:Nat, 1)), 1)
+		if hasSignedIntegerType(T:Type)
+		[structural]
 		
 		
 	// rule NullPointerConstant => 0 [structural]
@@ -295,40 +295,40 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	// rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
 	// rule type(tv(?, T:Type)) => T:Type [structural]
 
-	// rule isBasicType(K:K) => if (
-		// K:K ==Bool bool
-		// orBool K:K ==Bool void
-		// orBool K:K ==Bool char
-		// orBool K:K ==Bool short-int
-		// orBool K:K ==Bool int
-		// orBool K:K ==Bool long-int
-		// orBool K:K ==Bool long-long-int
-		// orBool K:K ==Bool float
-		// orBool K:K ==Bool double
-		// orBool K:K ==Bool long-double
-		// orBool K:K ==Bool signed-char
-		// orBool K:K ==Bool unsigned-char
-		// orBool K:K ==Bool unsigned-short-int
-		// orBool K:K ==Bool unsigned-int
-		// orBool K:K ==Bool unsigned-long-int
-		// orBool K:K ==Bool unsigned-long-long-int
-		// orBool K:K ==Bool no-type
-		// orBool getKLabel(K:K) ==Bool 'enumType
-		// ) then true else false fi
-		// [structural]
+	rule isBasicType('t(?,, K:K)) => if (
+		K:K ==Bool bool
+		orBool K:K ==Bool void
+		orBool K:K ==Bool char
+		orBool K:K ==Bool short-int
+		orBool K:K ==Bool int
+		orBool K:K ==Bool long-int
+		orBool K:K ==Bool long-long-int
+		orBool K:K ==Bool float
+		orBool K:K ==Bool double
+		orBool K:K ==Bool long-double
+		orBool K:K ==Bool signed-char
+		orBool K:K ==Bool unsigned-char
+		orBool K:K ==Bool unsigned-short-int
+		orBool K:K ==Bool unsigned-int
+		orBool K:K ==Bool unsigned-long-int
+		orBool K:K ==Bool unsigned-long-long-int
+		orBool K:K ==Bool no-type
+		orBool getKLabel(K:K) ==Bool 'enumType
+		) then true else false fi
+		[structural]
 		
-	// rule setOfTypes => Set(
-		// l('arrayType),, 
-		// l('bitfieldType),, 
-		// l('functionType),, 
-		// l('pointerType),, l('structType),, l('unionType),, 
-		// l('qualifiedType)
-	// ) [structural]
+	rule setOfTypes => Set(
+		l('arrayType),, 
+		l('bitfieldType),, 
+		l('functionType),, 
+		l('pointerType),, l('structType),, l('unionType),, 
+		l('qualifiedType)
+	) [structural]
 	
-	// rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
+	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	
 	
-	// rule assert(true, ?) => .K [structural]
+	rule assert(true, ?) => .K [structural]
 endkm
 
 kmod COMMON-C-BITSIZE is
@@ -384,9 +384,9 @@ kmod COMMON-C-BITSIZE is
 	// rule Rat2String(sym(N:Nat), M:NzNat) => "sym(" +String Rat2String(N:Nat, M:NzNat) +String ")" [structural]
 	
 	
-	// rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
-	// rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
-	// rule klistToK(.List{K}) => .K [structural]
+	rule listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
+	rule klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K}) [structural]
+	rule klistToK(.List{K}) => .K [structural]
 endkm
 
 

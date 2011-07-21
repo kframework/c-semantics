@@ -15,6 +15,7 @@ sub maudeOutputWrapper {
 
 	my $errorCell = "";
 	my $finalComp = "";
+	my $finalCompGoto = "";
 
 	my $myFunc = "";
 	my $myFile = "";
@@ -78,6 +79,9 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< k > (.*) <\/ k >/){
 				$haveError = 1;
 				$finalComp = $1;
+			} elsif ($line =~ m/< computation > (.*) <\/ computation >/){
+				$haveError = 1;
+				$finalCompGoto = $1;
 			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KLabel\(\.List\{K\}\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
@@ -113,6 +117,13 @@ sub maudeOutputWrapper {
 			$realOutput .= substr($finalComp, 0, 1000);
 			$realOutput .= "\n";
 		}
+		if ($finalCompGoto ne "") {
+			$realOutput .= "=============================================================\n";
+			$realOutput .= "Final Goto Map Computation:\n";
+			$realOutput .= substr($finalCompGoto, 0, 1000);
+			$realOutput .= "\n";
+		}
+		
 			
 		# < currentFunction > Id File-Scope(.List{K}) </ currentFunction >
 		# < currentProgramLoc > ('CabsLoc).KProperLabel(String "challenge01.prepre.gen"(.List{K}),,Rat 1(.List{K}),,Rat 96(.List{K}),,Rat 1(.List{K})) 

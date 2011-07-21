@@ -109,23 +109,23 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		// if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		// [structural] 
 		
-	// rule DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
-		// => DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
-		// ~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
-		// [structural]
-	// rule 
-		// DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) 
-			// => declare(SingleName(T:Type, Name:K), Exp:K) 
-		// [structural]
+	rule DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
+		=> DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
+		~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
+		[structural]
+	rule 
+		DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) 
+			=> declare(SingleName(T:Type, Name:K), Exp:K) 
+		[structural]
 			
-	// rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
-	// rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
+	rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
+	rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
 		
 
 	
-	// rule
-		// < k > defineType(typedDeclaration(T:Type, X:Id)) => giveType(typedef(X:Id), T:Type) ...</ k >
-		// [structural] 
+	rule
+		< k > defineType(typedDeclaration(T:Type, X:Id)) => giveType(typedef(X:Id), T:Type) ...</ k >
+		[structural] 
 			
 	op declareFunction : Id Type K -> K 
 	op declareExternalVariable : Id Type K -> K 
@@ -187,30 +187,30 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// //- external variables
 	// // feature request : nice to have MapList
 	
-	// // function definition
-	// rule
-		// < k > declareFunction(X:Id, T:Type, K:K)
-			// => declareWithLinkage(X:Id, T:Type, K:K, external)
-		// ...</ k >
-		// if notBool hasStaticType(T:Type)
-		// andBool K:K =/=Bool NoInit
-		// [structural] 
+	// function definition
+	rule
+		< k > declareFunction(X:Id, T:Type, K:K)
+			=> declareWithLinkage(X:Id, T:Type, K:K, external)
+		...</ k >
+		if notBool hasStaticType(T:Type)
+		andBool K:K =/=Bool NoInit
+		[structural] 
 
-	// rule
-		// < k > declareFunction(X:Id, T:Type, NoInit)
-			// => declareWithLinkage(X:Id, prototype(T:Type), NoInit, external)
-		// ...</ k >
-		// if notBool hasStaticType(T:Type)
-		// [structural] 
+	rule
+		< k > declareFunction(X:Id, T:Type, NoInit)
+			=> declareWithLinkage(X:Id, t(.Set, prototype(T:Type)), NoInit, external)
+		...</ k >
+		if notBool hasStaticType(T:Type)
+		[structural] 
 		
-	// // fixme not handling internal prototypes
-	// rule
-		// < k > declareFunction(X:Id, T:Type, K:K)
-			// => declareWithLinkage(X:Id, T:Type, K:K, internal)
-		// ...</ k >
-		// < currentFunction > File-Scope </ currentFunction >
-		// if hasStaticType(T:Type)
-		// [structural] 
+	// fixme not handling internal prototypes
+	rule
+		< k > declareFunction(X:Id, T:Type, K:K)
+			=> declareWithLinkage(X:Id, T:Type, K:K, internal)
+		...</ k >
+		< currentFunction > File-Scope </ currentFunction >
+		if hasStaticType(T:Type)
+		[structural] 
 		
 		
 	
@@ -219,13 +219,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	//- internal variables
 	
 	// fixme need to look for bad use
-	// rule
-		// < k > declareInternalVariable(X:Id, T:Type, K:K)
-			// => declareWithLinkage(X:Id, T:Type, K:K, noLinkage)
-		// ...</ k >
-		// if notBool hasStaticType(T:Type)
-		// andBool notBool hasExternType(T:Type)
-		// [structural] 
+	rule
+		< k > declareInternalVariable(X:Id, T:Type, K:K)
+			=> declareWithLinkage(X:Id, T:Type, K:K, noLinkage)
+		...</ k >
+		if notBool hasStaticType(T:Type)
+		andBool notBool hasExternType(T:Type)
+		[structural] 
 		
 	// rule
 		// < k > declareInternalVariable(X:Id, T:Type, NoInit)
@@ -342,60 +342,60 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op declareOnly : Id Type K -> K 
 	op declareAndDefine : Id Type K K -> K 
 
-	// rule
-		// < k > declareWithLinkage(X:Id, T:Type, NoInit, L:K) => declareOnly(X:Id, T:Type, L:K) ...</ k >
-		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if L:K =/=Bool noLinkage
-		// [structural] 
-	// rule
-		// < k > declareWithLinkage(X:Id, T:Type, K:K, L:K) => declareAndDefine(X:Id, T:Type, K:K, L:K) ...</ k >
-		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if K:K =/=Bool NoInit
-		// andBool L:K =/=Bool noLinkage
-		// [structural] 
+	rule
+		< k > declareWithLinkage(X:Id, T:Type, NoInit, L:K) => declareOnly(X:Id, T:Type, L:K) ...</ k >
+		< declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if L:K =/=Bool noLinkage
+		[structural] 
+	rule
+		< k > declareWithLinkage(X:Id, T:Type, K:K, L:K) => declareAndDefine(X:Id, T:Type, K:K, L:K) ...</ k >
+		< declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if K:K =/=Bool NoInit
+		andBool L:K =/=Bool noLinkage
+		[structural] 
 		
-	// // fixme this terribly needs to be refactored.  I'm duplicating the above two rules so I don't add locals to the declaration order
-	// rule
-		// < k > declareWithLinkage(X:Id, T:Type, NoInit, L:K) => declareOnly(X:Id, T:Type, L:K) ...</ k >
-		// // < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if L:K ==Bool noLinkage
-		// [structural] 
-	// rule
-		// < k > declareWithLinkage(X:Id, T:Type, K:K, L:K) => declareAndDefine(X:Id, T:Type, K:K, L:K) ...</ k >
-		// // < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if K:K =/=Bool NoInit
-		// andBool L:K ==Bool noLinkage
-		// [structural] 
+	// fixme this terribly needs to be refactored.  I'm duplicating the above two rules so I don't add locals to the declaration order
+	rule
+		< k > declareWithLinkage(X:Id, T:Type, NoInit, L:K) => declareOnly(X:Id, T:Type, L:K) ...</ k >
+		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if L:K ==Bool noLinkage
+		[structural] 
+	rule
+		< k > declareWithLinkage(X:Id, T:Type, K:K, L:K) => declareAndDefine(X:Id, T:Type, K:K, L:K) ...</ k >
+		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:Id))) ...</ declarationOrder >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if K:K =/=Bool NoInit
+		andBool L:K ==Bool noLinkage
+		[structural] 
 	
-	// // extern functions are no different than functions
-	// // fixme dangerous if someone marks it as static and extern.  can't tell
-	// rule qualifiedType(T:Type, Extern) => T:Type
-		// if hasFunctionType(T:Type) 
-		// [structural]
+	// extern functions are no different than functions
+	// fixme dangerous if someone marks it as static and extern.  can't tell
+	rule qualifiedType(T:Type, Extern) => T:Type
+		if hasFunctionType(T:Type) 
+		[structural]
 	
-	// // fixme clean these up, they are so redundant
-	// // fixme unqualifying these is probably unsafe
-	// rule
-		// < k > declareOnly(X:Id, T:Type, external)
-			// => .K
-		// ...</ k >
-		// < declarations >... .Set => SetItem(X:Id) ...</ declarations >
-		// < preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
-		// < preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if (notBool $hasMapping(Linkage:Map, X:Id) 
-				// orBool Linkage:Map(X:Id) ==Bool external
-			// )
-			// andBool (
-				// notBool $hasMapping(Types:Map, X:Id)
-				// // orBool Types:Map(X:Id) ==Bool prototype(T:Type)
-				// orBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
-			// )
-		// [structural] 
+	// fixme clean these up, they are so redundant
+	// fixme unqualifying these is probably unsafe
+	rule
+		< k > declareOnly(X:Id, T:Type, external)
+			=> .K
+		...</ k >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
+		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if (notBool $hasMapping(Linkage:Map, X:Id) 
+				orBool Linkage:Map(X:Id) ==Bool external
+			)
+			andBool (
+				notBool $hasMapping(Types:Map, X:Id)
+				// orBool Types:Map(X:Id) ==Bool prototype(T:Type)
+				orBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
+			)
+		[structural] 
 		
 	// rule
 		// < k > declareOnly(X:Id, prototype(T:Type), external)
@@ -446,65 +446,65 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		// andBool notBool hasExternType(T:Type)
 		// [structural] 
 	
-	// // exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
-	// rule
-		// < k > declareAndDefine(X:Id, T:Type, K:K, external)
-			// => .K
-		// ...</ k >
-		// < declarations >... .Set => SetItem(X:Id) ...</ declarations >
-		// < externalDefinitions > Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:Type), Tu:K, K:K)) </ externalDefinitions >
-		// < preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
-		// < preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
-		// andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool external)
-		// [structural] 
+	// exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
+	rule
+		< k > declareAndDefine(X:Id, T:Type, K:K, external)
+			=> .K
+		...</ k >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
+		< externalDefinitions > Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:Type), Tu:K, K:K)) </ externalDefinitions >
+		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
+		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool external)
+		[structural] 
 		
-	// rule
-		// < k > declareAndDefine(X:Id, T:Type, K:K, internal)
-			// => .K
-		// ...</ k >
-		// < declarations >... .Set => SetItem(X:Id) ...</ declarations >
-		// < internalDefinitions >... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:Type), Tu:K, K:K) / X:Id])) ...</ internalDefinitions >
-		// < preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
-		// < preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
-		// andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool internal)
-		// [structural]
+	rule
+		< k > declareAndDefine(X:Id, T:Type, K:K, internal)
+			=> .K
+		...</ k >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
+		< internalDefinitions >... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:Type), Tu:K, K:K) / X:Id])) ...</ internalDefinitions >
+		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
+		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool internal)
+		[structural]
 		
 	op defineAndInit : Id Type K Nat -> K [metadata "strict=(3)"] 
-	// rule
-		// < k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
-			// => defineAndInit(X:Id, T:Type, figureInitializer(X:Id, T:Type, K:K), Loc:Nat)
-		// ...</ k >
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// < localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		// < localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		// if notBool X:Id in Vars:List // again, this should be needed statically, but not dynamically
-		// [structural] 
-	// rule // this happens when we jump before a variable declaration with an initialization in the same block
-		// < k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
-			// => justInit(figureInitializer(X:Id, T:Type, K:K))
-		// ...</ k >
-		// < localVariables >... ListItem(X:Id) ...</ localVariables >
-		// [structural] 
+	rule
+		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
+			=> defineAndInit(X:Id, T:Type, figureInitializer(X:Id, T:Type, K:K), Loc:Nat)
+		...</ k >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		if notBool X:Id in Vars:List // again, this should be needed statically, but not dynamically
+		[structural] 
+	rule // this happens when we jump before a variable declaration with an initialization in the same block
+		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
+			=> justInit(figureInitializer(X:Id, T:Type, K:K))
+		...</ k >
+		< localVariables >... ListItem(X:Id) ...</ localVariables >
+		[structural] 
 		
 	op justInit : K -> K [metadata "strict=(1)"]
 	
-	// rule
-		// < k > justInit(initializerValue(X:Id, T:Type, K:K)) => initialize(X:Id, T:Type, K:K) ...</ k >
-		// [structural]
+	rule
+		< k > justInit(initializerValue(X:Id, T:Type, K:K)) => initialize(X:Id, T:Type, K:K) ...</ k >
+		[structural]
 		
-	// rule
-		// < k > defineAndInit(X:Id, ?, initializerValue(X:Id, T:Type, K:K), Loc:Nat)
-			// => allocateTypeIfAbsent(Loc:Nat, T:Type)
-			// ~> addToEnv(X:Id, Loc:Nat)
-			// ~> giveType(X:Id, T:Type)
-			// ~> initialize(X:Id, T:Type, K:K)
-		// ...</ k >
-		// < shouldInit > true </ shouldInit >
-		// [structural] 
+	rule
+		< k > defineAndInit(X:Id, ?, initializerValue(X:Id, T:Type, K:K), Loc:Nat)
+			=> allocateTypeIfAbsent(Loc:Nat, T:Type)
+			~> addToEnv(X:Id, Loc:Nat)
+			~> giveType(X:Id, T:Type)
+			~> initialize(X:Id, T:Type, K:K)
+		...</ k >
+		< shouldInit > true </ shouldInit >
+		[structural] 
 		
 	// rule
 		// < k > defineAndInit(X:Id, ?, initializerValue(X:Id, T:Type, ?), Loc:Nat)
@@ -552,25 +552,25 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// op defineFunctionUsingOldDeclaration : Type Id K -> K 
 	// FIXME check prototypes
-	// rule [function-definition]:
-		// < k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
-			// => declareFunction(
-				// X:Id, 
-				// T:Type, 
-				// initializer(initFunction(
-					// &(X:Id), 
-					// functionObject(
-						// X:Id, 
-						// unqualifyType(T:Type), 
-						// BODY
-					// )
-				// ))
-			// )
-			// ~> calculateGotoMap(X:Id, BODY)
-		// ...</ k >
-		// if hasFunctionType(T:Type)
-		// where BODY = (Block:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi))
-		// [structural] 
+	rule [function-definition]:
+		< k > FunctionDefinition(typedDeclaration(T:Type, X:Id), Block:K) 
+			=> declareFunction(
+				X:Id, 
+				T:Type, 
+				initializer(initFunction(
+					&(X:Id), 
+					functionObject(
+						X:Id, 
+						unqualifyType(T:Type), 
+						BODY
+					)
+				))
+			)
+			~> calculateGotoMap(X:Id, BODY)
+		...</ k >
+		if hasFunctionType(T:Type)
+		where BODY = (Block:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, t(.Set, int)) else NothingExpression fi))
+		[structural] 
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
@@ -972,29 +972,29 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	op canonicalizeTranslationUnitVariables : -> K 
-	// rule [unpack-TranslationUnit]:
-		// < k > TranslationUnit(Name:String, K:K, P:String) 
-			// => klistToK(eraseKLabel('StmtCons, K:K))
-		// ...</ k >
-		// < currentTranslationUnit > ? => Name:String </ currentTranslationUnit >
-		// < declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </ declarationOrder >
-		// < internalLocations > ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </ internalLocations >
-		// < functionTranslationUnits > Funs:Map => Funs:Map[Map(.) / Name:String] </ functionTranslationUnits > 
-		// < translationUnits >... . => BagItem(Name:String) ...</ translationUnits >
-		// < preLinkage > Linkage:Map => Linkage:Map[Map(.) / Name:String] </ preLinkage >
-		// < preTypes > Types:Map => Types:Map[Map(.) / Name:String] </ preTypes >
-		// < internalDefinitions > Def:Map => Def:Map[Map(.) / Name:String] </ internalDefinitions >
-		// < genv > Env:Map => Env:Map[Map(.) / Name:String] </ genv >
-		// < gtypes > Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</ gtypes >
-		// < programText > M:Map => M:Map[P:String / Name:String] </ programText >
-		// if notBool $hasMapping(Env:Map, Name:String)
-		// [structural] 
+	rule [unpack-TranslationUnit]:
+		< k > TranslationUnit(Name:String, K:K, P:String) 
+			=> klistToK(eraseKLabel('StmtCons, K:K))
+		...</ k >
+		< currentTranslationUnit > ? => Name:String </ currentTranslationUnit >
+		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </ declarationOrder >
+		< internalLocations > ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </ internalLocations >
+		< functionTranslationUnits > Funs:Map => Funs:Map[Map(.) / Name:String] </ functionTranslationUnits > 
+		< translationUnits >... . => BagItem(Name:String) ...</ translationUnits >
+		< preLinkage > Linkage:Map => Linkage:Map[Map(.) / Name:String] </ preLinkage >
+		< preTypes > Types:Map => Types:Map[Map(.) / Name:String] </ preTypes >
+		< internalDefinitions > Def:Map => Def:Map[Map(.) / Name:String] </ internalDefinitions >
+		< genv > Env:Map => Env:Map[Map(.) / Name:String] </ genv >
+		< gtypes > Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</ gtypes >
+		< programText > M:Map => M:Map[P:String / Name:String] </ programText >
+		if notBool $hasMapping(Env:Map, Name:String)
+		[structural] 
 	
 	op resolve : K -> K 
-	// rule
-		// < k > (. => resolve(Tu:K)) ~> resolveReferences ...</ k >
-		// < translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
-		// [structural] 
+	rule
+		< k > (. => resolve(Tu:K)) ~> resolveReferences ...</ k >
+		< translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
+		[structural] 
 		
 	/* this is what I want, but it doesn't compile
 	rule
@@ -1004,12 +1004,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		...</ staticSemantics >) => .Bag
 		[structural]
 	*/
-	// rule
-		// < k > resolveReferences => .K ...</ k >
-		// // < staticSemantics >...
-			// < translationUnits > .Bag </ translationUnits >
-		// // ...</ staticSemantics >
-		// [structural] 
+	rule
+		< k > resolveReferences => .K ...</ k >
+		// < staticSemantics >...
+			< translationUnits > .Bag </ translationUnits >
+		// ...</ staticSemantics >
+		[structural] 
 		
 	op resolveInternal : Id K K -> K 
 	op resolveExternal : Id K Bag K -> K 

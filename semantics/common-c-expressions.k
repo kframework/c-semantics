@@ -6,5 +6,5 @@ endkm
 kmod COMMON-C-EXPRESSIONS is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	// rule NothingExpression => emptyValue [structural]
+	rule NothingExpression => emptyValue [structural]
 endkm

@@ -456,79 +456,79 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	// rule < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
 		// [structural] // for internal computations
 		
-	op withinRange : Int Type -> Bool
-	// rule withinRange(I:Int, T:Type) => (I:Int <=Int max(T:Type)) andBool (I:Int >=Int min(T:Type)) [structural]
+	op withinRange : Int SimpleType -> Bool
+	rule withinRange(I:Int, T:SimpleType) => (I:Int <=Int max(t(.Set, T:SimpleType))) andBool (I:Int >=Int min(t(.Set, T:SimpleType))) [structural]
 	
-	// rule NoSuffix(DecimalConstant(I:Int)) =>
-		// if withinRange(I:Int, int) then tv(I:Int, int) else
-		// if withinRange(I:Int, long-int) then tv(I:Int, long-int) else
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi fi
-		// [structural]
+	rule NoSuffix(DecimalConstant(I:Int)) =>
+		if withinRange(I:Int, int) then tv(I:Int, t(.Set, int)) else
+		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi fi
+		[structural]
 		
 	op simplifyForHex : String -> String
-	// rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
-		// if firstChar(S:String) ==Bool "0"
-		// andBool lengthString(S:String) >Nat 1
-		// [structural]
-	// rule simplifyForHex(S:String) => S:String
-		// if firstChar(S:String) =/=Bool "0"
-		// orBool lengthString(S:String) ==Bool 1
-		// [structural]
+	rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
+		if firstChar(S:String) ==Bool "0"
+		andBool lengthString(S:String) >Nat 1
+		[structural]
+	rule simplifyForHex(S:String) => S:String
+		if firstChar(S:String) =/=Bool "0"
+		orBool lengthString(S:String) ==Bool 1
+		[structural]
 		
 		
 	op hexOrOctalConstant : K -> K
-	// rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural]
-	// rule OctalConstant(N:Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) [structural] // truncRat is just for sorts
+	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural]
+	rule OctalConstant(N:Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) [structural] // truncRat is just for sorts
 	
-	// rule NoSuffix(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, int) then tv(I:Int, int) else
-		// if withinRange(I:Int, unsigned-int) then tv(I:Int, unsigned-int) else
-		// if withinRange(I:Int, long-int) then tv(I:Int, long-int) else
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi fi fi fi fi
-		// [structural]
+	rule NoSuffix(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, int) then tv(I:Int, t(.Set, int)) else
+		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
+		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi fi fi fi fi
+		[structural]
 
-	// rule U(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-int) then tv(I:Int, unsigned-int) else
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi fi
-		// [structural]
+	rule U(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi fi
+		[structural]
 		
-	// rule L(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, long-int) then tv(I:Int, long-int) else
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi fi fi
-		// [structural]
+	rule L(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi fi fi
+		[structural]
 		
-	// rule UL(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-long-int) then tv(I:Int, unsigned-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi
-		// [structural]
+	rule UL(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi
+		[structural]
 		
-	// rule LL(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, long-long-int) then tv(I:Int, long-long-int) else
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi fi
-		// [structural]
+	rule LL(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi fi
+		[structural]
 	
-	// rule ULL(hexOrOctalConstant(I:Int)) =>
-		// if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, unsigned-long-long-int) else
-			// tv(I:Int, no-type)
-		// fi
-		// [structural]
+	rule ULL(hexOrOctalConstant(I:Int)) =>
+		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+			tv(I:Int, t(.Set, no-type))
+		fi
+		[structural]
 		
 		
 	// rule U(DecimalConstant(I:Int)) =>

@@ -8,6 +8,7 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	op canonicalizeType : Bag -> K 
 	
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
+	
 	op evalToType : -> K 
 	
 	op typeStrictUnaryOperators : -> Set [memo] 
@@ -169,182 +170,182 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	
 	op canonicalizeType : Bag K Bag Bag Bag -> K [metadata "strict=(2)"] 
 		
-	// rule
-		// < k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
-		// [structural] 
+	rule
+		< k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
+		[structural] 
 		
-	// // specifier, modifier, storage
-	// rule
-		// < k > canonicalizeType((B:Bag (BagItem(T:K) => .Bag)), ?, (? (.Bag => BagItem(T:K))), ?, ?) ...</ k >
-		// if false
-		// orBool (T:K ==Bool Void)
-		// orBool (T:K ==Bool Bool)
-		// orBool (T:K ==Bool Char)
-		// orBool (T:K ==Bool Short)
-		// orBool (T:K ==Bool Int)
-		// orBool (T:K ==Bool Long)
-		// orBool (T:K ==Bool Float)
-		// orBool (T:K ==Bool Double)
-		// orBool (T:K ==Bool Signed)
-		// orBool (T:K ==Bool Unsigned)
-		// orBool (getKLabel(T:K) ==Bool 'StructDef)
-		// orBool (getKLabel(T:K) ==Bool 'UnionDef)
-		// orBool (getKLabel(T:K) ==Bool 'EnumDef)
-		// orBool (getKLabel(T:K) ==Bool 'StructRef)
-		// orBool (getKLabel(T:K) ==Bool 'UnionRef)
-		// orBool (getKLabel(T:K) ==Bool 'EnumRef)
-		// orBool (getKLabel(T:K) ==Bool 'Named)
-		// orBool (getKLabel(T:K) ==Bool 'AttributeValue)
-		// [structural] 
+	// specifier, modifier, storage
+	rule
+		< k > canonicalizeType((B:Bag (BagItem(T:K) => .Bag)), ?, (? (.Bag => BagItem(T:K))), ?, ?) ...</ k >
+		if false
+		orBool (T:K ==Bool Void)
+		orBool (T:K ==Bool Bool)
+		orBool (T:K ==Bool Char)
+		orBool (T:K ==Bool Short)
+		orBool (T:K ==Bool Int)
+		orBool (T:K ==Bool Long)
+		orBool (T:K ==Bool Float)
+		orBool (T:K ==Bool Double)
+		orBool (T:K ==Bool Signed)
+		orBool (T:K ==Bool Unsigned)
+		orBool (getKLabel(T:K) ==Bool 'StructDef)
+		orBool (getKLabel(T:K) ==Bool 'UnionDef)
+		orBool (getKLabel(T:K) ==Bool 'EnumDef)
+		orBool (getKLabel(T:K) ==Bool 'StructRef)
+		orBool (getKLabel(T:K) ==Bool 'UnionRef)
+		orBool (getKLabel(T:K) ==Bool 'EnumRef)
+		orBool (getKLabel(T:K) ==Bool 'Named)
+		orBool (getKLabel(T:K) ==Bool 'AttributeValue)
+		[structural] 
 
-	// rule
-		// < k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, ?, (? .Bag => BagItem(T:K))) ...</ k >
-		// if T:K ==Bool Extern
-		// orBool T:K ==Bool Static
-		// orBool T:K ==Bool Const
-		// orBool T:K ==Bool Volatile
-		// orBool T:K ==Bool Restrict
-		// orBool T:K ==Bool Auto
-		// orBool T:K ==Bool Register
-		// [structural] 
+	rule
+		< k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, ?, (? .Bag => BagItem(T:K))) ...</ k >
+		if T:K ==Bool Extern
+		orBool T:K ==Bool Static
+		orBool T:K ==Bool Const
+		orBool T:K ==Bool Volatile
+		orBool T:K ==Bool Restrict
+		orBool T:K ==Bool Auto
+		orBool T:K ==Bool Register
+		[structural] 
 		
-	// rule
-		// < k > canonicalizeType(.Bag, (T:Type => qualifiedType(T:Type, Q:K)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
-		// if Q:K ==Bool Extern
-		// orBool Q:K ==Bool Static
-		// orBool Q:K ==Bool Const
-		// orBool Q:K ==Bool Volatile
-		// orBool Q:K ==Bool Restrict
-		// orBool Q:K ==Bool Auto
-		// orBool Q:K ==Bool Register
-		// [structural] 
+	rule
+		< k > canonicalizeType(.Bag, (T:Type => qualifiedType(T:Type, Q:K)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		if Q:K ==Bool Extern
+		orBool Q:K ==Bool Static
+		orBool Q:K ==Bool Const
+		orBool Q:K ==Bool Volatile
+		orBool Q:K ==Bool Restrict
+		orBool Q:K ==Bool Auto
+		orBool Q:K ==Bool Register
+		[structural] 
 	
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(Named(X:Id)))
-			// => typedefType(X:Id, T:Type)
-		// ...</ k >
-		// < types >... typedef(X:Id) |-> T:Type ...</ types >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(Named(X:Id)))
+			=> t(.Set, typedefType(X:Id, T:Type))
+		...</ k >
+		< types >... typedef(X:Id) |-> T:Type ...</ types >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
 		
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(StructRef(X:Id)))
-			// => structType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
-			// => enumType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-			// => unionType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(StructRef(X:Id)))
+			=> t(.Set, structType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
+			=> t(.Set, enumType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
+			=> t(.Set, unionType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
 		
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:List{C})))
-			// => EnumDef(X:Id, L:List{C})
-			// ~> enumType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:List{C})))
+			=> EnumDef(X:Id, L:List{C})
+			~> t(.Set, enumType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
 	
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, L:List{C})))) ...</ k >
-		// < freshNat > N:Nat => sNat(N:Nat) </ freshNat >
-		// if L:KLabel ==Bool 'StructDef
-		// orBool L:KLabel ==Bool 'EnumDef
-		// orBool L:KLabel ==Bool 'UnionDef
-		// [structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, L:List{C})))) ...</ k >
+		< freshNat > N:Nat => sNat(N:Nat) </ freshNat >
+		if L:KLabel ==Bool 'StructDef
+		orBool L:KLabel ==Bool 'EnumDef
+		orBool L:KLabel ==Bool 'UnionDef
+		[structural] 
 	
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(StructDef(X:Id, L:List{C})))
-			// => StructDef(X:Id, L:List{C})
-			// ~> structType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
-	// rule
-		// < k > canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:List{C})))
-			// => UnionDef(X:Id, L:List{C})
-			// ~> unionType(X:Id)
-		// ...</ k >
-		// if X:Id =/=Bool Identifier("")
-		// [structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(StructDef(X:Id, L:List{C})))
+			=> StructDef(X:Id, L:List{C})
+			~> t(.Set, structType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
+	rule
+		< k > canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:List{C})))
+			=> UnionDef(X:Id, L:List{C})
+			~> t(.Set, unionType(X:Id))
+		...</ k >
+		if X:Id =/=Bool Identifier("")
+		[structural] 
 		
 
-	// // FIXME what good is this?
-	// rule BagItem(SpecTypedef) => .Bag [structural]
-	// // fixme ignoring inlines
-	// rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
-	// // fixme should save these for later use
-	// rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
+	// FIXME what good is this?
+	rule BagItem(SpecTypedef) => .Bag [structural]
+	// fixme ignoring inlines
+	rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
+	// fixme should save these for later use
+	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
 
-	// rule 
-		// < k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
-		// if B:Bag =/=Bool .Bag
-		// [structural] 
+	rule 
+		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
+		if B:Bag =/=Bool .Bag
+		[structural] 
 		
-	// rule
-		// < k > canonicalizeType(.Bag, T:Type, .Bag, .Bag, .Bag) => T:Type ...</ k >
-		// [structural] 
+	rule
+		< k > canonicalizeType(.Bag, T:Type, .Bag, .Bag, .Bag) => T:Type ...</ k >
+		[structural] 
 		
 	op canonicalizeSpecifier : Bag -> K 
 	// C99 6.7.2:2
-	// rule canonicalizeSpecifier(BagItem(Void)) => void [structural]
-	// rule canonicalizeSpecifier(BagItem(Bool)) => bool [structural]
-	// rule canonicalizeSpecifier(BagItem(Char)) => char [structural]
-	// rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => signed-char [structural]
-	// rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => unsigned-char [structural]
+	rule canonicalizeSpecifier(BagItem(Void)) => t(.Set, void) [structural]
+	rule canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool) [structural]
+	rule canonicalizeSpecifier(BagItem(Char)) => t(.Set, char) [structural]
+	rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char) [structural]
+	rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char) [structural]
 	
-	// rule canonicalizeSpecifier(BagItem(Double)) => double [structural]
-	// rule canonicalizeSpecifier(BagItem(Float)) => float [structural]
-	// rule canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => long-double [structural]
+	rule canonicalizeSpecifier(BagItem(Double)) => t(.Set, double) [structural]
+	rule canonicalizeSpecifier(BagItem(Float)) => t(.Set, float) [structural]
+	rule canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => t(.Set, long-double) [structural]
 	
-	// rule canonicalizeSpecifier(B:Bag) => short-int
-		// if B:Bag ==Bool BagItem(Short)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Short)
-		// orBool B:Bag ==Bool BagItem(Short) BagItem(Int)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Short) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => unsigned-short-int
-		// if B:Bag ==Bool BagItem(Unsigned) BagItem(Short)
-		// orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Short) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => int
-		// if B:Bag ==Bool BagItem(Int)
-		// orBool B:Bag ==Bool BagItem(Signed)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => unsigned-int
-		// if B:Bag ==Bool BagItem(Unsigned)
-		// orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => long-int
-		// if B:Bag ==Bool BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Long) BagItem(Int)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => unsigned-long-int
-		// if B:Bag ==Bool BagItem(Unsigned) BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => long-long-int
-		// if B:Bag ==Bool BagItem(Long) BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Long) BagItem(Long) BagItem(Int)
-		// orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int) 
-		// [structural]
-	// rule canonicalizeSpecifier(B:Bag) => unsigned-long-long-int
-		// if B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long)
-		// orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
-		// [structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
+		if B:Bag ==Bool BagItem(Short)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short)
+		orBool B:Bag ==Bool BagItem(Short) BagItem(Int)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-short-int)
+		if B:Bag ==Bool BagItem(Unsigned) BagItem(Short)
+		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Short) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, int)
+		if B:Bag ==Bool BagItem(Int)
+		orBool B:Bag ==Bool BagItem(Signed)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-int)
+		if B:Bag ==Bool BagItem(Unsigned)
+		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, long-int)
+		if B:Bag ==Bool BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Long) BagItem(Int)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-int)
+		if B:Bag ==Bool BagItem(Unsigned) BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, long-long-int)
+		if B:Bag ==Bool BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Long) BagItem(Long) BagItem(Int)
+		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int) 
+		[structural]
+	rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-long-int)
+		if B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
+		[structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
@@ -354,9 +355,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	
 	op BitFieldType : K K -> K [metadata "strict=()"] 
 	
-	// rule
-		// < k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
-		// [structural]
+	rule
+		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
+		[structural]
 		
 	// rule BitFieldType(T:Type, tv(N:Nat, ?)) => bitfieldType(T:Type, N:Nat) [structural]
 	
@@ -364,68 +365,68 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op makeFunctionType : List{Type} -> KLabel 
 	op pushTypeDown : Type KLabel -> Type 
 	
-	// rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
-	// rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, 'incompleteArrayType) [structural]
-	// rule PointerType(T:Type) => pushTypeDown(T:Type, 'pointerType) [structural]
-	// // fixme I'm assuming functiontype is always below a prototype in the ast
-	// rule FunctionType(T:Type) => T:Type [structural]
-	// rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
-	// rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: variadic))) [structural]
+	rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
+	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, 'incompleteArrayType) [structural]
+	rule PointerType(T:Type) => pushTypeDown(T:Type, 'pointerType) [structural]
+	// fixme I'm assuming functiontype is always below a prototype in the ast
+	rule FunctionType(T:Type) => T:Type [structural]
+	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
+	rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: t(.Set, variadic)))) [structural]
 	
-	// rule [pushdown-array]: pushTypeDown(arrayType(T:Type, N:Nat), K:KLabel) => arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat) [structural]
-	// rule [pushdown-incomplete]: pushTypeDown(incompleteArrayType(T:Type), K:KLabel) => incompleteArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	// rule [pushdown-pointer]: pushTypeDown(pointerType(T:Type), K:KLabel) => pointerType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	// rule [pushdown-qualified]: pushTypeDown(qualifiedType(T:Type, K:K), K:KLabel) => qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K) [structural]
-	// rule [pushdown-function]: pushTypeDown(functionType(T:Type, L:List{Type}), K:KLabel) => functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type}) [structural]
-	// // rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
-	// rule [pushdown-struct]: pushTypeDown(structType(X:Id), K:KLabel) => K:KLabel(structType(X:Id)) [structural]
-	// rule [pushdown-union]: pushTypeDown(unionType(X:Id), K:KLabel) => K:KLabel(unionType(X:Id)) [structural]
-	// rule [pushdown-enum]: pushTypeDown(enumType(X:Id), K:KLabel) => K:KLabel(enumType(X:Id)) [structural]
+	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:Type, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat)) [structural]
+	rule [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:Type, K:KLabel))) [structural]
+	rule [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:Type)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:Type, K:KLabel))) [structural]
+	rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
+	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{Type})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type})) [structural]
+	// rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
+	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id))) [structural]
+	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id))) [structural]
+	rule [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:Id))) [structural]
 	
-	// rule [pushdown-typedef]: pushTypeDown(typedefType(X:Id, T:Type), K:KLabel) => K:KLabel(T:Type) [structural]
+	rule [pushdown-typedef]: pushTypeDown(t(S:Set, typedefType(X:Id, t(S':Set, T:SimpleType))), K:KLabel) => K:KLabel(t(S:Set S':Set, T:SimpleType)) [structural]
 	
-	// rule [pushdown-basic]: pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
-		// if isBasicType(T:Type)
-		// [structural]
+	rule [pushdown-basic]: pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
+		if isBasicType(T:Type)
+		[structural]
 	
-	// rule makeArrayType(N:Nat)(T:Type) => arrayType(T:Type, N:Nat) [structural]
-	// rule makeFunctionType(L:List{Type})(T:Type) => functionType(T:Type, giveNamesToArgs(L:List{Type})) [structural]
+	rule makeArrayType(N:Nat)(T:Type) => t(.Set, arrayType(T:Type, N:Nat)) [structural]
+	rule makeFunctionType(L:List{Type})(T:Type) => t(.Set, functionType(T:Type, giveNamesToArgs(L:List{Type}))) [structural]
 	
 	op giveNamesToArgs : List{Type} -> List{Type}
 	op giveNamesToArgs-aux : Nat List{Type} -> List{Type}
 	
-	// rule giveNamesToArgs(L:List{Type}) => giveNamesToArgs-aux(0, L:List{Type}) [structural]
-	// rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
-		// => typedDeclaration(T:Type, X:Id) :: giveNamesToArgs-aux(N:Nat, L:List{Type})
-		// if X:Id =/=Bool #NoName
-		// [structural]
-	// rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
-		// => typedDeclaration(T:Type, #NoName(N:Nat)) :: giveNamesToArgs-aux(sNat(N:Nat), L:List{Type})
-		// if X:Id ==Bool #NoName
-		// [structural]
-	// rule giveNamesToArgs-aux(?, variadic)
-		// => variadic
-		// [structural]
-	// rule giveNamesToArgs-aux(?, Nil)
-		// => Nil
-		// [structural]
+	rule giveNamesToArgs(L:List{Type}) => giveNamesToArgs-aux(0, L:List{Type}) [structural]
+	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, X:Id) :: giveNamesToArgs-aux(N:Nat, L:List{Type})
+		if X:Id =/=Bool #NoName
+		[structural]
+	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, #NoName(N:Nat)) :: giveNamesToArgs-aux(sNat(N:Nat), L:List{Type})
+		if X:Id ==Bool #NoName
+		[structural]
+	rule giveNamesToArgs-aux(?, t(.Set, variadic))
+		=> variadic
+		[structural]
+	rule giveNamesToArgs-aux(?, Nil)
+		=> Nil
+		[structural]
 	
-	// rule 
-		// < k > JustBase => T:Type ...</ k >
-		// < declarationTypeHolder > T:Type => . ...</ declarationTypeHolder >
-		// [structural] 
+	rule 
+		< k > JustBase => T:Type ...</ k >
+		< declarationTypeHolder > T:Type => .K ...</ declarationTypeHolder >
+		[structural] 
 
 	op extractActualTypeFreezer : -> K 
-	// rule
-		// < k > DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</ k >
-		// < declarationTypeHolder > (. => T:Type) ...</ declarationTypeHolder >
-		// [structural] 
+	rule
+		< k > DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</ k >
+		< declarationTypeHolder > (. => T:Type) ...</ declarationTypeHolder >
+		[structural] 
 	
-	// rule
-		// < k > T:Type ~> extractActualTypeFreezer 
-			// => extractActualType(T:Type)
-		// ...</ k >
-		// [structural] 
+	rule
+		< k > T:Type ~> extractActualTypeFreezer 
+			=> extractActualType(T:Type)
+		...</ k >
+		[structural] 
 		
 	op fillBitHoles : List{Type} -> List{Type} 
 	op fillBitHoles : Nat List{Type} -> List{Type} 
@@ -486,86 +487,86 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	// rule incompleteToFlexibleArrayMember(typedDeclaration(incompleteArrayType(T:Type), X:Id)) => typedDeclaration(flexibleArrayType(T:Type), X:Id) [structural]
 	// rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
 	
-	// rule
-		// < k > StructDef(X:Id, L:List{Type})
-			// => addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
-			// ~> giveType(X:Id, structType(X:Id))
-		// ...</ k >
-		// [structural] 
-	// rule
-		// < k > UnionDef(X:Id, L:List{Type})
-			// => addUnion(X:Id, L:List{Type})
-			// ~> giveType(X:Id, unionType(X:Id))
-		// ...</ k >
-		// [structural] 
+	rule
+		< k > StructDef(X:Id, L:List{Type})
+			=> addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
+			~> giveType(X:Id, t(.Set, structType(X:Id)))
+		...</ k >
+		[structural] 
+	rule
+		< k > UnionDef(X:Id, L:List{Type})
+			=> addUnion(X:Id, L:List{Type})
+			~> giveType(X:Id, t(.Set, unionType(X:Id)))
+		...</ k >
+		[structural] 
 
-	// // the K will resolve to a type, so throw it away
-	// rule
-		// < k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
-		// [structural] 
+	// the K will resolve to a type, so throw it away
+	rule
+		< k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
+		[structural] 
 		
 			
-	// rule
-		// NameAndType(X:Id, T:Type) => typedDeclaration(T:Type, X:Id)
-		// [structural] 
-		
-	// rule [extract-basic]: extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
-	// rule [extract-enum]: extractActualType(enumType(X:Id)) => enumType(X:Id) [structural]
-	// rule [extract-struct]: extractActualType(structType(X:Id)) => structType(X:Id) [structural]
-	// rule [extract-union]: extractActualType(unionType(X:Id)) => unionType(X:Id) [structural]
-	// rule [extract-array]: extractActualType(arrayType(T:Type, N:Nat)) => arrayType(extractActualType(T:Type), N:Nat) [structural]
-	// rule [extract-incompleteArray]: extractActualType(incompleteArrayType(T:Type)) => incompleteArrayType(extractActualType(T:Type)) [structural]
-	// // rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
-	// rule [extract-bitfield]: extractActualType(bitfieldType(T:Type, N:Nat)) => bitfieldType(extractActualType(T:Type), N:Nat) [structural]
-	// rule [extract-function]: extractActualType(functionType(T:Type, List:List{Type})) => functionType(extractActualType(T:Type), List:List{Type}) [structural]
-	// rule [extract-pointer]:  extractActualType(pointerType(T:Type)) => pointerType(extractActualType(T:Type)) [structural]
-	// rule [extract-qualified]: extractActualType(qualifiedType(T:Type, K:K)) => qualifiedType(extractActualType(T:Type), K:K) [structural]
-	// // rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
-	// rule [extract-typedef]: extractActualType(typedefType(?, T:Type)) => extractActualType(T:Type) [structural]
+	rule
+		NameAndType(X:Id, T:Type) => typedDeclaration(T:Type, X:Id)
+		[structural] 
+	
+	rule [extract-basic]: extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
+	rule [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id)) [structural]
+	rule [extract-struct]: extractActualType(t(S:Set, structType(X:Id))) => t(S:Set, structType(X:Id)) [structural]
+	rule [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id)) [structural]
+	rule [extract-array]: extractActualType(t(S:Set, arrayType(T:Type, N:Nat))) => t(S:Set, arrayType(extractActualType(T:Type), N:Nat)) [structural]
+	rule [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:Type))) => t(S:Set, incompleteArrayType(extractActualType(T:Type))) [structural]
+	// rule [extract-flexibleArray]: extractActualType(flexibleArrayType(T:Type)) => flexibleArrayType(extractActualType(T:Type)) [structural]
+	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:Nat)) [structural]
+	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{Type}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{Type})) [structural]
+	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
+	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
+	// rule [extract-prototype]: extractActualType(prototype(T:Type)) => prototype(extractActualType(T:Type)) [structural]
+	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
 		
 	op NameAndType : K K -> K [metadata "strict=(2)"] 
 		
-	// rule
-		// SingleName(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
-		// [structural] 
-	// rule [Separate-FieldGroups]:
-		// FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
-		// [structural]
+	rule
+		SingleName(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
+		[structural] 
+	rule [Separate-FieldGroups]:
+		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
+		[structural]
 		
-	// // op shouldFlatten : List{C} -> Type
-	// // rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
-	// // rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
-	// // fixme WHY CAN'T I WRITE THIS???
+	// op shouldFlatten : List{C} -> Type
+	// rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
+	// rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
+	// fixme WHY CAN'T I WRITE THIS???
 	
-	// // op flattenList : List{C} -> List{C} [metadata "strict=()"]
-	// // op flattenListAux : List{C} -> List{C} [metadata "strict=()"]
-	// // rule ('flattenList => 'flattenListAux)(?:List{Type}) [structural]
-	// // rule 'flattenListAux(('_::_(Lab:KLabel(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
-		// // => 'flattenListAux('_::_(Rem:List{Type}),, (Other:List{Type},, Lab:KLabel(L:List{K}))) 
-		// // if Lab:KLabel =/=Bool '_::_
-		// // [structural]
-	// // rule 'flattenListAux(('_::_('_::_(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
-		// // => 'flattenListAux(('_::_(L:List{K},, Rem:List{Type})),, (Other:List{Type})) 
-		// // [structural]
-	// // rule 'flattenListAux(('_::_(.List{K})),, (Other:List{Type})) 
-		// // => Other:List{Type}
-		// // [structural]
-	// rule
-		// FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
+	// op flattenList : List{C} -> List{C} [metadata "strict=()"]
+	// op flattenListAux : List{C} -> List{C} [metadata "strict=()"]
+	// rule ('flattenList => 'flattenListAux)(?:List{Type}) [structural]
+	// rule 'flattenListAux(('_::_(Lab:KLabel(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
+		// => 'flattenListAux('_::_(Rem:List{Type}),, (Other:List{Type},, Lab:KLabel(L:List{K}))) 
+		// if Lab:KLabel =/=Bool '_::_
 		// [structural]
-	// // rule
-		// // < k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
-			// // => L:List{Type}
-		// // ...</ k >
-		// // < structs >...
-			// // unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
-		// // ...</ structs >
-		// // [structural]
+	// rule 'flattenListAux(('_::_('_::_(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
+		// => 'flattenListAux(('_::_(L:List{K},, Rem:List{Type})),, (Other:List{Type})) 
+		// [structural]
+	// rule 'flattenListAux(('_::_(.List{K})),, (Other:List{Type})) 
+		// => Other:List{Type}
+		// [structural]
+	rule
+		FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
+		[structural]
 	// rule
-		// FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
-		// => NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
-		// [structural] 
-	// rule FieldName(K:K) => K:K [structural]
+		// < k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
+			// => L:List{Type}
+		// ...</ k >
+		// < structs >...
+			// unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
+		// ...</ structs >
+		// [structural]
+	rule
+		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
+		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
+		[structural] 
+	rule FieldName(K:K) => K:K [structural]
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
@@ -957,75 +958,75 @@ kmod COMMON-C-TYPING is
 		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
 		// [structural]
 	
-	// rule [hasArrayType-array]: hasArrayType(arrayType(?, ?)) => true [structural]
-	// rule [hasArrayType-incompleteArray]: hasArrayType(incompleteArrayType(?)) => true [structural]
-	// rule [hasArrayType-qualified]: hasArrayType(qualifiedType(T:Type, ?)) => hasArrayType(T:Type) [structural]
-	// rule [hasArrayType-other]: hasArrayType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'arrayType 
-		// andBool getKLabel(T:Type) =/=Bool 'incompleteArrayType 
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?))) => true [structural]
+	rule [hasArrayType-incompleteArray]: hasArrayType(t(?, incompleteArrayType(?))) => true [structural]
+	rule [hasArrayType-qualified]: hasArrayType(t(?, qualifiedType(T:Type, ?))) => hasArrayType(T:Type) [structural]
+	rule [hasArrayType-other]: hasArrayType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'arrayType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'incompleteArrayType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
+	rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
 		
-	// rule [hasStructType-struct]: hasStructType(structType(?)) => true [structural]
-	// rule [hasStructType-qualified]: hasStructType(qualifiedType(T:Type, ?)) => hasStructType(T:Type) [structural]
-	// rule [hasStructType-other]: hasStructType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'structType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasStructType-struct]: hasStructType(t(?, structType(?))) => true [structural]
+	rule [hasStructType-qualified]: hasStructType(t(?, qualifiedType(T:Type, ?))) => hasStructType(T:Type) [structural]
+	rule [hasStructType-other]: hasStructType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'structType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule [hasUnionType-union]: hasUnionType(unionType(?)) => true [structural]
-	// rule [hasUnionType-qualified]: hasUnionType(qualifiedType(T:Type, ?)) => hasUnionType(T:Type) [structural]
-	// rule [hasUnionType-other]: hasUnionType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'unionType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasUnionType-union]: hasUnionType(t(?, unionType(?))) => true [structural]
+	rule [hasUnionType-qualified]: hasUnionType(t(?, qualifiedType(T:Type, ?))) => hasUnionType(T:Type) [structural]
+	rule [hasUnionType-other]: hasUnionType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'unionType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 
-	// rule [hasIncompleteType-true]: hasIncompleteType(incompleteArrayType(?)) => true [structural]
-	// rule [hasIncompleteType-qualified]: hasIncompleteType(qualifiedType(T:Type, ?)) => hasIncompleteType(T:Type) [structural]
-	// rule [hasIncompleteType-false]: hasIncompleteType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'incompleteArrayType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasIncompleteType-true]: hasIncompleteType(t(?, incompleteArrayType(?))) => true [structural]
+	rule [hasIncompleteType-qualified]: hasIncompleteType(t(?, qualifiedType(T:Type, ?))) => hasIncompleteType(T:Type) [structural]
+	rule [hasIncompleteType-false]: hasIncompleteType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'incompleteArrayType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule [hasExternType-qualified]: hasExternType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
-		// [structural]
-	// rule [hasExternType-false]: hasExternType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasExternType-qualified]: hasExternType(t(?, qualifiedType(T:Type, K:K))) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
+		[structural]
+	rule [hasExternType-false]: hasExternType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule [hasStaticType-qualified]: hasStaticType(qualifiedType(T:Type, K:K)) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
-		// [structural]
-	// rule [hasStaticType-false]: hasStaticType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'qualifiedType 
-		// [structural]
+	rule [hasStaticType-qualified]: hasStaticType(t(?, qualifiedType(T:Type, K:K))) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
+		[structural]
+	rule [hasStaticType-false]: hasStaticType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		[structural]
 		
-	// rule [hasBitfieldType-true]: hasBitfieldType(bitfieldType(?, ?)) => true [structural]
-	// rule [hasBitfieldType-false]: hasBitfieldType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'bitfieldType
-		// [structural]
+	rule [hasBitfieldType-true]: hasBitfieldType(t(?, bitfieldType(?, ?))) => true [structural]
+	rule [hasBitfieldType-false]: hasBitfieldType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'bitfieldType
+		[structural]
 		
-	// rule [hasFunctionType-true]: hasFunctionType(functionType(?, ?)) => true [structural]
-	// rule [hasFunctionType-prototype]: hasFunctionType(prototype(T:Type)) => hasFunctionType(T:Type) [structural]
-	// rule [hasFunctionType-qualified]: hasFunctionType(qualifiedType(T:Type, ?)) => hasFunctionType(T:Type) [structural]
-	// rule [hasFunctionType-false]: hasFunctionType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'functionType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType
-		// andBool getKLabel(T:Type) =/=Bool 'prototype 
-		// [structural]
+	rule [hasFunctionType-true]: hasFunctionType(t(?, functionType(?, ?))) => true [structural]
+	rule [hasFunctionType-prototype]: hasFunctionType(t(?, prototype(T:Type))) => hasFunctionType(T:Type) [structural]
+	rule [hasFunctionType-qualified]: hasFunctionType(t(?, qualifiedType(T:Type, ?))) => hasFunctionType(T:Type) [structural]
+	rule [hasFunctionType-false]: hasFunctionType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'functionType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		andBool getKLabel(T:SimpleType) =/=Bool 'prototype 
+		[structural]
 		
-	// rule [hasFunctionPointerType-fp]: hasFunctionPointerType(pointerType(functionType(?, ?))) => true [structural]
-	// rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(qualifiedType(T:Type, ?)) => hasFunctionPointerType(T:Type) [structural]
-	// rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(pointerType(qualifiedType(T:Type, ?))) => hasFunctionPointerType(pointerType(T:Type)) [structural]
-	// rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(T:Type) => false
-		// if getKLabel(T:Type) =/=Bool 'pointerType
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType
-		// [structural]
-	// rule [hasFunctionPointerType-notFunction]: hasFunctionPointerType(pointerType(T:Type)) => false
-		// if getKLabel(T:Type) =/=Bool 'functionType 
-		// andBool getKLabel(T:Type) =/=Bool 'qualifiedType
-		// [structural]
+	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(t(?, pointerType(t(?, functionType(?, ?))))) => true [structural]
+	rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(?, qualifiedType(T:Type, ?))) => hasFunctionPointerType(T:Type) [structural]
+	rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(?, pointerType(t(?, qualifiedType(T:Type, ?))))) => hasFunctionPointerType(t(.Set, pointerType(T:Type))) [structural]
+	rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'pointerType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		[structural]
+	rule [hasFunctionPointerType-notFunction]: hasFunctionPointerType(t(?, pointerType(t(?, T:SimpleType)))) => false
+		if getKLabel(T:SimpleType) =/=Bool 'functionType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		[structural]
 		
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
 	// Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
