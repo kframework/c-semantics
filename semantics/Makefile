@@ -15,7 +15,7 @@ K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
 COMPILE_C = $(K_MAUDE) c.k -u -language C
-COMPILE_C_ND = $(K_MAUDE) c.k -nondet "nd(true) computational" -supercool "nd(true)" -u -language C
+COMPILE_C_ND = $(K_MAUDE) c.k -transition "nd(true) computational" -supercool "nd(true)" -u -language C
 # COMPILE_C_ND = $(K_MAUDE) c.k -ndstrict "nd(true)" -u -language C
 
 COMMON_C_FILES = c-syntax.k \
