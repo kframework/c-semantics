@@ -16,6 +16,7 @@ sub maudeOutputWrapper {
 	my $errorCell = "";
 	my $finalComp = "";
 	my $finalCompGoto = "";
+	my $finalCompType = "";
 
 	my $myFunc = "";
 	my $myFile = "";
@@ -82,7 +83,10 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< computation > (.*) <\/ computation >/){
 				$haveError = 1;
 				$finalCompGoto = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KLabel\(\.List\{K\}\)\) <\/ resultValue >/){
+			} elsif ($line =~ m/< type > (.*) <\/ type >/){
+				$haveError = 1;
+				$finalCompType = $1;
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}
@@ -121,6 +125,12 @@ sub maudeOutputWrapper {
 			$realOutput .= "=============================================================\n";
 			$realOutput .= "Final Goto Map Computation:\n";
 			$realOutput .= substr($finalCompGoto, 0, 1000);
+			$realOutput .= "\n";
+		}
+		if ($finalCompType ne "") {
+			$realOutput .= "=============================================================\n";
+			$realOutput .= "Final Type Computation:\n";
+			$realOutput .= substr($finalCompType, 0, 1000);
 			$realOutput .= "\n";
 		}
 		

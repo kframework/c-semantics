@@ -11,119 +11,119 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// fixme not really a sequence point
 	
 	op bind-aux : Nat List{C} List{Type} -> K 
-	// rule
-		// < k > bind(L:List{C}, L':List{Type}) => bind-aux(NullPointer, L:List{C}, L':List{Type}) ...</ k > 
-		// [structural] 
+	rule
+		< k > bind(L:List{C}, L':List{Type}) => bind-aux(NullPointer, L:List{C}, L':List{Type}) ...</ k > 
+		[structural] 
 	
-	// rule [bind-empty-void]:
-		// < k > bind-aux(?, Nil, typedDeclaration(void, ?)) => sequencePoint ...</ k > 
-		// [structural] 
-	// rule [bind-empty]:
-		// < k > bind-aux(?, Nil, Nil) => sequencePoint ...</ k > 
-		// [structural] 
+	rule [bind-empty-void]:
+		< k > bind-aux(?, Nil, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
+		[structural] 
+	rule [bind-empty]:
+		< k > bind-aux(?, Nil, Nil) => sequencePoint ...</ k > 
+		[structural] 
 		
 		
 	// n1494 6.5.2.2:6 If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (, ...) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
 	// -- one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
 	// -- both types are pointers to qualified or unqualified versions of a character type or void
 	
-	// rule [bind-coerce-array]:
-		// bind-aux(
-			// ?
-			// , L:List{C}
-			// , (
-				// ?:List{Type}
-				// :: typedDeclaration(
-					// (arrayType(T:Type, ?) => pointerType(T:Type))
-					// , X:Id
-				// )
-				// :: ?:List{Type}
-			// )
-		// )
-		// [structural] 
-	// rule [bind-coerce-incompleteArray]:
-		// bind-aux(
-			// ?
-			// , L:List{C}
-			// , (
-				// ?:List{Type} 
-				// :: typedDeclaration(
-					// (incompleteArrayType(T:Type) => pointerType(T:Type))
-					// , X:Id
-				// ) 
-				// :: ?:List{Type})
-		// )
-		// [structural] 
+	rule [bind-coerce-array]:
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type}
+				:: typedDeclaration(
+					(t(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
+					, X:Id
+				)
+				:: ?:List{Type}
+			)
+		)
+		[structural] 
+	rule [bind-coerce-incompleteArray]:
+		bind-aux(
+			?
+			, L:List{C}
+			, (
+				?:List{Type} 
+				:: typedDeclaration(
+					(t(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
+					, X:Id
+				) 
+				:: ?:List{Type})
+		)
+		[structural] 
 		
-	// rule [bind-one]:
-		// < k > true ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
-			// => allocateType(Loc:Nat, T:Type)
-			// ~> addToEnv(X:Id, Loc:Nat)
-			// ~> giveType(X:Id, T:Type)
-			// ~> initialize(X:Id, T:Type, Computation(X:Id := tv(V:List{K}, T':Type)))
-			// ~> bind-aux(Loc:Nat, L:List{C}, P:List{Type}) 
-		// ...</ k > 
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// < localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		// if notBool hasArrayType(T:Type)
-		// [structural] 
+	rule [bind-one]:
+		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
+			=> allocateType(Loc:Nat, T:Type)
+			~> addToEnv(X:Id, Loc:Nat)
+			~> giveType(X:Id, T:Type)
+			~> initialize(X:Id, T:Type, Computation(X:Id := tv(V:List{K}, T':Type)))
+			~> bind-aux(Loc:Nat, L:List{C}, P:List{Type}) 
+		...</ k > 
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		if notBool hasArrayType(T:Type)
+		[structural] 
 		
-	// rule [bind-one-check-type]:
-		// < k > (. => isTypeCompatible(T:Type, T':Type)) 
-			// ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
-		// ...</ k > 
-		// [structural] 
+	rule [bind-one-check-type]:
+		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
+			~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
+		...</ k > 
+		[structural] 
 	
 	op promoteList : List{C} -> List{K} 
-	// rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (cast(argPromote(T:Type), tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
-		// if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
-		// orBool T:Type ==Bool float 
-		// [structural]
-	// rule [promoteList-promoted]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
-		// if (notBool(hasIntegerType(T:Type)) 
-			// andBool notBool T:Type ==Bool float
-			// andBool notBool hasArrayType(T:Type)
-		// ) 
-		// orBool rank(T:Type) >=Int rank(int)
-		// orBool T:Type ==Bool double 
-		// orBool T:Type ==Bool long-double
-		// [structural]
+	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{C})
+		if ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
+		orBool T:SimpleType ==Bool float 
+		[structural]
+	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{C}))
+		if (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
+			andBool notBool T:SimpleType ==Bool float
+			andBool notBool hasArrayType(t(S:Set, T:SimpleType))
+		) 
+		orBool rank(t(S:Set, T:SimpleType)) >=Int rank(t(.Set, int))
+		orBool T:SimpleType ==Bool double 
+		orBool T:SimpleType ==Bool long-double
+		[structural]
 		
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 
-	// rule promoteList(Nil) => .List{K} [structural]
+	rule promoteList(Nil) => .List{K} [structural]
 	
-	// // the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
-	// rule [bind-variadic-pre]:
-		// < k > bind-aux(Loc:Nat, L:List{C}, variadic)
-			// => bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
-		// ...</ k >
-		// [structural] 
+	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
+	rule [bind-variadic-pre]:
+		< k > bind-aux(Loc:Nat, L:List{C}, t(?, variadic))
+			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
+		...</ k >
+		[structural] 
 
-	// rule [bind-variadic-start]:
-		// < k > bindVariadic-pre(Loc:Nat, L:List{KResult}) 
-			// => bindVariadic(Loc:Nat, L:List{KResult})
-		// ...</ k >
-		// [structural]
+	rule [bind-variadic-start]:
+		< k > bindVariadic-pre(Loc:Nat, L:List{KResult}) 
+			=> bindVariadic(Loc:Nat, L:List{KResult})
+		...</ k >
+		[structural]
 	
-	// // fixme don't forget to get rid of append
+	// fixme don't forget to get rid of append
 	
-	// // this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
-	// rule [bind-variadic]:
-		// < k > (.K 
-				// => allocateType(Loc:Nat, Type)
-				// ~> Computation(*(tv(Loc:Nat, pointerType(Type))) := V:Value)
-			// ) 
-			// ~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
-		// ...</ k >
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// < localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		// where Type = type(V:Value)
-		// [structural]
+	// this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
+	rule [bind-variadic]:
+		< k > (.K 
+				=> allocateType(Loc:Nat, Type)
+				~> Computation(*(tv(Loc:Nat, t(.Set, pointerType(Type)))) := V:Value)
+			) 
+			~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
+		...</ k >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		where Type = type(V:Value)
+		[structural]
 	
-	// rule [bind-variadic-done]:
-		// < k > bindVariadic(?, .List{K}) => sequencePoint ...</ k > 
-		// [structural]
+	rule [bind-variadic-done]:
+		< k > bindVariadic(?, .List{K}) => sequencePoint ...</ k > 
+		[structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is

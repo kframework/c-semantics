@@ -75,94 +75,94 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE
 
 	op waitingOnDeclType : -> K 
-	// rule [type-Cast-heat]:
-		// < k > (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</ k >
-		// < type > Cast(Specifier:K, DeclType:K, ?) => waitingOnDeclType ...</ type >
-		// [structural] 
+	rule [type-Cast-heat]:
+		< k > (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</ k >
+		< type > Cast(Specifier:K, DeclType:K, ?) => waitingOnDeclType ...</ type >
+		[structural] 
 		
-	// rule [type-Cast-cool]:
-		// < k > (T:Type => .) ~> evalToType ...</ k >
-		// < type > waitingOnDeclType => T:Type ...</ type >
-		// [structural] 
+	rule [type-Cast-cool]:
+		< k > (T:Type => .) ~> evalToType ...</ k >
+		< type > waitingOnDeclType => T:Type ...</ type >
+		[structural] 
 		
-	// rule [type-ternary-heat-left]:
-		// < type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
-		// if notBool isAType(K2:K)
-		// [structural] 
-	// rule [type-ternary-cool-left]:
-		// < type > T:Type ~> K1:K ? HOLE : K3:K => K1:K ? T:Type : K3:K ...</ type >
-		// if isAType(T:Type)
-		// [structural] 
-	// rule [type-ternary-heat-right]:
-		// < type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : HOLE ...</ type >
-		// if notBool isAType(K3:K)
-		// [structural] 
-	// rule [type-ternary-cool-right]:
-		// < type > T:Type ~> K1:K ? K2:K : HOLE => K1:K ? K2:K : T:Type ...</ type >
-		// if isAType(T:Type)
-		// [structural] 
+	rule [type-ternary-heat-left]:
+		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
+		if notBool isAType(K2:K)
+		[structural] 
+	rule [type-ternary-cool-left]:
+		< type > T:Type ~> K1:K ? HOLE : K3:K => K1:K ? T:Type : K3:K ...</ type >
+		if isAType(T:Type)
+		[structural] 
+	rule [type-ternary-heat-right]:
+		< type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : HOLE ...</ type >
+		if notBool isAType(K3:K)
+		[structural] 
+	rule [type-ternary-cool-right]:
+		< type > T:Type ~> K1:K ? K2:K : HOLE => K1:K ? K2:K : T:Type ...</ type >
+		if isAType(T:Type)
+		[structural] 
 		
-	// rule [type-bin-arith-heat-left]:
-		// < type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(HOLE,, K':K) ...</ type >
-		// if notBool isAType(K:K)
-		// andBool typeStrictBinaryOperators contains l(L:KLabel)
-		// [structural] 
-	// rule [type-bin-arith-cool-left]:
-		// < type > T:Type ~> L:KLabel(HOLE,, K:K) => L:KLabel(T:Type,, K:K) ...</ type >
-		// if isAType(T:Type)
-		// andBool typeStrictBinaryOperators contains l(L:KLabel)
-		// [structural] 
-	// rule [type-bin-arith-heat-right]:
-		// < type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, HOLE) ...</ type >
-		// if notBool isAType(K':K)
-		// andBool typeStrictBinaryOperators contains l(L:KLabel)
-		// [structural] 
-	// rule [type-bin-arith-cool-right]:
-		// < type > T:Type ~> L:KLabel(K:K,, HOLE) => L:KLabel(K:K,, T:Type) ...</ type >
-		// if isAType(T:Type)
-		// andBool typeStrictBinaryOperators contains l(L:KLabel)
-		// [structural] 
+	rule [type-bin-arith-heat-left]:
+		< type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(HOLE,, K':K) ...</ type >
+		if notBool isAType(K:K)
+		andBool typeStrictBinaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-bin-arith-cool-left]:
+		< type > T:Type ~> L:KLabel(HOLE,, K:K) => L:KLabel(T:Type,, K:K) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictBinaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-bin-arith-heat-right]:
+		< type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, HOLE) ...</ type >
+		if notBool isAType(K':K)
+		andBool typeStrictBinaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-bin-arith-cool-right]:
+		< type > T:Type ~> L:KLabel(K:K,, HOLE) => L:KLabel(K:K,, T:Type) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictBinaryOperators contains l(L:KLabel)
+		[structural] 
 		
-	// rule [type-unary-arith-heat]:
-		// < type > L:KLabel(K:K) => K:K ~> L:KLabel(HOLE) ...</ type >
-		// if notBool isAType(K:K)
-		// andBool typeStrictUnaryOperators contains l(L:KLabel)
-		// [structural] 
-	// rule [type-unary-arith-cool]:
-		// < type > T:Type ~> L:KLabel(HOLE) => L:KLabel(T:Type) ...</ type >
-		// if isAType(T:Type)
-		// andBool typeStrictUnaryOperators contains l(L:KLabel)
-		// [structural] 
+	rule [type-unary-arith-heat]:
+		< type > L:KLabel(K:K) => K:K ~> L:KLabel(HOLE) ...</ type >
+		if notBool isAType(K:K)
+		andBool typeStrictUnaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-unary-arith-cool]:
+		< type > T:Type ~> L:KLabel(HOLE) => L:KLabel(T:Type) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictUnaryOperators contains l(L:KLabel)
+		[structural] 
 		
-	// rule [type-bin-left-arith-heat]:
-		// < type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(HOLE,, Args:List{K}) ...</ type >
-		// if notBool isAType(K:K)
-		// andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		// [structural] 
-	// rule [type-bin-left-arith-cool]:
-		// < type > T:Type ~> L:KLabel(HOLE,, Args:List{K}) => L:KLabel(T:Type,, Args:List{K}) ...</ type >
-		// if isAType(T:Type)
-		// andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		// [structural] 
+	rule [type-bin-left-arith-heat]:
+		< type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(HOLE,, Args:List{K}) ...</ type >
+		if notBool isAType(K:K)
+		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural] 
+	rule [type-bin-left-arith-cool]:
+		< type > T:Type ~> L:KLabel(HOLE,, Args:List{K}) => L:KLabel(T:Type,, Args:List{K}) ...</ type >
+		if isAType(T:Type)
+		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural] 
 
 		
-	// rule [type-dot-heat]:
-		// < type > K:K . X:Id => K:K ~> HOLE . X:Id ...</ type >
-		// if notBool isAType(K:K)
-		// [structural] 
-	// rule [type-dot-cool]:
-		// < type > T:Type ~> HOLE . X:Id => T:Type . X:Id ...</ type >
-		// if isAType(T:Type)
-		// [structural]
+	rule [type-dot-heat]:
+		< type > K:K . X:Id => K:K ~> HOLE . X:Id ...</ type >
+		if notBool isAType(K:K)
+		[structural] 
+	rule [type-dot-cool]:
+		< type > T:Type ~> HOLE . X:Id => T:Type . X:Id ...</ type >
+		if isAType(T:Type)
+		[structural]
 		
-	// rule [type-call-heat]:
-		// < type > Call(K:K, L:List{C}) => K:K ~> Call(HOLE, L:List{C}) ...</ type >
-		// if notBool isAType(K:K)
-		// [structural] 
-	// rule [type-call-cool]:
-		// < type > T:Type ~> Call(HOLE, L:List{C}) => Call(T:Type, L:List{C}) ...</ type >
-		// if isAType(T:Type)
-		// [structural] 
+	rule [type-call-heat]:
+		< type > Call(K:K, L:List{C}) => K:K ~> Call(HOLE, L:List{C}) ...</ type >
+		if notBool isAType(K:K)
+		[structural] 
+	rule [type-call-cool]:
+		< type > T:Type ~> Call(HOLE, L:List{C}) => Call(T:Type, L:List{C}) ...</ type >
+		if isAType(T:Type)
+		[structural] 
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
@@ -434,62 +434,62 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	op fillBitHoles : List{Type} -> List{Type} 
 	op fillBitHoles : Nat List{Type} -> List{Type} 
-	// rule [fillBitHoles-none]:
-		// fillBitHoles(Nil) => Nil 
-		// [structural]
-	// // if we haven't seen bitfields
-	// rule [fillBitHoles-not-bitfield]:
-		// fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			// => typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
-		// if notBool hasBitfieldType(T:Type) 
-		// [structural]
+	rule [fillBitHoles-none]:
+		fillBitHoles(Nil) => Nil 
+		[structural]
+	// if we haven't seen bitfields
+	rule [fillBitHoles-not-bitfield]:
+		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
+		if notBool hasBitfieldType(T:Type) 
+		[structural]
 	
-	// rule [fillBitHoles-bitfield]:
-		// fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			// => fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
-		// if hasBitfieldType(T:Type) 
-		// [structural]
+	rule [fillBitHoles-bitfield]:
+		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
+		if hasBitfieldType(T:Type) 
+		[structural]
 	
-	// // if we have seen bitfields
-	// rule [fillBitHoles-aux-not-bitfield]:
-		// fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			// => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
-				// :: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
-		// if notBool hasBitfieldType(T:Type) 
-		// [structural]
+	// if we have seen bitfields
+	rule [fillBitHoles-aux-not-bitfield]:
+		fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+				:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
+		if notBool hasBitfieldType(T:Type) 
+		[structural]
 	
-	// rule [fillBitHoles-aux-bitfield-normal]:
-		// fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id) :: L:List{Type})) 
-			// => typedDeclaration(bitfieldType(T:Type, N':Nat), X:Id)
-				// :: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
-		// if N':Nat =/=Bool 0 
-		// [structural]
+	rule [fillBitHoles-aux-bitfield-normal]:
+		fillBitHoles(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:Type, N':Nat)), X:Id) :: L:List{Type})) 
+			=> typedDeclaration(t(S:Set, bitfieldType(T:Type, N':Nat)), X:Id)
+				:: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
+		if N':Nat =/=Bool 0 
+		[structural]
 		
-	// rule [fillBitHoles-bitfield-zero]:
-		// fillBitHoles(N:Nat, (typedDeclaration(bitfieldType(T:Type, N':Nat), ?) :: L:List{Type})) 
-			// => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName)
-				// :: fillBitHoles(L:List{Type})
-		// if N':Nat ==Bool 0
-		// [structural]
+	rule [fillBitHoles-bitfield-zero]:
+		fillBitHoles(N:Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':Nat)), ?) :: L:List{Type})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+				:: fillBitHoles(L:List{Type})
+		if N':Nat ==Bool 0
+		[structural]
 	
-	// rule [fillBitHoles-done]:
-		// fillBitHoles(N:Nat, Nil) 
-			// => typedDeclaration(bitfieldType(unsigned-int, absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte), #NoName) 
-		// [structural]
+	rule [fillBitHoles-done]:
+		fillBitHoles(N:Nat, Nil) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName) 
+		[structural]
 
 	
-	// rule typedDeclaration(bitfieldType(?, N:Nat), #NoName) :: typedDeclaration(bitfieldType(?, N':Nat), #NoName) 
-		// => typedDeclaration(bitfieldType(unsigned-int, N:Nat +Nat N':Nat), #NoName) 
-		// [structural]
+	rule typedDeclaration(t(?, bitfieldType(?, N:Nat)), #NoName) :: typedDeclaration(t(?, bitfieldType(?, N':Nat)), #NoName) 
+		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Nat +Nat N':Nat)), #NoName) 
+		[structural]
 	
 	// fixme chould check for some struct contraints here
 	op incompleteToFlexibleArrayMember : List{Type} -> List{Type} 
-	// rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
-		// => typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
-		// if notBool hasIncompleteType(T:Type) 
-		// [structural]
-	// rule incompleteToFlexibleArrayMember(typedDeclaration(incompleteArrayType(T:Type), X:Id)) => typedDeclaration(flexibleArrayType(T:Type), X:Id) [structural]
-	// rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
+	rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
+		=> typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
+		if notBool hasIncompleteType(T:Type) 
+		[structural]
+	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:Id)) => typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:Id) [structural]
+	rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
 	
 	rule
 		< k > StructDef(X:Id, L:List{Type})
@@ -575,188 +575,185 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	op HOLE : -> K 
-	// rule
-		// < k > typeof(E:Expression) => evalToType ~> typeof(HOLE) ...</ k >
-		// (.Bag => < type > E:Expression </ type >)
-		// [structural] 
-	// rule
-		// < k > evalToType ~> typeof(HOLE) => T:Type ...</ k >
-		// (< type > T:Type </ type > => .Bag)
-		// if isAType T:Type
-		// [structural] 
+	rule
+		< k > typeof(E:Expression) => evalToType ~> typeof(HOLE) ...</ k >
+		(.Bag => < type > E:Expression </ type >)
+		[structural] 
+	rule
+		< k > evalToType ~> typeof(HOLE) => T:Type ...</ k >
+		(< type > T:Type </ type > => .Bag)
+		if isAType T:Type
+		[structural] 
 
-	// rule
-		// < type > emptyValue => void ...</ type > 
-		// [structural] 
+	rule
+		< type > emptyValue => t(.Set, void) ...</ type > 
+		[structural] 
 		
-	// rule
-		// < type > T:Type << ? => T:Type ...</ type >
-		// [structural] 
-	// rule
-		// < type > T:Type >> ? => T:Type ...</ type >
-		// [structural] 
+	rule
+		< type > T:Type << ? => T:Type ...</ type >
+		[structural] 
+	rule
+		< type > T:Type >> ? => T:Type ...</ type >
+		[structural] 
 		
-	// rule
-		// < type > tv(?, T:Type) => T:Type ...</ type >
-		// [structural] 
+	rule
+		< type > tv(?, T:Type) => T:Type ...</ type >
+		[structural] 
 	
-	// rule
-		// < type > SizeofExpression(?) => cfg:sizeut ...</ type >
-		// [structural] 
+	rule
+		< type > SizeofExpression(?) => cfg:sizeut ...</ type >
+		[structural] 
 
-	// rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
-		// [structural] 
-	// rule 
-		// < type > arithInterpret(T:Type, ?) => T:Type ...</ type > 
-		// [structural]
-	// rule
-		// < type > pointerType(T:Type) + T':Type => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > T':Type + pointerType(T:Type) => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > pointerType(T:Type) - T':Type => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > pointerType(T:Type) - pointerType(T':Type) => cfg:ptrdiffut ...</ type >
-		// [structural]
-	// rule
-		// < type > arrayType(T:Type, ?) + T':Type => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > T':Type + arrayType(T:Type, ?) => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural] 
-	// rule
-		// < type > arrayType(T:Type, ?) - T':Type => pointerType(T:Type) ...</ type >
-		// if hasIntegerType(T':Type)
-		// [structural]
+	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
+		[structural] 
+	rule 
+		< type > arithInterpret(T:Type, ?) => T:Type ...</ type > 
+		[structural]
+	rule
+		< type > t(S:Set, pointerType(T:Type)) + T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > T':Type + t(S:Set, pointerType(T:Type)) => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > t(S:Set, pointerType(T:Type)) - T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > t(?, pointerType(T:Type)) - t(?, pointerType(T':Type)) => cfg:ptrdiffut ...</ type >
+		[structural]
+	rule
+		< type > t(S:Set, arrayType(T:Type, ?)) + T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > T':Type + t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural] 
+	rule
+		< type > t(S:Set, arrayType(T:Type, ?)) - T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		if hasIntegerType(T':Type)
+		[structural]
 
-	// // c99 6.4.5
-	// rule
-		// < type > Constant(StringLiteral(S:String)) => arrayType(char, lengthString(S:String) +Nat 1) ...</ type >
-		// [structural]
-	// rule
-		// < type > Constant(WStringLiteral(L:List{K})) => arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Nat 1) ...</ type >
-		// [structural]
+	// c99 6.4.5
+	rule
+		< type > Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Nat 1)) ...</ type >
+		[structural]
+	rule
+		< type > Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Nat 1)) ...</ type >
+		[structural]
 		
-	// rule
-		// < type > K:K => T:Type ...</ type >
-		// < types >... K:K |-> T:Type ...</ types >
-		// [structural] 
+	rule
+		< type > K:K => T:Type ...</ type >
+		< types >... K:K |-> T:Type ...</ types >
+		[structural] 
 			
-	// rule
-		// < type > Comma(L:List{C} :: K:C) => K:C ...</ type >
-		// [structural] 
+	rule
+		< type > Comma(L:List{C} :: K:C) => K:C ...</ type >
+		[structural] 
 
-	// rule [type-call-func]:
-		// < type > Call(functionType(T:Type, ?), L:List{C}) => T:Type ...</ type >
-		// [structural] 
-	// // rule [type-call-func-ptr]:
-		// // < type > Call(pointerType(functionType(T:Type, ?)), ?) => T:Type ...</ type >
-		// // [structural] 
+	rule [type-call-func]:
+		< type > Call(functionType(T:Type, ?), L:List{C}) => T:Type ...</ type >
+		[structural]
 		 		
-	// rule [type-struct-dot]:
-		// < type > structType(S:Id) . F:Id => T:Type ...</ type >
-		// < structs >... 
-			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
-		// ...</ structs >
-		// [structural] 
-	// rule [type-union-dot]:
-		// < type > unionType(S:Id) . F:Id => T:Type ...</ type >
-		// < structs >... 
-			// S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
-		// ...</ structs >
-		// [structural] 
+	rule [type-struct-dot]:
+		< type > t(?, structType(S:Id)) . F:Id => T:Type ...</ type >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
+		[structural] 
+	rule [type-union-dot]:
+		< type > t(?, unionType(S:Id)) . F:Id => T:Type ...</ type >
+		< structs >... 
+			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+		...</ structs >
+		[structural] 
 	
-	// rule [type-deref-type]:
-		// < type > *(pointerType(T:Type)) => T:Type ...</ type >
-		// [structural] 
-	// rule [type-deref-array-type]:
-		// < type > *(arrayType(T:Type, ?)) => T:Type ...</ type >
-		// [structural] 
+	rule [type-deref-type]:
+		< type > *(t(?, pointerType(T:Type))) => T:Type ...</ type >
+		[structural] 
+	rule [type-deref-array-type]:
+		< type > *(t(?, arrayType(T:Type, ?))) => T:Type ...</ type >
+		[structural] 
 
-	// rule [type-compound-literal]:
-		// < type > CompoundLiteral(?, Specifier:K, DeclType:K, ?)
-			// => Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
-		// ...</ type >
-		// [structural] 
+	rule [type-compound-literal]:
+		< type > CompoundLiteral(?, Specifier:K, DeclType:K, ?)
+			=> Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
+		...</ type >
+		[structural] 
 	
-	// rule [type-assignment]:
-		// < type > L:KLabel(K:K,, ?) 
-			// => K:K
-		// ...</ type >
-		// if Set(
-			// l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			// l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		// ) contains l(L:KLabel)
-		// [structural]
+	rule [type-assignment]:
+		< type > L:KLabel(K:K,, ?) 
+			=> K:K
+		...</ type >
+		if Set(
+			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
+			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
+		) contains l(L:KLabel)
+		[structural]
 
-	// rule 
-		// < type > L:KLabel(T:Type,, T':Type) => usualArithmeticConversion(T:Type, T':Type) ...</ type >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
-		// [structural] 
+	rule 
+		< type > L:KLabel(T:Type,, T':Type) => usualArithmeticConversion(T:Type, T':Type) ...</ type >
+		if isArithBinConversionOp(L:KLabel)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		[structural] 
 		
-	// rule [type-ternary-arithmetic]:
-		// < type > ?:K ? T:Type : T':Type => usualArithmeticConversion(T:Type, T':Type) ...</ type >
-		// if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
-		// [structural]
-	// rule [type-ternary-identical]:
-		// < type > ?:K ? T:Type : T:Type => T:Type ...</ type >
-		// if isAType(T:Type)
-		// andBool notBool hasArrayType(T:Type)
-		// [structural]
+	rule [type-ternary-arithmetic]:
+		< type > ?:K ? T:Type : T':Type => usualArithmeticConversion(T:Type, T':Type) ...</ type >
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		[structural]
+	rule [type-ternary-identical]:
+		< type > ?:K ? T:Type : T:Type => T:Type ...</ type >
+		if isAType(T:Type)
+		andBool notBool hasArrayType(T:Type)
+		[structural]
 		
-	// rule [type-ternary-array-left]: < type > ?:K ? (arrayType(T:Type, ?) => pointerType(T:Type)) : ? ...</ type > [structural]
-	// rule [type-ternary-array-right]: < type > ?:K ? ?:K : (arrayType(T:Type, ?) => pointerType(T:Type)) ...</ type > [structural]
+	rule [type-ternary-array-left]: < type > ?:K ? (t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type))) : ? ...</ type > [structural]
+	rule [type-ternary-array-right]: < type > ?:K ? ?:K : (t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type))) ...</ type > [structural]
 		
-	// rule [type-ternary-pointer]: // not safe, could be incompatible types
-		// < type > ?:K ? pointerType(T:Type) : pointerType(T':Type) => pointerType(T:Type) ...</ type >
-		// [structural]
+	rule [type-ternary-pointer]: // not safe, could be incompatible types
+		< type > ?:K ? t(S:Set, pointerType(T:Type)) : t(S':Set, pointerType(T':Type)) => t(S:Set, pointerType(T:Type)) ...</ type >
+		[structural]
 
-	// rule
-		// < type > L:KLabel(T:Type) => promote(T:Type) ...</ type > 
-		// if isArithUnaryOp(L:KLabel)
-		// andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// [structural]
+	rule
+		< type > L:KLabel(T:Type) => promote(T:Type) ...</ type > 
+		if isArithUnaryOp(L:KLabel)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		[structural]
 	
-	// rule 
-		// < type > L:KLabel(T:Type,, ?:List{K}) => promote(T:Type) ...</ type >
-		// if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		// [structural]
+	rule 
+		< type > L:KLabel(T:Type,, ?:List{K}) => promote(T:Type) ...</ type >
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
+		[structural]
 		
-	// rule [type-inc-dec]:
-		// < type > L:KLabel(T:Type) => T:Type ...</ type >
-		// if hasPointerType(T:Type)
-		// andBool (
-			// L:KLabel ==Bool ('_++)
-			// orBool L:KLabel ==Bool ('_--)
-			// orBool L:KLabel ==Bool ('--_)
-			// orBool L:KLabel ==Bool ('++_)
-		// )
-		// [structural]
+	rule [type-inc-dec]:
+		< type > L:KLabel(T:Type) => T:Type ...</ type >
+		if hasPointerType(T:Type)
+		andBool (
+			L:KLabel ==Bool ('_++)
+			orBool L:KLabel ==Bool ('_--)
+			orBool L:KLabel ==Bool ('--_)
+			orBool L:KLabel ==Bool ('++_)
+		)
+		[structural]
 		
-	// rule
-		// < type > L:KLabel(?:K,, ?:K) => int ...</ type >
-		// if L:KLabel ==Bool '_==_
-		// orBool L:KLabel ==Bool '_!=_
-		// orBool L:KLabel ==Bool '_&&_
-		// orBool L:KLabel ==Bool '_||_
-		// [structural]
+	rule
+		< type > L:KLabel(?:K,, ?:K) => t(.Set, int) ...</ type >
+		if L:KLabel ==Bool '_==_
+		orBool L:KLabel ==Bool '_!=_
+		orBool L:KLabel ==Bool '_&&_
+		orBool L:KLabel ==Bool '_||_
+		[structural]
 		
-	// rule [type-address]:
-		// < type > & T:Type => pointerType(T:Type) ...</ type >
-		// if isAType(T:Type)
-		// [structural]
+	rule [type-address]:
+		< type > & T:Type => t(.Set, pointerType(T:Type)) ...</ type >
+		if isAType(T:Type)
+		[structural]
 		
 endkm
 
@@ -768,72 +765,72 @@ kmod COMMON-C-TYPING is
 	including COMMON-SEMANTICS-TYPE-INTERPRETATION 
 	including COMMON-SEMANTICS-TYPE-EXPRESSIONS 
 	
-	// rule [ExpressionLoc-type]:
-		// < type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
+	rule [ExpressionLoc-type]:
+		< type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
+		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		[structural] 
 	
-	// rule [typeCompatible-identical]: isTypeCompatible(T:Type, T:Type) 
-		// => true 
-		// [structural]
-	// rule [typeCompatible-two-ints]: isTypeCompatible(T:Type, T':Type) 
-		// => true 
-		// if hasIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type) 
-		// [structural]
-	// rule [typeCompatible-two-ptr]: isTypeCompatible(pointerType(?), pointerType(?))
-		// => true 
-		// [structural]
-	// rule [typeCompatible-ptr-int]: isTypeCompatible(pointerType(?), T:Type)
-		// => true
-		// if hasIntegerType(T:Type) 
-		// [structural]
-	// rule [typeCompatible-int-ptr]: isTypeCompatible(T:Type, pointerType(?))
-		// => true
-		// if hasIntegerType(T:Type)
-		// [structural]
+	rule [typeCompatible-identical]: isTypeCompatible(T:Type, T:Type) 
+		=> true 
+		[structural]
+	rule [typeCompatible-two-ints]: isTypeCompatible(T:Type, T':Type) 
+		=> true 
+		if hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type) 
+		[structural]
+	rule [typeCompatible-two-ptr]: isTypeCompatible(t(?, pointerType(?)), t(?, pointerType(?)))
+		=> true 
+		[structural]
+	rule [typeCompatible-ptr-int]: isTypeCompatible(t(?, pointerType(?)), T:Type)
+		=> true
+		if hasIntegerType(T:Type) 
+		[structural]
+	rule [typeCompatible-int-ptr]: isTypeCompatible(T:Type, t(?, pointerType(?)))
+		=> true
+		if hasIntegerType(T:Type)
+		[structural]
 		
-	// rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
-		// => isTypeCompatible(T:Type, T':Type) 
-		// [structural]
-	// rule [typeCompatible-prototypes]: isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
-		// => isTypeCompatible(T:Type, T':Type) 
-		// [structural]
+	rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
+		=> isTypeCompatible(T:Type, T':Type) 
+		[structural]
+	rule [typeCompatible-prototypes]: isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
+		=> isTypeCompatible(T:Type, T':Type) 
+		[structural]
 
-	// rule [typeCompatible-array-right]: isTypeCompatible(T:Type, arrayType(T':Type, ?))
-		// => isTypeCompatible(T:Type, pointerType(T':Type)) 
-		// [structural]
-	// rule [typeCompatible-array-left]: isTypeCompatible(arrayType(T:Type, ?), T':Type)
-		// => isTypeCompatible(pointerType(T:Type), T':Type) 
-		// [structural]
+	rule [typeCompatible-array-right]: isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, ?)))
+		=> isTypeCompatible(T:Type, t(S:Set, pointerType(T':Type))) 
+		[structural]
+	rule [typeCompatible-array-left]: isTypeCompatible(t(S:Set, arrayType(T:Type, ?)), T':Type)
+		=> isTypeCompatible(t(S:Set, pointerType(T:Type)), T':Type) 
+		[structural]
 	
-	// rule [typeCompatible-incompleteArray-right]: isTypeCompatible(T:Type, incompleteArrayType(T':Type))
-		// => isTypeCompatible(T:Type, pointerType(T':Type)) 
-		// [structural]
-	// rule [typeCompatible-incompleteArray-left]: isTypeCompatible(incompleteArrayType(T:Type), T':Type)
-		// => isTypeCompatible(pointerType(T:Type), T':Type) 
-		// [structural]
+	rule [typeCompatible-incompleteArray-right]: isTypeCompatible(T:Type, t(S:Set, incompleteArrayType(T':Type)))
+		=> isTypeCompatible(T:Type, t(S:Set, pointerType(T':Type))) 
+		[structural]
+	rule [typeCompatible-incompleteArray-left]: isTypeCompatible(t(S:Set, incompleteArrayType(T:Type)), T':Type)
+		=> isTypeCompatible(t(S:Set, pointerType(T:Type)), T':Type) 
+		[structural]
 
-	// rule [typeCompatible-function-void-left]: isTypeCompatible(functionType(T1:Type, typedDeclaration(void, ?)), functionType(T2:Type, Nil))
-		// => isTypeCompatible(T1:Type, T2:Type) 
-		// [structural]
-	// rule [typeCompatible-function-void--right]: isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, typedDeclaration(void, ?)))
-		// => isTypeCompatible(T1:Type, T2:Type) 
-		// [structural]
-	// rule [typeCompatible-function]: isTypeCompatible(functionType(T1:Type, (T':Type :: L:List{Type})), functionType(T2:Type, (T'':Type :: L':List{Type})))
-		// => isTypeCompatible(functionType(T1:Type, L:List{Type}), functionType(T2:Type, L':List{Type}))
-		// andBool isTypeCompatible(T':Type, T'':Type) 
-		// [structural]
-	// rule [typeCompatible-incompleteArray-nil]: isTypeCompatible(functionType(T1:Type, Nil), functionType(T2:Type, Nil))
-		// => isTypeCompatible(T1:Type, T2:Type) 
-		// [structural]
-	// rule isTypeCompatible(T:Type, T':Type) => true
-		// if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
-		// [structural]
-	// rule 
-		// < k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
-		// [structural] 
+	rule [typeCompatible-function-void-left]: isTypeCompatible(t(?, functionType(T1:Type, typedDeclaration(t(?, void), ?))), t(?, functionType(T2:Type, Nil)))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule [typeCompatible-function-void-right]: isTypeCompatible(t(?, functionType(T1:Type, Nil)), t(?, functionType(T2:Type, typedDeclaration(t(?, void), ?))))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule [typeCompatible-function]: isTypeCompatible(t(S:Set, functionType(T1:Type, (T':Type :: L:List{Type}))), t(S':Set, functionType(T2:Type, (T'':Type :: L':List{Type}))))
+		=> isTypeCompatible(t(S:Set, functionType(T1:Type, L:List{Type})), t(S':Set, functionType(T2:Type, L':List{Type})))
+		andBool isTypeCompatible(T':Type, T'':Type) 
+		[structural]
+	rule [typeCompatible-incompleteArray-nil]: isTypeCompatible(t(?, functionType(T1:Type, Nil)), t(?, functionType(T2:Type, Nil)))
+		=> isTypeCompatible(T1:Type, T2:Type) 
+		[structural]
+	rule isTypeCompatible(T:Type, T':Type) => true
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
+		[structural]
+	rule 
+		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
+		[structural] 
 			
 	op addGlobalAggregate : Id K -> K 
 	op addLocalAggregate : Id K -> K 

@@ -12,9 +12,9 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	
 	op usualArithmeticConversion-aux : K K -> K
 	
-	// rule usualArithmeticConversion(T:Type, T':Type)
-			// => usualArithmeticConversion-aux(promote(T:Type), promote(T':Type))
-		// [structural]
+	rule usualArithmeticConversion(T:Type, T':Type)
+			=> usualArithmeticConversion-aux(promote(T:Type), promote(T':Type))
+		[structural]
 		
 
 	// op arithConversion-int : KLabel K K -> K
@@ -23,112 +23,112 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	op arithBinOps : -> Set [memo] 
 	op arithBinConversionOps : -> Set [memo] 
 
-	// rule [arithBinOps]:
-		// arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
-	// rule [arithBinConversionOps]:
-		// arithBinConversionOps => Set(
-		// l('_*_),, l('_/_),, l('_%_),,
-		// l('_+_),, l('_-_),,
-		// l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
-		// l('_==_),, l('_!=_),,
-		// l('_&_),, l('_|_),, l('_^_)
-	// ) [structural]
+	rule [arithBinOps]:
+		arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
+	rule [arithBinConversionOps]:
+		arithBinConversionOps => Set(
+		l('_*_),, l('_/_),, l('_%_),,
+		l('_+_),, l('_-_),,
+		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
+		l('_==_),, l('_!=_),,
+		l('_&_),, l('_|_),, l('_^_)
+	) [structural]
 	
-	// rule [checkArithBinOp]:
-		// isArithBinOp(KL:KLabel) => if arithBinOps contains l(KL:KLabel) then true else false fi 
-		// [structural]
-	// rule [checkArithBinConversionOp]:
-		// isArithBinConversionOp(KL:KLabel) => if arithBinConversionOps contains l(KL:KLabel) then true else false fi [structural]
+	rule [checkArithBinOp]:
+		isArithBinOp(KL:KLabel) => if arithBinOps contains l(KL:KLabel) then true else false fi 
+		[structural]
+	rule [checkArithBinConversionOp]:
+		isArithBinConversionOp(KL:KLabel) => if arithBinConversionOps contains l(KL:KLabel) then true else false fi [structural]
 
 	op arithUnaryOps : -> Set [memo] 
-	// rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
+	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
 
-	// rule [checkArithUnaryOp]: 
-		// isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
+	rule [checkArithUnaryOp]: 
+		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
 	
-	// rule hasBeenPromoted(enumType(?)) => true [structural]
-	// rule hasBeenPromoted(int) => true [structural]
-	// rule hasBeenPromoted(unsigned-int) => true [structural]
-	// rule hasBeenPromoted(long-int) => true [structural]
-	// rule hasBeenPromoted(unsigned-long-int) => true [structural]
-	// rule hasBeenPromoted(long-long-int) => true [structural]
-	// rule hasBeenPromoted(unsigned-long-long-int) => true [structural]
+	rule hasBeenPromoted(t(?, enumType(?))) => true [structural]
+	rule hasBeenPromoted(t(?, int)) => true [structural]
+	rule hasBeenPromoted(t(?, unsigned-int)) => true [structural]
+	rule hasBeenPromoted(t(?, long-int)) => true [structural]
+	rule hasBeenPromoted(t(?, unsigned-long-int)) => true [structural]
+	rule hasBeenPromoted(t(?, long-long-int)) => true [structural]
+	rule hasBeenPromoted(t(?, unsigned-long-long-int)) => true [structural]
 	
-	// rule hasBeenPromoted(bool) => false [structural]
-	// rule hasBeenPromoted(signed-char) => false [structural]
-	// rule hasBeenPromoted(unsigned-char) => false [structural]
-	// rule hasBeenPromoted(short-int) => false [structural]
-	// rule hasBeenPromoted(unsigned-short-int) => false [structural]
+	rule hasBeenPromoted(t(?, bool)) => false [structural]
+	rule hasBeenPromoted(t(?, signed-char)) => false [structural]
+	rule hasBeenPromoted(t(?, unsigned-char)) => false [structural]
+	rule hasBeenPromoted(t(?, short-int)) => false [structural]
+	rule hasBeenPromoted(t(?, unsigned-short-int)) => false [structural]
 	
-	// rule hasBeenPromoted(bitfieldType(?, ?)) => false [structural]
+	rule hasBeenPromoted(t(?, bitfieldType(?, ?))) => false [structural]
 	
 	
-	// rule [promote-unary]:
-		// < k > L:KLabel((tv(V:BaseValue, T:Type) 
-			// => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) 
-		// ...</ k > 
-		// if isArithUnaryOp(L:KLabel)
-		// andBool notBool hasBeenPromoted(T:Type)
-		// andBool hasIntegerType(T:Type)
-		// [structural]
-	// rule [promote-binary-left]:
-		// < k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type))),, ?) ...</ k > 
-		// if isArithBinOp(L:KLabel)
-		// andBool notBool hasBeenPromoted(T:Type)
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
-	// rule [promote-binary-right]:
-		// < k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
-		// if isArithBinOp(L:KLabel)
-		// andBool notBool hasBeenPromoted(T:Type)
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
+	rule [promote-unary]:
+		< k > L:KLabel((tv(V:BaseValue, T:Type) 
+			=> cast(promote(T:Type), tv(V:BaseValue, T:Type)))) 
+		...</ k > 
+		if isArithUnaryOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool hasIntegerType(T:Type)
+		[structural]
+	rule [promote-binary-left]:
+		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type))),, ?) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool hasIntegerType(T:Type)
+		[structural] 
+	rule [promote-binary-right]:
+		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		andBool notBool hasBeenPromoted(T:Type)
+		andBool hasIntegerType(T:Type)
+		[structural] 
 
-	// rule
-		// < k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type))
-			// => L:KLabel(cast(finalType, tv(V:BaseValue, T:Type)),, cast(finalType, tv(V':BaseValue, T':Type)))
-		// ...</ k >
-		// if isArithBinConversionOp(L:KLabel)
-		// andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
-		// andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
-		// andBool (
-			// T:Type =/=Bool T':Type
-			// //orBool notBool hasBeenPromoted(T:Type) 
-			// //orBool notBool hasBeenPromoted(T':Type)
-		// )
-		// where finalType = usualArithmeticConversion(T:Type, T':Type)
-		// [structural] 
+	rule
+		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type))
+			=> L:KLabel(cast(finalType, tv(V:BaseValue, T:Type)),, cast(finalType, tv(V':BaseValue, T':Type)))
+		...</ k >
+		if isArithBinConversionOp(L:KLabel)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
+		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
+		andBool (
+			T:Type =/=Bool T':Type
+			//orBool notBool hasBeenPromoted(T:Type) 
+			//orBool notBool hasBeenPromoted(T':Type)
+		)
+		where finalType = usualArithmeticConversion(T:Type, T':Type)
+		[structural] 
 		
 
-	// // fixme these could be done more cleanly
+	// fixme these could be done more cleanly
 
-	// //C99 6.3.1.8
-	// // First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
-	// rule usualArithmeticConversion-aux(long-double, ?) => long-double [structural]
-	// rule usualArithmeticConversion-aux(?, long-double) => long-double [structural] 
+	//C99 6.3.1.8
+	// First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
+	rule usualArithmeticConversion-aux(t(?, long-double), ?) => t(.Set, long-double) [structural]
+	rule usualArithmeticConversion-aux(?, t(?, long-double)) => t(.Set, long-double) [structural] 
 		
-	// // Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
-	// rule
-		// usualArithmeticConversion-aux(double, T:Type) => double
-		// if long-double =/=Bool T:Type
-		// [structural] 
-	// rule
-		// usualArithmeticConversion-aux(T:Type, double) => double
-		// if long-double =/=Bool T:Type
-		// [structural] 
+	// Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
+	rule
+		usualArithmeticConversion-aux(t(?, double), t(?, T:SimpleType)) => t(.Set, double)
+		if long-double =/=Bool T:SimpleType
+		[structural] 
+	rule
+		usualArithmeticConversion-aux(T:SimpleType, t(?, double)) => t(.Set, double)
+		if long-double =/=Bool T:SimpleType
+		[structural] 
 		
-	// // // Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
-	// rule
-		// usualArithmeticConversion-aux(float, T:Type) => float
-		// if long-double =/=Bool T:Type
-		// andBool double =/=Bool T:Type
-		// [structural] 
-	// rule
-		// usualArithmeticConversion-aux(T:Type, float) => float
-		// if long-double =/=Bool T:Type
-		// andBool double =/=Bool T:Type
-		// [structural] 
+	// Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
+	rule
+		usualArithmeticConversion-aux(t(?, float), t(?, T:SimpleType)) => t(.Set, float)
+		if long-double =/=Bool T:SimpleType
+		andBool double =/=Bool T:SimpleType
+		[structural] 
+	rule
+		usualArithmeticConversion-aux(t(?, T:SimpleType), t(?, float)) => t(.Set, float)
+		if long-double =/=Bool T:SimpleType
+		andBool double =/=Bool T:SimpleType
+		[structural] 
 
 	
 	// // Otherwise, the integer promotions are performed on both operands ..
@@ -280,98 +280,98 @@ endkm
 kmod DYNAMIC-SEMANTICS-CAST is 
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 		
-	// //- switch assumes casts can happen anywhere
-	// rule 
-		// cast(void, ?) => skipval
-		// [structural] 
+	//- switch assumes casts can happen anywhere
+	rule 
+		cast(void, ?) => skipval
+		[structural] 
 		
-	// rule
-		// cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
-		// [structural] 
+	rule
+		cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
+		[structural] 
 	
-	// //c99 6.3.1.2:1 to _Bool
-	// // fixme worried about qualifiers
-	// rule [cast-integer-to-bool]:
-		// cast(bool, tv(I:Int, T:Type))
-			// => if I:Int ==Bool 0 then tv(0, bool) else tv(1, bool) fi
-		// if hasIntegerType(T:Type)
-		// [structural]
-	// rule [cast-non-integer-to-bool]:
-		// cast(bool, tv(L:List{K}, T:Type)) 
-			// => cast(bool, tv(0, int) != tv(L:List{K}, T:Type))
-		// if notBool hasIntegerType(T:Type)
-		// [structural] 
+	//c99 6.3.1.2:1 to _Bool
+	// fixme worried about qualifiers
+	rule [cast-integer-to-bool]:
+		cast(t(S:Set, bool), tv(I:Int, T:Type))
+			=> if I:Int ==Bool 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
+		if hasIntegerType(T:Type)
+		[structural]
+	rule [cast-non-integer-to-bool]:
+		cast(t(S:Set, bool), tv(L:List{K}, T:Type)) 
+			=> cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:List{K}, T:Type))
+		if notBool hasIntegerType(T:Type)
+		[structural] 
 	
-	// //c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
-	// rule [cast-integer-no-value-change]:
-		// cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)
-		// if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
-		// andBool hasIntegerType(T':Type)
-		// andBool hasIntegerType(T:Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
+	//c99 6.3.1.3:1 When a value with integer type is converted to another integer type other than _Bool, if the value can be represented by the new type, it is unchanged. 
+	rule [cast-integer-no-value-change]:
+		cast(T:Type, tv(I:Int, T':Type)) => tv(I:Int, T:Type)
+		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int 
+		andBool hasIntegerType(T':Type)
+		andBool hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
 		
-	// //c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
+	//c99 6.3.1.3:2 Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type
 
-	// rule [cast-ubitfield-of-small]:
-		// cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
-			// => cast(bitfieldType(T:Type, Len:Nat), tv(I:Int +Int max(bitfieldType(T:Type, Len:Nat)) +Int 1, T':Type))
-		// if I:Int <Int min(bitfieldType(T:Type, Len:Nat))
-		// andBool hasIntegerType(T':Type)
-		// andBool hasUnsignedIntegerType(T:Type)
-		// [structural]
-	// rule [cast-uchar-of-small]:
-		// cast(unsigned-char, tv(I:Int, T':Type)) 
-			// => cast(unsigned-char, tv(I:Int +Int max(unsigned-char) +Int 1, T':Type))
-		// if I:Int <Int min(unsigned-char)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-usint-of-small]:
-		// cast(unsigned-short-int, tv(I:Int, T':Type)) 
-			// => cast(unsigned-short-int, tv(I:Int +Int max(unsigned-short-int) +Int 1, T':Type))
-		// if I:Int <Int min(unsigned-short-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-uint-of-small]:
-		// cast(unsigned-int, tv(I:Int, T':Type)) 
-			// => cast(unsigned-int, tv(I:Int +Int max(unsigned-int) +Int 1, T':Type))
-		// if I:Int <Int min(unsigned-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-ulong-of-small]:
-		// cast(unsigned-long-int, tv(I:Int, T':Type)) 
-			// => cast(unsigned-long-int, tv(I:Int +Int max(unsigned-long-int) +Int 1, T':Type))
-		// if I:Int <Int min(unsigned-long-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-ullong-of-small]:
-		// cast(unsigned-long-long-int, tv(I:Int, T':Type)) 
-			// => cast(unsigned-long-long-int, tv(I:Int +Int max(unsigned-long-long-int) +Int 1, T':Type))
-		// if I:Int <Int min(unsigned-long-long-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
+	rule [cast-ubitfield-of-small]:
+		cast(t(S:Set, bitfieldType(T:Type, Len:Nat)), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, bitfieldType(T:Type, Len:Nat)), tv(I:Int +Int max(t(S:Set, bitfieldType(T:Type, Len:Nat))) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, bitfieldType(T:Type, Len:Nat)))
+		andBool hasIntegerType(T':Type)
+		andBool hasUnsignedIntegerType(T:Type)
+		[structural]
+	rule [cast-uchar-of-small]:
+		cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, unsigned-char))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-usint-of-small]:
+		cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, unsigned-short-int), tv(I:Int +Int max(t(S:Set, unsigned-short-int)) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, unsigned-short-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-uint-of-small]:
+		cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, unsigned-int), tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, unsigned-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ulong-of-small]:
+		cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, unsigned-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, unsigned-long-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ullong-of-small]:
+		cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, unsigned-long-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T':Type))
+		if I:Int <Int min(t(S:Set, unsigned-long-long-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
 		
 	
 
-	// rule [cast-ubitfield-of-big]:
-		// cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(bitfieldType(T:Type, Len:Nat)) +Int 1), bitfieldType(T:Type, Len:Nat))
-		// if I:Int >Int max(bitfieldType(T:Type, Len:Nat))
-		// andBool hasIntegerType(T':Type)
-		// andBool hasUnsignedIntegerType(T:Type)
-		// [structural]
-	// rule [cast-uchar-of-big]:
-		// cast(unsigned-char, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(unsigned-char) +Int 1), unsigned-char)
-		// if I:Int >Int max(unsigned-char)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-usint-of-big]:
-		// cast(unsigned-short-int, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(unsigned-short-int) +Int 1), unsigned-short-int)
-		// if I:Int >Int max(unsigned-short-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
+	rule [cast-ubitfield-of-big]:
+		cast(t(S:Set, bitfieldType(T:Type, Len:Nat)), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, bitfieldType(T:Type, Len:Nat))) +Int 1), t(S:Set, bitfieldType(T:Type, Len:Nat)))
+		if I:Int >Int max(t(S:Set, bitfieldType(T:Type, Len:Nat)))
+		andBool hasIntegerType(T':Type)
+		andBool hasUnsignedIntegerType(T:Type)
+		[structural]
+	rule [cast-uchar-of-big]:
+		cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, unsigned-char)) +Int 1), t(S:Set, unsigned-char))
+		if I:Int >Int max(t(S:Set, unsigned-char))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-usint-of-big]:
+		cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1), t(S:Set, unsigned-short-int))
+		if I:Int >Int max(t(S:Set, unsigned-short-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
 	// rule [cast-uint-of-big]:
 		// cast(unsigned-int, tv(I:Int, T':Type)) 
 			// => tv(I:Int %Int (max(unsigned-int) +Int 1), unsigned-int)
@@ -527,13 +527,13 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		// andBool notBool hasBoolType (T:Type)
 		// [structural] 
 		
-	// // fixme
-	// // possibly not true with other endiannesses
-	// // choice
-	// // needs to handle alignment
-	// rule
-		// cast(pointerType(T:Type), tv(N:Nat, pointerType(?))) => tv(N:Nat, pointerType(T:Type))
-		// [structural] 
+	// fixme
+	// possibly not true with other endiannesses
+	// choice
+	// needs to handle alignment
+	rule
+		cast(t(S:Set, pointerType(T:Type)), tv(N:Nat, t(?, pointerType(?)))) => tv(N:Nat, t(S:Set, pointerType(T:Type)))
+		[structural] 
 
 endkm
 
@@ -546,88 +546,85 @@ kmod DYNAMIC-C-CONVERSIONS is
 	// shouldn't need to do the < min one since values start positive
 	op interpret-aux : Type K -> K 
 	
-	// rule [interpret-start]:
-		// interpret(T:Type, piece(N:Nat, ?)) => interpret-aux(T:Type, N:Nat)
-		// if N:Nat >=Nat 0 
-		// [structural]
+	rule [interpret-start]:
+		interpret(T:Type, piece(N:Nat, ?)) => interpret-aux(T:Type, N:Nat)
+		if N:Nat >=Nat 0 
+		[structural]
 	
-	// rule [interpret-done]:
-		// interpret-aux(T:Type, I:Int) => tv(I:Int, T:Type)
-		// if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
-	// rule [interpret-too-big]:
-		// interpret-aux(T:Type, I:Int) => interpret-aux(T:Type, _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))))
-		// if I:Int >Int max(T:Type)
-		// andBool hasIntegerType(T:Type)
-		// andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))) >=Int min(T:Type)
-		// [structural] 
+	rule [interpret-done]:
+		interpret-aux(T:Type, I:Int) => tv(I:Int, T:Type)
+		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
+		andBool hasIntegerType(T:Type)
+		[structural] 
+	rule [interpret-too-big]:
+		interpret-aux(T:Type, I:Int) => interpret-aux(T:Type, _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))))
+		if I:Int >Int max(T:Type)
+		andBool hasIntegerType(T:Type)
+		andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))) >=Int min(T:Type)
+		[structural] 
 		
-	// rule [arithInterpret-done]:
-		// arithInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
-		// if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
+	rule [arithInterpret-done]:
+		arithInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
+		if min(T:Type) <=Int I:Int andBool max(T:Type) >=Int I:Int
+		andBool hasIntegerType(T:Type)
+		[structural] 
+		
+	rule [arithInterpret-unknown]:
+		arithInterpret(T:Type, piece(unknown(N:Nat), N:Nat)) => tv(piece(unknown(N:Nat), N:Nat), T:Type)
+		[structural]
+		
+	// these could be so much better...
+	rule [bnot-unknown]: ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
 	
-	// // rule [arithInterpret-bignum]:
-		// // arithInterpret(bignum, I:Int) => tv(I:Int, bignum)
-		// // [structural]
-		
-	// rule [arithInterpret-unknown]:
-		// arithInterpret(T:Type, piece(unknown(N:Nat), N:Nat)) => tv(piece(unknown(N:Nat), N:Nat), T:Type)
-		// [structural]
-		
-	// // these could be so much better...
-	// rule [bnot-unknown]: ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	
-	// rule [xor-unknown-right]: N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	// rule [or-unknown-right]: N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
-	// rule [and-unknown-zero-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
-	// rule [and-unknown-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
+	rule [xor-unknown-right]: N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [or-unknown-right]: N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [and-unknown-zero-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat ==Bool 0 [structural]
+	rule [and-unknown-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0 if N:Nat =/=Bool 0 [structural]
 
-	// rule [xor-unknown-left]: piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
-	// rule [or-unknown-left]: piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
-	// rule [and-unknown-zero-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
-	// rule [and-unknown-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
+	rule [xor-unknown-left]: piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [or-unknown-left]: piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural]
+	rule [and-unknown-zero-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat ==Bool 0 [structural]
+	rule [and-unknown-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0 if N:Nat =/=Bool 0 [structural]
 		
-	// // c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
-	// // e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
-	// rule leftShiftInterpret(T:Type, I:Int, tv(E1:Int, T:Type)) => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
-		// if hasUnsignedIntegerType(T:Type)
-		// [structural] 
-	// rule leftShiftInterpret(T:Type, I:Int, tv(E1:Nat, T:Type)) => tv(I:Int, T:Type)
-		// if hasSignedIntegerType(T:Type)
-		// // andBool I:Int <=Int (2 ^Nat absInt(numBits(T:Type)))
-		// andBool I:Int <=Int max(T:Type)
-		// andBool I:Int >=Int min(T:Type)
-		// [structural] 
+	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
+	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
+	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Int, T:Type)) => tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
+		if hasUnsignedIntegerType(T:Type)
+		[structural] 
+	rule leftShiftInterpret(T:Type, I:Int, tv(E1:Nat, T:Type)) => tv(I:Int, T:Type)
+		if hasSignedIntegerType(T:Type)
+		// andBool I:Int <=Int (2 ^Nat absInt(numBits(T:Type)))
+		andBool I:Int <=Int max(T:Type)
+		andBool I:Int >=Int min(T:Type)
+		[structural] 
 		
-	// // c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined
-	// rule rightShiftInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
-		// if hasIntegerType(T:Type)
-		// [structural] 
+	// c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined
+	rule rightShiftInterpret(T:Type, I:Int) => tv(I:Int, T:Type)
+		if hasIntegerType(T:Type)
+		[structural] 
 	
-	// // fixme
-	// rule arithInterpret(T:Type, F:Float) => tv(F:Float, T:Type)
-		// if (T:Type ==Bool double)
-		// orBool T:Type ==Bool float
-		// orBool T:Type ==Bool long-double
-		// [structural] 
-	// // signed arithmetic isn't supposed to overflow
-	// rule
-		// arithInterpret(T:Type, I:Int) => 
-		// tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
-		// if hasUnsignedIntegerType(T:Type)
-		// andBool I:Int >Int max(T:Type)
-		// [structural] 
-	// rule
-		// arithInterpret(T:Type, I:Int) => arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
-		// if hasUnsignedIntegerType(T:Type)
-		// andBool I:Int <Int min(T:Type)
-		// // andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
-		// [structural] 
+	// fixme
+	rule arithInterpret(t(S:Set, T:SimpleType), F:Float) => tv(F:Float, t(S:Set, T:SimpleType))
+		if (T:SimpleType ==Bool double)
+		orBool T:SimpleType ==Bool float
+		orBool T:SimpleType ==Bool long-double
+		[structural] 
+	// signed arithmetic isn't supposed to overflow
+	rule
+		arithInterpret(T:Type, I:Int) 
+		=> tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
+		if hasUnsignedIntegerType(T:Type)
+		andBool I:Int >Int max(T:Type)
+		[structural] 
+	rule
+		arithInterpret(T:Type, I:Int) 
+		=> arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
+		if hasUnsignedIntegerType(T:Type)
+		andBool I:Int <Int min(T:Type)
+		// andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
+		[structural] 
 
-	// // rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
-	// rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
-	// rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
+	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
+	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
+	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
 endkm
