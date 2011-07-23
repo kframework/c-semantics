@@ -501,137 +501,137 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		< k > tv(0, ?) ~> printf-aux(Len:Nat, ?, ?) => tv(Len:Nat, t(.Set, int)) ...</ k >
 		[structural] 
 		
-	// rule [printf-%]:
-		// < k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
-			// => printf-%(Len:Nat, Loc:Nat, L:List{C})
-		// ...</ k >
-		// if (N:Nat ==Bool asciiCharString("%"))
-		// [structural] 
+	rule [printf-%]:
+		< k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C})
+		...</ k >
+		if (N:Nat ==Bool asciiCharString("%"))
+		[structural] 
 		
-	// rule [printf-prepare-%]:
-		// < k > (.K => read(Loc:Nat, char)) ~> printf-%(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
-		// [structural] 
+	rule [printf-prepare-%]:
+		< k > (.K => read(Loc:Nat, t(.Set, char))) ~> printf-%(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
+		[structural] 
 
-	// rule [printf-%%]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
-			// => writeToFD(1, N:Nat) 
-			// ~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) ...</ k >
-		// if N:Nat ==Bool asciiCharString("%") 
-		// [structural]
+	rule [printf-%%]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> writeToFD(1, N:Nat)
+			~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) ...</ k >
+		if N:Nat ==Bool asciiCharString("%") 
+		[structural]
 		
-	// // fixme ignoring 0 flag for now
-	// rule [printf-0]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
-			// => printf-%(Len:Nat, Loc:Nat, L:List{C}) 
-		// ...</ k >
-		// if N:Nat ==Bool asciiCharString("0") 
-		// [structural] 
+	// fixme ignoring 0 flag for now
+	rule [printf-0]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+		...</ k >
+		if N:Nat ==Bool asciiCharString("0") 
+		[structural] 
 		
-	// // ignoring num width
-	// rule [printf-width]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
-			// => printf-%(Len:Nat, Loc:Nat, L:List{C}) 
-		// ...</ k >
-		// if N:Nat >Int asciiCharString("0") 
-		// andBool N:Nat <=Int asciiCharString("9")
-		// [structural] 
+	// ignoring num width
+	rule [printf-width]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+			=> printf-%(Len:Nat, Loc:Nat, L:List{C}) 
+		...</ k >
+		if N:Nat >Int asciiCharString("0") 
+		andBool N:Nat <=Int asciiCharString("9")
+		[structural] 
 	
-	// rule [printf-%x-arg]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
-			// => printf-%x(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
-		// ...</ k >
-		// if N:Nat ==Bool asciiCharString("x")
-		// [structural]
-	// rule [printf-%X-arg]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
-			// => printf-%X(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, unsigned-int))
-		// ...</ k >
-		// if N:Nat ==Bool asciiCharString("X")
-		// [structural]
+	rule [printf-%x-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%x(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, t(.Set, unsigned-int)))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("x")
+		[structural]
+	rule [printf-%X-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%X(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, t(.Set, unsigned-int)))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("X")
+		[structural]
 		
-	// rule [printf-%x]:
-		// < k > printf-%x(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
-			// => writeToFD(1, Rat2String(D:Int, 16))
-			// ~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
-		// ...</ k >
-		// [structural]
-	// rule [printf-%X]:
-		// < k > printf-%X(Len:Nat, Loc:Nat, (vpair(tv(D:Int, unsigned-int), V:Value) :: ?)) 
-			// => writeToFD(1, toUpperCase(Rat2String(D:Int, 16)))
-			// ~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
-		// ...</ k >
-		// [structural]
+	rule [printf-%x]:
+		< k > printf-%x(Len:Nat, Loc:Nat, (vpair(tv(D:Int, t(?, unsigned-int)), V:Value) :: ?)) 
+			=> writeToFD(1, Rat2String(D:Int, 16))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural]
+	rule [printf-%X]:
+		< k > printf-%X(Len:Nat, Loc:Nat, (vpair(tv(D:Int, t(?, unsigned-int)), V:Value) :: ?)) 
+			=> writeToFD(1, toUpperCase(Rat2String(D:Int, 16)))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 16)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural]
 		
 	op toUpperCase : String -> String
 	op toUpperCase : Char -> Char
-	// rule toUpperCase(S:String) 
-		// => toUpperCase(firstChar(S:String)) +String toUpperCase(butFirstChar(S:String))
-		// if S:String =/=Bool ""
-		// [structural]
-	// rule toUpperCase("") => "" [structural]
+	rule toUpperCase(S:String) 
+		=> toUpperCase(firstChar(S:String)) +String toUpperCase(butFirstChar(S:String))
+		if S:String =/=Bool ""
+		[structural]
+	rule toUpperCase("") => "" [structural]
 		
-	// rule toUpperCase(C:Char)
-		// => C:Char
-		// if asciiString(C:Char) <Nat asciiString("a") 
-		// orBool asciiString(C:Char) >Nat asciiString("z")
-		// [structural]
-	// rule toUpperCase(C:Char)
-		// => charString(absInt(asciiString(C:Char) -Int Difference))
-		// if asciiString(C:Char) >=Nat asciiString("a") 
-		// andBool asciiString(C:Char) <=Nat asciiString("z")
-		// where Difference = (asciiString("a") -Int asciiString("A"))
-		// [structural]
+	rule toUpperCase(C:Char)
+		=> C:Char
+		if asciiString(C:Char) <Nat asciiString("a") 
+		orBool asciiString(C:Char) >Nat asciiString("z")
+		[structural]
+	rule toUpperCase(C:Char)
+		=> charString(absInt(asciiString(C:Char) -Int Difference))
+		if asciiString(C:Char) >=Nat asciiString("a") 
+		andBool asciiString(C:Char) <=Nat asciiString("z")
+		where Difference = (asciiString("a") -Int asciiString("A"))
+		[structural]
 	
 	// fixme might be messing things up elsewhere
 	op pointerToString : Nat -> String 
-	// rule [pointerToString]:
-		// pointerToString(sym(N:Nat) +Nat M:Nat) 
-			// => "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
-		// [structural]
+	rule [pointerToString]:
+		pointerToString(sym(N:Nat) +Nat M:Nat) 
+			=> "[sym(" +String subPointerToString(N:Nat) +String ") + " +String Rat2String(M:Nat, 10) +String "]"
+		[structural]
 	op subPointerToString : Nat -> String
 	
 	// allocatedDuration
 	
-	// // eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
-	// rule [subPointerToString-auto]:
-		// subPointerToString(threadId(N:Nat) +Nat N':Nat) 
-			// => "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
-		// if N:Nat =/=Bool allocatedDuration
-		// [structural]
-	// rule [sub-pointerToString-allocated]:
-		// subPointerToString(threadId(allocatedDuration) +Nat N':Nat) 
-			// => "threadId(allocatedDuration) +Nat " +String Rat2String(N':Nat, 10)
-		// [structural]
+	// eq subPointerToString(N:Nat) = Rat2String(N:Nat, 10)
+	rule [subPointerToString-auto]:
+		subPointerToString(threadId(N:Nat) +Nat N':Nat) 
+			=> "threadId(" +String Rat2String(N:Nat, 10) +String ") +Nat " +String Rat2String(N':Nat, 10)
+		if N:Nat =/=Bool allocatedDuration
+		[structural]
+	rule [sub-pointerToString-allocated]:
+		subPointerToString(threadId(allocatedDuration) +Nat N':Nat) 
+			=> "threadId(allocatedDuration) +Nat " +String Rat2String(N':Nat, 10)
+		[structural]
 	
 	
-	// rule [pointerToString-done]:
-		// pointerToString(NullPointer) => "NullPointer" [structural]
+	rule [pointerToString-done]:
+		pointerToString(NullPointer) => "NullPointer" [structural]
 		
-	// rule [printf-%p-arg]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
-			// => printf-%p(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, pointerType(void)))
-		// ...</ k >
-		// if N:Nat ==Bool asciiCharString("p")
-		// [structural] 
-	// rule [printf-%p]:
-		// < k > printf-%p(Len:Nat, Loc:Nat, (vpair(tv(N':Nat, pointerType(void)), V:Value) :: ?)) 
-			// => writeToFD(1, pointerToString(N':Nat))
-			// ~> printf-aux(Len:Nat +Nat lengthString(pointerToString(N':Nat)), Loc:Nat, V:Value) 
-		// ...</ k >
-		// [structural] 
+	rule [printf-%p-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%p(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, t(.Set, pointerType(t(.Set, void)))))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("p")
+		[structural] 
+	rule [printf-%p]:
+		< k > printf-%p(Len:Nat, Loc:Nat, (vpair(tv(N':Nat, t(?, pointerType(t(?, void)))), V:Value) :: ?)) 
+			=> writeToFD(1, pointerToString(N':Nat))
+			~> printf-aux(Len:Nat +Nat lengthString(pointerToString(N':Nat)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural] 
 		
-	// rule [printf-%d-arg]:
-		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
-			// => printf-%d(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, int))
-		// ...</ k >
-		// if N:Nat ==Bool asciiCharString("d")
-		// [structural] 
-	// rule [printf-%d]:
-		// < k > printf-%d(Len:Nat, Loc:Nat, vpair(tv(D:Int, int), V:Value) :: ?) 
-			// => writeToFD(1, Rat2String(D:Int, 10))
-			// ~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value) 
-		// ...</ k >
-		// [structural] 
+	rule [printf-%d-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%d(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, t(.Set, int)))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("d")
+		[structural] 
+	rule [printf-%d]:
+		< k > printf-%d(Len:Nat, Loc:Nat, vpair(tv(D:Int, t(?, int)), V:Value) :: ?) 
+			=> writeToFD(1, Rat2String(D:Int, 10))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value) 
+		...</ k >
+		[structural] 
 	
 	// rule [printf-%u-arg]:
 		// < k > tv(N:Nat, ?) ~> printf-%(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))

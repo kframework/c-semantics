@@ -131,59 +131,59 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 
 	
-	// // Otherwise, the integer promotions are performed on both operands ..
+	// Otherwise, the integer promotions are performed on both operands ..
 	
-	// //C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
-	// //C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
+	//C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
+	//C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
 
-	// rule [argPromote-float]: argPromote(float) => double [structural]
-	// rule [argPromote-double]: argPromote(double) => double [structural]
-	// rule [argPromote-long-double]: argPromote(long-double) => long-double [structural]
-	// rule [argPromote-integer]: argPromote(T:Type) => promote(T:Type)
-		// if hasIntegerType(T:Type)
-		// [structural]
+	rule [argPromote-float]: argPromote(t(?, float)) => t(.Set, double) [structural]
+	rule [argPromote-double]: argPromote(t(?, double)) => t(.Set, double) [structural]
+	rule [argPromote-long-double]: argPromote(t(?, long-double)) => t(.Set, long-double) [structural]
+	rule [argPromote-integer]: argPromote(T:Type) => promote(T:Type)
+		if hasIntegerType(T:Type)
+		[structural]
 	
-	// rule promote(T:Type) => T:Type
-		// if hasFloatType(T:Type)
-		// [structural]
+	rule promote(T:Type) => T:Type
+		if hasFloatType(T:Type)
+		[structural]
 	
-	// rule
-		// promote(T:Type) => int
-		// if rank(T:Type) <=Int rank(int)
-		// andBool min(int) <=Int min(T:Type) 
-		// andBool max(int) >=Int max(T:Type)		
-		// [structural]
+	rule
+		promote(T:Type) => t(.Set, int)
+		if rank(T:Type) <=Int rank(t(.Set, int))
+		andBool min(t(.Set, int)) <=Int min(T:Type) 
+		andBool max(t(.Set, int)) >=Int max(T:Type)		
+		[structural]
 
-	// rule
-		// promote(T:Type) => T:Type
-		// if rank(T:Type) >Int rank(int)
-		// [structural]
+	rule
+		promote(T:Type) => T:Type
+		if rank(T:Type) >Int rank(t(.Set, int))
+		[structural]
 
-	// rule
-		// promote(bitfieldType(T:Type, Len:Nat)) => int
-		// if (T:Type ==Bool bool orBool T:Type ==Bool int orBool T:Type ==Bool unsigned-int)
-		// andBool min(int) <=Int min(bitfieldType(T:Type, Len:Nat))
-		// andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))
-		// [structural] 
-	// // fixme unclear what 6.3.1.1:3 means
+	rule
+		promote(bitfieldType(t(S:Set, T:SimpleType), Len:Nat)) => t(.Set, int)
+		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
+		andBool min(t(.Set, int)) <=Int min(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+		andBool max(t(.Set, int)) >=Int max(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+		[structural] 
+	// fixme unclear what 6.3.1.1:3 means
 
-	// rule
-		// promote(T:Type) => unsigned-int
-		// if rank(T:Type) <=Int rank(int)
-		// andBool notBool (
-			// min(int) <=Int min(T:Type) 
-			// andBool max(int) >=Int max(T:Type)		
-		// )
-		// [structural]
+	rule
+		promote(T:Type) => t(.Set, unsigned-int)
+		if rank(T:Type) <=Int rank(t(.Set, int))
+		andBool notBool (
+			min(t(.Set, int)) <=Int min(T:Type) 
+			andBool max(t(.Set, int)) >=Int max(T:Type)		
+		)
+		[structural]
 
-	// rule
-		// promote(bitfieldType(T:Type, Len:Nat)) => unsigned-int
-		// if (T:Type ==Bool bool orBool T:Type ==Bool int orBool T:Type ==Bool unsigned-int)
-		// andBool notBool (
-			// min(int) <=Int min(bitfieldType(T:Type, Len:Nat))
-			// andBool max(int) >=Int max(bitfieldType(T:Type, Len:Nat))	
-		// )
-		// [structural]		
+	rule
+		promote(bitfieldType(t(S:Set, T:SimpleType), Len:Nat)) => t(.Set, unsigned-int)
+		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
+		andBool notBool (
+			min(t(.Set, int)) <=Int min(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+			andBool max(t(.Set, int)) >=Int max(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+		)
+		[structural]		
 		
 	// // Then the following rules are applied to the promoted operands:
 	

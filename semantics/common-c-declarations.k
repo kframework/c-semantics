@@ -396,54 +396,54 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			)
 		[structural] 
 		
-	// rule
-		// < k > declareOnly(X:Id, prototype(T:Type), external)
-			// => .K
-		// ...</ k >
-		// < preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
-		// < preTypes >... Tu:K |-> Map(Types:Map) ...</ preTypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if (notBool $hasMapping(Linkage:Map, X:Id) 
-				// orBool Linkage:Map(X:Id) ==Bool external
-			// )
-			// andBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
-		// [structural]
+	rule
+		< k > declareOnly(X:Id, t(?, prototype(T:Type)), external)
+			=> .K
+		...</ k >
+		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map(Types:Map) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if (notBool $hasMapping(Linkage:Map, X:Id) 
+				orBool Linkage:Map(X:Id) ==Bool external
+			)
+			andBool isTypeCompatible(unqualifyType(Types:Map(X:Id)), unqualifyType(T:Type))
+		[structural]
 	
-	// // fixme haven't thought about this much, is it right?
-	// rule
-		// < k > declareOnly(X:Id, T:Type, internal)
-			// => .K
-		// ...</ k >
-		// < declarations >... .Set => SetItem(X:Id) ...</ declarations >
-		// < preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
-		// < preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
-		// < currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		// if notBool $hasMapping(Linkage:Map, X:Id) 
-		// orBool Linkage:Map(X:Id) ==Bool internal
-		// [structural] 
-	// rule
-		// < k > declareOnly(X:Id, T:Type, noLinkage)
-			// => allocateType(Loc:Nat, T:Type)
-			// ~> addToEnv(X:Id, Loc:Nat)
-			// ~> giveType(X:Id, T:Type)
-		// ...</ k >
-		// < nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		// < localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
-		// < localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		// if notBool hasIncompleteType(T:Type)
-		// andBool notBool hasStaticType(T:Type)
-		// andBool notBool hasExternType(T:Type)
-		// andBool notBool X:Id in Vars:List // this should be here statically, but not dynamically
-		// [structural]
-	// rule // same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
-		// < k > declareOnly(X:Id, T:Type, noLinkage)
-			// => .K
-		// ...</ k >
-		// < localVariables >... ListItem(X:Id) ...</ localVariables >
-		// if notBool hasIncompleteType(T:Type)
-		// andBool notBool hasStaticType(T:Type)
-		// andBool notBool hasExternType(T:Type)
-		// [structural] 
+	// fixme haven't thought about this much, is it right?
+	rule
+		< k > declareOnly(X:Id, T:Type, internal)
+			=> .K
+		...</ k >
+		< declarations >... .Set => SetItem(X:Id) ...</ declarations >
+		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:Id])) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		if notBool $hasMapping(Linkage:Map, X:Id) 
+		orBool Linkage:Map(X:Id) ==Bool internal
+		[structural] 
+	rule
+		< k > declareOnly(X:Id, T:Type, noLinkage)
+			=> allocateType(Loc:Nat, T:Type)
+			~> addToEnv(X:Id, Loc:Nat)
+			~> giveType(X:Id, T:Type)
+		...</ k >
+		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		< localVariables > Vars:List (. => ListItem(X:Id)) </ localVariables >
+		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
+		if notBool hasIncompleteType(T:Type)
+		andBool notBool hasStaticType(T:Type)
+		andBool notBool hasExternType(T:Type)
+		andBool notBool X:Id in Vars:List // this should be here statically, but not dynamically
+		[structural]
+	rule // same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
+		< k > declareOnly(X:Id, T:Type, noLinkage)
+			=> .K
+		...</ k >
+		< localVariables >... ListItem(X:Id) ...</ localVariables >
+		if notBool hasIncompleteType(T:Type)
+		andBool notBool hasStaticType(T:Type)
+		andBool notBool hasExternType(T:Type)
+		[structural] 
 	
 	// exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
 	rule
@@ -889,79 +889,79 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) ==Bool Len:Nat
 		[structural] 
-	// rule [fillInit-string-array-lt]:
-		// < k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			// => fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
-		// if hasCharType(T:Type)
-		// andBool lengthString(S:String) <Int Len:Nat
-		// [structural] 
-	// rule [fillInit-wstring-array-lt]:
-		// < k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			// => fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
-		// if hasWCharType(T:Type)
-		// andBool lengthList{K}(S:List{K}) <Int Len:Nat
-		// [structural] 
-	// rule [fillInit-string-char]:
-		// < k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			// => fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
-		// if hasCharType(T:Type)
-		// [structural] 
-	// rule [fillInit-wstring-wchar]:
-		// < k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			// => fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
-		// if hasWCharType(T:Type)
-		// [structural] 	
-	// rule [fillInitAux-string-some]:
-		// < k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
-			// => fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), char))) 
-			// ~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		// if S:String =/=Bool ""
-		// andBool hasCharType(T:Type)
-		// [structural] 
-	// rule [fillInitAux-wstring-some]:
-		// < k > fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
-			// => fillInitializer(SingleInit(tv(N:Nat, cfg:wcharut)))
-			// ~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		// if hasWCharType(T:Type)
-		// [structural]
-	// // fixme not sure what happens in the case of   char *x = "";
-	// rule [fillInitAux-string-done]:
-		// < k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</ k >
-		// [structural]
-	// rule [fillInitAux-wstring-done]:
-		// < k > fillInitializer-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</ k >
-		// [structural] 
+	rule [fillInit-string-array-lt]:
+		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
+		if hasCharType(T:Type)
+		andBool lengthString(S:String) <Int Len:Nat
+		[structural] 
+	rule [fillInit-wstring-array-lt]:
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		andBool lengthList{K}(S:List{K}) <Int Len:Nat
+		[structural] 
+	rule [fillInit-string-char]:
+		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
+		if hasCharType(T:Type)
+		[structural] 
+	rule [fillInit-wstring-wchar]:
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		[structural]
+	rule [fillInitAux-string-some]:
+		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), t(.Set, char)))) 
+			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if S:String =/=Bool ""
+		andBool hasCharType(T:Type)
+		[structural] 
+	rule [fillInitAux-wstring-some]:
+		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
+			=> fillInitializer(SingleInit(tv(N:Nat, cfg:wcharut)))
+			~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if hasWCharType(T:Type)
+		[structural]
+	// fixme not sure what happens in the case of   char *x = "";
+	rule [fillInitAux-string-done]:
+		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</ k >
+		[structural]
+	rule [fillInitAux-wstring-done]:
+		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</ k >
+		[structural] 
 		
-	// // this rule assumes all unrollings have already occurred, so it needs to be a rule
-	// // alternatively, i've added the condition below which might be enough
-	// rule [fillInit-string-notchar]:
-		// < k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			// => initializeSingleInit(Constant(StringLiteral(S:String)))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		// if notBool hasCharType(T:Type)
-		// andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
-		// [structural] 
-	// rule [fillinit-wstring-notwchar]:
-		// < k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			// => initializeSingleInit(Constant(WStringLiteral(S:List{K})))
-		// ...</ k >
-		// < currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		// if notBool hasWCharType(T:Type)
-		// andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
-		// [structural]
+	// this rule assumes all unrollings have already occurred, so it needs to be a rule
+	// alternatively, i've added the condition below which might be enough
+	rule [fillInit-string-notchar]:
+		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
+			=> initializeSingleInit(Constant(StringLiteral(S:String)))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if notBool hasCharType(T:Type)
+		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		[structural] 
+	rule [fillinit-wstring-notwchar]:
+		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
+		...</ k >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		if notBool hasWCharType(T:Type)
+		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		[structural]
 endkm
 
 
@@ -1208,28 +1208,28 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	
 	op fillEnums : K -> K 
 	op fillEnums-aux : K K -> K 
-	// rule
-		// < k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
-		// [structural] 
-	// rule 
-		// < k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, int)) ...</ k > 
-		// [structural]
-	// rule
-		// < k > fillEnums-aux(EnumDef(X:Id, EnumItem(E:Id) :: L:List{C}), K:K) 
-			// => declare(typedDeclaration(int, E:Id), SingleInit(K:K))
-			// ~> fillEnums-aux(EnumDef(X:Id, L:List{C}), K:K + tv(1, int))
-		// ...</ k >
-		// [structural] 
-	// rule
-		// < k > fillEnums-aux(EnumDef(X:Id, EnumItemInit(E:Id, Exp:K) :: L:List{C}), ?)
-			// => declare(typedDeclaration(int, E:Id), SingleInit(Exp:K))
-			// ~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + tv(1, int))
-		// ...</ k >
-		// if Exp:K =/=Bool NothingExpression
-		// [structural] 
-	// rule
-		// < k > fillEnums-aux(EnumDef(X:Id, Nil), ?) => .K ...</ k > 
-		// [structural] 
+	rule
+		< k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
+		[structural] 
+	rule 
+		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</ k > 
+		[structural]
+	rule
+		< k > fillEnums-aux(EnumDef(X:Id, EnumItem(E:Id) :: L:List{C}), K:K) 
+			=> declare(typedDeclaration(t(.Set, int), E:Id), SingleInit(K:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), K:K + tv(1, t(.Set, int)))
+		...</ k >
+		[structural] 
+	rule
+		< k > fillEnums-aux(EnumDef(X:Id, EnumItemInit(E:Id, Exp:K) :: L:List{C}), ?)
+			=> declare(typedDeclaration(t(.Set, int), E:Id), SingleInit(Exp:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + tv(1, t(.Set, int)))
+		...</ k >
+		if Exp:K =/=Bool NothingExpression
+		[structural] 
+	rule
+		< k > fillEnums-aux(EnumDef(X:Id, Nil), ?) => .K ...</ k > 
+		[structural] 
 endkm
 
 kmod COMMON-C-DECLARATIONS is
