@@ -44,11 +44,21 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	op giveLocalType : K Type -> K 
 	
 	// FIXME these are here until I decide how to handle qualified types
-	rule [ignore-volatile]: qualifiedType(T:Type, Volatile) => T:Type [structural]
-	rule [ignore-restrict]: qualifiedType(T:Type, Restrict) => T:Type [structural]
-	rule [ignore-const]: qualifiedType(T:Type, Const) => T:Type [structural]
-	rule [ignore-auto]: qualifiedType(T:Type, Auto) => T:Type [structural]
-	rule [ignore-register]: qualifiedType(T:Type, Register) => T:Type [structural]
+	rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Volatile)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Restrict)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-const]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Const)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Auto)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-register]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Register)) 
+		=> t(S:Set S':Set, T:SimpleType)
+		[structural]
 	
 	
 	rule
@@ -210,7 +220,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 	rule
-		< k > canonicalizeType(.Bag, (T:Type => qualifiedType(T:Type, Q:K)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		< k > canonicalizeType(.Bag, (T:Type => t(.Set, qualifiedType(T:Type, Q:K))), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Extern
 		orBool Q:K ==Bool Static
 		orBool Q:K ==Bool Const
@@ -226,7 +236,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		...</ k >
 		< types >... typedef(X:Id) |-> T:Type ...</ types >
 		if X:Id =/=Bool Identifier("")
-		[structural] 
+		[structural]
 		
 	rule
 		< k > canonicalizeSpecifier(BagItem(StructRef(X:Id)))
@@ -368,7 +378,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op makeIncompleteArrayType : -> KLabel
 	
 	rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
-	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, 'incompleteArrayType) [structural]
+	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, makeIncompleteArrayType) [structural]
 	rule PointerType(T:Type) => pushTypeDown(T:Type, makePointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
 	rule FunctionType(T:Type) => T:Type [structural]
@@ -380,7 +390,6 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:Type)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
 	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{Type})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type})) [structural]
-	// rule [pushdown-flexible]: pushTypeDown(flexibleArrayType(T:Type), K:KLabel) => flexibleArrayType(pushTypeDown(T:Type, K:KLabel)) [structural]
 	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id))) [structural]
 	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id))) [structural]
 	rule [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:Id))) [structural]
@@ -409,7 +418,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		if X:Id ==Bool #NoName
 		[structural]
 	rule giveNamesToArgs-aux(?, t(.Set, variadic))
-		=> variadic
+		=> t(.Set, variadic)
 		[structural]
 	rule giveNamesToArgs-aux(?, Nil)
 		=> Nil

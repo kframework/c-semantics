@@ -8,7 +8,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	including TCP-INTERFACE-BUILTIN-MODULE
 	
 	op vararg : K -> C [metadata "hybrid=() strict=()"] 
-	// rule reval(vararg(K:K)) => vararg(K:K) [structural]
+	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	
 	op nextvarg : Nat Type -> C 
 	// fixme had to make this K because of the context bug
@@ -16,77 +16,73 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?) 
 	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
 	
-	// op C : K -> C 
-	// eq C(K:K) = K:K 
-	
 	op vpair : K K -> C [metadata "hybrid=() strict=()"] 
-	// rule [nextvarg-start]:
-		// < k > nextvarg(Loc:Nat, T:Type)
-			// => nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
-		// ...</ k >
-		// [structural]
-	// rule [nextvarg]:
-		// < k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat, Len:Nat)
-			// => vpair(read(Loc:Nat, T:Type), vararg(tv(inc(Loc:Nat), pointerType(void))))
-		// ...</ k >
-		// [structural]
+	rule [nextvarg-start]:
+		< k > nextvarg(Loc:Nat, T:Type)
+			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
+		...</ k >
+		[structural]
+	rule [nextvarg]:
+		< k > nextvarg-aux(Loc:Nat, T:Type, Len:Nat, Len:Nat)
+			=> vpair(read(Loc:Nat, T:Type), vararg(tv(inc(Loc:Nat), t(.Set, pointerType(t(.Set, void))))))
+		...</ k >
+		[structural]
 	
 	op prepareBuiltin : Id List{C} -> K
 	context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
 	
 	op idsFromDeclList : List{C} -> List{C} 
 	
-	// rule [idsFromDeclList-one]:
-		// idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
-			// => idsFromDeclList(L:List{C}) :: X:Id
-		// if T:Type =/=Bool void 
-		// [structural]
-	// rule [idsFromDeclList-void]:
-		// idsFromDeclList(L:List{C} :: typedDeclaration(void, X:Id)) 
-			// => idsFromDeclList(L:List{C}) 
-		// [structural]
-	// rule [idsFromDeclList-vararg]:
-		// idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: variadic)
-			// => idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
-			// :: vararg(incSymbolic(cast(pointerType(unsigned-char), &(X:Id))))
-			// // assumes variadic args are placed in incremental blocks
-		// [structural]
-	// rule [idsFromDeclList-done]:
-		// idsFromDeclList(Nil) => Nil [structural]
+	rule [idsFromDeclList-one]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(t(?, T:SimpleType), X:Id)) 
+			=> idsFromDeclList(L:List{C}) :: X:Id
+		if T:SimpleType =/=Bool void 
+		[structural]
+	rule [idsFromDeclList-void]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(t(?, void), X:Id)) 
+			=> idsFromDeclList(L:List{C}) 
+		[structural]
+	rule [idsFromDeclList-vararg]:
+		idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id) :: t(?, variadic))
+			=> idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:Id)) 
+			:: vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
+			// assumes variadic args are placed in incremental blocks
+		[structural]
+	rule [idsFromDeclList-done]:
+		idsFromDeclList(Nil) => Nil [structural]
 	
 	op incSymbolic : K -> K
 	context incSymbolic(([HOLE] => reval([HOLE])))
-	// rule [incSymbolic]: 
-		// incSymbolic(tv(Loc:Nat, T:Type)) => tv(inc(Loc:Nat), T:Type) 
-		// [structural]
+	rule [incSymbolic]: 
+		incSymbolic(tv(Loc:Nat, T:Type)) => tv(inc(Loc:Nat), T:Type) 
+		[structural]
 		
-	// rule [prepareBuiltin]:
-		// < k > handleBuiltin(F:Id, functionType(Return:Type, L:List{Type}))
-			// => Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
-		// ...</ k >
-		// // if F:Id =/=Bool Identifier("longjmp")
-		// [structural] 
+	rule [prepareBuiltin]:
+		< k > handleBuiltin(F:Id, t(?, functionType(Return:Type, L:List{Type})))
+			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
+		...</ k >
+		[structural] 
 
 	op offsetOf : K K -> K [metadata "strict=(1)"]
-	// rule
-		// < k > OffsetOf(T:Type, K:K, F:Id) => offsetOf(DeclType(T:Type, K:K), F:Id) ...</ k >
-		// [structural]
-	// // fixme should check for bitfield offset
-	// rule
-		// < k > offsetOf(structType(S:Id), F:Id) 
-			// => tv(bitsToBytes(Offset:Nat), cfg:sizeut)
-		// ...</ k >
-		// < structs >...
-			// S:Id |-> aggregateInfo(?, ?, (? F:Id |-> Offset:Nat))
-		// ...</ structs >
-		// [structural]
-	// rule < k > offsetOf(unionType(?), ?) => tv(0, cfg:sizeut) ...</ k >
-		// [structural]
+	rule
+		< k > OffsetOf(T:Type, K:K, F:Id) => offsetOf(DeclType(T:Type, K:K), F:Id) ...</ k >
+		[structural]
+	// fixme should check for bitfield offset
+	rule
+		< k > offsetOf(t(?, structType(S:Id)), F:Id) 
+			=> tv(bitsToBytes(Offset:Nat), cfg:sizeut)
+		...</ k >
+		< structs >...
+			S:Id |-> aggregateInfo(?, ?, (? F:Id |-> Offset:Nat))
+		...</ structs >
+		[structural]
+	rule < k > offsetOf(t(?, unionType(?)), ?) => tv(0, cfg:sizeut) ...</ k >
+		[structural]
 	
 
-	// rule [debug]:
-		// < k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
-		// [metadata "computational=()"]
+	rule [debug]:
+		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
+		[metadata "computational=()"]
 	////////////////////////////--
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
@@ -96,45 +92,45 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	op ignoreLocals : -> K
 	
 	// there seems to be a problem here related to locals.  what if longjmp is never called?
-	// rule [ignoreLocals]:
-		// < k > ignoreLocals => .K ...</ k >
-		// < localAddresses > Locals:Set => .Set </ localAddresses >
-		// [structural]
+	rule [ignoreLocals]:
+		< k > ignoreLocals => .K ...</ k >
+		< localAddresses > Locals:Set => .Set </ localAddresses >
+		[structural]
 		
-	// rule [setjmp]:
-		// < k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, pointerType(structType(Identifier("__jmp_buf_tag"))))) 
-			// => ignoreLocals 
-				// ~> writeByte(Loc:Nat, Bag(
-					// C:Bag
-					// < continuation > K:K </ continuation >
-				// ))
-				// ~> tv(0, int)
-			// )
-			// ~> K:K 
-		// </ k >
-		// < threadLocal > 
-			// C:Bag
-		// </ threadLocal >
-		// [structural] 
+	rule [setjmp]:
+		< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(?, pointerType(t(?, structType(Identifier("__jmp_buf_tag"))))))) 
+			=> ignoreLocals 
+				~> writeByte(Loc:Nat, Bag(
+					C:Bag
+					< continuation > K:K </ continuation >
+				))
+				~> tv(0, t(.Set, int))
+			)
+			~> K:K 
+		</ k >
+		< threadLocal > 
+			C:Bag
+		</ threadLocal >
+		[structural] 
 	////////////////////////////--
 	op longjmp-aux : K K -> K [metadata "strict=()"]
-	// rule [longjmp-prepare]:
-		// < k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
-			// => longjmp-aux(reval(*(V:Value)), V':Value)
-		// ...</ k >
-		// [structural]
+	rule [longjmp-prepare]:
+		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
+			=> longjmp-aux(reval(*(V:Value)), V':Value)
+		...</ k >
+		[structural]
 	
-	// rule [longjmp]:
-		// < k > longjmp-aux(tv(Bag(
-					// < continuation > K:K </ continuation >
-					// C:Bag
-			// ), structType(Identifier("__jmp_buf_tag"))), tv(I:Int, int)) ~> ? 
-			// => if I:Int ==Bool 0 then tv(1, int) else tv(I:Int, int) fi ~> K:K 
-		// </ k >
-		// < threadLocal > 
-			// ? => C:Bag
-		// </ threadLocal >
-		// [structural] 
+	rule [longjmp]:
+		< k > longjmp-aux(tv(Bag(
+					< continuation > K:K </ continuation >
+					C:Bag
+			), t(?, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(?, int))) ~> ? 
+			=> if I:Int ==Bool 0 then tv(1, t(.Set, int)) else tv(I:Int, t(.Set, int)) fi ~> K:K 
+		</ k >
+		< threadLocal > 
+			? => C:Bag
+		</ threadLocal >
+		[structural] 
 	////////////////////////////--
 	
 	// op spawn-aux : Value Nat List{C} List{C} -> K [metadata "strict=(3)"]
@@ -204,50 +200,50 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		// </ threads >
 		// [structural] 
 	////////////////////////////--
-	// rule [exit]:
-		// < k > prepareBuiltin((Identifier("exit")), tv(I:Int, int)) ~> ? => tv(I:Int, int) </ k >
-		// [structural] 
-	// ////////////////////////////--
-	// // rule [abort-is-debug]:
-		// // < k > [abort => debug] ...</ k >
-	// // 
-	// rule [abort]:
-		// < k > prepareBuiltin((Identifier("abort")), Nil) ~> ? 
-			// => printString("Aborted")
-			// ~> tv(134, int) 
-		// </ k >
+	rule [exit]:
+		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, t(?, int))) ~> ? => tv(I:Int, t(.Set, int)) </ k >
+		[structural] 
+	////////////////////////////--
+	// rule [abort-is-debug]:
+		// < k > [abort => debug] ...</ k >
+	// 
+	rule [abort]:
+		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ? 
+			=> printString("Aborted")
+			~> tv(134, t(.Set, int))
+		</ k >
 	
 	op printString : K -> K
 	
-	// rule 
-		// < k > printString(S:String)
-			// => writeToFD(1, asciiCharString(firstChar(S:String)))
-			// ~> printString(butFirstChar(S:String))
-		// ...</ k >
-		// if lengthString(S:String) >Nat 0
-		// [structural]
-	// rule 
-		// < k > printString("") => writeToFD(1, 10) ...</ k >
-		// [structural]
+	rule 
+		< k > printString(S:String)
+			=> writeToFD(1, asciiCharString(firstChar(S:String)))
+			~> printString(butFirstChar(S:String))
+		...</ k >
+		if lengthString(S:String) >Nat 0
+		[structural]
+	rule 
+		< k > printString("") => writeToFD(1, 10) ...</ k >
+		[structural]
 	
-	// ////////////////////////////--
-	// rule [sqrt]:
-		// < k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, double)) 
-			// => tv(sqrtFloat(F:Float), double) 
-		// ...</ k >
-		// [structural]
-	// ////////////////////////////--
-	// rule [log]:
-		// < k > prepareBuiltin((Identifier("log")), tv(F:Float, double)) 
-			// => tv(logFloat(F:Float), double) 
-		// ...</ k >
-		// [structural] 
-	// ////////////////////////////--
-	// rule [exp]:
-		// < k > prepareBuiltin((Identifier("exp")), tv(F:Float, double)) 
-			// => tv(expFloat(F:Float), double) 
-		// ...</ k >
-		// [structural] 
+	////////////////////////////--
+	rule [sqrt]:
+		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(?, double)))
+			=> tv(sqrtFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+	////////////////////////////--
+	rule [log]:
+		< k > prepareBuiltin((Identifier("log")), tv(F:Float, t(?, double)))
+			=> tv(logFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural] 
+	////////////////////////////--
+	rule [exp]:
+		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, t(?, double)))
+			=> tv(expFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural] 
 	// ////////////////////////////--
 	// rule [atan]:
 		// < k > prepareBuiltin((Identifier("atan")), tv(F:Float, double)) 
@@ -462,54 +458,49 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	op printf-%p : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	
 	
-	// //C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
-	// // on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
-	// // fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
-	// rule [printf]:
-		// < k > prepareBuiltin((Identifier("printf")), (tv(Loc:Nat, pointerType(?)) :: L:List{C})) => printf-aux(0, Loc:Nat, L:List{C}) ...</ k >
-		// [structural]
+	//C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
+	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
+	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
+	rule [printf]:
+		< k > prepareBuiltin((Identifier("printf")), (tv(Loc:Nat, t(?, pointerType(?))) :: L:List{C})) => printf-aux(0, Loc:Nat, L:List{C}) ...</ k >
+		[structural]
 		
 		
-	// rule [printf-prepare-string]:
-		// < k > (.K => read(Loc:Nat, char)) ~> printf-string(Len:Nat, (Loc:Nat => sNat(Loc:Nat))) ...</ k >
-		// [structural]
+	rule [printf-prepare-string]:
+		< k > (.K => read(Loc:Nat, t(.Set, char))) ~> printf-string(Len:Nat, (Loc:Nat => sNat(Loc:Nat))) ...</ k >
+		[structural]
 		
-	// rule [printf-string]:
-		// < k > tv(N:Nat, ?) ~> printf-string(Len:Nat, Loc:Nat) 
-			// => writeToFD(1, N:Nat) 
-			// ~> printf-string(sNat(Len:Nat), Loc:Nat) 
-		// ...</ k >
-		// if N:Nat =/=Bool 0
-		// [structural] 
+	rule [printf-string]:
+		< k > tv(N:Nat, ?) ~> printf-string(Len:Nat, Loc:Nat) 
+			=> writeToFD(1, N:Nat) 
+			~> printf-string(sNat(Len:Nat), Loc:Nat) 
+		...</ k >
+		if N:Nat =/=Bool 0
+		[structural] 
 	
-	// rule [printf-string-done]:
-		// < k > tv(0, ?) ~> printf-string(Len:Nat, Loc:Nat) => tv(Len:Nat, int) ...</ k >
-		// [structural] 
+	rule [printf-string-done]:
+		< k > tv(0, ?) ~> printf-string(Len:Nat, Loc:Nat) => tv(Len:Nat, t(.Set, int)) ...</ k >
+		[structural] 
 	
-	// rule [printf-prepare-normal]:
-		// < k > (.K => read(Loc:Nat, char)) ~> printf-aux(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
-		// [structural]
+	rule [printf-prepare-normal]:
+		< k > (.K => read(Loc:Nat, t(.Set, char))) ~> printf-aux(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) ...</ k >
+		[structural]
 	
-	// //fixme why do i have to have the 0--255 check?
-	// rule [printf-normal]:
-		// < k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
-			// => writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) 
-		// ...</ k >
-		// if N:Nat =/=Bool asciiCharString("%") 
-		// andBool N:Nat =/=Bool 0
-		// andBool N:Nat >=Nat 0 
-		// andBool N:Nat <=Nat 255
-		// [structural] 
+	//fixme why do i have to have the 0--255 check?
+	rule [printf-normal]:
+		< k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
+			=> writeToFD(1, N:Nat) ~> printf-aux(sNat(Len:Nat), Loc:Nat, L:List{C}) 
+		...</ k >
+		if N:Nat =/=Bool asciiCharString("%") 
+		andBool N:Nat =/=Bool 0
+		andBool N:Nat >=Nat 0 
+		andBool N:Nat <=Nat 255
+		[structural] 
 	
-	// rule [printf-done]:
-		// < k > tv(0, ?) ~> printf-aux(Len:Nat, ?, ?) => tv(Len:Nat, int) ...</ k >
-		// [structural] 
+	rule [printf-done]:
+		< k > tv(0, ?) ~> printf-aux(Len:Nat, ?, ?) => tv(Len:Nat, t(.Set, int)) ...</ k >
+		[structural] 
 		
-	// // fixme technically unsafe
-	// rule [printf-null]:
-		// < k > printf-aux(0, sym(0) +Nat 0, Nil) => writeToFD(1, "(null)") ~> tv(6, int) ...</ k >
-		// [structural] 
-	
 	// rule [printf-%]:
 		// < k > tv(N:Nat, ?) ~> printf-aux(Len:Nat, Loc:Nat, L:List{C}) 
 			// => printf-%(Len:Nat, Loc:Nat, L:List{C})
