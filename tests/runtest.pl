@@ -92,14 +92,17 @@ sub performTest {
 	my $kccCompileRetval = $?;
 	my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
 	
-	open(TEST, "<$testName") or return reportFailure($testName, $timer, "Failure---could not open $testName for reading.");
 	my $lookForError=0;
-	while(my $line = <TEST>){
-		chomp($line);
-		if ($line =~ /kcc-assert-error\((\d+)\)/) {
-			$lookForError = $1;
-			last;
+	if ($#allFilenames == 0) { # no logic to make this work for multiple translation units
+		open(TEST, "<$testName") or return reportFailure($testName, $timer, "Failure---could not open $testName for reading.");
+		while(my $line = <TEST>){
+			chomp($line);
+			if ($line =~ /kcc-assert-error\((\d+)\)/) {
+				$lookForError = $1;
+				last;
+			}
 		}
+		close(TEST);
 	}
 
 	if ($kccCompileRetval) {
