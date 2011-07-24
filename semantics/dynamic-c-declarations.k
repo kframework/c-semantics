@@ -16,7 +16,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	rule [bind-empty-void]:
-		< k > bind-aux(?, Nil, typedDeclaration(void, ?)) => sequencePoint ...</ k > 
+		< k > bind-aux(?, Nil, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
 		< k > bind-aux(?, Nil, Nil) => sequencePoint ...</ k > 
@@ -34,7 +34,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			, (
 				?:List{Type}
 				:: typedDeclaration(
-					(arrayType(T:Type, ?) => pointerType(T:Type))
+					(t(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
 					, X:Id
 				)
 				:: ?:List{Type}
@@ -48,7 +48,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			, (
 				?:List{Type} 
 				:: typedDeclaration(
-					(incompleteArrayType(T:Type) => pointerType(T:Type))
+					(t(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
 					, X:Id
 				) 
 				:: ?:List{Type})
@@ -69,28 +69,25 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 	rule [bind-one-check-type]:
-		< k > (. => isTypeCompatible(T:Type, T':Type)) 
+		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
 			~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
 	
 	op promoteList : List{C} -> List{K} 
-	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (cast(argPromote(T:Type), tv(V:List{K}, T:Type)),, promoteList(L:List{C}))
-		if ((rank(T:Type) <Int rank(int) orBool hasBitfieldType(T:Type)) andBool hasIntegerType(T:Type)) 
-		orBool T:Type ==Bool float 
+	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{C})
+		if ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
+		orBool T:SimpleType ==Bool float 
 		[structural]
-	rule [promoteList-promoted]: promoteList((tv(V:List{K}, T:Type) :: L:List{C})) => (tv(V:List{K}, T:Type),, promoteList(L:List{C}))
-		if (notBool(hasIntegerType(T:Type)) 
-			andBool notBool T:Type ==Bool float
-			andBool notBool hasArrayType(T:Type)
+	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{C}))
+		if (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
+			andBool notBool T:SimpleType ==Bool float
+			andBool notBool hasArrayType(t(S:Set, T:SimpleType))
 		) 
-		orBool rank(T:Type) >=Int rank(int)
-		orBool T:Type ==Bool double 
-		orBool T:Type ==Bool long-double
+		orBool rank(t(S:Set, T:SimpleType)) >=Int rank(t(.Set, int))
+		orBool T:SimpleType ==Bool double 
+		orBool T:SimpleType ==Bool long-double
 		[structural]
-		
-	// rule promoteList((tv(?, (arrayType(T:Type, ?) => pointerType(T:Type))) :: ?)) 
-		// [structural] 
 		
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 
@@ -98,7 +95,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
-		< k > bind-aux(Loc:Nat, L:List{C}, variadic)
+		< k > bind-aux(Loc:Nat, L:List{C}, t(?, variadic))
 			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{C}))
 		...</ k >
 		[structural] 
@@ -115,7 +112,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	rule [bind-variadic]:
 		< k > (.K 
 				=> allocateType(Loc:Nat, Type)
-				~> Computation(*(tv(Loc:Nat, pointerType(Type))) := V:Value)
+				~> Computation(*(tv(Loc:Nat, t(.Set, pointerType(Type)))) := V:Value)
 			) 
 			~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
 		...</ k >
@@ -151,11 +148,11 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	op zeroType : K Type -> K 
 	
 	rule
-		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0, int)) ...</ k >
+		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0, t(.Set, int))) ...</ k >
 		if hasIntegerType(T:Type)
 		[structural] 
 	rule
-		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0.0, float)) ...</ k >
+		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0.0, t(.Set, float))) ...</ k >
 		if hasFloatType(T:Type)
 		[structural] 
 		
@@ -168,14 +165,14 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	
 	rule
-		< k > zeroType(Name:K, structType(S:Id)) 
+		< k > zeroType(Name:K, t(?, structType(S:Id))) 
 			=> zeroStruct(Name:K, Fields:List{Type})
 		...</ k >
 		< structs >... S:Id |-> aggregateInfo(Fields:List{Type}, ?, ?) ...</ structs > 
 		[structural] 
 		
 	rule
-		< k > zeroType(Name:K, unionType(S:Id)) 
+		< k > zeroType(Name:K, t(?, unionType(S:Id))) 
 			=> zeroType(Name:K . F:Id, T:Type)
 		...</ k >
 		< structs >... 
@@ -203,17 +200,17 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural]
 		
 	rule
-		< k > zeroType(Name:K, arrayType(T:Type, sNat(Len:Nat))) 
+		< k > zeroType(Name:K, t(S:Set, arrayType(T:Type, sNat(Len:Nat)))) 
 			=> zeroType(Name:K[Len:Nat], T:Type)
-			~> zeroType(Name:K, arrayType(T:Type, Len:Nat)) 
+			~> zeroType(Name:K, t(S:Set, arrayType(T:Type, Len:Nat))) 
 		...</ k >
 		[structural] 
 	rule
-		< k > zeroType(Name:K, arrayType(T:Type, 0)) => .K ...</ k >
+		< k > zeroType(Name:K, t(?, arrayType(T:Type, 0))) => .K ...</ k >
 		[structural] 
 
 	rule
-		< k > zeroType(Name:K, flexibleArrayType(T:Type))
+		< k > zeroType(Name:K, t(?, flexibleArrayType(T:Type)))
 			=> .K
 		...</ k >
 		[structural]

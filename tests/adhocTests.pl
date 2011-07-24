@@ -39,7 +39,7 @@ assertContains("stdin", run("$kcc adhoc/stdin.c -o adhoc.o && echo \"hi.\" | ./a
 assertContains("Ddefines", run("$kcc adhoc/defines.c -DFOO -DBAR -DBAZ=32 -o defines.o && ./defines.o"), "1321");
 assertContains("Iincludes", run("$kcc -Iadhoc/inc adhoc/needsInclude.c -o includes.o && ./includes.o"), "xx0xx");
 
-assertEquals("blank", run("$kcc adhoc/basic.c -o basic.o && ./basic.o"), "");
+assertEquals("blank", run("$kcc adhoc/basic.c -o basic.o 2&>1 && ./basic.o 2&>1"), "");
 
 
 ###################################

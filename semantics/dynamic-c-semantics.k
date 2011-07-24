@@ -30,13 +30,13 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< files >... Filename:String |-> (S:String => S:String +String S':String) ...</ files >
 		[structural]
 	rule [readFromFD-char]:
-		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), int)  ...</ k >
+		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</ k >
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
 		if S:String =/=Bool ""
 		[structural]
 	rule [readFromFD-char-eof]:
-		< k > readFromFD(FD:Nat) => tv(-1, int) ...</ k > // -1 should be EOF
+		< k > readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
 		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
 		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
 		if S:String ==Bool ""
@@ -154,15 +154,15 @@ or equivalent;9) or in some other implementation-defined manner
 	// FIXME i think these are slightly different
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
-	rule callMain-aux(functionType(int, typedDeclaration(void, ?)), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(functionType(int, Nil), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(incompleteArrayType(pointerType(T:Type)), ?))), N:Nat, X:Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?))), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), Nil)), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:Nat, X:Id, Args:K)
 		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
-		if T:Type ==Bool char
+		if T:Type ==Bool t(.Set, char)
 		[structural]
-	rule callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(pointerType(pointerType(T:Type)), ?))), N:Nat, X:Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:Nat, X:Id, Args:K)
 		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
-		if T:Type ==Bool char
+		if T:Type ==Bool t(.Set, char)
 		[structural]
 
 

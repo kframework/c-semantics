@@ -72,36 +72,11 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< blockHistoryGoto > (?:ListItem => .List) ListItem(Num:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
-	// rule [StatementLoc-computation]:
-		// < computation > StatementLoc(K:K, L:CabsLoc) => K:K ...</ computation >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
-	// rule [StatementLoc-computation]:
-		// < computation > StatementLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ computation >
-		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
-		// if N:Nat =/=Bool 268
-		// [structural] 
-
-	// - fixme i hate that i have to do this twice.  once here, once in the dynamic semantics
-	// rule
-		// < computation > LocalDefinition(CodeLoc(K:K, Loc:K)) => CodeLoc(K:K, Loc:K) ...</ computation >
-		// [structural] 
-	// rule [DefinitionLoc-computation]:
-		// < computation > DefinitionLoc(K:K, L:CabsLoc) => K:K ...</ computation >
-		// < currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		// [structural] 
 	rule [DefinitionLoc-computation]:
 		< computation > CodeLoc(K:K, L:CabsLoc) => K:K ...</ computation >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
-	// rule [DefinitionLoc-computation]:
-		// < computation > DefinitionLoc(K:K, CabsLoc(S:String, N:Nat, N':Nat, N'':Nat)) => K:K ...</ computation >
-		// < currentProgramLoc > ? => CabsLoc(S:String, N:Nat, N':Nat, N'':Nat) </ currentProgramLoc >
-		// if N:Nat =/=Bool 268
-		// [structural]
-		
-	//  eq getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) = getIdOfName(K:C) 
-		
+
 	rule
 		< computation > DeclarationDefinition(InitNameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
 			=> DeclarationDefinition(InitNameGroup(T:K, K:C))
@@ -114,13 +89,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 			~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
 		...</ computation >
 		[structural] 
-	// rule
-		// < computation > Typedef(NameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
-			// => Typedef(NameGroup(T:K, K:C))
-			// ~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
-		// ...</ computation >
-		// [structural] 
-		
+
 	//  fixme would like to combine the below rules
 	rule
 		< computation > DeclarationDefinition(InitNameGroup(T:K, K:C)) => .K ...</ computation >
@@ -172,7 +141,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 				< computationTail >
 					Computation(Post:K)
 					~> loopMarked
-					~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi), Post:K, S:K)
+					~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K)
 					~> popLoop
 					~> K:K 
 					~> Tail:K 
@@ -312,5 +281,5 @@ kmod COMMON-C-STATEMENTS is
 	Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
 	*/
 	rule [skip-label]: < k > Label(L:Id, K:K) => K:K ...</ k >
-		[structural] 	
+		[structural]
 endkm

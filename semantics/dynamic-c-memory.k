@@ -69,9 +69,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule [read-allocated]: // read data of "allocated" duration
 		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		[metadata "computational=() nd=(true)"]
-	// rule [read-readonly]: // read data that is readonly (e.g., string literals)
-		// < k > ('read-aux => 'readActual)(sym(threadId(readOnly) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		// [metadata "computational=() nd=(true)"] 
 	
 	rule [read]:
 		< k > readActual(Loc:Nat, T:Type, bitSize:Nat)
@@ -96,8 +93,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 		andBool notBool hasBitfieldType(T:Type) 
 		[structural]
 	rule 
-		< k > concretize(bitfieldType(T:Type, Len:Nat), dataList(L:List{K})) 
-			=> joinIntegerBytes(bitfieldType(T:Type, Len:Nat), reverseList(L:List{K})) 
+		< k > concretize(t(S:Set, bitfieldType(T:Type, Len:Nat)), dataList(L:List{K})) 
+			=> joinIntegerBytes(t(S:Set, bitfieldType(T:Type, Len:Nat)), reverseList(L:List{K})) 
 		...</ k >
 		//if // hasIntegerType(T:Type) // redundant
 		//hasBitfieldType(T:Type) 
@@ -113,19 +110,19 @@ kmod DYNAMIC-SEMANTICS-READING is
 
 	// fixme should also check sizes are appropriate
 	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
-	rule < k > concretize(pointerType(T:Type), dataList((piece(encodedPointer(N:Nat), Len:Nat),, ?))) 
+	rule < k > concretize(t(S:Set, pointerType(T:Type)), dataList((piece(encodedPointer(N:Nat), Len:Nat),, ?))) 
 			=> checkValidLoc(N:Nat)
-			~> tv(N:Nat, pointerType(T:Type))
+			~> tv(N:Nat, t(S:Set, pointerType(T:Type)))
 		...</ k >
 		if Len:Nat ==Bool numBitsPerByte
 		[structural]
-	rule < k > concretize(structType(S:Id), dataList(L:List{K})) 
-			=> tv(L:List{K}, structType(S:Id)) 
+	rule < k > concretize(t(S:Set, structType(S:Id)), dataList(L:List{K})) 
+			=> tv(L:List{K}, t(S:Set, structType(S:Id))) 
 		...</ k >
 		// if hasStructType(T:Type)
 		[structural]
-	rule < k > concretize(unionType(S:Id), dataList(L:List{K})) 
-			=> tv(L:List{K}, unionType(S:Id))
+	rule < k > concretize(t(S:Set, unionType(S:Id)), dataList(L:List{K})) 
+			=> tv(L:List{K}, t(S:Set, unionType(S:Id)))
 		...</ k >
 		// if hasUnionType(T:Type)
 		[structural]
@@ -186,11 +183,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		[structural] 
 		
-	// rule
-		// < k > extractBytesFromMem-aux(Loc:Nat, sNat(Size:Nat), Aux:List{K})
-			// => extractBytesFromMem-aux(sNat(Loc:Nat), Size:Nat, (Aux:List{K},, extractByteFromMem(Loc:Nat)))
-		// ...</ k >
-		// [structural]
 	rule
 		< k > extractBytesFromMem-aux(Loc:Nat, sNat(Size:Nat), Aux:List{K})
 			=> extractByteFromMem(Loc:Nat)
@@ -218,7 +210,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
 			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
 			~> assert(Offset:Nat <Nat Size:Nat, 2)
-			~> tv(V:K, no-type)
+			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
@@ -228,7 +220,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
 			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
 			~> assert(Offset:Nat <Nat Size:Nat, 2)
-			~> tv(V:K, no-type)
+			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< mem >... Block:Nat |-> memblock(Size:Nat, (? Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
@@ -239,7 +231,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule [read-byte-lazy]:
 		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) 
 			=> assert(Offset:Nat <Nat Size:Nat, 2)
-			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), no-type)
+			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), t(.Set, no-type))
 		...</ k >
 		< mem >... 
 			Block:Nat |-> memblock(Size:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
@@ -252,7 +244,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule [read-byte-buffer]:
 		< k > extractByteFromMem(Loc:Nat) 
 			=> assert(notBool Loc:Nat in Locs:Bag, 3)
-			~> tv(V:K, no-type)
+			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer >... bwrite(Loc:Nat, V:K) Mem:List </ buffer >
@@ -266,7 +258,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	context alloc(?, value(`[HOLE`]:K)) 
 
 	rule allocateType(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) 
-		[structural] 
+		[structural]
 	rule [allocateTypeIfAbsent-absent]:
 		< k > allocateTypeIfAbsent(Loc:Nat, T:Type) => alloc(Loc:Nat, value(byteSizeofType(T:Type))) ...</ k >
 		< mem > Mem:Map </ mem >
@@ -291,15 +283,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op write-aux : K Value K -> K [metadata "strict=(2)"] 
 	rule write(K:K, tv(V:List{K}, T:Type)) 
 		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
-		//if notBool(hasFunctionType(T:Type)) 
 		[structural]
-	// FIXME should check types
-	// rule
-		// < k > write(Loc:Nat, tv(V:K, T:Type)) 
-			// => writeByte(Loc:Nat, V:K) 
-		// ...</ k >
-		// if hasFunctionType(T:Type)
-		// [structural]
 	context write-aux(?, ?, value(`[HOLE`]))
 	
 	
@@ -366,7 +350,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule justBits-aux(I:Int, T:Type) => justBits-aux((I:Int +Int max(T:Type) +Int 1), T:Type)
 		if I:Int <Int 0 
 		[structural]
-	rule justBits-aux(N:Nat, bitfieldType(T:Type, sNat(Len:Nat))) => N:Nat +Nat (1 <<Nat Len:Nat) [structural]
+	rule justBits-aux(N:Nat, t(?, bitfieldType(T:Type, sNat(Len:Nat)))) => N:Nat +Nat (1 <<Nat Len:Nat) [structural]
 	
 	rule [massage-bitfield]:
 		< k > write-specific(Loc:Nat, tv(I:Int, T:Type), bitSize:Nat)
@@ -477,7 +461,6 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
 		if Offset:Nat <Nat Len:Nat
 		[structural]
-		// [metadata "computational=()"]
 	rule
 		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
 		[structural] 
@@ -500,13 +483,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		if hasFloatType(T:Type)
 		[structural] 
 	rule [splitBytes-pointer]:
-		splitBytes(tv(I:Int, pointerType(T:Type))) 
-			=> splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
-		[structural] 
-	// rule [splitBytes-array]:
-		// splitBytes(tv(I:Int, arrayType(T:Type, ?))) 
-			// => splitPointerBytes(I:Int, pointerType(T:Type), value(byteSizeofType(pointerType(T:Type))))
-		// [structural] 
+		splitBytes(tv(I:Int, t(S:Set, pointerType(T:Type)))) 
+			=> splitPointerBytes(I:Int, t(S:Set, pointerType(T:Type)), value(byteSizeofType(t(.Set, pointerType(T:Type)))))
+		[structural]
 	rule [splitBytes-struct]:
 		splitBytes(tv(L:List{K}, T:Type)) 
 			=> splitStructBytes(dataList(L:List{K}), T:Type, value(byteSizeofType(T:Type)))
@@ -610,20 +589,20 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	op writeWString : Nat List{K} -> K
 	rule [alloc-string]:
 		< k > allocString(Loc:Nat, S:String)
-			=> allocateType(Loc:Nat, arrayType(char, lengthString(S:String)))
+			=> allocateType(Loc:Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:String))))
 			~> writeString(Loc:Nat, S:String)
 		...</ k >
 		[structural]
 	rule [alloc-wstring]:
 		< k > allocWString(Loc:Nat, S:List{K})
-			=> allocateType(Loc:Nat, arrayType(cfg:wcharut, 4 *Nat lengthList{K}(S:List{K})))
+			=> allocateType(Loc:Nat, t(.Set, arrayType(cfg:wcharut, 4 *Nat lengthList{K}(S:List{K}))))
 			~> writeWString(Loc:Nat, S:List{K})
 		...</ k >
 		[structural] 
 		
 	rule [write-string]:
 		< k > writeString(Loc:Nat, S:String)
-			=> Computation(*(tv(Loc:Nat, pointerType(char))) := tv(charToAscii(firstChar(S:String)), char))
+			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(t(.Set, char))))) := tv(charToAscii(firstChar(S:String)), t(.Set, char)))
 			~> writeString(sNat(Loc:Nat), butFirstChar(S:String))
 		...</ k >
 		if S:String =/=Bool ""
@@ -631,7 +610,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
 		< k > writeWString(Loc:Nat, (N:Nat,, S:List{K}))
-			=> Computation(*(tv(Loc:Nat, pointerType(cfg:wcharut))) := tv(N:Nat, cfg:wcharut))
+			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(cfg:wcharut)))) := tv(N:Nat, cfg:wcharut))
 			~> writeWString(Loc:Nat +Nat 4, S:List{K})
 		...</ k >
 		[structural] 
@@ -648,15 +627,6 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	
 	op checkValidLoc-aux : K -> K
-	
-	// rule
-		// < k > checkPossiblePointer(tv(V:K, T:Type)) => .K ...</ k >
-		// if notBool hasPointerType(T:Type)
-		// [structural]
-	// rule
-		// < k > checkPossiblePointer(tv(V:K, pointerType(?))) => .K ...</ k >
-		// if notBool hasPointerType(T:Type)
-		// [structural]
 	
 	rule
 		< k > checkValidLoc(Loc:Nat) => checkValidLoc-aux(ceilingLoc(Loc:Nat)) ...</ k >

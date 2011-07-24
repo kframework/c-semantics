@@ -27,11 +27,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op defineType : K -> K [metadata "strict=()"] 
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
 	context Typedef(NameGroup(`[HOLE`]:K, ?))
-	
-	// rule
-		// < k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
-		// [structural] 
-	
+
 	rule
 		< k > figureInitializer(X:Id, T:Type, CodeLoc(K:K, L:K)) 
 			=> CodeLoc(.K, L:K)
@@ -50,32 +46,32 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		//andBool notBool hasIncompleteType(T:Type)
 		[structural] 
 	rule
-		< k > figureInitializer(X:Id, arrayType(T:Type, Len:Nat), SingleInit(Constant(StringLiteral(S:String)))) 
-			=> figureInitializer(X:Id, arrayType(T:Type, Len:Nat), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String))))))
+		< k > figureInitializer(X:Id, t(Se:Set, arrayType(T:Type, Len:Nat)), SingleInit(Constant(StringLiteral(S:String)))) 
+			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:Type, Len:Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String))))))
 		...</ k >
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) <=Nat Len:Nat
 		[structural]
 	rule
-		< k > figureInitializer(X:Id, arrayType(T:Type, Len:Nat), SingleInit(Constant(WStringLiteral(S:List{K})))) 
-			=> figureInitializer(X:Id, arrayType(T:Type, Len:Nat), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
+		< k > figureInitializer(X:Id, t(Se:Set, arrayType(T:Type, Len:Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:Type, Len:Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
 		...</ k >
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <=Nat Len:Nat
 		[structural] 
 	
 	rule
-		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthString(S:String) +Nat 1)), SingleInit(Constant(StringLiteral(S:String)))) ...</ k >
+		< k > figureInitializer(X:Id, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthString(S:String) +Nat 1))), SingleInit(Constant(StringLiteral(S:String)))) ...</ k >
 		if hasCharType(T:Type)
 		[structural]
 	rule
-		< k > figureInitializer(X:Id, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthList{K}(S:List{K}) +Nat 1)), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
+		< k > figureInitializer(X:Id, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
 		if hasWCharType(T:Type)
 		[structural] 
 		
 	rule
-		< k > figureInitializer(X:Id, incompleteArrayType(T:Type), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String))))))
-			=> figureInitializer(X:Id, incompleteArrayType(T:Type), SingleInit(Constant(StringLiteral(S:String))))
+		< k > figureInitializer(X:Id, t(Se:Set, incompleteArrayType(T:Type)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String))))))
+			=> figureInitializer(X:Id, t(Se:Set, incompleteArrayType(T:Type)), SingleInit(Constant(StringLiteral(S:String))))
 		...</ k >
 		[structural] 
 		
@@ -90,7 +86,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > figureInitializer-aux(X:Id, T:Type, initializer(K:K))
 			=> initializerValue(X:Id, T:Type, K:K)
 		...</ k >
-		//< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
 		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		[structural]
 	
@@ -198,7 +193,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 
 	rule
 		< k > declareFunction(X:Id, T:Type, NoInit)
-			=> declareWithLinkage(X:Id, prototype(T:Type), NoInit, external)
+			=> declareWithLinkage(X:Id, t(.Set, prototype(T:Type)), NoInit, external)
 		...</ k >
 		if notBool hasStaticType(T:Type)
 		[structural] 
@@ -267,14 +262,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool K:K =/=Bool NoInit
 		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Nat))
 		[structural] 
-		
-	// op restoreShouldInit : Bool -> K 
-	// rule
-		// < k > restoreShouldInit(OldShouldValue:Bool) => . ...</ k >
-		// < shouldInit > ? => OldShouldValue:Bool </ shouldInit >
-		// [structural] 
-		
-		
+				
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
 	op reseenStatic : Id Type K Nat -> K [metadata "strict=(3)"] 
 	rule
@@ -405,7 +393,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 	rule
-		< k > declareOnly(X:Id, prototype(T:Type), external)
+		< k > declareOnly(X:Id, t(?, prototype(T:Type)), external)
 			=> .K
 		...</ k >
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</ preLinkage >
@@ -478,7 +466,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		if (notBool $hasMapping(Def:Map, X:Id) orBool hasFunctionType(T:Type))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==Bool internal)
-		[structural] 
+		[structural]
+		
 	op defineAndInit : Id Type K Nat -> K [metadata "strict=(3)"] 
 	rule
 		< k > declareAndDefine(X:Id, T:Type, K:K, noLinkage)
@@ -517,13 +506,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> allocateTypeIfAbsent(Loc:Nat, T:Type)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:Type)
-			// ~> initialize(X:Id, T:Type, K:K)
 		...</ k >
 		< shouldInit > false </ shouldInit >
 		[structural]
 		
 	rule
-		< k > figureInitializer-aux(?, (incompleteArrayType(T:Type) => arrayType(T:Type, N:Nat)), initializer(K:K))
+		< k > figureInitializer-aux(?, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, N:Nat))), initializer(K:K))
 		...</ k >
 		< incompleteLength > N:Nat </ incompleteLength >
 		[structural] 
@@ -553,10 +541,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > addToLocalEnv(X:Id, Loc:Nat) => . ...</ k >
 		< env > E:Map => E:Map[Loc:Nat / X:Id] </ env >
 		[structural] 
-			
-	// rule
-		// < k > DeclarationDefinition(InitNameGroup(T:Type, Nil)) => .K ...</ k >
-		// [structural] 
 	
 	op defineUsingOldDeclaration : Type Id K -> K 
 	
@@ -579,7 +563,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			~> calculateGotoMap(X:Id, BODY)
 		...</ k >
 		if hasFunctionType(T:Type)
-		where BODY = (Block:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, int) else NothingExpression fi))
+		where BODY = (Block:K ~> Return(if (X:Id ==Bool Identifier("main")) then tv(0, t(.Set, int)) else NothingExpression fi))
 		[structural] 
 endkm
 
@@ -587,90 +571,6 @@ kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	op typingBody : Id Type K -> K // third argument is just for now, as a hack
 	
-	/*rule
-		< k > processFunctionBody(functionObject(X:Id, T:Type, Body:K)) 
-			=> typingBody(X:Id, T:Type, Body:K)
-		...</ k >
-		< callStack > .List => ListItem(
-			< stackFrame > C:Bag
-				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
-				< statick > .K </ statick >
-				< newk > .K </ newk >
-			</ stackFrame >)
-		...</ callStack >	
-		(< control >
-			< statick > ?:K </ statick >
-			< newk > ?:K </ newk >
-			< currentFunction > CurrFun:K </ currentFunction >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-			C:Bag
-		</ control >
-		=>
-		< control >
-			< statick > Body:K </ statick >
-			< newk > .K </ newk >
-			< currentFunction > X:Id </ currentFunction >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		...</ control >)
-		[structural]
-		
-		
-	rule
-		
-		< k > typingBody(X:Id, T:Type, Body:K) 
-			=> functionObject(X:Id, T:Type, Body:K)
-		...</ k >
-		< control >
-			< currentFunction > X:Id => OldFunc:K </ currentFunction >
-			< currentProgramLoc > ? => OldLoc:K </ currentProgramLoc >
-			(?:Bag => C:Bag)
-		</ control >
-		<callStack> ListItem(
-			< stackFrame >
-				< stackCurrentFunction > OldFunc:K </ stackCurrentFunction >
-				< stackCurrentProgramLoc > OldLoc:K </ stackCurrentProgramLoc >
-				C:Bag
-			</ stackFrame >
-		) => .List
-		</callStack>
-		[structural]
-			
-	op groupBlock : Nat List{C} -> K
-	
-	rule
-		< statick > Block(BlockNum:Nat, Attrs:List{C}, Body:List{C}) 
-			=> listToK(Body:List{C})
-			~> groupBlock(BlockNum:Nat, Attrs:List{C})
-		...</ statick >
-		< newk > K:K => .K </ newk >
-		< blockStack > .List => ListItem(K:K) ...</ blockStack >
-		[structural]
-		
-	rule [groupBlock]:
-		< statick > groupBlock(BlockNum:Nat, Attrs:List{C}) => .K ...</ statick >
-		< newk > Block:C
-			=> Block(BlockNum:Nat, Attrs:List{C}, Block:C :: Nil) 
-			~> K:K
-		</ newk >
-		< blockStack > ListItem(K:K) => .List ...</ blockStack >
-		[structural]
-		
-	rule [codeloc-statick]:
-		< statick > CodeLoc(K:K, L:CabsLoc) => K:K ...</ statick >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
-		[structural] 
-	rule 
-		< statick > L:KLabel(Args:List{K}) => .K ...</ statick >
-		if false
-		orBool L:KLabel ==Bool 'Nop
-		orBool L:KLabel ==Bool 'Computation
-		orBool L:KLabel ==Bool 'Break
-		orBool L:KLabel ==Bool 'Continue
-		orBool L:KLabel ==Bool 'Return
-		orBool L:KLabel ==Bool 'Goto
-		orBool L:KLabel ==Bool 'CompGoto
-		[structural]	*/	
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
@@ -696,9 +596,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer(L:List{C}) ~> getInitializer
 		...</ k >
 		< incompleteLength > ? => 0 </ incompleteLength >
-		< currentSubObject > . => ListItem(te(X:Id, T:Type)) </ currentSubObject >
-		< currentObject > . => ListItem(te(X:Id, T:Type)) </ currentObject >
-		< savedInitialization >... . => zero(X:Id) </ savedInitialization > 
+		< currentSubObject > .List => ListItem(te(X:Id, T:Type)) </ currentSubObject >
+		< currentObject > .List => ListItem(te(X:Id, T:Type)) </ currentObject >
+		< savedInitialization >... .K => zero(X:Id) </ savedInitialization > 
 		if hasUnionType(T:Type) orBool hasAggregateType(T:Type)
 		[structural] 
 	
@@ -716,20 +616,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	rule
 		< currentSubObject > 
-			ListItem(te(K:K, arrayType(T:Type, Len:Nat)))
-			=> ListItem(te(K:K[0], T:Type)) ListItem(te(K:K, arrayType(T:Type, Len:Nat)))
+			ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:Nat))))
+			=> ListItem(te(K:K[0], T:Type)) ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:Nat))))
 		...</ currentSubObject >
 		[structural] 
 	rule
 		< currentSubObject > 
-			ListItem(te(K:K, incompleteArrayType(T:Type)))
-			=> ListItem(te(K:K[0], T:Type)) ListItem(te(K:K, incompleteArrayType(T:Type)))
+			ListItem(te(K:K, t(Se:Set, incompleteArrayType(T:Type))))
+			=> ListItem(te(K:K[0], T:Type)) ListItem(te(K:K, t(Se:Set, incompleteArrayType(T:Type))))
 		...</ currentSubObject >
 		[structural] 
 	rule
 		< currentSubObject > 
-			ListItem(te(K:K, structType(S:Id)))
-			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, structType(S:Id)))
+			ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, t(Se:Set, structType(S:Id))))
 		...</ currentSubObject >
 		< structs >... 
 			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?)
@@ -739,8 +639,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	// fixme these are terrible!
 	rule
 		< currentSubObject > 
-			ListItem(te(K:K, unionType(S:Id)))
-			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, unionType(S:Id)))
+			ListItem(te(K:K, t(Se:Set, unionType(S:Id))))
+			=> ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, t(Se:Set, unionType(S:Id))))
 		...</ currentSubObject >
 		< structs >... 
 			S:Id |-> aggregateInfo((typedDeclaration(T:Type, F:Id) :: ?), ?, ?) 
@@ -751,13 +651,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule [init-next-array-element]:
 		< currentSubObject > 
 			(next ListItem(te(K:K[N:Nat], T:Type)) => ListItem(te(K:K[sNat(N:Nat)], T:Type)))
-			ListItem(te(K:K, arrayType(?, Len:Nat)))
+			ListItem(te(K:K, t(?, arrayType(?, Len:Nat))))
 		...</ currentSubObject >
 		if Len:Nat >Nat sNat(N:Nat)
 		[structural] 
 	rule [init-next-array-element-done]:
 		< currentSubObject >
-			next (ListItem(te(K:K[N:Nat], T:Type)) => .) ListItem(te(K:K, arrayType(?, Len:Nat)))
+			next (ListItem(te(K:K[N:Nat], T:Type)) => .List) ListItem(te(K:K, t(?, arrayType(?, Len:Nat))))
 		...</ currentSubObject >
 		if notBool Len:Nat >Nat sNat(N:Nat)
 		[structural] 
@@ -765,15 +665,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule [init-next-incomplete-array-element]:
 		< currentSubObject >
 			(next ListItem(te(K:K[N:Nat], T:Type)) => ListItem(te(K:K[sNat(N:Nat)], T:Type))) 
-			ListItem(te(K:K, incompleteArrayType(?)))
+			ListItem(te(K:K, t(?, incompleteArrayType(?))))
 		...</ currentSubObject >
 		//< incompleteLength > N':Nat => maxNat(sNat(N:Nat), N':Nat) </ incompleteLength >
 		[structural] 
 	
 	rule [init-next-struct-element]:
 		< currentSubObject >
-			next ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, structType(S:Id)))
-			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, structType(S:Id)))
+			next ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:Id))))
 		...</ currentSubObject >
 		< structs >...
 			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(T':Type, F':Id) :: ?), ?, ?)
@@ -783,8 +683,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	 
 	rule [init-next-struct-element-noname]:
 		< currentSubObject >
-			next ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, structType(S:Id)))
-			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, structType(S:Id)))
+			next ListItem(te(K:K . F:Id, T:Type)) ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+			=> ListItem(te(K:K . F':Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:Id))))
 		...</ currentSubObject >
 		< structs >...
 			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName) :: typedDeclaration(T':Type, F':Id) :: ?), ?, ?)
@@ -793,7 +693,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	rule [init-next-struct-element-done]:
 		< currentSubObject >
-			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, structType(S:Id)))
+			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:Id))))
 		...</ currentSubObject >
 		< structs >...
 			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id)), ?, ?)
@@ -801,7 +701,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 	rule [init-next-struct-element-done-noname]:
 		< currentSubObject >
-			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, structType(S:Id)))
+			next (ListItem(te(K:K . F:Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:Id))))
 		...</ currentSubObject >
 		< structs >...
 			S:Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:Id) :: typedDeclaration(?, #NoName)), ?, ?)
@@ -810,7 +710,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	rule [init-next-union-element-done]:
 		< currentSubObject >
-			next (ListItem(te(K:K . ?, T:Type)) => .) ListItem(te(K:K, unionType(S:Id)))
+			next (ListItem(te(K:K . ?, T:Type)) => .List) ListItem(te(K:K, t(?, unionType(S:Id))))
 		...</ currentSubObject >
 		[structural] 
 		
@@ -832,7 +732,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		//[metadata "computational=()"] // fixme computational to make sure all the other equations have applied first
 	rule
 		< k > finishCompoundInit(L:List) => 
-			. 
+			.K
 			// debug
 		...</ k >
 		< currentObject > (ListItem(te(K:K, T:Type)) => .) ...</ currentObject >
@@ -868,7 +768,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > buildDesignator(InFieldInit(F:Id, More:K)) 
 			=> buildDesignator(More:K)
 		...</ k >
-		< currentSubObject > block (. => ListItem(te(K:K . F:Id, T:Type))) ListItem('te(K:K,, KL:KLabel(S:Id))) ...</ currentSubObject >
+		< currentSubObject > block (.List => ListItem(te(K:K . F:Id, T:Type))) ListItem('te(K:K,, 't(?,, KL:KLabel(S:Id)))) ...</ currentSubObject >
 		< structs >... 
 			// S:Id |-> ? :: typedDeclaration(T:Type, F:Id) :: ? 
 			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
@@ -879,20 +779,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	rule
 		< k > buildDesignator(NextInit) => NextInit ...</ k >
-		< currentSubObject > (block => .) ...</ currentSubObject >
+		< currentSubObject > (block => .List) ...</ currentSubObject >
 		[structural] 
 		
 	rule [innerType-arrayType]:
-		innerType(arrayType(T:Type, ?)) => T:Type 
+		innerType(t(?, arrayType(T:Type, ?))) => T:Type 
 		[structural]
 	rule [innerType-incompleteArrayType]: 
-		innerType(incompleteArrayType(T:Type)) => T:Type 
+		innerType(t(?, incompleteArrayType(T:Type))) => T:Type 
 		[structural]
 	rule [innerType-qualifiedType]:
-		innerType(qualifiedType(T:Type, ?)) => innerType(T:Type) 
+		innerType(t(?, qualifiedType(T:Type, ?))) => innerType(T:Type) 
 		[structural]
 	rule [innerType-pointerType]:
-		innerType(pointerType(T:Type)) => T:Type 
+		innerType(t(?, pointerType(T:Type))) => T:Type 
 		[structural]
 
 	context buildDesignator(AtIndexInit(([HOLE] => reval([HOLE])), ?)) 
@@ -900,7 +800,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > buildDesignator(AtIndexInit(tv(N:Nat, ?), More:K)) 
 			=> buildDesignator(More:K)
 		...</ k >
-		< currentSubObject > block (. => ListItem(te(K:K[N:Nat], innerType(T:Type)))) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		< currentSubObject > block (.List => ListItem(te(K:K[N:Nat], innerType(T:Type)))) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		if hasArrayType(T:Type)
 		[structural] 
 	
@@ -916,15 +816,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op initializeSingleInit : K -> K 
 		
 	rule
-		< k > (. => typeof(K:K)) ~> initializeSingleInit(K:K) ...</ k >
+		< k > (.K => typeof(K:K)) ~> initializeSingleInit(K:K) ...</ k >
 		[structural] 
 	
 	// fixme want to exclude strings, but not normal arrays
 	rule
 		< k > T':Type ~> initializeSingleInit(K':K) => . ...</ k >
-		< currentSubObject > (. => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
+		< currentSubObject > (.List => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
-		< savedInitialization >... . => Computation(K:K := K':K) </ savedInitialization > 
+		< savedInitialization >... .K => Computation(K:K := K':K) </ savedInitialization > 
 		if (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		andBool notBool hasStructType(T':Type)
 		andBool notBool hasUnionType(T':Type)
@@ -935,52 +835,45 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op initFromAggregateRHS : K Type -> K 
 	rule
 		< k > T:Type ~> initializeSingleInit(K:K) => initFromAggregateRHS(K:K, T:Type) ...</ k >
-		// if hasAggregateType(T:Type) 		
 		if hasStructType(T:Type)
 		orBool hasUnionType(T:Type)
 		[structural] 
 		
 	op initFromStructRHS : K Type -> K 
 	rule
-		< k > initFromAggregateRHS(K:K, structType(S:Id)) 
-			=> initFromStructRHS(K:K, structType(S:Id)) 
+		< k > initFromAggregateRHS(K:K, t(S:Set, structType(S:Id)))
+			=> initFromStructRHS(K:K, t(S:Set, structType(S:Id)))
 		...</ k >
-		< currentSubObject > . => findStruct(structType(S:Id)) ...</ currentSubObject >
+		< currentSubObject > .List => findStruct(t(S:Set, structType(S:Id))) ...</ currentSubObject >
 		[structural] 
 		
 	op findStruct : Type -> ListItem 
 		
 	rule
-		< currentSubObject > findStruct(T:Type) (ListItem(te(?, T':Type)) => .) ...</ currentSubObject >
+		< currentSubObject > findStruct(T:Type) (ListItem(te(?, T':Type)) => .List) ...</ currentSubObject >
 		if T:Type =/=Bool T':Type
 		[structural] 
 		
 	// fixme unsafe, might have started to initialize other things
 	rule
-		< k > initFromStructRHS(K':K, structType(S:Id))
+		< k > initFromStructRHS(K':K, t(?, structType(S:Id)))
 			=> .K
 		...</ k >
-		< currentSubObject > findStruct(structType(S:Id)) ListItem(te(K:K, structType(S:Id))) => next ...</ currentSubObject >
+		< currentSubObject > findStruct(t(?, structType(S:Id))) ListItem(te(K:K, t(?, structType(S:Id)))) => next ...</ currentSubObject >
 		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
-		< savedInitialization >... . => Computation(K:K := K':K) </ savedInitialization > 
+		< savedInitialization >... .K => Computation(K:K := K':K) </ savedInitialization > 
 		[structural] 
 	
 	rule
 		< k > fillInitializer(SingleInit(K:K)) => initializeSingleInit(K:K) ...</ k >
 		if getKLabel(K:K) =/=Bool 'Constant
 		[structural] 
-	// other constants should have the constant label removed as they turn into values locally
-	// rule
-		// < k > fillInitializer(SingleInit(Constant(K:K))) => initializeSingleInit(Constant(K:K)) ...</ k >
-		// if getKLabel(K:K) =/=Bool 'StringLiteral
-		// andBool getKLabel(K:K) =/=Bool 'WStringLiteral
-		// [structural] 
 
 	rule [fillInit-string-array-eq]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) ==Bool Len:Nat
 		[structural] 
@@ -988,7 +881,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) ==Bool Len:Nat
 		[structural] 
@@ -996,7 +889,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
 		if hasCharType(T:Type)
 		andBool lengthString(S:String) <Int Len:Nat
 		[structural] 
@@ -1004,7 +897,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, arrayType(T:Type, Len:Nat))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:Nat)))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <Int Len:Nat
 		[structural] 
@@ -1012,19 +905,19 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
 		if hasCharType(T:Type)
 		[structural] 
 	rule [fillInit-wstring-wchar]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
-		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, incompleteArrayType(T:Type))) ...</ currentSubObject >
+		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
 		if hasWCharType(T:Type)
-		[structural] 	
+		[structural]
 	rule [fillInitAux-string-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), char))) 
+			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), t(.Set, char)))) 
 			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
@@ -1117,12 +1010,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	op recordFunctionTranslationUnitInformation : K Type K K -> K // name, type, context, where defined
 	rule
-		< k > recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, DefTu:K) => . ...</ k >
+		< k > recordFunctionTranslationUnitInformation(X:Id, T:Type, Tu:K, DefTu:K) => .K ...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</ functionTranslationUnits >
 		if hasFunctionType(T:Type)
 		[structural] 
 	rule
-		< k > recordFunctionTranslationUnitInformation(?, T:Type, ?, ?) => . ...</ k >
+		< k > recordFunctionTranslationUnitInformation(?, T:Type, ?, ?) => .K ...</ k >
 		if notBool hasFunctionType(T:Type)
 		[structural] 
 	
@@ -1190,27 +1083,27 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	// 
 	rule
-		< k > (. => resolveInternal(X:Id, Tu:K, K:K)) ~> resolve(Tu:K) ...</ k >
-		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .))) ...</ preLinkage >
-		< internalDefinitions >... Tu:K |-> Map((? (X:Id |-> K:K => .))) ...</ internalDefinitions >
-		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
+		< k > (.K => resolveInternal(X:Id, Tu:K, K:K)) ~> resolve(Tu:K) ...</ k >
+		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .Map))) ...</ preLinkage >
+		< internalDefinitions >... Tu:K |-> Map((? (X:Id |-> K:K => .Map))) ...</ internalDefinitions >
+		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .List) ?) ...</ declarationOrder >
 		[structural] 
 		
 	// static variable without an initializer
 	rule
-		< k > (. => resolveInternal(X:Id, Tu:K, declarationObject(unqualifyType(T:Type), Tu:K, initializer(zero(X:Id))))) ~> resolve(Tu:K) ...</ k >
-		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .))) ...</ preLinkage >
+		< k > (.K => resolveInternal(X:Id, Tu:K, declarationObject(unqualifyType(T:Type), Tu:K, initializer(zero(X:Id))))) ~> resolve(Tu:K) ...</ k >
+		< preLinkage >... Tu:K |-> Map((? (X:Id |-> internal => .Map))) ...</ preLinkage >
 		< internalDefinitions >... Tu:K |-> Map(Defs:Map) ...</ internalDefinitions >
-		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
-		< preTypes >... Tu:K |-> Map((? (X:Id |-> T:Type => .))) ...</ preTypes >
+		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .List) ?) ...</ declarationOrder >
+		< preTypes >... Tu:K |-> Map((? (X:Id |-> T:Type => .Map))) ...</ preTypes >
 		if notBool $hasMapping(Defs:Map, X:Id)
 		[structural] 
 		
 	rule
-		< k > (. => resolveExternal(X:Id, Tu:K, Units:Bag, K:K)) ~> resolve(Tu:K) ...</ k >
-		< preLinkage >... Tu:K |-> Map((? (X:Id |-> external => .))) ...</ preLinkage >
-		< externalDefinitions > ExtDefs:Map (X:Id |-> K:K => .) </ externalDefinitions >
-		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
+		< k > (.K => resolveExternal(X:Id, Tu:K, Units:Bag, K:K)) ~> resolve(Tu:K) ...</ k >
+		< preLinkage >... Tu:K |-> Map((? (X:Id |-> external => .Map))) ...</ preLinkage >
+		< externalDefinitions > ExtDefs:Map (X:Id |-> K:K => .Map) </ externalDefinitions >
+		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .List) ?) ...</ declarationOrder >
 		< translationUnits > Units:Bag </ translationUnits >
 		if notBool $hasMapping(ExtDefs:Map, X:Id)
 		[structural] 
@@ -1238,7 +1131,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		...</ k >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
 		< preLinkage >... Tu:K |-> Map((? (X:Id |-> external => .))) ...</ preLinkage >
-		< preTypes >... Tu:K |-> Map((? X:Id |-> prototype(T:Type))) ...</ preTypes >
+		< preTypes >... Tu:K |-> Map((? X:Id |-> t(S:Set, prototype(T:Type)))) ...</ preTypes >
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > Defs:Map </ externalDefinitions >
 		if hasFunctionType(T:Type)
@@ -1292,7 +1185,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	
 	rule [initialize-function]:
-		< k > initFunction(tv(Loc:Nat, pointerType(T:Type)), Fun:Value) => .K ...</ k >
+		< k > initFunction(tv(Loc:Nat, t(?, pointerType(T:Type))), Fun:Value) => .K ...</ k >
 		< functions > M:Map => M:Map[Fun:Value / Loc:Nat] </ functions >
 		if hasFunctionType(T:Type)
 		andBool notBool $hasMapping(M:Map, Loc:Nat)
@@ -1315,18 +1208,18 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 		< k > EnumDef(X:Id, L:List{C}) => fillEnums(EnumDef(X:Id, L:List{C})) ...</ k >
 		[structural] 
 	rule 
-		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, int)) ...</ k > 
+		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</ k > 
 		[structural]
 	rule
 		< k > fillEnums-aux(EnumDef(X:Id, EnumItem(E:Id) :: L:List{C}), K:K) 
-			=> declare(typedDeclaration(int, E:Id), SingleInit(K:K))
-			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), K:K + tv(1, int))
+			=> declare(typedDeclaration(t(.Set, int), E:Id), SingleInit(K:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), K:K + tv(1, t(.Set, int)))
 		...</ k >
 		[structural] 
 	rule
 		< k > fillEnums-aux(EnumDef(X:Id, EnumItemInit(E:Id, Exp:K) :: L:List{C}), ?)
-			=> declare(typedDeclaration(int, E:Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + tv(1, int))
+			=> declare(typedDeclaration(t(.Set, int), E:Id), SingleInit(Exp:K))
+			~> fillEnums-aux(EnumDef(X:Id, L:List{C}), Exp:K + tv(1, t(.Set, int)))
 		...</ k >
 		if Exp:K =/=Bool NothingExpression
 		[structural] 

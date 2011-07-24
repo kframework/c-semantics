@@ -18,10 +18,10 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 	*/
 
 	rule [if-then-else-true]:
-		< k > IfThenElse(tv(1, int), S:K, ?) => sequencePoint ~> S:K ...</ k >
+		< k > IfThenElse(tv(1, t(?, int)), S:K, ?) => sequencePoint ~> S:K ...</ k >
 		[structural]
 	rule [if-then-else-false]:
-		< k > IfThenElse(tv(0, int), ?, S:K) => sequencePoint ~> S:K ...</ k >
+		< k > IfThenElse(tv(0, t(?, int)), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
 	rule
 		< k > IfThenElse((V:Value => simplifyTruth(V:Value)), ?, ?) ...</ k >
@@ -95,7 +95,7 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		< k > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:Statement) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, int) fi), Post:K, S:Statement) ~> popLoop)
+			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:Statement) ~> popLoop)
 		</ k >
 		@latex("\\kBR")
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
@@ -142,10 +142,6 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		< gotoMap >... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</ gotoMap >
 		[structural] 
 		
-	//  fixme feature can't do this :(
-	//  mb context handleSwitch-aux(?, ?, ?, Map((? (genLabel(?, `[HOLE`]:K) |-> ?)))) 
-	//  mb context handleSwitch-aux(`[HOLE`]:K, ?, ?, ?) 
-	
 	//  match found in value and type, goto it
 	//  don't need to erase the rest of K since we're GOTOing
 	rule
@@ -155,7 +151,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
 	context tryCase(([HOLE] => reval([HOLE])), _, _)
 	rule
-		< k > (. => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:Value, Map((? ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .))))
+		< k > (.K => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:Value, Map((? ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >
 		if Exp:K =/=Bool l('Default)
 		[structural] 
@@ -399,7 +395,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 	*/
 	
 	rule [return-clean-local]:
-		< k > (. => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
+		< k > (.K => deleteBlock(Loc:Nat)) ~> Return(V:Value) ...</ k >
 		< localAddresses >... SetItem(Loc:Nat) => .Set ...</ localAddresses >	
 		[structural] 
 		
@@ -431,7 +427,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 			(? => C:Bag)
 		</ control >
 		@latex("\\kBR")
-		< gtypes >... Tu:K |-> Map((? (F:Id |-> functionType(T:Type, ?)))) ...</ gtypes >
+		< gtypes >... Tu:K |-> Map((? (F:Id |-> t(?, functionType(T:Type, ?))))) ...</ gtypes >
 		< callStack >
 			ListItem(
 				< stackFrame >
@@ -472,7 +468,7 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 		[structural] 
 		
 	rule [pop-block-free-memory]:
-		< k > (. => deleteBlock(Loc:Nat)) ~> popBlock ...</ k >
+		< k > (.K => deleteBlock(Loc:Nat)) ~> popBlock ...</ k >
 		< localAddresses >... (SetItem(Loc:Nat) => .Set) ...</ localAddresses >
 		[structural] 
 		
@@ -552,7 +548,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?, ?, ?, Post:K, ?) ...</ k >
 		[structural]
 	rule [continue-done]:
-		< k > (Continue => .) ~> loopMarked ~> L:KLabel(?) ...</ k >
+		< k > (Continue => .K) ~> loopMarked ~> L:KLabel(?) ...</ k >
 		if L:KLabel =/=Bool 'For
 		[structural]
 		

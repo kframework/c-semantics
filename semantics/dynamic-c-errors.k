@@ -26,39 +26,6 @@ kmod DYNAMIC-C-ERRORS is
 		+String Msg:String
 		[structural]
 		
-	// op printFunction : Id -> String
-	// rule printFunction(Identifier(F:String)) => 
-		// "Function: " +String F:String +String "\n"
-		// [structural]
-		
-	// op printLoc : K -> String
-	// rule printLoc(CabsLoc(File:String, LineNo:Int, ?, ?)) => 
-		// "File: " +String File:String +String "\n"
-		// +String "Line: " +String Int2String(LineNo:Int) +String "\n"
-		// //+String "ByteOffset: " +String Int2String(Offset:Int) +String "\n"		
-		// [structural]
-	// rule printLoc(UnknownCabsLoc) => 
-		// "File: Unknown\n"
-		// +String "Line: Unknown\n"
-		// +String "ByteOffset: Unknown\n"
-		// [structural]
-		
-		
-	// rule 
-		// < T >... 
-			// < k > cast(T:Type, emptyValue) ...</ k > 
-			// // <currentFunction> F:Id </currentFunction>
-			// // <currentProgramLoc> Loc:K </currentProgramLoc>
-		// ...</ T >
-		// => 
-		// .Bag
-		// // <errorCell> 
-			// // ""
-			// // // Error("00001", F:Id, Loc:K, "Trying to cast void to some other type.  This is probably caused by failing to return a value from a function that is supposed to return a value.")
-		// // </errorCell>		
-		// if T:Type =/=Bool emptyValue
-		// [structural]
-		
 	op halted-k : -> CellLabel 
 	op halted-T : -> CellLabel
 	op halt_ : Bag -> Bag
@@ -84,23 +51,10 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00001]:
-		< k => finalComputation > cast(T:Type, emptyValue) ...</ k => finalComputation >
+		< k => finalComputation > cast(t(?, T:SimpleType), emptyValue) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00001", "Casting void to some other type.") </ errorCell >)
-		if T:Type =/=Bool void
+		if T:SimpleType =/=Bool void
 		[structural]
-		
-	// rule [err00002]:
-		// < k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
-		// < mem >... Block:Nat |-> memblock(Size:Nat, ?) ...</ mem >
-		// (.Bag => < errorCell > Error("00002", "Reading outside the bounds of an object.") </ errorCell >)
-		// if Offset:Nat >=Nat Size:Nat
-		// [structural]
-		
-	// rule [err00003]:
-		// < k => finalComputation > extractByteFromMem(Loc:Nat) ...</ k => finalComputation >
-		// < locsWrittenTo >... BagItem(Loc:Nat) ...</ locsWrittenTo >
-		// (.Bag => < errorCell > Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </ errorCell >)
-		// [structural]
 		
 	rule [err00002]:
 		< k => finalComputation > assert(false, 2) ...</ k => finalComputation >
@@ -110,12 +64,6 @@ kmod DYNAMIC-C-ERRORS is
 		< k => finalComputation > assert(false, 3) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </ errorCell >)
 		[structural]
-	
-	// rule [err00004]:
-		// < k => finalComputation > extractByteFromMem(Loc:Int) ...</ k => finalComputation >
-		// (.Bag => < errorCell > Error("00004", "Trying to read memory at a location that is not based on a pointer.") </ errorCell >)
-		// if Loc:Int >=Int 0 // if it can compare to 0, then it is not a symbolic location
-		// [structural]
 		
 	rule [err00005]:
 		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat ?) ...</ k => finalComputation >
@@ -138,7 +86,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00008]:
-		< k => finalComputation > concretize(pointerType(?), dataList((piece(unknown(Len:Nat), Len:Nat),, ?))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(t(?, pointerType(?)), dataList((piece(unknown(Len:Nat), Len:Nat),, ?))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00008", "Reading uninitialized memory.") </ errorCell >)
 		[structural]
 	
@@ -248,13 +196,13 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(functionType(T:Type, ?), ?, ?, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(?, functionType(T:Type, ?)), ?, ?, ?) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
 		if T:Type =/=Bool int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(functionType(int, (typedDeclaration(T:Type, ?) :: ?:List{Type})), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(T:Type, ?) :: ?:List{Type}))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		if T:Type =/=Bool int andBool T:Type =/=Bool void
@@ -262,46 +210,46 @@ kmod DYNAMIC-C-ERRORS is
 		
 	op isArgvType : Type -> Bool
 	
-	rule isArgvType(T:Type) => false
+	rule isArgvType(t(?, T:SimpleType)) => false
 		if notBool (
-			getKLabel(T:Type) ==Bool 'incompleteArrayType 
-			orBool getKLabel(T:Type) ==Bool 'incompleteArrayType
+			getKLabel(T:SimpleType) ==Bool 'incompleteArrayType 
+			orBool getKLabel(T:SimpleType) ==Bool 'incompleteArrayType
 		)
 		[structural]
 		
-	rule isArgvType(incompleteArrayType(T:Type)) => false
-		if notBool getKLabel(T:Type) ==Bool 'pointerType
+	rule isArgvType(t(?, incompleteArrayType(t(?, T:SimpleType)))) => false
+		if notBool getKLabel(T:SimpleType) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(incompleteArrayType(pointerType(T:Type))) => false
-		if T:Type =/=Bool char
+	rule isArgvType(t(?, incompleteArrayType(t(?, pointerType(t(?, T:SimpleType)))))) => false
+		if T:SimpleType =/=Bool char
 		[structural]
 		
-	rule isArgvType(pointerType(T:Type)) => false
-		if notBool getKLabel(T:Type) ==Bool 'pointerType
+	rule isArgvType(t(?, pointerType(t(?, T:SimpleType)))) => false
+		if notBool getKLabel(T:SimpleType) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(pointerType(pointerType(T:Type))) => false
-		if T:Type =/=Bool char
+	rule isArgvType(t(?, pointerType(t(?, pointerType(t(?, T:SimpleType)))))) => false
+		if T:SimpleType =/=Bool char
 		[structural]
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(functionType(int, (typedDeclaration(int, ?) :: typedDeclaration(T:Type, ?))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?) :: typedDeclaration(T:Type, ?)))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		if notBool isArgvType(T:Type)
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(functionType(int, (?:Type :: ?:Type :: ?:Type :: ?:List{Type})), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (?:Type :: ?:Type :: ?:Type :: ?:List{Type}))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(functionType(int, (typedDeclaration(T:Type, ?))), ?, ?, ?)
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?)))), ?, ?, ?)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
-		if T:Type =/=Bool void
+		if T:SimpleType =/=Bool void
 		[structural]
 		
 	rule [err00030]:
@@ -373,7 +321,6 @@ kmod DYNAMIC-C-ERRORS is
 		and Start2 = Loc':Nat
 		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational=()"]		
-		
-	//if T:Type =/=Bool emptyValue // moduleError `[ ERROR `] Error while wrapping Syntax lists into K `( module LISTS-TO-WRAPPERS `) `[ ENDERROR `] \n To reproduce load k-prelude and then the generated module. \n \n ---K-MAUDE-GENERATED-OUTPUT-BEGIN---
+
 
 endkm

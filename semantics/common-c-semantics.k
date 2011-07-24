@@ -136,38 +136,46 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op assert : Bool Nat -> K // check, error#
 	
+	sort SimpleType 
+	subsort SimpleType < K
 	
 	// Basic types
-	ops bool : -> Type 
-	ops void bool char short-int int long-int long-long-int : -> Type 
-	ops float double long-double : -> Type 
-	ops signed-char unsigned-char : -> Type 
-	ops unsigned-short-int unsigned-int unsigned-long-int unsigned-long-long-int : -> Type 
-	op no-type : -> Type
+	ops bool : -> SimpleType 
+	ops void bool char short-int int long-int long-long-int : -> SimpleType 
+	ops float double long-double : -> SimpleType 
+	ops signed-char unsigned-char : -> SimpleType 
+	ops unsigned-short-int unsigned-int unsigned-long-int unsigned-long-long-int : -> SimpleType 
+	op no-type : -> SimpleType
+	
+	op t : Set SimpleType -> Type
+	/*
+	t(S', pointerType(t(S, T:Type)))
+	pointerType(T:Type)
+	S' pointerType(S T:Type)
+	tv(5, T:Type)
+	*/
 	
 	op isBasicType : K -> Bool
 	
 	
 	// Composite types
-	op enumType : Id -> Type [ctor] 
-	op arrayType : Type Nat -> Type [ctor] 
-	op incompleteArrayType : Type -> Type [ctor] 
-	op flexibleArrayType : Type -> Type [ctor] 
-	op bitfieldType : Type Nat -> Type [ctor] 
-	op functionType : Type List{Type} -> Type [ctor] 
-	op pointerType : Type -> Type [ctor] 
-	op structType : Id -> Type [ctor] 
-	op unionType : Id -> Type [ctor] 
-	op qualifiedType : Type K -> Type [ctor]
-	// op t : Type Set -> Type
-	// tv(5, t(pointerType(t(int)), const))
+	op enumType : Id -> SimpleType [ctor] 
+	op arrayType : Type Nat -> SimpleType [ctor] 
+	op incompleteArrayType : Type -> SimpleType [ctor] 
+	op flexibleArrayType : Type -> SimpleType [ctor] 
+	op bitfieldType : Type Nat -> SimpleType [ctor] 
+	op functionType : Type List{Type} -> SimpleType [ctor] 
+	op pointerType : Type -> SimpleType [ctor] 
+	op structType : Id -> SimpleType [ctor] 
+	op unionType : Id -> SimpleType [ctor] 
+	op qualifiedType : Type K -> SimpleType [ctor]
 	
 	op unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
 	
 	// these aren't real types, but are values that can appear in type contexts
-	op prototype : Type -> Type 
-	op typedefType : Id Type -> Type 
-	op variadic : -> Type 
+	op prototype : Type -> SimpleType 
+	op typedefType : Id Type -> SimpleType 
+	op variadic : -> SimpleType 
 
 	op dataList : List{K} -> KResult 
 	
@@ -278,51 +286,6 @@ endkm
 
 kmod COMMON-C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
-
-	// op IdentifierSet : List{K} -> Set 
-	// rule IdentifierSet((S:String,, L:List{K})) => SetItem(Identifier(S:String)) IdentifierSet(L:List{K}) [structural]
-	// op builtinIdentifiers : -> Set [memo] 
-	
-	// // fixme bug why can't i use .List{K} here?
-	// rule builtinIdentifiers => IdentifierSet((
-		// "abort"
-		// ,, "asin"
-		// ,, "atan"
-		// ,, "atan2"
-		// ,, "calloc"
-		// ,, "cos"
-		// ,, "__debug"
-		// ,, "exit"
-		// ,, "exp"
-		// ,, "floor"
-		// ,, "fmod"
-		// ,, "free"
-		// ,, "fslCloseFile"
-		// ,, "fslFGetC"
-		// ,, "fslOpenFile"
-		// ,, "fslPutc"
-		// ,, "getchar"
-		// ,, "log"
-		// ,, "longjmp"
-		// ,, "malloc"
-		// ,, "printf"
-		// ,, "putchar"
-		// ,, "rand"
-		// ,, "setjmp"
-		// ,, "sin"
-		// ,, "sqrt"
-		// ,, "tan"
-		// // <threads.h>
-		// ,, "thrd_create"
-		// ,, "thrd_current"
-		// ,, "thrd_detach"
-		// ,, "thrd_join"
-		// ,, "__test_and_set"
-		// ,, "__va_inc"
-		// ,, "__va_start"
-		// ,, "__va_end"
-		// ,, "__va_copy"
-	// )) [structural]
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
@@ -335,55 +298,52 @@ kmod COMMON-C-SETTINGS is
 
 	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	
-	rule [numBytes-bool]: numBytes(bool) => 1 [structural]
-	rule [numBytes-signed-char]: numBytes(signed-char) => 1 [structural]
-	rule [numBytes-short-int]: numBytes(short-int) => 2 [structural]
-	rule [numBytes-int]: numBytes(int) => 4 [structural]
-	rule [numBytes-long-int]: numBytes(long-int) => 4 [structural]
-	rule [numBytes-long-long-int]: numBytes(long-long-int) => 8 [structural]
+	rule [numBytes-bool]: numBytes(t(?, bool)) => 1 [structural]
+	rule [numBytes-signed-char]: numBytes(t(?, signed-char)) => 1 [structural]
+	rule [numBytes-short-int]: numBytes(t(?, short-int)) => 2 [structural]
+	rule [numBytes-int]: numBytes(t(?, int)) => 4 [structural]
+	rule [numBytes-long-int]: numBytes(t(?, long-int)) => 4 [structural]
+	rule [numBytes-long-long-int]: numBytes(t(?, long-long-int)) => 8 [structural]
 	
-	rule [numBytes-float]: numBytes(float) => 4 [structural]
-	rule [numBytes-double]: numBytes(double) => 8 [structural]
-	rule [numBytes-long-double]: numBytes(long-double) => 16 [structural]
+	rule [numBytes-float]: numBytes(t(?, float)) => 4 [structural]
+	rule [numBytes-double]: numBytes(t(?, double)) => 8 [structural]
+	rule [numBytes-long-double]: numBytes(t(?, long-double)) => 16 [structural]
 	
-	rule [numBytes-enum]: numBytes(enumType(X:Id)) => numBytes(int) [structural]
+	rule [numBytes-enum]: numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int)) [structural]
 	
 	op cfg:sizeut : -> Type 
-	rule [cfg-size-t]: cfg:sizeut => unsigned-int [structural]
+	rule [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int) [structural]
 	
 	op cfg:wcharut : -> Type
-	rule [cfg-wchar-t]: cfg:wcharut => int [structural]
+	rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int) [structural]
 	
 	op cfg:largestUnsigned : -> Type 
-	rule [cfg-largestUnsigned]: cfg:largestUnsigned => unsigned-long-long-int [structural]
+	rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
 
 	op cfg:ptrsize : -> Nat 
 	rule [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
 	
 	op cfg:ptrdiffut : -> Type 
-	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => int [structural]
+	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
 	
-	rule [min]: min(enumType(?)) => min(int) [structural]
-	rule [max]: max(enumType(?)) => max(int) [structural]
+	rule [min]: min(t(S:Set, enumType(?))) => min(t(S:Set, int)) [structural]
+	rule [max]: max(t(S:Set, enumType(?))) => max(t(S:Set, int)) [structural]
 	
 	op rank : Type -> Int 
 		
-	rule rank(bool) => 0 [structural]
-	// rule rank(char) => 1 [structural] // not needed if char is sugar
-	rule rank(signed-char) => 1 [structural]
-	rule rank(unsigned-char) => 1 [structural]
-	rule rank(short-int) => 2 [structural]
-	rule rank(unsigned-short-int) => 2 [structural]
-	rule rank(int) => 3 [structural]
-	rule rank(unsigned-int) => 3 [structural]
-	rule rank(long-int) => 4 [structural]
-	rule rank(unsigned-long-int) => 4 [structural]
-	rule rank(long-long-int) => 5 [structural]
-	rule rank(unsigned-long-long-int) => 5 [structural]
+	rule rank(t(?, bool)) => 0 [structural]
+	rule rank(t(?, signed-char)) => 1 [structural]
+	rule rank(t(?, unsigned-char)) => 1 [structural]
+	rule rank(t(?, short-int)) => 2 [structural]
+	rule rank(t(?, unsigned-short-int)) => 2 [structural]
+	rule rank(t(?, int)) => 3 [structural]
+	rule rank(t(?, unsigned-int)) => 3 [structural]
+	rule rank(t(?, long-int)) => 4 [structural]
+	rule rank(t(?, unsigned-long-int)) => 4 [structural]
+	rule rank(t(?, long-long-int)) => 5 [structural]
+	rule rank(t(?, unsigned-long-long-int)) => 5 [structural]
 	
-	// rule rank(bignum) => 100 [structural] // used for internal calculation.  should be bigger than all other ranks
-	
-	rule rank(enumType(?)) => rank(int) [structural]
+	rule rank(t(S:Set, enumType(?))) => rank(t(S:Set, int)) [structural]
 	//C99 6.3.1.1
 	
 	/*
@@ -422,11 +382,6 @@ kmod COMMON-C-SEMANTICS-MISC is
 		=> absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
 		if N:Nat +Int I:Int >=Int 0 
 		[structural]
-		
-	// rule (N:Nat +Nat sym(M:Nat)) -Int I:Int
-		// => absInt(N:Nat -Int I:Int) +Nat sym(M:Nat) 
-		// if N:Nat -Int I:Int >=Int 0 
-		// [structural]
 
 	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 
