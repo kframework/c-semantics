@@ -317,6 +317,9 @@ kmod COMMON-C-SETTINGS is
 	op cfg:wcharut : -> Type
 	rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int) [structural]
 	
+	op simpleType : Type -> SimpleType
+	rule simpleType(t(?, T:SimpleType)) => T:SimpleType [structural]
+	
 	op cfg:largestUnsigned : -> Type 
 	rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
 

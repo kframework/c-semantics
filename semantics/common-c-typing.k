@@ -657,7 +657,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural] 
 
 	rule [type-call-func]:
-		< type > Call(functionType(T:Type, ?), L:List{C}) => T:Type ...</ type >
+		< type > Call(t(?, functionType(T:Type, ?)), L:List{C}) => T:Type ...</ type >
 		[structural]
 		 		
 	rule [type-struct-dot]:
@@ -939,10 +939,10 @@ kmod COMMON-C-TYPING is
 		[structural]
 		
 	rule [hasWCharType-wchar]: hasWCharType(t(?, T:SimpleType)) => true 
-		if T:SimpleType ==Bool cfg:wcharut 
+		if T:SimpleType ==Bool simpleType(cfg:wcharut)
 		[structural]
 	rule [hasWCharType-other]: hasWCharType(t(?, T:SimpleType)) => false
-		if T:SimpleType =/=Bool cfg:wcharut
+		if T:SimpleType =/=Bool simpleType(cfg:wcharut)
 		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 	rule [hasWCharType-qualified]: hasWCharType(t(?, qualifiedType(T:Type, ?))) => hasWCharType(T:Type) [structural]
