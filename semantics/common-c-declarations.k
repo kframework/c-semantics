@@ -368,7 +368,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// extern functions are no different than functions
 	// fixme dangerous if someone marks it as static and extern.  can't tell
-	rule qualifiedType(T:Type, Extern) => T:Type
+	rule t(?, qualifiedType(T:Type, Extern)) => T:Type
 		if hasFunctionType(T:Type) 
 		[structural]
 	
