@@ -795,7 +795,7 @@ kmod COMMON-C-TYPING is
 	rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
-	rule [typeCompatible-prototypes]: isTypeCompatible(prototype(T:Type), prototype(T':Type)) 
+	rule [typeCompatible-prototypes]: isTypeCompatible(t(?, prototype(T:Type)), t(?, prototype(T':Type))) 
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
 
