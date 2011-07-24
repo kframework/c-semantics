@@ -5,7 +5,6 @@ endkm
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
-
 	rule sym(N:Nat) +Nat M:Nat <Nat sym(N:Nat) +Nat M':Nat => true
 		if M:Nat <Nat M':Nat
 		[structural]

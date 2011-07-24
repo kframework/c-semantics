@@ -91,8 +91,22 @@ sub performTest {
 	my $kccCompileOutput = `$kcc -o $kccFilename $allFiles 2>&1`;
 	my $kccCompileRetval = $?;
 	my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
+	
+	open(TEST, "<$testName") or return reportFailure($testName, $timer, "Failure---could not open $testName for reading.");
+	my $lookForError=0;
+	while(my $line = <TEST>){
+		chomp($line);
+		if ($line =~ /kcc-assert-error\((\d+)\)/) {
+			$lookForError = $1;
+			last;
+		}
+	}
+
 	if ($kccCompileRetval) {
 		if ($shouldFail) {
+			if ($lookForError) {
+				return reportFailure($testName, $timer, "Failure---Was expecting particular runtime message but failed to compile");
+			}
 			return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
 		} else {
 			return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$encodedOut");
@@ -116,6 +130,13 @@ sub performTest {
 			my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
 			return reportFailure($testName, $timer, "Failure---Program seemed to run to completion\n$encodedOut\n");
 		} else {
+			if ($lookForError) {
+				if ($kccRunOutput =~ /^Error: $lookForError$/m) {
+					return reportSuccess($testName, $timer, "Success---Core dumped; Expected error $lookForError found");
+				} else {
+					return reportFailure($testName, $timer, "Failure---Program failed, but didn't give expected error message $lookForError");
+				}
+			}
 			return reportSuccess($testName, $timer, "Success---Core dumped");
 		}
 	}

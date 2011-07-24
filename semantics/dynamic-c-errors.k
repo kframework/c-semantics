@@ -25,6 +25,17 @@ kmod DYNAMIC-C-ERRORS is
 		+String "Description: " 
 		+String Msg:String
 		[structural]
+	op ICE : String String -> K
+	rule ICE(Name:String, Msg:String) =>
+		"Error: "
+		+String Name:String
+		+String "\n"
+		+String "Description: " 
+		+String Msg:String
+		+String "\n"
+		+String "NOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
+		[structural]
+	
 		
 	op halted-k : -> CellLabel 
 	op halted-T : -> CellLabel
@@ -52,7 +63,7 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00001]:
 		< k => finalComputation > cast(t(?, T:SimpleType), emptyValue) ...</ k => finalComputation >
-		(.Bag => < errorCell > Error("00001", "Casting void to some other type.") </ errorCell >)
+		(.Bag => < errorCell > Error("00001", "Casting empty value to type other than void.") </ errorCell >)
 		if T:SimpleType =/=Bool void
 		[structural]
 		
@@ -68,7 +79,7 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00005]:
 		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat ?) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
-		(.Bag => < errorCell > Error("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
+		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
 		if notBool $hasMapping(M:Map, Block:Nat)
 		[structural]
 	
@@ -195,17 +206,23 @@ kmod DYNAMIC-C-ERRORS is
 		andBool notBool (I:Int <=Int (2 ^Nat absInt(numBits(T:Type))))
 		[structural]
 		
+	rule [err00024]:
+		< k => finalComputation > arithInterpret(?, I:Int &Int I':Int) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00024", "Bitwise & used on a symbolic number (address) or float.") </ errorCell >)
+		if notBool isConcreteNumber(I':Int)
+		[structural]
+		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(?, functionType(T:Type, ?)), ?, ?, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?)), ?, ?, ?) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
-		if T:Type =/=Bool int
+		if T:SimpleType =/=Bool int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(T:Type, ?) :: ?:List{Type}))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?) :: ?:List{Type}))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
-		if T:Type =/=Bool int andBool T:Type =/=Bool void
+		if T:SimpleType =/=Bool int andBool T:SimpleType =/=Bool void
 		[structural]
 		
 	op isArgvType : Type -> Bool
@@ -275,13 +292,19 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:Nat) +Nat ?, T:Type) > tv(sym(Base':Nat) +Nat ?, T:Type)
+			tv(sym(Base:Nat) +Nat ?, T:Type) >= tv(sym(Base':Nat) +Nat ?, T:Type)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
 		if Base:Nat =/=Bool Base':Nat
 		[structural]
 		
-
+	rule [err00034]:
+		< k => finalComputation > 
+			cast(t(?, T:SimpleType), skipval)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00034", "Casting void type to non-void type.") </ errorCell >)
+		if (T:SimpleType =/=Bool void)
+		[structural]
 
 	op datarace : Nat Nat Nat Nat -> K 
 

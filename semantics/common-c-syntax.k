@@ -407,7 +407,7 @@ and statement =
 	| SEQUENCE of statement * statement * cabsloc
 */
 	op Nop : -> PureStatement
-	op Computation : K -> PureStatement [metadata "strict=()"]
+	op Computation : K -> PureStatement
 	context Computation(([HOLE] => reval([HOLE]))) // not sure why i had this commented out before...
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
