@@ -160,10 +160,10 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural]
 
 	rule
-		promote(bitfieldType(t(S:Set, T:SimpleType), Len:Nat)) => t(.Set, int)
+		promote(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat))) => t(.Set, int)
 		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
-		andBool min(t(.Set, int)) <=Int min(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
-		andBool max(t(.Set, int)) >=Int max(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat)))
+		andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat)))
 		[structural] 
 	// fixme unclear what 6.3.1.1:3 means
 
@@ -177,103 +177,112 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural]
 
 	rule
-		promote(bitfieldType(t(S:Set, T:SimpleType), Len:Nat)) => t(.Set, unsigned-int)
+		promote(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat))) => t(.Set, unsigned-int)
 		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
 		andBool notBool (
-			min(t(.Set, int)) <=Int min(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
-			andBool max(t(.Set, int)) >=Int max(t(.Set, bitfieldType(t(S:Set, T:SimpleType), Len:Nat)))
+			min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat)))
+			andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat)))
 		)
 		[structural]		
 		
-	// // Then the following rules are applied to the promoted operands:
+	// Then the following rules are applied to the promoted operands:
 	
-	// // If both operands have the same type, then no further conversion is needed
-	// rule [arithConversion-int-done]: usualArithmeticConversion-aux(T:Type, T:Type) => T:Type [structural]
+	// If both operands have the same type, then no further conversion is needed
+	rule [arithConversion-int-done]: usualArithmeticConversion-aux(T:Type, T:Type) => T:Type [structural]
 		
-	// rule [maxType-left]:
-		// maxType(T:Type, T':Type) => T:Type
-		// if rank(T:Type) >=Int rank(T':Type) 
-		// [structural]
-	// rule [maxType-right]:
-		// maxType(T:Type, T':Type) => T':Type
-		// if rank(T':Type) >=Int rank(T:Type) 
-		// [structural]
+	rule [maxType-left]:
+		maxType(T:Type, T':Type) => T:Type
+		if rank(T:Type) >=Int rank(T':Type) 
+		[structural]
+	rule [maxType-right]:
+		maxType(T:Type, T':Type) => T':Type
+		if rank(T':Type) >=Int rank(T:Type) 
+		[structural]
 
 	op hasSameSignedness : Type Type -> Bool [memo]
-	// rule [hasSameSignedness]: 
-		// hasSameSignedness(T:Type, T':Type)
-			// => (hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
-		// orBool (hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
-		// [structural]
+	rule [hasSameSignedness]: 
+		hasSameSignedness(T:Type, T':Type)
+			=> (hasSignedIntegerType(T:Type) andBool hasSignedIntegerType(T':Type))
+		orBool (hasUnsignedIntegerType(T:Type) andBool hasUnsignedIntegerType(T':Type))
+		[structural]
 		
-	// // Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
-	// rule [arithmeticConversion-same-signedness]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => maxType(T:Type, T':Type)
-		// if T:Type =/=Bool T':Type
-		// andBool hasSameSignedness(T:Type, T':Type)
-		// [structural]
+	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
+	rule [arithmeticConversion-same-signedness]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => maxType(T:Type, T':Type)
+		if T:Type =/=Bool T':Type
+		andBool hasSameSignedness(T:Type, T':Type)
+		[structural]
 	
 		
-	// // Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
-	// rule [arithmeticConversion-unsigned-ge-right]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
-		// if T:Type =/=Bool T':Type
-		// andBool hasSignedIntegerType(T:Type) 
-		// andBool hasUnsignedIntegerType(T':Type) 
-		// andBool rank(T':Type) >=Int rank(T:Type)
-		// [structural] 
-	// rule [arithmeticConversion-unsigned-ge-left]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
-		// if T:Type =/=Bool T':Type
-		// andBool hasUnsignedIntegerType(T:Type) 
-		// andBool hasSignedIntegerType(T':Type) 
-		// andBool rank(T:Type) >=Int rank(T':Type)
-		// [structural] 
+	// Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
+	rule [arithmeticConversion-unsigned-ge-right]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
+		if T:Type =/=Bool T':Type
+		andBool hasSignedIntegerType(T:Type) 
+		andBool hasUnsignedIntegerType(T':Type) 
+		andBool rank(T':Type) >=Int rank(T:Type)
+		[structural] 
+	rule [arithmeticConversion-unsigned-ge-left]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
+		if T:Type =/=Bool T':Type
+		andBool hasUnsignedIntegerType(T:Type) 
+		andBool hasSignedIntegerType(T':Type) 
+		andBool rank(T:Type) >=Int rank(T':Type)
+		[structural] 
 		
-	// // Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
-	// rule [arithmeticConversion-signed-big-left]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
-		// if T:Type =/=Bool T':Type
-		// andBool hasSignedIntegerType(T:Type) 
-		// andBool hasUnsignedIntegerType(T':Type) 
-		// andBool rank(T':Type) <Int rank(T:Type)
-		// andBool min(T:Type) <=Int min(T':Type)
-		// andBool max(T:Type) >=Int max(T':Type)
-		// [structural] 
-	// rule [arithmeticConversion-signed-big-right]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
-		// if T:Type =/=Bool T':Type
-		// andBool hasUnsignedIntegerType(T:Type) 
-		// andBool hasSignedIntegerType(T':Type) 
-		// andBool rank(T:Type) <Int rank(T':Type)
-		// andBool min(T':Type) <=Int min(T:Type)
-		// andBool max(T':Type) >=Int max(T:Type)
-		// [structural] 
+	// Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
+	rule [arithmeticConversion-signed-big-left]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => T:Type
+		if T:Type =/=Bool T':Type
+		andBool hasSignedIntegerType(T:Type) 
+		andBool hasUnsignedIntegerType(T':Type) 
+		andBool rank(T':Type) <Int rank(T:Type)
+		andBool min(T:Type) <=Int min(T':Type)
+		andBool max(T:Type) >=Int max(T':Type)
+		[structural] 
+	rule [arithmeticConversion-signed-big-right]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => T':Type
+		if T:Type =/=Bool T':Type
+		andBool hasUnsignedIntegerType(T:Type) 
+		andBool hasSignedIntegerType(T':Type) 
+		andBool rank(T:Type) <Int rank(T':Type)
+		andBool min(T':Type) <=Int min(T:Type)
+		andBool max(T':Type) >=Int max(T:Type)
+		[structural] 
 		
-	// // Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
-	// rule [arithmeticConversion-to-unsigned-left]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T:Type)
-		// if T:Type =/=Bool T':Type
-		// andBool hasSignedIntegerType(T:Type) 
-		// andBool hasUnsignedIntegerType(T':Type) 
-		// andBool rank(T':Type) <Int rank(T:Type)
-		// andBool (min(T:Type) >Int min(T':Type) orBool max(T:Type) <Int max(T':Type))
-		// [structural] 
-	// rule [arithmeticConversion-to-unsigned-right]:
-		// usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T':Type)
-		// if T:Type =/=Bool T':Type
-		// andBool hasUnsignedIntegerType(T:Type) 
-		// andBool hasSignedIntegerType(T':Type) 
-		// andBool rank(T:Type) <Int rank(T':Type)
-		// andBool (min(T':Type) >Int min(T:Type) orBool max(T':Type) <Int max(T:Type))
-		// [structural] 
+	// Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
+	rule [arithmeticConversion-to-unsigned-left]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T:Type)
+		if T:Type =/=Bool T':Type
+		andBool hasSignedIntegerType(T:Type) 
+		andBool hasUnsignedIntegerType(T':Type) 
+		andBool rank(T':Type) <Int rank(T:Type)
+		andBool (min(T:Type) >Int min(T':Type) orBool max(T:Type) <Int max(T':Type))
+		[structural] 
+	rule [arithmeticConversion-to-unsigned-right]:
+		usualArithmeticConversion-aux(T:Type, T':Type) => correspondingUnsignedType(T':Type)
+		if T:Type =/=Bool T':Type
+		andBool hasUnsignedIntegerType(T:Type) 
+		andBool hasSignedIntegerType(T':Type) 
+		andBool rank(T:Type) <Int rank(T':Type)
+		andBool (min(T':Type) >Int min(T:Type) orBool max(T':Type) <Int max(T:Type))
+		[structural] 
 		
 		
 	op correspondingUnsignedType : Type -> Type 
 	
-	// rule [correspondingUnsigned-int]: correspondingUnsignedType(int) => unsigned-int [structural]
-	// rule [correspondingUnsigned-long-int]: correspondingUnsignedType(long-int) => unsigned-long-int [structural]
-	// rule [correspondingUnsigned-long-long-int]: correspondingUnsignedType(long-long-int) => unsigned-long-long-int [structural]
+	rule [correspondingUnsigned-int]: 
+		correspondingUnsignedType(t(S:Set, int)) 
+			=> t(S:Set, unsigned-int)
+		[structural]
+	rule [correspondingUnsigned-long-int]: 
+		correspondingUnsignedType(t(S:Set, long-int))
+			=> t(S:Set, unsigned-long-int)
+		[structural]
+	rule [correspondingUnsigned-long-long-int]: 
+		correspondingUnsignedType(t(S:Set, long-long-int))
+			=> t(S:Set, unsigned-long-long-int)
+		[structural]
 	
 endkm
 
@@ -282,7 +291,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		
 	//- switch assumes casts can happen anywhere
 	rule 
-		cast(void, ?) => skipval
+		cast(t(?, void), ?) => skipval
 		[structural] 
 		
 	rule
@@ -372,160 +381,164 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		if I:Int >Int max(t(S:Set, unsigned-short-int))
 		andBool hasIntegerType(T':Type)
 		[structural]
-	// rule [cast-uint-of-big]:
-		// cast(unsigned-int, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(unsigned-int) +Int 1), unsigned-int)
-		// if I:Int >Int max(unsigned-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-ulong-of-big]:
-		// cast(unsigned-long-int, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(unsigned-long-int) +Int 1), unsigned-long-int)
-		// if I:Int >Int max(unsigned-long-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-ullong-of-big]:
-		// cast(unsigned-long-long-int, tv(I:Int, T':Type)) 
-			// => tv(I:Int %Int (max(unsigned-long-long-int) +Int 1), unsigned-long-long-int)
-		// if I:Int >Int max(unsigned-long-long-int)
-		// andBool hasIntegerType(T':Type)
-		// [structural]
+	rule [cast-uint-of-big]:
+		cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1), t(S:Set, unsigned-int))
+		if I:Int >Int max(t(S:Set, unsigned-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ulong-of-big]:
+		cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1), t(S:Set, unsigned-long-int))
+		if I:Int >Int max(t(S:Set, unsigned-long-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-ullong-of-big]:
+		cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+			=> tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1), t(S:Set, unsigned-long-long-int))
+		if I:Int >Int max(t(S:Set, unsigned-long-long-int))
+		andBool hasIntegerType(T':Type)
+		[structural]
 
 	
-	// //c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
-	// // choice
-	// rule [cast-sbitfield-of-huge]:
-		// cast(bitfieldType(T:Type, Len:Nat), tv(I:Int, T':Type)) 
-			// => cast(bitfieldType(T:Type, Len:Nat), tv(I:Int %Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat)))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(bitfieldType(T:Type, Len:Nat))))
-		// andBool hasIntegerType(T':Type)
-		// andBool hasSignedIntegerType(T:Type)
-		// [structural]
-	// rule [cast-schar-of-huge]:
-		// cast(signed-char, tv(I:Int, T':Type)) 
-			// => cast(signed-char, tv(I:Int %Int (2 ^Nat absInt(numBits(signed-char))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(signed-char)))
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-sint-of-huge]:
-		// cast(short-int, tv(I:Int, T':Type)) 
-			// => cast(short-int, tv(I:Int %Int (2 ^Nat absInt(numBits(short-int))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(short-int)))
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-int-of-huge]:
-		// cast(int, tv(I:Int, T':Type)) 
-			// => cast(int, tv(I:Int %Int (2 ^Nat absInt(numBits(int))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(int)))
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-long-of-huge]:
-		// cast(long-int, tv(I:Int, T':Type)) 
-			// => cast(long-int, tv(I:Int %Int (2 ^Nat absInt(numBits(long-int))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(long-int)))
-		// andBool hasIntegerType(T':Type)
-		// [structural]
-	// rule [cast-llong-of-huge]:
-		// cast(long-long-int, tv(I:Int, T':Type))
-			// => cast(long-long-int, tv(I:Int %Int (2 ^Nat absInt(numBits(long-long-int))), T':Type)) 
-		// if absInt(I:Int) >Int (2 ^Nat absInt(numBits(long-long-int)))
-		// andBool hasIntegerType(T':Type)
-		// [structural]
+	//c99 6.3.1.3:3 Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised
+	// choice
+	rule [cast-sbitfield-of-huge]:
+		cast(t(S:Set, bitfieldType(T:Type, Len:Nat)), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, bitfieldType(T:Type, Len:Nat)), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, bitfieldType(T:Type, Len:Nat))))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, bitfieldType(T:Type, Len:Nat)))))
+		andBool hasIntegerType(T':Type)
+		andBool hasSignedIntegerType(T:Type)
+		[structural]
+	rule [cast-schar-of-huge]:
+		cast(t(S:Set, signed-char), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, signed-char)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, signed-char))))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-sint-of-huge]:
+		cast(t(S:Set, short-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, short-int)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, short-int))))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-int-of-huge]:
+		cast(t(S:Set, int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, int)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, int))))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-long-of-huge]:
+		cast(t(S:Set, long-int), tv(I:Int, T':Type)) 
+			=> cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, long-int)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, long-int))))
+		andBool hasIntegerType(T':Type)
+		[structural]
+	rule [cast-llong-of-huge]:
+		cast(t(S:Set, long-long-int), tv(I:Int, T':Type))
+			=> cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, long-long-int)))), T':Type)) 
+		if absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, long-long-int))))
+		andBool hasIntegerType(T':Type)
+		[structural]
 		
 		
 		
-	// rule [cast-signed-of-small]:
-		// cast(T:Type, tv(I:Int, T':Type))
-			// => tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T:Type)
-		// if I:Int <Int min(T:Type)
-		// andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
-		// andBool hasSignedIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
-	// rule [cast-signed-of-big]:
-		// cast(T:Type, tv(I:Int, T':Type)) 
-			// => tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T:Type)
-		// if I:Int >Int max(T:Type)
-		// andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
-		// andBool hasSignedIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
+	rule [cast-signed-of-small]:
+		cast(T:Type, tv(I:Int, T':Type))
+			=> tv(I:Int +Int (2 ^Nat absInt(numBits(T:Type))), T:Type)
+		if I:Int <Int min(T:Type)
+		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
+		andBool hasSignedIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
+	rule [cast-signed-of-big]:
+		cast(T:Type, tv(I:Int, T':Type)) 
+			=> tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))), T:Type)
+		if I:Int >Int max(T:Type)
+		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:Type)))
+		andBool hasSignedIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
 
-	// // this is starting to get into sketchy land
-	// rule [cast-unknown-char]:
-		// cast(T:Type, tv(piece(unknown(Len:Nat), Len:Nat), T':Type)) 
-			// => tv(piece(unknown(K2Nat(bitSizeofType(T:Type))), K2Nat(bitSizeofType(T:Type))), T:Type)
-		// if hasIntegerType(T:Type)
-		// andBool hasIntegerType(T':Type)
-		// // andBool Len:Nat ==Bool numBitsPerByte
-		// [structural]	
+	// this is starting to get into sketchy land
+	rule [cast-unknown-integer]:
+		cast(T:Type, tv(piece(unknown(Len:Nat), Len:Nat), T':Type)) 
+			=> tv(piece(unknown(K2Nat(bitSizeofType(T:Type))), K2Nat(bitSizeofType(T:Type))), T:Type)
+		if hasIntegerType(T:Type)
+		andBool hasIntegerType(T':Type)
+		// andBool Len:Nat ==Bool numBitsPerByte
+		[structural]	
 	
-	// //C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
-	// // fixme
-	// rule
-		// cast(T:Type, tv(V:Float, double)) => cast(T:Type, tv(truncRat(Float2Rat(V:Float)), long-long-int))
-		// if hasIntegerType(T:Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
-	// rule
-		// cast(T:Type, tv(V:Float, float)) => cast(T:Type, tv(truncRat(Float2Rat(V:Float)), long-long-int))
-		// if hasIntegerType(T:Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
-	// rule
-		// cast(T:Type, tv(V:Float, long-double)) => cast(T:Type, tv(truncRat(Float2Rat(V:Float)), long-long-int))
-		// if hasIntegerType(T:Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
+	//C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
+	// fixme
+	rule
+		cast(T:Type, tv(V:Float, t(S:Set, double))) 
+			=> cast(T:Type, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+		if hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
+	rule
+		cast(T:Type, tv(V:Float, t(S:Set, float))) 
+			=> cast(T:Type, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+		if hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
+	rule
+		cast(T:Type, tv(V:Float, t(S:Set, long-double))) 
+			=> cast(T:Type, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+		if hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
 	
-	// //C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined
+	//C99 6.3.1.4:2 When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined
 
-	// // rule [cast-int-to-floating]:
-		// // cast(T':Type, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), T':Type)
-		// // if hasIntegerType(T:Type)
-		// // andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
-		// // [structural]
-	// rule [cast-int-to-float]:
-		// cast(float, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), float)
-		// if hasIntegerType(T:Type)
-		// [structural] 
-	// rule [cast-int-to-double]:
-		// cast(double, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), double)
-		// if hasIntegerType(T:Type)
-		// [structural] 
-	// rule [cast-int-to-long-double]:
-		// cast(long-double, tv(I:Int, T:Type)) => tv(Rat2Float(I:Int), long-double)
-		// if hasIntegerType(T:Type)
-		// [structural] 
+	rule [cast-int-to-float]:
+		cast(t(S:Set, float), tv(I:Int, T:Type)) 
+			=> tv(Rat2Float(I:Int), t(S:Set, float))
+		if hasIntegerType(T:Type)
+		[structural] 
+	rule [cast-int-to-double]:
+		cast(t(S:Set, double), tv(I:Int, T:Type)) 
+			=> tv(Rat2Float(I:Int), t(S:Set, double))
+		if hasIntegerType(T:Type)
+		[structural] 
+	rule [cast-int-to-long-double]:
+		cast(t(S:Set, long-double), tv(I:Int, T:Type)) 
+			=> tv(Rat2Float(I:Int), t(S:Set, long-double))
+		if hasIntegerType(T:Type)
+		[structural] 
 	
-	// // fixme all floats same precision
-	// rule
-		// cast(T':Type, tv(F:Float, T:Type)) => tv(F:Float, T':Type)
-		// if (T:Type ==Bool float orBool T:Type ==Bool double orBool T:Type ==Bool long-double)
-		// andBool (T':Type ==Bool float orBool T':Type ==Bool double orBool T':Type ==Bool long-double)
-		// [structural] 
+	// fixme all floats same precision
+	rule
+		cast(t(S:Set, T':SimpleType), tv(F:Float, t(?, T:SimpleType))) 
+			=> tv(F:Float, t(S:Set, T':SimpleType))
+		if (T:SimpleType ==Bool float orBool T:SimpleType ==Bool double orBool T:SimpleType ==Bool long-double)
+		andBool (T':SimpleType ==Bool float orBool T':SimpleType ==Bool double orBool T':SimpleType ==Bool long-double)
+		[structural] 
 	
-	// // choice implementation defined behavior
-	// rule
-		// cast(pointerType(T:Type), tv(N:Nat, T':Type)) => tv(N:Nat, pointerType(T:Type))
-		// if hasIntegerType(T':Type)
-		// andBool N:Nat =/=Bool NullPointerConstant
-		// [structural] 
-	// rule
-		// cast(pointerType(T:Type), tv(N:Nat, T':Type)) => tv(NullPointer, pointerType(T:Type))
-		// if hasIntegerType(T':Type)
-		// andBool N:Nat ==Bool NullPointerConstant
-		// [structural] 
+	// choice implementation defined behavior
+	rule
+		cast(t(S:Set, pointerType(T:Type)), tv(N:Nat, T':Type)) 
+			=> tv(N:Nat, t(S:Set, pointerType(T:Type)))
+		if hasIntegerType(T':Type)
+		andBool N:Nat =/=Bool NullPointerConstant
+		[structural] 
+	rule
+		cast(t(S:Set, pointerType(T:Type)), tv(N:Nat, T':Type)) 
+			=> tv(NullPointer, t(S:Set, pointerType(T:Type)))
+		if hasIntegerType(T':Type)
+		andBool N:Nat ==Bool NullPointerConstant
+		[structural] 
 	
-	// // fixme needs to check size
-	// rule
-		// cast(T:Type, tv(N:Nat, pointerType(?)))
-			// => tv(N:Nat, T:Type)
-		// if hasIntegerType(T:Type)
-		// andBool notBool hasBoolType (T:Type)
-		// [structural] 
+	// fixme needs to check size
+	rule
+		cast(T:Type, tv(N:Nat, t(?, pointerType(?))))
+			=> tv(N:Nat, T:Type)
+		if hasIntegerType(T:Type)
+		andBool notBool hasBoolType (T:Type)
+		[structural] 
 		
 	// fixme
 	// possibly not true with other endiannesses

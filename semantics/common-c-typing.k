@@ -369,7 +369,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
 		[structural]
 		
-	// rule BitFieldType(T:Type, tv(N:Nat, ?)) => bitfieldType(T:Type, N:Nat) [structural]
+	rule BitFieldType(T:Type, tv(N:Nat, ?)) => t(.Set, bitfieldType(T:Type, N:Nat)) [structural]
 	
 	op makeArrayType : Nat -> KLabel 
 	op makeFunctionType : List{Type} -> KLabel 
@@ -565,14 +565,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule
 		FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
 		[structural]
-	// rule
-		// < k > FieldGroup(structType(unnamed(Anon:Nat)), Name(AnonAggregate, JustBase))
-			// => L:List{Type}
-		// ...</ k >
-		// < structs >...
-			// unnamed(Anon:Nat) |-> aggregateInfo(L:List{Type}, ?, ?)
-		// ...</ structs >
-		// [structural]
+		
 	rule
 		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
 		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))

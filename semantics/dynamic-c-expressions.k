@@ -35,11 +35,6 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \source[n1570]{\para{6.3.2.1}{4}}
 	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
 	*/
-	// these come from f(a, b, c)
-	// rule reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
-	// rule peval(tv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type))	if hasFunctionType(T:Type) [structural]
-	// these come from things like (*f)(a, b, c)
-	// rule [reval-function]: reval(lv(L:List{K}, T:Type)) => tv(L:List{K}, pointerType(T:Type)) if hasFunctionType(T:Type) [structural]
 	rule [reval-function]: reval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, t(.Set, pointerType(T:Type))) if hasFunctionType(T:Type) [structural]
 	rule [peval-function]: peval(lv(Loc:Nat, T:Type)) => tv(Loc:Nat, t(.Set, pointerType(T:Type))) if hasFunctionType(T:Type) [structural]
 	
@@ -1178,10 +1173,10 @@ kmod DYNAMIC-SEMANTICS-SEQUENCING is
 	/*@ \source[n1570]{\para{6.5.17}{2}}
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	*/
-	// rule < k > Comma(T:Type :: K':C :: L:List{C}) => sequencePoint ~> Comma(K':C :: L:List{C}) ...</ k >
-		// [structural]
-	// rule < k > Comma(K:C) => K:C ...</ k >
-		// [structural]
+	rule < k > Comma(T:Type :: K':C :: L:List{C}) => sequencePoint ~> Comma(K':C :: L:List{C}) ...</ k >
+		[structural]
+	rule < k > Comma(K:C) => K:C ...</ k >
+		[structural]
 endkm
 
 kmod DYNAMIC-C-EXPRESSIONS is

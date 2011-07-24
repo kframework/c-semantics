@@ -27,11 +27,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op defineType : K -> K [metadata "strict=()"] 
 	context DeclarationDefinition(InitNameGroup(`[HOLE`]:K, ?)) 
 	context Typedef(NameGroup(`[HOLE`]:K, ?))
-	
-	// rule
-		// < k > LocalDefinition(DefinitionLoc(K:K, Loc:K)) => DefinitionLoc(K:K, Loc:K) ...</ k >
-		// [structural] 
-	
+
 	rule
 		< k > figureInitializer(X:Id, T:Type, CodeLoc(K:K, L:K)) 
 			=> CodeLoc(.K, L:K)

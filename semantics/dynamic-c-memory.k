@@ -13,8 +13,8 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	// fixme!!! This should be read-aux, but a bug in the K tool...
 	
 	
-	// rule [locations-none]: locations(.List) => .Set [structural]
-	// rule [locations-some]: locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
+	rule [locations-none]: locations(.List) => .Set [structural]
+	rule [locations-some]: locations(bwrite(Loc:Nat, ?) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-READING is
