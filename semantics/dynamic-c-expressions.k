@@ -1070,12 +1070,11 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 		[structural]
 	rule
 		< k > lv(Loc:Nat, t(?, unionType(S:Id))) . F:Id
-			=> lv(Loc:Nat +Nat bito(Offset:Nat), T:Type)
+			=> lv(Loc:Nat +Nat bito(Offset:Nat), t(SetItem(fromUnion(S:Id)) Se:Set, T:SimpleType))
 		...</ k >
 		< structs >...
-			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), (? F:Id |-> Offset:Nat))
+			S:Id |-> aggregateInfo(?, (? F:Id |-> t(Se:Set, T:SimpleType)), (? F:Id |-> Offset:Nat))
 		...</ structs >
-		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
 		
 	rule

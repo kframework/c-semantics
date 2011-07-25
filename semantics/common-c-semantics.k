@@ -28,6 +28,8 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
+	op fromUnion : Id -> K
+	
 	op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
 	op Nil : -> List{Type} [ditto] 
 		

@@ -10,7 +10,6 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	op bwrite : Nat K -> ListItem
 	op locations : List -> Set
 	op read-aux : K K K -> K
-	// fixme!!! This should be read-aux, but a bug in the K tool...
 	
 	
 	rule [locations-none]: locations(.List) => .Set [structural]
@@ -312,12 +311,42 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:Type), bitSize:Nat)
-			// => checkPossiblePointer(tv(V:K, T:Type))
 			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:Type)))
 		...</ k >
 		if bitSize:Nat %Nat numBitsPerByte ==Bool 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:Type)
+		andBool notBool hasUnionMarker(T:Type)
+		[structural]
+	rule [write-normal-union-field]:
+		< k > (.K => makeUnknown(Loc:Nat, t(.Set, unionType(S:Id))))
+			~> write-specific(Loc:Nat, tv(?, t((SetItem(fromUnion(S:Id)) => .Set) ?, ?)), ?)
+		...</ k >
+		if isByteLoc(Loc:Nat)
+		[structural]
+		
+	op makeUnknown : Nat Type -> K
+	op makeUnknown-aux : K K K -> K // should be Nat Type K
+	context makeUnknown-aux(?, ?, value(`[HOLE`]:K))
+	
+	rule makeUnknown(N:Nat, T:Type)
+		=> makeUnknown-aux(N:Nat, T:Type, value(byteSizeofType(T:Type))) 
+		[structural]
+	// rule < k > makeUnknown(N:Nat, T:Type)
+			// => makeUnknown-aux(N:Nat, T:Type, value(byteSizeofType(T:Type))) 
+		// ...</ k > 
+		// [structural]
+	rule
+		< k > makeUnknown-aux(sym(Block:Nat) +Nat Offset:Nat, ?, Len':Nat) => .K ...</ k >
+		< mem >... Block:Nat |-> memblock(Len:Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Nat Len':Nat)])) ...</ mem >
+		if Len:Nat >=Nat Offset:Nat +Nat Len':Nat
+		[structural]
+		
+	op hasUnionMarker : Type -> Bool
+	rule hasUnionMarker(t(SetItem(fromUnion(?)) ?, ?)) => true [structural]
+	rule hasUnionMarker(t(.Set, ?)) => false [structural]
+	rule hasUnionMarker(t(? (SetItem(L:KLabel(?)) => .Set), ?))
+		if L:KLabel =/=Bool 'fromUnion
 		[structural]
 	
 	
@@ -378,6 +407,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		if bitSize:Nat %Nat numBitsPerByte =/=Bool 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:Type)
+		andBool notBool hasUnionMarker(T:Type)
 		[structural]
 		
 	rule
