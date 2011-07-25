@@ -296,7 +296,11 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		
 	rule
 		cast(T:Type, tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type)
-		[structural] 
+		[structural]
+		
+	rule
+		cast(t(S:Set, T:SimpleType), tv(L:List{K}, t(?, T:SimpleType))) => tv(L:List{K}, t(S:Set, T:SimpleType))
+		[structural]
 	
 	//c99 6.3.1.2:1 to _Bool
 	// fixme worried about qualifiers
