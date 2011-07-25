@@ -1,6 +1,7 @@
 SCRIPTS_DIR = ../scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 APPEND_LINE = $(SCRIPTS_DIR)/append.sh
+FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
 
 K_MAUDE = $(K_BASE)/core/kompile
 K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
@@ -127,13 +128,14 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 	@$(COMPILE_C)
 	@mv c-compiled.maude c-compiled.maude.0
 
+c-compiled.maude.tmp: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled.maude.0`
 c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
-	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
+	$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
+	$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
-	@$(INSERT_LINE) 2 c-compiled.maude.1 "load maudeLib/TCPSupport"
+	$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/TCPSupport" 
 	@cp c-compiled.maude.1 c-compiled.maude.tmp
 	@echo "Done".
 
@@ -147,13 +149,14 @@ c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES
 	@$(COMPILE_C_ND)
 	@mv c-compiled.maude c-compiled-nd.maude.0
 	
+c-compiled-nd.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd.maude.0`
 c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
 	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) 2 c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
-	@$(INSERT_LINE) 2 c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
 	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
 	@echo "Done".
 
