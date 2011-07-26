@@ -42,7 +42,25 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 
 	op giveGlobalType : K Type -> K 
 	op giveLocalType : K Type -> K 
-		
+	
+	// FIXME these are here until I decide how to handle qualified types
+	rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Volatile)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Restrict)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-const]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Const)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Auto)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
+	rule [ignore-register]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Register)) 
+		=> t(S:Set S':Set, T:SimpleType)
+		[structural]
+	
+	
 	rule
 		< k > giveType(X:Id, T:Type) => 
 			if (Fun:Id ==Bool File-Scope) then giveGlobalType(X:Id, T:Type) else giveLocalType(X:Id, T:Type) fi
@@ -202,7 +220,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 	rule
-		< k > canonicalizeType(.Bag, (t(_ (.Set => SetItem(Q:K)), _)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		< k > canonicalizeType(.Bag, (T:Type => t(.Set, qualifiedType(T:Type, Q:K))), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Extern
 		orBool Q:K ==Bool Static
 		orBool Q:K ==Bool Const
@@ -370,7 +388,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:Type, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat)) [structural]
 	rule [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:Type)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:Type, K:KLabel))) [structural]
-	// rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
+	rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
 	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{Type})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type})) [structural]
 	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id))) [structural]
 	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id))) [structural]
@@ -514,7 +532,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:Nat)) [structural]
 	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{Type}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{Type})) [structural]
 	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
-	// rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
+	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
 	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
 		
 	op NameAndType : K K -> K [metadata "strict=(2)"] 
@@ -906,17 +924,18 @@ kmod COMMON-C-TYPING is
 		if T:SimpleType =/=Bool float
 		andBool T:SimpleType =/=Bool double
 		andBool T:SimpleType =/=Bool long-double
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
 		[structural]
 	
 	rule [hasCharType-char]: hasCharType(t(?, char)) => true [structural]
-	// rule [hasCharType-qualified]: hasCharType(t(?, qualifiedType(T:Type, ?))) => hasCharType(T:Type) [structural]
+	rule [hasCharType-qualified]: hasCharType(t(?, qualifiedType(T:Type, ?))) => hasCharType(T:Type) [structural]
 	rule [hasCharType-unsigned-char]: hasCharType(t(?, unsigned-char)) => true [structural]
 	rule [hasCharType-signed-char]: hasCharType(t(?, signed-char)) => true [structural]
 	rule [hasCharType-other]: hasCharType(t(?, T:SimpleType)) => false
 		if T:SimpleType =/=Bool char
 		andBool T:SimpleType =/=Bool unsigned-char
 		andBool T:SimpleType =/=Bool signed-char
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
 	rule [hasWCharType-wchar]: hasWCharType(t(?, T:SimpleType)) => true 
@@ -924,66 +943,66 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule [hasWCharType-other]: hasWCharType(t(?, T:SimpleType)) => false
 		if T:SimpleType =/=Bool simpleType(cfg:wcharut)
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
-	// rule [hasWCharType-qualified]: hasWCharType(t(?, qualifiedType(T:Type, ?))) => hasWCharType(T:Type) [structural]
+	rule [hasWCharType-qualified]: hasWCharType(t(?, qualifiedType(T:Type, ?))) => hasWCharType(T:Type) [structural]
 	
 	rule [hasPointerType-pointer]: hasPointerType(t(?, pointerType(?))) => true [structural]
-	// rule [hasPointerType-qualified]: hasPointerType(t(?, qualifiedType(T:Type, ?))) => hasPointerType(T:Type) [structural]
+	rule [hasPointerType-qualified]: hasPointerType(t(?, qualifiedType(T:Type, ?))) => hasPointerType(T:Type) [structural]
 	rule [hasPointerType-other]: hasPointerType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'pointerType
-		//andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 	
 	rule [hasBoolType-bool]: hasBoolType(t(?, bool)) => true [structural]
-	// rule [hasBoolType-qualifiedType]: hasBoolType(t(?, qualifiedType(T:Type, ?))) => hasBoolType(T:Type) [structural]
+	rule [hasBoolType-qualifiedType]: hasBoolType(t(?, qualifiedType(T:Type, ?))) => hasBoolType(T:Type) [structural]
 	rule [hasBoolType-other]: hasBoolType(t(?, T:SimpleType)) => false
 		if T:SimpleType =/=Bool bool 
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 	
 	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?))) => true [structural]
 	rule [hasArrayType-incompleteArray]: hasArrayType(t(?, incompleteArrayType(?))) => true [structural]
-	// rule [hasArrayType-qualified]: hasArrayType(t(?, qualifiedType(T:Type, ?))) => hasArrayType(T:Type) [structural]
+	rule [hasArrayType-qualified]: hasArrayType(t(?, qualifiedType(T:Type, ?))) => hasArrayType(T:Type) [structural]
 	rule [hasArrayType-other]: hasArrayType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'arrayType 
 		andBool getKLabel(T:SimpleType) =/=Bool 'incompleteArrayType 
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
 	rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
 		
 	rule [hasStructType-struct]: hasStructType(t(?, structType(?))) => true [structural]
-	// rule [hasStructType-qualified]: hasStructType(t(?, qualifiedType(T:Type, ?))) => hasStructType(T:Type) [structural]
+	rule [hasStructType-qualified]: hasStructType(t(?, qualifiedType(T:Type, ?))) => hasStructType(T:Type) [structural]
 	rule [hasStructType-other]: hasStructType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'structType
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
 	rule [hasUnionType-union]: hasUnionType(t(?, unionType(?))) => true [structural]
-	// rule [hasUnionType-qualified]: hasUnionType(t(?, qualifiedType(T:Type, ?))) => hasUnionType(T:Type) [structural]
+	rule [hasUnionType-qualified]: hasUnionType(t(?, qualifiedType(T:Type, ?))) => hasUnionType(T:Type) [structural]
 	rule [hasUnionType-other]: hasUnionType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'unionType
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 
 	rule [hasIncompleteType-true]: hasIncompleteType(t(?, incompleteArrayType(?))) => true [structural]
-	// rule [hasIncompleteType-qualified]: hasIncompleteType(t(?, qualifiedType(T:Type, ?))) => hasIncompleteType(T:Type) [structural]
+	rule [hasIncompleteType-qualified]: hasIncompleteType(t(?, qualifiedType(T:Type, ?))) => hasIncompleteType(T:Type) [structural]
 	rule [hasIncompleteType-false]: hasIncompleteType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'incompleteArrayType
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasExternType-true]: hasExternType(t(SetItem(Extern) ?, ?)) => true
+	rule [hasExternType-qualified]: hasExternType(t(?, qualifiedType(T:Type, K:K))) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:Type)) fi 
 		[structural]
-	rule [hasExternType-false]: hasExternType(t(S:Set, ?)) => false
-		if notBool Extern in S:Set
+	rule [hasExternType-false]: hasExternType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasStaticType-true]: hasStaticType(t(SetItem(Static) ?, ?)) => true
+	rule [hasStaticType-qualified]: hasStaticType(t(?, qualifiedType(T:Type, K:K))) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:Type)) fi 
 		[structural]
-	rule [hasStaticType-false]: hasStaticType(t(S:Set, ?)) => false
-		if notBool Static in S:Set
+	rule [hasStaticType-false]: hasStaticType(t(?, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
 	rule [hasBitfieldType-true]: hasBitfieldType(t(?, bitfieldType(?, ?))) => true [structural]
@@ -993,23 +1012,23 @@ kmod COMMON-C-TYPING is
 		
 	rule [hasFunctionType-true]: hasFunctionType(t(?, functionType(?, ?))) => true [structural]
 	rule [hasFunctionType-prototype]: hasFunctionType(t(?, prototype(T:Type))) => hasFunctionType(T:Type) [structural]
-	// rule [hasFunctionType-qualified]: hasFunctionType(t(?, qualifiedType(T:Type, ?))) => hasFunctionType(T:Type) [structural]
+	rule [hasFunctionType-qualified]: hasFunctionType(t(?, qualifiedType(T:Type, ?))) => hasFunctionType(T:Type) [structural]
 	rule [hasFunctionType-false]: hasFunctionType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'functionType
-		// andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
 		andBool getKLabel(T:SimpleType) =/=Bool 'prototype 
 		[structural]
 		
 	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(t(?, pointerType(t(?, functionType(?, ?))))) => true [structural]
-	// rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(?, qualifiedType(T:Type, ?))) => hasFunctionPointerType(T:Type) [structural]
-	//rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(?, pointerType(t(?, qualifiedType(T:Type, ?))))) => hasFunctionPointerType(t(.Set, pointerType(T:Type))) [structural]
+	rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(?, qualifiedType(T:Type, ?))) => hasFunctionPointerType(T:Type) [structural]
+	rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(?, pointerType(t(?, qualifiedType(T:Type, ?))))) => hasFunctionPointerType(t(.Set, pointerType(T:Type))) [structural]
 	rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'pointerType
-		//andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
 		[structural]
 	rule [hasFunctionPointerType-notFunction]: hasFunctionPointerType(t(?, pointerType(t(?, T:SimpleType)))) => false
 		if getKLabel(T:SimpleType) =/=Bool 'functionType 
-		//andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
+		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType
 		[structural]
 		
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
@@ -1020,8 +1039,8 @@ kmod COMMON-C-TYPING is
 		
 		
 			
-	// rule unqualifyType(t(?:Set, qualifiedType(T:Type, ?))) => T:Type [structural]
+	rule unqualifyType(t(?:Set, qualifiedType(T:Type, ?))) => T:Type [structural]
 	rule unqualifyType(t(?:Set, T:SimpleType)) => t(.Set, T:SimpleType)
-		// if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 endkm

@@ -345,10 +345,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op hasUnionMarker : Type -> Bool
 	rule hasUnionMarker(t(SetItem(fromUnion(?)) ?, ?)) => true [structural]
 	rule hasUnionMarker(t(.Set, ?)) => false [structural]
-	// rule hasUnionMarker(t(? (SetItem(L:KLabel(?)) => .Set), ?))
-		// if L:KLabel =/=Bool 'fromUnion
-		// [structural]
-	rule hasUnionMarker(t(S:Set SetItem(L:KLabel(?)), T:SimpleType)) => hasUnionMarker(t(S:Set, T:SimpleType))
+	rule hasUnionMarker(t(? (SetItem(L:KLabel(?)) => .Set), ?))
 		if L:KLabel =/=Bool 'fromUnion
 		[structural]
 	

@@ -320,8 +320,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		l('arrayType),, 
 		l('bitfieldType),, 
 		l('functionType),, 
-		l('pointerType),, l('structType),, l('unionType)
-		//l('qualifiedType)
+		l('pointerType),, l('structType),, l('unionType),, 
+		l('qualifiedType)
 	) [structural]
 	
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
@@ -358,7 +358,7 @@ kmod COMMON-C-BITSIZE is
 	rule bitSizeofType(t(?, functionType(?, ?))) => numBitsPerByte [structural]
 	rule bitSizeofType(t(?, pointerType(?))) => cfg:ptrsize *Nat numBitsPerByte [structural]
 	rule bitSizeofType(t(?, bitfieldType(?, N:Nat))) => N:Nat [structural]
-	// rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
 	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
 	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 
