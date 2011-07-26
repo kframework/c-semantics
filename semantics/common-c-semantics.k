@@ -170,7 +170,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op pointerType : Type -> SimpleType [ctor] 
 	op structType : Id -> SimpleType [ctor] 
 	op unionType : Id -> SimpleType [ctor] 
-	op qualifiedType : Type K -> SimpleType [ctor]
+	// op qualifiedType : Type K -> SimpleType [ctor]
 	
 	op unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
 	

@@ -368,8 +368,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// extern functions are no different than functions
 	// fixme dangerous if someone marks it as static and extern.  can't tell
-	rule t(?, qualifiedType(T:Type, Extern)) => T:Type
-		if hasFunctionType(T:Type) 
+	rule t((SetItem(Extern) => .Set) ?, T:SimpleType)
+		if hasFunctionType(t(.Set, T:SimpleType))
 		[structural]
 	
 	// fixme clean these up, they are so redundant
@@ -788,9 +788,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule [innerType-incompleteArrayType]: 
 		innerType(t(?, incompleteArrayType(T:Type))) => T:Type 
 		[structural]
-	rule [innerType-qualifiedType]:
-		innerType(t(?, qualifiedType(T:Type, ?))) => innerType(T:Type) 
-		[structural]
+	// rule [innerType-qualifiedType]:
+		// innerType(t(?, qualifiedType(T:Type, ?))) => innerType(T:Type) 
+		// [structural]
 	rule [innerType-pointerType]:
 		innerType(t(?, pointerType(T:Type))) => T:Type 
 		[structural]
