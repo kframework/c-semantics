@@ -1,9 +1,9 @@
 use strict;
-use XML::Parser;
-use XML::Twig;
 use File::Basename;
 use Encode;
 use MIME::Base64;
+use XML::LibXML::Reader;
+
 binmode STDOUT, ":utf8";
 binmode STDIN, ":utf8";
 
@@ -51,173 +51,177 @@ my $input = join("", <STDIN>);
 	# return $parent;
 # }
 
-my %labelMap = (
-	List => '_::_',
+# my %labelMap = (
+	# List => '_::_',
+# );
+
+my %ignoreThese = (	
+	'Filename' => 1,
+	'Lineno' => 1,
+	'Byteno' => 1,
+	'OffsetStart' => 1,
+	'OffsetEnd' => 1,
+	'Ident' => 1,
+	'BlockId' => 1,
+	'SwitchId' => 1,
+	'Lineno' => 1,
+	'CompoundLiteralId' => 1,
+	'CaseId' => 1,
+	'ForId' => 1,
+	'SourceCode' => 1,
+	'DeclarationType' => 1,
+	'Variable' => 1,
+	'Paren' => 1,
+	'Significand' => 1,
+	'Exponent' => 1,
+	'TypeQualifier' => 1,
+	'StorageSpecifier' => 1,
+	'FunctionSpecifier' => 1,
+	'Specifiers' => 1,
+	'TypeSpecifier' => 1,
+	'LocalDefinition' => 1,
+	'IntLiteral' => 1,
+	'FloatLiteral' => 1,
+	'ForClauseDeclaration' => 1,
 );
-my $filename = "";
-my $handlers = { 
-	# title   => sub { $_->set_tag( 'h2') }, # change title tags to h2
-	# para    => sub { $_->set_tag( 'p')  }, # change para to p
-	TranslationUnit => sub { 
-		my $RawData = $_->first_child('RawData');
-		$filename = $RawData->text;
-	},
-	Filename  => sub { $_->erase; },
-	Lineno  => sub { $_->erase; },
-	Byteno  => sub { $_->erase; },
-	OffsetStart  => sub { $_->erase; },
-	OffsetEnd  => sub { $_->erase; },
-	Ident  => sub { $_->erase; }, # not an identifier; it's part of a location
-	BlockId  => sub { $_->erase; },
-	SwitchId  => sub { $_->erase; },
-	CompoundLiteralId  => sub { $_->erase; },
-	CaseId  => sub { $_->erase; },
-	ForId  => sub { $_->erase; },
-	SourceCode  => sub { $_->erase; },
-	DeclarationType => sub { $_->erase; },
-	Variable => sub { $_->erase; },
-	Paren => sub { $_->erase; },
-	Significand => sub { $_->erase; },
-	Exponent => sub { $_->erase; },
-	TypeQualifier => sub { $_->erase; },
-	StorageSpecifier => sub { $_->erase; },
-	FunctionSpecifier => sub { $_->erase; },
-	Specifiers => sub { $_->erase; },
-	TypeSpecifier => sub { $_->erase; },
-	LocalDefinition => sub { $_->erase; },
-	IntLiteral => sub { $_->erase; },
-	FloatLiteral => sub { $_->erase; },
-	ForClauseDeclaration => sub { $_->erase; },
-};
 
+# foreach my $key (keys %labelMap) {
+	# $handlers->{$key} = sub { $_->set_tag($labelMap{$key}); };	
+# }
 
-foreach my $key (keys %labelMap) {
-	$handlers->{$key} = sub { $_->set_tag($labelMap{$key}); };	
+my $reader = new XML::LibXML::Reader(string => $input) or die "cannot create XML::LibXML::Reader object\n";
+$reader->read;
+
+if (! ($reader->name eq "TranslationUnit")) {
+	die "XML: Expected first entry to be 'TranslationUnit'.";
 }
-
-			
-		
-		
-# AnonymousName => sub { 
-	# my $anon = $_;
-	# my $parent = $anon->parent;
-	# my $noname = XML::Twig::Elt->new( Identifier => '#NoName' );
-	# my $new_elt = 
-	# <Identifier>
-		# <RawData sort="String"><![CDATA[main]]></RawData>
-	# </Identifier>
-	
-	# $parent->paste($anon->erase);
-	# #$_->insert( 'Name' )->erase; 
-# },
-#$p->insert( table => { border=> 1}, 'tr', 'td') 
-#'RawData[@sort="Int"]' => sub { $_->set_att( sort => 'Rat') },
-# list    => \&my_list_process,          # process list elements
-# div     => sub { $_[0]->flush;     },  # output and free memory
-
-my $twig = XML::Twig->new();
-my $twig=XML::Twig->new(   
-	twig_handlers => $handlers
-);
-
-$twig->parse($input);
-my $root = $twig->root;
+$reader->nextElement('RawData');
+my $filename = getRawData($reader);
+$reader->nextElement;
 
 if ($filename eq ""){
 	die "Could not find the filename in the XML\n";
 }
-#$filename = basename($filename,  (".c"));
-#print decode_utf8(xmlToK($root));
-$filename = decode_base64($filename);
 
-#print "mod C-program-$filename is including C .\n";
-# print "op 'program-$filename : -> KLabel .\n";
 print "---kccMarker\n";
-print "eq TranslationUnitName(\"$filename\")(.List`{K`}) = ";
-print xmlToK($root);
-print " .\n";
+my @args = ();
+push (@args, "String " . $filename . paren(KLIST_IDENTITY));
+push (@args, xmlToK($reader));
+$reader->nextElement('RawData');
+my $sourceCode = getRawData($reader);
+push (@args, "String " . $sourceCode . paren(KLIST_IDENTITY));
+my $tu = paren(join(KLIST_SEPARATOR, @args));
+print "eq TranslationUnitName($filename)(.List`{K`}) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
 if ($ltl ne "") {
-	# print "op ltls : -> List{K} .\n";
-	# print "eq ltls = $ltl .\n";
 	print $ltl;
 }
 
-#print "endm\n";
+
+
+sub printStatus {
+	my ($reader) = (@_);
+	print "visit: " . $reader->name . "\n";
+	print "isempty: " . $reader->isEmptyElement . "\n";
+	print "value: " . $reader->value . "\n";
+	print "type: " . $reader->nodeType . "\n";
+}
 
 # this function tries to figure out what kind of a node we're looking at, then delegates the conversion to another function
 sub xmlToK {
-	my ($xso) = (@_);
-
-	if (!$xso->is_pcdata()) {
-		return elementToK($xso);
+	my ($reader) = (@_);
+	#printStatus($reader);
+	if (! ($reader->nodeType == XML_READER_TYPE_CDATA)) {
+		my $depth = $reader->depth;
+		my ($inNextState, $retval) = elementToK($reader);
+		if (!$inNextState) {
+			$reader->nextElement;
+		}
+		return $retval;
 	}
 	return "";
 }
 
 sub elementToK {
-	my ($xso) = (@_);
-	my $label = $xso->name();
+	my ($reader) = (@_);
+	my $inNextState = 0;
+	my $label = $reader->name;
+	if (exists($ignoreThese{$label})) {
+		return ($inNextState, undef);
+	}
 	
 	if ($label eq "RawData") {
-		return rawdataToK($xso);
+		return ($inNextState, rawdataToK($reader));
 	}
-	if ($label eq 'Identifier') {
-		my $rawData = $xso->first_child('RawData');
-		my $str = '"'  . escapeString($rawData->text) . '"';
-		my $ident = 'Identifier' . paren($str);
+	if ($label eq 'List') {
+		$label = "_::_";
+	} elsif ($label eq 'Identifier') {
+		$reader->nextElement;
+		my $rawData = getRawData($reader);
+		my $ident = 'Identifier' . paren($rawData);
 		my $id = 'Id' . paren($ident);
-		return $id . paren(KLIST_IDENTITY); 
-	} if ($label eq 'WStringLiteral') {
-		my $rawData = $xso->first_child('RawData');
-		my $str = escapeWString($rawData->text);
+		return ($inNextState, $id . paren(KLIST_IDENTITY));
+	} elsif ($label eq 'WStringLiteral') {
+		$reader->nextElement;
+		$reader->read;
+		my $str = escapeWString($reader->value);
 		my $ident = "'WStringLiteral" . paren(paren($str));
-		return $ident;
+		return ($inNextState, $ident);
 	} elsif ($label eq 'Variadic') {
-		return paren("Bool true") . paren(KLIST_IDENTITY);
+		return ($inNextState, paren("Bool true") . paren(KLIST_IDENTITY));
 	} elsif ($label eq 'NotVariadic') {
-		return paren("Bool false") . paren(KLIST_IDENTITY);
+		return ($inNextState, paren("Bool false") . paren(KLIST_IDENTITY));
 	}
 	my @klist = ();
-	foreach my $child ($xso->children){
-		my $childResult = xmlToK($child);
-		if ($childResult) {
-			push (@klist, $childResult);
-		}
+	my $depth = $reader->depth;
+	$reader->nextElement;
+	if ($reader->depth > $depth) {
+		do {
+			my $childResult = xmlToK($reader);
+			if ($childResult) {
+				push (@klist, $childResult);
+			}
+		} while ($reader->depth > $depth) # while ($reader->nextSiblingElement == 1);
 	}
+	$inNextState = 1;
+	
 	my $numElements = scalar @klist;
 	if ($numElements == 0) {
 		push (@klist, KLIST_IDENTITY);
 	}
-	
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
 		$ltl .= "eq 'LTLAnnotation($klist[0]) = ";
 		shift (@klist);
 		$ltl .= paren(join(KLIST_SEPARATOR, @klist)) . " .\n";
-		return "(.).K";
+		return ($inNextState, "(.).K");
 	}
-	
-	return nameToLabel($label) . $kterm;
+	return ($inNextState, nameToLabel($label) . $kterm);
 }
 
 sub rawdataToK {
-	my ($xso) = (@_);
-	my $sort = $xso->att('sort');
+	my ($reader) = (@_);
+	my $sort = $reader->getAttribute('sort');
+	if ($sort eq 'Int') { $sort = 'Rat'; }
+	my $data = getRawData($reader);
+	return "$sort" . paren($data) . paren(KLIST_IDENTITY);
+}
+sub getRawData {
+	my ($reader) = (@_);
+	my $sort = $reader->getAttribute('sort');
 	my $data = "";
+	$reader->read;
 	
 	if ($sort eq 'String') {
-		$data = '"' . escapeString($xso->text) . '"';
+		$data = '"' . escapeString($reader->value) . '"';
 	} elsif ($sort eq 'Int') {
-		$sort = 'Rat';
-		$data = $xso->text;
+		$data = $reader->value;
 	}  elsif ($sort eq 'Float') {
-		$sort = 'Float';
-		$data = $xso->text;
+		$data = $reader->value;
 	} else {
 		return "unknown raw data";
 	}
-	return "$sort" . paren($data) . paren(KLIST_IDENTITY);
+	return $data;
 }
 
 
@@ -232,10 +236,6 @@ sub escapeSingleCharacter {
 		my $ord = ord($char);
 		return '\\' . sprintf("%03o", $ord) ;
 	}
-	#if ($char =~ /[a-zA-Z0-9\[ ]|[!-\/]|[:-@]|[\]-`]|[{-~]/) {
-	
-	#return $char;
-	#escapeMap
 }
 
 sub escapeString {

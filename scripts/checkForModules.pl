@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 use strict;
 my @requiredModules = qw(
-	XML::Twig
 	XML::DOM
 	XML::LibXML::Reader
 	Regexp::Common

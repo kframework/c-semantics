@@ -8,7 +8,6 @@ Install Perl
 	- Windows perl can be found here: http://www.activestate.com/activeperl
 	- Perl is used for many of the scripts in both the C tool and in K
 	- Install perl modules (probably using either ppm in windows, or cpan elsewhere)
-		- XML::Twig
 		- XML::DOM
 		- XML::LibXML::Reader
 		- Regexp::Common
