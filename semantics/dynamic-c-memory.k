@@ -517,9 +517,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			=> splitPointerBytes(I:Int, t(S:Set, pointerType(T:Type)), value(byteSizeofType(t(.Set, pointerType(T:Type)))))
 		[structural]
 	rule [splitBytes-struct]:
-		splitBytes(tv(L:List{K}, T:Type)) 
-			=> splitStructBytes(dataList(L:List{K}), T:Type, value(byteSizeofType(T:Type)))
-		if hasStructType(T:Type)
+		splitBytes(tv(L:List{K}, t(S:Set, structType(S:Id)))) 
+			=> splitStructBytes(dataList(L:List{K}), t(S:Set, structType(S:Id)), value(byteSizeofType(t(S:Set, structType(S:Id)))))
+		// if hasStructType(T:Type)
 		[structural] 
 	
 	op splitIntegerBytes : K K K -> K 

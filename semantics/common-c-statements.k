@@ -105,14 +105,14 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< blockHistoryGoto > ListItem(BlockNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
-	rule
+	rule [compute-label-typedef]:
 		< computation > Typedef(K:K) => .K ...</ computation >
 		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, Typedef(K:K))) </ declarationStack >
 		< nestingDepthGoto > Depth:Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
-	rule 
+	rule [compute-label-ignore-non-statement]:
 		< computation > L:KLabel(Args:List{K}) => .K ...</ computation >
 		if false
 		orBool L:KLabel ==Bool 'Nop
@@ -125,7 +125,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		[structural] 
 		
 	// - should do this with a split
-	rule
+	rule [compute-label-for]:
 		< gotoCalculation >
 			< computation > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) => .K) ~> K:K </ computation >
 			< computationTail > Tail:K </ computationTail >
@@ -154,7 +154,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		)
 		[structural large] 
 		
-	rule
+	rule [compute-label-do-while]:
 		< gotoCalculation >
 			< computation > (DoWhile(E:K, S:K) => .K) ~> K:K </ computation >
 			< computationTail > Tail:K </ computationTail >
@@ -178,17 +178,17 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		)
 		[structural]
 		
-	rule
+	rule [compute-label-while-mark]:
 		< computation > (. => S:K ~> loopMarked) ~> While(E:K, S:K) ~> (. => popLoop) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
 		< blockHistoryGoto > ListItem(Num:Nat) ...</ blockHistoryGoto >
 		< loopStackGoto > (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</ loopStackGoto >
 		[structural] 
-	rule
+	rule [compute-label-while-done]:
 		< computation > (loopMarked ~> While(E:K, S:K) => .K) ~> popLoop ~> K:K </ computation >
 		[structural] 
 		
-	rule
+	rule [compute-label-if-then-else]:
 		< gotoCalculation >
 			< computation > (IfThenElse(?, S1:K, S2:K) => .K) ~> K:K </ computation >
 			< computationTail > Tail:K </ computationTail >
@@ -210,14 +210,14 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		)
 		[structural] 
 		
-	rule
+	rule [compute-label-switch]:
 		< computation > (Switch(?, E:K, S:K) => S:K ~> popLoop) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
 		< blockHistoryGoto > ListItem(Num:Nat) ...</ blockHistoryGoto >
 		< loopStackGoto > (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</ loopStackGoto >
 		[structural] 
 		
-	rule
+	rule [compute-label-poploop]:
 		< computation > popLoop => .K ...</ computation >
 		< loopStackGoto > (?:ListItem => .) ...</ loopStackGoto >
 		[structural] 

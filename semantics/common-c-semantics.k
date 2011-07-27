@@ -259,7 +259,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op isArithBinConversionOp : KLabel -> Bool 
 	op isArithUnaryOp : KLabel -> Bool 
 	op kpair : K K -> K 
-	op promote : K -> K 
+	op promote : K -> Type // should be K, but is Type for efficiency reasons
 	op argPromote : K -> K
 	op extractField : List{K} K Id -> K // bytes of struct, type, field id
 	op allocString : Nat String -> K 

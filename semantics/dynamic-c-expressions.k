@@ -243,7 +243,7 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	op byteSizeofType-aux : K -> K [metadata "strict=()"]
 	rule byteSizeofType(T:Type) => byteSizeofType-aux(bitSizeofType(T:Type)) [structural]
 	rule byteSizeofType-aux(tv(N:Nat, T:Type)) => tv(bitsToBytes(N:Nat), T:Type)
-		if T:Type ==Bool cfg:largestUnsigned
+		//if T:Type ==Bool cfg:largestUnsigned
 		[structural]
 	rule
 		< k > SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</ k >
@@ -446,7 +446,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	rule CharLiteral(N:Nat) => tv(N:Nat, t(.Set, int)) [structural]
 	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural]
 	rule Constant(V:Value) => V:Value [structural]
-	rule < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
+	rule [create-internal-value]: < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
 		[structural] // for internal computations
 		
 	op withinRange : Int SimpleType -> Bool

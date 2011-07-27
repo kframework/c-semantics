@@ -66,24 +66,63 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	
 	rule [promote-unary]:
 		< k > L:KLabel((tv(V:BaseValue, T:Type) 
-			=> cast(promote(T:Type), tv(V:BaseValue, T:Type)))) 
+			=> tv(V:BaseValue, promote(T:Type)))) 
 		...</ k > 
 		if isArithUnaryOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
-		andBool hasIntegerType(T:Type)
+		//andBool hasIntegerType(T:Type)
 		[structural]
 	rule [promote-binary-left]:
-		< k > L:KLabel((tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type))),, ?) ...</ k > 
+		< k > L:KLabel((tv(V:BaseValue, T:Type) => tv(V:BaseValue, promote(T:Type))),, ?) ...</ k > 
 		if isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:Type)
-		andBool hasIntegerType(T:Type)
+		//andBool hasIntegerType(T:Type) // implicity in notBool hasBeenPromoted
 		[structural] 
-	rule [promote-binary-right]:
-		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
+	// rule [promote-binary-right]:
+		// < k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
+		// if isArithBinOp(L:KLabel)
+		// andBool notBool hasBeenPromoted(T:Type)
+		// andBool hasIntegerType(T:Type)
+		// [structural] 
+	// optimization based on above general rule
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
 		if isArithBinOp(L:KLabel)
-		andBool notBool hasBeenPromoted(T:Type)
-		andBool hasIntegerType(T:Type)
-		[structural] 
+		//andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, bool)
+		[structural]
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		//andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, signed-char)
+		[structural]
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		//andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, unsigned-char)
+		[structural]
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		//andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, short-int)
+		[structural]
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		//andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, unsigned-short-int)
+		[structural]
+	rule
+		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+		if isArithBinOp(L:KLabel)
+		// andBool hasIntegerType(TheType)
+		where TheType = t(S:Set, bitfieldType(T:Type, N:Nat))
+		[structural]
+	
+	
 
 	rule
 		< k > L:KLabel(tv(V:BaseValue, T:Type),, tv(V':BaseValue, T':Type))
@@ -143,23 +182,47 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		if hasIntegerType(T:Type)
 		[structural]
 	
-	rule promote(T:Type) => T:Type
-		if hasFloatType(T:Type)
-		[structural]
+	// rule [promote-float]: promote(T:Type) => T:Type
+		// if hasFloatType(T:Type)
+		// [structural]
+	// promote should never be called on non-integer types
+
 	
-	rule
+	rule [promote-lte-int-fits]:
 		promote(T:Type) => t(.Set, int)
-		if rank(T:Type) <=Int rank(t(.Set, int))
+		if rank(T:Type) <Int rank(t(.Set, int))
 		andBool min(t(.Set, int)) <=Int min(T:Type) 
 		andBool max(t(.Set, int)) >=Int max(T:Type)		
 		[structural]
 
-	rule
-		promote(T:Type) => T:Type
-		if rank(T:Type) >Int rank(t(.Set, int))
+	// rule [promote-gt-int]:
+		// promote(T:Type) => T:Type
+		// if rank(T:Type) >=Int rank(t(.Set, int))
+		// [structural]
+	// optimization based on above general rule
+	rule [promote-enum]:
+		promote(t(S:Set, enumType(?))) => t(S:Set, int)
+		[structural]
+	rule [promote-int]:
+		promote(t(S:Set, int)) => t(S:Set, int)
+		[structural]
+	rule [promote-unsigned-int]:
+		promote(t(S:Set, unsigned-int)) => t(S:Set, unsigned-int)
+		[structural]
+	rule [promote-long-int]:
+		promote(t(S:Set, long-int)) => t(S:Set, long-int)
+		[structural]
+	rule [promote-unsigned-long-int]:
+		promote(t(S:Set, unsigned-long-int)) => t(S:Set, unsigned-long-int)
+		[structural]
+	rule [promote-long-long-int]:
+		promote(t(S:Set, long-long-int)) => t(S:Set, long-long-int)
+		[structural]
+	rule [promote-unsigned-long-long-int]:
+		promote(t(S:Set, unsigned-long-long-int)) => t(S:Set, unsigned-long-long-int)
 		[structural]
 
-	rule
+	rule [promote-bitfield-fits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat))) => t(.Set, int)
 		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
 		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat)))
@@ -167,7 +230,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 	// fixme unclear what 6.3.1.1:3 means
 
-	rule
+	rule [promote-lte-int-nofits]:
 		promote(T:Type) => t(.Set, unsigned-int)
 		if rank(T:Type) <=Int rank(t(.Set, int))
 		andBool notBool (
@@ -176,7 +239,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		)
 		[structural]
 
-	rule
+	rule [promote-bitfield-nofits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:SimpleType), Len:Nat))) => t(.Set, unsigned-int)
 		if (T:SimpleType ==Bool bool orBool T:SimpleType ==Bool int orBool T:SimpleType ==Bool unsigned-int)
 		andBool notBool (
@@ -577,7 +640,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 		interpret-aux(T:Type, I:Int) => interpret-aux(T:Type, _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))))
 		if I:Int >Int max(T:Type)
 		andBool hasIntegerType(T:Type)
-		andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))) >=Int min(T:Type)
+		//andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:Type)))) >=Int min(T:Type)
 		[structural] 
 		
 	rule [arithInterpret-done]:
@@ -621,21 +684,22 @@ kmod DYNAMIC-C-CONVERSIONS is
 		[structural] 
 	
 	// fixme
-	rule arithInterpret(t(S:Set, T:SimpleType), F:Float) => tv(F:Float, t(S:Set, T:SimpleType))
+	rule [arithInterpret-float]: arithInterpret(t(S:Set, T:SimpleType), F:Float) => tv(F:Float, t(S:Set, T:SimpleType))
 		if (T:SimpleType ==Bool double)
 		orBool T:SimpleType ==Bool float
 		orBool T:SimpleType ==Bool long-double
 		[structural] 
 	// signed arithmetic isn't supposed to overflow
-	rule
+	rule [arithInterpret-unsigned-big]:
 		arithInterpret(T:Type, I:Int) 
 		=> tv(I:Int %Int (max(T:Type) +Int 1), T:Type)
 		if hasUnsignedIntegerType(T:Type)
 		andBool I:Int >Int max(T:Type)
 		[structural] 
-	rule
+	rule [arithInterpret-unsigned-small]:
 		arithInterpret(T:Type, I:Int) 
-		=> arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
+		// => arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
+		=> tv(_+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)), T:Type)
 		if hasUnsignedIntegerType(T:Type)
 		andBool I:Int <Int min(T:Type)
 		// andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
