@@ -182,10 +182,12 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		if hasIntegerType(T:Type)
 		[structural]
 	
-	// rule [promote-float]: promote(T:Type) => T:Type
-		// if hasFloatType(T:Type)
-		// [structural]
-	// promote should never be called on non-integer types
+	rule [promote-float]: promote(t(S:Set, float)) => t(S:Set, float)
+		[structural]
+	rule [promote-double]: promote(t(S:Set, double)) => t(S:Set, double)
+		[structural]
+	rule [promote-long-double]: promote(t(S:Set, long-double)) => t(S:Set, long-double)
+		[structural]
 
 	
 	rule [promote-lte-int-fits]:

@@ -724,22 +724,12 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< type > L:KLabel(T:Type) => promote(T:Type) ...</ type > 
 		if isArithUnaryOp(L:KLabel)
-		andBool hasIntegerType(T:Type)
-		[structural]
-	rule
-		< type > L:KLabel(T:Type) => T:Type ...</ type > 
-		if isArithUnaryOp(L:KLabel)
-		andBool hasFloatType(T:Type)
+		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		[structural]
 	
 	rule 
 		< type > L:KLabel(T:Type,, ?:List{K}) => promote(T:Type) ...</ type >
-		if hasIntegerType(T:Type)
-		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural]
-	rule 
-		< type > L:KLabel(T:Type,, ?:List{K}) => T:Type ...</ type >
-		if hasFloatType(T:Type)
+		if (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]
 		
