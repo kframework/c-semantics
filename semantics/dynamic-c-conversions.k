@@ -648,12 +648,12 @@ kmod DYNAMIC-C-CONVERSIONS is
 		[structural] 
 	rule [arithInterpret-unsigned-small]:
 		arithInterpret(T:Type, I:Int) 
-		// => arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
-		=> tv(_+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)), T:Type)
+		=> arithInterpret(T:Type, _+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)))
+		//=> tv(_+Int_(I:Int %Int (max(T:Type) +Int 1), (max(T:Type) +Int 1)), T:Type)
 		if hasUnsignedIntegerType(T:Type)
 		andBool I:Int <Int min(T:Type)
-		// andBool _+Int_(I:Int, (max(T:Type) +Int 1)) <=Int max(T:Type)
-		[structural] 
+		[structural]
+		// must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
 	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
