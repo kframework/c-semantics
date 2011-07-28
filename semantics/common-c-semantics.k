@@ -185,7 +185,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op sizeofType : K -> K [metadata "strict=()"] // generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [metadata "strict=()"] // needs to be heated to top of K for struct and union types
 	op byteSizeofType : K -> K [metadata "strict=()"] 
-	op bitsToBytes : Nat -> Nat 
+	op bitsToBytes : K -> Nat 
 	op HOLE : -> Expression 
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
 	op _contains_ : Set K -> Bool [memo] 

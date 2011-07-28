@@ -44,7 +44,7 @@ sub printResults {
 				$rule =~ s/["]//g; # remove quotes
 				$hash_ref->{$key} = $rule;
 			}
-			push(@fields, "\"$hash_ref->{$key}\"");
+			push(@fields, "$hash_ref->{$key}");
 		}
 		print join("\t", @fields);
 		print "\n";

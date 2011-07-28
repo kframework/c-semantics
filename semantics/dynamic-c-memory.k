@@ -504,7 +504,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural] 
 	rule [splitBytes-int]:
 		splitBytes(tv(I:Int, T:Type)) 
-			=> splitIntegerBytes(I:Int, T:Type, value(byteSizeofType(T:Type)))
+		// => splitIntegerBytes(I:Int, T:Type, value(byteSizeofType(T:Type)))
+			=> splitIntegerBytes(I:Int, T:Type, bitsToBytes(bitSizeofType(T:Type)))
 		if hasIntegerType(T:Type)
 		andBool (I:Int >=Int 0 orBool I:Int <=Int 0)
 		[structural] 
@@ -524,13 +525,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural] 
 	
 	op splitIntegerBytes : K K K -> K 
-	op splitIntegerBytes : K K K List{K} -> K 
-	context splitIntegerBytes(?, ?, value(`[HOLE`]:K)) 
-	rule splitIntegerBytes(I:Int, T:Type, Len:Nat) => splitIntegerBytes(I:Int, T:Type, Len:Nat, .List{K}) [structural]
-	rule splitIntegerBytes(I:Int, T:Type, sNat(Len:Nat), L:List{K})
-		=> splitIntegerBytes(I:Int >>Int numBitsPerByte, T:Type, Len:Nat, (L:List{K},, lowestByte(I:Int, T:Type))) 
+	op splitIntegerBytes-aux : K K K List{K} -> K 
+	//context splitIntegerBytes(?, ?, value(`[HOLE`]:K)) 
+	rule splitIntegerBytes(I:Int, T:Type, Len:Nat) => splitIntegerBytes-aux(I:Int, T:Type, Len:Nat, .List{K}) [structural]
+	rule splitIntegerBytes-aux(I:Int, T:Type, sNat(Len:Nat), L:List{K})
+		=> splitIntegerBytes-aux(I:Int >>Int numBitsPerByte, T:Type, Len:Nat, (L:List{K},, lowestByte(I:Int, T:Type))) 
 		[structural]
-	rule splitIntegerBytes(?, ?, 0, L:List{K})
+	rule splitIntegerBytes-aux(?, ?, 0, L:List{K})
 		=> dataList(L:List{K}) 
 		[structural]
 		
