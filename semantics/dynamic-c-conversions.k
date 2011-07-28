@@ -94,11 +94,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		if isArithBinConversionOp(L:KLabel)
 		andBool (hasIntegerType(T:Type) orBool hasFloatType(T:Type))
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type))
-		andBool (
-			T:Type =/=Bool T':Type
-			//orBool notBool hasBeenPromoted(T:Type) 
-			//orBool notBool hasBeenPromoted(T':Type)
-		)
+		andBool (T:Type =/=Bool T':Type)
 		where finalType = usualArithmeticConversion(T:Type, T':Type)
 		[structural] 
 		

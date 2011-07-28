@@ -13,8 +13,11 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	rule [reval-skipval]: reval(skipval) => skipval [structural]
 	rule [reval-emptyval]: reval(emptyValue) => emptyValue [structural]
-	rule [reval-tv-normal]: reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule [peval-tv-normal]: peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	// rule [reval-tv-normal]: reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule [reval-tv-normal]: reval(tv(L:List{K}, T:Type)) => tv(L:List{K}, T:Type) [structural] 
+	// tvs can't be arrays or functions
+	// rule [peval-tv-normal]: peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule [peval-tv-normal]: peval(tv(V:List{K}, T:Type)) => tv(V:List{K}, T:Type) [structural]
 	
 	/*@ \source[n1570]{\para{6.3.2.1}{2}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
