@@ -78,48 +78,11 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		andBool notBool hasBeenPromoted(T:Type)
 		//andBool hasIntegerType(T:Type) // implicity in notBool hasBeenPromoted
 		[structural] 
-	// rule [promote-binary-right]:
-		// < k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => cast(promote(T:Type), tv(V:BaseValue, T:Type)))) ...</ k > 
-		// if isArithBinOp(L:KLabel)
-		// andBool notBool hasBeenPromoted(T:Type)
-		// andBool hasIntegerType(T:Type)
-		// [structural] 
-	// optimization based on above general rule
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
+	rule [promote-binary-right]:
+		< k > L:KLabel(?,, (tv(V:BaseValue, T:Type) => tv(V:BaseValue, promote(T:Type)))) ...</ k > 
 		if isArithBinOp(L:KLabel)
-		//andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, bool)
-		[structural]
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		//andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, signed-char)
-		[structural]
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		//andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, unsigned-char)
-		[structural]
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		//andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, short-int)
-		[structural]
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		//andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, unsigned-short-int)
-		[structural]
-	rule
-		< k > L:KLabel(?,, (tv(V:BaseValue, TheType) => tv(V:BaseValue, promote(TheType)))) ...</ k > 
-		if isArithBinOp(L:KLabel)
-		// andBool hasIntegerType(TheType)
-		where TheType = t(S:Set, bitfieldType(T:Type, N:Nat))
+		andBool notBool hasBeenPromoted(T:Type)
+		//andBool hasIntegerType(T:Type)
 		[structural]
 	
 	
@@ -182,46 +145,31 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		if hasIntegerType(T:Type)
 		[structural]
 	
-	rule [promote-float]: promote(t(S:Set, float)) => t(S:Set, float)
+	rule [promote-float]:
+		promote(T:Type) => T:Type
+		if hasFloatType(T:Type)
 		[structural]
-	rule [promote-double]: promote(t(S:Set, double)) => t(S:Set, double)
-		[structural]
-	rule [promote-long-double]: promote(t(S:Set, long-double)) => t(S:Set, long-double)
-		[structural]
+		
+	// rule [promote-float]: promote(t(S:Set, float)) => t(S:Set, float)
+		// [structural]
+	// rule [promote-float]: promote(t(S:Set, float)) => t(S:Set, float)
+		// [structural]
+	// rule [promote-double]: promote(t(S:Set, double)) => t(S:Set, double)
+		// [structural]
+	// rule [promote-long-double]: promote(t(S:Set, long-double)) => t(S:Set, long-double)
+		// [structural]
 
-	
+	// <= so enums become ints
 	rule [promote-lte-int-fits]:
 		promote(T:Type) => t(.Set, int)
-		if rank(T:Type) <Int rank(t(.Set, int))
+		if rank(T:Type) <=Int rank(t(.Set, int))
 		andBool min(t(.Set, int)) <=Int min(T:Type) 
 		andBool max(t(.Set, int)) >=Int max(T:Type)		
 		[structural]
 
-	// rule [promote-gt-int]:
-		// promote(T:Type) => T:Type
-		// if rank(T:Type) >=Int rank(t(.Set, int))
-		// [structural]
-	// optimization based on above general rule
-	rule [promote-enum]:
-		promote(t(S:Set, enumType(?))) => t(S:Set, int)
-		[structural]
-	rule [promote-int]:
-		promote(t(S:Set, int)) => t(S:Set, int)
-		[structural]
-	rule [promote-unsigned-int]:
-		promote(t(S:Set, unsigned-int)) => t(S:Set, unsigned-int)
-		[structural]
-	rule [promote-long-int]:
-		promote(t(S:Set, long-int)) => t(S:Set, long-int)
-		[structural]
-	rule [promote-unsigned-long-int]:
-		promote(t(S:Set, unsigned-long-int)) => t(S:Set, unsigned-long-int)
-		[structural]
-	rule [promote-long-long-int]:
-		promote(t(S:Set, long-long-int)) => t(S:Set, long-long-int)
-		[structural]
-	rule [promote-unsigned-long-long-int]:
-		promote(t(S:Set, unsigned-long-long-int)) => t(S:Set, unsigned-long-long-int)
+	rule [promote-gt-int]:
+		promote(T:Type) => T:Type
+		if rank(T:Type) >Int rank(t(.Set, int))
 		[structural]
 
 	rule [promote-bitfield-fits]:
