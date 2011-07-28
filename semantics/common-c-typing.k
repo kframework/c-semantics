@@ -232,6 +232,13 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		< k > canonicalizeType(.Bag, (t((.Set => SetItem(Const)) ?, ?)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Const
 		[structural]
+		
+	/*@ \source[n1570]{\para{6.7.3}{9}}
+	If the specification of an array type includes any type qualifiers, the element type is so-qualified, not the array type. \ldots
+	*/
+	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:SimpleType), N:Nat))
+		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:SimpleType), N:Nat))
+		[structural]
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(Named(X:Id)))

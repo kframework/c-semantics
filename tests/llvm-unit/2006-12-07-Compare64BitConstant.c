@@ -2,7 +2,7 @@
 
 long long Large = 5LL << 48;
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
   // Make sure large constants compare correctly.
   if (((Large >> 48) & 7LL) == 5LL) {
     printf("Works.\n");
