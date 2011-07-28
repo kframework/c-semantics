@@ -192,9 +192,21 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	
+	op AllowWrite : K -> K [metadata "strict=()"]
+	
+	rule AllowWrite(lv(N:Nat, T:Type)) => lv(N:Nat, stripConst(T:Type)) [structural]
+
+	op stripConst : Type -> Type
+	
+	rule stripConst(t((SetItem(Const) => .Set) ?, ?)) [structural]
+	rule 
+		stripConst(t(S:Set, T:SimpleType)) => t(S:Set, T:SimpleType)
+		if notBool Const in S:Set
+		[structural]
 	
 	op bind : List{C} List{Type} -> K 
 	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
+	op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 
 	op functionObject : Id Type K -> Value 
 	op functionPrototype : Id Type -> Value 
@@ -248,6 +260,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op hasBitfieldType : Type -> Bool 
 	op hasExternType : Type -> Bool 
 	op hasStaticType : Type -> Bool 
+	op hasConstType : Type -> Bool
 	op hasIncompleteType : Type -> Bool 
 	// op hasTypedefType : Type -> Bool 
 	op hasArithmeticType : Type -> Bool

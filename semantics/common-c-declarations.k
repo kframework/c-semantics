@@ -92,14 +92,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// base types
 	rule
 		< k > figureInitializer(X:Id, T:Type, SingleInit(K:K))
-			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(X:Id := K:K)))
+			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(AllowWrite(X:Id) := K:K)))
 		...</ k >
 		if notBool hasArrayType(T:Type)
 		[structural] 
 	// c1x 6.7.8:11
 	rule
 		< k > figureInitializer(X:Id, T:Type, CompoundInit(InitFragment(NextInit, SingleInit(K:K))))
-			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(X:Id := K:K)))
+			=> figureInitializer-aux(X:Id, T:Type, initializer(Computation(AllowWrite(X:Id) := K:K)))
 		...</ k >
 		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		[structural] 
@@ -824,7 +824,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > T':Type ~> initializeSingleInit(K':K) => . ...</ k >
 		< currentSubObject > (.List => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
-		< savedInitialization >... .K => Computation(K:K := K':K) </ savedInitialization > 
+		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) </ savedInitialization > 
 		if (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		andBool notBool hasStructType(T':Type)
 		andBool notBool hasUnionType(T':Type)
@@ -861,7 +861,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > findStruct(t(?, structType(S:Id))) ListItem(te(K:K, t(?, structType(S:Id)))) => next ...</ currentSubObject >
 		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
-		< savedInitialization >... .K => Computation(K:K := K':K) </ savedInitialization > 
+		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) </ savedInitialization > 
 		[structural] 
 	
 	rule

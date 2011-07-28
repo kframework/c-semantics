@@ -279,9 +279,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op splitBytes : Value -> K 
 	op calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
 	
-	op write-aux : K Value K -> K [metadata "strict=(2)"] 
-	rule write(K:K, tv(V:List{K}, T:Type)) 
-		=> write-aux(K:K, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
+	op write-aux : K Value K -> K [metadata "strict=(2)"]
+	rule write(lv(Dest:Nat, T':Type), tv(V:List{K}, T:Type)) 
+		=> write-aux(Dest:Nat, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
+		if notBool hasConstType(T':Type)
 		[structural]
 	context write-aux(?, ?, value(`[HOLE`]))
 	

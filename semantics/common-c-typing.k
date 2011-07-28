@@ -50,9 +50,9 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Restrict)) 
 		=> t(S:Set S':Set, T:SimpleType) 
 		[structural]
-	rule [ignore-const]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Const)) 
-		=> t(S:Set S':Set, T:SimpleType) 
-		[structural]
+	// rule [ignore-const]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Const)) 
+		// => t(S:Set S':Set, T:SimpleType) 
+		// [structural]
 	rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Auto)) 
 		=> t(S:Set S':Set, T:SimpleType) 
 		[structural]
@@ -223,12 +223,15 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		< k > canonicalizeType(.Bag, (T:Type => t(.Set, qualifiedType(T:Type, Q:K))), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Extern
 		orBool Q:K ==Bool Static
-		orBool Q:K ==Bool Const
 		orBool Q:K ==Bool Volatile
 		orBool Q:K ==Bool Restrict
 		orBool Q:K ==Bool Auto
 		orBool Q:K ==Bool Register
-		[structural] 
+		[structural]
+	rule
+		< k > canonicalizeType(.Bag, (t((.Set => SetItem(Const)) ?, ?)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		if Q:K ==Bool Const
+		[structural]
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(Named(X:Id)))
@@ -1004,6 +1007,19 @@ kmod COMMON-C-TYPING is
 	rule [hasStaticType-false]: hasStaticType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
+	
+	rule [hasConstType-qualified]: 
+		hasConstType(t(?, qualifiedType(T:Type, K:K))) => hasConstType(T:Type)
+		[structural]
+	rule [hasConstType-false]: 
+		hasConstType(t(S:Set, T:SimpleType)) => false
+		if getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
+		andBool notBool Const in S:Set
+		[structural]
+	rule [hasConstType-true]: 
+		hasConstType(t(SetItem(Const) ?, T:SimpleType)) => true
+		[structural]		
+	
 		
 	rule [hasBitfieldType-true]: hasBitfieldType(t(?, bitfieldType(?, ?))) => true [structural]
 	rule [hasBitfieldType-false]: hasBitfieldType(t(?, T:SimpleType)) => false

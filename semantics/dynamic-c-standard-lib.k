@@ -265,14 +265,14 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		[structural]
 	
 	rule [strcpy-some]:
-		< k > (tv(I:Int, T:Type) => write(Dest:Nat, tv(I:Int, T:Type)))
+		< k > (tv(I:Int, T:Type) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:Type)))
 			~> strcpy((Dest:Nat => sNat(Dest:Nat)), ?, ?)
 		...</ k >
 		if I:Int =/=Bool 0
 		[structural]
 	rule [strcpy-done]:
 		< k > tv(0, T:Type) ~> strcpy(Dest:Nat, ?, Orig:Nat)
-			=> write(Dest:Nat, tv(0, T:Type)) 
+			=> write(lv(Dest:Nat, t(.Set, char)), tv(0, T:Type)) 
 			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
 		...</ k >
 		[structural]		

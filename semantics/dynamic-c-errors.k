@@ -305,7 +305,14 @@ kmod DYNAMIC-C-ERRORS is
 		(.Bag => < errorCell > Error("00034", "Casting void type to non-void type.") </ errorCell >)
 		if (T:SimpleType =/=Bool void)
 		[structural]
-
+		
+	rule [err00035]:
+		< k => finalComputation > 
+			write(lv(Dest:Nat, t(SetItem(Const) ?, ?)), ?)
+		...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00035", "Trying to write through a const lvalue.") </ errorCell >)
+		[structural]
+	
 	op datarace : Nat Nat Nat Nat -> K 
 
 	// fixme possible to miss dataraces with bitfields

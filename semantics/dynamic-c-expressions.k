@@ -5,7 +5,6 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	op lvGetOffset : K K Type -> K
 	op tvGetOffset : K K Type -> K
-	op lv : List{K} Type -> Value
 
 	
 	// fixme Whoah!  What about char types?  What is this about?
@@ -583,7 +582,7 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 	*/
 	rule [assign]:
 		< k > lv(Loc:Nat, T:Type) := RHS
-			=> write(Loc:Nat, RHS)
+			=> write(lv(Loc:Nat, T:Type), RHS)
 			~> RHS
 		...</ k >
 		where RHS = tv(V:List{K}, T:Type)

@@ -60,8 +60,8 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			=> allocateType(Loc:Nat, T:Type)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:Type)
-			~> initialize(X:Id, T:Type, Computation(X:Id := tv(V:List{K}, T':Type)))
-			~> bind-aux(Loc:Nat, L:List{C}, P:List{Type}) 
+			~> initialize(X:Id, T:Type, Computation(AllowWrite(X:Id) := tv(V:List{K}, T':Type)))
+			~> bind-aux(Loc:Nat, L:List{C}, P:List{Type})
 		...</ k > 
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
@@ -148,11 +148,13 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	op zeroType : K Type -> K 
 	
 	rule
-		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0, t(.Set, int))) ...</ k >
+		< k > zeroType(Name:K, T:Type) 
+			=> Computation(AllowWrite(Name:K) := tv(0, t(.Set, int))) ...</ k >
 		if hasIntegerType(T:Type)
 		[structural] 
 	rule
-		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(0.0, t(.Set, float))) ...</ k >
+		< k > zeroType(Name:K, T:Type) 
+			=> Computation(AllowWrite(Name:K) := tv(0.0, t(.Set, float))) ...</ k >
 		if hasFloatType(T:Type)
 		[structural] 
 		
@@ -191,7 +193,8 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 
 	rule
-		< k > zeroType(Name:K, T:Type) => Computation(Name:K := tv(NullPointer, T:Type)) ...</ k >
+		< k > zeroType(Name:K, T:Type) 
+			=> Computation(AllowWrite(Name:K) := tv(NullPointer, T:Type)) ...</ k >
 		if hasPointerType(T:Type)
 		[structural]
 	rule
