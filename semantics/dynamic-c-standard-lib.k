@@ -382,6 +382,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	op printf-string : Nat Nat -> K
 	op printf-% : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	op printf-%l : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	op printf-%ld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	op printf-%ll : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	op printf-%llu : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	op printf-%lld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
@@ -597,7 +598,20 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			~> printf-%l(Len:Nat, (Loc:Nat => sNat(Loc:Nat)), L:List{C}) 
 		...</ k >
 		[structural]
-		
+	
+	rule [printf-%ld-arg]:
+		< k > tv(N:Nat, ?) ~> printf-%l(Len:Nat, Loc:Nat, vararg(tv(Loc':Nat, ?)))
+			=> printf-%ld(Len:Nat, Loc:Nat, nextvarg(Loc':Nat, t(.Set, long-int)))
+		...</ k >
+		if N:Nat ==Bool asciiCharString("d")
+		[structural]
+	rule [printf-%ld]:
+		< k > printf-%ld(Len:Nat, Loc:Nat, vpair(tv(D:Int, t(?, long-int)), V:Value) :: ?)
+			=> writeToFD(1, Rat2String(D:Int, 10))
+			~> printf-aux(Len:Nat +Nat lengthString(Rat2String(D:Int, 10)), Loc:Nat, V:Value)
+		...</ k >
+		[structural]
+	
 	rule [printf-%ll]:
 		< k > tv(N:Nat, ?) ~> printf-%l(Len:Nat, Loc:Nat, L:List{C})
 			=> printf-%ll(Len:Nat, Loc:Nat, L:List{C})

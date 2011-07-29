@@ -431,20 +431,23 @@ global:
     * "declaration". For now we keep it at global scope only because in local
     * scope it looks too much like a function call  *) */
 | IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list SEMICOLON
+	{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+/*
                            { (* Convert pardecl to new style *)
                              let pardecl, isva = doOldParDecl $3 $5 in 
                              (* Make the function declarator *)
                              doDeclaration ((*handleLoc*) (snd $1)) []
                                [((fst $1, PROTO(JUSTBASE, pardecl,isva), [], cabslu),
                                  NO_INIT)]
-                            }
+                            }*/
 /* (* Old style function prototype, but without any arguments *) */
 | IDENT LPAREN RPAREN  SEMICOLON
-                           { (* Make the function declarator *)
+{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+                           /*{ (* Make the function declarator *)
                              doDeclaration ((*handleLoc*)(snd $1)) []
                                [((fst $1, PROTO(JUSTBASE,[],false), [], cabslu),
                                  NO_INIT)]
-                            }
+                            }*/
 /* transformer for a toplevel construct */
 | AT_TRANSFORM LBRACE global RBRACE  IDENT/*to*/  LBRACE globals RBRACE {
     checkConnective(fst $5);
@@ -1265,6 +1268,8 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                             } 
 /* (* New-style function that does not have a return type *) */
 | IDENT parameter_list_startscope rest_par_list RPAREN 
+{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+/*
                            { let (params, isva) = $3 in
                              let fdec = 
                                (fst $1, PROTO(JUSTBASE, params, isva), [], snd $1) in
@@ -1272,10 +1277,12 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                              (* Default is int type *)
                              let defSpec = [SpecType Tint] in
                              (snd $1, defSpec, fdec)
-                           }
+                           }*/
 
 /* (* No return type and old-style parameter list *) */
 | IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list
+{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+/*
                            { (* Convert pardecl to new style *)
                              let pardecl, isva = doOldParDecl $3 $5 in
                              (* Make the function declarator *)
@@ -1286,9 +1293,11 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                              (* Default is int type *)
                              let defSpec = [SpecType Tint] in
                              (snd $1, defSpec, fdec) 
-                            }
+                            }*/
 /* (* No return type and no parameters *) */
 | IDENT LPAREN                      RPAREN
+{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+/*
                            { (* Make the function declarator *)
                              let fdec = (fst $1,
                                          PROTO(JUSTBASE, [], false), 
@@ -1297,7 +1306,7 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                              (* Default is int type *)
                              let defSpec = [SpecType Tint] in
                              (snd $1, defSpec, fdec)
-                            }
+                            }*/
 ;
 
 /* const/volatile as type specifier elements */
