@@ -1,7 +1,7 @@
 #include "cq-header.h"
 
 
-sec(pd0)          /*  7.14  Assignment operators       */
+int sec(pd0)          /*  7.14  Assignment operators       */
 struct defs *pd0;
 {
    static char f[] = "Local error %d.\n";

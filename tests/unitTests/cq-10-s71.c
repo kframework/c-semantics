@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)          /*         7.1  Primary expressions   */
+int sec(pd0)          /*         7.1  Primary expressions   */
 struct defs *pd0;
 {
 	setupTable(pd0);

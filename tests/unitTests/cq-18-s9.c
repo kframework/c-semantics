@@ -1,5 +1,5 @@
 #include "cq-header.h"
-sec(pd0)          /*  9  Statements  */
+int sec(pd0)          /*  9  Statements  */
 struct defs *pd0;
 {
    static char s9er[] = "s9,er%d\n";

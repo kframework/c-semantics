@@ -12,7 +12,7 @@ typedef struct {
 } S2Ty;
 
 void printS1(S1Ty *V) {
-  printf("%d, %d, %d, %lld\n", V->w, (int)(100*V->x), (int)(100*V->y), V->z);
+  printf("%d, %d, %d, %lld\n", V->w, (int)(10*V->x), (int)(10*V->y), V->z);
 }
 
 int main() {

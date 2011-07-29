@@ -1,10 +1,10 @@
 #include "cq-header.h"
-s715f(x,y,z)
+int s715f(x,y,z)
 int x, y, z;
 {
    return y;
 }
-sec(pd0)          /*  7.15 Comma operator     */
+int sec(pd0)          /*  7.15 Comma operator     */
 struct defs *pd0;
 {
    static char s715er[] = "s715,er%d\n";

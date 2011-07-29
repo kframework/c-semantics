@@ -1,5 +1,5 @@
 #include "cq-header.h"
-sec(pd0)          /*  8.4 Meaning of declarators   */
+int sec(pd0)          /*  8.4 Meaning of declarators   */
 struct defs *pd0;
 {
    int *ip, i, *fip(), (*pfi)(), j, k, array(), glork(int);

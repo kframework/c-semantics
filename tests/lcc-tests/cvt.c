@@ -18,7 +18,7 @@ void print(void) {
 	printf("%d %d %d %d %u %u %u %u\n",c,s,i,l,C,S,I,L);
 }
 
-main() {
+int main() {
 	c= 1;     s=c;i=c;l=c;C=c;S=c;I=c;L=c;f=c;d=c;D=c; print();
 	s= 2; c=s;    i=s;l=s;C=s;S=s;I=s;L=s;f=s;d=s;D=s; print();
 	i= 3; c=i;s=i;    l=i;C=i;S=i;I=i;L=i;f=i;d=i;D=i; print();

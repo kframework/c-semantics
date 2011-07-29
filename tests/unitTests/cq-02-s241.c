@@ -1,7 +1,7 @@
 #include "cq-header.h"
 
 
-sec(struct defs *pd0)                   /* 2.4.1 Integer constants
+int sec(struct defs *pd0)                   /* 2.4.1 Integer constants
                                2.4.2 Explicit long constants  */
 {
    long pow2();

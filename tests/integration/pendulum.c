@@ -19,7 +19,7 @@
 #define g2(x1,x2,t) (-q*x2-sin(x1)+b*cos(w*t))
 const double q=0.5,b=0.9,w=2.0/3;
 
-main()
+int main()
 /* Main Program for a driven pendulum under damping solved with
    the fourth-order Runge-Kutta algorithm.  Parameters: Q, B,
    and W (omega_0).  Copyright (c) Tao Pang 1997. */

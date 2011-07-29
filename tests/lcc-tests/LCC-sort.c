@@ -1,7 +1,7 @@
 #include <stdio.h>
 int in[] = {10, 32, -1, 567, 3, 18, 1, -51, 789, 0};
 
-main() {
+int main() {
 	int i;
 
 	sort(in, (sizeof in)/(sizeof in[0]));

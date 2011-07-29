@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)                 /* 2.2 Identifiers (Names)      */
+int sec(pd0)                 /* 2.2 Identifiers (Names)      */
 struct defs *pd0;
 {
    int a234, a;

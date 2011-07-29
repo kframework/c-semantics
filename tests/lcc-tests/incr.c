@@ -1,4 +1,4 @@
-main() {return 0;}
+int main() {return 0;}
 
 void memchar() {
 	char x, *p;

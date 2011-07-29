@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)          /*  8.6 Initialization  */
+int sec(pd0)          /*  8.6 Initialization  */
 struct defs *pd0;
 {
    static char s86er[] = "s86,er%d\n";

@@ -1,7 +1,7 @@
 #include "cq-header.h"
 
 
-sec(pd0)          /* 7.5 Shift operators          */
+int sec(pd0)          /* 7.5 Shift operators          */
                    /* 7.6 Relational operators     */
                    /* 7.7 Equality operator        */
 struct defs *pd0;

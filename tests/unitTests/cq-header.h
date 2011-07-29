@@ -156,14 +156,14 @@ int svtest(int n) {
    }
    return rc;
 }
-zero(){                 /* Returns a value of zero, possibly */
+int zero(){                 /* Returns a value of zero, possibly */
    static int k;            /* with side effects, as it's called */
    int rc;              /* alternately with svtest, above,   */
    k = 2;               /* and has the same internal storage */
    rc = 0;              /* requirements.                     */
    return rc;
 }
-testev(){
+int testev(){
    if(extvar != 1066) return 1;
    else return 0;
 }

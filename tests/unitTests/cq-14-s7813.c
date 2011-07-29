@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)          /* 7.8 Bitwise AND operator
+int sec(pd0)          /* 7.8 Bitwise AND operator
                        7.9 Bitwise OR operator
                        7.10 Bitwise exclusive OR operator
                        7.11 Logical AND operator

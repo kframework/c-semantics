@@ -1,7 +1,7 @@
 #include <stdio.h>
 int x[3][4], *y[3];
 
-main() {
+int main() {
 	int z[3][4];
 	int i, j, *p;
 

@@ -17,7 +17,7 @@
 #include <math.h>
 #define NMAX 3
 
-main()
+int main()
 /* An example of solving linear equation set a[][] x[] = b[]
    with the partial-pivoting Gaussian elimination scheme.  The
    numerical values are for the Wheatstone bridge example discussed

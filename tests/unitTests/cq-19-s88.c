@@ -1,7 +1,7 @@
 #include "cq-header.h"
 
 int *metricp;
-sec(pd0)          /*  8.8 Typedef  */
+int sec(pd0)          /*  8.8 Typedef  */
 struct defs *pd0;
 {
    static char s88er[] = "s88,er%d\n";

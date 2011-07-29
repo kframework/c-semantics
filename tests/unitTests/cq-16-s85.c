@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)          /*  8.5 Structure and union declarations   */
+int sec(pd0)          /*  8.5 Structure and union declarations   */
 struct defs *pd0;
 {
    static char s85er[] = "s85,er%d\n";

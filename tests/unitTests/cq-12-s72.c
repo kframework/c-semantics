@@ -1,6 +1,6 @@
 #include "cq-header.h"
 
-sec(pd0)          /*  7.2  Unary operators  */
+int sec(pd0)          /*  7.2  Unary operators  */
 struct defs *pd0;
 {
 	setupTable(pd0);

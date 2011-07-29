@@ -3,7 +3,7 @@ float static func(){
 }
 
 typedef float d_struct;
-first(){
+void first(){
 	extern d_struct func();
 }
 d_struct second(){
