@@ -13,7 +13,7 @@ void f (x)
   p[1][0] = 0;
 }
 
-main ()
+int main ()
 {
   f (7);
   exit (0);

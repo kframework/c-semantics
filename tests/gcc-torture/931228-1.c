@@ -1,6 +1,6 @@
 void exit(int status);
 void abort(void);
-f (x)
+int f (x)
 {
   x &= 010000;
   x &= 007777;
@@ -9,7 +9,7 @@ f (x)
   return x;
 }
 
-main ()
+int main ()
 {
   if (f (-1) != 017770)
     abort ();

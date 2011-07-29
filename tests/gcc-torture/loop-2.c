@@ -9,7 +9,7 @@ void f (b)
     a[i] = i - 2;
 }
 
-main ()
+int main ()
 {
   a[0] = a[1] = 0;
   f (2);

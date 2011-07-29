@@ -46,7 +46,7 @@ load_data() {
 }
 
 
-main()
+int main()
 {
     load_data();
     if (sizeof (int) == 2 && data_ptr[0].dummy != 0x5555)

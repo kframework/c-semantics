@@ -2,10 +2,10 @@ void exit(int status);
 void abort(void);
 int a = 1, b;
 
-g () { return 0; }
-h (x) {}
+int g () { return 0; }
+void h (x) {}
 
-f ()
+int f ()
 {
   if (g () == -1)
     return 0;
@@ -15,7 +15,7 @@ f ()
   return 0;
 }
 
-main ()
+int main ()
 {
   f ();
   if (a != 0)

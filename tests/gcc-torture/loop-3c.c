@@ -17,7 +17,7 @@ void f (m)
   while (i < INT_MAX/2 + 1 + 4 * 4);
 }
 
-main ()
+int main ()
 {
   a[0x10] = 0;
   a[0x08] = 0;

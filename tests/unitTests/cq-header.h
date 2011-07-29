@@ -174,7 +174,7 @@ void setev(){                  /* Sets an external variable. Used  */
 }
 
 
-McCarthy(x)
+int McCarthy(x)
 int x;
 {
    if(x>100) return x-10;

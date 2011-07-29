@@ -15,7 +15,7 @@ void f (x)
     a = g (a);
 }
 
-main ()
+int main ()
 {
   f (3);
   if (glob != -4)

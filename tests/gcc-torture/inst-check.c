@@ -1,6 +1,6 @@
 #include <stdarg.h>
 
-f(m)
+int f(m)
 {
   int i,s=0;
   for(i=0;i<m;i++)
@@ -8,7 +8,7 @@ f(m)
   return s;
 }
 
-main()
+int main()
 {
   exit (0);
 }

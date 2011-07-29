@@ -12,7 +12,7 @@ f2 (x)
   return ((unsigned long long) (x != 0) - 3) / 2;
 }
 
-main ()
+int main ()
 {
   if (f1 (1) != (~(unsigned) 0) >> 1)
     abort ();

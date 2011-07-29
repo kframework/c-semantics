@@ -7,7 +7,7 @@ struct {
   E eval;
 } s;
 
-p()
+void p()
 {
   abort();
 }
@@ -21,7 +21,7 @@ void f()
     }
 }
 
-main()
+int main()
 {
   s.eval = e1;
   f();

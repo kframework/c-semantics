@@ -6,7 +6,7 @@ f (b)
   return (b >> 1) > 0;
 }
 
-main ()
+int main ()
 {
   if (!f (9))
     abort ();

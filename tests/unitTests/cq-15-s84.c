@@ -77,7 +77,7 @@ struct defs *pd0;
 
    return rc;
 }
-array(a,size,start)
+int array(a,size,start)
 int a[], size, start;
 {
    int i;
@@ -93,7 +93,7 @@ int x;
    y = x;
    return &y;
 }
-glork(x)
+int glork(x)
 int x;
 {return x;}
 #include "cq-main.h"

@@ -3,7 +3,7 @@ void abort(void);
 #define F 140
 #define T 13
 
-feq (x, y)
+int feq (x, y)
      long long int x;
      long long int y;
 {
@@ -13,7 +13,7 @@ feq (x, y)
     return F;
 }
 
-fne (x, y)
+int fne (x, y)
      long long int x;
      long long int y;
 {
@@ -23,7 +23,7 @@ fne (x, y)
     return F;
 }
 
-flt (x, y)
+int flt (x, y)
      long long int x;
      long long int y;
 {
@@ -33,7 +33,7 @@ flt (x, y)
     return F;
 }
 
-fge (x, y)
+int fge (x, y)
      long long int x;
      long long int y;
 {
@@ -43,7 +43,7 @@ fge (x, y)
     return F;
 }
 
-fgt (x, y)
+int fgt (x, y)
      long long int x;
      long long int y;
 {
@@ -53,7 +53,7 @@ fgt (x, y)
     return F;
 }
 
-fle (x, y)
+int fle (x, y)
      long long int x;
      long long int y;
 {
@@ -63,7 +63,7 @@ fle (x, y)
     return F;
 }
 
-fltu (x, y)
+int fltu (x, y)
      unsigned long long int x;
      unsigned long long int y;
 {
@@ -73,7 +73,7 @@ fltu (x, y)
     return F;
 }
 
-fgeu (x, y)
+int fgeu (x, y)
      unsigned long long int x;
      unsigned long long int y;
 {
@@ -83,7 +83,7 @@ fgeu (x, y)
     return F;
 }
 
-fgtu (x, y)
+int fgtu (x, y)
      unsigned long long int x;
      unsigned long long int y;
 {
@@ -93,7 +93,7 @@ fgtu (x, y)
     return F;
 }
 
-fleu (x, y)
+int fleu (x, y)
      unsigned long long int x;
      unsigned long long int y;
 {
@@ -183,7 +183,7 @@ int correct_results[] =
   T, F, F, T, F, T, F, T, F, T
 };
 
-main ()
+int main ()
 {
   int i, j, *res = correct_results;
 

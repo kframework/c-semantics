@@ -16,7 +16,7 @@ main ()
  exit (0);
 }
 #else
-main ()
+int main ()
 {
   exit (0);
 }

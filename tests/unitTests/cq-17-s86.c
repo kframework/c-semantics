@@ -96,7 +96,7 @@ struct defs *pd0;
    }
    return rc;
 }
-one(){
+int one(){
    return 1;
 }
 #include "cq-main.h"

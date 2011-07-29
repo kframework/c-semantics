@@ -3,7 +3,7 @@ void abort(void);
 int f (i) { return 12; }
 int g () { return 0; }
 
-main ()
+int main ()
 {
   int i, s;
 

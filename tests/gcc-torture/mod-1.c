@@ -6,7 +6,7 @@ void f (x, y)
     abort ();
 }
 
-main ()
+int main ()
 {
   f (-5, 5);
   exit (0);
