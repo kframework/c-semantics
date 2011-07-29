@@ -505,7 +505,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule [splitBytes-int]:
 		splitBytes(tv(I:Int, T:Type)) 
 		// => splitIntegerBytes(I:Int, T:Type, value(byteSizeofType(T:Type)))
-			=> splitIntegerBytes(I:Int, T:Type, bitsToBytes(bitSizeofType(T:Type)))
+			=> splitIntegerBytes(I:Int, T:Type, bitsToBytes(value(bitSizeofType(T:Type))))
 		if hasIntegerType(T:Type)
 		andBool (I:Int >=Int 0 orBool I:Int <=Int 0)
 		[structural] 

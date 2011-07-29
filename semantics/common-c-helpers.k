@@ -122,12 +122,6 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		if N:Nat >=Nat 0
 		[structural]
 	
-	rule calculateLength(Nil) => 0 [structural]
-	rule calculateLength(T:Type :: L:List{Type}) 
-		=> bitSizeofType(T:Type) + calculateLength(L:List{Type}) 
-		[structural]
-	// rule calculateLength(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
-	
 	op extractField-pre : List{K} Type Nat K -> K [metadata "strict=(4)"]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
 	
@@ -333,10 +327,26 @@ endkm
 kmod COMMON-C-BITSIZE is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
-	op bitSizeofList : List{Type} -> K 
-	rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
+	// syntax K ::= bitSizeofList ( List{Type} )
+	// syntax K ::= bitSizeofList-aux ( K , List{Type} ) [strict(1)]
+	
+	op bitSizeofList : List{Type} -> K
+	op bitSizeofList-aux : K Nat List{Type} -> K [metadata "strict=(1)"]
+	
+	
+	rule bitSizeofList(L:List{Type}) => bitSizeofList-aux(.K, 0, L:List{Type})
 		[structural]
-	rule bitSizeofList(Nil) => 0 [structural]
+	rule bitSizeofList-aux((.K => bitSizeofType(T:Type)), ?, (T:Type => Nil) :: ?:List{Type})
+		[structural]
+	rule bitSizeofList-aux((tv(Len':Nat, ?) => .K), (Len:Nat => Len:Nat +Nat Len':Nat), ?)
+		[structural]
+	rule bitSizeofList-aux(.K, Len:Nat, Nil) => tv(Len:Nat, cfg:largestUnsigned)
+		[structural]	
+	
+	
+	// rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
+		// [structural]
+	// rule bitSizeofList(Nil) => 0 [structural]
 	
 	op maxBitSizeofList : List{Type} -> K 
 	op maxBitSizeofList-aux : List{Type} Nat -> K 
@@ -350,16 +360,16 @@ kmod COMMON-C-BITSIZE is
 		< k > (tv(N':Nat, ?) => .) ~> maxBitSizeofList-aux(L:List{Type}, (N:Nat => maxNat(N:Nat, N':Nat))) ...</ k >
 		[structural] 
 	rule
-		< k > maxBitSizeofList-aux(Nil, N:Nat) => N:Nat ...</ k >
+		< k > maxBitSizeofList-aux(Nil, N:Nat) => tv(N:Nat, cfg:largestUnsigned) ...</ k >
 		[structural] 
 	
-	rule bitSizeofType(t(?, arrayType(T:Type, N:Nat))) => bitSizeofType(T:Type) * N:Nat [structural]
-	rule bitSizeofType(t(?, flexibleArrayType(T:Type))) => 0 [structural]
-	rule bitSizeofType(t(?, functionType(?, ?))) => numBitsPerByte [structural]
-	rule bitSizeofType(t(?, pointerType(?))) => cfg:ptrsize *Nat numBitsPerByte [structural]
-	rule bitSizeofType(t(?, bitfieldType(?, N:Nat))) => N:Nat [structural]
+	rule bitSizeofType(t(?, arrayType(T:Type, N:Nat))) => bitSizeofType(T:Type) * tv(N:Nat, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(?, flexibleArrayType(T:Type))) => tv(0, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(?, functionType(?, ?))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(?, pointerType(?))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(?, bitfieldType(?, N:Nat))) => tv(N:Nat, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
-	rule bitSizeofType(T:Type) => numBits(T:Type) if isBasicType(T:Type) [structural]
+	rule bitSizeofType(T:Type) => tv(numBits(T:Type), cfg:largestUnsigned) if isBasicType(T:Type) [structural]
 	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 
 	rule

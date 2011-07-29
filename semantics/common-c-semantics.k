@@ -242,7 +242,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op readFromFD : Nat -> K 
 	op readFromFD : Nat Nat -> K 
 
-	op calculateLength : List{Type} -> K 
 	op calculateGotoMap : Id K -> K 
 	
 	op hasCharType : Type -> Bool 
