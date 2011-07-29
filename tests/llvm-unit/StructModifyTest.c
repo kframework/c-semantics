@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 typedef struct {
   int w;
   float x;
@@ -10,7 +12,7 @@ typedef struct {
 } S2Ty;
 
 void printS1(S1Ty *V) {
-  printf("%d, %f, %f, %lld\n", V->w, V->x, V->y, V->z);
+  printf("%d, %d, %d, %lld\n", V->w, (int)(1000*V->x), (int)(1000*V->y), V->z);
 }
 
 int main() {

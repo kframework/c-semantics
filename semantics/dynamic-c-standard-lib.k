@@ -1,22 +1,28 @@
 load maudeLib/TCPSupport
 
-////////////////////////////////
-//- C standard library
-kmod DYNAMIC-C-STANDARD-LIBRARY is
-	including DYNAMIC-INCLUDE
+kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
+	including DYNAMIC-INCLUDE 
 	including #SOCKET
 	including #TCP-INTERFACE
 	
 	op vararg : K -> C [metadata "hybrid=() strict=()"]
-	rule reval(vararg(K:K)) => vararg(K:K) [structural]
-	
 	op nextvarg : Nat Type -> C
+	op vpair : K K -> C [metadata "hybrid=() strict=()"]
+	op prepareBuiltin : Id List{C} -> K
+	op incSymbolic : K -> K
+	op printString : K -> K
+	
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
+	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
 	op nextvarg-aux : K Type K K -> C // offset, type, length
 	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?)
 	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
 	
-	op vpair : K K -> C [metadata "hybrid=() strict=()"]
 	rule [nextvarg-start]:
 		< k > nextvarg(Loc:Nat, T:Type)
 			=> nextvarg-aux(Loc:Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:Nat)))
@@ -28,7 +34,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		...</ k >
 		[structural]
 	
-	op prepareBuiltin : Id List{C} -> K
+
 	context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
 	
 	op idsFromDeclList : List{C} -> List{C}
@@ -51,7 +57,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	rule [idsFromDeclList-done]:
 		idsFromDeclList(Nil) => Nil [structural]
 	
-	op incSymbolic : K -> K
+
 	context incSymbolic(([HOLE] => reval([HOLE])))
 	rule [incSymbolic]:
 		incSymbolic(tv(Loc:Nat, T:Type)) => tv(inc(Loc:Nat), T:Type)
@@ -62,6 +68,214 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{Type})))
 		...</ k >
 		[structural]
+		
+	rule
+		< k > printString(S:String)
+			=> writeToFD(1, asciiCharString(firstChar(S:String)))
+			~> printString(butFirstChar(S:String))
+		...</ k >
+		if lengthString(S:String) >Nat 0
+		[structural]
+	rule
+		< k > printString("") => writeToFD(1, 10) ...</ k >
+		[structural]
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
+	rule [sqrt]:
+		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(?, double)))
+			=> tv(sqrtFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [log]:
+		< k > prepareBuiltin((Identifier("log")), tv(F:Float, t(?, double)))
+			=> tv(logFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [exp]:
+		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, t(?, double)))
+			=> tv(expFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [atan]:
+		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, t(?, double)))
+			=> tv(atanFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [asin]:
+		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, t(?, double)))
+			=> tv(asinFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [atan2]:
+		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(?, double)) :: tv(F':Float, t(?, double))))
+			=> tv(atanFloat(F:Float, F':Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [tan]:
+		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, t(?, double)))
+			=> tv(tanFloat(F:Float), t(.Set, double))
+		...</ k >
+	[structural]
+
+	rule [floor]:
+		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, t(?, double)))
+			=> tv(floorFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [cos]:
+		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, t(?, double)))
+			=> tv(cosFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [fmod]:
+		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(?, double)) :: tv(F':Float, t(?, double))))
+			=> tv(F:Float %Float F':Float, t(.Set, double))
+		...</ k >
+		[structural]
+
+	rule [sin]:
+		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, t(?, double)))
+			=> tv(sinFloat(F:Float), t(.Set, double))
+		...</ k >
+		[structural]
+
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+
+	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
+	// fixme check bounds
+	// fixme obviously need to rework configuration to make this easy
+	op Bag : Bag -> K
+	
+	op ignoreLocals : -> K
+	
+	// there seems to be a problem here related to locals.  what if longjmp is never called?
+	rule [ignoreLocals]:
+		< k > ignoreLocals => .K ...</ k >
+		< localAddresses > Locals:Set => .Set </ localAddresses >
+		[structural]
+	
+	// fixme doesn't check if loc:Nat is const
+	rule [setjmp]:
+		< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(?, pointerType(t(?, structType(Identifier("__jmp_buf_tag")))))))
+			=> ignoreLocals
+				~> writeByte(Loc:Nat, Bag(
+					C:Bag
+					< continuation > K:K </ continuation >
+				))
+				~> tv(0, t(.Set, int))
+			)
+			~> K:K
+		</ k >
+		< threadLocal >
+			C:Bag
+		</ threadLocal >
+		[structural]
+
+	op longjmp-aux : K K -> K [metadata "strict=()"]
+	rule [longjmp-prepare]:
+		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
+			=> longjmp-aux(reval(*(V:Value)), V':Value)
+		...</ k >
+		[structural]
+	
+	// fixme: memory leak here with extra ignoreLocals.  needed for recursive setjmp/longjmp as in Looping.c
+	rule [longjmp]:
+		< k > longjmp-aux(tv(Bag(
+					< continuation > K:K </ continuation >
+					C:Bag
+			), t(?, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(?, int))) ~> ?
+			=> ignoreLocals ~> if I:Int ==Bool 0 then tv(1, t(.Set, int)) else tv(I:Int, t(.Set, int)) fi ~> K:K
+		</ k >
+		< threadLocal >
+			? => C:Bag
+		</ threadLocal >
+		[structural]
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+		
+	////////////////////////////--
+	// Stdarg.h
+	////////////////////////////--
+		// ,, "__va_inc"
+		// ,, "__va_start"
+		// ,, "__va_end"
+		// ,, "__va_copy"
+		
+	// va_list __va_start(va_list* ap, void* pN);
+	// fixme can add lots of checks here
+	// tool fixme, change Value to K and unquote error
+	rule [va_start]:
+		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
+				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
+				~> skipval
+		...</ k >
+		[structural]
+	
+	op va-inc-aux : K K K -> K // [metadata "strict=(3)"]
+	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
+	// fixme can do lots of checks here too
+	
+	// this doesn't work because when we read apLoc, the object has already changed
+	rule
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+				=> Computation(*(ApLoc:Value) := incSymbolic(ApLoc:Value))
+				~> ApLoc:Value
+		...</ k >
+		[structural]
+	
+	rule [va_inc-start]:
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
+		...</ k >
+		[structural]
+				
+	rule [va_inc]:
+		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
+			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
+			~> Ap:Value
+		...</ k >
+		[structural]				
+		
+	// fixme can do lots of checks here too
+	rule [va_copy]:
+		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
+				=> Computation(*(ApLoc:Value) := Other:Value)
+				~> skipval
+		...</ k >
+		[structural]
+		
+	// fixme can do lots of checks here too
+	// tool fixme, shouldn't let me compile empty rule
+	// rule
+		// < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
+				// ~> skipval
+		// ...</ k >
+		// [structural]
+	rule [va_end]:
+		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
+				=> skipval
+		...</ k >
+		[structural]
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	op offsetOf : K K -> K [metadata "strict=(1)"]
 	rule
@@ -78,225 +292,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		[structural]
 	rule < k > offsetOf(t(?, unionType(?)), ?) => tv(0, cfg:sizeut) ...</ k >
 		[structural]
-	
+endkm
 
-	rule [debug]:
-		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
-		[metadata "computational=()"]
-	////////////////////////////--
-	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
-	// fixme check bounds
-	// fixme obviously need to rework configuration to make this easy
-	op Bag : Bag -> K
-	
-	op ignoreLocals : -> K
-	
-	// there seems to be a problem here related to locals.  what if longjmp is never called?
-	rule [ignoreLocals]:
-		< k > ignoreLocals => .K ...</ k >
-		< localAddresses > Locals:Set => .Set </ localAddresses >
-		[structural]
-		
-	rule [setjmp]:
-		< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(?, pointerType(t(?, structType(Identifier("__jmp_buf_tag")))))))
-			=> ignoreLocals
-				~> writeByte(Loc:Nat, Bag(
-					C:Bag
-					< continuation > K:K </ continuation >
-				))
-				~> tv(0, t(.Set, int))
-			)
-			~> K:K
-		</ k >
-		< threadLocal >
-			C:Bag
-		</ threadLocal >
-		[structural]
-	////////////////////////////--
-	op longjmp-aux : K K -> K [metadata "strict=()"]
-	rule [longjmp-prepare]:
-		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
-			=> longjmp-aux(reval(*(V:Value)), V':Value)
-		...</ k >
-		[structural]
-	
-	rule [longjmp]:
-		< k > longjmp-aux(tv(Bag(
-					< continuation > K:K </ continuation >
-					C:Bag
-			), t(?, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(?, int))) ~> ?
-			=> if I:Int ==Bool 0 then tv(1, t(.Set, int)) else tv(I:Int, t(.Set, int)) fi ~> K:K
-		</ k >
-		< threadLocal >
-			? => C:Bag
-		</ threadLocal >
-		[structural]
 
-	////////////////////////////--
-	rule [exit]:
-		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, t(?, int))) ~> ? => tv(I:Int, t(.Set, int)) </ k >
-		[structural]
+kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-	rule [abort]:
-		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ?
-			=> printString("Aborted")
-			~> tv(134, t(.Set, int))
-		</ k >
-	
-	op printString : K -> K
-	
-	rule
-		< k > printString(S:String)
-			=> writeToFD(1, asciiCharString(firstChar(S:String)))
-			~> printString(butFirstChar(S:String))
-		...</ k >
-		if lengthString(S:String) >Nat 0
-		[structural]
-	rule
-		< k > printString("") => writeToFD(1, 10) ...</ k >
-		[structural]
-	
-	////////////////////////////--
-	rule [sqrt]:
-		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(?, double)))
-			=> tv(sqrtFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [log]:
-		< k > prepareBuiltin((Identifier("log")), tv(F:Float, t(?, double)))
-			=> tv(logFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [exp]:
-		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, t(?, double)))
-			=> tv(expFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [atan]:
-		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, t(?, double)))
-			=> tv(atanFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [asin]:
-		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, t(?, double)))
-			=> tv(asinFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [atan2]:
-		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(?, double)) :: tv(F':Float, t(?, double))))
-			=> tv(atanFloat(F:Float, F':Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [tan]:
-		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, t(?, double)))
-			=> tv(tanFloat(F:Float), t(.Set, double))
-		...</ k >
-	[structural]
-	////////////////////////////--
-	rule [floor]:
-		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, t(?, double)))
-			=> tv(floorFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [cos]:
-		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, t(?, double)))
-			=> tv(cosFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [fmod]:
-		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(?, double)) :: tv(F':Float, t(?, double))))
-			=> tv(F:Float %Float F':Float, t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-	rule [sin]:
-		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, t(?, double)))
-			=> tv(sinFloat(F:Float), t(.Set, double))
-		...</ k >
-		[structural]
-	////////////////////////////--
-
-	rule [malloc]:
-		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type))
-			=> alloc(Loc, N:Nat)
-			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
-		...</ k >
-		< malloced >... .Map => Loc |-> N:Nat ...</ malloced >
-		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
-		if T:Type ==Bool cfg:sizeut
-		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
-		[structural]
-	////////////////////////////--
-	op calloc-aux : -> K
-	rule [calloc]:
-		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?)))
-			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Nat Size:Nat, cfg:sizeut))
-			~> calloc-aux
-		...</ k >
-		[structural]
-	rule [calloc-aux]:
-		< k > (.K => zeroBlock(Loc:Nat)) 
-			~> tv(Loc:Nat, t(?, pointerType(t(?, void))))
-			~> (calloc-aux => .K)
-		...</ k >
-		[structural]
-	////////////////////////////--
-	
-	// fixme should detect overlaps
-	op strcpy : K K K -> K
-	rule [strcpy-start]:
-		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(?, pointerType(?))) :: tv(Src:Nat, t(?, pointerType(?)))))
-			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
-		...</ k >
-		[structural]
-		
-	rule [strcpy-pre]:
-		< k > (.K => read(Src:Nat, t(.Set, char)))
-			~> strcpy(?, (Src:Nat => sNat(Src:Nat)), ?)
-		...</ k >
-		[structural]
-	
-	rule [strcpy-some]:
-		< k > (tv(I:Int, T:Type) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:Type)))
-			~> strcpy((Dest:Nat => sNat(Dest:Nat)), ?, ?)
-		...</ k >
-		if I:Int =/=Bool 0
-		[structural]
-	rule [strcpy-done]:
-		< k > tv(0, T:Type) ~> strcpy(Dest:Nat, ?, Orig:Nat)
-			=> write(lv(Dest:Nat, t(.Set, char)), tv(0, T:Type)) 
-			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
-		...</ k >
-		[structural]		
-	
-	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
-	
-	// unsignedIntegerTypes contains T:Type
-	// (2 ^Nat absInt(numBits(int)))
-	// fixme should use RAND_MAX
-	rule [rand]:
-		< k > prepareBuiltin((Identifier("rand")), Nil)
-			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(t(.Set, int)), t(.Set, int))
-		...</ k >
-		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
-		[structural]
-	//////////////////////////--
-	rule [free]:
-		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, t(?, pointerType(?))))
-			=> deleteSizedBlock(Loc:Nat, Len:Nat) 
-			~> skipval
-		...</ k >
-		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
-		[structural]
-	////////////////////////////--
 	// fixme doesn't cast to int
 	rule [putchar]:
 		< k > prepareBuiltin((Identifier("putchar")), tv(N:Nat, ?))
@@ -304,34 +305,34 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 			~> tv(N:Nat, t(.Set, int))
 		...</ k >
 		[structural]
-	//////////////////////////--
+
 	// fixme doesn't cast to int
 	rule [fslPutc]:
-		< k > prepareBuiltin((Identifier("fslPutc")), (tv(N:Nat, ?) :: tv(H:Nat, ?)))
+		< k > prepareBuiltin((Identifier("__fslPutc")), (tv(N:Nat, ?) :: tv(H:Nat, ?)))
 			=> writeToFD(H:Nat, N:Nat)
 			~> tv(N:Nat, t(.Set, int))
 		...</ k >
 		[structural]
-	////////////////////////////--
+
 	rule [getchar]:
 		< k > prepareBuiltin((Identifier("getchar")), Nil) => readFromFD(0) ...</ k >
 		[structural]
-	////////////////////////////--
+
 	rule [fslFGetC]:
-		< k > prepareBuiltin((Identifier("fslFGetC")), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?)))
+		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Nat, ?) :: tv(Offset:Nat, ?)))
 			=> readFromFD(FD:Nat)
 		...</ k >
 		[structural]
-	////////////////////////////--
+
 	rule [fslCloseFile]:
-		< k > prepareBuiltin((Identifier("fslCloseFile")), tv(FD:Nat, t(?, int))) 
+		< k > prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Nat, t(?, int))) 
 			=> tv(0, t(.Set, int))
 		...</ k >
 		< openFiles >... FD:Nat |-> ? => .Map ...</ openFiles >
 		[structural]
-	////////////////////////////--
+
 	rule [fslOpenFile-pre]:
-		< k > prepareBuiltin((Identifier("fslOpenFile")), (Loc:Value :: tv(FD:Nat, t(?, int))))
+		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Loc:Value :: tv(FD:Nat, t(?, int))))
 			=> fsl-open-file(getString(Loc:Value), FD:Nat)
 		...</ k >
 		[structural]
@@ -703,8 +704,109 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 		< k > tv(Len':Nat, t(?, int)) ~> addPrintfString ~> printf-aux(Len:Nat, Loc:Nat, L:List{C})
 			=> printf-aux(Len:Nat +Nat Len':Nat, Loc:Nat, L:List{C})
 		...</ k >
+		[structural]	
+	
+endkm
+
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
+	rule [debug]:
+		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
+		[metadata "computational=()"]
+	
+	rule [exit]:
+		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, t(?, int))) ~> ? 
+			=> tv(I:Int, t(.Set, int)) 
+		</ k >
+		[structural]
+
+	rule [abort]:
+		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ?
+			=> printString("Aborted")
+			~> tv(134, t(.Set, int))
+		</ k >
+	
+	rule [malloc]:
+		< k > prepareBuiltin((Identifier("malloc")), tv(N:Nat, T:Type))
+			=> alloc(Loc, N:Nat)
+			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
+		...</ k >
+		< malloced >... .Map => Loc |-> N:Nat ...</ malloced >
+		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
+		if T:Type ==Bool cfg:sizeut
+		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
+		[structural]
+
+	op calloc-aux : -> K
+	rule [calloc]:
+		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, ?) :: tv(Size:Nat, ?)))
+			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Nat Size:Nat, cfg:sizeut))
+			~> calloc-aux
+		...</ k >
+		[structural]
+	rule [calloc-aux]:
+		< k > (.K => zeroBlock(Loc:Nat)) 
+			~> tv(Loc:Nat, t(?, pointerType(t(?, void))))
+			~> (calloc-aux => .K)
+		...</ k >
+		[structural]
+
+	rule [free]:
+		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, t(?, pointerType(?))))
+			=> deleteSizedBlock(Loc:Nat, Len:Nat) 
+			~> skipval
+		...</ k >
+		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
 		[structural]
 		
+	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
+	// fixme should use RAND_MAX
+	rule [rand]:
+		< k > prepareBuiltin((Identifier("rand")), Nil)
+			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(t(.Set, int)), t(.Set, int))
+		...</ k >
+		< freshNat > Fresh:Nat => sNat(Fresh:Nat) </ freshNat >
+		[structural]
+
+
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
+	// fixme should detect overlaps
+	op strcpy : K K K -> K
+	rule [strcpy-start]:
+		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(?, pointerType(?))) :: tv(Src:Nat, t(?, pointerType(?)))))
+			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
+		...</ k >
+		[structural]
+		
+	rule [strcpy-pre]:
+		< k > (.K => read(Src:Nat, t(.Set, char)))
+			~> strcpy(?, (Src:Nat => sNat(Src:Nat)), ?)
+		...</ k >
+		[structural]
+	
+	rule [strcpy-some]:
+		< k > (tv(I:Int, T:Type) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:Type)))
+			~> strcpy((Dest:Nat => sNat(Dest:Nat)), ?, ?)
+		...</ k >
+		if I:Int =/=Bool 0
+		[structural]
+	rule [strcpy-done]:
+		< k > tv(0, T:Type) ~> strcpy(Dest:Nat, ?, Orig:Nat)
+			=> write(lv(Dest:Nat, t(.Set, char)), tv(0, T:Type)) 
+			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
+		...</ k >
+		[structural]
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
 	////////////////////////////--
 	// Threads
 	////////////////////////////--
@@ -819,68 +921,27 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			~> Retval:Value
 		...</ k >
 		[structural]
-		
-	////////////////////////////--
-	// Stdarg.h
-	////////////////////////////--
-		// ,, "__va_inc"
-		// ,, "__va_start"
-		// ,, "__va_end"
-		// ,, "__va_copy"
-		
-	// va_list __va_start(va_list* ap, void* pN);
-	// fixme can add lots of checks here
-	// tool fixme, change Value to K and unquote error
-	rule [va_start]:
-		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
-				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
-				~> skipval
-		...</ k >
-		[structural]
+endkm
+
+kmod DYNAMIC-C-STANDARD-LIBRARY-MISC is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+
+endkm
+
+////////////////////////////////
+//- C standard library
+kmod DYNAMIC-C-STANDARD-LIBRARY is
+	including DYNAMIC-INCLUDE
+	including DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	
-	op va-inc-aux : K K K -> K // [metadata "strict=(3)"]
-	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
-	// fixme can do lots of checks here too
+	including DYNAMIC-C-STANDARD-LIBRARY-MATH
+	including DYNAMIC-C-STANDARD-LIBRARY-SETJMP
+	including DYNAMIC-C-STANDARD-LIBRARY-STDARG
+	including DYNAMIC-C-STANDARD-LIBRARY-STDDEF
+	including DYNAMIC-C-STANDARD-LIBRARY-STDIO 
+	including DYNAMIC-C-STANDARD-LIBRARY-STDLIB
+	including DYNAMIC-C-STANDARD-LIBRARY-STRING
+	including DYNAMIC-C-STANDARD-LIBRARY-THREADS
 	
-	// this doesn't work because when we read apLoc, the object has already changed
-	rule
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
-				=> Computation(*(ApLoc:Value) := incSymbolic(ApLoc:Value))
-				~> ApLoc:Value
-		...</ k >
-		[structural]
-	
-	rule [va_inc-start]:
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
-				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
-		...</ k >
-		[structural]
-				
-	rule [va_inc]:
-		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
-			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
-			~> Ap:Value
-		...</ k >
-		[structural]				
-		
-	// fixme can do lots of checks here too
-	rule [va_copy]:
-		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
-				=> Computation(*(ApLoc:Value) := Other:Value)
-				~> skipval
-		...</ k >
-		[structural]
-		
-	// fixme can do lots of checks here too
-	// tool fixme, shouldn't let me compile empty rule
-	// rule
-		// < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
-				// ~> skipval
-		// ...</ k >
-		// [structural]
-	rule [va_end]:
-		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
-				=> skipval
-		...</ k >
-		[structural]
+	including DYNAMIC-C-STANDARD-LIBRARY-MISC
 endkm

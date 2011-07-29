@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <setjmp.h>
 
 void baz(jmp_buf buf)

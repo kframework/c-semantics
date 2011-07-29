@@ -10,17 +10,7 @@ int getc(FILE *stream){
 	return fgetc(stream);
 }
 
-// char *strcpy(char *dest, const char *src) {
-	// unsigned i;
-	// for (i=0; src[i] != '\0'; ++i) {
-		// dest[i] = src[i];
-	// }
-	// dest[i] = '\0';
-	// return dest;
-// }
-
 // from http://clc-wiki.net/wiki/strncpy, public domain
-
 char* strncpy(char* restrict dest, const char* restrict src, size_t n) {
 	char *ret = dest;
 	do {
@@ -151,14 +141,14 @@ int puts(const char * str){
 	return printf("%s\n", str);
 }
 
-int fslPutc(char c, int handle);
-int fslOpenFile(const char* filename, int handle);
-int fslCloseFile(int handle);
-int fslFGetC(int handle, unsigned long long int offset);
-int fsl_next_fd = 3;
+int __fslPutc(char c, int handle);
+int __fslOpenFile(const char* filename, int handle);
+int __fslCloseFile(int handle);
+int __fslFGetC(int handle, unsigned long long int offset);
+int __fsl_next_fd = 3;
 
 int putc (char c, FILE* stream) {
-	return fslPutc(c, stream->handle);
+	return __fslPutc(c, stream->handle);
 }
 
 
@@ -169,8 +159,8 @@ FILE* stdin = &stdin_file;
 FILE* stdout = &stdout_file;
 FILE* stderr = &stderr_file;
 FILE* fopen(const char *filename, const char *mode){
-	int nextHandle = fsl_next_fd++;
-	int retval = fslOpenFile(filename, nextHandle);
+	int nextHandle = __fsl_next_fd++;
+	int retval = __fslOpenFile(filename, nextHandle);
 	if (retval) {
 		return NULL;
 	}
@@ -183,7 +173,7 @@ FILE* fopen(const char *filename, const char *mode){
 }
 
 int fclose(FILE* stream){
-	int retval = fslCloseFile(stream->handle);
+	int retval = __fslCloseFile(stream->handle);
 	if (retval) {
 		return EOF;
 	}
@@ -197,7 +187,7 @@ int feof ( FILE * stream ) {
 }
 
 int fgetc(FILE* stream){
-	int retval = fslFGetC(stream->handle, 0); // offset is not being used
+	int retval = __fslFGetC(stream->handle, 0); // offset is not being used
 	if (retval < 0) {
 		// stream->offset++;
 	// } else {
