@@ -1,0 +1,104 @@
+This was taken from ISO/IEC 9899:201x n1516.  General undefinedness is in undefined.txt
+
+Libraries
+
+101	An attempt is made to copy an object to an overlapping object by use of a library function, other than as explicitly allowed (e.g., memmove) (clause 7). 
+102	A file with the same name as one of the standard headers, not provided as part of the implementation, is placed in any of the standard places that are searched for included source files (7.1.2). 
+103	A header is included within an external declaration or definition (7.1.2). 
+104	A function, object, type, or macro that is specified as being declared or defined by some standard header is used before any header that declares or defines it is included (7.1.2). 
+105	A standard header is included while a macro is defined with the same name as a keyword (7.1.2). 
+106	The program attempts to declare a library function itself, rather than via a standard header, but the declaration does not have external linkage (7.1.2). 
+107	The program declares or defines a reserved identifier, other than as allowed by 7.1.4 (7.1.3). 
+108	The program removes the definition of a macro whose name begins with an underscore and either an uppercase letter or another underscore (7.1.3). 
+109	An argument to a library function has an invalid value or a type not expected by a function with variable number of arguments (7.1.4). 
+110	The pointer passed to a library function array parameter does not have a value such that all address computations and object accesses are valid (7.1.4). 
+111	The macro definition of assert is suppressed in order to access an actual function (7.2). 
+112	The argument to the assert macro does not have a scalar type (7.2). 
+113	The CX_LIMITED_RANGE, FENV_ACCESS, or FP_CONTRACT pragma is used in any context other than outside all external declarations or preceding all explicit declarations and statements inside a compound statement (7.3.4, 7.6.1, 7.12.2). 
+114	The value of an argument to a character handling function is neither equal to the value of EOF nor representable as an unsigned char (7.4). 
+115	A macro definition of errno is suppressed in order to access an actual object, or the program defines an identifier with the name errno (7.5). 
+116	Part of the program tests floating-point status flags, sets floating-point control modes, or runs under non-default mode settings, but was translated with the state for the FENV_ACCESS pragma "off" (7.6.1). 
+117	The exception-mask argument for one of the functions that provide access to the floating-point status flags has a nonzero value not obtained by bitwise OR of the floating-point exception macros (7.6.2). 
+118	The fesetexceptflag function is used to set floating-point status flags that were not specified in the call to the fegetexceptflag function that provided the value of the corresponding fexcept_t object (7.6.2.4). 
+119	The argument to fesetenv or feupdateenv is neither an object set by a call to fegetenv or feholdexcept, nor is it an environment macro (7.6.4.3, 7.6.4.4). 
+120	The value of the result of an integer arithmetic or conversion function cannot be represented (7.8.2.1, 7.8.2.2, 7.8.2.3, 7.8.2.4, 7.22.6.1, 7.22.6.2, 7.22.1). 
+121	The program modifies the string pointed to by the value returned by the setlocale function (7.11.1.1). 
+122	The program modifies the structure pointed to by the value returned by the localeconv function (7.11.2.1). 
+123	A macro definition of math_errhandling is suppressed or the program defines an identifier with the name math_errhandling (7.12). 
+124	An argument to a floating-point classification or comparison macro is not of real floating type (7.12.3, 7.12.14). 
+125	A macro definition of setjmp is suppressed in order to access an actual function, or the program defines an external identifier with the name setjmp (7.13). 
+126	An inv ocation of the setjmp macro occurs other than in an allowed context (7.13.2.1). 
+127	The longjmp function is invoked to restore a nonexistent environment (7.13.2.1). 
+128	After a longjmp, there is an attempt to access the value of an object of automatic storage duration that does not have volatile-qualified type, local to the function containing the invocation of the corresponding setjmp macro, that was changed between the setjmp invocation and longjmp call (7.13.2.1). 
+129	The program specifies an invalid pointer to a signal handler function (7.14.1.1). 
+130	A signal handler returns when the signal corresponded to a computational exception (7.14.1.1). 
+131	A signal occurs as the result of calling the abort or raise function, and the signal handler calls the raise function (7.14.1.1). 
+132	A signal occurs other than as the result of calling the abort or raise function, and the signal handler refers to an object with static storage duration other than by assigning a value to an object declared as volatile sig_atomic_t, or calls any function in the standard library other than the abort function, the _Exit function, the quick_exit function, or the signal function (for the same signal number) (7.14.1.1). 
+133	The value of errno is referred to after a signal occurred other than as the result of calling the abort or raise function and the corresponding signal handler obtained a SIG_ERR return from a call to the signal function (7.14.1.1). 
+134	A signal is generated by an asynchronous signal handler (7.14.1.1). 
+135	A function with a variable number of arguments attempts to access its varying arguments other than through a properly declared and initialized va_list object, or before the va_start macro is invoked (7.16, 7.16.1.1, 7.16.1.4). 
+136	The macro va_arg is invoked using the parameter ap that was passed to a function that invoked the macro va_arg with the same parameter (7.16). 
+137	A macro definition of va_start, va_arg, va_copy, or va_end is suppressed in order to access an actual function, or the program defines an external identifier with the name va_copy or va_end (7.16.1). 
+138	The va_start or va_copy macro is invoked without a corresponding invocation of the va_end macro in the same function, or vice versa (7.16.1, 7.16.1.2, 7.16.1.3, 7.16.1.4). 
+139	The type parameter to the va_arg macro is not such that a pointer to an object of that type can be obtained simply by postfixing a * (7.16.1.1). 
+140	The va_arg macro is invoked when there is no actual next argument, or with a specified type that is not compatible with the promoted type of the actual next argument, with certain exceptions (7.16.1.1). 
+141	The va_copy or va_start macro is called to initialize a va_list that was previously initialized by either macro without an intervening invocation of the va_end macro for the same va_list (7.16.1.2, 7.16.1.4). 
+142	The parameter parmN of a va_start macro is declared with the register storage class, with a function or array type, or with a type that is not compatible with the type that results after application of the default argument promotions (7.16.1.4). 
+143	The member designator parameter of an offsetof macro is an invalid right operand of the . operator for the type parameter, or designates a bit-field (7.19). 
+144	The argument in an instance of one of the integer-constant macros is not a decimal, octal, or hexadecimal constant, or it has a value that exceeds the limits for the corresponding type (7.24). 
+145	A byte input/output function is applied to a wide-oriented stream, or a wide character input/output function is applied to a byte-oriented stream (7.21.2). 
+146	Use is made of any portion of a file beyond the most recent wide character written to a wide-oriented stream (7.21.2). 
+147	The value of a pointer to a FILE object is used after the associated file is closed (7.21.3). 
+148	The stream for the fflush function points to an input stream or to an update stream in which the most recent operation was input (7.21.5.2). 
+149	The string pointed to by the mode argument in a call to the fopen function does not exactly match one of the specified character sequences (7.21.5.3). 
+150	An output operation on an update stream is followed by an input operation without an intervening call to the fflush function or a file positioning function, or an input operation on an update stream is followed by an output operation with an intervening call to a file positioning function (7.21.5.3). 
+151	An attempt is made to use the contents of the array that was supplied in a call to the setvbuf function (7.21.5.6). 
+152	There are insufficient arguments for the format in a call to one of the formatted input/output functions, or an argument does not have an appropriate type (7.21.6.1, 7.21.6.2, 7.28.2.1, 7.28.2.2). 
+153	The format in a call to one of the formatted input/output functions or to the strftime or wcsftime function is not a valid multibyte character sequence that begins and ends in its initial shift state (7.21.6.1, 7.21.6.2, 7.26.3.5, 7.28.2.1, 7.28.2.2, 7.28.5.1). 
+154	In a call to one of the formatted output functions, a precision appears with a conversion specifier other than those described (7.21.6.1, 7.28.2.1). 
+155	A conversion specification for a formatted output function uses an asterisk to denote an argument-supplied field width or precision, but the corresponding argument is not provided (7.21.6.1, 7.28.2.1). 
+156	A conversion specification for a formatted output function uses a # or 0 flag with a conversion specifier other than those described (7.21.6.1, 7.28.2.1). 
+157	A conversion specification for one of the formatted input/output functions uses a length modifier with a conversion specifier other than those described (7.21.6.1, 7.21.6.2, 7.28.2.1, 7.28.2.2). 
+158	An "s" conversion specifier is encountered by one of the formatted output functions, and the argument is missing the null terminator (unless a precision is specified that does not require null termination) (7.21.6.1, 7.28.2.1). 
+159	An "n" conversion specification for one of the formatted input/output functions includes any flags, an assignment-suppressing character, a field width, or a precision (7.21.6.1, 7.21.6.2, 7.28.2.1, 7.28.2.2). 
+160	A "%" conversion specifier is encountered by one of the formatted input/output functions, but the complete conversion specification is not exactly %% (7.21.6.1, 7.21.6.2, 7.28.2.1, 7.28.2.2). 
+161	An invalid conversion specification is found in the format for one of the formatted input/output functions, or the strftime or wcsftime function (7.21.6.1, 7.21.6.2, 7.26.3.5, 7.28.2.1, 7.28.2.2, 7.28.5.1). 
+162	The number of characters transmitted by a formatted output function is greater than INT_MAX (7.21.6.1, 7.21.6.3, 7.21.6.8, 7.21.6.10). 
+163	The result of a conversion by one of the formatted input functions cannot be represented in the corresponding object, or the receiving object does not have an appropriate type (7.21.6.2, 7.28.2.2). 
+164	A "c", "s", or "[" conversion specifier is encountered by one of the formatted input functions, and the array pointed to by the corresponding argument is not large enough to accept the input sequence (and a null terminator if the conversion specifier is s or [) (7.21.6.2, 7.28.2.2). 
+165	A "c", "s", or "[" conversion specifier with an l qualifier is encountered by one of the formatted input functions, but the input is not a valid multibyte character sequence that begins in the initial shift state (7.21.6.2, 7.28.2.2). 
+166	The input item for a "%p" conversion by one of the formatted input functions is not a value converted earlier during the same program execution (7.21.6.2, 7.28.2.2). 
+167	The vfprintf, vfscanf, vprintf, vscanf, vsnprintf, vsprintf, vsscanf, vfwprintf, vfwscanf, vswprintf, vswscanf, vwprintf, or vwscanf function is called with an improperly initialized va_list argument, or the argument is used (other than in an invocation of va_end) after the function returns (7.21.6.8, 7.21.6.9, 7.21.6.10, 7.21.6.11, 7.21.6.12, 7.21.6.13, 7.21.6.14, 7.28.2.5, 7.28.2.6, 7.28.2.7, 7.28.2.8, 7.28.2.9, 7.28.2.10). 
+168	The contents of the array supplied in a call to the fgets or fgetws function are used after a read error occurred (7.21.7.2, 7.28.3.2). 
+169	The file position indicator for a binary stream is used after a call to the ungetc function where its value was zero before the call (7.21.7.10). 
+170	The file position indicator for a stream is used after an error occurred during a call to the fread or fwrite function (7.21.8.1, 7.21.8.2). 
+171	A partial element read by a call to the fread function is used (7.21.8.1). 
+172	The fseek function is called for a text stream with a nonzero offset and either the offset was not returned by a previous successful call to the ftell function on a stream associated with the same file or whence is not SEEK_SET (7.21.9.2). 
+173	The fsetpos function is called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file (7.21.9.3). 
+174	A non-null pointer returned by a call to the calloc, malloc, or realloc function with a zero requested size is used to access an object (7.22.3). 
+175	The value of a pointer that refers to space deallocated by a call to the free or realloc function is used (7.22.3). 
+176	The alignment requested of the aligned_alloc function is not valid or not supported by the implementation, or the size requested is not an integral multiple of the alignment (7.22.3.1). 
+177	The pointer argument to the free or realloc function does not match a pointer earlier returned by a memory management function, or the space has been deallocated by a call to free or realloc (7.22.3.3, 7.22.3.5). 
+178	The value of the object allocated by the malloc function is used (7.22.3.4). 
+179	The value of any bytes in a new object allocated by the realloc function beyond the size of the old object are used (7.22.3.5). 
+180	The program calls the exit or quick_exit function more than once, or calls both functions (7.22.4.4, 7.22.4.7). 
+181	During the call to a function registered with the atexit or at_quick_exit function, a call is made to the longjmp function that would terminate the call to the registered function (7.22.4.4, 7.22.4.7). 
+182	The string set up by the getenv or strerror function is modified by the program (7.22.4.6, 7.23.6.2). 
+183	A command is executed through the system function in a way that is documented as causing termination or some other form of undefined behavior (7.22.4.8). 
+184	A searching or sorting utility function is called with an invalid pointer argument, even if the number of elements is zero (7.22.5). 
+185	The comparison function called by a searching or sorting utility function alters the contents of the array being searched or sorted, or returns ordering values inconsistently (7.22.5). 
+186	The array being searched by the bsearch function does not have its elements in proper order (7.22.5.1). 
+187	The current conversion state is used by a multibyte/wide character conversion function after changing the LC_CTYPE category (7.22.7). 
+188	A string or wide string utility function is instructed to access an array beyond the end of an object (7.23.1, 7.28.4). 
+189	A string or wide string utility function is called with an invalid pointer argument, even if the length is zero (7.23.1, 7.28.4). 
+190	The contents of the destination array are used after a call to the strxfrm, strftime, wcsxfrm, or wcsftime function in which the specified length was too small to hold the entire null-terminated result (7.23.4.5, 7.26.3.5, 7.28.4.4.4, 7.28.5.1). 
+191	The first argument in the very first call to the strtok or wcstok is a null pointer (7.23.5.8, 7.28.4.5.7). 
+192	The type of an argument to a type-generic macro is not compatible with the type of the corresponding parameter of the selected function (7.24). 
+193	A complex argument is supplied for a generic parameter of a type-generic macro that has no corresponding complex function (7.24). 
+194	At least one field of the broken-down time passed to asctime contains a value outside its normal range, or the calculated year exceeds four digits or is less than the year 1000 (7.26.3.1). 
+195	The argument corresponding to an s specifier without an l qualifier in a call to the fwprintf function does not point to a valid multibyte character sequence that begins in the initial shift state (7.28.2.11). 
+196	In a call to the wcstok function, the object pointed to by ptr does not have the value stored by the previous call for the same wide string (7.28.4.5.7). 
+197	An mbstate_t object is used inappropriately (7.28.6). 
+198	The value of an argument of type wint_t to a wide character classification or case mapping function is neither equal to the value of WEOF nor representable as a wchar_t (7.29.1). 
+199	The iswctype function is called using a different LC_CTYPE category from the one in effect for the call to the wctype function that returned the description (7.29.2.2.1). 
+200	The towctrans function is called using a different LC_CTYPE category from the one in effect for the call to the wctrans function that returned the description (7.29.3.2.1). 
