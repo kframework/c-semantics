@@ -174,6 +174,10 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op EnumDef : Id List{C} -> TypeSpecifier [ctor] // new
 	op TypeofExpression : K -> TypeSpecifier [ctor]
 	op TypeofType : K K -> TypeSpecifier [ctor]
+	
+	op Complex : -> TypeSpecifier [ctor]
+	op Imaginary : -> TypeSpecifier [ctor]
+	op Atomic : K -> TypeSpecifier [ctor]
 
 /*
 and storage =

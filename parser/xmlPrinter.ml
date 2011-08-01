@@ -697,6 +697,9 @@ and printTypeSpec = function
 	| Tenum (a, b, c) -> printEnumType a b c
 	| TtypeofE e -> wrap ((printExpression e) :: []) "TypeofExpression"
 	| TtypeofT (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "TypeofType"
+	| Tcomplex -> printCell "Complex" [] ""
+	| Timaginary -> printCell "Imaginary" [] ""
+	| Tatomic (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "Atomic"
 and printStructType a b c =
 	printAttr (match b with
 		| None -> wrap ((printIdentifier a) :: []) "StructRef"
