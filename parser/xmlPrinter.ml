@@ -698,8 +698,8 @@ and printTypeSpec = function
 	| TtypeofE e -> wrap ((printExpression e) :: []) "TypeofExpression"
 	| TtypeofT (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "TypeofType"
 	| Tcomplex -> printCell "Complex" [] ""
-	| Timaginary -> printCell "Imaginary" [] ""
-	| Tatomic (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "Atomic"
+	| Timaginary ->	printCell "Imaginary" [] ""
+	| Tatomic (s, d) ->	wrap ((printSpecifier s) :: (printDeclType d) :: []) "TAtomic"
 and printStructType a b c =
 	printAttr (match b with
 		| None -> wrap ((printIdentifier a) :: []) "StructRef"

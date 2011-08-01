@@ -327,7 +327,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 		
 	op makeUnknown : Nat Type -> K
-	op makeUnknown-aux : K K K -> K // should be Nat Type K
+	op makeUnknown-aux : Nat Type K -> K // should be Nat Type K
 	context makeUnknown-aux(?, ?, value(`[HOLE`]:K))
 	
 	rule makeUnknown(N:Nat, T:Type)

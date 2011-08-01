@@ -177,7 +177,8 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	
 	op Complex : -> TypeSpecifier [ctor]
 	op Imaginary : -> TypeSpecifier [ctor]
-	op Atomic : K -> TypeSpecifier [ctor]
+	op TAtomic : K K -> TypeSpecifier [ctor]
+	op Atomic : -> TypeSpecifier [ctor] // this will be used as the actual modifier
 
 /*
 and storage =

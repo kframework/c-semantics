@@ -162,6 +162,31 @@ let saveOffset =
 
 let max_errors = 20  (* Stop after 20 errors *)
 
+let parse_warn (msg: string) : unit =
+  (* Sometimes the Ocaml parser raises errors in symbol_start and symbol_end *)
+  let token_start, token_end = 
+    try Parsing.symbol_start (), Parsing.symbol_end ()
+    with e -> begin 
+      ignore (Printf.printf "Warning: Parsing raised %s\n" (Printexc.to_string e));
+      0, 0
+    end
+  in
+  let i = !current in
+  let adjStart = 
+    if token_start < i.linestart then 0 else token_start - i.linestart in
+  let adjEnd = 
+    if token_end < i.linestart then 0 else token_end - i.linestart in
+  output_string 
+    stderr
+    (i.fileName ^ "[" ^ (string_of_int i.linenum) ^ ":" 
+                        ^ (string_of_int adjStart) ^ "-" 
+                        ^ (string_of_int adjEnd) 
+                  ^ "]"
+     ^ " : Warning: " ^ msg);
+  output_string stderr "\n";
+  flush stderr ;
+  ()
+
 let parse_error (msg: string) : 'a =
   (* Sometimes the Ocaml parser raises errors in symbol_start and symbol_end *)
   let token_start, token_end = 

@@ -47,6 +47,8 @@ module E = Errormsg
 
 let parse_error msg : unit =       (* sm: c++-mode highlight hack: -> ' <- *)
   E.parse_error msg
+let parse_warn msg : unit =       (* sm: c++-mode highlight hack: -> ' <- *)
+  E.parse_warn msg
 
 let print = print_string
 
@@ -1042,10 +1044,20 @@ type_spec:   /* ISO 6.7.2 */
 |   TYPEOF LPAREN expression RPAREN     { TtypeofE (fst $3), $1 }
 |   TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
                                           TtypeofT (s, d), $1 }
-|   COMPLEX        { Tcomplex, $1 }
-|   IMAGINARY        { Timaginary, $1 }
-|   ATOMIC LPAREN type_name RPAREN {let b, d = $3 in Tatomic (b, d), $1}
+|   COMPLEX        { 
+	parse_warn "Encountered _Complex type.  These are not yet supported, and are currently ignored.\n";
+	Tcomplex, $1 
+}
+|   IMAGINARY        { 
+	parse_warn "Encountered _Imaginary type.  These are not yet supported, and are currently ignored.\n";
+	Timaginary, $1 
+}
+|   ATOMIC LPAREN type_name RPAREN {
+	parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.\n";
+	let b, d = $3 in Tatomic (b, d), $1
+	}
 ;
+/* parse_error "Struct declaration lists must contain at least one element."; raise Parsing.Parse_error */
 struct_decl_list: /* (* ISO 6.7.2. Except that we allow empty structs. We 
                       * also allow missing field names. *)
                    */

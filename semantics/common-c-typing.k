@@ -178,15 +178,32 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op canonicalizeType : Bag K Bag Bag Bag -> K [metadata "strict=(2)"] 
+	op canonicalizeType-aux : Bag K Bag Bag Bag -> K [metadata "strict=(2)"] 
 		
 	rule
-		< k > canonicalizeType(B:Bag) => canonicalizeType(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
+		< k > canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
 		[structural] 
+		
+		
+	
+	rule
+		< k > (.K => DeclType(K1:K, K2:K))
+			~> canonicalizeType-aux((?:Bag BagItem(TAtomic(K1:K, K2:K))), ?, ?, ?, ?) 
+		...</ k >
+		[structural]
+		
+	op atomic : Type -> K
+	
+	rule
+		< k > (T:Type => .K)
+			~> canonicalizeType-aux((?:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), ?, (? (.Bag => BagItem(atomic(T:Type)))), ?, ?) 
+		...</ k >
+			if isAType(T:Type)
+		[structural]
 		
 	// specifier, modifier, storage
 	rule
-		< k > canonicalizeType((B:Bag (BagItem(T:K) => .Bag)), ?, (? (.Bag => BagItem(T:K))), ?, ?) ...</ k >
+		< k > canonicalizeType-aux((?:Bag (BagItem(T:K) => .Bag)), ?, (? (.Bag => BagItem(T:K))), ?, ?) ...</ k >
 		if false
 		orBool (T:K ==Bool Void)
 		orBool (T:K ==Bool Bool)
@@ -198,6 +215,8 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool (T:K ==Bool Double)
 		orBool (T:K ==Bool Signed)
 		orBool (T:K ==Bool Unsigned)
+		orBool (T:K ==Bool Complex)
+		orBool (T:K ==Bool Imaginary)
 		orBool (getKLabel(T:K) ==Bool 'StructDef)
 		orBool (getKLabel(T:K) ==Bool 'UnionDef)
 		orBool (getKLabel(T:K) ==Bool 'EnumDef)
@@ -209,7 +228,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 
 	rule
-		< k > canonicalizeType(B:Bag (BagItem(T:K) => .Bag), ?, ?, ?, (? .Bag => BagItem(T:K))) ...</ k >
+		< k > canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), ?, ?, ?, (? .Bag => BagItem(T:K))) ...</ k >
 		if T:K ==Bool Extern
 		orBool T:K ==Bool Static
 		orBool T:K ==Bool Const
@@ -220,7 +239,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 	rule
-		< k > canonicalizeType(.Bag, (T:Type => t(.Set, qualifiedType(T:Type, Q:K))), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		< k > canonicalizeType-aux(.Bag, (T:Type => t(.Set, qualifiedType(T:Type, Q:K))), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Extern
 		orBool Q:K ==Bool Static
 		orBool Q:K ==Bool Volatile
@@ -229,7 +248,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool Q:K ==Bool Register
 		[structural]
 	rule
-		< k > canonicalizeType(.Bag, (t((.Set => SetItem(Const)) ?, ?)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
+		< k > canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) ?, ?)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >
 		if Q:K ==Bool Const
 		[structural]
 		
@@ -307,12 +326,12 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
 
 	rule 
-		< k > canonicalizeType(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
+		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
 		if B:Bag =/=Bool .Bag
 		[structural] 
 		
 	rule
-		< k > canonicalizeType(.Bag, T:Type, .Bag, .Bag, .Bag) => T:Type ...</ k >
+		< k > canonicalizeType-aux(.Bag, T:Type, .Bag, .Bag, .Bag) => T:Type ...</ k >
 		[structural] 
 		
 	op canonicalizeSpecifier : Bag -> K 
@@ -323,9 +342,19 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char) [structural]
 	rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char) [structural]
 	
+	rule canonicalizeSpecifier(BagItem(atomic(t(S:Set, T:SimpleType)))) => t(S:Set SetItem(Atomic), T:SimpleType) [structural]
+	
 	rule canonicalizeSpecifier(BagItem(Double)) => t(.Set, double) [structural]
 	rule canonicalizeSpecifier(BagItem(Float)) => t(.Set, float) [structural]
 	rule canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => t(.Set, long-double) [structural]
+	
+	rule canonicalizeSpecifier(BagItem(Complex) BagItem(Double)) => t(SetItem(Complex), double) [structural]
+	rule canonicalizeSpecifier(BagItem(Complex) BagItem(Float)) => t(SetItem(Complex), float) [structural]
+	rule canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double)) => t(SetItem(Complex), long-double) [structural]
+	
+	rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double)) => t(SetItem(Imaginary), double) [structural]
+	rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float)) => t(SetItem(Imaginary), float) [structural]
+	rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double)) => t(SetItem(Imaginary), long-double) [structural]
 	
 	rule canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
 		if B:Bag ==Bool BagItem(Short)
