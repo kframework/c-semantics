@@ -25,7 +25,7 @@ DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude .k kcompile_* \
-c-compiled.maude.tmp.bak c-compiled.maude.0 c-compiled.maude.1 c-compiled.maude.1.bak c-compiled-nd.maude.0 c-compiled-nd.maude.1  c-compiled-nd.maude.bak static-c.k.bak \
+c-compiled.maude.tmp.bak c-compiled.maude.0 c-compiled.maude.1 c-compiled.maude.1.bak c-compiled-nd.maude.0 c-compiled-nd.maude.1 c-compiled-nd.maude.1.bak c-compiled-nd.maude.bak static-c.k.bak \
 duplicateLabels.txt 
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
