@@ -64,6 +64,10 @@ while(<MYINPUTFILE>) {
 		$kind = $1;
 	}  elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(end\)).*\]\.\s*$/){
 		$kind = $1;
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\(start\)).*\]\.\s*$/){
+		$kind = $1;
+	}  elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\(\)).*\]\.\s*$/){
+		$kind = $1;
 	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool).*\]\.\s*$/){
 		$kind = $1;
 	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){

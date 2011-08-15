@@ -127,6 +127,10 @@ sub handleEq {
 		}
 		if ($line =~ m/(supercool=\(wrapper\))/){
 			$kind = $1;
+		} elsif ($line =~ m/(superheat=\(start\))/){
+			$kind = $1;
+		} elsif ($line =~ m/(superheat=\(\))/){
+			$kind = $1;
 		} elsif ($line =~ m/(supercool=\(result\))/){
 			$kind = $1;
 		} elsif ($line =~ m/(supercool=\(end\))/){
