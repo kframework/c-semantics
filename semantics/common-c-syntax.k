@@ -66,7 +66,7 @@ kmod COMMON-C-SYNTAX is
 	
 	// sort C
 	sort List{C}
-	subsort Id < C
+	subsort #Id < C
 	op Nil : -> List{C}
 	subsort C < List{C}
 	// fixme, can't figure out how to right this with the new contexts
@@ -123,8 +123,8 @@ type cabsloc = {
 	}
 */
 	// sort CabsLoc
-	op CabsLoc : String Int Int Int -> CabsLoc
-	// syntax CabsLoc ::= `CabsLoc ( String , Int , Int , Int )
+	op CabsLoc : #String #Int #Int #Int -> CabsLoc
+	// syntax CabsLoc ::= `CabsLoc ( #String , #Int , #Int , #Int )
 	
 /*
 type typeSpecifier = (* Merge all specifiers into one type *)
@@ -151,27 +151,27 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op Double : -> TypeSpecifier [ctor]
 	op Signed : -> TypeSpecifier [ctor]
 	op Unsigned : -> TypeSpecifier [ctor]
-	op inf : -> Float
+	op inf : -> #Float
 	// macro inf = Infinity
-	op Named : Id -> TypeSpecifier [ctor]
+	op Named : #Id -> TypeSpecifier [ctor]
 /*
 	(* each of the following three kinds of specifiers contains a field 
 	* or item list iff it corresponds to a definition (as opposed to
 	* a forward declaration or simple reference to the type); they
 	* also have a list of __attribute__s that appeared between the
 	* keyword and the type name (definitions only) *)
-	| Tstruct of string * field_group list option * attribute list
-	| Tunion of string * field_group list option * attribute list
-	| Tenum of string * enum_item list option * attribute list
+	| Tstruct of #String * field_group list option * attribute list
+	| Tunion of #String * field_group list option * attribute list
+	| Tenum of #String * enum_item list option * attribute list
 	| TtypeofE of expression                      (* GCC __typeof__ *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
-	op StructRef : Id -> TypeSpecifier [ctor] // new
-	op StructDef : Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
-	op UnionRef : Id -> TypeSpecifier [ctor] // new
-	op UnionDef : Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
-	op EnumRef : Id -> TypeSpecifier [ctor] // new
-	op EnumDef : Id List{C} -> TypeSpecifier [ctor] // new
+	op StructRef : #Id -> TypeSpecifier [ctor] // new
+	op StructDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	op UnionRef : #Id -> TypeSpecifier [ctor] // new
+	op UnionDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	op EnumRef : #Id -> TypeSpecifier [ctor] // new
+	op EnumDef : #Id List{C} -> TypeSpecifier [ctor] // new
 	op TypeofExpression : K -> TypeSpecifier [ctor]
 	op TypeofType : K K -> TypeSpecifier [ctor]
 	
@@ -213,7 +213,7 @@ and spec_elem =
 	| SpecStorage of storage
 	| SpecInline
 	| SpecType of typeSpecifier
-	| SpecPattern of string       (* specifier pattern variable *)
+	| SpecPattern of #String       (* specifier pattern variable *)
 */
 	op SpecTypedef : -> SpecifierElem
 	// the following are because I flattened SpecifierElem
@@ -222,7 +222,7 @@ and spec_elem =
 	subsort Storage < SpecifierElem
 	op Inline : -> SpecifierElem
 	subsort TypeSpecifier < SpecifierElem
-	op SpecPattern : Id -> SpecifierElem
+	op SpecPattern : #Id -> SpecifierElem
 	
 /*
 	and specifier = spec_elem list
@@ -254,7 +254,7 @@ and decl_type =
 	op ArrayType : K K -> DeclType [metadata "strict=(1)"]
 	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
-	op Prototype : K List{C} Bool -> DeclType [metadata "strict=(1 2)"]
+	op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -275,7 +275,7 @@ and field_group = specifier * (name * expression option) list
 	
 /*
 	(* like name_group, except the declared variables are allowed to have initializers *)
-	(* e.g.: int x=1, y=2; *)
+	(* e.g.: #Int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
 	op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
@@ -286,15 +286,15 @@ and init_name_group = specifier * init_name list
 	 * printed after the declarator *)
 	(* e.g: in "int *x", "*x" is the declarator; "x" will be pulled out as *)
 	(* the string, and decl_type will be PTR([], JUSTBASE) *)
-and name = string * decl_type * attribute list * cabsloc
+and name = #String * decl_type * attribute list * cabsloc
 */
 	op Name : K K -> Name // first argument is id, second is basetype
 	//op AnonymousName : K -> Name // new, argument is type
 	op AnonymousName : -> K // new, argument is type
-	op #NoName : -> Id [metadata "latex=(renameTo \\#NoName)"] // new
+	op #NoName : -> #Id [metadata "latex=(renameTo \\#NoName)"] // new
 	// latex "\llbracket\,{#1}\,\rrbracket"
-	op #NoName : Nat -> Id [metadata "latex=(renameTo \\#NoName\\mybracket{_})"] // new
-	op Identifier : String -> Id // new	
+	op #NoName : #Nat -> #Id [metadata "latex=(renameTo \\#NoName\\mybracket{_})"] // new
+	op Identifier : #String -> #Id // new	
 	// op NameLoc : K K -> Name // new
 	
 	macro AnonymousName = #NoName
@@ -315,10 +315,10 @@ and single_name = specifier * name
 	op SingleName : K K -> SingleName [metadata "strict=(1)"]
 	
 /*
-and enum_item = string * expression * cabsloc
+and enum_item = #String * expression * cabsloc
 */
-	op EnumItem : Id -> PureEnumItem // this one has no init
-	op EnumItemInit : Id K -> PureEnumItem // this one has an init
+	op EnumItem : #Id -> PureEnumItem // this one has no init
+	op EnumItemInit : #Id K -> PureEnumItem // this one has an init
 	//op EnumItemLoc : K K -> EnumItem // new
 		
 /*
@@ -330,9 +330,9 @@ and enum_item = string * expression * cabsloc
 	 | DECDEF of init_name_group * cabsloc        (* variable(s), or function prototype *)
 	 | TYPEDEF of name_group * cabsloc
 	 | ONLYTYPEDEF of specifier * cabsloc
-	 | GLOBASM of string * cabsloc
+	 | GLOBASM of #String * cabsloc
 	 | PRAGMA of expression * cabsloc
-	 | LINKAGE of string * cabsloc * definition list (* extern "C" { ... } *)
+	 | LINKAGE of #String * cabsloc * definition list (* extern "C" { ... } *)
 	 (* toplevel form transformer, from the first definition to the *)
 	 (* second group of definitions *)
 	 | TRANSFORMER of definition * definition list * cabsloc
@@ -343,9 +343,9 @@ and enum_item = string * expression * cabsloc
 	op DeclarationDefinition : K -> PureDefinition
 	op Typedef : K -> PureDefinition
 	op OnlyTypedef : K -> PureDefinition
-	op GlobAsm : String -> PureDefinition
+	op GlobAsm : #String -> PureDefinition
 	op Pragma : K -> PureDefinition
-	op Linkage : String List{C} -> PureDefinition
+	op Linkage : #String List{C} -> PureDefinition
 	op Transformer : K List{C} -> PureDefinition
 	op ExpressionTransformer : K K -> PureDefinition
 	op LTLAnnotation : K -> PureDefinition // name
@@ -373,32 +373,32 @@ and enum_item = string * expression * cabsloc
 	op DefinitionLocRange : K K K -> Definition // new
 	
 /*
-(* the string is a file name, and then the list of toplevel forms *)
-and file = string * definition list
+(* the #String is a file name, and then the list of toplevel forms *)
+and file = #String * definition list
 */
 	// name, code, source
-	op TranslationUnit : String K String -> TranslationUnit // new
+	op TranslationUnit : #String K #String -> TranslationUnit // new
 	op Program : List{C} -> Program // new
 
 /*
 	(* A block contains a list of local label declarations ( GCC's ({ __label__ 
 	 * l1, l2; ... }) ) , a list of definitions and a list of statements  *)
 and block = 
-	{ blabels: string list;
+	{ blabels: #String list;
 	  battrs: attribute list;
 	  bstmts: statement list
 	} 
 */
-	op Block : Nat List{C} List{C} -> Block
+	op Block : #Nat List{C} List{C} -> Block
 	
 /*
 	(* GCC asm directives have lots of extra information to guide the optimizer *)
 and asm_details =
-	{ aoutputs: (string option * string * expression) list; 
+	{ aoutputs: (string option * #String * expression) list; 
 	(* optional name, constraints and expressions for outputs *)
-	ainputs: (string option * string * expression) list; 
+	ainputs: (string option * #String * expression) list; 
 	(* optional name, constraints and expressions for inputs *)
-	aclobbers: string list 
+	aclobbers: #String list 
 	(* clobbered registers *)
 	}
 */
@@ -426,7 +426,7 @@ and statement =
 	context IfThenElse(([HOLE] => reval([HOLE])), _, _)
 	op While : K K -> PureStatement
 	op DoWhile : K K -> PureStatement
-	op For : Nat K K K K -> PureStatement // id, ...
+	op For : #Nat K K K K -> PureStatement // id, ...
 /*
 	| BREAK of cabsloc
 	| CONTINUE of cabsloc
@@ -444,22 +444,22 @@ and statement =
 */
 	op Switch : K K K -> PureStatement // unique switch id
 	context Switch(_, ([HOLE] => reval([HOLE])), _)
-	op Case : Nat Nat K K -> PureStatement // unique switch id, unique case id, exp, statement
+	op Case : #Nat #Nat K K -> PureStatement // unique switch id, unique case id, exp, statement
 	op CaseRange : K K K -> PureStatement // gcc extension
-	op Default : Nat K -> PureStatement // unique switch id, statement
+	op Default : #Nat K -> PureStatement // unique switch id, statement
 /*
-	| LABEL of string * statement * cabsloc
-	| GOTO of string * cabsloc
+	| LABEL of #String * statement * cabsloc
+	| GOTO of #String * cabsloc
 	| COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
 	| DEFINITION of definition (*definition or declaration of a variable or type*)
 */
-	op Label : Id K -> PureStatement
-	op Goto : K -> PureStatement // Id
+	op Label : #Id K -> PureStatement
+	op Goto : K -> PureStatement // #Id
 	op CompGoto : K -> PureStatement
 	// op LocalDefinition : K -> PureStatement  // renamed from "DEFINITION"
 /*
 	| ASM of attribute list * (* typically only volatile and const *)
-		  string list * (* template *)
+		  #String list * (* template *)
 		  asm_details option * (* extra details to guide GCC's optimizer *)
 		  cabsloc
 	| TRY_EXCEPT of block * expression * block * cabsloc
@@ -523,7 +523,7 @@ and unary_operator =
 	context _--(([HOLE] => peval([HOLE])))
 	
 /*
-	| LABELADDR of string  (* GCC's && Label *)
+	| LABELADDR of #String  (* GCC's && Label *)
 */
 	// TODO not handling && Label
 /*
@@ -647,9 +647,9 @@ and unary_operator =
 */
 	op Constant : K -> Expression
 	// context Constant(([HOLE] => reval([HOLE])))
-	// string constants aren't revals
+	// #String constants aren't revals
 	// for paren, just putting parentheses
-	subsort Id < Expression
+	subsort #Id < Expression
 /*
 	| EXPR_SIZEOF of expression
 	| TYPE_SIZEOF of specifier * decl_type
@@ -669,21 +669,21 @@ and unary_operator =
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
 */
-	op _._ : K Id -> Expression
+	op _._ : K #Id -> Expression
 	context _._(([HOLE] => peval([HOLE])), _)
-	op _->_ : K Id -> Expression
-	context _->_(([HOLE] => reval([HOLE])), _:Id)
+	op _->_ : K #Id -> Expression
+	context _->_(([HOLE] => reval([HOLE])), _:#Id)
 /*
 	| GNU_BODY of block
-	| EXPR_PATTERN of string     (* pattern variable, and name *)
+	| EXPR_PATTERN of #String     (* pattern variable, and name *)
 */
 	op GnuBody : K -> Expression
-	op ExpressionPattern : String -> Expression
+	op ExpressionPattern : #String -> Expression
 	
 /*
 and constant =
-	| CONST_INT of string   (* the textual representation *)
-	| CONST_FLOAT of string (* the textual representaton *)
+	| CONST_INT of #String   (* the textual representation *)
+	| CONST_FLOAT of #String (* the textual representaton *)
 	| CONST_CHAR of int64 list
 	| CONST_WCHAR of int64 list
 	| CONST_STRING of string
@@ -693,8 +693,8 @@ and constant =
 	op OctalConstant : K -> IntConstant // new
 	op HexConstant : K -> IntConstant // new // expected to be string
 	
-	op DecimalFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
-	op HexFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
+	op DecimalFloatConstant : #String #Int #Float -> IntConstant // new; significand, exponent, approx
+	op HexFloatConstant : #String #Int #Float -> IntConstant // new; significand, exponent, approx
 	
 	op U : K -> Constant // new
 	op L : K -> Constant // new
@@ -706,9 +706,9 @@ and constant =
 	
 	//op IntLiteral : K -> Constant
 	//op FloatLiteral : K -> Constant
-	op CharLiteral : Int -> Constant
-	op WCharLiteral : Int -> Constant
-	op StringLiteral : String -> Constant
+	op CharLiteral : #Int -> Constant
+	op WCharLiteral : #Int -> Constant
+	op StringLiteral : #String -> Constant
 	op WStringLiteral : List{K} -> Constant
 	
 
@@ -726,20 +726,20 @@ and init_expression =
 /*
 and initwhat =
 	NEXT_INIT
-	| INFIELD_INIT of string * initwhat
+	| INFIELD_INIT of #String * initwhat
 	| ATINDEX_INIT of expression * initwhat
 	| ATINDEXRANGE_INIT of expression * expression
 */
 	op NextInit : -> KResult
-	op InFieldInit : Id K -> KResult
+	op InFieldInit : #Id K -> KResult
 	op AtIndexInit : K K -> KResult
 	op AtIndexRangeInit : K K -> KResult // nonstandard
 
 	
 /*
-and attribute = string * expression list
+and attribute = #String * expression list
 */
-	op Attribute : String List{C} -> C
+	op Attribute : #String List{C} -> C
 	
 	
 	
@@ -844,10 +844,10 @@ and attribute = string * expression list
 	ops AssignRightShift : K K -> Expression
 	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
 	
-	ops Dot : K Id -> Expression
-	macro Dot(K:K, X:Id) = K:K . X:Id
-	op Arrow : K Id -> Expression
-	macro Arrow(K:K, X:Id) = K:K -> X:Id
+	ops Dot : K #Id -> Expression
+	macro Dot(K:K, X:#Id) = K:K . X:#Id
+	op Arrow : K #Id -> Expression
+	macro Arrow(K:K, X:#Id) = K:K -> X:#Id
 	
 	
 	

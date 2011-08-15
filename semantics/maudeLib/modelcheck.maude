@@ -30,7 +30,7 @@ mod #MODEL-CHECK is
 							--- < modelChecking > (.).K </ modelChecking > --- so equations match
 							< threads > B2:Bag
 								< thread > B3:Bag
-									< k > '_!=_(A:K,, 'syntaxNat(Rat 0(.List{K}))) ~> 'debug(.List{K}) </ k >
+									< k > '_!=_(A:K,, 'syntaxNat(#Rat 0(.List{K}))) ~> 'debug(.List{K}) </ k >
 								</ thread >
 							</ threads >
 						</ T >

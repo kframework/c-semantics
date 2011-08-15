@@ -2,12 +2,12 @@
 mod #TCP-SYNTAX is
 	including #SOCKET .
 	
-	op error : -> String .
-	op containedRequest : Socket-Configuration -> [String] .
-	op toSend : String -> Socket-Msg .
-	op start : Nat -> Socket-Configuration .
-	op tcpRequest : String -> [String] .
-	op errorTCPSyntax : -> String .
+	op error : -> #String .
+	op containedRequest : #Socket-Configuration -> [#String] .
+	op toSend : #String -> #Socket-Msg .
+	op start : #Nat -> #Socket-Configuration .
+	op tcpRequest : #String -> [#String] .
+	op errorTCPSyntax : -> #String .
 endm
 
 mod #TCP-CLIENT is
@@ -15,22 +15,22 @@ mod #TCP-CLIENT is
 	
 	sort TCPState .
 		
-	op Client : -> Socket-Cid .
-	op cnum : Nat -> Socket-Oid .
+	op Client : -> #Socket-Cid .
+	op cnum : #Nat -> #Socket-Oid .
 	
 	ops idle connecting sending receiving haveAnswer closing connected finished : -> TCPState [ctor] .
 	
-	op state:_ : TCPState -> Socket-Attribute [ctor] .
-	op answer:_ : String -> Socket-Attribute [ctor] .
-	op connectedTo:_ : Socket-Oid -> Socket-Attribute [ctor] .
+	op state:_ : TCPState -> #Socket-Attribute [ctor] .
+	op answer:_ : #String -> #Socket-Attribute [ctor] .
+	op connectedTo:_ : #Socket-Oid -> #Socket-Attribute [ctor] .
 	
 		
-	vars Me Server : Socket-Oid .
-	var A : Socket-AttributeSet .
-	var S : String .
-	var M : Socket-Msg .
-	var C : Socket-Configuration .
-	var N : Nat .
+	vars Me Server : #Socket-Oid .
+	var A : #Socket-AttributeSet .
+	var S : #String .
+	var M : #Socket-Msg .
+	var C : #Socket-Configuration .
+	var N : #Nat .
 	
 	rl < Me : Client | state: connecting, A > createdSocket(Me, socketManager, Server)
 	=> < Me : Client | state: connected, connectedTo: Server, A >
@@ -83,23 +83,23 @@ mod #TCP-INTERFACE is
 	including #TCP-CLIENT .
 	including #COUNTER .
 		
-	rl tcpRequest(S:String) => containedRequest(start(counter) toSend(S:String +String "###EOMTCP###" +String "\r\n")) .
+	rl tcpRequest(S:#String) => containedRequest(start(counter) toSend(S:#String +String "###EOMTCP###" +String "\r\n")) .
 	
-	op readFile : String -> String .
-	op writeFile : String -> String .
-	op check : String -> String .
+	op readFile : #String -> #String .
+	op writeFile : #String -> #String .
+	op check : #String -> #String .
 	
-	eq readFile(S:String) = check(tcpRequest("###READFILE###" +String S:String)) .
-	eq writeFile(S:String) = check(tcpRequest("###WRITEFILE###" +String S:String)) .
+	eq readFile(S:#String) = check(tcpRequest("###READFILE###" +String S:#String)) .
+	eq writeFile(S:#String) = check(tcpRequest("###WRITEFILE###" +String S:#String)) .
 			
-	ceq check(S:String) = substrString(S:String, lengthString("###SUCC###"), lengthString(S:String))
-		if substrString(S:String, 0, lengthString("###SUCC###")) ==Bool "###SUCC###" .
+	ceq check(S:#String) = substrString(S:#String, lengthString("###SUCC###"), lengthString(S:#String))
+		if substrString(S:#String, 0, lengthString("###SUCC###")) ==Bool "###SUCC###" .
 		
-	ceq check(S:String) = errorTCPSyntax
-		if substrString(S:String, 0, lengthString("###ERR###")) ==Bool "###ERR###" .
+	ceq check(S:#String) = errorTCPSyntax
+		if substrString(S:#String, 0, lengthString("###ERR###")) ==Bool "###ERR###" .
 		
-	--- ceq check(S:String) = errorTCPSyntax
-		--- if substrString(S:String, 0, 0) =/=Bool "" .
+	--- ceq check(S:#String) = errorTCPSyntax
+		--- if substrString(S:#String, 0, 0) =/=Bool "" .
 
 	
 endm

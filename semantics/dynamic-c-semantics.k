@@ -20,26 +20,26 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 						
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
-		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => S:String +String charString(N:Nat %Nat 256)) ...</ files >
+		< k > writeToFD(FD:#Nat, N:#Nat) => .K ...</ k >
+		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
+		< files >... Filename:#String |-> (S:#String => S:#String +String charString(N:#Nat %Nat 256)) ...</ files >
 		[structural]
 	rule [writeToFD-string]:
-		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => S:String +String S':String) ...</ files >
+		< k > writeToFD(FD:#Nat, S':#String) => .K ...</ k >
+		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
+		< files >... Filename:#String |-> (S:#String => S:#String +String S':#String) ...</ files >
 		[structural]
 	rule [readFromFD-char]:
-		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</ k >
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
-		if S:String =/=Bool ""
+		< k > readFromFD(FD:#Nat) => tv(charToAscii(firstChar(S:#String)), t(.Set, int))  ...</ k >
+		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
+		< files >... Filename:#String |-> (S:#String => butFirstChar(S:#String)) ...</ files >
+		if S:#String =/=Bool ""
 		[structural]
 	rule [readFromFD-char-eof]:
-		< k > readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
-		< openFiles >... FD:Nat |-> Filename:String ...</ openFiles >
-		< files >... Filename:String |-> (S:String => butFirstChar(S:String)) ...</ files >
-		if S:String ==Bool ""
+		< k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
+		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
+		< files >... Filename:#String |-> (S:#String => butFirstChar(S:#String)) ...</ files >
+		if S:#String ==Bool ""
 		[structural]
 endkm
 
@@ -81,25 +81,25 @@ If they are declared, the parameters to the main function shall obey the followi
 \end{itemize}
 */
 	
-	op incomingArguments-aux : List{K} Nat -> K
+	op incomingArguments-aux : List{K} #Nat -> K
 	
 	rule incomingArguments(L:List{K}) 
 			=> incomingArguments-aux(L:List{K}, 0) 
 		[structural]
-	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
-			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := Constant(StringLiteral(S:String)))
-			~> incomingArguments-aux(L:List{K}, sNat(N:Nat))
+	rule incomingArguments-aux((S:#String,, L:List{K}), N:#Nat) 
+			=> Computation(Identifier("#incomingArgumentsArray")[N:#Nat] := Constant(StringLiteral(S:#String)))
+			~> incomingArguments-aux(L:List{K}, sNat(N:#Nat))
 		[structural]
-	rule incomingArguments-aux(.List{K}, N:Nat) 
-			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
+	rule incomingArguments-aux(.List{K}, N:#Nat) 
+			=> Computation(Identifier("#incomingArgumentsArray")[N:#Nat] := NullPointer)
 		[structural]
 		
 		
-	op syntaxNat : Nat -> K
-	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
+	op syntaxNat : #Nat -> K
+	rule [syntaxNat]: syntaxNat(N:#Nat) => NoSuffix(DecimalConstant(N:#Nat)) [structural]
 	
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "") [structural]
-	rule [eval-input]: eval(Program(P:List{C}), L:List{K}, Input:String) =>
+	rule [eval-input]: eval(Program(P:List{C}), L:List{K}, Input:#String) =>
 		< T >
 			< threads >
 				< thread >
@@ -128,7 +128,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			</ openFiles >
 		...</ T >
 		< files > 
-			"stdin" |-> Input:String
+			"stdin" |-> Input:#String
 			"stdout" |-> ""
 		</ files >
 		< xmessages > .K </ xmessages >
@@ -144,8 +144,8 @@ or equivalent;9) or in some other implementation-defined manner
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	
-	rule < k > callMain(N:Nat, X:Id, Args:K)
-			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
+	rule < k > callMain(N:#Nat, X:#Id, Args:K)
+			=> callMain-aux(typeof(Identifier("main")), N:#Nat, X:#Id, Args:K)
 		...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
@@ -154,14 +154,14 @@ or equivalent;9) or in some other implementation-defined manner
 	// FIXME i think these are slightly different
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?))), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), Nil)), N:Nat, X:Id, ?) => Call(Identifier("main"), Nil) [structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:Nat, X:Id, Args:K)
-		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?))), N:#Nat, X:#Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), Nil)), N:#Nat, X:#Id, ?) => Call(Identifier("main"), Nil) [structural]
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
+		=> Args:K ~> Call(Identifier("main"), N:#Nat :: X:#Id)
 		if T:Type ==Bool t(.Set, char)
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:Nat, X:Id, Args:K)
-		=> Args:K ~> Call(Identifier("main"), N:Nat :: X:Id)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
+		=> Args:K ~> Call(Identifier("main"), N:#Nat :: X:#Id)
 		if T:Type ==Bool t(.Set, char)
 		[structural]
 
@@ -175,8 +175,8 @@ or equivalent;9) or in some other implementation-defined manner
 		...</ thread > ...</ threads > ...</ T >
 			=> < resultValue > V:Value </ resultValue >)
 		< files >...
-			"stdin" |-> S1:String	"stdout" |-> S2:String => .Map
+			"stdin" |-> S1:#String	"stdout" |-> S2:#String => .Map
 		...</ files >
-		(.Bag => < input > S1:String </ input >	< output > S2:String </ output >)
+		(.Bag => < input > S1:#String </ input >	< output > S2:#String </ output >)
 		
 endkm

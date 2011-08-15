@@ -54,13 +54,13 @@ sub maudeOutputWrapper {
 		} elsif ($state eq "success"){
 			if ($line =~ m/< input > .* <\/ input >/){
 				$reduced = 1;
-			} elsif ($line =~ m/< output > String "(.*)"\(\.List{K}\) <\/ output >/){
+			} elsif ($line =~ m/< output > #String "(.*)"\(\.List{K}\) <\/ output >/){
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
 				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$realOutput .= substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< errorCell > String "(.*)"\(\.List{K}\) <\/ errorCell >/){
+			} elsif ($line =~ m/< errorCell > #String "(.*)"\(\.List{K}\) <\/ errorCell >/){
 				$haveError = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
@@ -69,7 +69,7 @@ sub maudeOutputWrapper {
 				$errorCell = substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 				$myFunc = $1;
-			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(String "(.*)"\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\),,Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(#String "(.*)"\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 				$myFile = $1;
 				$myLine = $2;
 				$myOffsetStart = $3;
@@ -86,7 +86,7 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< type > (.*) <\/ type >/){
 				$haveError = 1;
 				$finalCompType = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(#Rat (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}
@@ -134,9 +134,6 @@ sub maudeOutputWrapper {
 			$realOutput .= "\n";
 		}
 		
-			
-		# < currentFunction > Id File-Scope(.List{K}) </ currentFunction >
-		# < currentProgramLoc > ('CabsLoc).KProperLabel(String "challenge01.prepre.gen"(.List{K}),,Rat 1(.List{K}),,Rat 96(.List{K}),,Rat 1(.List{K})) 
 		
 		$realOutput .= "\nFull report can be found in $filename\n";
 		close $fh;

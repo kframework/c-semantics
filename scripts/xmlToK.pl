@@ -10,6 +10,11 @@ binmode STDIN, ":utf8";
 # not handling the case of multiple cdatas 
 # can use 'erase' to get rid of junk cells
 
+my $STRING = "#String";
+my $ID = "#Id";
+my $BOOL = '#Bool';
+my $RAT = '#Rat';
+
 #########################################################
 # you may want to configure things inside this section
 use constant KLIST_IDENTITY => ".List{K}";
@@ -105,11 +110,11 @@ if ($filename eq ""){
 
 print "---kccMarker\n";
 my @args = ();
-push (@args, "String " . $filename . paren(KLIST_IDENTITY));
+push (@args, "$STRING $filename" . paren(KLIST_IDENTITY));
 push (@args, xmlToK($reader));
 $reader->nextElement('RawData');
 my $sourceCode = getRawData($reader);
-push (@args, "String " . $sourceCode . paren(KLIST_IDENTITY));
+push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
 print "eq TranslationUnitName($filename)(.List`{K`}) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
 if ($ltl ne "") {
@@ -158,7 +163,7 @@ sub elementToK {
 		$reader->nextElement;
 		my $rawData = getRawData($reader);
 		my $ident = 'Identifier' . paren($rawData);
-		my $id = 'Id' . paren($ident);
+		my $id = $ID . paren($ident);
 		return ($inNextState, $id . paren(KLIST_IDENTITY));
 	} elsif ($label eq 'WStringLiteral') {
 		$reader->nextElement;
@@ -167,9 +172,9 @@ sub elementToK {
 		my $ident = "'WStringLiteral" . paren(paren($str));
 		return ($inNextState, $ident);
 	} elsif ($label eq 'Variadic') {
-		return ($inNextState, paren("Bool true") . paren(KLIST_IDENTITY));
+		return ($inNextState, paren("$BOOL true") . paren(KLIST_IDENTITY));
 	} elsif ($label eq 'NotVariadic') {
-		return ($inNextState, paren("Bool false") . paren(KLIST_IDENTITY));
+		return ($inNextState, paren("$BOOL false") . paren(KLIST_IDENTITY));
 	}
 	my @klist = ();
 	my $depth = $reader->depth;
@@ -204,7 +209,7 @@ sub rawdataToK {
 	my $sort = $reader->getAttribute('sort');
 	if ($sort eq 'Int') { $sort = 'Rat'; }
 	my $data = getRawData($reader);
-	return "$sort" . paren($data) . paren(KLIST_IDENTITY);
+	return "#$sort" . paren($data) . paren(KLIST_IDENTITY);
 }
 sub getRawData {
 	my ($reader) = (@_);
@@ -250,7 +255,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = "_`(_`)(kList((\"wklist_\").String), (";
+	my $retval = "_`(_`)(kList((\"wklist_\").$STRING), (";
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {
@@ -260,7 +265,7 @@ sub escapeWString {
 		for my $cp (@charPartArray) {
 			$single = ($single << 8) + ord($cp);
 		}
-		$retval .= "Rat $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
+		$retval .= "$RAT $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
 	}
 	
 	$retval .= ".List{K}))";

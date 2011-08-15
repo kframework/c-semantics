@@ -2,9 +2,9 @@
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	//op addAggregate : Id List{Type} -> K 
-	op addStruct : Id List{Type} -> K 
-	op addUnion : Id List{Type} -> K 
+	//op addAggregate : #Id List{Type} -> K 
+	op addStruct : #Id List{Type} -> K 
+	op addUnion : #Id List{Type} -> K 
 	op canonicalizeType : Bag -> K 
 	
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
@@ -62,22 +62,22 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	
 	
 	rule
-		< k > giveType(X:Id, T:Type) => 
-			if (Fun:Id ==Bool File-Scope) then giveGlobalType(X:Id, T:Type) else giveLocalType(X:Id, T:Type) fi
+		< k > giveType(X:#Id, T:Type) => 
+			if (Fun:#Id ==Bool File-Scope) then giveGlobalType(X:#Id, T:Type) else giveLocalType(X:#Id, T:Type) fi
 			...</ k >
-		< currentFunction > Fun:Id </ currentFunction >
+		< currentFunction > Fun:#Id </ currentFunction >
 		if notBool hasStaticType(T:Type)
 		[structural] 
 		
 	rule
-		< k > giveGlobalType(X:Id, T:Type) => .K ...</ k >
-		< types > M:Map => M:Map[T:Type / X:Id] </ types >
-		< gtypes >... Tu:K |-> Map((M':Map => M':Map[T:Type / X:Id])) ...</ gtypes >
+		< k > giveGlobalType(X:#Id, T:Type) => .K ...</ k >
+		< types > M:Map => M:Map[T:Type / X:#Id] </ types >
+		< gtypes >... Tu:K |-> Map((M':Map => M':Map[T:Type / X:#Id])) ...</ gtypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		[structural] 
 	rule
-		< k > giveLocalType(X:Id, T:Type) => .K ...</ k >
-		< types > M:Map => M:Map[T:Type / X:Id] </ types >
+		< k > giveLocalType(X:#Id, T:Type) => .K ...</ k >
+		< types > M:Map => M:Map[T:Type / X:#Id] </ types >
 		[structural]	
 endkm
 
@@ -157,11 +157,11 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 
 		
 	rule [type-dot-heat]:
-		< type > K:K . X:Id => K:K ~> HOLE . X:Id ...</ type >
+		< type > K:K . X:#Id => K:K ~> HOLE . X:#Id ...</ type >
 		if notBool isAType(K:K)
 		[structural] 
 	rule [type-dot-cool]:
-		< type > T:Type ~> HOLE . X:Id => T:Type . X:Id ...</ type >
+		< type > T:Type ~> HOLE . X:#Id => T:Type . X:#Id ...</ type >
 		if isAType(T:Type)
 		[structural]
 		
@@ -255,66 +255,66 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	/*@ \source[n1570]{\para{6.7.3}{9}}
 	If the specification of an array type includes any type qualifiers, the element type is so-qualified, not the array type. \ldots
 	*/
-	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:SimpleType), N:Nat))
-		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:SimpleType), N:Nat))
+	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:SimpleType), N:#Nat))
+		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:SimpleType), N:#Nat))
 		[structural]
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(Named(X:Id)))
-			=> t(.Set, typedefType(X:Id, T:Type))
+		< k > canonicalizeSpecifier(BagItem(Named(X:#Id)))
+			=> t(.Set, typedefType(X:#Id, T:Type))
 		...</ k >
-		< types >... typedef(X:Id) |-> T:Type ...</ types >
-		if X:Id =/=Bool Identifier("")
+		< types >... typedef(X:#Id) |-> T:Type ...</ types >
+		if X:#Id =/=Bool Identifier("")
 		[structural]
 		
 	rule
-		< k > canonicalizeSpecifier(BagItem(StructRef(X:Id)))
-			=> t(.Set, structType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(StructRef(X:#Id)))
+			=> t(.Set, structType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 	rule
-		< k > canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
-			=> t(.Set, enumType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(EnumRef(X:#Id)))
+			=> t(.Set, enumType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 	rule
-		< k > canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-			=> t(.Set, unionType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(UnionRef(X:#Id)))
+			=> t(.Set, unionType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 		
 	rule
-		< k > canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:List{C})))
-			=> EnumDef(X:Id, L:List{C})
-			~> t(.Set, enumType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(EnumDef(X:#Id, L:List{C})))
+			=> EnumDef(X:#Id, L:List{C})
+			~> t(.Set, enumType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, L:List{C})))) ...</ k >
-		< freshNat > N:Nat => sNat(N:Nat) </ freshNat >
+		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:#Nat)),, L:List{C})))) ...</ k >
+		< freshNat > N:#Nat => sNat(N:#Nat) </ freshNat >
 		if L:KLabel ==Bool 'StructDef
 		orBool L:KLabel ==Bool 'EnumDef
 		orBool L:KLabel ==Bool 'UnionDef
 		[structural] 
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(StructDef(X:Id, L:List{C})))
-			=> StructDef(X:Id, L:List{C})
-			~> t(.Set, structType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(StructDef(X:#Id, L:List{C})))
+			=> StructDef(X:#Id, L:List{C})
+			~> t(.Set, structType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 	rule
-		< k > canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:List{C})))
-			=> UnionDef(X:Id, L:List{C})
-			~> t(.Set, unionType(X:Id))
+		< k > canonicalizeSpecifier(BagItem(UnionDef(X:#Id, L:List{C})))
+			=> UnionDef(X:#Id, L:List{C})
+			~> t(.Set, unionType(X:#Id))
 		...</ k >
-		if X:Id =/=Bool Identifier("")
+		if X:#Id =/=Bool Identifier("")
 		[structural] 
 		
 
@@ -400,7 +400,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
-	op structDefType : Id List{Type} -> Type 
+	op structDefType : #Id List{Type} -> Type 
 	
 	op BitFieldType : K K -> K [metadata "strict=()"] 
 	
@@ -408,15 +408,15 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
 		[structural]
 		
-	rule BitFieldType(T:Type, tv(N:Nat, ?)) => t(.Set, bitfieldType(T:Type, N:Nat)) [structural]
+	rule BitFieldType(T:Type, tv(N:#Nat, ?)) => t(.Set, bitfieldType(T:Type, N:#Nat)) [structural]
 	
-	op makeArrayType : Nat -> KLabel 
+	op makeArrayType : #Nat -> KLabel 
 	op makeFunctionType : List{Type} -> KLabel 
 	op pushTypeDown : Type KLabel -> Type 
 	op makePointerType : -> KLabel
 	op makeIncompleteArrayType : -> KLabel
 	
-	rule ArrayType(T:Type, tv(N:Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:Nat)) [structural]
+	rule ArrayType(T:Type, tv(N:#Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:#Nat)) [structural]
 	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, makeIncompleteArrayType) [structural]
 	rule PointerType(T:Type) => pushTypeDown(T:Type, makePointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
@@ -424,37 +424,37 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
 	rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: t(.Set, variadic)))) [structural]
 	
-	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:Type, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:Type, K:KLabel), N:Nat)) [structural]
+	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:Type, N:#Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:Type, K:KLabel), N:#Nat)) [structural]
 	rule [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:Type)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
 	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{Type})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type})) [structural]
-	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id))) [structural]
-	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id))) [structural]
-	rule [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:Id))) [structural]
+	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:#Id))) [structural]
+	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:#Id))) [structural]
+	rule [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:#Id))) [structural]
 	
-	rule [pushdown-typedef]: pushTypeDown(t(S:Set, typedefType(X:Id, t(S':Set, T:SimpleType))), K:KLabel) => K:KLabel(t(S:Set S':Set, T:SimpleType)) [structural]
+	rule [pushdown-typedef]: pushTypeDown(t(S:Set, typedefType(X:#Id, t(S':Set, T:SimpleType))), K:KLabel) => K:KLabel(t(S:Set S':Set, T:SimpleType)) [structural]
 	
 	rule [pushdown-basic]: pushTypeDown(T:Type, K:KLabel) => K:KLabel(T:Type) 
 		if isBasicType(T:Type)
 		[structural]
 	
-	rule makeArrayType(N:Nat)(T:Type) => t(.Set, arrayType(T:Type, N:Nat)) [structural]
+	rule makeArrayType(N:#Nat)(T:Type) => t(.Set, arrayType(T:Type, N:#Nat)) [structural]
 	rule makeFunctionType(L:List{Type})(T:Type) => t(.Set, functionType(T:Type, giveNamesToArgs(L:List{Type}))) [structural]
 	rule makePointerType(T:Type) => t(.Set, pointerType(T:Type)) [structural]
 	rule makeIncompleteArrayType(T:Type) => t(.Set, incompleteArrayType(T:Type)) [structural]
 	
 	op giveNamesToArgs : List{Type} -> List{Type}
-	op giveNamesToArgs-aux : Nat List{Type} -> List{Type}
+	op giveNamesToArgs-aux : #Nat List{Type} -> List{Type}
 	
 	rule giveNamesToArgs(L:List{Type}) => giveNamesToArgs-aux(0, L:List{Type}) [structural]
-	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
-		=> typedDeclaration(T:Type, X:Id) :: giveNamesToArgs-aux(N:Nat, L:List{Type})
-		if X:Id =/=Bool #NoName
+	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, X:#Id) :: giveNamesToArgs-aux(N:#Nat, L:List{Type})
+		if X:#Id =/=Bool #NoName
 		[structural]
-	rule giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type}))
-		=> typedDeclaration(T:Type, #NoName(N:Nat)) :: giveNamesToArgs-aux(sNat(N:Nat), L:List{Type})
-		if X:Id ==Bool #NoName
+	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type}))
+		=> typedDeclaration(T:Type, #NoName(N:#Nat)) :: giveNamesToArgs-aux(sNat(N:#Nat), L:List{Type})
+		if X:#Id ==Bool #NoName
 		[structural]
 	rule giveNamesToArgs-aux(?, t(.Set, variadic))
 		=> t(.Set, variadic)
@@ -481,74 +481,74 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural] 
 		
 	op fillBitHoles : List{Type} -> List{Type} 
-	op fillBitHoles : Nat List{Type} -> List{Type} 
+	op fillBitHoles : #Nat List{Type} -> List{Type} 
 	rule [fillBitHoles-none]:
 		fillBitHoles(Nil) => Nil 
 		[structural]
 	// if we haven't seen bitfields
 	rule [fillBitHoles-not-bitfield]:
-		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			=> typedDeclaration(T:Type, X:Id) :: fillBitHoles(L:List{Type})
+		fillBitHoles((typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
+			=> typedDeclaration(T:Type, X:#Id) :: fillBitHoles(L:List{Type})
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
 	rule [fillBitHoles-bitfield]:
-		fillBitHoles((typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			=> fillBitHoles(0, typedDeclaration(T:Type, X:Id) :: L:List{Type})
+		fillBitHoles((typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
+			=> fillBitHoles(0, typedDeclaration(T:Type, X:#Id) :: L:List{Type})
 		if hasBitfieldType(T:Type) 
 		[structural]
 	
 	// if we have seen bitfields
 	rule [fillBitHoles-aux-not-bitfield]:
-		fillBitHoles(N:Nat, (typedDeclaration(T:Type, X:Id) :: L:List{Type})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
-				:: fillBitHoles(typedDeclaration(T:Type, X:Id) :: L:List{Type})
+		fillBitHoles(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+				:: fillBitHoles(typedDeclaration(T:Type, X:#Id) :: L:List{Type})
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
 	rule [fillBitHoles-aux-bitfield-normal]:
-		fillBitHoles(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:Type, N':Nat)), X:Id) :: L:List{Type})) 
-			=> typedDeclaration(t(S:Set, bitfieldType(T:Type, N':Nat)), X:Id)
-				:: fillBitHoles(N:Nat +Nat N':Nat, L:List{Type})
-		if N':Nat =/=Bool 0 
+		fillBitHoles(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:Type, N':#Nat)), X:#Id) :: L:List{Type})) 
+			=> typedDeclaration(t(S:Set, bitfieldType(T:Type, N':#Nat)), X:#Id)
+				:: fillBitHoles(N:#Nat +Nat N':#Nat, L:List{Type})
+		if N':#Nat =/=Bool 0 
 		[structural]
 		
 	rule [fillBitHoles-bitfield-zero]:
-		fillBitHoles(N:Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':Nat)), ?) :: L:List{Type})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+		fillBitHoles(N:#Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':#Nat)), ?) :: L:List{Type})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
 				:: fillBitHoles(L:List{Type})
-		if N':Nat ==Bool 0
+		if N':#Nat ==Bool 0
 		[structural]
 	
 	rule [fillBitHoles-done]:
-		fillBitHoles(N:Nat, Nil) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName) 
+		fillBitHoles(N:#Nat, Nil) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName) 
 		[structural]
 
 	
-	rule typedDeclaration(t(?, bitfieldType(?, N:Nat)), #NoName) :: typedDeclaration(t(?, bitfieldType(?, N':Nat)), #NoName) 
-		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Nat +Nat N':Nat)), #NoName) 
+	rule typedDeclaration(t(?, bitfieldType(?, N:#Nat)), #NoName) :: typedDeclaration(t(?, bitfieldType(?, N':#Nat)), #NoName) 
+		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:#Nat +Nat N':#Nat)), #NoName) 
 		[structural]
 	
 	// fixme chould check for some struct contraints here
 	op incompleteToFlexibleArrayMember : List{Type} -> List{Type} 
-	rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:Id) :: L:List{Type}) 
-		=> typedDeclaration(T:Type, X:Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
+	rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:#Id) :: L:List{Type}) 
+		=> typedDeclaration(T:Type, X:#Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
 		if notBool hasIncompleteType(T:Type) 
 		[structural]
-	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:Id)) => typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:Id) [structural]
+	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:#Id)) => typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:#Id) [structural]
 	rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
 	
 	rule
-		< k > StructDef(X:Id, L:List{Type})
-			=> addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
-			~> giveType(X:Id, t(.Set, structType(X:Id)))
+		< k > StructDef(X:#Id, L:List{Type})
+			=> addStruct(X:#Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
+			~> giveType(X:#Id, t(.Set, structType(X:#Id)))
 		...</ k >
 		[structural] 
 	rule
-		< k > UnionDef(X:Id, L:List{Type})
-			=> addUnion(X:Id, L:List{Type})
-			~> giveType(X:Id, t(.Set, unionType(X:Id)))
+		< k > UnionDef(X:#Id, L:List{Type})
+			=> addUnion(X:#Id, L:List{Type})
+			~> giveType(X:#Id, t(.Set, unionType(X:#Id)))
 		...</ k >
 		[structural] 
 
@@ -559,16 +559,16 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 			
 	rule
-		NameAndType(X:Id, T:Type) => typedDeclaration(T:Type, X:Id)
+		NameAndType(X:#Id, T:Type) => typedDeclaration(T:Type, X:#Id)
 		[structural] 
 	
 	rule [extract-basic]: extractActualType(T:Type) => T:Type if isBasicType(T:Type) [structural]
-	rule [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id)) [structural]
-	rule [extract-struct]: extractActualType(t(S:Set, structType(X:Id))) => t(S:Set, structType(X:Id)) [structural]
-	rule [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id)) [structural]
-	rule [extract-array]: extractActualType(t(S:Set, arrayType(T:Type, N:Nat))) => t(S:Set, arrayType(extractActualType(T:Type), N:Nat)) [structural]
+	rule [extract-enum]: extractActualType(t(S:Set, enumType(X:#Id))) => t(S:Set, enumType(X:#Id)) [structural]
+	rule [extract-struct]: extractActualType(t(S:Set, structType(X:#Id))) => t(S:Set, structType(X:#Id)) [structural]
+	rule [extract-union]: extractActualType(t(S:Set, unionType(X:#Id))) => t(S:Set, unionType(X:#Id)) [structural]
+	rule [extract-array]: extractActualType(t(S:Set, arrayType(T:Type, N:#Nat))) => t(S:Set, arrayType(extractActualType(T:Type), N:#Nat)) [structural]
 	rule [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:Type))) => t(S:Set, incompleteArrayType(extractActualType(T:Type))) [structural]
-	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:Nat)) [structural]
+	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:#Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:#Nat)) [structural]
 	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{Type}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{Type})) [structural]
 	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
 	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
@@ -577,7 +577,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op NameAndType : K K -> K [metadata "strict=(2)"] 
 		
 	rule
-		SingleName(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
+		SingleName(T:Type, Name(X:#Id, K:K)) => NameAndType(X:#Id, DeclType(T:Type, K:K))
 		[structural] 
 	rule [Separate-FieldGroups]:
 		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
@@ -602,12 +602,12 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		// => Other:List{Type}
 		// [structural]
 	rule
-		FieldGroup(T:Type, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:Type, K:K))
+		FieldGroup(T:Type, Name(X:#Id, K:K)) => NameAndType(X:#Id, DeclType(T:Type, K:K))
 		[structural]
 		
 	rule
-		FieldGroup(T:Type, BitFieldName(Name(X:Id, K:K), Size:K))
-		=> NameAndType(X:Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
+		FieldGroup(T:Type, BitFieldName(Name(X:#Id, K:K), Size:K))
+		=> NameAndType(X:#Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
 		[structural] 
 	rule FieldName(K:K) => K:K [structural]
 endkm
@@ -680,7 +680,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	// c99 6.4.5
 	rule
-		< type > Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Nat 1)) ...</ type >
+		< type > Constant(StringLiteral(S:#String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:#String) +Nat 1)) ...</ type >
 		[structural]
 	rule
 		< type > Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Nat 1)) ...</ type >
@@ -700,15 +700,15 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 		 		
 	rule [type-struct-dot]:
-		< type > t(?, structType(S:Id)) . F:Id => T:Type ...</ type >
+		< type > t(?, structType(S:#Id)) . F:#Id => T:Type ...</ type >
 		< structs >... 
-			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+			S:#Id |-> aggregateInfo(?, (? F:#Id |-> T:Type), ?)
 		...</ structs >
 		[structural] 
 	rule [type-union-dot]:
-		< type > t(?, unionType(S:Id)) . F:Id => T:Type ...</ type >
+		< type > t(?, unionType(S:#Id)) . F:#Id => T:Type ...</ type >
 		< structs >... 
-			S:Id |-> aggregateInfo(?, (? F:Id |-> T:Type), ?)
+			S:#Id |-> aggregateInfo(?, (? F:#Id |-> T:Type), ?)
 		...</ structs >
 		[structural] 
 	
@@ -873,74 +873,74 @@ kmod COMMON-C-TYPING is
 		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
 		[structural] 
 			
-	op addGlobalAggregate : Id K -> K 
-	op addLocalAggregate : Id K -> K 
+	op addGlobalAggregate : #Id K -> K 
+	op addLocalAggregate : #Id K -> K 
 	
-	op addStruct-aux : Id List{Type} K Map Map List{Type} -> K [metadata "strict=(3)"]
-	op addUnion-aux : Id List{Type} Map Map List{Type} -> K
+	op addStruct-aux : #Id List{Type} K Map Map List{Type} -> K [metadata "strict=(3)"]
+	op addUnion-aux : #Id List{Type} Map Map List{Type} -> K
 	rule
-		< k > addStruct(S:Id, L:List{Type}) 
-			=> addStruct-aux(S:Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
+		< k > addStruct(S:#Id, L:List{Type}) 
+			=> addStruct-aux(S:#Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
 		...</ k >
 		[structural]
 	rule
 		< k > addStruct-aux(
-				S:Id
-				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				S:#Id
+				, (typedDeclaration(T:Type, Field:#Id) :: L:List{Type})
 				, V:Value
 				, Types:Map
 				, Offsets:Map
 				, L':List{Type}
 			) 
-			=> addStruct-aux(S:Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:Id], Offsets:Map[value(V:Value) / Field:Id], L':List{Type})
+			=> addStruct-aux(S:#Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:#Id], Offsets:Map[value(V:Value) / Field:#Id], L':List{Type})
 		...</ k >
 		[structural]
 	rule
-		< k > addStruct-aux(S:Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
-			=> if (F:Id ==Bool File-Scope) then 
-				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+		< k > addStruct-aux(S:#Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
+			=> if (F:#Id ==Bool File-Scope) then 
+				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
 			else
-				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+				(addLocalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
 			fi
 		...</ k >
-		< currentFunction > F:Id </ currentFunction >
+		< currentFunction > F:#Id </ currentFunction >
 		[structural]		
 		
 	rule
-		< k > addUnion(S:Id, L:List{Type}) 
-			=> addUnion-aux(S:Id, L:List{Type}, .Map, .Map, L:List{Type})
+		< k > addUnion(S:#Id, L:List{Type}) 
+			=> addUnion-aux(S:#Id, L:List{Type}, .Map, .Map, L:List{Type})
 		...</ k >
 		[structural]
 	rule
 		< k > addUnion-aux(
-				S:Id
-				, (typedDeclaration(T:Type, Field:Id) :: L:List{Type})
+				S:#Id
+				, (typedDeclaration(T:Type, Field:#Id) :: L:List{Type})
 				, Types:Map
 				, Offsets:Map
 				, L':List{Type}
 			) 
-			=> addUnion-aux(S:Id, L:List{Type}, Types:Map[T:Type / Field:Id], Offsets:Map[0 / Field:Id], L':List{Type})
+			=> addUnion-aux(S:#Id, L:List{Type}, Types:Map[T:Type / Field:#Id], Offsets:Map[0 / Field:#Id], L':List{Type})
 		...</ k >
 		[structural]
 	rule
-		< k > addUnion-aux(S:Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
-			=> if (F:Id ==Bool File-Scope) then 
-				(addGlobalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+		< k > addUnion-aux(S:#Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
+			=> if (F:#Id ==Bool File-Scope) then 
+				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
 			else
-				(addLocalAggregate(S:Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+				(addLocalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
 			fi
 		...</ k >
-		< currentFunction > F:Id </ currentFunction >
+		< currentFunction > F:#Id </ currentFunction >
 		[structural]
 
 	rule
-		< k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
-		< structs > M':Map => M':Map[K:K / X:Id] </ structs >
-		< gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
+		< k > addGlobalAggregate(X:#Id, K:K) => . ...</ k >
+		< structs > M':Map => M':Map[K:K / X:#Id] </ structs >
+		< gstructs > M:Map => M:Map[K:K / X:#Id] </ gstructs >
 		[structural] 
 	rule
-		< k > addLocalAggregate(X:Id, K:K) => . ...</ k >
-		< structs > M:Map => M:Map[K:K / X:Id] </ structs >
+		< k > addLocalAggregate(X:#Id, K:K) => . ...</ k >
+		< structs > M:Map => M:Map[K:K / X:#Id] </ structs >
 		[structural] 
 		
 	rule isAType t(?, T:SimpleType) => true

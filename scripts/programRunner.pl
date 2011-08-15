@@ -122,7 +122,7 @@ close($fileInput);
 # first, set up the runner file with the right commands and set any variables
 my $commandLineArguments = "";
 for my $arg ($thisFile, @ARGV) {	
-	$commandLineArguments .= "String \"$arg\"(.List{K}),, ";
+	$commandLineArguments .= "#String \"$arg\"(.List{K}),, ";
 }
 my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), \"\Q$stdin\E\")";
 my $evalLine = "erew in C-program-linked : $startTerm .\n";
