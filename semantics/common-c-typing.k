@@ -810,6 +810,13 @@ kmod COMMON-C-TYPING is
 		< type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
+		
+	/*@ \source[n1570]{\para{6.2.7}{1}}
+	Two types have compatible type if their types are the same. Additional rules for determining whether two types are compatible are described in 6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for declarators.  Moreover, two structure, union, or enumerated types declared in separate translation units are compatible if their tags and members satisfy the following requirements: If one is declared with a tag, the other shall be declared with the same tag. If both are completed anywhere within their respective translation units, then the following additional requirements apply: there shall be a one-to-one correspondence between their members such that each pair of corresponding members are declared with compatible types; if one member of the pair is declared with an alignment specifier, the other is declared with an equivalent alignment specifier; and if one member of the pair is declared with a name, the other is declared with the same name. For two structures, corresponding members shall be declared in the same order. For two structures or unions, corresponding bit-fields shall have the same widths. For two enumerations, corresponding members shall have the same values.
+	
+	\source[n1570]{\para{6.7.3}{10}}
+	For two qualified types to be compatible, both shall have the identically qualified version of a compatible type; the order of type qualifiers within a list of specifiers or qualifiers does not affect the specified type.
+	*/
 	
 	rule [typeCompatible-identical]: isTypeCompatible(T:Type, T:Type) 
 		=> true 

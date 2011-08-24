@@ -12,6 +12,8 @@ kmod COMMON-C-SYNTAX is
 	including K
 	including K-PROPER
 	
+	tags ndlocal ndheat computational structural
+	
 	// these are semantic
 	// op reval : K -> K // [strict]
 	// op peval : K -> K // [strict]
@@ -65,13 +67,14 @@ kmod COMMON-C-SYNTAX is
 	sort PureDefinition
 	
 	// sort C
-	sort List{C}
+	// sort List{C}
 	subsort #Id < C
 	op Nil : -> List{C}
 	subsort C < List{C}
 	// fixme, can't figure out how to right this with the new contexts
 	// this is only used when doing nondeterministic stuff, so it's okay
-	op _::_ : List{C} List{C} -> List{C} [metadata "hybrid=() strict=()" assoc id: Nil]
+	// op _::_ : List{C} List{C} -> List{C} [metadata "hybrid=() strict=()" assoc id: Nil]
+	syntax List{C} ::= List{C} :: List{C} [hybrid strict assoc id: Nil]
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 	
@@ -252,7 +255,7 @@ and decl_type =
 	op JustBase : -> K
 	op FunctionType : K -> DeclType [metadata "strict=()"]
 	op ArrayType : K K -> DeclType [metadata "strict=(1)"]
-	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
 	
@@ -305,7 +308,7 @@ and name = #String * decl_type * attribute list * cabsloc
 and init_name = name * init_expression
 */
 	op InitName : K K -> InitName
-	context InitName(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context InitName(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 /*
 	(* Single names are for declarations that cannot come in groups, like
@@ -532,67 +535,67 @@ and unary_operator =
 	op _*_ : K K -> Expression [prec 31 gather(E e)]
 	op _/_ : K K -> Expression [prec 31 gather(E e)]
 	op _%_ : K K -> Expression [prec 31 gather(E e)]
-	context _*_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _*_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _/_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _/_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _%_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _%_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _*_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _*_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _/_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _/_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _%_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _%_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _+_ : K K -> Expression [prec 33 gather(E e)]
 	op _-_ : K K -> Expression [prec 33 gather(E e)]
-	context _+_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _+_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _-_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _-_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _+_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _+_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _-_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _-_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _<<_ : K K -> Expression [prec 35 gather(E e)]
-	context _<<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _<<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _<<_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _<<_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _>>_ : K K -> Expression [prec 35 gather(E e)]
-	context _>>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _>>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _>>_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _>>_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _<_ : K K -> Expression [prec 37 gather(E e)]
 	op _<=_ : K K -> Expression [prec 37 gather(E e)]
-	context _<_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _<_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _<=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _<=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _<_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _<_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _<=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _<=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _>_ : K K -> Expression [prec 37 gather(E e)]
 	op _>=_ : K K -> Expression [prec 37 gather(E e)]
-	context _>_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _>_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _>=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _>=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _>_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _>_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _>=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _>=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _==_ : K K -> Expression [prec 39 gather(E e)]
 	op _!=_ : K K -> Expression [prec 39 gather(E e)]
-	context _==_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _==_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
-	context _!=_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _!=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _==_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _==_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _!=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _!=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _&_ : K K -> Expression [prec 41 gather(E e)]
-	context _&_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _&_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _&_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _&_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _^_ : K K -> Expression [prec 43 gather(E e)]
-	context _^_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _^_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _^_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _^_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	op _|_ : K K -> Expression [prec 45 gather(E e)]
-	context _|_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	context _|_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _|_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _|_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 	
 	op _&&_ : K K -> Expression [prec 47 gather(E e)]
-	context _&&_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _&&_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	
 	op _||_ : K K -> Expression [prec 49 gather(E e)]
-	context _||_(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
+	context _||_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 			
 	op _*=_ : K K -> Expression [prec 53]
 	op _/=_  : K K -> Expression [prec 53]
@@ -605,8 +608,8 @@ and unary_operator =
 	op _|=_ : K K -> Expression [prec 53]
 	op _>>=_ : K K -> Expression [prec 53]
 	op _:=_ : K K -> Expression [prec 53]
-	context _:=_(([HOLE] => peval([HOLE])), _) [metadata "nd=(true)"]
-	context _:=_(_, ([HOLE] => reval([HOLE]))) [metadata "nd=(true)"]
+	context _:=_(([HOLE] => peval([HOLE])), _) [metadata "ndheat=()"]
+	context _:=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
 	
 /*
 	| QUESTION of expression * expression * expression
@@ -631,15 +634,15 @@ and unary_operator =
 */
 
 	op Call : K List{C} -> Expression
-	context Call(([HOLE] => reval([HOLE])), _) [metadata "nd=(true)"]
-	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "nd=(true)"]
-	context 'Call(_,, '_::_(?,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, ?)) [metadata "nd=(true)"]
+	context Call(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "ndheat=()"]
+	context 'Call(_,, '_::_(?,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, ?)) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
 	op Comma : List{C} -> Expression
-	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "nd=(true)"]
-	context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "nd=(true)"]
+	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "ndheat=()"]
+	context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression

@@ -61,13 +61,13 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule [read-thread-local]:
 		< k > ('read-aux => 'readActual)(sym(threadId(Id:#Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
 		<threadId> Id:#Nat </threadId>
-		[structural metadata "nd=(true)"]
+		[structural ndlocal]
 	rule [read-shared]: // read global or shared data
 		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational=() nd=(true)"] 
+		[computational ndlocal]
 	rule [read-allocated]: // read data of "allocated" duration
 		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
-		[metadata "computational=() nd=(true)"]
+		[computational ndlocal]
 	
 	rule [read]:
 		< k > readActual(Loc:#Nat, T:Type, bitSize:#Nat)
@@ -296,19 +296,19 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		<threadId> Id:#Nat </threadId>
 		where Loc = sym(threadId(Id:#Nat) +Nat N:#Nat) +Nat Offset:#Nat
-		[structural metadata " nd=(true)"]
+		[structural ndlocal]
 	rule [write]: // write global or shared data
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:#Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:#Nat)
 		...</ k >
 		where Loc = sym(threadId(0) +Nat N:#Nat) +Nat Offset:#Nat
-		[metadata "computational=() nd=(true)"]
+		[computational ndlocal]
 	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:Type), bitSize:#Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:Type), bitSize:#Nat)
 		...</ k >
 		where Loc = sym(threadId(allocatedDuration) +Nat N:#Nat) +Nat Offset:#Nat
-		[metadata "computational=() nd=(true)"]
+		[computational ndlocal]
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:#Nat, tv(V:K, T:Type), bitSize:#Nat)

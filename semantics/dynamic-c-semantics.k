@@ -16,7 +16,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule [sequencePoint]:
 		< k > sequencePoint => .K ...</ k >
 		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
-		[structural metadata "nd=(true)"]
+		[structural ndlocal]
 						
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:

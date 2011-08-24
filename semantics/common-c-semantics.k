@@ -5,10 +5,11 @@ kmod COMMON-INCOMING-MODULES is
 	including K-CONTEXTS 
 	including K-PROPER
 	
-	
 	sort Type 
 	sort Value 
-	sort List{Type} 
+	// sort List{Type} 
+	syntax List{Type} ::= List{Type} :: List{Type} [ditto] 
+	op Nil : -> List{Type} [ditto]
 	subsort List{Type} < KResult 
 	subsort List{Type} < List{C} 
 	subsort Type < List{Type}
@@ -30,8 +31,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op fromUnion : #Id -> K
 	
-	op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
-	op Nil : -> List{Type} [ditto] 
+	// op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
+	
 		
 	// Types
 	op typedDeclaration : Type #Id -> Type // would rather this be KResult, but can't get the subsorting to work
