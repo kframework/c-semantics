@@ -788,6 +788,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule [innerType-incompleteArrayType]: 
 		innerType(t(?, incompleteArrayType(T:Type))) => T:Type 
 		[structural]
+	rule [innerType-flexibleArrayType]: 
+		innerType(t(?, flexibleArrayType(T:Type))) => T:Type 
+		[structural]
 	rule [innerType-qualifiedType]:
 		innerType(t(?, qualifiedType(T:Type, ?))) => innerType(T:Type) 
 		[structural]

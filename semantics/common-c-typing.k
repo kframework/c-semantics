@@ -1009,10 +1009,12 @@ kmod COMMON-C-TYPING is
 	
 	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?))) => true [structural]
 	rule [hasArrayType-incompleteArray]: hasArrayType(t(?, incompleteArrayType(?))) => true [structural]
+	rule [hasArrayType-flexibleArray]: hasArrayType(t(?, flexibleArrayType(?))) => true [structural]
 	rule [hasArrayType-qualified]: hasArrayType(t(?, qualifiedType(T:Type, ?))) => hasArrayType(T:Type) [structural]
 	rule [hasArrayType-other]: hasArrayType(t(?, T:SimpleType)) => false
 		if getKLabel(T:SimpleType) =/=Bool 'arrayType 
 		andBool getKLabel(T:SimpleType) =/=Bool 'incompleteArrayType 
+		andBool getKLabel(T:SimpleType) =/=Bool 'flexibleArrayType 
 		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
