@@ -15,11 +15,9 @@ This was taken from ISO/IEC 9899:201x n1516.  I've moved syntactic properties an
 025	Conversion between two pointer types produces a result that is incorrectly aligned (6.3.2.3). 
 026	A pointer is used to call a function whose type is not compatible with the referenced type (6.3.2.3). 
 031	Two identifiers differ only in nonsignificant characters (6.4.2.1). 
-032	The identifier __func__ is explicitly declared (6.4.2.2). 
 035	A side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object (6.5). 
 036	An exceptional condition occurs during the evaluation of an expression (6.5). 
 037	An object has its stored value accessed other than by an lvalue of an allowable type (6.5). 
-040	For a call to a function without a function prototype in scope where the function is not defined with a function prototype, the types of the arguments after promotion are not compatible with those of the parameters after promotion (with certain exceptions) (6.5.2.2). 
 041	A function is defined with a type that is not compatible with the type (of the expression) pointed to by the expression that denotes the called function (6.5.2.2). 
 042	A member of an _Atomic-qualified structure or union is accessed (6.5.2.3). 
 050	The result of subtracting two pointers is not representable in an object of type ptrdiff_t (6.5.6). 
@@ -98,9 +96,11 @@ Remark: I'm not sure how you could do 009 without doing 010.
 017	Conversion to or from an integer type produces a value outside the range that can be represented (6.3.1.4). 
 022	An lvalue having array type is converted to a pointer to the initial element of the array, and the array object has register storage class (6.3.2.1). 
 023	An attempt is made to use the value of a void expression, or an implicit or explicit conversion (except to void) is applied to a void expression (6.3.2.2). 
+032	The identifier __func__ is explicitly declared (6.4.2.2). 
 033	The program attempts to modify a string literal (6.4.5). 
 038	For a call to a function without a function prototype in scope, the number of arguments does not equal the number of parameters (6.5.2.2). 
 039	For call to a function without a function prototype in scope where the function is defined with a function prototype, either the prototype ends with an ellipsis or the types of the arguments after promotion are not compatible with the types of the parameters (6.5.2.2). 
+040	For a call to a function without a function prototype in scope where the function is not defined with a function prototype, the types of the arguments after promotion are not compatible with those of the parameters after promotion (with certain exceptions) (6.5.2.2). 
 043	The operand of the unary * operator has an invalid value (6.5.3.2). 
 044	A pointer is converted to other than an integer or pointer type (6.5.4). 
 045	The value of the second operand of the / or % operator is zero (6.5.5). 

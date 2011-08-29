@@ -137,7 +137,7 @@ c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPS
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/TCPSupport" 
+#@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/TCPSupport" 
 	@cp c-compiled.maude.1 c-compiled.maude.tmp
 	@echo "Done".
 
@@ -158,7 +158,7 @@ c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILE
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
+#@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
 	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
 	@echo "Done".
 

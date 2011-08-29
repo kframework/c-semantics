@@ -1,9 +1,9 @@
-load maudeLib/TCPSupport
+// load maudeLib/TCPSupport
 
 kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	including DYNAMIC-INCLUDE 
-	including #SOCKET
-	including #TCP-INTERFACE
+	// including #SOCKET
+	// including #TCP-INTERFACE
 	
 	op vararg : K -> C [metadata "hybrid=() strict=()"]
 	op nextvarg : #Nat Type -> C
@@ -339,11 +339,11 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	op fsl-open-file-aux : #String #Nat #String -> K
 	
-	rule [fslOpenFile-aux]:
-		< k > fsl-open-file(str(S:#String), FD:#Nat)
-			=> fsl-open-file-aux(S:#String, FD:#Nat, readFile(S:#String))
-		...</ k >
-		[structural]
+	// rule [fslOpenFile-aux]:
+		// < k > fsl-open-file(str(S:#String), FD:#Nat)
+			// => fsl-open-file-aux(S:#String, FD:#Nat, readFile(S:#String))
+		// ...</ k >
+		// [structural]
 
 	rule [fslOpenFile]:
 		< k > fsl-open-file-aux(Name:#String, FD:#Nat, Data:#String) => tv(0, t(.Set, int)) ...</ k >
