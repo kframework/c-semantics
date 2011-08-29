@@ -18,17 +18,10 @@ This was taken from ISO/IEC 9899:201x n1516.  I've moved syntactic properties an
 035	A side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object (6.5). 
 036	An exceptional condition occurs during the evaluation of an expression (6.5). 
 037	An object has its stored value accessed other than by an lvalue of an allowable type (6.5). 
-041	A function is defined with a type that is not compatible with the type (of the expression) pointed to by the expression that denotes the called function (6.5.2.2). 
 042	A member of an _Atomic-qualified structure or union is accessed (6.5.2.3). 
 050	The result of subtracting two pointers is not representable in an object of type ptrdiff_t (6.5.6). 
-051	An expression is shifted by a negative number or by an amount greater than or equal to the width of the promoted expression (6.5.7). 
-052	An expression having signed promoted type is left-shifted and either the value of the expression is negative or the result of shifting would be not be representable in the promoted type (6.5.7). 
-053	Pointers that do not point to the same aggregate or union (nor just beyond the same array object) are compared using relational operators (6.5.8). 
-054	An object is assigned to an inexactly overlapping object or to an exactly overlapping object with incompatible type (6.5.16.1). 
 055	An expression that is required to be an integer constant expression does not have an integer type; has operands that are not integer constants, enumeration constants, character constants, sizeof expressions whose results are integer constants, or immediately-cast floating constants; or contains casts (outside operands to sizeof operators) other than conversions of arithmetic types to integer types (6.6). 
-056	A constant expression in an initializer is not, or does not evaluate to, one of the following: an arithmetic constant expression, a null pointer constant, an address constant, or an address constant for a complete object type plus or minus an integer constant expression (6.6). 
 057	An arithmetic constant expression does not have arithmetic type; has operands that are not integer constants, floating constants, enumeration constants, character constants, or sizeof expressions; or contains casts (outside operands to sizeof operators) other than conversions of arithmetic types to arithmetic types (6.6). 
-058	The value of an object is accessed by an array-subscript [], member-access . or ->, address &, or indirection * operator or a pointer cast in creating an address constant (6.6). 
 059	An identifier for an object is declared with no linkage and the type of the object is incomplete after its declarator, or after its init-declarator if it has an initializer (6.7). 
 062	An attempt is made to access, or generate a pointer to just past, a flexible array member of a structure when the referenced object provides no elements for that array (6.7.2.1). 
 063	When the complete type is needed, an incomplete structure or union type is not completed in the same scope by another declaration of the tag that defines the content (6.7.2.3). 
@@ -101,6 +94,7 @@ Remark: I'm not sure how you could do 009 without doing 010.
 038	For a call to a function without a function prototype in scope, the number of arguments does not equal the number of parameters (6.5.2.2). 
 039	For call to a function without a function prototype in scope where the function is defined with a function prototype, either the prototype ends with an ellipsis or the types of the arguments after promotion are not compatible with the types of the parameters (6.5.2.2). 
 040	For a call to a function without a function prototype in scope where the function is not defined with a function prototype, the types of the arguments after promotion are not compatible with those of the parameters after promotion (with certain exceptions) (6.5.2.2). 
+041	A function is defined with a type that is not compatible with the type (of the expression) pointed to by the expression that denotes the called function (6.5.2.2). 
 043	The operand of the unary * operator has an invalid value (6.5.3.2). 
 044	A pointer is converted to other than an integer or pointer type (6.5.4). 
 045	The value of the second operand of the / or % operator is zero (6.5.5). 
@@ -108,6 +102,12 @@ Remark: I'm not sure how you could do 009 without doing 010.
 047	Addition or subtraction of a pointer into, or just beyond, an array object and an integer type produces a result that points just beyond the array object and is used as the operand of a unary * operator that is evaluated (6.5.6). 
 048	Pointers that do not point into, or just beyond, the same array object are subtracted (6.5.6). 
 049	An array subscript is out of range, even if an object is apparently accessible with the given subscript (as in the lvalue expression a[1][7] given the declaration int a[4][5]) (6.5.6). 
+051	An expression is shifted by a negative number or by an amount greater than or equal to the width of the promoted expression (6.5.7). 
+052	An expression having signed promoted type is left-shifted and either the value of the expression is negative or the result of shifting would be not be representable in the promoted type (6.5.7). 
+053	Pointers that do not point to the same aggregate or union (nor just beyond the same array object) are compared using relational operators (6.5.8). 
+054	An object is assigned to an inexactly overlapping object or to an exactly overlapping object with incompatible type (6.5.16.1). 
+056	A constant expression in an initializer is not, or does not evaluate to, one of the following: an arithmetic constant expression, a null pointer constant, an address constant, or an address constant for a complete object type plus or minus an integer constant expression (6.6). 
+058	The value of an object is accessed by an array-subscript [], member-access . or ->, address &, or indirection * operator or a pointer cast in creating an address constant (6.6). 
 060	A function is declared at block scope with an explicit storage-class specifier other than extern (6.7.1). 
 061	A structure or union is defined as containing no named members, no anonymous structures, and no anonymous unions (6.7.2.1). 
 067	The specification of a function type includes any type qualifiers (6.7.3). 

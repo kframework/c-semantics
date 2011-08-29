@@ -56,14 +56,13 @@ if (defined($ENV{'HELP'})) {
 	print "Here are some configuration variables you can set to affect how this program is run:\n";
 	print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
 	print "DEBUGON --- debugs a particular semantic rule\n";
-	#print "DEBUG_STATIC --- directly runs static semantics in maude so you can ctrl-c and debug\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
-	#print "MODELCHECK --- runs the model checker on #pragma defined property given by value of MODELCHECK\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
 	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
 	print "LOADMAUDE --- loads this program into maude without executing; only of use to developers\n";
+	print "TRACEMAUDE --- prints an execution trace; only of use to developers\n";
 	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
 	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
@@ -87,6 +86,11 @@ require $wrapperScript;
 my $graphScript = catfile($SCRIPTS_DIR, 'graphSearch.pl');
 require $graphScript;
 
+# print defined($ENV{'PLAIN'});
+# print defined($ENV{'TRACEMAUDE'});
+my $plainOutput = (defined($ENV{'PLAIN'}) or defined($ENV{'TRACEMAUDE'})) ? 1 : 0 ;
+# print "plain: $plainOutput\n";
+
 my $stdin="";
 # actual start of script
 if ( -t STDIN ) {
@@ -103,6 +107,11 @@ push(@temporaryFiles, $fileRunner);
 # push(@temporaryFiles, $fileDynamicRunner);
 my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 push(@temporaryFiles, $fileInput);
+
+my $traceFile;
+if (defined($ENV{'TRACEMAUDE'})) {
+	$traceFile = File::Temp->new( TEMPLATE => 'tmp-kcc-trace-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+}
 # my $fileDynamicInput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 # push(@temporaryFiles, $fileDynamicInput);
 
@@ -138,6 +147,9 @@ if (defined($ENV{'PROFILE'})) {
 if (defined($ENV{'DEBUG'})) {
 	print $fileRunner "break select debug .\n";
 	print $fileRunner "set break on .\n";
+}
+if (defined($ENV{'TRACEMAUDE'})) {
+	print $fileRunner "set trace on .\n";
 }
 if (defined($ENV{'DEBUGON'})) {
 	print $fileRunner "break select $ENV{'DEBUGON'} .\n";
@@ -210,7 +222,7 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 	open (my $fh, "<$intermediateOutputFile");
 	my @dynamicOutput = <$fh>;
 	close($fh);
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @dynamicOutput);
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, @dynamicOutput);
 	print $finalOutput;
 	my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
 	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
@@ -228,8 +240,14 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper(defined($ENV{'PLAIN'}), @dynamicOutput);
-	print $finalOutput;
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, @dynamicOutput);
+	if (defined($ENV{'TRACEMAUDE'})) {
+		print $traceFile $finalOutput;
+		close $traceFile;
+		print "Trace placed in $traceFile\n";
+	} else {
+		print $finalOutput;
+	}
 	exit($finalReturnValue);
 }
 
@@ -246,104 +264,6 @@ sub runProgram {
 	
 	return ($returnValue, @data);
 }
-
-# sub runProgramSafe {
-	# my ($command) = (@_);
-	# #my @data = `$command`;
-	
-	# use Symbol 'gensym'; 
-	# #my $inputfh;
-	# my $input = gensym;
-	# #open($inputfh, \@input);
-	# my $outputfh;
-	# my $output="";
-	# open($outputfh, '>', \my $output);
-	# #my $errorfh;
-	# my $error = gensym;
-	# #open($errorfh, \@error);
-	# $childPid = open3($input, $outputfh, $error, $command);
-	# waitpid $childPid, 0;
-	# $childPid = 0;
-	# close $outputfh;
-	# print "output:\nxxx\n$output\nxxx\n";
-	
-	# return (0, $output);
-# }
-
-
-# if [ $DEBUG ]; then
-	# # if [ $IOFLAG ]; then
-		# # perl $IO_SERVER &> tmpIOServerOutput.log &
-		# # PERL_SERVER_PID=$!
-	# # fi
-	# $DYNAMIC_MAUDE_COMMAND
-# elif [ $SEARCH ]; then
-	# #INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# #GRAPH_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# INTERMEDIATE_OUTPUT_FILE=tmpSearchResults.txt
-	# GRAPH_OUTPUT_FILE=tmpSearchResults.dot
-	# if [ ! 1 = "$ND_FLAG" ]; then
-		# echo "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space."
-	# fi
-	# echo "Performing the search..."
-	# $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
-	# echo "Generated $INTERMEDIATE_OUTPUT_FILE."
-	# echo "Examining the output..."
-	# cat $INTERMEDIATE_OUTPUT_FILE | perl $SEARCH_GRAPH_WRAPPER $GRAPH_OUTPUT_FILE
-	# echo "Generated $GRAPH_OUTPUT_FILE."
-	# if [ $GRAPH ]; then
-# #		if [ "$?" -eq 0 ]; then
-		# set -e # start to fail on error
-		# echo "Generating the graph..."
-		# dot -Tps2 $GRAPH_OUTPUT_FILE > tmpSearchResults.ps
-		# echo "Generated tmpSearchResults.ps."
-		# ps2pdf tmpSearchResults.ps tmpSearchResults.pdf
-		# echo "Generated tmpSearchResults.pdf."
-		# #acroread tmpSearchResults.pdf &
-		# set +e #stop failing on error
-	# fi
-	# #rm -f $INTERMEDIATE_OUTPUT_FILE
-	# #rm -f $GRAPH_OUTPUT_FILE
-# elif [ $PROFILE ]; then
-	# if [ -f "maudeProfileDBfile.sqlite" ]; then
-		# true
-		# #echo "Database maudeProfileDBfile.sqlite already exists; will add results to it."
-	# else
-		# cp $SCRIPTS_DIR/maudeProfileDBfile.calibration.sqlite maudeProfileDBfile.sqlite
-	# fi
-	# INTERMEDIATE_OUTPUT_FILE=`mktemp -t $username-fsl-c.XXXXXXXXXXX`
-	# #echo "Running the program..."
-	# $DYNAMIC_MAUDE_COMMAND > $INTERMEDIATE_OUTPUT_FILE
-	# cp $INTERMEDIATE_OUTPUT_FILE tmpProfileResults.txt
-	# #echo "Analyzing results..."
-	# cat $INTERMEDIATE_OUTPUT_FILE | perl $WRAPPER $PLAIN
-	# RETVAL=$?
-	# perl $SCRIPTS_DIR/analyzeProfile.pl $INTERMEDIATE_OUTPUT_FILE $PROGRAM_NAME
-	# # cat $INTERMEDIATE_OUTPUT_FILE
-	# # perl $SCRIPTS_DIR/printProfileData.pl -p > tmpProfileResults.csv
-	# #echo "Results added to maudeProfileDBfile.sqlite.  Try running:"
-	# #echo "cat $SCRIPTS_DIR/profile-executiveSummaryByProgram.sql | $SCRIPTS_DIR/accessProfiling.pl"
-	# #echo "See $SCRIPTS_DIR/*.sql for some other example queries."
-	# #echo "Done."
-	# rm -f $INTERMEDIATE_OUTPUT_FILE
-	# exit $RETVAL
-# else
-	# if [ $IOFLAG ]; then
-		# perl $IO_SERVER &> tmpIOServerOutput.log &
-		# PERL_SERVER_PID=$!
-	# fi
-	# $DYNAMIC_MAUDE_COMMAND | perl $WRAPPER $PLAIN
-# fi
-# RETVAL=$?
-# if [ $IOFLAG ]; then
-	# #echo "killing $PERL_SERVER_PID"
-	# kill -s SIGINT $PERL_SERVER_PID &> /dev/null
-# fi
-# rm -f $FSL_C_RUNNER_FILE
-# rm -f $STATIC_MAUDE_INPUT
-# exit $RETVAL
-
-
 
 sub runDebugger {
 	my ($command) = (@_);
