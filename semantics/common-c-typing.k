@@ -178,13 +178,15 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op canonicalizeType-aux : Bag K Bag Bag Bag -> K [metadata "strict=(2)"] 
+	op canonicalizeType-aux : Bag K Bag Bag Bag -> K 
+	context canonicalizeType-aux(_,[#],_,_,_) if [#] =/=Bool .K 
+
 		
 	rule
 		< k > canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
 		[structural] 
 		
-		
+
 	
 	rule
 		< k > (.K => DeclType(K1:K, K2:K))
