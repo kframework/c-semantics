@@ -676,6 +676,8 @@ and printSpecElem a =
 		| REGISTER -> printCell "Register" [] "") :: []) "StorageSpecifier"
 	| SpecInline -> (* right now there is only inline, but in C1X there is _Noreturn *)
 		wrap ((printCell "Inline" [] "") :: []) "FunctionSpecifier"
+	| SpecNoReturn -> 
+		wrap ((printCell "Noreturn" [] "") :: []) "FunctionSpecifier"
 	| SpecType bt -> printCell "TypeSpecifier" [] (printTypeSpec bt)
 	| SpecPattern name -> wrap ((printIdentifier name) :: []) "SpecPattern"
 	

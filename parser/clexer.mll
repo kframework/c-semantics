@@ -225,7 +225,7 @@ let init_lexicon _ =
 		("_Complex", fun loc -> COMPLEX loc);
 		("_Generic", fun loc -> GENERIC loc);
 		("_Imaginary", fun loc -> IMAGINARY loc);
-		("_NoReturn", fun loc -> NORETURN loc);
+		("_Noreturn", fun loc -> NORETURN loc);
 		("_Static_assert", fun loc -> STATIC_ASSERT loc);
 		("_Thread_local", fun loc -> THREAD_LOCAL loc);
 		("__kcc_offsetof", fun loc -> OFFSETOF loc);

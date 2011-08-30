@@ -324,6 +324,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule BagItem(SpecTypedef) => .Bag [structural]
 	// fixme ignoring inlines
 	rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
+	rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural]
 	// fixme should save these for later use
 	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
 

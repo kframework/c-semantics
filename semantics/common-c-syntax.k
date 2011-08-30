@@ -224,6 +224,7 @@ and spec_elem =
 	// subsort Attribute < SpecifierElem
 	subsort Storage < SpecifierElem
 	op Inline : -> SpecifierElem
+	op Noreturn : -> SpecifierElem
 	subsort TypeSpecifier < SpecifierElem
 	op SpecPattern : #Id -> SpecifierElem
 	
