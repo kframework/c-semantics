@@ -1,7 +1,9 @@
 // load maudeLib/TCPSupport
+require /modules/uris
 
 kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	including DYNAMIC-INCLUDE 
+	including URIS
 	// including #SOCKET
 	// including #TCP-INTERFACE
 	
@@ -320,7 +322,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 
 	rule [fslFGetC]:
 		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:#Nat, ?) :: tv(Offset:#Nat, ?)))
-			=> readFromFD(FD:#Nat)
+			// => readFromFD(FD:#Nat)
+			=> #fReadByte(FD:#Nat)
 		...</ k >
 		[structural]
 
@@ -337,19 +340,30 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	op fsl-open-file-aux : #String #Nat #String -> K
+	op fsl-open-file-aux : #String #Nat K -> K [metadata "strict=(3)"]
 	
 	// rule [fslOpenFile-aux]:
 		// < k > fsl-open-file(str(S:#String), FD:#Nat)
 			// => fsl-open-file-aux(S:#String, FD:#Nat, readFile(S:#String))
 		// ...</ k >
 		// [structural]
+	rule [fslOpenFile-aux]:
+		< k > fsl-open-file(str(S:#String), FD:#Nat)
+			=> fsl-open-file-aux("file:/" +String "/" +String S:#String, FD:#Nat, #open("file:/" +String "/" +String S:#String))
+		...</ k >
+		[structural]
 
+	// rule [fslOpenFile]:
+		// < k > fsl-open-file-aux(Name:#String, FD:#Nat, Data:#String) => tv(0, t(.Set, int)) ...</ k >
+		// < openFiles > M:Map => M:Map[Name:#String / FD:#Nat] </ openFiles >
+		// < files > M':Map => M':Map[Data:#String / Name:#String] </ files >
+		// if lengthString(Data:#String) >=Nat 0 // if it's a real string
+		// [structural]
 	rule [fslOpenFile]:
-		< k > fsl-open-file-aux(Name:#String, FD:#Nat, Data:#String) => tv(0, t(.Set, int)) ...</ k >
+		< k > fsl-open-file-aux(Name:#String, FD:#Nat, tv(0, ?)) => tv(0, t(.Set, int)) ...</ k >
 		< openFiles > M:Map => M:Map[Name:#String / FD:#Nat] </ openFiles >
-		< files > M':Map => M':Map[Data:#String / Name:#String] </ files >
-		if lengthString(Data:#String) >=Nat 0 // if it's a real string
+		//< files > M':Map => M':Map[Data:#String / Name:#String] </ files >
+		//if lengthString(Data:#String) >=Nat 0 // if it's a real string
 		[structural]
 
 	op fsl-open-file : K #Nat -> K [metadata "strict=(1)"]
@@ -728,7 +742,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 	
 	rule [debug]:
 		< k > prepareBuiltin(Identifier("__debug"), ?) => skipval ...</ k >
-		[metadata "computational=()"]
+		[interpRule]
 	
 	rule [exit]:
 		< k > prepareBuiltin((Identifier("exit")), tv(I:#Int, t(?, int))) ~> ? 

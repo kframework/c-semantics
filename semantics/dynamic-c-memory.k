@@ -47,7 +47,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural] 
 	
 	
-	context read-aux(?, ?, value(`[HOLE`]:K)) 
+	context readActual(?, ?, value(`[HOLE`]:K))
 	rule read(Loc:#Nat, T:Type) => read-aux(Loc:#Nat, T:Type, value(bitSizeofType(T:Type))) 
 		if notBool(hasFunctionType(T:Type))
 		[structural]
@@ -248,7 +248,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer >... bwrite(Loc:#Nat, V:K) Mem:List </ buffer >
 		if notBool Loc:#Nat in locations(Mem:List)
-		[metadata "computational=()"] // for speed in interpretation; forces local buffer to be flushed before a read
+		[structural]
+		//[interpRule] // for speed in interpretation; forces local buffer to be flushed before a read
 
 endkm
 
@@ -483,8 +484,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		if notBool LOC in Locs:Bag
 		andBool Offset:#Nat <Nat Len:#Nat
 		where LOC = sym(Block:#Nat) +Nat Offset:#Nat
-		[structural] 
-		// [metadata "computational=()"]
+		[structural]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >

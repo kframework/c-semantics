@@ -15,11 +15,9 @@ K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
-COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "computational"
-# -partial 
-# COMPILE_C_ND = $(K_MAUDE) c.k -transition "nd(true) computational" -nd "nd(true)" -localtransition "nd(true)" -u -language C
+COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "interpRule"
+# -transition "computational"
 COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -nd "ndheat" -localtransition "ndlocal" -u -language C
-# COMPILE_C_ND = $(K_MAUDE) c.k -ndstrict "nd(true)" -u -language C
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k

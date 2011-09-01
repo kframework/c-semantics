@@ -135,7 +135,7 @@ exit();
 sub performSpecializations {
 	my ($file) = (@_);
 	
-	my $ioserver = catfile($myDirectory, 'fileserver.pl');
+	my $ioserver = catfile($myDirectory, 'ioserver.jar');
 	my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-n'} ? 1 : 0;

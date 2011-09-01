@@ -28,7 +28,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
 	$(SCRIPTS_DIR)/programRunner.pl \
-	$(SCRIPTS_DIR)/fileserver.pl \
+	$(SCRIPTS_DIR)/ioserver.jar \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(SEMANTICS_DIR)/includes/*) \

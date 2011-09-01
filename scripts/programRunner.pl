@@ -232,7 +232,7 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 		$PERL_SERVER_PID = fork();
 		die "unable to fork: $!" unless defined($PERL_SERVER_PID);
 		if (!$PERL_SERVER_PID) {  # child
-			exec("perl $IO_SERVER > tmpIOServerOutput.log 2>&1");
+			exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
 			die "unable to exec: $!";
 		}
 	}

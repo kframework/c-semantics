@@ -1,5 +1,6 @@
 use strict;
 use DBI;
+my $errorFlag = 0;
 
 my $filename = $ARGV[0];
 my $RULE_LENGTH = 20;
@@ -58,17 +59,9 @@ while(<MYINPUTFILE>) {
 			$isLibrary = 1;
 		}
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(wrapper\)).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\([^)]*\)).*\]\.\s*$/){
 		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(result\)).*\]\.\s*$/){
-		$kind = $1;
-	}  elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\(end\)).*\]\.\s*$/){
-		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\(start\)).*\]\.\s*$/){
-		$kind = $1;
-	}  elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\(\)).*\]\.\s*$/){
-		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool).*\]\.\s*$/){
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\([^)]*\)).*\]\.\s*$/){
 		$kind = $1;
 	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){
 		$kind = $1;
@@ -77,9 +70,10 @@ while(<MYINPUTFILE>) {
 	}
 	if ($locationFile && $locationFrom && $locationTo) { 
 		my $retval = $insertHandle->execute($ruleName, $locationFile, $locationFrom, $locationTo, $isLibrary, $type, $kind);
-		if ($retval != 1){
-			print "$locationFile, $locationFrom, $locationTo\n";
+		if (!$retval) {
+			print "$locationFile, $locationFrom, $locationTo, $kind\n";
+			$errorFlag = 1;
 		}
-		
 	}
 }
+exit $errorFlag;
