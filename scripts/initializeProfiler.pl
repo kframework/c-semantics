@@ -59,11 +59,9 @@ while(<MYINPUTFILE>) {
 			$isLibrary = 1;
 		}
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(supercool=\([^)]*\)).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:supercool|superheat|heating|cooling)=\([^)]*\)).*\]\.\s*$/){
 		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(superheat=\([^)]*\)).*\]\.\s*$/){
-		$kind = $1;
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(heating|cooling|structural|computational).*\]\.\s*$/){
+	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*(structural|computational).*\]\.\s*$/){
 		$kind = $1;
 	} else {
 		$kind = 'macro';
