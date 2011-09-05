@@ -142,7 +142,8 @@ int puts(const char * str){
 }
 
 int __fslPutc(char c, int handle);
-int __fslOpenFile(const char* filename, int handle);
+// int __fslOpenFile(const char* filename, int handle);
+int __fslOpenFile(const char* filename);
 int __fslCloseFile(int handle);
 int __fslFGetC(int handle, unsigned long long int offset);
 int __fsl_next_fd = 3;
@@ -159,11 +160,12 @@ FILE* stdin = &stdin_file;
 FILE* stdout = &stdout_file;
 FILE* stderr = &stderr_file;
 FILE* fopen(const char *filename, const char *mode){
-	int nextHandle = __fsl_next_fd++;
-	int retval = __fslOpenFile(filename, nextHandle);
-	if (retval) {
-		return NULL;
-	}
+	//int nextHandle = __fsl_next_fd++;
+	//int retval = __fslOpenFile(filename, nextHandle);
+	int nextHandle = __fslOpenFile(filename);
+	// if (retval) {
+		// return NULL;
+	// }
 	
 	FILE* newFile = (FILE*)malloc(sizeof(FILE));
 	newFile->offset = 0;

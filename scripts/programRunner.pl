@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+use POSIX;
 use strict;
 use File::Spec::Functions qw(rel2abs catfile);
 use Getopt::Declare;
@@ -47,8 +48,10 @@ sub finalCleanup {
 		close($file);
 		unlink ($file);
 	}
+	# print "serverid = $PERL_SERVER_PID\n";
 	if ($PERL_SERVER_PID > 0) {
-		my $ret = kill(2, $PERL_SERVER_PID);
+		# my $ret = kill(SIGTERM, 0); # this works, but kills this script too
+		my $ret = kill(SIGTERM, $PERL_SERVER_PID);
 	}
 }
 
@@ -232,7 +235,8 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 		$PERL_SERVER_PID = fork();
 		die "unable to fork: $!" unless defined($PERL_SERVER_PID);
 		if (!$PERL_SERVER_PID) {  # child
-			exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
+			# exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
+			exec("java -jar $IO_SERVER 10000");
 			die "unable to exec: $!";
 		}
 	}

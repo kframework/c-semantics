@@ -326,6 +326,10 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			=> #fReadByte(FD:#Nat)
 		...</ k >
 		[structural]
+		
+	rule [read-eof]:
+		< k > String2Int(errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
+		[structural]	
 
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:#Nat, t(?, int))) 
@@ -335,12 +339,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslOpenFile-pre]:
-		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Loc:Value :: tv(FD:#Nat, t(?, int))))
-			=> fsl-open-file(getString(Loc:Value), FD:#Nat)
+		< k > prepareBuiltin((Identifier("__fslOpenFile")), Loc:Value)
+			=> fsl-open-file(getString(Loc:Value))
 		...</ k >
 		[structural]
 	
-	op fsl-open-file-aux : #String #Nat K -> K [metadata "strict=(3)"]
+	op fsl-open-file-aux : #String K -> K [metadata "strict=(2)"]
 	
 	// rule [fslOpenFile-aux]:
 		// < k > fsl-open-file(str(S:#String), FD:#Nat)
@@ -348,8 +352,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		// ...</ k >
 		// [structural]
 	rule [fslOpenFile-aux]:
-		< k > fsl-open-file(str(S:#String), FD:#Nat)
-			=> fsl-open-file-aux("file:/" +String "/" +String S:#String, FD:#Nat, #open("file:/" +String "/" +String S:#String))
+		< k > fsl-open-file(str(S:#String))
+			=> fsl-open-file-aux("file:" +String S:#String, #open("file:" +String S:#String +String "#r"))
 		...</ k >
 		[structural]
 
@@ -360,13 +364,13 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		// if lengthString(Data:#String) >=Nat 0 // if it's a real string
 		// [structural]
 	rule [fslOpenFile]:
-		< k > fsl-open-file-aux(Name:#String, FD:#Nat, tv(0, ?)) => tv(0, t(.Set, int)) ...</ k >
+		< k > fsl-open-file-aux(Name:#String, tv(FD:#Nat, ?)) => tv(FD:#Nat, t(.Set, int)) ...</ k >
 		< openFiles > M:Map => M:Map[Name:#String / FD:#Nat] </ openFiles >
 		//< files > M':Map => M':Map[Data:#String / Name:#String] </ files >
 		//if lengthString(Data:#String) >=Nat 0 // if it's a real string
 		[structural]
 
-	op fsl-open-file : K #Nat -> K [metadata "strict=(1)"]
+	op fsl-open-file : K -> K [metadata "strict=(1)"]
 	op getString : K -> K
 	op getString-aux : K #String -> K [metadata "strict=(1)"]
 	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
