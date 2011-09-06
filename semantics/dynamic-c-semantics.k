@@ -17,28 +17,28 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< k > sequencePoint => .K ...</ k >
 		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
 		[structural ndlocal]
-						
+
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
 		< k > writeToFD(FD:#Nat, N:#Nat) => .K ...</ k >
-		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
-		< files >... Filename:#String |-> (S:#String => S:#String +String charString(N:#Nat %Nat 256)) ...</ files >
+		< fid > FD:#Nat </ fid >
+		< buff > S:#String => S:#String +String charString(N:#Nat %Nat 256) </ buff >
 		[structural]
 	rule [writeToFD-string]:
 		< k > writeToFD(FD:#Nat, S':#String) => .K ...</ k >
-		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
-		< files >... Filename:#String |-> (S:#String => S:#String +String S':#String) ...</ files >
+		< fid > FD:#Nat </ fid >
+		< buff > S:#String => S:#String +String S':#String ...</ files >
 		[structural]
 	rule [readFromFD-char]:
 		< k > readFromFD(FD:#Nat) => tv(charToAscii(firstChar(S:#String)), t(.Set, int))  ...</ k >
-		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
-		< files >... Filename:#String |-> (S:#String => butFirstChar(S:#String)) ...</ files >
+		< fid > FD:#Nat </ fid >
+		< buff > S:#String => butFirstChar(S:#String) </ files >
 		if S:#String =/=Bool ""
 		[structural]
 	rule [readFromFD-char-eof]:
 		< k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
-		< openFiles >... FD:#Nat |-> Filename:#String ...</ openFiles >
-		< files >... Filename:#String |-> (S:#String => butFirstChar(S:#String)) ...</ files >
+		< fid > FD:#Nat </ fid >
+		< buff > S:#String => butFirstChar(S:#String) </ files >
 		if S:#String ==Bool ""
 		[structural]
 endkm
@@ -120,16 +120,23 @@ If they are declared, the parameters to the main function shall obey the followi
 				...</ thread >
 			</ threads >
 			<nextSharedLoc> sym(threadId(0) +Nat 0) +Nat 0 </nextSharedLoc>
-			< nextFile > 3 </ nextFile >
-			< openFiles >
-				0 |-> "stdin" // stdin
-				1 |-> "stdout" // stdout
-				2 |-> "stdout" // stderr
-			</ openFiles >
 		...</ T >
-		< files > 
-			"stdin" |-> Input:#String
-			"stdout" |-> ""
+		< files >
+			<file>...
+				<fid> 0 </fid>
+				<uri> "stdin:/" +String "/" +String "/" </uri>
+				<mode> "r" </mode>
+			...</file>
+			<file>...
+				<fid> 1 </fid>
+				<uri> "stdout:/" +String "/" +String "/" </uri>
+				<mode> "w" </mode>
+			...</file>
+			<file>...
+				<fid> 2 </fid>
+				<uri> "stdout:/" +String "/" +String "/" </uri>
+				<mode> "w" </mode>
+			...</file>
 		</ files >
 		< xmessages > .K </ xmessages >
 		[structural]

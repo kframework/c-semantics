@@ -6,7 +6,6 @@ kmod COMMON-C-CONFIGURATION is
 	op continuation : -> CellLabel
 	op stackCurrentFunction : -> CellLabel
 	op stackCurrentProgramLoc : -> CellLabel
-	op nextFile : -> CellLabel
 	op currentProgramLoc : -> CellLabel 
 	op structs : -> CellLabel
 	
@@ -30,7 +29,6 @@ kmod COMMON-C-CONFIGURATION is
 			<functions color="lightgray"> .Map </functions>
 			<freshNat color="green"> 0 </freshNat>
 			<nextThreadId color="green"> 2 </nextThreadId> // 0 is global, 1 is main
-			<nextFile color="green"> 0 </nextFile>
 			<malloced color="lightgray"> .Map </malloced>
 			<stringLiterals color="lightgray"> .Map </stringLiterals>
 			@latex("\\kBR")
@@ -53,7 +51,7 @@ kmod COMMON-C-CONFIGURATION is
 				<joiningMap color="yellow"> .Map </joiningMap>
 				<detachingMap color="yellow"> .Map </detachingMap>
 			</threadInformation>
-			<openFiles color="lightgray"> .Map </openFiles>
+			// <openFiles color="lightgray"> .Map </openFiles>
 			<programText color="black"> .Map </programText>
 			<compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
 			@latex("\\kBR")
@@ -118,7 +116,16 @@ kmod COMMON-C-CONFIGURATION is
 		</T>
 		@latex("\\kBR")
 		<xmessages color="black"> .K </xmessages>
-		<files color="lightgray"> .Map </files> // filenames to strings
+		<files color="lightgray">
+			<file multiplicity="*">
+				<fid> .K </fid>
+				<uri> .K </uri>
+				<pos> 0 </pos>
+				<mode> "r" </mode>
+				<buff> "" </buff>
+				<done> "" </done>
+			</file>
+		</files> 
 		<input color="lightgray"> "" </input>
 		<output color="lightgray"> "" </output>
 		<resultValue color="red"> .K </resultValue>
