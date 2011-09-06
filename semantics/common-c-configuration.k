@@ -59,7 +59,6 @@ kmod COMMON-C-CONFIGURATION is
 			@latex("\\kBR")
 			<threads color="yellow">
 				<thread multiplicity="*" color="yellow">
-					// < parentThreadId > 0 </ parentThreadId >
 					<threadId color="yellow"> 0 </threadId>
 					<nextLoc color="green"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
 					<buffer color="lightgray"> .List </buffer>
@@ -80,8 +79,6 @@ kmod COMMON-C-CONFIGURATION is
 						</calculateGotoMap>
 						@latex("\\kBR")
 						<control>
-							//<statick> .K </statick>
-							//<newk> .K </newk>
 							<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
 							<blockStack color="violet"> .List </blockStack> // stack of "local" cells
 							<local>
