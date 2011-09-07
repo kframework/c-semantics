@@ -159,6 +159,7 @@ If they are declared, the parameters to the main function shall obey the followi
 				<fid> 0 </fid>
 				<uri> "stdin:/" +String "/" +String "/" </uri>
 				<mode> "r" </mode>
+				<buff> Input:#String </buff>
 			...</file>
 			<file>...
 				<fid> 1 </fid>
