@@ -107,6 +107,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op sizeofLocation : K -> K
 	op type : K -> Type 
 	
+	op flush : -> K
+	op flush-aux : #Nat -> K
 	
 	op allocateType : #Nat Type -> K 
 	op allocateTypeIfAbsent : #Nat Type -> K 

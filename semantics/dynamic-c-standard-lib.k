@@ -451,7 +451,10 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 	
 	rule [printf-done]:
-		< k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) => tv(Len:#Nat, t(.Set, int)) ...</ k >
+		< k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) 
+			=> flush(1)
+			~> tv(Len:#Nat, t(.Set, int)) 
+		...</ k >
 		[structural]
 		
 	rule [printf-%]:
