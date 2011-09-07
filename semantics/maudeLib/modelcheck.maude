@@ -1,4 +1,4 @@
-set print attribute on .
+--- set print attribute on .
 mod #MODEL-CHECK is
 	including #MODEL-CHECKER .
 	including #META-LEVEL .

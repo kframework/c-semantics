@@ -1,8 +1,10 @@
 load dynamic-c-configuration
 load common-c-semantics
+require /modules/uris
 
 kmod DYNAMIC-SEMANTIC-SYNTAX is
 	including COMMON-INCLUDE
+	including URIS
 endkm
 
 kmod DYNAMIC-INCLUDE is
@@ -27,20 +29,51 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule [writeToFD-string]:
 		< k > writeToFD(FD:#Nat, S':#String) => .K ...</ k >
 		< fid > FD:#Nat </ fid >
-		< buff > S:#String => S:#String +String S':#String ...</ files >
+		< buff > S:#String => S:#String +String S':#String ...</ buff >
 		[structural]
 	rule [readFromFD-char]:
 		< k > readFromFD(FD:#Nat) => tv(charToAscii(firstChar(S:#String)), t(.Set, int))  ...</ k >
 		< fid > FD:#Nat </ fid >
-		< buff > S:#String => butFirstChar(S:#String) </ files >
+		< buff > S:#String => butFirstChar(S:#String) </ buff >
 		if S:#String =/=Bool ""
 		[structural]
 	rule [readFromFD-char-eof]:
 		< k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
 		< fid > FD:#Nat </ fid >
-		< buff > S:#String => butFirstChar(S:#String) </ files >
+		< buff > S:#String => butFirstChar(S:#String) </ buff >
 		if S:#String ==Bool ""
 		[structural]
+		
+	// op flushString : #Nat #String -> K
+	
+	// rule [flush-out-start]: 
+		// < k > .K => flushString(1, S:#String) ...</ k >
+		// <fid> 1 </fid>
+		// <buff> S:#String => "" </buff>
+		// <mode> "w" </mode>
+		// if S:#String =/=Bool ""
+		// [structural]
+		
+	// op flushSuccess : #Nat K -> K
+	
+	// rule [flush-success]: 
+		// < k > flushSuccess(FD:#Nat, S:#String) => .K ...</ k >
+		// <fid> FD:#Nat </fid>
+		// <done> Done:#String => Done:#String +String S:#String </done>
+		// [structural]
+		
+	// rule [flush-out-one]: 
+		// < k > (.K 
+				// => #fPutByte(FD:#Nat, charToAscii(firstChar(S:#String))) 
+				// ~> flushSuccess(FD:#Nat, firstChar(S:#String))
+			// )
+			// ~> flushString(FD:#Nat, (S:#String => butFirstChar(S:#String)))
+		// ...</ k >
+		// if S:#String =/=Bool ""
+		// [structural]
+	// rule [flush-out-done]: 
+		// < k > flushString(?, "") => .K ...</ k >
+		// [structural]
 endkm
 
 load dynamic-c-expressions
@@ -182,8 +215,16 @@ or equivalent;9) or in some other implementation-defined manner
 		...</ thread > ...</ threads > ...</ T >
 			=> < resultValue > V:Value </ resultValue >)
 		< files >...
-			"stdin" |-> S1:#String	"stdout" |-> S2:#String => .Map
+			<file>... // stdin
+				<fid> 0 </fid>
+				<buff> S1:#String </buff>
+			...</file>
+			<file>... // stdout
+				<fid> 1 </fid>
+				<buff> S2':#String </buff>
+				<done> S2:#String </done>
+			...</file>
 		...</ files >
-		(.Bag => < input > S1:#String </ input >	< output > S2:#String </ output >)
+		(.Bag => < input > S1:#String </ input >	< output > S2:#String +String S2':#String </ output >)
 		
 endkm

@@ -1,9 +1,7 @@
 // load maudeLib/TCPSupport
-require /modules/uris
 
 kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	including DYNAMIC-INCLUDE 
-	including URIS
 	// including #SOCKET
 	// including #TCP-INTERFACE
 	
