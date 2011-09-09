@@ -60,7 +60,7 @@ my @gccIncludeDirs = ();
 
 my $spec = q(#
   -c				Compile and assemble, but do not link
-  -i				Include support for runtime file io
+#-i				Include support for runtime file io
   -d				Keep intermediate files
   -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
 					{ push(@::gccDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
@@ -136,11 +136,11 @@ sub performSpecializations {
 	my ($file) = (@_);
 	
 	my $ioserver = catfile($myDirectory, 'ioserver.jar');
-	my $ioFlag = $args->{'-i'};
+	#my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-n'} ? 1 : 0;
 	
-	$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
+	#$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
 	$file =~ s?EXTERN_IO_SERVER?$ioserver?g;
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
 	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;

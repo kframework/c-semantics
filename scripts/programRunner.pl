@@ -79,7 +79,7 @@ if (defined($ENV{'PRINTMAUDE'})) {
 
 # these are compile time settings and are set by the compile script using this file as a template
 my $IO_SERVER="EXTERN_IO_SERVER";
-my $IOFLAG="EXTERN_COMPILED_WITH_IO";
+# my $IOFLAG="EXTERN_COMPILED_WITH_IO";
 my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME="EXTERN_IDENTIFIER";
 # my $ND_FLAG=EXTERN_ND_FLAG;
@@ -134,7 +134,7 @@ close($fileInput);
 # first, set up the runner file with the right commands and set any variables
 my $commandLineArguments = "";
 for my $arg ($thisFile, @ARGV) {	
-	$commandLineArguments .= "#String \"$arg\"(.List{K}),, ";
+	$commandLineArguments .= "# \"$arg\"(.List{K}),, ";
 }
 my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), \"\Q$stdin\E\")";
 my $evalLine = "erew in C-program-linked : $startTerm .\n";
@@ -231,15 +231,15 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
 	exit($finalReturnValue);
 } else {
-	if ($IOFLAG) {
-		$PERL_SERVER_PID = fork();
-		die "unable to fork: $!" unless defined($PERL_SERVER_PID);
-		if (!$PERL_SERVER_PID) {  # child
-			# exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
-			exec("java -jar $IO_SERVER 10000");
-			die "unable to exec: $!";
-		}
+	#if ($IOFLAG) {
+	$PERL_SERVER_PID = fork();
+	die "unable to fork: $!" unless defined($PERL_SERVER_PID);
+	if (!$PERL_SERVER_PID) {  # child
+		# exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
+		exec("java -jar $IO_SERVER 10000");
+		die "unable to exec: $!";
 	}
+	#}
 	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
