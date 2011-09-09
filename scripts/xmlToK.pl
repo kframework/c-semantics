@@ -10,10 +10,10 @@ binmode STDIN, ":utf8";
 # not handling the case of multiple cdatas 
 # can use 'erase' to get rid of junk cells
 
-my $STRING = "#String";
-my $ID = "#Id";
-my $BOOL = '#Bool';
-my $RAT = '#Rat';
+my $STRING = "#";
+my $ID = "#";
+my $BOOL = '#';
+my $RAT = '#';
 
 #########################################################
 # you may want to configure things inside this section
@@ -209,7 +209,7 @@ sub rawdataToK {
 	my $sort = $reader->getAttribute('sort');
 	if ($sort eq 'Int') { $sort = 'Rat'; }
 	my $data = getRawData($reader);
-	return "#$sort" . paren($data) . paren(KLIST_IDENTITY);
+	return "#" . paren($data) . paren(KLIST_IDENTITY);
 }
 sub getRawData {
 	my ($reader) = (@_);

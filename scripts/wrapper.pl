@@ -54,13 +54,13 @@ sub maudeOutputWrapper {
 		} elsif ($state eq "success"){
 			if ($line =~ m/< input > .* <\/ input >/){
 				$reduced = 1;
-			} elsif ($line =~ m/< output > #String "(.*)"\(\.List{K}\) <\/ output >/){
+			} elsif ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
 				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$realOutput .= substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< errorCell > #String "(.*)"\(\.List{K}\) <\/ errorCell >/){
+			} elsif ($line =~ m/< errorCell > # "(.*)"\(\.List{K}\) <\/ errorCell >/){
 				$haveError = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
@@ -69,7 +69,7 @@ sub maudeOutputWrapper {
 				$errorCell = substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 				$myFunc = $1;
-			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(#String "(.*)"\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\),,#Rat (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 				$myFile = $1;
 				$myLine = $2;
 				$myOffsetStart = $3;
@@ -86,7 +86,7 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< type > (.*) <\/ type >/){
 				$haveError = 1;
 				$finalCompType = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(#Rat (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}
