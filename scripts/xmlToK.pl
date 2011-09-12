@@ -255,7 +255,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = "_`(_`)(kList((\"wklist_\").$STRING), (";
+	my $retval = "_`(_`)(kList(\"wklist_\"), (";
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {
