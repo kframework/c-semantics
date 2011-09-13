@@ -103,7 +103,9 @@ if ( -t STDIN ) {
 }
 
 my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-#push(@temporaryFiles, $fileRunner);
+push(@temporaryFiles, $fileRunner);
+my $fileCommand = File::Temp->new( TEMPLATE => 'tmp-kcc-cmd-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $fileCommand);
 
 my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 push(@temporaryFiles, $fileInput);
@@ -124,6 +126,7 @@ if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
 
 print $fileRunner "load $fileMaudeDefinition\n";
 print $fileRunner "load $fileInput\n";
+close($fileRunner);
 
 # create a file consisting of just the program (the tail of this script)
 print $fileInput linkedProgram();
@@ -135,47 +138,48 @@ for my $arg ($thisFile, @ARGV) {
 	$commandLineArguments .= "# \"$arg\"(.List{K}),, ";
 }
 my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), \"\Q$stdin\E\")";
-my $evalLine = "erew in C-program-linked : $startTerm .\n";
+my $evalLine = "erew $startTerm .\n";
 my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
 my $modelLine = "red in C-program-linked : modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .\n";
 #my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .";
 # $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) .\n";
 
 if (defined($ENV{'PROFILE'})) {
-	print $fileRunner "set profile on .\n";
-	print $fileRunner "set profile on .\n";
+	print $fileCommand "set profile on .\n";
+	print $fileCommand "set profile on .\n";
 }
 if (defined($ENV{'DEBUG'})) {
-	print $fileRunner "break select debug .\n";
-	print $fileRunner "set break on .\n";
+	print $fileCommand "break select debug .\n";
+	print $fileCommand "set break on .\n";
 }
 if (defined($ENV{'TRACEMAUDE'})) {
-	print $fileRunner "set trace on .\n";
+	print $fileCommand "set trace on .\n";
 }
 if (defined($ENV{'DEBUGON'})) {
-	print $fileRunner "break select $ENV{'DEBUGON'} .\n";
-	print $fileRunner "set break on .\n";
+	print $fileCommand "break select $ENV{'DEBUGON'} .\n";
+	print $fileCommand "set break on .\n";
 }
 
 if (defined($ENV{'SEARCH'})) {
-	print $fileRunner $searchLine;
-	print $fileRunner "show search graph .\n"
+	print $fileCommand $searchLine;
+	print $fileCommand "show search graph .\n"
 } elsif (defined($ENV{'MODELCHECK'})) {
-	print $fileRunner $modelLine;
+	print $fileCommand $modelLine;
 } elsif (! defined($ENV{'LOADMAUDE'})) {
-	print $fileRunner $evalLine;
+	print $fileCommand $evalLine;
 }
 if (defined($ENV{'PROFILE'})) {
-	print $fileRunner "show profile .\n";
+	print $fileCommand "show profile .\n";
 }
 if (! defined($ENV{'DEBUG'}) and ! defined($ENV{'DEBUGON'}) and ! defined($ENV{'LOADMAUDE'})) {
-	print $fileRunner "q\n";
+	print $fileCommand "q\n";
 }
-close($fileRunner);
+
+close($fileCommand);
 
 
 # I had to add this strange true; thing to get it to work in windows.  no idea why...
-my $maudeCommand = "true; maude -no-wrap -no-banner " . rel2abs($fileRunner);
+my $maudeCommand = "true; maude -no-wrap -no-banner " . rel2abs($fileRunner) . " " . rel2abs($fileCommand);
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
@@ -236,7 +240,7 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 		# die "unable to exec: $!";
 	# }
 	#}
-	my ($returnValue, @dynamicOutput) = runWrapper($fileRunner);
+	my ($returnValue, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
@@ -266,12 +270,15 @@ sub runProgram {
 }
 # runs a command and returns a pair (return value, output)
 sub runWrapper {
-	my ($runner) = (@_);
+	my ($runner, $maudeCommand) = (@_);
 	my $outfile;
 	$outfile = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	#push(@temporaryFiles, $traceFile);
+	push(@temporaryFiles, $outfile);
+	my $errorFile;
+	$errorFile = File::Temp->new( TEMPLATE => 'tmp-kcc-err-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	#push(@temporaryFiles, $errorFile);
 
-	my $command = "$IO_SERVER --maudefile $runner --outputfile $outfile --port 10000";
+	my $command = "$IO_SERVER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	#print "for $command, pid is $childPid\n";
 	#my @data=<P>;
