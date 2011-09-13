@@ -101,24 +101,19 @@ if ( -t STDIN ) {
 } else {
 	$stdin=join("", <STDIN>);
 }
-#my $username=`id -un`;
 
 my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileRunner);
-# my $fileDynamicRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-# #open my $fileDynamicRunner, ">fileDynamicRunner.maude";
-# push(@temporaryFiles, $fileDynamicRunner);
+#push(@temporaryFiles, $fileRunner);
+
 my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 push(@temporaryFiles, $fileInput);
 
 my $traceFile;
 if (defined($ENV{'TRACEMAUDE'})) {
 	$traceFile = File::Temp->new( TEMPLATE => 'tmp-kcc-trace-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	push(@temporaryFiles, $traceFile);
 }
-# my $fileDynamicInput = File::Temp->new( TEMPLATE => 'tmp-kcc-dynamic-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-# push(@temporaryFiles, $fileDynamicInput);
 
-#my $fileStaticMaudeDefinition = catfile($SCRIPTS_DIR, 'static-c-total.maude');
 my $fileMaudeDefinition;
 
 if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
@@ -126,6 +121,9 @@ if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
 } else {
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
 }
+
+print $fileRunner "load $fileMaudeDefinition\n";
+print $fileRunner "load $fileInput\n";
 
 # create a file consisting of just the program (the tail of this script)
 print $fileInput linkedProgram();
@@ -177,9 +175,7 @@ close($fileRunner);
 
 
 # I had to add this strange true; thing to get it to work in windows.  no idea why...
-my $maudeCommand = "true; maude -no-wrap -no-banner $fileMaudeDefinition " 
-	. rel2abs($fileInput)
-	. " " . rel2abs($fileRunner);
+my $maudeCommand = "true; maude -no-wrap -no-banner " . rel2abs($fileRunner);
 
 # now we can actually run maude on the runner file we built
 # maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
@@ -232,15 +228,15 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 	exit($finalReturnValue);
 } else {
 	#if ($IOFLAG) {
-	$PERL_SERVER_PID = fork();
-	die "unable to fork: $!" unless defined($PERL_SERVER_PID);
-	if (!$PERL_SERVER_PID) {  # child
-		# exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
-		exec("java -jar $IO_SERVER 10000");
-		die "unable to exec: $!";
-	}
+	# $PERL_SERVER_PID = fork();
+	# die "unable to fork: $!" unless defined($PERL_SERVER_PID);
+	# if (!$PERL_SERVER_PID) {  # child
+		# # exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
+		# exec("java -jar $IO_SERVER 10000");
+		# die "unable to exec: $!";
+	# }
 	#}
-	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
+	my ($returnValue, @dynamicOutput) = runWrapper($fileRunner);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
@@ -267,6 +263,30 @@ sub runProgram {
 	my $returnValue = $? >> 8;
 	
 	return ($returnValue, @data);
+}
+# runs a command and returns a pair (return value, output)
+sub runWrapper {
+	my ($runner) = (@_);
+	my $outfile;
+	$outfile = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	#push(@temporaryFiles, $traceFile);
+
+	my $command = "$IO_SERVER --maudefile $runner --outputfile $outfile --port 10000";
+	$childPid = open P, "$command |" or die "Error running \"$command\"!";
+	#print "for $command, pid is $childPid\n";
+	#my @data=<P>;
+	while (defined(my $line = <P>)) {
+		print "$line";
+	}
+	close P;
+	#print @data;
+	$childPid = 0;
+	#print "child is dead\n";
+	my $returnValue = $? >> 8;
+	open FILE, "<", $outfile;
+	my @lines = <FILE>;
+	
+	return ($returnValue, @lines);
 }
 
 sub runDebugger {

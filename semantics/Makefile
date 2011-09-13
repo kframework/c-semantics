@@ -129,7 +129,7 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 	@mv c-compiled.maude c-compiled.maude.0
 
 c-compiled.maude.tmp: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled.maude.0`
-c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
+c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
 	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
