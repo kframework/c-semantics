@@ -276,7 +276,7 @@ sub runWrapper {
 	push(@temporaryFiles, $outfile);
 	my $errorFile;
 	$errorFile = File::Temp->new( TEMPLATE => 'tmp-kcc-err-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	#push(@temporaryFiles, $errorFile);
+	push(@temporaryFiles, $errorFile);
 
 	my $command = "$IO_SERVER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
@@ -292,6 +292,11 @@ sub runWrapper {
 	my $returnValue = $? >> 8;
 	open FILE, "<", $outfile;
 	my @lines = <FILE>;
+	close FILE;
+	open FILE, "<", $errorFile;
+	my @xlines = <FILE>;
+	close FILE;
+	print @xlines;
 	
 	return ($returnValue, @lines);
 }
