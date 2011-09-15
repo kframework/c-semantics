@@ -17,7 +17,7 @@ K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
 COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "interpRule"
 # -transition "computational"
-COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -nd "ndheat" -localtransition "ndlocal" -u -language C
+COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -superheat "ndheat" -supercool "ndlocal" -u -language C
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
@@ -129,7 +129,7 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 	@mv c-compiled.maude c-compiled.maude.0
 
 c-compiled.maude.tmp: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled.maude.0`
-c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude maudeLib/TCPSupport.maude Makefile
+c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
 	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"

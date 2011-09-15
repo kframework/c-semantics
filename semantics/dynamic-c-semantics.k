@@ -44,6 +44,27 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		if S:#String ==Bool ""
 		[structural]
 		
+	// can't lex string2List{K} correctly in #fPrint(N:#Nat,, string2List{K}(S:#String))
+	rule [flush]:
+		<k> flush(N:#Nat) 
+			=> #fPrint(N:#Nat,, string2List(S:#String))
+			~> #flush(N:#Nat)
+		...</k>
+		<fid> N:#Nat </fid>
+		<buff> S:#String => "" </buff>
+		<done> S':#String => S':#String +String S:#String </done>
+		[structural]
+		
+	op string2List : #String -> List{K}
+	op string2List-aux : #String List{K} -> List{K}
+	rule string2List(S:#String) => string2List-aux(S:#String, .List{K}) [structural]
+	rule string2List-aux("", L:List{K}) => L:List{K} [structural]
+	rule 
+		string2List-aux(S:#String, L:List{K})
+			=> string2List-aux(butFirstChar(S:#String), (L:List{K},, firstChar(S:#String)))
+		if S:#String =/=Bool ""
+		[structural]
+		
 	// op flushString : #Nat #String -> K
 	
 	// rule [flush-out-start]: 
