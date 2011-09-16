@@ -25,13 +25,13 @@ sub aTest {
 	close P;
 	my $actualValue = $? >> 8;
 
-	if ($actualValue != $expectedValue) {
-		die "Error in return value from compiled program.  I expected $expectedValue, but got $actualValue"
+	if ($actualValue == $expectedValue) {
+		die "Error in return value from compiled program.  I expected $expectedValue, but got $actualValue.\nOutput was:\n@data\n";
 	}
 	print "Return value is correct.\n";
 	my $actualOutput = join("", @data);
 	if ($actualOutput ne $expectedOutput) {
-		die "Error in output from compiled program.  I expected:\n$expectedOutput\nbut I saw:\n$actualOutput\n"
+		die "Error in output from compiled program.  I expected:\n$expectedOutput\nbut I saw:\n$actualOutput\n";
 	}
 	print "Output is correct.\n";
 }
