@@ -25,7 +25,7 @@ sub aTest {
 	close P;
 	my $actualValue = $? >> 8;
 
-	if ($actualValue == $expectedValue) {
+	if ($actualValue != $expectedValue) {
 		die "Error in return value from compiled program.  I expected $expectedValue, but got $actualValue.\nOutput was:\n@data\n";
 	}
 	print "Return value is correct.\n";
