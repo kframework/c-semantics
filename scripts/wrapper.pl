@@ -34,7 +34,7 @@ sub maudeOutputWrapper {
 		#$line =~ s/[\000-\037]\[(\d|;)+m//g; # remove ansi colors
 		#print "$line\n";
 		if ($state eq "start"){
-			if ($line =~ m/^rewrites: /){
+			if ($line =~ m/rewrites: /){
 				$state = "rewrite";
 				#printf "REWRITE\n";
 			}
