@@ -326,7 +326,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 		
 	rule [read-eof]:
-		< k > String2Int(errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
+		< k > String2Int(#errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
 		[structural]	
 
 	rule [fslCloseFile]:

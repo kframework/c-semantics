@@ -66,6 +66,7 @@ if (defined($ENV{'HELP'})) {
 	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
 	print "LOADMAUDE --- loads this program into maude without executing; only of use to developers\n";
 	print "TRACEMAUDE --- prints an execution trace; only of use to developers\n";
+	print "IOLOG --- records a .log file showing what happens in the IO server\n";
 	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
 	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
@@ -75,6 +76,10 @@ if (defined($ENV{'HELP'})) {
 if (defined($ENV{'PRINTMAUDE'})) {
 	print linkedProgram();
 	exit(0);
+}
+my $iolog_flag = "";
+if (defined($ENV{'IOLOG'})) {
+	$iolog_flag = "--createLogs ";
 }
 
 # these are compile time settings and are set by the compile script using this file as a template
@@ -143,6 +148,8 @@ my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
 my $modelLine = "red in C-program-linked : modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .\n";
 #my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .";
 # $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) .\n";
+
+# print $fileCommand "set print attribute on .\n";
 
 if (defined($ENV{'PROFILE'})) {
 	print $fileCommand "set profile on .\n";
@@ -278,7 +285,7 @@ sub runWrapper {
 	$errorFile = File::Temp->new( TEMPLATE => 'tmp-kcc-err-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 	push(@temporaryFiles, $errorFile);
 
-	my $command = "$IO_SERVER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked";
+	my $command = "$IO_SERVER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked $iolog_flag";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	#print "for $command, pid is $childPid\n";
 	#my @data=<P>;

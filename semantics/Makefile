@@ -6,12 +6,13 @@ FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
 K_MAUDE = $(K_BASE)/core/kompile
 K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
 K_SOCKETS = $(K_BASE)/core/maude/lib/socket
+K_TCP = $(K_BASE)/core/maude/lib/TCPSupport
 K-PL-BUILTINS = $(K_BASE)/core/maude/lib/pl-builtins
 K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
 K_PL_META_LEVEL = $(K_BASE)/core/maude/lib/pl-meta-level
 
 
-K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
+K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K_TCP).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C

@@ -117,13 +117,15 @@ kmod COMMON-C-CONFIGURATION is
 		@latex("\\kBR")
 		<xmessages color="black"> .K </xmessages>
 		<files color="lightgray">
+			<fileCommands> .K </fileCommands>
 			<file multiplicity="*">
 				<fid> .K </fid>
 				<uri> .K </uri>
 				<pos> 0 </pos>
 				<mode> "r" </mode>
 				<buff> "" </buff>
-				<done> "" </done>
+				<sending> .List </sending>
+				<done> ListItem("") </done>
 			</file>
 		</files> 
 		<input color="lightgray"> "" </input>

@@ -44,15 +44,47 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		if S:#String ==Bool ""
 		[structural]
 		
+	op f-sent : #Nat #String -> K
+	op f-flush : #Nat -> K
+	op f-sendString : #Nat #String -> K
+	
 	// can't lex string2List{K} correctly in #fPrint(N:#Nat,, string2List{K}(S:#String))
 	rule [flush]:
-		<k> flush(N:#Nat) 
-			=> #fPrint(N:#Nat,, string2List(S:#String))
-			~> #flush(N:#Nat)
-		...</k>
+		<k> flush(N:#Nat) => .K ...</k>
+		<fileCommands>... .K
+			=> f-sendString(N:#Nat, S:#String)
+			~> f-sent(N:#Nat, S:#String)
+			~> f-flush(N:#Nat)
+		</fileCommands>
 		<fid> N:#Nat </fid>
 		<buff> S:#String => "" </buff>
-		<done> S':#String => S':#String +String S:#String </done>
+		<sending>... .List => ListItem(S:#String) </sending>
+		[structural]
+	rule [sendString-one]:
+		<fileCommands> f-sendString(N:#Nat, S:#String) 
+			=> #fPutByte(N:#Nat, charToAscii(firstChar(S:#String)))
+			~> f-sendString(N:#Nat, butFirstChar(S:#String))
+		...</fileCommands>
+		if S:#String =/=Bool ""
+		[structural]
+	rule [sendString-done]:
+		<fileCommands> f-sendString(N:#Nat, "") => .K ...</fileCommands>
+		[structural]
+
+	rule [f-sent]:
+		<files>...
+			<fileCommands> f-sent(N:#Nat, S:#String) => .K ...</fileCommands>
+			<fid> N:#Nat </fid>
+			<sending> ListItem(S:#String) => .List ...</sending>
+			<done>... .List => ListItem(S:#String) </done>
+		...</files>
+		[structural]
+	rule [f-flush]:
+		<fileCommands> f-flush(N:#Nat) => #flush(N:#Nat) ...</fileCommands>
+		[structural]
+		
+	rule [combine-done]:
+		<done> (ListItem(S:#String) ListItem(S':#String) => ListItem(S:#String +String S':#String)) ...</done>
 		[structural]
 		
 	op string2List : #String -> List{K}
@@ -176,6 +208,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			<nextSharedLoc> sym(threadId(0) +Nat 0) +Nat 0 </nextSharedLoc>
 		...</ T >
 		< files >
+			<fileCommands> .K </fileCommands>
 			<file>...
 				<fid> 0 </fid>
 				<uri> "stdin:/" +String "/" +String "/" </uri>
@@ -219,11 +252,13 @@ or equivalent;9) or in some other implementation-defined manner
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?))), N:#Nat, X:#Id, ?) => Call(Identifier("main"), Nil) [structural]
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), Nil)), N:#Nat, X:#Id, ?) => Call(Identifier("main"), Nil) [structural]
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
-		=> Args:K ~> Call(Identifier("main"), N:#Nat :: X:#Id)
+			=> Args:K 
+			~> Call(Identifier("main"), N:#Nat :: X:#Id)
 		if T:Type ==Bool t(.Set, char)
 		[structural]
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
-		=> Args:K ~> Call(Identifier("main"), N:#Nat :: X:#Id)
+			=> Args:K 
+			~> Call(Identifier("main"), N:#Nat :: X:#Id)
 		if T:Type ==Bool t(.Set, char)
 		[structural]
 
@@ -243,10 +278,46 @@ or equivalent;9) or in some other implementation-defined manner
 			...</file>
 			<file>... // stdout
 				<fid> 1 </fid>
-				<buff> S2':#String </buff>
-				<done> S2:#String </done>
+				<buff> S2'':#String </buff>
+				<sending> L:List </sending>
+				<done> ListItem(S2:#String) </done>
 			...</file>
 		...</ files >
-		(.Bag => < input > S1:#String </ input >	< output > S2:#String +String S2':#String </ output >)
+		(.Bag =>
+			< input > S1:#String </ input >	
+			< output > S2:#String +String listToString(L:List) +String S2'':#String </ output >
+		)
+		
+ // < buff > # ""(.List{K}) </ buff > 
+  // < fid > # 0(.List{K}) </ fid > 
+  // < mode > # "r"(.List{K}) </ mode > 
+  // < pos > # 0(.List{K}) </ pos > 
+  // < uri > # "stdin:///"(.List{K}) </ uri > 
+  // < done > ListItem(# ""(.List{K})) </ done > 
+  // < (sending).CellLabel > (.).List </ (sending).CellLabel > </ file > 
+ // < file > 
+  // < buff > # ""(.List{K}) </ buff > 
+  // < fid > # 1(.List{K}) </ fid > 
+  // < mode > # "w"(.List{K}) </ mode > 
+  // < pos > # 0(.List{K}) </ pos > 
+  // < uri > # "stdout:///"(.List{K}) </ uri > 
+  // < done > ListItem(# ""(.List{K})) </ done > 
+  // < (sending).CellLabel > ListItem(# "Hello world\n"(.List{K})) </ (sending).CellLabel > </ file > 
+	
+	op listToString : List -> #String
+	op listToString-aux : List #String -> #String
+	
+	rule [listToString-start]:
+		listToString(L:List) => listToString-aux(L:List, "")
+		[structural]
+		
+	rule [listToString-one]:
+		listToString-aux(ListItem(S:#String) L:List, S':#String)
+			=> listToString-aux(L:List, S':#String +String S:#String)
+		[structural]
+		
+	rule [listToString-done]:
+		listToString-aux(.List, S:#String) => S:#String
+		[structural]
 		
 endkm
