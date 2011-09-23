@@ -54,6 +54,12 @@ sub maudeOutputWrapper {
 		} elsif ($state eq "success"){
 			if ($line =~ m/< input > .* <\/ input >/){
 				$reduced = 1;
+			} elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.List{K}\) <\/ unflushedOutput >/){
+				my $output = $1;
+				$output =~ s/\%/\%\%/g;
+				$output =~ s/`/\\`/g;
+				$output =~ s/\\\\/\\\\\\\\/g;
+				$realOutput .= substr(`printf "x$output"`, 1);
 			# } elsif ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
 				# my $output = $1;
 				# $output =~ s/\%/\%\%/g;

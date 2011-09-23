@@ -44,9 +44,11 @@ END {
 
 # this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-	foreach my $file (@temporaryFiles) {
-		close($file);
-		unlink ($file);
+	if (!defined($ENV{'DUMPALL'})) {
+		foreach my $file (@temporaryFiles) {
+			close($file);
+			unlink ($file);
+		}
 	}
 	# print "serverid = $PERL_SERVER_PID\n";
 	if ($PERL_SERVER_PID > 0) {
@@ -67,6 +69,7 @@ if (defined($ENV{'HELP'})) {
 	print "LOADMAUDE --- loads this program into maude without executing; only of use to developers\n";
 	print "TRACEMAUDE --- prints an execution trace; only of use to developers\n";
 	print "IOLOG --- records a .log file showing what happens in the IO server\n";
+	print "DUMPALL --- leaves all the intermediate files in the current directory\n";
 	print "E.g., DEBUG=1 $thisFile\n";
 	print "\n";
 	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
