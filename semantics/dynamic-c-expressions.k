@@ -858,8 +858,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			=> tv(0, t(.Set, int))
 		...</ k >
 		< mem >... 
-			Base:#Nat |-> memblock(Len:#Nat, ?) 
-			Base':#Nat |-> memblock(Len':#Nat, ?) 
+			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
+			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
 			...</ mem >
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		andBool Base:#Nat =/=Bool Base':#Nat
@@ -870,8 +870,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			=> tv(1, t(.Set, int))
 		...</ k >
 		< mem >... 
-			Base:#Nat |-> memblock(Len:#Nat, ?) 
-			Base':#Nat |-> memblock(Len':#Nat, ?) 
+			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
+			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
 			...</ mem >
 		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		andBool Base:#Nat =/=Bool Base':#Nat

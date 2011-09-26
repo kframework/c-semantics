@@ -211,7 +211,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 			~> assert(Offset:#Nat <Nat Size:#Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
-		< mem >... Block:#Nat |-> memblock(Size:#Nat, (? Offset:#Nat |-> V:K)) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) ?, (? Offset:#Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > .List </ buffer >
 		[structural]
@@ -221,7 +221,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 			~> assert(Offset:#Nat <Nat Size:#Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
-		< mem >... Block:#Nat |-> memblock(Size:#Nat, (? Offset:#Nat |-> V:K)) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) ?, (? Offset:#Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
 		if notBool sym(Block:#Nat) +Nat Offset:#Nat in locations(Mem:List)
@@ -233,7 +233,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), t(.Set, no-type))
 		...</ k >
 		< mem >... 
-			Block:#Nat |-> memblock(Size:#Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:#Nat])) 
+			Block:#Nat |-> memblock(mlength(Size:#Nat) ?, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:#Nat])) 
 		...</ mem >
 		< buffer > Mem:List </ buffer >
 		if notBool sym(Block:#Nat) +Nat Offset:#Nat in locations(Mem:List)
@@ -271,7 +271,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 
 	rule [alloc-lazy]:
 		< k > alloc(sym(Block:#Nat) +Nat 0, Len:#Nat) => .K ...</ k >
-		< mem >... .Map => Block:#Nat |-> memblock(Len:#Nat, .Map) ...</ mem >
+		< mem >... .Map => Block:#Nat |-> memblock(mlength(Len:#Nat), .Map) ...</ mem >
 		[structural]		
 		
 	op writeBytes : #Nat K -> K [metadata "strict=(2)"] 
@@ -340,7 +340,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		// [structural]
 	rule
 		< k > makeUnknown-aux(sym(Block:#Nat) +Nat Offset:#Nat, ?, Len':#Nat) => .K ...</ k >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:#Nat to (Offset:#Nat +Nat Len':#Nat)])) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:#Nat to (Offset:#Nat +Nat Len':#Nat)])) ...</ mem >
 		if Len:#Nat >=Nat Offset:#Nat +Nat Len':#Nat
 		[structural]
 		
@@ -479,17 +479,18 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule [write-byte-buffer]:
 		< k > writeByte(LOC, V:K) => .K ...</ k >
 		< buffer >... (.List => bwrite(LOC, V:K)) </ buffer >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, ?) ...</ mem >		
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) Attr:Bag, ?) ...</ mem >		
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
 		if notBool LOC in Locs:Bag
 		andBool Offset:#Nat <Nat Len:#Nat
+		andBool notBool mconst in Attr:Bag
 		where LOC = sym(Block:#Nat) +Nat Offset:#Nat
 		[structural]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >
 		< buffer > (bwrite(sym(Block:#Nat) +Nat Offset:#Nat, V:K) => .List) ...</ buffer >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, (M:Map => M:Map[V:K / Offset:#Nat])) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, (M:Map => M:Map[V:K / Offset:#Nat])) ...</ mem >
 		if Offset:#Nat <Nat Len:#Nat
 		[structural]
 	rule
@@ -594,17 +595,17 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	// used by calloc
 	rule
 		< k > zeroBlock(sym(Block:#Nat) +Nat 0) => .K ...</ k >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:#Nat])) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, (? => .Map[piece(0, numBitsPerByte) / 0 to Len:#Nat])) ...</ mem >
 		[structural]
 		
 	rule
 		< k > sizeofLocation(sym(Block:#Nat) +Nat ?) => tv(Len:#Nat, cfg:sizeut) ...</ k >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, ?) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) ...</ mem >
 		[structural]
 		
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(sym(Block:#Nat) +Nat ?, Len:#Nat) => .K ...</ k >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, ?) => .Map ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) => .Map ...</ mem >
 		< buffer > .List </ buffer > // fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
@@ -623,14 +624,21 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		< k > allocString(Loc:#Nat, S:#String)
 			=> allocateType(Loc:#Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:#String))))
 			~> writeString(Loc:#Nat, S:#String)
+			~> makeUnwritable(Loc:#Nat)
 		...</ k >
 		[structural]
 	rule [alloc-wstring]:
 		< k > allocWString(Loc:#Nat, S:List{K})
 			=> allocateType(Loc:#Nat, t(.Set, arrayType(cfg:wcharut, 4 *Nat lengthList{K}(S:List{K}))))
 			~> writeWString(Loc:#Nat, S:List{K})
+			~> makeUnwritable(Loc:#Nat)
 		...</ k >
 		[structural] 
+		
+	rule [makeUnwritable]:
+		< k > makeUnwritable(sym(Base:#Nat) +Nat 0) => .K ...</ k >
+		< mem >... Base:#Nat |-> memblock((.Bag => mconst) ?, ?) ...</ mem >
+		[structural]
 		
 	rule [write-string]:
 		< k > writeString(Loc:#Nat, S:#String)
@@ -674,7 +682,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	// fixme could additionally use the type to check whether that type is valid for that pointer
 	rule [check-valid-loc]:
 		< k > checkValidLoc-aux(sym(BASE) +Nat Offset:#Nat) => .K ...</ k >
-		< mem >... BASE |-> memblock(Len:#Nat, ?) ...</ mem >
+		< mem >... BASE |-> memblock(mlength(Len:#Nat) ?, ?) ...</ mem >
 		<threadId> MyThreadId:#Nat </threadId>
 		if (PtrThreadId:#Nat ==Bool MyThreadId:#Nat 
 			orBool PtrThreadId:#Nat ==Bool 0

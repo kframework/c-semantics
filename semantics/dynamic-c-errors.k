@@ -109,7 +109,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00010]:
 		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat Offset:#Nat) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(Size:#Nat, ?) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) ?, ?) ...</ mem >
 		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
 		if Offset:#Nat >Nat Size:#Nat
 		[structural]
@@ -180,7 +180,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00020]:
 		< k => finalComputation > writeByte(sym(Block:#Nat) +Nat Offset:#Nat, ?) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(Len:#Nat, ?) ...</ mem >		
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) ...</ mem >		
 		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
 		if notBool Offset:#Nat <Nat Len:#Nat
 		[structural] 

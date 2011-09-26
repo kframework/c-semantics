@@ -131,7 +131,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op readOnly : -> #Nat // fake threadid for above when location can't be written to
 		
 	op initialize : #Id Type K -> K 
-	op memblock : #Nat Map -> K // length and an array from offsets to bytes
+	op memblock : Bag Map -> K // length and an array from offsets to bytes
+	op mlength : #Nat -> BagItem
+	op mconst : -> BagItem
+	op makeUnwritable : #Nat -> K
 	
 	op listToK : K -> K 
 	op klistToK : List{K} -> K 
