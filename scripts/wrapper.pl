@@ -73,7 +73,7 @@ sub maudeOutputWrapper {
 				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$errorCell = substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< currentFunction > Id Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
+			} elsif ($line =~ m/< currentFunction > # Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
 				$myFunc = $1;
 			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 				$myFile = $1;
