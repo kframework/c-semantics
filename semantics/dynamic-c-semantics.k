@@ -35,14 +35,19 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< k > readFromFD(FD:#Nat) => tv(charToAscii(firstChar(S:#String)), t(.Set, int))  ...</ k >
 		< fid > FD:#Nat </ fid >
 		< buff > S:#String => butFirstChar(S:#String) </ buff >
-		if S:#String =/=Bool ""
+		if lengthString(S:#String) >Int 0 // don't compare with "" in order to only treat string sort
 		[structural]
-	rule [readFromFD-char-eof]:
-		< k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
+	rule [readFromFD-empty-buff]:
+		< k > readFromFD(FD:#Nat) ...</ k >
 		< fid > FD:#Nat </ fid >
-		< buff > S:#String => butFirstChar(S:#String) </ buff >
-		if S:#String ==Bool ""
+		< buff > "" => "" +String charString(K2Nat(#fReadByte(FD:#Nat))) </ buff >
 		[structural]
+	// rule [readFromFD-char-eof]:
+		// < k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
+		// < fid > FD:#Nat </ fid >
+		// < buff > S:#String => butFirstChar(S:#String) </ buff >
+		// if S:#String ==Bool ""
+		// [structural]
 		
 	op f-sent : #Nat #String -> K
 	op f-flush : #Nat -> K

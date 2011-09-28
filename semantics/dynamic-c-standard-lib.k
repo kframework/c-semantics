@@ -320,8 +320,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 
 	rule [fslFGetC]:
 		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:#Nat, ?) :: tv(Offset:#Nat, ?)))
-			// => readFromFD(FD:#Nat)
-			=> #fReadByte(FD:#Nat)
+			=> readFromFD(FD:#Nat)
+			// => #fReadByte(FD:#Nat)
 		...</ k >
 		[structural]
 		

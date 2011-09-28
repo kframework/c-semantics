@@ -292,9 +292,14 @@ sub runWrapper {
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	#print "for $command, pid is $childPid\n";
 	#my @data=<P>;
-	while (defined(my $line = <P>)) {
-		print "$line";
+	# while (defined(my $line = <P>)) {
+	$| = 1; # autoflush
+	my $char;
+	while (read (P, $char, 1)) {
+		
+		print "$char";
 	}
+	$| = 0; # no autoflush
 	close P;
 	#print @data;
 	$childPid = 0;
