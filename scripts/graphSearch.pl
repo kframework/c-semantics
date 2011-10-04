@@ -71,7 +71,7 @@ sub graphSearch {
 			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> # "(.*)"\(\.List\{K\}\)/) {
 				$solutions[-1]->{'output'} = $1;
 			}
-			if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KProperLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
 				$solutions[-1]->{'file'} = $1;
 				$solutions[-1]->{'line'} = $2;
 				# $myOffsetStart = $3;

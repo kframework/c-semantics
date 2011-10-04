@@ -42,6 +42,15 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< fid > FD:#Nat </ fid >
 		< buff > "" => "" +String charString(K2Nat(#fReadByte(FD:#Nat))) </ buff >
 		[structural]
+	rule [readFromFD-eof]:
+		< k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k >
+		< fid > FD:#Nat </ fid >
+		< buff > #EOF </ buff >
+		[structural]
+	rule [make-eof]:
+		"" +String charString(K2Nat(String2Int(#errorTCPSyntax("EOF"))))
+			=> #EOF
+		[structural]
 	// rule [readFromFD-char-eof]:
 		// < k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
 		// < fid > FD:#Nat </ fid >

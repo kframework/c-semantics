@@ -325,9 +325,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 		
-	rule [read-eof]:
-		< k > String2Int(#errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
-		[structural]	
+	// rule [read-eof]:
+		// < k > String2Int(#errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
+		// [structural]
 
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:#Nat, t(?, int))) 
