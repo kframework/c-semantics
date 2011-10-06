@@ -2,8 +2,7 @@ use strict;
 use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
 use Text::Diff;
-use HTML::Entities;
-
+use XML::LibXML;
 
 # use XML::Writer;
 
@@ -90,7 +89,7 @@ sub performTest {
 	
 	my $kccCompileOutput = `$kcc -o $kccFilename $allFiles 2>&1`;
 	my $kccCompileRetval = $?;
-	my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
+	# my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
 	
 	my $lookForError=0;
 	if ($#allFilenames == 0) { # no logic to make this work for multiple translation units
@@ -131,8 +130,8 @@ sub performTest {
 	if ($shouldFail) {
 		# if ($kccRunRetval == 0) {
 		if (!($kccRunOutput =~ /^ERROR!/m)) {
-			my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
-			return reportFailure($testName, $timer, "Failure---Program seemed to run to completion\n$encodedOut\n");
+			# my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
+			return reportFailure($testName, $timer, "Failure---Program seemed to run to completion\n$kccRunOutput\n");
 		} else {
 			if ($lookForError) {
 				if ($kccRunOutput =~ /^Error: $lookForError$/m) {
@@ -149,10 +148,10 @@ sub performTest {
 	if ($testSuite eq "gcc-torture"){
 		if ($kccRunRetval != 0) {
 			my $msg = "";
-			my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
+			# my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
 			$msg .= "kcc retval=$kccRunRetval\n";
 			$msg .= "-----------------------------------------------\n";
-			$msg .= "$encodedOut\n";
+			$msg .= "$kccRunOutput\n";
 			$msg .= "-----------------------------------------------\n";
 			return reportFailure($testName, $timer, $msg);
 		} else {
@@ -171,11 +170,11 @@ sub performTest {
 		if ($kccRunOutput ne $gccRunOutput) {
 			$msg .= "Outputs were not identical.\n";
 			my $diff = diff(\$gccRunOutput, \$kccRunOutput, { STYLE => "Unified" });
-			my $encodedDiff = HTML::Entities::encode_entities($diff);
+			# my $encodedDiff = HTML::Entities::encode_entities($diff);
 			# my $text = new XML::Code('=');
 			# $text->set_text($diff);
 			$msg .= "-----------------------------------------------\n";
-			$msg .= "$encodedDiff\n";
+			$msg .= "$diff\n";
 			$msg .= "-----------------------------------------------\n";
 			#$msg .= "(actual output elided)\n";
 		}
@@ -188,6 +187,8 @@ sub performTest {
 sub reportFailure {
 	my ($name, $timer, $message) = (@_);
 	$globalNumFailed++;
+	$message = encode($message);
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<failure>$message</failure>";
 	print "$name failed\n";
 	return reportAny($name, $timer, $inner);	
@@ -195,6 +196,8 @@ sub reportFailure {
 sub reportError {
 	my ($name, $timer, $message) = (@_);
 	$globalNumError++;
+	$message = encode($message);
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<error>$message</error>";
 	print "$name errored\n";
 	return reportAny($name, $timer, $inner);	
@@ -202,6 +205,7 @@ sub reportError {
 sub reportSuccess {
 	my ($name, $timer, $message) = (@_);
 	$globalNumPassed++;
+	$message = encode($message);
 	my $inner = "$message";
 	print "$name passed\n";
 	return reportAny($name, $timer, $inner);	
@@ -216,6 +220,14 @@ sub reportAny {
 	$globalTests .= "\t\t$inner\n";
 	$globalTests .= "\t</testcase>\n";
 }
+
+sub encode {
+	my ($str) = (@_);
+	my $doc = XML::LibXML::Document->new('1.0', 'UTF-8');
+	my $node = $doc->createTextNode($str);
+	return $node->toString();
+}
+
 #@diff -y --suppress-common-lines -I '^VOLATILE' $+
 
 

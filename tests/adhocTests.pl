@@ -2,7 +2,7 @@ use strict;
 use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
 use Text::Diff;
-use HTML::Entities;
+use XML::LibXML;
 
 # my $doc = XML::LibXML:Document->new('1.0',$some_encoding);
 # my $element = $doc->createElement($name);
@@ -68,7 +68,9 @@ sub assertContains {
 	if (index($haystack, $needle) >= 0) {
 		return reportSuccess($testName, $elapsed, "Success");
 	} else {
-		return reportFailure($testName, $elapsed, "Failure---could not find \"$needle\"");
+		my $msg = "Failure---could not find \"$needle\"\n";
+		$msg .= "Instead found $haystack\n";
+		return reportFailure($testName, $elapsed, $msg);
 	}
 }
 
@@ -78,20 +80,26 @@ sub assertEquals {
 	if ($haystack eq $needle) {
 		return reportSuccess($testName, $elapsed, "Success");
 	} else {
-		return reportFailure($testName, $elapsed, "Failure---could not find \"$needle\"");
+		my $msg = "Failure---could not find \"$needle\"\n";
+		$msg .= "Instead found:\n$haystack\n";
+		return reportFailure($testName, $elapsed, $msg);
 	}
 }
 
 sub reportFailure {
 	my ($name, $timer, $message) = (@_);
 	$globalNumFailed++;
+	$message = encode($message);
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<failure>$message</failure>";
 	print "$name failed\n";
-	return reportAny($name, $timer, $inner);	
+	return reportAny($name, $timer, $inner);
 }
 sub reportError {
 	my ($name, $timer, $message) = (@_);
 	$globalNumError++;
+	$message = encode($message);
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<error>$message</error>";
 	print "$name errored\n";
 	return reportAny($name, $timer, $inner);	
@@ -99,6 +107,7 @@ sub reportError {
 sub reportSuccess {
 	my ($name, $timer, $message) = (@_);
 	$globalNumPassed++;
+	$message = encode($message);
 	my $inner = "$message";
 	print "$name passed\n";
 	return reportAny($name, $timer, $inner);	
@@ -109,7 +118,14 @@ sub reportAny {
 	my $elapsed = $timer;
 	$globalTotalTime += $elapsed;
 	$globalTests .= "\t<testcase name='$name' time='$elapsed'>\n";
-	$globalTests .= "\t\t<measurement><name>Time</name><value>$elapsed</value></measurement>\n";
+	#$globalTests .= "\t\t<measurement><name>Time</name><value>$elapsed</value></measurement>\n";
 	$globalTests .= "\t\t$inner\n";
 	$globalTests .= "\t</testcase>\n";
+}
+
+sub encode {
+	my ($str) = (@_);
+	my $doc = XML::LibXML::Document->new('1.0', 'UTF-8');
+	my $node = $doc->createTextNode($str);
+	return $node->toString();
 }
