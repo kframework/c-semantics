@@ -111,7 +111,7 @@ sub performTest {
 			}
 			return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
 		} else {
-			return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$encodedOut");
+			return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$kccCompileOutput");
 		}
 	}
 	
