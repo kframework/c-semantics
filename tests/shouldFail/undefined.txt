@@ -67,7 +67,6 @@ Partially Tested
 010	The value of a pointer to an object whose lifetime has ended is used (6.2.4). 
 Remark: I'm not sure how you could do 009 without doing 010.
 011	The value of an object with automatic storage duration is used while it is indeterminate (6.2.4, 6.7.9, 6.8). 
-012	A trap representation is read by an lvalue expression that does not have character type (6.2.6.1). 
 015	Two declarations of the same object or function specify types that are not compatible (6.2.7). 
 017	Conversion to or from an integer type produces a value outside the range that can be represented (6.3.1.4). 
 021	An lvalue designating an object of automatic storage duration that could have been declared with the register storage class is used in a context that requires the value of the designated object, but the object is uninitialized. (6.3.2.1). 

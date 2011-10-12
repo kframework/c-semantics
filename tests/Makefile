@@ -2,7 +2,7 @@ PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests
 FAIL_DIRECTORIES = shouldFail unspecified-shouldFail
-MUSTFAIL_DIRECTORIES = mustFail
+MUSTFAIL_DIRECTORIES = mustFail unspecified-mustFail uncategorized-mustFail
 INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests
 THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-unit
