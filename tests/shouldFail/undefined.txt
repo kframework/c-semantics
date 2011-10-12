@@ -1,26 +1,16 @@
-This was taken from ISO/IEC 9899:201x n1516.  I've moved syntactic properties and things related to cpp to bottom, along with cases that are partially tested.  Undefinedness pertaining to libraries is in undefinedLib.txt
+This was taken from ISO/IEC 9899:201x n1516.  I've moved syntactic properties and things related to cpp to bottom, along with cases that are partially tested.  Undefinedness pertaining to libraries is in undefinedLib.txt.  Undefinedness that depends on the implementation is in undefinedImplementation.txt
 
 001	A "shall" or "shall not" requirement that appears outside of a constraint is violated (clause 4). 
-013	A trap representation is produced by a side effect that modifies any part of the object using an lvalue expression that does not have character type (6.2.6.1). 
-014	The operands to certain operators are such that they could produce a negative zero result, but the implementation does not support negative zeros (6.2.6.2). 
+
 016	A program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (6.2.7). 
-018	Demotion of one real floating type to another produces a value outside the range that can be represented (6.3.1.5). 
 019	An lvalue does not designate an object when evaluated (6.3.2.1). 
 020	A non-array lvalue with an incomplete type is used in a context that requires the value of the designated object (6.3.2.1). 
-021	An lvalue designating an object of automatic storage duration that could have been declared with the register storage class is used in a context that requires the value of the designated object, but the object is uninitialized. (6.3.2.1). 
-024	Conversion of a pointer to an integer type produces a value outside the range that can be represented (6.3.2.3). 
-025	Conversion between two pointer types produces a result that is incorrectly aligned (6.3.2.3). 
 026	A pointer is used to call a function whose type is not compatible with the referenced type (6.3.2.3). 
-031	Two identifiers differ only in nonsignificant characters (6.4.2.1). 
 035	A side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object (6.5). 
-036	An exceptional condition occurs during the evaluation of an expression (6.5). 
-037	An object has its stored value accessed other than by an lvalue of an allowable type (6.5). 
-050	The result of subtracting two pointers is not representable in an object of type ptrdiff_t (6.5.6). 
 055	An expression that is required to be an integer constant expression does not have an integer type; has operands that are not integer constants, enumeration constants, character constants, sizeof expressions whose results are integer constants, or immediately-cast floating constants; or contains casts (outside operands to sizeof operators) other than conversions of arithmetic types to integer types (6.6). 
 057	An arithmetic constant expression does not have arithmetic type; has operands that are not integer constants, floating constants, enumeration constants, character constants, or sizeof expressions; or contains casts (outside operands to sizeof operators) other than conversions of arithmetic types to arithmetic types (6.6). 
 059	An identifier for an object is declared with no linkage and the type of the object is incomplete after its declarator, or after its init-declarator if it has an initializer (6.7).
 063	When the complete type is needed, an incomplete structure or union type is not completed in the same scope by another declaration of the tag that defines the content (6.7.2.3). 
-065	An attempt is made to refer to an object defined with a volatile-qualified type through use of an lvalue with non-volatile-qualified type (6.7.3). 
 068	Two qualified types that are required to be compatible do not have the identically qualified version of a compatible type (6.7.3). 
 069	An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type, or through a restrict-qualified pointer and another pointer that are not both based on the same object (6.7.3.1). 
 070	A restrict-qualified pointer is assigned a value based on another restricted pointer whose associated block neither began execution before the block associated with this pointer, nor ended before the assignment (6.7.3.1). 
@@ -80,10 +70,13 @@ Remark: I'm not sure how you could do 009 without doing 010.
 012	A trap representation is read by an lvalue expression that does not have character type (6.2.6.1). 
 015	Two declarations of the same object or function specify types that are not compatible (6.2.7). 
 017	Conversion to or from an integer type produces a value outside the range that can be represented (6.3.1.4). 
+021	An lvalue designating an object of automatic storage duration that could have been declared with the register storage class is used in a context that requires the value of the designated object, but the object is uninitialized. (6.3.2.1). 
 022	An lvalue having array type is converted to a pointer to the initial element of the array, and the array object has register storage class (6.3.2.1). 
 023	An attempt is made to use the value of a void expression, or an implicit or explicit conversion (except to void) is applied to a void expression (6.3.2.2). 
 032	The identifier __func__ is explicitly declared (6.4.2.2). 
 033	The program attempts to modify a string literal (6.4.5). 
+036	An exceptional condition occurs during the evaluation of an expression (6.5). 
+037	An object has its stored value accessed other than by an lvalue of an allowable type (6.5). 
 038	For a call to a function without a function prototype in scope, the number of arguments does not equal the number of parameters (6.5.2.2). 
 039	For call to a function without a function prototype in scope where the function is defined with a function prototype, either the prototype ends with an ellipsis or the types of the arguments after promotion are not compatible with the types of the parameters (6.5.2.2). 
 040	For a call to a function without a function prototype in scope where the function is not defined with a function prototype, the types of the arguments after promotion are not compatible with those of the parameters after promotion (with certain exceptions) (6.5.2.2). 
@@ -105,6 +98,7 @@ Remark: I'm not sure how you could do 009 without doing 010.
 061	A structure or union is defined as containing no named members, no anonymous structures, and no anonymous unions (6.7.2.1). 
 062	An attempt is made to access, or generate a pointer to just past, a flexible array member of a structure when the referenced object provides no elements for that array (6.7.2.1). 
 064	An attempt is made to modify an object defined with a const-qualified type through use of an lvalue with non-const-qualified type (6.7.3). 
+065	An attempt is made to refer to an object defined with a volatile-qualified type through use of an lvalue with non-volatile-qualified type (6.7.3). 
 067	The specification of a function type includes any type qualifiers (6.7.3). 
 072	A function declared with a _Noreturn function specifier returns to its caller (6.7.4). 
 073	The definition of an object has an alignment specifier and another declaration of that object has a different alignment specifier (6.7.5). 

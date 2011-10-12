@@ -1,7 +1,7 @@
 PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests
-FAIL_DIRECTORIES = shouldFail
+FAIL_DIRECTORIES = shouldFail unspecified-shouldFail
 MUSTFAIL_DIRECTORIES = mustFail
 INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests

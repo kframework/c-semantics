@@ -1,0 +1,7 @@
+013	A trap representation is produced by a side effect that modifies any part of the object using an lvalue expression that does not have character type (6.2.6.1). 
+014	The operands to certain operators are such that they could produce a negative zero result, but the implementation does not support negative zeros (6.2.6.2). 
+018	Demotion of one real floating type to another produces a value outside the range that can be represented (6.3.1.5). 
+024	Conversion of a pointer to an integer type produces a value outside the range that can be represented (6.3.2.3). 
+025	Conversion between two pointer types produces a result that is incorrectly aligned (6.3.2.3). 
+031	Two identifiers differ only in nonsignificant characters (6.4.2.1). 
+050	The result of subtracting two pointers is not representable in an object of type ptrdiff_t (6.5.6). 
