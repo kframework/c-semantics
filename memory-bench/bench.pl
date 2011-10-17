@@ -19,94 +19,151 @@ my $globalTotalTime = 0;
 ###################################
 my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
 
-my @compilers = (
-	[
-		'gcc', 
-		"$gccCommand -Werror %s", 
-		'./a.out'
-	],
-	[
-		'kcc', 
-		"kcc -s %s",
-		'./a.out'
-	],
-	[
-		'valgrind', 
-		"$gccCommand %s", 
-		'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
-	],
-	[
-		'UBC', 
-		'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
-		'./a.out'
-	],
-	[
-		'ccured', 
-		'~/tools/ccured/bin/ccured %s', 
-		'./a.out'
-	],
-	# [ # doesn't seem to find anything
-		# 'fjalar', 
-		# "$gccCommand %s", 
-		# '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar --leak-check=no --xml-output-file=fjalar.out.xml ./a.out'
+# my @compilers = (
+	# [
+		# 'gcc', 
+		# "$gccCommand -Werror %s", 
+		# './a.out'
 	# ],
-	[ # doesn't work well without annotations
-		'deputy', 
-		'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
-		'./a.out'
-	],
-	[
-		'frama-c', 
-		'[ ! `frama-c -val -val-signed-overflow-alarms -slevel 100 %s | grep assert` ]',
-		'true'
-	],
+	# # [
+		# # 'kcc', 
+		# # "kcc -s %s",
+		# # './a.out'
+	# # ],
+	# # [
+		# # 'valgrind', 
+		# # "$gccCommand %s", 
+		# # 'valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out'
+	# # ],
+	# # [
+		# # 'UBC', 
+		# # 'clang -w -std=c99 -m32 -fcatch-undefined-c99-behavior -fcatch-undefined-nonarith-behavior %s', 
+		# # './a.out'
+	# # ],
+	# # [
+		# # 'ccured', 
+		# # '~/tools/ccured/bin/ccured %s', 
+		# # './a.out'
+	# # ],
+	# # # [ # doesn't seem to find anything
+		# # # 'fjalar', 
+		# # # "$gccCommand %s", 
+		# # # '~/fjalar-1.4/inst/bin/valgrind -q --error-exitcode=1 --tool=fjalar --leak-check=no --xml-output-file=fjalar.out.xml ./a.out'
+	# # # ],
+	# # [ # doesn't work well without annotations
+		# # 'deputy', 
+		# # 'deputy --trust -lm -Wall -Wextra -O0 -m32 -U __GNUC__ -pedantic -std=c99 %s', 
+		# # './a.out'
+	# # ],
+	# # [
+		# # 'frama-c', 
+		# # # '[ ! `frama-c -val -val-signed-overflow-alarms -slevel 100 %s | grep assert` ]',
+		# # 'true',
+		# # '[ ! `frama-c -val -val-signed-overflow-alarms -unspecified-access -obviously-terminates -machdep x86_64 -cpp-command "gcc -C -E -m64 -Dprintf=Frama_C_show_each -Iruntime" -precise-unions -big-ints-hex 0 -no-val-show-progress %s | grep assert` ]',
+	# # ],
 	
-);
+# );
+
+my $_timer = [gettimeofday];
 
 # bench('badArithmetic');
 # bench('badPointers');
 # bench('badMemory');
 # bench('gcc.all');
-bench('custom');
+# bench('custom');
+printResult("Test", "Pass", "Tool", "", "", "");
+bench('../tests/shouldFail');
+bench('../tests/mustFail');
 
 sub bench {
 	my ($dir) = (@_);
 	opendir (DIR, $dir) or die $!;
 	while (my $file = readdir(DIR)) {
 		next if !($file =~ m/\.c$/);
-		for my $stuff (@compilers) {
-			my ($name, $compiler, $runner) = @$stuff;
-			unlink('a.out');
-			
-			#####
-			{
-				my $filename = "$dir/$file";
-				my $compileString = "$compiler 2>&1";
-				$compileString =~ s/%s/$filename/;
-				my ($elapsed, $retval, @output) = run($compileString);
-				my $length = length(join('', @output));
-				if ($retval != 0) {
-					printf("%-10s\t0\t%-10s\t%-17s\t%-10d\t%-10s\t%-10s\n", $dir, $name, $file, -1, $length, $elapsed);
-					next;
-				} else {
-					my ($elapsed, $retval, @output) = run("$runner 2>&1");
-					my $length = length(join('', @output));
-					if ($name eq 'ccured') {
-						if ($retval == -1) { $retval = 1; }
-					} elsif ($name eq 'UBC') {
-						if ($length > 0) { $retval = 1; }
-					}
-					printf("%-10s\t1\t%-10s\t%-17s\t%-10d\t%-10s\t%-10s\n", $dir, $name, $file, $retval, $length, $elapsed);
-				}
-			}
-			
-			#####
-			
-		}
+		my $filename = "$dir/$file";
+		$_timer = [gettimeofday];
+		gccTest($file, $filename);
+		# for my $stuff (@compilers) {
+			# #my ($name, $compiler, $runner) = @$stuff;
+			# unlink('a.out');
+			# if (compile($file, $filename, @$stuff)) {
+				# # dynamic($file, $filename, @$stuff);
+			# }
+		# }
 		# print "$file\n";
 	}
 	closedir(DIR);
 }
+
+sub printResult {
+	my ($dir, $dynamic, $name, $file, $retval, $length, $elapsed) = (@_);
+	printf("%-17s\t%s\t%-10s\t%-10s\t%-10s\t%-10s\n", $dir, $dynamic, $name, $retval, $length, $elapsed);
+}
+
+sub report {
+	my ($test, $name, $result, $msg) = (@_);
+	my $elapsed = tv_interval($_timer, [gettimeofday]);
+	printf("%-17s\t%s\t%-10s\t%-10s\t%-10s\t%s\n", $test, $name, $result, $elapsed, $msg);
+}
+
+# returns true when everything works but it fails to find a bug
+# sub compile {
+	# my ($testname, $filename, $name, $compiler, $runner) = (@_);
+	# #print STDERR "Compiling $filename with $name\n";
+	# my $compileString = "$compiler 2>&1";
+	# $compileString =~ s/%s/$filename/;
+	# my ($elapsed, $retval, @output) = run($compileString);
+	# my $length = length(join('', @output));
+	# print STDERR @output;
+	# if ($retval != 0) {
+		# printResult($testname, 0, $name, -1, $length, $elapsed);
+		# return 0;
+	# }
+	# return 1;
+# }
+
+# sub dynamic {
+	# my ($testname, $filename, $name, $compiler, $runner) = (@_);
+	
+	# my ($elapsed, $retval, @output) = run("$runner 2>&1");
+	# my $length = length(join('', @output));
+	# if ($name eq 'ccured') {
+		# if ($retval == -1) { $retval = 1; }
+	# } elsif ($name eq 'UBC') {
+		# if ($length > 0) { $retval = 1; }
+	# }
+	# printResult($testname, 1, $name, $retval, $length, $elapsed);
+# }
+
+sub gccTest {
+	my ($testname, $filename) = (@_);
+	unlink('a.out');
+	
+	my ($signal, $retval, $output, $stderr) = run("c99 -lm -O0 -m32 $filename");
+	if ($signal) {
+		report($testname, 'GCC', '0', "Failed to compile normally: signal $signal");
+	}
+	if ($retval) {
+		report($testname, 'GCC', '0', "Failed to compile normally: retval $retval");
+	}
+	
+	report($testname, 'GCC', '???');
+
+	
+	#print STDERR "Compiling $filename with $name\n";
+	# my $compileString = "$compiler 2>&1";
+	# $compileString =~ s/%s/$filename/;
+	# my ($signal, $retval, $output, $stderr) = run($compileString);
+
+	# my $length = length(join('', @output));
+	# print STDERR @output;
+	# if ($retval != 0) {
+		# printResult($testname, 0, $name, -1, $length, $elapsed);
+		# return 0;
+	# }
+	# return 1;
+}
+
 
 #run("$kcc adhoc/nondet.c -o && SEARCH=1 ./adhoc.o");
 
@@ -121,30 +178,31 @@ sub bench {
 # }
 
 sub run {
-	my ($command) = (@_);
-	my $timer = [gettimeofday];
+	my ($theircommand) = (@_);
+
+	my $command = "$theircommand 1>stdout.txt 2>stderr.txt";
 	# print "Running $command\n";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
-	my @data=<P>;
+	#my @data=<P>;
 	close P;
 	# my $retval = $? >> 8;
 	my $retval = 0;
 	if ($? == -1) {
 		# print "failed to execute: $!\n";
 		$retval = -1;
-	} elsif ($? & 127) {
-		# $signal = ($? & 127);
-		# $dump = ($? & 128);
-		# $result = '-1';
-		$retval = -1;
-		# printf "child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with' : 'without';
 	} else {
 		# printf "child exited with value %d\n", $? >> 8;
 		$retval = $? >> 8;
 	}
-	# my $retval = $?;
-	my $elapsed = tv_interval($timer, [gettimeofday]);
+	my $signal = ($? & 127);
+	
+	open FILE, "stdout.txt" or die "Couldn't open file: $!"; 
+	my $stdout = join("", <FILE>); 
+	close FILE;
+	open FILE, "stderr.txt" or die "Couldn't open file: $!"; 
+	my $stderr = join("", <FILE>); 
+	close FILE;
+
 	$childPid = 0;
-		
-	return ($elapsed, $retval, @data);
+	return ($signal, $retval, $stdout, $stderr);
 }
