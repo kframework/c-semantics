@@ -4,7 +4,7 @@ use File::Spec::Functions qw(rel2abs);
 use File::Basename;
 
 sub maudeOutputWrapper {
-	my ($plainOutput, @input) = (@_);
+	my ($plainOutput, $screenOutput, @input) = (@_);
 	my $realOutput = "";
 	my $state = "start";
 	my $retval = -1;
@@ -54,18 +54,27 @@ sub maudeOutputWrapper {
 		} elsif ($state eq "success"){
 			if ($line =~ m/< input > .* <\/ input >/){
 				$reduced = 1;
-			} elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.List{K}\) <\/ unflushedOutput >/){
-				my $output = $1;
-				$output =~ s/\%/\%\%/g;
-				$output =~ s/`/\\`/g;
-				$output =~ s/\\\\/\\\\\\\\/g;
-				$realOutput .= substr(`printf "x$output"`, 1);
-			# } elsif ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
+			# } elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.List{K}\) <\/ unflushedOutput >/){
 				# my $output = $1;
 				# $output =~ s/\%/\%\%/g;
 				# $output =~ s/`/\\`/g;
 				# $output =~ s/\\\\/\\\\\\\\/g;
 				# $realOutput .= substr(`printf "x$output"`, 1);
+			} elsif ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
+				my $output = $1;
+				$output =~ s/\%/\%\%/g;
+				$output =~ s/`/\\`/g;
+				$output =~ s/\\\\/\\\\\\\\/g;
+				$output = substr(`printf "x$output"`, 1);
+				# print "have:\n$output\n";
+				# print "looking for:\n$screenOutput\n";
+				my $index = index($output, $screenOutput);
+				if ($index == 0){
+					$realOutput .= substr($output, length($screenOutput));
+				} else {
+					$realOutput .= "Internal Error: couldn't find stdout in semantic output\n";
+				}
+				#$realOutput .= substr(`printf "x$output"`, 1);
 			} elsif ($line =~ m/< errorCell > # "(.*)"\(\.List{K}\) <\/ errorCell >/){
 				$haveError = 1;
 				my $output = $1;

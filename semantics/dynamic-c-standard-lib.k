@@ -315,7 +315,10 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [getchar]:
-		< k > prepareBuiltin((Identifier("getchar")), Nil) => readFromFD(0) ...</ k >
+		< k > prepareBuiltin((Identifier("getchar")), Nil) 
+			=> flush(1)
+			~> readFromFD(0) 
+		...</ k >
 		[structural]
 
 	rule [fslFGetC]:

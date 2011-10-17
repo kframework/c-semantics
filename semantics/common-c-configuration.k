@@ -130,7 +130,7 @@ kmod COMMON-C-CONFIGURATION is
 		</files> 
 		<input color="lightgray"> "" </input>
 		<output color="lightgray"> "" </output>
-		<unflushedOutput color="lightgray"> "" </unflushedOutput>
+		//<unflushedOutput color="lightgray"> "" </unflushedOutput>
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
 	

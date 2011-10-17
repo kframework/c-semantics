@@ -235,26 +235,17 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 	open (my $fh, "<$intermediateOutputFile");
 	my @dynamicOutput = <$fh>;
 	close($fh);
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, @dynamicOutput);
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, "", @dynamicOutput);
 	print $finalOutput;
 	my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
 	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
 	exit($finalReturnValue);
 } else {
-	#if ($IOFLAG) {
-	# $PERL_SERVER_PID = fork();
-	# die "unable to fork: $!" unless defined($PERL_SERVER_PID);
-	# if (!$PERL_SERVER_PID) {  # child
-		# # exec("java -jar $IO_SERVER 10000 > tmpIOServerOutput.log 2>&1");
-		# exec("java -jar $IO_SERVER 10000");
-		# die "unable to exec: $!";
-	# }
-	#}
-	my ($returnValue, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
+	my ($returnValue, $screenOutput, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, @dynamicOutput);
+	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, $screenOutput, @dynamicOutput);
 	if (defined($ENV{'TRACEMAUDE'})) {
 		print $traceFile $finalOutput;
 		close $traceFile;
@@ -293,10 +284,11 @@ sub runWrapper {
 	#print "for $command, pid is $childPid\n";
 	#my @data=<P>;
 	# while (defined(my $line = <P>)) {
+	my $screenOutput = "";
 	$| = 1; # autoflush
 	my $char;
 	while (read (P, $char, 1)) {
-		
+		$screenOutput .= $char;
 		print "$char";
 	}
 	$| = 0; # no autoflush
@@ -313,7 +305,7 @@ sub runWrapper {
 	close FILE;
 	print @xlines;
 	
-	return ($returnValue, @lines);
+	return ($returnValue, $screenOutput, @lines);
 }
 
 sub runDebugger {
