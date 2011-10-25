@@ -75,6 +75,11 @@ printResult("Test", "Pass", "Tool", "", "", "");
 bench('../tests/shouldFail');
 bench('../tests/mustFail');
 
+
+# wine cmd /C "c:\Program Files\SemanticDesigns\DMS\executables\DMSCheckPointer.cmd C~GCC3 -cache ./cache-file -config ./init.h -target out.over -source . over.c"
+
+
+
 sub bench {
 	my ($dir) = (@_);
 	opendir (DIR, $dir) or die $!;
@@ -82,7 +87,9 @@ sub bench {
 		next if !($file =~ m/\.c$/);
 		my $filename = "$dir/$file";
 		$_timer = [gettimeofday];
-		gccTest($file, $filename);
+		# gccTest($file, $filename);
+		valgrindTest($file, $filename);
+		
 		# for my $stuff (@compilers) {
 			# #my ($name, $compiler, $runner) = @$stuff;
 			# unlink('a.out');
@@ -134,6 +141,32 @@ sub report {
 	# }
 	# printResult($testname, 1, $name, $retval, $length, $elapsed);
 # }
+
+sub valgrindTest {
+	my ($testname, $filename) = (@_);
+	
+	my $tool = 'Valgrind';
+	unlink('a.out');
+
+	my ($signal, $retval, $output, $stderr) = run("$gccCommand $filename");
+	if ($signal) {
+		return report($testname, $tool, '0', "Failed to compile normally: signal $signal");
+	}
+	if ($retval) {
+		return report($testname, $tool, '1', "Failed to compile normally: retval $retval");
+	}
+	
+	my ($signal, $retval, $output, $stderr) = run("valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out");
+	if ($signal) {
+		return report($testname, $tool, '2', "Failed to run normally: signal $signal");
+	}
+	if ($retval) {
+		return report($testname, $tool, '3', "Failed to run normally: retval $retval");
+	}
+	
+	return report($testname, $tool, '4');
+}
+
 
 sub gccTest {
 	my ($testname, $filename) = (@_);

@@ -76,6 +76,12 @@ if (defined($ENV{'HELP'})) {
 	exit(1);
 }
 
+# may be many more of these
+if (defined($ENV{'PROFILE'}) && defined($ENV{'TRACEMAUDE'})) {
+	print STDERR "Error: Cannot use both PROFILE and TRACEMAUDE at the same time.\n";
+	exit(1);
+}
+
 if (defined($ENV{'PRINTMAUDE'})) {
 	print linkedProgram();
 	exit(0);
@@ -220,32 +226,24 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 		system("ps2pdf tmpSearchResults.ps tmpSearchResults.pdf") == 0 or die "Running ps2pdf failed: $?";
 		print "Generated tmpSearchResults.pdf\n";
 	}
-} elsif (defined($ENV{'PROFILE'})) {
-	if (! -e "maudeProfileDBfile.sqlite") {
-		copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), "maudeProfileDBfile.sqlite");
-	}
-	my $intermediateOutputFile = File::Temp->new( TEMPLATE => 'tmp-kcc-intermediate-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	push(@temporaryFiles, $intermediateOutputFile);
-	
-	my ($returnValue) = runProgram("$maudeCommand > $intermediateOutputFile");
-	if ($returnValue != 0) {
-		die "Dynamic execution failed: $returnValue";
-	}	
-	copy($intermediateOutputFile, "tmpProfileResults.txt");
-	open (my $fh, "<$intermediateOutputFile");
-	my @dynamicOutput = <$fh>;
-	close($fh);
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, "", @dynamicOutput);
-	print $finalOutput;
-	my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
-	`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
-	exit($finalReturnValue);
 } else {
 	my ($returnValue, $screenOutput, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
 	if ($returnValue != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
 	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, $screenOutput, @dynamicOutput);
+		
+	if (defined($ENV{'PROFILE'})) {
+		if (! -e "maudeProfileDBfile.sqlite") {
+			copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), "maudeProfileDBfile.sqlite");
+		}
+		my $intermediateOutputFile = File::Temp->new( TEMPLATE => 'tmp-kcc-intermediate-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+		push(@temporaryFiles, $intermediateOutputFile);
+		writeToFile($intermediateOutputFile, @dynamicOutput);
+		my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
+		`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
+	}
+	
 	if (defined($ENV{'TRACEMAUDE'})) {
 		print $traceFile $finalOutput;
 		close $traceFile;
@@ -312,6 +310,15 @@ sub runDebugger {
 	my ($command) = (@_);
 	print "Running $command\n";
 	exec($command);
+}
+
+sub writeToFile {
+	my ($file, @data) = (@_);
+	open (MYFILE, ">$file");
+	for my $line  (@data) {
+		print MYFILE $line;
+	}
+	close (MYFILE);
 }
 
 
