@@ -1117,12 +1117,10 @@ direct_decl: /* (* ISO 6.7.5 *) */
                                    { let (n,decl,al,loc) = $3 in
                                      (n, PARENTYPE($2,decl,al)) }
 
-|   direct_decl LBRACKET attributes comma_expression_opt RBRACKET
+|   direct_decl LBRACKET array_insides RBRACKET
                                    { let (n, decl) = $1 in
-                                     (n, ARRAY(decl, $3, $4)) }
-|   direct_decl LBRACKET attributes error RBRACKET
-                                   { let (n, decl) = $1 in
-                                     (n, ARRAY(decl, $3, NOTHING)) }
+                                     (n, ARRAY(decl, fst $3, snd $3)) }
+									 
 |   direct_decl parameter_list_startscope rest_par_list RPAREN
                                    { let (n, decl) = $1 in
                                      let (params, isva) = $3 in
@@ -1130,6 +1128,12 @@ direct_decl: /* (* ISO 6.7.5 *) */
                                      (n, PROTO(decl, params, isva))
                                    }
 ;
+array_insides:
+	| attributes comma_expression_opt	{ ($1, $2) }
+	| attributes STAR					{ ($1, NOTHING) }
+	| attributes error					{ ($1, NOTHING) }
+;
+
 parameter_list_startscope: 
     LPAREN                         { !Lexerhack.push_context () }
 ;
