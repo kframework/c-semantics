@@ -276,13 +276,13 @@ and printDeclType a =
 	printCell "DeclarationType" [] (match a with
 	| JUSTBASE -> printCell "JustBase" [] ""
 	| PARENTYPE (a, b, c) -> printParenType a b c
-	| ARRAY (a, b, c) -> printArrayType a b c
+	| ARRAY (a, b, c, d) -> printArrayType a b c d
 	| PTR (a, b) -> printPointerType a b
 	| PROTO (a, b, c) -> printProtoType a b c)
 and printParenType a b c =
 	printAttr (wrap ((printAttr (printDeclType b) c) :: []) "FunctionType") a
-and printArrayType a b c =
-	printAttr (wrap ((printDeclType a) :: (printExpression c) :: []) "ArrayType") b
+and printArrayType a b c d =
+	printAttr (wrap ((printDeclType a) :: (printExpression c) :: (printSpecifier d) :: []) "ArrayType") b
 and printPointerType a b =
 	printAttr (wrap ((printDeclType b) :: []) "PointerType") a
 and printProtoType a b c =

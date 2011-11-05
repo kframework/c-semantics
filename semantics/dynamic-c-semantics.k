@@ -206,7 +206,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					< threadId > 1 </ threadId >
 					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
 					< k > listToK(P:List{C})
-							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K}))))), NoInit)))
+							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K})), Specifier(Nil)))), NoInit)))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))

@@ -131,7 +131,7 @@ and decl_type =
                                            * contain attributes for the
                                            * identifier or attributes for the
                                            * enclosing type.  *)
- | ARRAY of decl_type * attribute list * expression
+ | ARRAY of decl_type * attribute list * expression * specifier
                                           (* Prints "decl [ attrs exp ]".
                                            * decl is never a PTR. *)
  | PTR of attribute list * decl_type      (* Prints "* attrs decl" *)

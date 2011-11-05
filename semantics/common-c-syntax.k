@@ -255,8 +255,8 @@ and decl_type =
 */
 	op JustBase : -> K
 	op FunctionType : K -> DeclType [metadata "strict=()"]
-	op ArrayType : K K -> DeclType [metadata "strict=(1)"]
-	context ArrayType(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
+	context ArrayType(_, ([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
 	

@@ -419,8 +419,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op makePointerType : -> KLabel
 	op makeIncompleteArrayType : -> KLabel
 	
-	rule ArrayType(T:Type, tv(N:#Nat, ?)) => pushTypeDown(T:Type, makeArrayType(N:#Nat)) [structural]
-	rule ArrayType(T:Type, emptyValue) => pushTypeDown(T:Type, makeIncompleteArrayType) [structural]
+	// fixme, throwing away specifier
+	rule ArrayType(T:Type, tv(N:#Nat, ?), ?) => pushTypeDown(T:Type, makeArrayType(N:#Nat)) [structural]
+	rule ArrayType(T:Type, emptyValue, ?) => pushTypeDown(T:Type, makeIncompleteArrayType) [structural]
 	rule PointerType(T:Type) => pushTypeDown(T:Type, makePointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
 	rule FunctionType(T:Type) => T:Type [structural]

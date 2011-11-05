@@ -102,7 +102,7 @@ let announceFunctionName ((n, decl, _, _):name) =
     | PROTO (d, _, _) -> findProto d
     | PARENTYPE (_, d, _) -> findProto d
     | PTR (_, d) -> findProto d
-    | ARRAY (d, _, _) -> findProto d
+    | ARRAY (d, _, _, _) -> findProto d
     | _ -> parse_error "Cannot find the prototype in a function definition";
            raise Parsing.Parse_error 
 
@@ -214,8 +214,8 @@ let transformOffsetOf (speclist, dtype) member =
 	PTR([], JUSTBASE)
     | PARENTYPE (attrs1, dtype, attrs2) ->
 	PARENTYPE (attrs1, addPointer dtype, attrs2)
-    | ARRAY (dtype, attrs, expr) ->
-	ARRAY (addPointer dtype, attrs, expr)
+    | ARRAY (dtype, attrs, expr, qualifiers) ->
+	ARRAY (addPointer dtype, attrs, expr, qualifiers)
     | PTR (attrs, dtype) ->
 	PTR (attrs, addPointer dtype)
     | PROTO (dtype, names, variadic) ->
@@ -1119,7 +1119,8 @@ direct_decl: /* (* ISO 6.7.5 *) */
 
 |   direct_decl LBRACKET array_insides RBRACKET
                                    { let (n, decl) = $1 in
-                                     (n, ARRAY(decl, fst $3, snd $3)) }
+										let (attrs, exp, qualifiers) = $3 in
+                                     (n, ARRAY(decl, attrs, exp, qualifiers)) }
 									 
 |   direct_decl parameter_list_startscope rest_par_list RPAREN
                                    { let (n, decl) = $1 in
@@ -1129,11 +1130,18 @@ direct_decl: /* (* ISO 6.7.5 *) */
                                    }
 ;
 array_insides:
-	| attributes comma_expression_opt	{ ($1, $2) }
-	| attributes STAR					{ ($1, NOTHING) }
-	| attributes error					{ ($1, NOTHING) }
+	| attributes comma_expression_opt	{ ($1, $2, []) }
+	| attributes mycvspec_list comma_expression_opt	{ ($1, $3, $2) }
+	| attributes STAR					{ ($1, NOTHING, []) } /* for [*] */
+	| attributes error					{ ($1, NOTHING, []) }
 ;
+mycvspec_list:
+	| mycvspec { $1 :: [] }
+	| mycvspec mycvspec_list { $1 :: $2 }
 
+mycvspec:
+	| STATIC { SpecStorage STATIC }
+	
 parameter_list_startscope: 
     LPAREN                         { !Lexerhack.push_context () }
 ;
@@ -1249,7 +1257,7 @@ abs_direct_decl: /* (* ISO 6.7.6. We do not support optional declarator for
                                    { JUSTBASE } 
             
 |   abs_direct_decl_opt LBRACKET comma_expression_opt RBRACKET
-                                   { ARRAY($1, [], $3) }
+                                   { ARRAY($1, [], $3, []) }
 /*(* The next should be abs_direct_decl_opt but we get conflicts *)*/
 |   abs_direct_decl  parameter_list_startscope rest_par_list RPAREN
                                    { let (params, isva) = $3 in
