@@ -313,6 +313,16 @@ kmod DYNAMIC-C-ERRORS is
 		(.Bag => < errorCell > Error("00035", "Trying to write through a const lvalue.") </ errorCell >)
 		[structural]
 	
+	rule [err00036]:
+		< k => finalComputation > checkDerefLoc(NullPointer) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00036", "Trying to dereference a null pointer.") </ errorCell >)
+		[structural]
+		
+	rule [err00037]:
+		< k => finalComputation > read-aux(NullPointer, _, _) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00037", "Trying to read through a null pointer.") </ errorCell >)
+		[structural]
+	
 	op datarace : #Nat #Nat #Nat #Nat -> K 
 
 	// fixme possible to miss dataraces with bitfields

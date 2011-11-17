@@ -800,7 +800,14 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 		< k > prepareBuiltin((Identifier("rand")), Nil)
 			=> tv(absInt(randomRandom(Fresh:#Nat)) %Int max(t(.Set, int)), t(.Set, int))
 		...</ k >
-		< freshNat > Fresh:#Nat => sNat(Fresh:#Nat) </ freshNat >
+		< randNat > Fresh:#Nat => sNat(Fresh:#Nat) </ randNat >
+		[structural]
+		
+	rule [srand]:
+		< k > prepareBuiltin((Identifier("srand")), tv(N:#Nat, t(.Set, unsigned-int)))
+			=> skipval
+		...</ k >
+		< randNat > _ => N:#Nat </ randNat >
 		[structural]
 
 
@@ -956,6 +963,18 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[structural]
 endkm
 
+kmod DYNAMIC-C-STANDARD-LIBRARY-TIME is
+	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	
+	// fixme, just a placeholder
+	rule [time]:
+		< k > prepareBuiltin((Identifier("time")), ?:Value)
+			=> tv(0, t(.Set, long-long-int))
+		...</ k >
+		[structural]
+	
+endkm
+
 kmod DYNAMIC-C-STANDARD-LIBRARY-MISC is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
@@ -975,6 +994,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	including DYNAMIC-C-STANDARD-LIBRARY-STDLIB
 	including DYNAMIC-C-STANDARD-LIBRARY-STRING
 	including DYNAMIC-C-STANDARD-LIBRARY-THREADS
+	including DYNAMIC-C-STANDARD-LIBRARY-TIME
 	
 	including DYNAMIC-C-STANDARD-LIBRARY-MISC
 endkm

@@ -66,7 +66,6 @@ my $spec = q(#
 					{ push(@::gccDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
   -I <dir>			Look for headers in <dir>
 					{ push(@::gccIncludeDirs, " -I$dir "); }
-  -lm				Ignored
   -s				Do not link against the standard library
   -o <file>			Place the output into <file>
   -p				Profile parsing
@@ -74,6 +73,9 @@ my $spec = q(#
   -w				Do not print warning messages
   <files>...			.c files to be compiled [required]
 		{ defer { foreach (@files) { compile($_); } } }
+  -lm				Ignored
+  -std <standard>		Ignored
+  -x <language>			Ignored  
 		
 There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
 );

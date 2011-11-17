@@ -28,6 +28,7 @@ kmod COMMON-C-CONFIGURATION is
 			<mem color="red"> .Map </mem>
 			<functions color="lightgray"> .Map </functions>
 			<freshNat color="green"> 0 </freshNat>
+			<randNat color="green"> 0 </randNat>
 			<nextThreadId color="green"> 2 </nextThreadId> // 0 is global, 1 is main
 			<malloced color="lightgray"> .Map </malloced>
 			<stringLiterals color="lightgray"> .Map </stringLiterals>

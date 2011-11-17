@@ -3,7 +3,26 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
 use Text::Diff;
 use HTML::Entities;
-use IPC::Open3;
+# use IPC::Open3;
+
+setpgrp;
+# here we trap control-c (and others) so we can clean up when that happens
+$SIG{'ABRT'} = 'interruptHandler';
+$SIG{'BREAK'} = 'interruptHandler';
+$SIG{'TERM'} = 'interruptHandler';
+$SIG{'QUIT'} = 'interruptHandler';
+$SIG{'SEGV'} = 'interruptHandler';
+$SIG{'HUP' } = 'interruptHandler';
+$SIG{'TRAP'} = 'interruptHandler';
+$SIG{'STOP'} = 'interruptHandler';
+$SIG{'INT'} = 'interruptHandler'; # handle control-c 
+
+sub interruptHandler {
+	print "in handler\n";
+	# finalCleanup(); # call single cleanup point
+	kill 1, -$$;
+	exit(1); # since we were interrupted, we should exit with a non-zero code
+}
 
 my $childPid = 0;
 
@@ -73,7 +92,7 @@ my $_timer = [gettimeofday];
 # bench('custom');
 printResult("Test", "Pass", "Tool", "", "", "");
 bench('../tests/shouldFail');
-bench('../tests/mustFail');
+# bench('../tests/mustFail');
 
 
 # wine cmd /C "c:\Program Files\SemanticDesigns\DMS\executables\DMSCheckPointer.cmd C~GCC3 -cache ./cache-file -config ./init.h -target out.over -source . over.c"
@@ -110,7 +129,7 @@ sub printResult {
 sub report {
 	my ($test, $name, $result, $msg) = (@_);
 	my $elapsed = tv_interval($_timer, [gettimeofday]);
-	printf("%-17s\t%s\t%-10s\t%-10s\t%-10s\t%s\n", $test, $name, $result, $elapsed, $msg);
+	printf("%-17s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
 }
 
 # returns true when everything works but it fails to find a bug
