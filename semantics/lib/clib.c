@@ -59,6 +59,14 @@ int strcmp (const char * s1, const char * s2) {
     return *(unsigned char *)s1 < *(unsigned char *)s2 ? -1 : 1;
 }
 
+void *memmove(void *s1, const void *s2, size_t n) {
+	char* tmp = (char*)malloc(n);
+	memcpy(tmp, s2, n);
+	memcpy(s1, tmp, n);
+	free(tmp);
+	return s1;
+}
+
 char *(strchr)(const char *s, int c) {
  /* Scan s for the character.  When this loop is finished,
 	s will either point to the end of the string or the
@@ -134,6 +142,11 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 
 char * strcat(char *dest, const char *src){
     strcpy(dest + strlen(dest), src);
+    return dest;
+}
+
+char *strncat(char * restrict dest, const char * restrict src, size_t n){
+    strncpy(dest + strlen(dest), src, n);
     return dest;
 }
 

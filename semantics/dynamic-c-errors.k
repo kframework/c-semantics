@@ -322,6 +322,13 @@ kmod DYNAMIC-C-ERRORS is
 		< k => finalComputation > read-aux(NullPointer, _, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00037", "Trying to read through a null pointer.") </ errorCell >)
 		[structural]
+		
+	rule [err00038]:
+		< k => finalComputation > ArrayType(T:Type, tv(0, ?), ?)  ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00038", "Arrays cannot be of 0 length.") </ errorCell >)
+		[structural]
+		
+		
 	
 	op datarace : #Nat #Nat #Nat #Nat -> K 
 

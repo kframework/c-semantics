@@ -75,7 +75,9 @@ my $spec = q(#
 		{ defer { foreach (@files) { compile($_); } } }
   -lm				Ignored
   -std <standard>		Ignored
-  -x <language>			Ignored  
+  -x <language>			Ignored
+  -pedantic				Ignored
+  -Wall					Ignored
 		
 There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
 );
