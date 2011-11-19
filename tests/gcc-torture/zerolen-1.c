@@ -5,7 +5,7 @@ union iso_directory_record {
    char carr[4];
    struct {
            unsigned char name_len [1];
-           char name [0];
+           char name [];
    } u;
 } entry;
 

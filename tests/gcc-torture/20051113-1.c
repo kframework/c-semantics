@@ -28,7 +28,7 @@ typedef union
 typedef struct
 {
   int Count;
-  Union List[0];
+  Union List[];
 } __attribute__((packed)) Struct3;
 
 unsigned long long Sum (Struct3 *instrs) __attribute__((noinline));
