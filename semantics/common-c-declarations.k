@@ -991,21 +991,39 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
 		[structural] 
 		
-	/* this is what I want, but it doesn't compile
+	// rule
+		// < k > resolveReferences => .K ...</ k >
+		// < translationUnits > .Bag </ translationUnits >
+		// [structural] 
+	
+	op resolveLeftovers : -> K
 	rule
-		< k > resolveReferences => .K ...</ k >
-		(< staticSemantics >...
-			< translationUnits > .Bag </ translationUnits >
-		...</ staticSemantics >) => .Bag
-		[structural]
-	*/
-	rule
-		< k > resolveReferences => .K ...</ k >
-		// < staticSemantics >...
-			< translationUnits > .Bag </ translationUnits >
-		// ...</ staticSemantics >
+		< k > resolveReferences => resolveLeftovers ...</ k >
+		< translationUnits > .Bag </ translationUnits >
 		[structural] 
 		
+	rule
+		< k > (.K =>
+			addToEnv(X:#Id, Loc:#Nat)
+			~> giveType(X:#Id, unqualifyType(T:Type))
+			) ~> resolveLeftovers 
+		...</ k >
+		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
+		< externalLocations >... X:#Id |-> Loc:#Nat ...</ externalLocations >
+		< leftoverExterns >... BagItem(leftover(Tu:K, X:#Id, T:Type)) => .Bag ...</ leftoverExterns >
+		[structural]
+	rule
+		< k > resolveLeftovers ...</ k >
+		< externalLocations > Locs:Map </ externalLocations >
+		< leftoverExterns >... BagItem(leftover(_, X:#Id, _)) => .Bag ...</ leftoverExterns >
+		if notBool $hasMapping(Locs:Map, X:#Id)
+		[structural]
+	
+	rule
+		< k > resolveLeftovers => .K ...</ k >
+		< leftoverExterns > .Bag </ leftoverExterns >
+		[structural]
+			
 	op resolveInternal : #Id K K -> K 
 	op resolveExternal : #Id K Bag K -> K 
 	op resolveExternal-aux : #Id K Bag K #Nat K -> K [metadata "strict=(6)"] 
@@ -1162,12 +1180,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		andBool notBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Defs:Map, X:#Id)
 		[structural] 
+	op leftover : K K K -> K
 	rule [resolve-extern-object-nomapping]:
 		< k > resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? (X:#Id |-> external => .))) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((? X:#Id |-> T:Type)) ...</ preTypes >
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > Defs:Map </ externalDefinitions >
+		< leftoverExterns >... .Bag => BagItem(leftover(Tu:K, X:#Id, T:Type)) ...</ leftoverExterns >
 		if notBool hasFunctionType(T:Type)
 		andBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Defs:Map, X:#Id)

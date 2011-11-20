@@ -34,6 +34,7 @@ kmod COMMON-C-CONFIGURATION is
 			<stringLiterals color="lightgray"> .Map </stringLiterals>
 			@latex("\\kBR")
 			// <staticSemantics multiplicity="?" color="cyan">
+				<leftoverExterns color="cyan"> .Bag </leftoverExterns>
 				<translationUnits color="cyan"> .Bag </translationUnits>
 				<declarationOrder color="cyan"> .Map </declarationOrder>
 				<externalDefinitions color="cyan"> .Map </externalDefinitions>

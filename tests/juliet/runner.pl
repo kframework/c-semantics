@@ -9,7 +9,9 @@ use File::Spec::Functions qw(rel2abs catfile);
 my $_timer = [gettimeofday];
 my $childPid = 0;
 
-bench("testcases/CWE121_Stack_Based_Buffer_Overflow");
+# bench("testcases/CWE121_Stack_Based_Buffer_Overflow");
+# bench("testcases/CWE369_Divide_By_Zero"); # their rand has overflow :/
+bench("testcases/CWE170_Improper_Null_Termination");
 # bench("test");
 
 my %seenFilenames = ();
