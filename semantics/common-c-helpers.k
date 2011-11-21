@@ -216,6 +216,51 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		butFirstChar(S:#String) => substrString(S:#String, 1, lengthString(S:#String))
 		[structural]
 		
+	op toUpperCase : #String -> #String
+	op toUpperCase : #Char -> #Char
+	rule toUpperCase(S:#String)
+		=> toUpperCase(firstChar(S:#String)) +String toUpperCase(butFirstChar(S:#String))
+		if S:#String =/=Bool ""
+		[structural]
+	rule toUpperCase("") => "" [structural]
+		
+	rule toUpperCase(C:#Char)
+		=> C:#Char
+		if asciiString(C:#Char) <Nat asciiString("a")
+		orBool asciiString(C:#Char) >Nat asciiString("z")
+		[structural]
+	rule toUpperCase(C:#Char)
+		=> charString(absInt(asciiString(C:#Char) -Int Difference))
+		if asciiString(C:#Char) >=Nat asciiString("a")
+		andBool asciiString(C:#Char) <=Nat asciiString("z")
+		where Difference = (asciiString("a") -Int asciiString("A"))
+		[structural]
+		
+	
+	// fixme might be messing things up elsewhere
+	op pointerToString : #Nat -> #String
+	rule [pointerToString]:
+		pointerToString(sym(N:#Nat) +Nat M:#Nat)
+			=> "[sym(" +String subPointerToString(N:#Nat) +String ") + " 
+			+String Rat2String(M:#Nat, 10) +String "]"
+		[structural]
+	op subPointerToString : #Nat -> #String
+	
+	rule [subPointerToString-auto]:
+		subPointerToString(threadId(N:#Nat) +Nat N':#Nat)
+			=> "threadId(" +String Rat2String(N:#Nat, 10) +String ") +Nat " 
+			+String Rat2String(N':#Nat, 10)
+		if N:#Nat =/=Bool allocatedDuration
+		[structural]
+	rule [sub-pointerToString-allocated]:
+		subPointerToString(threadId(allocatedDuration) +Nat N':#Nat)
+			=> "threadId(allocatedDuration) +Nat " +String Rat2String(N':#Nat, 10)
+		[structural]
+	
+	rule [pointerToString-done]:
+		pointerToString(NullPointer) => "NullPointer" [structural]
+		
+		
 	rule N:#Nat to N:#Nat => .List{K} [structural]
 	rule N:#Nat to N':#Nat => (N:#Nat,,((N:#Nat +Nat 1) to N':#Nat))
 		if N:#Nat <Nat N':#Nat

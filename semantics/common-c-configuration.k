@@ -87,6 +87,14 @@ kmod COMMON-C-CONFIGURATION is
 								<types color="lightgray"> .Map </types>
 								<structs color="lightgray"> .Map </structs>
 
+								<formatting multiplicity="?">
+									<format> .List </format>
+									<formatArg> .K </formatArg>
+									<formatResult> .List </formatResult>
+									<formatState> "normal" </formatState>
+									<formatModifiers> .Map </formatModifiers>
+									<formatLength> "" </formatLength>
+								</formatting>
 								// information about the block we're in
 								<nestingDepth color="lightgray"> 0 </nestingDepth>
 								<blockHistory color="lightgray"> .List </blockHistory>

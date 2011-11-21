@@ -6,7 +6,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	// including #TCP-INTERFACE
 	
 	op vararg : K -> C [metadata "hybrid=() strict=()"]
-	op nextvarg : #Nat Type -> C
+	op nextvarg : #Nat K -> C [metadata "strict=(2)"] // loc, type
 	op vpair : K K -> C [metadata "hybrid=() strict=()"]
 	op prepareBuiltin : #Id List{C} -> K
 	op incSymbolic : K -> K
@@ -19,7 +19,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
-	op nextvarg-aux : K Type K K -> C // offset, type, length
+	op nextvarg-aux : K Type K K -> C // offset, type, length, checklength
 	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?)
 	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
 	
@@ -220,7 +220,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	// va_list __va_start(va_list* ap, void* pN);
 	// fixme can add lots of checks here
 	// tool fixme, change Value to K and unquote error
-	rule [va_start]:
+	rule [va-start]:
 		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
 				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
 				~> skipval
@@ -239,13 +239,13 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		...</ k >
 		[structural]
 	
-	rule [va_inc-start]:
+	rule [va-inc-start]:
 		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
 				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
 		...</ k >
 		[structural]
 				
-	rule [va_inc]:
+	rule [va-inc]:
 		< k > va-inc-aux(ApLoc:Value, Size:Value, Ap:Value)
 			=> Computation(*(ApLoc:Value) := incSymbolic(Ap:Value))
 			~> Ap:Value
@@ -253,7 +253,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		[structural]				
 		
 	// fixme can do lots of checks here too
-	rule [va_copy]:
+	rule [va-copy]:
 		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
 				=> Computation(*(ApLoc:Value) := Other:Value)
 				~> skipval
@@ -267,7 +267,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 				// ~> skipval
 		// ...</ k >
 		// [structural]
-	rule [va_end]:
+	rule [va-end]:
 		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:Value))
 				=> skipval
 		...</ k >
@@ -376,369 +376,794 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	rule [getString-pre]:
 		< k > (.K => read(Loc:#Nat, t(.Set, char)))
-			~> getString-aux(tv((Loc:#Nat => sNat(Loc:#Nat)), t(?, pointerType(T:Type))), S:#String)
+			~> getString-aux(tv((Loc:#Nat => sNat(Loc:#Nat)), _), S:#String)
 		...</ k >
 		[structural]
 		
 	rule [getString]:
 		< k > tv(N:#Nat, ?) 
-			~> getString-aux(tv(Loc:#Nat, t(?, pointerType(T:Type))), S:#String)
-			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(T:Type))), S:#String +String charString(N:#Nat))
+			~> getString-aux(tv(Loc:#Nat, _), S:#String)
+			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
 		...</ k >
 		if N:#Nat =/=Bool 0
 		[structural]
 	rule [getString-done]:
-		< k > tv(0, ?) ~> getString-aux(tv(Loc:#Nat, t(?, pointerType(?))), S:#String)
+		< k > tv(0, ?) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
 			=> str(S:#String)
 		...</ k >
 		[structural]
 	//////////////////////////--	
 	
-	op printf-aux : #Nat #Nat List{C} -> K
-	op printf-string : #Nat #Nat -> K
-	op printf-% : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%l : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%ld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%ll : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%llu : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%lld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%llx : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%llX : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%x : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%X : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%d : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%f : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%u : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%s : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%c : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	op printf-%p : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-aux : #Nat #Nat List{C} -> K
+	// op printf-string : #Nat #Nat -> K
+	// op printf-% : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%l : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%ld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%ll : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%llu : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%lld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%llx : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%llX : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%x : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%X : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%d : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%f : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%u : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%s : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%c : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
+	// op printf-%p : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
 	
 	
 	//C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
 	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
 	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
-		< k > prepareBuiltin((Identifier("printf")), (tv(Loc:#Nat, t(?, pointerType(?))) :: L:List{C})) => printf-aux(0, Loc:#Nat, L:List{C}) ...</ k >
-		[structural]
-		
-		
-	rule [printf-prepare-string]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-string(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat))) ...</ k >
-		[structural]
-		
-	rule [printf-string]:
-		< k > tv(N:#Nat, ?) ~> printf-string(Len:#Nat, Loc:#Nat)
-			=> writeToFD(1, N:#Nat)
-			~> printf-string(sNat(Len:#Nat), Loc:#Nat)
-		...</ k >
-		if N:#Nat =/=Bool 0
-		[structural]
-	
-	rule [printf-string-done]:
-		< k > tv(0, ?) ~> printf-string(Len:#Nat, Loc:#Nat) => tv(Len:#Nat, t(.Set, int)) ...</ k >
-		[structural]
-	
-	rule [printf-prepare-normal]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-aux(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
-		[structural]
-	
-	//fixme why do i have to have the 0--255 check?
-	rule [printf-normal]:
-		< k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			=> writeToFD(1, N:#Nat) ~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C})
-		...</ k >
-		if N:#Nat =/=Bool asciiCharString("%")
-		andBool N:#Nat =/=Bool 0
-		andBool N:#Nat >=Nat 0
-		andBool N:#Nat <=Nat 255
-		[structural]
-	
-	rule [printf-done]:
-		< k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) 
-			=> flush(1)
-			~> tv(Len:#Nat, t(.Set, int)) 
+		< k > prepareBuiltin((Identifier("printf")), (Format:Value :: VarArgs:Value))
+			=> new-printf-aux(formatter(getString(Format:Value), VarArgs:Value))
 		...</ k >
 		[structural]
-		
-	rule [printf-%]:
-		< k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+	
+	op new-printf-aux : K -> K [metadata "strict=()"]
+	op formatter : K K -> K [metadata "strict=(1)"]
+	op formatter-aux : K -> K [metadata "strict=()"]
+	
+	op formatter-next : K -> K
+	op formatter-arg : K -> K [metadata "strict=(1)"]
+	rule 
+		< k > formatter-next(vararg(tv(Loc:#Nat, ?)))
+			=> formatter-arg(nextvarg(Loc:#Nat, getFormatType))
 		...</ k >
-		if (N:#Nat ==Bool asciiCharString("%"))
 		[structural]
-		
-	rule [printf-prepare-%]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
+	rule 
+		< k > formatter-arg(vpair(tv(K:K, _), V':Value))
+			=> formatter-aux(V':Value)
+		...</ k >
+		<formatArg> _ => K:K </formatArg>
 		[structural]
 
-	rule [printf-%%]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			=> writeToFD(1, N:#Nat)
-			~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C}) ...</ k >
-		if N:#Nat ==Bool asciiCharString("%")
-		[structural]
-		
-	// fixme ignoring 0 flag for now
-	rule [printf-0]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("0")
-		[structural]
-		
-	// ignoring num width
-	rule [printf-width]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-		...</ k >
-		if N:#Nat >Int asciiCharString("0")
-		andBool N:#Nat <=Int asciiCharString("9")
-		[structural]
 	
-	rule [printf-%x-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%x(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("x")
+	op stringToList : #String -> List
+	op listToString : List -> #String
+	
+	rule stringToList("") => .List
 		[structural]
-	rule [printf-%X-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%X(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("X")
-		[structural]
-		
-	rule [printf-%x]:
-		< k > printf-%x(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
-			=> writeToFD(1, Rat2String(D:#Int, 16))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-	rule [printf-%X]:
-		< k > printf-%X(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
-			=> writeToFD(1, toUpperCase(Rat2String(D:#Int, 16)))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-		
-	op toUpperCase : #String -> #String
-	op toUpperCase : #Char -> #Char
-	rule toUpperCase(S:#String)
-		=> toUpperCase(firstChar(S:#String)) +String toUpperCase(butFirstChar(S:#String))
+	rule stringToList(S:#String) 
+			=> ListItem(firstChar(S:#String)) stringToList(butFirstChar(S:#String))
 		if S:#String =/=Bool ""
 		[structural]
-	rule toUpperCase("") => "" [structural]
 		
-	rule toUpperCase(C:#Char)
-		=> C:#Char
-		if asciiString(C:#Char) <Nat asciiString("a")
-		orBool asciiString(C:#Char) >Nat asciiString("z")
+	rule listToString(.List) => ""
 		[structural]
-	rule toUpperCase(C:#Char)
-		=> charString(absInt(asciiString(C:#Char) -Int Difference))
-		if asciiString(C:#Char) >=Nat asciiString("a")
-		andBool asciiString(C:#Char) <=Nat asciiString("z")
-		where Difference = (asciiString("a") -Int asciiString("A"))
+	rule listToString((ListItem(S:#String) L:List))
+			=> S:#String +String listToString(L:List)
 		[structural]
 	
-	// fixme might be messing things up elsewhere
-	op pointerToString : #Nat -> #String
-	rule [pointerToString]:
-		pointerToString(sym(N:#Nat) +Nat M:#Nat)
-			=> "[sym(" +String subPointerToString(N:#Nat) +String ") + " +String Rat2String(M:#Nat, 10) +String "]"
-		[structural]
-	op subPointerToString : #Nat -> #String
-	
-	// allocatedDuration
-	
-	// eq subPointerToString(N:#Nat) = Rat2String(N:#Nat, 10)
-	rule [subPointerToString-auto]:
-		subPointerToString(threadId(N:#Nat) +Nat N':#Nat)
-			=> "threadId(" +String Rat2String(N:#Nat, 10) +String ") +Nat " +String Rat2String(N':#Nat, 10)
-		if N:#Nat =/=Bool allocatedDuration
-		[structural]
-	rule [sub-pointerToString-allocated]:
-		subPointerToString(threadId(allocatedDuration) +Nat N':#Nat)
-			=> "threadId(allocatedDuration) +Nat " +String Rat2String(N':#Nat, 10)
+	rule [format-start]:
+		< k > formatter(str(S:#String), VarArgs:Value)
+			=> formatter-aux(VarArgs:Value)
+		...</ k >
+		(.Bag => 
+			<formatting>...
+				<format> stringToList(S:#String) </format>
+			...</formatting>
+		)
 		[structural]
 	
+	op formattedResult : K -> Value
 	
-	rule [pointerToString-done]:
-		pointerToString(NullPointer) => "NullPointer" [structural]
+	rule [format-done]:
+		< k > formatter-aux(_) 
+			=> formattedResult(listToString(Result:List))
+		...</ k >
+		(
+			<formatting>...
+				<format> .List </format>
+				<formatResult> Result:List </formatResult>
+				<formatState> "normal" </formatState>
+				<formatModifiers> .Map </formatModifiers>
+			...</formatting>
+			=> .Bag
+		)
+		[structural]
 		
-	rule [printf-%p-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%p(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, void)))))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("p")
-		[structural]
-	rule [printf-%p]:
-		< k > printf-%p(Len:#Nat, Loc:#Nat, (vpair(tv(N':#Nat, t(?, pointerType(t(?, void)))), V:Value) :: ?))
-			=> writeToFD(1, pointerToString(N':#Nat))
-			~> printf-aux(Len:#Nat +Nat lengthString(pointerToString(N':#Nat)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
+	// rule [printf-prepare-string]:
+		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-string(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat))) ...</ k >
+		// [structural]
 		
-	rule [printf-%d-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%d(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("d")
-		[structural]
-	rule [printf-%d]:
-		< k > printf-%d(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, int)), V:Value) :: ?)
-			=> writeToFD(1, Rat2String(D:#Int, 10))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
+	// rule [printf-string]:
+		// < k > tv(N:#Nat, ?) ~> printf-string(Len:#Nat, Loc:#Nat)
+			// => writeToFD(1, N:#Nat)
+			// ~> printf-string(sNat(Len:#Nat), Loc:#Nat)
+		// ...</ k >
+		// if N:#Nat =/=Bool 0
+		// [structural]
 	
-	rule [printf-%u-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%u(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("u")
-		[structural]
-	rule [printf-%u]:
-		< k > printf-%u(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?)
-			=> writeToFD(1, Rat2String(D:#Int, 10))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-		
-	rule [printf-%l]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("l")
-		[structural]
-		
-	rule [printf-prepare-%l]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char)))
-			~> printf-%l(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) 
-		...</ k >
-		[structural]
+	// rule [printf-string-done]:
+		// < k > tv(0, ?) ~> printf-string(Len:#Nat, Loc:#Nat) => tv(Len:#Nat, t(.Set, int)) ...</ k >
+		// [structural]
 	
-	rule [printf-%ld-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%ld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("d")
+	
+	// rule [printf-prepare-normal]:
+		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-aux(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
+		// [structural]
+		
+	
+	//fixme why do i have to have the 0--255 check?
+	// rule [printf-normal]:
+		// < k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
+			// => writeToFD(1, N:#Nat) ~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if N:#Nat =/=Bool asciiCharString("%")
+		// andBool N:#Nat =/=Bool 0
+		// andBool N:#Nat >=Nat 0
+		// andBool N:#Nat <=Nat 255
+		// [structural]
+	rule [format-normal]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem(S:#String) => .List ...</format>
+		<formatResult>... .List => ListItem(S:#String) </formatResult>
+		<formatState> "normal" </formatState>
+		if S:#String =/=Bool "%"
 		[structural]
-	rule [printf-%ld]:
-		< k > printf-%ld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-int)), V:Value) :: ?)
-			=> writeToFD(1, Rat2String(D:#Int, 10))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		...</ k >
+		
+	rule [format-reset]:
+		< k > formatter-aux(_) ...</ k >
+		<formatModifiers> _ => .Map </formatModifiers>
+		<formatLength> _ => "" </formatLength>
+		<formatState> "reset" => "normal" </formatState>
 		[structural]
 	
-	rule [printf-%ll]:
-		< k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-%ll(Len:#Nat, Loc:#Nat, L:List{C})
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("l")
-		[structural]
-		
-	rule [printf-prepare-%ll]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%ll(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
-		[structural]
-		
-	rule [printf-%llx-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%llx(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("x")
-		[structural]
-		
-	rule [printf-%llu-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%llu(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("u")
-		[structural]
-		
-	rule [printf-%lld-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%lld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-long-int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("d")
-		[structural]
-		
-	rule [printf-%llu]:
-		< k > printf-%llu(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
-			=> writeToFD(1, Rat2String(D:#Int, 10))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-	rule [printf-%lld]:
-		< k > printf-%lld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-long-int)), V:Value) :: ?)
-			=> writeToFD(1, Rat2String(D:#Int, 10))
-			~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-	rule [printf-%llx]:
-		< k > printf-%llx(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
-			=> writeToFD(1, (if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
-				"0" +String Rat2String(D:#Int, 16)
-			else
-				Rat2String(D:#Int, 16)
-			fi)) ~> printf-aux(Len:#Nat +Nat lengthString((if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
-				"0" +String Rat2String(D:#Int, 16)
-			else
-				Rat2String(D:#Int, 16)
-			fi)), Loc:#Nat, V:Value)
+	// rule [printf-done]:
+		// < k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) 
+			// => flush(1)
+			// ~> tv(Len:#Nat, t(.Set, int)) 
+		// ...</ k >
+		// [structural]
+	rule [printf-done]:
+		< k > new-printf-aux(formattedResult(S:#String))
+			=> writeToFD(1, S:#String)
+			~> flush(1)
+			~> tv(lengthString(S:#String), t(.Set, int)) 
 		...</ k >
 		[structural]
 		
-	rule [printf-%c-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%c(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("c")
+	// rule [printf-%]:
+		// < k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if (N:#Nat ==Bool asciiCharString("%"))
+		// [structural]
+	rule [format-%]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem("%") => .List ...</format>
+		<formatState> "normal" => "%" </formatState>
 		[structural]
-	// need to cast to unsigned-char
-	rule [printf-%c]:
-		< k > printf-%c(Len:#Nat, Loc:#Nat, (vpair(tv(C:#Nat, t(?, int)), V:Value) :: ?))
-			=> writeToFD(1, C:#Nat)
-			~> printf-aux(Len:#Nat +Nat 1, Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
+		
+	// rule [printf-prepare-%]:
+		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
+		// [structural]
+
+
+		
+	// %[flags][width][.precision][length]type	
 	
-	rule [printf-%f-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%f(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, double)))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("f") orBool N:#Nat ==Bool asciiCharString("g")
-		[structural]
-	rule [printf-%f]:
-		< k > printf-%f(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Float, t(?, double)), V:Value) :: ?))
-			=> writeToFD(1, Float2String(D:#Float))
-			~> printf-aux(Len:#Nat +Nat lengthString(Float2String(D:#Float)), Loc:#Nat, V:Value)
-		...</ k >
-		[structural]
-		
-		
-	op addPrintfString : -> K
+	/*@ \source[n1570]{\para{7.21.6.1}{4}}
+	Each conversion specification is introduced by the character \texttt{\%}. After the \texttt{\%}, the following appear in sequence:
+\begin{itemize}
+\item Zero or more flags (in any order) that modify the meaning of the conversion specification.
+\item An optional minimum field width. If the converted value has fewer characters than the field width, it is padded with spaces (by default) on the left (or right, if the left adjustment flag, described later, has been given) to the field width. The field width takes the form of an asterisk \texttt{*} (described later) or a nonnegative decimal integer.)
+\item An optional precision that gives the minimum number of digits to appear for the \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X} conversions, the number of digits to appear after the decimal-point character for \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, and \texttt{F} conversions, the maximum number of significant digits for the \texttt{g} and \texttt{G} conversions, or the maximum number of bytes to be written for s conversions. The precision takes the form of a period (\texttt{.}) followed either by an asterisk \texttt{*} (described later) or by an optional decimal integer; if only the period is specified, the precision is taken as zero. If a precision appears with any other conversion specifier, the behavior is undefined.
+\item An optional length modifier that specifies the size of the argument.
+\item A conversion specifier character that specifies the type of conversion to be applied.
+\end{itemize}
+	*/
+
+	/*@ \source[n1570]{\para{7.21.6.1}{5}}
+	As noted above, a field width, or precision, or both, may be indicated by an asterisk. In this case, an \cinline{int} argument supplies the field width or precision. The arguments specifying field width, or precision, or both, shall appear (in that order) before the argument (if any) to be converted. A negative field width argument is taken as a \texttt{-} flag followed by a positive field width. A negative precision argument is taken as if the precision were omitted.
+	*/
 	
-	rule [printf-%s-arg]:
-		< k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			=> printf-%s(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))))
-		...</ k >
-		if N:#Nat ==Bool asciiCharString("s")
+	/*@ \source[n1570]{\para{7.21.6.1}{6}}
+	The flag characters and their meanings are:
+\begin{description}
+\item[\texttt{-}]
+\broken{The result of the conversion is left-justified within the field. (It is right-justified if this flag is not specified.)}
+\item[\texttt{+}]
+\broken{The result of a signed conversion always begins with a plus or minus sign. (It begins with a sign only when a negative value is converted if this flag is not specified.)}
+\item[\emph{space}]
+\broken{If the first character of a signed conversion is not a sign, or if a signed conversion results in no characters, a space is prefixed to the result. If the \emph{space} and \texttt{+} flags both appear, the \emph{space} flag is ignored.}
+\item[\texttt{\#}]
+\broken{The result is converted to an ``alternative form''. For \texttt{o} conversion, it increases the precision, if and only if necessary, to force the first digit of the result to be a zero (if the value and precision are both 0, a single 0 is printed). For \texttt{x} (or \texttt{X}) conversion, a nonzero result has \texttt{0x} (or \texttt{0X}) prefixed to it. For \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, and \texttt{G} conversions, the result of converting a floating-point number always contains a decimal-point character, even if no digits follow it. (Normally, a decimal-point character appears in the result of these conversions only if a digit follows it.) For \texttt{g} and \texttt{G} conversions, trailing zeros are \emph{not} removed from the result. For other conversions, the behavior is undefined.}
+\item[\texttt{0}]
+\broken{For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, \texttt{X}, \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, and \texttt{G} conversions, leading zeros (following any indication of sign or base) are used to pad to the field width rather than performing space padding, except when converting an infinity or NaN. If the \texttt{0} and \texttt{-} flags both appear, the \texttt{0} flag is ignored. For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X} conversions, if a precision is specified, the \texttt{0} flag is ignored.}
+\end{description}
+For other conversions, the behavior is undefined.
+*/
+
+	// // fixme ignoring 0 flag for now
+	// rule [printf-0]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("0")
+		// [structural]
+	// fixme ignoring 0 flag for now
+	rule [format-%0]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem("0") => .List ...</format>
+		<formatState> "%" </formatState>
 		[structural]
-	rule [printf-%s]:
-		< k > printf-%s(Len:#Nat, Loc:#Nat, (vpair(tv(S:#Nat, t(?, pointerType(t(?, unsigned-char)))), V:Value) :: ?))
-			=> printf-string(0, S:#Nat)
-			~> addPrintfString
-			~> printf-aux(Len:#Nat, Loc:#Nat, V:Value)
-		...</ k >
+		
+	// // ignoring num width
+	// rule [printf-width]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if N:#Nat >Int asciiCharString("0")
+		// andBool N:#Nat <=Int asciiCharString("9")
+		// [structural]
+	rule [format-width]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem(C:#Char) => .List ...</format>
+		<formatState> "%" </formatState>
+		if charToAscii(C:#Char) >Int asciiCharString("0")
+		andBool charToAscii(C:#Char) <=Int asciiCharString("9")
+		[structural]	
+
+/*@ \source[n1570]{\para{7.21.6.1}{7}}
+The length modifiers and their meanings are:
+\begin{description}
+\item[\texttt{hh}]
+\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{signed char} or \cinline{unsigned char} argument (the argument will have been promoted according to the integer promotions, but its value shall be converted to \cinline{signed char} or \cinline{unsigned char} before printing); or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{signed char} argument.}
+\item[\texttt{h}]
+\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{short int} or \cinline{unsigned short int} argument (the argument will have been promoted according to the integer promotions, but its value shall be converted to \cinline{short int} or \cinline{unsigned short int} before printing); or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{short int} argument.}
+\item[\texttt{l} (ell)]
+Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long int} or \cinline{unsigned long int} argument; that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{long int} argument; \broken{that a following \texttt{c} conversion specifier applies to a \cinline{wint_t} argument; that a following \texttt{s} conversion specifier applies to a pointer to a \cinline{wchar_t} argument}; or has no effect on a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier.
+\item[\texttt{ll} (ell-ell)]
+Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long long int} or \cinline{unsigned long long int} argument; or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{long long int} argument.
+\item[\texttt{j}]
+\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to an \cinline{intmax_t} or \cinline{uintmax_t} argument; or that a following \texttt{n} conversion specifier applies to a pointer to an \cinline{intmax_t} argument.}
+\item[\texttt{z}]
+\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{size_t} or the corresponding signed integer type argument; or that a following \texttt{n} conversion specifier applies to a pointer to a signed integer type corresponding to \cinline{size_t} argument.}
+\item[\texttt{t}]
+\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{ptrdiff_t} or the corresponding unsigned integer type argument; or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{ptrdiff_t} argument.}
+\item[\texttt{L}]
+\broken{Specifies that a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier applies to a \cinline{long double} argument.}
+\end{description}
+If a length modifier appears with any conversion specifier other than as specified above, the behavior is undefined.
+*/
+
+	op getFormatType : -> K
+	op getFormatType-aux : K K -> K 
+	rule 
+		<k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
+		<formatLength> Length:K </formatLength>
+		<formatState> State:K </formatState>
 		[structural]
 
-	rule [printf-%s-done]:
-		< k > tv(Len':#Nat, t(?, int)) ~> addPrintfString ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			=> printf-aux(Len:#Nat +Nat Len':#Nat, Loc:#Nat, L:List{C})
-		...</ k >
-		[structural]	
+	rule getFormatType-aux("%a", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%A", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%e", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%E", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%f", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%F", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%g", _) => t(.Set, double) [structural]
+	rule getFormatType-aux("%G", _) => t(.Set, double) [structural]
+			
+	rule getFormatType-aux("%c", "") => t(.Set, int) [structural]
+	rule getFormatType-aux("%s", "") => t(.Set, pointerType(t(.Set, unsigned-char))) [structural]
 	
+	rule getFormatType-aux("%p", "") => t(.Set, pointerType(t(.Set, void))) [structural]
+	
+	rule getFormatType-aux("%d", "") => t(.Set, int) [structural]
+	rule getFormatType-aux("%o", "") => t(.Set, int) [structural]
+	rule getFormatType-aux("%u", "") => t(.Set, unsigned-int) [structural]
+	rule getFormatType-aux("%x", "") => t(.Set, unsigned-int) [structural]
+	rule getFormatType-aux("%X", "") => t(.Set, unsigned-int) [structural]
+	rule getFormatType-aux("%n", "") => t(.Set, pointerType(t(.Set, int))) [structural]
+	
+	rule getFormatType-aux("%d", "l") => t(.Set, long-int) [structural]
+	rule getFormatType-aux("%o", "l") => t(.Set, long-int) [structural]
+	rule getFormatType-aux("%u", "l") => t(.Set, unsigned-long-int) [structural]
+	rule getFormatType-aux("%x", "l") => t(.Set, unsigned-long-int) [structural]
+	rule getFormatType-aux("%X", "l") => t(.Set, unsigned-long-int) [structural]
+	rule getFormatType-aux("%n", "l") => t(.Set, pointerType(t(.Set, long-int))) [structural]
+	
+	rule getFormatType-aux("%d", "ll") => t(.Set, long-long-int) [structural]
+	rule getFormatType-aux("%o", "ll") => t(.Set, long-long-int) [structural]
+	rule getFormatType-aux("%u", "ll") => t(.Set, unsigned-long-long-int) [structural]
+	rule getFormatType-aux("%x", "ll") => t(.Set, unsigned-long-long-int) [structural]
+	rule getFormatType-aux("%X", "ll") => t(.Set, unsigned-long-long-int) [structural]
+	rule getFormatType-aux("%n", "ll") => t(.Set, pointerType(t(.Set, long-long-int))) [structural]
+
+		
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{d},\texttt{i}]
+The \cinline{int} argument is converted to signed decimal in the style \emph{[-]dddd}. \broken{The precision specifies the minimum number of digits to appear; if the value being converted can be represented in fewer digits, it is expanded with leading zeros. The default precision is 1. The result of converting a zero value with a precision of zero is no characters.}
+\end{description}
+	*/
+	// rule [printf-%d-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%d(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("d")
+		// [structural]
+	// rule [printf-%d]:
+		// < k > printf-%d(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, int)), V:Value) :: ?)
+			// => writeToFD(1, Rat2String(D:#Int, 10))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%d-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem(S:#String) => .List ...</format>
+		<formatState> "%" => "%d" </formatState>
+		if S:#String ==Bool "d" orBool S:#String ==Bool "i"
+		[structural]
+	rule [format-%d]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(Rat2String(D:#Int, 10)) </formatResult>
+		<formatState> "%d" => "reset" </formatState>
+		[structural]
+		
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{o},\texttt{u},\texttt{x},\texttt{X}]
+The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}), unsigned decimal (\texttt{u}), or unsigned hexadecimal notation (\texttt{x} or \texttt{X}) in the style \emph{dddd}; the letters \texttt{abcdef} are used for \texttt{x} conversion and the letters \texttt{ABCDEF} for \texttt{X} conversion. \broken{The precision specifies the minimum number of digits to appear; if the value being converted can be represented in fewer digits, it is expanded with leading zeros. The default precision is 1. The result of converting a zero value with a precision of zero is no characters.}
+\end{description}
+	*/
+	rule [format-%o-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("o") => .List ...</format>
+		<formatState> "%" => "%o" </formatState>
+		[structural]
+	rule [format-%o]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(Rat2String(D:#Int, 8)) </formatResult>
+		<formatState> "%o" => "reset" </formatState>
+		[structural]
+	// rule [printf-%u-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%u(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("u")
+		// [structural]
+	// rule [printf-%u]:
+		// < k > printf-%u(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?)
+			// => writeToFD(1, Rat2String(D:#Int, 10))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%u-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("u") => .List ...</format>
+		<formatState> "%" => "%u" </formatState>
+		[structural]
+	rule [format-%u]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(Rat2String(D:#Int, 10)) </formatResult>
+		<formatState> "%u" => "reset" </formatState>
+		[structural]		
+	// rule [printf-%x-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%x(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("x")
+		// [structural]	
+	// rule [printf-%x]:
+		// < k > printf-%x(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
+			// => writeToFD(1, Rat2String(D:#Int, 16))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%x-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("x") => .List ...</format>
+		<formatState> "%" => "%x" </formatState>
+		[structural]
+	rule [format-%x]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(Rat2String(D:#Int, 16)) </formatResult>
+		<formatState> "%x" => "reset" </formatState>
+		[structural]
+	// rule [printf-%X-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%X(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("X")
+		// [structural]
+	// rule [printf-%X]:
+		// < k > printf-%X(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
+			// => writeToFD(1, toUpperCase(Rat2String(D:#Int, 16)))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%X-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("X") => .List ...</format>
+		<formatState> "%" => "%X" </formatState>
+		[structural]
+	rule [format-%X]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(toUpperCase(Rat2String(D:#Int, 16))) </formatResult>
+		<formatState> "%X" => "reset" </formatState>
+		[structural]
+
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{f},\texttt{F}]
+A \cinline{double} argument representing a floating-point number is converted to decimal notation in the style \emph{[-]ddd.ddd}, \broken{where the number of digits after the decimal-point character is equal to the precision specification. If the precision is missing, it is taken as 6; if the precision is zero and the \texttt{\#} flag is not specified, no decimal-point character appears. If a decimal-point character appears, at least one digit appears before it. The value is rounded to the appropriate number of digits.}
+
+A \cinline{double} argument representing an infinity is converted in one of the styles \emph{[-]inf} or \emph{[-]infinity}---which style is implementation-defined.  A \cinline{double} argument representing a NaN is converted in one of the styles \emph{[-]nan} or \emph{[-]nan}(\emph{n-char-sequence})---which style, and the meaning of any \emph{n-char-sequence}, is implementation-defined. The \texttt{F} conversion specifier produces \cinline{INF}, \cinline{INFINITY}, or \cinline{NAN} instead of \cinline{inf}, \cinline{infinity}, or \cinline{nan}, respectively.
+\end{description}
+	*/		
+	// rule [printf-%f-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%f(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, double)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("f") orBool N:#Nat ==Bool asciiCharString("g")
+		// [structural]
+	// rule [printf-%f]:
+		// < k > printf-%f(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Float, t(?, double)), V:Value) :: ?))
+			// => writeToFD(1, Float2String(D:#Float))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Float2String(D:#Float)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%f-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("f") => .List ...</format>
+		<formatState> "%" => "%f" </formatState>
+		[structural]
+	rule [format-%f]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Float => .K </formatArg>
+		<formatResult>... .List => ListItem(Float2String(D:#Float)) </formatResult>
+		<formatState> "%f" => "reset" </formatState>
+		[structural]
+	rule [format-%F-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("F") => .List ...</format>
+		<formatState> "%" => "%F" </formatState>
+		[structural]
+	rule [format-%F]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Float => .K </formatArg>
+		<formatResult>... .List => ListItem(toUpperCase(Float2String(D:#Float))) </formatResult>
+		<formatState> "%F" => "reset" </formatState>
+		[structural]
+		
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{e},\texttt{E}]
+\broken{A \cinline{double} argument representing a floating-point number is converted in the style \emph{[-]d.ddde$\pm{}$dd}, where there is one digit (which is nonzero if the argument is nonzero) before the decimal-point character and the number of digits after it is equal to the precision; if the precision is missing, it is taken as 6; if the precision is zero and the \texttt{\#} flag is not specified, no decimal-point character appears. The value is rounded to the appropriate number of digits. The \texttt{E} conversion specifier produces a number with \texttt{E} instead of e introducing the exponent. The exponent always contains at least two digits, and only as many more digits as necessary to represent the exponent. If the value is zero, the exponent is zero.}
+
+\broken{A double argument representing an infinity or NaN is converted in the style of an \texttt{f} or \texttt{F} conversion specifier.}
+\end{description}
+	*/
+
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{g},\texttt{G}]
+A \cinline{double} argument representing a floating-point number is converted in style \texttt{f} or \texttt{e} (or in style \texttt{F} or \texttt{E} in the case of a \texttt{G} conversion specifier), depending on the value converted and the precision. \broken{Let $P$ equal the precision if nonzero, 6 if the precision is omitted, or 1 if the precision is zero.  Then, if a conversion with style \texttt{E} would have an exponent of $X$:}
+\begin{itemize}
+\item \broken{if $P > X = -4$, the conversion is with style \texttt{f} (or \texttt{F}) and precision $P - (X + 1)$.}
+\item \broken{otherwise, the conversion is with style \texttt{e} (or \texttt{E}) and precision $P - 1$.}
+\end{itemize}
+\broken{Finally, unless the \texttt{\#} flag is used, any trailing zeros are removed from the fractional portion of the result and the decimal-point character is removed if there is no fractional portion remaining.}
+
+A \cinline{double} argument representing an infinity or NaN is converted in the style of an \texttt{f} or \texttt{F} conversion specifier.
+\end{description}
+	*/
+	rule [format-%g-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("g") => .List ...</format>
+		<formatState> "%" => "%g" </formatState>
+		[structural]
+	rule [format-%g]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Float => .K </formatArg>
+		<formatResult>... .List => ListItem(Float2String(D:#Float)) </formatResult>
+		<formatState> "%g" => "reset" </formatState>
+		[structural]
+	rule [format-%G-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("G") => .List ...</format>
+		<formatState> "%" => "%G" </formatState>
+		[structural]
+	rule [format-%G]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> D:#Float => .K </formatArg>
+		<formatResult>... .List => ListItem(toUpperCase(Float2String(D:#Float))) </formatResult>
+		<formatState> "%G" => "reset" </formatState>
+		[structural]
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{a},\texttt{A}]
+\ldots
+\end{description}
+	*/
+
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{c}]
+If no \texttt{l} length modifier is present, the \cinline{int} argument is converted to an \cinline{unsigned char}, and the resulting character is written. 
+
+\broken{If an \texttt{l} length modifier is present, the \cinline{wint_t} argument is converted as if by an \texttt{ls} conversion specification with no precision and an argument that points to the initial element of a two-element array of \cinline{wchar_t}, the first element containing the \cinline{wint_t} argument to the \texttt{lc} conversion specification and the second a null wide character.}
+\end{description}
+	*/
+	// rule [printf-%c-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%c(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("c")
+		// [structural]
+	// rule [format-%c-start]:
+		// < k > formatter-aux(
+			// vararg(tv(Loc:#Nat, ?)) => nextvarg(Loc:#Nat, t(.Set, int))
+		// )
+		// ...</ k >
+		// <format> ListItem("c") => .List ...</format>
+		// <formatState> "%" => "%c" </formatState>
+		// [structural]		
+	rule [format-%c-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)
+		...</ k >
+		<format> ListItem("c") => .List ...</format>
+		<formatState> "%" => "%c" </formatState>
+		[structural]
+	// // need to cast to unsigned-char
+	// rule [printf-%c]:
+		// < k > printf-%c(Len:#Nat, Loc:#Nat, (vpair(tv(C:#Nat, t(?, int)), V:Value) :: ?))
+			// => writeToFD(1, C:#Nat)
+			// ~> printf-aux(Len:#Nat +Nat 1, Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%c]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> C:#Int => .K </formatArg>
+		<formatResult>... .List => ListItem(charString(((C:#Int %Int 256) +Int 256) %Int 256)) </formatResult>
+		<formatState> "%c" => "reset" </formatState>
+		[structural]
+		
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{s}]
+If no \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of character type. Characters from the array are written up to (but not including) the terminating null character. \broken{If the precision is specified, no more than that many bytes are written.} If the precision is not specified or is greater than the size of the array, the array shall contain a null character.
+
+\broken{If an \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of \cinline{wchar_t} type. Wide characters from the array are converted to multibyte characters (each as if by a call to the \cinline{wcrtomb} function, with the conversion state described by an \cinline{mbstate_t} object initialized to zero before the first wide character is converted) up to and including a terminating null wide character. The resulting multibyte characters are written up to (but not including) the terminating null character (byte). If no precision is specified, the array shall contain a null wide character. If a precision is specified, no more than that many bytes are written (including shift sequences, if any), and the array shall contain a null wide character if, to equal the multibyte character sequence length given by the precision, the function would need to access a wide character one past the end of the array. In no case is a partial multibyte character written.}
+\end{description}
+	*/
+	// rule [printf-%s-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%s(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("s")
+		// [structural]
+	// rule [printf-%s]:
+		// < k > printf-%s(Len:#Nat, Loc:#Nat, (vpair(tv(S:#Nat, t(?, pointerType(t(?, unsigned-char)))), V:Value) :: ?))
+			// => printf-string(0, S:#Nat)
+			// ~> addPrintfString
+			// ~> printf-aux(Len:#Nat, Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	// rule [printf-%s-done]:
+		// < k > tv(Len':#Nat, t(?, int)) ~> addPrintfString ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-aux(Len:#Nat +Nat Len':#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// [structural]	
+	rule [format-%s-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)		
+		...</ k >
+		<format> ListItem("s") => .List ...</format>
+		<formatState> "%" => "%s" </formatState>
+		[structural]
+	rule [format-%s]:
+		< k > (.K => getString(Loc:#Nat))
+			~> formatter-aux(_)
+		...</ k >
+		<formatArg> Loc:#Nat => .K </formatArg>
+		<formatState> "%s" => "%s-read" </formatState>
+		[structural]
+	rule [format-%s-done]:
+		< k > (str(S:#String) => .K)
+			~> formatter-aux(_)
+		...</ k >
+		<formatResult>... .List => ListItem(S:#String) </formatResult>
+		<formatState> "%s-read" => "reset" </formatState>
+		[structural]
+
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{p}]
+The argument shall be a pointer to \cinline{void}. The value of the pointer is converted to a sequence of printing characters, in an implementation-defined manner.
+\end{description}
+	*/
+	// rule [printf-%p-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%p(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, void)))))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("p")
+		// [structural]
+	// rule [printf-%p]:
+		// < k > printf-%p(Len:#Nat, Loc:#Nat, (vpair(tv(N':#Nat, t(?, pointerType(t(?, void)))), V:Value) :: ?))
+			// => writeToFD(1, pointerToString(N':#Nat))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(pointerToString(N':#Nat)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	rule [format-%p-start]:
+		< k > formatter-aux(V:Value)
+			=> formatter-next(V:Value)		
+		...</ k >
+		<format> ListItem("p") => .List ...</format>
+		<formatState> "%" => "%p" </formatState>
+		[structural]
+	rule [format-%p]:
+		< k > formatter-aux(_) ...</ k >
+		<formatArg> Loc:#Nat => .K </formatArg>
+		<formatResult>... .List => ListItem(pointerToString(Loc:#Nat)) </formatResult>
+		<formatState> "%p" => "reset" </formatState>
+		[structural]
+		
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{n}]
+\broken{The argument shall be a pointer to signed integer into which is \emph{written} the number of characters written to the output stream so far by this call to \cinline{fprintf}. No argument is converted, but one is consumed. If the conversion specification includes any flags, a field width, or a precision, the behavior is undefined.}
+\end{description}
+	*/
+	
+	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+\begin{description}
+\item[\texttt{\%}]
+A \texttt{\%} character is written. No argument is converted. The complete conversion specification shall be \texttt{\%\%}.
+\end{description}
+	*/
+	// rule [printf-%%]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+			// => writeToFD(1, N:#Nat)
+			// ~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C}) ...</ k >
+		// if N:#Nat ==Bool asciiCharString("%")
+		// [structural]
+	rule [format-%%]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem("%") => .List ...</format>
+		<formatResult>... .List => ListItem("%") </formatResult>
+		<formatState> "%" => "reset" </formatState>
+		[structural]
+		
+	// rule [printf-%l]:
+		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("l")
+		// [structural]
+	rule [format-%l]:
+		< k > formatter-aux(_) ...</ k >
+		<format> ListItem("l") => .List ...</format>
+		<formatState> "%" </formatState>
+		<formatLength> Length:#String => Length:#String +String "l" </formatLength>
+		[structural]
+		
+	// rule [printf-prepare-%l]:
+		// < k > (.K => read(Loc:#Nat, t(.Set, char)))
+			// ~> printf-%l(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) 
+		// ...</ k >
+		// [structural]
+	
+	// rule [printf-%ld-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%ld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("d")
+		// [structural]
+	// rule [printf-%ld]:
+		// < k > printf-%ld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-int)), V:Value) :: ?)
+			// => writeToFD(1, Rat2String(D:#Int, 10))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	
+	// rule [printf-%ll]:
+		// < k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
+			// => printf-%ll(Len:#Nat, Loc:#Nat, L:List{C})
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("l")
+		// [structural]
+		
+	// rule [printf-prepare-%ll]:
+		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%ll(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
+		// [structural]
+		
+	// rule [printf-%llx-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%llx(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("x")
+		// [structural]
+		
+	// rule [printf-%llu-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%llu(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("u")
+		// [structural]
+		
+	// rule [printf-%lld-arg]:
+		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
+			// => printf-%lld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-long-int)))
+		// ...</ k >
+		// if N:#Nat ==Bool asciiCharString("d")
+		// [structural]
+		
+	// rule [printf-%llu]:
+		// < k > printf-%llu(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
+			// => writeToFD(1, Rat2String(D:#Int, 10))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	// rule [printf-%lld]:
+		// < k > printf-%lld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-long-int)), V:Value) :: ?)
+			// => writeToFD(1, Rat2String(D:#Int, 10))
+			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
+	// rule [printf-%llx]:
+		// < k > printf-%llx(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
+			// => writeToFD(1, (if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
+				// "0" +String Rat2String(D:#Int, 16)
+			// else
+				// Rat2String(D:#Int, 16)
+			// fi)) ~> printf-aux(Len:#Nat +Nat lengthString((if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
+				// "0" +String Rat2String(D:#Int, 16)
+			// else
+				// Rat2String(D:#Int, 16)
+			// fi)), Loc:#Nat, V:Value)
+		// ...</ k >
+		// [structural]
 endkm
 
 
@@ -863,7 +1288,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	op threadId : #Nat #Nat -> #Nat // parent, new
 	op spawn-aux : #Nat Value Value -> K
 	// threadId(MyId:#Nat, Fresh:#Nat)
-	rule [thrd_create-start]:
+	rule [thrd-create-start]:
 		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value))
 			=> Computation((* ThreadIdPointer:Value) := tv(Fresh:#Nat, t(.Set, int)))
 			~> spawn-aux(Fresh:#Nat, ThreadFuncPointer:Value, ThreadArg:Value)
@@ -875,7 +1300,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 */
 		
-	rule [thrd_create]:
+	rule [thrd-create]:
 		< thread >
 			< nextLoc > ?:#Nat </ nextLoc >
 			< threadId > ?:#Nat </ threadId >
@@ -904,7 +1329,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:#Nat] </ threadStatus >
 		[metadata "computational=()"]
 		
-	rule [thrd_current]:
+	rule [thrd-current]:
 		< k > prepareBuiltin((Identifier("thrd_current")), Nil)
 			=> tv(ThreadId:#Nat, t(.Set, int))
 		...</ k >
@@ -913,7 +1338,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		
 	op join-aux : #Nat Value -> K
 		
-	rule [thrd_join-start]:
+	rule [thrd-join-start]:
 		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)) :: ResultPointer:Value))
 			=> join-aux(ThreadId:#Nat, ResultPointer:Value)
 		...</ k >
@@ -924,7 +1349,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		andBool notBool $hasMapping(Detaching:Map, ThreadId:#Nat)
 		[structural]
 	
-	rule [thrd_join-error]:
+	rule [thrd-join-error]:
 		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)) :: ?))
 			=> thrd-error
 		...</ k >
@@ -935,7 +1360,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[metadata "computational=()"]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
-	rule [thrd_join]:
+	rule [thrd-join]:
 		< thread >...
 			< k > join-aux(ThreadId:#Nat, ResultPointer:Value)
 				=> Computation((* ResultPointer:Value) := cast(t(.Set, int), V:Value))
