@@ -618,8 +618,6 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	// c99 6.5:2 If a side effect on a scalar object is unsequenced relative to either a different side effect on the same scalar object or a value computation using the value of the same scalar object, the behavior is undefined. If there are multiple allowable orderings of the subexpressions of an expression, the behavior is undefined if such an unsequenced side effect occurs in any of the orderings
 	// i take this to mean that if i write to a location twice or read from a location after being written to, then it is a problem
 		
-	op writeString : #Nat #String -> K
-	op writeWString : #Nat List{K} -> K
 	rule [alloc-string]:
 		< k > allocString(Loc:#Nat, S:#String)
 			=> allocateType(Loc:#Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:#String))))
@@ -639,32 +637,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		< k > makeUnwritable(sym(Base:#Nat) +Nat 0) => .K ...</ k >
 		< mem >... Base:#Nat |-> memblock((.Bag => mconst) ?, ?) ...</ mem >
 		[structural]
-		
-	rule [write-string]:
-		< k > writeString(Loc:#Nat, S:#String)
-			=> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, char))))) := tv(charToAscii(firstChar(S:#String)), t(.Set, char)))
-			~> writeString(sNat(Loc:#Nat), butFirstChar(S:#String))
-		...</ k >
-		if S:#String =/=Bool ""
-		[structural]
-	// fixme this bare 4 needs to be updated to handle different size wchar_ts
-	rule [write-wstring]:
-		< k > writeWString(Loc:#Nat, (N:#Nat,, S:List{K}))
-			=> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(cfg:wcharut)))) := tv(N:#Nat, cfg:wcharut))
-			~> writeWString(Loc:#Nat +Nat 4, S:List{K})
-		...</ k >
-		[structural] 
-		
-	rule [write-empty-string]:
-		< k > writeString(Loc:#Nat, "") 
-			=> .K
-		...</ k >
-		[structural]
-	rule [write-empty-wstring]:
-		< k > writeWString(Loc:#Nat, .List{K}) 
-			=> .K
-		...</ k >
-		[structural]
+
 	
 	op checkValidLoc-aux : K -> K
 	

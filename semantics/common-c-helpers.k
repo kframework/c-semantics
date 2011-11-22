@@ -236,6 +236,58 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		where Difference = (asciiString("a") -Int asciiString("A"))
 		[structural]
 		
+	// getString returns the string without the null terminator
+	op getString : K -> K
+	op getString-aux : K #String -> K [metadata "strict=(1)"]
+	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
+	op str : #String -> Value
+	
+	rule [getString-pre]:
+		< k > (.K => read(Loc:#Nat, t(.Set, char)))
+			~> getString-aux(tv((Loc:#Nat => sNat(Loc:#Nat)), _), S:#String)
+		...</ k >
+		[structural]
+		
+	rule [getString]:
+		< k > tv(N:#Nat, ?) 
+			~> getString-aux(tv(Loc:#Nat, _), S:#String)
+			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
+		...</ k >
+		if N:#Nat =/=Bool 0
+		[structural]
+	rule [getString-done]:
+		< k > tv(0, ?) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
+			=> str(S:#String)
+		...</ k >
+		[structural]
+		
+	// writeString and writeWString expect the user to add the '\0' to the end of the strings passed
+	op writeString : K #String -> K [metadata "strict=(1)"]
+	op writeWString : K List{K} -> K [metadata "strict=(1)"]
+
+	rule [write-string]:
+		< k > writeString(tv(Loc:#Nat, T:Type), S:#String)
+			=> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, char))))) 
+				:= tv(charToAscii(firstChar(S:#String)), t(.Set, char)))
+			~> writeString(tv(sNat(Loc:#Nat), T:Type), butFirstChar(S:#String))
+		...</ k >
+		if S:#String =/=Bool ""
+		[structural]
+	// fixme this bare 4 needs to be updated to handle different size wchar_ts
+	rule [write-wstring]:
+		< k > writeWString(tv(Loc:#Nat, T:Type), (N:#Nat,, S:List{K}))
+			=> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(cfg:wcharut)))) 
+				:= tv(N:#Nat, cfg:wcharut))
+			~> writeWString(tv(Loc:#Nat +Nat 4, T:Type), S:List{K})
+		...</ k >
+		[structural] 
+	rule [write-empty-string]:
+		< k > writeString(_, "") => .K ...</ k >
+		[structural]
+	rule [write-empty-wstring]:
+		< k > writeWString(_, .List{K}) => .K ...</ k >
+		[structural]
+		
 	
 	// fixme might be messing things up elsewhere
 	op pointerToString : #Nat -> #String

@@ -298,7 +298,6 @@ endkm
 kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-	// fixme doesn't cast to int
 	rule [putchar]:
 		< k > prepareBuiltin((Identifier("putchar")), tv(N:#Nat, ?))
 			=> writeToFD(1, N:#Nat) 
@@ -306,7 +305,6 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 
-	// fixme doesn't cast to int
 	rule [fslPutc]:
 		< k > prepareBuiltin((Identifier("__fslPutc")), (tv(N:#Nat, ?) :: tv(H:#Nat, ?)))
 			=> writeToFD(H:#Nat, N:#Nat)
@@ -327,10 +325,6 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			// => #fReadByte(FD:#Nat)
 		...</ k >
 		[structural]
-		
-	// rule [read-eof]:
-		// < k > String2Int(#errorTCPSyntax("EOF")) => tv(-1, t(.Set, int)) ...</ k >
-		// [structural]
 
 	rule [fslCloseFile]:
 		< k > prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:#Nat, t(?, int))) 
@@ -369,50 +363,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	op fsl-open-file : K K -> K [metadata "strict=()"]
-	op getString : K -> K
-	op getString-aux : K #String -> K [metadata "strict=(1)"]
-	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
-	op str : #String -> Value
-	
-	rule [getString-pre]:
-		< k > (.K => read(Loc:#Nat, t(.Set, char)))
-			~> getString-aux(tv((Loc:#Nat => sNat(Loc:#Nat)), _), S:#String)
-		...</ k >
-		[structural]
-		
-	rule [getString]:
-		< k > tv(N:#Nat, ?) 
-			~> getString-aux(tv(Loc:#Nat, _), S:#String)
-			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
-		...</ k >
-		if N:#Nat =/=Bool 0
-		[structural]
-	rule [getString-done]:
-		< k > tv(0, ?) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
-			=> str(S:#String)
-		...</ k >
-		[structural]
+
 	//////////////////////////--	
-	
-	// op printf-aux : #Nat #Nat List{C} -> K
-	// op printf-string : #Nat #Nat -> K
-	// op printf-% : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%l : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%ld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%ll : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%llu : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%lld : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%llx : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%llX : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%x : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%X : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%d : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%f : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%u : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%s : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%c : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	// op printf-%p : K K List{C} -> K [metadata "strict=(3)"] // K not nat, for context bug
-	
+
 	
 	//C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
 	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
@@ -422,11 +375,56 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			=> new-printf-aux(formatter(getString(Format:Value), VarArgs:Value))
 		...</ k >
 		[structural]
+		
+	// rule [printf-done]:
+		// < k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) 
+			// => flush(1)
+			// ~> tv(Len:#Nat, t(.Set, int)) 
+		// ...</ k >
+		// [structural]
+	rule [printf-done]:
+		< k > new-printf-aux(formattedResult(S:#String))
+			=> writeToFD(1, S:#String)
+			~> flush(1)
+			~> tv(lengthString(S:#String), t(.Set, int)) 
+		...</ k >
+		[structural]
+	
+	op sprintf : K K -> K [metadata "strict=(1)"]
+	rule [sprintf]:
+		< k > prepareBuiltin((Identifier("sprintf")), (Dest:Value :: Format:Value :: VarArgs:Value))
+			=> sprintf(formatter(getString(Format:Value), VarArgs:Value), Dest:Value)
+		...</ k >
+		[structural]
+	rule [sprintf-done]:
+		< k > sprintf(formattedResult(S:#String), Dest:Value)
+			=> writeString(Dest:Value, S:#String +String "\0")
+			~> tv(lengthString(S:#String), t(.Set, int))
+		...</ k >
+		[structural]
+	
+	op snprintf : K K #Nat -> K [metadata "strict=(1)"]
+	rule [snprintf]:
+		< k > prepareBuiltin((Identifier("snprintf")), (Dest:Value :: tv(Len:#Nat, _) :: Format:Value :: VarArgs:Value))
+			=> snprintf(formatter(getString(Format:Value), VarArgs:Value), Dest:Value, Len:#Nat)
+		...</ k >
+		[structural]
+	rule [snprintf-done-nz]:
+		< k > snprintf(formattedResult(S:#String), Dest:Value, Len:#Nat)
+			=> writeString(Dest:Value, substrString(S:#String, 0, Len:#Nat -Int 1) +String "\0")
+			~> tv(lengthString(S:#String), t(.Set, int))
+		...</ k >
+		if Len:#Nat >Nat 0
+		[structural]
+	rule [snprintf-done-0]:
+		< k > snprintf(formattedResult(S:#String), _, 0)
+			=> tv(lengthString(S:#String), t(.Set, int))
+		...</ k >
+		[structural]
 	
 	op new-printf-aux : K -> K [metadata "strict=()"]
 	op formatter : K K -> K [metadata "strict=(1)"]
 	op formatter-aux : K -> K [metadata "strict=()"]
-	
 	op formatter-next : K -> K
 	op formatter-arg : K -> K [metadata "strict=(1)"]
 	rule 
@@ -532,20 +530,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		<formatLength> _ => "" </formatLength>
 		<formatState> "reset" => "normal" </formatState>
 		[structural]
-	
-	// rule [printf-done]:
-		// < k > tv(0, ?) ~> printf-aux(Len:#Nat, ?, ?) 
-			// => flush(1)
-			// ~> tv(Len:#Nat, t(.Set, int)) 
-		// ...</ k >
-		// [structural]
-	rule [printf-done]:
-		< k > new-printf-aux(formattedResult(S:#String))
-			=> writeToFD(1, S:#String)
-			~> flush(1)
-			~> tv(lengthString(S:#String), t(.Set, int)) 
-		...</ k >
-		[structural]
+
 		
 	// rule [printf-%]:
 		// < k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})

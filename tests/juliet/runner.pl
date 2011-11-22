@@ -9,10 +9,22 @@ use File::Spec::Functions qw(rel2abs catfile);
 my $_timer = [gettimeofday];
 my $childPid = 0;
 
+# good
 # bench("testcases/CWE121_Stack_Based_Buffer_Overflow");
-bench("testcases/CWE122_Heap_Based_Buffer_Overflow");
-# bench("testcases/CWE369_Divide_By_Zero"); # their rand has overflow :/
+# bench("testcases/CWE122_Heap_Based_Buffer_Overflow");
 # bench("testcases/CWE170_Improper_Null_Termination");
+
+bench("testcases/CWE124_Buffer_Underwrite");
+bench("testcases/CWE126_Buffer_Overread");
+bench("testcases/CWE127_Buffer_Underread");
+
+
+# weird
+# bench("testcases/CWE415_Double_Free"); # they use the ptr after it's been freed, despite "The value of a pointer to an object whose lifetime has ended is used (6.2.4)" and "(7.22.3) The lifetime of an allocated object extends from the allocation until the deallocation."
+# bench("testcases/CWE416_Use_After_Free"); # also uses after been freed, even in good tests
+# bench("testcases/CWE129_Improper_Validation_Of_Array_Index");
+# bench("testcases/CWE369_Divide_By_Zero"); # their rand has overflow :/
+
 # bench("test");
 
 my %seenFilenames = ();
