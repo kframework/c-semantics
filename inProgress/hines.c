@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-main(togo,toog)
+int main(togo,toog)
 int togo;
 char *toog[];
 {char *ogto,   tgoo[90];FILE  *ogot;  int    oogt=0, ootg,  otog=89,

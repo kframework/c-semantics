@@ -13,10 +13,25 @@ my $childPid = 0;
 # bench("testcases/CWE121_Stack_Based_Buffer_Overflow");
 # bench("testcases/CWE122_Heap_Based_Buffer_Overflow");
 # bench("testcases/CWE170_Improper_Null_Termination");
+# bench("testcases/CWE124_Buffer_Underwrite");
+# bench("testcases/CWE126_Buffer_Overread");
+# bench("testcases/CWE127_Buffer_Underread");
+# bench("testcases/CWE131_Incorrect_Calculation_Of_Buffer_Size");
+# bench("testcases/CWE193_Off_by_One_Error");
+# bench("testcases/CWE562_Return_Of_Stack_Variable_Address");
+# bench("testcases/CWE590_Free_Of_Invalid_Pointer_Not_On_The_Heap");
+# bench("testcases/CWE680_Integer_Overflow_To_Buffer_Overflow");
+# bench("testcases/CWE685_Function_Call_With_Incorrect_Number_Of_Arguments");
+# bench("testcases/CWE688_Function_Call_With_Incorrect_Variable_Or_Reference_As_Argument");
 
-bench("testcases/CWE124_Buffer_Underwrite");
-bench("testcases/CWE126_Buffer_Overread");
-bench("testcases/CWE127_Buffer_Underread");
+
+bench("testcases/CWE665_Improper_Initialization");
+# bench("testcases/CWE761_Free_Pointer_Not_At_Start_Of_Buffer");
+
+# look into these
+# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_52*.c
+# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_67*.c
+# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_19.c
 
 
 # weird
@@ -71,7 +86,7 @@ sub test {
 sub report {
 	my ($test, $name, $result, $msg) = (@_);
 	my $elapsed = tv_interval($_timer, [gettimeofday]);
-	printf("%-70s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
+	printf("%-80s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
 }
 
 sub run {

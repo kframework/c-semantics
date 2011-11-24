@@ -32,6 +32,7 @@ mv testcases/CWE620_Unverified_Password_Change/ notApplicable/
 mv testcases/CWE78_OS_Command_Injection/ notApplicable/
 mv testcases/CWE534_Info_Leak_Debug_Log/ notApplicable/
 mv testcases/CWE535_Info_Leak_Shell_Error/ notApplicable/
+mv testcases/CWE134_Uncontrolled_Format_String/ notApplicable/
 
 # these are bad programming practices, but are not necessarily undefined
 mv testcases/CWE478_Failure_To_Use_Default_Case_In_Switch/ notApplicable/
@@ -50,6 +51,7 @@ mv testcases/CWE571_Expression_Always_True/ notApplicable/
 mv testcases/CWE511_Logic_Time_Bomb/ notApplicable/
 mv testcases/CWE789_Uncontrolled_Mem_Alloc/ notApplicable/
 mv testcases/CWE484_Omitted_Break_Statement/ notApplicable/
+mv testcases/CWE483_Incorrect_Block_Delimitation/ notApplicable/
 
 # these are system dependent tests, but are not necessarily undefined
 mv testcases/CWE114_Process_Control/ notApplicable/
@@ -58,9 +60,17 @@ mv testcases/CWE785_Path_Manipulation_Function_Without_Max_Sized_Buffer/ notAppl
 
 # just io tests
 mv testcases/CWE123_Write_What_Where_Condition/ notApplicable/
+
+# assume static analysis
+mv testcases/CWE129_Improper_Validation_Of_Array_Index/ notApplicable/
+
+# this one is usually okay, but mallocs 4 gigs of ram
+mv testcases/CWE194_Unexpected_Sign_Extension/ notApplicable/
  
 # c++ tests
 mv testcases/CWE762_Mismatched_Memory_Management_Routines/ notApplicable/
+mv testcases/CWE248_Uncaught_Exception/ notApplicable/
+mv testcases/CWE374_Passing_Mutable_Objects_to_Untrusted_Method/ notApplicable/
 
 echo "Moving tests that use functions we don't handle"
 mkdir -p alloca
@@ -78,8 +88,6 @@ mkdir -p w32
 mv `ls testcases/*/*w32*.c` w32/
 mkdir -p wchar
 mv `ls testcases/*/*wchar*.c` wchar/
-mkdir -p random
-mv `ls testcases/*/*rand*.c` random/
 mkdir -p cpp
 rm -f `ls testcases/*/main.cpp`
 mv -f `ls testcases/*/*.cpp` cpp/
@@ -87,9 +95,15 @@ mv -f `ls testcases/*/*.cpp` cpp/
 # mv `grep -l 'RAND64' testcases/*/*.c` random/
 # mv `grep -l ')rand(' testcases/*/*.c` random/
 
-mkdir -p randbehavior
+mkdir -p environment
+mv -f `ls testcases/*/*Environment*.c` environment/
+mv -f `ls testcases/*/*fromConsole*.c` environment/
+mv -f `ls testcases/*/*fromFile*.c` environment/
+
 # these tests assume we're doing static analysis and can actually be correct dynamically
-mv `grep -l 'global_returns_t_or_f' testcases/*/*.c` randbehavior/
+mkdir -p random
+mv `ls testcases/*/*rand*.c` random/
+mv `grep -l 'global_returns_t_or_f' testcases/*/*.c` random/
 
 echo "Fixing some tests that have undefined behavior in the good branches"
 # there is some undefined behavior in some of the tests where they read a value that hasn't been initialized.  This fixes those cases
