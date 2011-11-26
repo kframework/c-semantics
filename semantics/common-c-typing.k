@@ -896,6 +896,7 @@ kmod COMMON-C-TYPING is
 		< k > addStruct(S:#Id, L:List{Type}) 
 			=> addStruct-aux(S:#Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
 		...</ k >
+		if L:List{Type} =/=Bool Nil
 		[structural]
 	rule
 		< k > addStruct-aux(
@@ -924,6 +925,7 @@ kmod COMMON-C-TYPING is
 		< k > addUnion(S:#Id, L:List{Type}) 
 			=> addUnion-aux(S:#Id, L:List{Type}, .Map, .Map, L:List{Type})
 		...</ k >
+		if L:List{Type} =/=Bool Nil
 		[structural]
 	rule
 		< k > addUnion-aux(

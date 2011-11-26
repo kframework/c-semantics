@@ -176,7 +176,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 
 	
 	rule
-		< k > (.K => getTypes((E1,, E2))) ~> E:K ? E1:K : E2:K ...</ k >
+		< k > (.K => getTypes((E1:K,, E2:K))) ~> E:K ? E1:K : E2:K ...</ k >
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.5.15}{5}}

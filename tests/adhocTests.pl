@@ -43,6 +43,10 @@ assertEquals("blank", run("$kcc adhoc/basic.c -o basic.o 2&>1 && ./basic.o 2&>1"
 
 assertContains("printfP", run("$kcc adhoc/percentP.c -o adhoc.o && ./adhoc.o"), "[sym(threadId(1) +Nat 0) + 0]");
 
+assertContains("assert", run("$kcc adhoc/assert.c -o adhoc.o && ./adhoc.o"), "Assertion failed: `6 == 7'");
+
+
+
 ###################################
 
 open(OUT, ">$outputFilename"); #open for write, overwrite

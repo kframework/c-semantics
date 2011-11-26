@@ -231,7 +231,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	op _to_ : #Nat #Nat -> List{K} 
-	op cast : K K -> K [metadata "strict=(1)"] // as described in 6.3 // totype, fromvalue
+	op cast : K K -> K [metadata "strict=()"] // as described in 6.3 // totype, fromvalue
 	context cast(_, ([HOLE] => reval([HOLE])))
 	op arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
 	op interpret : Type K -> K // interpret the values of reading from mem
