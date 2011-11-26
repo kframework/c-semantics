@@ -1,7 +1,13 @@
-typedef int ptrdiff_t; // this needs to correspond to cfg:ptrdiffut
-typedef unsigned int size_t; // this needs to correspond to cfg:sizeut
-typedef char max_align_t;
-typedef int wchar_t;
+#ifndef _KCC_STDDEF_H
+#define _KCC_STDDEF_H
+#include <kccSettings.h>
 
-#define NULL ((void *)0)
+typedef _KCC_PTRDIFF_T ptrdiff_t;
+typedef _KCC_SIZE_T size_t;
+typedef char max_align_t;
+typedef _KCC_WCHAR_T wchar_t;
+
+#define NULL _KCC_NULL
 #define offsetof(t, m) ((__kcc_offsetof((t), (m))))
+
+#endif

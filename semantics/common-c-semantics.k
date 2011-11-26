@@ -29,6 +29,11 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
+	// these are used for runtime settings
+	op kccSettingSimpleType : #String -> SimpleType
+	op kccSettingNzNat : #String -> #NzNat
+	op kccSettingInt : #String -> #Int
+	
 	op fromUnion : #Id -> K
 	
 	// op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
@@ -307,21 +312,27 @@ kmod COMMON-C-SETTINGS is
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
-	rule char => signed-char 
-		[structural] 
+	rule char => signed-char
+	// rule char => kccSettingSimpleType("_KCC_CHAR_TYPE")
+		[structural]
 
 	op numBitsPerByte : -> #NzNat 
 	op numBytes : Type -> #Nat [memo] 
 	op numBits : Type -> #Nat [memo] 
 
 	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
+	// rule [numBitsPerByte]: numBitsPerByte => kccSettingNzNat("_KCC_BITS_PER_BYTE") [structural]
 	
 	rule [numBytes-bool]: numBytes(t(?, bool)) => 1 [structural]
 	rule [numBytes-signed-char]: numBytes(t(?, signed-char)) => 1 [structural]
 	rule [numBytes-short-int]: numBytes(t(?, short-int)) => 2 [structural]
+	// rule [numBytes-short-int]: numBytes(t(?, short-int)) => kccSettingNzNat("_KCC_SIZEOF_SHORT") [structural]
 	rule [numBytes-int]: numBytes(t(?, int)) => 4 [structural]
+	// rule [numBytes-int]: numBytes(t(?, int)) => kccSettingNzNat("_KCC_SIZEOF_INT") [structural]
 	rule [numBytes-long-int]: numBytes(t(?, long-int)) => 4 [structural]
+	// rule [numBytes-long-int]: numBytes(t(?, long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG") [structural]
 	rule [numBytes-long-long-int]: numBytes(t(?, long-long-int)) => 8 [structural]
+	// rule [numBytes-long-long-int]: numBytes(t(?, long-long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG_LONG") [structural]
 	
 	rule [numBytes-float]: numBytes(t(?, float)) => 4 [structural]
 	rule [numBytes-double]: numBytes(t(?, double)) => 8 [structural]
@@ -329,11 +340,13 @@ kmod COMMON-C-SETTINGS is
 	
 	rule [numBytes-enum]: numBytes(t(S:Set, enumType(X:#Id))) => numBytes(t(S:Set, int)) [structural]
 	
-	op cfg:sizeut : -> Type 
+	op cfg:sizeut : -> Type
 	rule [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int) [structural]
+	// rule [cfg-size-t]: cfg:sizeut => t(.Set, kccSettingSimpleType("_KCC_SIZE_T")) [structural]
 	
 	op cfg:wcharut : -> Type
 	rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int) [structural]
+	// rule [cfg-wchar-t]: cfg:wcharut => t(.Set, kccSettingSimpleType("_KCC_WCHAR_T")) [structural]
 	
 	op simpleType : Type -> SimpleType
 	rule simpleType(t(?, T:SimpleType)) => T:SimpleType [structural]

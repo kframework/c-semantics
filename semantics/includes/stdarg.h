@@ -1,3 +1,7 @@
+#ifndef _KCC_STDARG_H
+#define _KCC_STDARG_H
+#include <kccSettings.h>
+
 #include <stdlib.h>
 typedef void* va_list;
 
@@ -25,3 +29,5 @@ void __va_end(va_list* ap);
 void __va_copy(va_list* dst, va_list src);
 #define va_copy(dst, src) \
 	(__va_copy((&(dst)), (src)))
+
+#endif

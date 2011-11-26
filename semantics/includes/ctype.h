@@ -1,5 +1,7 @@
-#ifndef _K_CTYPE_H
-#define _K_CTYPE_H
+#ifndef _KCC_CTYPE_H
+#define _KCC_CTYPE_H
+
+#include <kccSettings.h>
 
 int isalnum(int c);
 int isalpha(int c);

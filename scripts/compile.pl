@@ -73,11 +73,16 @@ my $spec = q(#
   -w				Do not print warning messages
   <files>...			.c files to be compiled [required]
 		{ defer { foreach (@files) { compile($_); } } }
+#-funsigned-char		Let the type "char" be unsigned, like "unsigned char"
+#-fsigned-char			Let the type "char" be signed, like "signed char"
+#-fbits-per-byte <num>		Sets the number of bits in a byte
+#[mutex: -funsigned-char -fsigned-char]
   -lm				Ignored
+  -O[<level:/0|1|2|3|s/>]	Ignored
   -std <standard>		Ignored
   -x <language>			Ignored
-  -pedantic				Ignored
-  -Wall					Ignored
+  -pedantic			Ignored
+  -Wall				Ignored
 		
 There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
 );

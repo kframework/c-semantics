@@ -1,3 +1,7 @@
+#ifndef _KCC_FLOAT_H
+#define _KCC_FLOAT_H
+#include <kccSettings.h>
+
 #define FLT_RADIX 2
 #define FLT_ROUNDS 1
 #define DECIMAL_DIG 15
@@ -37,3 +41,5 @@
 #define LDBL_EPSILON 2.2204460492503131e-16
 #define LDBL_MIN 2.2250738585072014e-308
 #define LDBL_TRUE_MIN 2.2250738585072014e-308
+
+#endif

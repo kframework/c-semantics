@@ -179,6 +179,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule max(t(?, bool)) => 1 [structural]
 	
 	rule min(t(?, signed-char)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
+	// rule min(t(?, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
 	rule max(t(?, signed-char)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1) [structural]
 	rule min(t(?, short-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
 	rule max(t(?, short-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1) [structural]

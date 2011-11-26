@@ -1,3 +1,7 @@
+#ifndef _KCC_THREADS_H
+#define _KCC_THREADS_H
+#include <kccSettings.h>
+
 // some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
 #include <time.h>
 // expands to a value that can be used to initialize an object of type once_flag
@@ -131,3 +135,4 @@ The thrd_join function returns thrd_success on success or thrd_error if the requ
 extern int thrd_join(thrd_t thr, int *res);
 
 
+#endif

@@ -1,9 +1,10 @@
-#define NULL ((void *)0)
+#include <kccSettings.h>
+#define NULL _KCC_NULL
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-typedef unsigned long int size_t;
+typedef _KCC_SIZE_T size_t;
 // nice public domain implementations at http://en.wikibooks.org/wiki/C_Programming/Strings
 static int x = 32;
 int getc(FILE *stream){

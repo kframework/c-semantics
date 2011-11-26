@@ -1,8 +1,9 @@
-#ifndef _K_STDIO_H
-#define _K_STDIO_H
+#ifndef _KCC_STDIO_H
+#define _KCC_STDIO_H
+#include <kccSettings.h>
 
-#define NULL ((void *)0)
-typedef unsigned int size_t; // this needs to correspond to cfg:sizeut
+#define NULL _KCC_NULL
+typedef _KCC_SIZE_T size_t;
 
 typedef struct {
 	unsigned long long int offset;

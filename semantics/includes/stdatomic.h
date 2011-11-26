@@ -1,3 +1,7 @@
+#ifndef _KCC_STDATOMIC_H
+#define _KCC_STDATOMIC_H
+#include <kccSettings.h>
+
 // some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
 
 
@@ -23,3 +27,5 @@ Depending on the value of order, this operation:
 - is a sequentially consistent acquire and release fence, if order == memory_order_seq_cst.
 */
 void atomic_thread_fence(memory_order order);
+
+#endif

@@ -1,3 +1,7 @@
+#ifndef _KCC_STDINT_H
+#define _KCC_STDINT_H
+#include <kccSettings.h>
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 # define INT8_MIN		(-128)
@@ -102,3 +106,5 @@ typedef unsigned long long int uintmax_t;
 
 # define INTMAX_C(value) ((intmax_t) value)
 # define UINTMAX_C(value) ((uintmax_t) value)
+
+#endif

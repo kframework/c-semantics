@@ -12,35 +12,32 @@ my $childPid = 0;
 # good
 # bench("testcases/CWE121_Stack_Based_Buffer_Overflow");
 # bench("testcases/CWE122_Heap_Based_Buffer_Overflow");
-# bench("testcases/CWE170_Improper_Null_Termination");
 # bench("testcases/CWE124_Buffer_Underwrite");
 # bench("testcases/CWE126_Buffer_Overread");
 # bench("testcases/CWE127_Buffer_Underread");
 # bench("testcases/CWE131_Incorrect_Calculation_Of_Buffer_Size");
+# bench("testcases/CWE170_Improper_Null_Termination");
 # bench("testcases/CWE193_Off_by_One_Error");
 # bench("testcases/CWE562_Return_Of_Stack_Variable_Address");
 # bench("testcases/CWE590_Free_Of_Invalid_Pointer_Not_On_The_Heap");
+# bench("testcases/CWE665_Improper_Initialization");
 # bench("testcases/CWE680_Integer_Overflow_To_Buffer_Overflow");
 # bench("testcases/CWE685_Function_Call_With_Incorrect_Number_Of_Arguments");
 # bench("testcases/CWE688_Function_Call_With_Incorrect_Variable_Or_Reference_As_Argument");
-
-
-bench("testcases/CWE665_Improper_Initialization");
 # bench("testcases/CWE761_Free_Pointer_Not_At_Start_Of_Buffer");
+# bench("testcases/CWE369_Divide_By_Zero");
 
-# look into these
-# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_52*.c
-# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_67*.c
-# CWE761_Free_Pointer_Not_At_Start_Of_Buffer__char_fixed_string_19.c
 
+bench("testcases/CWE457_Use_of_Uninitialized_Variable");
+
+# look into
+# CWE457_Use_of_Uninitialized_Variable__double_pointer_63*.c 
+# CWE457_Use_of_Uninitialized_Variable__twoints_pointer_63*.c 
+# CWE457_Use_of_Uninitialized_Variable__double_64*.c
 
 # weird
-# bench("testcases/CWE415_Double_Free"); # they use the ptr after it's been freed, despite "The value of a pointer to an object whose lifetime has ended is used (6.2.4)" and "(7.22.3) The lifetime of an allocated object extends from the allocation until the deallocation."
-# bench("testcases/CWE416_Use_After_Free"); # also uses after been freed, even in good tests
-# bench("testcases/CWE129_Improper_Validation_Of_Array_Index");
 # bench("testcases/CWE369_Divide_By_Zero"); # their rand has overflow :/
 
-# bench("test");
 
 my %seenFilenames = ();
 
@@ -86,7 +83,7 @@ sub test {
 sub report {
 	my ($test, $name, $result, $msg) = (@_);
 	my $elapsed = tv_interval($_timer, [gettimeofday]);
-	printf("%-80s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
+	printf("%-74s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
 }
 
 sub run {

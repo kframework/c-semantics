@@ -1,6 +1,10 @@
+#ifndef _KCC_STRING_H
+#define _KCC_STRING_H
+#include <kccSettings.h>
+
 // string.h
-#define NULL ((void *)0)
-typedef unsigned int size_t; // this needs to correspond to cfg:sizeut
+#define NULL _KCC_NULL
+typedef _KCC_SIZE_T size_t; // this needs to correspond to cfg:sizeut
 size_t strlen(char *str);
 int strcmp(const char *str1, const char *str2);
 char *strcpy(char* s1, const char* s2);
@@ -20,3 +24,5 @@ char *strpbrk(const char *s1, const char *s2);
 size_t strspn(const char *s1, const char *s2);
 char *strstr(const char *haystack, const char *needle);
 char *strtok(char *restrict s1, const char *restrict delimiters);
+
+#endif
