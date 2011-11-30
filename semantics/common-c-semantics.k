@@ -90,7 +90,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op innerType : Type -> Type
 	
-	op AttributeValue : #String List{C} -> KResult 
+	op AttributeValue : #String List{K} -> KResult 
 	
 	op extractBitsFromList : K #Nat #Nat -> K [metadata "strict=(1)"] // data, offset, size in bits
 	op typedef : #Id -> #Id 
@@ -441,7 +441,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 		// [structural]
 		
 	rule [Attributes]:
-		< k > Attribute(S:#String, L:List{C}) => AttributeValue(S:#String, L:List{C}) ...</ k >
+		< k > Attribute(S:#String, List(L:List{K})) => AttributeValue(S:#String, L:List{K}) ...</ k >
 		[structural]
 		
 	rule AttributeWrapper(K:K, ?) => K:K [structural]

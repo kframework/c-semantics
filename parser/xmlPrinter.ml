@@ -297,8 +297,6 @@ and printNop =
 and printComputation exp =
 	wrap ((printExpression exp) :: []) "Computation"
 and printExpressionList defs =
-	printList printExpression defs
-and printNewExpressionList defs =
 	printNewList printExpression defs
 and printBuiltin (sort : string) (data : string) =
 	printCell "RawData" [Attrib("sort", sort)] (cdata data)
@@ -470,11 +468,11 @@ and printExpression exp =
 		let compoundLiteralPrinter x = wrap (compoundLiteralIdCell :: (printSpecifier spec) :: (printDeclType declType) :: x :: []) "CompoundLiteral"
 		in printInitExpressionForCast initExp castPrinter compoundLiteralPrinter
 		(* A CAST can actually be a constructor expression *)
-	| CALL (exp1, expList) -> wrap ((printExpression exp1) :: (printNewExpressionList expList) :: []) "Call"
+	| CALL (exp1, expList) -> wrap ((printExpression exp1) :: (printExpressionList expList) :: []) "Call"
 		(* There is a special form of CALL in which the function called is
 		__builtin_va_arg and the second argument is sizeof(T). This 
 		should be printed as just T *)
-	| COMMA (expList) -> wrap ((printNewExpressionList expList) :: []) "Comma"
+	| COMMA (expList) -> wrap ((printExpressionList expList) :: []) "Comma"
 	| CONSTANT (const) -> wrap (printConstant const :: []) "Constant"
 	| VARIABLE name -> wrap ((printIdentifier name) :: []) "Variable"
 	| EXPR_SIZEOF exp1 -> wrap ((printExpression exp1) :: []) "SizeofExpression"
@@ -643,7 +641,7 @@ and printStatementLoc s l =
 and printStatementList a =
 	printNewList printStatement a
 and printAttributeList a =
-	printList printAttribute a
+	printNewList printAttribute a
 and printEnumItemList a =
 	printList printEnumItem a
 and printBlockLabels a =

@@ -22,7 +22,7 @@ kmod COMMON-C-SYNTAX is
 	
 	// the rest are syntactic
 	sort C
-	op AttributeWrapper : K List{C} -> C // new
+	op AttributeWrapper : K K -> C // new // K, List
 	//syntax C ::= `AttributeWrapper ( K , List{C} ) // new
 	
 	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
@@ -746,7 +746,7 @@ and initwhat =
 /*
 and attribute = #String * expression list
 */
-	op Attribute : #String List{C} -> C
+	op Attribute : #String K -> C // #String, List
 	
 	
 	
