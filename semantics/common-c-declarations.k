@@ -1227,26 +1227,26 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	op fillEnums : K -> K 
 	op fillEnums-aux : K K -> K 
 	rule
-		< k > EnumDef(X:#Id, L:List{C}) => fillEnums(EnumDef(X:#Id, L:List{C})) ...</ k >
+		< k > EnumDef(X:#Id, L:K) => fillEnums(EnumDef(X:#Id, L:K)) ...</ k >
 		[structural] 
 	rule 
 		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</ k > 
 		[structural]
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, EnumItem(E:#Id) :: L:List{C}), K:K) 
+		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItem(E:#Id),, L:List{K}))), K:K) 
 			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(K:K))
-			~> fillEnums-aux(EnumDef(X:#Id, L:List{C}), K:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), K:K + tv(1, t(.Set, int)))
 		...</ k >
 		[structural] 
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, EnumItemInit(E:#Id, Exp:K) :: L:List{C}), ?)
+		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItemInit(E:#Id, Exp:K),, L:List{K}))), ?)
 			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:#Id, L:List{C}), Exp:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), Exp:K + tv(1, t(.Set, int)))
 		...</ k >
 		if Exp:K =/=Bool NothingExpression
 		[structural] 
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, Nil), ?) => .K ...</ k > 
+		< k > fillEnums-aux(EnumDef(X:#Id, List(.List{K})), ?) => .K ...</ k > 
 		[structural] 
 endkm
 

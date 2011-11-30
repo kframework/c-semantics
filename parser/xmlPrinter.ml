@@ -643,7 +643,7 @@ and printStatementList a =
 and printAttributeList a =
 	printNewList printAttribute a
 and printEnumItemList a =
-	printList printEnumItem a
+	printNewList printEnumItem a
 and printBlockLabels a =
 	printNewList (fun x -> x) a
 and printAttribute (a, b) =

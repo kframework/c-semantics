@@ -176,7 +176,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
 	op UnionDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
-	op EnumDef : #Id List{C} -> TypeSpecifier [ctor] // new
+	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
 	op TypeofType : K K -> TypeSpecifier [ctor]
 	

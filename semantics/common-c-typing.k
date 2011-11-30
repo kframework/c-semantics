@@ -289,8 +289,8 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 		
 	rule
-		< k > canonicalizeSpecifier(BagItem(EnumDef(X:#Id, L:List{C})))
-			=> EnumDef(X:#Id, L:List{C})
+		< k > canonicalizeSpecifier(BagItem(EnumDef(X:#Id, L:K)))
+			=> EnumDef(X:#Id, L:K)
 			~> t(.Set, enumType(X:#Id))
 		...</ k >
 		if X:#Id =/=Bool Identifier("")
