@@ -52,9 +52,9 @@ sub linker {
 	$retval .= "op 'linked-program : -> KLabel .\n";
 	$retval .= "eq 'linked-program(.List{K}) = ";
 	$retval .= "'Program(";
-	$retval .= "'_::_(";
+	$retval .= "'List((_`(_`)(kList(\"wklist_\"), (";
 	$retval .= printNested(@programNames);
-	$retval .= ')';
+	$retval .= '))))';
 	$retval .= ')';
 	return "$retval.\n";
 }

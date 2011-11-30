@@ -199,13 +199,13 @@ If they are declared, the parameters to the main function shall obey the followi
 	rule [syntaxNat]: syntaxNat(N:#Nat) => NoSuffix(DecimalConstant(N:#Nat)) [structural]
 	
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "") [structural]
-	rule [eval-input]: eval(Program(P:List{C}), L:List{K}, Input:#String) =>
+	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:#String) =>
 		< T >
 			< threads >
 				< thread >
 					< threadId > 1 </ threadId >
 					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
-					< k > listToK(P:List{C})
+					< k > klistToK(P:List{K})
 							~> DeclarationDefinition(InitNameGroup(Specifier(Char), InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K})), Specifier(Nil)))), NoInit)))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})

@@ -384,7 +384,7 @@ and file = #String * definition list
 */
 	// name, code, source
 	op TranslationUnit : #String K #String -> TranslationUnit // new
-	op Program : List{C} -> Program // new
+	op Program : K -> Program // new // List
 
 /*
 	(* A block contains a list of local label declarations ( GCC's ({ __label__ 
