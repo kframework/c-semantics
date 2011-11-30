@@ -474,7 +474,7 @@ and printExpression exp =
 		(* There is a special form of CALL in which the function called is
 		__builtin_va_arg and the second argument is sizeof(T). This 
 		should be printed as just T *)
-	| COMMA (expList) -> wrap ((printExpressionList expList) :: []) "Comma"
+	| COMMA (expList) -> wrap ((printNewExpressionList expList) :: []) "Comma"
 	| CONSTANT (const) -> wrap (printConstant const :: []) "Constant"
 	| VARIABLE name -> wrap ((printIdentifier name) :: []) "Variable"
 	| EXPR_SIZEOF exp1 -> wrap ((printExpression exp1) :: []) "SizeofExpression"

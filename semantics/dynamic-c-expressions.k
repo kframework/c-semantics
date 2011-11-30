@@ -1174,9 +1174,11 @@ kmod DYNAMIC-SEMANTICS-SEQUENCING is
 	/*@ \source[n1570]{\para{6.5.17}{2}}
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	*/
-	rule < k > Comma(T:Type :: K':C :: L:List{C}) => sequencePoint ~> Comma(K':C :: L:List{C}) ...</ k >
+	rule < k > Comma(List((V:Value,, K':K,, L:List{K}))) 
+		=> sequencePoint
+		~> Comma(List((K':K,, L:List{K}))) ...</ k >
 		[structural]
-	rule < k > Comma(K:C) => K:C ...</ k >
+	rule < k > Comma(List(K:C)) => K:C ...</ k >
 		[structural]
 endkm
 

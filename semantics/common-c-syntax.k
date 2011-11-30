@@ -639,13 +639,14 @@ and unary_operator =
 	op Call : K K -> Expression // K, List
 	context Call(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "ndheat=()"]
-	context Call(_, List((?,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, ?))) [metadata "ndheat=()"]
+	context Call(_, List((?,, (`[HOLE`]:K => reval(`[HOLE`]:K)),, ?))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
-	op Comma : List{C} -> Expression
+	op Comma : K -> Expression // List
 	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "ndheat=()"]
-	context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
+	// context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
+	context Comma(List(((`[HOLE`]:K => reval(`[HOLE`]:K)),, _))) [metadata "ndheat=()"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
