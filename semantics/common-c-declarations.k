@@ -38,23 +38,23 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// aggregates
 	rule
-		< k > figureInitializer(X:#Id, T:Type, CompoundInit(L:List{C}))
+		< k > figureInitializer(X:#Id, T:Type, CompoundInit(L:K))
 			=> giveType(X:#Id, T:Type)
-			~> figureInitializer-aux(X:#Id, T:Type, startInitializer(T:Type, X:#Id, CompoundInit(L:List{C})))
+			~> figureInitializer-aux(X:#Id, T:Type, startInitializer(T:Type, X:#Id, CompoundInit(L:K)))
 		...</ k >
 		if (hasAggregateType(T:Type) orBool hasUnionType(T:Type)) 
 		//andBool notBool hasIncompleteType(T:Type)
 		[structural] 
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(StringLiteral(S:#String)))) 
-			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String))))))
+			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String)))))))
 		...</ k >
 		if hasCharType(T:Type)
 		andBool lengthString(S:#String) <=Nat Len:#Nat
 		[structural]
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
-			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
+			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
 		...</ k >
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <=Nat Len:#Nat
@@ -70,7 +70,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 	rule
-		< k > figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String))))))
+		< k > figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String)))))))
 			=> figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), SingleInit(Constant(StringLiteral(S:#String))))
 		...</ k >
 		[structural] 
@@ -98,7 +98,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	// c1x 6.7.8:11
 	rule
-		< k > figureInitializer(X:#Id, T:Type, CompoundInit(InitFragment(NextInit, SingleInit(K:K))))
+		< k > figureInitializer(X:#Id, T:Type, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
 			=> figureInitializer-aux(X:#Id, T:Type, initializer(Computation(AllowWrite(X:#Id) := K:K)))
 		...</ k >
 		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
@@ -580,7 +580,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op getInitializer : -> K 
 	op fillInitializer : K -> K 
 	op fillInitializer-aux : K -> K 
-	op fillInitializer : List{C} -> K 
+	op fillInitializer : List{K} -> K 
 	op completeInitializerFragment : K K -> C 
 	op initializerFragment : K -> KResult 
 	
@@ -592,8 +592,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 
 	rule
-		< k > startInitializer(T:Type, X:#Id, CompoundInit(L:List{C}))
-			=> fillInitializer(L:List{C}) ~> getInitializer
+		< k > startInitializer(T:Type, X:#Id, CompoundInit(List(L:List{K})))
+			=> fillInitializer(L:List{K}) 
+			~> getInitializer
 		...</ k >
 		< incompleteLength > ? => 0 </ incompleteLength >
 		< currentSubObject > .List => ListItem(te(X:#Id, T:Type)) </ currentSubObject >
@@ -603,12 +604,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 	
 	rule
-		< k > fillInitializer(InitFragment(K:K, Exp:K) :: L:List{C})
-		=> fillInitializer(InitFragment(K:K, Exp:K)) ~> fillInitializer(L:List{C})
+		< k > fillInitializer((InitFragment(K:K, Exp:K),, L:List{K}))
+			=> fillInitializer(InitFragment(K:K, Exp:K)) 
+			~> fillInitializer(L:List{K})
 		...</ k >
 		[structural] 
 	rule
-		< k > fillInitializer(Nil) => . ...</ k >
+		< k > fillInitializer(.List{K}) => . ...</ k >
 		[structural] 
 	
 	op next : -> ListItem 
@@ -715,13 +717,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	rule
-		< k > fillInitializer(InitFragment(NextInit, Exp:K)) => fillInitializer(Exp:K) ...</ k >
+		< k > fillInitializer(InitFragment(NextInit, Exp:K)) 
+			=> fillInitializer(Exp:K) 
+		...</ k >
 		[structural] 
 		
 	op finishCompoundInit : List -> K 
 	rule
-		< k > fillInitializer(CompoundInit(L:List{C})) 
-			=> fillInitializer(L:List{C})
+		< k > fillInitializer(CompoundInit(List(L:List{K})))
+			=> fillInitializer(L:List{K})
 			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:Type)) Remainder:ListItem)
 		...</ k >

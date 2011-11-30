@@ -727,7 +727,7 @@ and init_expression =
 */
 	op NoInit : -> KResult // InitExpression
 	op SingleInit : K -> InitExpression [metadata "hybrid=() strict=()"]
-	op CompoundInit : List{C} -> InitExpression [metadata "hybrid=() strict=()"]
+	op CompoundInit : K -> InitExpression [metadata "hybrid=() strict=()"] // List
 	op InitFragment : K K -> InitFragment // new; (initwhat * init_expression)
 	
 /*

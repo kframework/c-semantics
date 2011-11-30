@@ -265,7 +265,7 @@ and printInitExpressionForCast a castPrinter compoundLiteralPrinter = (* this is
 	| SINGLE_INIT exp -> castPrinter (printExpression exp)
 	| COMPOUND_INIT a -> compoundLiteralPrinter (wrap ((printInitFragmentList a) :: []) "CompoundInit")
 and printInitFragmentList a =
-	printList printInitFragment a
+	printNewList printInitFragment a
 and printInitFragment (a, b) =
 	wrap ((printInitWhat a) :: (printInitExpression b) :: []) "InitFragment"
 and printInitWhat a = 
