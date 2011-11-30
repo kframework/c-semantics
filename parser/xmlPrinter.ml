@@ -243,7 +243,7 @@ and printNameList a =
 and printInitNameList a = 
 	printList printInitName a
 and printFieldGroupList a =
-	printList printFieldGroup a
+	printNewList printFieldGroup a
 and printFieldGroup (spec, fields) =
 	wrap ((printSpecifier spec) :: (printFieldList fields) :: []) "FieldGroup"
 and printFieldList (fields) =

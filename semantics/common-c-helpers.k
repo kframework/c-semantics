@@ -428,17 +428,17 @@ kmod COMMON-C-BITSIZE is
 	// syntax K ::= bitSizeofList ( List{Type} )
 	// syntax K ::= bitSizeofList-aux ( K , List{Type} ) [strict(1)]
 	
-	op bitSizeofList : List{Type} -> K
-	op bitSizeofList-aux : K #Nat List{Type} -> K [metadata "strict=(1)"]
+	op bitSizeofList : List{KResult} -> K
+	op bitSizeofList-aux : K #Nat List{KResult} -> K [metadata "strict=(1)"]
 	
 	
-	rule bitSizeofList(L:List{Type}) => bitSizeofList-aux(.K, 0, L:List{Type})
+	rule bitSizeofList(L:List{KResult}) => bitSizeofList-aux(.K, 0, L:List{KResult})
 		[structural]
-	rule bitSizeofList-aux((.K => bitSizeofType(T:Type)), ?, (T:Type => Nil) :: ?:List{Type})
+	rule bitSizeofList-aux((.K => bitSizeofType(T:Type)), ?, ((T:Type => .List{K}),, ?:List{KResult}))
 		[structural]
 	rule bitSizeofList-aux((tv(Len':#Nat, ?) => .K), (Len:#Nat => Len:#Nat +Nat Len':#Nat), ?)
 		[structural]
-	rule bitSizeofList-aux(.K, Len:#Nat, Nil) => tv(Len:#Nat, cfg:largestUnsigned)
+	rule bitSizeofList-aux(.K, Len:#Nat, .List{K}) => tv(Len:#Nat, cfg:largestUnsigned)
 		[structural]	
 	
 	
@@ -446,19 +446,22 @@ kmod COMMON-C-BITSIZE is
 		// [structural]
 	// rule bitSizeofList(Nil) => 0 [structural]
 	
-	op maxBitSizeofList : List{Type} -> K 
-	op maxBitSizeofList-aux : List{Type} #Nat -> K 
-	rule maxBitSizeofList(L:List{Type}) => maxBitSizeofList-aux(L:List{Type}, 0) [structural]
+	op maxBitSizeofList : List{KResult} -> K 
+	op maxBitSizeofList-aux : List{KResult} #Nat -> K 
+	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural]
 	rule
-		< k > maxBitSizeofList-aux(T:Type :: L:List{Type}, N:#Nat) 
-			=> bitSizeofType(T:Type) ~> maxBitSizeofList-aux(L:List{Type}, N:#Nat) 
+		< k > maxBitSizeofList-aux((T:Type,, L:List{KResult}), N:#Nat)
+			=> bitSizeofType(T:Type) 
+			~> maxBitSizeofList-aux(L:List{KResult}, N:#Nat) 
 		...</ k >
 		[structural] 
 	rule
-		< k > (tv(N':#Nat, ?) => .) ~> maxBitSizeofList-aux(L:List{Type}, (N:#Nat => maxNat(N:#Nat, N':#Nat))) ...</ k >
+		< k > (tv(N':#Nat, ?) => .) 
+			~> maxBitSizeofList-aux(L:List{KResult}, (N:#Nat => maxNat(N:#Nat, N':#Nat))) 
+		...</ k >
 		[structural] 
 	rule
-		< k > maxBitSizeofList-aux(Nil, N:#Nat) => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
+		< k > maxBitSizeofList-aux(.List{K}, N:#Nat) => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
 		[structural] 
 	
 	rule bitSizeofType(t(?, arrayType(T:Type, N:#Nat))) => bitSizeofType(T:Type) * tv(N:#Nat, cfg:largestUnsigned) [structural]
@@ -471,12 +474,12 @@ kmod COMMON-C-BITSIZE is
 	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
 
 	rule
-		< k > bitSizeofType(t(?, structType(S:#Id))) => bitSizeofList(L:List{Type}) ...</ k >
-		< structs >... S:#Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		< k > bitSizeofType(t(?, structType(S:#Id))) => bitSizeofList(L:List{KResult}) ...</ k >
+		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, ?, ?) ...</ structs >
 		[structural] 
 	rule
-		< k > bitSizeofType(t(?, unionType(S:#Id))) => maxBitSizeofList(L:List{Type}) ...</ k >
-		< structs >... S:#Id |-> aggregateInfo(L:List{Type}, ?, ?) ...</ structs >
+		< k > bitSizeofType(t(?, unionType(S:#Id))) => maxBitSizeofList(L:List{KResult}) ...</ k >
+		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, ?, ?) ...</ structs >
 		[structural]
 		
 	rule K2Nat(N:#Nat) => N:#Nat [structural]

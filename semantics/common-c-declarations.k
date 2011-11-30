@@ -634,7 +634,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F:#Id, T:Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?)
 		...</ structs > 
 		[structural] 
 		
@@ -645,7 +645,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F:#Id, T:Type)) ListItem(te(K:K, t(Se:Set, unionType(S:#Id))))
 		...</ currentSubObject >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id) :: ?), ?, ?) 
+			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?) 
 		...</ structs > 
 		[structural] 
 		
@@ -678,7 +678,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':#Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(T':Type, F':#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(T':Type, F':#Id),, ?), ?, ?)
 		...</ structs > 
 		if F':#Id =/=Bool #NoName
 		[structural] 
@@ -689,7 +689,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':#Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(?, #NoName) :: typedDeclaration(T':Type, F':#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(?, #NoName),, typedDeclaration(T':Type, F':#Id),, ?), ?, ?)
 		...</ structs >
 		[structural] 
 		
@@ -698,7 +698,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:#Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id)), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id)), ?, ?)
 		...</ structs > 
 		[structural] 
 	rule [init-next-struct-element-done-noname]:
@@ -706,7 +706,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:#Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(?, #NoName)), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(?, #NoName)), ?, ?)
 		...</ structs > 
 		[structural] 
 		

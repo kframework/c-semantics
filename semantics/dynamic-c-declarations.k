@@ -161,7 +161,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		if hasFloatType(T:Type)
 		[structural] 
 		
-	op zeroStruct : K List{C} -> K 
+	op zeroStruct : K List{KResult} -> K 
 	
 	// c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
 	// -- if it has pointer type, it is initialized to a null pointer;
@@ -171,9 +171,9 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	rule
 		< k > zeroType(Name:K, t(?, structType(S:#Id))) 
-			=> zeroStruct(Name:K, Fields:List{Type})
+			=> zeroStruct(Name:K, Fields:List{KResult})
 		...</ k >
-		< structs >... S:#Id |-> aggregateInfo(Fields:List{Type}, ?, ?) ...</ structs > 
+		< structs >... S:#Id |-> aggregateInfo(Fields:List{KResult}, ?, ?) ...</ structs > 
 		[structural] 
 		
 	rule
@@ -181,18 +181,18 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 			=> zeroType(Name:K . F:#Id, T:Type)
 		...</ k >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id) :: ?), ?, ?) 
+			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?) 
 		...</ structs > 
 		[structural] 
 		
 	rule
-		< k > zeroStruct(Name:K, (typedDeclaration(T:Type, F:#Id) :: L:List{C})) 
+		< k > zeroStruct(Name:K, (typedDeclaration(T:Type, F:#Id),, L:List{KResult})) 
 			=> zeroType(Name:K . F:#Id, T:Type)
-			~> zeroStruct(Name:K, L:List{C}) 
+			~> zeroStruct(Name:K, L:List{KResult}) 
 		...</ k >
 		[structural] 
 	rule
-		< k > zeroStruct(Name:K, Nil) => .K ...</ k >
+		< k > zeroStruct(Name:K, .List{K}) => .K ...</ k >
 		[structural] 
 
 	rule

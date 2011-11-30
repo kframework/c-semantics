@@ -274,7 +274,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op hasTypedefType : Type -> #Bool 
 	op hasArithmeticType : Type -> #Bool
 	
-	op aggregateInfo : List{C} Map Map -> K // first map is for type, second map is for offset
+	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
 	op getFieldOffset : #Id K -> #Nat // these expect an aggregateInfo term as second argument
 	op getFieldType : #Id K -> Type
 	

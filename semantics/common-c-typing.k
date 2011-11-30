@@ -3,8 +3,8 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
 	//op addAggregate : #Id List{Type} -> K 
-	op addStruct : #Id List{Type} -> K 
-	op addUnion : #Id List{Type} -> K 
+	op addStruct : #Id List{KResult} -> K 
+	op addUnion : #Id List{KResult} -> K 
 	op canonicalizeType : Bag -> K 
 	
 	op extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
@@ -297,7 +297,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:#Nat)),, L:List{C})))) ...</ k >
+		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:#Nat)),, ?)))) ...</ k >
 		< freshNat > N:#Nat => sNat(N:#Nat) </ freshNat >
 		if L:KLabel ==Bool 'StructDef
 		orBool L:KLabel ==Bool 'EnumDef
@@ -305,15 +305,15 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural] 
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(StructDef(X:#Id, L:List{C})))
-			=> StructDef(X:#Id, L:List{C})
+		< k > canonicalizeSpecifier(BagItem(StructDef(X:#Id, L:K)))
+			=> StructDef(X:#Id, L:K)
 			~> t(.Set, structType(X:#Id))
 		...</ k >
 		if X:#Id =/=Bool Identifier("")
 		[structural] 
 	rule
-		< k > canonicalizeSpecifier(BagItem(UnionDef(X:#Id, L:List{C})))
-			=> UnionDef(X:#Id, L:List{C})
+		< k > canonicalizeSpecifier(BagItem(UnionDef(X:#Id, L:K)))
+			=> UnionDef(X:#Id, L:K)
 			~> t(.Set, unionType(X:#Id))
 		...</ k >
 		if X:#Id =/=Bool Identifier("")
@@ -403,8 +403,6 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
-	op structDefType : #Id List{Type} -> Type 
-	
 	op BitFieldType : K K -> K [metadata "strict=()"] 
 	
 	rule
@@ -487,48 +485,49 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		...</ k >
 		[structural] 
 		
-	op fillBitHoles : List{Type} -> List{Type} 
-	op fillBitHoles : #Nat List{Type} -> List{Type} 
+	op fillBitHoles : List{KResult} -> List{KResult} 
+	op fillBitHoles-aux : #Nat List{KResult} -> List{KResult} 
 	rule [fillBitHoles-none]:
-		fillBitHoles(Nil) => Nil 
+		fillBitHoles(.List{K}) => .List{K} 
 		[structural]
 	// if we haven't seen bitfields
 	rule [fillBitHoles-not-bitfield]:
-		fillBitHoles((typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
-			=> typedDeclaration(T:Type, X:#Id) :: fillBitHoles(L:List{Type})
+		fillBitHoles((typedDeclaration(T:Type, X:#Id),, L:List{KResult})) 
+			=> typedDeclaration(T:Type, X:#Id)
+			,, fillBitHoles(L:List{KResult})
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
 	rule [fillBitHoles-bitfield]:
-		fillBitHoles((typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
-			=> fillBitHoles(0, typedDeclaration(T:Type, X:#Id) :: L:List{Type})
+		fillBitHoles((typedDeclaration(T:Type, X:#Id),, L:List{KResult})) 
+			=> fillBitHoles-aux(0, (typedDeclaration(T:Type, X:#Id),, L:List{KResult}))
 		if hasBitfieldType(T:Type) 
 		[structural]
 	
 	// if we have seen bitfields
 	rule [fillBitHoles-aux-not-bitfield]:
-		fillBitHoles(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type})) 
+		fillBitHoles-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
-				:: fillBitHoles(typedDeclaration(T:Type, X:#Id) :: L:List{Type})
+			,, fillBitHoles((typedDeclaration(T:Type, X:#Id),, L:List{KResult}))
 		if notBool hasBitfieldType(T:Type) 
 		[structural]
 	
 	rule [fillBitHoles-aux-bitfield-normal]:
-		fillBitHoles(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:Type, N':#Nat)), X:#Id) :: L:List{Type})) 
+		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:Type, N':#Nat)), X:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(S:Set, bitfieldType(T:Type, N':#Nat)), X:#Id)
-				:: fillBitHoles(N:#Nat +Nat N':#Nat, L:List{Type})
+			,, fillBitHoles-aux(N:#Nat +Nat N':#Nat, L:List{KResult})
 		if N':#Nat =/=Bool 0 
 		[structural]
 		
 	rule [fillBitHoles-bitfield-zero]:
-		fillBitHoles(N:#Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':#Nat)), ?) :: L:List{Type})) 
+		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':#Nat)), ?),, L:List{KResult})) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
-				:: fillBitHoles(L:List{Type})
+			,, fillBitHoles(L:List{KResult})
 		if N':#Nat ==Bool 0
 		[structural]
 	
 	rule [fillBitHoles-done]:
-		fillBitHoles(N:#Nat, Nil) 
+		fillBitHoles-aux(N:#Nat, .List{K}) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName) 
 		[structural]
 
@@ -538,17 +537,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	
 	// fixme chould check for some struct contraints here
-	op incompleteToFlexibleArrayMember : List{Type} -> List{Type} 
-	rule incompleteToFlexibleArrayMember(typedDeclaration(T:Type, X:#Id) :: L:List{Type}) 
-		=> typedDeclaration(T:Type, X:#Id) :: incompleteToFlexibleArrayMember(L:List{Type}) 
+	op incompleteToFlexibleArrayMember : List{KResult} -> List{KResult} 
+	rule incompleteToFlexibleArrayMember((typedDeclaration(T:Type, X:#Id),, L:List{KResult}))
+		=> typedDeclaration(T:Type, X:#Id),, incompleteToFlexibleArrayMember(L:List{KResult}) 
 		if notBool hasIncompleteType(T:Type) 
 		[structural]
-	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:#Id)) => typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:#Id) [structural]
+	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:#Id)) 
+		=> typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:#Id) 
+		[structural]
 	rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
 	
 	rule
-		< k > StructDef(X:#Id, L:List{Type})
-			=> addStruct(X:#Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{Type})))
+		< k > StructDef(X:#Id, List(L:List{KResult}))
+			=> addStruct(X:#Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{KResult})))
 			~> giveType(X:#Id, t(.Set, structType(X:#Id)))
 		...</ k >
 		[structural] 
@@ -589,25 +590,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [Separate-FieldGroups]:
 		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
 		[structural]
-		
-	// op shouldFlatten : List{C} -> Type
-	// rule C :: shouldFlatten(L':List{C}) => C :: L':List{C} [structural]
-	// rule shouldFlatten(L':List{C}) :: C => L':List{C} :: C [structural]
-	// fixme WHY CAN'T I WRITE THIS???
-	
-	// op flattenList : List{C} -> List{C} [metadata "strict=()"]
-	// op flattenListAux : List{C} -> List{C} [metadata "strict=()"]
-	// rule ('flattenList => 'flattenListAux)(?:List{Type}) [structural]
-	// rule 'flattenListAux(('_::_(Lab:KLabel(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
-		// => 'flattenListAux('_::_(Rem:List{Type}),, (Other:List{Type},, Lab:KLabel(L:List{K}))) 
-		// if Lab:KLabel =/=Bool '_::_
-		// [structural]
-	// rule 'flattenListAux(('_::_('_::_(L:List{K}),, Rem:List{Type})),, (Other:List{Type})) 
-		// => 'flattenListAux(('_::_(L:List{K},, Rem:List{Type})),, (Other:List{Type})) 
-		// [structural]
-	// rule 'flattenListAux(('_::_(.List{K})),, (Other:List{Type})) 
-		// => Other:List{Type}
-		// [structural]
+
 	rule
 		FieldGroup(T:Type, Name(X:#Id, K:K)) => NameAndType(X:#Id, DeclType(T:Type, K:K))
 		[structural]
@@ -699,7 +682,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural] 
 			
 	rule
-		< type > Comma(L:List{C} :: K:C) => K:C ...</ type >
+		< type > Comma(List((?,, K:K))) => K:K ...</ type >
 		[structural] 
 
 	rule [type-call-func]:
@@ -890,60 +873,60 @@ kmod COMMON-C-TYPING is
 	op addGlobalAggregate : #Id K -> K 
 	op addLocalAggregate : #Id K -> K 
 	
-	op addStruct-aux : #Id List{Type} K Map Map List{Type} -> K [metadata "strict=(3)"]
-	op addUnion-aux : #Id List{Type} Map Map List{Type} -> K
+	op addStruct-aux : #Id List{KResult} K Map Map List{KResult} -> K [metadata "strict=(3)"]
+	op addUnion-aux : #Id List{KResult} Map Map List{KResult} -> K
 	rule
-		< k > addStruct(S:#Id, L:List{Type}) 
-			=> addStruct-aux(S:#Id, L:List{Type}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{Type})
+		< k > addStruct(S:#Id, L:List{KResult}) 
+			=> addStruct-aux(S:#Id, L:List{KResult}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{KResult})
 		...</ k >
 		if L:List{Type} =/=Bool Nil
 		[structural]
 	rule
 		< k > addStruct-aux(
 				S:#Id
-				, (typedDeclaration(T:Type, Field:#Id) :: L:List{Type})
+				, (typedDeclaration(T:Type, Field:#Id),, L:List{KResult})
 				, V:Value
 				, Types:Map
 				, Offsets:Map
-				, L':List{Type}
+				, L':List{KResult}
 			) 
-			=> addStruct-aux(S:#Id, L:List{Type}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:#Id], Offsets:Map[value(V:Value) / Field:#Id], L':List{Type})
+			=> addStruct-aux(S:#Id, L:List{KResult}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:#Id], Offsets:Map[value(V:Value) / Field:#Id], L':List{KResult})
 		...</ k >
 		[structural]
 	rule
-		< k > addStruct-aux(S:#Id, Nil, ?, Types:Map, Offsets:Map, L:List{Type}) 
+		< k > addStruct-aux(S:#Id, .List{K}, ?, Types:Map, Offsets:Map, L:List{KResult}) 
 			=> if (F:#Id ==Bool File-Scope) then 
-				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			else
-				(addLocalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+				(addLocalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
 			fi
 		...</ k >
 		< currentFunction > F:#Id </ currentFunction >
 		[structural]		
 		
 	rule
-		< k > addUnion(S:#Id, L:List{Type}) 
-			=> addUnion-aux(S:#Id, L:List{Type}, .Map, .Map, L:List{Type})
+		< k > addUnion(S:#Id, L:List{KResult}) 
+			=> addUnion-aux(S:#Id, L:List{KResult}, .Map, .Map, L:List{KResult})
 		...</ k >
-		if L:List{Type} =/=Bool Nil
+		if L:List{KResult} =/=Bool .List{K}
 		[structural]
 	rule
 		< k > addUnion-aux(
 				S:#Id
-				, (typedDeclaration(T:Type, Field:#Id) :: L:List{Type})
+				, (typedDeclaration(T:Type, Field:#Id),, L:List{KResult})
 				, Types:Map
 				, Offsets:Map
-				, L':List{Type}
+				, L':List{KResult}
 			) 
-			=> addUnion-aux(S:#Id, L:List{Type}, Types:Map[T:Type / Field:#Id], Offsets:Map[0 / Field:#Id], L':List{Type})
+			=> addUnion-aux(S:#Id, L:List{KResult}, Types:Map[T:Type / Field:#Id], Offsets:Map[0 / Field:#Id], L':List{KResult})
 		...</ k >
 		[structural]
 	rule
-		< k > addUnion-aux(S:#Id, Nil, Types:Map, Offsets:Map, L:List{Type}) 
+		< k > addUnion-aux(S:#Id, .List{K}, Types:Map, Offsets:Map, L:List{KResult}) 
 			=> if (F:#Id ==Bool File-Scope) then 
-				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map))) 
+				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			else
-				(addLocalAggregate(S:#Id, aggregateInfo(L:List{Type}, Types:Map, Offsets:Map)))
+				(addLocalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
 			fi
 		...</ k >
 		< currentFunction > F:#Id </ currentFunction >

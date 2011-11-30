@@ -23,7 +23,6 @@ kmod COMMON-C-SYNTAX is
 	// the rest are syntactic
 	sort C
 	op AttributeWrapper : K K -> C // new // K, List
-	//syntax C ::= `AttributeWrapper ( K , List{C} ) // new
 	
 	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
 	
@@ -172,9 +171,9 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
-	op StructDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
-	op UnionDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
