@@ -61,7 +61,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< blockHistoryGoto > ListItem(OldNum:#Nat) ...</ blockHistoryGoto >
 		[structural] 
 	rule
-		< computation > Block(Num:#Nat, ?, L:List{C}) => listToK(L:List{C}) ...</ computation > 
+		< computation > Block(Num:#Nat, ?, List(L:List{K})) => klistToK(L:List{K}) ...</ computation > 
 		< blockHistoryGoto > . => ListItem(Num:#Nat) ...</ blockHistoryGoto >
 		//  < declarationStack >... .List => ListItem(.K) </ declarationStack >
 		[structural] 

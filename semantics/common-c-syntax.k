@@ -78,6 +78,8 @@ kmod COMMON-C-SYNTAX is
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 	
+	op List : List{K} -> C [metadata "strict=() hybrid=()"]
+	
 	op StmtCons : K K -> K
 	
 	subsort SpecifierElem < KResult
@@ -393,7 +395,7 @@ and block =
 	  bstmts: statement list
 	} 
 */
-	op Block : #Nat List{C} List{C} -> Block
+	op Block : #Nat K K -> Block // #Nat, list, list
 	
 /*
 	(* GCC asm directives have lots of extra information to guide the optimizer *)

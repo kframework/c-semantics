@@ -123,6 +123,8 @@ let wrap (d1) (d2) =
 	printCell d2 [] (printFlatList (fun x -> x) d1)
 let printList f x =
 	wrap [List.fold_left (fun aux arg -> aux ^ "" ^ (f arg)) "" x] "List"
+let printNewList f x =
+	wrap [List.fold_left (fun aux arg -> aux ^ "" ^ (f arg)) "" x] "NewList"
 	
 (* this is where the recursive printer starts *)
 	
@@ -637,13 +639,13 @@ and printStatement a =
 and printStatementLoc s l =
 	wrap (s :: (printCabsLoc l) :: []) "StatementLoc"
 and printStatementList a =
-	printList printStatement a
+	printNewList printStatement a
 and printAttributeList a =
 	printList printAttribute a
 and printEnumItemList a =
 	printList printEnumItem a
 and printBlockLabels a =
-	printList (fun x -> x) a
+	printNewList (fun x -> x) a
 and printAttribute (a, b) =
 	wrap ((printRawString a) :: (printExpressionList b) :: []) "Attribute"
 and printEnumItem (str, expression, cabsloc) =
