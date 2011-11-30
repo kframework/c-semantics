@@ -10,16 +10,16 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// empty binding
 	// fixme not really a sequence point
 	
-	op bind-aux : #Nat List{C} List{Type} -> K 
+	op bind-aux : #Nat List{KResult} List{Type} -> K 
 	rule
-		< k > bind(L:List{C}, L':List{Type}) => bind-aux(NullPointer, L:List{C}, L':List{Type}) ...</ k > 
+		< k > bind(L:List{KResult}, L':List{Type}) => bind-aux(NullPointer, L:List{KResult}, L':List{Type}) ...</ k > 
 		[structural] 
 	
 	rule [bind-empty-void]:
-		< k > bind-aux(?, Nil, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
+		< k > bind-aux(?, .List{K}, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
-		< k > bind-aux(?, Nil, Nil) => sequencePoint ...</ k > 
+		< k > bind-aux(?, .List{K}, Nil) => sequencePoint ...</ k > 
 		[structural] 
 		
 		
@@ -30,7 +30,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	rule [bind-coerce-array]:
 		bind-aux(
 			?
-			, L:List{C}
+			, L:List{KResult}
 			, (
 				?:List{Type}
 				:: typedDeclaration(
@@ -44,7 +44,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
 			?
-			, L:List{C}
+			, L:List{KResult}
 			, (
 				?:List{Type} 
 				:: typedDeclaration(
@@ -56,12 +56,12 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 	rule [bind-one]:
-		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
+		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
 			=> allocateType(Loc:#Nat, T:Type)
 			~> addToEnv(X:#Id, Loc:#Nat)
 			~> giveType(X:#Id, T:Type)
 			~> initialize(X:#Id, T:Type, Computation(AllowWrite(X:#Id) := tv(V:List{K}, T':Type)))
-			~> bind-aux(Loc:#Nat, L:List{C}, P:List{Type})
+			~> bind-aux(Loc:#Nat, L:List{KResult}, P:List{Type})
 		...</ k > 
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
@@ -70,16 +70,18 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		
 	rule [bind-one-check-type]:
 		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
-			~> bind-aux(?, (tv(V:List{K}, T':Type) :: L:List{C}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
+			~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
 		...</ k > 
 		[structural] 
 	
-	op promoteList : List{C} -> List{K} 
-	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{C})
+	op promoteList : List{KResult} -> List{K} 
+	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
+		=> cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{KResult})
 		if ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
 		orBool T:SimpleType ==Bool float 
 		[structural]
-	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)) :: L:List{C})) => (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{C}))
+	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
+		=> (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{KResult}))
 		if (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
 			andBool notBool T:SimpleType ==Bool float
 			andBool notBool hasArrayType(t(S:Set, T:SimpleType))
@@ -88,15 +90,16 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		orBool T:SimpleType ==Bool double 
 		orBool T:SimpleType ==Bool long-double
 		[structural]
-		
+	rule promoteList(.List{K}) => .List{K} [structural]
+	
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 
-	rule promoteList(Nil) => .List{K} [structural]
+	
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
-		< k > bind-aux(Loc:#Nat, L:List{C}, t(?, variadic))
-			=> bindVariadic-pre(Loc:#Nat, promoteList(L:List{C}))
+		< k > bind-aux(Loc:#Nat, L:List{KResult}, t(?, variadic))
+			=> bindVariadic-pre(Loc:#Nat, promoteList(L:List{KResult}))
 		...</ k >
 		[structural] 
 

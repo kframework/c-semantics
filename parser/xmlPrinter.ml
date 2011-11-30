@@ -298,6 +298,8 @@ and printComputation exp =
 	wrap ((printExpression exp) :: []) "Computation"
 and printExpressionList defs =
 	printList printExpression defs
+and printNewExpressionList defs =
+	printNewList printExpression defs
 and printBuiltin (sort : string) (data : string) =
 	printCell "RawData" [Attrib("sort", sort)] (cdata data)
 and printRawString s =
@@ -468,7 +470,7 @@ and printExpression exp =
 		let compoundLiteralPrinter x = wrap (compoundLiteralIdCell :: (printSpecifier spec) :: (printDeclType declType) :: x :: []) "CompoundLiteral"
 		in printInitExpressionForCast initExp castPrinter compoundLiteralPrinter
 		(* A CAST can actually be a constructor expression *)
-	| CALL (exp1, expList) -> wrap ((printExpression exp1) :: (printExpressionList expList) :: []) "Call"
+	| CALL (exp1, expList) -> wrap ((printExpression exp1) :: (printNewExpressionList expList) :: []) "Call"
 		(* There is a special form of CALL in which the function called is
 		__builtin_va_arg and the second argument is sizeof(T). This 
 		should be printed as just T *)

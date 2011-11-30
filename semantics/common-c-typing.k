@@ -166,11 +166,11 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		[structural]
 		
 	rule [type-call-heat]:
-		< type > Call(K:K, L:List{C}) => K:K ~> Call(HOLE, L:List{C}) ...</ type >
+		< type > Call(K:K, L:K) => K:K ~> Call(HOLE, L:K) ...</ type >
 		if notBool isAType(K:K)
 		[structural] 
 	rule [type-call-cool]:
-		< type > T:Type ~> Call(HOLE, L:List{C}) => Call(T:Type, L:List{C}) ...</ type >
+		< type > T:Type ~> Call(HOLE, L:K) => Call(T:Type, L:K) ...</ type >
 		if isAType(T:Type)
 		[structural] 
 endkm
@@ -703,7 +703,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural] 
 
 	rule [type-call-func]:
-		< type > Call(t(?, functionType(T:Type, ?)), L:List{C}) => T:Type ...</ type >
+		< type > Call(t(?, functionType(T:Type, ?)), ?) => T:Type ...</ type >
 		[structural]
 		 		
 	rule [type-struct-dot]:

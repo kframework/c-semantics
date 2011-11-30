@@ -214,7 +214,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 		if notBool Const in S:Set
 		[structural]
 	
-	op bind : List{C} List{Type} -> K 
+	op bind : List{KResult} List{Type} -> K 
 	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
 	op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 
