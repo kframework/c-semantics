@@ -77,7 +77,10 @@ kmod COMMON-C-SYNTAX is
 	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 	
-	op List : List{K} -> C [metadata "strict=() hybrid=()"]
+	// op List : List{K} -> C [metadata "strict=() hybrid=()"]
+	// op List : List{K} -> C [metadata "hybrid=()"]
+	op List : List{K} -> C
+	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
 	op StmtCons : K K -> K
 	
@@ -171,9 +174,13 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
-	op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	context StructDef(_, List((?,, `[HOLE`]:K,, ?)))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
-	op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	context UnionDef(_, List((?,, `[HOLE`]:K,, ?)))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]

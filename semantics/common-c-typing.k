@@ -545,7 +545,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:#Id)) 
 		=> typedDeclaration(t(S:Set, flexibleArrayType(T:Type)), X:#Id) 
 		[structural]
-	rule incompleteToFlexibleArrayMember(Nil) => Nil [structural]
+	rule incompleteToFlexibleArrayMember(.List{K}) => .List{K} [structural]
 	
 	rule
 		< k > StructDef(X:#Id, List(L:List{KResult}))
