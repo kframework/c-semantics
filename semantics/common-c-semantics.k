@@ -7,7 +7,6 @@ kmod COMMON-INCOMING-MODULES is
 	
 	sort Type 
 	sort Value 
-	// sort List{Type} 
 	syntax List{Type} ::= List{Type} :: List{Type} [ditto] 
 	op Nil : -> List{Type} [ditto]
 	subsort List{Type} < KResult 
@@ -34,10 +33,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op kccSettingNzNat : #String -> #NzNat
 	op kccSettingInt : #String -> #Int
 	
-	op fromUnion : #Id -> K
-	
-	// op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
-	
+	op fromUnion : #Id -> K	
 		
 	// Types
 	op typedDeclaration : Type #Id -> Type // would rather this be KResult, but can't get the subsorting to work

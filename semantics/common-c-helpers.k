@@ -425,9 +425,6 @@ endkm
 kmod COMMON-C-BITSIZE is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
-	// syntax K ::= bitSizeofList ( List{Type} )
-	// syntax K ::= bitSizeofList-aux ( K , List{Type} ) [strict(1)]
-	
 	op bitSizeofList : List{KResult} -> K
 	op bitSizeofList-aux : K #Nat List{KResult} -> K [metadata "strict=(1)"]
 	
@@ -441,11 +438,7 @@ kmod COMMON-C-BITSIZE is
 	rule bitSizeofList-aux(.K, Len:#Nat, .List{K}) => tv(Len:#Nat, cfg:largestUnsigned)
 		[structural]	
 	
-	
-	// rule bitSizeofList(T:Type :: L:List{Type}) => bitSizeofType(T:Type) + bitSizeofList(L:List{Type}) 
-		// [structural]
-	// rule bitSizeofList(Nil) => 0 [structural]
-	
+		
 	op maxBitSizeofList : List{KResult} -> K 
 	op maxBitSizeofList-aux : List{KResult} #Nat -> K 
 	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural]

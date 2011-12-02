@@ -247,7 +247,7 @@ and printFieldGroupList a =
 and printFieldGroup (spec, fields) =
 	wrap ((printSpecifier spec) :: (printFieldList fields) :: []) "FieldGroup"
 and printFieldList (fields) =
-	printList printField fields
+	printNewList printField fields
 and printField (name, expOpt) =
 	match expOpt with
 	| None -> wrap ((printName name) :: []) "FieldName"

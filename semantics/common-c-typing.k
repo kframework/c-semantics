@@ -2,7 +2,6 @@
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	//op addAggregate : #Id List{Type} -> K 
 	op addStruct : #Id List{KResult} -> K 
 	op addUnion : #Id List{KResult} -> K 
 	op canonicalizeType : Bag -> K 
@@ -558,8 +557,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		...</ k >
 		[structural] 
 	rule
-		< k > UnionDef(X:#Id, L:List{Type})
-			=> addUnion(X:#Id, L:List{Type})
+		< k > UnionDef(X:#Id, List(L:List{KResult}))
+			=> addUnion(X:#Id, L:List{KResult})
 			~> giveType(X:#Id, t(.Set, unionType(X:#Id)))
 		...</ k >
 		[structural] 
@@ -592,16 +591,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		SingleName(T:Type, Name(X:#Id, K:K)) => NameAndType(X:#Id, DeclType(T:Type, K:K))
 		[structural] 
 	rule [Separate-FieldGroups]:
-		FieldGroup(K:K, (C:C :: C':C :: L:List{C})) => FieldGroup(K:K, C:C) :: FieldGroup(K:K, (C':C :: L:List{C}))
+		FieldGroup(K:K, List((C:K,, C':K,, L:List{K}))) 
+			=> FieldGroup(K:K, List(C:K))
+			,, FieldGroup(K:K, List((C':K,, L:List{K})))
 		[structural]
 
 	rule
-		FieldGroup(T:Type, Name(X:#Id, K:K)) => NameAndType(X:#Id, DeclType(T:Type, K:K))
+		FieldGroup(T:Type, List(Name(X:#Id, K:K))) 
+			=> NameAndType(X:#Id, DeclType(T:Type, K:K))
 		[structural]
 		
 	rule
-		FieldGroup(T:Type, BitFieldName(Name(X:#Id, K:K), Size:K))
-		=> NameAndType(X:#Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
+		FieldGroup(T:Type, List(BitFieldName(Name(X:#Id, K:K), Size:K)))
+			=> NameAndType(X:#Id, DeclType(T:Type, BitFieldType(K:K, Size:K)))
 		[structural] 
 	rule FieldName(K:K) => K:K [structural]
 endkm
@@ -883,7 +885,7 @@ kmod COMMON-C-TYPING is
 		< k > addStruct(S:#Id, L:List{KResult}) 
 			=> addStruct-aux(S:#Id, L:List{KResult}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{KResult})
 		...</ k >
-		if L:List{Type} =/=Bool Nil
+		if L:List{KResult} =/=Bool .List{K}
 		[structural]
 	rule
 		< k > addStruct-aux(

@@ -286,7 +286,8 @@ and name_group = specifier * name list
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
 */
-	op FieldGroup : K List{C} -> FieldGroup [metadata "strict=(1)"]
+	// op FieldGroup : K List{C} -> FieldGroup [metadata "strict=(1)"]
+	op FieldGroup : K K -> FieldGroup [metadata "strict=(1)"] // K, List
 	op FieldName : K -> FieldName // new
 	op BitFieldName : K K -> FieldName // new
 	
@@ -363,8 +364,8 @@ and enum_item = #String * expression * cabsloc
 	op OnlyTypedef : K -> PureDefinition
 	op GlobAsm : #String -> PureDefinition
 	op Pragma : K -> PureDefinition
-	op Linkage : #String List{C} -> PureDefinition
-	op Transformer : K List{C} -> PureDefinition
+	op Linkage : #String K -> PureDefinition // seems to be unused
+	op Transformer : K K -> PureDefinition // seems to be unused
 	op ExpressionTransformer : K K -> PureDefinition
 	op LTLAnnotation : K -> PureDefinition // name
 	
