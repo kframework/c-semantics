@@ -169,7 +169,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op isBasicType : K -> #Bool
 	
-	
 	// Composite types
 	op enumType : #Id -> SimpleType [ctor] 
 	op arrayType : Type #Nat -> SimpleType [ctor] 

@@ -113,13 +113,17 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declare(SingleName(T:Type, Name:K), Exp:K) 
 		[structural]
 			
-	rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
-	rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
-		
+	rule Typedef(NameGroup(T:Type, List((K:K,, L:List{K})))) 
+		=> defineType(SingleName(T:Type, K:K))
+		~> Typedef(NameGroup(T:Type, List(L:List{K})))
+		[structural]
+	rule Typedef(NameGroup(T:Type, List(.List{K}))) => .K
+		[structural]
 
-	
 	rule
-		< k > defineType(typedDeclaration(T:Type, X:#Id)) => giveType(typedef(X:#Id), T:Type) ...</ k >
+		< k > defineType(typedDeclaration(T:Type, X:#Id)) 
+			=> giveType(typedef(X:#Id), T:Type) 
+		...</ k >
 		[structural] 
 			
 	op declareFunction : #Id Type K -> K 

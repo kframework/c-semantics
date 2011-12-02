@@ -77,37 +77,53 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 
-	rule
-		< computation > DeclarationDefinition(InitNameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
-			=> DeclarationDefinition(InitNameGroup(T:K, K:C))
-			~> DeclarationDefinition(InitNameGroup(T:K, K':C :: L:List{C})) 
-		...</ computation >
-		[structural] 
-	rule
-		< computation > Typedef(NameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
-			=> Typedef(NameGroup(T:K, K:C))
-			~> Typedef(NameGroup(T:K, K':C :: L:List{C})) 
-		...</ computation >
-		[structural] 
+	// // this rule is different than the dynamic one because we don't enforce T to be reduced yet
+	// rule
+		// < computation > DeclarationDefinition(InitNameGroup(T:K, (K:C :: K':C :: L:List{C}))) 
+			// => DeclarationDefinition(InitNameGroup(T:K, K:C))
+			// ~> DeclarationDefinition(InitNameGroup(T:K, K':C :: L:List{C})) 
+		// ...</ computation >
+		// [structural]
+		
+	// rule
+		// < computation > Typedef(NameGroup(T:K, List((K:K,, K':K,, L:List{K}))))
+			// => Typedef(nameGroup-aux(T:K, K:K))
+			// ~> Typedef(NameGroup(T:K, List(K':K,, L:List{K})))
+		// ...</ computation >
+		// [structural] 
 
 	//  fixme would like to combine the below rules
+	// rule
+		// < computation > DeclarationDefinition(InitNameGroup(T:K, K:C)) => .K ...</ computation >
+		// < declarationStack >... .List 
+			// => ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, DeclarationDefinition(InitNameGroup(T:K, K:C)))) 
+		// </ declarationStack >
+		// < nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
+		// < blockHistoryGoto > ListItem(BlockNum:#Nat) ...</ blockHistoryGoto >
+		// [structural]
 	rule
-		< computation > DeclarationDefinition(InitNameGroup(T:K, K:C)) => .K ...</ computation >
-		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, DeclarationDefinition(InitNameGroup(T:K, K:C)))) </ declarationStack >
+		< computation > DeclarationDefinition(K:K) => .K ...</ computation >
+		< declarationStack >... .List 
+			=> ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, DeclarationDefinition(K:K))) 
+		</ declarationStack >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:#Nat) ...</ blockHistoryGoto >
-		[structural] 
+		[structural]
 		
 	rule
 		< computation > OnlyTypedef(K:K) => .K ...</ computation >
-		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, OnlyTypedef(K:K))) </ declarationStack >
+		< declarationStack >... .List 
+			=> ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, OnlyTypedef(K:K))) 
+		</ declarationStack >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:#Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
 	rule [compute-label-typedef]:
 		< computation > Typedef(K:K) => .K ...</ computation >
-		< declarationStack >... .List => ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, Typedef(K:K))) </ declarationStack >
+		< declarationStack >... .List 
+			=> ListItem(frozenDeclaration(Depth:#Nat, BlockNum:#Nat, Typedef(K:K))) 
+		</ declarationStack >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(BlockNum:#Nat) ...</ blockHistoryGoto >
 		[structural] 

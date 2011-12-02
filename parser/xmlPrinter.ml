@@ -239,7 +239,7 @@ and printInitNameGroup (a, b) =
 and printNameGroup (a, b) = 
 	wrap ((printSpecifier a) :: (printNameList b) :: []) "NameGroup"
 and printNameList a =
-	printList printName a
+	printNewList printName a
 and printInitNameList a = 
 	printList printInitName a
 and printFieldGroupList a =

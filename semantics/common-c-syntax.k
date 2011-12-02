@@ -279,7 +279,8 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K List{C} -> NameGroup [metadata "strict=(1 2)"]
+	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
+	context NameGroup(_, List((?,, `[HOLE`]:K,, ?)))
 	
 /*
 	(* The optional expression is the bitfield *)
