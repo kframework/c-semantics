@@ -295,7 +295,8 @@ and field_group = specifier * (name * expression option) list
 	(* e.g.: #Int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
-	op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
+	// op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
+	op InitNameGroup : K K -> InitNameGroup [metadata "strict=(1)"] // K, List
 	
 /*
 	(* The decl_type is in the order in which they are printed. Only the name of

@@ -241,7 +241,7 @@ and printNameGroup (a, b) =
 and printNameList a =
 	printNewList printName a
 and printInitNameList a = 
-	printList printInitName a
+	printNewList printInitName a
 and printFieldGroupList a =
 	printNewList printFieldGroup a
 and printFieldGroup (spec, fields) =

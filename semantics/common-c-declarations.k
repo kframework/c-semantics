@@ -104,13 +104,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		[structural] 
 		
-	rule DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
-		=> DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
-		~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
+	rule DeclarationDefinition(InitNameGroup(T:Type, List((K:K,, K':K,, L:List{K}))))
+		=> DeclarationDefinition(InitNameGroup(T:Type, List(K:K)))
+		~> DeclarationDefinition(InitNameGroup(T:Type, List((K':K,, L:List{K}))))
 		[structural]
 	rule 
-		DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) 
-			=> declare(SingleName(T:Type, Name:K), Exp:K) 
+		DeclarationDefinition(InitNameGroup(T:Type, List(InitName(Name:K, Exp:K))))
+			=> declare(SingleName(T:Type, Name:K), Exp:K)
 		[structural]
 			
 	rule Typedef(NameGroup(T:Type, List((K:K,, L:List{K})))) 
