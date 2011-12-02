@@ -7,14 +7,6 @@ kmod COMMON-INCOMING-MODULES is
 	
 	sort Type 
 	sort Value 
-	// sort List{Type} 
-	syntax List{Type} ::= List{Type} :: List{Type} [ditto] 
-	op Nil : -> List{Type} [ditto]
-	subsort List{Type} < KResult 
-	subsort List{Type} < List{C} 
-	subsort Type < List{Type}
-	subsort Type < List{C} 
-	subsort Value < List{Type} 
 	subsort Type < C 
 	subsort Value < C 
 	sort BaseValue 
@@ -34,10 +26,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op kccSettingNzNat : #String -> #NzNat
 	op kccSettingInt : #String -> #Int
 	
-	op fromUnion : #Id -> K
-	
-	// op _::_ : List{Type} List{Type} -> List{Type} [ditto] 
-	
+	op fromUnion : #Id -> K	
 		
 	// Types
 	op typedDeclaration : Type #Id -> Type // would rather this be KResult, but can't get the subsorting to work
@@ -90,7 +79,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op innerType : Type -> Type
 	
-	op AttributeValue : #String List{C} -> KResult 
+	op AttributeValue : #String List{K} -> KResult 
 	
 	op extractBitsFromList : K #Nat #Nat -> K [metadata "strict=(1)"] // data, offset, size in bits
 	op typedef : #Id -> #Id 
@@ -169,14 +158,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op isBasicType : K -> #Bool
 	
-	
 	// Composite types
 	op enumType : #Id -> SimpleType [ctor] 
 	op arrayType : Type #Nat -> SimpleType [ctor] 
 	op incompleteArrayType : Type -> SimpleType [ctor] 
 	op flexibleArrayType : Type -> SimpleType [ctor] 
 	op bitfieldType : Type #Nat -> SimpleType [ctor] 
-	op functionType : Type List{Type} -> SimpleType [ctor] 
+	op functionType : Type List{KResult} -> SimpleType [ctor] 
 	op pointerType : Type -> SimpleType [ctor] 
 	op structType : #Id -> SimpleType [ctor] 
 	op unionType : #Id -> SimpleType [ctor] 
@@ -214,7 +202,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 		if notBool Const in S:Set
 		[structural]
 	
-	op bind : List{C} List{Type} -> K 
+	op bind : List{KResult} List{KResult} -> K 
 	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
 	op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 
@@ -274,7 +262,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op hasTypedefType : Type -> #Bool 
 	op hasArithmeticType : Type -> #Bool
 	
-	op aggregateInfo : List{C} Map Map -> K // first map is for type, second map is for offset
+	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
 	op getFieldOffset : #Id K -> #Nat // these expect an aggregateInfo term as second argument
 	op getFieldType : #Id K -> Type
 	
@@ -441,7 +429,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 		// [structural]
 		
 	rule [Attributes]:
-		< k > Attribute(S:#String, L:List{C}) => AttributeValue(S:#String, L:List{C}) ...</ k >
+		< k > Attribute(S:#String, List(L:List{K})) => AttributeValue(S:#String, L:List{K}) ...</ k >
 		[structural]
 		
 	rule AttributeWrapper(K:K, ?) => K:K [structural]

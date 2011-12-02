@@ -219,7 +219,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?) :: ?:List{Type}))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?),, ?:List{KResult}))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		if T:SimpleType =/=Bool int andBool T:SimpleType =/=Bool void
@@ -250,14 +250,14 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?) :: typedDeclaration(T:Type, ?)))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?),, typedDeclaration(T:Type, ?)))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		if notBool isArgvType(T:Type)
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (?:Type :: ?:Type :: ?:Type :: ?:List{Type}))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (?:Type,, ?:Type,, ?:Type,, ?:List{KResult}))), ?, ?, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
@@ -329,11 +329,11 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00039]:
-		< k => finalComputation > addUnion(S:#Id, Nil)  ...</ k => finalComputation >
+		< k => finalComputation > addUnion(S:#Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00039", "Unions cannot be empty.") </ errorCell >)
 		[structural]
 	rule [err00040]:
-		< k => finalComputation > addStruct(S:#Id, Nil)  ...</ k => finalComputation >
+		< k => finalComputation > addStruct(S:#Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00040", "Structs cannot be empty.") </ errorCell >)
 		[structural]
 		

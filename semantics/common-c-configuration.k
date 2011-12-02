@@ -150,6 +150,5 @@ kmod COMMON-C-CONFIGURATION is
 	//subsort #String < Builtins
 	
 	subsort C < K
-	subsort List{C} < K
 	
 endkm

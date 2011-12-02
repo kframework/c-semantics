@@ -153,12 +153,17 @@ sub elementToK {
 	if (exists($ignoreThese{$label})) {
 		return ($inNextState, undef);
 	}
-	
+	my $prefix = "";
+	my $suffix = "";
 	if ($label eq "RawData") {
 		return ($inNextState, rawdataToK($reader));
 	}
 	if ($label eq 'List') {
 		$label = "_::_";
+	} elsif ($label eq 'NewList') {
+		$label = "List";
+		$prefix = '(_`(_`)(kList("wklist_"), ';
+		$suffix = '))';
 	} elsif ($label eq 'Identifier') {
 		$reader->nextElement;
 		my $rawData = getRawData($reader);
@@ -201,7 +206,7 @@ sub elementToK {
 		$ltl .= paren(join(KLIST_SEPARATOR, @klist)) . " .\n";
 		return ($inNextState, "(.).K");
 	}
-	return ($inNextState, nameToLabel($label) . $kterm);
+	return ($inNextState, nameToLabel($label) . $prefix . $kterm . $suffix);
 }
 
 sub rawdataToK {
@@ -255,7 +260,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = "_`(_`)(kList(\"wklist_\"), (";
+	my $retval = '_`(_`)(kList("wklist_"), (';
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {

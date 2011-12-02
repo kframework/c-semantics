@@ -38,23 +38,23 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// aggregates
 	rule
-		< k > figureInitializer(X:#Id, T:Type, CompoundInit(L:List{C}))
+		< k > figureInitializer(X:#Id, T:Type, CompoundInit(L:K))
 			=> giveType(X:#Id, T:Type)
-			~> figureInitializer-aux(X:#Id, T:Type, startInitializer(T:Type, X:#Id, CompoundInit(L:List{C})))
+			~> figureInitializer-aux(X:#Id, T:Type, startInitializer(T:Type, X:#Id, CompoundInit(L:K)))
 		...</ k >
 		if (hasAggregateType(T:Type) orBool hasUnionType(T:Type)) 
 		//andBool notBool hasIncompleteType(T:Type)
 		[structural] 
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(StringLiteral(S:#String)))) 
-			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String))))))
+			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String)))))))
 		...</ k >
 		if hasCharType(T:Type)
 		andBool lengthString(S:#String) <=Nat Len:#Nat
 		[structural]
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
-			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K}))))))
+			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
 		...</ k >
 		if hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <=Nat Len:#Nat
@@ -70,7 +70,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 	rule
-		< k > figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), CompoundInit(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String))))))
+		< k > figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String)))))))
 			=> figureInitializer(X:#Id, t(Se:Set, incompleteArrayType(T:Type)), SingleInit(Constant(StringLiteral(S:#String))))
 		...</ k >
 		[structural] 
@@ -98,28 +98,32 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	// c1x 6.7.8:11
 	rule
-		< k > figureInitializer(X:#Id, T:Type, CompoundInit(InitFragment(NextInit, SingleInit(K:K))))
+		< k > figureInitializer(X:#Id, T:Type, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
 			=> figureInitializer-aux(X:#Id, T:Type, initializer(Computation(AllowWrite(X:#Id) := K:K)))
 		...</ k >
 		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		[structural] 
 		
-	rule DeclarationDefinition(InitNameGroup(T:Type, (K:C :: K':C :: L:List{C}))) 
-		=> DeclarationDefinition(InitNameGroup(T:Type, K:C)) 
-		~> DeclarationDefinition(InitNameGroup(T:Type, K':C :: L:List{C})) 
+	rule DeclarationDefinition(InitNameGroup(T:Type, List((K:K,, K':K,, L:List{K}))))
+		=> DeclarationDefinition(InitNameGroup(T:Type, List(K:K)))
+		~> DeclarationDefinition(InitNameGroup(T:Type, List((K':K,, L:List{K}))))
 		[structural]
 	rule 
-		DeclarationDefinition(InitNameGroup(T:Type, InitName(Name:K, Exp:K))) 
-			=> declare(SingleName(T:Type, Name:K), Exp:K) 
+		DeclarationDefinition(InitNameGroup(T:Type, List(InitName(Name:K, Exp:K))))
+			=> declare(SingleName(T:Type, Name:K), Exp:K)
 		[structural]
 			
-	rule Typedef(NameGroup(T:Type, (K:C :: K':C :: L:List{C}))) => Typedef(NameGroup(T:Type, K:C)) ~> Typedef(NameGroup(T:Type, K':C :: L:List{C})) [structural]
-	rule Typedef(NameGroup(T:Type, Name:C)) => defineType(SingleName(T:Type, Name:C)) [structural]
-		
+	rule Typedef(NameGroup(T:Type, List((K:K,, L:List{K})))) 
+		=> defineType(SingleName(T:Type, K:K))
+		~> Typedef(NameGroup(T:Type, List(L:List{K})))
+		[structural]
+	rule Typedef(NameGroup(T:Type, List(.List{K}))) => .K
+		[structural]
 
-	
 	rule
-		< k > defineType(typedDeclaration(T:Type, X:#Id)) => giveType(typedef(X:#Id), T:Type) ...</ k >
+		< k > defineType(typedDeclaration(T:Type, X:#Id)) 
+			=> giveType(typedef(X:#Id), T:Type) 
+		...</ k >
 		[structural] 
 			
 	op declareFunction : #Id Type K -> K 
@@ -580,7 +584,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op getInitializer : -> K 
 	op fillInitializer : K -> K 
 	op fillInitializer-aux : K -> K 
-	op fillInitializer : List{C} -> K 
+	op fillInitializer : List{K} -> K 
 	op completeInitializerFragment : K K -> C 
 	op initializerFragment : K -> KResult 
 	
@@ -592,8 +596,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 
 	rule
-		< k > startInitializer(T:Type, X:#Id, CompoundInit(L:List{C}))
-			=> fillInitializer(L:List{C}) ~> getInitializer
+		< k > startInitializer(T:Type, X:#Id, CompoundInit(List(L:List{K})))
+			=> fillInitializer(L:List{K}) 
+			~> getInitializer
 		...</ k >
 		< incompleteLength > ? => 0 </ incompleteLength >
 		< currentSubObject > .List => ListItem(te(X:#Id, T:Type)) </ currentSubObject >
@@ -603,12 +608,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 	
 	rule
-		< k > fillInitializer(InitFragment(K:K, Exp:K) :: L:List{C})
-		=> fillInitializer(InitFragment(K:K, Exp:K)) ~> fillInitializer(L:List{C})
+		< k > fillInitializer((InitFragment(K:K, Exp:K),, L:List{K}))
+			=> fillInitializer(InitFragment(K:K, Exp:K)) 
+			~> fillInitializer(L:List{K})
 		...</ k >
 		[structural] 
 	rule
-		< k > fillInitializer(Nil) => . ...</ k >
+		< k > fillInitializer(.List{K}) => . ...</ k >
 		[structural] 
 	
 	op next : -> ListItem 
@@ -632,7 +638,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F:#Id, T:Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?)
 		...</ structs > 
 		[structural] 
 		
@@ -643,7 +649,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F:#Id, T:Type)) ListItem(te(K:K, t(Se:Set, unionType(S:#Id))))
 		...</ currentSubObject >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id) :: ?), ?, ?) 
+			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?) 
 		...</ structs > 
 		[structural] 
 		
@@ -676,7 +682,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':#Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(T':Type, F':#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(T':Type, F':#Id),, ?), ?, ?)
 		...</ structs > 
 		if F':#Id =/=Bool #NoName
 		[structural] 
@@ -687,7 +693,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> ListItem(te(K:K . F':#Id, T':Type)) ListItem(te(K:K, t(Se:Set, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(?, #NoName) :: typedDeclaration(T':Type, F':#Id) :: ?), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(?, #NoName),, typedDeclaration(T':Type, F':#Id),, ?), ?, ?)
 		...</ structs >
 		[structural] 
 		
@@ -696,7 +702,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:#Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id)), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id)), ?, ?)
 		...</ structs > 
 		[structural] 
 	rule [init-next-struct-element-done-noname]:
@@ -704,7 +710,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			next (ListItem(te(K:K . F:#Id, T:Type)) => .) ListItem(te(K:K, t(?, structType(S:#Id))))
 		...</ currentSubObject >
 		< structs >...
-			S:#Id |-> aggregateInfo((? :: typedDeclaration(T:Type, F:#Id) :: typedDeclaration(?, #NoName)), ?, ?)
+			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(?, #NoName)), ?, ?)
 		...</ structs > 
 		[structural] 
 		
@@ -715,13 +721,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	rule
-		< k > fillInitializer(InitFragment(NextInit, Exp:K)) => fillInitializer(Exp:K) ...</ k >
+		< k > fillInitializer(InitFragment(NextInit, Exp:K)) 
+			=> fillInitializer(Exp:K) 
+		...</ k >
 		[structural] 
 		
 	op finishCompoundInit : List -> K 
 	rule
-		< k > fillInitializer(CompoundInit(L:List{C})) 
-			=> fillInitializer(L:List{C})
+		< k > fillInitializer(CompoundInit(List(L:List{K})))
+			=> fillInitializer(L:List{K})
 			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:Type)) Remainder:ListItem)
 		...</ k >
@@ -1227,26 +1235,26 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	op fillEnums : K -> K 
 	op fillEnums-aux : K K -> K 
 	rule
-		< k > EnumDef(X:#Id, L:List{C}) => fillEnums(EnumDef(X:#Id, L:List{C})) ...</ k >
+		< k > EnumDef(X:#Id, L:K) => fillEnums(EnumDef(X:#Id, L:K)) ...</ k >
 		[structural] 
 	rule 
 		< k > fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</ k > 
 		[structural]
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, EnumItem(E:#Id) :: L:List{C}), K:K) 
+		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItem(E:#Id),, L:List{K}))), K:K) 
 			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(K:K))
-			~> fillEnums-aux(EnumDef(X:#Id, L:List{C}), K:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), K:K + tv(1, t(.Set, int)))
 		...</ k >
 		[structural] 
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, EnumItemInit(E:#Id, Exp:K) :: L:List{C}), ?)
+		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItemInit(E:#Id, Exp:K),, L:List{K}))), ?)
 			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:#Id, L:List{C}), Exp:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), Exp:K + tv(1, t(.Set, int)))
 		...</ k >
 		if Exp:K =/=Bool NothingExpression
 		[structural] 
 	rule
-		< k > fillEnums-aux(EnumDef(X:#Id, Nil), ?) => .K ...</ k > 
+		< k > fillEnums-aux(EnumDef(X:#Id, List(.List{K})), ?) => .K ...</ k > 
 		[structural] 
 endkm
 

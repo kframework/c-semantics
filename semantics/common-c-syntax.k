@@ -22,8 +22,7 @@ kmod COMMON-C-SYNTAX is
 	
 	// the rest are syntactic
 	sort C
-	op AttributeWrapper : K List{C} -> C // new
-	//syntax C ::= `AttributeWrapper ( K , List{C} ) // new
+	op AttributeWrapper : K K -> C // new // K, List
 	
 	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
 	
@@ -67,16 +66,13 @@ kmod COMMON-C-SYNTAX is
 	sort PureDefinition
 	
 	// sort C
-	// sort List{C}
 	subsort #Id < C
-	op Nil : -> List{C}
-	subsort C < List{C}
-	// fixme, can't figure out how to right this with the new contexts
-	// this is only used when doing nondeterministic stuff, so it's okay
-	// op _::_ : List{C} List{C} -> List{C} [metadata "hybrid=() strict=()" assoc id: Nil]
-	syntax List{C} ::= List{C} :: List{C} [hybrid strict assoc id: Nil]
-	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
+	
+	// op List : List{K} -> C [metadata "strict=() hybrid=()"]
+	// op List : List{K} -> C [metadata "hybrid=()"]
+	op List : List{K} -> C
+	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
 	op StmtCons : K K -> K
 	
@@ -170,11 +166,15 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
-	op StructDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	context StructDef(_, List((?,, `[HOLE`]:K,, ?)))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
-	op UnionDef : #Id List{C} -> TypeSpecifier [metadata "strict=(2)" ctor] // new
+	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
+	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	context UnionDef(_, List((?,, `[HOLE`]:K,, ?)))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
-	op EnumDef : #Id List{C} -> TypeSpecifier [ctor] // new
+	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
 	op TypeofType : K K -> TypeSpecifier [ctor]
 	
@@ -231,7 +231,8 @@ and spec_elem =
 /*
 	and specifier = spec_elem list
 */
-	op Specifier : List{C} -> Specifier [metadata "strict=()"]
+	op Specifier : K -> Specifier
+	context Specifier(List((?,, `[HOLE`]:K,, ?)))
 	
 /*
 and decl_type =
@@ -258,7 +259,8 @@ and decl_type =
 	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
 	context ArrayType(_, ([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
-	op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
+	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
+	context Prototype(_, List((?,, `[HOLE`]:K,, ?)), _)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -267,13 +269,14 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K List{C} -> NameGroup [metadata "strict=(1 2)"]
+	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
+	context NameGroup(_, List((?,, `[HOLE`]:K,, ?)))
 	
 /*
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
 */
-	op FieldGroup : K List{C} -> FieldGroup [metadata "strict=(1)"]
+	op FieldGroup : K K -> FieldGroup [metadata "strict=(1)"] // K, List
 	op FieldName : K -> FieldName // new
 	op BitFieldName : K K -> FieldName // new
 	
@@ -282,7 +285,7 @@ and field_group = specifier * (name * expression option) list
 	(* e.g.: #Int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
-	op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
+	op InitNameGroup : K K -> InitNameGroup [metadata "strict=(1)"] // K, List
 	
 /*
 	(* The decl_type is in the order in which they are printed. Only the name of
@@ -349,8 +352,8 @@ and enum_item = #String * expression * cabsloc
 	op OnlyTypedef : K -> PureDefinition
 	op GlobAsm : #String -> PureDefinition
 	op Pragma : K -> PureDefinition
-	op Linkage : #String List{C} -> PureDefinition
-	op Transformer : K List{C} -> PureDefinition
+	op Linkage : #String K -> PureDefinition // seems to be unused
+	op Transformer : K K -> PureDefinition // seems to be unused
 	op ExpressionTransformer : K K -> PureDefinition
 	op LTLAnnotation : K -> PureDefinition // name
 	
@@ -382,7 +385,7 @@ and file = #String * definition list
 */
 	// name, code, source
 	op TranslationUnit : #String K #String -> TranslationUnit // new
-	op Program : List{C} -> Program // new
+	op Program : K -> Program // new // List
 
 /*
 	(* A block contains a list of local label declarations ( GCC's ({ __label__ 
@@ -393,7 +396,7 @@ and block =
 	  bstmts: statement list
 	} 
 */
-	op Block : #Nat List{C} List{C} -> Block
+	op Block : #Nat K K -> Block // #Nat, list, list
 	
 /*
 	(* GCC asm directives have lots of extra information to guide the optimizer *)
@@ -634,16 +637,17 @@ and unary_operator =
 	| CALL of expression * expression list
 */
 
-	op Call : K List{C} -> Expression
+	op Call : K K -> Expression // K, List
 	context Call(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "ndheat=()"]
-	context 'Call(_,, '_::_(?,, (`[HOLE`]:C => reval(`[HOLE`]:C)),, ?)) [metadata "ndheat=()"]
+	context Call(_, List((?,, (`[HOLE`]:K => reval(`[HOLE`]:K)),, ?))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
-	op Comma : List{C} -> Expression
+	op Comma : K -> Expression // List
 	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "ndheat=()"]
-	context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
+	// context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
+	context Comma(List(((`[HOLE`]:K => reval(`[HOLE`]:K)),, _))) [metadata "ndheat=()"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
@@ -724,7 +728,7 @@ and init_expression =
 */
 	op NoInit : -> KResult // InitExpression
 	op SingleInit : K -> InitExpression [metadata "hybrid=() strict=()"]
-	op CompoundInit : List{C} -> InitExpression [metadata "hybrid=() strict=()"]
+	op CompoundInit : K -> InitExpression [metadata "hybrid=() strict=()"] // List
 	op InitFragment : K K -> InitFragment // new; (initwhat * init_expression)
 	
 /*
@@ -743,7 +747,7 @@ and initwhat =
 /*
 and attribute = #String * expression list
 */
-	op Attribute : #String List{C} -> C
+	op Attribute : #String K -> C // #String, List
 	
 	
 	

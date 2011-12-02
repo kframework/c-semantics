@@ -8,7 +8,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	op vararg : K -> C [metadata "hybrid=() strict=()"]
 	op nextvarg : #Nat K -> C [metadata "strict=(2)"] // loc, type
 	op vpair : K K -> C [metadata "hybrid=() strict=()"]
-	op prepareBuiltin : #Id List{C} -> K
+	op prepareBuiltin : #Id List{K} -> K
 	op incSymbolic : K -> K
 	op printString : K -> K
 	
@@ -35,27 +35,28 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 	
 
-	context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
+	// context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
+	context prepareBuiltin(_, (_,, (`[HOLE`]:K => reval(`[HOLE`]:K)),, _))
 	
-	op idsFromDeclList : List{C} -> List{C}
+	op idsFromDeclList : List{K} -> List{K}
 	
 	rule [idsFromDeclList-one]:
-		idsFromDeclList(L:List{C} :: typedDeclaration(t(?, T:SimpleType), X:#Id))
-			=> idsFromDeclList(L:List{C}) :: X:#Id
+		idsFromDeclList((L:List{K},, typedDeclaration(t(?, T:SimpleType), X:#Id)))
+			=> idsFromDeclList(L:List{K}),, X:#Id
 		if T:SimpleType =/=Bool void
 		[structural]
 	rule [idsFromDeclList-void]:
-		idsFromDeclList(L:List{C} :: typedDeclaration(t(?, void), X:#Id))
-			=> idsFromDeclList(L:List{C})
+		idsFromDeclList((L:List{K},, typedDeclaration(t(?, void), X:#Id)))
+			=> idsFromDeclList(L:List{K})
 		[structural]
 	rule [idsFromDeclList-vararg]:
-		idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:#Id) :: t(?, variadic))
-			=> idsFromDeclList(L:List{C} :: typedDeclaration(T:Type, X:#Id))
-			:: vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:#Id))))
+		idsFromDeclList((L:List{K},, typedDeclaration(T:Type, X:#Id),, t(?, variadic)))
+			=> idsFromDeclList((L:List{K},, typedDeclaration(T:Type, X:#Id)))
+			,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:#Id))))
 			// assumes variadic args are placed in incremental blocks
 		[structural]
 	rule [idsFromDeclList-done]:
-		idsFromDeclList(Nil) => Nil [structural]
+		idsFromDeclList(.List{K}) => .List{K} [structural]
 	
 
 	context incSymbolic(([HOLE] => reval([HOLE])))
@@ -64,8 +65,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 		
 	rule [prepareBuiltin]:
-		< k > handleBuiltin(F:#Id, t(?, functionType(Return:Type, L:List{Type})))
-			=> Return(prepareBuiltin(F:#Id, idsFromDeclList(L:List{Type})))
+		< k > handleBuiltin(F:#Id, t(?, functionType(Return:Type, L:List{KResult})))
+			=> Return(prepareBuiltin(F:#Id, idsFromDeclList(L:List{KResult})))
 		...</ k >
 		[structural]
 		
@@ -115,7 +116,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
 		[structural]
 
 	rule [atan2]:
-		< k > prepareBuiltin((Identifier("atan2")), (tv(F:#Float, t(?, double)) :: tv(F':#Float, t(?, double))))
+		< k > prepareBuiltin((Identifier("atan2")), (tv(F:#Float, t(?, double)),, tv(F':#Float, t(?, double))))
 			=> tv(atanFloat(F:#Float, F':#Float), t(.Set, double))
 		...</ k >
 		[structural]
@@ -139,7 +140,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
 		[structural]
 
 	rule [fmod]:
-		< k > prepareBuiltin((Identifier("fmod")), (tv(F:#Float, t(?, double)) :: tv(F':#Float, t(?, double))))
+		< k > prepareBuiltin((Identifier("fmod")), (tv(F:#Float, t(?, double)),, tv(F':#Float, t(?, double))))
 			=> tv(F:#Float %Float F':#Float, t(.Set, double))
 		...</ k >
 		[structural]
@@ -187,7 +188,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 
 	op longjmp-aux : K K -> K [metadata "strict=()"]
 	rule [longjmp-prepare]:
-		< k > prepareBuiltin(Identifier("longjmp"), (V:Value :: V':Value))
+		< k > prepareBuiltin(Identifier("longjmp"), (V:Value,, V':Value))
 			=> longjmp-aux(reval(*(V:Value)), V':Value)
 		...</ k >
 		[structural]
@@ -221,7 +222,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	// fixme can add lots of checks here
 	// tool fixme, change Value to K and unquote error
 	rule [va-start]:
-		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value :: ArgLoc:Value))
+		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:Value,, ArgLoc:Value))
 				=> Computation(*(ApLoc:Value) := incSymbolic(ArgLoc:Value))
 				~> skipval
 		...</ k >
@@ -233,14 +234,14 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	
 	// this doesn't work because when we read apLoc, the object has already changed
 	rule
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value,, Size:Value))
 				=> Computation(*(ApLoc:Value) := incSymbolic(ApLoc:Value))
 				~> ApLoc:Value
 		...</ k >
 		[structural]
 	
 	rule [va-inc-start]:
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value :: Size:Value))
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:Value,, Size:Value))
 				=> va-inc-aux(ApLoc:Value, Size:Value, *ApLoc:Value)
 		...</ k >
 		[structural]
@@ -254,7 +255,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		
 	// fixme can do lots of checks here too
 	rule [va-copy]:
-		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value :: Other:Value))
+		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:Value,, Other:Value))
 				=> Computation(*(ApLoc:Value) := Other:Value)
 				~> skipval
 		...</ k >
@@ -306,21 +307,21 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslPutc]:
-		< k > prepareBuiltin((Identifier("__fslPutc")), (tv(N:#Nat, ?) :: tv(H:#Nat, ?)))
+		< k > prepareBuiltin((Identifier("__fslPutc")), (tv(N:#Nat, ?),, tv(H:#Nat, ?)))
 			=> writeToFD(H:#Nat, N:#Nat)
 			~> tv(N:#Nat, t(.Set, int))
 		...</ k >
 		[structural]
 
 	rule [getchar]:
-		< k > prepareBuiltin((Identifier("getchar")), Nil) 
+		< k > prepareBuiltin((Identifier("getchar")), .List{K}) 
 			=> flush(1)
 			~> readFromFD(0) 
 		...</ k >
 		[structural]
 
 	rule [fslFGetC]:
-		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:#Nat, ?) :: tv(Offset:#Nat, ?)))
+		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:#Nat, ?),, tv(Offset:#Nat, ?)))
 			=> readFromFD(FD:#Nat)
 			// => #fReadByte(FD:#Nat)
 		...</ k >
@@ -334,7 +335,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslOpenFile-pre]:
-		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Filename:Value :: Mode:Value))
+		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Filename:Value,, Mode:Value))
 			=> fsl-open-file(getString(Filename:Value), getString(Mode:Value))
 		...</ k >
 		[structural]
@@ -371,7 +372,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
 	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
-		< k > prepareBuiltin((Identifier("printf")), (Format:Value :: VarArgs:Value))
+		< k > prepareBuiltin((Identifier("printf")), (Format:Value,, VarArgs:Value))
 			=> new-printf-aux(formatter(getString(Format:Value), VarArgs:Value))
 		...</ k >
 		[structural]
@@ -392,7 +393,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	op sprintf : K K -> K [metadata "strict=(1)"]
 	rule [sprintf]:
-		< k > prepareBuiltin((Identifier("sprintf")), (Dest:Value :: Format:Value :: VarArgs:Value))
+		< k > prepareBuiltin((Identifier("sprintf")), (Dest:Value,, Format:Value,, VarArgs:Value))
 			=> sprintf(formatter(getString(Format:Value), VarArgs:Value), Dest:Value)
 		...</ k >
 		[structural]
@@ -405,7 +406,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	op snprintf : K K #Nat -> K [metadata "strict=(1)"]
 	rule [snprintf]:
-		< k > prepareBuiltin((Identifier("snprintf")), (Dest:Value :: tv(Len:#Nat, _) :: Format:Value :: VarArgs:Value))
+		< k > prepareBuiltin((Identifier("snprintf")), (Dest:Value,, tv(Len:#Nat, _),, Format:Value,, VarArgs:Value))
 			=> snprintf(formatter(getString(Format:Value), VarArgs:Value), Dest:Value, Len:#Nat)
 		...</ k >
 		[structural]
@@ -483,39 +484,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			=> .Bag
 		)
 		[structural]
-		
-	// rule [printf-prepare-string]:
-		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-string(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat))) ...</ k >
-		// [structural]
-		
-	// rule [printf-string]:
-		// < k > tv(N:#Nat, ?) ~> printf-string(Len:#Nat, Loc:#Nat)
-			// => writeToFD(1, N:#Nat)
-			// ~> printf-string(sNat(Len:#Nat), Loc:#Nat)
-		// ...</ k >
-		// if N:#Nat =/=Bool 0
-		// [structural]
-	
-	// rule [printf-string-done]:
-		// < k > tv(0, ?) ~> printf-string(Len:#Nat, Loc:#Nat) => tv(Len:#Nat, t(.Set, int)) ...</ k >
-		// [structural]
-	
-	
-	// rule [printf-prepare-normal]:
-		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-aux(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
-		// [structural]
-		
-	
-	//fixme why do i have to have the 0--255 check?
-	// rule [printf-normal]:
-		// < k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			// => writeToFD(1, N:#Nat) ~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if N:#Nat =/=Bool asciiCharString("%")
-		// andBool N:#Nat =/=Bool 0
-		// andBool N:#Nat >=Nat 0
-		// andBool N:#Nat <=Nat 255
-		// [structural]
+
 	rule [format-normal]:
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem(S:#String) => .List ...</format>
@@ -531,25 +500,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		<formatState> "reset" => "normal" </formatState>
 		[structural]
 
-		
-	// rule [printf-%]:
-		// < k > tv(N:#Nat, ?) ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if (N:#Nat ==Bool asciiCharString("%"))
-		// [structural]
 	rule [format-%]:
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem("%") => .List ...</format>
 		<formatState> "normal" => "%" </formatState>
 		[structural]
-		
-	// rule [printf-prepare-%]:
-		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
-		// [structural]
 
-
-		
 	// %[flags][width][.precision][length]type	
 	
 	/*@ \source[n1570]{\para{7.21.6.1}{4}}
@@ -584,13 +540,6 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 For other conversions, the behavior is undefined.
 */
 
-	// // fixme ignoring 0 flag for now
-	// rule [printf-0]:
-		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("0")
-		// [structural]
 	// fixme ignoring 0 flag for now
 	rule [format-%0]:
 		< k > formatter-aux(_) ...</ k >
@@ -598,14 +547,7 @@ For other conversions, the behavior is undefined.
 		<formatState> "%" </formatState>
 		[structural]
 		
-	// // ignoring num width
-	// rule [printf-width]:
-		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if N:#Nat >Int asciiCharString("0")
-		// andBool N:#Nat <=Int asciiCharString("9")
-		// [structural]
+	// ignoring num width
 	rule [format-width]:
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem(C:#Char) => .List ...</format>
@@ -694,7 +636,7 @@ The \cinline{int} argument is converted to signed decimal in the style \emph{[-]
 		// if N:#Nat ==Bool asciiCharString("d")
 		// [structural]
 	// rule [printf-%d]:
-		// < k > printf-%d(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, int)), V:Value) :: ?)
+		// < k > printf-%d(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, int)), V:Value),, ?)
 			// => writeToFD(1, Rat2String(D:#Int, 10))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -740,7 +682,7 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		// if N:#Nat ==Bool asciiCharString("u")
 		// [structural]
 	// rule [printf-%u]:
-		// < k > printf-%u(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?)
+		// < k > printf-%u(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-int)), V:Value),, ?)
 			// => writeToFD(1, Rat2String(D:#Int, 10))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -765,7 +707,7 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		// if N:#Nat ==Bool asciiCharString("x")
 		// [structural]	
 	// rule [printf-%x]:
-		// < k > printf-%x(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
+		// < k > printf-%x(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value),, ?))
 			// => writeToFD(1, Rat2String(D:#Int, 16))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -790,7 +732,7 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		// if N:#Nat ==Bool asciiCharString("X")
 		// [structural]
 	// rule [printf-%X]:
-		// < k > printf-%X(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value) :: ?))
+		// < k > printf-%X(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(?, unsigned-int)), V:Value),, ?))
 			// => writeToFD(1, toUpperCase(Rat2String(D:#Int, 16)))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -824,7 +766,7 @@ A \cinline{double} argument representing an infinity is converted in one of the 
 		// if N:#Nat ==Bool asciiCharString("f") orBool N:#Nat ==Bool asciiCharString("g")
 		// [structural]
 	// rule [printf-%f]:
-		// < k > printf-%f(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Float, t(?, double)), V:Value) :: ?))
+		// < k > printf-%f(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Float, t(?, double)), V:Value),, ?))
 			// => writeToFD(1, Float2String(D:#Float))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(Float2String(D:#Float)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -942,7 +884,7 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 		[structural]
 	// // need to cast to unsigned-char
 	// rule [printf-%c]:
-		// < k > printf-%c(Len:#Nat, Loc:#Nat, (vpair(tv(C:#Nat, t(?, int)), V:Value) :: ?))
+		// < k > printf-%c(Len:#Nat, Loc:#Nat, (vpair(tv(C:#Nat, t(?, int)), V:Value),, ?))
 			// => writeToFD(1, C:#Nat)
 			// ~> printf-aux(Len:#Nat +Nat 1, Loc:#Nat, V:Value)
 		// ...</ k >
@@ -962,24 +904,6 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
 \broken{If an \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of \cinline{wchar_t} type. Wide characters from the array are converted to multibyte characters (each as if by a call to the \cinline{wcrtomb} function, with the conversion state described by an \cinline{mbstate_t} object initialized to zero before the first wide character is converted) up to and including a terminating null wide character. The resulting multibyte characters are written up to (but not including) the terminating null character (byte). If no precision is specified, the array shall contain a null wide character. If a precision is specified, no more than that many bytes are written (including shift sequences, if any), and the array shall contain a null wide character if, to equal the multibyte character sequence length given by the precision, the function would need to access a wide character one past the end of the array. In no case is a partial multibyte character written.}
 \end{description}
 	*/
-	// rule [printf-%s-arg]:
-		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			// => printf-%s(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("s")
-		// [structural]
-	// rule [printf-%s]:
-		// < k > printf-%s(Len:#Nat, Loc:#Nat, (vpair(tv(S:#Nat, t(?, pointerType(t(?, unsigned-char)))), V:Value) :: ?))
-			// => printf-string(0, S:#Nat)
-			// ~> addPrintfString
-			// ~> printf-aux(Len:#Nat, Loc:#Nat, V:Value)
-		// ...</ k >
-		// [structural]
-	// rule [printf-%s-done]:
-		// < k > tv(Len':#Nat, t(?, int)) ~> addPrintfString ~> printf-aux(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-aux(Len:#Nat +Nat Len':#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// [structural]	
 	rule [format-%s-start]:
 		< k > formatter-aux(V:Value)
 			=> formatter-next(V:Value)		
@@ -1015,7 +939,7 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
 		// if N:#Nat ==Bool asciiCharString("p")
 		// [structural]
 	// rule [printf-%p]:
-		// < k > printf-%p(Len:#Nat, Loc:#Nat, (vpair(tv(N':#Nat, t(?, pointerType(t(?, void)))), V:Value) :: ?))
+		// < k > printf-%p(Len:#Nat, Loc:#Nat, (vpair(tv(N':#Nat, t(?, pointerType(t(?, void)))), V:Value),, ?))
 			// => writeToFD(1, pointerToString(N':#Nat))
 			// ~> printf-aux(Len:#Nat +Nat lengthString(pointerToString(N':#Nat)), Loc:#Nat, V:Value)
 		// ...</ k >
@@ -1047,108 +971,19 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
 A \texttt{\%} character is written. No argument is converted. The complete conversion specification shall be \texttt{\%\%}.
 \end{description}
 	*/
-	// rule [printf-%%]:
-		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			// => writeToFD(1, N:#Nat)
-			// ~> printf-aux(sNat(Len:#Nat), Loc:#Nat, L:List{C}) ...</ k >
-		// if N:#Nat ==Bool asciiCharString("%")
-		// [structural]
 	rule [format-%%]:
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem("%") => .List ...</format>
 		<formatResult>... .List => ListItem("%") </formatResult>
 		<formatState> "%" => "reset" </formatState>
 		[structural]
-		
-	// rule [printf-%l]:
-		// < k > tv(N:#Nat, ?) ~> printf-%(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("l")
-		// [structural]
+
 	rule [format-%l]:
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem("l") => .List ...</format>
 		<formatState> "%" </formatState>
 		<formatLength> Length:#String => Length:#String +String "l" </formatLength>
 		[structural]
-		
-	// rule [printf-prepare-%l]:
-		// < k > (.K => read(Loc:#Nat, t(.Set, char)))
-			// ~> printf-%l(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) 
-		// ...</ k >
-		// [structural]
-	
-	// rule [printf-%ld-arg]:
-		// < k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			// => printf-%ld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("d")
-		// [structural]
-	// rule [printf-%ld]:
-		// < k > printf-%ld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-int)), V:Value) :: ?)
-			// => writeToFD(1, Rat2String(D:#Int, 10))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		// ...</ k >
-		// [structural]
-	
-	// rule [printf-%ll]:
-		// < k > tv(N:#Nat, ?) ~> printf-%l(Len:#Nat, Loc:#Nat, L:List{C})
-			// => printf-%ll(Len:#Nat, Loc:#Nat, L:List{C})
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("l")
-		// [structural]
-		
-	// rule [printf-prepare-%ll]:
-		// < k > (.K => read(Loc:#Nat, t(.Set, char))) ~> printf-%ll(Len:#Nat, (Loc:#Nat => sNat(Loc:#Nat)), L:List{C}) ...</ k >
-		// [structural]
-		
-	// rule [printf-%llx-arg]:
-		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			// => printf-%llx(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("x")
-		// [structural]
-		
-	// rule [printf-%llu-arg]:
-		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			// => printf-%llu(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-long-long-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("u")
-		// [structural]
-		
-	// rule [printf-%lld-arg]:
-		// < k > tv(N:#Nat, ?) ~> printf-%ll(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, ?)))
-			// => printf-%lld(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, long-long-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("d")
-		// [structural]
-		
-	// rule [printf-%llu]:
-		// < k > printf-%llu(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
-			// => writeToFD(1, Rat2String(D:#Int, 10))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		// ...</ k >
-		// [structural]
-	// rule [printf-%lld]:
-		// < k > printf-%lld(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, long-long-int)), V:Value) :: ?)
-			// => writeToFD(1, Rat2String(D:#Int, 10))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:Value)
-		// ...</ k >
-		// [structural]
-	// rule [printf-%llx]:
-		// < k > printf-%llx(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(?, unsigned-long-long-int)), V:Value) :: ?)
-			// => writeToFD(1, (if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
-				// "0" +String Rat2String(D:#Int, 16)
-			// else
-				// Rat2String(D:#Int, 16)
-			// fi)) ~> printf-aux(Len:#Nat +Nat lengthString((if (lengthString(Rat2String(D:#Int, 16)) ==Bool 1) then
-				// "0" +String Rat2String(D:#Int, 16)
-			// else
-				// Rat2String(D:#Int, 16)
-			// fi)), Loc:#Nat, V:Value)
-		// ...</ k >
-		// [structural]
 endkm
 
 
@@ -1166,7 +1001,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 		[structural]
 
 	rule [abort]:
-		< k > prepareBuiltin((Identifier("abort")), Nil) ~> ?
+		< k > prepareBuiltin((Identifier("abort")), .List{K}) ~> ?
 			=> printString("Aborted")
 			~> tv(134, t(.Set, int))
 		</ k >
@@ -1184,7 +1019,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 
 	op calloc-aux : -> K
 	rule [calloc]:
-		< k > prepareBuiltin((Identifier("calloc")), (tv(N:#Nat, ?) :: tv(Size:#Nat, ?)))
+		< k > prepareBuiltin((Identifier("calloc")), (tv(N:#Nat, ?),, tv(Size:#Nat, ?)))
 			=> prepareBuiltin((Identifier("malloc")), tv(N:#Nat *Nat Size:#Nat, cfg:sizeut))
 			~> calloc-aux
 		...</ k >
@@ -1207,7 +1042,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	// fixme should use RAND_MAX
 	rule [rand]:
-		< k > prepareBuiltin((Identifier("rand")), Nil)
+		< k > prepareBuiltin((Identifier("rand")), .List{K})
 			=> tv(absInt(randomRandom(Fresh:#Nat)) %Int max(t(.Set, int)), t(.Set, int))
 		...</ k >
 		< randNat > Fresh:#Nat => sNat(Fresh:#Nat) </ randNat >
@@ -1229,7 +1064,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	// fixme should detect overlaps
 	op strcpy : K K K -> K
 	rule [strcpy-start]:
-		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:#Nat, t(?, pointerType(?))) :: tv(Src:#Nat, t(?, pointerType(?)))))
+		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:#Nat, t(?, pointerType(?))),, tv(Src:#Nat, t(?, pointerType(?)))))
 			=> strcpy(Dest:#Nat, Src:#Nat, Dest:#Nat)
 		...</ k >
 		[structural]
@@ -1274,7 +1109,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	op spawn-aux : #Nat Value Value -> K
 	// threadId(MyId:#Nat, Fresh:#Nat)
 	rule [thrd-create-start]:
-		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:Value :: ThreadFuncPointer:Value :: ThreadArg:Value))
+		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:Value,, ThreadFuncPointer:Value,, ThreadArg:Value))
 			=> Computation((* ThreadIdPointer:Value) := tv(Fresh:#Nat, t(.Set, int)))
 			~> spawn-aux(Fresh:#Nat, ThreadFuncPointer:Value, ThreadArg:Value)
 		...</ k >
@@ -1315,7 +1150,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[metadata "computational=()"]
 		
 	rule [thrd-current]:
-		< k > prepareBuiltin((Identifier("thrd_current")), Nil)
+		< k > prepareBuiltin((Identifier("thrd_current")), .List{K})
 			=> tv(ThreadId:#Nat, t(.Set, int))
 		...</ k >
 		< threadId > ThreadId:#Nat </ threadId >
@@ -1324,7 +1159,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 	op join-aux : #Nat Value -> K
 		
 	rule [thrd-join-start]:
-		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)) :: ResultPointer:Value))
+		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)),, ResultPointer:Value))
 			=> join-aux(ThreadId:#Nat, ResultPointer:Value)
 		...</ k >
 		< threadId > MyId:#Nat </ threadId >
@@ -1335,7 +1170,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[structural]
 	
 	rule [thrd-join-error]:
-		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)) :: ?))
+		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:#Nat, t(?, int)),, ?))
 			=> thrd-error
 		...</ k >
 		< joiningMap > Joining:Map </ joiningMap >
@@ -1360,7 +1195,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 
 	op testAndSet : K K K -> K [metadata "strict=(1)"]
 	rule [test-and-set-start]:
-		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:Value :: V:Value))
+		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:Value,, V:Value))
 			=> testAndSet(*(Loc:Value), Loc:Value, V:Value)
 		...</ k >
 		[structural]

@@ -123,6 +123,8 @@ let wrap (d1) (d2) =
 	printCell d2 [] (printFlatList (fun x -> x) d1)
 let printList f x =
 	wrap [List.fold_left (fun aux arg -> aux ^ "" ^ (f arg)) "" x] "List"
+let printNewList f x =
+	wrap [List.fold_left (fun aux arg -> aux ^ "" ^ (f arg)) "" x] "NewList"
 	
 (* this is where the recursive printer starts *)
 	
@@ -237,15 +239,15 @@ and printInitNameGroup (a, b) =
 and printNameGroup (a, b) = 
 	wrap ((printSpecifier a) :: (printNameList b) :: []) "NameGroup"
 and printNameList a =
-	printList printName a
+	printNewList printName a
 and printInitNameList a = 
-	printList printInitName a
+	printNewList printInitName a
 and printFieldGroupList a =
-	printList printFieldGroup a
+	printNewList printFieldGroup a
 and printFieldGroup (spec, fields) =
 	wrap ((printSpecifier spec) :: (printFieldList fields) :: []) "FieldGroup"
 and printFieldList (fields) =
-	printList printField fields
+	printNewList printField fields
 and printField (name, expOpt) =
 	match expOpt with
 	| None -> wrap ((printName name) :: []) "FieldName"
@@ -263,7 +265,7 @@ and printInitExpressionForCast a castPrinter compoundLiteralPrinter = (* this is
 	| SINGLE_INIT exp -> castPrinter (printExpression exp)
 	| COMPOUND_INIT a -> compoundLiteralPrinter (wrap ((printInitFragmentList a) :: []) "CompoundInit")
 and printInitFragmentList a =
-	printList printInitFragment a
+	printNewList printInitFragment a
 and printInitFragment (a, b) =
 	wrap ((printInitWhat a) :: (printInitExpression b) :: []) "InitFragment"
 and printInitWhat a = 
@@ -295,7 +297,7 @@ and printNop =
 and printComputation exp =
 	wrap ((printExpression exp) :: []) "Computation"
 and printExpressionList defs =
-	printList printExpression defs
+	printNewList printExpression defs
 and printBuiltin (sort : string) (data : string) =
 	printCell "RawData" [Attrib("sort", sort)] (cdata data)
 and printRawString s =
@@ -637,13 +639,13 @@ and printStatement a =
 and printStatementLoc s l =
 	wrap (s :: (printCabsLoc l) :: []) "StatementLoc"
 and printStatementList a =
-	printList printStatement a
+	printNewList printStatement a
 and printAttributeList a =
-	printList printAttribute a
+	printNewList printAttribute a
 and printEnumItemList a =
-	printList printEnumItem a
+	printNewList printEnumItem a
 and printBlockLabels a =
-	printList (fun x -> x) a
+	printNewList (fun x -> x) a
 and printAttribute (a, b) =
 	wrap ((printRawString a) :: (printExpressionList b) :: []) "Attribute"
 and printEnumItem (str, expression, cabsloc) =
@@ -654,9 +656,9 @@ and printEnumItem (str, expression, cabsloc) =
 and printSpecifier a =
 	wrap (printSpecElemList a :: []) "Specifier"
 and printSpecElemList a =
-	printList printSpecElem a
+	printNewList printSpecElem a
 and printSingleNameList a =
-	printList printSingleName a
+	printNewList printSingleName a
 and printSpecElem a =
 	match a with
 	| SpecTypedef -> printCell "SpecTypedef" [] ""
