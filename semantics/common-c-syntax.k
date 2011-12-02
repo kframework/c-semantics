@@ -239,7 +239,9 @@ and spec_elem =
 /*
 	and specifier = spec_elem list
 */
-	op Specifier : List{C} -> Specifier [metadata "strict=()"]
+	// op Specifier : List{C} -> Specifier [metadata "strict=()"]
+	op Specifier : K -> Specifier
+	context Specifier(List((?,, `[HOLE`]:K,, ?)))
 	
 /*
 and decl_type =

@@ -406,7 +406,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	op BitFieldType : K K -> K [metadata "strict=()"] 
 	
 	rule
-		< k > Specifier(L:List{Type}) => canonicalizeType(Bag(getList{K}(L:List{Type}))) ...</ k >
+		< k > Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</ k >
 		[structural]
 		
 	rule BitFieldType(T:Type, tv(N:#Nat, ?)) => t(.Set, bitfieldType(T:Type, N:#Nat)) [structural]

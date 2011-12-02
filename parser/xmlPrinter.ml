@@ -656,7 +656,7 @@ and printEnumItem (str, expression, cabsloc) =
 and printSpecifier a =
 	wrap (printSpecElemList a :: []) "Specifier"
 and printSpecElemList a =
-	printList printSpecElem a
+	printNewList printSpecElem a
 and printSingleNameList a =
 	printList printSingleName a
 and printSpecElem a =
