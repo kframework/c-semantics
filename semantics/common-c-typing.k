@@ -412,7 +412,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule BitFieldType(T:Type, tv(N:#Nat, ?)) => t(.Set, bitfieldType(T:Type, N:#Nat)) [structural]
 	
 	op makeArrayType : #Nat -> KLabel 
-	op makeFunctionType : List{Type} -> KLabel 
+	op makeFunctionType : List{KResult} -> KLabel 
 	op pushTypeDown : Type KLabel -> Type 
 	op makePointerType : -> KLabel
 	op makeIncompleteArrayType : -> KLabel
@@ -426,14 +426,18 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule PointerType(T:Type) => pushTypeDown(T:Type, makePointerType) [structural]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
 	rule FunctionType(T:Type) => T:Type [structural]
-	rule Prototype(T:Type, L:List{Type}, false) => pushTypeDown(T:Type, makeFunctionType(L:List{Type})) [structural]
-	rule Prototype(T:Type, L:List{Type}, true) => pushTypeDown(T:Type, makeFunctionType((L:List{Type} :: t(.Set, variadic)))) [structural]
+	rule Prototype(T:Type, List(L:List{KResult}), false) 
+		=> pushTypeDown(T:Type, makeFunctionType(L:List{KResult})) 
+		[structural]
+	rule Prototype(T:Type, List(L:List{KResult}), true) 
+		=> pushTypeDown(T:Type, makeFunctionType((L:List{KResult},, t(.Set, variadic)))) 
+		[structural]
 	
 	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:Type, N:#Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:Type, K:KLabel), N:#Nat)) [structural]
 	rule [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:Type)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:Type, K:KLabel))) [structural]
 	rule [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:Type, K:KLabel), K:K)) [structural]
-	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{Type})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{Type})) [structural]
+	rule [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:Type, L:List{KResult})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:Type, K:KLabel), L:List{KResult})) [structural]
 	rule [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:#Id))) [structural]
 	rule [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:#Id))) [structural]
 	rule [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:#Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:#Id))) [structural]
@@ -445,27 +449,27 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	
 	rule makeArrayType(N:#Nat)(T:Type) => t(.Set, arrayType(T:Type, N:#Nat)) [structural]
-	rule makeFunctionType(L:List{Type})(T:Type) => t(.Set, functionType(T:Type, giveNamesToArgs(L:List{Type}))) [structural]
+	rule makeFunctionType(L:List{KResult})(T:Type) => t(.Set, functionType(T:Type, giveNamesToArgs(L:List{KResult}))) [structural]
 	rule makePointerType(T:Type) => t(.Set, pointerType(T:Type)) [structural]
 	rule makeIncompleteArrayType(T:Type) => t(.Set, incompleteArrayType(T:Type)) [structural]
 	
-	op giveNamesToArgs : List{Type} -> List{Type}
-	op giveNamesToArgs-aux : #Nat List{Type} -> List{Type}
+	op giveNamesToArgs : List{KResult} -> List{KResult}
+	op giveNamesToArgs-aux : #Nat List{KResult} -> List{KResult}
 	
-	rule giveNamesToArgs(L:List{Type}) => giveNamesToArgs-aux(0, L:List{Type}) [structural]
-	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type}))
-		=> typedDeclaration(T:Type, X:#Id) :: giveNamesToArgs-aux(N:#Nat, L:List{Type})
+	rule giveNamesToArgs(L:List{KResult}) => giveNamesToArgs-aux(0, L:List{KResult}) [structural]
+	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id),, L:List{KResult}))
+		=> typedDeclaration(T:Type, X:#Id),, giveNamesToArgs-aux(N:#Nat, L:List{KResult})
 		if X:#Id =/=Bool #NoName
 		[structural]
-	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id) :: L:List{Type}))
-		=> typedDeclaration(T:Type, #NoName(N:#Nat)) :: giveNamesToArgs-aux(sNat(N:#Nat), L:List{Type})
+	rule giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:Type, X:#Id),, L:List{KResult}))
+		=> typedDeclaration(T:Type, #NoName(N:#Nat)),, giveNamesToArgs-aux(sNat(N:#Nat), L:List{KResult})
 		if X:#Id ==Bool #NoName
 		[structural]
 	rule giveNamesToArgs-aux(?, t(.Set, variadic))
 		=> t(.Set, variadic)
 		[structural]
-	rule giveNamesToArgs-aux(?, Nil)
-		=> Nil
+	rule giveNamesToArgs-aux(?, .List{K})
+		=> .List{K}
 		[structural]
 	
 	rule 
@@ -577,7 +581,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-array]: extractActualType(t(S:Set, arrayType(T:Type, N:#Nat))) => t(S:Set, arrayType(extractActualType(T:Type), N:#Nat)) [structural]
 	rule [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:Type))) => t(S:Set, incompleteArrayType(extractActualType(T:Type))) [structural]
 	rule [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:Type, N:#Nat))) => t(S:Set, bitfieldType(extractActualType(T:Type), N:#Nat)) [structural]
-	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{Type}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{Type})) [structural]
+	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{KResult}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{KResult})) [structural]
 	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
 	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
 	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
@@ -849,17 +853,17 @@ kmod COMMON-C-TYPING is
 		=> isTypeCompatible(t(S:Set, pointerType(T:Type)), T':Type) 
 		[structural]
 
-	rule [typeCompatible-function-void-left]: isTypeCompatible(t(?, functionType(T1:Type, typedDeclaration(t(?, void), ?))), t(?, functionType(T2:Type, Nil)))
+	rule [typeCompatible-function-void-left]: isTypeCompatible(t(?, functionType(T1:Type, typedDeclaration(t(?, void), ?))), t(?, functionType(T2:Type, .List{K})))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
-	rule [typeCompatible-function-void-right]: isTypeCompatible(t(?, functionType(T1:Type, Nil)), t(?, functionType(T2:Type, typedDeclaration(t(?, void), ?))))
+	rule [typeCompatible-function-void-right]: isTypeCompatible(t(?, functionType(T1:Type, .List{K})), t(?, functionType(T2:Type, typedDeclaration(t(?, void), ?))))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
-	rule [typeCompatible-function]: isTypeCompatible(t(S:Set, functionType(T1:Type, (T':Type :: L:List{Type}))), t(S':Set, functionType(T2:Type, (T'':Type :: L':List{Type}))))
-		=> isTypeCompatible(t(S:Set, functionType(T1:Type, L:List{Type})), t(S':Set, functionType(T2:Type, L':List{Type})))
+	rule [typeCompatible-function]: isTypeCompatible(t(S:Set, functionType(T1:Type, (T':Type,, L:List{KResult}))), t(S':Set, functionType(T2:Type, (T'':Type,, L':List{KResult}))))
+		=> isTypeCompatible(t(S:Set, functionType(T1:Type, L:List{KResult})), t(S':Set, functionType(T2:Type, L':List{KResult})))
 		andBool isTypeCompatible(T':Type, T'':Type) 
 		[structural]
-	rule [typeCompatible-incompleteArray-nil]: isTypeCompatible(t(?, functionType(T1:Type, Nil)), t(?, functionType(T2:Type, Nil)))
+	rule [typeCompatible-incompleteArray-nil]: isTypeCompatible(t(?, functionType(T1:Type, .List{K})), t(?, functionType(T2:Type, .List{K})))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
 	rule isTypeCompatible(T:Type, T':Type) => true

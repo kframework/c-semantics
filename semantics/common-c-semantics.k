@@ -176,7 +176,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op incompleteArrayType : Type -> SimpleType [ctor] 
 	op flexibleArrayType : Type -> SimpleType [ctor] 
 	op bitfieldType : Type #Nat -> SimpleType [ctor] 
-	op functionType : Type List{Type} -> SimpleType [ctor] 
+	op functionType : Type List{KResult} -> SimpleType [ctor] 
 	op pointerType : Type -> SimpleType [ctor] 
 	op structType : #Id -> SimpleType [ctor] 
 	op unionType : #Id -> SimpleType [ctor] 
@@ -214,7 +214,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 		if notBool Const in S:Set
 		[structural]
 	
-	op bind : List{KResult} List{Type} -> K 
+	op bind : List{KResult} List{KResult} -> K 
 	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
 	op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 

@@ -658,7 +658,7 @@ and printSpecifier a =
 and printSpecElemList a =
 	printNewList printSpecElem a
 and printSingleNameList a =
-	printList printSingleName a
+	printNewList printSingleName a
 and printSpecElem a =
 	match a with
 	| SpecTypedef -> printCell "SpecTypedef" [] ""

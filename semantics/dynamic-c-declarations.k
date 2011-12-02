@@ -10,16 +10,17 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// empty binding
 	// fixme not really a sequence point
 	
-	op bind-aux : #Nat List{KResult} List{Type} -> K 
+	op bind-aux : #Nat List{KResult} List{KResult} -> K 
 	rule
-		< k > bind(L:List{KResult}, L':List{Type}) => bind-aux(NullPointer, L:List{KResult}, L':List{Type}) ...</ k > 
+		< k > bind(L:List{KResult}, L':List{KResult}) 
+			=> bind-aux(NullPointer, L:List{KResult}, L':List{KResult}) ...</ k > 
 		[structural] 
 	
 	rule [bind-empty-void]:
 		< k > bind-aux(?, .List{K}, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
-		< k > bind-aux(?, .List{K}, Nil) => sequencePoint ...</ k > 
+		< k > bind-aux(?, .List{K}, .List{K}) => sequencePoint ...</ k > 
 		[structural] 
 		
 		
@@ -32,12 +33,12 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			?
 			, L:List{KResult}
 			, (
-				?:List{Type}
-				:: typedDeclaration(
+				?:List{KResult}
+				,, typedDeclaration(
 					(t(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
 					, X:#Id
 				)
-				:: ?:List{Type}
+				,, ?:List{KResult}
 			)
 		)
 		[structural] 
@@ -46,22 +47,22 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			?
 			, L:List{KResult}
 			, (
-				?:List{Type} 
-				:: typedDeclaration(
+				?:List{KResult} 
+				,, typedDeclaration(
 					(t(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
 					, X:#Id
 				) 
-				:: ?:List{Type})
+				,, ?:List{KResult})
 		)
 		[structural] 
 		
 	rule [bind-one]:
-		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
+		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
 			=> allocateType(Loc:#Nat, T:Type)
 			~> addToEnv(X:#Id, Loc:#Nat)
 			~> giveType(X:#Id, T:Type)
 			~> initialize(X:#Id, T:Type, Computation(AllowWrite(X:#Id) := tv(V:List{K}, T':Type)))
-			~> bind-aux(Loc:#Nat, L:List{KResult}, P:List{Type})
+			~> bind-aux(Loc:#Nat, L:List{KResult}, P:List{KResult})
 		...</ k > 
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
@@ -70,7 +71,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		
 	rule [bind-one-check-type]:
 		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
-			~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id) :: P:List{Type}))
+			~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
 		...</ k > 
 		[structural] 
 	

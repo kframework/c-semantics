@@ -324,10 +324,10 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		[structural]
 		
 	rule [function-application]:
-		< k > application(functionObject(X:#Id, t(?, functionType(R:Type, P:List{Type})), B:K), L:List{KResult}) ~> K:K 
+		< k > application(functionObject(X:#Id, t(?, functionType(R:Type, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
 			=> sequencePoint
 			~> populateFromGlobal
-			~> bind(L:List{KResult}, P:List{Type})
+			~> bind(L:List{KResult}, P:List{KResult})
 			~> B:K
 		</ k >
 		< callStack > .List => ListItem(

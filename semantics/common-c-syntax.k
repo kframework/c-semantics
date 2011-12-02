@@ -268,7 +268,9 @@ and decl_type =
 	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
 	context ArrayType(_, ([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
-	op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
+	// op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
+	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
+	context Prototype(_, List((?,, `[HOLE`]:K,, ?)), _)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
