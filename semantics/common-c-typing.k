@@ -225,7 +225,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool (getKLabel(T:K) ==Bool 'UnionRef)
 		orBool (getKLabel(T:K) ==Bool 'EnumRef)
 		orBool (getKLabel(T:K) ==Bool 'Named)
-		orBool (getKLabel(T:K) ==Bool 'AttributeValue)
+		orBool (getKLabel(T:K) ==Bool 'Attribute)
 		[structural] 
 
 	rule
@@ -325,7 +325,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
 	rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural]
 	// fixme should save these for later use
-	rule BagItem(AttributeValue(?, ?)) => .Bag [structural]
+	rule BagItem(Attribute(?, ?)) => .Bag [structural]
 
 	rule 
 		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >

@@ -33,7 +33,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	op getIdOfDeclaration : K -> K 
 	op getIdOfName : K -> K 
-	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, K:C))) => getIdOfName(K:C) [structural]
+	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, List(K:C)))) => getIdOfName(K:C) [structural]
 	rule getIdOfName(InitName(K:K, ?)) => getIdOfName(K:K) [structural]
 	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K) [structural] 
 	rule getIdOfName(Name(X:#Id, ?)) => X:#Id [structural]
