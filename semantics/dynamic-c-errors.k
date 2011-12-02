@@ -329,11 +329,11 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00039]:
-		< k => finalComputation > addUnion(S:#Id, Nil)  ...</ k => finalComputation >
+		< k => finalComputation > addUnion(S:#Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00039", "Unions cannot be empty.") </ errorCell >)
 		[structural]
 	rule [err00040]:
-		< k => finalComputation > addStruct(S:#Id, Nil)  ...</ k => finalComputation >
+		< k => finalComputation > addStruct(S:#Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00040", "Structs cannot be empty.") </ errorCell >)
 		[structural]
 		

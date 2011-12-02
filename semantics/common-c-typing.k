@@ -535,8 +535,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 
 	
-	rule typedDeclaration(t(?, bitfieldType(?, N:#Nat)), #NoName) :: typedDeclaration(t(?, bitfieldType(?, N':#Nat)), #NoName) 
-		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:#Nat +Nat N':#Nat)), #NoName) 
+	rule typedDeclaration(t(?, bitfieldType(?, N:#Nat)), #NoName)
+		,, typedDeclaration(t(?, bitfieldType(?, N':#Nat)), #NoName) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:#Nat +Nat N':#Nat)), #NoName) 
 		[structural]
 	
 	// fixme chould check for some struct contraints here

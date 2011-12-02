@@ -206,7 +206,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					< threadId > 1 </ threadId >
 					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
 					< k > klistToK(P:List{K})
-							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K})), Specifier(Nil)))), NoInit))))
+							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K})), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
@@ -266,15 +266,15 @@ or equivalent;9) or in some other implementation-defined manner
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?))), N:#Nat, X:#Id, ?) 
 		=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), Nil)), N:#Nat, X:#Id, ?) 
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:#Nat, X:#Id, ?) 
 		=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
 		if T:Type ==Bool t(.Set, char)
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?) :: typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
 		if T:Type ==Bool t(.Set, char)

@@ -7,13 +7,6 @@ kmod COMMON-INCOMING-MODULES is
 	
 	sort Type 
 	sort Value 
-	syntax List{Type} ::= List{Type} :: List{Type} [ditto] 
-	op Nil : -> List{Type} [ditto]
-	subsort List{Type} < KResult 
-	subsort List{Type} < List{C} 
-	subsort Type < List{Type}
-	subsort Type < List{C} 
-	subsort Value < List{Type} 
 	subsort Type < C 
 	subsort Value < C 
 	sort BaseValue 

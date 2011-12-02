@@ -66,15 +66,7 @@ kmod COMMON-C-SYNTAX is
 	sort PureDefinition
 	
 	// sort C
-	// sort List{C}
 	subsort #Id < C
-	op Nil : -> List{C}
-	subsort C < List{C}
-	// fixme, can't figure out how to right this with the new contexts
-	// this is only used when doing nondeterministic stuff, so it's okay
-	// op _::_ : List{C} List{C} -> List{C} [metadata "hybrid=() strict=()" assoc id: Nil]
-	syntax List{C} ::= List{C} :: List{C} [hybrid strict assoc id: Nil]
-	// op _::_ : List{C} List{C} -> List{C} [hybrid assoc id: Nil]
 	// moved heating/cooling to common-c-semantics.k
 	
 	// op List : List{K} -> C [metadata "strict=() hybrid=()"]
@@ -239,7 +231,6 @@ and spec_elem =
 /*
 	and specifier = spec_elem list
 */
-	// op Specifier : List{C} -> Specifier [metadata "strict=()"]
 	op Specifier : K -> Specifier
 	context Specifier(List((?,, `[HOLE`]:K,, ?)))
 	
@@ -268,7 +259,6 @@ and decl_type =
 	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
 	context ArrayType(_, ([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
-	// op Prototype : K List{C} #Bool -> DeclType [metadata "strict=(1 2)"]
 	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
 	context Prototype(_, List((?,, `[HOLE`]:K,, ?)), _)
 	
@@ -286,7 +276,6 @@ and name_group = specifier * name list
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
 */
-	// op FieldGroup : K List{C} -> FieldGroup [metadata "strict=(1)"]
 	op FieldGroup : K K -> FieldGroup [metadata "strict=(1)"] // K, List
 	op FieldName : K -> FieldName // new
 	op BitFieldName : K K -> FieldName // new
@@ -296,7 +285,6 @@ and field_group = specifier * (name * expression option) list
 	(* e.g.: #Int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
-	// op InitNameGroup : K List{C} -> InitNameGroup [metadata "strict=(1)"]
 	op InitNameGroup : K K -> InitNameGroup [metadata "strict=(1)"] // K, List
 	
 /*
