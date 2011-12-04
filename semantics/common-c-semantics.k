@@ -298,7 +298,7 @@ endkm
 kmod COMMON-C-SETTINGS is
 	including COMMON-SEMANTIC-SYNTAX 
 	
-	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either
+	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either"
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
 	rule char => signed-char
 	// rule char => kccSettingSimpleType("_KCC_CHAR_TYPE")

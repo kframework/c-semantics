@@ -25,7 +25,7 @@ if (-e "juliet.out") {
 
 my ($signal, $retval, $output, $stderr);
 
-($signal, $retval, $output, $stderr) = run("$command -x c -o juliet.out -std=c99 -pedantic -Wall -I testcasesupport -D INCLUDEMAIN testcasesupport/io.c $test");
+($signal, $retval, $output, $stderr) = run("$command -x c -o juliet.out -std=c99 -pedantic -Wall -I testcasesupport -D INCLUDEMAIN -D _KCC_EXPERIMENTAL_TIME testcasesupport/io.c $test");
 
 print "$output\n$stderr";
 if ($signal) {
