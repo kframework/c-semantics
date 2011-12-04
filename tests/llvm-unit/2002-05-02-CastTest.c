@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
 
 /* Linux defines these in stdint.h, sun might not have that file, don't mess 
    around when it's this easy to fix */
