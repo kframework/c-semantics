@@ -168,14 +168,20 @@ sub compile {
 		die "kcc: $file: No such file or directory";
 	}
 	my $inputDirectory = dirname($inputFile);
-	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, '.c');
-	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
-	my $line = <$fh>;
-	close $fh;
-	if ($line =~ /^---kccMarker/) {
+	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('.c', '.o', '.a'));
+	if (($suffix eq '.o') or ($suffix eq '.a')) {
+		# assuming .o or .a file
 		push(@compiledPrograms, $inputFile);
 		return;
 	}
+	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
+	my $line = <$fh>;
+	close $fh;
+	# # if the file was already compiled, return
+	# if ($line =~ /^---kccMarker/) {
+		# push(@compiledPrograms, $inputFile);
+		# return;
+	# }
 	# assume it's a normal input file, so compile it
 	my $localOval = "$baseName.o";
 	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
