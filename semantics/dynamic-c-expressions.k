@@ -445,7 +445,9 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	An integer character constant has type \cinline{int}. The value of an integer character constant containing a single character that maps to a single-byte execution character is the numerical value of the representation of the mapped character interpreted as an integer. The value of an integer character constant containing more than one character (e.g., \cinline{'ab'}), or containing a character or escape sequence that does not map to a single-byte execution character, is implementation-defined. If an integer character constant contains a single character or escape sequence, its value is the one that results when an object with type \cinline{char} whose value is that of the single character or escape sequence is converted to type \cinline{int}.
 	*/
 	// c1x 6.4.4.4:10
-	rule CharLiteral(N:#Nat) => tv(N:#Nat, t(.Set, int)) [structural]
+	rule CharLiteral(N:#Nat) 
+		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:#Nat, t(.Set, int))))
+		[structural]
 	rule WCharLiteral(N:#Nat) => tv(N:#Nat, cfg:wcharut) [structural]
 	rule Constant(V:Value) => V:Value [structural]
 	rule [create-internal-value]: < k > N:#Nat => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
