@@ -51,7 +51,13 @@ $::VERSION="0.1";
 my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
-my $stdlib = catfile($myDirectory, 'lib', 'clib.o');
+my @stdlib = ();
+push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
 my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
 my $cparser = catfile($myDirectory, 'cparser');
 
@@ -107,7 +113,7 @@ my $linkTemp = "mod C-program-linked is including C .\n";
 $linkTemp .= "including #MODEL-CHECK .\n";
 
 if (! $args->{'-s'}) {
-	push(@compiledPrograms, $stdlib);
+	push(@compiledPrograms, @stdlib);
 }
 my $linkingResults = linker(@compiledPrograms);
 unlink(@shouldBeDeleted);
@@ -168,7 +174,10 @@ sub compile {
 		die "kcc: $file: No such file or directory";
 	}
 	my $inputDirectory = dirname($inputFile);
-	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('.c', '.o', '.a'));
+	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
+	#print "basename = $baseName\n";
+	#print "inputDirectory = $inputDirectory\n";
+	#print "suffix = $suffix\n";
 	if (($suffix eq '.o') or ($suffix eq '.a')) {
 		# assuming .o or .a file
 		push(@compiledPrograms, $inputFile);
@@ -259,7 +268,6 @@ sub compileProgram {
 		print STDERR join("\n", @lines);
 		die();		
 	}
-	
 	if (! $nowarn) {
 		print join("\n", @lines);
 	}

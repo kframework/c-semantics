@@ -45,6 +45,12 @@ assertContains("printfP", run("$kcc adhoc/percentP.c -o adhoc.o && ./adhoc.o"), 
 
 assertContains("assert", run("$kcc adhoc/assert.c -o adhoc.o && ./adhoc.o"), "Assertion failed: `6 == 7'");
 
+run("$kcc -c adhoc/three-link1.c");
+run("$kcc -c adhoc/three-link2.c");
+run("$kcc -c adhoc/three-link3.c");
+run("ar -cvq libthree.a three-link2.o three-link3.o");
+assertContains("archive", run("$kcc three-link1.o libthree.a -o adhoc.o && ./adhoc.o"), '15');
+
 
 
 ###################################

@@ -72,10 +72,21 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
-	@mv $(DIST_DIR)/clib.c $(DIST_DIR)/lib
+	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
+	@echo compiling clib
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
+	@echo compiling ctype
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/ctype.o $(DIST_DIR)/lib/ctype.c
+	@echo compiling math
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/math.o $(DIST_DIR)/lib/math.c
+	@echo compiling stdio
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/stdio.o $(DIST_DIR)/lib/stdio.c
+	@echo compiling stdlib
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/stdlib.o $(DIST_DIR)/lib/stdlib.c
+	@echo compiling string
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/string.o $(DIST_DIR)/lib/string.c
 	@echo "Done."
 	@echo "Testing kcc..."
 	@perl $(SCRIPTS_DIR)/testInstall.pl $(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c $(DIST_DIR)/testProgram.compiled
