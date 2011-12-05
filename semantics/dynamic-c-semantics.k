@@ -291,10 +291,6 @@ or equivalent;9) or in some other implementation-defined manner
 			=> < resultValue > V:Value </ resultValue >)
 		< files >...
 			<fileCommands> ? => .K </fileCommands> // to prevent further io commands from firing
-			<file>... // stdin
-				<fid> 0 </fid>
-				<buff> S1:#String </buff>
-			...</file>
 			<file>... // stdout
 				<fid> 1 </fid>
 				<buff> S2'':#String </buff>
@@ -303,7 +299,6 @@ or equivalent;9) or in some other implementation-defined manner
 			...</file>
 		...</ files >
 		(.Bag =>
-			< input > S1:#String </ input >	
 			< output > S2:#String +String listToString(L:List) +String S2'':#String </ output >
 			//< unflushedOutput > listToString(L:List) +String S2'':#String </ unflushedOutput >
 		)

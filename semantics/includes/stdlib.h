@@ -11,6 +11,7 @@ typedef struct {int quot; int rem;} div_t;
 typedef struct {long int quot; long int rem;} ldiv_t;
 
 void *malloc(size_t size);
+void *realloc(void *ptr, size_t size);
 void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
 void exit(int status);

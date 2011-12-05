@@ -52,15 +52,16 @@ sub maudeOutputWrapper {
 				$realOutput .= "FAILURE\n";
 			}
 		} elsif ($state eq "success"){
-			if ($line =~ m/< input > .* <\/ input >/){
-				$reduced = 1;
+			# if ($line =~ m/< input > .* <\/ input >/){
+				# $reduced = 1;
 			# } elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.List{K}\) <\/ unflushedOutput >/){
 				# my $output = $1;
 				# $output =~ s/\%/\%\%/g;
 				# $output =~ s/`/\\`/g;
 				# $output =~ s/\\\\/\\\\\\\\/g;
 				# $realOutput .= substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
+			if ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
+				$reduced = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
 				$output =~ s/`/\\`/g;

@@ -260,7 +260,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule allocateType(Loc:#Nat, T:Type) => alloc(Loc:#Nat, value(byteSizeofType(T:Type))) 
 		[structural]
 	rule [allocateTypeIfAbsent-absent]:
-		< k > allocateTypeIfAbsent(Loc:#Nat, T:Type) => alloc(Loc:#Nat, value(byteSizeofType(T:Type))) ...</ k >
+		< k > allocateTypeIfAbsent(Loc:#Nat, T:Type) 
+			=> alloc(Loc:#Nat, value(byteSizeofType(T:Type))) 
+		...</ k >
 		< mem > Mem:Map </ mem >
 		if notBool $hasMapping(Mem:Map, Loc:#Nat)
 		[structural] 
@@ -272,7 +274,37 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule [alloc-lazy]:
 		< k > alloc(sym(Block:#Nat) +Nat 0, Len:#Nat) => .K ...</ k >
 		< mem >... .Map => Block:#Nat |-> memblock(mlength(Len:#Nat), .Map) ...</ mem >
-		[structural]		
+		[structural]
+	
+	op realloc-aux : K K K K K -> K
+	rule [realloc-start]:
+		< k > realloc(Old:K, New:K, OldLen:#Nat, NewLen:#Nat)
+			=> alloc(New:K, NewLen:#Nat)
+			~> realloc-aux(minNat(OldLen:#Nat, NewLen:#Nat), Old:K, New:K, OldLen:#Nat, NewLen:#Nat)
+		...</ k >
+		[structural]
+		
+	rule [realloc-found]:
+		< k > realloc-aux((sNat(N:#Nat) => N:#Nat), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
+		...</ k >
+		< mem >... 
+			OldBlock:#Nat |-> memblock(_, (_ N:#Nat |-> K:K))
+			NewBlock:#Nat |-> memblock(_, (_ (.Map => N:#Nat |-> K:K)))
+		...</ mem >
+		[structural]
+	rule [realloc-unfound]:
+		< k > realloc-aux((sNat(N:#Nat) => N:#Nat), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
+		...</ k >
+		< mem >... 
+			OldBlock:#Nat |-> memblock(_, M:Map)
+		...</ mem >
+		if notBool $hasMapping(M:Map, N:#Nat)
+		[structural]
+	rule [realloc-0]:
+		< k > realloc-aux(0, sym(OldBlock:#Nat) +Nat 0, _, OldLen:#Nat, _)
+			=> deleteSizedBlock(sym(OldBlock:#Nat) +Nat 0, OldLen:#Nat) 
+		...</ k >
+		[structural]	
 		
 	op writeBytes : #Nat K -> K [metadata "strict=(2)"] 
 	op writeBitfield : #Nat Type K -> K [metadata "strict=(3)"] 

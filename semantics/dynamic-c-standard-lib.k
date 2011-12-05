@@ -1006,15 +1006,48 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 			~> tv(134, t(.Set, int))
 		</ k >
 	
+	/*@ \source[n1570]{\para{7.22.3.4}{2--3}}
+	The \cinline{malloc} function allocates space for an object whose size is specified by \cinline{size} and whose value is indeterminate.
+
+The malloc function returns either a null pointer or a pointer to the allocated space.
+	*/
 	rule [malloc]:
-		< k > prepareBuiltin((Identifier("malloc")), tv(N:#Nat, T:Type))
-			=> alloc(Loc, N:#Nat)
+		< k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:Type))
+			=> alloc(Loc, Len:#Nat)
 			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
 		...</ k >
-		< malloced >... .Map => Loc |-> N:#Nat ...</ malloced >
+		< malloced >... .Map => Loc |-> Len:#Nat ...</ malloced >
 		< freshNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ freshNat >
-		if T:Type ==Bool cfg:sizeut
 		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:#Nat) +Nat 0
+		[structural]
+	// might want this for searching purposes
+	// rule [malloc-null]:
+		// < k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:Type))
+			// => tv(NullPointer, t(.Set, pointerType(void)))
+		// ...</ k >
+		// [structural]
+		
+	/*@ \source[n1570]{\para{7.22.3.5}{2--4}}
+	The \cinline{realloc} function deallocates the old object pointed to by \cinline|ptr| and returns a pointer to a new object that has the size specified by \cinline|size|. The contents of the new object shall be the same as that of the old object prior to deallocation, up to the lesser of the new and old sizes. Any bytes in the new object beyond the size of the old object have indeterminate values.
+
+If \cinline|ptr| is a null pointer, the \cinline|realloc| function behaves like the \cinline|malloc| function for the specified size. Otherwise, if \cinline|ptr| does not match a pointer earlier returned by a memory management function, or if the space has been deallocated by a call to the \cinline|free| or \cinline|realloc| function, the behavior is undefined. If memory for the new object cannot be allocated, the old object is not deallocated and its value is unchanged.
+
+The \cinline|realloc| function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
+	*/
+	rule [realloc]:
+		< k > prepareBuiltin((Identifier("realloc")), (tv(OldLoc:#Nat, ?),, tv(NewLen:#Nat, T:Type)))
+			=> realloc(OldLoc:#Nat, NewLoc, OldLen:#Nat, NewLen:#Nat)
+			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
+		...</ k >
+		< malloced >... (OldLoc:#Nat => NewLoc) |-> (OldLen:#Nat => NewLen:#Nat) ...</ malloced >
+		< freshNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ freshNat >
+		if OldLoc:#Nat =/=Bool NullPointer
+		where NewLoc = sym(threadId(allocatedDuration) +Nat Fresh:#Nat) +Nat 0
+		[structural]
+	rule [realloc-null]:
+		< k > prepareBuiltin((Identifier("realloc")), (tv(NullPointer, ?),, Len:Value))
+			=> prepareBuiltin((Identifier("malloc")), Len:Value)
+		...</ k >
 		[structural]
 
 	op calloc-aux : -> K

@@ -281,6 +281,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op min : Type -> #Int [memo]
 	op max : Type -> #Int [memo]
 	op alloc : K K -> K // should be K K 
+	op realloc : K K K K -> K // should be K K 
 	
 	// these are also used by compound literals
 	op initializerValue : #Id Type K -> KResult 
