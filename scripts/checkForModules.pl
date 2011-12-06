@@ -9,6 +9,7 @@ my @requiredModules = qw(
 	DBI
 	DBD::SQLite
 	Getopt::Declare
+	File::Spec::Link
 );
 my @missingPackages = ();
 
@@ -18,7 +19,7 @@ if (!$missingPackage) {
 }
 
 # at this point, we're missing at least one package
-print "ERROR: You are missing some required perl modules.  Would you like me to try installing them automatically by running `cpan -i @missingPackages`? (Y/N)";
+print "ERROR: You are missing some required perl modules.  It's probably best to install them using the package manager for your operating system.\n\nWould you like me to try installing these packages automatically by running `cpan -i @missingPackages`? (Y/N)";
 my $response = <STDIN>;
 chomp($response);
 if (uc($response) eq 'Y') {
@@ -40,7 +41,7 @@ sub tryInstalling {
 		print "The missing packages were installed successfully.\n";
 		exit(0);
 	} else {
-		print "ERROR: You're still missing some packages.  You can either rerun 'make' to try again, or install them yourself.\n";
+		print "ERROR: You're still missing some packages.  You can either rerun 'make' to try again, or install them yourself.  Sometimes `cpan` must be run with sudo privileges.\n";
 		exit(1);
 	}
 }

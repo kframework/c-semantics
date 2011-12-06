@@ -16,6 +16,7 @@ Install Perl
 		- DBI
 		- DBD::SQLite
 		- Getopt::Declare
+		- File::Spec::Link
 
 Example/Test:
 [celliso2@fsl3 ~]$ cpan -i XML::DOM
