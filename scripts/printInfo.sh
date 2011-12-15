@@ -57,3 +57,5 @@ printf "Compiled ceq:       %4d\n" `cat ../semantics/c-compiled.maude | perl mau
 printf "Compiled rl:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^rl " | wc -l`
 printf "Compiled crl:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^crl " | wc -l`
 printf "Compiled ops:       %4d\n" `cat ../semantics/c-compiled.maude | perl maudeloc.pl | grep "^op " | wc -l`
+echo "---------------------------------------------------------------------------"
+stats "../semantics/c-total.maude" 
