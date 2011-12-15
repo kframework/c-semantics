@@ -19,16 +19,23 @@ my $kcc = "../dist/kcc";
 my $gcc = "gcc -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99";
 
 my $flag = $ARGV[0];
-my $shouldFail;
+my $shouldFail = 0;
+# this is so terrible...
+my $shouldRun = 0;
 if ($flag eq "-f") {
 	$shouldFail = 1;
 } elsif ($flag eq "-p"){
-	$shouldFail = 0;
+	#$shouldFail = 0;
+} elsif ($flag eq "-r"){
+	$shouldRun = 1;
 } else {
 	die "use either -f or -p";
 }
 my $directory = $ARGV[1];
 my $testSuite = $directory;
+if ($testSuite eq "gcc-torture") {
+	$shouldRun = 1;
+}
 my $outputFilename = "results-$directory.xml";
 
 my $globalTests = "";
@@ -119,7 +126,7 @@ sub performTest {
 	my $gccCompileRetval = $?;
 	#$encodedOut = HTML::Entities::encode_entities($gccCompileOutput);
 	if ($gccCompileRetval) {
-		if (!$shouldFail) {
+		if (!$shouldFail && !$shouldRun) {
 			return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$gccCompileOutput");
 		}
 	}
@@ -145,7 +152,7 @@ sub performTest {
 	}
 	
 	# hack
-	if ($testSuite eq "gcc-torture"){
+	if ($shouldRun){
 		if ($kccRunRetval != 0) {
 			my $msg = "";
 			# my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);

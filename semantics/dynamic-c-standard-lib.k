@@ -1161,6 +1161,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< k > spawn-aux(ThreadId:#Nat, ThreadFuncPointer:Value, ThreadArg:Value) => thrd-success ...</ k >
 			< threadLocal >
 				< callStack > ?:List </ callStack >
+				C'':Bag // just calculateGoto I think
 				< control >
 					C':Bag
 				</ control >
@@ -1171,7 +1172,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< nextLoc > sym(threadId(ThreadId:#Nat) +Nat 0) +Nat 0 </ nextLoc >
 			< threadId > ThreadId:#Nat </ threadId >
 			C:Bag
-			< k > Call(ThreadFuncPointer:Value, ThreadArg:Value) </ k >
+			< k > Call(ThreadFuncPointer:Value, List(ThreadArg:Value)) </ k >
 			< threadLocal >
 				< callStack > .List </ callStack >
 				< control >

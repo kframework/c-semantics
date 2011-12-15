@@ -3,6 +3,7 @@ PARSER ?= ../dist/cparser
 GOOD_DIRECTORIES = buildTests
 FAIL_DIRECTORIES = shouldFail unspecified-shouldFail
 MUSTFAIL_DIRECTORIES = mustFail unspecified-mustFail uncategorized-mustFail
+MUSTPASS_DIRECTORIES = mustPass
 INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests
 THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-unit
@@ -17,6 +18,7 @@ ALL_DIRECTORIES = $(MUSTFAIL_DIRECTORIES) $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES
 GOOD_TARGETS = $(foreach var,  $(GOOD_DIRECTORIES), results-pass-$(var).xml)
 FAIL_TARGETS = $(foreach var,  $(FAIL_DIRECTORIES), results-fail-$(var).xml)
 MUSTFAIL_TARGETS = $(foreach var,  $(MUSTFAIL_DIRECTORIES), results-fail-$(var).xml)
+MUSTPASS_TARGETS = $(foreach var,  $(MUSTPASS_DIRECTORIES), results-runs-$(var).xml)
 INTEGRATION_TARGETS = $(foreach var, $(INTEGRATION_DIRECTORIES), results-pass-$(var).xml)
 UNIT_TARGETS = $(foreach var, $(UNIT_DIRECTORIES), results-pass-$(var).xml)
 THIRD_PARTY_TARGETS = $(foreach var, $(THIRD_PARTY_DIRECTORIES), results-pass-$(var).xml)
@@ -29,7 +31,7 @@ all: $(PARSER) test
 
 integration: $(INTEGRATION_TARGETS)
 
-unit: $(MUSTFAIL_TARGETS) adhoc $(UNIT_TARGETS)
+unit: $(MUSTPASS_TARGETS) $(MUSTFAIL_TARGETS) adhoc $(UNIT_TARGETS)
 
 adhoc: results-adhoc.xml
 
@@ -56,6 +58,9 @@ shouldFail: $(FAIL_TARGETS)
 
 results-pass-%.xml:
 	@perl runtest.pl -p $*
+	
+results-runs-%.xml:
+	@perl runtest.pl -r $*
 	
 results-fail-%.xml:
 	@perl runtest.pl -f $*

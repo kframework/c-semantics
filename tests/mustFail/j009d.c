@@ -1,5 +1,3 @@
-// this program shouldn't run
-
 int* f(){
 	int z = 6;
 	{ 

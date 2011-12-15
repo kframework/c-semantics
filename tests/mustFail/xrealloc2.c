@@ -4,5 +4,6 @@ int main(void){
 	p1[3] = 'd';
 	char* p2 = realloc(p1, 5);
 	char* p3 = realloc(p1, 5);
-	return p3[3];
+	p3[3];
+	return 0; 
 }

@@ -237,6 +237,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool T:K ==Bool Restrict
 		orBool T:K ==Bool Auto
 		orBool T:K ==Bool Register
+		orBool T:K ==Bool ThreadLocal
 		[structural] 
 		
 	rule
@@ -247,6 +248,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool Q:K ==Bool Restrict
 		orBool Q:K ==Bool Auto
 		orBool Q:K ==Bool Register
+		orBool Q:K ==Bool ThreadLocal
 		[structural]
 	rule
 		< k > canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) ?, ?)), .Bag, .Bag, (? BagItem(Q:K) => .Bag)) ...</ k >

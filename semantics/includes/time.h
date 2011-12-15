@@ -2,14 +2,15 @@
 #define _KCC_TIME_H
 #include <kccSettings.h>
 
-#ifndef _KCC_EXPERIMENTAL_TIME
-#error time.h not supported
-#endif
+// #ifndef _KCC_EXPERIMENTAL_TIME
+// #error time.h not supported
+// #endif
 
 #define NULL _KCC_NULL
 #define CLOCKS_PER_SEC ((clock_t)1)
 #define TIME_UTC 1
 
+typedef _KCC_SIZE_T size_t; // this needs to correspond to cfg:sizeut
 typedef signed long long clock_t;
 typedef signed long long time_t;
 

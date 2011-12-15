@@ -1,5 +1,3 @@
-// this program shouldn't run
-
 int* f(void){
 	int x = 5;
 	return &x;

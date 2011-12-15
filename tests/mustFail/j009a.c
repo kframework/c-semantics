@@ -1,4 +1,3 @@
-// this program shouldn't run
 int main(void){
 	int* p;
 	{
