@@ -4,5 +4,5 @@ int f(int x){
 
 int main(void){
 	int (*x)(int) = &f;
-	return x(5);
+	return x(0);
 }

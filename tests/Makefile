@@ -1,31 +1,34 @@
 PARSER ?= ../dist/cparser
 
 GOOD_DIRECTORIES = buildTests
-FAIL_DIRECTORIES = shouldFail unspecified-shouldFail
+SHOULDFAIL_DIRECTORIES = shouldFail unspecified-shouldFail
 MUSTFAIL_DIRECTORIES = mustFail unspecified-mustFail uncategorized-mustFail
 MUSTPASS_DIRECTORIES = mustPass
+SHOULDPASS_DIRECTORIES = shouldPass
 INTEGRATION_DIRECTORIES = integration
 UNIT_DIRECTORIES = unitTests
 THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-unit
 TORTURE_DIRECTORIES = gcc-torture
 CSMITH_DIRECTORIES = csmith
-ALL_DIRECTORIES = $(MUSTFAIL_DIRECTORIES) $(GOOD_DIRECTORIES) $(FAIL_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(TORTURE_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES)
 
-#ALL_FILES = $(foreach var, $(GOOD_DIRECTORIES), $(wildcard $(var)/*.c))
-#ALL_PROGRAMS_BASIC = $(basename $(ALL_FILES))
-#ALL_PROGRAMS = $(filter-out $(DONT_WORK), $(ALL_PROGRAMS_BASIC))
-#ALL_TARGETS = $(foreach var,  $(filter-out $(DONT_RUN), $(ALL_PROGRAMS)), $(dir $(var))compare-$(notdir $(var)).pass)
+
+ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(SHOULDFAIL_DIRECTORIES) $(MUSTFAIL_DIRECTORIES)  $(MUSTPASS_DIRECTORIES) $(SHOULDPASS_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES) $(TORTURE_DIRECTORIES) $(CSMITH_DIRECTORIES)
+
+
 GOOD_TARGETS = $(foreach var,  $(GOOD_DIRECTORIES), results-pass-$(var).xml)
-FAIL_TARGETS = $(foreach var,  $(FAIL_DIRECTORIES), results-fail-$(var).xml)
+SHOULDFAIL_TARGETS = $(foreach var,  $(SHOULDFAIL_DIRECTORIES), results-fail-$(var).xml)
 MUSTFAIL_TARGETS = $(foreach var,  $(MUSTFAIL_DIRECTORIES), results-fail-$(var).xml)
 MUSTPASS_TARGETS = $(foreach var,  $(MUSTPASS_DIRECTORIES), results-runs-$(var).xml)
+SHOULDPASS_TARGETS = $(foreach var,  $(SHOULDPASS_DIRECTORIES), results-runs-$(var).xml)
 INTEGRATION_TARGETS = $(foreach var, $(INTEGRATION_DIRECTORIES), results-pass-$(var).xml)
 UNIT_TARGETS = $(foreach var, $(UNIT_DIRECTORIES), results-pass-$(var).xml)
 THIRD_PARTY_TARGETS = $(foreach var, $(THIRD_PARTY_DIRECTORIES), results-pass-$(var).xml)
 TORTURE_TARGETS = $(foreach var, $(TORTURE_DIRECTORIES), results-pass-$(var).xml)
 CSMITH_TARGETS = $(foreach var, $(CSMITH_DIRECTORIES), results-pass-$(var).xml)
 
+
 CLEAN_TARGETS = $(foreach var, $(ALL_DIRECTORIES), clean-$(var))
+
 
 all: $(PARSER) test 
 
@@ -54,7 +57,8 @@ test: good
 	
 good: $(GOOD_TARGETS)
 
-shouldFail: $(FAIL_TARGETS)
+# not really shouldFail, but should<whatever>
+shouldFail: $(SHOULDFAIL_TARGETS) $(SHOULDPASS_TARGETS)
 
 results-pass-%.xml:
 	@perl runtest.pl -p $*

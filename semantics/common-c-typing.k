@@ -46,6 +46,9 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Volatile)) 
 		=> t(S:Set S':Set, T:SimpleType) 
 		[structural]
+	rule [ignore-atomic]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Atomic)) 
+		=> t(S:Set S':Set, T:SimpleType) 
+		[structural]
 	rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:SimpleType), Restrict)) 
 		=> t(S:Set S':Set, T:SimpleType) 
 		[structural]
@@ -192,12 +195,35 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			~> canonicalizeType-aux((?:Bag BagItem(TAtomic(K1:K, K2:K))), ?, ?, ?, ?) 
 		...</ k >
 		[structural]
+	rule
+		< k > (.K => DeclType(K1:K, K2:K))
+			~> canonicalizeType-aux((?:Bag BagItem(AlignasType(K1:K, K2:K))), ?, ?, ?, ?) 
+		...</ k >
+		[structural]
+	rule
+		< k > (.K => typeof(K1:K))
+			~> canonicalizeType-aux((?:Bag BagItem(AlignasExpression(K1:K))), ?, ?, ?, ?) 
+		...</ k >
+		[structural]
 		
 	op atomic : Type -> K
+	op alignas : Type -> K
 	
 	rule
 		< k > (T:Type => .K)
 			~> canonicalizeType-aux((?:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), ?, (? (.Bag => BagItem(atomic(T:Type)))), ?, ?) 
+		...</ k >
+			when isAType(T:Type)
+		[structural]
+	rule
+		< k > (T:Type => .K)
+			~> canonicalizeType-aux((?:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), ?, (? (.Bag => BagItem(alignas(T:Type)))), ?, ?) 
+		...</ k >
+			when isAType(T:Type)
+		[structural]
+	rule
+		< k > (T:Type => .K)
+			~> canonicalizeType-aux((?:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), ?, (? (.Bag => BagItem(alignas(T:Type)))), ?, ?) 
 		...</ k >
 			when isAType(T:Type)
 		[structural]
@@ -234,6 +260,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool T:K ==Bool Static
 		orBool T:K ==Bool Const
 		orBool T:K ==Bool Volatile
+		orBool T:K ==Bool Atomic
 		orBool T:K ==Bool Restrict
 		orBool T:K ==Bool Auto
 		orBool T:K ==Bool Register
@@ -245,6 +272,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		when Q:K ==Bool Extern
 		orBool Q:K ==Bool Static
 		orBool Q:K ==Bool Volatile
+		orBool Q:K ==Bool Atomic
 		orBool Q:K ==Bool Restrict
 		orBool Q:K ==Bool Auto
 		orBool Q:K ==Bool Register
@@ -346,7 +374,10 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char) [structural]
 	rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char) [structural]
 	
-	rule canonicalizeSpecifier(BagItem(atomic(t(S:Set, T:SimpleType)))) => t(S:Set SetItem(Atomic), T:SimpleType) [structural]
+	// rule canonicalizeSpecifier(BagItem(atomic(t(S:Set, T:SimpleType)))) => t(S:Set SetItem(Atomic), T:SimpleType) [structural]
+	
+	rule BagItem(atomic(_)) => .Bag [structural]
+	rule BagItem(alignas(_)) => .Bag [structural]
 	
 	rule canonicalizeSpecifier(BagItem(Double)) => t(.Set, double) [structural]
 	rule canonicalizeSpecifier(BagItem(Float)) => t(.Set, float) [structural]

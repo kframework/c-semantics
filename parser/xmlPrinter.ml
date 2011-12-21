@@ -666,6 +666,7 @@ and printSpecElem a =
 		wrap ((match cv with
 		| CV_CONST -> printCell "Const" [] ""
 		| CV_VOLATILE -> printCell "Volatile" [] ""
+		| CV_ATOMIC -> printCell "Atomic" [] ""
 		| CV_RESTRICT -> printCell "Restrict" [] "") :: []) "TypeQualifier"
 	| SpecAttr al -> printAttribute al
 	| SpecStorage sto ->
@@ -680,9 +681,17 @@ and printSpecElem a =
 		wrap ((printCell "Inline" [] "") :: []) "FunctionSpecifier"
 	| SpecNoReturn -> 
 		wrap ((printCell "Noreturn" [] "") :: []) "FunctionSpecifier"
+	| SpecAlignment a -> 
+		(match a with
+		| EXPR_ALIGNAS e -> printAlignasExpression e
+		| TYPE_ALIGNAS (s, d) -> printAlignasType s d)
 	| SpecType bt -> printCell "TypeSpecifier" [] (printTypeSpec bt)
 	| SpecPattern name -> wrap ((printIdentifier name) :: []) "SpecPattern"
-	
+and printAlignasExpression e = 
+	wrap ((printExpression e) :: []) "AlignasExpression"
+and printAlignasType s d =
+	wrap ((printSpecifier s) :: (printDeclType d) :: []) "AlignasType"
+
 and printTypeSpec = function
 	Tvoid -> printCell "Void" [] ""
 	| Tchar -> printCell "Char" [] ""

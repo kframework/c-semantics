@@ -7,5 +7,5 @@ int main(void){
 }
 
 int f(const int * p){
-	return *p;
+	return *p != 5;
 }

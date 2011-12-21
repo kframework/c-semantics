@@ -182,6 +182,8 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op Imaginary : -> TypeSpecifier [ctor]
 	op TAtomic : K K -> TypeSpecifier [ctor]
 	op Atomic : -> TypeSpecifier [ctor] // this will be used as the actual modifier
+	op AlignasExpression : K -> TypeSpecifier [ctor]
+	op AlignasType : K K -> TypeSpecifier [ctor]
 
 /*
 and storage =

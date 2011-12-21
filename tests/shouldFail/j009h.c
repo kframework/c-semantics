@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 int* sneaky;
+_Thread_local int p = 5;
 
 int f(void* p){
-	_Thread_local int p = 5;
 	sneaky = &p;
 	return 0;
 }

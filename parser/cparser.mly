@@ -970,7 +970,10 @@ decl_spec_list:                         /* ISO 6.7 */
 |   STATIC  decl_spec_list_opt          { SpecStorage STATIC :: $2, $1 }
 |   AUTO   decl_spec_list_opt           { SpecStorage AUTO :: $2, $1 }
 |   REGISTER decl_spec_list_opt         { SpecStorage REGISTER :: $2, $1}
-|   THREAD_LOCAL decl_spec_list_opt     { SpecStorage THREAD_LOCAL :: $2, $1}
+|   THREAD_LOCAL decl_spec_list_opt     { 
+	parse_warn "Encountered _Thread_local type.  These are not yet supported, and are currently ignored.";
+	SpecStorage THREAD_LOCAL :: $2, $1
+}
                                         /* ISO 6.7.2 */
 |   type_spec decl_spec_list_opt_no_named { SpecType (fst $1) :: $2, snd $1 }
                                         /* ISO 6.7.4 */
@@ -1045,15 +1048,16 @@ type_spec:   /* ISO 6.7.2 */
 |   TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
                                           TtypeofT (s, d), $1 }
 |   COMPLEX        { 
-	parse_warn "Encountered _Complex type.  These are not yet supported, and are currently ignored.\n";
+	parse_warn "Encountered _Complex type.  These are not yet supported, and are currently ignored.";
 	Tcomplex, $1 
 }
 |   IMAGINARY        { 
-	parse_warn "Encountered _Imaginary type.  These are not yet supported, and are currently ignored.\n";
+	parse_warn "Encountered _Imaginary type.  These are not yet supported, and are currently ignored.";
 	Timaginary, $1 
 }
+/* shift reduce conflict with other ATOMIC */
 |   ATOMIC LPAREN type_name RPAREN {
-	parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.\n";
+	parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
 	let b, d = $3 in Tatomic (b, d), $1
 	}
 ;
@@ -1338,6 +1342,9 @@ cvspec:
     CONST                               { SpecCV(CV_CONST), $1 }
 |   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   RESTRICT                            { SpecCV(CV_RESTRICT), $1 }
+|   ATOMIC                              { 
+parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
+SpecCV(CV_ATOMIC), $1 }
 ;
 
 /*** GCC attributes ***/
