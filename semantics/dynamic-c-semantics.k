@@ -35,7 +35,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< k > readFromFD(FD:#Nat) => tv(charToAscii(firstChar(S:#String)), t(.Set, int))  ...</ k >
 		< fid > FD:#Nat </ fid >
 		< buff > S:#String => butFirstChar(S:#String) </ buff >
-		if lengthString(S:#String) >Int 0 // don't compare with "" in order to only treat string sort
+		when lengthString(S:#String) >Int 0 // don't compare with "" in order to only treat string sort
 		[structural]
 	rule [readFromFD-empty-buff]:
 		< k > readFromFD(FD:#Nat) ...</ k >
@@ -79,7 +79,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 			=> #fPutByte(N:#Nat, charToAscii(firstChar(S:#String)))
 			~> f-sendString(N:#Nat, butFirstChar(S:#String))
 		...</fileCommands>
-		if S:#String =/=Bool ""
+		when S:#String =/=Bool ""
 		[structural]
 	rule [sendString-done]:
 		<fileCommands> f-sendString(N:#Nat, "") => .K ...</fileCommands>
@@ -108,7 +108,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule 
 		string2List-aux(S:#String, L:List{K})
 			=> string2List-aux(butFirstChar(S:#String), (L:List{K},, firstChar(S:#String)))
-		if S:#String =/=Bool ""
+		when S:#String =/=Bool ""
 		[structural]
 		
 	// op flushString : #Nat #String -> K
@@ -272,12 +272,12 @@ or equivalent;9) or in some other implementation-defined manner
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		if T:Type ==Bool t(.Set, char)
+		when T:Type ==Bool t(.Set, char)
 		[structural]
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		if T:Type ==Bool t(.Set, char)
+		when T:Type ==Bool t(.Set, char)
 		[structural]
 
 

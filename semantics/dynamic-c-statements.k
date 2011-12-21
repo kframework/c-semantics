@@ -25,7 +25,7 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 		[structural]
 	rule
 		< k > IfThenElse((V:Value => simplifyTruth(V:Value)), ?, ?) ...</ k >
-		if isNotTruthValue(V:Value)
+		when isNotTruthValue(V:Value)
 		[structural]
 endkm
 
@@ -132,7 +132,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 			=> sequencePoint 
 			~> handleSwitch(SN:#Nat, cast(promote(T:Type), tv(V:BaseValue, T:Type))) 
 		...</ k >
-		if hasIntegerType(T:Type)
+		when hasIntegerType(T:Type)
 		[structural] 
 		
 	rule
@@ -153,7 +153,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	rule
 		< k > (.K => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:Value, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >
-		if Exp:K =/=Bool l('Default)
+		when Exp:K =/=Bool l('Default)
 		[structural] 
 		
 	//  if all that's left is a default, do it
@@ -170,21 +170,21 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 
 	rule
 		< k > tryCase(tv(V':BaseValue, T:Type), tv(V:BaseValue, T:Type), CaseHelper:K) => .K ...</ k >
-		if V:BaseValue =/=Bool V':BaseValue
+		when V:BaseValue =/=Bool V':BaseValue
 		[structural] 
 		
 	rule
 		< k > handleSwitch-aux(SN:#Nat, ?, Map((? ((genLabel(SN':#Nat, ?) |-> ?) => .Map)))) ...</ k >
-		if SN:#Nat =/=Bool SN':#Nat
+		when SN:#Nat =/=Bool SN':#Nat
 		[structural] 
 	rule
 		< k > handleSwitch-aux(SN:#Nat, ?, Map((? ((L:KLabel(?) |-> ?) => .Map)))) ...</ k >
-		if L:KLabel =/=Bool 'genLabel
+		when L:KLabel =/=Bool 'genLabel
 		[structural] 
 			
 	rule
 		< k > tryCase((tv(V:BaseValue, T':Type) => cast(T:Type, tv(V:BaseValue, T':Type))), tv(?, T:Type), ?) ...</ k >
-		if T:Type =/=Bool T':Type
+		when T:Type =/=Bool T':Type
 		[structural] 
 	
 	rule [case-fall-through]:
@@ -262,7 +262,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< blockHistory > ListItem(CurrentBlock:#Nat) BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
 		< localVariables > Vars:List </ localVariables >
-		if L:KLabel ==Bool 'processGoto
+		when L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
 		
@@ -274,7 +274,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			~> processGoto(gotoObject(TargetDepth:#Nat, TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:#Nat) ActualHistory:List </ blockHistory >
-		if notBool BlockNum:#Nat in TargetBlockHistory:List
+		when notBool BlockNum:#Nat in TargetBlockHistory:List
 		[structural] 
 		
 	//  same
@@ -283,7 +283,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			~> processGoto(gotoObject(TargetDepth:#Nat, Prefix:List ListItem(BlockNum:#Nat) TargetBlockHistory:List, ?, ?, ?))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:#Nat) ActualHistory:List </ blockHistory >
-		if TargetBlockHistory:List =/=Bool ActualHistory:List
+		when TargetBlockHistory:List =/=Bool ActualHistory:List
 		[structural] 
 			
 	//  once we share a history, we start to push
@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:#Nat) ActualHistory:List </ blockHistory >
-		if sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
+		when sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
 		[structural large] 
 		
 	rule
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:#Nat)) 
-		if sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
+		when sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
 		[structural large] 
 	
 	//  We've made it to the block above the target
@@ -328,7 +328,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< nestingDepth > Depth:#Nat </ nestingDepth >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > ? => LoopStack:List </ loopStack >
-		if L:KLabel ==Bool 'processGoto
+		when L:KLabel ==Bool 'processGoto
 		orBool L:KLabel ==Bool 'processGotoDown
 		[structural] 
 		
@@ -341,7 +341,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			)
 		...</ k >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
-		if BlockNum:#Nat =/=Bool TargetBlock:#Nat
+		when BlockNum:#Nat =/=Bool TargetBlock:#Nat
 		[structural] 
 		
 	//  skip variables in the real history
@@ -352,7 +352,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
-		if getIdOfDeclaration(Decl:K) in Vars:List
+		when getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
 	// op getIdString : K -> #String 
@@ -373,7 +373,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< localVariables > Vars:List </ localVariables >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
 		< shouldInit > ? => false </ shouldInit >
-		if notBool getIdOfDeclaration(Decl:K) in Vars:List
+		when notBool getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 		
 	//  fixme this is wrong
@@ -524,7 +524,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':#Nat, ?)) ...</ loopStack >
-		if Num':#Nat =/=Bool Num:#Nat
+		when Num':#Nat =/=Bool Num:#Nat
 		[structural] 
 	
 	/*@ \source[n1570]{\para{6.8.6.2}{2}}
@@ -532,7 +532,7 @@ kmod DYNAMIC-C-STATEMENTS is
 	*/
 	rule [continue]:
 		< k > Continue ~> ((L:KLabel)(?) => .) ...</ k >
-		if L:KLabel =/=Bool 'loopMarked
+		when L:KLabel =/=Bool 'loopMarked
 		andBool L:KLabel =/=Bool 'popBlock
 		andBool L:KLabel =/=Bool 'pushBlock
 		andBool L:KLabel =/=Bool 'popLoop
@@ -549,7 +549,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		[structural]
 	rule [continue-done]:
 		< k > (Continue => .K) ~> loopMarked ~> L:KLabel(?) ...</ k >
-		if L:KLabel =/=Bool 'For
+		when L:KLabel =/=Bool 'For
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.8.6.3}{2}}

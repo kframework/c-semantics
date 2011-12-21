@@ -22,23 +22,37 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \source[n1570]{\para{6.3.2.1}{2}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
 	*/
-	rule reval(lv(Loc:#Nat, T:Type)) => read(Loc:#Nat, unqualifyType(T:Type)) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
-	rule peval(lv(Loc:#Nat, T:Type)) => lv(Loc:#Nat, T:Type) if notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) [structural]
+	rule reval(lv(Loc:#Nat, T:Type)) => read(Loc:#Nat, unqualifyType(T:Type)) 
+		when notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) 
+		[structural]
+	rule peval(lv(Loc:#Nat, T:Type)) => lv(Loc:#Nat, T:Type) 
+		when notBool hasArrayType(T:Type) andBool notBool hasFunctionType(T:Type) 
+		[structural]
 
 	
 	/*@ \source[n1570]{\para{6.3.2.1}{3}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	*/
-	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:Type)))) if hasArrayType(T:Type) [structural]
-	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:Type)))) if hasArrayType(T:Type) [structural]
+	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:Type))))
+		when hasArrayType(T:Type) 
+		[structural]
+	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:Type)))) 
+		when hasArrayType(T:Type) 
+		[structural]
 	// should never get to the situation where we have tv(..., arrayType)
 	
 	
 	/*@ \source[n1570]{\para{6.3.2.1}{4}}
 	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
 	*/
-	rule [reval-function]: reval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(T:Type))) if hasFunctionType(T:Type) [structural]
-	rule [peval-function]: peval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(T:Type))) if hasFunctionType(T:Type) [structural]
+	rule [reval-function]: 
+		reval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(T:Type))) 
+		when hasFunctionType(T:Type) 
+		[structural]
+	rule [peval-function]: 
+		peval(lv(Loc:#Nat, T:Type)) => tv(Loc:#Nat, t(.Set, pointerType(T:Type))) 
+		when hasFunctionType(T:Type) 
+	[structural]
 	
 endkm
 
@@ -70,7 +84,7 @@ kmod DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 		...</ k >
 		< compoundLiteralMap > M:Map => M:Map[Loc:#Nat / X:#Id] </ compoundLiteralMap >
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
-		if notBool $hasMapping(M:Map, X:#Id)
+		when notBool $hasMapping(M:Map, X:#Id)
 		[structural]
 		
 	rule
@@ -109,7 +123,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		[structural]
 	rule
 		< k > (V:Value => simplifyTruth(V:Value)) && ? ...</ k >
-		if isNotTruthValue(V:Value)
+		when isNotTruthValue(V:Value)
 		[structural]	
 				
 	/*@ \source[n1570]{\para{6.5.14}{3--4}}
@@ -130,7 +144,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		[structural]
 	rule
 		< k > (V:Value => V:Value != tv(0, t(.Set, int))) || ? ...</ k >
-		if isNotTruthValue(V:Value)
+		when isNotTruthValue(V:Value)
 		[structural]
 
 	
@@ -160,15 +174,15 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	// fixme, not handling qualifiers correctly
 	rule
 		retype(T:Type) => t(.Set, pointerType(innerType(T:Type)))
-		if hasArrayType(T:Type)
+		when hasArrayType(T:Type)
 		[structural]
 	rule
 		retype(T:Type) => t(.Set, pointerType(T:Type))
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		[structural]
 	rule
 		retype(T:Type) => T:Type
-		if notBool (hasArrayType(T:Type) orBool hasFunctionType(T:Type))
+		when notBool (hasArrayType(T:Type) orBool hasFunctionType(T:Type))
 		[structural]	
 	/*@ \source[n1570]{\para{6.5.15}{4}}
 	The first operand is evaluated; there is a sequence point between its evaluation and the evaluation of the second or third operand (whichever is evaluated). The second operand is evaluated only if the first compares unequal to 0; the third operand is evaluated only if the first compares equal to 0; the result is the value of the second or third operand (whichever is evaluated), converted to the type described below.
@@ -186,7 +200,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T1:Type,, T2:Type)) => convertedType(usualArithmeticConversion(T1:Type, T2:Type)))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		if T1:Type =/=Bool T2:Type
+		when T1:Type =/=Bool T2:Type
 		andBool hasArithmeticType(T1:Type)
 		andBool hasArithmeticType(T2:Type)
 		[structural]
@@ -199,14 +213,14 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T1:Type,, T2:Type)) => convertedType(T2:Type))
 			~> E:K ? tv(0, T1:Type) : E2:K
 		...</ k >
-		if hasIntegerType(T1:Type)
+		when hasIntegerType(T1:Type)
 		andBool hasPointerType(T2:Type)
 		[structural]
 	rule [conditional-right-is-null]:
 		< k > (types((T1:Type,, T2:Type)) => convertedType(T1:Type))
 			~> E:K ? E1:K : tv(0, T2:Type)
 		...</ k >
-		if hasIntegerType(T2:Type)
+		when hasIntegerType(T2:Type)
 		andBool hasPointerType(T1:Type)
 		[structural]
 		
@@ -215,7 +229,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T1:Type,, T2:Type)) => convertedType(T1:Type))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		if hasPointerType(T1:Type)
+		when hasPointerType(T1:Type)
 		andBool hasPointerType(T2:Type)
 		[structural]
 		
@@ -224,7 +238,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T:Type,, T:Type)) => convertedType(T:Type))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		if notBool hasPointerType(T:Type)
+		when notBool hasPointerType(T:Type)
 		[structural]
 	rule
 		< k > convertedType(T:Type) ~> E:K ? E1:K : E2:K
@@ -280,7 +294,7 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 		< env > Env:Map </ env >
 		< types >... X:#Id |-> T:Type ...</ types >
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		andBool notBool $hasMapping(Env:Map, X:#Id)
 		[structural]
 endkm
@@ -306,7 +320,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		< k > Call(tv(Loc:#Nat, t(?, pointerType(T:Type))), List(L:List{KResult}))
 			=> application(readFunction(Loc:#Nat), L:List{KResult})
 		...</ k >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		[structural]
 
 	rule [populateFromGlobal]:
@@ -379,7 +393,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 			M:Map
 			(.Map => S:#String |-> lv(Loc:#Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:#String) +Nat 1))))
 		</ stringLiterals >
-		if notBool($hasMapping(M:Map, S:#String))
+		when notBool($hasMapping(M:Map, S:#String))
 		[structural]
 		
 	op wstring : List{K} -> K 
@@ -392,7 +406,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 			M:Map
 			(.Map => wstring(S:List{K}) |-> lv(Loc:#Nat, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Nat 1))))
 		</ stringLiterals >
-		if notBool($hasMapping(M:Map, wstring(S:List{K})))
+		when notBool($hasMapping(M:Map, wstring(S:List{K})))
 		[structural]
 		
 	rule [const-string-found]:
@@ -466,11 +480,11 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		
 	op simplifyForHex : #String -> #String
 	rule simplifyForHex(S:#String) => simplifyForHex(butFirstChar(S:#String))
-		if firstChar(S:#String) ==Bool "0"
+		when firstChar(S:#String) ==Bool "0"
 		andBool lengthString(S:#String) >Nat 1
 		[structural]
 	rule simplifyForHex(S:#String) => S:#String
-		if firstChar(S:#String) =/=Bool "0"
+		when firstChar(S:#String) =/=Bool "0"
 		orBool lengthString(S:#String) ==Bool 1
 		[structural]
 		
@@ -598,7 +612,7 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 			:=
 			(tv(V:List{K}, T':Type) => cast(T:Type, tv(V:List{K}, T':Type)))
 		...</ k >
-		if T:Type =/=Bool T':Type
+		when T:Type =/=Bool T':Type
 		[structural]
 	/*@ \source[n1570]{\para{6.5.16.1}{3}}
 	\broken{If the value being stored in an object is read from another object that overlaps in any way the storage of the first object, then the overlap shall be exact and the two objects shall have qualified or unqualified versions of a compatible type; otherwise, the behavior is undefined.}
@@ -658,12 +672,12 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The integer promotions are performed on each of the operands. The type of the result is that of the promoted left operand. If the value of the right operand is negative or is greater than or equal to the width of the promoted left operand, the behavior is undefined
 	*/
 	rule tv(I:#Int, T:Type) << tv(N:#Nat, T':Type) => leftShiftInterpret(T:Type, I:#Int <<Int N:#Nat, tv(I:#Int, T:Type))
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		andBool hasBeenPromoted(T':Type)
 		andBool N:#Nat <Int numBits(T:Type)
 		[structural]
 	rule tv(I:#Int, T:Type) >> tv(N:#Nat, T':Type) => rightShiftInterpret(T:Type, I:#Int >>Int N:#Nat)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		andBool hasBeenPromoted(T':Type)
 		andBool N:#Nat <Int numBits(T:Type)
 		[structural]
@@ -675,7 +689,7 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the binary \cinline{&} operator is the bitwise AND of the operands (that is, each bit in the result is set if and only if each of the corresponding bits in the converted operands is set).
 	*/
 	rule tv(I1:#Int, T:Type) & tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int &Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	
 	/*@ \source[n1570]{\para{6.5.11}{3--4}}
@@ -684,7 +698,7 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{^} operator is the bitwise exclusive OR of the operands (that is, each bit in the result is set if and only if exactly one of the corresponding bits in the converted operands is set).	
 	*/
 	rule tv(I1:#Int, T:Type) ^ tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int xorInt I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.5.12}{3--4}}
@@ -693,14 +707,14 @@ kmod DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{|} operator is the bitwise inclusive OR of the operands (that is, each bit in the result is set if and only if at least one of the corresponding bits in the converted operands is set).
 	*/
 	rule tv(I1:#Int, T:Type) | tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int |Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 
 	/*@ \source[n1570]{\para{6.5.3.3}{4}}
 	The result of the \cinline{\~} operator is the bitwise complement of its (promoted) operand (that is, each bit in the result is set if and only if the corresponding bit in the converted operand is not set). The integer promotions are performed on the operand, and the result has the promoted type. If the promoted type is an unsigned type, the expression \cinline{\~E} is equivalent to the maximum value representable in that type minus \cinline{E}.
 	*/
 	rule ~ tv(I:#Int, T:Type) => arithInterpret(T:Type, ~Int I:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 endkm
 
@@ -725,22 +739,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	rule tv(I1:#Int, T:Type) < tv(I2:#Int, T:Type)
 			=> makeTruth(I1:#Int <Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:Type) <= tv(I2:#Int, T:Type)
 			=> makeTruth(I1:#Int <=Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:Type) > tv(I2:#Int, T:Type)
 			=> makeTruth(I1:#Int >Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:Type) >= tv(I2:#Int, T:Type)
 			=> makeTruth(I1:#Int >=Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		[structural]
 	rule
@@ -765,19 +779,19 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// fixme there are further restrictions on pointers
 	rule [ptr-compare-lt]: tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) < tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type)
 			=> makeTruth(Offset:#Nat <Int Offset':#Nat)
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 	rule [ptr-compare-lte]: tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) <= tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type)
 			=> makeTruth(Offset:#Nat <=Int Offset':#Nat)
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 	rule [ptr-compare-gt]: tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) > tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type)
 			=> makeTruth(Offset:#Nat >Int Offset':#Nat)
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 	rule [ptr-compare-gte]: tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) >= tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type)
 			=> makeTruth(Offset:#Nat >=Int Offset':#Nat)
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 
 	/*@ \source[n1570]{\para{6.5.9}{3}}
@@ -786,14 +800,14 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	rule tv(I1:#Int, T:Type) == tv(I2:#Int, T:Type)
 		=> makeTruth(I1:#Int ==Bool I2:#Int)
-		if (
+		when (
 			hasBeenPromoted(T:Type)
 			orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		) andBool notBool (isUnknown(I1:#Int) orBool isUnknown(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:Type) != tv(I2:#Int, T:Type)
 		=> makeTruth(I1:#Int =/=Bool I2:#Int)
-		if (
+		when (
 			hasBeenPromoted(T:Type)
 			orBool (hasPointerType(T:Type) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		) andBool notBool (isUnknown(I1:#Int) orBool isUnknown(I2:#Int))
@@ -804,40 +818,40 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule [isUnknown-ptr]: isUnknown(sym(?) +Nat ?) => false [structural]
 	//rule [isUnknown-bito]: isUnknown(bito(?) +Nat ?) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:#Int) => false
-		if  I:#Int <=Int 0 orBool I:#Int >Int 0
+		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]
 	
 	// if they're identical, we know for sure they are the same
 	rule tv(N:#Nat, T:Type) == tv(N:#Nat, T':Type)
 		=> tv(1, t(.Set, int))
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 	rule tv(N:#Nat, T:Type) != tv(N:#Nat, T':Type)
 		=> tv(0, t(.Set, int))
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 	
 	// if one of the pointers is null, it's also straightforward
 	rule tv(NullPointer, T:Type) == tv(N:#Nat, T':Type)
 		=> makeTruth(NullPointer ==Bool N:#Nat)
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 	rule tv(NullPointer, T:Type) != tv(N:#Nat, T':Type)
 		=> makeTruth(NullPointer =/=Bool N:#Nat)
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 	rule tv(N:#Nat, T:Type) == tv(NullPointer, T':Type)
 		=> makeTruth(NullPointer ==Bool N:#Nat)
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 	rule tv(N:#Nat, T:Type) != tv(NullPointer, T':Type)
 		=> makeTruth(NullPointer =/=Bool N:#Nat)
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasPointerType(T':Type)
 		[structural]
 		
@@ -846,12 +860,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) == tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type) 
 			=> makeTruth(Offset:#Nat ==Bool Offset':#Nat)
 		...</ k >
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:Type) != tv(sym(Base:#Nat) +Nat Offset':#Nat, T':Type) 
 			=> makeTruth(Offset:#Nat =/=Bool Offset':#Nat)
 		...</ k >
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		[structural]
 		
 	// next, they are part of different objects.  
@@ -863,7 +877,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
 			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
 			...</ mem >
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		andBool Base:#Nat =/=Bool Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
@@ -875,7 +889,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
 			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
 			...</ mem >
-		if hasPointerType(T:Type) andBool hasPointerType(T':Type)
+		when hasPointerType(T:Type) andBool hasPointerType(T':Type)
 		andBool Base:#Nat =/=Bool Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
@@ -887,26 +901,26 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
 		(tv(N:#Nat, T:Type) => tv(NullPointer, T':Type)) == tv(?, T':Type)
-		if hasBeenPromoted(T:Type) 
+		when hasBeenPromoted(T:Type) 
 		andBool hasPointerType(T':Type)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(?, T:Type) == (tv(N:#Nat, T':Type) => tv(NullPointer, T:Type))
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasBeenPromoted(T':Type)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:#Nat, T:Type) => tv(NullPointer, T':Type)) != tv(?, T':Type)
-		if hasBeenPromoted(T:Type) 
+		when hasBeenPromoted(T:Type) 
 		andBool hasPointerType(T':Type)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(?, T:Type) != (tv(N:#Nat, T':Type) => tv(NullPointer, T:Type))
-		if hasPointerType(T:Type) 
+		when hasPointerType(T:Type) 
 		andBool hasBeenPromoted(T':Type)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
@@ -955,19 +969,19 @@ second operand from the first.
 	rule < k > tv(Loc:#Nat, t(S:Set, pointerType(T':Type))) + tv(I:#Int, T:Type)
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':Type)), I:#Int, sizeofType(T':Type))
 		...</ k >
-		if hasIntegerType(T:Type)
+		when hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		[structural]
 	rule < k > tv(I:#Int, T:Type) + tv(Loc:#Nat, t(S:Set, pointerType(T':Type)))
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':Type)), I:#Int, sizeofType(T':Type))
 		...</ k >
-		if hasIntegerType(T:Type)
+		when hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		[structural]
 	rule < k > tv(Loc:#Nat, t(S:Set, pointerType(T':Type))) - tv(I:#Int, T:Type)
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':Type)), -Int I:#Int, sizeofType(T':Type)) 
 		...</ k >
-		if hasIntegerType(T:Type)
+		when hasIntegerType(T:Type)
 		andBool T':Type =/=Bool void
 		[structural]
 			
@@ -988,36 +1002,36 @@ second operand from the first.
 	rule [pointer-difference]: 
 		computePointerDifference(sym(Block:#Nat) +Nat Offset1:#Nat, sym(Block:#Nat) +Nat Offset2:#Nat, tv(Size:#Nat, ?))
 			=> tv(_-Int_(Offset1:#Nat, Offset2:#Nat) /Int Size:#Nat, cfg:ptrdiffut)
-		if _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Bool 0
+		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Bool 0
 		[structural]
 	
 		
 		
 	rule tv(I1:#Int, T:Type) + tv(I2:#Int, T:Type) => arithInterpret(T:Type, _+Int_(I1:#Int,I2:#Int))
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	rule _-_(tv(I1:#Int, T:Type), tv(I2:#Int, T:Type)) => arithInterpret(T:Type, _-Int_(I1:#Int,I2:#Int))
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	rule tv(I1:#Int, T:Type) * tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int *Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	rule tv(I1:#Int, T:Type) / tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int /Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		andBool I2:#Int =/=Bool 0
 		[structural]
 	rule tv(I1:#Int, T:Type) % tv(I2:#Int, T:Type) => arithInterpret(T:Type, I1:#Int %Int I2:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		andBool min(T:Type) <=Int I1:#Int /Int I2:#Int andBool max(T:Type) >=Int I1:#Int /Int I2:#Int
 		andBool I2:#Int =/=Bool 0
 		[structural]
 	rule - tv(I1:#Int, T:Type) => arithInterpret(T:Type, -Int_(I1:#Int))
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 		
 	rule piece(unknown(N:#Nat), N:#Nat) /Int M:#Nat 
 		=> piece(unknown(N:#Nat), N:#Nat)
-		if M:#Nat =/=Bool 0
+		when M:#Nat =/=Bool 0
 		andBool isConcreteNumber(M:#Nat)
 		[structural]
 		
@@ -1039,7 +1053,7 @@ second operand from the first.
 	The result of the unary \cinline{+} operator is the value of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/		
 	rule [unaryPlus-int]: + tv(I:#Int, T:Type) => arithInterpret(T:Type, I:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	rule [unaryPlus-float]: + tv(F:#Float, T:Type) => tv(F:#Float, T:Type)
 		[structural]	
@@ -1048,7 +1062,7 @@ second operand from the first.
 	The result of the unary \cinline{-} operator is the negative of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/
 	rule [unaryMinus-int]: - tv(I:#Int, T:Type) => arithInterpret(T:Type, -Int I:#Int)
-		if hasBeenPromoted(T:Type)
+		when hasBeenPromoted(T:Type)
 		[structural]
 	rule [unaryMinus-float]: - tv(F:#Float, T:Type) => arithInterpret(T:Type, -Float_(F:#Float))
 		[structural]
@@ -1105,7 +1119,7 @@ kmod DYNAMIC-SEMANTICS-DEREFERENCE is
 			=> checkDerefLoc(Loc:#Nat)
 			~> lv(Loc:#Nat, t(S:Set, T:SimpleType))
 		...</ k >
-		if notBool T:SimpleType ==Bool void
+		when notBool T:SimpleType ==Bool void
 		[structural]
 endkm
 

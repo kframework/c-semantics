@@ -199,7 +199,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	rule stripConst(t((SetItem(Const) => .Set) ?, ?)) [structural]
 	rule 
 		stripConst(t(S:Set, T:SimpleType)) => t(S:Set, T:SimpleType)
-		if notBool Const in S:Set
+		when notBool Const in S:Set
 		[structural]
 	
 	op bind : List{KResult} List{KResult} -> K 
@@ -403,7 +403,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 	rule sNat(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat) +Nat (M:#Nat +Nat 1) [structural]
 	rule I:#Int +Int (N:#Nat +Nat sym(M:#Nat))
 		=> absInt(N:#Nat +Int I:#Int) +Nat sym(M:#Nat) 
-		if N:#Nat +Int I:#Int >=Int 0 
+		when N:#Nat +Int I:#Int >=Int 0 
 		[structural]
 
 	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
@@ -436,7 +436,7 @@ kmod COMMON-C-SEMANTICS-MISC is
 	rule AttributeWrapper(K:K, ?) => K:K [structural]
 	
 	rule N:#Nat +Nat bito(M:#Nat) => N:#Nat +Nat (M:#Nat /Nat numBitsPerByte) +Nat bito(M:#Nat %Nat numBitsPerByte)
-		if M:#Nat >=Nat numBitsPerByte 
+		when M:#Nat >=Nat numBitsPerByte 
 		[structural]
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]

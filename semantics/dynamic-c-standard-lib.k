@@ -43,7 +43,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	rule [idsFromDeclList-one]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(?, T:SimpleType), X:#Id)))
 			=> idsFromDeclList(L:List{K}),, X:#Id
-		if T:SimpleType =/=Bool void
+		when T:SimpleType =/=Bool void
 		[structural]
 	rule [idsFromDeclList-void]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(?, void), X:#Id)))
@@ -75,7 +75,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 			=> writeToFD(1, asciiCharString(firstChar(S:#String)))
 			~> printString(butFirstChar(S:#String))
 		...</ k >
-		if lengthString(S:#String) >Nat 0
+		when lengthString(S:#String) >Nat 0
 		[structural]
 	rule
 		< k > printString("") => writeToFD(1, 10) ...</ k >
@@ -415,7 +415,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			=> writeString(Dest:Value, substrString(S:#String, 0, Len:#Nat -Int 1) +String "\0")
 			~> tv(lengthString(S:#String), t(.Set, int))
 		...</ k >
-		if Len:#Nat >Nat 0
+		when Len:#Nat >Nat 0
 		[structural]
 	rule [snprintf-done-0]:
 		< k > snprintf(formattedResult(S:#String), _, 0)
@@ -448,7 +448,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 	rule stringToList(S:#String) 
 			=> ListItem(firstChar(S:#String)) stringToList(butFirstChar(S:#String))
-		if S:#String =/=Bool ""
+		when S:#String =/=Bool ""
 		[structural]
 		
 	rule listToString(.List) => ""
@@ -490,7 +490,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		<format> ListItem(S:#String) => .List ...</format>
 		<formatResult>... .List => ListItem(S:#String) </formatResult>
 		<formatState> "normal" </formatState>
-		if S:#String =/=Bool "%"
+		when S:#String =/=Bool "%"
 		[structural]
 		
 	rule [format-reset]:
@@ -552,7 +552,7 @@ For other conversions, the behavior is undefined.
 		< k > formatter-aux(_) ...</ k >
 		<format> ListItem(C:#Char) => .List ...</format>
 		<formatState> "%" </formatState>
-		if charToAscii(C:#Char) >Int asciiCharString("0")
+		when charToAscii(C:#Char) >Int asciiCharString("0")
 		andBool charToAscii(C:#Char) <=Int asciiCharString("9")
 		[structural]	
 
@@ -647,7 +647,7 @@ The \cinline{int} argument is converted to signed decimal in the style \emph{[-]
 		...</ k >
 		<format> ListItem(S:#String) => .List ...</format>
 		<formatState> "%" => "%d" </formatState>
-		if S:#String ==Bool "d" orBool S:#String ==Bool "i"
+		when S:#String ==Bool "d" orBool S:#String ==Bool "i"
 		[structural]
 	rule [format-%d]:
 		< k > formatter-aux(_) ...</ k >
@@ -1041,7 +1041,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		...</ k >
 		< malloced >... (OldLoc:#Nat => NewLoc) |-> (OldLen:#Nat => NewLen:#Nat) ...</ malloced >
 		< freshNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ freshNat >
-		if OldLoc:#Nat =/=Bool NullPointer
+		when OldLoc:#Nat =/=Bool NullPointer
 		where NewLoc = sym(threadId(allocatedDuration) +Nat Fresh:#Nat) +Nat 0
 		[structural]
 	rule [realloc-null]:
@@ -1112,7 +1112,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		< k > (tv(I:#Int, T:Type) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:Type)))
 			~> strcpy((Dest:#Nat => sNat(Dest:#Nat)), ?, ?)
 		...</ k >
-		if I:#Int =/=Bool 0
+		when I:#Int =/=Bool 0
 		[structural]
 	rule [strcpy-done]:
 		< k > tv(0, T:Type) ~> strcpy(Dest:#Nat, ?, Orig:#Nat)
@@ -1199,7 +1199,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		< threadId > MyId:#Nat </ threadId >
 		< joiningMap > Joining:Map => Joining:Map[MyId:#Nat / ThreadId:#Nat] </ joiningMap >
 		< detachingMap > Detaching:Map </ detachingMap >
-		if notBool $hasMapping(Joining:Map, ThreadId:#Nat)
+		when notBool $hasMapping(Joining:Map, ThreadId:#Nat)
 		andBool notBool $hasMapping(Detaching:Map, ThreadId:#Nat)
 		[structural]
 	
@@ -1209,7 +1209,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ k >
 		< joiningMap > Joining:Map </ joiningMap >
 		< detachingMap > Detaching:Map </ detachingMap >
-		if $hasMapping(Joining:Map, ThreadId:#Nat)
+		when $hasMapping(Joining:Map, ThreadId:#Nat)
 		orBool $hasMapping(Detaching:Map, ThreadId:#Nat)
 		[metadata "computational=()"]
 	

@@ -66,7 +66,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k > 
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
-		if notBool hasArrayType(T:Type)
+		when notBool hasArrayType(T:Type)
 		[structural] 
 		
 	rule [bind-one-check-type]:
@@ -78,12 +78,12 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	op promoteList : List{KResult} -> List{K} 
 	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
 		=> cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{KResult})
-		if ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
+		when ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
 		orBool T:SimpleType ==Bool float 
 		[structural]
 	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
 		=> (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{KResult}))
-		if (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
+		when (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
 			andBool notBool T:SimpleType ==Bool float
 			andBool notBool hasArrayType(t(S:Set, T:SimpleType))
 		) 
@@ -154,12 +154,12 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zeroType(Name:K, T:Type) 
 			=> Computation(AllowWrite(Name:K) := tv(0, t(.Set, int))) ...</ k >
-		if hasIntegerType(T:Type)
+		when hasIntegerType(T:Type)
 		[structural] 
 	rule
 		< k > zeroType(Name:K, T:Type) 
 			=> Computation(AllowWrite(Name:K) := tv(0.0, t(.Set, float))) ...</ k >
-		if hasFloatType(T:Type)
+		when hasFloatType(T:Type)
 		[structural] 
 		
 	op zeroStruct : K List{KResult} -> K 
@@ -199,11 +199,11 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zeroType(Name:K, T:Type) 
 			=> Computation(AllowWrite(Name:K) := tv(NullPointer, T:Type)) ...</ k >
-		if hasPointerType(T:Type)
+		when hasPointerType(T:Type)
 		[structural]
 	rule
 		< k > zeroType(Name:K, T:Type) => .K ...</ k >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		[structural]
 		
 	rule

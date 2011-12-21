@@ -130,7 +130,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		
 	rule [compute-label-ignore-non-statement]:
 		< computation > L:KLabel(Args:List{K}) => .K ...</ computation >
-		if false
+		when false
 		orBool L:KLabel ==Bool 'Nop
 		orBool L:KLabel ==Bool 'Computation
 		orBool L:KLabel ==Bool 'Break
@@ -248,7 +248,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
-		if notBool $hasMapping(M:Map, Target:#Id)
+		when notBool $hasMapping(M:Map, Target:#Id)
 		[structural]
 		
 	rule
@@ -265,7 +265,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
-		if notBool $hasMapping(M:Map, genLabel(SwitchNum:#Nat, Val:K))
+		when notBool $hasMapping(M:Map, genLabel(SwitchNum:#Nat, Val:K))
 		//  andBool hasIntegerType(T:Type)
 		[structural large] 
 	rule
@@ -279,7 +279,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
-		if notBool $hasMapping(M:Map, genLabel(SwitchNum:#Nat, l('Default)))
+		when notBool $hasMapping(M:Map, genLabel(SwitchNum:#Nat, l('Default)))
 		[structural]
 endkm
  

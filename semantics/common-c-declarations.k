@@ -42,31 +42,31 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> giveType(X:#Id, T:Type)
 			~> figureInitializer-aux(X:#Id, T:Type, startInitializer(T:Type, X:#Id, CompoundInit(L:K)))
 		...</ k >
-		if (hasAggregateType(T:Type) orBool hasUnionType(T:Type)) 
+		when (hasAggregateType(T:Type) orBool hasUnionType(T:Type)) 
 		//andBool notBool hasIncompleteType(T:Type)
 		[structural] 
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(StringLiteral(S:#String)))) 
 			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:#String)))))))
 		...</ k >
-		if hasCharType(T:Type)
+		when hasCharType(T:Type)
 		andBool lengthString(S:#String) <=Nat Len:#Nat
 		[structural]
 	rule
 		< k > figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
 			=> figureInitializer(X:#Id, t(Se:Set, arrayType(T:Type, Len:#Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
 		...</ k >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <=Nat Len:#Nat
 		[structural] 
 	
 	rule
 		< k > figureInitializer(X:#Id, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthString(S:#String) +Nat 1))), SingleInit(Constant(StringLiteral(S:#String)))) ...</ k >
-		if hasCharType(T:Type)
+		when hasCharType(T:Type)
 		[structural]
 	rule
 		< k > figureInitializer(X:#Id, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		[structural] 
 		
 	rule
@@ -86,7 +86,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > figureInitializer-aux(X:#Id, T:Type, initializer(K:K))
 			=> initializerValue(X:#Id, T:Type, K:K)
 		...</ k >
-		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
+		when notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		[structural]
 	
 	// base types
@@ -94,14 +94,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > figureInitializer(X:#Id, T:Type, SingleInit(K:K))
 			=> figureInitializer-aux(X:#Id, T:Type, initializer(Computation(AllowWrite(X:#Id) := K:K)))
 		...</ k >
-		if notBool hasArrayType(T:Type)
+		when notBool hasArrayType(T:Type)
 		[structural] 
 	// c1x 6.7.8:11
 	rule
 		< k > figureInitializer(X:#Id, T:Type, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
 			=> figureInitializer-aux(X:#Id, T:Type, initializer(Computation(AllowWrite(X:#Id) := K:K)))
 		...</ k >
-		if notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
+		when notBool (hasAggregateType(T:Type) orBool hasUnionType(T:Type))
 		[structural] 
 		
 	rule DeclarationDefinition(InitNameGroup(T:Type, List((K:K,, K':K,, L:List{K}))))
@@ -136,7 +136,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareFunction(X:#Id, T:Type, K:K)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
-		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
+		when notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		[structural]
 		
@@ -148,7 +148,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< externalLocations >... X:#Id |-> Loc:#Nat ...</ externalLocations > 
 		< currentFunction > F:K </ currentFunction >
-		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
+		when notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
 		[structural] 
@@ -159,7 +159,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< externalLocations > Locs:Map </ externalLocations > 
 		< currentFunction > F:K </ currentFunction >
-		if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
+		when notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
 		andBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
 		andBool notBool $hasMapping(Locs:Map, X:#Id)
@@ -171,7 +171,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< currentFunction > File-Scope </ currentFunction >
 		< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
 		// if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
-		if notBool hasFunctionType(T:Type)
+		when notBool hasFunctionType(T:Type)
 		[structural] 
 	rule
 		< k > declare(typedDeclaration(T:Type, X:#Id), K:K) 
@@ -179,7 +179,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< currentFunction > F:K </ currentFunction >
 		// if notBool hasIncompleteType(T:Type) // I'd like to get rid of this cleanly
-		if notBool hasFunctionType(T:Type)
+		when notBool hasFunctionType(T:Type)
 		andBool F:K =/=Bool File-Scope
 		[structural] 
 		
@@ -191,7 +191,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareFunction(X:#Id, T:Type, K:K)
 			=> declareWithLinkage(X:#Id, T:Type, K:K, external)
 		...</ k >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		andBool K:K =/=Bool NoInit
 		[structural] 
 
@@ -199,7 +199,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareFunction(X:#Id, T:Type, NoInit)
 			=> declareWithLinkage(X:#Id, t(.Set, prototype(T:Type)), NoInit, external)
 		...</ k >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		[structural] 
 		
 	// fixme not handling internal prototypes
@@ -208,7 +208,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareWithLinkage(X:#Id, T:Type, K:K, internal)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		[structural] 
 		
 		
@@ -222,7 +222,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareInternalVariable(X:#Id, T:Type, K:K)
 			=> declareWithLinkage(X:#Id, T:Type, K:K, noLinkage)
 		...</ k >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		[structural] 
 		
@@ -234,7 +234,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< internalLocations >... Tu:K |-> Map((? kpair(X:#Id, BlockNum:#Nat) |-> Loc:#Nat)) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		[structural] 
 	rule
@@ -248,7 +248,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
 		< nextSharedLoc > Loc:#Nat => inc(Loc:#Nat) </ nextSharedLoc >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Locs:Map, kpair(X:#Id, BlockNum:#Nat))
 		[structural] 
@@ -261,7 +261,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
 		< nextSharedLoc > Loc:#Nat => inc(Loc:#Nat) </ nextSharedLoc >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		andBool K:K =/=Bool NoInit
 		andBool notBool $hasMapping(Locs:Map, kpair(X:#Id, BlockNum:#Nat))
@@ -276,7 +276,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< internalLocations >... Tu:K |-> Map((? kpair(X:#Id, BlockNum:#Nat) |-> Loc:#Nat)) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		andBool K:K =/=Bool NoInit
 		[structural] 
@@ -295,7 +295,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			~> giveType(X:#Id, unqualifyType(T:Type))
 		...</ k >
 		< externalLocations >... X:#Id |-> Loc:#Nat ...</ externalLocations >
-		if notBool hasIncompleteType(T:Type)
+		when notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool hasExternType(T:Type)
 		[structural] 
@@ -306,7 +306,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareExternalVariable(X:#Id, T:Type, K:K)
 			=> declareWithLinkage(X:#Id, T:Type, K:K, external)
 		...</ k >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		[structural] 
 	rule
@@ -315,7 +315,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< preLinkage >... Tu:K |-> Map(Linkage:Map) ...</ preLinkage >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		andBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Linkage:Map, X:#Id)
 		[structural] 
@@ -326,7 +326,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		< preLinkage >... Tu:K |-> Map(Linkage:Map) ...</ preLinkage >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if notBool hasStaticType(T:Type)
+		when notBool hasStaticType(T:Type)
 		andBool hasExternType(T:Type)
 		andBool $hasMapping(Linkage:Map, X:#Id)
 		[structural] 
@@ -334,7 +334,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareExternalVariable(X:#Id, T:Type, K:K)
 			=> declareWithLinkage(X:#Id, T:Type, K:K, internal)
 		...</ k >
-		if hasStaticType(T:Type)
+		when hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		[structural] 
 		
@@ -345,13 +345,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareWithLinkage(X:#Id, T:Type, NoInit, L:K) => declareOnly(X:#Id, T:Type, L:K) ...</ k >
 		< declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:#Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if L:K =/=Bool noLinkage
+		when L:K =/=Bool noLinkage
 		[structural] 
 	rule
 		< k > declareWithLinkage(X:#Id, T:Type, K:K, L:K) => declareAndDefine(X:#Id, T:Type, K:K, L:K) ...</ k >
 		< declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:#Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if K:K =/=Bool NoInit
+		when K:K =/=Bool NoInit
 		andBool L:K =/=Bool noLinkage
 		[structural] 
 		
@@ -360,20 +360,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< k > declareWithLinkage(X:#Id, T:Type, NoInit, L:K) => declareOnly(X:#Id, T:Type, L:K) ...</ k >
 		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:#Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if L:K ==Bool noLinkage
+		when L:K ==Bool noLinkage
 		[structural] 
 	rule
 		< k > declareWithLinkage(X:#Id, T:Type, K:K, L:K) => declareAndDefine(X:#Id, T:Type, K:K, L:K) ...</ k >
 		// < declarationOrder >... Tu:K |-> ListToK(? (. => ListItem(X:#Id))) ...</ declarationOrder >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if K:K =/=Bool NoInit
+		when K:K =/=Bool NoInit
 		andBool L:K ==Bool noLinkage
 		[structural] 
 	
 	// extern functions are no different than functions
 	// fixme dangerous if someone marks it as static and extern.  can't tell
 	rule t(?, qualifiedType(T:Type, Extern)) => T:Type
-		if hasFunctionType(T:Type) 
+		when hasFunctionType(T:Type) 
 		[structural]
 	
 	// fixme clean these up, they are so redundant
@@ -386,7 +386,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:#Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:#Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if (notBool $hasMapping(Linkage:Map, X:#Id) 
+		when (notBool $hasMapping(Linkage:Map, X:#Id) 
 				orBool Linkage:Map(X:#Id) ==Bool external
 			)
 			andBool (
@@ -403,7 +403,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:#Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map(Types:Map) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if (notBool $hasMapping(Linkage:Map, X:#Id) 
+		when (notBool $hasMapping(Linkage:Map, X:#Id) 
 				orBool Linkage:Map(X:#Id) ==Bool external
 			)
 			andBool isTypeCompatible(unqualifyType(Types:Map(X:#Id)), unqualifyType(T:Type))
@@ -418,7 +418,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:#Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:#Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if notBool $hasMapping(Linkage:Map, X:#Id) 
+		when notBool $hasMapping(Linkage:Map, X:#Id) 
 		orBool Linkage:Map(X:#Id) ==Bool internal
 		[structural] 
 	rule
@@ -430,7 +430,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:#Id)) </ localVariables >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
-		if notBool hasIncompleteType(T:Type)
+		when notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		andBool notBool X:#Id in Vars:List // this should be here statically, but not dynamically
@@ -440,7 +440,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> .K
 		...</ k >
 		< localVariables >... ListItem(X:#Id) ...</ localVariables >
-		if notBool hasIncompleteType(T:Type)
+		when notBool hasIncompleteType(T:Type)
 		andBool notBool hasStaticType(T:Type)
 		andBool notBool hasExternType(T:Type)
 		[structural] 
@@ -455,7 +455,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:#Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:#Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:Type))
+		when (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:Type))
 		andBool (notBool $hasMapping(Linkage:Map, X:#Id) orBool Linkage:Map(X:#Id) ==Bool external)
 		[structural] 
 		
@@ -468,7 +468,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< preLinkage >... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:#Id])) ...</ preLinkage >
 		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:Type / X:#Id])) ...</ preTypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		if (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:Type))
+		when (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:Type))
 		andBool (notBool $hasMapping(Linkage:Map, X:#Id) orBool Linkage:Map(X:#Id) ==Bool internal)
 		[structural]
 		
@@ -480,7 +480,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localVariables > Vars:List (. => ListItem(X:#Id)) </ localVariables >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
-		if notBool X:#Id in Vars:List // again, this should be needed statically, but not dynamically
+		when notBool X:#Id in Vars:List // again, this should be needed statically, but not dynamically
 		[structural] 
 	rule // this happens when we jump before a variable declaration with an initialization in the same block
 		< k > declareAndDefine(X:#Id, T:Type, K:K, noLinkage)
@@ -532,7 +532,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > addToEnv(X:#Id, Loc:#Nat) => addToLocalEnv(X:#Id, Loc:#Nat) ...</ k >
 		< currentFunction > F:K </ currentFunction >
-		if F:K =/=Bool File-Scope
+		when F:K =/=Bool File-Scope
 		[structural] 
 		
 	rule
@@ -566,7 +566,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			)
 			~> calculateGotoMap(X:#Id, BODY)
 		...</ k >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		where BODY = (Block:K ~> Return(if (X:#Id ==Bool Identifier("main")) then tv(0, t(.Set, int)) else NothingExpression fi))
 		[structural] 
 endkm
@@ -604,7 +604,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > .List => ListItem(te(X:#Id, T:Type)) </ currentSubObject >
 		< currentObject > .List => ListItem(te(X:#Id, T:Type)) </ currentObject >
 		< savedInitialization >... .K => zero(X:#Id) </ savedInitialization > 
-		if hasUnionType(T:Type) orBool hasAggregateType(T:Type)
+		when hasUnionType(T:Type) orBool hasAggregateType(T:Type)
 		[structural] 
 	
 	rule
@@ -659,13 +659,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			(next ListItem(te(K:K[N:#Nat], T:Type)) => ListItem(te(K:K[sNat(N:#Nat)], T:Type)))
 			ListItem(te(K:K, t(?, arrayType(?, Len:#Nat))))
 		...</ currentSubObject >
-		if Len:#Nat >Nat sNat(N:#Nat)
+		when Len:#Nat >Nat sNat(N:#Nat)
 		[structural] 
 	rule [init-next-array-element-done]:
 		< currentSubObject >
 			next (ListItem(te(K:K[N:#Nat], T:Type)) => .List) ListItem(te(K:K, t(?, arrayType(?, Len:#Nat))))
 		...</ currentSubObject >
-		if notBool Len:#Nat >Nat sNat(N:#Nat)
+		when notBool Len:#Nat >Nat sNat(N:#Nat)
 		[structural] 
 	
 	rule [init-next-incomplete-array-element]:
@@ -684,7 +684,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< structs >...
 			S:#Id |-> aggregateInfo((?,, typedDeclaration(T:Type, F:#Id),, typedDeclaration(T':Type, F':#Id),, ?), ?, ?)
 		...</ structs > 
-		if F':#Id =/=Bool #NoName
+		when F':#Id =/=Bool #NoName
 		[structural] 
 	 
 	rule [init-next-struct-element-noname]:
@@ -735,7 +735,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > (?:List => .) ListItem(te(K:K, T:Type)) (Remainder:ListItem => .) </ currentSubObject >
 		< currentObject > (. => ListItem(te(K:K, T:Type))) ...</ currentObject >
-		if hasAggregateType(T:Type) orBool hasUnionType(T:Type)
+		when hasAggregateType(T:Type) orBool hasUnionType(T:Type)
 		[structural]
 	rule
 		< k > finishCompoundInit(L:List) => 
@@ -756,7 +756,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentObject > ListItem(te(K:K, T:Type)) ...</ currentObject >
 		< currentSubObject > ?:List => block ListItem(te(K:K, T:Type)) </ currentSubObject >
-		if hasStructType(T:Type) orBool hasUnionType(T:Type)
+		when hasStructType(T:Type) orBool hasUnionType(T:Type)
 		[structural] 
 	// fixme does this need to worry about incompleteLength?
 	rule
@@ -765,7 +765,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentObject > ListItem(te(K:K, T:Type)) ...</ currentObject >
 		< currentSubObject > ?:List => block ListItem(te(K:K, T:Type)) </ currentSubObject >
-		if hasArrayType(T:Type)
+		when hasArrayType(T:Type)
 		[structural] 
 		
 	
@@ -780,7 +780,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			// S:#Id |-> ? :: typedDeclaration(T:Type, F:#Id) :: ? 
 			S:#Id |-> aggregateInfo(?, (? F:#Id |-> T:Type), ?)
 		...</ structs >
-		if KL:KLabel ==Bool 'structType 
+		when KL:KLabel ==Bool 'structType 
 		orBool KL:KLabel ==Bool 'unionType
 		[structural] 
 		
@@ -811,7 +811,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> buildDesignator(More:K)
 		...</ k >
 		< currentSubObject > block (.List => ListItem(te(K:K[N:#Nat], innerType(T:Type)))) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		if hasArrayType(T:Type)
+		when hasArrayType(T:Type)
 		[structural] 
 	
 	op popInit : -> K
@@ -835,7 +835,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (.List => next) ListItem(te(K:K, T:Type)) ...</ currentSubObject >
 		< incompleteLength > N:#Nat => maxNat(N:#Nat, getTopArrayUse(K:K)) </ incompleteLength >
 		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) </ savedInitialization > 
-		if (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
+		when (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		andBool notBool hasStructType(T':Type)
 		andBool notBool hasUnionType(T':Type)
 		[structural] 
@@ -845,7 +845,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op initFromAggregateRHS : K Type -> K 
 	rule
 		< k > T:Type ~> initializeSingleInit(K:K) => initFromAggregateRHS(K:K, T:Type) ...</ k >
-		if hasStructType(T:Type)
+		when hasStructType(T:Type)
 		orBool hasUnionType(T:Type)
 		[structural] 
 		
@@ -861,7 +861,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	rule
 		< currentSubObject > findStruct(T:Type) (ListItem(te(?, T':Type)) => .List) ...</ currentSubObject >
-		if T:Type =/=Bool T':Type
+		when T:Type =/=Bool T':Type
 		[structural] 
 		
 	// fixme unsafe, might have started to initialize other things
@@ -876,7 +876,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	rule
 		< k > fillInitializer(SingleInit(K:K)) => initializeSingleInit(K:K) ...</ k >
-		if getKLabel(K:K) =/=Bool 'Constant
+		when getKLabel(K:K) =/=Bool 'Constant
 		[structural] 
 
 	rule [fillInit-string-array-eq]:
@@ -884,7 +884,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:#String))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:#Nat)))) ...</ currentSubObject >
-		if hasCharType(T:Type)
+		when hasCharType(T:Type)
 		andBool lengthString(S:#String) ==Bool Len:#Nat
 		[structural] 
 	rule [fillInit-wstring-array-eq]:
@@ -892,7 +892,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:#Nat)))) ...</ currentSubObject >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) ==Bool Len:#Nat
 		[structural] 
 	rule [fillInit-string-array-lt]:
@@ -900,7 +900,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer(SingleInit(Constant(StringLiteral(S:#String +String "\0"))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:#Nat)))) ...</ currentSubObject >
-		if hasCharType(T:Type)
+		when hasCharType(T:Type)
 		andBool lengthString(S:#String) <Int Len:#Nat
 		[structural] 
 	rule [fillInit-wstring-array-lt]:
@@ -908,7 +908,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, arrayType(T:Type, Len:#Nat)))) ...</ currentSubObject >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		andBool lengthList{K}(S:List{K}) <Int Len:#Nat
 		[structural] 
 	rule [fillInit-string-char]:
@@ -916,14 +916,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:#String +String "\0"))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
-		if hasCharType(T:Type)
+		when hasCharType(T:Type)
 		[structural] 
 	rule [fillInit-wstring-wchar]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ListItem(te(?, t(?, incompleteArrayType(T:Type)))) ...</ currentSubObject >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		[structural]
 	rule [fillInitAux-string-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:#String))))
@@ -931,7 +931,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:#String))))) 
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		if S:#String =/=Bool ""
+		when S:#String =/=Bool ""
 		andBool hasCharType(T:Type)
 		[structural] 
 	rule [fillInitAux-wstring-some]:
@@ -940,7 +940,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		if hasWCharType(T:Type)
+		when hasWCharType(T:Type)
 		[structural]
 	// fixme not sure what happens in the case of   char *x = "";
 	rule [fillInitAux-string-done]:
@@ -957,7 +957,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> initializeSingleInit(Constant(StringLiteral(S:#String)))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		if notBool hasCharType(T:Type)
+		when notBool hasCharType(T:Type)
 		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural] 
 	rule [fillinit-wstring-notwchar]:
@@ -965,7 +965,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:Type)) ...</ currentSubObject >
-		if notBool hasWCharType(T:Type)
+		when notBool hasWCharType(T:Type)
 		andBool (isBasicType(T:Type) orBool hasPointerType(T:Type) orBool hasBitfieldType(T:Type))
 		[structural]
 endkm
@@ -990,7 +990,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< genv > Env:Map => Env:Map[Map(.) / Name:#String] </ genv >
 		< gtypes > Gtypes:Map => Gtypes:Map[Map(.) / Name:#String]</ gtypes >
 		< programText > M:Map => M:Map[P:#String / Name:#String] </ programText >
-		if notBool $hasMapping(Env:Map, Name:#String)
+		when notBool $hasMapping(Env:Map, Name:#String)
 		[structural] 
 	
 	op resolve : K -> K 
@@ -1024,7 +1024,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< k > resolveLeftovers ...</ k >
 		< externalLocations > Locs:Map </ externalLocations >
 		< leftoverExterns >... BagItem(leftover(_, X:#Id, _)) => .Bag ...</ leftoverExterns >
-		if notBool $hasMapping(Locs:Map, X:#Id)
+		when notBool $hasMapping(Locs:Map, X:#Id)
 		[structural]
 	
 	rule
@@ -1040,11 +1040,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	rule
 		< k > recordFunctionTranslationUnitInformation(X:#Id, T:Type, Tu:K, DefTu:K) => .K ...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:#Id])) ...</ functionTranslationUnits >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		[structural] 
 	rule
 		< k > recordFunctionTranslationUnitInformation(?, T:Type, ?, ?) => .K ...</ k >
-		if notBool hasFunctionType(T:Type)
+		when notBool hasFunctionType(T:Type)
 		[structural] 
 	
 	// fixme
@@ -1097,12 +1097,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		...</ k >
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
 		< externalLocations > Locs:Map => Locs:Map[Loc:#Nat / X:#Id] </ externalLocations >
-		if notBool $hasMapping(Locs:Map, X:#Id)
+		when notBool $hasMapping(Locs:Map, X:#Id)
 		[structural] 
 	rule
 		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?, ?) ...</ k >
 		< preLinkage >... Tu:K |-> Map(M:Map) ...</ preLinkage >
-		if notBool $hasMapping(M:Map, X:#Id)
+		when notBool $hasMapping(M:Map, X:#Id)
 		[structural] 
 	rule [resolveExternal-internal]:
 		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?, ?) ...</ k >
@@ -1124,7 +1124,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< internalDefinitions >... Tu:K |-> Map(Defs:Map) ...</ internalDefinitions >
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .List) ?) ...</ declarationOrder >
 		< preTypes >... Tu:K |-> Map((? (X:#Id |-> T:Type => .Map))) ...</ preTypes >
-		if notBool $hasMapping(Defs:Map, X:#Id)
+		when notBool $hasMapping(Defs:Map, X:#Id)
 		[structural] 
 		
 	rule
@@ -1133,7 +1133,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< externalDefinitions > ExtDefs:Map (X:#Id |-> K:K => .Map) </ externalDefinitions >
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .List) ?) ...</ declarationOrder >
 		< translationUnits > Units:Bag </ translationUnits >
-		if notBool $hasMapping(ExtDefs:Map, X:#Id)
+		when notBool $hasMapping(ExtDefs:Map, X:#Id)
 		[structural] 
 
 	
@@ -1144,7 +1144,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > ExtDefs:Map </ externalDefinitions >
 		< internalDefinitions > IntDefs:Map </ internalDefinitions >
-		if notBool $hasMapping(Linkage:Map, X:#Id)
+		when notBool $hasMapping(Linkage:Map, X:#Id)
 		andBool notBool $hasMapping(ExtDefs:Map, X:#Id)
 		andBool notBool $hasMapping(IntDefs:Map, X:#Id)
 		[structural] 
@@ -1162,7 +1162,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< preTypes >... Tu:K |-> Map((? X:#Id |-> t(S:Set, prototype(T:Type)))) ...</ preTypes >
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > Defs:Map </ externalDefinitions >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		andBool notBool $hasMapping(Defs:Map, X:#Id)
 		[structural] 
 		
@@ -1182,7 +1182,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
 		< nextSharedLoc > Loc:#Nat => inc(Loc:#Nat) </ nextSharedLoc >
 		< externalLocations > Locs:Map => Locs:Map[Loc:#Nat / X:#Id] </ externalLocations >
-		if notBool $hasMapping(Locs:Map, X:#Id)
+		when notBool $hasMapping(Locs:Map, X:#Id)
 		andBool notBool hasFunctionType(T:Type)
 		andBool notBool hasIncompleteType(T:Type)
 		andBool notBool hasExternType(T:Type)
@@ -1196,7 +1196,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< declarationOrder >... Tu:K |-> ListToK((ListItem(X:#Id) => .) ?) ...</ declarationOrder >
 		< externalDefinitions > Defs:Map </ externalDefinitions >
 		< leftoverExterns >... .Bag => BagItem(leftover(Tu:K, X:#Id, T:Type)) ...</ leftoverExterns >
-		if notBool hasFunctionType(T:Type)
+		when notBool hasFunctionType(T:Type)
 		andBool hasExternType(T:Type)
 		andBool notBool $hasMapping(Defs:Map, X:#Id)
 		[structural] 
@@ -1217,7 +1217,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	rule [initialize-function]:
 		< k > initFunction(tv(Loc:#Nat, t(?, pointerType(T:Type))), Fun:Value) => .K ...</ k >
 		< functions > M:Map => M:Map[Fun:Value / Loc:#Nat] </ functions >
-		if hasFunctionType(T:Type)
+		when hasFunctionType(T:Type)
 		andBool notBool $hasMapping(M:Map, Loc:#Nat)
 		[structural]
 		
@@ -1251,7 +1251,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(Exp:K))
 			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), Exp:K + tv(1, t(.Set, int)))
 		...</ k >
-		if Exp:K =/=Bool NothingExpression
+		when Exp:K =/=Bool NothingExpression
 		[structural] 
 	rule
 		< k > fillEnums-aux(EnumDef(X:#Id, List(.List{K})), ?) => .K ...</ k > 
