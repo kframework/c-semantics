@@ -4,5 +4,5 @@ struct _s {
 } s;
 
 int main(void){
-	s.a[0];
+	&(s.a[0]);
 }
