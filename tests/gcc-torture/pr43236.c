@@ -1,4 +1,3 @@
-#include "fsl-header.h"
 /* { dg-options "-ftree-loop-distribution" } */
 extern void abort(void);
 extern void *memset(void *s, int c, __SIZE_TYPE__ n);
