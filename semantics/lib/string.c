@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 // nice public domain implementations at http://en.wikibooks.org/wiki/C_Programming/Strings
 
 // from http://clc-wiki.net/wiki/strncpy, public domain
