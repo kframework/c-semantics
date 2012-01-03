@@ -5,6 +5,12 @@ use Text::Diff;
 use HTML::Entities;
 # use IPC::Open3;
 
+$| = 1;
+
+use constant TOOL_FAILED_GOOD => 1;
+use constant TOOL_FAILED_FIND => 2;
+use constant TOOL_FOUND_BUG => 0;
+
 setpgrp;
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
@@ -36,7 +42,7 @@ my $globalNumError = 0; # errors are tests that didn't finish running
 my $globalTotalTime = 0;
 
 ###################################
-my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99';
+my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c';
 
 # my @compilers = (
 	# [
@@ -84,6 +90,9 @@ my $gccCommand = 'gcc -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99
 # );
 
 my $_timer = [gettimeofday];
+my $_testName = "";
+my $_toolName = "";
+#my $_testPhase = 0;
 
 # bench('badArithmetic');
 # bench('badPointers');
@@ -91,24 +100,43 @@ my $_timer = [gettimeofday];
 # bench('gcc.all');
 # bench('custom');
 printResult("Test", "Pass", "Tool", "", "", "");
-bench('../tests/shouldFail');
+bench('../tests/juliet/finalgood', '../tests/juliet/finalbad');
+# bench('../tests/shouldFail');
 # bench('../tests/mustFail');
 
 
 # wine cmd /C "c:\Program Files\SemanticDesigns\DMS\executables\DMSCheckPointer.cmd C~GCC3 -cache ./cache-file -config ./init.h -target out.over -source . over.c"
 
-
+my %seenFilenames = ();
 
 sub bench {
-	my ($dir) = (@_);
-	opendir (DIR, $dir) or die $!;
+	my ($gooddir, $baddir) = (@_);
+	opendir (DIR, $baddir) or die $!;
 	while (my $file = readdir(DIR)) {
 		next if !($file =~ m/\.c$/);
-		my $filename = "$dir/$file";
-		$_timer = [gettimeofday];
-		# gccTest($file, $filename);
-		valgrindTest($file, $filename);
+		my ($baseFilename, $dirname, $suffix) = fileparse($file, ".c");
+		$_testName = $file;
+		if ($baseFilename =~ /^(.*)[a-z]$/) {
+			my $rootFilename = $1;
+			$_testName = $rootFilename;
+			if ($seenFilenames{$rootFilename}) { next; }
+			$seenFilenames{$rootFilename} = 1;
+			$file = "$rootFilename*.c";
+		}
+		my $badfilename = "$baddir/$file";
+		my $goodfilename = "$gooddir/$file";
 		
+		# print "Running valgrind with $goodfilename, $badfilename\n";
+		valgrind($goodfilename, $badfilename);
+		# $_timer = [gettimeofday];
+		# $_testPhase = 0;
+		# valgrindTest($goodfilename);
+		
+		# $_timer = [gettimeofday];
+		# $_testPhase = 1;
+		# valgrindTest($badfilename);
+		
+		# gccTest($file, $filename);
 		# for my $stuff (@compilers) {
 			# #my ($name, $compiler, $runner) = @$stuff;
 			# unlink('a.out');
@@ -127,10 +155,17 @@ sub printResult {
 }
 
 sub report {
-	my ($test, $name, $result, $msg) = (@_);
+	my ($result, $msg) = (@_);
 	my $elapsed = tv_interval($_timer, [gettimeofday]);
-	printf("%-17s\t%s\t%-10s\t%.3f\t%s\n", $test, $name, $result, $elapsed, $msg);
+	printf("%-17s\t%s\t%-5s\t%.3f\t%s\n", $_testName, $_toolName, $result, $elapsed, $msg);
 }
+
+# sub runtest {
+	# my ($sub, $good, $bad) = (@_);
+	# print "in runtest\n";
+	# &$sub->($good, $bad);
+	# print "back\n";
+# }
 
 # returns true when everything works but it fails to find a bug
 # sub compile {
@@ -161,73 +196,71 @@ sub report {
 	# printResult($testname, 1, $name, $retval, $length, $elapsed);
 # }
 
-sub valgrindTest {
-	my ($testname, $filename) = (@_);
+sub valgrind {
+	my ($goodfile, $badfile) = (@_);
+	use constant VALGRIND_NO_FAIL => 2;
+	use constant VALGRIND_FOUND_BUG => 0;
 	
-	my $tool = 'Valgrind';
-	unlink('a.out');
+	$_toolName = "Valgrind";
+	my $template = "tools/valgrind.sh $_testName \"-gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c\" \"%s\"";
+	my $command = $template;
+	$command =~ s/%s/$goodfile/;
+	if (performCommand($command) != VALGRIND_NO_FAIL) {
+		return report(TOOL_FAILED_GOOD);
+	}
+	$command = $template;
+	$command =~ s/%s/$badfile/;
+	$_timer = [gettimeofday];
+	if (performCommand($command) == VALGRIND_FOUND_BUG) {
+		return report(TOOL_FOUND_BUG);
+	}
+	return report(TOOL_FAILED_FIND);
+}
 
-	my ($signal, $retval, $output, $stderr) = run("$gccCommand $filename");
+sub reportSuccess {
+	report('0');
+}
+
+sub performCommand {
+	my ($command) = (@_);
+	my ($signal, $retval, $output, $stderr) = run($command);
 	if ($signal) {
-		return report($testname, $tool, '0', "Failed to compile normally: signal $signal");
+		# report($signal, "Failed to run normally: signal $signal");
+		return -$signal;
 	}
-	if ($retval) {
-		return report($testname, $tool, '1', "Failed to compile normally: retval $retval");
-	}
-	
-	my ($signal, $retval, $output, $stderr) = run("valgrind -q --error-exitcode=1 --leak-check=no --undef-value-errors=yes ./a.out");
-	if ($signal) {
-		return report($testname, $tool, '2', "Failed to run normally: signal $signal");
-	}
-	if ($retval) {
-		return report($testname, $tool, '3', "Failed to run normally: retval $retval");
-	}
-	
-	return report($testname, $tool, '4');
+	return $retval;
 }
 
 
-sub gccTest {
-	my ($testname, $filename) = (@_);
-	unlink('a.out');
+# sub gccTest {
+	# my ($testname, $filename) = (@_);
+	# unlink('a.out');
 	
-	my ($signal, $retval, $output, $stderr) = run("c99 -lm -O0 -m32 $filename");
-	if ($signal) {
-		report($testname, 'GCC', '0', "Failed to compile normally: signal $signal");
-	}
-	if ($retval) {
-		report($testname, 'GCC', '0', "Failed to compile normally: retval $retval");
-	}
-	
-	report($testname, 'GCC', '???');
-
-	
-	#print STDERR "Compiling $filename with $name\n";
-	# my $compileString = "$compiler 2>&1";
-	# $compileString =~ s/%s/$filename/;
-	# my ($signal, $retval, $output, $stderr) = run($compileString);
-
-	# my $length = length(join('', @output));
-	# print STDERR @output;
-	# if ($retval != 0) {
-		# printResult($testname, 0, $name, -1, $length, $elapsed);
-		# return 0;
+	# my ($signal, $retval, $output, $stderr) = run("c99 -lm -O0 -m32 $filename");
+	# if ($signal) {
+		# report($testname, 'GCC', '0', "Failed to compile normally: signal $signal");
 	# }
-	# return 1;
-}
+	# if ($retval) {
+		# report($testname, 'GCC', '0', "Failed to compile normally: retval $retval");
+	# }
+	
+	# report($testname, 'GCC', '???');
 
+	
+	# #print STDERR "Compiling $filename with $name\n";
+	# # my $compileString = "$compiler 2>&1";
+	# # $compileString =~ s/%s/$filename/;
+	# # my ($signal, $retval, $output, $stderr) = run($compileString);
 
-#run("$kcc adhoc/nondet.c -o && SEARCH=1 ./adhoc.o");
-
-
-# sub run {
-	# my ($command) = (@_);
-	# my $timer = [gettimeofday];
-	# my $output = `$command 2>&1`;
-	# my $retval = $? >> 8;
-	# my $elapsed = tv_interval($timer, [gettimeofday]);
-	# return ($elapsed, $output, $retval);
+	# # my $length = length(join('', @output));
+	# # print STDERR @output;
+	# # if ($retval != 0) {
+		# # printResult($testname, 0, $name, -1, $length, $elapsed);
+		# # return 0;
+	# # }
+	# # return 1;
 # }
+
 
 sub run {
 	my ($theircommand) = (@_);
