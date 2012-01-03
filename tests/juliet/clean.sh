@@ -93,6 +93,7 @@ mv testcases/CWE248_Uncaught_Exception/ notApplicable/
 mv testcases/CWE374_Passing_Mutable_Objects_to_Untrusted_Method/ notApplicable/
 
 # not going to deal with signal stuff
+rm -rf signal/*
 mkdir -p signal
 mv testcases/CWE364_Signal_Handler_Race_Condition/ signal/
 mv testcases/CWE479_Unsafe_Call_from_a_Signal_Handler/ signal/
@@ -136,8 +137,11 @@ echo "Fixing some tests that have undefined behavior in the good branches"
 # there is some undefined behavior in some of the tests where they read a value that hasn't been initialized.  This fixes those cases
 perl -i -p -e 'undef $/; s/^    (char|int|long|long long|double) \* data;(\s+\1 \* \*data_ptr1 = &data;\s+\1 \* \*data_ptr2 = &data;)/    \1 \* data = 0;\2/gsm' testcases/*/*.c
 
+echo "Changing \"_snprintf\" to \"snprintf\""
+perl -i -p -e 's/(\s)_snprintf/\1snprintf/gsm' testcases/*/*.c
 
 echo "Saving the known good tests"
+rm -rf good
 mkdir -p good
 mv testcases/CWE121_Stack_Based_Buffer_Overflow/ good/
 mv testcases/CWE122_Heap_Based_Buffer_Overflow/ good/

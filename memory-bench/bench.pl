@@ -100,7 +100,8 @@ my $_toolName = "";
 # bench('gcc.all');
 # bench('custom');
 printResult("Test", "Pass", "Tool", "", "", "");
-bench('../tests/juliet/finalgood', '../tests/juliet/finalbad');
+# bench('../tests/juliet/finalgood', '../tests/juliet/finalbad');
+bench('../tests/juliet/finalpre');
 # bench('../tests/shouldFail');
 # bench('../tests/mustFail');
 
@@ -110,8 +111,8 @@ bench('../tests/juliet/finalgood', '../tests/juliet/finalbad');
 my %seenFilenames = ();
 
 sub bench {
-	my ($gooddir, $baddir) = (@_);
-	opendir (DIR, $baddir) or die $!;
+	my ($testdir) = (@_);
+	opendir (DIR, $testdir) or die $!;
 	while (my $file = readdir(DIR)) {
 		next if !($file =~ m/\.c$/);
 		my ($baseFilename, $dirname, $suffix) = fileparse($file, ".c");
@@ -123,11 +124,12 @@ sub bench {
 			$seenFilenames{$rootFilename} = 1;
 			$file = "$rootFilename*.c";
 		}
-		my $badfilename = "$baddir/$file";
-		my $goodfilename = "$gooddir/$file";
+		my $testfilename = "$testdir/$file";
+		
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
-		valgrind($goodfilename, $badfilename);
+		valgrind($testfilename);
+		kcc($testfilename);
 		# $_timer = [gettimeofday];
 		# $_testPhase = 0;
 		# valgrindTest($goodfilename);
@@ -197,21 +199,44 @@ sub report {
 # }
 
 sub valgrind {
-	my ($goodfile, $badfile) = (@_);
+	my ($file) = (@_);
 	use constant VALGRIND_NO_FAIL => 2;
 	use constant VALGRIND_FOUND_BUG => 0;
 	
 	$_toolName = "Valgrind";
-	my $template = "tools/valgrind.sh $_testName \"-gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c\" \"%s\"";
-	my $command = $template;
-	$command =~ s/%s/$goodfile/;
-	if (performCommand($command) != VALGRIND_NO_FAIL) {
+	my $template = "tools/valgrind.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c $file\" ";
+	my $goodCommand = $template;
+	$goodCommand =~ s/%s/-DOMITBAD/;
+	my $badCommand = $template;
+	$badCommand =~ s/%s/-DOMITGOOD/;
+	genericTestHandler($goodCommand, $badCommand, VALGRIND_NO_FAIL, VALGRIND_FOUND_BUG);
+}
+
+sub kcc {
+	my ($file) = (@_);
+	use constant KCC_NO_FAIL => 2;
+	use constant KCC_FOUND_BUG => 0;
+	
+	$_toolName = "kcc";
+	my $template = "tools/kcc.sh $_testName \"-I../tests/juliet/testcasesupport -DINCLUDEMAIN %s ../tests/juliet/testcasesupport/io.c $file\"";
+	my $goodCommand = $template;
+	$goodCommand =~ s/%s/-DOMITBAD/;
+	my $badCommand = $template;
+	$badCommand =~ s/%s/-DOMITGOOD/;
+	genericTestHandler($goodCommand, $badCommand, KCC_NO_FAIL, KCC_FOUND_BUG);
+}
+
+sub genericTestHandler {
+	my ($goodCommand, $badCommand, $toolNoFail, $toolFoundBug) = (@_);
+	
+	# $command =~ s/%s/$goodfile/;
+	if (performCommand($goodCommand) != $toolNoFail) {
 		return report(TOOL_FAILED_GOOD);
 	}
-	$command = $template;
-	$command =~ s/%s/$badfile/;
+	# $command = $template;
+	# $command =~ s/%s/$badfile/;
 	$_timer = [gettimeofday];
-	if (performCommand($command) == VALGRIND_FOUND_BUG) {
+	if (performCommand($badCommand) == $toolFoundBug) {
 		return report(TOOL_FOUND_BUG);
 	}
 	return report(TOOL_FAILED_FIND);

@@ -7,37 +7,32 @@
 
 set -e
 
-EXPECTED_ARGS=3
+EXPECTED_ARGS=2
 if [ $# -ne $EXPECTED_ARGS ]; then
-  echo "Usage: `basename $0` test_name \"gcc args\" file.c"
+  echo "Usage: `basename $0` test_name \"gcc args\""
   exit 1
 fi
 
+TOOL_NAME=valgrind
+
 BASE_NAME=$1
 GCC_ARGS=$2
-INPUT_FILE=$3
-#if [ ! -e "$INPUT_FILE" ]; then
-if ! ls -1 $INPUT_FILE > /dev/null 2>&1; then
-	echo "$INPUT_FILE does not exist"
-	exit 1
-fi
 
-LOG_FILE=logs/valgrind.$BASE_NAME.log
+LOG_FILE=logs/$TOOL_NAME.$BASE_NAME.log
 mkdir -p logs
 rm -f $LOG_FILE
 
-OUT_DIR=tmp/valgrind
+OUT_DIR=tmp/$TOOL_NAME
 OUTPUT_FILE=$OUT_DIR/$BASE_NAME.out
 OUT_FILE=$OUT_DIR/$BASE_NAME.o
 mkdir -p $OUT_DIR
 rm -f $OUT_FILE
 
 # if gcc fails, return 1
-if ! gcc -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 -o $OUT_FILE $GCC_ARGS $INPUT_FILE >> $LOG_FILE 2>&1; then 
+if ! gcc -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 -o $OUT_FILE $GCC_ARGS >> $LOG_FILE 2>&1; then 
 	exit 1
 fi
 
-# if valgrind fails, return 1
 set +e
 `valgrind -q --error-exitcode=77 --leak-check=no --undef-value-errors=yes $OUT_FILE > $OUTPUT_FILE 2>&1`
 RETVAL=$?
