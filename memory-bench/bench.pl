@@ -1,3 +1,10 @@
+#  ~/tools/ccured/bin/ccured -o foo.a -DOMITGOOD -DINCLUDEMAIN --includedir=../tests/juliet/testcasesupport ../tests/juliet/testcasesupport/io.c ../tests/juliet/finalpre/CWE122_Heap_Based_Buffer_Overflow__c_dest_int_memmove_45.c
+# the above fails nondeterministically
+
+# ~/tools/ccured/bin/ccured -o foo.a -DOMITBAD -DINCLUDEMAIN --includedir=../tests/juliet/testcasesupport ../tests/juliet/testcasesupport/io.c ../tests/juliet/finalpre/CWE122_Heap_Based_Buffer_Overflow__c_dest_int_memmove_45.c
+# the above actually segfaults, which suggests there might be a bug in ccured
+
+
 use strict;
 use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
@@ -7,9 +14,13 @@ use HTML::Entities;
 
 $| = 1;
 
-use constant TOOL_FAILED_GOOD => 1;
-use constant TOOL_FAILED_FIND => 2;
-use constant TOOL_FOUND_BUG => 0;
+use constant TOOL_FAILED_GOOD => "Died";
+use constant TOOL_FAILED_FIND => "False negative";
+use constant TOOL_FALSE_ALARM => "False positive";
+use constant TOOL_FOUND_BUG => "Success";
+
+use constant SCRIPT_NO_FAIL => 2;
+use constant SCRIPT_FOUND_BUG => 0;
 
 setpgrp;
 # here we trap control-c (and others) so we can clean up when that happens
@@ -99,7 +110,8 @@ my $_toolName = "";
 # bench('badMemory');
 # bench('gcc.all');
 # bench('custom');
-printResult("Test", "Pass", "Tool", "", "", "");
+printHeader();
+
 # bench('../tests/juliet/finalgood', '../tests/juliet/finalbad');
 bench('../tests/juliet/finalpre');
 # bench('../tests/shouldFail');
@@ -128,9 +140,10 @@ sub bench {
 		
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
-		#valgrind($testfilename);
-		framac($testfilename);
-		#kcc($testfilename);
+		valgrind($testfilename);
+		# framac($testfilename);
+		# kcc($testfilename);
+		# ccured($testfilename);
 		
 		
 		# $_timer = [gettimeofday];
@@ -154,15 +167,14 @@ sub bench {
 	closedir(DIR);
 }
 
-sub printResult {
-	my ($dir, $dynamic, $name, $file, $retval, $length, $elapsed) = (@_);
-	printf("%-17s\t%s\t%-10s\t%-10s\t%-10s\t%-10s\n", $dir, $dynamic, $name, $retval, $length, $elapsed);
+sub printHeader {
+	printf("%-75s\t%-10s\t%-15s\t%s\t%s\n", "Test", "Tool", "Status", "Time");
 }
 
 sub report {
 	my ($result, $msg) = (@_);
 	my $elapsed = tv_interval($_timer, [gettimeofday]);
-	printf("%-17s\t%s\t%-5s\t%.3f\t%s\n", $_testName, $_toolName, $result, $elapsed, $msg);
+	printf("%-75s\t%-10s\t%-15s\t%.3f\t%s\n", $_testName, $_toolName, $result, $elapsed, $msg);
 }
 
 # sub runtest {
@@ -203,8 +215,6 @@ sub report {
 
 sub valgrind {
 	my ($file) = (@_);
-	use constant VALGRIND_NO_FAIL => 2;
-	use constant VALGRIND_FOUND_BUG => 0;
 	
 	$_toolName = "Valgrind";
 	my $template = "tools/valgrind.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c $file\" ";
@@ -212,13 +222,11 @@ sub valgrind {
 	$goodCommand =~ s/%s/-DOMITBAD/;
 	my $badCommand = $template;
 	$badCommand =~ s/%s/-DOMITGOOD/;
-	genericTestHandler($goodCommand, $badCommand, VALGRIND_NO_FAIL, VALGRIND_FOUND_BUG);
+	genericTestHandler($goodCommand, $badCommand);
 }
 
 sub kcc {
 	my ($file) = (@_);
-	use constant KCC_NO_FAIL => 2;
-	use constant KCC_FOUND_BUG => 0;
 	
 	$_toolName = "kcc";
 	my $template = "tools/kcc.sh $_testName \"-I../tests/juliet/testcasesupport -DINCLUDEMAIN %s ../tests/juliet/testcasesupport/io.c $file\"";
@@ -226,13 +234,23 @@ sub kcc {
 	$goodCommand =~ s/%s/-DOMITBAD/;
 	my $badCommand = $template;
 	$badCommand =~ s/%s/-DOMITGOOD/;
-	genericTestHandler($goodCommand, $badCommand, KCC_NO_FAIL, KCC_FOUND_BUG);
+	genericTestHandler($goodCommand, $badCommand);
+}
+
+sub ccured {
+	my ($file) = (@_);
+	
+	$_toolName = "ccured";
+	my $template = "tools/ccured.sh $_testName \"--includedir=../tests/juliet/testcasesupport -DINCLUDEMAIN %s ../tests/juliet/testcasesupport/io.c $file\"";
+	my $goodCommand = $template;
+	$goodCommand =~ s/%s/-DOMITBAD/;
+	my $badCommand = $template;
+	$badCommand =~ s/%s/-DOMITGOOD/;
+	genericTestHandler($goodCommand, $badCommand);
 }
 
 sub framac {
 	my ($file) = (@_);
-	use constant FRAMAC_NO_FAIL => 2;
-	use constant FRAMAC_FOUND_BUG => 0;
 	
 	$_toolName = "framac";
 	my $template = "tools/framac.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN\" \"../tests/juliet/testcasesupport/io.c $file\"";
@@ -240,20 +258,25 @@ sub framac {
 	$goodCommand =~ s/%s/-DOMITBAD/;
 	my $badCommand = $template;
 	$badCommand =~ s/%s/-DOMITGOOD/;
-	genericTestHandler($goodCommand, $badCommand, FRAMAC_NO_FAIL, FRAMAC_FOUND_BUG);
+	genericTestHandler($goodCommand, $badCommand);
 }
 
 sub genericTestHandler {
-	my ($goodCommand, $badCommand, $toolNoFail, $toolFoundBug) = (@_);
-	
+	my ($goodCommand, $badCommand) = (@_);
+
 	# $command =~ s/%s/$goodfile/;
-	if (performCommand($goodCommand) != $toolNoFail) {
+	my $goodResult = performCommand($goodCommand);
+	if ($goodResult == SCRIPT_FOUND_BUG) {
+		return report(TOOL_FALSE_ALARM);
+	}
+	if ($goodResult != SCRIPT_NO_FAIL) {
 		return report(TOOL_FAILED_GOOD);
 	}
 	# $command = $template;
 	# $command =~ s/%s/$badfile/;
 	$_timer = [gettimeofday];
-	if (performCommand($badCommand) == $toolFoundBug) {
+	my $badResult = performCommand($badCommand);
+	if ($badResult == SCRIPT_FOUND_BUG) {
 		return report(TOOL_FOUND_BUG);
 	}
 	return report(TOOL_FAILED_FIND);
