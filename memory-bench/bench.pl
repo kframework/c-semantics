@@ -128,8 +128,11 @@ sub bench {
 		
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
-		valgrind($testfilename);
-		kcc($testfilename);
+		#valgrind($testfilename);
+		framac($testfilename);
+		#kcc($testfilename);
+		
+		
 		# $_timer = [gettimeofday];
 		# $_testPhase = 0;
 		# valgrindTest($goodfilename);
@@ -224,6 +227,20 @@ sub kcc {
 	my $badCommand = $template;
 	$badCommand =~ s/%s/-DOMITGOOD/;
 	genericTestHandler($goodCommand, $badCommand, KCC_NO_FAIL, KCC_FOUND_BUG);
+}
+
+sub framac {
+	my ($file) = (@_);
+	use constant FRAMAC_NO_FAIL => 2;
+	use constant FRAMAC_FOUND_BUG => 0;
+	
+	$_toolName = "framac";
+	my $template = "tools/framac.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN\" \"../tests/juliet/testcasesupport/io.c $file\"";
+	my $goodCommand = $template;
+	$goodCommand =~ s/%s/-DOMITBAD/;
+	my $badCommand = $template;
+	$badCommand =~ s/%s/-DOMITGOOD/;
+	genericTestHandler($goodCommand, $badCommand, FRAMAC_NO_FAIL, FRAMAC_FOUND_BUG);
 }
 
 sub genericTestHandler {
