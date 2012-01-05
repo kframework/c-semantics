@@ -20,8 +20,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
 	op nextvarg-aux : K Type K K -> C // offset, type, length, checklength
-	context nextvarg-aux(?, ?, value(`[HOLE`]:K), ?)
-	context nextvarg-aux(?, ?, ?, value(`[HOLE`]:K))
+	context nextvarg-aux(?, ?, value(HOLE:K), ?)
+	context nextvarg-aux(?, ?, ?, value(HOLE:K))
 	
 	rule [nextvarg-start]:
 		< k > nextvarg(Loc:#Nat, T:Type)
@@ -35,8 +35,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 	
 
-	// context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (`[HOLE`]:C => reval(`[HOLE`]:C)),, _:List`{K`}))
-	context prepareBuiltin(_, (_,, (`[HOLE`]:K => reval(`[HOLE`]:K)),, _))
+	// context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE:C)),, _:List`{K`}))
+	context prepareBuiltin(_, (_,, (HOLE:K => reval(HOLE:K)),, _))
 	
 	op idsFromDeclList : List{K} -> List{K}
 	
@@ -59,7 +59,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		idsFromDeclList(.List{K}) => .List{K} [structural]
 	
 
-	context incSymbolic(([HOLE] => reval([HOLE])))
+	context incSymbolic((HOLE => reval(HOLE)))
 	rule [incSymbolic]:
 		incSymbolic(tv(Loc:#Nat, T:Type)) => tv(inc(Loc:#Nat), T:Type)
 		[structural]
@@ -229,7 +229,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		[structural]
 	
 	op va-inc-aux : K K K -> K // [metadata "strict=(3)"]
-	context va-inc-aux(_, _, ([HOLE] => reval([HOLE])))
+	context va-inc-aux(_, _, (HOLE => reval(HOLE)))
 	// fixme can do lots of checks here too
 	
 	// this doesn't work because when we read apLoc, the object has already changed

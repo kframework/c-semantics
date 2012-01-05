@@ -47,7 +47,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural] 
 	
 	
-	context readActual(?, ?, value(`[HOLE`]:K))
+	context readActual(?, ?, value(HOLE:K))
 	rule read(Loc:#Nat, T:Type) => read-aux(Loc:#Nat, T:Type, value(bitSizeofType(T:Type))) 
 		when notBool(hasFunctionType(T:Type))
 		[structural]
@@ -172,7 +172,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		[structural] 
 	
-	// context extractBytesFromMem-aux(?, ?, (?,, [HOLE],, ?)) 
+	// context extractBytesFromMem-aux(?, ?, (?,, HOLE,, ?)) 
 	// this next op should use Nats, but the context doesn't allow it.  See issue 54
 	op extractBytesFromMem-aux : K K List{K} -> K // loc, size in bytes, aux list
 	
@@ -255,7 +255,7 @@ endkm
 
 kmod DYNAMIC-SEMANTICS-WRITING is
 	including DYNAMIC-MEMORY-INCLUDE 
-	context alloc(?, value(`[HOLE`]:K)) 
+	context alloc(?, value(HOLE:K)) 
 
 	rule allocateType(Loc:#Nat, T:Type) => alloc(Loc:#Nat, value(byteSizeofType(T:Type))) 
 		[structural]
@@ -317,7 +317,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> write-aux(Dest:#Nat, tv(V:List{K}, T:Type), value(bitSizeofType(T:Type))) 
 		when notBool hasConstType(T':Type)
 		[structural]
-	context write-aux(?, ?, value(`[HOLE`]))
+	context write-aux(?, ?, value(HOLE))
 	
 	
 	
@@ -361,7 +361,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	op makeUnknown : #Nat Type -> K
 	op makeUnknown-aux : #Nat Type K -> K // should be #Nat Type K
-	context makeUnknown-aux(?, ?, value(`[HOLE`]:K))
+	context makeUnknown-aux(?, ?, value(HOLE:K))
 	
 	rule makeUnknown(N:#Nat, T:Type)
 		=> makeUnknown-aux(N:#Nat, T:Type, value(byteSizeofType(T:Type))) 
@@ -559,7 +559,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	op splitIntegerBytes : K K K -> K 
 	op splitIntegerBytes-aux : K K K List{K} -> K 
-	//context splitIntegerBytes(?, ?, value(`[HOLE`]:K)) 
+	//context splitIntegerBytes(?, ?, value(HOLE:K)) 
 	rule splitIntegerBytes(I:#Int, T:Type, Len:#Nat) => splitIntegerBytes-aux(I:#Int, T:Type, Len:#Nat, .List{K}) [structural]
 	rule splitIntegerBytes-aux(I:#Int, T:Type, sNat(Len:#Nat), L:List{K})
 		=> splitIntegerBytes-aux(I:#Int >>Int numBitsPerByte, T:Type, Len:#Nat, (L:List{K},, lowestByte(I:#Int, T:Type))) 
@@ -570,7 +570,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	op splitStructBytes : K K K -> K 
 	op splitStructBytes : K K K List{K} -> K 
-	context splitStructBytes(?, ?, value(`[HOLE`]:K)) 
+	context splitStructBytes(?, ?, value(HOLE:K)) 
 	rule splitStructBytes(dataList(L:List{K}), T:Type, Len:#Nat) => splitStructBytes(dataList(L:List{K}), T:Type, Len:#Nat, .List{K}) 
 		[structural]
 	rule splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:Type, sNat(Len:#Nat), L:List{K})
@@ -584,7 +584,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	op splitPointerBytes : K K K -> K 
 	op splitPointerBytes : K K K List{K} -> K 
-	context splitPointerBytes(?, ?, value(`[HOLE`]:K)) 
+	context splitPointerBytes(?, ?, value(HOLE:K)) 
 	rule splitPointerBytes(I:#Int, T:Type, sNat(Len:#Nat)) 
 		=> splitPointerBytes(I:#Int, T:Type, Len:#Nat, piece(encodedPointer(I:#Int), numBitsPerByte)) 
 		[structural]
@@ -597,7 +597,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	op splitFloatBytes : K K K -> K 
 	op splitFloatBytes : K K K List{K} -> K 
-	context splitFloatBytes(?, ?, value(`[HOLE`]:K)) 
+	context splitFloatBytes(?, ?, value(HOLE:K)) 
 	rule splitFloatBytes(F:#Float, T:Type, sNat(Len:#Nat)) 
 		=> splitFloatBytes(F:#Float, T:Type, Len:#Nat, piece(encodedFloat(F:#Float), numBitsPerByte)) 
 		[structural]

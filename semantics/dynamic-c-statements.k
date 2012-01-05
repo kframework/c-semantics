@@ -149,7 +149,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		[structural]
 		
 	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
-	context tryCase(([HOLE] => reval([HOLE])), _, _)
+	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
 		< k > (.K => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:Value, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >

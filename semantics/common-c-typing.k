@@ -2,6 +2,8 @@
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
+	op MYHOLE : -> K 
+	
 	op addStruct : #Id List{KResult} -> K 
 	op addUnion : #Id List{KResult} -> K 
 	op canonicalizeType : Bag -> K 
@@ -98,81 +100,81 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		[structural] 
 		
 	rule [type-ternary-heat-left]:
-		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? HOLE : K3:K ...</ type >
+		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? MYHOLE : K3:K ...</ type >
 		when notBool isAType(K2:K)
 		[structural] 
 	rule [type-ternary-cool-left]:
-		< type > T:Type ~> K1:K ? HOLE : K3:K => K1:K ? T:Type : K3:K ...</ type >
+		< type > T:Type ~> K1:K ? MYHOLE : K3:K => K1:K ? T:Type : K3:K ...</ type >
 		when isAType(T:Type)
 		[structural] 
 	rule [type-ternary-heat-right]:
-		< type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : HOLE ...</ type >
+		< type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : MYHOLE ...</ type >
 		when notBool isAType(K3:K)
 		[structural] 
 	rule [type-ternary-cool-right]:
-		< type > T:Type ~> K1:K ? K2:K : HOLE => K1:K ? K2:K : T:Type ...</ type >
+		< type > T:Type ~> K1:K ? K2:K : MYHOLE => K1:K ? K2:K : T:Type ...</ type >
 		when isAType(T:Type)
 		[structural] 
 		
 	rule [type-bin-arith-heat-left]:
-		< type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(HOLE,, K':K) ...</ type >
+		< type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(MYHOLE,, K':K) ...</ type >
 		when notBool isAType(K:K)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
 	rule [type-bin-arith-cool-left]:
-		< type > T:Type ~> L:KLabel(HOLE,, K:K) => L:KLabel(T:Type,, K:K) ...</ type >
+		< type > T:Type ~> L:KLabel(MYHOLE,, K:K) => L:KLabel(T:Type,, K:K) ...</ type >
 		when isAType(T:Type)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
 	rule [type-bin-arith-heat-right]:
-		< type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, HOLE) ...</ type >
+		< type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, MYHOLE) ...</ type >
 		when notBool isAType(K':K)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
 	rule [type-bin-arith-cool-right]:
-		< type > T:Type ~> L:KLabel(K:K,, HOLE) => L:KLabel(K:K,, T:Type) ...</ type >
+		< type > T:Type ~> L:KLabel(K:K,, MYHOLE) => L:KLabel(K:K,, T:Type) ...</ type >
 		when isAType(T:Type)
 		andBool typeStrictBinaryOperators contains l(L:KLabel)
 		[structural] 
 		
 	rule [type-unary-arith-heat]:
-		< type > L:KLabel(K:K) => K:K ~> L:KLabel(HOLE) ...</ type >
+		< type > L:KLabel(K:K) => K:K ~> L:KLabel(MYHOLE) ...</ type >
 		when notBool isAType(K:K)
 		andBool typeStrictUnaryOperators contains l(L:KLabel)
 		[structural] 
 	rule [type-unary-arith-cool]:
-		< type > T:Type ~> L:KLabel(HOLE) => L:KLabel(T:Type) ...</ type >
+		< type > T:Type ~> L:KLabel(MYHOLE) => L:KLabel(T:Type) ...</ type >
 		when isAType(T:Type)
 		andBool typeStrictUnaryOperators contains l(L:KLabel)
 		[structural] 
 		
 	rule [type-bin-left-arith-heat]:
-		< type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(HOLE,, Args:List{K}) ...</ type >
+		< type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(MYHOLE,, Args:List{K}) ...</ type >
 		when notBool isAType(K:K)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural] 
 	rule [type-bin-left-arith-cool]:
-		< type > T:Type ~> L:KLabel(HOLE,, Args:List{K}) => L:KLabel(T:Type,, Args:List{K}) ...</ type >
+		< type > T:Type ~> L:KLabel(MYHOLE,, Args:List{K}) => L:KLabel(T:Type,, Args:List{K}) ...</ type >
 		when isAType(T:Type)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural] 
 
 		
 	rule [type-dot-heat]:
-		< type > K:K . X:#Id => K:K ~> HOLE . X:#Id ...</ type >
+		< type > K:K . X:#Id => K:K ~> MYHOLE . X:#Id ...</ type >
 		when notBool isAType(K:K)
 		[structural] 
 	rule [type-dot-cool]:
-		< type > T:Type ~> HOLE . X:#Id => T:Type . X:#Id ...</ type >
+		< type > T:Type ~> MYHOLE . X:#Id => T:Type . X:#Id ...</ type >
 		when isAType(T:Type)
 		[structural]
 		
 	rule [type-call-heat]:
-		< type > Call(K:K, L:K) => K:K ~> Call(HOLE, L:K) ...</ type >
+		< type > Call(K:K, L:K) => K:K ~> Call(MYHOLE, L:K) ...</ type >
 		when notBool isAType(K:K)
 		[structural] 
 	rule [type-call-cool]:
-		< type > T:Type ~> Call(HOLE, L:K) => Call(T:Type, L:K) ...</ type >
+		< type > T:Type ~> Call(MYHOLE, L:K) => Call(T:Type, L:K) ...</ type >
 		when isAType(T:Type)
 		[structural] 
 endkm
@@ -181,7 +183,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	op canonicalizeType-aux : Bag K Bag Bag Bag -> K 
-	context canonicalizeType-aux(_,[#],_,_,_) when [#] =/=Bool .K 
+	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=Bool .K 
 
 		
 	rule
@@ -645,13 +647,12 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op HOLE : -> K 
 	rule
-		< k > typeof(E:Expression) => evalToType ~> typeof(HOLE) ...</ k >
+		< k > typeof(E:Expression) => evalToType ~> typeof(MYHOLE) ...</ k >
 		(.Bag => < type > E:Expression </ type >)
 		[structural] 
 	rule
-		< k > evalToType ~> typeof(HOLE) => T:Type ...</ k >
+		< k > evalToType ~> typeof(MYHOLE) => T:Type ...</ k >
 		(< type > T:Type </ type > => .Bag)
 		when isAType T:Type
 		[structural] 

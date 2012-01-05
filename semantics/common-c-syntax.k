@@ -168,11 +168,11 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
 	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context StructDef(_, List((?,, `[HOLE`]:K,, ?)))
+	context StructDef(_, List((?,, HOLE:K,, ?)))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
 	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context UnionDef(_, List((?,, `[HOLE`]:K,, ?)))
+	context UnionDef(_, List((?,, HOLE:K,, ?)))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
@@ -234,7 +234,7 @@ and spec_elem =
 	and specifier = spec_elem list
 */
 	op Specifier : K -> Specifier
-	context Specifier(List((?,, `[HOLE`]:K,, ?)))
+	context Specifier(List((?,, HOLE:K,, ?)))
 	
 /*
 and decl_type =
@@ -259,10 +259,10 @@ and decl_type =
 	op JustBase : -> K
 	op FunctionType : K -> DeclType [metadata "strict=()"]
 	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
-	context ArrayType(_, ([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
-	context Prototype(_, List((?,, `[HOLE`]:K,, ?)), _)
+	context Prototype(_, List((?,, HOLE:K,, ?)), _)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -272,7 +272,7 @@ and decl_type =
 and name_group = specifier * name list
 */
 	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
-	context NameGroup(_, List((?,, `[HOLE`]:K,, ?)))
+	context NameGroup(_, List((?,, HOLE:K,, ?)))
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -314,7 +314,7 @@ and name = #String * decl_type * attribute list * cabsloc
 and init_name = name * init_expression
 */
 	op InitName : K K -> InitName
-	context InitName(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context InitName(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 /*
 	(* Single names are for declarations that cannot come in groups, like
@@ -422,7 +422,7 @@ and statement =
 */
 	op Nop : -> PureStatement
 	op Computation : K -> PureStatement
-	context Computation(([HOLE] => reval([HOLE]))) // not sure why i had this commented out before...
+	context Computation((HOLE => reval(HOLE))) // not sure why i had this commented out before...
 	op BlockStatement : K -> PureStatement
 	op Sequence : K K -> PureStatement
 /*
@@ -432,7 +432,7 @@ and statement =
 	| FOR of for_clause * expression * expression * statement * cabsloc
 */
 	op IfThenElse : K K K -> PureStatement
-	context IfThenElse(([HOLE] => reval([HOLE])), _, _)
+	context IfThenElse((HOLE => reval(HOLE)), _, _)
 	op While : K K -> PureStatement
 	op DoWhile : K K -> PureStatement
 	op For : #Nat K K K K -> PureStatement // id, ...
@@ -444,7 +444,7 @@ and statement =
 	op Break : -> PureStatement
 	op Continue : -> PureStatement
 	op Return : K -> PureStatement
-	context Return(([HOLE] => reval([HOLE])))
+	context Return((HOLE => reval(HOLE)))
 /*
 	| SWITCH of expression * statement * cabsloc
 	| CASE of expression * statement * cabsloc
@@ -452,7 +452,7 @@ and statement =
 	| DEFAULT of statement * cabsloc
 */
 	op Switch : K K K -> PureStatement // unique switch id
-	context Switch(_, ([HOLE] => reval([HOLE])), _)
+	context Switch(_, (HOLE => reval(HOLE)), _)
 	op Case : #Nat #Nat K K -> PureStatement // unique switch id, unique case id, exp, statement
 	op CaseRange : K K K -> PureStatement // gcc extension
 	op Default : #Nat K -> PureStatement // unique switch id, statement
@@ -514,22 +514,22 @@ and unary_operator =
 	| PREINCR | PREDECR | POSINCR | POSDECR
 */
 	op -_ : K -> Expression [prec 22]
-	context -_(([HOLE] => reval([HOLE])))
+	context -_((HOLE => reval(HOLE)))
 	op +_ : K -> Expression [prec 22]
-	context +_(([HOLE] => reval([HOLE])))
+	context +_((HOLE => reval(HOLE)))
 	op !_ : K -> Expression [prec 22]
-	context !_(([HOLE] => reval([HOLE])))
+	context !_((HOLE => reval(HOLE)))
 	op ~_ : K -> Expression [prec 22]
-	context ~_(([HOLE] => reval([HOLE])))
+	context ~_((HOLE => reval(HOLE)))
 	op *_ : K -> Expression [prec 22]
-	context *_(([HOLE] => reval([HOLE])))
+	context *_((HOLE => reval(HOLE)))
 	op &_ : K -> Expression [prec 22 metadata "strict=()"]
 	op ++_ : K -> Expression [prec 22]
 	op --_ : K -> Expression [prec 22]
 	op _++ : K -> Expression
-	context _++(([HOLE] => peval([HOLE])))
+	context _++((HOLE => peval(HOLE)))
 	op _-- : K -> Expression
-	context _--(([HOLE] => peval([HOLE])))
+	context _--((HOLE => peval(HOLE)))
 	
 /*
 	| LABELADDR of #String  (* GCC's && Label *)
@@ -541,67 +541,67 @@ and unary_operator =
 	op _*_ : K K -> Expression [prec 31 gather(E e)]
 	op _/_ : K K -> Expression [prec 31 gather(E e)]
 	op _%_ : K K -> Expression [prec 31 gather(E e)]
-	context _*_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _*_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _/_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _/_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _%_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _%_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _*_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _*_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _/_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _/_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _%_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _%_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _+_ : K K -> Expression [prec 33 gather(E e)]
 	op _-_ : K K -> Expression [prec 33 gather(E e)]
-	context _+_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _+_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _-_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _-_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _+_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _+_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _-_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _-_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _<<_ : K K -> Expression [prec 35 gather(E e)]
-	context _<<_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _<<_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _<<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _<<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _>>_ : K K -> Expression [prec 35 gather(E e)]
-	context _>>_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _>>_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _>>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _>>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _<_ : K K -> Expression [prec 37 gather(E e)]
 	op _<=_ : K K -> Expression [prec 37 gather(E e)]
-	context _<_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _<_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _<=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _<=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _<=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _<=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _>_ : K K -> Expression [prec 37 gather(E e)]
 	op _>=_ : K K -> Expression [prec 37 gather(E e)]
-	context _>_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _>_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _>=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _>=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _>=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _>=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _==_ : K K -> Expression [prec 39 gather(E e)]
 	op _!=_ : K K -> Expression [prec 39 gather(E e)]
-	context _==_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _==_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
-	context _!=_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _!=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _==_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _==_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _!=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _!=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _&_ : K K -> Expression [prec 41 gather(E e)]
-	context _&_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _&_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _&_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _^_ : K K -> Expression [prec 43 gather(E e)]
-	context _^_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _^_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _^_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _^_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	op _|_ : K K -> Expression [prec 45 gather(E e)]
-	context _|_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	context _|_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _|_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _|_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 	
 	op _&&_ : K K -> Expression [prec 47 gather(E e)]
-	context _&&_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _&&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	
 	op _||_ : K K -> Expression [prec 49 gather(E e)]
-	context _||_(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
+	context _||_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 			
 	op _*=_ : K K -> Expression [prec 53]
 	op _/=_  : K K -> Expression [prec 53]
@@ -614,22 +614,22 @@ and unary_operator =
 	op _|=_ : K K -> Expression [prec 53]
 	op _>>=_ : K K -> Expression [prec 53]
 	op _:=_ : K K -> Expression [prec 53]
-	context _:=_(([HOLE] => peval([HOLE])), _) [metadata "ndheat=()"]
-	context _:=_(_, ([HOLE] => reval([HOLE]))) [metadata "ndheat=()"]
+	context _:=_((HOLE => peval(HOLE)), _) [metadata "ndheat=()"]
+	context _:=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 /*
 	| QUESTION of expression * expression * expression
 */
 	op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
 	// syntax Expression ::= K ? K : K [prec 51 gather(e & E)]
-	context _?_:_(([HOLE] => reval([HOLE])), _, _)
+	context _?_:_((HOLE => reval(HOLE)), _, _)
 
 /*
 	(* A CAST can actually be a constructor expression *)
 	| CAST of (specifier * decl_type) * init_expression
 */
 	op Cast : K K K -> Expression [metadata "strict=(1)"]
-	context Cast(_, _, ([HOLE] => reval([HOLE])))
+	context Cast(_, _, (HOLE => reval(HOLE)))
 	
 	op CompoundLiteral : K K K K -> Expression [metadata "strict=(2)"] // new // comp-lit id, spec, decl, init
 /*
@@ -640,23 +640,23 @@ and unary_operator =
 */
 
 	op Call : K K -> Expression // K, List
-	context Call(([HOLE] => reval([HOLE])), _) [metadata "ndheat=()"]
-	// context Call(_, (_ :: (`[HOLE`]:C => reval(`[HOLE`]:C)) :: _)) [metadata "ndheat=()"]
-	context Call(_, List((?,, (`[HOLE`]:K => reval(`[HOLE`]:K)),, ?))) [metadata "ndheat=()"]
+	context Call((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	// context Call(_, (_ :: (HOLE:C => reval(HOLE:C)) :: _)) [metadata "ndheat=()"]
+	context Call(_, List((?,, (HOLE:K => reval(HOLE:K)),, ?))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
 	op Comma : K -> Expression // List
-	// context Comma((`[HOLE`]:C => reval([HOLE])) :: _) [metadata "ndheat=()"]
-	// context 'Comma('_::_((`[HOLE`]:C => reval([HOLE])),, _)) [metadata "ndheat=()"]
-	context Comma(List(((`[HOLE`]:K => reval(`[HOLE`]:K)),, _))) [metadata "ndheat=()"]
+	// context Comma((HOLE:C => reval(HOLE)) :: _) [metadata "ndheat=()"]
+	// context 'Comma('_::_((HOLE:C => reval(HOLE)),, _)) [metadata "ndheat=()"]
+	context Comma(List(((HOLE:K => reval(HOLE:K)),, _))) [metadata "ndheat=()"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
 	| VARIABLE of string
 */
 	op Constant : K -> Expression
-	// context Constant(([HOLE] => reval([HOLE])))
+	// context Constant((HOLE => reval(HOLE)))
 	// #String constants aren't revals
 	// for paren, just putting parentheses
 	subsort #Id < Expression
@@ -680,9 +680,9 @@ and unary_operator =
 	| MEMBEROFPTR of expression * string
 */
 	op _._ : K #Id -> Expression
-	context _._(([HOLE] => peval([HOLE])), _)
+	context _._((HOLE => peval(HOLE)), _)
 	op _->_ : K #Id -> Expression
-	context _->_(([HOLE] => reval([HOLE])), _:#Id)
+	context _->_((HOLE => reval(HOLE)), _:#Id)
 /*
 	| GNU_BODY of block
 	| EXPR_PATTERN of #String     (* pattern variable, and name *)

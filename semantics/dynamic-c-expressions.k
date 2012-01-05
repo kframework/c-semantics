@@ -160,7 +160,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 
 	op getTypes : List{K} -> K
 	op types : List{K} -> K
-	context types((?,, `[HOLE`]:K,, ?))
+	context types((?,, HOLE:K,, ?))
 	op convertedType : K -> K [metadata "strict=()"]
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
@@ -624,8 +624,8 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 	*/
 	op compoundAssignment : KLabel K K -> K
 	// these should not be nd, in order to keep the operations together
-	context compoundAssignment(_, ([HOLE] => peval([HOLE])), _)
-	context compoundAssignment(_, _, ([HOLE] => reval([HOLE])))
+	context compoundAssignment(_, (HOLE => peval(HOLE)), _)
+	context compoundAssignment(_, _, (HOLE => reval(HOLE)))
 		
 	rule [compoundAssignment-mult]:
 		< k > E1:K *= E2:K => compoundAssignment('_*_, E1:K, E2:K) ...</ k >
