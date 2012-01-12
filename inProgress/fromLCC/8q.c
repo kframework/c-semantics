@@ -1,7 +1,9 @@
+#include <stdio.h>
+
 int up[15], down[15], rows[8], x[8];
 void queens(), print();
 
-main()
+int main()
 {
 	int i;
 

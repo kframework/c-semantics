@@ -1,20 +1,21 @@
+#include <stdio.h>
 #include <stdarg.h>
 
 struct node { int a[4]; } x = {1,2,3,4};
 
-int print(char *fmt, ...);
+void print(char *fmt, ...);
 
-main() {
+int main() {
 	print("test 1\n");
 	print("test %s\n", "2");
 	print("test %d%c", 3, '\n');
-	print("%s%s %w%c", "te", "st", 4, '\n');
+	print("%s%s %d%c", "te", "st", 4, '\n');
 	print("%s%s %f%c", "te", "st", 5.0, '\n');
 	print("%b %b %b %b %b %b\n", x, x, x, x, x, x);
 	return 0;
 }
 
-print(char *fmt, ...) {
+void print(char *fmt, ...) {
 	va_list ap;
 
 	va_start(ap, fmt);

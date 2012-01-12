@@ -1,19 +1,6 @@
-main()
-{
-	int i; char *s;
+#include <stdio.h>
 
-	for (s = "bfnrtvx"; *s; s++)
-		printf("%c = 0x%02x\n", *s, backslash(*s));
-	f();
-	g();
-	h();
-	for (i = 0x1000000; i&0x7000000; i += 0x1000000)
-		big(i);
-	limit();
-	return 0;
-}	
-
-backslash(c)
+int backslash(c)
 {
 	switch (c) {
 	case 'b':
@@ -134,4 +121,19 @@ void limit() {
 		case INT_MAX-4:	printf("4\n"); break;
 		default:	printf("5\n"); break;
 		}
+}
+
+int main()
+{
+	int i; char *s;
+
+	for (s = "bfnrtvx"; *s; s++)
+		printf("%c = 0x%02x\n", *s, backslash(*s));
+	f();
+	g();
+	h();
+	for (i = 0x1000000; i&0x7000000; i += 0x1000000)
+		big(i);
+	limit();
+	return 0;
 }

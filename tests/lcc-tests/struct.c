@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef struct point { int x,y; } point;
 typedef struct rect { point pt1, pt2; } rect;
 
@@ -48,7 +51,7 @@ void odd(struct odd y) {
 	printf("%s\n", x.a);
 }
 
-main() {
+int main() {
 	int i;
 	point x, origin = { 0, 0 }, maxpt = { 320, 320 };
 	point pts[] = { -1, -1, 1, 1, 20, 300, 500, 400 };
