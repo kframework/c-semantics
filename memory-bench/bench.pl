@@ -140,7 +140,8 @@ sub bench {
 		
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
-		valgrind($testfilename);
+		# valgrind($testfilename);
+		ubc($testfilename);
 		# framac($testfilename);
 		# kcc($testfilename);
 		# ccured($testfilename);
@@ -218,6 +219,18 @@ sub valgrind {
 	
 	$_toolName = "Valgrind";
 	my $template = "tools/valgrind.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN -gdwarf-2 -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c $file\" ";
+	my $goodCommand = $template;
+	$goodCommand =~ s/%s/-DOMITBAD/;
+	my $badCommand = $template;
+	$badCommand =~ s/%s/-DOMITGOOD/;
+	genericTestHandler($goodCommand, $badCommand);
+}
+
+sub ubc {
+	my ($file) = (@_);
+	
+	$_toolName = "ubc";
+	my $template = "tools/ubc.sh $_testName \"-I../tests/juliet/testcasesupport %s -DINCLUDEMAIN -lm -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99 ../tests/juliet/testcasesupport/io.c $file\" ";
 	my $goodCommand = $template;
 	$goodCommand =~ s/%s/-DOMITBAD/;
 	my $badCommand = $template;

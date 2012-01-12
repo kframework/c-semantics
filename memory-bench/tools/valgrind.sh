@@ -18,8 +18,8 @@ TOOL_NAME=valgrind
 BASE_NAME=$1
 GCC_ARGS=$2
 
-LOG_FILE=logs/$TOOL_NAME.$BASE_NAME.log
-mkdir -p logs
+LOG_FILE=logs/$TOOL_NAME/$BASE_NAME.log
+mkdir -p logs/$TOOL_NAME
 rm -f $LOG_FILE
 
 OUT_DIR=tmp/$TOOL_NAME
