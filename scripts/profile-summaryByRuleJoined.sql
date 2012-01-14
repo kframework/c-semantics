@@ -1,8 +1,8 @@
 SELECT 
 	rules.ruleName
 	, rules.kind
-	, SUM(matches) as matches
-	, SUM(rewrites) as rewrites
+	, COALESCE(SUM(matches), 0) as matches
+	, COALESCE(SUM(rewrites), 0) as rewrites
 	, rules.locationFile
 	, rules.locationFrom
 	, rules.locationTo
