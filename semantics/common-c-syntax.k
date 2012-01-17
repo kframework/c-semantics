@@ -761,6 +761,9 @@ and attribute = #String * expression list
 	// macro EnumItemLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	
 	
+	/*@ This macro defines an important identity from (n1570) 6.5.3.2.  As a syntactic macro, it should run on programs before they even start to reduce. */
+	macro &(*(K:K)) = K:K
+	
 	
 
 	/*@ The below macros simply transform the prefix AST names to the infix/mixfix names we use from now on */
