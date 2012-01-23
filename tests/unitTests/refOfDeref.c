@@ -20,7 +20,7 @@ int main(void) {
 	if (&(*(&(*(void**)NULL))) == (void**)NULL) {
 		printf("5\n");
 	}
-	if (&(&(*(*(void**)NULL))) == (void**)NULL) {
-		printf("6\n");
-	}
+	// if (&(&(*(*(void**)NULL))) == (void**)NULL) {
+	// 	printf("6\n");
+	// }
 }

@@ -101,9 +101,8 @@ if (! ($reader->name eq "TranslationUnit")) {
 	die "XML: Expected first entry to be 'TranslationUnit'.";
 }
 $reader->nextElement('RawData');
+# print STDERR "At " . $reader->name . "\n";
 my $filename = getRawData($reader);
-$reader->nextElement;
-
 if ($filename eq ""){
 	die "Could not find the filename in the XML\n";
 }
@@ -111,8 +110,17 @@ if ($filename eq ""){
 print "---kccMarker\n";
 my @args = ();
 push (@args, "$STRING $filename" . paren(KLIST_IDENTITY));
+
+$reader->nextElement;
+# print STDERR "At " . $reader->name . "\n";
 push (@args, xmlToK($reader));
+
+#$reader->nextElement;
+# print STDERR "At " . $reader->name . "\n";
+push (@args, xmlToK($reader));
+
 $reader->nextElement('RawData');
+# print STDERR "At " . $reader->name . "\n";
 my $sourceCode = getRawData($reader);
 push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));

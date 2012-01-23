@@ -7,6 +7,10 @@ let counter = ref 0
 let currentSwitchId = ref 0
 let switchStack = ref [0]
 let realFilename = ref ""
+let defsPrinted = ref 0
+let ast = ref ""
+
+let stringLiterals = ref []
 
 let rec trim s =
   let l = String.length s in 
@@ -68,35 +72,9 @@ and interpret_wcharacter_constant char_list =
 
 let replace input output =
     Str.global_replace (Str.regexp_string input) output
-(*
-<TranslationUnit filename="asdf" source="asdf">
-	<FunctionDefinition> </FunctionDefinition>
-	<FunctionDefinition> </FunctionDefinition>
-	<FunctionDefinition> </FunctionDefinition>
-</TranslationUnit>
-*)
 
 type attribute =
 	Attrib of string * string
-
-(* 
-let escapeForXML str =
-	(replace "<" "&lt;"
-	(replace "\"" "&quot;" str))
-
-let myEscapeChars s = 
-	replace "\000" "\\\\0" s
-*)
-	
-(*
-let myEscapeChars s = 
-	if (String.length s = 0) then "" else (
-		(myEscapeChar s.[0]) ^ myEscapeChars
-	)
-	for i=1 to (String.length s - 1) do 
-		if ((Char.code s.[i]) = 0) then (s.[i] <- "\\0") 
-	done
-*)
 	
 let cdata (str : string) =
 	(* let str = replace "]]>" "]]]]><![CDATA[>" str in *) (* escapes "]]>" *)
@@ -133,21 +111,28 @@ let rec cabsToXML ((filename, defs) : file) (sourceCode : string) (myRealFilenam
 	realFilename := myRealFilename;
 	"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" ^
 	printTranslationUnit filename sourceCode defs
-			
+
 and printTranslationUnit (filename : string) (sourceCode : string) defs =
 	let filenameCell = (printCell "Filename" [] 
 		(* (printRawString filename) *)
 		(printRawString !realFilename)
-		) in	
-	wrap (filenameCell :: (printDefs defs) :: (printSource sourceCode) :: []) "TranslationUnit" 
-	
+		) in
+	let ast = printDefs defs in
+	let source = printSource sourceCode in
+	let strings = printStrings "foo" in (* the evaluation order is all messed up if this has no argument *)
+	wrap (filenameCell :: strings :: ast :: source :: []) "TranslationUnit" 
+and printStrings x =
+	(* List.map (fun element -> print_string (element ^ "\n")) !stringLiterals;
+	print_string "printed strings\n"; *)
+	printNewList (fun x -> wrap (x :: []) "Constant") !stringLiterals
 and printSource (sourceCode : string) =
 	printCell "SourceCode" [] (printRawString sourceCode)
-	
 and printDefs defs =
-	(* printList printDef defs *)
-	List.fold_left (fun aux arg -> printCell "StmtCons" [] (aux ^ (printDef arg))) (printNop) defs
-	
+	if !defsPrinted = 1 then !ast else 
+		let result = List.fold_left (fun aux arg -> printCell "StmtCons" [] (aux ^ (printDef arg))) (printNop) defs in
+			defsPrinted := 1;
+			ast := result;
+			result
 and printDef def =
 	match def with
 		| FUNDEF (a, b, c, d) -> 
@@ -331,8 +316,18 @@ and printConstant const =
 	| CONST_FLOAT r -> wrap ((printFloatLiteral r) :: []) "FloatLiteral"
 	| CONST_CHAR c -> wrap [printRawInt (interpret_character_constant c)] "CharLiteral"
 	| CONST_WCHAR c -> wrap [printRawInt (interpret_wcharacter_constant c)] "WCharLiteral"
-	| CONST_STRING s -> wrap [printRawString s] "StringLiteral"
-	| CONST_WSTRING ws -> wrap [printRawString (string_of_list_of_int64 ws)] "WStringLiteral"
+	| CONST_STRING s -> handleStringLiteral s
+	| CONST_WSTRING ws -> handleWStringLiteral ws
+and handleStringLiteral s =
+	let result = wrap [printRawString s] "StringLiteral" in
+	(* List.map (fun element -> print_string (element ^ "\n")) !stringLiterals;
+	print_string "inside string handler\n"; *)
+	stringLiterals := result :: !stringLiterals;
+	result
+and handleWStringLiteral ws =
+	let result = wrap [printRawString (string_of_list_of_int64 ws)] "WStringLiteral" in
+	stringLiterals := result :: !stringLiterals;
+	result	
 and splitFloat (xs, i) =
 	let lastOne = if (String.length i > 1) then String.uppercase (Str.last_chars i 1) else ("x") in
 	let newi = (Str.string_before i (String.length i - 1)) in

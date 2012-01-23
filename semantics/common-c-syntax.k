@@ -386,7 +386,7 @@ and enum_item = #String * expression * cabsloc
 and file = #String * definition list
 */
 	// name, code, source
-	op TranslationUnit : #String K #String -> TranslationUnit // new
+	op TranslationUnit : #String K K #String -> TranslationUnit // new: Filename, strings, ast, code
 	op Program : K -> Program // new // List
 
 /*

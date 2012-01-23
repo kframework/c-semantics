@@ -976,8 +976,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	op canonicalizeTranslationUnitVariables : -> K 
 	rule [unpack-TranslationUnit]:
-		< k > TranslationUnit(Name:#String, K:K, P:#String) 
-			=> klistToK(eraseKLabel('StmtCons, K:K))
+		< k > TranslationUnit(Name:#String, Strings:K, K:K, P:#String) 
+			=> preDeclareStrings(Strings:K)
+			~> klistToK(eraseKLabel('StmtCons, K:K))
 		...</ k >
 		< currentTranslationUnit > ? => Name:#String </ currentTranslationUnit >
 		< declarationOrder > DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:#String] </ declarationOrder >
@@ -991,7 +992,20 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< gtypes > Gtypes:Map => Gtypes:Map[Map(.) / Name:#String]</ gtypes >
 		< programText > M:Map => M:Map[P:#String / Name:#String] </ programText >
 		when notBool $hasMapping(Env:Map, Name:#String)
-		[structural] 
+		[structural]
+		
+	op preDeclareStrings : K -> K
+	
+	rule
+		< k > preDeclareStrings(List((K:K,, L:List{K})))
+			=> K:K
+			~> discard
+			~> preDeclareStrings(List(L:List{K}))
+		...</ k >
+		[structural]
+	rule
+		< k > preDeclareStrings(List(.List{K})) => .K ...</ k >
+		[structural]
 	
 	op resolve : K -> K 
 	rule
