@@ -143,8 +143,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		...</ k >
 		[structural]
 	
-	rule isConcreteNumber(sym(?) +Nat ?) => false [structural]
-	rule isConcreteNumber(bito(?) +Nat ?) => false [structural]
+	rule isConcreteNumber(sym(?) +Nat ?:#Nat) => false [structural]
+	rule isConcreteNumber(bito(?) +Nat ?:#Nat) => false [structural]
 	rule isConcreteNumber(I:#Int) => true
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]

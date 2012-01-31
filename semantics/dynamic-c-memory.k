@@ -22,9 +22,9 @@ kmod DYNAMIC-SEMANTICS-READING is
 	op extractBitsFromMem : #Nat #Nat -> K // loc, size in bits
 	op extractByteFromMem : #Nat -> K 
 	op getBitOffset : #Nat -> #Nat 
-	rule getBitOffset(? +Nat bito(M:#Nat)) => M:#Nat [structural]
+	rule getBitOffset(?:#Nat +Nat bito(M:#Nat)) => M:#Nat [structural]
 	// fixme owise!!!!
-	eq getBitOffset(?) = 0 [owise]
+	eq getBitOffset(?:#Nat) = 0 [owise]
 	
 	op extractBitsFromList-aux : K #Nat #Nat List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:#Nat, M:#Nat) 
@@ -616,9 +616,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op byteMaskSet : -> #Nat
 	rule byteMaskSet => (2 ^Nat numBitsPerByte) -Int 1 [structural]
 		
-	rule isByteLoc(? +Nat bito(?)) => false [structural]
+	rule isByteLoc(?:#Nat +Nat bito(?)) => false [structural]
 	// fixme owise!!!
-	eq isByteLoc(?) = true [owise] 
+	eq isByteLoc(?:#Nat) = true [owise] 
 endkm
 
 kmod DYNAMIC-C-MEMORY-MISC is
