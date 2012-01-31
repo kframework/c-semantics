@@ -10,7 +10,7 @@ kmod COMMON-C-SYNTAX is
 	including #RANDOM
 	including #ID
 	including K
-	including K-PROPER
+	//including K-PROPER
 	
 	tags ndlocal ndheat computational structural interpRule
 	
