@@ -3,7 +3,6 @@ kmod COMMON-INCOMING-MODULES is
 	including C-SYNTAX 
 	including COMMON-C-CONFIGURATION 
 	including K-CONTEXTS 
-	including K-PROPER
 	
 	sort Type 
 	sort Value 
