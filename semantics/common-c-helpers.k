@@ -81,13 +81,13 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		=> piece(piece(N'':#Nat, Len':#Nat) bit:: N:#Nat bit:: N':#Nat, Len:#Nat +Nat Len':#Nat)
 		[structural]
 
-	rule bitRange(N:#Nat bit:: piece(?, Len:#Nat), Pos:#Nat, Pos:#Nat)
+	rule bitRange(N:#Nat bit:: piece(?:#Nat, Len:#Nat), Pos:#Nat, Pos:#Nat)
 		=> bitRange(N:#Nat, absInt(Pos:#Nat -Int Len:#Nat), absInt(Pos:#Nat -Int Len:#Nat))
 		when Pos:#Nat >Nat 0
 		andBool Pos:#Nat -Int Len:#Nat >=Int 0
 		[structural]
 		
-	rule bitRange(? bit:: piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
+	rule bitRange(?:#Nat bit:: piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
 	rule bitRange(piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
 		
 	rule bitRange(piece(bitRange(N:#Nat, Start:#Nat, End:#Nat), Len:#Nat), 0, 0)
@@ -106,7 +106,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when sNat(To:#Nat) ==Bool numBitsPerByte
 		[structural]
 	
-	rule bitRange(? bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
+	rule bitRange(?:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
 		=> bitRange(piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
 		when sNat(End:#Nat) <=Nat Len:#Nat
 		[structural]
@@ -114,7 +114,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule bitRange(piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
 		=> piece(N:#Nat, sNat(End:#Nat))
 		[structural]
-	rule bitRange(? bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
+	rule bitRange(?:#Nat bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
 		=> piece(N:#Nat, sNat(End:#Nat))
 		[structural]
 		
