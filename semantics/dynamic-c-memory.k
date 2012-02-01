@@ -59,14 +59,14 @@ kmod DYNAMIC-SEMANTICS-READING is
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
 	rule [read-thread-local]:
-		< k > ('read-aux => 'readActual)(sym(threadId(Id:#Nat) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(Id:#Nat) +Nat ?:#Nat) +Nat ?:#Nat,, ?,, ?) ...</ k >
 		<threadId> Id:#Nat </threadId>
 		[structural ndlocal]
 	rule [read-shared]: // read global or shared data
-		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat ?:#Nat) +Nat ?:#Nat,, ?,, ?) ...</ k >
 		[computational ndlocal]
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?) +Nat ?,, ?,, ?) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat ?:#Nat) +Nat ?:#Nat,, ?,, ?) ...</ k >
 		[computational ndlocal]
 	
 	rule [read]:
@@ -631,18 +631,18 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 		
 	rule
-		< k > sizeofLocation(sym(Block:#Nat) +Nat ?) => tv(Len:#Nat, cfg:sizeut) ...</ k >
+		< k > sizeofLocation(sym(Block:#Nat) +Nat ?:#Nat) => tv(Len:#Nat, cfg:sizeut) ...</ k >
 		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) ...</ mem >
 		[structural]
 		
 	rule [delete-sized-block]:
-		< k > deleteSizedBlock(sym(Block:#Nat) +Nat ?, Len:#Nat) => .K ...</ k >
+		< k > deleteSizedBlock(sym(Block:#Nat) +Nat ?:#Nat, Len:#Nat) => .K ...</ k >
 		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) => .Map ...</ mem >
 		< buffer > .List </ buffer > // fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
 	rule [delete-block]:
-		< k > deleteBlock(sym(Block:#Nat) +Nat ?) => .K ...</ k >
+		< k > deleteBlock(sym(Block:#Nat) +Nat ?:#Nat) => .K ...</ k >
 		< mem >... Block:#Nat |-> ? => .Map ...</ mem >
 		< buffer > .List </ buffer >
 		[structural] 

@@ -77,7 +77,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00005]:
-		< k => finalComputation > extractByteFromMem(sym(Block:#Nat) +Nat ?) ...</ k => finalComputation >
+		< k => finalComputation > extractByteFromMem(sym(Block:#Nat) +Nat ?:#Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:#Nat)
@@ -90,7 +90,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00007]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat ?) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat ?:#Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:#Nat)
@@ -271,28 +271,28 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?, T:Type) < tv(sym(Base':#Nat) +Nat ?, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) < tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?, T:Type) > tv(sym(Base':#Nat) +Nat ?, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) > tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?, T:Type) <= tv(sym(Base':#Nat) +Nat ?, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) <= tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?, T:Type) >= tv(sym(Base':#Nat) +Nat ?, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) >= tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
