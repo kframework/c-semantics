@@ -26,15 +26,12 @@ my $childPid = 0;
 # bench("testcases/CWE685_Function_Call_With_Incorrect_Number_Of_Arguments");
 # bench("testcases/CWE688_Function_Call_With_Incorrect_Variable_Or_Reference_As_Argument");
 # bench("testcases/CWE761_Free_Pointer_Not_At_Start_Of_Buffer");
+# bench("testcases/CWE457_Use_of_Uninitialized_Variable");
+# bench("testcases/CWE469_Use_Of_Pointer_Subtraction_To_Determine_Size");
+# bench("testcases/CWE758_Undefined_Behavior");
 
-bench("testcases/CWE457_Use_of_Uninitialized_Variable");
-bench("testcases/CWE469_Use_Of_Pointer_Subtraction_To_Determine_Size");
-bench("testcases/CWE758_Undefined_Behavior");
-
-# look into
-# CWE457_Use_of_Uninitialized_Variable__double_pointer_63*.c 
-# CWE457_Use_of_Uninitialized_Variable__twoints_pointer_63*.c 
-# CWE457_Use_of_Uninitialized_Variable__double_64*.c
+# not catching memcpy bugs
+bench("testcases/CWE475_Undefined_Behavior_For_Input_to_API");
 
 # weird
 # bench("testcases/CWE369_Divide_By_Zero"); # their rand has overflow :/
