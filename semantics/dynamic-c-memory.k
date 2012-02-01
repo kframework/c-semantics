@@ -393,9 +393,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool notBool hasBitfieldType(T:Type)
 		[structural]
 		
-	rule bitoffset(? +Nat bito(N:#Nat)) => N:#Nat [structural]
+	rule bitoffset(?:#Nat +Nat bito(N:#Nat)) => N:#Nat [structural]
 	// fixme owise!!!
-	eq bitoffset(?) = 0 [owise] 
+	eq bitoffset(?:#Nat) = 0 [owise] 
 	
 	// fixme owise!!!
 	rule byteoffset(N:#Nat +Nat bito(?)) => N:#Nat [structural]

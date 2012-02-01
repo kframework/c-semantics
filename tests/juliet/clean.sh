@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+# 758 no_return 01 has no newline at end of file
+
 echo "Unzipping Juliet..."
 unzip -q -o Juliet-2010-12.c.cpp.zip
 
@@ -13,6 +15,7 @@ mv testcases/CWE204_Response_Discrepancy_Information_Leak/ notApplicable/
 mv testcases/CWE222_Truncation_Of_Security_Relevant_Information/ notApplicable/
 mv testcases/CWE223_Omission_Of_Security_Relevant_Information/ notApplicable/
 mv testcases/CWE226_Sensitive_Information_Uncleared_Before_Release/ notApplicable/
+mv testcases/CWE244_Failure_to_Clear_Heap_Before_Release/ notApplicable/
 mv testcases/CWE247_Reliance_On_DNS_Lookups_In_A_Security_Decision/ notApplicable/
 mv testcases/CWE252_Unchecked_Return_Value/ notApplicable/
 mv testcases/CWE256_Plaintext_Storage_of_Password/ notApplicable/
@@ -25,6 +28,7 @@ mv testcases/CWE321_Hard_Coded_Cryptographic_Key/ notApplicable/
 mv testcases/CWE327_Use_Broken_Crypto/ notApplicable/
 mv testcases/CWE328_Reversible_Oneway_Hash/ notApplicable/
 mv testcases/CWE338_Weak_PRNG/ notApplicable/
+mv testcases/CWE377_Insecure_Temporary_File/ notApplicable/
 mv testcases/CWE547_Hardcoded_Security_Constants/ notApplicable/
 mv testcases/CWE560_Use_Of_umask_With_chmod_Style_Argument/ notApplicable/
 mv testcases/CWE591_Sensitive_Data_Storage_in_Improperly_Locked_Memory/ notApplicable/
@@ -151,6 +155,7 @@ mv testcases/CWE127_Buffer_Underread/ good/
 mv testcases/CWE131_Incorrect_Calculation_Of_Buffer_Size/ good/
 mv testcases/CWE170_Improper_Null_Termination/ good/
 mv testcases/CWE193_Off_by_One_Error/ good/
+mv testcases/CWE369_Divide_By_Zero/ good/
 mv testcases/CWE562_Return_Of_Stack_Variable_Address/ good/
 mv testcases/CWE590_Free_Of_Invalid_Pointer_Not_On_The_Heap/ good/
 mv testcases/CWE665_Improper_Initialization/ good/
