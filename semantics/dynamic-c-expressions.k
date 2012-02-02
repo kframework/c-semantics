@@ -814,7 +814,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		[structural]
 		
 	op isUnknown : K -> #Bool
-	rule [isUnknown-piece]: isUnknown(piece(?, ?)) => true [structural]
+	rule [isUnknown-piece]: isUnknown(piece(?:#Nat, ?:#Nat)) => true [structural]
 	rule [isUnknown-ptr]: isUnknown(sym(?:#Nat) +Nat ?:#Nat) => false [structural]
 	//rule [isUnknown-bito]: isUnknown(bito(?:#Nat) +Nat ?) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:#Int) => false

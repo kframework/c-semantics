@@ -347,8 +347,8 @@ kmod COMMON-C-SETTINGS is
 	op cfg:ptrdiffut : -> Type 
 	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
 	
-	rule [min]: min(t(S:Set, enumType(?))) => min(t(S:Set, int)) [structural]
-	rule [max]: max(t(S:Set, enumType(?))) => max(t(S:Set, int)) [structural]
+	rule [min]: min(t(S:Set, enumType(?:#Id))) => min(t(S:Set, int)) [structural]
+	rule [max]: max(t(S:Set, enumType(?:#Id))) => max(t(S:Set, int)) [structural]
 	
 	op rank : Type -> #Int 
 		
@@ -364,7 +364,7 @@ kmod COMMON-C-SETTINGS is
 	rule rank(t(?, long-long-int)) => 5 [structural]
 	rule rank(t(?, unsigned-long-long-int)) => 5 [structural]
 	
-	rule rank(t(S:Set, enumType(?))) => rank(t(S:Set, int)) [structural]
+	rule rank(t(S:Set, enumType(?:#Id))) => rank(t(S:Set, int)) [structural]
 	//C99 6.3.1.1
 	
 	/*

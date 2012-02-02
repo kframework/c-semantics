@@ -352,7 +352,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule hasSignedIntegerType(t(?, T:SimpleType)) => true
 		when (signedIntegerTypes contains T:SimpleType)
 		[structural]
-	rule hasSignedIntegerType(t(?, enumType(?))) => true [structural] // choice fixme
+	rule hasSignedIntegerType(t(?, enumType(?:#Id))) => true [structural] // choice fixme
 	rule hasSignedIntegerType(t(S:Set, T:SimpleType)) => false
 		when getKLabel(T:SimpleType) =/=Bool 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:SimpleType)) orBool hasFloatType(t(S:Set, T:SimpleType)))
@@ -468,7 +468,7 @@ kmod COMMON-C-BITSIZE is
 	rule bitSizeofType(t(?, bitfieldType(?, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
 	rule bitSizeofType(T:Type) => tv(numBits(T:Type), cfg:largestUnsigned) when isBasicType(T:Type) [structural]
-	rule bitSizeofType(typedDeclaration(T:Type, ?)) => bitSizeofType(T:Type) [structural]
+	rule bitSizeofType(typedDeclaration(T:Type, ?:#Id)) => bitSizeofType(T:Type) [structural]
 
 	rule
 		< k > bitSizeofType(t(?, structType(S:#Id))) => bitSizeofList(L:List{KResult}) ...</ k >

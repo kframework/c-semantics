@@ -499,10 +499,10 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		=> typedDeclaration(T:Type, #NoName(N:#Nat)),, giveNamesToArgs-aux(sNat(N:#Nat), L:List{KResult})
 		when X:#Id ==Bool #NoName
 		[structural]
-	rule giveNamesToArgs-aux(?, t(.Set, variadic))
+	rule giveNamesToArgs-aux(?:#Nat, t(.Set, variadic))
 		=> t(.Set, variadic)
 		[structural]
-	rule giveNamesToArgs-aux(?, .List{K})
+	rule giveNamesToArgs-aux(?:#Nat, .List{K})
 		=> .List{K}
 		[structural]
 	
@@ -558,7 +558,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 		
 	rule [fillBitHoles-bitfield-zero]:
-		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':#Nat)), ?),, L:List{KResult})) 
+		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(?, bitfieldType(T:Type, N':#Nat)), ?:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
 			,, fillBitHoles(L:List{KResult})
 		when N':#Nat ==Bool 0
@@ -619,7 +619,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule [extract-function]: extractActualType(t(S:Set, functionType(T:Type, List:List{KResult}))) => t(S:Set, functionType(extractActualType(T:Type), List:List{KResult})) [structural]
 	rule [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:Type))) => t(S:Set, pointerType(extractActualType(T:Type))) [structural]
 	rule [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) => t(S:Set, qualifiedType(extractActualType(T:Type), K:K)) [structural]
-	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
+	rule [extract-typedef]: extractActualType(t(S:Set, typedefType(?:#Id, t(S':Set, T:SimpleType)))) => extractActualType(t(S:Set S':Set, T:SimpleType)) [structural]
 		
 	op NameAndType : K K -> K [metadata "strict=(2)"] 
 		
@@ -869,7 +869,7 @@ kmod COMMON-C-TYPING is
 		when hasIntegerType(T:Type)
 		[structural]
 		
-	rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?), typedDeclaration(T':Type, ?))
+	rule [typeCompatible-declarations]: isTypeCompatible(typedDeclaration(T:Type, ?:#Id), typedDeclaration(T':Type, ?:#Id))
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
 	rule [typeCompatible-prototypes]: isTypeCompatible(t(?, prototype(T:Type)), t(?, prototype(T':Type))) 
@@ -890,10 +890,10 @@ kmod COMMON-C-TYPING is
 		=> isTypeCompatible(t(S:Set, pointerType(T:Type)), T':Type) 
 		[structural]
 
-	rule [typeCompatible-function-void-left]: isTypeCompatible(t(?, functionType(T1:Type, typedDeclaration(t(?, void), ?))), t(?, functionType(T2:Type, .List{K})))
+	rule [typeCompatible-function-void-left]: isTypeCompatible(t(?, functionType(T1:Type, typedDeclaration(t(?, void), ?:#Id))), t(?, functionType(T2:Type, .List{K})))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
-	rule [typeCompatible-function-void-right]: isTypeCompatible(t(?, functionType(T1:Type, .List{K})), t(?, functionType(T2:Type, typedDeclaration(t(?, void), ?))))
+	rule [typeCompatible-function-void-right]: isTypeCompatible(t(?, functionType(T1:Type, .List{K})), t(?, functionType(T2:Type, typedDeclaration(t(?, void), ?:#Id))))
 		=> isTypeCompatible(T1:Type, T2:Type) 
 		[structural]
 	rule [typeCompatible-function]: isTypeCompatible(t(S:Set, functionType(T1:Type, (T':Type,, L:List{KResult}))), t(S':Set, functionType(T2:Type, (T'':Type,, L':List{KResult}))))
@@ -1053,14 +1053,14 @@ kmod COMMON-C-TYPING is
 		
 	rule hasAggregateType(T:Type) => hasArrayType(T:Type) orBool hasStructType(T:Type) [structural]
 		
-	rule [hasStructType-struct]: hasStructType(t(?, structType(?))) => true [structural]
+	rule [hasStructType-struct]: hasStructType(t(?, structType(?:#Id))) => true [structural]
 	rule [hasStructType-qualified]: hasStructType(t(?, qualifiedType(T:Type, ?))) => hasStructType(T:Type) [structural]
 	rule [hasStructType-other]: hasStructType(t(?, T:SimpleType)) => false
 		when getKLabel(T:SimpleType) =/=Bool 'structType
 		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasUnionType-union]: hasUnionType(t(?, unionType(?))) => true [structural]
+	rule [hasUnionType-union]: hasUnionType(t(?, unionType(?:#Id))) => true [structural]
 	rule [hasUnionType-qualified]: hasUnionType(t(?, qualifiedType(T:Type, ?))) => hasUnionType(T:Type) [structural]
 	rule [hasUnionType-other]: hasUnionType(t(?, T:SimpleType)) => false
 		when getKLabel(T:SimpleType) =/=Bool 'unionType

@@ -17,7 +17,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	rule [bind-empty-void]:
-		< k > bind-aux(?:#Nat, .List{K}, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
+		< k > bind-aux(?:#Nat, .List{K}, typedDeclaration(t(.Set, void), ?:#Id)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
 		< k > bind-aux(?:#Nat, .List{K}, .List{K}) => sequencePoint ...</ k > 

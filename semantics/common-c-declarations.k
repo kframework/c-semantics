@@ -515,7 +515,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural]
 		
 	rule
-		< k > figureInitializer-aux(?, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, N:#Nat))), initializer(K:K))
+		< k > figureInitializer-aux(?:#Id, t(?, (incompleteArrayType(T:Type) => arrayType(T:Type, N:#Nat))), initializer(K:K))
 		...</ k >
 		< incompleteLength > N:#Nat </ incompleteLength >
 		[structural] 
@@ -1114,12 +1114,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		when notBool $hasMapping(Locs:Map, X:#Id)
 		[structural] 
 	rule
-		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?, ?) ...</ k >
+		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?:#Nat, ?) ...</ k >
 		< preLinkage >... Tu:K |-> Map(M:Map) ...</ preLinkage >
 		when notBool $hasMapping(M:Map, X:#Id)
 		[structural] 
 	rule [resolveExternal-internal]:
-		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?, ?) ...</ k >
+		< k > resolveExternal-aux(X:#Id, ?, ((BagItem(Tu:K) => .) Units:Bag), ?, ?:#Nat, ?) ...</ k >
 		< preLinkage >... Tu:K |-> Map((? X:#Id |-> internal)) ...</ preLinkage >
 		[structural] 
 	

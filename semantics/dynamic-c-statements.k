@@ -337,7 +337,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 	//  skip variables from other blocks
 	rule
 		< k > addVariablesForBlock(TargetBlock:#Nat, 
-				((ListItem(frozenDeclaration(?, BlockNum:#Nat, ?)) => .) DeclStack:List)
+				((ListItem(frozenDeclaration(?:#Nat, BlockNum:#Nat, ?)) => .) DeclStack:List)
 			)
 		...</ k >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
@@ -347,7 +347,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 	//  skip variables in the real history
 	rule
 		< k > addVariablesForBlock(TargetBlock:#Nat,
-				((ListItem(frozenDeclaration(?, TargetBlock:#Nat, Decl:K)) => .) DeclStack:List)
+				((ListItem(frozenDeclaration(?:#Nat, TargetBlock:#Nat, Decl:K)) => .) DeclStack:List)
 			)
 		...</ k >
 		< localVariables > Vars:List </ localVariables >
@@ -367,7 +367,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 	
 	rule
 		< k > (. => Decl:K ~> enableInits) ~> addVariablesForBlock(TargetBlock:#Nat, 
-				((ListItem(frozenDeclaration(?, TargetBlock:#Nat, Decl:K)) => .List) ?)
+				((ListItem(frozenDeclaration(?:#Nat, TargetBlock:#Nat, Decl:K)) => .List) ?)
 			)
 		...</ k >
 		< localVariables > Vars:List </ localVariables >

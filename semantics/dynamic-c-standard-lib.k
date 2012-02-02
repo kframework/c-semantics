@@ -35,8 +35,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 	
 
-	// context 'prepareBuiltin(_:K,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE:C)),, _:List`{K`}))
-	context prepareBuiltin(_, (_,, (HOLE:K => reval(HOLE:K)),, _))
+	// context 'prepareBuiltin(_:#Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE:C)),, _:List`{K`}))
+	context prepareBuiltin(_:#Id, (_,, (HOLE:K => reval(HOLE:K)),, _))
 	
 	op idsFromDeclList : List{K} -> List{K}
 	
@@ -291,7 +291,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 			S:#Id |-> aggregateInfo(?, ?, (? F:#Id |-> Offset:#Nat))
 		...</ structs >
 		[structural]
-	rule < k > offsetOf(t(?, unionType(?)), ?) => tv(0, cfg:sizeut) ...</ k >
+	rule < k > offsetOf(t(?, unionType(?:#Id)), ?) => tv(0, cfg:sizeut) ...</ k >
 		[structural]
 endkm
 

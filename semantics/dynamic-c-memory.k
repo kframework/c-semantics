@@ -32,7 +32,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		// if M:#Nat =/=Bool 10
 		[structural]
 	rule
-		< k > extractBitsFromList-aux(dataList((piece(?, 1),, L:List{K})), sNat(Offset:#Nat), NumBits:#Nat, .List{K})
+		< k > extractBitsFromList-aux(dataList((piece(?:#Nat, 1),, L:List{K})), sNat(Offset:#Nat), NumBits:#Nat, .List{K})
 			=> extractBitsFromList-aux(dataList(L:List{K}), Offset:#Nat, NumBits:#Nat, .List{K})
 		...</ k >
 		[structural] 
@@ -354,14 +354,14 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	rule [write-normal-union-field]:
 		< k > (.K => makeUnknown(Loc:#Nat, t(.Set, unionType(S:#Id))))
-			~> write-specific(Loc:#Nat, tv(?, t((SetItem(fromUnion(S:#Id)) => .Set) ?, ?)), ?)
+			~> write-specific(Loc:#Nat, tv(?, t((SetItem(fromUnion(S:#Id)) => .Set) ?, ?)), ?:#Nat)
 		...</ k >
 		when isByteLoc(Loc:#Nat)
 		[structural]
 		
 	op makeUnknown : #Nat Type -> K
 	op makeUnknown-aux : #Nat Type K -> K // should be #Nat Type K
-	context makeUnknown-aux(?, ?, value(HOLE:K))
+	context makeUnknown-aux(?:#Nat, ?, value(HOLE:K))
 	
 	rule makeUnknown(N:#Nat, T:Type)
 		=> makeUnknown-aux(N:#Nat, T:Type, value(byteSizeofType(T:Type))) 
@@ -377,7 +377,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 		
 	op hasUnionMarker : Type -> #Bool
-	rule hasUnionMarker(t(SetItem(fromUnion(?)) ?, ?)) => true [structural]
+	rule hasUnionMarker(t(SetItem(fromUnion(?:#Id)) ?, ?)) => true [structural]
 	rule hasUnionMarker(t(.Set, ?)) => false [structural]
 	rule hasUnionMarker(t(? (SetItem(L:KLabel(?)) => .Set), ?))
 		when L:KLabel =/=Bool 'fromUnion
@@ -464,7 +464,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> calculateNewBytes-aux(N:#Nat, K:K, dataList(L:List{K}), (Result:List{K},, piece(Bit:#Nat, 1))) 
 		[structural]
 	
-	rule calculateNewBytes-aux(0, dataList((piece(N:#Nat, 1),, L:List{K})), dataList((piece(?, 1),, L':List{K})), Result:List{K}) 
+	rule calculateNewBytes-aux(0, dataList((piece(N:#Nat, 1),, L:List{K})), dataList((piece(?:#Nat, 1),, L':List{K})), Result:List{K}) 
 		=> calculateNewBytes-aux(0, dataList(L:List{K}), dataList(L':List{K}), (Result:List{K},, piece(N:#Nat, 1))) 
 		[structural]
 	rule calculateNewBytes-aux(0, dataList(.List{K}), dataList(L:List{K}), Result:List{K}) 
@@ -495,7 +495,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op splinter : #Nat #Nat -> List{K} 
 	op splinter-aux : #Nat #Nat #Nat -> List{K} 
 	rule splinter(N:#Nat, Len:#Nat) => splinter-aux(N:#Nat, Len:#Nat, 0) [structural]
-	rule splinter-aux(?, Len:#Nat, Len:#Nat) => .List{K} [structural]
+	rule splinter-aux(?:#Nat, Len:#Nat, Len:#Nat) => .List{K} [structural]
 	rule splinter-aux(N:#Nat, Len:#Nat, Pos:#Nat)
 		=> splinter-aux(N:#Nat, Len:#Nat, sNat(Pos:#Nat)),, piece(bitRange(N:#Nat, Pos:#Nat, Pos:#Nat), 1)
 		when Pos:#Nat <Nat Len:#Nat 
@@ -526,7 +526,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		when Offset:#Nat <Nat Len:#Nat
 		[structural]
 	rule
-		< k > writeBytes(?, dataList(.List{K})) => .K ...</ k >
+		< k > writeBytes(?:#Nat, dataList(.List{K})) => .K ...</ k >
 		[structural] 
 		
 	// this general rule is useful for unknowns, abstracts, etc

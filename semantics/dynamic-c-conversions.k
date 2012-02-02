@@ -47,7 +47,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
 	
-	rule hasBeenPromoted(t(?, enumType(?))) => true [structural]
+	rule hasBeenPromoted(t(?, enumType(?:#Id))) => true [structural]
 	rule hasBeenPromoted(t(?, int)) => true [structural]
 	rule hasBeenPromoted(t(?, unsigned-int)) => true [structural]
 	rule hasBeenPromoted(t(?, long-int)) => true [structural]
@@ -573,7 +573,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 	op interpret-aux : Type K -> K 
 	
 	rule [interpret-start]:
-		interpret(T:Type, piece(N:#Nat, ?)) => interpret-aux(T:Type, N:#Nat)
+		interpret(T:Type, piece(N:#Nat, ?:#Nat)) => interpret-aux(T:Type, N:#Nat)
 		when N:#Nat >=Nat 0 
 		[structural]
 	

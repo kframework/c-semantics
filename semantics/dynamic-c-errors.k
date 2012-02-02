@@ -219,7 +219,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?:#Id),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		when T:SimpleType =/=Bool int andBool T:SimpleType =/=Bool void
@@ -250,7 +250,7 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?),, typedDeclaration(T:Type, ?)))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?:#Id),, typedDeclaration(T:Type, ?:#Id)))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		when notBool isArgvType(T:Type)
@@ -263,7 +263,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?)))), ?:#Nat, ?:#Id, ?)
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?:#Id)))), ?:#Nat, ?:#Id, ?)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
 		when T:SimpleType =/=Bool void
