@@ -213,13 +213,13 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?)), ?, ?, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?)), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
 		when T:SimpleType =/=Bool int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?),, ?:List{KResult}))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		when T:SimpleType =/=Bool int andBool T:SimpleType =/=Bool void
@@ -250,7 +250,7 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?),, typedDeclaration(T:Type, ?)))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?),, typedDeclaration(T:Type, ?)))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		when notBool isArgvType(T:Type)
