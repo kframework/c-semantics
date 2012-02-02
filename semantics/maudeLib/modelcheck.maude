@@ -4,6 +4,9 @@ mod #MODEL-CHECK is
 	including #META-LEVEL .
 	including C .
 	
+	op expAtom : #LTLFormula -> #Prop .
+	
+	
 	op errorTerm : -> Bag .
 	--- op printTerm : K -> K [strat(0) frozen] .
 	--- eq printTerm(K:K) = K:K [print K:K] .

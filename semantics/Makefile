@@ -16,9 +16,11 @@ K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K_TCP).maude $(K-PL-BUILT
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
-COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "interpRule"
+COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "interpRule" 
+# -lib maudeLib/common-c-builtins.maude
 # -transition "computational"
-COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -superheat "ndheat" -supercool "ndlocal" -u -language C
+COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -superheat "ndheat" -supercool "ndlocal" -u -language C 
+#-lib maudeLib/common-c-builtins.maude
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
@@ -132,6 +134,7 @@ c-compiled.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $
 c-compiled.maude.tmp: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled.maude.0`
 c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
 	@cp c-compiled.maude.0 c-compiled.maude.1
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/common-c-builtins"
 	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
@@ -153,8 +156,11 @@ c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES
 c-compiled-nd.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd.maude.0`
 c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
-	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/common-c-builtins"
+	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
+#@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
+#@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
 #@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
 #@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/TCPSupport"

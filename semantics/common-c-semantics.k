@@ -89,7 +89,6 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op NullPointer : -> #Nat 
 	
 	op emptyValue : -> Value 
-	op _bit::_ : #Nat #Nat -> #Nat [assoc] 
 	op allocate : Type K -> K
 	
 	op zero : K -> K 

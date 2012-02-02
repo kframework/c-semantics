@@ -1,6 +1,10 @@
+require maudeLib/common-c-builtins
+
 kmod COMMON-SEMANTICS-HELPERS-INCLUDE is
+	including #COMMON-SEMANTICS-HELPERS-BUILTINS
 	including COMMON-NOHELPER-INCLUDE
 endkm
+
 
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
@@ -143,8 +147,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		...</ k >
 		[structural]
 	
-	rule isConcreteNumber(sym(?) +Nat ?:#Nat) => false [structural]
-	rule isConcreteNumber(bito(?) +Nat ?:#Nat) => false [structural]
+	rule isConcreteNumber(sym(?:#Nat) +Nat ?:#Nat) => false [structural]
+	rule isConcreteNumber(bito(?:#Nat) +Nat ?:#Nat) => false [structural]
 	rule isConcreteNumber(I:#Int) => true
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]
@@ -338,10 +342,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when getKLabel(T:SimpleType) =/=Bool 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:SimpleType)) orBool hasFloatType(t(S:Set, T:SimpleType)))
 		[structural]
-	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?))) => true
+	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?:#Nat))) => true
 		when hasUnsignedIntegerType(T:Type) ==Bool true
 		[structural]
-	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?))) => false
+	rule hasUnsignedIntegerType(t(?, bitfieldType(T:Type, ?:#Nat))) => false
 		when hasUnsignedIntegerType(T:Type) ==Bool false
 		[structural]
 	
@@ -353,10 +357,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when getKLabel(T:SimpleType) =/=Bool 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:SimpleType)) orBool hasFloatType(t(S:Set, T:SimpleType)))
 		[structural]
-	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?))) => true
+	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?:#Nat))) => true
 		when hasSignedIntegerType(T:Type) ==Bool true
 		[structural]
-	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?))) => false
+	rule hasSignedIntegerType(t(?, bitfieldType(T:Type, ?:#Nat))) => false
 		when hasSignedIntegerType(T:Type) ==Bool false
 		[structural]
 
@@ -419,7 +423,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	
 	
-	rule assert(true, ?) => .K [structural]
+	rule assert(true, ?:#Nat) => .K [structural]
 endkm
 
 kmod COMMON-C-BITSIZE is
@@ -431,7 +435,7 @@ kmod COMMON-C-BITSIZE is
 	
 	rule bitSizeofList(L:List{KResult}) => bitSizeofList-aux(.K, 0, L:List{KResult})
 		[structural]
-	rule bitSizeofList-aux((.K => bitSizeofType(T:Type)), ?, ((T:Type => .List{K}),, ?:List{KResult}))
+	rule bitSizeofList-aux((.K => bitSizeofType(T:Type)), ?:#Nat, ((T:Type => .List{K}),, ?:List{KResult}))
 		[structural]
 	rule bitSizeofList-aux((tv(Len':#Nat, ?) => .K), (Len:#Nat => Len:#Nat +Nat Len':#Nat), ?)
 		[structural]

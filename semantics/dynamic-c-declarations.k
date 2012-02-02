@@ -17,10 +17,10 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	rule [bind-empty-void]:
-		< k > bind-aux(?, .List{K}, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
+		< k > bind-aux(?:#Nat, .List{K}, typedDeclaration(t(.Set, void), ?)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
-		< k > bind-aux(?, .List{K}, .List{K}) => sequencePoint ...</ k > 
+		< k > bind-aux(?:#Nat, .List{K}, .List{K}) => sequencePoint ...</ k > 
 		[structural] 
 		
 		
@@ -30,12 +30,12 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	rule [bind-coerce-array]:
 		bind-aux(
-			?
+			?:#Nat
 			, L:List{KResult}
 			, (
 				?:List{KResult}
 				,, typedDeclaration(
-					(t(?, (arrayType(T:Type, ?) => pointerType(T:Type))))
+					(t(?, (arrayType(T:Type, ?:#Nat) => pointerType(T:Type))))
 					, X:#Id
 				)
 				,, ?:List{KResult}
@@ -44,7 +44,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
-			?
+			?:#Nat
 			, L:List{KResult}
 			, (
 				?:List{KResult} 
@@ -57,7 +57,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 	rule [bind-one]:
-		< k > true ~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
+		< k > true ~> bind-aux(?:#Nat, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
 			=> allocateType(Loc:#Nat, T:Type)
 			~> addToEnv(X:#Id, Loc:#Nat)
 			~> giveType(X:#Id, T:Type)
@@ -71,7 +71,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		
 	rule [bind-one-check-type]:
 		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
-			~> bind-aux(?, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
+			~> bind-aux(?:#Nat, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
 		...</ k > 
 		[structural] 
 	

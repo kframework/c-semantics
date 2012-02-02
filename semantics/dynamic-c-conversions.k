@@ -61,7 +61,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	rule hasBeenPromoted(t(?, short-int)) => false [structural]
 	rule hasBeenPromoted(t(?, unsigned-short-int)) => false [structural]
 	
-	rule hasBeenPromoted(t(?, bitfieldType(?, ?))) => false [structural]
+	rule hasBeenPromoted(t(?, bitfieldType(?, ?:#Nat))) => false [structural]
 	
 	
 	rule [promote-unary]:

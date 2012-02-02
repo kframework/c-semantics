@@ -716,7 +716,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	rule [init-next-union-element-done]:
 		< currentSubObject >
-			next (ListItem(te(K:K . ?, T:Type)) => .List) ListItem(te(K:K, t(?, unionType(S:#Id))))
+			next (ListItem(te(K:K . ?:#Id, T:Type)) => .List) ListItem(te(K:K, t(?, unionType(S:#Id))))
 		...</ currentSubObject >
 		[structural] 
 		
@@ -790,7 +790,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	rule [innerType-arrayType]:
-		innerType(t(?, arrayType(T:Type, ?))) => T:Type 
+		innerType(t(?, arrayType(T:Type, ?:#Nat))) => T:Type 
 		[structural]
 	rule [innerType-incompleteArrayType]: 
 		innerType(t(?, incompleteArrayType(T:Type))) => T:Type 

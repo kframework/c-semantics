@@ -257,13 +257,13 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (?:Type,, ?:Type,, ?:Type,, ?:List{KResult}))), ?, ?, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (?:Type,, ?:Type,, ?:Type,, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?)))), ?, ?, ?)
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?)))), ?:#Nat, ?:#Id, ?)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
 		when T:SimpleType =/=Bool void

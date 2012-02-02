@@ -168,11 +168,11 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
 	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context StructDef(_, List((?,, HOLE:K,, ?)))
+	context StructDef(_:#Id, List((?,, HOLE:K,, ?)))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
 	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context UnionDef(_, List((?,, HOLE:K,, ?)))
+	context UnionDef(_:#Id, List((?,, HOLE:K,, ?)))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
@@ -262,7 +262,7 @@ and decl_type =
 	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
-	context Prototype(_, List((?,, HOLE:K,, ?)), _)
+	context Prototype(_, List((?,, HOLE:K,, ?)), _:#Bool)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -680,7 +680,7 @@ and unary_operator =
 	| MEMBEROFPTR of expression * string
 */
 	op _._ : K #Id -> Expression
-	context _._((HOLE => peval(HOLE)), _)
+	context _._((HOLE => peval(HOLE)), _:#Id)
 	op _->_ : K #Id -> Expression
 	context _->_((HOLE => reval(HOLE)), _:#Id)
 /*

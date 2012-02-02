@@ -357,7 +357,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule [ignore-inline]: BagItem(Inline) => .Bag [structural]
 	rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural]
 	// fixme should save these for later use
-	rule BagItem(Attribute(?, ?)) => .Bag [structural]
+	rule BagItem(Attribute(?:#String, ?)) => .Bag [structural]
 
 	rule 
 		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), ?, ?) ...</ k >
@@ -697,15 +697,15 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > t(?, pointerType(T:Type)) - t(?, pointerType(T':Type)) => cfg:ptrdiffut ...</ type >
 		[structural]
 	rule
-		< type > t(S:Set, arrayType(T:Type, ?)) + T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		< type > t(S:Set, arrayType(T:Type, ?:#Nat)) + T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
 		when hasIntegerType(T':Type)
 		[structural] 
 	rule
-		< type > T':Type + t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type)) ...</ type >
+		< type > T':Type + t(S:Set, arrayType(T:Type, ?:#Nat)) => t(S:Set, pointerType(T:Type)) ...</ type >
 		when hasIntegerType(T':Type)
 		[structural] 
 	rule
-		< type > t(S:Set, arrayType(T:Type, ?)) - T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
+		< type > t(S:Set, arrayType(T:Type, ?:#Nat)) - T':Type => t(S:Set, pointerType(T:Type)) ...</ type >
 		when hasIntegerType(T':Type)
 		[structural]
 
@@ -747,7 +747,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > *(t(?, pointerType(T:Type))) => T:Type ...</ type >
 		[structural] 
 	rule [type-deref-array-type]:
-		< type > *(t(?, arrayType(T:Type, ?))) => T:Type ...</ type >
+		< type > *(t(?, arrayType(T:Type, ?:#Nat))) => T:Type ...</ type >
 		[structural] 
 
 	rule [type-compound-literal]:
@@ -784,8 +784,8 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		andBool notBool hasArrayType(T:Type)
 		[structural]
 		
-	rule [type-ternary-array-left]: < type > ?:K ? (t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type))) : ? ...</ type > [structural]
-	rule [type-ternary-array-right]: < type > ?:K ? ?:K : (t(S:Set, arrayType(T:Type, ?)) => t(S:Set, pointerType(T:Type))) ...</ type > [structural]
+	rule [type-ternary-array-left]: < type > ?:K ? (t(S:Set, arrayType(T:Type, ?:#Nat)) => t(S:Set, pointerType(T:Type))) : ? ...</ type > [structural]
+	rule [type-ternary-array-right]: < type > ?:K ? ?:K : (t(S:Set, arrayType(T:Type, ?:#Nat)) => t(S:Set, pointerType(T:Type))) ...</ type > [structural]
 		
 	rule [type-ternary-pointer]: // not safe, could be incompatible types
 		< type > ?:K ? t(S:Set, pointerType(T:Type)) : t(S':Set, pointerType(T':Type)) => t(S:Set, pointerType(T:Type)) ...</ type >
@@ -876,10 +876,10 @@ kmod COMMON-C-TYPING is
 		=> isTypeCompatible(T:Type, T':Type) 
 		[structural]
 
-	rule [typeCompatible-array-right]: isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, ?)))
+	rule [typeCompatible-array-right]: isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, ?:#Nat)))
 		=> isTypeCompatible(T:Type, t(S:Set, pointerType(T':Type))) 
 		[structural]
-	rule [typeCompatible-array-left]: isTypeCompatible(t(S:Set, arrayType(T:Type, ?)), T':Type)
+	rule [typeCompatible-array-left]: isTypeCompatible(t(S:Set, arrayType(T:Type, ?:#Nat)), T':Type)
 		=> isTypeCompatible(t(S:Set, pointerType(T:Type)), T':Type) 
 		[structural]
 	
@@ -1040,7 +1040,7 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:SimpleType) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?))) => true [structural]
+	rule [hasArrayType-array]: hasArrayType(t(?, arrayType(?, ?:#Nat))) => true [structural]
 	rule [hasArrayType-incompleteArray]: hasArrayType(t(?, incompleteArrayType(?))) => true [structural]
 	rule [hasArrayType-flexibleArray]: hasArrayType(t(?, flexibleArrayType(?))) => true [structural]
 	rule [hasArrayType-qualified]: hasArrayType(t(?, qualifiedType(T:Type, ?))) => hasArrayType(T:Type) [structural]
@@ -1099,7 +1099,7 @@ kmod COMMON-C-TYPING is
 		[structural]		
 	
 		
-	rule [hasBitfieldType-true]: hasBitfieldType(t(?, bitfieldType(?, ?))) => true [structural]
+	rule [hasBitfieldType-true]: hasBitfieldType(t(?, bitfieldType(?, ?:#Nat))) => true [structural]
 	rule [hasBitfieldType-false]: hasBitfieldType(t(?, T:SimpleType)) => false
 		when getKLabel(T:SimpleType) =/=Bool 'bitfieldType
 		[structural]

@@ -188,10 +188,10 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 	
 	rule [case-fall-through]:
-		< k > Case(?, ?, ?, K:K) => K:K ...</ k >
+		< k > Case(?:#Nat, ?:#Nat, ?, K:K) => K:K ...</ k >
 		[structural] 
 	rule [default-fall-through]:
-		< k > Default(?, K:K) => K:K ...</ k >
+		< k > Default(?:#Nat, K:K) => K:K ...</ k >
 		[structural] 
 endkm
 
@@ -378,7 +378,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		
 	//  fixme this is wrong
 	rule
-		< k > addVariablesForBlock(?, .List) => .K ...</ k >
+		< k > addVariablesForBlock(?:#Nat, .List) => .K ...</ k >
 		[structural] 
 
 endkm
@@ -545,7 +545,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		[structural]
 
 	rule [continue-done-for]:
-		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?, ?, ?, Post:K, ?) ...</ k >
+		< k > (Continue => Computation(Post:K)) ~> loopMarked ~> For(?:#Nat, ?, ?, Post:K, ?) ...</ k >
 		[structural]
 	rule [continue-done]:
 		< k > (Continue => .K) ~> loopMarked ~> L:KLabel(?) ...</ k >

@@ -577,8 +577,8 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	*/
 	
 	op reducedFloat : #Float -> K
-	rule DecimalFloatConstant(?, ?, F:#Float) => reducedFloat(F:#Float) [structural]
-	rule HexFloatConstant(?, ?, F:#Float) => reducedFloat(F:#Float) [structural]
+	rule DecimalFloatConstant(?:#String, ?:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
+	rule HexFloatConstant(?:#String, ?:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
 	
 	rule NoSuffix(reducedFloat(F:#Float)) => tv(F:#Float, t(.Set, double))
 		[structural]
@@ -815,8 +815,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	op isUnknown : K -> #Bool
 	rule [isUnknown-piece]: isUnknown(piece(?, ?)) => true [structural]
-	rule [isUnknown-ptr]: isUnknown(sym(?) +Nat ?:#Nat) => false [structural]
-	//rule [isUnknown-bito]: isUnknown(bito(?) +Nat ?) => false [structural]
+	rule [isUnknown-ptr]: isUnknown(sym(?:#Nat) +Nat ?:#Nat) => false [structural]
+	//rule [isUnknown-bito]: isUnknown(bito(?:#Nat) +Nat ?) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:#Int) => false
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]

@@ -398,7 +398,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	eq bitoffset(?:#Nat) = 0 [owise] 
 	
 	// fixme owise!!!
-	rule byteoffset(N:#Nat +Nat bito(?)) => N:#Nat [structural]
+	rule byteoffset(N:#Nat +Nat bito(?:#Nat)) => N:#Nat [structural]
 	eq byteoffset(N:#Nat) = N:#Nat [owise] 
 		
 	op justBits : #Int Type -> Value 
@@ -616,7 +616,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op byteMaskSet : -> #Nat
 	rule byteMaskSet => (2 ^Nat numBitsPerByte) -Int 1 [structural]
 		
-	rule isByteLoc(?:#Nat +Nat bito(?)) => false [structural]
+	rule isByteLoc(?:#Nat +Nat bito(?:#Nat)) => false [structural]
 	// fixme owise!!!
 	eq isByteLoc(?:#Nat) = true [owise] 
 endkm
