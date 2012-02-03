@@ -36,7 +36,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	
 
 	// context 'prepareBuiltin(_:#Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE:C)),, _:List`{K`}))
-	context prepareBuiltin(_:#Id, (_,, (HOLE:K => reval(HOLE:K)),, _))
+	context prepareBuiltin(_:#Id, (_:List{K},, (HOLE:K => reval(HOLE:K)),, _:List{K}))
 	
 	op idsFromDeclList : List{K} -> List{K}
 	
