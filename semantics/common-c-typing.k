@@ -727,7 +727,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural] 
 
 	rule [type-call-func]:
-		< type > Call(t(?, functionType(T:Type, ?)), ?) => T:Type ...</ type >
+		< type > Call(t(?, functionType(T:Type, ?:List{KResult})), ?) => T:Type ...</ type >
 		[structural]
 		 		
 	rule [type-struct-dot]:
@@ -1104,7 +1104,7 @@ kmod COMMON-C-TYPING is
 		when getKLabel(T:SimpleType) =/=Bool 'bitfieldType
 		[structural]
 		
-	rule [hasFunctionType-true]: hasFunctionType(t(?, functionType(?, ?))) => true [structural]
+	rule [hasFunctionType-true]: hasFunctionType(t(?, functionType(?, ?:List{KResult}))) => true [structural]
 	rule [hasFunctionType-prototype]: hasFunctionType(t(?, prototype(T:Type))) => hasFunctionType(T:Type) [structural]
 	rule [hasFunctionType-qualified]: hasFunctionType(t(?, qualifiedType(T:Type, ?))) => hasFunctionType(T:Type) [structural]
 	rule [hasFunctionType-false]: hasFunctionType(t(?, T:SimpleType)) => false
@@ -1113,7 +1113,7 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:SimpleType) =/=Bool 'prototype 
 		[structural]
 		
-	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(t(?, pointerType(t(?, functionType(?, ?))))) => true [structural]
+	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(t(?, pointerType(t(?, functionType(?, ?:List{KResult}))))) => true [structural]
 	rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(?, qualifiedType(T:Type, ?))) => hasFunctionPointerType(T:Type) [structural]
 	rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(?, pointerType(t(?, qualifiedType(T:Type, ?))))) => hasFunctionPointerType(t(.Set, pointerType(T:Type))) [structural]
 	rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(?, T:SimpleType)) => false

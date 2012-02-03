@@ -213,7 +213,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?)), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?:List{KResult})), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
 		when T:SimpleType =/=Bool int
 		[structural]

@@ -168,11 +168,11 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
 	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context StructDef(_:#Id, List((?,, HOLE:K,, ?)))
+	context StructDef(_:#Id, List((?:List{K},, HOLE:K,, ?:List{K})))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
 	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context UnionDef(_:#Id, List((?,, HOLE:K,, ?)))
+	context UnionDef(_:#Id, List((?:List{K},, HOLE:K,, ?:List{K})))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
@@ -234,7 +234,7 @@ and spec_elem =
 	and specifier = spec_elem list
 */
 	op Specifier : K -> Specifier
-	context Specifier(List((?,, HOLE:K,, ?)))
+	context Specifier(List((?:List{K},, HOLE:K,, ?:List{K})))
 	
 /*
 and decl_type =
@@ -262,7 +262,7 @@ and decl_type =
 	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
-	context Prototype(_, List((?,, HOLE:K,, ?)), _:#Bool)
+	context Prototype(_, List((?:List{K},, HOLE:K,, ?:List{K})), _:#Bool)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -272,7 +272,7 @@ and decl_type =
 and name_group = specifier * name list
 */
 	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
-	context NameGroup(_, List((?,, HOLE:K,, ?)))
+	context NameGroup(_, List((?:List{K},, HOLE:K,, ?:List{K})))
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -642,14 +642,14 @@ and unary_operator =
 	op Call : K K -> Expression // K, List
 	context Call((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	// context Call(_, (_ :: (HOLE:C => reval(HOLE:C)) :: _)) [metadata "ndheat=()"]
-	context Call(_, List((?,, (HOLE:K => reval(HOLE:K)),, ?))) [metadata "ndheat=()"]
+	context Call(_, List((?:List{K},, (HOLE:K => reval(HOLE:K)),, ?:List{K}))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
 	op Comma : K -> Expression // List
 	// context Comma((HOLE:C => reval(HOLE)) :: _) [metadata "ndheat=()"]
 	// context 'Comma('_::_((HOLE:C => reval(HOLE)),, _)) [metadata "ndheat=()"]
-	context Comma(List(((HOLE:K => reval(HOLE:K)),, _))) [metadata "ndheat=()"]
+	context Comma(List(((HOLE:K => reval(HOLE:K)),, _:List{K}))) [metadata "ndheat=()"]
 /*
 	| CONSTANT of constant
 	| PAREN of expression

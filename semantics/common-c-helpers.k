@@ -463,7 +463,7 @@ kmod COMMON-C-BITSIZE is
 	
 	rule bitSizeofType(t(?, arrayType(T:Type, N:#Nat))) => bitSizeofType(T:Type) * tv(N:#Nat, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, flexibleArrayType(T:Type))) => tv(0, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, functionType(?, ?))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(?, functionType(?, ?:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, pointerType(?))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, bitfieldType(?, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural]
 	rule bitSizeofType(t(?, qualifiedType(T:Type, ?))) => bitSizeofType(T:Type) [structural]
