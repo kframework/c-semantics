@@ -24,13 +24,13 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	context nextvarg-aux(?, ?, ?, value(HOLE:K))
 	
 	rule [nextvarg-start]:
-		< k > nextvarg(Loc:#Nat, T:Type)
-			=> nextvarg-aux(Loc:#Nat, T:Type, value(byteSizeofType(T:Type)), value(sizeofLocation(Loc:#Nat)))
+		< k > nextvarg(Loc:#Nat, T:KResult)
+			=> nextvarg-aux(Loc:#Nat, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc:#Nat)))
 		...</ k >
 		[structural]
 	rule [nextvarg]:
-		< k > nextvarg-aux(Loc:#Nat, T:Type, Len:#Nat, Len:#Nat)
-			=> vpair(read(Loc:#Nat, T:Type), vararg(tv(inc(Loc:#Nat), t(.Set, pointerType(t(.Set, void))))))
+		< k > nextvarg-aux(Loc:#Nat, T:KResult, Len:#Nat, Len:#Nat)
+			=> vpair(read(Loc:#Nat, T:KResult), vararg(tv(inc(Loc:#Nat), t(.Set, pointerType(t(.Set, void))))))
 		...</ k >
 		[structural]
 	
@@ -41,17 +41,17 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	op idsFromDeclList : List{K} -> List{K}
 	
 	rule [idsFromDeclList-one]:
-		idsFromDeclList((L:List{K},, typedDeclaration(t(?, T:SimpleType), X:#Id)))
+		idsFromDeclList((L:List{K},, typedDeclaration(t(?, T:K), X:#Id)))
 			=> idsFromDeclList(L:List{K}),, X:#Id
-		when T:SimpleType =/=Bool void
+		when T:K =/=Bool void
 		[structural]
 	rule [idsFromDeclList-void]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(?, void), X:#Id)))
 			=> idsFromDeclList(L:List{K})
 		[structural]
 	rule [idsFromDeclList-vararg]:
-		idsFromDeclList((L:List{K},, typedDeclaration(T:Type, X:#Id),, t(?, variadic)))
-			=> idsFromDeclList((L:List{K},, typedDeclaration(T:Type, X:#Id)))
+		idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:#Id),, t(?, variadic)))
+			=> idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:#Id)))
 			,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:#Id))))
 			// assumes variadic args are placed in incremental blocks
 		[structural]
@@ -61,11 +61,11 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 
 	context incSymbolic((HOLE => reval(HOLE)))
 	rule [incSymbolic]:
-		incSymbolic(tv(Loc:#Nat, T:Type)) => tv(inc(Loc:#Nat), T:Type)
+		incSymbolic(tv(Loc:#Nat, T:KResult)) => tv(inc(Loc:#Nat), T:KResult)
 		[structural]
 		
 	rule [prepareBuiltin]:
-		< k > handleBuiltin(F:#Id, t(?, functionType(Return:Type, L:List{KResult})))
+		< k > handleBuiltin(F:#Id, t(?, functionType(Return:KResult, L:List{KResult})))
 			=> Return(prepareBuiltin(F:#Id, idsFromDeclList(L:List{KResult})))
 		...</ k >
 		[structural]
@@ -188,8 +188,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 
 	op longjmp-aux : K K -> K [metadata "strict=()"]
 	rule [longjmp-prepare]:
-		< k > prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':Value))
-			=> longjmp-aux(reval(*(V:KResult)), V':Value)
+		< k > prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
+			=> longjmp-aux(reval(*(V:KResult)), V':KResult)
 		...</ k >
 		[structural]
 	
@@ -222,8 +222,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	// fixme can add lots of checks here
 	// tool fixme, change Value to K and unquote error
 	rule [va-start]:
-		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:Value))
-				=> Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:Value))
+		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
+				=> Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
 				~> skipval
 		...</ k >
 		[structural]
@@ -234,29 +234,29 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	
 	// this doesn't work because when we read apLoc, the object has already changed
 	rule
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:Value))
-				=> Computation(*(ApLoc:KResult) := incSymbolic(ApLoc:Value))
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+				=> Computation(*(ApLoc:KResult) := incSymbolic(ApLoc:KResult))
 				~> ApLoc:KResult
 		...</ k >
 		[structural]
 	
 	rule [va-inc-start]:
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:Value))
-				=> va-inc-aux(ApLoc:KResult, Size:Value, *ApLoc:Value)
+		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+				=> va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
 		...</ k >
 		[structural]
 				
 	rule [va-inc]:
-		< k > va-inc-aux(ApLoc:KResult, Size:Value, Ap:Value)
-			=> Computation(*(ApLoc:KResult) := incSymbolic(Ap:Value))
+		< k > va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
+			=> Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
 			~> Ap:KResult
 		...</ k >
 		[structural]				
 		
 	// fixme can do lots of checks here too
 	rule [va-copy]:
-		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:Value))
-				=> Computation(*(ApLoc:KResult) := Other:Value)
+		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
+				=> Computation(*(ApLoc:KResult) := Other:KResult)
 				~> skipval
 		...</ k >
 		[structural]
@@ -280,7 +280,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 
 	op offsetOf : K K -> K [metadata "strict=(1)"]
 	rule
-		< k > OffsetOf(T:Type, K:K, F:#Id) => offsetOf(DeclType(T:Type, K:K), F:#Id) ...</ k >
+		< k > OffsetOf(T:KResult, K:K, F:#Id) => offsetOf(DeclType(T:KResult, K:K), F:#Id) ...</ k >
 		[structural]
 	// fixme should check for bitfield offset
 	rule
@@ -335,8 +335,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslOpenFile-pre]:
-		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:Value))
-			=> fsl-open-file(getString(Filename:KResult), getString(Mode:Value))
+		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
+			=> fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
 		...</ k >
 		[structural]
 	
@@ -372,8 +372,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
 	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
-		< k > prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:Value))
-			=> new-printf-aux(formatter(getString(Format:KResult), VarArgs:Value))
+		< k > prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
+			=> new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
 		...</ k >
 		[structural]
 		
@@ -393,8 +393,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	op sprintf : K K -> K [metadata "strict=(1)"]
 	rule [sprintf]:
-		< k > prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:Value,, VarArgs:Value))
-			=> sprintf(formatter(getString(Format:KResult), VarArgs:Value), Dest:Value)
+		< k > prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
+			=> sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
 		...</ k >
 		[structural]
 	rule [sprintf-done]:
@@ -406,8 +406,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	
 	op snprintf : K K #Nat -> K [metadata "strict=(1)"]
 	rule [snprintf]:
-		< k > prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:#Nat, _),, Format:Value,, VarArgs:Value))
-			=> snprintf(formatter(getString(Format:KResult), VarArgs:Value), Dest:Value, Len:#Nat)
+		< k > prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:#Nat, _),, Format:KResult,, VarArgs:KResult))
+			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:#Nat)
 		...</ k >
 		[structural]
 	rule [snprintf-done-nz]:
@@ -1012,7 +1012,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 The malloc function returns either a null pointer or a pointer to the allocated space.
 	*/
 	rule [malloc]:
-		< k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:Type))
+		< k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:KResult))
 			=> alloc(Loc, Len:#Nat)
 			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
 		...</ k >
@@ -1022,7 +1022,7 @@ The malloc function returns either a null pointer or a pointer to the allocated 
 		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
-		// < k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:Type))
+		// < k > prepareBuiltin((Identifier("malloc")), tv(Len:#Nat, T:KResult))
 			// => tv(NullPointer, t(.Set, pointerType(void)))
 		// ...</ k >
 		// [structural]
@@ -1035,7 +1035,7 @@ If \cinline|ptr| is a null pointer, the \cinline|realloc| function behaves like 
 The \cinline|realloc| function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
 	*/
 	rule [realloc]:
-		< k > prepareBuiltin((Identifier("realloc")), (tv(OldLoc:#Nat, ?),, tv(NewLen:#Nat, T:Type)))
+		< k > prepareBuiltin((Identifier("realloc")), (tv(OldLoc:#Nat, ?),, tv(NewLen:#Nat, T:KResult)))
 			=> realloc(OldLoc:#Nat, NewLoc, OldLen:#Nat, NewLen:#Nat)
 			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
 		...</ k >
@@ -1109,14 +1109,14 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		[structural]
 	
 	rule [strcpy-some]:
-		< k > (tv(I:#Int, T:Type) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:Type)))
+		< k > (tv(I:#Int, T:KResult) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:KResult)))
 			~> strcpy((Dest:#Nat => sNat(Dest:#Nat)), ?, ?)
 		...</ k >
 		when I:#Int =/=Bool 0
 		[structural]
 	rule [strcpy-done]:
-		< k > tv(0, T:Type) ~> strcpy(Dest:#Nat, ?, Orig:#Nat)
-			=> write(lv(Dest:#Nat, t(.Set, char)), tv(0, T:Type)) 
+		< k > tv(0, T:KResult) ~> strcpy(Dest:#Nat, ?, Orig:#Nat)
+			=> write(lv(Dest:#Nat, t(.Set, char)), tv(0, T:KResult)) 
 			~> tv(Orig:#Nat, t(.Set, pointerType(t(.Set, char))))
 		...</ k >
 		[structural]
@@ -1142,9 +1142,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	op spawn-aux : #Nat Value Value -> K
 	// threadId(MyId:#Nat, Fresh:#Nat)
 	rule [thrd-create-start]:
-		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:Value,, ThreadArg:Value))
+		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
 			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:#Nat, t(.Set, int)))
-			~> spawn-aux(Fresh:#Nat, ThreadFuncPointer:KResult, ThreadArg:Value)
+			~> spawn-aux(Fresh:#Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</ k >
 		<threadId> MyId:#Nat </threadId>
 		< nextThreadId > Fresh:#Nat => sNat(Fresh:#Nat) </ nextThreadId >
@@ -1158,7 +1158,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< nextLoc > ?:#Nat </ nextLoc >
 			< threadId > ?:#Nat </ threadId >
 			C:Bag
-			< k > spawn-aux(ThreadId:#Nat, ThreadFuncPointer:KResult, ThreadArg:Value) => thrd-success ...</ k >
+			< k > spawn-aux(ThreadId:#Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</ k >
 			< threadLocal >
 				< callStack > ?:List </ callStack >
 				C'':Bag // just calculateGoto I think
@@ -1172,7 +1172,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			< nextLoc > sym(threadId(ThreadId:#Nat) +Nat 0) +Nat 0 </ nextLoc >
 			< threadId > ThreadId:#Nat </ threadId >
 			C:Bag
-			< k > Call(ThreadFuncPointer:KResult, List(ThreadArg:Value)) </ k >
+			< k > Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </ k >
 			< threadLocal >
 				< callStack > .List </ callStack >
 				< control >
@@ -1217,7 +1217,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 	rule [thrd-join]:
 		< thread >...
 			< k > join-aux(ThreadId:#Nat, ResultPointer:KResult)
-				=> Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:Value))
+				=> Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:KResult))
 				~> thrd-success
 			...</ k >
 		...</ thread >
@@ -1229,14 +1229,14 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 
 	op testAndSet : K K K -> K [metadata "strict=(1)"]
 	rule [test-and-set-start]:
-		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:Value))
-			=> testAndSet(*(Loc:KResult), Loc:Value, V:Value)
+		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
+			=> testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
 		...</ k >
 		[structural]
 		
 	rule [test-and-set]:
-		< k > testAndSet(Retval:KResult, Loc:Value, V:Value)
-			=> Computation((* Loc:KResult) := V:Value)
+		< k > testAndSet(Retval:KResult, Loc:KResult, V:KResult)
+			=> Computation((* Loc:KResult) := V:KResult)
 			~> Retval:KResult
 		...</ k >
 		[structural]

@@ -24,7 +24,7 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 		< k > IfThenElse(tv(0, t(?, int)), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
 	rule
-		< k > IfThenElse((V:KResult => simplifyTruth(V:Value)), ?, ?) ...</ k >
+		< k > IfThenElse((V:KResult => simplifyTruth(V:KResult)), ?, ?) ...</ k >
 		when isNotTruthValue(V:KResult)
 		[structural]
 endkm
@@ -37,15 +37,15 @@ kmod DYNAMIC-SEMANTICS-WHILE is
 	*/
 	
 	rule [while-mark]:
-		< k > While(B:Expression, S:K) ~> K:K
-			=> loopMarked ~> While(B:Expression, S:K) ~> popLoop
+		< k > While(B:K, S:K) ~> K:K
+			=> loopMarked ~> While(B:K, S:K) ~> popLoop
 		</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		< loopStack > .List => ListItem(kpair(Num:#Nat, K:K)) ...</ loopStack >
 		[structural] 
 	rule [while]:
-		< k > loopMarked ~> While(B:Expression, S:K)
-			=> IfThenElse(B:Expression, (S:K ~> loopMarked ~> While(B:Expression, S:K)), Nop)
+		< k > loopMarked ~> While(B:K, S:K)
+			=> IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
 		...</ k >
 		[metadata "computational=()"]
 		// [structural]  // rule so that looping programs see repetition
@@ -128,15 +128,15 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	*/
 	
 	rule
-		< k > Switch(SN:#Nat, tv(V:BaseValue, T:Type), ?) 
+		< k > Switch(SN:#Nat, tv(V:K, T:KResult), ?) 
 			=> sequencePoint 
-			~> handleSwitch(SN:#Nat, cast(promote(T:Type), tv(V:BaseValue, T:Type))) 
+			~> handleSwitch(SN:#Nat, cast(promote(T:KResult), tv(V:K, T:KResult))) 
 		...</ k >
-		when hasIntegerType(T:Type)
+		when hasIntegerType(T:KResult)
 		[structural] 
 		
 	rule
-		< k > handleSwitch(SN:#Nat, V:KResult) => handleSwitch-aux(SN:#Nat, V:Value, Map(M:Map)) ...</ k >
+		< k > handleSwitch(SN:#Nat, V:KResult) => handleSwitch-aux(SN:#Nat, V:KResult, Map(M:Map)) ...</ k >
 		< currentFunction > F:#Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< gotoMap >... kpair(Tu:K, F:#Id) |-> Map(M:Map) ...</ gotoMap >
@@ -145,13 +145,13 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  match found in value and type, goto it
 	//  don't need to erase the rest of K since we're GOTOing
 	rule
-		< k > tryCase(V:KResult, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
+		< k > tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural]
 		
 	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
-		< k > (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:Value, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
+		< k > (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:KResult, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >
 		when Exp:K =/=Bool l('Default)
 		[structural] 
@@ -169,8 +169,8 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 
 	rule
-		< k > tryCase(tv(V':BaseValue, T:Type), tv(V:BaseValue, T:Type), CaseHelper:K) => .K ...</ k >
-		when V:BaseValue =/=Bool V':BaseValue
+		< k > tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .K ...</ k >
+		when V:K =/=Bool V':K
 		[structural] 
 		
 	rule
@@ -183,8 +183,8 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 			
 	rule
-		< k > tryCase((tv(V:BaseValue, T':Type) => cast(T:Type, tv(V:BaseValue, T':Type))), tv(?, T:Type), ?) ...</ k >
-		when T:Type =/=Bool T':Type
+		< k > tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(?, T:KResult), ?) ...</ k >
+		when T:KResult =/=Bool T':KResult
 		[structural] 
 	
 	rule [case-fall-through]:
@@ -414,7 +414,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 	rule [return]: 
 		< k > Return(V:KResult) ~> ? 
 			=> sequencePoint 
-			~> cast(T:Type, V:KResult) 
+			~> cast(T:KResult, V:KResult) 
 			~> K:K
 		</ k >
 		< control >
@@ -427,7 +427,7 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 			(? => C:Bag)
 		</ control >
 		@latex("\\kBR")
-		< gtypes >... Tu:K |-> Map((? (F:#Id |-> t(?, functionType(T:Type, ?))))) ...</ gtypes >
+		< gtypes >... Tu:K |-> Map((? (F:#Id |-> t(?, functionType(T:KResult, ?))))) ...</ gtypes >
 		< callStack >
 			ListItem(
 				< stackFrame >

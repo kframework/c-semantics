@@ -148,10 +148,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op t : Set SimpleType -> Type
 	/*
-	t(S', pointerType(t(S, T:Type)))
-	pointerType(T:Type)
-	S' pointerType(S T:Type)
-	tv(5, T:Type)
+	t(S', pointerType(t(S, T:KResult)))
+	pointerType(T:KResult)
+	S' pointerType(S T:KResult)
+	tv(5, T:KResult)
 	*/
 	
 	op isBasicType : K -> #Bool
@@ -190,13 +190,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op AllowWrite : K -> K [metadata "strict=()"]
 	
-	rule AllowWrite(lv(N:#Nat, T:Type)) => lv(N:#Nat, stripConst(T:Type)) [structural]
+	rule AllowWrite(lv(N:#Nat, T:KResult)) => lv(N:#Nat, stripConst(T:KResult)) [structural]
 
 	op stripConst : Type -> Type
 	
 	rule stripConst(t((SetItem(Const) => .Set) ?, ?)) [structural]
 	rule 
-		stripConst(t(S:Set, T:SimpleType)) => t(S:Set, T:SimpleType)
+		stripConst(t(S:Set, T:K)) => t(S:Set, T:K)
 		when notBool Const in S:Set
 		[structural]
 	
@@ -336,7 +336,7 @@ kmod COMMON-C-SETTINGS is
 	// rule [cfg-wchar-t]: cfg:wcharut => t(.Set, kccSettingSimpleType("_KCC_WCHAR_T")) [structural]
 	
 	op simpleType : Type -> SimpleType
-	rule simpleType(t(?, T:SimpleType)) => T:SimpleType [structural]
+	rule simpleType(t(?, T:K)) => T:K [structural]
 	
 	op cfg:largestUnsigned : -> Type 
 	rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]

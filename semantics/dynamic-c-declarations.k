@@ -35,7 +35,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			, (
 				?:List{KResult}
 				,, typedDeclaration(
-					(t(?, (arrayType(T:Type, ?:#Nat) => pointerType(T:Type))))
+					(t(?, (arrayType(T:KResult, ?:#Nat) => pointerType(T:KResult))))
 					, X:#Id
 				)
 				,, ?:List{KResult}
@@ -49,7 +49,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 			, (
 				?:List{KResult} 
 				,, typedDeclaration(
-					(t(?, (incompleteArrayType(T:Type) => pointerType(T:Type))))
+					(t(?, (incompleteArrayType(T:KResult) => pointerType(T:KResult))))
 					, X:#Id
 				) 
 				,, ?:List{KResult})
@@ -57,39 +57,39 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 		
 	rule [bind-one]:
-		< k > true ~> bind-aux(?:#Nat, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
-			=> allocateType(Loc:#Nat, T:Type)
+		< k > true ~> bind-aux(?:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
+			=> allocateType(Loc:#Nat, T:KResult)
 			~> addToEnv(X:#Id, Loc:#Nat)
-			~> giveType(X:#Id, T:Type)
-			~> initialize(X:#Id, T:Type, Computation(AllowWrite(X:#Id) := tv(V:List{K}, T':Type)))
+			~> giveType(X:#Id, T:KResult)
+			~> initialize(X:#Id, T:KResult, Computation(AllowWrite(X:#Id) := tv(V:List{K}, T':KResult)))
 			~> bind-aux(Loc:#Nat, L:List{KResult}, P:List{KResult})
 		...</ k > 
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
-		when notBool hasArrayType(T:Type)
+		when notBool hasArrayType(T:KResult)
 		[structural] 
 		
 	rule [bind-one-check-type]:
-		< k > (.K => isTypeCompatible(T:Type, T':Type)) 
-			~> bind-aux(?:#Nat, (tv(V:List{K}, T':Type),, L:List{KResult}), (typedDeclaration(T:Type, X:#Id),, P:List{KResult}))
+		< k > (.K => isTypeCompatible(T:KResult, T':KResult)) 
+			~> bind-aux(?:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
 		...</ k > 
 		[structural] 
 	
 	op promoteList : List{KResult} -> List{K} 
-	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
-		=> cast(argPromote(t(S:Set, T:SimpleType)), tv(V:List{K}, t(S:Set, T:SimpleType))),, promoteList(L:List{KResult})
-		when ((rank(t(S:Set, T:SimpleType)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:SimpleType))) andBool hasIntegerType(t(S:Set, T:SimpleType))) 
-		orBool T:SimpleType ==Bool float 
+	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
+		=> cast(argPromote(t(S:Set, T:K)), tv(V:List{K}, t(S:Set, T:K))),, promoteList(L:List{KResult})
+		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
+		orBool T:K ==Bool float 
 		[structural]
-	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:SimpleType)),, L:List{KResult})) 
-		=> (tv(V:List{K}, t(S:Set, T:SimpleType)),, promoteList(L:List{KResult}))
-		when (notBool(hasIntegerType(t(S:Set, T:SimpleType))) 
-			andBool notBool T:SimpleType ==Bool float
-			andBool notBool hasArrayType(t(S:Set, T:SimpleType))
+	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
+		=> (tv(V:List{K}, t(S:Set, T:K)),, promoteList(L:List{KResult}))
+		when (notBool(hasIntegerType(t(S:Set, T:K))) 
+			andBool notBool T:K ==Bool float
+			andBool notBool hasArrayType(t(S:Set, T:K))
 		) 
-		orBool rank(t(S:Set, T:SimpleType)) >=Int rank(t(.Set, int))
-		orBool T:SimpleType ==Bool double 
-		orBool T:SimpleType ==Bool long-double
+		orBool rank(t(S:Set, T:K)) >=Int rank(t(.Set, int))
+		orBool T:K ==Bool double 
+		orBool T:K ==Bool long-double
 		[structural]
 	rule promoteList(.List{K}) => .List{K} [structural]
 	
@@ -136,7 +136,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
 	rule
-		< k > initialize(X:#Id, T:Type, K:K)
+		< k > initialize(X:#Id, T:KResult, K:K)
 			=> if (F:#Id ==Bool File-Scope) then zero(X:#Id) else (.) fi 
 			~> K:K
 			~> sequencePoint
@@ -145,21 +145,21 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 
 	rule
-		< k > zero(Name:K) => zeroType(Name:K, unqualifyType(T:Type)) ...</ k >
-		< types >... Name:K |-> T:Type ...</ types >
+		< k > zero(Name:K) => zeroType(Name:K, unqualifyType(T:KResult)) ...</ k >
+		< types >... Name:K |-> T:KResult ...</ types >
 		[structural] 
 		
 	op zeroType : K Type -> K 
 	
 	rule
-		< k > zeroType(Name:K, T:Type) 
+		< k > zeroType(Name:K, T:KResult) 
 			=> Computation(AllowWrite(Name:K) := tv(0, t(.Set, int))) ...</ k >
-		when hasIntegerType(T:Type)
+		when hasIntegerType(T:KResult)
 		[structural] 
 	rule
-		< k > zeroType(Name:K, T:Type) 
+		< k > zeroType(Name:K, T:KResult) 
 			=> Computation(AllowWrite(Name:K) := tv(0.0, t(.Set, float))) ...</ k >
-		when hasFloatType(T:Type)
+		when hasFloatType(T:KResult)
 		[structural] 
 		
 	op zeroStruct : K List{KResult} -> K 
@@ -179,16 +179,16 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	rule
 		< k > zeroType(Name:K, t(?, unionType(S:#Id))) 
-			=> zeroType(Name:K . F:#Id, T:Type)
+			=> zeroType(Name:K . F:#Id, T:KResult)
 		...</ k >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:Type, F:#Id),, ?), ?, ?) 
+			S:#Id |-> aggregateInfo((typedDeclaration(T:KResult, F:#Id),, ?), ?, ?) 
 		...</ structs > 
 		[structural] 
 		
 	rule
-		< k > zeroStruct(Name:K, (typedDeclaration(T:Type, F:#Id),, L:List{KResult})) 
-			=> zeroType(Name:K . F:#Id, T:Type)
+		< k > zeroStruct(Name:K, (typedDeclaration(T:KResult, F:#Id),, L:List{KResult})) 
+			=> zeroType(Name:K . F:#Id, T:KResult)
 			~> zeroStruct(Name:K, L:List{KResult}) 
 		...</ k >
 		[structural] 
@@ -197,27 +197,27 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 
 	rule
-		< k > zeroType(Name:K, T:Type) 
-			=> Computation(AllowWrite(Name:K) := tv(NullPointer, T:Type)) ...</ k >
-		when hasPointerType(T:Type)
+		< k > zeroType(Name:K, T:KResult) 
+			=> Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult)) ...</ k >
+		when hasPointerType(T:KResult)
 		[structural]
 	rule
-		< k > zeroType(Name:K, T:Type) => .K ...</ k >
-		when hasFunctionType(T:Type)
+		< k > zeroType(Name:K, T:KResult) => .K ...</ k >
+		when hasFunctionType(T:KResult)
 		[structural]
 		
 	rule
-		< k > zeroType(Name:K, t(S:Set, arrayType(T:Type, sNat(Len:#Nat)))) 
-			=> zeroType(Name:K[Len:#Nat], T:Type)
-			~> zeroType(Name:K, t(S:Set, arrayType(T:Type, Len:#Nat))) 
+		< k > zeroType(Name:K, t(S:Set, arrayType(T:KResult, sNat(Len:#Nat)))) 
+			=> zeroType(Name:K[Len:#Nat], T:KResult)
+			~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:#Nat))) 
 		...</ k >
 		[structural] 
 	rule
-		< k > zeroType(Name:K, t(?, arrayType(T:Type, 0))) => .K ...</ k >
+		< k > zeroType(Name:K, t(?, arrayType(T:KResult, 0))) => .K ...</ k >
 		[structural] 
 
 	rule
-		< k > zeroType(Name:K, t(?, flexibleArrayType(T:Type)))
+		< k > zeroType(Name:K, t(?, flexibleArrayType(T:KResult)))
 			=> .K
 		...</ k >
 		[structural]

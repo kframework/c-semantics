@@ -266,7 +266,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< nestingDepthGoto > Depth:#Nat </ nestingDepthGoto >
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:#Nat, Val:K))
-		//  andBool hasIntegerType(T:Type)
+		//  andBool hasIntegerType(T:KResult)
 		[structural large] 
 	rule
 		< computation > (Default(SwitchNum:#Nat, S:K) => S:K) ~> K:K </ computation >

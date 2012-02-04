@@ -269,15 +269,15 @@ or equivalent;9) or in some other implementation-defined manner
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:#Nat, X:#Id, ?) 
 		=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		when T:Type ==Bool t(.Set, char)
+		when T:KResult ==Bool t(.Set, char)
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		when T:Type ==Bool t(.Set, char)
+		when T:KResult ==Bool t(.Set, char)
 		[structural]
 
 

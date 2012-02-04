@@ -62,9 +62,9 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00001]:
-		< k => finalComputation > cast(t(?, T:SimpleType), emptyValue) ...</ k => finalComputation >
+		< k => finalComputation > cast(t(?, T:K), emptyValue) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00001", "Casting empty value to type other than void.") </ errorCell >)
-		when T:SimpleType =/=Bool void
+		when T:K =/=Bool void
 		[structural]
 		
 	rule [err00002]:
@@ -84,9 +84,9 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:Type, (?:List{K},, piece(unknown(Len:#Nat), Len:#Nat)), ?:K) ...</ k => finalComputation >
+		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (?:List{K},, piece(unknown(Len:#Nat), Len:#Nat)), ?:K) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </ errorCell >)
-		when notBool hasCharType(T:Type)
+		when notBool hasCharType(T:KResult)
 		[structural]
 		
 	rule [err00007]:
@@ -102,9 +102,9 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00009]:
-		< k => finalComputation > concretize(T:Type, dataList((piece(unknown(Len:#Nat), Len:#Nat),, ?))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:#Nat), Len:#Nat),, ?))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00009", "Reading uninitialized memory.") </ errorCell >)
-		when hasFloatType(T:Type)
+		when hasFloatType(T:KResult)
 		[structural]
 		
 	rule [err00010]:
@@ -116,35 +116,35 @@ kmod DYNAMIC-C-ERRORS is
 		
 		
 	rule [err00011]:
-		< k => finalComputation > tv(?, T:Type) < tv(?, T':Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(?, T:KResult) < tv(?, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00011", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
-		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
+		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural]
 	rule [err00012]:
-		< k => finalComputation > tv(?, T:Type) <= tv(?, T':Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(?, T:KResult) <= tv(?, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00012", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
-		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
+		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00013]:
-		< k => finalComputation > tv(?, T:Type) > tv(?, T':Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(?, T:KResult) > tv(?, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00013", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
-		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
+		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00014]:
-		< k => finalComputation > tv(?, T:Type) >= tv(?, T':Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(?, T:KResult) >= tv(?, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00014", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:Type) andBool hasPointerType(T':Type))
-		orBool (hasPointerType(T:Type) andBool hasIntegerType(T':Type))
+		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
+		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 		
 	rule [err00015]:
-		< k => finalComputation > arithInterpret(T:Type, I:#Int) ...</ k => finalComputation >
+		< k => finalComputation > arithInterpret(T:KResult, I:#Int) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00015", "Signed overflow.") </ errorCell >)
-		when hasSignedIntegerType(T:Type)
-		andBool notBool (min(T:Type) <=Int I:#Int andBool max(T:Type) >=Int I:#Int)
+		when hasSignedIntegerType(T:KResult)
+		andBool notBool (min(T:KResult) <=Int I:#Int andBool max(T:KResult) >=Int I:#Int)
 		[structural] 	
 		
 		
@@ -156,25 +156,25 @@ kmod DYNAMIC-C-ERRORS is
 		[structural] 
 		
 	rule [err00017]:
-		< k => finalComputation > tv(I1:#Int, T:Type) / tv(0, T:Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:#Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00017", "Division by 0.") </ errorCell >)
-		when hasIntegerType(T:Type)
-		andBool hasBeenPromoted(T:Type)
+		when hasIntegerType(T:KResult)
+		andBool hasBeenPromoted(T:KResult)
 		[structural]
 	
 	rule [err00018]:
-		< k => finalComputation > tv(I1:#Int, T:Type) % tv(0, T:Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:#Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00018", "Modulus by 0.") </ errorCell >)
-		when hasIntegerType(T:Type)
-		andBool hasBeenPromoted(T:Type)
+		when hasIntegerType(T:KResult)
+		andBool hasBeenPromoted(T:KResult)
 		[structural]
 		
 	rule [err00019]:
-		< k => finalComputation > tv(I1:#Int, T:Type) % tv(I2:#Int, T:Type) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:#Int, T:KResult) % tv(I2:#Int, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00019", "Signed overflow.") </ errorCell >)
-		when hasIntegerType(T:Type)
-		andBool notBool (min(T:Type) <=Int I1:#Int /Int I2:#Int andBool max(T:Type) >=Int I1:#Int /Int I2:#Int)
-		andBool hasBeenPromoted(T:Type)
+		when hasIntegerType(T:KResult)
+		andBool notBool (min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int)
+		andBool hasBeenPromoted(T:KResult)
 		andBool I2:#Int =/=Bool 0
 		[structural]
 		
@@ -193,17 +193,17 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00022]:
-		< k => finalComputation > leftShiftInterpret(T:Type, I:#Int, tv(E1:#Int, T:Type)) ...</ k => finalComputation >
+		< k => finalComputation > leftShiftInterpret(T:KResult, I:#Int, tv(E1:#Int, T:KResult)) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00022", "Trying to left-shift a negative signed value.") </ errorCell >)
-		when hasSignedIntegerType(T:Type)
+		when hasSignedIntegerType(T:KResult)
 		andBool E1:#Int <Int 0
 		[structural]
 		
 	rule [err00023]:
-		< k => finalComputation > leftShiftInterpret(T:Type, I:#Int, tv(E1:#Nat, T:Type)) ...</ k => finalComputation >
+		< k => finalComputation > leftShiftInterpret(T:KResult, I:#Int, tv(E1:#Nat, T:KResult)) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </ errorCell >)
-		when hasSignedIntegerType(T:Type)
-		andBool notBool (I:#Int <=Int (2 ^Nat absInt(numBits(T:Type))))
+		when hasSignedIntegerType(T:KResult)
+		andBool notBool (I:#Int <=Int (2 ^Nat absInt(numBits(T:KResult))))
 		[structural]
 		
 	rule [err00024]:
@@ -213,86 +213,86 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:SimpleType), ?:List{KResult})), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:K), ?:List{KResult})), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
-		when T:SimpleType =/=Bool int
+		when T:K =/=Bool int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?:#Id),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:K), ?:#Id),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
-		when T:SimpleType =/=Bool int andBool T:SimpleType =/=Bool void
+		when T:K =/=Bool int andBool T:K =/=Bool void
 		[structural]
 		
 	op isArgvType : Type -> #Bool
 	
-	rule isArgvType(t(?, T:SimpleType)) => false
+	rule isArgvType(t(?, T:K)) => false
 		when notBool (
-			getKLabel(T:SimpleType) ==Bool 'incompleteArrayType 
-			orBool getKLabel(T:SimpleType) ==Bool 'incompleteArrayType
+			getKLabel(T:K) ==Bool 'incompleteArrayType 
+			orBool getKLabel(T:K) ==Bool 'incompleteArrayType
 		)
 		[structural]
 		
-	rule isArgvType(t(?, incompleteArrayType(t(?, T:SimpleType)))) => false
-		when notBool getKLabel(T:SimpleType) ==Bool 'pointerType
+	rule isArgvType(t(?, incompleteArrayType(t(?, T:K)))) => false
+		when notBool getKLabel(T:K) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(t(?, incompleteArrayType(t(?, pointerType(t(?, T:SimpleType)))))) => false
-		when T:SimpleType =/=Bool char
+	rule isArgvType(t(?, incompleteArrayType(t(?, pointerType(t(?, T:K)))))) => false
+		when T:K =/=Bool char
 		[structural]
 		
-	rule isArgvType(t(?, pointerType(t(?, T:SimpleType)))) => false
-		when notBool getKLabel(T:SimpleType) ==Bool 'pointerType
+	rule isArgvType(t(?, pointerType(t(?, T:K)))) => false
+		when notBool getKLabel(T:K) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(t(?, pointerType(t(?, pointerType(t(?, T:SimpleType)))))) => false
-		when T:SimpleType =/=Bool char
+	rule isArgvType(t(?, pointerType(t(?, pointerType(t(?, T:K)))))) => false
+		when T:K =/=Bool char
 		[structural]
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?:#Id),, typedDeclaration(T:Type, ?:#Id)))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?:#Id),, typedDeclaration(T:KResult, ?:#Id)))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
-		when notBool isArgvType(T:Type)
+		when notBool isArgvType(T:KResult)
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (?:Type,, ?:Type,, ?:Type,, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(?, functionType(t(?, int), (?:KResult,, ?:KResult,, ?:KResult,, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:SimpleType), ?:#Id)))), ?:#Nat, ?:#Id, ?)
+			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:K), ?:#Id)))), ?:#Nat, ?:#Id, ?)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
-		when T:SimpleType =/=Bool void
+		when T:K =/=Bool void
 		[structural]
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) < tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) > tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) <= tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:Type) >= tv(sym(Base':#Nat) +Nat ?:#Nat, T:Type)
+			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
@@ -300,10 +300,10 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00034]:
 		< k => finalComputation > 
-			cast(t(?, T:SimpleType), skipval)
+			cast(t(?, T:K), skipval)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00034", "Casting void type to non-void type.") </ errorCell >)
-		when (T:SimpleType =/=Bool void)
+		when (T:K =/=Bool void)
 		[structural]
 		
 	rule [err00035]:
@@ -324,7 +324,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00038]:
-		< k => finalComputation > ArrayType(T:Type, tv(0, ?), ?)  ...</ k => finalComputation >
+		< k => finalComputation > ArrayType(T:KResult, tv(0, ?), ?)  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00038", "Arrays cannot be of 0 length.") </ errorCell >)
 		[structural]
 	
