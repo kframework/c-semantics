@@ -648,8 +648,8 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	rule
-		< k > typeof(E:Expression) => evalToType ~> typeof(MYHOLE) ...</ k >
-		(.Bag => < type > E:Expression </ type >)
+		< k > typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</ k >
+		(.Bag => < type > K:K </ type >)
 		[structural] 
 	rule
 		< k > evalToType ~> typeof(MYHOLE) => T:Type ...</ k >
@@ -908,7 +908,7 @@ kmod COMMON-C-TYPING is
 		andBool (hasIntegerType(T':Type) orBool hasFloatType(T':Type)) 
 		[structural]
 	rule 
-		< k > Cast(T:Type, K:K, V:Value) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
+		< k > Cast(T:Type, K:K, V:KResult) => cast(DeclType(T:Type, K:K), V:Value) ...</ k >
 		[structural] 
 			
 	op addGlobalAggregate : #Id K -> K 
@@ -926,12 +926,12 @@ kmod COMMON-C-TYPING is
 		< k > addStruct-aux(
 				S:#Id
 				, (typedDeclaration(T:Type, Field:#Id),, L:List{KResult})
-				, V:Value
+				, V:KResult
 				, Types:Map
 				, Offsets:Map
 				, L':List{KResult}
 			) 
-			=> addStruct-aux(S:#Id, L:List{KResult}, V:Value + bitSizeofType(T:Type), Types:Map[T:Type / Field:#Id], Offsets:Map[value(V:Value) / Field:#Id], L':List{KResult})
+			=> addStruct-aux(S:#Id, L:List{KResult}, V:KResult + bitSizeofType(T:Type), Types:Map[T:Type / Field:#Id], Offsets:Map[value(V:Value) / Field:#Id], L':List{KResult})
 		...</ k >
 		[structural]
 	rule

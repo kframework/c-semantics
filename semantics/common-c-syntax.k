@@ -641,7 +641,7 @@ and unary_operator =
 
 	op Call : K K -> Expression // K, List
 	context Call((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	// context Call(_, (_ :: (HOLE:C => reval(HOLE:C)) :: _)) [metadata "ndheat=()"]
+	// context Call(_, (_ :: (HOLE:C => reval(HOLE:K)) :: _)) [metadata "ndheat=()"]
 	context Call(_, List((?:List{K},, (HOLE:K => reval(HOLE:K)),, ?:List{K}))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list

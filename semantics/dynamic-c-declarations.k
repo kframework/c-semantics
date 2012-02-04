@@ -116,13 +116,13 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	rule [bind-variadic]:
 		< k > (.K 
 				=> allocateType(Loc:#Nat, Type)
-				~> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(Type)))) := V:Value)
+				~> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(Type)))) := V:KResult)
 			) 
-			~> bindVariadic(?, ((V:Value => .List{K}),, ?:List{KResult})) 
+			~> bindVariadic(?, ((V:KResult => .List{K}),, ?:List{KResult})) 
 		...</ k >
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
-		where Type = type(V:Value)
+		where Type = type(V:KResult)
 		[structural]
 	
 	rule [bind-variadic-done]:

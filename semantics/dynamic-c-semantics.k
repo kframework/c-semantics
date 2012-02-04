@@ -286,9 +286,9 @@ or equivalent;9) or in some other implementation-defined manner
 	rule [terminate]:
 		(< T >... < threads >... < thread >... 
 			< threadId > 1 </ threadId > // main's thread, not the global "thread"
-			< k > V:Value </ k >
+			< k > V:KResult </ k >
 		...</ thread > ...</ threads > ...</ T >
-			=> < resultValue > V:Value </ resultValue >)
+			=> < resultValue > V:KResult </ resultValue >)
 		< files >...
 			<fileCommands> ? => .K </fileCommands> // to prevent further io commands from firing
 			<file>... // stdout

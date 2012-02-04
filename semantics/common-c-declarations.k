@@ -589,8 +589,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	op initializerFragment : K -> KResult 
 	
 	rule
-		< k > getInitializer => initializer(K:C) ...</ k >
-		< savedInitialization > K:C => . </ savedInitialization > 
+		< k > getInitializer => initializer(K:K) ...</ k >
+		< savedInitialization > K:K => . </ savedInitialization > 
 		< currentObject > ?:List => . </ currentObject > 
 		< currentSubObject > ?:List => . </ currentSubObject > 
 		[structural] 
@@ -1229,15 +1229,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	
 	
 	rule [initialize-function]:
-		< k > initFunction(tv(Loc:#Nat, t(?, pointerType(T:Type))), Fun:Value) => .K ...</ k >
-		< functions > M:Map => M:Map[Fun:Value / Loc:#Nat] </ functions >
+		< k > initFunction(tv(Loc:#Nat, t(?, pointerType(T:Type))), Fun:KResult) => .K ...</ k >
+		< functions > M:Map => M:Map[Fun:KResult / Loc:#Nat] </ functions >
 		when hasFunctionType(T:Type)
 		andBool notBool $hasMapping(M:Map, Loc:#Nat)
 		[structural]
 		
 	rule
-		< k > readFunction(Loc:#Nat) => Fun:Value  ...</ k >
-		< functions >... Loc:#Nat |-> Fun:Value ...</ functions >
+		< k > readFunction(Loc:#Nat) => Fun:KResult  ...</ k >
+		< functions >... Loc:#Nat |-> Fun:KResult ...</ functions >
 		[structural]
 	
 	

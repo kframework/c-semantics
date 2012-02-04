@@ -122,8 +122,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		...</ k >
 		[structural]
 	rule
-		< k > (V:Value => simplifyTruth(V:Value)) && ? ...</ k >
-		when isNotTruthValue(V:Value)
+		< k > (V:KResult => simplifyTruth(V:Value)) && ? ...</ k >
+		when isNotTruthValue(V:KResult)
 		[structural]	
 				
 	/*@ \source[n1570]{\para{6.5.14}{3--4}}
@@ -143,8 +143,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 		...</ k >
 		[structural]
 	rule
-		< k > (V:Value => V:Value != tv(0, t(.Set, int))) || ? ...</ k >
-		when isNotTruthValue(V:Value)
+		< k > (V:KResult => V:Value != tv(0, t(.Set, int))) || ? ...</ k >
+		when isNotTruthValue(V:KResult)
 		[structural]
 
 	
@@ -410,12 +410,12 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		[structural]
 		
 	rule [const-string-found]:
-		< k > Constant(StringLiteral(S:#String)) => V:Value ...</ k >
-		< stringLiterals >... S:#String |-> V:Value ...</ stringLiterals >
+		< k > Constant(StringLiteral(S:#String)) => V:KResult ...</ k >
+		< stringLiterals >... S:#String |-> V:KResult ...</ stringLiterals >
 		[structural]
 	rule [const-wstring-found]:
-		< k > Constant(WStringLiteral(S:List{K})) => V:Value ...</ k >
-		< stringLiterals >... wstring(S:List{K}) |-> V:Value ...</ stringLiterals >
+		< k > Constant(WStringLiteral(S:List{K})) => V:KResult ...</ k >
+		< stringLiterals >... wstring(S:List{K}) |-> V:KResult ...</ stringLiterals >
 		[structural]
 	
 	/*@ \source[n1570]{\para{6.4.4.1}{5}}
@@ -463,7 +463,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:#Nat, t(.Set, int))))
 		[structural]
 	rule WCharLiteral(N:#Nat) => tv(N:#Nat, cfg:wcharut) [structural]
-	rule Constant(V:Value) => V:Value [structural]
+	rule Constant(V:KResult) => V:Value [structural]
 	rule [create-internal-value]: < k > N:#Nat => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
 		[structural] // for internal computations
 		
@@ -659,8 +659,8 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 		[structural]
 
 	rule
-		< k > compoundAssignment(L:KLabel, V:Value, V':Value)
-			=> V:Value := L:KLabel(reval(V:Value),, V':Value)
+		< k > compoundAssignment(L:KLabel, V:KResult, V':Value)
+			=> V:KResult := L:KLabel(reval(V:Value),, V':Value)
 		...</ k >
 		[structural]
 endkm
@@ -1190,11 +1190,11 @@ kmod DYNAMIC-SEMANTICS-SEQUENCING is
 	/*@ \source[n1570]{\para{6.5.17}{2}}
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	*/
-	rule < k > Comma(List((V:Value,, K':K,, L:List{K}))) 
+	rule < k > Comma(List((V:KResult,, K':K,, L:List{K}))) 
 		=> sequencePoint
 		~> Comma(List((K':K,, L:List{K}))) ...</ k >
 		[structural]
-	rule < k > Comma(List(K:C)) => K:C ...</ k >
+	rule < k > Comma(List(K:K)) => K:K ...</ k >
 		[structural]
 endkm
 

@@ -24,8 +24,8 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 		< k > IfThenElse(tv(0, t(?, int)), ?, S:K) => sequencePoint ~> S:K ...</ k >
 		[structural]
 	rule
-		< k > IfThenElse((V:Value => simplifyTruth(V:Value)), ?, ?) ...</ k >
-		when isNotTruthValue(V:Value)
+		< k > IfThenElse((V:KResult => simplifyTruth(V:Value)), ?, ?) ...</ k >
+		when isNotTruthValue(V:KResult)
 		[structural]
 endkm
 
@@ -37,15 +37,15 @@ kmod DYNAMIC-SEMANTICS-WHILE is
 	*/
 	
 	rule [while-mark]:
-		< k > While(B:Expression, S:Statement) ~> K:K
-			=> loopMarked ~> While(B:Expression, S:Statement) ~> popLoop
+		< k > While(B:Expression, S:K) ~> K:K
+			=> loopMarked ~> While(B:Expression, S:K) ~> popLoop
 		</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		< loopStack > .List => ListItem(kpair(Num:#Nat, K:K)) ...</ loopStack >
 		[structural] 
 	rule [while]:
-		< k > loopMarked ~> While(B:Expression, S:Statement)
-			=> IfThenElse(B:Expression, (S:Statement ~> loopMarked ~> While(B:Expression, S:Statement)), Nop)
+		< k > loopMarked ~> While(B:Expression, S:K)
+			=> IfThenElse(B:Expression, (S:K ~> loopMarked ~> While(B:Expression, S:K)), Nop)
 		...</ k >
 		[metadata "computational=()"]
 		// [structural]  // rule so that looping programs see repetition
@@ -94,8 +94,8 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 	
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
-		< k > (For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:Statement) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:#Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:#Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:Statement) ~> popLoop)
+		< k > (For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
+			=> pushBlock ~> addToHistory(ForNum:#Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:#Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K) ~> popLoop)
 		</ k >
 		@latex("\\kBR")
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
@@ -103,8 +103,8 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 		[structural large] 
 		
 	rule [for]:
-		< k > loopMarked ~> For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:Statement)
-			=> IfThenElse(Control:K, (S:Statement ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:Statement)), Nop)
+		< k > loopMarked ~> For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:K)
+			=> IfThenElse(Control:K, (S:K ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:K)), Nop)
 		...</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		[metadata "computational=()"]
@@ -136,7 +136,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 		
 	rule
-		< k > handleSwitch(SN:#Nat, V:Value) => handleSwitch-aux(SN:#Nat, V:Value, Map(M:Map)) ...</ k >
+		< k > handleSwitch(SN:#Nat, V:KResult) => handleSwitch-aux(SN:#Nat, V:Value, Map(M:Map)) ...</ k >
 		< currentFunction > F:#Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< gotoMap >... kpair(Tu:K, F:#Id) |-> Map(M:Map) ...</ gotoMap >
@@ -145,13 +145,13 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  match found in value and type, goto it
 	//  don't need to erase the rest of K since we're GOTOing
 	rule
-		< k > tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
+		< k > tryCase(V:KResult, V:Value, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural]
 		
 	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
-		< k > (.K => tryCase(Exp:K, V:Value, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:Value, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
+		< k > (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:Value, Map((? ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >
 		when Exp:K =/=Bool l('Default)
 		[structural] 
@@ -395,12 +395,12 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 	*/
 	
 	rule [return-clean-local]:
-		< k > (.K => deleteBlock(Loc:#Nat)) ~> Return(V:Value) ...</ k >
+		< k > (.K => deleteBlock(Loc:#Nat)) ~> Return(V:KResult) ...</ k >
 		< localAddresses >... SetItem(Loc:#Nat) => .Set ...</ localAddresses >	
 		[structural] 
 		
 	rule [fetch-all-locals]:
-		< k > Return(V:Value) ...</ k >
+		< k > Return(V:KResult) ...</ k >
 		< localAddresses > .Set => Addresses:Set </ localAddresses >
 		< blockStack > ListItem(< stackFrame > 
 			?
@@ -412,9 +412,9 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 
 	//  this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
 	rule [return]: 
-		< k > Return(V:Value) ~> ? 
+		< k > Return(V:KResult) ~> ? 
 			=> sequencePoint 
-			~> cast(T:Type, V:Value) 
+			~> cast(T:Type, V:KResult) 
 			~> K:K
 		</ k >
 		< control >
@@ -511,7 +511,7 @@ kmod DYNAMIC-C-STATEMENTS is
 	The expression in an expression statement is evaluated as a void expression for its side effects.
 	*/
 	rule [expression-statement]:
-		< k > Computation(V:Value) => sequencePoint ...</ k > 
+		< k > Computation(V:KResult) => sequencePoint ...</ k > 
 		[structural] 
 	
 	rule [popLoop]:

@@ -300,7 +300,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		
 	//- switch assumes casts can happen anywhere
 	rule 
-		cast(t(?, void), _:Value) => skipval
+		cast(t(?, void), _:KResult) => skipval
 		[structural] 
 		
 	rule
