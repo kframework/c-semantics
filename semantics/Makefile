@@ -156,9 +156,9 @@ c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES
 c-compiled-nd.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd.maude.0`
 c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
 	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/common-c-builtins"
-	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/common-c-builtins"
+	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
 #@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
 #@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
