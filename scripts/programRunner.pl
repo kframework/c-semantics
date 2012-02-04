@@ -227,8 +227,8 @@ if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUD
 		print "Generated tmpSearchResults.pdf\n";
 	}
 } else {
-	my ($returnValue, $screenOutput, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
-	if ($returnValue != 0) {
+	my ($returnValue, $signal, $screenOutput, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
+	if ($returnValue != 0 or $signal != 0) {
 		die "Dynamic execution failed: $returnValue";
 	}	
 	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, $screenOutput, @dynamicOutput);
@@ -294,7 +294,10 @@ sub runWrapper {
 	#print @data;
 	$childPid = 0;
 	#print "child is dead\n";
-	my $returnValue = $? >> 8;
+	my $code = $?;
+	my $returnValue = $code >> 8;
+	my $signal = ($code & 127);
+	
 	open FILE, "<", $outfile;
 	my @lines = <FILE>;
 	close FILE;
@@ -303,7 +306,8 @@ sub runWrapper {
 	close FILE;
 	print @xlines;
 	
-	return ($returnValue, $screenOutput, @lines);
+	# print "$returnValue, $signal\n";
+	return ($returnValue, $signal, $screenOutput, @lines);
 }
 
 sub runDebugger {
