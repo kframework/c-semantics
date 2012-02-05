@@ -337,6 +337,24 @@ kmod DYNAMIC-C-ERRORS is
 		(.Bag => < errorCell > Error("00040", "Structs cannot be empty.") </ errorCell >)
 		[structural]
 		
+	rule [err00041]:
+		< k => finalComputation > types((t(?, void),, t(?, T:K)))  ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00041", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
+		when T:K =/=Bool void
+		[structural]
+	rule [err00042]:
+		< k => finalComputation > types((t(?, T:K),, t(?, void)))  ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
+		when T:K =/=Bool void
+		[structural]
+	rule [err00043]:
+		< k => finalComputation > types((T1:KResult,, T2:KResult))  ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </ errorCell >)
+		when T1:KResult =/=Bool T2:KResult
+		andBool (hasStructType(T1:KResult) orBool hasUnionType(T1:KResult))
+		andBool (hasStructType(T2:KResult) orBool hasUnionType(T2:KResult))
+		[structural]
+		
 	
 	op datarace : #Nat #Nat #Nat #Nat -> K 
 
