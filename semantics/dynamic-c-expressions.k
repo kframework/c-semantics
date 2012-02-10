@@ -1013,6 +1013,8 @@ second operand from the first.
 	op newFromArray : KResult #Int -> KResult
 	rule newFromArray(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int) 
 		=> t(fromArray(Offset:#Int +Int I:#Int, Len:#Nat), pointerType(T:KResult))
+	rule newFromArray(t(.Set, pointerType(T:KResult)), I:#Int) 
+		=> t(.Set, pointerType(T:KResult))
 		
 	op ifFromArrayInBounds : KResult #Int -> #Bool
 	rule ifFromArrayInBounds(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int)
