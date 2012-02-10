@@ -355,6 +355,12 @@ kmod DYNAMIC-C-ERRORS is
 		andBool (hasStructType(T2:KResult) orBool hasUnionType(T2:KResult))
 		[structural]
 		
+	rule [err00044]:
+		< k => finalComputation > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, ?))  ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00044", "An array subscript is out of range.") </ errorCell >)
+		when notBool ifFromArrayInBounds(T:KResult, I:#Int)
+		[structural]
+		
 	
 	op datarace : #Nat #Nat #Nat #Nat -> K 
 

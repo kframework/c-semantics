@@ -6,6 +6,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op lvGetOffset : K K Type -> K
 	op tvGetOffset : K K Type -> K
 
+	op fromArray : #Int #Nat -> SetItem // offset, length
+	
+	op arrayLength : KResult -> #Nat
+	rule arrayLength(t(_:Set, arrayType(_:KResult, N:#Nat))) => N:#Nat
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
@@ -33,10 +37,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \source[n1570]{\para{6.3.2.1}{3}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	*/
-	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:KResult))))
+	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(fromArray(0, arrayLength(T:KResult)), pointerType(innerType(T:KResult))))
 		when hasArrayType(T:KResult) 
 		[structural]
-	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(.Set, pointerType(innerType(T:KResult)))) 
+	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(fromArray(0, arrayLength(T:KResult)), pointerType(innerType(T:KResult))))
 		when hasArrayType(T:KResult) 
 		[structural]
 	// should never get to the situation where we have tv(..., arrayType)
@@ -1000,9 +1004,25 @@ second operand from the first.
 		[structural]
 			
 	rule < k > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, ?))
-			=> tv(Loc:#Nat +Int (I:#Int *Int Size:#Nat), T:KResult)
+			=> tv(Loc:#Nat +Int (I:#Int *Int Size:#Nat), NEWTYPE)
 		...</ k >
+		when ifFromArrayInBounds(T:KResult, I:#Int)
+		where NEWTYPE = newFromArray(T:KResult, I:#Int)
 		[structural]
+		
+	op newFromArray : KResult #Int -> KResult
+	rule newFromArray(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int) 
+		=> t(fromArray(Offset:#Int +Int I:#Int, Len:#Nat), pointerType(T:KResult))
+		
+	op ifFromArrayInBounds : KResult #Int -> #Bool
+	rule ifFromArrayInBounds(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int)
+		=> true
+		when Offset:#Int +Int I:#Int <=Int Len:#Nat
+	rule ifFromArrayInBounds(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int)
+		=> false
+		when Offset:#Int +Int I:#Int >Int Len:#Nat
+	rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:#Int)
+		=> true
 		
 	/*@ \source[n1570]{\para{6.5.6}{9}}
 	When two pointers are subtracted, both shall point to elements of the same array object, or one past the last element of the array object; the result is the difference of the subscripts of the two array elements. The size of the result is implementation-defined, and its type (a signed integer type) is \cinline{ptrdiff_t} defined in the \cinline{<stddef.h>} header. If the result is not representable in an object of that type, the behavior is undefined. In other words, if the expressions \cinline{P} and \cinline{Q} point to, respectively, the $i$-th and $j$-th elements of an array object, the expression \cinline{(P)-(Q)} has the value $i-j$ provided the value fits in an object of type \cinline{ptrdiff_t}. Moreover, if the expression P points either to an element of an array object or one past the last element of an array object, and the expression \cinline{Q} points to the last element of the same array object, the expression \cinline{((Q)+1)-(P)} has the same value as \cinline{((Q)-(P))+1} and as \cinline{-((P)-((Q)+1))}, and has the value zero if the expression \cinline{P} points one past the last element of the array object, even though the expression \cinline{(Q)+1} does not point to an element of the array object.
