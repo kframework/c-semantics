@@ -375,8 +375,22 @@ kmod DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
 	/*@ \source[n1570]{\para{6.5.2.1}{2}}
 	A postfix expression followed by an expression in square brackets \cinline{[]} is a subscripted designation of an element of an array object. The definition of the subscript operator \cinline{[]} is that \cinline{E1[E2]} is identical to \cinline{(*((E1)+(E2)))}. Because of the conversion rules that apply to the binary \cinline{+} operator, if \cinline{E1} is an array object (equivalently, a pointer to the initial element of an array object) and \cinline{E2} is an integer, \cinline{E1[E2]} designates the \cinline{E2}-th element of \cinline{E1} (counting from zero).
 	*/
-	rule < k > E1:K[E2:K] => *(E1:K + E2:K) ...</ k >
+	// op subscript : K K K K -> K [metadata "strict=(3 4)"]
+	rule [array-subscript]:
+		< k > E1:K[E2:K]
+			=> *(E1:K + E2:K) 
+		...</ k >
 		[structural]
+	// rule [array-subscript]:
+		// < k > E1:K[E2:K]
+			// => subscript(E1:K, E2:K, typeof(E1:K), typeof(E2:K))
+		// ...</ k >
+		// [structural]
+	// rule [array-subscript-aux]:
+		// < k > subscript(E1:K, E2:K, typeof(E1:K))
+			// => 
+		// ...</ k >
+		// [structural]
 endkm
 
 kmod DYNAMIC-SEMANTICS-LITERALS is

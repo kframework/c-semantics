@@ -445,7 +445,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool hasExternType(T:KResult)
 		[structural] 
 	
+	/*@ \source[n1570]{\para{6.2.2}{4}}
+	For an identifier declared with the storage-class specifier \cinline{extern} in a scope in which a prior declaration of that identifier is visible, if the prior declaration specifies internal or external linkage, the linkage of the identifier at the later declaration is the same as the linkage specified at the prior declaration. If no prior declaration is visible, or if the prior declaration specifies no linkage, then the identifier has external linkage. 
+	*/
 	// exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
+	// case when it has no previous linkage, or previous linkage is external
 	rule
 		< k > declareAndDefine(X:#Id, T:KResult, K:K, external)
 			=> .K
@@ -457,7 +461,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		when (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:KResult))
 		andBool (notBool $hasMapping(Linkage:Map, X:#Id) orBool Linkage:Map(X:#Id) ==Bool external)
-		[structural] 
+		[structural]
+		
+	// case when it has a previous linkage (internal).  
+	rule
+		< k > declareAndDefine(X:#Id, T:KResult, K:K, external)
+			=> .K
+		...</ k >
+		< declarations >... .Set => SetItem(X:#Id) ...</ declarations >
+		// < externalDefinitions > Def:Map => Def:Map (X:#Id |-> declarationObject(unqualifyType(T:KResult), Tu:K, K:K)) </ externalDefinitions >
+		< internalDefinitions >... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:#Id])) ...</ internalDefinitions >
+		< preLinkage >... Tu:K |-> Map(Linkage:Map) ...</ preLinkage >
+		< preTypes >... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:#Id])) ...</ preTypes >
+		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		when (notBool $hasMapping(Def:Map, X:#Id) orBool hasFunctionType(T:KResult))
+		andBool Linkage:Map(X:#Id) ==Bool internal
+		[structural]
 		
 	rule
 		< k > declareAndDefine(X:#Id, T:KResult, K:K, internal)
