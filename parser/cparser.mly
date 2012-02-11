@@ -1413,7 +1413,8 @@ pragma:
 | PRAGMA attr SEMICOLON PRAGMA_EOL	{ PRAGMA ($2, $1) }
 | PRAGMA_LINE                           { PRAGMA (VARIABLE (fst $1), 
                                                   snd $1) }
-| PRAGMA LTL ltl_pragma PRAGMA_EOL { $3 }								  
+| PRAGMA LTL ltl_pragma PRAGMA_EOL { $3 }
+| PRAGMA PRAGMA_EOL { PRAGMA (VARIABLE "", $1) }
 ;
 
 ltl_pragma:
