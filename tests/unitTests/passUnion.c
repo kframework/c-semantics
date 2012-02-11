@@ -7,5 +7,5 @@ unsigned char f (union U x) {
 }
 
 int main(void){
-	return f(u).f0;
+	return f(u);
 }

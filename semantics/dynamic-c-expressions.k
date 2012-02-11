@@ -10,6 +10,8 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	op arrayLength : KResult -> #Nat
 	rule arrayLength(t(_:Set, arrayType(_:KResult, N:#Nat))) => N:#Nat
+	rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
+	rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
