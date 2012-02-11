@@ -6,7 +6,7 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	op lvGetOffset : K K Type -> K
 	op tvGetOffset : K K Type -> K
 
-	op fromArray : #Int #Nat -> SetItem // offset, length
+	op fromArray : #Int #Nat -> K // offset, length
 	
 	op arrayLength : KResult -> #Nat
 	rule arrayLength(t(_:Set, arrayType(_:KResult, N:#Nat))) => N:#Nat
@@ -37,10 +37,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \source[n1570]{\para{6.3.2.1}{3}}
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	*/
-	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(fromArray(0, arrayLength(T:KResult)), pointerType(innerType(T:KResult))))
+	rule [reval-lv-array]: reval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
 		when hasArrayType(T:KResult) 
 		[structural]
-	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(fromArray(0, arrayLength(T:KResult)), pointerType(innerType(T:KResult))))
+	rule [peval-lv-array]: peval(lv(Loc:#Nat, T:KResult)) => tv(Loc:#Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
 		when hasArrayType(T:KResult) 
 		[structural]
 	// should never get to the situation where we have tv(..., arrayType)
@@ -1011,16 +1011,16 @@ second operand from the first.
 		[structural]
 		
 	op newFromArray : KResult #Int -> KResult
-	rule newFromArray(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int) 
-		=> t(fromArray(Offset:#Int +Int I:#Int, Len:#Nat), pointerType(T:KResult))
+	rule newFromArray(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int) 
+		=> t(SetItem(fromArray(Offset:#Int +Int I:#Int, Len:#Nat)), pointerType(T:KResult))
 	rule newFromArray(t(.Set, pointerType(T:KResult)), I:#Int) 
 		=> t(.Set, pointerType(T:KResult))
 		
 	op ifFromArrayInBounds : KResult #Int -> #Bool
-	rule ifFromArrayInBounds(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int)
+	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
 		=> true
 		when Offset:#Int +Int I:#Int <=Int Len:#Nat
-	rule ifFromArrayInBounds(t(fromArray(Offset:#Int, Len:#Nat), pointerType(T:KResult)), I:#Int)
+	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
 		=> false
 		when Offset:#Int +Int I:#Int >Int Len:#Nat
 	rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:#Int)

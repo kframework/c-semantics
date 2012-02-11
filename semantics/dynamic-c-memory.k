@@ -366,10 +366,6 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule makeUnknown(N:#Nat, T:KResult)
 		=> makeUnknown-aux(N:#Nat, T:KResult, value(byteSizeofType(T:KResult))) 
 		[structural]
-	// rule < k > makeUnknown(N:#Nat, T:KResult)
-			// => makeUnknown-aux(N:#Nat, T:KResult, value(byteSizeofType(T:KResult))) 
-		// ...</ k > 
-		// [structural]
 	rule
 		< k > makeUnknown-aux(sym(Block:#Nat) +Nat Offset:#Nat, ?, Len':#Nat) => .K ...</ k >
 		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:#Nat to (Offset:#Nat +Nat Len':#Nat)])) ...</ mem >
@@ -379,7 +375,11 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op hasUnionMarker : Type -> #Bool
 	rule hasUnionMarker(t(SetItem(fromUnion(?:#Id)) ?, ?)) => true [structural]
 	rule hasUnionMarker(t(.Set, ?)) => false [structural]
-	rule hasUnionMarker(t(? (SetItem(L:KLabel(?)) => .Set), ?))
+	// rule hasUnionMarker(t(? (SetItem(L:KLabel(?:List{K})) => .Set), ?))
+		// when L:KLabel =/=Bool 'fromUnion
+		// [structural]
+	rule hasUnionMarker(t(S:Set (SetItem(L:KLabel(?:List{K}))), K:K))
+		=> hasUnionMarker(t(S:Set, K:K))
 		when L:KLabel =/=Bool 'fromUnion
 		[structural]
 	
@@ -555,6 +555,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		splitBytes(tv(L:List{K}, t(S:Set, structType(S:#Id)))) 
 			=> splitStructBytes(dataList(L:List{K}), t(S:Set, structType(S:#Id)), value(byteSizeofType(t(S:Set, structType(S:#Id)))))
 		// if hasStructType(T:KResult)
+		[structural]
+	rule [splitBytes-union]:
+		splitBytes(tv(L:List{K}, t(S:Set, unionType(S:#Id)))) 
+			=> splitStructBytes(dataList(L:List{K}), t(S:Set, unionType(S:#Id)), value(byteSizeofType(t(S:Set, unionType(S:#Id)))))
 		[structural] 
 	
 	op splitIntegerBytes : K K K -> K 
@@ -571,7 +575,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op splitStructBytes : K K K -> K 
 	op splitStructBytes : K K K List{K} -> K 
 	context splitStructBytes(?, ?, value(HOLE:K)) 
-	rule splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat) => splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat, .List{K}) 
+	rule splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat) 
+		=> splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat, .List{K}) 
 		[structural]
 	rule splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, sNat(Len:#Nat), L:List{K})
 		=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat, (L:List{K},, piece(N:#Nat, PieceLen:#Nat))) 
