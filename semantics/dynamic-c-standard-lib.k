@@ -20,8 +20,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
 	op nextvarg-aux : K Type K K -> C // offset, type, length, checklength
-	context nextvarg-aux(?, ?, value(HOLE:K), ?)
-	context nextvarg-aux(?, ?, ?, value(HOLE:K))
+	context nextvarg-aux(?, ?, value(HOLE), ?)
+	context nextvarg-aux(?, ?, ?, value(HOLE))
 	
 	rule [nextvarg-start]:
 		< k > nextvarg(Loc:#Nat, T:KResult)
@@ -35,8 +35,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 	
 
-	// context 'prepareBuiltin(_:#Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE:K)),, _:List`{K`}))
-	context prepareBuiltin(_:#Id, (_:List{K},, (HOLE:K => reval(HOLE:K)),, _:List{K}))
+	// context 'prepareBuiltin(_:#Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE)),, _:List`{K`}))
+	context prepareBuiltin(_:#Id, (_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))
 	
 	op idsFromDeclList : List{K} -> List{K}
 	

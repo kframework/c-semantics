@@ -25,8 +25,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules
 
 	op defineType : K -> K [metadata "strict=()"] 
-	context DeclarationDefinition(InitNameGroup(HOLE:K, ?)) 
-	context Typedef(NameGroup(HOLE:K, ?))
+	context DeclarationDefinition(InitNameGroup(HOLE, ?)) 
+	context Typedef(NameGroup(HOLE, ?))
 
 	rule
 		< k > figureInitializer(X:#Id, T:KResult, CodeLoc(K:K, L:K)) 
@@ -765,7 +765,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (? => L:List) </ currentSubObject >
 		[structural] 
 			
-	context fillInitializer(InitFragment(HOLE:K, ?)) 
+	context fillInitializer(InitFragment(HOLE, ?)) 
 	op buildDesignator : K -> K 
 	
 	// note that these clear the current subobject cell, because it will be repopulated when building the designator

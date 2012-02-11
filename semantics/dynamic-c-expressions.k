@@ -164,7 +164,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 
 	op getTypes : List{K} -> K
 	op types : List{K} -> K
-	context types((?,, HOLE:K,, ?))
+	context types((?,, HOLE,, ?))
 	op convertedType : K -> K [metadata "strict=()"]
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
