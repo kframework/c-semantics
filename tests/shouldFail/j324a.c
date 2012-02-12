@@ -1,3 +1,5 @@
+// for coverage purposes, this test assumes int and double are the same size
+
 union { int i; double d; } id;
 int main(void) {
 	id.d = id.i;
