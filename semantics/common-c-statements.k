@@ -34,7 +34,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 	rule 
 		< k > calculateGotoMap(F:#Id, K:K) => waitingOnGotoMap ...</ k >
 		< gotoMap > M:Map => M:Map[Map(.Map) / kpair(Tu:K, F:#Id)] </ gotoMap >
-		< currentFunction > ? => F:#Id </ currentFunction >
+		< currentFunction > _ => F:#Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		< calculateGotoMap >
 			. => (< gotoCalculation >... < computation > K:K ~> Return(NothingExpression) </ computation > ...</ gotoCalculation >)
@@ -49,7 +49,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 	rule
 		< k > waitingOnGotoMap => .K ...</ k >
 		< calculateGotoMap > .Bag </ calculateGotoMap >
-		< currentFunction > ? => File-Scope </ currentFunction >
+		< currentFunction > _ => File-Scope </ currentFunction >
 		[structural] 
 
 	op endBlockForGoto : #Nat -> K 
@@ -61,7 +61,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< blockHistoryGoto > ListItem(OldNum:#Nat) ...</ blockHistoryGoto >
 		[structural] 
 	rule
-		< computation > Block(Num:#Nat, ?, List(L:List{K})) => klistToK(L:List{K}) ...</ computation > 
+		< computation > Block(Num:#Nat, _, List(L:List{K})) => klistToK(L:List{K}) ...</ computation > 
 		< blockHistoryGoto > . => ListItem(Num:#Nat) ...</ blockHistoryGoto >
 		//  < declarationStack >... .List => ListItem(.K) </ declarationStack >
 		[structural] 
@@ -69,12 +69,12 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 	rule
 		< computation > popBlock => .K ...</ computation >
 		< nestingDepthGoto > sNat(N:#Nat) => N:#Nat </ nestingDepthGoto >
-		< blockHistoryGoto > (?:ListItem => .List) ListItem(Num:#Nat) ...</ blockHistoryGoto >
+		< blockHistoryGoto > (_:ListItem => .List) ListItem(Num:#Nat) ...</ blockHistoryGoto >
 		[structural] 
 		
 	rule [DefinitionLoc-computation]:
 		< computation > CodeLoc(K:K, L:CabsLoc) => K:K ...</ computation >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		< currentProgramLoc > _ => L:CabsLoc </ currentProgramLoc >
 		[structural] 
 
 	// this rule is different than the dynamic one because we don't enforce T to be reduced yet
@@ -206,7 +206,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		
 	rule [compute-label-if-then-else]:
 		< gotoCalculation >
-			< computation > (IfThenElse(?, S1:K, S2:K) => .K) ~> K:K </ computation >
+			< computation > (IfThenElse(_, S1:K, S2:K) => .K) ~> K:K </ computation >
 			< computationTail > Tail:K </ computationTail >
 			B:Bag
 		</ gotoCalculation >
@@ -227,7 +227,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		[structural] 
 		
 	rule [compute-label-switch]:
-		< computation > (Switch(?, E:K, S:K) => S:K ~> popLoop) ~> K:K </ computation >
+		< computation > (Switch(_, E:K, S:K) => S:K ~> popLoop) ~> K:K </ computation >
 		< computationTail > Tail:K </ computationTail >
 		< blockHistoryGoto > ListItem(Num:#Nat) ...</ blockHistoryGoto >
 		< loopStackGoto > (. => ListItem(kpair(Num:#Nat, (K:K ~> Tail:K)))) ...</ loopStackGoto >
@@ -235,7 +235,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		
 	rule [compute-label-poploop]:
 		< computation > popLoop => .K ...</ computation >
-		< loopStackGoto > (?:ListItem => .) ...</ loopStackGoto >
+		< loopStackGoto > (_:ListItem => .) ...</ loopStackGoto >
 		[structural] 
 		
 	rule

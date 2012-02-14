@@ -194,7 +194,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op stripConst : Type -> Type
 	
-	rule stripConst(t((SetItem(Const) => .Set) ?, ?)) [structural]
+	rule stripConst(t((SetItem(Const) => .Set) _, _)) [structural]
 	rule 
 		stripConst(t(S:Set, T:K)) => t(S:Set, T:K)
 		when notBool Const in S:Set
@@ -310,20 +310,20 @@ kmod COMMON-C-SETTINGS is
 	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	// rule [numBitsPerByte]: numBitsPerByte => kccSettingNzNat("_KCC_BITS_PER_BYTE") [structural]
 	
-	rule [numBytes-bool]: numBytes(t(?, bool)) => 1 [structural]
-	rule [numBytes-signed-char]: numBytes(t(?, signed-char)) => 1 [structural]
-	rule [numBytes-short-int]: numBytes(t(?, short-int)) => 2 [structural]
-	// rule [numBytes-short-int]: numBytes(t(?, short-int)) => kccSettingNzNat("_KCC_SIZEOF_SHORT") [structural]
-	rule [numBytes-int]: numBytes(t(?, int)) => 4 [structural]
-	// rule [numBytes-int]: numBytes(t(?, int)) => kccSettingNzNat("_KCC_SIZEOF_INT") [structural]
-	rule [numBytes-long-int]: numBytes(t(?, long-int)) => 4 [structural]
-	// rule [numBytes-long-int]: numBytes(t(?, long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG") [structural]
-	rule [numBytes-long-long-int]: numBytes(t(?, long-long-int)) => 8 [structural]
-	// rule [numBytes-long-long-int]: numBytes(t(?, long-long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG_LONG") [structural]
+	rule [numBytes-bool]: numBytes(t(_, bool)) => 1 [structural]
+	rule [numBytes-signed-char]: numBytes(t(_, signed-char)) => 1 [structural]
+	rule [numBytes-short-int]: numBytes(t(_, short-int)) => 2 [structural]
+	// rule [numBytes-short-int]: numBytes(t(_, short-int)) => kccSettingNzNat("_KCC_SIZEOF_SHORT") [structural]
+	rule [numBytes-int]: numBytes(t(_, int)) => 4 [structural]
+	// rule [numBytes-int]: numBytes(t(_, int)) => kccSettingNzNat("_KCC_SIZEOF_INT") [structural]
+	rule [numBytes-long-int]: numBytes(t(_, long-int)) => 4 [structural]
+	// rule [numBytes-long-int]: numBytes(t(_, long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG") [structural]
+	rule [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => 8 [structural]
+	// rule [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG_LONG") [structural]
 	
-	rule [numBytes-float]: numBytes(t(?, float)) => 4 [structural]
-	rule [numBytes-double]: numBytes(t(?, double)) => 8 [structural]
-	rule [numBytes-long-double]: numBytes(t(?, long-double)) => 16 [structural]
+	rule [numBytes-float]: numBytes(t(_, float)) => 4 [structural]
+	rule [numBytes-double]: numBytes(t(_, double)) => 8 [structural]
+	rule [numBytes-long-double]: numBytes(t(_, long-double)) => 16 [structural]
 	
 	rule [numBytes-enum]: numBytes(t(S:Set, enumType(X:#Id))) => numBytes(t(S:Set, int)) [structural]
 	
@@ -336,7 +336,7 @@ kmod COMMON-C-SETTINGS is
 	// rule [cfg-wchar-t]: cfg:wcharut => t(.Set, kccSettingSimpleType("_KCC_WCHAR_T")) [structural]
 	
 	op simpleType : Type -> SimpleType
-	rule simpleType(t(?, T:K)) => T:K [structural]
+	rule simpleType(t(_, T:K)) => T:K [structural]
 	
 	op cfg:largestUnsigned : -> Type 
 	rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
@@ -347,24 +347,24 @@ kmod COMMON-C-SETTINGS is
 	op cfg:ptrdiffut : -> Type 
 	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
 	
-	rule [min]: min(t(S:Set, enumType(?:#Id))) => min(t(S:Set, int)) [structural]
-	rule [max]: max(t(S:Set, enumType(?:#Id))) => max(t(S:Set, int)) [structural]
+	rule [min]: min(t(S:Set, enumType(_:#Id))) => min(t(S:Set, int)) [structural]
+	rule [max]: max(t(S:Set, enumType(_:#Id))) => max(t(S:Set, int)) [structural]
 	
 	op rank : Type -> #Int 
 		
-	rule rank(t(?, bool)) => 0 [structural]
-	rule rank(t(?, signed-char)) => 1 [structural]
-	rule rank(t(?, unsigned-char)) => 1 [structural]
-	rule rank(t(?, short-int)) => 2 [structural]
-	rule rank(t(?, unsigned-short-int)) => 2 [structural]
-	rule rank(t(?, int)) => 3 [structural]
-	rule rank(t(?, unsigned-int)) => 3 [structural]
-	rule rank(t(?, long-int)) => 4 [structural]
-	rule rank(t(?, unsigned-long-int)) => 4 [structural]
-	rule rank(t(?, long-long-int)) => 5 [structural]
-	rule rank(t(?, unsigned-long-long-int)) => 5 [structural]
+	rule rank(t(_, bool)) => 0 [structural]
+	rule rank(t(_, signed-char)) => 1 [structural]
+	rule rank(t(_, unsigned-char)) => 1 [structural]
+	rule rank(t(_, short-int)) => 2 [structural]
+	rule rank(t(_, unsigned-short-int)) => 2 [structural]
+	rule rank(t(_, int)) => 3 [structural]
+	rule rank(t(_, unsigned-int)) => 3 [structural]
+	rule rank(t(_, long-int)) => 4 [structural]
+	rule rank(t(_, unsigned-long-int)) => 4 [structural]
+	rule rank(t(_, long-long-int)) => 5 [structural]
+	rule rank(t(_, unsigned-long-long-int)) => 5 [structural]
 	
-	rule rank(t(S:Set, enumType(?:#Id))) => rank(t(S:Set, int)) [structural]
+	rule rank(t(S:Set, enumType(_:#Id))) => rank(t(S:Set, int)) [structural]
 	//C99 6.3.1.1
 	
 	/*
@@ -406,11 +406,11 @@ kmod COMMON-C-SEMANTICS-MISC is
 
 	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
 
-	rule [expression-loc]: ExpressionLoc(K:K, ?) => K:K [structural]
+	rule [expression-loc]: ExpressionLoc(K:K, _) => K:K [structural]
 
 	rule [CodeLoc-k]:
 		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > ? => L:CabsLoc </ currentProgramLoc >
+		< currentProgramLoc > _ => L:CabsLoc </ currentProgramLoc >
 		[structural]
 		
 		
@@ -420,25 +420,25 @@ kmod COMMON-C-SEMANTICS-MISC is
 \broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
 	*/
 	rule [Pragma]:
-		< k > Pragma(?:K) => .K ...</ k >
+		< k > Pragma(_:K) => .K ...</ k >
 		[structural]
 	// fixme, problem in K:  this rule takes 150 seconds to error
 	// rule [Pragma]:
-		// < k > Pragma(?:K) => ? ...</ k >
+		// < k > Pragma(_:K) => _ ...</ k >
 		// [structural]
 		
 	// rule [Attributes]:
 		// < k > Attribute(S:#String, List(L:List{K})) => AttributeValue(S:#String, L:List{K}) ...</ k >
 		// [structural]
 		
-	rule AttributeWrapper(K:K, ?) => K:K [structural]
+	rule AttributeWrapper(K:K, _) => K:K [structural]
 	
 	rule N:#Nat +Nat bito(M:#Nat) => N:#Nat +Nat (M:#Nat /Nat numBitsPerByte) +Nat bito(M:#Nat %Nat numBitsPerByte)
 		when M:#Nat >=Nat numBitsPerByte 
 		[structural]
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
-	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), ?) [structural]
+	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), _) [structural]
 	rule Identifier("___missing_field_name") => #NoName [structural]
 	// #NoName [structural] 
 endkm

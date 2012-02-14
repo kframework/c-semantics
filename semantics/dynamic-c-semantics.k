@@ -17,7 +17,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 			
 	rule [sequencePoint]:
 		< k > sequencePoint => .K ...</ k >
-		< locsWrittenTo > ? => .Bag </ locsWrittenTo >
+		< locsWrittenTo > _ => .Bag </ locsWrittenTo >
 		[structural ndlocal]
 
 	// fixme these should be computational, unless I handle that at a higher level
@@ -139,7 +139,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		// if S:#String =/=Bool ""
 		// [structural]
 	// rule [flush-out-done]: 
-		// < k > flushString(?, "") => .K ...</ k >
+		// < k > flushString(_, "") => .K ...</ k >
 		// [structural]
 endkm
 
@@ -256,25 +256,25 @@ or equivalent;9) or in some other implementation-defined manner
 	rule < k > callMain(N:#Nat, X:#Id, Args:K)
 			=> callMain-aux(typeof(Identifier("main")), N:#Nat, X:#Id, Args:K)
 		...</ k >
-		< functionTranslationUnits >... Tu:K |-> Map((? Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
-		< currentTranslationUnit > ? => Tu:K </ currentTranslationUnit >
+		< functionTranslationUnits >... Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
+		< currentTranslationUnit > _ => Tu:K </ currentTranslationUnit >
 		[structural]
 	
 	// FIXME i think these are slightly different
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), ?:#Id))), N:#Nat, X:#Id, ?) 
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:#Id))), N:#Nat, X:#Id, _) 
 		=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:#Nat, X:#Id, ?) 
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:#Nat, X:#Id, _) 
 		=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:#Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
 		when T:KResult ==Bool t(.Set, char)
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), ?:#Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), ?:#Id)))), N:#Nat, X:#Id, Args:K)
+	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:#Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
 		when T:KResult ==Bool t(.Set, char)
@@ -290,7 +290,7 @@ or equivalent;9) or in some other implementation-defined manner
 		...</ thread > ...</ threads > ...</ T >
 			=> < resultValue > V:KResult </ resultValue >)
 		< files >...
-			<fileCommands> ? => .K </fileCommands> // to prevent further io commands from firing
+			<fileCommands> _ => .K </fileCommands> // to prevent further io commands from firing
 			<file>... // stdout
 				<fid> 1 </fid>
 				<buff> S2'':#String </buff>

@@ -27,7 +27,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	
 	op isNotTruthValue : Value -> #Bool
-	rule isNotTruthValue(tv(V:K, t(?, T:K))) 
+	rule isNotTruthValue(tv(V:K, t(_, T:K))) 
 		=> T:K =/=Bool int
 		orBool (
 			V:K =/=Bool 0
@@ -37,10 +37,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	op getIdOfDeclaration : K -> K 
 	op getIdOfName : K -> K 
-	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(?, List(K:K)))) => getIdOfName(K:K) [structural]
-	rule getIdOfName(InitName(K:K, ?)) => getIdOfName(K:K) [structural]
-	rule getIdOfName(SingleName(?, K:K)) => getIdOfName(K:K) [structural] 
-	rule getIdOfName(Name(X:#Id, ?)) => X:#Id [structural]
+	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(_, List(K:K)))) => getIdOfName(K:K) [structural]
+	rule getIdOfName(InitName(K:K, _)) => getIdOfName(K:K) [structural]
+	rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K) [structural] 
+	rule getIdOfName(Name(X:#Id, _)) => X:#Id [structural]
 	
 	// this maintains byte order
 	op fillToBytes-aux : K List{K} -> K
@@ -85,13 +85,13 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		=> piece(piece(N'':#Nat, Len':#Nat) bit:: N:#Nat bit:: N':#Nat, Len:#Nat +Nat Len':#Nat)
 		[structural]
 
-	rule bitRange(N:#Nat bit:: piece(?:#Nat, Len:#Nat), Pos:#Nat, Pos:#Nat)
+	rule bitRange(N:#Nat bit:: piece(_:#Nat, Len:#Nat), Pos:#Nat, Pos:#Nat)
 		=> bitRange(N:#Nat, absInt(Pos:#Nat -Int Len:#Nat), absInt(Pos:#Nat -Int Len:#Nat))
 		when Pos:#Nat >Nat 0
 		andBool Pos:#Nat -Int Len:#Nat >=Int 0
 		[structural]
 		
-	rule bitRange(?:#Nat bit:: piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
+	rule bitRange(_:#Nat bit:: piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
 	rule bitRange(piece(N:#Nat, 1), 0, 0) => piece(N:#Nat, 1) [structural]
 		
 	rule bitRange(piece(bitRange(N:#Nat, Start:#Nat, End:#Nat), Len:#Nat), 0, 0)
@@ -110,7 +110,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when sNat(To:#Nat) ==Bool numBitsPerByte
 		[structural]
 	
-	rule bitRange(?:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
+	rule bitRange(_:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
 		=> bitRange(piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
 		when sNat(End:#Nat) <=Nat Len:#Nat
 		[structural]
@@ -118,7 +118,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule bitRange(piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
 		=> piece(N:#Nat, sNat(End:#Nat))
 		[structural]
-	rule bitRange(?:#Nat bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
+	rule bitRange(_:#Nat bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
 		=> piece(N:#Nat, sNat(End:#Nat))
 		[structural]
 		
@@ -131,31 +131,31 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
-		< k > extractField(L:List{K}, 't(?,, L:KLabel(S:#Id)), F:#Id)
+		< k > extractField(L:List{K}, 't(_,, L:KLabel(S:#Id)), F:#Id)
 			=> extractField-pre(L:List{K}, T:KResult, Offset:#Nat, bitSizeofType(T:KResult)) 
 		...</ k >
 		< structs >... 
-			S:#Id |-> aggregateInfo(?, (? F:#Id |-> T:KResult), (? F:#Id |-> Offset:#Nat)) 
+			S:#Id |-> aggregateInfo(_, (_ F:#Id |-> T:KResult), (_ F:#Id |-> Offset:#Nat)) 
 		...</ structs >
 		when L:KLabel ==Bool 'unionType
 		orBool L:KLabel ==Bool 'structType
 		[structural]
 
 	rule
-		< k > extractField-pre(L:List{K}, T:KResult, Offset:#Nat, tv(Len:#Nat, ?))
+		< k > extractField-pre(L:List{K}, T:KResult, Offset:#Nat, tv(Len:#Nat, _))
 			=> concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:#Nat, Len:#Nat)))
 		...</ k >
 		[structural]
 	
-	rule isConcreteNumber(sym(?:#Nat) +Nat ?:#Nat) => false [structural]
-	rule isConcreteNumber(bito(?:#Nat) +Nat ?:#Nat) => false [structural]
+	rule isConcreteNumber(sym(_:#Nat) +Nat _:#Nat) => false [structural]
+	rule isConcreteNumber(bito(_:#Nat) +Nat _:#Nat) => false [structural]
 	rule isConcreteNumber(I:#Int) => true
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]
 	
 	// this should probably go in the k prelude
 
-	rule K:K in (ListItem(K:K) ?) => true [structural]
+	rule K:K in (ListItem(K:K) _) => true [structural]
 	rule K:K in .List => false [structural]
 	rule K:K in (ListItem(K':K) L:List) => K:K in L:List
 		when K:K =/=Bool K':K
@@ -168,42 +168,42 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	//- derived
 	rule bitsToBytes(N:#Nat) => absInt(ceilingRat(N:#Nat /Rat numBitsPerByte)) [structural]
 		
-	rule numBytes(t(?, unsigned-char)) => numBytes(t(.Set, signed-char)) [structural]
-	rule numBytes(t(?, unsigned-short-int)) => numBytes(t(.Set, short-int)) [structural]
-	rule numBytes(t(?, unsigned-int)) => numBytes(t(.Set, int)) [structural]
-	rule numBytes(t(?, unsigned-long-int)) => numBytes(t(.Set, long-int)) [structural]
-	rule numBytes(t(?, unsigned-long-long-int)) => numBytes(t(.Set, long-long-int)) [structural]
+	rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char)) [structural]
+	rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int)) [structural]
+	rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int)) [structural]
+	rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int)) [structural]
+	rule numBytes(t(_, unsigned-long-long-int)) => numBytes(t(.Set, long-long-int)) [structural]
 	
 	rule numBits(t(S:Set, T:K)) => numBytes(t(S:Set, T:K)) *Nat numBitsPerByte
 		when getKLabel(T:K) =/=Bool 'bitfieldType
 		[structural]
-	rule numBits(t(?, bitfieldType(?, N:#Nat))) => N:#Nat [structural]
+	rule numBits(t(_, bitfieldType(_, N:#Nat))) => N:#Nat [structural]
 
-	rule min(t(?, bool)) => 0 [structural]
-	rule max(t(?, bool)) => 1 [structural]
+	rule min(t(_, bool)) => 0 [structural]
+	rule max(t(_, bool)) => 1 [structural]
 	
-	rule min(t(?, signed-char)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
-	// rule min(t(?, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
-	rule max(t(?, signed-char)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1) [structural]
-	rule min(t(?, short-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
-	rule max(t(?, short-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1) [structural]
-	rule min(t(?, int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1))) [structural]
-	rule max(t(?, int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1)), 1) [structural]
-	rule min(t(?, long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1))) [structural]
-	rule max(t(?, long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1)), 1) [structural]
-	rule min(t(?, long-long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1))) [structural]
-	rule max(t(?, long-long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)), 1) [structural]
+	rule min(t(_, signed-char)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
+	// rule min(t(_, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
+	rule max(t(_, signed-char)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1) [structural]
+	rule min(t(_, short-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
+	rule max(t(_, short-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1) [structural]
+	rule min(t(_, int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1))) [structural]
+	rule max(t(_, int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, int)), 1)), 1) [structural]
+	rule min(t(_, long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1))) [structural]
+	rule max(t(_, long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-int)), 1)), 1) [structural]
+	rule min(t(_, long-long-int)) => -Int (2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1))) [structural]
+	rule max(t(_, long-long-int)) => _-Int_(2 ^Nat absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)), 1) [structural]
 	
-	rule min(t(?, unsigned-char)) => 0 [structural]
-	rule max(t(?, unsigned-char)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-char))), 1) [structural]
-	rule min(t(?, unsigned-short-int)) => 0 [structural]
-	rule max(t(?, unsigned-short-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-short-int))), 1) [structural]
-	rule min(t(?, unsigned-int)) => 0 [structural]
-	rule max(t(?, unsigned-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-int))), 1) [structural]
-	rule min(t(?, unsigned-long-int)) => 0 [structural]
-	rule max(t(?, unsigned-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-int))), 1) [structural]
-	rule min(t(?, unsigned-long-long-int)) => 0 [structural]
-	rule max(t(?, unsigned-long-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-long-int))), 1) [structural]
+	rule min(t(_, unsigned-char)) => 0 [structural]
+	rule max(t(_, unsigned-char)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-char))), 1) [structural]
+	rule min(t(_, unsigned-short-int)) => 0 [structural]
+	rule max(t(_, unsigned-short-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-short-int))), 1) [structural]
+	rule min(t(_, unsigned-int)) => 0 [structural]
+	rule max(t(_, unsigned-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-int))), 1) [structural]
+	rule min(t(_, unsigned-long-int)) => 0 [structural]
+	rule max(t(_, unsigned-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-int))), 1) [structural]
+	rule min(t(_, unsigned-long-long-int)) => 0 [structural]
+	rule max(t(_, unsigned-long-long-int)) => _-Int_(2 ^Nat absInt(numBits(t(.Set, unsigned-long-long-int))), 1) [structural]
 	
 	
 	rule stringToChar(C:#Char) => C:#Char [structural]
@@ -254,14 +254,14 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	rule [getString]:
-		< k > tv(N:#Nat, ?) 
+		< k > tv(N:#Nat, _) 
 			~> getString-aux(tv(Loc:#Nat, _), S:#String)
 			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
 		...</ k >
 		when N:#Nat =/=Bool 0
 		[structural]
 	rule [getString-done]:
-		< k > tv(0, ?) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
+		< k > tv(0, _) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
 			=> str(S:#String)
 		...</ k >
 		[structural]
@@ -334,7 +334,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		=> hasUnsignedIntegerType(T:KResult) orBool hasSignedIntegerType(T:KResult)
 		[structural]
 	
-	rule hasUnsignedIntegerType(t(?, T:K)) => true
+	rule hasUnsignedIntegerType(t(_, T:K)) => true
 		when (unsignedIntegerTypes contains T:K)
 		[structural]
 
@@ -342,39 +342,39 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when getKLabel(T:K) =/=Bool 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
 		[structural]
-	rule hasUnsignedIntegerType(t(?, bitfieldType(T:KResult, ?:#Nat))) => true
+	rule hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => true
 		when hasUnsignedIntegerType(T:KResult) ==Bool true
 		[structural]
-	rule hasUnsignedIntegerType(t(?, bitfieldType(T:KResult, ?:#Nat))) => false
+	rule hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => false
 		when hasUnsignedIntegerType(T:KResult) ==Bool false
 		[structural]
 	
-	rule hasSignedIntegerType(t(?, T:K)) => true
+	rule hasSignedIntegerType(t(_, T:K)) => true
 		when (signedIntegerTypes contains T:K)
 		[structural]
-	rule hasSignedIntegerType(t(?, enumType(?:#Id))) => true [structural] // choice fixme
+	rule hasSignedIntegerType(t(_, enumType(_:#Id))) => true [structural] // choice fixme
 	rule hasSignedIntegerType(t(S:Set, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
 		[structural]
-	rule hasSignedIntegerType(t(?, bitfieldType(T:KResult, ?:#Nat))) => true
+	rule hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => true
 		when hasSignedIntegerType(T:KResult) ==Bool true
 		[structural]
-	rule hasSignedIntegerType(t(?, bitfieldType(T:KResult, ?:#Nat))) => false
+	rule hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => false
 		when hasSignedIntegerType(T:KResult) ==Bool false
 		[structural]
 
-	rule min(t(?, bitfieldType(T:KResult, N:#Nat))) => 0
+	rule min(t(_, bitfieldType(T:KResult, N:#Nat))) => 0
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
-	rule max(t(?, bitfieldType(T:KResult, N:#Nat))) => _-Int_(2 ^Nat absInt(N:#Nat), 1)
+	rule max(t(_, bitfieldType(T:KResult, N:#Nat))) => _-Int_(2 ^Nat absInt(N:#Nat), 1)
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
 	
-	rule min(t(?, bitfieldType(T:KResult, N:#Nat))) => -Int (2 ^Nat absInt(_-Int_(N:#Nat, 1)))
+	rule min(t(_, bitfieldType(T:KResult, N:#Nat))) => -Int (2 ^Nat absInt(_-Int_(N:#Nat, 1)))
 		when hasSignedIntegerType(T:KResult)
 		[structural]
-	rule max(t(?, bitfieldType(T:KResult, N:#Nat))) => _-Int_(2 ^Nat absInt(_-Int_(N:#Nat, 1)), 1)
+	rule max(t(_, bitfieldType(T:KResult, N:#Nat))) => _-Int_(2 ^Nat absInt(_-Int_(N:#Nat, 1)), 1)
 		when hasSignedIntegerType(T:KResult)
 		[structural]
 		
@@ -387,10 +387,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural] 
 	rule _bit::_(piece(0, 0), N:#Nat) => N:#Nat [structural] 
 	rule piece(piece(N:#Nat, Len:#Nat), Len:#Nat) => piece(N:#Nat, Len:#Nat) [structural] 
-	rule value(tv(V:List{K}, ?)) => V:List{K} [structural]
-	rule type(tv(?, T:KResult)) => T:KResult [structural]
+	rule value(tv(V:List{K}, _)) => V:List{K} [structural]
+	rule type(tv(_, T:KResult)) => T:KResult [structural]
 
-	rule isBasicType('t(?,, K:K)) => if (
+	rule isBasicType('t(_,, K:K)) => if (
 		K:K ==Bool bool
 		orBool K:K ==Bool void
 		orBool K:K ==Bool char
@@ -423,7 +423,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
 	
 	
-	rule assert(true, ?:#Nat) => .K [structural]
+	rule assert(true, _:#Nat) => .K [structural]
 endkm
 
 kmod COMMON-C-BITSIZE is
@@ -435,9 +435,9 @@ kmod COMMON-C-BITSIZE is
 	
 	rule bitSizeofList(L:List{KResult}) => bitSizeofList-aux(.K, 0, L:List{KResult})
 		[structural]
-	rule bitSizeofList-aux((.K => bitSizeofType(T:KResult)), ?:#Nat, ((T:KResult => .List{K}),, ?:List{KResult}))
+	rule bitSizeofList-aux((.K => bitSizeofType(T:KResult)), _:#Nat, ((T:KResult => .List{K}),, _:List{KResult}))
 		[structural]
-	rule bitSizeofList-aux((tv(Len':#Nat, ?) => .K), (Len:#Nat => Len:#Nat +Nat Len':#Nat), ?)
+	rule bitSizeofList-aux((tv(Len':#Nat, _) => .K), (Len:#Nat => Len:#Nat +Nat Len':#Nat), _)
 		[structural]
 	rule bitSizeofList-aux(.K, Len:#Nat, .List{K}) => tv(Len:#Nat, cfg:largestUnsigned)
 		[structural]	
@@ -453,7 +453,7 @@ kmod COMMON-C-BITSIZE is
 		...</ k >
 		[structural] 
 	rule
-		< k > (tv(N':#Nat, ?) => .) 
+		< k > (tv(N':#Nat, _) => .) 
 			~> maxBitSizeofList-aux(L:List{KResult}, (N:#Nat => maxNat(N:#Nat, N':#Nat))) 
 		...</ k >
 		[structural] 
@@ -461,28 +461,28 @@ kmod COMMON-C-BITSIZE is
 		< k > maxBitSizeofList-aux(.List{K}, N:#Nat) => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
 		[structural] 
 	
-	rule bitSizeofType(t(?, arrayType(T:KResult, N:#Nat))) => bitSizeofType(T:KResult) * tv(N:#Nat, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, functionType(?, ?:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, pointerType(?))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, bitfieldType(?, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(?, qualifiedType(T:KResult, ?))) => bitSizeofType(T:KResult) [structural]
+	rule bitSizeofType(t(_, arrayType(T:KResult, N:#Nat))) => bitSizeofType(T:KResult) * tv(N:#Nat, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(_, bitfieldType(_, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural]
+	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural]
 	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural]
-	rule bitSizeofType(typedDeclaration(T:KResult, ?:#Id)) => bitSizeofType(T:KResult) [structural]
+	rule bitSizeofType(typedDeclaration(T:KResult, _:#Id)) => bitSizeofType(T:KResult) [structural]
 
 	rule
-		< k > bitSizeofType(t(?, structType(S:#Id))) => bitSizeofList(L:List{KResult}) ...</ k >
-		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, ?, ?) ...</ structs >
+		< k > bitSizeofType(t(_, structType(S:#Id))) => bitSizeofList(L:List{KResult}) ...</ k >
+		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, _, _) ...</ structs >
 		[structural] 
 	rule
-		< k > bitSizeofType(t(?, unionType(S:#Id))) => maxBitSizeofList(L:List{KResult}) ...</ k >
-		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, ?, ?) ...</ structs >
+		< k > bitSizeofType(t(_, unionType(S:#Id))) => maxBitSizeofList(L:List{KResult}) ...</ k >
+		< structs >... S:#Id |-> aggregateInfo(L:List{KResult}, _, _) ...</ structs >
 		[structural]
 		
 	rule K2Nat(N:#Nat) => N:#Nat [structural]
 
-	rule getFieldOffset(F:#Id, aggregateInfo(?, ?, (? F:#Id |-> N:#Nat))) => N:#Nat [structural]
-	rule getFieldType(F:#Id, aggregateInfo(?, ?, (? F:#Id |-> T:KResult))) => T:KResult [structural]
+	rule getFieldOffset(F:#Id, aggregateInfo(_, _, (_ F:#Id |-> N:#Nat))) => N:#Nat [structural]
+	rule getFieldType(F:#Id, aggregateInfo(_, _, (_ F:#Id |-> T:KResult))) => T:KResult [structural]
 
 		
 	rule toString(Identifier(S:#String)) => S:#String [structural]

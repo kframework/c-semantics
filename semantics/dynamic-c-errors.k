@@ -55,14 +55,14 @@ kmod DYNAMIC-C-ERRORS is
 			< threads > 
 				(B:Bag => halt B:Bag)
 				< thread >...
-					< finalComputation > ?:K </ finalComputation >
+					< finalComputation > _:K </ finalComputation >
 				...</ thread > 
 			</ threads > 
 		...</ T => halted-T >
 		[structural]
 	
 	rule [err00001]:
-		< k => finalComputation > cast(t(?, T:K), emptyValue) ...</ k => finalComputation >
+		< k => finalComputation > cast(t(_, T:K), emptyValue) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00001", "Casting empty value to type other than void.") </ errorCell >)
 		when T:K =/=Bool void
 		[structural]
@@ -77,64 +77,64 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00005]:
-		< k => finalComputation > extractByteFromMem(sym(Block:#Nat) +Nat ?:#Nat) ...</ k => finalComputation >
+		< k => finalComputation > extractByteFromMem(sym(Block:#Nat) +Nat _:#Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:#Nat)
 		[structural]
 	
 	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (?:List{K},, piece(unknown(Len:#Nat), Len:#Nat)), ?:K) ...</ k => finalComputation >
+		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:#Nat), Len:#Nat)), _:K) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </ errorCell >)
 		when notBool hasCharType(T:KResult)
 		[structural]
 		
 	rule [err00007]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat ?:#Nat) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat _:#Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:#Nat)
 		[structural]
 	
 	rule [err00008]:
-		< k => finalComputation > concretize(t(?, pointerType(?)), dataList((piece(unknown(Len:#Nat), Len:#Nat),, ?))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:#Nat), Len:#Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00008", "Reading uninitialized memory.") </ errorCell >)
 		[structural]
 	
 	rule [err00009]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:#Nat), Len:#Nat),, ?))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:#Nat), Len:#Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00009", "Reading uninitialized memory.") </ errorCell >)
 		when hasFloatType(T:KResult)
 		[structural]
 		
 	rule [err00010]:
 		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat Offset:#Nat) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) ?, ?) ...</ mem >
+		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) _, _) ...</ mem >
 		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
 		when Offset:#Nat >Nat Size:#Nat
 		[structural]
 		
 		
 	rule [err00011]:
-		< k => finalComputation > tv(?, T:KResult) < tv(?, T':KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(_, T:KResult) < tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00011", "Directly comparing an integer type with a pointer type.") </ errorCell >)
 		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
 		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural]
 	rule [err00012]:
-		< k => finalComputation > tv(?, T:KResult) <= tv(?, T':KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(_, T:KResult) <= tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00012", "Directly comparing an integer type with a pointer type.") </ errorCell >)
 		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
 		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00013]:
-		< k => finalComputation > tv(?, T:KResult) > tv(?, T':KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(_, T:KResult) > tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00013", "Directly comparing an integer type with a pointer type.") </ errorCell >)
 		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
 		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00014]:
-		< k => finalComputation > tv(?, T:KResult) >= tv(?, T':KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(_, T:KResult) >= tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00014", "Directly comparing an integer type with a pointer type.") </ errorCell >)
 		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
 		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
@@ -149,7 +149,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 		
 	rule [err00016]:
-		< k => finalComputation > writeByte(Loc:#Nat, ?) ...</ k => finalComputation >
+		< k => finalComputation > writeByte(Loc:#Nat, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </ errorCell >)
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		when Loc:#Nat in Locs:Bag
@@ -179,8 +179,8 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00020]:
-		< k => finalComputation > writeByte(sym(Block:#Nat) +Nat Offset:#Nat, ?) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) ...</ mem >		
+		< k => finalComputation > writeByte(sym(Block:#Nat) +Nat Offset:#Nat, _) ...</ k => finalComputation >
+		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) _, _) ...</ mem >		
 		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
 		when notBool Offset:#Nat <Nat Len:#Nat
 		[structural] 
@@ -207,19 +207,19 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00024]:
-		< k => finalComputation > arithInterpret(?, I:#Int &Int I':#Int) ...</ k => finalComputation >
+		< k => finalComputation > arithInterpret(_, I:#Int &Int I':#Int) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00024", "Bitwise & used on a symbolic number (address) or float.") </ errorCell >)
 		when notBool isConcreteNumber(I':#Int)
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(?, functionType(t(?, T:K), ?:List{KResult})), ?:#Nat, ?:#Id, ?) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:#Nat, _:#Id, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
 		when T:K =/=Bool int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:K), ?:#Id),, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id),, _:List{KResult}))), _:#Nat, _:#Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		when T:K =/=Bool int andBool T:K =/=Bool void
@@ -227,43 +227,43 @@ kmod DYNAMIC-C-ERRORS is
 		
 	op isArgvType : Type -> #Bool
 	
-	rule isArgvType(t(?, T:K)) => false
+	rule isArgvType(t(_, T:K)) => false
 		when notBool (
 			getKLabel(T:K) ==Bool 'incompleteArrayType 
 			orBool getKLabel(T:K) ==Bool 'incompleteArrayType
 		)
 		[structural]
 		
-	rule isArgvType(t(?, incompleteArrayType(t(?, T:K)))) => false
+	rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(t(?, incompleteArrayType(t(?, pointerType(t(?, T:K)))))) => false
+	rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=Bool char
 		[structural]
 		
-	rule isArgvType(t(?, pointerType(t(?, T:K)))) => false
+	rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==Bool 'pointerType
 		[structural]
-	rule isArgvType(t(?, pointerType(t(?, pointerType(t(?, T:K)))))) => false
+	rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=Bool char
 		[structural]
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, int), ?:#Id),, typedDeclaration(T:KResult, ?:#Id)))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:#Id),, typedDeclaration(T:KResult, _:#Id)))), _:#Nat, _:#Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		when notBool isArgvType(T:KResult)
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(?, functionType(t(?, int), (?:KResult,, ?:KResult,, ?:KResult,, ?:List{KResult}))), ?:#Nat, ?:#Id, ?) 
+			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:List{KResult}))), _:#Nat, _:#Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(?, functionType(t(?, int), (typedDeclaration(t(?, T:K), ?:#Id)))), ?:#Nat, ?:#Id, ?)
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id)))), _:#Nat, _:#Id, _)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
 		when T:K =/=Bool void
@@ -271,28 +271,28 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
+			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
+			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
+			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat ?:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat ?:#Nat, T:KResult)
+			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
 		when Base:#Nat =/=Bool Base':#Nat
@@ -300,7 +300,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00034]:
 		< k => finalComputation > 
-			cast(t(?, T:K), skipval)
+			cast(t(_, T:K), skipval)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00034", "Casting void type to non-void type.") </ errorCell >)
 		when (T:K =/=Bool void)
@@ -308,7 +308,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00035]:
 		< k => finalComputation > 
-			write(lv(Dest:#Nat, t(SetItem(Const) ?, ?)), ?)
+			write(lv(Dest:#Nat, t(SetItem(Const) _, _)), _)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00035", "Trying to write through a const lvalue.") </ errorCell >)
 		[structural]
@@ -324,7 +324,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00038]:
-		< k => finalComputation > ArrayType(T:KResult, tv(0, ?), ?)  ...</ k => finalComputation >
+		< k => finalComputation > ArrayType(T:KResult, tv(0, _), _)  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00038", "Arrays cannot be of 0 length.") </ errorCell >)
 		[structural]
 	
@@ -338,12 +338,12 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00041]:
-		< k => finalComputation > types((t(?, void),, t(?, T:K)))  ...</ k => finalComputation >
+		< k => finalComputation > types((t(_, void),, t(_, T:K)))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00041", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
 		when T:K =/=Bool void
 		[structural]
 	rule [err00042]:
-		< k => finalComputation > types((t(?, T:K),, t(?, void)))  ...</ k => finalComputation >
+		< k => finalComputation > types((t(_, T:K),, t(_, void)))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
 		when T:K =/=Bool void
 		[structural]
@@ -356,7 +356,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00044]:
-		< k => finalComputation > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, ?))  ...</ k => finalComputation >
+		< k => finalComputation > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, _))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00044", "An array subscript is out of range.") </ errorCell >)
 		when notBool ifFromArrayInBounds(T:KResult, I:#Int)
 		[structural]
@@ -367,11 +367,11 @@ kmod DYNAMIC-C-ERRORS is
 	// fixme possible to miss dataraces with bitfields
 	rule [read-write-race]:
 		< T > 
-			? 
+			_ 
 			< threads > 
-				?
-				< thread > ? < k > read-aux(Loc:#Nat, ?, BitSize:#Nat) ...</ k > </ thread >
-				< thread > ? < k > write-aux(Loc':#Nat, ?, BitSize':#Nat) ...</ k > </ thread >
+				_
+				< thread > _ < k > read-aux(Loc:#Nat, _, BitSize:#Nat) ...</ k > </ thread >
+				< thread > _ < k > write-aux(Loc':#Nat, _, BitSize':#Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
 		=> < errorCell > datarace(Loc:#Nat, BitSize:#Nat, Loc':#Nat, BitSize':#Nat) </ errorCell >
@@ -385,11 +385,11 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [write-write-race]:
 		< T > 
-			? 
+			_ 
 			< threads > 
-				?
-				< thread > ? < k > write-aux(Loc:#Nat, ?, BitSize:#Nat) ...</ k > </ thread >
-				< thread > ? < k > write-aux(Loc':#Nat, ?, BitSize':#Nat) ...</ k > </ thread >
+				_
+				< thread > _ < k > write-aux(Loc:#Nat, _, BitSize:#Nat) ...</ k > </ thread >
+				< thread > _ < k > write-aux(Loc':#Nat, _, BitSize':#Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
 		=> < errorCell > datarace(Loc:#Nat, BitSize:#Nat, Loc':#Nat, BitSize':#Nat) </ errorCell >

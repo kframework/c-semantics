@@ -168,11 +168,11 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	op StructRef : #Id -> TypeSpecifier [ctor] // new
 	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context StructDef(_:#Id, List((?:List{K},, HOLE,, ?:List{K})))
+	context StructDef(_:#Id, List((_:List{K},, HOLE,, _:List{K})))
 	op UnionRef : #Id -> TypeSpecifier [ctor] // new
 	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
 	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	context UnionDef(_:#Id, List((?:List{K},, HOLE,, ?:List{K})))
+	context UnionDef(_:#Id, List((_:List{K},, HOLE,, _:List{K})))
 	op EnumRef : #Id -> TypeSpecifier [ctor] // new
 	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
 	op TypeofExpression : K -> TypeSpecifier [ctor]
@@ -200,7 +200,7 @@ and storage =
 and funspec = 
 	INLINE | VIRTUAL | EXPLICIT
 */
-	// Not sure what this is from, maybe C++?  It's not used elsewhere in cabs.
+	// Not sure what this is from, maybe C++_  It's not used elsewhere in cabs.
 	
 /*
 and cvspec =
@@ -234,7 +234,7 @@ and spec_elem =
 	and specifier = spec_elem list
 */
 	op Specifier : K -> Specifier
-	context Specifier(List((?:List{K},, HOLE,, ?:List{K})))
+	context Specifier(List((_:List{K},, HOLE,, _:List{K})))
 	
 /*
 and decl_type =
@@ -262,7 +262,7 @@ and decl_type =
 	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
 	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
-	context Prototype(_, List((?:List{K},, HOLE,, ?:List{K})), _:#Bool)
+	context Prototype(_, List((_:List{K},, HOLE,, _:List{K})), _:#Bool)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K
@@ -272,7 +272,7 @@ and decl_type =
 and name_group = specifier * name list
 */
 	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
-	context NameGroup(_, List((?:List{K},, HOLE,, ?:List{K})))
+	context NameGroup(_, List((_:List{K},, HOLE,, _:List{K})))
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -642,7 +642,7 @@ and unary_operator =
 	op Call : K K -> Expression // K, List
 	context Call((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	// context Call(_, (_ :: (HOLE:C => reval(HOLE)) :: _)) [metadata "ndheat=()"]
-	context Call(_, List((?:List{K},, (HOLE => reval(HOLE)),, ?:List{K}))) [metadata "ndheat=()"]
+	context Call(_, List((_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))) [metadata "ndheat=()"]
 /*
 	| COMMA of expression list
 */
@@ -757,7 +757,7 @@ and attribute = #String * expression list
 	macro DefinitionLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	macro StatementLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	// macro ExpressionLoc(K:K, L:K) = CodeLoc(K:K, L:K)	
-	macro DefinitionLocRange(K:K, ?, L:K) = CodeLoc(K:K, L:K)
+	macro DefinitionLocRange(K:K, _, L:K) = CodeLoc(K:K, L:K)
 	// macro EnumItemLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	
 	

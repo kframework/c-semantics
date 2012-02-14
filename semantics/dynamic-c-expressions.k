@@ -13,7 +13,7 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
 	rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
 	
-	// fixme Whoah!  What about char types?  What is this about?
+	// fixme Whoah!  What about char types_  What is this about_
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
 	
 	
@@ -117,18 +117,18 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 	Unlike the bitwise binary \cinline{&} operator, the \cinline{&&} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares equal to 0, the second operand is not evaluated.
 	*/	
 	rule
-		< k > tv(0, t(?, int)) && E:K
+		< k > tv(0, t(_, int)) && E:K
 			=> tv(0, t(.Set, int))
 		...</ k >
 		[structural]
 	rule
-		< k > tv(1, t(?, int)) && E:K
+		< k > tv(1, t(_, int)) && E:K
 			=> sequencePoint
 			~> simplifyTruth(E:K)
 		...</ k >
 		[structural]
 	rule
-		< k > (V:KResult => simplifyTruth(V:KResult)) && ? ...</ k >
+		< k > (V:KResult => simplifyTruth(V:KResult)) && _ ...</ k >
 		when isNotTruthValue(V:KResult)
 		[structural]	
 				
@@ -138,18 +138,18 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN is
 	Unlike the bitwise \cinline{|} operator, the \cinline{||} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares unequal to 0, the second operand is not evaluated.
 	*/
 	rule
-		< k > tv(0, t(?, int)) || E:K
+		< k > tv(0, t(_, int)) || E:K
 			=> sequencePoint
 			~> simplifyTruth(E:K)
 		...</ k >
 		[structural]
 	rule
-		< k > tv(1, t(?, int)) || E:K
+		< k > tv(1, t(_, int)) || E:K
 			=> tv(1, t(.Set, int))
 		...</ k >
 		[structural]
 	rule
-		< k > (V:KResult => V:KResult != tv(0, t(.Set, int))) || ? ...</ k >
+		< k > (V:KResult => V:KResult != tv(0, t(.Set, int))) || _ ...</ k >
 		when isNotTruthValue(V:KResult)
 		[structural]
 
@@ -166,7 +166,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 
 	op getTypes : List{K} -> K
 	op types : List{K} -> K
-	context types((?,, HOLE,, ?))
+	context types((_,, HOLE,, _))
 	op convertedType : K -> K [metadata "strict=()"]
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
@@ -323,7 +323,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	*/
 	
 	rule [function-application-pre]:
-		< k > Call(tv(Loc:#Nat, t(?, pointerType(T:KResult))), List(L:List{KResult}))
+		< k > Call(tv(Loc:#Nat, t(_, pointerType(T:KResult))), List(L:List{KResult}))
 			=> application(readFunction(Loc:#Nat), L:List{KResult})
 		...</ k >
 		when hasFunctionType(T:KResult)
@@ -331,9 +331,9 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 
 	rule [populateFromGlobal]:
 		< k > populateFromGlobal => .K ...</ k >
-		< genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > ? => G:Map </ env >
-		< gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > ? => GT:Map </ types >
-		< gstructs > GS:Map </ gstructs > < structs > ? => GS:Map </ structs >
+		< genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > _ => G:Map </ env >
+		< gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > _ => GT:Map </ types >
+		< gstructs > GS:Map </ gstructs > < structs > _ => GS:Map </ structs >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 		[structural]
 
@@ -344,7 +344,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		[structural]
 		
 	rule [function-application]:
-		< k > application(functionObject(X:#Id, t(?, functionType(R:KResult, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
+		< k > application(functionObject(X:#Id, t(_, functionType(R:KResult, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
 			=> sequencePoint
 			~> populateFromGlobal
 			~> bind(L:List{KResult}, P:List{KResult})
@@ -371,7 +371,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
 			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
 		...</ control >)
-		< functionTranslationUnits >... OldTu:K |-> Map((? X:#Id |-> Tu:K)) ...</ functionTranslationUnits >
+		< functionTranslationUnits >... OldTu:K |-> Map((_ X:#Id |-> Tu:K)) ...</ functionTranslationUnits >
 		[structural large]
 endkm
 
@@ -597,8 +597,8 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	*/
 	
 	op reducedFloat : #Float -> K
-	rule DecimalFloatConstant(?:#String, ?:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
-	rule HexFloatConstant(?:#String, ?:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
+	rule DecimalFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
+	rule HexFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
 	
 	rule NoSuffix(reducedFloat(F:#Float)) => tv(F:#Float, t(.Set, double))
 		[structural]
@@ -628,7 +628,7 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 		[structural]
 	rule [convert-for-assignment]:
 		< k >
-			lv(?, T:KResult)
+			lv(_, T:KResult)
 			:=
 			(tv(V:List{K}, T':KResult) => cast(T:KResult, tv(V:List{K}, T':KResult)))
 		...</ k >
@@ -834,9 +834,9 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		[structural]
 		
 	op isUnknown : K -> #Bool
-	rule [isUnknown-piece]: isUnknown(piece(?:#Nat, ?:#Nat)) => true [structural]
-	rule [isUnknown-ptr]: isUnknown(sym(?:#Nat) +Nat ?:#Nat) => false [structural]
-	//rule [isUnknown-bito]: isUnknown(bito(?:#Nat) +Nat ?) => false [structural]
+	rule [isUnknown-piece]: isUnknown(piece(_:#Nat, _:#Nat)) => true [structural]
+	rule [isUnknown-ptr]: isUnknown(sym(_:#Nat) +Nat _:#Nat) => false [structural]
+	//rule [isUnknown-bito]: isUnknown(bito(_:#Nat) +Nat _) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:#Int) => false
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]
@@ -894,8 +894,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			=> tv(0, t(.Set, int))
 		...</ k >
 		< mem >... 
-			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
-			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
+			Base:#Nat |-> memblock(mlength(Len:#Nat) _, _) 
+			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:#Nat =/=Bool Base':#Nat
@@ -906,8 +906,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			=> tv(1, t(.Set, int))
 		...</ k >
 		< mem >... 
-			Base:#Nat |-> memblock(mlength(Len:#Nat) ?, ?) 
-			Base':#Nat |-> memblock(mlength(Len':#Nat) ?, ?) 
+			Base:#Nat |-> memblock(mlength(Len:#Nat) _, _) 
+			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:#Nat =/=Bool Base':#Nat
@@ -920,26 +920,26 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	//- comparison of ints with pointers
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
-		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(?, T':KResult)
+		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
-		tv(?, T:KResult) == (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
+		tv(_, T:KResult) == (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
-		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(?, T':KResult)
+		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		andBool N:#Nat ==Bool NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
-		tv(?, T:KResult) != (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
+		tv(_, T:KResult) != (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
 		andBool N:#Nat ==Bool NullPointerConstant
@@ -1005,7 +1005,7 @@ second operand from the first.
 		andBool T':KResult =/=Bool void
 		[structural]
 			
-	rule < k > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, ?))
+	rule < k > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, _))
 			=> tv(Loc:#Nat +Int (I:#Int *Int Size:#Nat), NEWTYPE)
 		...</ k >
 		when ifFromArrayInBounds(T:KResult, I:#Int)
@@ -1034,11 +1034,11 @@ second operand from the first.
 
 	op computePointerDifference : #Int #Int K -> K [metadata "strict=(3)"] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: 
-		tv(I1:#Int, t(?, pointerType(T:KResult))) - tv(I2:#Int, t(?, pointerType(T:KResult)))
+		tv(I1:#Int, t(_, pointerType(T:KResult))) - tv(I2:#Int, t(_, pointerType(T:KResult)))
 			=> computePointerDifference(I1:#Int, I2:#Int, sizeofType(T:KResult))
 		[structural]
 	rule [pointer-difference]: 
-		computePointerDifference(sym(Block:#Nat) +Nat Offset1:#Nat, sym(Block:#Nat) +Nat Offset2:#Nat, tv(Size:#Nat, ?))
+		computePointerDifference(sym(Block:#Nat) +Nat Offset1:#Nat, sym(Block:#Nat) +Nat Offset2:#Nat, tv(Size:#Nat, _))
 			=> tv(_-Int_(Offset1:#Nat, Offset2:#Nat) /Int Size:#Nat, cfg:ptrdiffut)
 		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Bool 0
 		[structural]
@@ -1116,20 +1116,20 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 			
 	// fixme tool bug, can't use L:KLabel
 	rule
-		< k > lv(Loc:#Nat, t(?, structType(S:#Id))) . F:#Id
+		< k > lv(Loc:#Nat, t(_, structType(S:#Id))) . F:#Id
 			=> lv(Loc:#Nat +Nat bito(Offset:#Nat), T:KResult)
 		...</ k >
 		< structs >...
-			S:#Id |-> aggregateInfo(?, (? F:#Id |-> T:KResult), (? F:#Id |-> Offset:#Nat))
+			S:#Id |-> aggregateInfo(_, (_ F:#Id |-> T:KResult), (_ F:#Id |-> Offset:#Nat))
 		...</ structs >
 		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
 	rule
-		< k > lv(Loc:#Nat, t(?, unionType(S:#Id))) . F:#Id
+		< k > lv(Loc:#Nat, t(_, unionType(S:#Id))) . F:#Id
 			=> lv(Loc:#Nat +Nat bito(Offset:#Nat), t(SetItem(fromUnion(S:#Id)) Se:Set, T:K))
 		...</ k >
 		< structs >...
-			S:#Id |-> aggregateInfo(?, (? F:#Id |-> t(Se:Set, T:K)), (? F:#Id |-> Offset:#Nat))
+			S:#Id |-> aggregateInfo(_, (_ F:#Id |-> t(Se:Set, T:K)), (_ F:#Id |-> Offset:#Nat))
 		...</ structs >
 		[structural]
 		
@@ -1153,7 +1153,7 @@ kmod DYNAMIC-SEMANTICS-DEREFERENCE is
 	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
 	*/
 	rule [deref]:
-		< k > *(tv(Loc:#Nat, t(?, pointerType(t(S:Set, T:K)))))
+		< k > *(tv(Loc:#Nat, t(_, pointerType(t(S:Set, T:K)))))
 			=> checkDerefLoc(Loc:#Nat)
 			~> lv(Loc:#Nat, t(S:Set, T:K))
 		...</ k >

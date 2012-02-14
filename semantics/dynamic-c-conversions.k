@@ -47,21 +47,21 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
 	
 	
-	rule hasBeenPromoted(t(?, enumType(?:#Id))) => true [structural]
-	rule hasBeenPromoted(t(?, int)) => true [structural]
-	rule hasBeenPromoted(t(?, unsigned-int)) => true [structural]
-	rule hasBeenPromoted(t(?, long-int)) => true [structural]
-	rule hasBeenPromoted(t(?, unsigned-long-int)) => true [structural]
-	rule hasBeenPromoted(t(?, long-long-int)) => true [structural]
-	rule hasBeenPromoted(t(?, unsigned-long-long-int)) => true [structural]
+	rule hasBeenPromoted(t(_, enumType(_:#Id))) => true [structural]
+	rule hasBeenPromoted(t(_, int)) => true [structural]
+	rule hasBeenPromoted(t(_, unsigned-int)) => true [structural]
+	rule hasBeenPromoted(t(_, long-int)) => true [structural]
+	rule hasBeenPromoted(t(_, unsigned-long-int)) => true [structural]
+	rule hasBeenPromoted(t(_, long-long-int)) => true [structural]
+	rule hasBeenPromoted(t(_, unsigned-long-long-int)) => true [structural]
 	
-	rule hasBeenPromoted(t(?, bool)) => false [structural]
-	rule hasBeenPromoted(t(?, signed-char)) => false [structural]
-	rule hasBeenPromoted(t(?, unsigned-char)) => false [structural]
-	rule hasBeenPromoted(t(?, short-int)) => false [structural]
-	rule hasBeenPromoted(t(?, unsigned-short-int)) => false [structural]
+	rule hasBeenPromoted(t(_, bool)) => false [structural]
+	rule hasBeenPromoted(t(_, signed-char)) => false [structural]
+	rule hasBeenPromoted(t(_, unsigned-char)) => false [structural]
+	rule hasBeenPromoted(t(_, short-int)) => false [structural]
+	rule hasBeenPromoted(t(_, unsigned-short-int)) => false [structural]
 	
-	rule hasBeenPromoted(t(?, bitfieldType(?, ?:#Nat))) => false [structural]
+	rule hasBeenPromoted(t(_, bitfieldType(_, _:#Nat))) => false [structural]
 	
 	
 	rule [promote-unary]:
@@ -73,13 +73,13 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		//andBool hasIntegerType(T:KResult)
 		[structural]
 	rule [promote-binary-left]:
-		< k > L:KLabel((tv(V:K, T:KResult) => tv(V:K, promote(T:KResult))),, ?) ...</ k > 
+		< k > L:KLabel((tv(V:K, T:KResult) => tv(V:K, promote(T:KResult))),, _) ...</ k > 
 		when isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:KResult)
 		//andBool hasIntegerType(T:KResult) // implicity in notBool hasBeenPromoted
 		[structural] 
 	rule [promote-binary-right]:
-		< k > L:KLabel(?,, (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))) ...</ k > 
+		< k > L:KLabel(_,, (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))) ...</ k > 
 		when isArithBinOp(L:KLabel)
 		andBool notBool hasBeenPromoted(T:KResult)
 		//andBool hasIntegerType(T:KResult)
@@ -103,27 +103,27 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 
 	//C99 6.3.1.8
 	// First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double
-	rule usualArithmeticConversion-aux(t(?, long-double), ?) => t(.Set, long-double) [structural]
-	rule usualArithmeticConversion-aux(?, t(?, long-double)) => t(.Set, long-double) [structural] 
+	rule usualArithmeticConversion-aux(t(_, long-double), _) => t(.Set, long-double) [structural]
+	rule usualArithmeticConversion-aux(_, t(_, long-double)) => t(.Set, long-double) [structural] 
 		
 	// Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
 	rule
-		usualArithmeticConversion-aux(t(?, double), t(?, T:K)) => t(.Set, double)
+		usualArithmeticConversion-aux(t(_, double), t(_, T:K)) => t(.Set, double)
 		when long-double =/=Bool T:K
 		[structural] 
 	rule
-		usualArithmeticConversion-aux(T:K, t(?, double)) => t(.Set, double)
+		usualArithmeticConversion-aux(T:K, t(_, double)) => t(.Set, double)
 		when long-double =/=Bool T:K
 		[structural] 
 		
 	// Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
 	rule
-		usualArithmeticConversion-aux(t(?, float), t(?, T:K)) => t(.Set, float)
+		usualArithmeticConversion-aux(t(_, float), t(_, T:K)) => t(.Set, float)
 		when long-double =/=Bool T:K
 		andBool double =/=Bool T:K
 		[structural] 
 	rule
-		usualArithmeticConversion-aux(t(?, T:K), t(?, float)) => t(.Set, float)
+		usualArithmeticConversion-aux(t(_, T:K), t(_, float)) => t(.Set, float)
 		when long-double =/=Bool T:K
 		andBool double =/=Bool T:K
 		[structural] 
@@ -134,9 +134,9 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	//C99 6.3.1.1:2 For objects or expressions with an integer type  whose integer conversion rank is less than or equal to the rank of int and unsigned int, and a bit field of type _Bool, int, signed int, or unsigned int, If an int can represent all values of the original type, the value is converted to an int; otherwise, it is converted to an unsigned int.  These are called the integer promotions.  All other types are unchanged by the integer promotions
 	//C99 6.3.1.1:3 The integer promotions preserve value including sign. As discussed earlier, whether a "plain" char is treated as signed is implementation-defined
 
-	rule [argPromote-float]: argPromote(t(?, float)) => t(.Set, double) [structural]
-	rule [argPromote-double]: argPromote(t(?, double)) => t(.Set, double) [structural]
-	rule [argPromote-long-double]: argPromote(t(?, long-double)) => t(.Set, long-double) [structural]
+	rule [argPromote-float]: argPromote(t(_, float)) => t(.Set, double) [structural]
+	rule [argPromote-double]: argPromote(t(_, double)) => t(.Set, double) [structural]
+	rule [argPromote-long-double]: argPromote(t(_, long-double)) => t(.Set, long-double) [structural]
 	rule [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
 		when hasIntegerType(T:KResult)
 		[structural]
@@ -300,7 +300,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		
 	//- switch assumes casts can happen anywhere
 	rule 
-		cast(t(?, void), _:KResult) => skipval
+		cast(t(_, void), _:KResult) => skipval
 		[structural] 
 		
 	rule
@@ -308,7 +308,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		[structural]
 		
 	rule
-		cast(t(S:Set, T:K), tv(L:List{K}, t(?, T:K))) => tv(L:List{K}, t(S:Set, T:K))
+		cast(t(S:Set, T:K), tv(L:List{K}, t(_, T:K))) => tv(L:List{K}, t(S:Set, T:K))
 		[structural]
 	
 	//c99 6.3.1.2:1 to _Bool
@@ -525,7 +525,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	
 	// fixme all floats same precision
 	rule
-		cast(t(S:Set, T':K), tv(F:#Float, t(?, T:K))) 
+		cast(t(S:Set, T':K), tv(F:#Float, t(_, T:K))) 
 			=> tv(F:#Float, t(S:Set, T':K))
 		when (T:K ==Bool float orBool T:K ==Bool double orBool T:K ==Bool long-double)
 		andBool (T':K ==Bool float orBool T':K ==Bool double orBool T':K ==Bool long-double)
@@ -547,7 +547,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	
 	// fixme needs to check size
 	rule
-		cast(T:KResult, tv(N:#Nat, t(?, pointerType(?))))
+		cast(T:KResult, tv(N:#Nat, t(_, pointerType(_))))
 			=> tv(N:#Nat, T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool notBool hasBoolType (T:KResult)
@@ -558,7 +558,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// choice
 	// needs to handle alignment
 	rule
-		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, t(?, pointerType(?)))) => tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
+		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, t(_, pointerType(_)))) => tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
 		[structural] 
 
 endkm
@@ -573,7 +573,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 	op interpret-aux : Type K -> K 
 	
 	rule [interpret-start]:
-		interpret(T:KResult, piece(N:#Nat, ?:#Nat)) => interpret-aux(T:KResult, N:#Nat)
+		interpret(T:KResult, piece(N:#Nat, _:#Nat)) => interpret-aux(T:KResult, N:#Nat)
 		when N:#Nat >=Nat 0 
 		[structural]
 	

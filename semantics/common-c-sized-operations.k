@@ -79,13 +79,13 @@ kmod FIXED-UNSIGNED-ARITHMETIC is
 		// N:#Nat /uInt[W:#Nat] N':NzNat => Result:#Nat
 		// where Result:#Nat = (N:#Nat /Nat N':NzNat)
 	// rule [fixed-unsigned-division-divz]:
-		// ? /uInt[W:#Nat] 0 => divideByZero
+		// _ /uInt[W:#Nat] 0 => divideByZero
 		
 	// rule [fixed-unsigned-modulo-normal]:
 		// N:#Nat %uInt[W:#Nat] N':NzNat => Result:#Nat
 		// where Result:#Nat = (N:#Nat %Nat N':NzNat)
 	// rule [fixed-unsigned-modulo-divz]:
-		// ? %uInt[W:#Nat] 0 => divideByZero
+		// _ %uInt[W:#Nat] 0 => divideByZero
 		
 	// rule [fixed-unsigned-subtraction-normal]:
 		// N:#Nat -uInt[W:#Nat] N':#Nat => absInt(Result:#Int)
@@ -115,13 +115,13 @@ kmod FIXED-SIGNED-ARITHMETIC is
 		// N:#Int /sInt[W:#Nat] N':NzInt => Result:#Int
 		// where Result:#Int = (N:#Int /Int N':NzInt)
 	// rule [fixed-signed-division-divz]:
-		// ? /sInt[W:#Nat] 0 => divideByZero
+		// _ /sInt[W:#Nat] 0 => divideByZero
 		
 	// rule [fixed-signed-modulo-normal]:
 		// N:#Int %sInt[W:#Nat] N':NzInt => Result:#Int
 		// where Result:#Int = (N:#Int %Int N':NzInt)
 	// rule [fixed-signed-modulo-divz]:
-		// ? %sInt[W:#Nat] 0 => divideByZero // why do i have to do this?
+		// _ %sInt[W:#Nat] 0 => divideByZero // why do i have to do this_
 		
 	// rule [fixed-signed-subtraction-normal]:
 		// N:#Int -sInt[W:#Nat] N':#Int => Result:#Int

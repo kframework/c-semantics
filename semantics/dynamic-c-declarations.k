@@ -17,10 +17,10 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural] 
 	
 	rule [bind-empty-void]:
-		< k > bind-aux(?:#Nat, .List{K}, typedDeclaration(t(.Set, void), ?:#Id)) => sequencePoint ...</ k > 
+		< k > bind-aux(_:#Nat, .List{K}, typedDeclaration(t(.Set, void), _:#Id)) => sequencePoint ...</ k > 
 		[structural] 
 	rule [bind-empty]:
-		< k > bind-aux(?:#Nat, .List{K}, .List{K}) => sequencePoint ...</ k > 
+		< k > bind-aux(_:#Nat, .List{K}, .List{K}) => sequencePoint ...</ k > 
 		[structural] 
 		
 		
@@ -30,34 +30,34 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	rule [bind-coerce-array]:
 		bind-aux(
-			?:#Nat
+			_:#Nat
 			, L:List{KResult}
 			, (
-				?:List{KResult}
+				_:List{KResult}
 				,, typedDeclaration(
-					(t(?, (arrayType(T:KResult, ?:#Nat) => pointerType(T:KResult))))
+					(t(_, (arrayType(T:KResult, _:#Nat) => pointerType(T:KResult))))
 					, X:#Id
 				)
-				,, ?:List{KResult}
+				,, _:List{KResult}
 			)
 		)
 		[structural] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
-			?:#Nat
+			_:#Nat
 			, L:List{KResult}
 			, (
-				?:List{KResult} 
+				_:List{KResult} 
 				,, typedDeclaration(
-					(t(?, (incompleteArrayType(T:KResult) => pointerType(T:KResult))))
+					(t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult))))
 					, X:#Id
 				) 
-				,, ?:List{KResult})
+				,, _:List{KResult})
 		)
 		[structural] 
 		
 	rule [bind-one]:
-		< k > true ~> bind-aux(?:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
+		< k > true ~> bind-aux(_:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
 			=> allocateType(Loc:#Nat, T:KResult)
 			~> addToEnv(X:#Id, Loc:#Nat)
 			~> giveType(X:#Id, T:KResult)
@@ -71,7 +71,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		
 	rule [bind-one-check-type]:
 		< k > (.K => isTypeCompatible(T:KResult, T':KResult)) 
-			~> bind-aux(?:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
+			~> bind-aux(_:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
 		...</ k > 
 		[structural] 
 	
@@ -99,7 +99,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
-		< k > bind-aux(Loc:#Nat, L:List{KResult}, t(?, variadic))
+		< k > bind-aux(Loc:#Nat, L:List{KResult}, t(_, variadic))
 			=> bindVariadic-pre(Loc:#Nat, promoteList(L:List{KResult}))
 		...</ k >
 		[structural] 
@@ -118,7 +118,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 				=> allocateType(Loc:#Nat, Type)
 				~> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(Type)))) := V:KResult)
 			) 
-			~> bindVariadic(?, ((V:KResult => .List{K}),, ?:List{KResult})) 
+			~> bindVariadic(_, ((V:KResult => .List{K}),, _:List{KResult})) 
 		...</ k >
 		< nextLoc > Loc:#Nat => inc(Loc:#Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:#Nat) ...</ localAddresses >
@@ -126,7 +126,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural]
 	
 	rule [bind-variadic-done]:
-		< k > bindVariadic(?, .List{K}) => sequencePoint ...</ k > 
+		< k > bindVariadic(_, .List{K}) => sequencePoint ...</ k > 
 		[structural]
 endkm
 
@@ -171,18 +171,18 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules, and any padding is initialized to zero bits;
 	
 	rule
-		< k > zeroType(Name:K, t(?, structType(S:#Id))) 
+		< k > zeroType(Name:K, t(_, structType(S:#Id))) 
 			=> zeroStruct(Name:K, Fields:List{KResult})
 		...</ k >
-		< structs >... S:#Id |-> aggregateInfo(Fields:List{KResult}, ?, ?) ...</ structs > 
+		< structs >... S:#Id |-> aggregateInfo(Fields:List{KResult}, _, _) ...</ structs > 
 		[structural] 
 		
 	rule
-		< k > zeroType(Name:K, t(?, unionType(S:#Id))) 
+		< k > zeroType(Name:K, t(_, unionType(S:#Id))) 
 			=> zeroType(Name:K . F:#Id, T:KResult)
 		...</ k >
 		< structs >... 
-			S:#Id |-> aggregateInfo((typedDeclaration(T:KResult, F:#Id),, ?), ?, ?) 
+			S:#Id |-> aggregateInfo((typedDeclaration(T:KResult, F:#Id),, _), _, _) 
 		...</ structs > 
 		[structural] 
 		
@@ -213,11 +213,11 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		[structural] 
 	rule
-		< k > zeroType(Name:K, t(?, arrayType(T:KResult, 0))) => .K ...</ k >
+		< k > zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .K ...</ k >
 		[structural] 
 
 	rule
-		< k > zeroType(Name:K, t(?, flexibleArrayType(T:KResult)))
+		< k > zeroType(Name:K, t(_, flexibleArrayType(T:KResult)))
 			=> .K
 		...</ k >
 		[structural]
