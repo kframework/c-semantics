@@ -163,7 +163,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 	
 	op ignoreLocals : -> K
 	
-	// there seems to be a problem here related to locals.  what if longjmp is never called_
+	// there seems to be a problem here related to locals.  what if longjmp is never called?
 	rule [ignoreLocals]:
 		< k > ignoreLocals => .K ...</ k >
 		< localAddresses > Locals:Set => .Set </ localAddresses >

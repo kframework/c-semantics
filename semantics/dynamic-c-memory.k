@@ -126,7 +126,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		// if hasUnionType(T:KResult)
 		[structural]
 
-	// FIXME assuming bytes_
+	// FIXME assuming bytes?
 	op joinIntegerBytes-aux : Type List{K} K -> K 
 	rule [joinIntegerBytes-start]:
 		joinIntegerBytes(T:KResult, L:List{K}) 

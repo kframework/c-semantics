@@ -114,7 +114,7 @@ endkm
 kmod DYNAMIC-SEMANTICS-SWITCH is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
-	//  fixme shouldn't there be sequence points here_
+	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
 	op handleSwitch : #Nat K -> K [metadata "strict=(2)"] //  switch num, promoted value of controlling exp, int value of exp
