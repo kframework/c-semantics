@@ -523,6 +523,23 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		...</ k >
 		[structural] 
 		
+	op fillUnionBitHoles : List{KResult} -> List{KResult} 
+	op fillUnionBitHoles-aux : #Nat List{KResult} -> List{KResult} 
+	rule fillUnionBitHoles(L:List{K}) => fillUnionBitHoles-aux(0, L:List{K}) [structural]
+	rule fillUnionBitHoles-aux(N:#Nat, (typedDeclaration(T:KResult, X:#Id),, L:List{KResult})) 
+			=> typedDeclaration(T:KResult, X:#Id)
+			,, fillUnionBitHoles-aux(N:#Nat, L:List{KResult})
+		when notBool hasBitfieldType(T:KResult)
+		[structural]
+	rule fillUnionBitHoles-aux(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id),, L:List{KResult})) 
+			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id)
+			,, fillUnionBitHoles-aux(maxNat(N:#Nat, N':#Nat), L:List{KResult})
+		[structural]
+	rule fillUnionBitHoles-aux(N:#Nat, .List{K}) 
+		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), NEARESTMULT)), #NoName)
+		where NEARESTMULT = N:#Nat +Nat (absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)
+		[structural]
+	
 	op fillBitHoles : List{KResult} -> List{KResult} 
 	op fillBitHoles-aux : #Nat List{KResult} -> List{KResult} 
 	rule [fillBitHoles-none]:
@@ -594,7 +611,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural] 
 	rule
 		< k > UnionDef(X:#Id, List(L:List{KResult}))
-			=> addUnion(X:#Id, L:List{KResult})
+			=> addUnion(X:#Id, fillUnionBitHoles(L:List{KResult}))
 			~> giveType(X:#Id, t(.Set, unionType(X:#Id)))
 		...</ k >
 		[structural] 
