@@ -525,7 +525,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	op fillUnionBitHoles : List{KResult} -> List{KResult} 
 	op fillUnionBitHoles-aux : #Nat List{KResult} -> List{KResult} 
-	rule fillUnionBitHoles(L:List{K}) => fillUnionBitHoles-aux(0, L:List{K}) [structural]
+	rule fillUnionBitHoles(.List{K}) => .List{K} [structural]
+	rule fillUnionBitHoles((K:K,, L:List{K})) => fillUnionBitHoles-aux(0, (K:K,, L:List{K})) [structural]
 	rule fillUnionBitHoles-aux(N:#Nat, (typedDeclaration(T:KResult, X:#Id),, L:List{KResult})) 
 			=> typedDeclaration(T:KResult, X:#Id)
 			,, fillUnionBitHoles-aux(N:#Nat, L:List{KResult})
