@@ -30,7 +30,9 @@ mkdir -p $OUT_DIR
 rm -f $OUT_FILE
 
 set +e
-`frama-c -val -val-signed-overflow-alarms -unspecified-access -slevel 100 -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
+# `frama-c -val -val-signed-overflow-alarms -unspecified-access -slevel 100 -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
+`frama-c -val-signed-overflow-alarms -unspecified-access -val -stop-at-first-alarm -no-val-show-progress -obviously-terminates -precise-unions -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
+
 RETVAL=$?
 cat $OUTPUT_FILE
 if grep -q 'assert' $OUTPUT_FILE; then 

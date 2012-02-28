@@ -669,7 +669,11 @@ kmod DYNAMIC-C-MEMORY-MISC is
 			~> makeUnwritable(Loc:#Nat)
 		...</ k >
 		[structural] 
-		
+	
+	rule [makeUnwritable-var]:
+		< k > makeUnwritableVar(X:#Id) => makeUnwritable(Loc:#Nat)  ...</ k >
+		< env >... X:#Id |-> Loc:#Nat ...</ env>
+		[structural]
 	rule [makeUnwritable]:
 		< k > makeUnwritable(sym(Base:#Nat) +Nat 0) => .K ...</ k >
 		< mem >... Base:#Nat |-> memblock((.Bag => mconst) _, _) ...</ mem >

@@ -127,6 +127,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op mlength : #Nat -> BagItem
 	op mconst : -> BagItem
 	op makeUnwritable : #Nat -> K
+	op makeUnwritableVar : #Id -> K
 	
 	op listToK : K -> K 
 	op klistToK : List{K} -> K 

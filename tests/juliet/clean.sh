@@ -1,5 +1,11 @@
 #! /usr/bin/env bash
 
+function saveAndPrint {
+	echo -n "$1: "
+	ls -1 *.c testcases/$1/ | sed 's/\([1-9][0-9]\?\)[a-z]\?\.c/\1\.c/' | sort | uniq | wc -l
+	mv testcases/$1/ good/
+}
+
 # 758 no_return 01 has no newline at end of file
 
 echo "Unzipping Juliet..."
@@ -78,6 +84,7 @@ mv testcases/CWE392_Failure_To_Report_Error_In_Status_Code/ $DIR
 mv testcases/CWE390_Error_Without_Action/ $DIR
 mv testcases/CWE391_Unchecked_Error_Condition/ $DIR
 mv testcases/CWE135_Incorrect_Calculation_Of_Multibyte_String_Length/ $DIR
+mv testcases/CWE617_Reachable_Assertion/ $DIR
 
 # these are system dependent tests, but are not necessarily undefined
 mv testcases/CWE114_Process_Control/ $DIR
@@ -188,6 +195,9 @@ perl -i -p -e 'undef $/; s/^    (char|int|long|long long|double) \* data;(\s+\1 
 echo "Changing \"_snprintf\" to \"snprintf\""
 perl -i -p -e 's/(\s)_snprintf/\1snprintf/gsm' testcases/*/*.c
 
+echo "Commenting out use of wprintf"
+sed -i 's/\(wprintf(L"%s\\n", line);\)/\/\/ \1/' testcasesupport/io.c
+
 echo "Adding newlines to files that need them"
 FIX=testcases/CWE758_Undefined_Behavior/CWE758_Undefined_Behavior__no_return_implicit_01.c
 echo | cat $FIX - > fix.tmp
@@ -205,26 +215,12 @@ mv fix.tmp $FIX
 echo "Saving the known good tests"
 rm -rf good
 mkdir -p good
-mv testcases/CWE121_Stack_Based_Buffer_Overflow/ good/
-mv testcases/CWE122_Heap_Based_Buffer_Overflow/ good/
-mv testcases/CWE124_Buffer_Underwrite/ good/
-mv testcases/CWE126_Buffer_Overread/ good/
-mv testcases/CWE127_Buffer_Underread/ good/
-mv testcases/CWE131_Incorrect_Calculation_Of_Buffer_Size/ good/
-mv testcases/CWE170_Improper_Null_Termination/ good/
-mv testcases/CWE193_Off_by_One_Error/ good/
-mv testcases/CWE369_Divide_By_Zero/ good/
-mv testcases/CWE457_Use_of_Uninitialized_Variable/ good/
-mv testcases/CWE469_Use_Of_Pointer_Subtraction_To_Determine_Size/ good/
-mv testcases/CWE562_Return_Of_Stack_Variable_Address/ good/
-mv testcases/CWE590_Free_Of_Invalid_Pointer_Not_On_The_Heap/ good/
-mv testcases/CWE665_Improper_Initialization/ good/
-mv testcases/CWE680_Integer_Overflow_To_Buffer_Overflow/ good/
-mv testcases/CWE685_Function_Call_With_Incorrect_Number_Of_Arguments/ good/
-mv testcases/CWE688_Function_Call_With_Incorrect_Variable_Or_Reference_As_Argument/ good/
-mv testcases/CWE758_Undefined_Behavior/ good/
-mv testcases/CWE761_Free_Pointer_Not_At_Start_Of_Buffer/ good/
-mv testcases/CWE617_Reachable_Assertion/ good/
-mv testcases/CWE588_Attempt_To_Access_Child_Of_A_Non_Structure_Pointer/ good/
+
+GOODTESTS='CWE121_Stack_Based_Buffer_Overflow CWE122_Heap_Based_Buffer_Overflow CWE124_Buffer_Underwrite CWE126_Buffer_Overread CWE127_Buffer_Underread CWE131_Incorrect_Calculation_Of_Buffer_Size CWE170_Improper_Null_Termination CWE193_Off_by_One_Error CWE369_Divide_By_Zero CWE457_Use_of_Uninitialized_Variable CWE469_Use_Of_Pointer_Subtraction_To_Determine_Size CWE562_Return_Of_Stack_Variable_Address CWE590_Free_Of_Invalid_Pointer_Not_On_The_Heap CWE665_Improper_Initialization CWE680_Integer_Overflow_To_Buffer_Overflow CWE685_Function_Call_With_Incorrect_Number_Of_Arguments CWE688_Function_Call_With_Incorrect_Variable_Or_Reference_As_Argument CWE758_Undefined_Behavior CWE761_Free_Pointer_Not_At_Start_Of_Buffer CWE588_Attempt_To_Access_Child_Of_A_Non_Structure_Pointer'
+
+for dir in $GOODTESTS
+do
+	saveAndPrint $dir
+done
 
 echo "Done!"

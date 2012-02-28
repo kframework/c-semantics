@@ -61,11 +61,15 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	
 	rule
-		< k > figureInitializer(X:#Id, t(_, (incompleteArrayType(T:KResult) => arrayType(T:KResult, lengthString(S:#String) +Nat 1))), SingleInit(Constant(StringLiteral(S:#String)))) ...</ k >
+		< k > figureInitializer(X:#Id, t(_, (incompleteArrayType(T:KResult) 
+			=> arrayType(T:KResult, lengthString(S:#String) +Nat 1))), SingleInit(Constant(StringLiteral(S:#String)))) 
+		...</ k >
 		when hasCharType(T:KResult)
 		[structural]
 	rule
-		< k > figureInitializer(X:#Id, t(_, (incompleteArrayType(T:KResult) => arrayType(T:KResult, lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) ...</ k >
+		< k > figureInitializer(X:#Id, t(_, (incompleteArrayType(T:KResult) 
+			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+		...</ k >
 		when hasWCharType(T:KResult)
 		[structural] 
 		
@@ -87,6 +91,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> initializerValue(X:#Id, T:KResult, K:K)
 		...</ k >
 		when notBool hasIncompleteType(T:KResult) // I'd like to get rid of this cleanly
+		andBool notBool hasConstType(T:KResult)
+		[structural]
+	rule
+		< k > figureInitializer-aux(X:#Id, T:KResult, initializer(K:K))
+			=> initializerValue(X:#Id, T:KResult, (K:K ~> makeUnwritableVar(X:#Id)))
+		...</ k >
+		when notBool hasIncompleteType(T:KResult) // I'd like to get rid of this cleanly
+		andBool hasConstType(T:KResult)
 		[structural]
 	
 	// base types
@@ -255,7 +267,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	rule
 		< k > declareInternalVariable(X:#Id, T:KResult, K:K)
-			=> defineAndInit(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, unqualifyType(T:KResult), K:K), Loc:#Nat)
+			=> defineAndInit(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, T:KResult, K:K), Loc:#Nat)
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:#Nat / kpair(X:#Id, BlockNum:#Nat)])) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
@@ -271,7 +283,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op reseenStatic : #Id Type K #Nat -> K [metadata "strict=(3)"] 
 	rule
 		< k > declareInternalVariable(X:#Id, T:KResult, K:K)
-			=> reseenStatic(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, unqualifyType(T:KResult), K:K), Loc:#Nat)
+			=> reseenStatic(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, T:KResult, K:K), Loc:#Nat)
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((_ kpair(X:#Id, BlockNum:#Nat) |-> Loc:#Nat)) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >

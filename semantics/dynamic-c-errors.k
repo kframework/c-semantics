@@ -361,6 +361,23 @@ kmod DYNAMIC-C-ERRORS is
 		when notBool ifFromArrayInBounds(T:KResult, I:#Int)
 		[structural]
 		
+	rule [err00045]:
+		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
+		< mem >... Block:#Nat |-> memblock(mconst _:Bag, _) ...</ mem >
+		(.Bag => < errorCell > Error("00045", "Trying to modify an object declared with const type.") </ errorCell >)
+		where LOC = sym(Block:#Nat) +Nat Offset:#Nat
+		[structural]
+		
+	rule [err00046]:
+		< k => finalComputation > concretize(T:KResult, dataList((piece(N:#Nat, Len:#Nat),, _))) ...</ k => finalComputation >
+		(.Bag => < errorCell > Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </ errorCell >)
+		when hasFloatType(T:KResult)
+		andBool N:#Nat >=Nat 0
+		[structural]
+		
+	op isUnknown : #Nat -> #Bool
+	eq isUnknown(unknown(_:#Nat)) = true
+	eq isUnknown(_:#Nat) = false [owise]
 	
 	op datarace : #Nat #Nat #Nat #Nat -> K 
 
