@@ -67,10 +67,10 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	
 	rule
 		< k > giveType(X:#Id, T:KResult) => 
-			if (Fun:#Id ==Bool File-Scope) then giveGlobalType(X:#Id, T:KResult) else giveLocalType(X:#Id, T:KResult) fi
+			if (Fun:#Id ==Bool File-Scope) then giveGlobalType(X:#Id, unqualifyType(T:KResult)) else giveLocalType(X:#Id, unqualifyType(T:KResult)) fi
 			...</ k >
 		< currentFunction > Fun:#Id </ currentFunction >
-		when notBool hasStaticType(T:KResult)
+		// when notBool hasStaticType(T:KResult)
 		[structural] 
 		
 	rule
@@ -1098,7 +1098,9 @@ kmod COMMON-C-TYPING is
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasStaticType-qualified]: hasStaticType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==Bool Static) then (true) else (hasStaticType(T:KResult)) fi 
+	rule [hasStaticType-qualified]: 
+		hasStaticType(t(_, qualifiedType(T:KResult, K:K))) 
+			=> if (K:K ==Bool Static) then (true) else (hasStaticType(T:KResult)) fi
 		[structural]
 	rule [hasStaticType-false]: hasStaticType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
