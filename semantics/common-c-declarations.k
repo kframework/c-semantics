@@ -267,7 +267,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	rule
 		< k > declareInternalVariable(X:#Id, T:KResult, K:K)
-			=> defineAndInit(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, T:KResult, K:K), Loc:#Nat)
+			=> defineAndInit(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, removeStorageSpecifiers(T:KResult), K:K), Loc:#Nat)
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:#Nat / kpair(X:#Id, BlockNum:#Nat)])) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >
@@ -283,7 +283,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	op reseenStatic : #Id Type K #Nat -> K [metadata "strict=(3)"] 
 	rule
 		< k > declareInternalVariable(X:#Id, T:KResult, K:K)
-			=> reseenStatic(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, T:KResult, K:K), Loc:#Nat)
+			=> reseenStatic(X:#Id, unqualifyType(T:KResult), figureInitializer(X:#Id, removeStorageSpecifiers(T:KResult), K:K), Loc:#Nat)
 		...</ k >
 		< internalLocations >... Tu:K |-> Map((_ kpair(X:#Id, BlockNum:#Nat) |-> Loc:#Nat)) ...</ internalLocations >
 		< blockHistory > ListItem(BlockNum:#Nat) ...</ blockHistory >

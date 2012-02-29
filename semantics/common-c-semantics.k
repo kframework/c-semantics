@@ -170,6 +170,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op qualifiedType : Type K -> SimpleType [ctor]
 	
 	op unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
+	op removeStorageSpecifiers : K -> Type
 	
 	// these aren't real types, but are values that can appear in type contexts
 	op prototype : Type -> SimpleType 

@@ -1157,4 +1157,9 @@ kmod COMMON-C-TYPING is
 	rule unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
+		
+	rule removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
+	rule removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
+		when getKLabel(T:K) =/=Bool 'qualifiedType
+		[structural]
 endkm
