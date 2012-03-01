@@ -1,4 +1,4 @@
-// kcc-assert-error(00035)
+// kcc-assert-error(00045)
 #include <stdio.h>
 
 int bad(void){
