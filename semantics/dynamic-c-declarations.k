@@ -41,7 +41,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 				,, _:List{KResult}
 			)
 		)
-		[structural] 
+		[structural anywhere] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
 			_:#Nat
@@ -54,7 +54,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 				) 
 				,, _:List{KResult})
 		)
-		[structural] 
+		[structural anywhere] 
 		
 	rule [bind-one]:
 		< k > true ~> bind-aux(_:#Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:#Id),, P:List{KResult}))
