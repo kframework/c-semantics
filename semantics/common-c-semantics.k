@@ -75,7 +75,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op ceilingLoc : #Nat -> #Nat // loc with possible bit offset returning upperbounded byte	
 	op readFunction : #Nat -> K 
 	
-	op innerType : Type -> Type
+	declare innerType : Type -> Type
 	
 	// op AttributeValue : #String List{K} -> KResult 
 	

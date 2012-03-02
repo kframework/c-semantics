@@ -8,10 +8,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 
 	op fromArray : #Int #Nat -> K // offset, length
 	
-	op arrayLength : KResult -> #Nat
-	rule arrayLength(t(_:Set, arrayType(_:KResult, N:#Nat))) => N:#Nat
-	rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
-	rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
+	declare arrayLength : KResult -> #Nat
+	define arrayLength(t(_:Set, arrayType(_:KResult, N:#Nat))) => N:#Nat
+	define arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
+	define arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
@@ -171,22 +171,22 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
 	
-	op wrapWithTypeOf : List{K} -> List{K}
-	rule wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K})) [structural]
-	rule wrapWithTypeOf(.List{K}) => .List{K} [structural]
+	declare wrapWithTypeOf : List{K} -> List{K}
+	define wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K})) [structural]
+	define wrapWithTypeOf(.List{K}) => .List{K} [structural]
 	
-	op retype : K -> K [metadata "strict=()"]
+	declare retype : K -> K [metadata "strict=()"]
 	
 	// fixme, not handling qualifiers correctly
-	rule
+	define
 		retype(T:KResult) => t(.Set, pointerType(innerType(T:KResult)))
 		when hasArrayType(T:KResult)
 		[structural]
-	rule
+	define
 		retype(T:KResult) => t(.Set, pointerType(T:KResult))
 		when hasFunctionType(T:KResult)
 		[structural]
-	rule
+	define
 		retype(T:KResult) => T:KResult
 		when notBool (hasArrayType(T:KResult) orBool hasFunctionType(T:KResult))
 		[structural]	
@@ -481,14 +481,14 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	// c1x 6.4.4.4:10
 	rule CharLiteral(N:#Nat) 
 		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:#Nat, t(.Set, int))))
-		[structural]
-	rule WCharLiteral(N:#Nat) => tv(N:#Nat, cfg:wcharut) [structural]
-	rule Constant(V:KResult) => V:KResult [structural]
+		[structural anywhere]
+	rule WCharLiteral(N:#Nat) => tv(N:#Nat, cfg:wcharut) [structural anywhere]
+	rule Constant(V:KResult) => V:KResult [structural anywhere]
 	rule [create-internal-value]: < k > N:#Nat => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
 		[structural] // for internal computations
 		
-	op withinRange : #Int SimpleType -> #Bool
-	rule withinRange(I:#Int, T:K) => (I:#Int <=Int max(t(.Set, T:K))) andBool (I:#Int >=Int min(t(.Set, T:K))) [structural]
+	declare withinRange : #Int SimpleType -> #Bool
+	define withinRange(I:#Int, T:K) => (I:#Int <=Int max(t(.Set, T:K))) andBool (I:#Int >=Int min(t(.Set, T:K))) [structural]
 	
 	rule NoSuffix(DecimalConstant(I:#Int)) =>
 		if withinRange(I:#Int, int) then tv(I:#Int, t(.Set, int)) else
@@ -496,22 +496,22 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		if withinRange(I:#Int, long-long-int) then tv(I:#Int, t(.Set, long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi fi
-		[structural]
+		[structural anywhere]
 		
-	op simplifyForHex : #String -> #String
-	rule simplifyForHex(S:#String) => simplifyForHex(butFirstChar(S:#String))
+	declare simplifyForHex : #String -> #String
+	define simplifyForHex(S:#String) => simplifyForHex(butFirstChar(S:#String))
 		when firstChar(S:#String) ==Bool "0"
 		andBool lengthString(S:#String) >Nat 1
 		[structural]
-	rule simplifyForHex(S:#String) => S:#String
+	define simplifyForHex(S:#String) => S:#String
 		when firstChar(S:#String) =/=Bool "0"
 		orBool lengthString(S:#String) ==Bool 1
 		[structural]
 		
 		
 	op hexOrOctalConstant : K -> K
-	rule HexConstant(S:#String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:#String), 16)) [structural]
-	rule OctalConstant(N:#Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:#Nat, 10), 8))) [structural] // truncRat is just for sorts
+	rule HexConstant(S:#String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:#String), 16)) [structural anywhere]
+	rule OctalConstant(N:#Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:#Nat, 10), 8))) [structural anywhere] // truncRat is just for sorts
 	
 	rule NoSuffix(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, int) then tv(I:#Int, t(.Set, int)) else
@@ -522,7 +522,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi fi fi fi fi
-		[structural]
+		[structural anywhere]
 
 	rule U(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, unsigned-int) then tv(I:#Int, t(.Set, unsigned-int)) else
@@ -530,7 +530,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi fi
-		[structural]
+		[structural anywhere]
 		
 	rule L(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, long-int) then tv(I:#Int, t(.Set, long-int)) else
@@ -539,27 +539,27 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi fi fi
-		[structural]
+		[structural anywhere]
 		
 	rule UL(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, unsigned-long-int) then tv(I:#Int, t(.Set, unsigned-long-int)) else
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi
-		[structural]
+		[structural anywhere]
 		
 	rule LL(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, long-long-int) then tv(I:#Int, t(.Set, long-long-int)) else
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi
-		[structural]
+		[structural anywhere]
 	
 	rule ULL(hexOrOctalConstant(I:#Int)) =>
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi
-		[structural]
+		[structural anywhere]
 		
 		
 	rule U(DecimalConstant(I:#Int)) =>
@@ -568,44 +568,44 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi fi
-		[structural]
+		[structural anywhere]
 	rule L(DecimalConstant(I:#Int)) =>
 		if withinRange(I:#Int, long-int) then tv(I:#Int, t(.Set, long-int)) else
 		if withinRange(I:#Int, long-long-int) then tv(I:#Int, t(.Set, long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi
-		[structural]
+		[structural anywhere]
 	rule UL(DecimalConstant(I:#Int)) =>
 		if withinRange(I:#Int, unsigned-long-int) then tv(I:#Int, t(.Set, unsigned-long-int)) else
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi fi		
-		[structural]
+		[structural anywhere]
 	rule LL(DecimalConstant(I:#Int)) =>
 		if withinRange(I:#Int, long-long-int) then tv(I:#Int, t(.Set, long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi
-		[structural]
+		[structural anywhere]
 	rule ULL(DecimalConstant(I:#Int)) =>
 		if withinRange(I:#Int, unsigned-long-long-int) then tv(I:#Int, t(.Set, unsigned-long-long-int)) else
 			tv(I:#Int, t(.Set, no-type))
 		fi
-		[structural]
+		[structural anywhere]
 	
 	/*@ \source[n1570]{\para{6.4.4.2}{4}}
 	An unsuffixed floating constant has type \cinline{double}. If suffixed by the letter \cinline{f} or \cinline{F}, it has type \cinline{float}. If suffixed by the letter \cinline{l} or \cinline{L}, it has type \cinline{long double}.
 	*/
 	
 	op reducedFloat : #Float -> K
-	rule DecimalFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
-	rule HexFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural]
+	rule DecimalFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural anywhere]
+	rule HexFloatConstant(_:#String, _:#Int, F:#Float) => reducedFloat(F:#Float) [structural anywhere]
 	
 	rule NoSuffix(reducedFloat(F:#Float)) => tv(F:#Float, t(.Set, double))
-		[structural]
+		[structural anywhere]
 	rule L(reducedFloat(F:#Float)) => tv(F:#Float, t(.Set, long-double))
-		[structural]
+		[structural anywhere]
 	rule F(reducedFloat(F:#Float)) => tv(F:#Float, t(.Set, float))
-		[structural]
+		[structural anywhere]
 
 endkm
 
@@ -754,8 +754,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	Each of the operators \cinline{<} (less than), \cinline{>} (greater than), \cinline{<=} (less than or equal to), and \cinline{>=} (greater than or equal to) shall yield 1 if the specified relation is true and 0 if it is false. The result has type \cinline{int}.
 	*/
 	
-	op makeTruth : #Bool -> K
-	rule makeTruth(B:#Bool) => if B:#Bool then tv(1, t(.Set, int)) else tv(0, t(.Set, int)) fi [structural]
+	declare makeTruth : #Bool -> K
+	define makeTruth(B:#Bool) => if B:#Bool then tv(1, t(.Set, int)) else tv(0, t(.Set, int)) fi [structural]
 	
 	rule tv(I1:#Int, T:KResult) < tv(I2:#Int, T:KResult)
 			=> makeTruth(I1:#Int <Int I2:#Int)
@@ -1012,20 +1012,20 @@ second operand from the first.
 		where NEWTYPE = newFromArray(T:KResult, I:#Int)
 		[structural]
 		
-	op newFromArray : KResult #Int -> KResult
-	rule newFromArray(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int) 
+	declare newFromArray : KResult #Int -> KResult
+	define newFromArray(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int) 
 		=> t(SetItem(fromArray(Offset:#Int +Int I:#Int, Len:#Nat)), pointerType(T:KResult))
-	rule newFromArray(t(.Set, pointerType(T:KResult)), I:#Int) 
+	define newFromArray(t(.Set, pointerType(T:KResult)), I:#Int) 
 		=> t(.Set, pointerType(T:KResult))
 		
-	op ifFromArrayInBounds : KResult #Int -> #Bool
-	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
+	declare ifFromArrayInBounds : KResult #Int -> #Bool
+	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
 		=> true
 		when Offset:#Int +Int I:#Int <=Int Len:#Nat
-	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
+	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:#Int, Len:#Nat)), pointerType(T:KResult)), I:#Int)
 		=> false
 		when Offset:#Int +Int I:#Int >Int Len:#Nat
-	rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:#Int)
+	define ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:#Int)
 		=> true
 		
 	/*@ \source[n1570]{\para{6.5.6}{9}}
@@ -1071,7 +1071,7 @@ second operand from the first.
 		=> piece(unknown(N:#Nat), N:#Nat)
 		when M:#Nat =/=Bool 0
 		andBool isConcreteNumber(M:#Nat)
-		[structural]
+		[structural anywhere]
 		
 	
 	// floats

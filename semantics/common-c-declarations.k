@@ -821,19 +821,19 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > (block => .List) ...</ currentSubObject >
 		[structural] 
 		
-	rule [innerType-arrayType]:
+	define [innerType-arrayType]:
 		innerType(t(_, arrayType(T:KResult, _:#Nat))) => T:KResult 
 		[structural]
-	rule [innerType-incompleteArrayType]: 
+	define [innerType-incompleteArrayType]: 
 		innerType(t(_, incompleteArrayType(T:KResult))) => T:KResult 
 		[structural]
-	rule [innerType-flexibleArrayType]: 
+	define [innerType-flexibleArrayType]: 
 		innerType(t(_, flexibleArrayType(T:KResult))) => T:KResult 
 		[structural]
-	rule [innerType-qualifiedType]:
+	define [innerType-qualifiedType]:
 		innerType(t(_, qualifiedType(T:KResult, _))) => innerType(T:KResult) 
 		[structural]
-	rule [innerType-pointerType]:
+	define [innerType-pointerType]:
 		innerType(t(_, pointerType(T:KResult))) => T:KResult 
 		[structural]
 
@@ -848,12 +848,12 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	op popInit : -> K
 	
-	op getTopArrayUse : K -> #Nat 
-	rule getTopArrayUse(X:#Id) => 0 [structural]
-	rule getTopArrayUse(X:#Id[N:#Nat]) => sNat(N:#Nat) [structural] // +1 for length instead of index
-	rule getTopArrayUse(K:K . F:#Id) => getTopArrayUse(K:K) [structural]
-	rule getTopArrayUse((K:K[N:#Nat])[_]) => getTopArrayUse(K:K[N:#Nat]) [structural]
-	rule getTopArrayUse((K:K . F:#Id)[_]) => getTopArrayUse(K:K) [structural]
+	declare getTopArrayUse : K -> #Nat 
+	define getTopArrayUse(X:#Id) => 0 [structural]
+	define getTopArrayUse(X:#Id[N:#Nat]) => sNat(N:#Nat) [structural] // +1 for length instead of index
+	define getTopArrayUse(K:K . F:#Id) => getTopArrayUse(K:K) [structural]
+	define getTopArrayUse((K:K[N:#Nat])[_]) => getTopArrayUse(K:K[N:#Nat]) [structural]
+	define getTopArrayUse((K:K . F:#Id)[_]) => getTopArrayUse(K:K) [structural]
 	
 	op initializeSingleInit : K -> K 
 		
