@@ -51,7 +51,7 @@ kmod COMMON-C-SYNTAX is
 	sort ForClause
 	// sort BinaryOperator // not used by us
 	// sort UnaryOperator // not used by us
-	sort Expression
+	// sort Expression
 	sort Constant
 	sort InitExpression
 	sort InitWhat

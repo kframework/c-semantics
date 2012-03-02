@@ -12,13 +12,13 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	
 	op evalToType : -> K 
 	
-	declare typeStrictUnaryOperators : -> Set [memo] 
+	declare typeStrictUnaryOperators : -> Set // [memo] 
 	define typeStrictUnaryOperators => Set(
 		l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
 	)
 	[structural]
 	
-	declare typeStrictBinaryOperators : -> Set [memo] 
+	declare typeStrictBinaryOperators : -> Set // [memo] 
 	define typeStrictBinaryOperators => Set(
 		l('_*_),, l('_/_),, l('_%_),,
 		l('_+_),, l('_-_),,
@@ -28,7 +28,7 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	)
 	[structural]
 	
-	declare typeStrictLeftBinaryOperators : -> Set [memo] 
+	declare typeStrictLeftBinaryOperators : -> Set // [memo] 
 	define typeStrictLeftBinaryOperators => Set(
 		l('_<<_),, l('_>>_),,
 		l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 

@@ -32,7 +32,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	op isAType_ : K -> #Bool 
-	op setOfTypes : -> Set [memo] 
+	op setOfTypes : -> Set // [memo] 
 	
 	op usualArithmeticConversion : Type Type -> K
 	op callMain-aux : K #Nat #Id K -> K [metadata "strict=(1)"] // having to put this out here so errors can see it
@@ -186,7 +186,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bitsToBytes : K -> #Nat 
 	// op MYHOLE : -> Expression 
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
-	declare _contains_ : Set K -> #Bool [memo] 
+	declare _contains_ : Set K -> #Bool // [memo] 
 	
 	
 	
@@ -226,13 +226,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op leftShiftInterpret : Type BaseValue K -> K 
 	op rightShiftInterpret : Type BaseValue -> K 
 	
-	// op integerTypes : -> Set [memo] 
-	op unsignedIntegerTypes : -> Set [memo] 
-	op signedIntegerTypes : -> Set [memo] 
-	declare hasIntegerType : Type -> #Bool [memo] 
-	declare hasFloatType : Type -> #Bool [memo] 
-	declare hasUnsignedIntegerType : Type -> #Bool [memo] 
-	declarehasSignedIntegerType : Type -> #Bool [memo] 
+	// op integerTypes : -> Set // [memo] 
+	op unsignedIntegerTypes : -> Set // [memo] 
+	op signedIntegerTypes : -> Set // [memo] 
+	declare hasIntegerType : Type -> #Bool // [memo] 
+	declare hasFloatType : Type -> #Bool // [memo] 
+	declare hasUnsignedIntegerType : Type -> #Bool // [memo] 
+	declare hasSignedIntegerType : Type -> #Bool // [memo] 
 	
 	op typeof : K -> K 
 	op writeToFD : #Nat #Nat -> K 
@@ -278,8 +278,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op handleBuiltin : #Id Type -> K 
 	
-	declare min : Type -> #Int [memo]
-	declare max : Type -> #Int [memo]
+	declare min : Type -> #Int // [memo]
+	declare max : Type -> #Int // [memo]
 	op alloc : K K -> K // should be K K 
 	op realloc : K K K K -> K // should be K K 
 	
@@ -305,68 +305,68 @@ kmod COMMON-C-SETTINGS is
 	// rule char => kccSettingSimpleType("_KCC_CHAR_TYPE")
 		[structural]
 
-	op numBitsPerByte : -> #NzNat 
-	op numBytes : Type -> #Nat [memo] 
-	op numBits : Type -> #Nat [memo] 
+	declare numBitsPerByte : -> #NzNat 
+	declare numBytes : Type -> #Nat // [memo] 
+	declare numBits : Type -> #Nat // [memo] 
 
-	rule [numBitsPerByte]: numBitsPerByte => 8 [structural]
+	define [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	// rule [numBitsPerByte]: numBitsPerByte => kccSettingNzNat("_KCC_BITS_PER_BYTE") [structural]
 	
-	rule [numBytes-bool]: numBytes(t(_, bool)) => 1 [structural]
-	rule [numBytes-signed-char]: numBytes(t(_, signed-char)) => 1 [structural]
-	rule [numBytes-short-int]: numBytes(t(_, short-int)) => 2 [structural]
+	define [numBytes-bool]: numBytes(t(_, bool)) => 1 [structural]
+	define [numBytes-signed-char]: numBytes(t(_, signed-char)) => 1 [structural]
+	define [numBytes-short-int]: numBytes(t(_, short-int)) => 2 [structural]
 	// rule [numBytes-short-int]: numBytes(t(_, short-int)) => kccSettingNzNat("_KCC_SIZEOF_SHORT") [structural]
-	rule [numBytes-int]: numBytes(t(_, int)) => 4 [structural]
+	define [numBytes-int]: numBytes(t(_, int)) => 4 [structural]
 	// rule [numBytes-int]: numBytes(t(_, int)) => kccSettingNzNat("_KCC_SIZEOF_INT") [structural]
-	rule [numBytes-long-int]: numBytes(t(_, long-int)) => 4 [structural]
+	define [numBytes-long-int]: numBytes(t(_, long-int)) => 4 [structural]
 	// rule [numBytes-long-int]: numBytes(t(_, long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG") [structural]
-	rule [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => 8 [structural]
+	define [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => 8 [structural]
 	// rule [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => kccSettingNzNat("_KCC_SIZEOF_LONG_LONG") [structural]
 	
-	rule [numBytes-float]: numBytes(t(_, float)) => 4 [structural]
-	rule [numBytes-double]: numBytes(t(_, double)) => 8 [structural]
-	rule [numBytes-long-double]: numBytes(t(_, long-double)) => 16 [structural]
+	define [numBytes-float]: numBytes(t(_, float)) => 4 [structural]
+	define [numBytes-double]: numBytes(t(_, double)) => 8 [structural]
+	define [numBytes-long-double]: numBytes(t(_, long-double)) => 16 [structural]
 	
-	rule [numBytes-enum]: numBytes(t(S:Set, enumType(X:#Id))) => numBytes(t(S:Set, int)) [structural]
+	define [numBytes-enum]: numBytes(t(S:Set, enumType(X:#Id))) => numBytes(t(S:Set, int)) [structural]
 	
-	op cfg:sizeut : -> Type
-	rule [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int) [structural]
+	declare cfg:sizeut : -> Type
+	define [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int) [structural]
 	// rule [cfg-size-t]: cfg:sizeut => t(.Set, kccSettingSimpleType("_KCC_SIZE_T")) [structural]
 	
-	op cfg:wcharut : -> Type
-	rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int) [structural]
+	declare cfg:wcharut : -> Type
+	define [cfg-wchar-t]: cfg:wcharut => t(.Set, int) [structural]
 	// rule [cfg-wchar-t]: cfg:wcharut => t(.Set, kccSettingSimpleType("_KCC_WCHAR_T")) [structural]
 	
-	op simpleType : Type -> SimpleType
-	rule simpleType(t(_, T:K)) => T:K [structural]
+	declare simpleType : Type -> SimpleType
+	define simpleType(t(_, T:K)) => T:K [structural]
 	
-	op cfg:largestUnsigned : -> Type 
-	rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
+	declare cfg:largestUnsigned : -> Type 
+	define [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
 
-	op cfg:ptrsize : -> #Nat 
-	rule [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
+	declare cfg:ptrsize : -> #Nat 
+	define [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
 	
-	op cfg:ptrdiffut : -> Type 
-	rule [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
+	declare cfg:ptrdiffut : -> Type 
+	define [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
 	
-	rule [min]: min(t(S:Set, enumType(_:#Id))) => min(t(S:Set, int)) [structural]
-	rule [max]: max(t(S:Set, enumType(_:#Id))) => max(t(S:Set, int)) [structural]
+	define [min]: min(t(S:Set, enumType(_:#Id))) => min(t(S:Set, int)) [structural]
+	define [max]: max(t(S:Set, enumType(_:#Id))) => max(t(S:Set, int)) [structural]
 	
-	op rank : Type -> #Int 
+	declare rank : Type -> #Int 
 		
-	rule rank(t(_, bool)) => 0 [structural]
-	rule rank(t(_, signed-char)) => 1 [structural]
-	rule rank(t(_, unsigned-char)) => 1 [structural]
-	rule rank(t(_, short-int)) => 2 [structural]
-	rule rank(t(_, unsigned-short-int)) => 2 [structural]
-	rule rank(t(_, int)) => 3 [structural]
-	rule rank(t(_, unsigned-int)) => 3 [structural]
-	rule rank(t(_, long-int)) => 4 [structural]
-	rule rank(t(_, unsigned-long-int)) => 4 [structural]
-	rule rank(t(_, long-long-int)) => 5 [structural]
-	rule rank(t(_, unsigned-long-long-int)) => 5 [structural]
+	define rank(t(_, bool)) => 0 [structural]
+	define rank(t(_, signed-char)) => 1 [structural]
+	define rank(t(_, unsigned-char)) => 1 [structural]
+	define rank(t(_, short-int)) => 2 [structural]
+	define rank(t(_, unsigned-short-int)) => 2 [structural]
+	define rank(t(_, int)) => 3 [structural]
+	define rank(t(_, unsigned-int)) => 3 [structural]
+	define rank(t(_, long-int)) => 4 [structural]
+	define rank(t(_, unsigned-long-int)) => 4 [structural]
+	define rank(t(_, long-long-int)) => 5 [structural]
+	define rank(t(_, unsigned-long-long-int)) => 5 [structural]
 	
-	rule rank(t(S:Set, enumType(_:#Id))) => rank(t(S:Set, int)) [structural]
+	define rank(t(S:Set, enumType(_:#Id))) => rank(t(S:Set, int)) [structural]
 	//C99 6.3.1.1
 	
 	/*

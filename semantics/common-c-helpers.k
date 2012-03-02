@@ -155,7 +155,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	// this should probably go in the k prelude
 
-	define K:K in (ListItem(K:K) _) => true [structural]
+	define K:K in (ListItem(K:K) _:List) => true [structural]
 	define K:K in .List => false [structural]
 	define K:K in (ListItem(K':K) L:List) => K:K in L:List
 		when K:K =/=Bool K':K

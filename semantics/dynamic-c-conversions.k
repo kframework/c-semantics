@@ -20,8 +20,8 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// op arithConversion-int : KLabel K K -> K
 	op isArithBinOp : KLabel -> #Bool 
 
-	op arithBinOps : -> Set [memo] 
-	op arithBinConversionOps : -> Set [memo] 
+	op arithBinOps : -> Set // [memo] 
+	op arithBinConversionOps : -> Set // [memo] 
 
 	rule [arithBinOps]:
 		arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
@@ -40,7 +40,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	rule [checkArithBinConversionOp]:
 		isArithBinConversionOp(KL:KLabel) => if arithBinConversionOps contains l(KL:KLabel) then true else false fi [structural]
 
-	op arithUnaryOps : -> Set [memo] 
+	op arithUnaryOps : -> Set // [memo] 
 	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
 
 	rule [checkArithUnaryOp]: 
@@ -208,7 +208,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		when rank(T':KResult) >=Int rank(T:KResult) 
 		[structural]
 
-	op hasSameSignedness : Type Type -> #Bool [memo]
+	op hasSameSignedness : Type Type -> #Bool // [memo]
 	rule [hasSameSignedness]: 
 		hasSameSignedness(T:KResult, T':KResult)
 			=> (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
