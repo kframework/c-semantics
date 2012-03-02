@@ -9,7 +9,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	op nextvarg : #Nat K -> C [metadata "strict=(2)"] // loc, type
 	op vpair : K K -> C [metadata "hybrid=() strict=()"]
 	op prepareBuiltin : #Id List{K} -> K
-	op incSymbolic : K -> K
+	declare incSymbolic : K -> K
 	op printString : K -> K
 	
 endkm
@@ -38,29 +38,29 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	// context 'prepareBuiltin(_:#Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE)),, _:List`{K`}))
 	context prepareBuiltin(_:#Id, (_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))
 	
-	op idsFromDeclList : List{K} -> List{K}
+	declare idsFromDeclList : List{K} -> List{K}
 	
-	rule [idsFromDeclList-one]:
+	define [idsFromDeclList-one]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(_, T:K), X:#Id)))
 			=> idsFromDeclList(L:List{K}),, X:#Id
 		when T:K =/=Bool void
 		[structural]
-	rule [idsFromDeclList-void]:
+	define [idsFromDeclList-void]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(_, void), X:#Id)))
 			=> idsFromDeclList(L:List{K})
 		[structural]
-	rule [idsFromDeclList-vararg]:
+	define [idsFromDeclList-vararg]:
 		idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:#Id),, t(_, variadic)))
 			=> idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:#Id)))
 			,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:#Id))))
 			// assumes variadic args are placed in incremental blocks
 		[structural]
-	rule [idsFromDeclList-done]:
+	define [idsFromDeclList-done]:
 		idsFromDeclList(.List{K}) => .List{K} [structural]
 	
 
 	context incSymbolic((HOLE => reval(HOLE)))
-	rule [incSymbolic]:
+	define [incSymbolic]:
 		incSymbolic(tv(Loc:#Nat, T:KResult)) => tv(inc(Loc:#Nat), T:KResult)
 		[structural]
 		

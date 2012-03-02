@@ -75,13 +75,13 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k > 
 		[structural] 
 	
-	op promoteList : List{KResult} -> List{K} 
-	rule [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
+	declare promoteList : List{KResult} -> List{K} 
+	define [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> cast(argPromote(t(S:Set, T:K)), tv(V:List{K}, t(S:Set, T:K))),, promoteList(L:List{KResult})
 		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
 		orBool T:K ==Bool float 
 		[structural]
-	rule [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
+	define [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> (tv(V:List{K}, t(S:Set, T:K)),, promoteList(L:List{KResult}))
 		when (notBool(hasIntegerType(t(S:Set, T:K))) 
 			andBool notBool T:K ==Bool float
@@ -91,7 +91,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		orBool T:K ==Bool double 
 		orBool T:K ==Bool long-double
 		[structural]
-	rule promoteList(.List{K}) => .List{K} [structural]
+	define promoteList(.List{K}) => .List{K} [structural]
 	
 	op bindVariadic : K List{KResult} -> K 
 	op bindVariadic-pre : K List{K} -> K 

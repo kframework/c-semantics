@@ -58,8 +58,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op byteo : #Nat -> #Nat 
 	op bito : #Nat -> #Nat 
 
-	op bitoffset : #Nat -> #Nat 
-	op byteoffset : #Nat -> #Nat
+	declare bitoffset : #Nat -> #Nat 
+	declare byteoffset : #Nat -> #Nat
 	op enumItem : #Id Value -> Value 
 	op resolveReferences : -> K 
 	
