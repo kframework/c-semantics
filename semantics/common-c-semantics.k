@@ -46,13 +46,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op Map : Map -> K 
 	op piece : #Nat #Nat -> #Nat 
 	
-	op unknown : #Nat -> #Nat [ctor] 
+	op unknown : #Nat -> #Nat // [ctor] 
 	
 	op skipval : -> KResult 
 	op debug : -> K 
 	op discard : -> K 
-	op File-Scope : -> #Id [ctor] 
-	op unnamedBitField : -> #Id [ctor] 
+	op File-Scope : -> #Id // [ctor] 
+	op unnamedBitField : -> #Id // [ctor] 
 	//op bignum : -> Type 
 	op sym : #Nat -> #Nat 
 	op byteo : #Nat -> #Nat 
@@ -158,16 +158,16 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op isBasicType : K -> #Bool
 	
 	// Composite types
-	op enumType : #Id -> SimpleType [ctor] 
-	op arrayType : Type #Nat -> SimpleType [ctor] 
-	op incompleteArrayType : Type -> SimpleType [ctor] 
-	op flexibleArrayType : Type -> SimpleType [ctor] 
-	op bitfieldType : Type #Nat -> SimpleType [ctor] 
-	op functionType : Type List{KResult} -> SimpleType [ctor] 
-	op pointerType : Type -> SimpleType [ctor] 
-	op structType : #Id -> SimpleType [ctor] 
-	op unionType : #Id -> SimpleType [ctor] 
-	op qualifiedType : Type K -> SimpleType [ctor]
+	op enumType : #Id -> SimpleType // [ctor] 
+	op arrayType : Type #Nat -> SimpleType // [ctor] 
+	op incompleteArrayType : Type -> SimpleType // [ctor] 
+	op flexibleArrayType : Type -> SimpleType // [ctor] 
+	op bitfieldType : Type #Nat -> SimpleType // [ctor] 
+	op functionType : Type List{KResult} -> SimpleType // [ctor] 
+	op pointerType : Type -> SimpleType // [ctor] 
+	op structType : #Id -> SimpleType // [ctor] 
+	op unionType : #Id -> SimpleType // [ctor] 
+	op qualifiedType : Type K -> SimpleType // [ctor]
 	
 	declare unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
 	declare removeStorageSpecifiers : K -> Type

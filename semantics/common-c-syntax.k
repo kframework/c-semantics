@@ -140,19 +140,19 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tunsigned
 	| Tnamed of string
 */
-	op Void : -> TypeSpecifier [ctor]
-	op Char : -> TypeSpecifier [ctor]
-	op Bool : -> TypeSpecifier [ctor]
-	op Short : -> TypeSpecifier [ctor]
-	op Int : -> TypeSpecifier [ctor]
-	op Long : -> TypeSpecifier [ctor]
-	op Float : -> TypeSpecifier [ctor]
-	op Double : -> TypeSpecifier [ctor]
-	op Signed : -> TypeSpecifier [ctor]
-	op Unsigned : -> TypeSpecifier [ctor]
+	op Void : -> TypeSpecifier // [ctor]
+	op Char : -> TypeSpecifier // [ctor]
+	op Bool : -> TypeSpecifier // [ctor]
+	op Short : -> TypeSpecifier // [ctor]
+	op Int : -> TypeSpecifier // [ctor]
+	op Long : -> TypeSpecifier // [ctor]
+	op Float : -> TypeSpecifier // [ctor]
+	op Double : -> TypeSpecifier // [ctor]
+	op Signed : -> TypeSpecifier // [ctor]
+	op Unsigned : -> TypeSpecifier // [ctor]
 	op inf : -> #Float
 	// macro inf = Infinity
-	op Named : #Id -> TypeSpecifier [ctor]
+	op Named : #Id -> TypeSpecifier // [ctor]
 /*
 	(* each of the following three kinds of specifiers contains a field 
 	* or item list iff it corresponds to a definition (as opposed to
@@ -165,36 +165,36 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofE of expression                      (* GCC __typeof__ *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
-	op StructRef : #Id -> TypeSpecifier [ctor] // new
+	op StructRef : #Id -> TypeSpecifier // [ctor] // new
 	// op StructDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
-	op StructDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	op StructDef : #Id K -> TypeSpecifier // [ctor] // new // Id, List
 	context StructDef(_:#Id, List((_:List{K},, HOLE,, _:List{K})))
-	op UnionRef : #Id -> TypeSpecifier [ctor] // new
+	op UnionRef : #Id -> TypeSpecifier // [ctor] // new
 	// op UnionDef : #Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
-	op UnionDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
+	op UnionDef : #Id K -> TypeSpecifier // [ctor] // new // Id, List
 	context UnionDef(_:#Id, List((_:List{K},, HOLE,, _:List{K})))
-	op EnumRef : #Id -> TypeSpecifier [ctor] // new
-	op EnumDef : #Id K -> TypeSpecifier [ctor] // new // Id, List
-	op TypeofExpression : K -> TypeSpecifier [ctor]
-	op TypeofType : K K -> TypeSpecifier [ctor]
+	op EnumRef : #Id -> TypeSpecifier // [ctor] // new
+	op EnumDef : #Id K -> TypeSpecifier // [ctor] // new // Id, List
+	op TypeofExpression : K -> TypeSpecifier // [ctor]
+	op TypeofType : K K -> TypeSpecifier // [ctor]
 	
-	op Complex : -> TypeSpecifier [ctor]
-	op Imaginary : -> TypeSpecifier [ctor]
-	op TAtomic : K K -> TypeSpecifier [ctor]
-	op Atomic : -> TypeSpecifier [ctor] // this will be used as the actual modifier
-	op AlignasExpression : K -> TypeSpecifier [ctor]
-	op AlignasType : K K -> TypeSpecifier [ctor]
+	op Complex : -> TypeSpecifier // [ctor]
+	op Imaginary : -> TypeSpecifier // [ctor]
+	op TAtomic : K K -> TypeSpecifier // [ctor]
+	op Atomic : -> TypeSpecifier // [ctor] // this will be used as the actual modifier
+	op AlignasExpression : K -> TypeSpecifier // [ctor]
+	op AlignasType : K K -> TypeSpecifier // [ctor]
 
 /*
 and storage =
 	NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
 */
-	op NoStorage : -> Storage [ctor]
-	op Auto : -> Storage [ctor]
-	op Static : -> Storage [ctor]
-	op Extern : -> Storage [ctor]
-	op Register : -> Storage [ctor]
-	op ThreadLocal : -> Storage [ctor]
+	op NoStorage : -> Storage // [ctor]
+	op Auto : -> Storage // [ctor]
+	op Static : -> Storage // [ctor]
+	op Extern : -> Storage // [ctor]
+	op Register : -> Storage // [ctor]
+	op ThreadLocal : -> Storage // [ctor]
 	
 /*
 and funspec = 
@@ -513,22 +513,32 @@ and unary_operator =
 	MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
 	| PREINCR | PREDECR | POSINCR | POSDECR
 */
-	op -_ : K -> Expression [prec 22]
+	syntax Expression ::= "-" K [prec(22)]
+	// op -_ : K -> Expression [prec 22]
 	context -_((HOLE => reval(HOLE)))
-	op +_ : K -> Expression [prec 22]
+	syntax Expression ::= "+" K [prec(22)]
+	// op +_ : K -> Expression [prec 22]
 	context +_((HOLE => reval(HOLE)))
-	op !_ : K -> Expression [prec 22]
+	syntax Expression ::= "!" K [prec(22)]
+	// op !_ : K -> Expression [prec 22]
 	context !_((HOLE => reval(HOLE)))
-	op ~_ : K -> Expression [prec 22]
+	syntax Expression ::= "~" K [prec(22)]
+	// op ~_ : K -> Expression [prec 22]
 	context ~_((HOLE => reval(HOLE)))
-	op *_ : K -> Expression [prec 22]
+	syntax Expression ::= "*" K [prec(22)]
+	// op *_ : K -> Expression [prec 22]
 	context *_((HOLE => reval(HOLE)))
-	op &_ : K -> Expression [prec 22 metadata "strict=()"]
-	op ++_ : K -> Expression [prec 22]
-	op --_ : K -> Expression [prec 22]
-	op _++ : K -> Expression
+	syntax Expression ::= "&" K [strict prec(22)]
+	// op &_ : K -> Expression [prec 22 metadata "strict=()"]
+	syntax Expression ::= "++" K [prec(22)]
+	syntax Expression ::= "--" K [prec(22)]
+	// op ++_ : K -> Expression [prec 22]
+	// op --_ : K -> Expression [prec 22]
+	syntax Expression ::= K "++"
+	// op _++ : K -> Expression
 	context _++((HOLE => peval(HOLE)))
-	op _-- : K -> Expression
+	syntax Expression ::= K "--"
+	// op _-- : K -> Expression
 	context _--((HOLE => peval(HOLE)))
 	
 /*
@@ -538,9 +548,12 @@ and unary_operator =
 /*
 	| BINARY of binary_operator * expression * expression
 */
-	op _*_ : K K -> Expression [prec 31 gather(E e)]
-	op _/_ : K K -> Expression [prec 31 gather(E e)]
-	op _%_ : K K -> Expression [prec 31 gather(E e)]
+	syntax Expression ::= K "*" K [prec(31) gather(E e)]
+	syntax Expression ::= K "/" K [prec(31) gather(E e)]
+	syntax Expression ::= K "%" K [prec(31) gather(E e)]
+	// op _*_ : K K -> Expression [prec 31 gather(E e)]
+	// op _/_ : K K -> Expression [prec 31 gather(E e)]
+	// op _%_ : K K -> Expression [prec 31 gather(E e)]
 	context _*_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _*_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	context _/_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
@@ -548,79 +561,105 @@ and unary_operator =
 	context _%_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _%_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _+_ : K K -> Expression [prec 33 gather(E e)]
-	op _-_ : K K -> Expression [prec 33 gather(E e)]
+	syntax Expression ::= K "+" K [prec(33) gather(E e)]
+	syntax Expression ::= K "-" K [prec(33) gather(E e)]
+	// op _+_ : K K -> Expression [prec 33 gather(E e)]
+	// op _-_ : K K -> Expression [prec 33 gather(E e)]
 	context _+_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _+_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	context _-_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _-_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _<<_ : K K -> Expression [prec 35 gather(E e)]
+	syntax Expression ::= K "<<" K [prec(35) gather(E e)]
+	// op _<<_ : K K -> Expression [prec 35 gather(E e)]
 	context _<<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _<<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _>>_ : K K -> Expression [prec 35 gather(E e)]
+	syntax Expression ::= K ">>" K [prec(35) gather(E e)]
+	// op _>>_ : K K -> Expression [prec 35 gather(E e)]
 	context _>>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _>>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _<_ : K K -> Expression [prec 37 gather(E e)]
-	op _<=_ : K K -> Expression [prec 37 gather(E e)]
+	syntax Expression ::= K "<" K [prec(37) gather(E e)]
+	syntax Expression ::= K "<=" K [prec(37) gather(E e)]
+	// op _<_ : K K -> Expression [prec 37 gather(E e)]
+	// op _<=_ : K K -> Expression [prec 37 gather(E e)]
 	context _<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	context _<=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _<=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _>_ : K K -> Expression [prec 37 gather(E e)]
-	op _>=_ : K K -> Expression [prec 37 gather(E e)]
+	syntax Expression ::= K ">" K [prec(37) gather(E e)]
+	syntax Expression ::= K ">=" K [prec(37) gather(E e)]
+	// op _>_ : K K -> Expression [prec 37 gather(E e)]
+	// op _>=_ : K K -> Expression [prec 37 gather(E e)]
 	context _>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	context _>=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _>=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _==_ : K K -> Expression [prec 39 gather(E e)]
-	op _!=_ : K K -> Expression [prec 39 gather(E e)]
+	syntax Expression ::= K "==" K [prec(39) gather(E e)]
+	syntax Expression ::= K "!=" K [prec(39) gather(E e)]
+	// op _==_ : K K -> Expression [prec 39 gather(E e)]
+	// op _!=_ : K K -> Expression [prec 39 gather(E e)]
 	context _==_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _==_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	context _!=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _!=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _&_ : K K -> Expression [prec 41 gather(E e)]
+	syntax Expression ::= K "&" K [prec(41) gather(E e)]
+	// op _&_ : K K -> Expression [prec 41 gather(E e)]
 	context _&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _&_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _^_ : K K -> Expression [prec 43 gather(E e)]
+	syntax Expression ::= K "^" K [prec(43) gather(E e)]
+	// op _^_ : K K -> Expression [prec 43 gather(E e)]
 	context _^_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _^_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	op _|_ : K K -> Expression [prec 45 gather(E e)]
+	syntax Expression ::= K "|" K [prec(45) gather(E e)]
+	// op _|_ : K K -> Expression [prec 45 gather(E e)]
 	context _|_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	context _|_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
-	
-	op _&&_ : K K -> Expression [prec 47 gather(E e)]
+	syntax Expression ::= K "&&" K [prec(47) gather(E e)]
+	// op _&&_ : K K -> Expression [prec 47 gather(E e)]
 	context _&&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	
-	op _||_ : K K -> Expression [prec 49 gather(E e)]
+	syntax Expression ::= K "||" K [prec(49) gather(E e)]
+	// op _||_ : K K -> Expression [prec 49 gather(E e)]
 	context _||_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-			
-	op _*=_ : K K -> Expression [prec 53]
-	op _/=_  : K K -> Expression [prec 53]
-	op _%=_  : K K -> Expression [prec 53]
-	op _+=_ : K K -> Expression [prec 53]
-	op _-=_ : K K -> Expression [prec 53]
-	op _<<=_ : K K -> Expression [prec 53]
-	op _&=_ : K K -> Expression [prec 53]
-	op _^=_ : K K -> Expression [prec 53]
-	op _|=_ : K K -> Expression [prec 53]
-	op _>>=_ : K K -> Expression [prec 53]
-	op _:=_ : K K -> Expression [prec 53]
+	
+	syntax Expression ::= K "*=" K [prec(53)]
+	syntax Expression ::= K "/=" K [prec(53)]
+	syntax Expression ::= K "%=" K [prec(53)]
+	syntax Expression ::= K "+=" K [prec(53)]
+	syntax Expression ::= K "-=" K [prec(53)]
+	// op _*=_ : K K -> Expression [prec 53]
+	// op _/=_  : K K -> Expression [prec 53]
+	// op _%=_  : K K -> Expression [prec 53]
+	// op _+=_ : K K -> Expression [prec 53]
+	// op _-=_ : K K -> Expression [prec 53]
+	syntax Expression ::= K "<<=" K [prec(53)]
+	syntax Expression ::= K "&=" K [prec(53)]
+	syntax Expression ::= K "^=" K [prec(53)]
+	syntax Expression ::= K "|=" K [prec(53)]
+	syntax Expression ::= K ">>=" K [prec(53)]
+	// op _<<=_ : K K -> Expression [prec 53]
+	// op _&=_ : K K -> Expression [prec 53]
+	// op _^=_ : K K -> Expression [prec 53]
+	// op _|=_ : K K -> Expression [prec 53]
+	// op _>>=_ : K K -> Expression [prec 53]
+	syntax Expression ::= K ":=" K [prec(53)]
+	// op _:=_ : K K -> Expression [prec 53]
 	context _:=_((HOLE => peval(HOLE)), _) [metadata "ndheat=()"]
 	context _:=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
 	
 /*
 	| QUESTION of expression * expression * expression
 */
-	op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
+	syntax Expression ::= K "?" K ":" K [prec(51) gather(e & E)]
+	// op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
 	// syntax Expression ::= K ? K : K [prec 51 gather(e & E)]
 	context _?_:_((HOLE => reval(HOLE)), _, _)
 
