@@ -147,9 +147,9 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		...</ k >
 		[structural]
 	
-	declare isConcreteNumber(sym(_:#Nat) +Nat _:#Nat) => false [structural]
-	declare isConcreteNumber(bito(_:#Nat) +Nat _:#Nat) => false [structural]
-	declare isConcreteNumber(I:#Int) => true
+	define isConcreteNumber(sym(_:#Nat) +Nat _:#Nat) => false [structural]
+	define isConcreteNumber(bito(_:#Nat) +Nat _:#Nat) => false [structural]
+	define isConcreteNumber(I:#Int) => true
 		when  I:#Int <=Int 0 orBool I:#Int >Int 0
 		[structural]
 	
