@@ -9,7 +9,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	
 	op initializer : K -> KResult 
 	op startInitializer : Type #Id K -> K 
-	
+	 
+	op doDeclare : K K -> K [metadata "strict=(1)"] 
 			
 	op processFunctionBody : K -> K
 endkm
@@ -122,7 +123,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural]
 	rule 
 		DeclarationDefinition(InitNameGroup(T:KResult, List(InitName(Name:K, Exp:K))))
-			=> declare(SingleName(T:KResult, Name:K), Exp:K)
+			=> doDeclare(SingleName(T:KResult, Name:K), Exp:K)
 		[structural]
 			
 	rule Typedef(NameGroup(T:KResult, List((K:K,, L:List{K})))) 
@@ -144,7 +145,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// function definition
 	rule
-		< k > declare(typedDeclaration(T:KResult, X:#Id), K:K) 
+		< k > doDeclare(typedDeclaration(T:KResult, X:#Id), K:K) 
 			=> declareFunction(X:#Id, T:KResult, K:K)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
@@ -154,7 +155,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	// fixme there are still no nested functions though, right_
 	rule
-		< k > declare(typedDeclaration(T:KResult, X:#Id), NoInit) 
+		< k > doDeclare(typedDeclaration(T:KResult, X:#Id), NoInit) 
 			=> addToEnv(X:#Id, Loc:#Nat)
 			~> giveType(X:#Id, unqualifyType(T:KResult))
 		...</ k >
@@ -166,7 +167,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	// fixme i believe this is for local declarations of external library functions
 	rule
-		< k > declare(typedDeclaration(T:KResult, X:#Id), NoInit) 
+		< k > doDeclare(typedDeclaration(T:KResult, X:#Id), NoInit) 
 			=> giveType(X:#Id, unqualifyType(T:KResult))
 		...</ k >
 		< externalLocations > Locs:Map </ externalLocations > 
@@ -177,7 +178,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool $hasMapping(Locs:Map, X:#Id)
 		[structural] 
 	rule
-		< k > declare(typedDeclaration(T:KResult, X:#Id), K:K)
+		< k > doDeclare(typedDeclaration(T:KResult, X:#Id), K:K)
 			=> declareExternalVariable(X:#Id, T:KResult, if K:K ==Bool NoInit then NoInit else CodeLoc(K:K, L:CabsLoc) fi)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
@@ -186,7 +187,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		when notBool hasFunctionType(T:KResult)
 		[structural] 
 	rule
-		< k > declare(typedDeclaration(T:KResult, X:#Id), K:K) 
+		< k > doDeclare(typedDeclaration(T:KResult, X:#Id), K:K) 
 			=> declareInternalVariable(X:#Id, T:KResult, K:K)
 		...</ k >
 		< currentFunction > F:K </ currentFunction >
@@ -1287,13 +1288,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 		[structural]
 	rule
 		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItem(E:#Id),, L:List{K}))), K:K) 
-			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(K:K))
+			=> doDeclare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(K:K))
 			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), K:K + tv(1, t(.Set, int)))
 		...</ k >
 		[structural] 
 	rule
 		< k > fillEnums-aux(EnumDef(X:#Id, List((EnumItemInit(E:#Id, Exp:K),, L:List{K}))), _)
-			=> declare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(Exp:K))
+			=> doDeclare(typedDeclaration(t(.Set, int), E:#Id), SingleInit(Exp:K))
 			~> fillEnums-aux(EnumDef(X:#Id, List(L:List{K})), Exp:K + tv(1, t(.Set, int)))
 		...</ k >
 		when Exp:K =/=Bool NothingExpression

@@ -244,7 +244,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	// getString returns the string without the null terminator
 	op getString : K -> K
 	op getString-aux : K #String -> K [metadata "strict=(1)"]
-	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural]
+	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural anywhere]
 	op str : #String -> Value
 	
 	rule [getString-pre]:
@@ -420,10 +420,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		l('qualifiedType)
 	) [structural]
 	
-	rule bito(0) => 0 [structural] // FIXME need to check this is okay in all circumstances
+	rule bito(0) => 0 [structural anywhere] // FIXME need to check this is okay in all circumstances
 	
 	
-	rule assert(true, _:#Nat) => .K [structural]
+	rule assert(true, _:#Nat) => .K [structural anywhere]
 endkm
 
 kmod COMMON-C-BITSIZE is
@@ -445,7 +445,7 @@ kmod COMMON-C-BITSIZE is
 		
 	op maxBitSizeofList : List{KResult} -> K 
 	op maxBitSizeofList-aux : List{KResult} #Nat -> K 
-	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural]
+	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
 	rule
 		< k > maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:#Nat)
 			=> bitSizeofType(T:KResult) 
@@ -461,14 +461,14 @@ kmod COMMON-C-BITSIZE is
 		< k > maxBitSizeofList-aux(.List{K}, N:#Nat) => tv(N:#Nat, cfg:largestUnsigned) ...</ k >
 		[structural] 
 	
-	rule bitSizeofType(t(_, arrayType(T:KResult, N:#Nat))) => bitSizeofType(T:KResult) * tv(N:#Nat, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(_, bitfieldType(_, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural]
-	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural]
-	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural]
-	rule bitSizeofType(typedDeclaration(T:KResult, _:#Id)) => bitSizeofType(T:KResult) [structural]
+	rule bitSizeofType(t(_, arrayType(T:KResult, N:#Nat))) => bitSizeofType(T:KResult) * tv(N:#Nat, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Nat numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, bitfieldType(_, N:#Nat))) => tv(N:#Nat, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural anywhere]
+	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural anywhere]
+	rule bitSizeofType(typedDeclaration(T:KResult, _:#Id)) => bitSizeofType(T:KResult) [structural anywhere]
 
 	rule
 		< k > bitSizeofType(t(_, structType(S:#Id))) => bitSizeofList(L:List{KResult}) ...</ k >

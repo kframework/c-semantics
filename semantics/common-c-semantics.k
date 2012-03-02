@@ -59,8 +59,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bito : #Nat -> #Nat 
 
 	op bitoffset : #Nat -> #Nat 
-	op byteoffset : #Nat -> #Nat 
-	op declare : K K -> K [metadata "strict=(1)"] 
+	op byteoffset : #Nat -> #Nat
 	op enumItem : #Id Value -> Value 
 	op resolveReferences : -> K 
 	
@@ -110,9 +109,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op write : K K -> K [metadata "strict=(2)"] // location, value
 	op writeByte : #Nat K -> K 
 
-	op isTypeCompatible : K K -> #Bool 
+	declare isTypeCompatible : K K -> #Bool 
 	
-	op hasBeenPromoted : Type -> #Bool
+	declare hasBeenPromoted : Type -> #Bool
 	// op isPromotedInteger : Type -> #Bool
 	
 	
@@ -192,12 +191,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op AllowWrite : K -> K [metadata "strict=()"]
 	
-	rule AllowWrite(lv(N:#Nat, T:KResult)) => lv(N:#Nat, stripConst(T:KResult)) [structural]
+	rule AllowWrite(lv(N:#Nat, T:KResult)) => lv(N:#Nat, stripConst(T:KResult)) [structural anywhere]
 
-	op stripConst : Type -> Type
+	declare stripConst : Type -> Type
 	
-	rule stripConst(t((SetItem(Const) => .Set) _, _)) [structural]
-	rule 
+	define stripConst(t((SetItem(Const) => .Set) _, _)) [structural]
+	define 
 		stripConst(t(S:Set, T:K)) => t(S:Set, T:K)
 		when notBool Const in S:Set
 		[structural]
@@ -301,9 +300,8 @@ kmod COMMON-C-SETTINGS is
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either"
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
-	rule char => signed-char
+	rule char => signed-char [structural anywhere]
 	// rule char => kccSettingSimpleType("_KCC_CHAR_TYPE")
-		[structural]
 
 	declare numBitsPerByte : -> #NzNat 
 	declare numBytes : Type -> #Nat // [memo] 
@@ -399,16 +397,16 @@ kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
 	
-	rule inc(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat +Nat 1) +Nat M:#Nat [structural]
-	rule sNat(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat) +Nat (M:#Nat +Nat 1) [structural]
+	rule inc(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat +Nat 1) +Nat M:#Nat [structural anywhere]
+	rule sNat(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat) +Nat (M:#Nat +Nat 1) [structural anywhere]
 	rule I:#Int +Int (N:#Nat +Nat sym(M:#Nat))
 		=> absInt(N:#Nat +Int I:#Int) +Nat sym(M:#Nat) 
 		when N:#Nat +Int I:#Int >=Int 0 
-		[structural]
+		[structural anywhere]
 
-	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural]
+	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural anywhere]
 
-	rule [expression-loc]: ExpressionLoc(K:K, _) => K:K [structural]
+	rule [expression-loc]: ExpressionLoc(K:K, _) => K:K [structural anywhere]
 
 	rule [CodeLoc-k]:
 		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
@@ -433,15 +431,15 @@ kmod COMMON-C-SEMANTICS-MISC is
 		// < k > Attribute(S:#String, List(L:List{K})) => AttributeValue(S:#String, L:List{K}) ...</ k >
 		// [structural]
 		
-	rule AttributeWrapper(K:K, _) => K:K [structural]
+	rule AttributeWrapper(K:K, _) => K:K [structural anywhere]
 	
 	rule N:#Nat +Nat bito(M:#Nat) => N:#Nat +Nat (M:#Nat /Nat numBitsPerByte) +Nat bito(M:#Nat %Nat numBitsPerByte)
 		when M:#Nat >=Nat numBitsPerByte 
-		[structural]
+		[structural anywhere]
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
 	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), _) [structural]
-	rule Identifier("___missing_field_name") => #NoName [structural]
+	rule Identifier("___missing_field_name") => #NoName [structural anywhere]
 	// #NoName [structural] 
 endkm
 

@@ -16,10 +16,10 @@ K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K_TCP).maude $(K-PL-BUILT
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
-COMPILE_C = $(K_MAUDE) c.k -u -language C -transition "interpRule" 
+COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "interpRule"
 # -lib maudeLib/common-c-builtins.maude
 # -transition "computational"
-COMPILE_C_ND = $(K_MAUDE) c.k -transition "computational" -superheat "ndheat" -supercool "ndlocal" -u -language C 
+COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "computational" -superheat "ndheat" -supercool "ndlocal"
 #-lib maudeLib/common-c-builtins.maude
 
 COMMON_C_FILES = c-syntax.k \

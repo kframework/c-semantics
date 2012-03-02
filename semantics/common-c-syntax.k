@@ -12,7 +12,7 @@ kmod COMMON-C-SYNTAX is
 	including K
 	//including K-PROPER
 	
-	tags ndlocal ndheat computational structural interpRule
+	tags ndlocal ndheat computational structural interpRule anywhere
 	
 	// these are semantic
 	// op reval : K -> K // [strict]
