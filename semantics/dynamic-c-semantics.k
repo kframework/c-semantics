@@ -50,7 +50,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule [make-eof]:
 		"" +String charString(K2Nat(#string2Int(#EOF)))
 			=> #EOF
-		[structural]
+		[structural anywhere]
 	// rule [readFromFD-char-eof]:
 		// < k > readFromFD(FD:#Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
 		// < fid > FD:#Nat </ fid >
@@ -101,11 +101,11 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		<done> (ListItem(S:#String) ListItem(S':#String) => ListItem(S:#String +String S':#String)) ...</done>
 		[structural]
 		
-	op string2List : #String -> List{K}
-	op string2List-aux : #String List{K} -> List{K}
-	rule string2List(S:#String) => string2List-aux(S:#String, .List{K}) [structural]
-	rule string2List-aux("", L:List{K}) => L:List{K} [structural]
-	rule 
+	declare string2List : #String -> List{K}
+	declare string2List-aux : #String List{K} -> List{K}
+	define string2List(S:#String) => string2List-aux(S:#String, .List{K}) [structural]
+	define string2List-aux("", L:List{K}) => L:List{K} [structural]
+	define 
 		string2List-aux(S:#String, L:List{K})
 			=> string2List-aux(butFirstChar(S:#String), (L:List{K},, firstChar(S:#String)))
 		when S:#String =/=Bool ""
