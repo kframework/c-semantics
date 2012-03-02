@@ -218,12 +218,12 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	declare _to_ : #Nat #Nat -> List{K} 
-	op cast : K K -> K [metadata "strict=()"] // as described in 6.3 // totype, fromvalue
+	declare cast : K K -> K [metadata "strict=()"] // as described in 6.3 // totype, fromvalue
 	context cast(_, (HOLE => reval(HOLE)))
-	op arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
-	op interpret : Type K -> K // interpret the values of reading from mem
-	op leftShiftInterpret : Type BaseValue K -> K 
-	op rightShiftInterpret : Type BaseValue -> K 
+	declare arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
+	declare interpret : Type K -> K // interpret the values of reading from mem
+	declare leftShiftInterpret : Type BaseValue K -> K 
+	declare rightShiftInterpret : Type BaseValue -> K 
 	
 	// op integerTypes : -> Set // [memo] 
 	op unsignedIntegerTypes : -> Set // [memo] 
@@ -268,8 +268,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	declare isArithBinConversionOp : KLabel -> #Bool 
 	declare isArithUnaryOp : KLabel -> #Bool 
 	op kpair : K K -> K 
-	op promote : K -> Type // should be K, but is Type for efficiency reasons
-	op argPromote : K -> K
+	declare promote : K -> Type // should be K, but is Type for efficiency reasons
+	declare argPromote : K -> K
 	op extractField : List{K} K #Id -> K // bytes of struct, type, field id
 	op allocString : #Nat #String -> K 
 	op allocWString : #Nat List{K} -> K 
