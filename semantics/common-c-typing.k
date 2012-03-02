@@ -12,14 +12,14 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	
 	op evalToType : -> K 
 	
-	op typeStrictUnaryOperators : -> Set [memo] 
-	rule typeStrictUnaryOperators => Set(
+	declare typeStrictUnaryOperators : -> Set [memo] 
+	define typeStrictUnaryOperators => Set(
 		l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
 	)
 	[structural]
 	
-	op typeStrictBinaryOperators : -> Set [memo] 
-	rule typeStrictBinaryOperators => Set(
+	declare typeStrictBinaryOperators : -> Set [memo] 
+	define typeStrictBinaryOperators => Set(
 		l('_*_),, l('_/_),, l('_%_),,
 		l('_+_),, l('_-_),,
 		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
@@ -28,8 +28,8 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	)
 	[structural]
 	
-	op typeStrictLeftBinaryOperators : -> Set [memo] 
-	rule typeStrictLeftBinaryOperators => Set(
+	declare typeStrictLeftBinaryOperators : -> Set [memo] 
+	define typeStrictLeftBinaryOperators => Set(
 		l('_<<_),, l('_>>_),,
 		l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
 		l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_),,
@@ -1001,146 +1001,146 @@ kmod COMMON-C-TYPING is
 		< structs > M:Map => M:Map[K:K / X:#Id] </ structs >
 		[structural] 
 		
-	rule isAType t(_, T:K) => true
+	define isAType t(_, T:K) => true
 		when setOfTypes contains l(getKLabel(T:K)) 
 		[structural]
-	rule isAType T:KResult => true when isBasicType(T:KResult) [structural]
-	rule isAType K:K => false
+	define isAType T:KResult => true when isBasicType(T:KResult) [structural]
+	define isAType K:K => false
 		when getKLabel(K:K) =/=Bool 't
 		[structural]
-	rule isAType t(S:Set, T:K) => false
+	define isAType t(S:Set, T:K) => false
 		when notBool setOfTypes contains l(getKLabel(T:K))
 		andBool notBool isBasicType(t(S:Set, T:K)) 
 		[structural]
 			
 
-	rule hasFloatType(t(_, float)) => true [structural]
-	rule hasFloatType(t(_, double)) => true [structural]
-	rule hasFloatType(t(_, long-double)) => true [structural]
-	rule hasFloatType(t(_, T:K)) => false
+	define hasFloatType(t(_, float)) => true [structural]
+	define hasFloatType(t(_, double)) => true [structural]
+	define hasFloatType(t(_, long-double)) => true [structural]
+	define hasFloatType(t(_, T:K)) => false
 		when T:K =/=Bool float
 		andBool T:K =/=Bool double
 		andBool T:K =/=Bool long-double
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType
 		[structural]
 	
-	rule [hasCharType-char]: hasCharType(t(_, char)) => true [structural]
-	rule [hasCharType-qualified]: hasCharType(t(_, qualifiedType(T:KResult, _))) => hasCharType(T:KResult) [structural]
-	rule [hasCharType-unsigned-char]: hasCharType(t(_, unsigned-char)) => true [structural]
-	rule [hasCharType-signed-char]: hasCharType(t(_, signed-char)) => true [structural]
-	rule [hasCharType-other]: hasCharType(t(_, T:K)) => false
+	define [hasCharType-char]: hasCharType(t(_, char)) => true [structural]
+	define [hasCharType-qualified]: hasCharType(t(_, qualifiedType(T:KResult, _))) => hasCharType(T:KResult) [structural]
+	define [hasCharType-unsigned-char]: hasCharType(t(_, unsigned-char)) => true [structural]
+	define [hasCharType-signed-char]: hasCharType(t(_, signed-char)) => true [structural]
+	define [hasCharType-other]: hasCharType(t(_, T:K)) => false
 		when T:K =/=Bool char
 		andBool T:K =/=Bool unsigned-char
 		andBool T:K =/=Bool signed-char
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasWCharType-wchar]: hasWCharType(t(_, T:K)) => true 
+	define [hasWCharType-wchar]: hasWCharType(t(_, T:K)) => true 
 		when T:K ==Bool simpleType(cfg:wcharut)
 		[structural]
-	rule [hasWCharType-other]: hasWCharType(t(_, T:K)) => false
+	define [hasWCharType-other]: hasWCharType(t(_, T:K)) => false
 		when T:K =/=Bool simpleType(cfg:wcharut)
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
-	rule [hasWCharType-qualified]: hasWCharType(t(_, qualifiedType(T:KResult, _))) => hasWCharType(T:KResult) [structural]
+	define [hasWCharType-qualified]: hasWCharType(t(_, qualifiedType(T:KResult, _))) => hasWCharType(T:KResult) [structural]
 	
-	rule [hasPointerType-pointer]: hasPointerType(t(_, pointerType(_))) => true [structural]
-	rule [hasPointerType-qualified]: hasPointerType(t(_, qualifiedType(T:KResult, _))) => hasPointerType(T:KResult) [structural]
-	rule [hasPointerType-other]: hasPointerType(t(_, T:K)) => false
+	define [hasPointerType-pointer]: hasPointerType(t(_, pointerType(_))) => true [structural]
+	define [hasPointerType-qualified]: hasPointerType(t(_, qualifiedType(T:KResult, _))) => hasPointerType(T:KResult) [structural]
+	define [hasPointerType-other]: hasPointerType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'pointerType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule [hasBoolType-bool]: hasBoolType(t(_, bool)) => true [structural]
-	rule [hasBoolType-qualifiedType]: hasBoolType(t(_, qualifiedType(T:KResult, _))) => hasBoolType(T:KResult) [structural]
-	rule [hasBoolType-other]: hasBoolType(t(_, T:K)) => false
+	define [hasBoolType-bool]: hasBoolType(t(_, bool)) => true [structural]
+	define [hasBoolType-qualifiedType]: hasBoolType(t(_, qualifiedType(T:KResult, _))) => hasBoolType(T:KResult) [structural]
+	define [hasBoolType-other]: hasBoolType(t(_, T:K)) => false
 		when T:K =/=Bool bool 
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule [hasArrayType-array]: hasArrayType(t(_, arrayType(_, _:#Nat))) => true [structural]
-	rule [hasArrayType-incompleteArray]: hasArrayType(t(_, incompleteArrayType(_))) => true [structural]
-	rule [hasArrayType-flexibleArray]: hasArrayType(t(_, flexibleArrayType(_))) => true [structural]
-	rule [hasArrayType-qualified]: hasArrayType(t(_, qualifiedType(T:KResult, _))) => hasArrayType(T:KResult) [structural]
-	rule [hasArrayType-other]: hasArrayType(t(_, T:K)) => false
+	define [hasArrayType-array]: hasArrayType(t(_, arrayType(_, _:#Nat))) => true [structural]
+	define [hasArrayType-incompleteArray]: hasArrayType(t(_, incompleteArrayType(_))) => true [structural]
+	define [hasArrayType-flexibleArray]: hasArrayType(t(_, flexibleArrayType(_))) => true [structural]
+	define [hasArrayType-qualified]: hasArrayType(t(_, qualifiedType(T:KResult, _))) => hasArrayType(T:KResult) [structural]
+	define [hasArrayType-other]: hasArrayType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'arrayType 
 		andBool getKLabel(T:K) =/=Bool 'incompleteArrayType 
 		andBool getKLabel(T:K) =/=Bool 'flexibleArrayType 
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule hasAggregateType(T:KResult) => hasArrayType(T:KResult) orBool hasStructType(T:KResult) [structural]
+	define hasAggregateType(T:KResult) => hasArrayType(T:KResult) orBool hasStructType(T:KResult) [structural]
 		
-	rule [hasStructType-struct]: hasStructType(t(_, structType(_:#Id))) => true [structural]
-	rule [hasStructType-qualified]: hasStructType(t(_, qualifiedType(T:KResult, _))) => hasStructType(T:KResult) [structural]
-	rule [hasStructType-other]: hasStructType(t(_, T:K)) => false
+	define [hasStructType-struct]: hasStructType(t(_, structType(_:#Id))) => true [structural]
+	define [hasStructType-qualified]: hasStructType(t(_, qualifiedType(T:KResult, _))) => hasStructType(T:KResult) [structural]
+	define [hasStructType-other]: hasStructType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'structType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasUnionType-union]: hasUnionType(t(_, unionType(_:#Id))) => true [structural]
-	rule [hasUnionType-qualified]: hasUnionType(t(_, qualifiedType(T:KResult, _))) => hasUnionType(T:KResult) [structural]
-	rule [hasUnionType-other]: hasUnionType(t(_, T:K)) => false
+	define [hasUnionType-union]: hasUnionType(t(_, unionType(_:#Id))) => true [structural]
+	define [hasUnionType-qualified]: hasUnionType(t(_, qualifiedType(T:KResult, _))) => hasUnionType(T:KResult) [structural]
+	define [hasUnionType-other]: hasUnionType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'unionType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 
-	rule [hasIncompleteType-true]: hasIncompleteType(t(_, incompleteArrayType(_))) => true [structural]
-	rule [hasIncompleteType-qualified]: hasIncompleteType(t(_, qualifiedType(T:KResult, _))) => hasIncompleteType(T:KResult) [structural]
-	rule [hasIncompleteType-false]: hasIncompleteType(t(_, T:K)) => false
+	define [hasIncompleteType-true]: hasIncompleteType(t(_, incompleteArrayType(_))) => true [structural]
+	define [hasIncompleteType-qualified]: hasIncompleteType(t(_, qualifiedType(T:KResult, _))) => hasIncompleteType(T:KResult) [structural]
+	define [hasIncompleteType-false]: hasIncompleteType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'incompleteArrayType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:KResult)) fi 
+	define [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:KResult)) fi 
 		[structural]
-	rule [hasExternType-false]: hasExternType(t(_, T:K)) => false
+	define [hasExternType-false]: hasExternType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule [hasStaticType-qualified]: 
+	define [hasStaticType-qualified]: 
 		hasStaticType(t(_, qualifiedType(T:KResult, K:K))) 
 			=> if (K:K ==Bool Static) then (true) else (hasStaticType(T:KResult)) fi
 		[structural]
-	rule [hasStaticType-false]: hasStaticType(t(_, T:K)) => false
+	define [hasStaticType-false]: hasStaticType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 	
-	rule [hasConstType-qualified]: 
+	define [hasConstType-qualified]: 
 		hasConstType(t(_, qualifiedType(T:KResult, K:K))) => hasConstType(T:KResult)
 		[structural]
-	rule [hasConstType-false]: 
+	define [hasConstType-false]: 
 		hasConstType(t(S:Set, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		andBool notBool Const in S:Set
 		[structural]
-	rule [hasConstType-true]: 
+	define [hasConstType-true]: 
 		hasConstType(t(SetItem(Const) _, T:K)) => true
 		[structural]		
 	
 		
-	rule [hasBitfieldType-true]: hasBitfieldType(t(_, bitfieldType(_, _:#Nat))) => true [structural]
-	rule [hasBitfieldType-false]: hasBitfieldType(t(_, T:K)) => false
+	define [hasBitfieldType-true]: hasBitfieldType(t(_, bitfieldType(_, _:#Nat))) => true [structural]
+	define [hasBitfieldType-false]: hasBitfieldType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'bitfieldType
 		[structural]
 		
-	rule [hasFunctionType-true]: hasFunctionType(t(_, functionType(_, _:List{KResult}))) => true [structural]
-	rule [hasFunctionType-prototype]: hasFunctionType(t(_, prototype(T:KResult))) => hasFunctionType(T:KResult) [structural]
-	rule [hasFunctionType-qualified]: hasFunctionType(t(_, qualifiedType(T:KResult, _))) => hasFunctionType(T:KResult) [structural]
-	rule [hasFunctionType-false]: hasFunctionType(t(_, T:K)) => false
+	define [hasFunctionType-true]: hasFunctionType(t(_, functionType(_, _:List{KResult}))) => true [structural]
+	define [hasFunctionType-prototype]: hasFunctionType(t(_, prototype(T:KResult))) => hasFunctionType(T:KResult) [structural]
+	define [hasFunctionType-qualified]: hasFunctionType(t(_, qualifiedType(T:KResult, _))) => hasFunctionType(T:KResult) [structural]
+	define [hasFunctionType-false]: hasFunctionType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'functionType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType
 		andBool getKLabel(T:K) =/=Bool 'prototype 
 		[structural]
 		
-	rule [hasFunctionPointerType-fp]: hasFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:List{KResult}))))) => true [structural]
-	rule [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => hasFunctionPointerType(T:KResult) [structural]
-	rule [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => hasFunctionPointerType(t(.Set, pointerType(T:KResult))) [structural]
-	rule [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(_, T:K)) => false
+	define [hasFunctionPointerType-fp]: hasFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:List{KResult}))))) => true [structural]
+	define [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => hasFunctionPointerType(T:KResult) [structural]
+	define [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => hasFunctionPointerType(t(.Set, pointerType(T:KResult))) [structural]
+	define [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=Bool 'pointerType
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType
 		[structural]
-	rule [hasFunctionPointerType-notFunction]: hasFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
+	define [hasFunctionPointerType-notFunction]: hasFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
 		when getKLabel(T:K) =/=Bool 'functionType 
 		andBool getKLabel(T:K) =/=Bool 'qualifiedType
 		[structural]
@@ -1148,18 +1148,18 @@ kmod COMMON-C-TYPING is
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
 	// Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
 	// */
-	rule hasArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool hasFloatType(T:KResult)
+	define hasArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool hasFloatType(T:KResult)
 		[structural]
 		
 		
 			
-	rule unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
-	rule unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
+	define unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
+	define unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
 		when getKLabel(T:K) =/=Bool 'qualifiedType 
 		[structural]
 		
-	rule removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
-	rule removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
+	define removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
+	define removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
 		when getKLabel(T:K) =/=Bool 'qualifiedType
 		[structural]
 endkm

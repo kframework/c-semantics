@@ -42,7 +42,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op checkValidLoc : K -> K
 	op checkDerefLoc : K -> K
 	op ListItem : BagItem -> ListItem
-	op ListToK : List -> K 
+	declare ListToK : List -> K 
 	op Map : Map -> K 
 	op piece : #Nat #Nat -> #Nat 
 	
@@ -169,8 +169,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unionType : #Id -> SimpleType [ctor] 
 	op qualifiedType : Type K -> SimpleType [ctor]
 	
-	op unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
-	op removeStorageSpecifiers : K -> Type
+	declare unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
+	declare removeStorageSpecifiers : K -> Type
 	
 	// these aren't real types, but are values that can appear in type contexts
 	op prototype : Type -> SimpleType 
@@ -186,7 +186,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bitsToBytes : K -> #Nat 
 	// op MYHOLE : -> Expression 
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
-	op _contains_ : Set K -> #Bool [memo] 
+	declare _contains_ : Set K -> #Bool [memo] 
 	
 	
 	
@@ -218,7 +218,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	
 	
-	op _to_ : #Nat #Nat -> List{K} 
+	declare _to_ : #Nat #Nat -> List{K} 
 	op cast : K K -> K [metadata "strict=()"] // as described in 6.3 // totype, fromvalue
 	context cast(_, (HOLE => reval(HOLE)))
 	op arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
@@ -229,10 +229,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op integerTypes : -> Set [memo] 
 	op unsignedIntegerTypes : -> Set [memo] 
 	op signedIntegerTypes : -> Set [memo] 
-	op hasIntegerType : Type -> #Bool [memo] 
-	op hasFloatType : Type -> #Bool [memo] 
-	op hasUnsignedIntegerType : Type -> #Bool [memo] 
-	op hasSignedIntegerType : Type -> #Bool [memo] 
+	declare hasIntegerType : Type -> #Bool [memo] 
+	declare hasFloatType : Type -> #Bool [memo] 
+	declare hasUnsignedIntegerType : Type -> #Bool [memo] 
+	declarehasSignedIntegerType : Type -> #Bool [memo] 
 	
 	op typeof : K -> K 
 	op writeToFD : #Nat #Nat -> K 
@@ -242,32 +242,32 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op calculateGotoMap : #Id K -> K 
 	
-	op hasCharType : Type -> #Bool 
-	op hasWCharType : Type -> #Bool 
+	declare hasCharType : Type -> #Bool 
+	declare hasWCharType : Type -> #Bool 
 	// fixme make sure i use this everywhere instead of T:BaseType
 	// op isABaseType_ : K -> #Bool 
-	op hasPointerType : Type -> #Bool 
-	op hasArrayType : Type -> #Bool 
-	op hasBoolType : Type -> #Bool 
-	op hasStructType : Type -> #Bool 
-	op hasUnionType : Type -> #Bool 
-	op hasAggregateType : Type -> #Bool 
-	op hasFunctionType : Type -> #Bool 
-	op hasFunctionPointerType : Type -> #Bool 
-	op hasBitfieldType : Type -> #Bool 
-	op hasExternType : Type -> #Bool 
-	op hasStaticType : Type -> #Bool 
-	op hasConstType : Type -> #Bool
-	op hasIncompleteType : Type -> #Bool 
+	declare hasPointerType : Type -> #Bool 
+	declare hasArrayType : Type -> #Bool 
+	declare hasBoolType : Type -> #Bool 
+	declare hasStructType : Type -> #Bool 
+	declare hasUnionType : Type -> #Bool 
+	declare hasAggregateType : Type -> #Bool 
+	declare hasFunctionType : Type -> #Bool 
+	declare hasFunctionPointerType : Type -> #Bool 
+	declare hasBitfieldType : Type -> #Bool 
+	declare hasExternType : Type -> #Bool 
+	declare hasStaticType : Type -> #Bool 
+	declare hasConstType : Type -> #Bool
+	declare hasIncompleteType : Type -> #Bool 
 	// op hasTypedefType : Type -> #Bool 
-	op hasArithmeticType : Type -> #Bool
+	declare hasArithmeticType : Type -> #Bool
 	
 	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
-	op getFieldOffset : #Id K -> #Nat // these expect an aggregateInfo term as second argument
-	op getFieldType : #Id K -> Type
+	declare getFieldOffset : #Id K -> #Nat // these expect an aggregateInfo term as second argument
+	declare getFieldType : #Id K -> Type
 	
-	op isArithBinConversionOp : KLabel -> #Bool 
-	op isArithUnaryOp : KLabel -> #Bool 
+	declare isArithBinConversionOp : KLabel -> #Bool 
+	declare isArithUnaryOp : KLabel -> #Bool 
 	op kpair : K K -> K 
 	op promote : K -> Type // should be K, but is Type for efficiency reasons
 	op argPromote : K -> K
@@ -278,8 +278,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op handleBuiltin : #Id Type -> K 
 	
-	op min : Type -> #Int [memo]
-	op max : Type -> #Int [memo]
+	declare min : Type -> #Int [memo]
+	declare max : Type -> #Int [memo]
 	op alloc : K K -> K // should be K K 
 	op realloc : K K K K -> K // should be K K 
 	
@@ -292,8 +292,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op deleteBlock : #Nat -> K // deletes the base object from memory, given a location
 	op deleteSizedBlock : #Nat #Nat -> K // deletes the base object from memory, given a location and it size (as a check)
 	
-	op isConcreteNumber : #Int -> #Bool 
-	op _in_ : K List -> #Bool 
+	declare isConcreteNumber : #Int -> #Bool 
+	declare _in_ : K List -> #Bool 
 endkm
 
 kmod COMMON-C-SETTINGS is
