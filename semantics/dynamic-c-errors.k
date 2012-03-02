@@ -15,8 +15,8 @@ endkm
 kmod DYNAMIC-C-ERRORS is
 	including DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
-	op Error : #String #String -> K
-	rule Error(Name:#String, Msg:#String)  => 
+	declare Error : #String #String -> K
+	define Error(Name:#String, Msg:#String)  => 
 		//"=====================================================\n"
 		//+String "ERROR! KCC encountered an error while executing this program.\n"
 		"Error: " 
@@ -25,8 +25,8 @@ kmod DYNAMIC-C-ERRORS is
 		+String "Description: " 
 		+String Msg:#String
 		[structural]
-	op ICE : #String #String -> K
-	rule ICE(Name:#String, Msg:#String) =>
+	declare ICE : #String #String -> K
+	define ICE(Name:#String, Msg:#String) =>
 		"Error: "
 		+String Name:#String
 		+String "\n"
@@ -39,16 +39,16 @@ kmod DYNAMIC-C-ERRORS is
 		
 	op halted-k : -> CellLabel 
 	op halted-T : -> CellLabel
-	op halt_ : Bag -> Bag
-	rule halt < k => halted-k > _:K </ k => halted-k > [structural]
-	rule halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
+	declare halt_ : Bag -> Bag
+	define halt < k => halted-k > _:K </ k => halted-k > [structural]
+	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
 		when L:CellLabel =/=Bool k 
 		[structural]
-	rule halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel > [structural]
-	rule halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel > [structural]
-	rule halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel > [structural]
-	rule halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel > [structural]
-	rule halt .Bag => .Bag [structural]
+	define halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel > [structural]
+	define halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel > [structural]
+	define halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel > [structural]
+	define halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel > [structural]
+	define halt .Bag => .Bag [structural]
 	
 	rule [halt-start]:
 		< T => halted-T >...
