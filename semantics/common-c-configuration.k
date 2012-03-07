@@ -68,7 +68,7 @@ kmod COMMON-C-CONFIGURATION is
 					<threadLocal>
 						<callStack color="violet"> .List </callStack> // stack of "control" cells
 						<calculateGotoMap color="cyan">
-							<gotoCalculation multiplicity="?" color="cyan">
+							<gotoCalculation multiplicity="*" color="cyan">
 								<computation color="cyan"> .K </computation>
 								<computationTail color="cyan"> .K </computationTail>
 								<declarationStack color="cyan"> .List </declarationStack>
