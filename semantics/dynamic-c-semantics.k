@@ -48,7 +48,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< buff > #EOF </ buff >
 		[structural]
 	rule [make-eof]:
-		"" +String charString(K2Nat(#string2Int(#EOF)))
+		"" +String charString(K2Nat(#EOF))
 			=> #EOF
 		[structural anywhere]
 	// rule [readFromFD-char-eof]:
