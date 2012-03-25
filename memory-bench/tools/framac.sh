@@ -31,11 +31,15 @@ rm -f $OUT_FILE
 
 set +e
 # `frama-c -val -val-signed-overflow-alarms -unspecified-access -slevel 100 -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
-`frama-c -val-signed-overflow-alarms -unspecified-access -val -stop-at-first-alarm -no-val-show-progress -obviously-terminates -precise-unions -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
+`frama-c -val -obviously-terminates -cpp-extra-args="$GCC_ARGS"  $INPUT_FILES > $OUTPUT_FILE 2>&1`
+# -val -val-signed-overflow-alarms -unspecified-access -stop-at-first-alarm -no-val-show-progress -obviously-terminates -precise-unions 
 
 RETVAL=$?
 cat $OUTPUT_FILE
 if grep -q 'assert' $OUTPUT_FILE; then 
+	# if frama-c prints any errors, return 0
+	exit 0
+elif grep -q 'got status invalid' $OUTPUT_FILE; then 
 	# if frama-c prints any errors, return 0
 	exit 0
 elif [ 0 -eq $RETVAL ]; then

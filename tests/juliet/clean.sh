@@ -190,7 +190,7 @@ mv `grep -l 'global_returns_t_or_f' testcases/*/*.c` $DIR
 
 echo "Fixing some tests that have undefined behavior in the good branches"
 # there is some undefined behavior in some of the tests where they read a value that hasn't been initialized.  This fixes those cases
-perl -i -p -e 'undef $/; s/^    (char|int|long|long long|double) \* data;(\s+\1 \* \*data_ptr1 = &data;\s+\1 \* \*data_ptr2 = &data;)/    \1 \* data = 0;\2/gsm' testcases/*/*.c
+perl -i -p -e 'undef $/; s/^    (void|char|int|long|long long|double|twoints) \* data;(\s+\1 \* \*data_ptr1 = &data;\s+\1 \* \*data_ptr2 = &data;)/    \1 \* data = 0;\2/gsm' testcases/*/*.c
 
 echo "Changing \"_snprintf\" to \"snprintf\""
 perl -i -p -e 's/(\s)_snprintf/\1snprintf/gsm' testcases/*/*.c

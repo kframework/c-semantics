@@ -11,6 +11,7 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	declare locations : List -> Set
 	op read-aux : K K K -> K
 	
+	declare subObject : K K K -> #Nat // object, start piece, end piece
 	
 	define [locations-none]: locations(.List) => .Set [structural]
 	define [locations-some]: locations(bwrite(Loc:#Nat, _) L:List) => SetItem(Loc:#Nat) locations(L:List) [structural]
@@ -107,14 +108,37 @@ kmod DYNAMIC-SEMANTICS-READING is
 		andBool Len:#Nat ==Bool numBitsPerByte 
 		[structural]
 
+	op joinPointerBytes : Type List{K} -> K
+	op joinPointerBytes-aux : Type List{K} K -> K
 	// fixme should also check sizes are appropriate
 	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
-	rule < k > concretize(t(S:Set, pointerType(T:KResult)), dataList((piece(encodedPointer(N:#Nat), Len:#Nat),, _))) 
-			=> checkValidLoc(N:#Nat)
-			~> tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
+	// rule < k > concretize(t(S:Set, pointerType(T:KResult)), dataList((piece(encodedPointer(N:#Nat), Len:#Nat),, _))) 
+			// => checkValidLoc(N:#Nat)
+			// ~> tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
+		// ...</ k >
+		// when Len:#Nat ==Bool numBitsPerByte
+		// [structural]
+	rule < k > concretize(T:KResult, dataList(L:List{K}))
+			=> joinPointerBytes(T:KResult, L:List{K})
+		...</ k >
+		when hasPointerType(T:KResult)
+		[structural]
+	rule < k > joinPointerBytes(T:KResult, (piece(N:#Nat, Len:#Nat),, L:List{K}))
+			=> joinPointerBytes-aux(T:KResult, L:List{K}, N:#Nat)
 		...</ k >
 		when Len:#Nat ==Bool numBitsPerByte
 		[structural]
+	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:#Nat, sNat(End:#Nat), sNat(End:#Nat)), Len:#Nat),, L:List{K}), subObject(N:#Nat, 0, End:#Nat))
+			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:#Nat, 0, sNat(End:#Nat)))
+		...</ k >
+		when Len:#Nat ==Bool numBitsPerByte
+		[structural]
+	rule < k > joinPointerBytes-aux(T:KResult, .List{K}, subObject(N:#Nat, 0, End:#Nat))
+			=> checkValidLoc(N:#Nat)
+			~> tv(N:#Nat, T:KResult)
+		...</ k >
+		[structural]
+
 	rule < k > concretize(t(S:Set, structType(S:#Id)), dataList(L:List{K})) 
 			=> tv(L:List{K}, t(S:Set, structType(S:#Id))) 
 		...</ k >
@@ -589,15 +613,22 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 		
 	declare splitPointerBytes : K K K -> K 
-	declare splitPointerBytes : K K K List{K} -> K 
-	context splitPointerBytes(_, _, value(HOLE)) 
-	define splitPointerBytes(I:#Int, T:KResult, sNat(Len:#Nat)) 
-		=> splitPointerBytes(I:#Int, T:KResult, Len:#Nat, piece(encodedPointer(I:#Int), numBitsPerByte)) 
+	declare splitPointerBytes-aux : K K K K List{K} -> K 
+	context splitPointerBytes(_, _, value(HOLE))
+	// define splitPointerBytes(I:#Int, T:KResult, sNat(Len:#Nat))
+		// => splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, piece(encodedPointer(I:#Int), numBitsPerByte)) 
+		// [structural]
+	// define splitPointerBytes-aux(I:#Int, T:KResult, sNat(Len:#Nat), L:List{K}) 
+		// => splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, (L:List{K},, piece(unknown(numBitsPerByte), numBitsPerByte)))
+		// [structural]
+	define splitPointerBytes(I:#Int, T:KResult, Len:#Nat)
+		=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, 0, .List{K}) 
 		[structural]
-	define splitPointerBytes(I:#Int, T:KResult, sNat(Len:#Nat), L:List{K}) => splitPointerBytes(I:#Int, T:KResult, Len:#Nat, (L:List{K},, piece(unknown(numBitsPerByte), numBitsPerByte))) 
+	define splitPointerBytes-aux(I:#Int, T:KResult, sNat(Len:#Nat), N:#Nat, L:List{K})
+		=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, N:#Nat +Nat 1, (L:List{K},, piece(subObject(I:#Int, N:#Nat, N:#Nat), numBitsPerByte)))
 		[structural]
-	define splitPointerBytes(_, _, 0, L:List{K}) 
-		=> dataList(L:List{K}) 
+	define splitPointerBytes-aux(_, _, 0, _, L:List{K}) 
+		=> dataList(L:List{K})
 		[structural]
 		
 		

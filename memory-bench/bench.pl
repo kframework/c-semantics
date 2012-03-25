@@ -112,10 +112,10 @@ sub bench {
 		# print "Running valgrind with $goodfilename, $badfilename\n";
 		# valgrind($testfilename);
 		# ubc($testfilename);
-		# framac($testfilename);
+		framac($testfilename);
 		# kcc($testfilename);
 		# ccured($testfilename);
-		checkPointer($testfilename, $secFiles);
+		# checkPointer($testfilename, $secFiles);
 		
 	}
 	closedir(DIR);
@@ -184,7 +184,7 @@ sub framac {
 	my ($file) = (@_);
 	
 	$_toolName = "framac";
-	my $template = "$myDirectory/tools/framac.sh $_testName \"-I$myDirectory/../tests/juliet/testcasesupport %s -DINCLUDEMAIN\" \"$myDirectory/../tests/juliet/testcasesupport/io.c $file\"";
+	my $template = "$myDirectory/tools/framac.sh $_testName \"-I$myDirectory/../tests/juliet/testcasesupport %s -DINCLUDEMAIN -I$myDirectory/frama-c-Nitrogen-20111001+dev/share/libc -I$myDirectory/frama-c-Nitrogen-20111001+dev/share\" \"$myDirectory/frama-c-Nitrogen-20111001+dev/share/libc.c $myDirectory/../tests/juliet/testcasesupport/io.c $file\"";
 	my $goodCommand = $template;
 	$goodCommand =~ s/%s/-DOMITBAD/;
 	my $badCommand = $template;
@@ -249,7 +249,7 @@ sub run {
 	close($stderrFile);
 	
 	my $command = "$theircommand 1>$stdoutFile 2>$stderrFile";
-	# print "Running $command\n";
+	# print STDERR "Running $command\n";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	#my @data=<P>;
 	close P;
