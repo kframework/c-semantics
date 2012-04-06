@@ -375,6 +375,12 @@ kmod DYNAMIC-C-ERRORS is
 		andBool N:#Nat >=Nat 0
 		[structural]
 		
+	rule [err00047]:
+		< k => finalComputation > writeByte(Loc:#Nat, V:K)  ...</ k => finalComputation >
+		< notWritable >... Loc:#Nat |-> _ ...</notWritable>
+		(.Bag => < errorCell > Error("00047", "Trying to modify an object declared with const type.") </ errorCell >)
+		[structural]
+		
 	op isUnknown : #Nat -> #Bool
 	eq isUnknown(unknown(_:#Nat)) = true
 	eq isUnknown(_:#Nat) = false [owise]

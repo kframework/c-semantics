@@ -26,6 +26,7 @@ kmod COMMON-C-CONFIGURATION is
 			<gtypes color="lightgray"> .Map </gtypes>
 			<gstructs color="lightgray"> .Map </gstructs>
 			<mem color="red"> .Map </mem>
+			<notWritable> .Map </notWritable>
 			<functions color="lightgray"> .Map </functions>
 			<freshNat color="green"> 0 </freshNat>
 			<randNat color="green"> 0 </randNat>

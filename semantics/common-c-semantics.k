@@ -126,7 +126,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op mlength : #Nat -> BagItem
 	op mconst : -> BagItem
 	op makeUnwritable : #Nat -> K
-	op makeUnwritableVar : #Id -> K
+	op makeUnwritableSubObject : K -> K
+	op makeUnwritableVar : K -> K
+	context makeUnwritableSubObject((HOLE => peval(HOLE)))
 	
 	op listToK : K -> K 
 	op klistToK : List{K} -> K 
@@ -187,7 +189,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
 	declare _contains_ : Set K -> #Bool // [memo] 
 	
-	
+	op getModifiers : K -> Set
 	
 	op AllowWrite : K -> K [metadata "strict=()"]
 	

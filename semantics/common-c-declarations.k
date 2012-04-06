@@ -866,11 +866,22 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > T':KResult ~> initializeSingleInit(K':K) => . ...</ k >
 		< currentSubObject > (.List => next) ListItem(te(K:K, T:KResult)) ...</ currentSubObject >
 		< incompleteLength > N:#Nat => maxNat(N:#Nat, getTopArrayUse(K:K)) </ incompleteLength >
-		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) </ savedInitialization > 
+		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) ~> possiblyMakeConst(T:KResult, K:K) </ savedInitialization >
 		when (isBasicType(T:KResult) orBool hasPointerType(T:KResult) orBool hasBitfieldType(T:KResult))
 		andBool notBool hasStructType(T':KResult)
 		andBool notBool hasUnionType(T':KResult)
-		[structural] 
+		[structural]
+	
+	op possiblyMakeConst : Type K -> K
+	
+	rule
+		<k> possiblyMakeConst(T:KResult, K) => makeUnwritableSubObject(K) ...</k>
+		when hasConstType(T:KResult)
+		[structural]
+	rule
+		<k> possiblyMakeConst(T:KResult, K) => . ...</k>
+		when notBool hasConstType(T:KResult)
+		[structural]
 		
 	// this is used to have an aggregate on the RHS of a compound init
 	// fixme want to exclude strings, but not normal arrays
@@ -959,13 +970,13 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural]
 	rule [fillInitAux-string-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(StringLiteral(S:#String))))
-			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:#String)), t(.Set, char)))) 
+			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:#String)), t(getModifiers(T:KResult), char)))) 
 			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:#String))))) 
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:KResult)) ...</ currentSubObject >
 		when S:#String =/=Bool ""
 		andBool hasCharType(T:KResult)
-		[structural] 
+		[structural]
 	rule [fillInitAux-wstring-some]:
 		< k > fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:#Nat,, S:List{K})))))
 			=> fillInitializer(SingleInit(tv(N:#Nat, cfg:wcharut)))

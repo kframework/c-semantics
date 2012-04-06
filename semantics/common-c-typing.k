@@ -1162,4 +1162,6 @@ kmod COMMON-C-TYPING is
 	define removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
 		when getKLabel(T:K) =/=Bool 'qualifiedType
 		[structural]
+	
+	define getModifiers(t(S:Set, _)) => S:Set
 endkm

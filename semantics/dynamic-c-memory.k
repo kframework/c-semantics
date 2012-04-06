@@ -538,9 +538,11 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< buffer >... (.List => bwrite(LOC, V:K)) </ buffer >
 		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) Attr:Bag, _) ...</ mem >		
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
+		< notWritable > NotWritable:Map </notWritable>
 		when notBool LOC in Locs:Bag
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool notBool mconst in Attr:Bag
+		andBool notBool $hasMapping(NotWritable, LOC)
 		where LOC = sym(Block:#Nat) +Nat Offset:#Nat
 		[structural]
 		
@@ -705,6 +707,11 @@ kmod DYNAMIC-C-MEMORY-MISC is
 	rule [makeUnwritable-var]:
 		< k > makeUnwritableVar(X:#Id) => makeUnwritable(Loc:#Nat)  ...</ k >
 		< env >... X:#Id |-> Loc:#Nat ...</ env>
+		[structural]
+	// fixme shouldn't need both of these
+	rule [makeUnwritable-subobject]:
+		< k > makeUnwritableSubObject(lv(sym(Base:#Nat) +Nat Offset:#Nat, _)) => . ...</ k >
+		< notWritable > M:Map => M:Map[1 / sym(Base:#Nat) +Nat Offset:#Nat] </ notWritable >
 		[structural]
 	rule [makeUnwritable]:
 		< k > makeUnwritable(sym(Base:#Nat) +Nat 0) => .K ...</ k >

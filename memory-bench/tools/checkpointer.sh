@@ -5,6 +5,8 @@ export DMS_OUTPUT_ENCODING=ISO-8859-1
 
 set -e
 
+TIMEOUT=200
+
 EXPECTED_ARGS=5
 if [ $# -ne $EXPECTED_ARGS ]; then
   echo "Usage: `basename $0` testName \"files.c\" \"gcc args\" \"sec files\" \"chkopts\""
@@ -49,7 +51,7 @@ rm *.c
 cp $INPUT_FILES .
 ALLFILES=`ls *.c`
 mv io.bak io.c
-`/home/software/bin/wine cmd /C "c:\Program Files\SemanticDesigns\DMS\executables\DMSCheckPointer.cmd C~GCC3 $CHK_OPTS -cache ./cache-file -target $OUT_DIR -source . $ALLFILES" >> $LOG_FILE 2>&1`
+`../timeout $TIMEOUT /home/software/bin/wine cmd /C "c:\Program Files\SemanticDesigns\DMS\executables\DMSCheckPointer.cmd C~GCC3 $CHK_OPTS -cache ./cache-file -target $OUT_DIR -source . $ALLFILES" >> $LOG_FILE 2>&1`
 RETVAL=$?
 if [ 0 -ne $RETVAL ]; then
 	exit 1
@@ -82,7 +84,7 @@ gcc -o $OUT_FILE -O $GCC_ARGS -I/home/grosu/celliso2/.wine/drive_c/Program\ File
 test -e $OUT_FILE
 
 set +e
-`$OUT_FILE > $OUTPUT_FILE 2>&1`
+`../timeout $TIMEOUT $OUT_FILE > $OUTPUT_FILE 2>&1`
 RETVAL=$?
 if grep -q '*** Error:' $OUTPUT_FILE; then 
 	# if tool prints any errors, return 0
