@@ -5,7 +5,7 @@ int bad(void){
 	int x = 5;
 	int y = 0;
 	const int* p = &x;
-	*p = &y;
+	*p = y;
 	return *p;
 }
 int main(void){
