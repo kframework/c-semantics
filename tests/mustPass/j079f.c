@@ -1,4 +1,4 @@
-int f(static void){
+int f(void){
 	static int x;
 	return 0;
 }

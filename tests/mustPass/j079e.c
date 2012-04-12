@@ -1,4 +1,4 @@
-int f(auto void){
+int f(void){
 	auto int x;
 	return 0;
 }

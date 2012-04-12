@@ -1,4 +1,4 @@
-int f(_Atomic void){
+int f(void){
 	_Atomic int x;
 	return 0;
 }

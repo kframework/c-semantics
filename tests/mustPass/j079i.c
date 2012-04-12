@@ -1,4 +1,4 @@
-int f(volatile void){
+int f(void){
 	volatile int x;
 	return 0;
 }

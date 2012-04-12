@@ -1,4 +1,4 @@
-int f(const void){
+int f(void){
 	const int x = 0;
 	return 0;
 }

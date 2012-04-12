@@ -7,6 +7,6 @@ struct v {
 
 int main(void){
 	v1.w.k = 5;
-	printf("%d\n", v1.w.k);
+	printf("%ld\n", v1.w.k);
 	return 0;
 }

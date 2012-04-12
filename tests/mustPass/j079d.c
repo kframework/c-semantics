@@ -1,4 +1,4 @@
-int f(_Thread_local void){
+int f(void){
 	_Thread_local int x;
 	return 0;
 }

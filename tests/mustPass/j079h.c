@@ -1,4 +1,4 @@
-int f(restrict void){
+int f(void){
 	int* restrict p;
 	return 0;
 }

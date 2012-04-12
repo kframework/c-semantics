@@ -10,7 +10,7 @@ int main(void){
 	// v1.i = 2;
 	// printf("%d\n", v1.i);
 	v1.k = 3; // invalid: inner structure is not anonymous
-	printf("%d\n", v1.k);
+	printf("%ld\n", v1.k);
 	// v1.w.k = 5;
 	// printf("%d\n", v1.w.k);
 	return 0;
