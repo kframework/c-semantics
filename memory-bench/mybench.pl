@@ -114,11 +114,10 @@ sub bench {
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
 		# print "$testfilename\n";
-		# valgrind($testfilename);
-		# # ubc($testfilename);
-		# framac($testfilename);
-		# kcc($testfilename);
-		# ccured($testfilename);
+		valgrind($testfilename);
+		framac($testfilename);
+		kcc($testfilename);
+		ccured($testfilename);
 		checkPointer($testfilename);
 		
 		`mv $testfilename $myDirectory/allgood/done/`;

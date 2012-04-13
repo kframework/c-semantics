@@ -110,12 +110,12 @@ sub bench {
 		
 		
 		# print "Running valgrind with $goodfilename, $badfilename\n";
-		# valgrind($testfilename);
-		# ubc($testfilename);
+		valgrind($testfilename);
+		ubc($testfilename);
 		framac($testfilename);
-		# kcc($testfilename);
-		# ccured($testfilename);
-		# checkPointer($testfilename, $secFiles);
+		kcc($testfilename);
+		ccured($testfilename);
+		checkPointer($testfilename, $secFiles);
 		
 	}
 	closedir(DIR);
