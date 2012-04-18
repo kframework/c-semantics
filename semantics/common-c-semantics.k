@@ -10,7 +10,7 @@ kmod COMMON-INCOMING-MODULES is
 	subsort Value < C 
 	sort BaseValue 
 
-	subsort #Nat #Int #Float < BaseValue 
+	subsort Nat Int Float < BaseValue 
 	subsort BaseValue < C
 	subsort Value < KResult K 
 	subsort Type < KResult K
@@ -21,21 +21,21 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
 	// these are used for runtime settings
-	op kccSettingSimpleType : #String -> SimpleType
-	op kccSettingNzNat : #String -> #NzNat
-	op kccSettingInt : #String -> #Int
+	op kccSettingSimpleType : String -> SimpleType
+	op kccSettingNzNat : String -> #NzNat
+	op kccSettingInt : String -> Int
 	
-	op fromUnion : #Id -> K	
+	op fromUnion : Id -> K	
 		
 	// Types
-	op typedDeclaration : Type #Id -> Type // would rather this be KResult, but can't get the subsorting to work
+	op typedDeclaration : Type Id -> Type // would rather this be KResult, but can't get the subsorting to work
 	
 	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-	op isAType_ : K -> #Bool 
+	op isAType_ : K -> Bool 
 	op setOfTypes : -> Set // [memo] 
 	
 	op usualArithmeticConversion : Type Type -> K
-	op callMain-aux : K #Nat #Id K -> K [metadata "strict=(1)"] // having to put this out here so errors can see it
+	op callMain-aux : K Nat Id K -> K [metadata "strict=(1)"] // having to put this out here so errors can see it
 	op initFunction : K K -> K [metadata "strict=()"]
 	op populateFromGlobal : -> K 
 	
@@ -44,88 +44,88 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op ListItem : BagItem -> ListItem
 	declare ListToK : List -> K 
 	op Map : Map -> K 
-	op piece : #Nat #Nat -> #Nat 
+	op piece : Nat Nat -> Nat 
 	
-	op unknown : #Nat -> #Nat // [ctor] 
+	op unknown : Nat -> Nat // [ctor] 
 	
 	op skipval : -> KResult 
 	op debug : -> K 
 	op discard : -> K 
-	op File-Scope : -> #Id // [ctor] 
-	op unnamedBitField : -> #Id // [ctor] 
+	op File-Scope : -> Id // [ctor] 
+	op unnamedBitField : -> Id // [ctor] 
 	//op bignum : -> Type 
-	op sym : #Nat -> #Nat 
-	op byteo : #Nat -> #Nat 
-	op bito : #Nat -> #Nat 
+	op sym : Nat -> Nat 
+	op byteo : Nat -> Nat 
+	op bito : Nat -> Nat 
 
-	declare bitoffset : #Nat -> #Nat 
-	declare byteoffset : #Nat -> #Nat
-	op enumItem : #Id Value -> Value 
+	declare bitoffset : Nat -> Nat 
+	declare byteoffset : Nat -> Nat
+	op enumItem : Id Value -> Value 
 	op resolveReferences : -> K 
 	
-	op toString : K -> #String 
+	op toString : K -> String 
 	
 	op maxType : Type Type -> Type 
 	
-	op bitRange : #Nat #Nat #Nat -> #Nat // original number, from, to inclusive
+	op bitRange : Nat Nat Nat -> Nat // original number, from, to inclusive
 	
 	op fillToBytes : K -> K [metadata "strict=()"] 
 	
-	op floorLoc : #Nat -> #Nat // loc with possible bit offset returning base byte	
-	op ceilingLoc : #Nat -> #Nat // loc with possible bit offset returning upperbounded byte	
-	op readFunction : #Nat -> K 
+	op floorLoc : Nat -> Nat // loc with possible bit offset returning base byte	
+	op ceilingLoc : Nat -> Nat // loc with possible bit offset returning upperbounded byte	
+	op readFunction : Nat -> K 
 	
 	declare innerType : Type -> Type
 	
-	// op AttributeValue : #String List{K} -> KResult 
+	// op AttributeValue : String List{K} -> KResult 
 	
-	op extractBitsFromList : K #Nat #Nat -> K [metadata "strict=(1)"] // data, offset, size in bits
-	op typedef : #Id -> #Id 
-	op unnamed : #Nat -> #Id 
+	op extractBitsFromList : K Nat Nat -> K [metadata "strict=(1)"] // data, offset, size in bits
+	op typedef : Id -> Id 
+	op unnamed : Nat -> Id 
 	
-	op NullPointerConstant : -> #Nat 
+	op NullPointerConstant : -> Nat 
 	
-	op NullPointer : -> #Nat 
+	op NullPointer : -> Nat 
 	
 	op emptyValue : -> Value 
 	op allocate : Type K -> K
 	
 	op zero : K -> K 
-	op zeroBlock : #Nat -> K 
+	op zeroBlock : Nat -> K 
 		
 	op value : K -> K 
 		
 	op sizeofLocation : K -> K
 	op type : K -> Type 
 	
-	op flush : #Nat -> K
+	op flush : Nat -> K
 	
-	op allocateType : #Nat Type -> K 
-	op allocateTypeIfAbsent : #Nat Type -> K 
-	op giveType : #Id Type -> K 
-	op addToEnv : #Id #Nat -> K 
+	op allocateType : Nat Type -> K 
+	op allocateTypeIfAbsent : Nat Type -> K 
+	op giveType : Id Type -> K 
+	op addToEnv : Id Nat -> K 
 	
 	op read : K K -> K [metadata "strict=(2)"] // location, type
 	op write : K K -> K [metadata "strict=(2)"] // location, value
-	op writeByte : #Nat K -> K 
+	op writeByte : Nat K -> K 
 
-	declare isTypeCompatible : K K -> #Bool 
+	declare isTypeCompatible : K K -> Bool 
 	
-	declare hasBeenPromoted : Type -> #Bool
-	// op isPromotedInteger : Type -> #Bool
+	declare hasBeenPromoted : Type -> Bool
+	// op isPromotedInteger : Type -> Bool
 	
 	
-	op bitloc : #Nat #Nat #Nat -> #Nat 
-	op inc : #Nat -> #Nat 
-	op threadId : #Nat -> #Nat // used for symbolic locations based on threadid
-	op allocatedDuration : -> #Nat // fake threadid for above when location is of allocated duration
-	// op readOnly : -> #Nat // fake threadid for above when location can't be written to
+	op bitloc : Nat Nat Nat -> Nat 
+	op inc : Nat -> Nat 
+	op threadId : Nat -> Nat // used for symbolic locations based on threadid
+	op allocatedDuration : -> Nat // fake threadid for above when location is of allocated duration
+	// op readOnly : -> Nat // fake threadid for above when location can't be written to
 		
-	op initialize : #Id Type K -> K 
+	op initialize : Id Type K -> K 
 	op memblock : Bag Map -> K // length and an array from offsets to bytes
-	op mlength : #Nat -> BagItem
+	op mlength : Nat -> BagItem
 	op mconst : -> BagItem
-	op makeUnwritable : #Nat -> K
+	op makeUnwritable : Nat -> K
 	op makeUnwritableSubObject : K -> K
 	op makeUnwritableVar : K -> K
 	context makeUnwritableSubObject((HOLE => peval(HOLE)))
@@ -135,7 +135,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op UnknownCabsLoc : -> K 
 	
 	
-	op assert : #Bool #Nat -> K // check, error#
+	op assert : Bool Nat -> K // check, error#
 	
 	sort SimpleType 
 	subsort SimpleType < K
@@ -156,18 +156,18 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	tv(5, T:KResult)
 	*/
 	
-	op isBasicType : K -> #Bool
+	op isBasicType : K -> Bool
 	
 	// Composite types
-	op enumType : #Id -> SimpleType // [ctor] 
-	op arrayType : Type #Nat -> SimpleType // [ctor] 
+	op enumType : Id -> SimpleType // [ctor] 
+	op arrayType : Type Nat -> SimpleType // [ctor] 
 	op incompleteArrayType : Type -> SimpleType // [ctor] 
 	op flexibleArrayType : Type -> SimpleType // [ctor] 
-	op bitfieldType : Type #Nat -> SimpleType // [ctor] 
+	op bitfieldType : Type Nat -> SimpleType // [ctor] 
 	op functionType : Type List{KResult} -> SimpleType // [ctor] 
 	op pointerType : Type -> SimpleType // [ctor] 
-	op structType : #Id -> SimpleType // [ctor] 
-	op unionType : #Id -> SimpleType // [ctor] 
+	op structType : Id -> SimpleType // [ctor] 
+	op unionType : Id -> SimpleType // [ctor] 
 	op qualifiedType : Type K -> SimpleType // [ctor]
 	
 	declare unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
@@ -175,25 +175,25 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	// these aren't real types, but are values that can appear in type contexts
 	op prototype : Type -> SimpleType 
-	op typedefType : #Id Type -> SimpleType 
+	op typedefType : Id Type -> SimpleType 
 	op variadic : -> SimpleType 
 
 	op dataList : List{K} -> KResult 
 	
-	op K2Nat : K -> #Nat
+	op K2Nat : K -> Nat
 	op sizeofType : K -> K [metadata "strict=()"] // generates a tv(size, cfg:sizeut)
 	op bitSizeofType : K -> K [metadata "strict=()"] // needs to be heated to top of K for struct and union types
 	op byteSizeofType : K -> K [metadata "strict=()"] 
-	op bitsToBytes : K -> #Nat 
+	op bitsToBytes : K -> Nat 
 	// op MYHOLE : -> Expression 
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
-	declare _contains_ : Set K -> #Bool // [memo] 
+	declare _contains_ : Set K -> Bool // [memo] 
 	
 	op getModifiers : K -> Set
 	
 	op AllowWrite : K -> K [metadata "strict=()"]
 	
-	rule AllowWrite(lv(N:#Nat, T:KResult)) => lv(N:#Nat, stripConst(T:KResult)) [structural anywhere]
+	rule AllowWrite(lv(N:Nat, T:KResult)) => lv(N:Nat, stripConst(T:KResult)) [structural anywhere]
 
 	declare stripConst : Type -> Type
 	
@@ -207,19 +207,19 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op tv : List{K} Type -> Value [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
 	op lv : List{K} Type -> Value
 	op concretize : Type K -> K [metadata "strict=(2)"] 
-	op functionObject : #Id Type K -> Value 
-	op functionPrototype : #Id Type -> Value 
+	op functionObject : Id Type K -> Value 
+	op functionPrototype : Id Type -> Value 
 	
-	op firstChar : #String -> #Char 
-	op nthChar : #String #Nat -> #Char 
-	op butFirstChar : #String -> #String 
-	op charToAscii : #String -> #Nat 
-	op stringToChar : #String -> #Char 
-	op asciiCharString : #String -> #Nat 
+	op firstChar : String -> Char 
+	op nthChar : String Nat -> Char 
+	op butFirstChar : String -> String 
+	op charToAscii : String -> Nat 
+	op stringToChar : String -> Char 
+	op asciiCharString : String -> Nat 
 	
 	
 	
-	declare _to_ : #Nat #Nat -> List{K} 
+	declare _to_ : Nat Nat -> List{K} 
 	declare cast : K K -> K [metadata "strict=()"] // as described in 6.3 // totype, fromvalue
 	context cast(_, (HOLE => reval(HOLE)))
 	declare arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
@@ -230,71 +230,71 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op integerTypes : -> Set // [memo] 
 	op unsignedIntegerTypes : -> Set // [memo] 
 	op signedIntegerTypes : -> Set // [memo] 
-	declare hasIntegerType : Type -> #Bool // [memo] 
-	declare hasFloatType : Type -> #Bool // [memo] 
-	declare hasUnsignedIntegerType : Type -> #Bool // [memo] 
-	declare hasSignedIntegerType : Type -> #Bool // [memo] 
+	declare hasIntegerType : Type -> Bool // [memo] 
+	declare hasFloatType : Type -> Bool // [memo] 
+	declare hasUnsignedIntegerType : Type -> Bool // [memo] 
+	declare hasSignedIntegerType : Type -> Bool // [memo] 
 	
 	op typeof : K -> K 
-	op writeToFD : #Nat #Nat -> K 
-	op writeToFD : #Nat #String -> K 
-	op readFromFD : #Nat -> K 
-	op readFromFD : #Nat #Nat -> K 
+	op writeToFD : Nat Nat -> K 
+	op writeToFD : Nat String -> K 
+	op readFromFD : Nat -> K 
+	op readFromFD : Nat Nat -> K 
 
-	op calculateGotoMap : #Id K -> K 
+	op calculateGotoMap : Id K -> K 
 	
-	declare hasCharType : Type -> #Bool 
-	declare hasWCharType : Type -> #Bool 
+	declare hasCharType : Type -> Bool 
+	declare hasWCharType : Type -> Bool 
 	// fixme make sure i use this everywhere instead of T:BaseType
-	// op isABaseType_ : K -> #Bool 
-	declare hasPointerType : Type -> #Bool 
-	declare hasArrayType : Type -> #Bool 
-	declare hasBoolType : Type -> #Bool 
-	declare hasStructType : Type -> #Bool 
-	declare hasUnionType : Type -> #Bool 
-	declare hasAggregateType : Type -> #Bool 
-	declare hasFunctionType : Type -> #Bool 
-	declare hasFunctionPointerType : Type -> #Bool 
-	declare hasBitfieldType : Type -> #Bool 
-	declare hasExternType : Type -> #Bool 
-	declare hasStaticType : Type -> #Bool 
-	declare hasConstType : Type -> #Bool
-	declare hasIncompleteType : Type -> #Bool 
-	// op hasTypedefType : Type -> #Bool 
-	declare hasArithmeticType : Type -> #Bool
+	// op isABaseType_ : K -> Bool 
+	declare hasPointerType : Type -> Bool 
+	declare hasArrayType : Type -> Bool 
+	declare hasBoolType : Type -> Bool 
+	declare hasStructType : Type -> Bool 
+	declare hasUnionType : Type -> Bool 
+	declare hasAggregateType : Type -> Bool 
+	declare hasFunctionType : Type -> Bool 
+	declare hasFunctionPointerType : Type -> Bool 
+	declare hasBitfieldType : Type -> Bool 
+	declare hasExternType : Type -> Bool 
+	declare hasStaticType : Type -> Bool 
+	declare hasConstType : Type -> Bool
+	declare hasIncompleteType : Type -> Bool 
+	// op hasTypedefType : Type -> Bool 
+	declare hasArithmeticType : Type -> Bool
 	
 	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
-	declare getFieldOffset : #Id K -> #Nat // these expect an aggregateInfo term as second argument
-	declare getFieldType : #Id K -> Type
+	declare getFieldOffset : Id K -> Nat // these expect an aggregateInfo term as second argument
+	declare getFieldType : Id K -> Type
 	
-	declare isArithBinConversionOp : KLabel -> #Bool 
-	declare isArithUnaryOp : KLabel -> #Bool 
+	declare isArithBinConversionOp : KLabel -> Bool 
+	declare isArithUnaryOp : KLabel -> Bool 
 	op kpair : K K -> K 
 	declare promote : K -> Type // should be K, but is Type for efficiency reasons
 	declare argPromote : K -> K
-	op extractField : List{K} K #Id -> K // bytes of struct, type, field id
-	op allocString : #Nat #String -> K 
-	op allocWString : #Nat List{K} -> K 
+	op extractField : List{K} K Id -> K // bytes of struct, type, field id
+	op allocString : Nat String -> K 
+	op allocWString : Nat List{K} -> K 
 	op sequencePoint : -> K 
 	
-	op handleBuiltin : #Id Type -> K 
+	op handleBuiltin : Id Type -> K 
 	
-	declare min : Type -> #Int // [memo]
-	declare max : Type -> #Int // [memo]
+	declare min : Type -> Int // [memo]
+	declare max : Type -> Int // [memo]
 	op alloc : K K -> K // should be K K 
 	op realloc : K K K K -> K // should be K K 
 	
 	// these are also used by compound literals
-	op initializerValue : #Id Type K -> KResult 
-	op figureInitializer : #Id K K -> K [metadata "strict=(2)"] // id, type, initializer
+	op initializerValue : Id Type K -> KResult 
+	op figureInitializer : Id K K -> K [metadata "strict=(2)"] // id, type, initializer
 	
 		
-	op append : #Nat #Nat Value -> K // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
-	op deleteBlock : #Nat -> K // deletes the base object from memory, given a location
-	op deleteSizedBlock : #Nat #Nat -> K // deletes the base object from memory, given a location and it size (as a check)
+	op append : Nat Nat Value -> K // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
+	op deleteBlock : Nat -> K // deletes the base object from memory, given a location
+	op deleteSizedBlock : Nat Nat -> K // deletes the base object from memory, given a location and it size (as a check)
 	
-	declare isConcreteNumber : #Int -> #Bool 
-	declare _in_ : K List -> #Bool 
+	declare isConcreteNumber : Int -> Bool 
+	declare _in_ : K List -> Bool 
 endkm
 
 kmod COMMON-C-SETTINGS is
@@ -306,8 +306,8 @@ kmod COMMON-C-SETTINGS is
 	// rule char => kccSettingSimpleType("_KCC_CHAR_TYPE")
 
 	declare numBitsPerByte : -> #NzNat 
-	declare numBytes : Type -> #Nat // [memo] 
-	declare numBits : Type -> #Nat // [memo] 
+	declare numBytes : Type -> Nat // [memo] 
+	declare numBits : Type -> Nat // [memo] 
 
 	define [numBitsPerByte]: numBitsPerByte => 8 [structural]
 	// rule [numBitsPerByte]: numBitsPerByte => kccSettingNzNat("_KCC_BITS_PER_BYTE") [structural]
@@ -327,7 +327,7 @@ kmod COMMON-C-SETTINGS is
 	define [numBytes-double]: numBytes(t(_, double)) => 8 [structural]
 	define [numBytes-long-double]: numBytes(t(_, long-double)) => 16 [structural]
 	
-	define [numBytes-enum]: numBytes(t(S:Set, enumType(X:#Id))) => numBytes(t(S:Set, int)) [structural]
+	define [numBytes-enum]: numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int)) [structural]
 	
 	declare cfg:sizeut : -> Type
 	define [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int) [structural]
@@ -343,16 +343,16 @@ kmod COMMON-C-SETTINGS is
 	declare cfg:largestUnsigned : -> Type 
 	define [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int) [structural]
 
-	declare cfg:ptrsize : -> #Nat 
+	declare cfg:ptrsize : -> Nat 
 	define [cfg-ptrsize]: cfg:ptrsize => 4 [structural]
 	
 	declare cfg:ptrdiffut : -> Type 
 	define [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int) [structural]
 	
-	define [min]: min(t(S:Set, enumType(_:#Id))) => min(t(S:Set, int)) [structural]
-	define [max]: max(t(S:Set, enumType(_:#Id))) => max(t(S:Set, int)) [structural]
+	define [min]: min(t(S:Set, enumType(_:Id))) => min(t(S:Set, int)) [structural]
+	define [max]: max(t(S:Set, enumType(_:Id))) => max(t(S:Set, int)) [structural]
 	
-	declare rank : Type -> #Int 
+	declare rank : Type -> Int 
 		
 	define rank(t(_, bool)) => 0 [structural]
 	define rank(t(_, signed-char)) => 1 [structural]
@@ -366,7 +366,7 @@ kmod COMMON-C-SETTINGS is
 	define rank(t(_, long-long-int)) => 5 [structural]
 	define rank(t(_, unsigned-long-long-int)) => 5 [structural]
 	
-	define rank(t(S:Set, enumType(_:#Id))) => rank(t(S:Set, int)) [structural]
+	define rank(t(S:Set, enumType(_:Id))) => rank(t(S:Set, int)) [structural]
 	//C99 6.3.1.1
 	
 	/*
@@ -399,11 +399,11 @@ kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
 	
-	rule inc(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat +Nat 1) +Nat M:#Nat [structural anywhere]
-	rule sNat(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat) +Nat (M:#Nat +Nat 1) [structural anywhere]
-	rule I:#Int +Int (N:#Nat +Nat sym(M:#Nat))
-		=> absInt(N:#Nat +Int I:#Int) +Nat sym(M:#Nat) 
-		when N:#Nat +Int I:#Int >=Int 0 
+	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural anywhere]
+	rule sNat(sym(N:Nat) +Nat M:Nat) => sym(N:Nat) +Nat (M:Nat +Nat 1) [structural anywhere]
+	rule I:Int +Int (N:Nat +Nat sym(M:Nat))
+		=> absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
+		when N:Nat +Int I:Int >=Int 0 
 		[structural anywhere]
 
 	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural anywhere]
@@ -430,13 +430,13 @@ kmod COMMON-C-SEMANTICS-MISC is
 		// [structural]
 		
 	// rule [Attributes]:
-		// < k > Attribute(S:#String, List(L:List{K})) => AttributeValue(S:#String, L:List{K}) ...</ k >
+		// < k > Attribute(S:String, List(L:List{K})) => AttributeValue(S:String, L:List{K}) ...</ k >
 		// [structural]
 		
 	rule AttributeWrapper(K:K, _) => K:K [structural anywhere]
 	
-	rule N:#Nat +Nat bito(M:#Nat) => N:#Nat +Nat (M:#Nat /Nat numBitsPerByte) +Nat bito(M:#Nat %Nat numBitsPerByte)
-		when M:#Nat >=Nat numBitsPerByte 
+	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
+		when M:Nat >=Nat numBitsPerByte 
 		[structural anywhere]
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
@@ -460,10 +460,10 @@ kmod COMMON-C-SEMANTICS is
 	including COMMON-C-TYPING
 	
 	op eval : K -> Bag 
-	op eval : K List{K} #String -> Bag
-	op callMain : #Nat #Id K -> K
+	op eval : K List{K} String -> Bag
+	op callMain : Nat Id K -> K
 	op incomingArguments : List{K} -> K
 	
-	op TranslationUnitName : #String -> KLabel
+	op TranslationUnitName : String -> KLabel
 		
 endkm
