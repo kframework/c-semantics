@@ -57,7 +57,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< computation > BlockStatement(Block:K)
 			=> Block:K ~> popBlock
 		...</ computation >
-		< nestingDepthGoto > N:#Nat => sNat(N:#Nat) </ nestingDepthGoto >
+		< nestingDepthGoto > N:#Nat => N:#Nat +Nat 1 </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(OldNum:#Nat) ...</ blockHistoryGoto >
 		[structural] 
 	rule
@@ -163,7 +163,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 					~> Tail:K 
 				</ computationTail >
 				B:Bag
-				< nestingDepthGoto > sNat(N:#Nat) </ nestingDepthGoto >
+				< nestingDepthGoto > N:#Nat +Nat 1 </ nestingDepthGoto >
 				< blockHistoryGoto > ListItem(ForNum:#Nat) ListItem(Num:#Nat) OldBlockHistory:List </ blockHistoryGoto >
 				< loopStackGoto > ListItem(kpair(Num:#Nat, (K:K ~> Tail:K))) OldLoopStack:List </ loopStackGoto >
 			</ gotoCalculation >
@@ -256,7 +256,6 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< computationTail > Tail:K </ computationTail >
 		< loopStackGoto > LoopStack:List </ loopStackGoto >
 		< declarationStack > DeclStack:List </ declarationStack >
-		//  < freshNat > Fresh:#Nat => sNat(Fresh:#Nat) </ freshNat >
 		< gotoMap >... kpair(Tu:K, F:#Id) |-> Map(
 			(M:Map => (M:Map[caseHelper(CaseNum:#Nat) / genLabel(SwitchNum:#Nat, Val:K)])[gotoObject(Depth:#Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / caseHelper(CaseNum:#Nat)])
 		) ...</ gotoMap >
@@ -273,7 +272,6 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< computationTail > Tail:K </ computationTail >
 		< loopStackGoto > LoopStack:List </ loopStackGoto >
 		< declarationStack > DeclStack:List </ declarationStack >
-		//  < freshNat > Fresh:#Nat => sNat(Fresh:#Nat) </ freshNat >
 		< gotoMap >... kpair(Tu:K, F:#Id) |-> Map((M:Map => M:Map[gotoObject(Depth:#Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / genLabel(SwitchNum:#Nat, l('Default))])) ...</ gotoMap >
 		< currentFunction > F:#Id </ currentFunction >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >

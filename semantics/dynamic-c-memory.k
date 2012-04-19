@@ -129,7 +129,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		when Len:#Nat ==Bool numBitsPerByte
 		[structural]
 	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:#Nat, sNat(End:#Nat), sNat(End:#Nat)), Len:#Nat),, L:List{K}), subObject(N:#Nat, 0, End:#Nat))
-			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:#Nat, 0, sNat(End:#Nat)))
+			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:#Nat, 0, End:#Nat +Nat 1))
 		...</ k >
 		when Len:#Nat ==Bool numBitsPerByte
 		[structural]
@@ -209,7 +209,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule
 		< k > extractBytesFromMem-aux(Loc:#Nat, sNat(Size:#Nat), Aux:List{K})
 			=> extractByteFromMem(Loc:#Nat)
-			~> extractBytesFromMem-aux(sNat(Loc:#Nat), Size:#Nat, Aux:List{K})
+			~> extractBytesFromMem-aux(Loc:#Nat +Nat 1, Size:#Nat, Aux:List{K})
 		...</ k >
 		[structural]
 	rule
@@ -498,7 +498,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	define joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K})) [structural]
 	define joinBitsToBytes-aux(dataList((piece(N:#Nat, Len:#Nat),, piece(M:#Nat, 1),, L:List{K})), dataList(R:List{K}))
-		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:#Nat, Len:#Nat), piece(M:#Nat, 1)), sNat(Len:#Nat)),, L:List{K})), dataList(R:List{K}))
+		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:#Nat, Len:#Nat), piece(M:#Nat, 1)), Len:#Nat +Nat 1),, L:List{K})), dataList(R:List{K}))
 		when Len:#Nat <Nat numBitsPerByte 
 		[structural]
 	define joinBitsToBytes-aux(dataList((piece(N:#Nat, Len:#Nat),, L:List{K})), dataList(R:List{K}))
@@ -511,8 +511,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	
 	define explodeToBits((K:K,, L:NeList{K})) => (explodeToBits(K:K),, explodeToBits(L:NeList{K})) [structural]
-	define explodeToBits(piece(N:#Nat, sNat(Len:#Nat)))
-		=> splinter(N:#Nat, sNat(Len:#Nat)) 
+	define explodeToBits(piece(N:#Nat, Len:#Nat))
+		=> splinter(N:#Nat, Len:#Nat)
+		when Len:#Nat >Int 0
 		[structural]
 	define explodeToBits(piece(N:#Nat, 0)) => .List{K} [structural]
 	define explodeToBits(.List{K}) => .List{K} [structural]
@@ -522,7 +523,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define splinter(N:#Nat, Len:#Nat) => splinter-aux(N:#Nat, Len:#Nat, 0) [structural]
 	define splinter-aux(_:#Nat, Len:#Nat, Len:#Nat) => .List{K} [structural]
 	define splinter-aux(N:#Nat, Len:#Nat, Pos:#Nat)
-		=> splinter-aux(N:#Nat, Len:#Nat, sNat(Pos:#Nat)),, piece(bitRange(N:#Nat, Pos:#Nat, Pos:#Nat), 1)
+		=> splinter-aux(N:#Nat, Len:#Nat, Pos:#Nat +Nat 1),, piece(bitRange(N:#Nat, Pos:#Nat, Pos:#Nat), 1)
 		when Pos:#Nat <Nat Len:#Nat 
 		[structural]
 	
@@ -530,7 +531,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule
 		< k > writeBytes(sym(Block:#Nat) +Nat Offset:#Nat, dataList((V:K,, L:List{K})))
 			=> writeByte(sym(Block:#Nat) +Nat Offset:#Nat, V:K)
-			~> writeBytes(sym(Block:#Nat) +Nat sNat(Offset:#Nat), dataList(L:List{K}))
+			~> writeBytes(sym(Block:#Nat) +Nat Offset:#Nat +Nat 1, dataList(L:List{K}))
 		...</ k >
 		[structural]
 	rule [write-byte-buffer]:
@@ -605,8 +606,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat) 
 		=> splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat, .List{K}) 
 		[structural]
-	define splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, sNat(Len:#Nat), L:List{K})
-		=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat, (L:List{K},, piece(N:#Nat, PieceLen:#Nat))) 
+	define 
+		splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, sNat(Len:#Nat), L:List{K})
+			=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat, (L:List{K},, piece(N:#Nat, PieceLen:#Nat))) 
 		when PieceLen:#Nat ==Bool numBitsPerByte 
 		[structural]
 	define splitStructBytes(_, _, 0, L:List{K})
@@ -617,12 +619,6 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare splitPointerBytes : K K K -> K 
 	declare splitPointerBytes-aux : K K K K List{K} -> K 
 	context splitPointerBytes(_, _, value(HOLE))
-	// define splitPointerBytes(I:#Int, T:KResult, sNat(Len:#Nat))
-		// => splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, piece(encodedPointer(I:#Int), numBitsPerByte)) 
-		// [structural]
-	// define splitPointerBytes-aux(I:#Int, T:KResult, sNat(Len:#Nat), L:List{K}) 
-		// => splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, (L:List{K},, piece(unknown(numBitsPerByte), numBitsPerByte)))
-		// [structural]
 	define splitPointerBytes(I:#Int, T:KResult, Len:#Nat)
 		=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, 0, .List{K}) 
 		[structural]

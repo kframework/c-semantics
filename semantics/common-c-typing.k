@@ -329,7 +329,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:#Nat)),, _)))) ...</ k >
-		< freshNat > N:#Nat => sNat(N:#Nat) </ freshNat >
+		< freshNat > N:#Nat => N:#Nat +Nat 1 </ freshNat >
 		when L:KLabel ==Bool 'StructDef
 		orBool L:KLabel ==Bool 'EnumDef
 		orBool L:KLabel ==Bool 'UnionDef
@@ -496,7 +496,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		when X:#Id =/=Bool #NoName
 		[structural]
 	define giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:KResult, X:#Id),, L:List{KResult}))
-		=> typedDeclaration(T:KResult, #NoName(N:#Nat)),, giveNamesToArgs-aux(sNat(N:#Nat), L:List{KResult})
+		=> typedDeclaration(T:KResult, #NoName(N:#Nat)),, giveNamesToArgs-aux(N:#Nat +Nat 1, L:List{KResult})
 		when X:#Id ==Bool #NoName
 		[structural]
 	define giveNamesToArgs-aux(_:#Nat, t(.Set, variadic))

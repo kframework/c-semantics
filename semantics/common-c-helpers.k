@@ -96,7 +96,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		
 	define bitRange(piece(bitRange(N:#Nat, Start:#Nat, End:#Nat), Len:#Nat), 0, 0)
 		=> bitRange(piece(bitRange(N:#Nat, Start:#Nat, Start:#Nat), 1), 0, 0)
-		when Start:#Nat +Nat Len:#Nat ==Bool sNat(End:#Nat)
+		when Start:#Nat +Nat Len:#Nat ==Bool End:#Nat +Nat 1
 		[structural]
 	
 	define bitRange(N:#Nat, Pos:#Nat, Pos:#Nat) => 1 &Nat (N:#Nat >>Nat Pos:#Nat)
@@ -107,19 +107,19 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	define bitRange(N:#Nat, 0, To:#Nat) => N:#Nat
-		when sNat(To:#Nat) ==Bool numBitsPerByte
+		when To:#Nat +Nat 1 ==Bool numBitsPerByte
 		[structural]
 	
 	define bitRange(_:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
 		=> bitRange(piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
-		when sNat(End:#Nat) <=Nat Len:#Nat
+		when End:#Nat +Nat 1 <=Nat Len:#Nat
 		[structural]
 	
 	define bitRange(piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
-		=> piece(N:#Nat, sNat(End:#Nat))
+		=> piece(N:#Nat, End:#Nat +Nat 1)
 		[structural]
 	define bitRange(_:#Nat bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
-		=> piece(N:#Nat, sNat(End:#Nat))
+		=> piece(N:#Nat, End:#Nat +Nat 1)
 		[structural]
 		
 	define bitRange(piece(N:#Nat, Len:#Nat), Pos:#Nat, Pos:#Nat) => (N:#Nat >>Nat Pos:#Nat) &Nat 1
@@ -249,7 +249,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	rule [getString-pre]:
 		< k > (.K => read(Loc:#Nat, t(.Set, char)))
-			~> getString-aux(tv((Loc:#Nat => sNat(Loc:#Nat)), _), S:#String)
+			~> getString-aux(tv((Loc:#Nat => Loc:#Nat +Nat 1), _), S:#String)
 		...</ k >
 		[structural]
 		
@@ -274,7 +274,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		< k > writeString(tv(Loc:#Nat, T:KResult), S:#String)
 			=> Computation(*(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, char))))) 
 				:= tv(charToAscii(firstChar(S:#String)), t(.Set, char)))
-			~> writeString(tv(sNat(Loc:#Nat), T:KResult), butFirstChar(S:#String))
+			~> writeString(tv(Loc:#Nat +Nat 1, T:KResult), butFirstChar(S:#String))
 		...</ k >
 		when S:#String =/=Bool ""
 		[structural]

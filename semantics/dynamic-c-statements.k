@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:#Nat) ActualHistory:List </ blockHistory >
-		when sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=Bool TargetDepth:#Nat
 		[structural large] 
 		
 	rule
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:#Nat)) 
-		when sNat(ActualDepth:#Nat) =/=Bool TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=Bool TargetDepth:#Nat
 		[structural large] 
 	
 	//  We've made it to the block above the target
@@ -456,7 +456,7 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 			C:Bag
 			< localVariables > Vars:List => .List </ localVariables >
 			< localAddresses > Addresses:Set => .Set </ localAddresses >
-			< nestingDepth > N:#Nat => sNat(N:#Nat) </ nestingDepth >
+			< nestingDepth > N:#Nat => N:#Nat +Nat 1 </ nestingDepth >
 		</ local >
 		< blockStack > .List 
 			=> ListItem(< stackFrame > C:Bag 

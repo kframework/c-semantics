@@ -1078,7 +1078,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		< k > prepareBuiltin((Identifier("rand")), .List{K})
 			=> tv(absInt(randomRandom(Fresh:#Nat)) %Int max(t(.Set, int)), t(.Set, int))
 		...</ k >
-		< randNat > Fresh:#Nat => sNat(Fresh:#Nat) </ randNat >
+		< randNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ randNat >
 		[structural]
 		
 	rule [srand]:
@@ -1104,13 +1104,13 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		
 	rule [strcpy-pre]:
 		< k > (.K => read(Src:#Nat, t(.Set, char)))
-			~> strcpy(_, (Src:#Nat => sNat(Src:#Nat)), _)
+			~> strcpy(_, (Src:#Nat => Src:#Nat +Nat 1), _)
 		...</ k >
 		[structural]
 	
 	rule [strcpy-some]:
 		< k > (tv(I:#Int, T:KResult) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:KResult)))
-			~> strcpy((Dest:#Nat => sNat(Dest:#Nat)), _, _)
+			~> strcpy((Dest:#Nat => Dest:#Nat +Nat 1), _, _)
 		...</ k >
 		when I:#Int =/=Bool 0
 		[structural]
@@ -1147,7 +1147,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 			~> spawn-aux(Fresh:#Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</ k >
 		<threadId> MyId:#Nat </threadId>
-		< nextThreadId > Fresh:#Nat => sNat(Fresh:#Nat) </ nextThreadId >
+		< nextThreadId > Fresh:#Nat => Fresh:#Nat +Nat 1 </ nextThreadId >
 		[structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm

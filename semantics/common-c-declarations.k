@@ -688,24 +688,23 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	// fixme should i worry about basetype here_
 	rule [init-next-array-element]:
 		< currentSubObject > 
-			(next ListItem(te(K:K[N:#Nat], T:KResult)) => ListItem(te(K:K[sNat(N:#Nat)], T:KResult)))
+			(next ListItem(te(K:K[N:#Nat], T:KResult)) => ListItem(te(K:K[N:#Nat +Nat 1], T:KResult)))
 			ListItem(te(K:K, t(_, arrayType(_, Len:#Nat))))
 		...</ currentSubObject >
-		when Len:#Nat >Nat sNat(N:#Nat)
+		when Len:#Nat >Nat N:#Nat +Nat 1
 		[structural] 
 	rule [init-next-array-element-done]:
 		< currentSubObject >
 			next (ListItem(te(K:K[N:#Nat], T:KResult)) => .List) ListItem(te(K:K, t(_, arrayType(_, Len:#Nat))))
 		...</ currentSubObject >
-		when notBool Len:#Nat >Nat sNat(N:#Nat)
+		when notBool Len:#Nat >Nat N:#Nat +Nat 1
 		[structural] 
 	
 	rule [init-next-incomplete-array-element]:
 		< currentSubObject >
-			(next ListItem(te(K:K[N:#Nat], T:KResult)) => ListItem(te(K:K[sNat(N:#Nat)], T:KResult))) 
+			(next ListItem(te(K:K[N:#Nat], T:KResult)) => ListItem(te(K:K[N:#Nat +Nat 1], T:KResult))) 
 			ListItem(te(K:K, t(_, incompleteArrayType(_))))
 		...</ currentSubObject >
-		//< incompleteLength > N':#Nat => maxNat(sNat(N:#Nat), N':#Nat) </ incompleteLength >
 		[structural] 
 	
 	rule [init-next-struct-element]:
@@ -850,7 +849,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	declare getTopArrayUse : K -> #Nat 
 	define getTopArrayUse(X:#Id) => 0 [structural]
-	define getTopArrayUse(X:#Id[N:#Nat]) => sNat(N:#Nat) [structural] // +1 for length instead of index
+	define getTopArrayUse(X:#Id[N:#Nat]) => N:#Nat +Nat 1 [structural] // +1 for length instead of index
 	define getTopArrayUse(K:K . F:#Id) => getTopArrayUse(K:K) [structural]
 	define getTopArrayUse((K:K[N:#Nat])[_]) => getTopArrayUse(K:K[N:#Nat]) [structural]
 	define getTopArrayUse((K:K . F:#Id)[_]) => getTopArrayUse(K:K) [structural]

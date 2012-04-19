@@ -188,7 +188,7 @@ If they are declared, the parameters to the main function shall obey the followi
 		[structural]
 	rule incomingArguments-aux((S:#String,, L:List{K}), N:#Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:#Nat] := Constant(StringLiteral(S:#String)))
-			~> incomingArguments-aux(L:List{K}, sNat(N:#Nat))
+			~> incomingArguments-aux(L:List{K}, N:#Nat +Nat 1)
 		[structural]
 	rule incomingArguments-aux(.List{K}, N:#Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:#Nat] := NullPointer)
@@ -206,7 +206,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					< threadId > 1 </ threadId >
 					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
 					< k > klistToK(P:List{K})
-							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat(sNat(lengthList{K} L:List{K})), Specifier(List(.List{K}))))), NoInit))))
+							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Nat 1), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
