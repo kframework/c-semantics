@@ -30,7 +30,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 	op extractBitsFromList-aux : K #Nat #Nat List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:#Nat, M:#Nat) 
 		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:#Nat, M:#Nat, .List{K})
-		// if M:#Nat =/=Bool 10
 		[structural]
 	rule
 		< k > extractBitsFromList-aux(dataList((piece(_:#Nat, 1),, L:List{K})), sNat(Offset:#Nat), NumBits:#Nat, .List{K})
@@ -105,19 +104,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 			=> tv(F:#Float, T:KResult)
 		...</ k >
 		when hasFloatType(T:KResult)
-		andBool Len:#Nat ==Bool numBitsPerByte 
+		andBool Len:#Nat ==Int numBitsPerByte 
 		[structural]
 
 	op joinPointerBytes : Type List{K} -> K
 	op joinPointerBytes-aux : Type List{K} K -> K
 	// fixme should also check sizes are appropriate
-	// fixme very unsafe as is.  doesn't care if other bytes were overwritten
-	// rule < k > concretize(t(S:Set, pointerType(T:KResult)), dataList((piece(encodedPointer(N:#Nat), Len:#Nat),, _))) 
-			// => checkValidLoc(N:#Nat)
-			// ~> tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
-		// ...</ k >
-		// when Len:#Nat ==Bool numBitsPerByte
-		// [structural]
 	rule < k > concretize(T:KResult, dataList(L:List{K}))
 			=> joinPointerBytes(T:KResult, L:List{K})
 		...</ k >
@@ -126,12 +118,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule < k > joinPointerBytes(T:KResult, (piece(N:#Nat, Len:#Nat),, L:List{K}))
 			=> joinPointerBytes-aux(T:KResult, L:List{K}, N:#Nat)
 		...</ k >
-		when Len:#Nat ==Bool numBitsPerByte
+		when Len:#Nat ==Int numBitsPerByte
 		[structural]
 	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:#Nat, sNat(End:#Nat), sNat(End:#Nat)), Len:#Nat),, L:List{K}), subObject(N:#Nat, 0, End:#Nat))
 			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:#Nat, 0, End:#Nat +Nat 1))
 		...</ k >
-		when Len:#Nat ==Bool numBitsPerByte
+		when Len:#Nat ==Int numBitsPerByte
 		[structural]
 	rule < k > joinPointerBytes-aux(T:KResult, .List{K}, subObject(N:#Nat, 0, End:#Nat))
 			=> checkValidLoc(N:#Nat)
@@ -371,7 +363,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< k > write-specific(Loc:#Nat, tv(V:K, T:KResult), bitSize:#Nat)
 			=> writeBytes(Loc:#Nat, splitBytes(tv(V:K, T:KResult)))
 		...</ k >
-		when bitSize:#Nat %Nat numBitsPerByte ==Bool 0
+		when bitSize:#Nat %Nat numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:#Nat)
 		andBool notBool hasBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
@@ -399,12 +391,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare hasUnionMarker : Type -> #Bool
 	define hasUnionMarker(t(SetItem(fromUnion(_:#Id)) _, _)) => true [structural]
 	define hasUnionMarker(t(.Set, _)) => false [structural]
-	// rule hasUnionMarker(t(_ (SetItem(L:KLabel(_:List{K})) => .Set), _))
-		// when L:KLabel =/=Bool 'fromUnion
-		// [structural]
 	define hasUnionMarker(t(S:Set (SetItem(L:KLabel(_:List{K}))), K:K))
 		=> hasUnionMarker(t(S:Set, K:K))
-		when L:KLabel =/=Bool 'fromUnion
+		when L:KLabel =/=KLabel 'fromUnion
 		[structural]
 	
 	
@@ -412,7 +401,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< k > write-specific(Loc:#Nat, tv((V:K,, V':K,, L:List{K}), T:KResult), bitSize:#Nat)
 			=> writeBytes(Loc:#Nat, dataList((V:K,, V':K,, L:List{K})))
 		...</ k >
-		when bitSize:#Nat %Nat numBitsPerByte ==Bool 0
+		when bitSize:#Nat %Nat numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:#Nat)
 		andBool notBool hasBitfieldType(T:KResult)
 		[structural]
@@ -443,7 +432,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< k > write-specific(Loc:#Nat, tv(I:#Int, T:KResult), bitSize:#Nat)
 			=> write-specific(Loc:#Nat, tv(justBits(I:#Int, T:KResult), T:KResult), bitSize:#Nat)
 		...</ k >
-		when (bitSize:#Nat %Nat numBitsPerByte =/=Bool 0
+		when (bitSize:#Nat %Nat numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:#Nat))
 		orBool hasBitfieldType(T:KResult))
 		andBool I:#Int <Int 0
@@ -462,7 +451,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 				)
 			)
 		...</ k >
-		when bitSize:#Nat %Nat numBitsPerByte =/=Bool 0
+		when bitSize:#Nat %Nat numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:#Nat))
 		orBool hasBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
@@ -503,7 +492,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	define joinBitsToBytes-aux(dataList((piece(N:#Nat, Len:#Nat),, L:List{K})), dataList(R:List{K}))
 		=> joinBitsToBytes-aux(dataList(L:List{K}), dataList((R:List{K},, piece(N:#Nat, Len:#Nat))))
-		when Len:#Nat ==Bool numBitsPerByte 
+		when Len:#Nat ==Int numBitsPerByte 
 		[structural]
 	define joinBitsToBytes-aux(dataList(.List{K}), dataList(R:List{K}))
 		=> dataList(R:List{K}) 
@@ -609,7 +598,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define 
 		splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, sNat(Len:#Nat), L:List{K})
 			=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat, (L:List{K},, piece(N:#Nat, PieceLen:#Nat))) 
-		when PieceLen:#Nat ==Bool numBitsPerByte 
+		when PieceLen:#Nat ==Int numBitsPerByte 
 		[structural]
 	define splitStructBytes(_, _, 0, L:List{K})
 		=> dataList(L:List{K}) 
@@ -722,7 +711,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	rule
 		< k > checkDerefLoc(Loc:#Nat) => checkValidLoc(Loc:#Nat) ...</ k >
-		when Loc:#Nat =/=Bool NullPointer
+		when Loc:#Nat =/=Int NullPointer
 		[structural]
 	
 	rule [check-valid-loc-null]:
@@ -733,10 +722,9 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		< k > checkValidLoc-aux(sym(BASE) +Nat Offset:#Nat) => .K ...</ k >
 		< mem >... BASE |-> memblock(mlength(Len:#Nat) _, _) ...</ mem >
 		<threadId> MyThreadId:#Nat </threadId>
-		when (PtrThreadId:#Nat ==Bool MyThreadId:#Nat 
-			orBool PtrThreadId:#Nat ==Bool 0
-			orBool PtrThreadId:#Nat ==Bool allocatedDuration
-			// orBool PtrThreadId:#Nat ==Bool readOnly
+		when (PtrThreadId:#Nat ==Int MyThreadId:#Nat 
+			orBool PtrThreadId:#Nat ==Int 0
+			orBool PtrThreadId:#Nat ==Int allocatedDuration
 			) // my thread, global memory, or allocated (malloced) memory
 		andBool Offset:#Nat <=Nat Len:#Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:#Nat) +Nat N:#Nat

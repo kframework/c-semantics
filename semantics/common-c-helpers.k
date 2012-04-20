@@ -28,10 +28,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	declare isNotTruthValue : Value -> #Bool
 	define isNotTruthValue(tv(V:K, t(_, T:K))) 
-		=> T:K =/=Bool int
+		=> T:K =/=K int
 		orBool (
-			V:K =/=Bool 0
-			andBool V:K =/=Bool 1 
+			V:K =/=K 0
+			andBool V:K =/=K 1 
 		)
 		[structural]
 	
@@ -51,7 +51,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define [fillToBytes-foundByte]:
 		fillToBytes-aux(dataList((L:List{K},, piece(N:#Nat, Len:#Nat))), L':List{K})
 			=> fillToBytes-aux(dataList(L:List{K}), (piece(N:#Nat, Len:#Nat),, L':List{K}))
-		when Len:#Nat ==Bool numBitsPerByte
+		when Len:#Nat ==Int numBitsPerByte
 		[structural]
 	
 	define [fillToBytes-addBit]:
@@ -96,7 +96,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		
 	define bitRange(piece(bitRange(N:#Nat, Start:#Nat, End:#Nat), Len:#Nat), 0, 0)
 		=> bitRange(piece(bitRange(N:#Nat, Start:#Nat, Start:#Nat), 1), 0, 0)
-		when Start:#Nat +Nat Len:#Nat ==Bool End:#Nat +Nat 1
+		when Start:#Nat +Nat Len:#Nat ==Int End:#Nat +Nat 1
 		[structural]
 	
 	define bitRange(N:#Nat, Pos:#Nat, Pos:#Nat) => 1 &Nat (N:#Nat >>Nat Pos:#Nat)
@@ -107,7 +107,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	define bitRange(N:#Nat, 0, To:#Nat) => N:#Nat
-		when To:#Nat +Nat 1 ==Bool numBitsPerByte
+		when To:#Nat +Nat 1 ==Int numBitsPerByte
 		[structural]
 	
 	define bitRange(_:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
@@ -137,8 +137,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		< structs >... 
 			S:#Id |-> aggregateInfo(_, (_ F:#Id |-> T:KResult), (_ F:#Id |-> Offset:#Nat)) 
 		...</ structs >
-		when L:KLabel ==Bool 'unionType
-		orBool L:KLabel ==Bool 'structType
+		when L:KLabel ==KLabel 'unionType
+		orBool L:KLabel ==KLabel 'structType
 		[structural]
 
 	rule
@@ -158,7 +158,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define K:K in (ListItem(K:K) _:List) => true [structural]
 	define K:K in .List => false [structural]
 	define K:K in (ListItem(K':K) L:List) => K:K in L:List
-		when K:K =/=Bool K':K
+		when K:K =/=K K':K
 		[structural]
 	
 	rule [discard]:
@@ -175,7 +175,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define numBytes(t(_, unsigned-long-long-int)) => numBytes(t(.Set, long-long-int)) [structural]
 	
 	define numBits(t(S:Set, T:K)) => numBytes(t(S:Set, T:K)) *Nat numBitsPerByte
-		when getKLabel(T:K) =/=Bool 'bitfieldType
+		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		[structural]
 	define numBits(t(_, bitfieldType(_, N:#Nat))) => N:#Nat [structural]
 
@@ -225,7 +225,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	declare toUpperCase : #Char -> #Char
 	define toUpperCase(S:#String)
 		=> toUpperCase(firstChar(S:#String)) +String toUpperCase(butFirstChar(S:#String))
-		when S:#String =/=Bool ""
+		when S:#String =/=String ""
 		[structural]
 	define toUpperCase("") => "" [structural]
 		
@@ -258,7 +258,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 			~> getString-aux(tv(Loc:#Nat, _), S:#String)
 			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
 		...</ k >
-		when N:#Nat =/=Bool 0
+		when N:#Nat =/=Int 0
 		[structural]
 	rule [getString-done]:
 		< k > tv(0, _) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
@@ -276,7 +276,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 				:= tv(charToAscii(firstChar(S:#String)), t(.Set, char)))
 			~> writeString(tv(Loc:#Nat +Nat 1, T:KResult), butFirstChar(S:#String))
 		...</ k >
-		when S:#String =/=Bool ""
+		when S:#String =/=String ""
 		[structural]
 	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
@@ -307,7 +307,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		subPointerToString(threadId(N:#Nat) +Nat N':#Nat)
 			=> "threadId(" +String Rat2String(N:#Nat, 10) +String ") +Nat " 
 			+String Rat2String(N':#Nat, 10)
-		when N:#Nat =/=Bool allocatedDuration
+		when N:#Nat =/=Int allocatedDuration
 		[structural]
 	define [sub-pointerToString-allocated]:
 		subPointerToString(threadId(allocatedDuration) +Nat N':#Nat)
@@ -326,7 +326,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	// Note: it only makes sense to memo this if the sets are just used to represent categories
 	define S:Set SetItem(K:K) contains K:K => true [structural]
 	define S:Set SetItem(K1:K) contains K2:K => S:Set contains K2:K
-		when K1:K =/=Bool K2:K
+		when K1:K =/=K K2:K
 		[structural]
 	define .Set contains K:K => false [structural]
 
@@ -339,7 +339,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 
 	define hasUnsignedIntegerType(t(S:Set, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'bitfieldType
+		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
 		[structural]
 	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => true
@@ -354,7 +354,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 	define hasSignedIntegerType(t(_, enumType(_:#Id))) => true [structural] // choice fixme
 	define hasSignedIntegerType(t(S:Set, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'bitfieldType
+		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
 		[structural]
 	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:#Nat))) => true
@@ -391,24 +391,24 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define type(tv(_, T:KResult)) => T:KResult [structural]
 
 	define isBasicType('t(_,, K:K)) => if (
-		K:K ==Bool bool
-		orBool K:K ==Bool void
-		orBool K:K ==Bool char
-		orBool K:K ==Bool short-int
-		orBool K:K ==Bool int
-		orBool K:K ==Bool long-int
-		orBool K:K ==Bool long-long-int
-		orBool K:K ==Bool float
-		orBool K:K ==Bool double
-		orBool K:K ==Bool long-double
-		orBool K:K ==Bool signed-char
-		orBool K:K ==Bool unsigned-char
-		orBool K:K ==Bool unsigned-short-int
-		orBool K:K ==Bool unsigned-int
-		orBool K:K ==Bool unsigned-long-int
-		orBool K:K ==Bool unsigned-long-long-int
-		orBool K:K ==Bool no-type
-		orBool getKLabel(K:K) ==Bool 'enumType
+		K:K ==K bool
+		orBool K:K ==K void
+		orBool K:K ==K char
+		orBool K:K ==K short-int
+		orBool K:K ==K int
+		orBool K:K ==K long-int
+		orBool K:K ==K long-long-int
+		orBool K:K ==K float
+		orBool K:K ==K double
+		orBool K:K ==K long-double
+		orBool K:K ==K signed-char
+		orBool K:K ==K unsigned-char
+		orBool K:K ==K unsigned-short-int
+		orBool K:K ==K unsigned-int
+		orBool K:K ==K unsigned-long-int
+		orBool K:K ==K unsigned-long-long-int
+		orBool K:K ==K no-type
+		orBool getKLabel(K:K) ==KLabel 'enumType
 		) then true else false fi
 		[structural]
 		

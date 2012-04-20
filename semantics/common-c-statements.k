@@ -131,13 +131,13 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 	rule [compute-label-ignore-non-statement]:
 		< computation > L:KLabel(Args:List{K}) => .K ...</ computation >
 		when false
-		orBool L:KLabel ==Bool 'Nop
-		orBool L:KLabel ==Bool 'Computation
-		orBool L:KLabel ==Bool 'Break
-		orBool L:KLabel ==Bool 'Continue
-		orBool L:KLabel ==Bool 'Return
-		orBool L:KLabel ==Bool 'Goto
-		orBool L:KLabel ==Bool 'CompGoto
+		orBool L:KLabel ==KLabel 'Nop
+		orBool L:KLabel ==KLabel 'Computation
+		orBool L:KLabel ==KLabel 'Break
+		orBool L:KLabel ==KLabel 'Continue
+		orBool L:KLabel ==KLabel 'Return
+		orBool L:KLabel ==KLabel 'Goto
+		orBool L:KLabel ==KLabel 'CompGoto
 		[structural] 
 		
 	// - should do this with a split
@@ -157,7 +157,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 				< computationTail >
 					Computation(Post:K)
 					~> loopMarked
-					~> For(ForNum:#Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K)
+					~> For(ForNum:#Nat, Pre:K, (if Control:K =/=K emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K)
 					~> popLoop
 					~> K:K 
 					~> Tail:K 

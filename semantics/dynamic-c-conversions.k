@@ -94,7 +94,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		when isArithBinConversionOp(L:KLabel)
 		andBool (hasIntegerType(T:KResult) orBool hasFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool hasFloatType(T':KResult))
-		andBool (T:KResult =/=Bool T':KResult)
+		andBool (T:KResult =/=K T':KResult)
 		where finalType = usualArithmeticConversion(T:KResult, T':KResult)
 		[structural] 
 		
@@ -109,23 +109,23 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double
 	define
 		usualArithmeticConversion-aux(t(_, double), t(_, T:K)) => t(.Set, double)
-		when long-double =/=Bool T:K
+		when long-double =/=K T:K
 		[structural] 
 	define
 		usualArithmeticConversion-aux(T:K, t(_, double)) => t(.Set, double)
-		when long-double =/=Bool T:K
+		when long-double =/=K T:K
 		[structural] 
 		
 	// Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float. 53) For example, addition of a double _Complex and a float entails just the conversion of the float operand to double (and yields a double _Complex result)
 	define
 		usualArithmeticConversion-aux(t(_, float), t(_, T:K)) => t(.Set, float)
-		when long-double =/=Bool T:K
-		andBool double =/=Bool T:K
+		when long-double =/=K T:K
+		andBool double =/=K T:K
 		[structural] 
 	define
 		usualArithmeticConversion-aux(t(_, T:K), t(_, float)) => t(.Set, float)
-		when long-double =/=Bool T:K
-		andBool double =/=Bool T:K
+		when long-double =/=K T:K
+		andBool double =/=K T:K
 		[structural] 
 
 	
@@ -170,7 +170,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 
 	define [promote-bitfield-fits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat))) => t(.Set, int)
-		when (T:K ==Bool bool orBool T:K ==Bool int orBool T:K ==Bool unsigned-int)
+		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
 		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat)))
 		andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat)))
 		[structural] 
@@ -187,7 +187,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 
 	define [promote-bitfield-nofits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat))) => t(.Set, unsigned-int)
-		when (T:K ==Bool bool orBool T:K ==Bool int orBool T:K ==Bool unsigned-int)
+		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
 		andBool notBool (
 			min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat)))
 			andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:#Nat)))
@@ -218,7 +218,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank
 	define [arithmeticConversion-same-signedness]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => maxType(T:KResult, T':KResult)
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasSameSignedness(T:KResult, T':KResult)
 		[structural]
 	
@@ -226,14 +226,14 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned integer type
 	define [arithmeticConversion-unsigned-ge-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) >=Int rank(T:KResult)
 		[structural] 
 	define [arithmeticConversion-unsigned-ge-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) >=Int rank(T':KResult)
@@ -242,7 +242,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type
 	define [arithmeticConversion-signed-big-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
@@ -251,7 +251,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 	define [arithmeticConversion-signed-big-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) <Int rank(T':KResult)
@@ -262,7 +262,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	// Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type
 	define [arithmeticConversion-to-unsigned-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T:KResult)
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
@@ -270,7 +270,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		[structural] 
 	define [arithmeticConversion-to-unsigned-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T':KResult)
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		andBool hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) <Int rank(T':KResult)
@@ -315,7 +315,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// fixme worried about qualifiers
 	define [cast-integer-to-bool]:
 		cast(t(S:Set, bool), tv(I:#Int, T:KResult))
-			=> if I:#Int ==Bool 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
+			=> if I:#Int ==Int 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
 		when hasIntegerType(T:KResult)
 		[structural]
 	define [cast-non-integer-to-bool]:
@@ -481,7 +481,6 @@ kmod DYNAMIC-SEMANTICS-CAST is
 			=> tv(piece(unknown(K2Nat(bitSizeofType(T:KResult))), K2Nat(bitSizeofType(T:KResult))), T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
-		// andBool Len:#Nat ==Bool numBitsPerByte
 		[structural]	
 	
 	//C99 6.3.1.4:1 When a finite value of real floating type is converted to an integer type other than _Bool, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.52) The remaindering operation performed when a value of integer type is converted to unsigned type need not be performed when a value of real floating type is converted to unsigned type. Thus, the range of portable real floating values is (-1, Utype_MAX+1)
@@ -527,8 +526,8 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define
 		cast(t(S:Set, T':K), tv(F:#Float, t(_, T:K))) 
 			=> tv(F:#Float, t(S:Set, T':K))
-		when (T:K ==Bool float orBool T:K ==Bool double orBool T:K ==Bool long-double)
-		andBool (T':K ==Bool float orBool T':K ==Bool double orBool T':K ==Bool long-double)
+		when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
+		andBool (T':K ==K float orBool T':K ==K double orBool T':K ==K long-double)
 		[structural] 
 	
 	// choice implementation defined behavior
@@ -536,13 +535,13 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, T':KResult)) 
 			=> tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:#Nat =/=Bool NullPointerConstant
+		andBool N:#Nat =/=Int NullPointerConstant
 		[structural] 
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:#Nat ==Bool NullPointerConstant
+		andBool N:#Nat ==Int NullPointerConstant
 		[structural] 
 	
 	// fixme needs to check size
@@ -605,19 +604,19 @@ kmod DYNAMIC-C-CONVERSIONS is
 	rule [xor-unknown-right]: N:#Nat xorInt piece(unknown(Len:#Nat), Len:#Nat) => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [or-unknown-right]: N:#Nat |Int piece(unknown(Len:#Nat), Len:#Nat) => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [and-unknown-zero-right]: N:#Nat &Int piece(unknown(Len:#Nat), Len:#Nat) => 0
-		when N:#Nat ==Bool 0 
+		when N:#Nat ==Int 0 
 		[structural anywhere]
 	rule [and-unknown-right]: N:#Nat &Int piece(unknown(Len:#Nat), Len:#Nat) => 0
-		when N:#Nat =/=Bool 0 
+		when N:#Nat =/=Int 0 
 		[structural anywhere]
 
 	rule [xor-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) xorInt N:#Nat => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [or-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) |Int N:#Nat => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [and-unknown-zero-left]: piece(unknown(Len:#Nat), Len:#Nat) &Int N:#Nat => 0
-		when N:#Nat ==Bool 0 
+		when N:#Nat ==Int 0 
 		[structural anywhere]
 	rule [and-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) &Int N:#Nat => 0
-		when N:#Nat =/=Bool 0 [structural anywhere]
+		when N:#Nat =/=Int 0 [structural anywhere]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
@@ -638,9 +637,9 @@ kmod DYNAMIC-C-CONVERSIONS is
 	
 	// fixme
 	define [arithInterpret-float]: arithInterpret(t(S:Set, T:K), F:#Float) => tv(F:#Float, t(S:Set, T:K))
-		when (T:K ==Bool double)
-		orBool T:K ==Bool float
-		orBool T:K ==Bool long-double
+		when (T:K ==K double)
+		orBool T:K ==K float
+		orBool T:K ==K long-double
 		[structural] 
 	// signed arithmetic isn't supposed to overflow
 	define [arithInterpret-unsigned-big]:

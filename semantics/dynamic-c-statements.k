@@ -95,7 +95,7 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		< k > (For(ForNum:#Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:#Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:#Nat, Pre:K, (if Control:K =/=Bool emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K) ~> popLoop)
+			=> pushBlock ~> addToHistory(ForNum:#Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:#Nat, Pre:K, (if Control:K =/=K emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K) ~> popLoop)
 		</ k >
 		@latex("\\kBR")
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
@@ -153,7 +153,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	rule
 		< k > (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:#Nat, V:KResult, Map((_ ((genLabel(SN:#Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</ k >
-		when Exp:K =/=Bool l('Default)
+		when Exp:K =/=K l('Default)
 		[structural] 
 		
 	//  if all that's left is a default, do it
@@ -170,21 +170,21 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 
 	rule
 		< k > tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .K ...</ k >
-		when V:K =/=Bool V':K
+		when V:K =/=K V':K
 		[structural] 
 		
 	rule
 		< k > handleSwitch-aux(SN:#Nat, _, Map((_ ((genLabel(SN':#Nat, _) |-> _) => .Map)))) ...</ k >
-		when SN:#Nat =/=Bool SN':#Nat
+		when SN:#Nat =/=Int SN':#Nat
 		[structural] 
 	rule
 		< k > handleSwitch-aux(SN:#Nat, _, Map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</ k >
-		when L:KLabel =/=Bool 'genLabel
+		when L:KLabel =/=KLabel 'genLabel
 		[structural] 
 			
 	rule
 		< k > tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _) ...</ k >
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		[structural] 
 	
 	rule [case-fall-through]:
@@ -262,8 +262,8 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< blockHistory > ListItem(CurrentBlock:#Nat) BlockHistory:List </ blockHistory >
 		< loopStack > _ => LoopStack:List </ loopStack >
 		< localVariables > Vars:List </ localVariables >
-		when L:KLabel ==Bool 'processGoto
-		orBool L:KLabel ==Bool 'processGotoDown
+		when L:KLabel ==KLabel 'processGoto
+		orBool L:KLabel ==KLabel 'processGotoDown
 		[structural] 
 		
 	// - second case, we're in a different block
@@ -283,7 +283,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			~> processGoto(gotoObject(TargetDepth:#Nat, Prefix:List ListItem(BlockNum:#Nat) TargetBlockHistory:List, _, _, _))
 		...</ k >
 		< blockHistory > ListItem(BlockNum:#Nat) ActualHistory:List </ blockHistory >
-		when TargetBlockHistory:List =/=Bool ActualHistory:List
+		when TargetBlockHistory:List =/=List ActualHistory:List
 		[structural] 
 			
 	//  once we share a history, we start to push
@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:#Nat) ActualHistory:List </ blockHistory >
-		when ActualDepth:#Nat +Nat 1 =/=Bool TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=Int TargetDepth:#Nat
 		[structural large] 
 		
 	rule
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:#Nat)) 
-		when ActualDepth:#Nat +Nat 1 =/=Bool TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=Int TargetDepth:#Nat
 		[structural large] 
 	
 	//  We've made it to the block above the target
@@ -328,8 +328,8 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< nestingDepth > Depth:#Nat </ nestingDepth >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > _ => LoopStack:List </ loopStack >
-		when L:KLabel ==Bool 'processGoto
-		orBool L:KLabel ==Bool 'processGotoDown
+		when L:KLabel ==KLabel 'processGoto
+		orBool L:KLabel ==KLabel 'processGotoDown
 		[structural] 
 		
 	op addVariablesForBlock : #Nat List -> K 
@@ -341,7 +341,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			)
 		...</ k >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
-		when BlockNum:#Nat =/=Bool TargetBlock:#Nat
+		when BlockNum:#Nat =/=Int TargetBlock:#Nat
 		[structural] 
 		
 	//  skip variables in the real history
@@ -524,7 +524,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':#Nat, _)) ...</ loopStack >
-		when Num':#Nat =/=Bool Num:#Nat
+		when Num':#Nat =/=Int Num:#Nat
 		[structural] 
 	
 	/*@ \source[n1570]{\para{6.8.6.2}{2}}
@@ -532,10 +532,10 @@ kmod DYNAMIC-C-STATEMENTS is
 	*/
 	rule [continue]:
 		< k > Continue ~> ((L:KLabel)(_) => .) ...</ k >
-		when L:KLabel =/=Bool 'loopMarked
-		andBool L:KLabel =/=Bool 'popBlock
-		andBool L:KLabel =/=Bool 'pushBlock
-		andBool L:KLabel =/=Bool 'popLoop
+		when L:KLabel =/=KLabel 'loopMarked
+		andBool L:KLabel =/=KLabel 'popBlock
+		andBool L:KLabel =/=KLabel 'pushBlock
+		andBool L:KLabel =/=KLabel 'popLoop
 		[structural]
 	rule [continue-through-pop]:
 		< k > Continue ~> popBlock 
@@ -549,7 +549,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		[structural]
 	rule [continue-done]:
 		< k > (Continue => .K) ~> loopMarked ~> L:KLabel(_) ...</ k >
-		when L:KLabel =/=Bool 'For
+		when L:KLabel =/=KLabel 'For
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.8.6.3}{2}}

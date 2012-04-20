@@ -206,7 +206,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		when T1:KResult =/=Bool T2:KResult
+		when T1:KResult =/=K T2:KResult
 		andBool hasArithmeticType(T1:KResult)
 		andBool hasArithmeticType(T2:KResult)
 		[structural]
@@ -265,7 +265,6 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	op byteSizeofType-aux : K -> K [metadata "strict=()"]
 	rule byteSizeofType(T:KResult) => byteSizeofType-aux(bitSizeofType(T:KResult)) [structural]
 	rule byteSizeofType-aux(tv(N:#Nat, T:KResult)) => tv(bitsToBytes(N:#Nat), T:KResult)
-		//if T:KResult ==Bool cfg:largestUnsigned
 		[structural]
 	rule
 		< k > SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</ k >
@@ -500,12 +499,12 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		
 	declare simplifyForHex : #String -> #String
 	define simplifyForHex(S:#String) => simplifyForHex(butFirstChar(S:#String))
-		when firstChar(S:#String) ==Bool "0"
+		when firstChar(S:#String) ==String "0"
 		andBool lengthString(S:#String) >Nat 1
 		[structural]
 	define simplifyForHex(S:#String) => S:#String
-		when firstChar(S:#String) =/=Bool "0"
-		orBool lengthString(S:#String) ==Bool 1
+		when firstChar(S:#String) =/=String "0"
+		orBool lengthString(S:#String) ==Int 1
 		[structural]
 		
 		
@@ -632,7 +631,7 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 			:=
 			(tv(V:List{K}, T':KResult) => cast(T:KResult, tv(V:List{K}, T':KResult)))
 		...</ k >
-		when T:KResult =/=Bool T':KResult
+		when T:KResult =/=K T':KResult
 		[structural]
 	/*@ \source[n1570]{\para{6.5.16.1}{3}}
 	\broken{If the value being stored in an object is read from another object that overlaps in any way the storage of the first object, then the overlap shall be exact and the two objects shall have qualified or unqualified versions of a compatible type; otherwise, the behavior is undefined.}
@@ -819,14 +818,14 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	*/
 	
 	rule tv(I1:#Int, T:KResult) == tv(I2:#Int, T:KResult)
-		=> makeTruth(I1:#Int ==Bool I2:#Int)
+		=> makeTruth(I1:#Int ==Int I2:#Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		) andBool notBool (isUnknown(I1:#Int) orBool isUnknown(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:KResult) != tv(I2:#Int, T:KResult)
-		=> makeTruth(I1:#Int =/=Bool I2:#Int)
+		=> makeTruth(I1:#Int =/=Int I2:#Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
@@ -855,22 +854,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	// if one of the pointers is null, it's also straightforward
 	rule tv(NullPointer, T:KResult) == tv(N:#Nat, T':KResult)
-		=> makeTruth(NullPointer ==Bool N:#Nat)
+		=> makeTruth(NullPointer ==Int N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(NullPointer, T:KResult) != tv(N:#Nat, T':KResult)
-		=> makeTruth(NullPointer =/=Bool N:#Nat)
+		=> makeTruth(NullPointer =/=Int N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:#Nat, T:KResult) == tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer ==Bool N:#Nat)
+		=> makeTruth(NullPointer ==Int N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:#Nat, T:KResult) != tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer =/=Bool N:#Nat)
+		=> makeTruth(NullPointer =/=Int N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
@@ -878,12 +877,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:KResult) == tv(sym(Base:#Nat) +Nat Offset':#Nat, T':KResult) 
-			=> makeTruth(Offset:#Nat ==Bool Offset':#Nat)
+			=> makeTruth(Offset:#Nat ==Int Offset':#Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:KResult) != tv(sym(Base:#Nat) +Nat Offset':#Nat, T':KResult) 
-			=> makeTruth(Offset:#Nat =/=Bool Offset':#Nat)
+			=> makeTruth(Offset:#Nat =/=Int Offset':#Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
@@ -898,7 +897,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:#Nat =/=Bool Base':#Nat
+		andBool Base:#Nat =/=Int Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
 		[structural]
@@ -910,7 +909,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:#Nat =/=Bool Base':#Nat
+		andBool Base:#Nat =/=Int Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
 		[structural]
@@ -923,32 +922,32 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:#Nat ==Bool NullPointerConstant
+		andBool N:#Nat ==Int NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:#Nat ==Bool NullPointerConstant
+		andBool N:#Nat ==Int NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:#Nat ==Bool NullPointerConstant
+		andBool N:#Nat ==Int NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(_, T:KResult) != (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:#Nat ==Bool NullPointerConstant
+		andBool N:#Nat ==Int NullPointerConstant
 		[structural]
 	rule
-		tv(F1:#Float, T:KResult) == tv(F2:#Float, T:KResult) => makeTruth(F1:#Float ==Bool F2:#Float)
+		tv(F1:#Float, T:KResult) == tv(F2:#Float, T:KResult) => makeTruth(F1:#Float ==Float F2:#Float)
 		[structural]
 	rule
-		tv(F1:#Float, T:KResult) != tv(F2:#Float, T:KResult) => makeTruth(F1:#Float =/=Bool F2:#Float)
+		tv(F1:#Float, T:KResult) != tv(F2:#Float, T:KResult) => makeTruth(F1:#Float =/=Float F2:#Float)
 		[structural]
 endkm
 
@@ -990,19 +989,19 @@ second operand from the first.
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':KResult)), I:#Int, sizeofType(T':KResult))
 		...</ k >
 		when hasIntegerType(T:KResult)
-		andBool T':KResult =/=Bool void
+		andBool T':KResult =/=K void
 		[structural]
 	rule < k > tv(I:#Int, T:KResult) + tv(Loc:#Nat, t(S:Set, pointerType(T':KResult)))
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':KResult)), I:#Int, sizeofType(T':KResult))
 		...</ k >
 		when hasIntegerType(T:KResult)
-		andBool T':KResult =/=Bool void
+		andBool T':KResult =/=K void
 		[structural]
 	rule < k > tv(Loc:#Nat, t(S:Set, pointerType(T':KResult))) - tv(I:#Int, T:KResult)
 			=> addToPointer(Loc:#Nat, t(S:Set, pointerType(T':KResult)), -Int I:#Int, sizeofType(T':KResult)) 
 		...</ k >
 		when hasIntegerType(T:KResult)
-		andBool T':KResult =/=Bool void
+		andBool T':KResult =/=K void
 		[structural]
 			
 	rule < k > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, _))
@@ -1040,7 +1039,7 @@ second operand from the first.
 	rule [pointer-difference]: 
 		computePointerDifference(sym(Block:#Nat) +Nat Offset1:#Nat, sym(Block:#Nat) +Nat Offset2:#Nat, tv(Size:#Nat, _))
 			=> tv(_-Int_(Offset1:#Nat, Offset2:#Nat) /Int Size:#Nat, cfg:ptrdiffut)
-		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Bool 0
+		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Int 0
 		[structural]
 	
 		
@@ -1056,12 +1055,12 @@ second operand from the first.
 		[structural]
 	rule tv(I1:#Int, T:KResult) / tv(I2:#Int, T:KResult) => arithInterpret(T:KResult, I1:#Int /Int I2:#Int)
 		when hasBeenPromoted(T:KResult)
-		andBool I2:#Int =/=Bool 0
+		andBool I2:#Int =/=Int 0
 		[structural]
 	rule tv(I1:#Int, T:KResult) % tv(I2:#Int, T:KResult) => arithInterpret(T:KResult, I1:#Int %Int I2:#Int)
 		when hasBeenPromoted(T:KResult)
 		andBool min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int
-		andBool I2:#Int =/=Bool 0
+		andBool I2:#Int =/=Int 0
 		[structural]
 	rule - tv(I1:#Int, T:KResult) => arithInterpret(T:KResult, -Int_(I1:#Int))
 		when hasBeenPromoted(T:KResult)
@@ -1069,7 +1068,7 @@ second operand from the first.
 		
 	rule piece(unknown(N:#Nat), N:#Nat) /Int M:#Nat 
 		=> piece(unknown(N:#Nat), N:#Nat)
-		when M:#Nat =/=Bool 0
+		when M:#Nat =/=Int 0
 		andBool isConcreteNumber(M:#Nat)
 		[structural anywhere]
 		
@@ -1122,7 +1121,6 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 		< structs >...
 			S:#Id |-> aggregateInfo(_, (_ F:#Id |-> T:KResult), (_ F:#Id |-> Offset:#Nat))
 		...</ structs >
-		//if L:KLabel ==Bool 'structType orBool L:KLabel ==Bool 'unionType
 		[structural]
 	rule
 		< k > lv(Loc:#Nat, t(_, unionType(S:#Id))) . F:#Id
@@ -1157,7 +1155,7 @@ kmod DYNAMIC-SEMANTICS-DEREFERENCE is
 			=> checkDerefLoc(Loc:#Nat)
 			~> lv(Loc:#Nat, t(S:Set, T:K))
 		...</ k >
-		when notBool T:K ==Bool void
+		when notBool T:K ==K void
 		[structural]
 endkm
 

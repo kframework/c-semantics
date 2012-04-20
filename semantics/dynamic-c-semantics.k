@@ -79,7 +79,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 			=> #fPutByte(N:#Nat, charToAscii(firstChar(S:#String)))
 			~> f-sendString(N:#Nat, butFirstChar(S:#String))
 		...</fileCommands>
-		when S:#String =/=Bool ""
+		when S:#String =/=String ""
 		[structural]
 	rule [sendString-done]:
 		<fileCommands> f-sendString(N:#Nat, "") => .K ...</fileCommands>
@@ -108,7 +108,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	define 
 		string2List-aux(S:#String, L:List{K})
 			=> string2List-aux(butFirstChar(S:#String), (L:List{K},, firstChar(S:#String)))
-		when S:#String =/=Bool ""
+		when S:#String =/=String ""
 		[structural]
 		
 	// op flushString : #Nat #String -> K
@@ -272,12 +272,12 @@ or equivalent;9) or in some other implementation-defined manner
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:#Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		when T:KResult ==Bool t(.Set, char)
+		when T:KResult ==K t(.Set, char)
 		[structural]
 	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:#Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:#Id)))), N:#Nat, X:#Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:#Nat,, X:#Id)))
-		when T:KResult ==Bool t(.Set, char)
+		when T:KResult ==K t(.Set, char)
 		[structural]
 
 

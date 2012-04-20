@@ -79,17 +79,17 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	define [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> cast(argPromote(t(S:Set, T:K)), tv(V:List{K}, t(S:Set, T:K))),, promoteList(L:List{KResult})
 		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
-		orBool T:K ==Bool float 
+		orBool T:K ==K float 
 		[structural]
 	define [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> (tv(V:List{K}, t(S:Set, T:K)),, promoteList(L:List{KResult}))
 		when (notBool(hasIntegerType(t(S:Set, T:K))) 
-			andBool notBool T:K ==Bool float
+			andBool notBool T:K ==K float
 			andBool notBool hasArrayType(t(S:Set, T:K))
 		) 
 		orBool rank(t(S:Set, T:K)) >=Int rank(t(.Set, int))
-		orBool T:K ==Bool double 
-		orBool T:K ==Bool long-double
+		orBool T:K ==K double 
+		orBool T:K ==K long-double
 		[structural]
 	define promoteList(.List{K}) => .List{K} [structural]
 	
@@ -137,7 +137,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	// c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
 	rule
 		< k > initialize(X:#Id, T:KResult, K:K)
-			=> if (F:#Id ==Bool File-Scope) then zero(X:#Id) else (.) fi 
+			=> if (F:#Id ==K File-Scope) then zero(X:#Id) else (.) fi 
 			~> K:K
 			~> sequencePoint
 		...</ k >

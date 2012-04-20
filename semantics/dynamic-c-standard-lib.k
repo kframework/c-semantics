@@ -43,7 +43,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	define [idsFromDeclList-one]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(_, T:K), X:#Id)))
 			=> idsFromDeclList(L:List{K}),, X:#Id
-		when T:K =/=Bool void
+		when T:K =/=K void
 		[structural]
 	define [idsFromDeclList-void]:
 		idsFromDeclList((L:List{K},, typedDeclaration(t(_, void), X:#Id)))
@@ -199,7 +199,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 					< continuation > K:K </ continuation >
 					C:Bag
 			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:#Int, t(_, int))) ~> _
-			=> ignoreLocals ~> if I:#Int ==Bool 0 then tv(1, t(.Set, int)) else tv(I:#Int, t(.Set, int)) fi ~> K:K
+			=> ignoreLocals ~> if I:#Int ==Int 0 then tv(1, t(.Set, int)) else tv(I:#Int, t(.Set, int)) fi ~> K:K
 		</ k >
 		< threadLocal >
 			_ => C:Bag
@@ -448,7 +448,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 	rule stringToList(S:#String) 
 			=> ListItem(firstChar(S:#String)) stringToList(butFirstChar(S:#String))
-		when S:#String =/=Bool ""
+		when S:#String =/=String ""
 		[structural]
 		
 	rule listToString(.List) => ""
@@ -490,7 +490,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		<format> ListItem(S:#String) => .List ...</format>
 		<formatResult>... .List => ListItem(S:#String) </formatResult>
 		<formatState> "normal" </formatState>
-		when S:#String =/=Bool "%"
+		when S:#String =/=String "%"
 		[structural]
 		
 	rule [format-reset]:
@@ -629,25 +629,13 @@ If a length modifier appears with any conversion specifier other than as specifi
 The \cinline{int} argument is converted to signed decimal in the style \emph{[-]dddd}. \broken{The precision specifies the minimum number of digits to appear; if the value being converted can be represented in fewer digits, it is expanded with leading zeros. The default precision is 1. The result of converting a zero value with a precision of zero is no characters.}
 \end{description}
 	*/
-	// rule [printf-%d-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%d(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("d")
-		// [structural]
-	// rule [printf-%d]:
-		// < k > printf-%d(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(_, int)), V:KResult),, _)
-			// => writeToFD(1, Rat2String(D:#Int, 10))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
 	rule [format-%d-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
 		...</ k >
 		<format> ListItem(S:#String) => .List ...</format>
 		<formatState> "%" => "%d" </formatState>
-		when S:#String ==Bool "d" orBool S:#String ==Bool "i"
+		when S:#String ==String "d" orBool S:#String ==String "i"
 		[structural]
 	rule [format-%d]:
 		< k > formatter-aux(_) ...</ k >
@@ -675,18 +663,6 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<formatResult>... .List => ListItem(Rat2String(D:#Int, 8)) </formatResult>
 		<formatState> "%o" => "reset" </formatState>
 		[structural]
-	// rule [printf-%u-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%u(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("u")
-		// [structural]
-	// rule [printf-%u]:
-		// < k > printf-%u(Len:#Nat, Loc:#Nat, vpair(tv(D:#Int, t(_, unsigned-int)), V:KResult),, _)
-			// => writeToFD(1, Rat2String(D:#Int, 10))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 10)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
 	rule [format-%u-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -699,19 +675,7 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<formatArg> D:#Int => .K </formatArg>
 		<formatResult>... .List => ListItem(Rat2String(D:#Int, 10)) </formatResult>
 		<formatState> "%u" => "reset" </formatState>
-		[structural]		
-	// rule [printf-%x-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%x(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("x")
-		// [structural]	
-	// rule [printf-%x]:
-		// < k > printf-%x(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(_, unsigned-int)), V:KResult),, _))
-			// => writeToFD(1, Rat2String(D:#Int, 16))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
+		[structural]
 	rule [format-%x-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -725,18 +689,6 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<formatResult>... .List => ListItem(Rat2String(D:#Int, 16)) </formatResult>
 		<formatState> "%x" => "reset" </formatState>
 		[structural]
-	// rule [printf-%X-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%X(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, unsigned-int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("X")
-		// [structural]
-	// rule [printf-%X]:
-		// < k > printf-%X(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Int, t(_, unsigned-int)), V:KResult),, _))
-			// => writeToFD(1, toUpperCase(Rat2String(D:#Int, 16)))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Rat2String(D:#Int, 16)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
 	rule [format-%X-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -758,19 +710,7 @@ A \cinline{double} argument representing a floating-point number is converted to
 
 A \cinline{double} argument representing an infinity is converted in one of the styles \emph{[-]inf} or \emph{[-]infinity}---which style is implementation-defined.  A \cinline{double} argument representing a NaN is converted in one of the styles \emph{[-]nan} or \emph{[-]nan}(\emph{n-char-sequence})---which style, and the meaning of any \emph{n-char-sequence}, is implementation-defined. The \texttt{F} conversion specifier produces \cinline{INF}, \cinline{INFINITY}, or \cinline{NAN} instead of \cinline{inf}, \cinline{infinity}, or \cinline{nan}, respectively.
 \end{description}
-	*/		
-	// rule [printf-%f-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%f(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, double)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("f") orBool N:#Nat ==Bool asciiCharString("g")
-		// [structural]
-	// rule [printf-%f]:
-		// < k > printf-%f(Len:#Nat, Loc:#Nat, (vpair(tv(D:#Float, t(_, double)), V:KResult),, _))
-			// => writeToFD(1, Float2String(D:#Float))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(Float2String(D:#Float)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
+	*/
 	rule [format-%f-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -861,20 +801,6 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 \broken{If an \texttt{l} length modifier is present, the \cinline{wint_t} argument is converted as if by an \texttt{ls} conversion specification with no precision and an argument that points to the initial element of a two-element array of \cinline{wchar_t}, the first element containing the \cinline{wint_t} argument to the \texttt{lc} conversion specification and the second a null wide character.}
 \end{description}
 	*/
-	// rule [printf-%c-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%c(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, int)))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("c")
-		// [structural]
-	// rule [format-%c-start]:
-		// < k > formatter-aux(
-			// vararg(tv(Loc:#Nat, _)) => nextvarg(Loc:#Nat, t(.Set, int))
-		// )
-		// ...</ k >
-		// <format> ListItem("c") => .List ...</format>
-		// <formatState> "%" => "%c" </formatState>
-		// [structural]		
 	rule [format-%c-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -932,18 +858,6 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
 The argument shall be a pointer to \cinline{void}. The value of the pointer is converted to a sequence of printing characters, in an implementation-defined manner.
 \end{description}
 	*/
-	// rule [printf-%p-arg]:
-		// < k > tv(N:#Nat, _) ~> printf-%(Len:#Nat, Loc:#Nat, vararg(tv(Loc':#Nat, _)))
-			// => printf-%p(Len:#Nat, Loc:#Nat, nextvarg(Loc':#Nat, t(.Set, pointerType(t(.Set, void)))))
-		// ...</ k >
-		// if N:#Nat ==Bool asciiCharString("p")
-		// [structural]
-	// rule [printf-%p]:
-		// < k > printf-%p(Len:#Nat, Loc:#Nat, (vpair(tv(N':#Nat, t(_, pointerType(t(_, void)))), V:KResult),, _))
-			// => writeToFD(1, pointerToString(N':#Nat))
-			// ~> printf-aux(Len:#Nat +Nat lengthString(pointerToString(N':#Nat)), Loc:#Nat, V:KResult)
-		// ...</ k >
-		// [structural]
 	rule [format-%p-start]:
 		< k > formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)		
@@ -1041,7 +955,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		...</ k >
 		< malloced >... (OldLoc:#Nat => NewLoc) |-> (OldLen:#Nat => NewLen:#Nat) ...</ malloced >
 		< freshNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ freshNat >
-		when OldLoc:#Nat =/=Bool NullPointer
+		when OldLoc:#Nat =/=Int NullPointer
 		where NewLoc = sym(threadId(allocatedDuration) +Nat Fresh:#Nat) +Nat 0
 		[structural]
 	rule [realloc-null]:
@@ -1112,7 +1026,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		< k > (tv(I:#Int, T:KResult) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:KResult)))
 			~> strcpy((Dest:#Nat => Dest:#Nat +Nat 1), _, _)
 		...</ k >
-		when I:#Int =/=Bool 0
+		when I:#Int =/=Int 0
 		[structural]
 	rule [strcpy-done]:
 		< k > tv(0, T:KResult) ~> strcpy(Dest:#Nat, _, Orig:#Nat)

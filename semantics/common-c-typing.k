@@ -67,7 +67,7 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	
 	rule
 		< k > giveType(X:#Id, T:KResult) => 
-			if (Fun:#Id ==Bool File-Scope) then giveGlobalType(X:#Id, unqualifyType(T:KResult)) else giveLocalType(X:#Id, unqualifyType(T:KResult)) fi
+			if (Fun:#Id ==K File-Scope) then giveGlobalType(X:#Id, unqualifyType(T:KResult)) else giveLocalType(X:#Id, unqualifyType(T:KResult)) fi
 			...</ k >
 		< currentFunction > Fun:#Id </ currentFunction >
 		// when notBool hasStaticType(T:KResult)
@@ -183,7 +183,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	op canonicalizeType-aux : Bag K Bag Bag Bag -> K 
-	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=Bool .K 
+	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
 
 		
 	rule
@@ -234,55 +234,55 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule
 		< k > canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, (_ (.Bag => BagItem(T:K))), _, _) ...</ k >
 		when false
-		orBool (T:K ==Bool Void)
-		orBool (T:K ==Bool Bool)
-		orBool (T:K ==Bool Char)
-		orBool (T:K ==Bool Short)
-		orBool (T:K ==Bool Int)
-		orBool (T:K ==Bool Long)
-		orBool (T:K ==Bool Float)
-		orBool (T:K ==Bool Double)
-		orBool (T:K ==Bool Signed)
-		orBool (T:K ==Bool Unsigned)
-		orBool (T:K ==Bool Complex)
-		orBool (T:K ==Bool Imaginary)
-		orBool (getKLabel(T:K) ==Bool 'StructDef)
-		orBool (getKLabel(T:K) ==Bool 'UnionDef)
-		orBool (getKLabel(T:K) ==Bool 'EnumDef)
-		orBool (getKLabel(T:K) ==Bool 'StructRef)
-		orBool (getKLabel(T:K) ==Bool 'UnionRef)
-		orBool (getKLabel(T:K) ==Bool 'EnumRef)
-		orBool (getKLabel(T:K) ==Bool 'Named)
-		orBool (getKLabel(T:K) ==Bool 'Attribute)
+		orBool (T:K ==K Void)
+		orBool (T:K ==K Bool)
+		orBool (T:K ==K Char)
+		orBool (T:K ==K Short)
+		orBool (T:K ==K Int)
+		orBool (T:K ==K Long)
+		orBool (T:K ==K Float)
+		orBool (T:K ==K Double)
+		orBool (T:K ==K Signed)
+		orBool (T:K ==K Unsigned)
+		orBool (T:K ==K Complex)
+		orBool (T:K ==K Imaginary)
+		orBool (getKLabel(T:K) ==KLabel 'StructDef)
+		orBool (getKLabel(T:K) ==KLabel 'UnionDef)
+		orBool (getKLabel(T:K) ==KLabel 'EnumDef)
+		orBool (getKLabel(T:K) ==KLabel 'StructRef)
+		orBool (getKLabel(T:K) ==KLabel 'UnionRef)
+		orBool (getKLabel(T:K) ==KLabel 'EnumRef)
+		orBool (getKLabel(T:K) ==KLabel 'Named)
+		orBool (getKLabel(T:K) ==KLabel 'Attribute)
 		[structural] 
 
 	rule
 		< k > canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</ k >
-		when T:K ==Bool Extern
-		orBool T:K ==Bool Static
-		orBool T:K ==Bool Const
-		orBool T:K ==Bool Volatile
-		orBool T:K ==Bool Atomic
-		orBool T:K ==Bool Restrict
-		orBool T:K ==Bool Auto
-		orBool T:K ==Bool Register
-		orBool T:K ==Bool ThreadLocal
+		when T:K ==K Extern
+		orBool T:K ==K Static
+		orBool T:K ==K Const
+		orBool T:K ==K Volatile
+		orBool T:K ==K Atomic
+		orBool T:K ==K Restrict
+		orBool T:K ==K Auto
+		orBool T:K ==K Register
+		orBool T:K ==K ThreadLocal
 		[structural] 
 		
 	rule
 		< k > canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</ k >
-		when Q:K ==Bool Extern
-		orBool Q:K ==Bool Static
-		orBool Q:K ==Bool Volatile
-		orBool Q:K ==Bool Atomic
-		orBool Q:K ==Bool Restrict
-		orBool Q:K ==Bool Auto
-		orBool Q:K ==Bool Register
-		orBool Q:K ==Bool ThreadLocal
+		when Q:K ==K Extern
+		orBool Q:K ==K Static
+		orBool Q:K ==K Volatile
+		orBool Q:K ==K Atomic
+		orBool Q:K ==K Restrict
+		orBool Q:K ==K Auto
+		orBool Q:K ==K Register
+		orBool Q:K ==K ThreadLocal
 		[structural]
 	rule
 		< k > canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</ k >
-		when Q:K ==Bool Const
+		when Q:K ==K Const
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.7.3}{9}}
@@ -297,26 +297,26 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			=> t(.Set, typedefType(X:#Id, T:KResult))
 		...</ k >
 		< types >... typedef(X:#Id) |-> T:KResult ...</ types >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural]
 		
 	rule
 		< k > canonicalizeSpecifier(BagItem(StructRef(X:#Id)))
 			=> t(.Set, structType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 	rule
 		< k > canonicalizeSpecifier(BagItem(EnumRef(X:#Id)))
 			=> t(.Set, enumType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 	rule
 		< k > canonicalizeSpecifier(BagItem(UnionRef(X:#Id)))
 			=> t(.Set, unionType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 		
 	rule
@@ -324,15 +324,15 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			=> EnumDef(X:#Id, L:K)
 			~> t(.Set, enumType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:#Nat)),, _)))) ...</ k >
 		< freshNat > N:#Nat => N:#Nat +Nat 1 </ freshNat >
-		when L:KLabel ==Bool 'StructDef
-		orBool L:KLabel ==Bool 'EnumDef
-		orBool L:KLabel ==Bool 'UnionDef
+		when L:KLabel ==KLabel 'StructDef
+		orBool L:KLabel ==KLabel 'EnumDef
+		orBool L:KLabel ==KLabel 'UnionDef
 		[structural] 
 	
 	rule
@@ -340,14 +340,14 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			=> StructDef(X:#Id, L:K)
 			~> t(.Set, structType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 	rule
 		< k > canonicalizeSpecifier(BagItem(UnionDef(X:#Id, L:K)))
 			=> UnionDef(X:#Id, L:K)
 			~> t(.Set, unionType(X:#Id))
 		...</ k >
-		when X:#Id =/=Bool Identifier("")
+		when X:#Id =/=K Identifier("")
 		[structural] 
 		
 
@@ -361,7 +361,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 
 	rule 
 		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</ k >
-		when B:Bag =/=Bool .Bag
+		when B:Bag =/=Bag .Bag
 		[structural] 
 		
 	rule
@@ -394,43 +394,43 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double)) => t(SetItem(Imaginary), long-double) [structural]
 	
 	define canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
-		when B:Bag ==Bool BagItem(Short)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short)
-		orBool B:Bag ==Bool BagItem(Short) BagItem(Int)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Short) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Short)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Short)
+		orBool B:Bag ==Bag BagItem(Short) BagItem(Int)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Short) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-short-int)
-		when B:Bag ==Bool BagItem(Unsigned) BagItem(Short)
-		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Short) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Unsigned) BagItem(Short)
+		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Short) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, int)
-		when B:Bag ==Bool BagItem(Int)
-		orBool B:Bag ==Bool BagItem(Signed)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Int)
+		orBool B:Bag ==Bag BagItem(Signed)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-int)
-		when B:Bag ==Bool BagItem(Unsigned)
-		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Unsigned)
+		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, long-int)
-		when B:Bag ==Bool BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Long) BagItem(Int)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Long) BagItem(Int)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-int)
-		when B:Bag ==Bool BagItem(Unsigned) BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Unsigned) BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, long-long-int)
-		when B:Bag ==Bool BagItem(Long) BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Long) BagItem(Long) BagItem(Int)
-		orBool B:Bag ==Bool BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Long) BagItem(Long) BagItem(Int)
+		orBool B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int) 
 		[structural]
 	define canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-long-int)
-		when B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long)
-		orBool B:Bag ==Bool BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
+		when B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long)
+		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
 		[structural]
 endkm
 
@@ -493,11 +493,11 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define giveNamesToArgs(L:List{KResult}) => giveNamesToArgs-aux(0, L:List{KResult}) [structural]
 	define giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:KResult, X:#Id),, L:List{KResult}))
 		=> typedDeclaration(T:KResult, X:#Id),, giveNamesToArgs-aux(N:#Nat, L:List{KResult})
-		when X:#Id =/=Bool #NoName
+		when X:#Id =/=K #NoName
 		[structural]
 	define giveNamesToArgs-aux(N:#Nat, (typedDeclaration(T:KResult, X:#Id),, L:List{KResult}))
 		=> typedDeclaration(T:KResult, #NoName(N:#Nat)),, giveNamesToArgs-aux(N:#Nat +Nat 1, L:List{KResult})
-		when X:#Id ==Bool #NoName
+		when X:#Id ==K #NoName
 		[structural]
 	define giveNamesToArgs-aux(_:#Nat, t(.Set, variadic))
 		=> t(.Set, variadic)
@@ -572,14 +572,14 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id)
 			,, fillBitHoles-aux(N:#Nat +Nat N':#Nat, L:List{KResult})
-		when N':#Nat =/=Bool 0 
+		when N':#Nat =/=Int 0 
 		[structural]
 		
 	define [fillBitHoles-bitfield-zero]:
 		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(_, bitfieldType(T:KResult, N':#Nat)), _:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
 			,, fillBitHoles(L:List{KResult})
-		when N':#Nat ==Bool 0
+		when N':#Nat ==Int 0
 		[structural]
 	
 	define [fillBitHoles-done]:
@@ -825,19 +825,19 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > L:KLabel(T:KResult) => T:KResult ...</ type >
 		when hasPointerType(T:KResult)
 		andBool (
-			L:KLabel ==Bool ('_++)
-			orBool L:KLabel ==Bool ('_--)
-			orBool L:KLabel ==Bool ('--_)
-			orBool L:KLabel ==Bool ('++_)
+			L:KLabel ==KLabel ('_++)
+			orBool L:KLabel ==KLabel ('_--)
+			orBool L:KLabel ==KLabel ('--_)
+			orBool L:KLabel ==KLabel ('++_)
 		)
 		[structural]
 		
 	rule
 		< type > L:KLabel(_:K,, _:K) => t(.Set, int) ...</ type >
-		when L:KLabel ==Bool '_==_
-		orBool L:KLabel ==Bool '_!=_
-		orBool L:KLabel ==Bool '_&&_
-		orBool L:KLabel ==Bool '_||_
+		when L:KLabel ==KLabel '_==_
+		orBool L:KLabel ==KLabel '_!=_
+		orBool L:KLabel ==KLabel '_&&_
+		orBool L:KLabel ==KLabel '_||_
 		[structural]
 		
 	rule [type-address]:
@@ -938,7 +938,7 @@ kmod COMMON-C-TYPING is
 		< k > addStruct(S:#Id, L:List{KResult}) 
 			=> addStruct-aux(S:#Id, L:List{KResult}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{KResult})
 		...</ k >
-		when L:List{KResult} =/=Bool .List{K}
+		when L:List{KResult} =/=List{K} .List{K}
 		[structural]
 	rule
 		< k > addStruct-aux(
@@ -954,7 +954,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule
 		< k > addStruct-aux(S:#Id, .List{K}, _, Types:Map, Offsets:Map, L:List{KResult}) 
-			=> if (F:#Id ==Bool File-Scope) then 
+			=> if (F:#Id ==K File-Scope) then 
 				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			else
 				(addLocalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
@@ -967,7 +967,7 @@ kmod COMMON-C-TYPING is
 		< k > addUnion(S:#Id, L:List{KResult}) 
 			=> addUnion-aux(S:#Id, L:List{KResult}, .Map, .Map, L:List{KResult})
 		...</ k >
-		when L:List{KResult} =/=Bool .List{K}
+		when L:List{KResult} =/=List{K} .List{K}
 		[structural]
 	rule
 		< k > addUnion-aux(
@@ -982,7 +982,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule
 		< k > addUnion-aux(S:#Id, .List{K}, Types:Map, Offsets:Map, L:List{KResult}) 
-			=> if (F:#Id ==Bool File-Scope) then 
+			=> if (F:#Id ==K File-Scope) then 
 				(addGlobalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			else
 				(addLocalAggregate(S:#Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
@@ -1006,7 +1006,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	define isAType T:KResult => true when isBasicType(T:KResult) [structural]
 	define isAType K:K => false
-		when getKLabel(K:K) =/=Bool 't
+		when getKLabel(K:K) =/=KLabel 't
 		[structural]
 	define isAType t(S:Set, T:K) => false
 		when notBool setOfTypes contains l(getKLabel(T:K))
@@ -1018,10 +1018,10 @@ kmod COMMON-C-TYPING is
 	define hasFloatType(t(_, double)) => true [structural]
 	define hasFloatType(t(_, long-double)) => true [structural]
 	define hasFloatType(t(_, T:K)) => false
-		when T:K =/=Bool float
-		andBool T:K =/=Bool double
-		andBool T:K =/=Bool long-double
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType
+		when T:K =/=K float
+		andBool T:K =/=K double
+		andBool T:K =/=K long-double
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
 		[structural]
 	
 	define [hasCharType-char]: hasCharType(t(_, char)) => true [structural]
@@ -1029,33 +1029,33 @@ kmod COMMON-C-TYPING is
 	define [hasCharType-unsigned-char]: hasCharType(t(_, unsigned-char)) => true [structural]
 	define [hasCharType-signed-char]: hasCharType(t(_, signed-char)) => true [structural]
 	define [hasCharType-other]: hasCharType(t(_, T:K)) => false
-		when T:K =/=Bool char
-		andBool T:K =/=Bool unsigned-char
-		andBool T:K =/=Bool signed-char
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when T:K =/=K char
+		andBool T:K =/=K unsigned-char
+		andBool T:K =/=K signed-char
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
 	define [hasWCharType-wchar]: hasWCharType(t(_, T:K)) => true 
-		when T:K ==Bool simpleType(cfg:wcharut)
+		when T:K ==K simpleType(cfg:wcharut)
 		[structural]
 	define [hasWCharType-other]: hasWCharType(t(_, T:K)) => false
-		when T:K =/=Bool simpleType(cfg:wcharut)
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when T:K =/=K simpleType(cfg:wcharut)
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 	define [hasWCharType-qualified]: hasWCharType(t(_, qualifiedType(T:KResult, _))) => hasWCharType(T:KResult) [structural]
 	
 	define [hasPointerType-pointer]: hasPointerType(t(_, pointerType(_))) => true [structural]
 	define [hasPointerType-qualified]: hasPointerType(t(_, qualifiedType(T:KResult, _))) => hasPointerType(T:KResult) [structural]
 	define [hasPointerType-other]: hasPointerType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'pointerType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'pointerType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 	
 	define [hasBoolType-bool]: hasBoolType(t(_, bool)) => true [structural]
 	define [hasBoolType-qualifiedType]: hasBoolType(t(_, qualifiedType(T:KResult, _))) => hasBoolType(T:KResult) [structural]
 	define [hasBoolType-other]: hasBoolType(t(_, T:K)) => false
-		when T:K =/=Bool bool 
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when T:K =/=K bool 
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 	
 	define [hasArrayType-array]: hasArrayType(t(_, arrayType(_, _:#Nat))) => true [structural]
@@ -1063,10 +1063,10 @@ kmod COMMON-C-TYPING is
 	define [hasArrayType-flexibleArray]: hasArrayType(t(_, flexibleArrayType(_))) => true [structural]
 	define [hasArrayType-qualified]: hasArrayType(t(_, qualifiedType(T:KResult, _))) => hasArrayType(T:KResult) [structural]
 	define [hasArrayType-other]: hasArrayType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'arrayType 
-		andBool getKLabel(T:K) =/=Bool 'incompleteArrayType 
-		andBool getKLabel(T:K) =/=Bool 'flexibleArrayType 
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'arrayType 
+		andBool getKLabel(T:K) =/=KLabel 'incompleteArrayType 
+		andBool getKLabel(T:K) =/=KLabel 'flexibleArrayType 
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
 	define hasAggregateType(T:KResult) => hasArrayType(T:KResult) orBool hasStructType(T:KResult) [structural]
@@ -1074,36 +1074,36 @@ kmod COMMON-C-TYPING is
 	define [hasStructType-struct]: hasStructType(t(_, structType(_:#Id))) => true [structural]
 	define [hasStructType-qualified]: hasStructType(t(_, qualifiedType(T:KResult, _))) => hasStructType(T:KResult) [structural]
 	define [hasStructType-other]: hasStructType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'structType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'structType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
 	define [hasUnionType-union]: hasUnionType(t(_, unionType(_:#Id))) => true [structural]
 	define [hasUnionType-qualified]: hasUnionType(t(_, qualifiedType(T:KResult, _))) => hasUnionType(T:KResult) [structural]
 	define [hasUnionType-other]: hasUnionType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'unionType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'unionType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 
 	define [hasIncompleteType-true]: hasIncompleteType(t(_, incompleteArrayType(_))) => true [structural]
 	define [hasIncompleteType-qualified]: hasIncompleteType(t(_, qualifiedType(T:KResult, _))) => hasIncompleteType(T:KResult) [structural]
 	define [hasIncompleteType-false]: hasIncompleteType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'incompleteArrayType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'incompleteArrayType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
-	define [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==Bool Extern) then (true) else (hasExternType(T:KResult)) fi 
+	define [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==K Extern) then (true) else (hasExternType(T:KResult)) fi 
 		[structural]
 	define [hasExternType-false]: hasExternType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
 	define [hasStaticType-qualified]: 
 		hasStaticType(t(_, qualifiedType(T:KResult, K:K))) 
-			=> if (K:K ==Bool Static) then (true) else (hasStaticType(T:KResult)) fi
+			=> if (K:K ==K Static) then (true) else (hasStaticType(T:KResult)) fi
 		[structural]
 	define [hasStaticType-false]: hasStaticType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 	
 	define [hasConstType-qualified]: 
@@ -1111,7 +1111,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	define [hasConstType-false]: 
 		hasConstType(t(S:Set, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'qualifiedType 
 		andBool notBool Const in S:Set
 		[structural]
 	define [hasConstType-true]: 
@@ -1121,28 +1121,28 @@ kmod COMMON-C-TYPING is
 		
 	define [hasBitfieldType-true]: hasBitfieldType(t(_, bitfieldType(_, _:#Nat))) => true [structural]
 	define [hasBitfieldType-false]: hasBitfieldType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'bitfieldType
+		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		[structural]
 		
 	define [hasFunctionType-true]: hasFunctionType(t(_, functionType(_, _:List{KResult}))) => true [structural]
 	define [hasFunctionType-prototype]: hasFunctionType(t(_, prototype(T:KResult))) => hasFunctionType(T:KResult) [structural]
 	define [hasFunctionType-qualified]: hasFunctionType(t(_, qualifiedType(T:KResult, _))) => hasFunctionType(T:KResult) [structural]
 	define [hasFunctionType-false]: hasFunctionType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'functionType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType
-		andBool getKLabel(T:K) =/=Bool 'prototype 
+		when getKLabel(T:K) =/=KLabel 'functionType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
+		andBool getKLabel(T:K) =/=KLabel 'prototype 
 		[structural]
 		
 	define [hasFunctionPointerType-fp]: hasFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:List{KResult}))))) => true [structural]
 	define [hasFunctionPointerType-qualified]: hasFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => hasFunctionPointerType(T:KResult) [structural]
 	define [hasFunctionPointerType-qualified-pointer]: hasFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => hasFunctionPointerType(t(.Set, pointerType(T:KResult))) [structural]
 	define [hasFunctionPointerType-notPointer]: hasFunctionPointerType(t(_, T:K)) => false
-		when getKLabel(T:K) =/=Bool 'pointerType
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType
+		when getKLabel(T:K) =/=KLabel 'pointerType
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
 		[structural]
 	define [hasFunctionPointerType-notFunction]: hasFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
-		when getKLabel(T:K) =/=Bool 'functionType 
-		andBool getKLabel(T:K) =/=Bool 'qualifiedType
+		when getKLabel(T:K) =/=KLabel 'functionType 
+		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
 		[structural]
 		
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
@@ -1155,12 +1155,12 @@ kmod COMMON-C-TYPING is
 			
 	define unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
 	define unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
-		when getKLabel(T:K) =/=Bool 'qualifiedType 
+		when getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
 	define removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
 	define removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
-		when getKLabel(T:K) =/=Bool 'qualifiedType
+		when getKLabel(T:K) =/=KLabel 'qualifiedType
 		[structural]
 	
 	define getModifiers(t(S:Set, _)) => S:Set

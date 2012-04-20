@@ -42,7 +42,7 @@ kmod DYNAMIC-C-ERRORS is
 	declare halt_ : Bag -> Bag
 	define halt < k => halted-k > _:K </ k => halted-k > [structural]
 	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
-		when L:CellLabel =/=Bool k 
+		when L:CellLabel =/=CellLabel k 
 		[structural]
 	define halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel > [structural]
 	define halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel > [structural]
@@ -64,7 +64,7 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00001]:
 		< k => finalComputation > cast(t(_, T:K), emptyValue) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00001", "Casting empty value to type other than void.") </ errorCell >)
-		when T:K =/=Bool void
+		when T:K =/=K void
 		[structural]
 		
 	rule [err00002]:
@@ -175,7 +175,7 @@ kmod DYNAMIC-C-ERRORS is
 		when hasIntegerType(T:KResult)
 		andBool notBool (min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int)
 		andBool hasBeenPromoted(T:KResult)
-		andBool I2:#Int =/=Bool 0
+		andBool I2:#Int =/=Int 0
 		[structural]
 		
 	rule [err00020]:
@@ -215,37 +215,37 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00025]:
 		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:#Nat, _:#Id, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
-		when T:K =/=Bool int
+		when T:K =/=K int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
 			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id),, _:List{KResult}))), _:#Nat, _:#Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
-		when T:K =/=Bool int andBool T:K =/=Bool void
+		when T:K =/=K int andBool T:K =/=K void
 		[structural]
 		
 	op isArgvType : Type -> #Bool
 	
 	rule isArgvType(t(_, T:K)) => false
 		when notBool (
-			getKLabel(T:K) ==Bool 'incompleteArrayType 
-			orBool getKLabel(T:K) ==Bool 'incompleteArrayType
+			getKLabel(T:K) ==KLabel 'incompleteArrayType 
+			orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
 		)
 		[structural]
 		
 	rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
-		when notBool getKLabel(T:K) ==Bool 'pointerType
+		when notBool getKLabel(T:K) ==KLabel 'pointerType
 		[structural]
 	rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
-		when T:K =/=Bool char
+		when T:K =/=K char
 		[structural]
 		
 	rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
-		when notBool getKLabel(T:K) ==Bool 'pointerType
+		when notBool getKLabel(T:K) ==KLabel 'pointerType
 		[structural]
 	rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
-		when T:K =/=Bool char
+		when T:K =/=K char
 		[structural]
 	
 	rule [err00027]:
@@ -266,7 +266,7 @@ kmod DYNAMIC-C-ERRORS is
 			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id)))), _:#Nat, _:#Id, _)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
-		when T:K =/=Bool void
+		when T:K =/=K void
 		[structural]
 		
 	rule [err00030]:
@@ -274,28 +274,28 @@ kmod DYNAMIC-C-ERRORS is
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
-		when Base:#Nat =/=Bool Base':#Nat
+		when Base:#Nat =/=Int Base':#Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
-		when Base:#Nat =/=Bool Base':#Nat
+		when Base:#Nat =/=Int Base':#Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
-		when Base:#Nat =/=Bool Base':#Nat
+		when Base:#Nat =/=Int Base':#Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
-		when Base:#Nat =/=Bool Base':#Nat
+		when Base:#Nat =/=Int Base':#Nat
 		[structural]
 		
 	rule [err00034]:
@@ -303,7 +303,7 @@ kmod DYNAMIC-C-ERRORS is
 			cast(t(_, T:K), skipval)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00034", "Casting void type to non-void type.") </ errorCell >)
-		when (T:K =/=Bool void)
+		when (T:K =/=K void)
 		[structural]
 		
 	rule [err00035]:
@@ -340,17 +340,17 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00041]:
 		< k => finalComputation > types((t(_, void),, t(_, T:K)))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00041", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
-		when T:K =/=Bool void
+		when T:K =/=K void
 		[structural]
 	rule [err00042]:
 		< k => finalComputation > types((t(_, T:K),, t(_, void)))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") </ errorCell >)
-		when T:K =/=Bool void
+		when T:K =/=K void
 		[structural]
 	rule [err00043]:
 		< k => finalComputation > types((T1:KResult,, T2:KResult))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </ errorCell >)
-		when T1:KResult =/=Bool T2:KResult
+		when T1:KResult =/=K T2:KResult
 		andBool (hasStructType(T1:KResult) orBool hasUnionType(T1:KResult))
 		andBool (hasStructType(T2:KResult) orBool hasUnionType(T2:KResult))
 		[structural]
