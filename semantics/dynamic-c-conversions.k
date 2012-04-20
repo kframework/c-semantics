@@ -315,7 +315,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// fixme worried about qualifiers
 	define [cast-integer-to-bool]:
 		cast(t(S:Set, bool), tv(I:#Int, T:KResult))
-			=> if I:#Int ==Int 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
+			=> if I:#Int ==MyInt 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
 		when hasIntegerType(T:KResult)
 		[structural]
 	define [cast-non-integer-to-bool]:
@@ -535,13 +535,13 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, T':KResult)) 
 			=> tv(N:#Nat, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:#Nat =/=Int NullPointerConstant
+		andBool N:#Nat =/=MyInt NullPointerConstant
 		[structural] 
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:#Nat, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:#Nat ==Int NullPointerConstant
+		andBool N:#Nat ==MyInt NullPointerConstant
 		[structural] 
 	
 	// fixme needs to check size
@@ -604,19 +604,19 @@ kmod DYNAMIC-C-CONVERSIONS is
 	rule [xor-unknown-right]: N:#Nat xorInt piece(unknown(Len:#Nat), Len:#Nat) => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [or-unknown-right]: N:#Nat |Int piece(unknown(Len:#Nat), Len:#Nat) => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [and-unknown-zero-right]: N:#Nat &Int piece(unknown(Len:#Nat), Len:#Nat) => 0
-		when N:#Nat ==Int 0 
+		when N:#Nat ==MyInt 0 
 		[structural anywhere]
 	rule [and-unknown-right]: N:#Nat &Int piece(unknown(Len:#Nat), Len:#Nat) => 0
-		when N:#Nat =/=Int 0 
+		when N:#Nat =/=MyInt 0 
 		[structural anywhere]
 
 	rule [xor-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) xorInt N:#Nat => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [or-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) |Int N:#Nat => piece(unknown(Len:#Nat), Len:#Nat) [structural anywhere]
 	rule [and-unknown-zero-left]: piece(unknown(Len:#Nat), Len:#Nat) &Int N:#Nat => 0
-		when N:#Nat ==Int 0 
+		when N:#Nat ==MyInt 0 
 		[structural anywhere]
 	rule [and-unknown-left]: piece(unknown(Len:#Nat), Len:#Nat) &Int N:#Nat => 0
-		when N:#Nat =/=Int 0 [structural anywhere]
+		when N:#Nat =/=MyInt 0 [structural anywhere]
 		
 	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
 	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294

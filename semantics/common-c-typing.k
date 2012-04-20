@@ -572,14 +572,14 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':#Nat)), X:#Id)
 			,, fillBitHoles-aux(N:#Nat +Nat N':#Nat, L:List{KResult})
-		when N':#Nat =/=Int 0 
+		when N':#Nat =/=MyInt 0 
 		[structural]
 		
 	define [fillBitHoles-bitfield-zero]:
 		fillBitHoles-aux(N:#Nat, (typedDeclaration(t(_, bitfieldType(T:KResult, N':#Nat)), _:#Id),, L:List{KResult})) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:#Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
 			,, fillBitHoles(L:List{KResult})
-		when N':#Nat ==Int 0
+		when N':#Nat ==MyInt 0
 		[structural]
 	
 	define [fillBitHoles-done]:

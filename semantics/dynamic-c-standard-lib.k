@@ -199,7 +199,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 					< continuation > K:K </ continuation >
 					C:Bag
 			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:#Int, t(_, int))) ~> _
-			=> ignoreLocals ~> if I:#Int ==Int 0 then tv(1, t(.Set, int)) else tv(I:#Int, t(.Set, int)) fi ~> K:K
+			=> ignoreLocals ~> if I:#Int ==MyInt 0 then tv(1, t(.Set, int)) else tv(I:#Int, t(.Set, int)) fi ~> K:K
 		</ k >
 		< threadLocal >
 			_ => C:Bag
@@ -955,7 +955,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		...</ k >
 		< malloced >... (OldLoc:#Nat => NewLoc) |-> (OldLen:#Nat => NewLen:#Nat) ...</ malloced >
 		< freshNat > Fresh:#Nat => Fresh:#Nat +Nat 1 </ freshNat >
-		when OldLoc:#Nat =/=Int NullPointer
+		when OldLoc:#Nat =/=MyInt NullPointer
 		where NewLoc = sym(threadId(allocatedDuration) +Nat Fresh:#Nat) +Nat 0
 		[structural]
 	rule [realloc-null]:
@@ -1026,7 +1026,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		< k > (tv(I:#Int, T:KResult) => write(lv(Dest:#Nat, t(.Set, char)), tv(I:#Int, T:KResult)))
 			~> strcpy((Dest:#Nat => Dest:#Nat +Nat 1), _, _)
 		...</ k >
-		when I:#Int =/=Int 0
+		when I:#Int =/=MyInt 0
 		[structural]
 	rule [strcpy-done]:
 		< k > tv(0, T:KResult) ~> strcpy(Dest:#Nat, _, Orig:#Nat)

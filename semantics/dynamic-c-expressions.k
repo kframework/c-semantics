@@ -504,7 +504,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		[structural]
 	define simplifyForHex(S:#String) => S:#String
 		when firstChar(S:#String) =/=String "0"
-		orBool lengthString(S:#String) ==Int 1
+		orBool lengthString(S:#String) ==MyInt 1
 		[structural]
 		
 		
@@ -818,14 +818,14 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	*/
 	
 	rule tv(I1:#Int, T:KResult) == tv(I2:#Int, T:KResult)
-		=> makeTruth(I1:#Int ==Int I2:#Int)
+		=> makeTruth(I1:#Int ==MyInt I2:#Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
 		) andBool notBool (isUnknown(I1:#Int) orBool isUnknown(I2:#Int))
 		[structural]
 	rule tv(I1:#Int, T:KResult) != tv(I2:#Int, T:KResult)
-		=> makeTruth(I1:#Int =/=Int I2:#Int)
+		=> makeTruth(I1:#Int =/=MyInt I2:#Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:#Int) andBool isConcreteNumber(I2:#Int))
@@ -854,22 +854,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	// if one of the pointers is null, it's also straightforward
 	rule tv(NullPointer, T:KResult) == tv(N:#Nat, T':KResult)
-		=> makeTruth(NullPointer ==Int N:#Nat)
+		=> makeTruth(NullPointer ==MyInt N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(NullPointer, T:KResult) != tv(N:#Nat, T':KResult)
-		=> makeTruth(NullPointer =/=Int N:#Nat)
+		=> makeTruth(NullPointer =/=MyInt N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:#Nat, T:KResult) == tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer ==Int N:#Nat)
+		=> makeTruth(NullPointer ==MyInt N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:#Nat, T:KResult) != tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer =/=Int N:#Nat)
+		=> makeTruth(NullPointer =/=MyInt N:#Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
@@ -877,12 +877,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:KResult) == tv(sym(Base:#Nat) +Nat Offset':#Nat, T':KResult) 
-			=> makeTruth(Offset:#Nat ==Int Offset':#Nat)
+			=> makeTruth(Offset:#Nat ==MyInt Offset':#Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
 	rule < k > tv(sym(Base:#Nat) +Nat Offset:#Nat, T:KResult) != tv(sym(Base:#Nat) +Nat Offset':#Nat, T':KResult) 
-			=> makeTruth(Offset:#Nat =/=Int Offset':#Nat)
+			=> makeTruth(Offset:#Nat =/=MyInt Offset':#Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
@@ -897,7 +897,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:#Nat =/=Int Base':#Nat
+		andBool Base:#Nat =/=MyInt Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
 		[structural]
@@ -909,7 +909,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':#Nat |-> memblock(mlength(Len':#Nat) _, _) 
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:#Nat =/=Int Base':#Nat
+		andBool Base:#Nat =/=MyInt Base':#Nat
 		andBool Offset:#Nat <Nat Len:#Nat
 		andBool Offset':#Nat <Nat Len':#Nat
 		[structural]
@@ -922,26 +922,26 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:#Nat ==Int NullPointerConstant
+		andBool N:#Nat ==MyInt NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:#Nat ==Int NullPointerConstant
+		andBool N:#Nat ==MyInt NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:#Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:#Nat ==Int NullPointerConstant
+		andBool N:#Nat ==MyInt NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(_, T:KResult) != (tv(N:#Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:#Nat ==Int NullPointerConstant
+		andBool N:#Nat ==MyInt NullPointerConstant
 		[structural]
 	rule
 		tv(F1:#Float, T:KResult) == tv(F2:#Float, T:KResult) => makeTruth(F1:#Float ==Float F2:#Float)
@@ -1039,7 +1039,7 @@ second operand from the first.
 	rule [pointer-difference]: 
 		computePointerDifference(sym(Block:#Nat) +Nat Offset1:#Nat, sym(Block:#Nat) +Nat Offset2:#Nat, tv(Size:#Nat, _))
 			=> tv(_-Int_(Offset1:#Nat, Offset2:#Nat) /Int Size:#Nat, cfg:ptrdiffut)
-		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==Int 0
+		when _-Int_(Offset1:#Nat, Offset2:#Nat) %Int Size:#Nat ==MyInt 0
 		[structural]
 	
 		
@@ -1055,12 +1055,12 @@ second operand from the first.
 		[structural]
 	rule tv(I1:#Int, T:KResult) / tv(I2:#Int, T:KResult) => arithInterpret(T:KResult, I1:#Int /Int I2:#Int)
 		when hasBeenPromoted(T:KResult)
-		andBool I2:#Int =/=Int 0
+		andBool I2:#Int =/=MyInt 0
 		[structural]
 	rule tv(I1:#Int, T:KResult) % tv(I2:#Int, T:KResult) => arithInterpret(T:KResult, I1:#Int %Int I2:#Int)
 		when hasBeenPromoted(T:KResult)
 		andBool min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int
-		andBool I2:#Int =/=Int 0
+		andBool I2:#Int =/=MyInt 0
 		[structural]
 	rule - tv(I1:#Int, T:KResult) => arithInterpret(T:KResult, -Int_(I1:#Int))
 		when hasBeenPromoted(T:KResult)
@@ -1068,7 +1068,7 @@ second operand from the first.
 		
 	rule piece(unknown(N:#Nat), N:#Nat) /Int M:#Nat 
 		=> piece(unknown(N:#Nat), N:#Nat)
-		when M:#Nat =/=Int 0
+		when M:#Nat =/=MyInt 0
 		andBool isConcreteNumber(M:#Nat)
 		[structural anywhere]
 		

@@ -21,7 +21,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
 	op _==K_ : K K -> #Bool
-	//op _==Int_ : K K -> #Bool
+	op _==MyInt_ : K K -> #Bool
 	op _==Float_ : K K -> #Bool
 	op _==String_ : K K -> #Bool
 	op _==Bag_ : Bag Bag -> #Bool
@@ -31,7 +31,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op _==KLabel_ : KLabel KLabel -> #Bool
 	
 	op _=/=K_ : K K -> #Bool
-	op _=/=Int_ : K K -> #Bool
+	op _=/=MyInt_ : K K -> #Bool
 	op _=/=Float_ : K K -> #Bool
 	op _=/=String_ : K K -> #Bool
 	op _=/=Bag_ : Bag Bag -> #Bool
@@ -41,7 +41,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op _=/=KLabel_ : KLabel KLabel -> #Bool
 	
 	rule K1:K ==K K2:K => K1:K ==Bool K2:K [anywhere]
-	//rule I1:#Int ==Int I2:#Int => I1:#Int ==Bool I2:#Int [anywhere]
+	rule I1:#Int ==MyInt I2:#Int => I1:#Int ==Bool I2:#Int [anywhere]
 	rule F1:#Float ==Float F2:#Float => F1:#Float ==Bool F2:#Float [anywhere]
 	rule S1:#String ==String S2:#String => S1:#String ==Bool S2:#String [anywhere]
 	rule B1:Bag ==Bag B2:Bag => B1:Bag ==Bool B2:Bag [anywhere]
@@ -51,7 +51,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	rule KL1:KLabel ==KLabel KL2:KLabel => KL1:KLabel ==Bool KL2:KLabel [anywhere]
 	
 	rule K1:K =/=K K2:K => K1:K =/=Bool K2:K [anywhere]
-	rule I1:#Int =/=Int I2:#Int => I1:#Int =/=Bool I2:#Int [anywhere]
+	rule I1:#Int =/=MyInt I2:#Int => I1:#Int =/=Bool I2:#Int [anywhere]
 	rule F1:#Float =/=Float F2:#Float => F1:#Float =/=Bool F2:#Float [anywhere]
 	rule S1:#String =/=String S2:#String => S1:#String =/=Bool S2:#String [anywhere]
 	rule B1:Bag =/=Bag B2:Bag => B1:Bag =/=Bool B2:Bag [anywhere]

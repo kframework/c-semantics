@@ -175,7 +175,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		
 	rule
 		< k > handleSwitch-aux(SN:#Nat, _, Map((_ ((genLabel(SN':#Nat, _) |-> _) => .Map)))) ...</ k >
-		when SN:#Nat =/=Int SN':#Nat
+		when SN:#Nat =/=MyInt SN':#Nat
 		[structural] 
 	rule
 		< k > handleSwitch-aux(SN:#Nat, _, Map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</ k >
@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:#Nat) ActualHistory:List </ blockHistory >
-		when ActualDepth:#Nat +Nat 1 =/=Int TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=MyInt TargetDepth:#Nat
 		[structural large] 
 		
 	rule
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:#Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:#Nat)) 
-		when ActualDepth:#Nat +Nat 1 =/=Int TargetDepth:#Nat
+		when ActualDepth:#Nat +Nat 1 =/=MyInt TargetDepth:#Nat
 		[structural large] 
 	
 	//  We've made it to the block above the target
@@ -341,7 +341,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 			)
 		...</ k >
 		< blockHistory > ListItem(TargetBlock:#Nat) ...</ blockHistory >
-		when BlockNum:#Nat =/=Int TargetBlock:#Nat
+		when BlockNum:#Nat =/=MyInt TargetBlock:#Nat
 		[structural] 
 		
 	//  skip variables in the real history
@@ -524,7 +524,7 @@ kmod DYNAMIC-C-STATEMENTS is
 		< k > (. => popBlock) ~> popLoop ...</ k >
 		< blockHistory > ListItem(Num:#Nat) ...</ blockHistory >
 		< loopStack > ListItem(kpair(Num':#Nat, _)) ...</ loopStack >
-		when Num':#Nat =/=Int Num:#Nat
+		when Num':#Nat =/=MyInt Num:#Nat
 		[structural] 
 	
 	/*@ \source[n1570]{\para{6.8.6.2}{2}}

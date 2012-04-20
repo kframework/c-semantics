@@ -51,7 +51,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define [fillToBytes-foundByte]:
 		fillToBytes-aux(dataList((L:List{K},, piece(N:#Nat, Len:#Nat))), L':List{K})
 			=> fillToBytes-aux(dataList(L:List{K}), (piece(N:#Nat, Len:#Nat),, L':List{K}))
-		when Len:#Nat ==Int numBitsPerByte
+		when Len:#Nat ==MyInt numBitsPerByte
 		[structural]
 	
 	define [fillToBytes-addBit]:
@@ -96,7 +96,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		
 	define bitRange(piece(bitRange(N:#Nat, Start:#Nat, End:#Nat), Len:#Nat), 0, 0)
 		=> bitRange(piece(bitRange(N:#Nat, Start:#Nat, Start:#Nat), 1), 0, 0)
-		when Start:#Nat +Nat Len:#Nat ==Int End:#Nat +Nat 1
+		when Start:#Nat +Nat Len:#Nat ==MyInt End:#Nat +Nat 1
 		[structural]
 	
 	define bitRange(N:#Nat, Pos:#Nat, Pos:#Nat) => 1 &Nat (N:#Nat >>Nat Pos:#Nat)
@@ -107,7 +107,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	define bitRange(N:#Nat, 0, To:#Nat) => N:#Nat
-		when To:#Nat +Nat 1 ==Int numBitsPerByte
+		when To:#Nat +Nat 1 ==MyInt numBitsPerByte
 		[structural]
 	
 	define bitRange(_:#Nat bit:: piece(N:#Nat, Len:#Nat), Start:#Nat, End:#Nat)
@@ -258,7 +258,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 			~> getString-aux(tv(Loc:#Nat, _), S:#String)
 			=> getString-aux(tv(Loc:#Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:#String +String charString(N:#Nat))
 		...</ k >
-		when N:#Nat =/=Int 0
+		when N:#Nat =/=MyInt 0
 		[structural]
 	rule [getString-done]:
 		< k > tv(0, _) ~> getString-aux(tv(Loc:#Nat, _), S:#String)
@@ -307,7 +307,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		subPointerToString(threadId(N:#Nat) +Nat N':#Nat)
 			=> "threadId(" +String Rat2String(N:#Nat, 10) +String ") +Nat " 
 			+String Rat2String(N':#Nat, 10)
-		when N:#Nat =/=Int allocatedDuration
+		when N:#Nat =/=MyInt allocatedDuration
 		[structural]
 	define [sub-pointerToString-allocated]:
 		subPointerToString(threadId(allocatedDuration) +Nat N':#Nat)

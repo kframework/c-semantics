@@ -175,7 +175,7 @@ kmod DYNAMIC-C-ERRORS is
 		when hasIntegerType(T:KResult)
 		andBool notBool (min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int)
 		andBool hasBeenPromoted(T:KResult)
-		andBool I2:#Int =/=Int 0
+		andBool I2:#Int =/=MyInt 0
 		[structural]
 		
 	rule [err00020]:
@@ -274,28 +274,28 @@ kmod DYNAMIC-C-ERRORS is
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
-		when Base:#Nat =/=Int Base':#Nat
+		when Base:#Nat =/=MyInt Base':#Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
-		when Base:#Nat =/=Int Base':#Nat
+		when Base:#Nat =/=MyInt Base':#Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
-		when Base:#Nat =/=Int Base':#Nat
+		when Base:#Nat =/=MyInt Base':#Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
 			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
-		when Base:#Nat =/=Int Base':#Nat
+		when Base:#Nat =/=MyInt Base':#Nat
 		[structural]
 		
 	rule [err00034]:

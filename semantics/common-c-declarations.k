@@ -927,7 +927,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:#Nat)))) ...</ currentSubObject >
 		when hasCharType(T:KResult)
-		andBool lengthString(S:#String) ==Int Len:#Nat
+		andBool lengthString(S:#String) ==MyInt Len:#Nat
 		[structural] 
 	rule [fillInit-wstring-array-eq]:
 		< k > fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
@@ -935,7 +935,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		< currentSubObject > ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:#Nat)))) ...</ currentSubObject >
 		when hasWCharType(T:KResult)
-		andBool lengthList{K}(S:List{K}) ==Int Len:#Nat
+		andBool lengthList{K}(S:List{K}) ==MyInt Len:#Nat
 		[structural] 
 	rule [fillInit-string-array-lt]:
 		< k > fillInitializer(SingleInit(Constant(StringLiteral(S:#String))))
