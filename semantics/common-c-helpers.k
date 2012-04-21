@@ -1,7 +1,9 @@
-require maudeLib/common-c-builtins
+// require maudeLib/common-c-builtins
 
 kmod COMMON-SEMANTICS-HELPERS-INCLUDE is
-	including #COMMON-SEMANTICS-HELPERS-BUILTINS
+	// including #COMMON-SEMANTICS-HELPERS-BUILTINS
+	// op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
+	op _bit::_ : Nat Nat -> Nat
 	including COMMON-NOHELPER-INCLUDE
 endkm
 
@@ -72,62 +74,62 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	// coallesce bitranges that are adjacent
-	define _bit::_(piece(bitRange(N:Nat, sNatTo:Nat, To':Nat), Len:Nat), piece(bitRange(N:Nat, From:Nat, To:Nat), Len':Nat))
-		=> piece(bitRange(N:Nat, From:Nat, To':Nat), Len:Nat +Int Len':Nat)
-		when Len:Nat +Int Len':Nat <=Int numBitsPerByte
-		andBool sNatTo:Nat ==Int To:Nat +Int 1
-		[structural]
+	// define _bit::_(piece(bitRange(N:Nat, sNatTo:Nat, To':Nat), Len:Nat), piece(bitRange(N:Nat, From:Nat, To:Nat), Len':Nat))
+		// => piece(bitRange(N:Nat, From:Nat, To':Nat), Len:Nat +Int Len':Nat)
+		// when Len:Nat +Int Len':Nat <=Int numBitsPerByte
+		// andBool sNatTo:Nat ==Int To:Nat +Int 1
+		// [structural]
 	
-	define piece(N:Nat bit:: N':Nat, Len:Nat) bit:: piece(N'':Nat, Len':Nat)
-		=> piece(N:Nat bit:: N':Nat bit:: piece(N'':Nat, Len':Nat), Len:Nat +Int Len':Nat)
-		[structural]
+	// define piece(N:Nat bit:: N':Nat, Len:Nat) bit:: piece(N'':Nat, Len':Nat)
+		// => piece(N:Nat bit:: N':Nat bit:: piece(N'':Nat, Len':Nat), Len:Nat +Int Len':Nat)
+		// [structural]
 
-	define piece(N'':Nat, Len':Nat) bit:: piece(N:Nat bit:: N':Nat, Len:Nat)
-		=> piece(piece(N'':Nat, Len':Nat) bit:: N:Nat bit:: N':Nat, Len:Nat +Int Len':Nat)
-		[structural]
+	// define piece(N'':Nat, Len':Nat) bit:: piece(N:Nat bit:: N':Nat, Len:Nat)
+		// => piece(piece(N'':Nat, Len':Nat) bit:: N:Nat bit:: N':Nat, Len:Nat +Int Len':Nat)
+		// [structural]
 
-	define bitRange(N:Nat bit:: piece(_:Nat, Len:Nat), Pos:Nat, Pos:Nat)
-		=> bitRange(N:Nat, absInt(Pos:Nat -Int Len:Nat), absInt(Pos:Nat -Int Len:Nat))
-		when Pos:Nat >Int 0
-		andBool Pos:Nat -Int Len:Nat >=Int 0
-		[structural]
+	// define bitRange(N:Nat bit:: piece(_:Nat, Len:Nat), Pos:Nat, Pos:Nat)
+		// => bitRange(N:Nat, absInt(Pos:Nat -Int Len:Nat), absInt(Pos:Nat -Int Len:Nat))
+		// when Pos:Nat >Int 0
+		// andBool Pos:Nat -Int Len:Nat >=Int 0
+		// [structural]
 		
-	define bitRange(_:Nat bit:: piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1) [structural]
-	define bitRange(piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1) [structural]
+	// define bitRange(_:Nat bit:: piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1) [structural]
+	// define bitRange(piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1) [structural]
 		
-	define bitRange(piece(bitRange(N:Nat, Start:Nat, End:Nat), Len:Nat), 0, 0)
-		=> bitRange(piece(bitRange(N:Nat, Start:Nat, Start:Nat), 1), 0, 0)
-		when Start:Nat +Int Len:Nat ==Int End:Nat +Int 1
-		[structural]
+	// define bitRange(piece(bitRange(N:Nat, Start:Nat, End:Nat), Len:Nat), 0, 0)
+		// => bitRange(piece(bitRange(N:Nat, Start:Nat, Start:Nat), 1), 0, 0)
+		// when Start:Nat +Int Len:Nat ==Int End:Nat +Int 1
+		// [structural]
 	
-	define bitRange(N:Nat, Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
-		when N:Nat >=Int 0
-		[structural]
-	define bitRange(piece(N:Nat, 1), Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
-		when N:Nat >=Int 0
-		[structural]
+	// define bitRange(N:Nat, Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
+		// when N:Nat >=Int 0
+		// [structural]
+	// define bitRange(piece(N:Nat, 1), Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
+		// when N:Nat >=Int 0
+		// [structural]
 		
-	define bitRange(N:Nat, 0, To:Nat) => N:Nat
-		when To:Nat +Int 1 ==Int numBitsPerByte
-		[structural]
+	// define bitRange(N:Nat, 0, To:Nat) => N:Nat
+		// when To:Nat +Int 1 ==Int numBitsPerByte
+		// [structural]
 	
-	define bitRange(_:Nat bit:: piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
-		=> bitRange(piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
-		when End:Nat +Int 1 <=Int Len:Nat
-		[structural]
+	// define bitRange(_:Nat bit:: piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
+		// => bitRange(piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
+		// when End:Nat +Int 1 <=Int Len:Nat
+		// [structural]
 	
-	define bitRange(piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
-		=> piece(N:Nat, End:Nat +Int 1)
-		when sNatEnd:Nat ==Int End:Nat +Int 1
-		[structural]
-	define bitRange(_:Nat bit:: piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
-		=> piece(N:Nat, End:Nat +Int 1)
-		when sNatEnd:Nat ==Int End:Nat +Int 1
-		[structural]
+	// define bitRange(piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
+		// => piece(N:Nat, End:Nat +Int 1)
+		// when sNatEnd:Nat ==Int End:Nat +Int 1
+		// [structural]
+	// define bitRange(_:Nat bit:: piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
+		// => piece(N:Nat, End:Nat +Int 1)
+		// when sNatEnd:Nat ==Int End:Nat +Int 1
+		// [structural]
 		
-	define bitRange(piece(N:Nat, Len:Nat), Pos:Nat, Pos:Nat) => (N:Nat >>Int Pos:Nat) &Int 1
-		when N:Nat >=Int 0
-		[structural]
+	// define bitRange(piece(N:Nat, Len:Nat), Pos:Nat, Pos:Nat) => (N:Nat >>Int Pos:Nat) &Int 1
+		// when N:Nat >=Int 0
+		// [structural]
 	
 	op extractField-pre : List{K} Type Nat K -> K [metadata "strict=(4)"]
 	op extractField-aux : List{K} Type Nat Nat List{K} -> K
@@ -158,11 +160,11 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	// this should probably go in the k prelude
 
-	define K:K in (ListItem(K:K) _:List) => true [structural]
-	define K:K in .List => false [structural]
-	define K:K in (ListItem(K':K) L:List) => K:K in L:List
-		when K:K =/=K K':K
-		[structural]
+	// define K:K in (ListItem(K:K) _:List) => true [structural]
+	// define K:K in .List => false [structural]
+	// define K:K in (ListItem(K':K) L:List) => K:K in L:List
+		// when K:K =/=K K':K
+		// [structural]
 	
 	rule [discard]:
 		< k > V:KResult ~> discard => .K ...</ k >

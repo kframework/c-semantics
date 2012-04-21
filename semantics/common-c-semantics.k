@@ -334,7 +334,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op deleteSizedBlock : Nat Nat -> K // deletes the base object from memory, given a location and it size (as a check)
 	
 	declare isConcreteNumber : Int -> Bool 
-	declare _in_ : K List -> Bool 
+	//declare _in_ : K List -> Bool 
 endkm
 
 kmod COMMON-C-SETTINGS is

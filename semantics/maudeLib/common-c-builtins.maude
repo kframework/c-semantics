@@ -1,4 +1,7 @@
 mod #COMMON-SEMANTICS-HELPERS-BUILTINS is
 	including #NAT-INTERFACE .
-	op _bit::_ : #Nat #Nat -> #Nat [assoc] .
+	op _bitList_ : #Nat #Nat -> #Nat [assoc] .
+	
+
+	
 endm

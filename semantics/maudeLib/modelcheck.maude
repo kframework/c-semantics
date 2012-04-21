@@ -4,10 +4,10 @@ mod #MODEL-CHECK is
 	including #META-LEVEL .
 	including C .
 	
-	op state : Bag -> #Model-Checker-State
-	op k2model : K -> #LTLFormula
-	op executing : -> #Prop
-	op checkTruth : Bag -> #Bool
+	op state : Bag -> #Model-Checker-State .
+	op k2model : K -> #LTLFormula .
+	op executing : -> #Prop .
+	op checkTruth : Bag -> #Bool .
 	
 	op expAtom : #LTLFormula -> #Prop .
 	

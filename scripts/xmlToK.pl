@@ -108,8 +108,9 @@ if ($filename eq ""){
 }
 
 print "---kccMarker\n";
+my $filenameTerm = "$STRING $filename" . paren(KLIST_IDENTITY);
 my @args = ();
-push (@args, "$STRING $filename" . paren(KLIST_IDENTITY));
+push (@args, $filenameTerm);
 
 $reader->nextElement;
 # print STDERR "At " . $reader->name . "\n";
@@ -124,7 +125,7 @@ $reader->nextElement('RawData');
 my $sourceCode = getRawData($reader);
 push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
-print "eq TranslationUnitName($filename)(.List`{K`}) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
+print "eq TranslationUnitName($filenameTerm)(.List`{K`}) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
 if ($ltl ne "") {
 	print $ltl;
 }
