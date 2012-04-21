@@ -15,23 +15,23 @@ endkm
 kmod DYNAMIC-C-ERRORS is
 	including DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
-	declare Error : #String #String -> K
-	define Error(Name:#String, Msg:#String)  => 
+	declare Error : String String -> K
+	define Error(Name:String, Msg:String)  => 
 		//"=====================================================\n"
 		//+String "ERROR! KCC encountered an error while executing this program.\n"
 		"Error: " 
-		+String Name:#String 
+		+String Name:String 
 		+String "\n"
 		+String "Description: " 
-		+String Msg:#String
+		+String Msg:String
 		[structural]
-	declare ICE : #String #String -> K
-	define ICE(Name:#String, Msg:#String) =>
+	declare ICE : String String -> K
+	define ICE(Name:String, Msg:String) =>
 		"Error: "
-		+String Name:#String
+		+String Name:String
 		+String "\n"
 		+String "Description: " 
-		+String Msg:#String
+		+String Msg:String
 		+String "\n"
 		+String "NOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
 		[structural]
@@ -77,41 +77,41 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00005]:
-		< k => finalComputation > extractByteFromMem(sym(Block:#Nat) +Nat _:#Nat) ...</ k => finalComputation >
+		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Nat _:Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
-		when notBool $hasMapping(M:Map, Block:#Nat)
+		when notBool $hasMapping(M:Map, Block:Nat)
 		[structural]
 	
 	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:#Nat), Len:#Nat)), _:K) ...</ k => finalComputation >
+		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:Nat), Len:Nat)), _:K) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </ errorCell >)
 		when notBool hasCharType(T:KResult)
 		[structural]
 		
 	rule [err00007]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat _:#Nat) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Nat _:Nat) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
-		when notBool $hasMapping(M:Map, Block:#Nat)
+		when notBool $hasMapping(M:Map, Block:Nat)
 		[structural]
 	
 	rule [err00008]:
-		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:#Nat), Len:#Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Nat), Len:Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00008", "Reading uninitialized memory.") </ errorCell >)
 		[structural]
 	
 	rule [err00009]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:#Nat), Len:#Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Nat), Len:Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00009", "Reading uninitialized memory.") </ errorCell >)
 		when hasFloatType(T:KResult)
 		[structural]
 		
 	rule [err00010]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:#Nat) +Nat Offset:#Nat) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(mlength(Size:#Nat) _, _) ...</ mem >
+		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Nat Offset:Nat) ...</ k => finalComputation >
+		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, _) ...</ mem >
 		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
-		when Offset:#Nat >Nat Size:#Nat
+		when Offset:Nat >Nat Size:Nat
 		[structural]
 		
 		
@@ -141,85 +141,85 @@ kmod DYNAMIC-C-ERRORS is
 		[structural] 
 		
 	rule [err00015]:
-		< k => finalComputation > arithInterpret(T:KResult, I:#Int) ...</ k => finalComputation >
+		< k => finalComputation > arithInterpret(T:KResult, I:Int) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00015", "Signed overflow.") </ errorCell >)
 		when hasSignedIntegerType(T:KResult)
-		andBool notBool (min(T:KResult) <=Int I:#Int andBool max(T:KResult) >=Int I:#Int)
+		andBool notBool (min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int)
 		[structural] 	
 		
 		
 	rule [err00016]:
-		< k => finalComputation > writeByte(Loc:#Nat, _) ...</ k => finalComputation >
+		< k => finalComputation > writeByte(Loc:Nat, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </ errorCell >)
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
-		when Loc:#Nat in Locs:Bag
+		when Loc:Nat in Locs:Bag
 		[structural] 
 		
 	rule [err00017]:
-		< k => finalComputation > tv(I1:#Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00017", "Division by 0.") </ errorCell >)
 		when hasIntegerType(T:KResult)
 		andBool hasBeenPromoted(T:KResult)
 		[structural]
 	
 	rule [err00018]:
-		< k => finalComputation > tv(I1:#Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00018", "Modulus by 0.") </ errorCell >)
 		when hasIntegerType(T:KResult)
 		andBool hasBeenPromoted(T:KResult)
 		[structural]
 		
 	rule [err00019]:
-		< k => finalComputation > tv(I1:#Int, T:KResult) % tv(I2:#Int, T:KResult) ...</ k => finalComputation >
+		< k => finalComputation > tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00019", "Signed overflow.") </ errorCell >)
 		when hasIntegerType(T:KResult)
-		andBool notBool (min(T:KResult) <=Int I1:#Int /Int I2:#Int andBool max(T:KResult) >=Int I1:#Int /Int I2:#Int)
+		andBool notBool (min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int)
 		andBool hasBeenPromoted(T:KResult)
-		andBool I2:#Int =/=MyInt 0
+		andBool I2:Int =/=Int 0
 		[structural]
 		
 	rule [err00020]:
-		< k => finalComputation > writeByte(sym(Block:#Nat) +Nat Offset:#Nat, _) ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(mlength(Len:#Nat) _, _) ...</ mem >		
+		< k => finalComputation > writeByte(sym(Block:Nat) +Nat Offset:Nat, _) ...</ k => finalComputation >
+		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >		
 		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
-		when notBool Offset:#Nat <Nat Len:#Nat
+		when notBool Offset:Nat <Nat Len:Nat
 		[structural] 
 		
 	rule [err00021]:
-		< k => finalComputation > Identifier(S:#String) ...</ k => finalComputation >
+		< k => finalComputation > Identifier(S:String) ...</ k => finalComputation >
 		< env > M:Map </ env >
-		(.Bag => < errorCell > Error("00021", "Trying to look up identifier  " +String S:#String +String " , but no such identifier is in scope.") </ errorCell >)
-		when notBool $hasMapping(M:Map, Identifier(S:#String))
+		(.Bag => < errorCell > Error("00021", "Trying to look up identifier  " +String S:String +String " , but no such identifier is in scope.") </ errorCell >)
+		when notBool $hasMapping(M:Map, Identifier(S:String))
 		[structural]
 		
 	rule [err00022]:
-		< k => finalComputation > leftShiftInterpret(T:KResult, I:#Int, tv(E1:#Int, T:KResult)) ...</ k => finalComputation >
+		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00022", "Trying to left-shift a negative signed value.") </ errorCell >)
 		when hasSignedIntegerType(T:KResult)
-		andBool E1:#Int <Int 0
+		andBool E1:Int <Int 0
 		[structural]
 		
 	rule [err00023]:
-		< k => finalComputation > leftShiftInterpret(T:KResult, I:#Int, tv(E1:#Nat, T:KResult)) ...</ k => finalComputation >
+		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Nat, T:KResult)) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </ errorCell >)
 		when hasSignedIntegerType(T:KResult)
-		andBool notBool (I:#Int <=Int (2 ^Nat absInt(numBits(T:KResult))))
+		andBool notBool (I:Int <=Int (2 ^Nat absInt(numBits(T:KResult))))
 		[structural]
 		
 	rule [err00024]:
-		< k => finalComputation > arithInterpret(_, I:#Int &Int I':#Int) ...</ k => finalComputation >
+		< k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00024", "Bitwise & used on a symbolic number (address) or float.") </ errorCell >)
-		when notBool isConcreteNumber(I':#Int)
+		when notBool isConcreteNumber(I':Int)
 		[structural]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:#Nat, _:#Id, _) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:Nat, _:Id, _) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00025", "Main must return an int.") </ errorCell >)
 		when T:K =/=K int
 		[structural]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id),, _:List{KResult}))), _:#Nat, _:#Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:List{KResult}))), _:Nat, _:Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </ errorCell >)
 		when T:K =/=K int andBool T:K =/=K void
@@ -250,20 +250,20 @@ kmod DYNAMIC-C-ERRORS is
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:#Id),, typedDeclaration(T:KResult, _:#Id)))), _:#Nat, _:#Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Nat, _:Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </ errorCell >)
 		when notBool isArgvType(T:KResult)
 		[structural]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:List{KResult}))), _:#Nat, _:#Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:List{KResult}))), _:Nat, _:Id, _) 
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00028", "Main can only have zero or two arguments.") </ errorCell >)
 		[structural]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:#Id)))), _:#Nat, _:#Id, _)
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id)))), _:Nat, _:Id, _)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00029", "Main can only have zero or two arguments.") </ errorCell >)
 		when T:K =/=K void
@@ -271,31 +271,31 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) < tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
+			tv(sym(Base:Nat) +Nat _:Nat, T:KResult) < tv(sym(Base':Nat) +Nat _:Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
-		when Base:#Nat =/=MyInt Base':#Nat
+		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) > tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
+			tv(sym(Base:Nat) +Nat _:Nat, T:KResult) > tv(sym(Base':Nat) +Nat _:Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
-		when Base:#Nat =/=MyInt Base':#Nat
+		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) <= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
+			tv(sym(Base:Nat) +Nat _:Nat, T:KResult) <= tv(sym(Base':Nat) +Nat _:Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
-		when Base:#Nat =/=MyInt Base':#Nat
+		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:#Nat) +Nat _:#Nat, T:KResult) >= tv(sym(Base':#Nat) +Nat _:#Nat, T:KResult)
+			tv(sym(Base:Nat) +Nat _:Nat, T:KResult) >= tv(sym(Base':Nat) +Nat _:Nat, T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
-		when Base:#Nat =/=MyInt Base':#Nat
+		when Base:Nat =/=Int Base':Nat
 		[structural]
 		
 	rule [err00034]:
@@ -308,7 +308,7 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00035]:
 		< k => finalComputation > 
-			write(lv(Dest:#Nat, t(SetItem(Const) _, _)), _)
+			write(lv(Dest:Nat, t(SetItem(Const) _, _)), _)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00035", "Trying to write through a const lvalue.") </ errorCell >)
 		[structural]
@@ -329,11 +329,11 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 	rule [err00039]:
-		< k => finalComputation > addUnion(S:#Id, .List{K})  ...</ k => finalComputation >
+		< k => finalComputation > addUnion(S:Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00039", "Unions cannot be empty.") </ errorCell >)
 		[structural]
 	rule [err00040]:
-		< k => finalComputation > addStruct(S:#Id, .List{K})  ...</ k => finalComputation >
+		< k => finalComputation > addStruct(S:Id, .List{K})  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00040", "Structs cannot be empty.") </ errorCell >)
 		[structural]
 		
@@ -356,36 +356,36 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00044]:
-		< k => finalComputation > addToPointer(Loc:#Nat, T:KResult, I:#Int, tv(Size:#Nat, _))  ...</ k => finalComputation >
+		< k => finalComputation > addToPointer(Loc:Nat, T:KResult, I:Int, tv(Size:Nat, _))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00044", "An array subscript is out of range.") </ errorCell >)
-		when notBool ifFromArrayInBounds(T:KResult, I:#Int)
+		when notBool ifFromArrayInBounds(T:KResult, I:Int)
 		[structural]
 		
 	rule [err00045]:
 		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
-		< mem >... Block:#Nat |-> memblock(mconst _:Bag, _) ...</ mem >
+		< mem >... Block:Nat |-> memblock(mconst _:Bag, _) ...</ mem >
 		(.Bag => < errorCell > Error("00045", "Trying to modify an object declared with const type.") </ errorCell >)
-		where LOC = sym(Block:#Nat) +Nat Offset:#Nat
+		where LOC = sym(Block:Nat) +Nat Offset:Nat
 		[structural]
 		
 	rule [err00046]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(N:#Nat, Len:#Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(N:Nat, Len:Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </ errorCell >)
 		when hasFloatType(T:KResult)
-		andBool N:#Nat >=Nat 0
+		andBool N:Nat >=Nat 0
 		[structural]
 		
 	rule [err00047]:
-		< k => finalComputation > writeByte(Loc:#Nat, V:K)  ...</ k => finalComputation >
-		< notWritable >... Loc:#Nat |-> _ ...</notWritable>
+		< k => finalComputation > writeByte(Loc:Nat, V:K)  ...</ k => finalComputation >
+		< notWritable >... Loc:Nat |-> _ ...</notWritable>
 		(.Bag => < errorCell > Error("00047", "Trying to modify an object declared with const type.") </ errorCell >)
 		[structural]
 		
-	op isUnknown : #Nat -> #Bool
-	eq isUnknown(unknown(_:#Nat)) = true
-	eq isUnknown(_:#Nat) = false [owise]
+	op isUnknown : Nat -> #Bool
+	eq isUnknown(unknown(_:Nat)) = true
+	eq isUnknown(_:Nat) = false [owise]
 	
-	op datarace : #Nat #Nat #Nat #Nat -> K 
+	op datarace : Nat Nat Nat Nat -> K 
 
 	// fixme possible to miss dataraces with bitfields
 	rule [read-write-race]:
@@ -393,17 +393,17 @@ kmod DYNAMIC-C-ERRORS is
 			_ 
 			< threads > 
 				_
-				< thread > _ < k > read-aux(Loc:#Nat, _, BitSize:#Nat) ...</ k > </ thread >
-				< thread > _ < k > write-aux(Loc':#Nat, _, BitSize':#Nat) ...</ k > </ thread >
+				< thread > _ < k > read-aux(Loc:Nat, _, BitSize:Nat) ...</ k > </ thread >
+				< thread > _ < k > write-aux(Loc':Nat, _, BitSize':Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
-		=> < errorCell > datarace(Loc:#Nat, BitSize:#Nat, Loc':#Nat, BitSize':#Nat) </ errorCell >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
 		when (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
 		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		where Start1 = Loc:#Nat
-		and End1 = Loc:#Nat +Nat bitsToBytes(BitSize:#Nat)
-		and Start2 = Loc':#Nat
-		and End2 = Loc':#Nat +Nat bitsToBytes(BitSize':#Nat)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational=()"]
 		
 	rule [write-write-race]:
@@ -411,17 +411,17 @@ kmod DYNAMIC-C-ERRORS is
 			_ 
 			< threads > 
 				_
-				< thread > _ < k > write-aux(Loc:#Nat, _, BitSize:#Nat) ...</ k > </ thread >
-				< thread > _ < k > write-aux(Loc':#Nat, _, BitSize':#Nat) ...</ k > </ thread >
+				< thread > _ < k > write-aux(Loc:Nat, _, BitSize:Nat) ...</ k > </ thread >
+				< thread > _ < k > write-aux(Loc':Nat, _, BitSize':Nat) ...</ k > </ thread >
 			</ threads > 
 		</ T >
-		=> < errorCell > datarace(Loc:#Nat, BitSize:#Nat, Loc':#Nat, BitSize':#Nat) </ errorCell >
+		=> < errorCell > datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </ errorCell >
 		when (Start1 <=Nat Start2 andBool End1 >=Nat Start2)
 		orBool (Start1 >Nat Start2 andBool Start1 <=Nat End2)
-		where Start1 = Loc:#Nat
-		and End1 = Loc:#Nat +Nat bitsToBytes(BitSize:#Nat)
-		and Start2 = Loc':#Nat
-		and End2 = Loc':#Nat +Nat bitsToBytes(BitSize':#Nat)
+		where Start1 = Loc:Nat
+		and End1 = Loc:Nat +Nat bitsToBytes(BitSize:Nat)
+		and Start2 = Loc':Nat
+		and End2 = Loc':Nat +Nat bitsToBytes(BitSize':Nat)
 		[metadata "computational=()"]		
 
 

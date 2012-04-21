@@ -147,8 +147,8 @@ kmod COMMON-C-CONFIGURATION is
 	
 	ops files input output resultValue errorCell xmessages : -> CellLabel
 	
-	subsort #Id #Int #String #Float #Bool #Rat < K
-	//subsort #String < Builtins
+	subsort Id Int String Float #Bool #Rat < K
+	//subsort String < Builtins
 	
 	subsort C < K
 	
