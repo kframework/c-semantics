@@ -206,11 +206,13 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		when hasFunctionType(T:KResult)
 		[structural]
 		
+	// fixme snat
 	rule
-		< k > zeroType(Name:K, t(S:Set, arrayType(T:KResult, sNat(Len:#Nat)))) 
-			=> zeroType(Name:K[Len:#Nat], T:KResult)
-			~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:#Nat))) 
+		< k > zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:#Nat))) 
+			=> zeroType(Name:K[Len:#Nat -Int 1], T:KResult)
+			~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:#Nat -Int 1))) 
 		...</ k >
+		when Len:#Nat >Int 0
 		[structural] 
 	rule
 		< k > zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .K ...</ k >

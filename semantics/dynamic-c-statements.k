@@ -314,7 +314,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 	
 	//  We've made it to the block above the target
 	rule
-		< k > L:KLabel(gotoObject(sNat(Depth:#Nat), 
+		< k > L:KLabel(gotoObject(sNatDepth:#Nat, 
 				(ListItem(TargetBlock:#Nat) BlockHistory:List),
 				K:K, 
 				LoopStack:List, 
@@ -328,8 +328,9 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< nestingDepth > Depth:#Nat </ nestingDepth >
 		< blockHistory > BlockHistory:List </ blockHistory >
 		< loopStack > _ => LoopStack:List </ loopStack >
-		when L:KLabel ==KLabel 'processGoto
-		orBool L:KLabel ==KLabel 'processGotoDown
+		when (L:KLabel ==KLabel 'processGoto
+		orBool L:KLabel ==KLabel 'processGotoDown)
+		andBool sNatDepth:#Nat ==Int Depth:#Nat +Int 1
 		[structural] 
 		
 	op addVariablesForBlock : #Nat List -> K 

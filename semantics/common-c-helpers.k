@@ -72,9 +72,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	// coallesce bitranges that are adjacent
-	define _bit::_(piece(bitRange(N:#Nat, sNat(To:#Nat), To':#Nat), Len:#Nat), piece(bitRange(N:#Nat, From:#Nat, To:#Nat), Len':#Nat))
+	define _bit::_(piece(bitRange(N:#Nat, sNatTo:#Nat, To':#Nat), Len:#Nat), piece(bitRange(N:#Nat, From:#Nat, To:#Nat), Len':#Nat))
 		=> piece(bitRange(N:#Nat, From:#Nat, To':#Nat), Len:#Nat +Nat Len':#Nat)
 		when Len:#Nat +Nat Len':#Nat <=Nat numBitsPerByte
+		andBool sNatTo:#Nat ==Int To:#Nat +Int 1
 		[structural]
 	
 	define piece(N:#Nat bit:: N':#Nat, Len:#Nat) bit:: piece(N'':#Nat, Len':#Nat)
@@ -115,11 +116,13 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when End:#Nat +Nat 1 <=Nat Len:#Nat
 		[structural]
 	
-	define bitRange(piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
+	define bitRange(piece(N:#Nat, sNatEnd:#Nat), 0, End:#Nat)
 		=> piece(N:#Nat, End:#Nat +Nat 1)
+		when sNatEnd:#Nat ==Int End:#Nat +Int 1
 		[structural]
-	define bitRange(_:#Nat bit:: piece(N:#Nat, sNat(End:#Nat)), 0, End:#Nat)
+	define bitRange(_:#Nat bit:: piece(N:#Nat, sNatEnd:#Nat), 0, End:#Nat)
 		=> piece(N:#Nat, End:#Nat +Nat 1)
+		when sNatEnd:#Nat ==Int End:#Nat +Int 1
 		[structural]
 		
 	define bitRange(piece(N:#Nat, Len:#Nat), Pos:#Nat, Pos:#Nat) => (N:#Nat >>Nat Pos:#Nat) &Nat 1

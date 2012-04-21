@@ -200,7 +200,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	// Composite types
 	op enumType : #Id -> SimpleType // [ctor] 
-	op arrayType : Type #Nat -> SimpleType // [ctor] 
+	op arrayType : Type #Int -> SimpleType // [ctor] 
 	op incompleteArrayType : Type -> SimpleType // [ctor] 
 	op flexibleArrayType : Type -> SimpleType // [ctor] 
 	op bitfieldType : Type #Nat -> SimpleType // [ctor] 
@@ -440,7 +440,6 @@ kmod COMMON-C-SEMANTICS-MISC is
 	
 	
 	rule inc(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat +Nat 1) +Nat M:#Nat [structural anywhere]
-	// rule sNat(sym(N:#Nat) +Nat M:#Nat) => sym(N:#Nat) +Nat (M:#Nat +Nat 1) [structural anywhere]
 	rule I:#Int +Int (N:#Nat +Nat sym(M:#Nat))
 		=> absInt(N:#Nat +Int I:#Int) +Nat sym(M:#Nat) 
 		when N:#Nat +Int I:#Int >=Int 0 

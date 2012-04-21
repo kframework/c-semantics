@@ -27,19 +27,22 @@ kmod DYNAMIC-SEMANTICS-READING is
 	// fixme owise!!!!
 	eq getBitOffset(_:#Nat) = 0 [owise]
 	
-	op extractBitsFromList-aux : K #Nat #Nat List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
+	op extractBitsFromList-aux : K #Int #Int List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:#Nat, M:#Nat) 
 		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:#Nat, M:#Nat, .List{K})
 		[structural]
+	// fixme snat
 	rule
-		< k > extractBitsFromList-aux(dataList((piece(_:#Nat, 1),, L:List{K})), sNat(Offset:#Nat), NumBits:#Nat, .List{K})
-			=> extractBitsFromList-aux(dataList(L:List{K}), Offset:#Nat, NumBits:#Nat, .List{K})
+		< k > extractBitsFromList-aux(dataList((piece(_:#Nat, 1),, L:List{K})), Offset:#Nat, NumBits:#Nat, .List{K})
+			=> extractBitsFromList-aux(dataList(L:List{K}), Offset:#Nat -Int 1, NumBits:#Nat, .List{K})
 		...</ k >
+		when Offset:#Nat >Int 0
 		[structural] 
 	rule
-		< k > extractBitsFromList-aux(dataList((piece(N:#Nat, 1),, L:List{K})), 0, sNat(NumBits:#Nat), Done:List{K})
-			=> extractBitsFromList-aux(dataList(L:List{K}), 0, NumBits:#Nat, (Done:List{K},, piece(N:#Nat, 1)))
+		< k > extractBitsFromList-aux(dataList((piece(N:#Nat, 1),, L:List{K})), 0, NumBits:#Nat, Done:List{K})
+			=> extractBitsFromList-aux(dataList(L:List{K}), 0, NumBits:#Nat -Int 1, (Done:List{K},, piece(N:#Nat, 1)))
 		...</ k >
+		when NumBits:#Nat >Int 0
 		[structural] 
 	
 	rule
@@ -120,10 +123,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		when Len:#Nat ==MyInt numBitsPerByte
 		[structural]
-	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:#Nat, sNat(End:#Nat), sNat(End:#Nat)), Len:#Nat),, L:List{K}), subObject(N:#Nat, 0, End:#Nat))
+	// fixme sNat
+	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:#Nat, sNatEnd:#Nat, sNatEnd:#Nat), Len:#Nat),, L:List{K}), subObject(N:#Nat, 0, End:#Nat))
 			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:#Nat, 0, End:#Nat +Nat 1))
 		...</ k >
 		when Len:#Nat ==MyInt numBitsPerByte
+		andBool sNatEnd:#Nat ==Int End:#Nat +Int 1
 		[structural]
 	rule < k > joinPointerBytes-aux(T:KResult, .List{K}, subObject(N:#Nat, 0, End:#Nat))
 			=> checkValidLoc(N:#Nat)
@@ -198,11 +203,13 @@ kmod DYNAMIC-SEMANTICS-READING is
 		...</ k >
 		[structural] 
 		
+	// fixme sNat
 	rule
-		< k > extractBytesFromMem-aux(Loc:#Nat, sNat(Size:#Nat), Aux:List{K})
+		< k > extractBytesFromMem-aux(Loc:#Nat, Size:#Nat, Aux:List{K})
 			=> extractByteFromMem(Loc:#Nat)
-			~> extractBytesFromMem-aux(Loc:#Nat +Nat 1, Size:#Nat, Aux:List{K})
+			~> extractBytesFromMem-aux(Loc:#Nat +Nat 1, Size:#Nat -Int 1, Aux:List{K})
 		...</ k >
+		when Size:#Nat >Int 0
 		[structural]
 	rule
 		< k > (tv(V:List{K}, T:KResult) => .K)
@@ -300,21 +307,35 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		[structural]
 		
+	// fixme sNat this kind of rule might be very slow without matching on sNat (it's also ugly)
+	// rule [realloc-found]:
+		// < k > realloc-aux((sNat(N:#Nat) => N:#Nat), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
+		// ...</ k >
+		// < mem >... 
+			// OldBlock:#Nat |-> memblock(_, (_ N:#Nat |-> K:K))
+			// NewBlock:#Nat |-> memblock(_, (_ (.Map => N:#Nat |-> K:K)))
+		// ...</ mem >
+		// [structural]
 	rule [realloc-found]:
-		< k > realloc-aux((sNat(N:#Nat) => N:#Nat), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
+		< k > realloc-aux((sNatN:#Nat => sNatN:#Nat -Int 1), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:#Nat |-> memblock(_, (_ N:#Nat |-> K:K))
-			NewBlock:#Nat |-> memblock(_, (_ (.Map => N:#Nat |-> K:K)))
+			NewBlock:#Nat |-> memblock(_, (_ (.Map => sNatN:#Nat -Int 1 |-> K:K)))
 		...</ mem >
-		[structural]
+		when N:#Nat ==Int sNatN:#Nat -Int 1
+		andBool sNatN:#Nat >Int 0
+		[structural]	
+		
+	// fixme sNat
 	rule [realloc-unfound]:
-		< k > realloc-aux((sNat(N:#Nat) => N:#Nat), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
+		< k > realloc-aux((sNatN:#Nat => sNatN:#Nat -Int 1), sym(OldBlock:#Nat) +Nat 0, sym(NewBlock:#Nat) +Nat 0, _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:#Nat |-> memblock(_, M:Map)
 		...</ mem >
-		when notBool $hasMapping(M:Map, N:#Nat)
+		when notBool $hasMapping(M:Map, sNatN:#Nat -Int 1)
+		andBool sNatN:#Nat >Int 0
 		[structural]
 	rule [realloc-0]:
 		< k > realloc-aux(0, sym(OldBlock:#Nat) +Nat 0, _, OldLen:#Nat, _)
@@ -426,7 +447,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define justBits-aux(I:#Int, T:KResult) => justBits-aux((I:#Int +Int max(T:KResult) +Int 1), T:KResult)
 		when I:#Int <Int 0 
 		[structural]
-	define justBits-aux(N:#Nat, t(_, bitfieldType(T:KResult, sNat(Len:#Nat)))) => N:#Nat +Nat (1 <<Nat Len:#Nat) [structural]
+	// fixme sNat
+	define 
+		justBits-aux(N:#Nat, t(_, bitfieldType(T:KResult, Len:#Nat))) 
+			=> N:#Nat +Nat (1 <<Nat K2Nat(Len:#Nat -Int 1))
+		when Len:#Nat >Int 0
+		[structural]
 	
 	rule [massage-bitfield]:
 		< k > write-specific(Loc:#Nat, tv(I:#Int, T:KResult), bitSize:#Nat)
@@ -463,7 +489,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		[structural] 
 		
-	declare calculateNewBytes-aux : #Nat K K List{K} -> K 
+	declare calculateNewBytes-aux : #Int K K List{K} -> K 
 	define calculateNewBytes(Len:#Nat, N:#Nat, dataList(L:List{K})) 
 		=> calculateNewBytes-aux(Len:#Nat, dataList(explodeToBits(N:#Nat)), dataList(explodeToBits(L:List{K})), .List{K})
 		[structural]
@@ -474,8 +500,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare joinBitsToBytes : List{K} -> K 
 	declare joinBitsToBytes-aux : K K -> K 
 	
-	define calculateNewBytes-aux(sNat(N:#Nat), K:K, dataList((piece(Bit:#Nat, 1),, L:List{K})), Result:List{K}) 
-		=> calculateNewBytes-aux(N:#Nat, K:K, dataList(L:List{K}), (Result:List{K},, piece(Bit:#Nat, 1))) 
+	// fixme sNat
+	define calculateNewBytes-aux(N:#Nat, K:K, dataList((piece(Bit:#Nat, 1),, L:List{K})), Result:List{K}) 
+		=> calculateNewBytes-aux(N:#Nat -Int 1, K:K, dataList(L:List{K}), (Result:List{K},, piece(Bit:#Nat, 1))) 
+		when N:#Nat >Int 0
 		[structural]
 	
 	define calculateNewBytes-aux(0, dataList((piece(N:#Nat, 1),, L:List{K})), dataList((piece(_:#Nat, 1),, L':List{K})), Result:List{K}) 
@@ -582,8 +610,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare splitIntegerBytes-aux : K K K List{K} -> K 
 	//context splitIntegerBytes(_, _, value(HOLE)) 
 	define splitIntegerBytes(I:#Int, T:KResult, Len:#Nat) => splitIntegerBytes-aux(I:#Int, T:KResult, Len:#Nat, .List{K}) [structural]
-	define splitIntegerBytes-aux(I:#Int, T:KResult, sNat(Len:#Nat), L:List{K})
-		=> splitIntegerBytes-aux(I:#Int >>Int numBitsPerByte, T:KResult, Len:#Nat, (L:List{K},, lowestByte(I:#Int, T:KResult))) 
+	define 
+		splitIntegerBytes-aux(I:#Int, T:KResult, Len:#Nat, L:List{K})
+			=> splitIntegerBytes-aux(I:#Int >>Int numBitsPerByte, T:KResult, Len:#Nat -Int 1, (L:List{K},, lowestByte(I:#Int, T:KResult)))
+		when Len:#Nat >Int 0
 		[structural]
 	define splitIntegerBytes-aux(_, _, 0, L:List{K})
 		=> dataList(L:List{K}) 
@@ -596,9 +626,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> splitStructBytes(dataList(L:List{K}), T:KResult, Len:#Nat, .List{K}) 
 		[structural]
 	define 
-		splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, sNat(Len:#Nat), L:List{K})
-			=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat, (L:List{K},, piece(N:#Nat, PieceLen:#Nat))) 
-		when PieceLen:#Nat ==MyInt numBitsPerByte 
+		splitStructBytes(dataList((piece(N:#Nat, PieceLen:#Nat),, Rest:List{K})), T:KResult, Len:#Nat, L:List{K})
+			=> splitStructBytes(dataList(Rest:List{K}), T:KResult, Len:#Nat -Int 1, (L:List{K},, piece(N:#Nat, PieceLen:#Nat)))
+		when PieceLen:#Nat ==MyInt numBitsPerByte
+		andBool Len:#Nat >Int 0
 		[structural]
 	define splitStructBytes(_, _, 0, L:List{K})
 		=> dataList(L:List{K}) 
@@ -611,8 +642,10 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define splitPointerBytes(I:#Int, T:KResult, Len:#Nat)
 		=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, 0, .List{K}) 
 		[structural]
-	define splitPointerBytes-aux(I:#Int, T:KResult, sNat(Len:#Nat), N:#Nat, L:List{K})
-		=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, N:#Nat +Nat 1, (L:List{K},, piece(subObject(I:#Int, N:#Nat, N:#Nat), numBitsPerByte)))
+	define 
+		splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat, N:#Nat, L:List{K})
+			=> splitPointerBytes-aux(I:#Int, T:KResult, Len:#Nat -Int 1, N:#Nat +Nat 1, (L:List{K},, piece(subObject(I:#Int, N:#Nat, N:#Nat), numBitsPerByte)))
+		when Len:#Nat >Int 0
 		[structural]
 	define splitPointerBytes-aux(_, _, 0, _, L:List{K}) 
 		=> dataList(L:List{K})
@@ -622,10 +655,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare splitFloatBytes : K K K -> K 
 	declare splitFloatBytes : K K K List{K} -> K 
 	context splitFloatBytes(_, _, value(HOLE)) 
-	define splitFloatBytes(F:#Float, T:KResult, sNat(Len:#Nat)) 
-		=> splitFloatBytes(F:#Float, T:KResult, Len:#Nat, piece(encodedFloat(F:#Float), numBitsPerByte)) 
+	define splitFloatBytes(F:#Float, T:KResult, Len:#Nat) 
+		=> splitFloatBytes(F:#Float, T:KResult, Len:#Nat -Int 1, piece(encodedFloat(F:#Float), numBitsPerByte)) 
+		when Len:#Nat >Int 0
 		[structural]
-	define splitFloatBytes(F:#Float, T:KResult, sNat(Len:#Nat), L:List{K}) => splitFloatBytes(F:#Float, T:KResult, Len:#Nat, (L:List{K},, piece(unknown(numBitsPerByte), numBitsPerByte))) 
+	define splitFloatBytes(F:#Float, T:KResult, Len:#Nat, L:List{K}) 
+		=> splitFloatBytes(F:#Float, T:KResult, Len:#Nat -Int 1, (L:List{K},, piece(unknown(numBitsPerByte), numBitsPerByte))) 
+		when Len:#Nat >Int 0
 		[structural]
 	define splitFloatBytes(_, T:KResult, 0, L:List{K}) 
 		=> dataList(L:List{K}) 

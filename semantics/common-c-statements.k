@@ -68,8 +68,9 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		
 	rule
 		< computation > popBlock => .K ...</ computation >
-		< nestingDepthGoto > sNat(N:#Nat) => N:#Nat </ nestingDepthGoto >
+		< nestingDepthGoto > I:#Int => I:#Int -Int 1 </ nestingDepthGoto >
 		< blockHistoryGoto > (_:ListItem => .List) ListItem(Num:#Nat) ...</ blockHistoryGoto >
+		when I:#Int >Int 0
 		[structural] 
 		
 	rule [DefinitionLoc-computation]:
