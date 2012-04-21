@@ -287,14 +287,14 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule allocateType(Loc:Nat, T:KResult) => alloc(Loc:Nat, value(byteSizeofType(T:KResult))) 
 		[structural]
 	rule [allocateTypeIfAbsent-absent]:
-		< k > allocateTypeIfAbsent(Loc:Nat, T:KResult) 
+		< k > allocateTypeIfAbsent(Loc:Nat +Int 0, T:KResult) 
 			=> alloc(Loc:Nat, value(byteSizeofType(T:KResult))) 
 		...</ k >
 		< mem > Mem:Map </ mem >
 		when notBool $hasMapping(Mem:Map, Loc:Nat)
 		[structural] 
 	rule [allocateTypeIfAbsent-present]:
-		< k > allocateTypeIfAbsent(Loc:Nat, T:KResult) => .K ...</ k >
+		< k > allocateTypeIfAbsent(Loc:Nat +Int 0, T:KResult) => .K ...</ k >
 		< mem >... Loc:Nat |-> _ ...</ mem >
 		[structural]
 

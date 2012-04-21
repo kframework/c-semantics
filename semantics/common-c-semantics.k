@@ -60,6 +60,13 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// rule L1:List{K} =/=List{K} L2:List{K} => L1:List{K} =/=Bool L2:List{K} [anywhere]
 	// rule KL1:KLabel =/=KLabel KL2:KLabel => KL1:KLabel =/=Bool KL2:KLabel [anywhere]
 	
+	
+	// fixme super sketchy
+	define true orBool _ => true
+	define _ orBool true => true
+	define false andBool _ => false
+	define _ andBool false => false
+	
 	// these are used for runtime settings
 	op kccSettingSimpleType : String -> SimpleType
 	op kccSettingNzNat : String -> #NzNat
@@ -88,14 +95,16 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op unknown : Nat -> Nat // [ctor] 
 	
-	op skipval : -> KResult 
+	op skipval : -> KResult
 	op debug : -> K 
 	op discard : -> K 
 	op File-Scope : -> Id // [ctor] 
 	op unnamedBitField : -> Id // [ctor] 
 	//op bignum : -> Type 
-	op sym : Nat -> Nat 
-	op byteo : Nat -> Nat 
+
+	define 'isNat(sym(N:Nat) +Int M:Nat) => true
+	define 'isNat(sym(N:Nat) +Int bito(N':Nat) +Int M:Nat) => true
+	op sym : Nat -> Nat
 	op bito : Nat -> Nat 
 
 	declare bitoffset : Nat -> Nat 
@@ -155,8 +164,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op isPromotedInteger : Type -> Bool
 	
 	
-	op bitloc : Nat Nat Nat -> Nat 
 	op inc : Nat -> Nat 
+	
+	define 'isNat(threadId(N:Nat) +Int M:Nat) => true [structural]
+	define 'isNat(allocatedDuration +Int M:Nat) => true [structural]
 	op threadId : Nat -> Nat // used for symbolic locations based on threadid
 	op allocatedDuration : -> Nat // fake threadid for above when location is of allocated duration
 	// op readOnly : -> Nat // fake threadid for above when location can't be written to
@@ -438,10 +449,16 @@ endkm
 kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
-	
+	define (sym(Base:Int) +Int Offset:Int) +Int Offset':Int 
+		=> sym(Base:Int) +Int (Offset:Int +Int Offset':Int)
+		[structural]
+	define (threadId(N:Int) +Int M:Int) +Int N':Int
+		=> threadId(N:Int) +Int (M:Int +Int N':Int)
+	define (allocatedDuration +Int M:Int) +Int N':Int
+		=> allocatedDuration +Int (M:Int +Int N':Int)
 	rule inc(sym(N:Nat) +Int M:Nat) => sym(N:Nat +Int 1) +Int M:Nat [structural anywhere]
 	rule I:Int +Int (N:Nat +Int sym(M:Nat))
-		=> absInt(N:Nat +Int I:Int) +Int sym(M:Nat) 
+		=> sym(M:Nat) +Int absInt(N:Nat +Int I:Int)
 		when N:Nat +Int I:Int >=Int 0 
 		[structural anywhere]
 

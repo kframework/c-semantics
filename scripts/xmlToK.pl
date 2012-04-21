@@ -173,12 +173,12 @@ sub elementToK {
 		$label = "List";
 		$prefix = '(_`(_`)(kList("wklist_"), ';
 		$suffix = '))';
-	} elsif ($label eq 'Identifier') {
-		$reader->nextElement;
-		my $rawData = getRawData($reader);
-		my $ident = 'Identifier' . paren($rawData);
-		my $id = $ID . paren($ident);
-		return ($inNextState, $id . paren(KLIST_IDENTITY));
+	# } elsif ($label eq 'Identifier') {
+		# $reader->nextElement;
+		# my $rawData = getRawData($reader);
+		# my $ident = 'Identifier' . paren($rawData);
+		# my $id = paren($ident);
+		# return ($inNextState, $id);
 	} elsif ($label eq 'WStringLiteral') {
 		$reader->nextElement;
 		$reader->read;
