@@ -51,25 +51,25 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
 		...</ k >
 		when hasCharType(T:KResult)
-		andBool lengthString(S:String) <=Nat Len:Nat
+		andBool lengthString(S:String) <=Int Len:Nat
 		[structural]
 	rule
 		< k > figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
 			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
 		...</ k >
 		when hasWCharType(T:KResult)
-		andBool lengthList{K}(S:List{K}) <=Nat Len:Nat
+		andBool lengthList{K}(S:List{K}) <=Int Len:Nat
 		[structural] 
 	
 	rule
 		< k > figureInitializer(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthString(S:String) +Nat 1))), SingleInit(Constant(StringLiteral(S:String)))) 
+			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Constant(StringLiteral(S:String)))) 
 		...</ k >
 		when hasCharType(T:KResult)
 		[structural]
 	rule
 		< k > figureInitializer(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Nat 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Int 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
 		...</ k >
 		when hasWCharType(T:KResult)
 		[structural] 
@@ -179,7 +179,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 	rule
 		< k > doDeclare(typedDeclaration(T:KResult, X:Id), K:K)
-			=> declareExternalVariable(X:Id, T:KResult, if K:K ==K NoInit then NoInit else CodeLoc(K:K, L:CabsLoc) fi)
+			=> declareExternalVariable(X:Id, T:KResult, #if K:K ==K NoInit #then NoInit #else CodeLoc(K:K, L:CabsLoc) #fi)
 		...</ k >
 		< currentFunction > File-Scope </ currentFunction >
 		< currentProgramLoc > L:CabsLoc </ currentProgramLoc >
@@ -599,7 +599,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			~> calculateGotoMap(X:Id, BODY)
 		...</ k >
 		when hasFunctionType(T:KResult)
-		where BODY = (Block:K ~> Return(if (X:Id ==K Identifier("main")) then tv(0, t(.Set, int)) else NothingExpression fi))
+		where BODY = (Block:K ~> Return(#if (X:Id ==K Identifier("main")) #then tv(0, t(.Set, int)) #else NothingExpression #fi))
 		[structural] 
 endkm
 
@@ -688,21 +688,21 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	// fixme should i worry about basetype here_
 	rule [init-next-array-element]:
 		< currentSubObject > 
-			(next ListItem(te(K:K[N:Nat], T:KResult)) => ListItem(te(K:K[N:Nat +Nat 1], T:KResult)))
+			(next ListItem(te(K:K[N:Nat], T:KResult)) => ListItem(te(K:K[N:Nat +Int 1], T:KResult)))
 			ListItem(te(K:K, t(_, arrayType(_, Len:Nat))))
 		...</ currentSubObject >
-		when Len:Nat >Nat N:Nat +Nat 1
+		when Len:Nat >Int N:Nat +Int 1
 		[structural] 
 	rule [init-next-array-element-done]:
 		< currentSubObject >
 			next (ListItem(te(K:K[N:Nat], T:KResult)) => .List) ListItem(te(K:K, t(_, arrayType(_, Len:Nat))))
 		...</ currentSubObject >
-		when notBool Len:Nat >Nat N:Nat +Nat 1
+		when notBool Len:Nat >Int N:Nat +Int 1
 		[structural] 
 	
 	rule [init-next-incomplete-array-element]:
 		< currentSubObject >
-			(next ListItem(te(K:K[N:Nat], T:KResult)) => ListItem(te(K:K[N:Nat +Nat 1], T:KResult))) 
+			(next ListItem(te(K:K[N:Nat], T:KResult)) => ListItem(te(K:K[N:Nat +Int 1], T:KResult))) 
 			ListItem(te(K:K, t(_, incompleteArrayType(_))))
 		...</ currentSubObject >
 		[structural] 
@@ -849,7 +849,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	declare getTopArrayUse : K -> Nat 
 	define getTopArrayUse(X:Id) => 0 [structural]
-	define getTopArrayUse(X:Id[N:Nat]) => N:Nat +Nat 1 [structural] // +1 for length instead of index
+	define getTopArrayUse(X:Id[N:Nat]) => N:Nat +Int 1 [structural] // +1 for length instead of index
 	define getTopArrayUse(K:K . F:Id) => getTopArrayUse(K:K) [structural]
 	define getTopArrayUse((K:K[N:Nat])[_]) => getTopArrayUse(K:K[N:Nat]) [structural]
 	define getTopArrayUse((K:K . F:Id)[_]) => getTopArrayUse(K:K) [structural]
@@ -864,7 +864,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	rule
 		< k > T':KResult ~> initializeSingleInit(K':K) => . ...</ k >
 		< currentSubObject > (.List => next) ListItem(te(K:K, T:KResult)) ...</ currentSubObject >
-		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
+		< incompleteLength > N:Nat => maxInt(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
 		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) ~> possiblyMakeConst(T:KResult, K:K) </ savedInitialization >
 		when (isBasicType(T:KResult) orBool hasPointerType(T:KResult) orBool hasBitfieldType(T:KResult))
 		andBool notBool hasStructType(T':KResult)
@@ -912,7 +912,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 			=> .K
 		...</ k >
 		< currentSubObject > findStruct(t(_, structType(S:Id))) ListItem(te(K:K, t(_, structType(S:Id)))) => next ...</ currentSubObject >
-		< incompleteLength > N:Nat => maxNat(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
+		< incompleteLength > N:Nat => maxInt(N:Nat, getTopArrayUse(K:K)) </ incompleteLength >
 		< savedInitialization >... .K => Computation(AllowWrite(K:K) := K':K) </ savedInitialization > 
 		[structural] 
 	

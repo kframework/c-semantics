@@ -67,7 +67,7 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	
 	rule
 		< k > giveType(X:Id, T:KResult) => 
-			if (Fun:Id ==K File-Scope) then giveGlobalType(X:Id, unqualifyType(T:KResult)) else giveLocalType(X:Id, unqualifyType(T:KResult)) fi
+			#if (Fun:Id ==K File-Scope) #then giveGlobalType(X:Id, unqualifyType(T:KResult)) #else giveLocalType(X:Id, unqualifyType(T:KResult)) #fi
 			...</ k >
 		< currentFunction > Fun:Id </ currentFunction >
 		// when notBool hasStaticType(T:KResult)
@@ -329,7 +329,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, _)))) ...</ k >
-		< freshNat > N:Nat => N:Nat +Nat 1 </ freshNat >
+		< freshNat > N:Nat => N:Nat +Int 1 </ freshNat >
 		when L:KLabel ==KLabel 'StructDef
 		orBool L:KLabel ==KLabel 'EnumDef
 		orBool L:KLabel ==KLabel 'UnionDef
@@ -454,7 +454,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	// fixme, throwing away specifier
 	rule ArrayType(T:KResult, tv(N:Nat, _), _) 
 		=> pushTypeDown(T:KResult, makeArrayType(N:Nat)) 
-		when N:Nat >Nat 0
+		when N:Nat >Int 0
 		[structural anywhere]
 	rule ArrayType(T:KResult, emptyValue, _) => pushTypeDown(T:KResult, makeIncompleteArrayType) [structural anywhere]
 	rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural anywhere]
@@ -496,7 +496,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		when X:Id =/=K #NoName
 		[structural]
 	define giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
-		=> typedDeclaration(T:KResult, #NoName(N:Nat)),, giveNamesToArgs-aux(N:Nat +Nat 1, L:List{KResult})
+		=> typedDeclaration(T:KResult, #NoName(N:Nat)),, giveNamesToArgs-aux(N:Nat +Int 1, L:List{KResult})
 		when X:Id ==K #NoName
 		[structural]
 	define giveNamesToArgs-aux(_:Nat, t(.Set, variadic))
@@ -534,11 +534,11 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	define fillUnionBitHoles-aux(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id),, L:List{KResult})) 
 			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id)
-			,, fillUnionBitHoles-aux(maxNat(N:Nat, N':Nat), L:List{KResult})
+			,, fillUnionBitHoles-aux(maxInt(N:Nat, N':Nat), L:List{KResult})
 		[structural]
 	define fillUnionBitHoles-aux(N:Nat, .List{K}) 
 		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), NEARESTMULT)), #NoName)
-		where NEARESTMULT = N:Nat +Nat (absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)
+		where NEARESTMULT = N:Nat +Int (absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)
 		[structural]
 	
 	declare fillBitHoles : List{KResult} -> List{KResult} 
@@ -563,7 +563,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	// if we have seen bitfields
 	define [fillBitHoles-aux-not-bitfield]:
 		fillBitHoles-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
 			,, fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
 		when notBool hasBitfieldType(T:KResult) 
 		[structural]
@@ -571,26 +571,26 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define [fillBitHoles-aux-bitfield-normal]:
 		fillBitHoles-aux(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id),, L:List{KResult})) 
 			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id)
-			,, fillBitHoles-aux(N:Nat +Nat N':Nat, L:List{KResult})
+			,, fillBitHoles-aux(N:Nat +Int N':Nat, L:List{KResult})
 		when N':Nat =/=Int 0 
 		[structural]
 		
 	define [fillBitHoles-bitfield-zero]:
 		fillBitHoles-aux(N:Nat, (typedDeclaration(t(_, bitfieldType(T:KResult, N':Nat)), _:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName)
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
 			,, fillBitHoles(L:List{KResult})
 		when N':Nat ==Int 0
 		[structural]
 	
 	define [fillBitHoles-done]:
 		fillBitHoles-aux(N:Nat, .List{K}) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Nat numBitsPerByte)) %Nat numBitsPerByte)), #NoName) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName) 
 		[structural]
 
 	
 	rule typedDeclaration(t(_, bitfieldType(_, N:Nat)), #NoName)
 		,, typedDeclaration(t(_, bitfieldType(_, N':Nat)), #NoName) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Nat +Nat N':Nat)), #NoName) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Nat +Int N':Nat)), #NoName) 
 		[structural anywhere]
 	
 	// fixme chould check for some struct contraints here
@@ -729,10 +729,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	// c99 6.4.5
 	rule
-		< type > Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Nat 1)) ...</ type >
+		< type > Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) ...</ type >
 		[structural]
 	rule
-		< type > Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Nat 1)) ...</ type >
+		< type > Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) ...</ type >
 		[structural]
 		
 	rule
@@ -954,11 +954,11 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule
 		< k > addStruct-aux(S:Id, .List{K}, _, Types:Map, Offsets:Map, L:List{KResult}) 
-			=> if (F:Id ==K File-Scope) then 
+			=> #if (F:Id ==K File-Scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
-			else
+			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
-			fi
+			#fi
 		...</ k >
 		< currentFunction > F:Id </ currentFunction >
 		[structural]		
@@ -982,11 +982,11 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule
 		< k > addUnion-aux(S:Id, .List{K}, Types:Map, Offsets:Map, L:List{KResult}) 
-			=> if (F:Id ==K File-Scope) then 
+			=> #if (F:Id ==K File-Scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
-			else
+			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
-			fi
+			#fi
 		...</ k >
 		< currentFunction > F:Id </ currentFunction >
 		[structural]
@@ -1092,7 +1092,7 @@ kmod COMMON-C-TYPING is
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		[structural]
 		
-	define [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => if (K:K ==K Extern) then (true) else (hasExternType(T:KResult)) fi 
+	define [hasExternType-qualified]: hasExternType(t(_, qualifiedType(T:KResult, K:K))) => #if (K:K ==K Extern) #then (true) #else (hasExternType(T:KResult)) #fi 
 		[structural]
 	define [hasExternType-false]: hasExternType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
@@ -1100,7 +1100,7 @@ kmod COMMON-C-TYPING is
 		
 	define [hasStaticType-qualified]: 
 		hasStaticType(t(_, qualifiedType(T:KResult, K:K))) 
-			=> if (K:K ==K Static) then (true) else (hasStaticType(T:KResult)) fi
+			=> #if (K:K ==K Static) #then (true) #else (hasStaticType(T:KResult)) #fi
 		[structural]
 	define [hasStaticType-false]: hasStaticType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 

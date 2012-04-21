@@ -410,7 +410,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< stringLiterals >
 			M:Map
-			(.Map => S:String |-> lv(Loc:Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Nat 1))))
+			(.Map => S:String |-> lv(Loc:Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1))))
 		</ stringLiterals >
 		when notBool($hasMapping(M:Map, S:String))
 		[structural]
@@ -423,7 +423,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
 		< stringLiterals >
 			M:Map
-			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Nat 1))))
+			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Int 1))))
 		</ stringLiterals >
 		when notBool($hasMapping(M:Map, wstring(S:List{K})))
 		[structural]
@@ -486,21 +486,21 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	rule [create-internal-value]: < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
 		[structural] // for internal computations
 		
-	declare withinRange : Int SimpleType -> #Bool
+	declare withinRange : Int SimpleType -> Bool
 	define withinRange(I:Int, T:K) => (I:Int <=Int max(t(.Set, T:K))) andBool (I:Int >=Int min(t(.Set, T:K))) [structural]
 	
 	rule NoSuffix(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, int) then tv(I:Int, t(.Set, int)) else
-		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		#if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
+		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi fi
+		#fi #fi #fi
 		[structural anywhere]
 		
 	declare simplifyForHex : String -> String
 	define simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
 		when firstChar(S:String) ==String "0"
-		andBool lengthString(S:String) >Nat 1
+		andBool lengthString(S:String) >Int 1
 		[structural]
 	define simplifyForHex(S:String) => S:String
 		when firstChar(S:String) =/=String "0"
@@ -513,82 +513,82 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	rule OctalConstant(N:Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) [structural anywhere] // truncRat is just for sorts
 	
 	rule NoSuffix(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, int) then tv(I:Int, t(.Set, int)) else
-		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
-		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
+		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
+		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi fi fi fi fi
+		#fi #fi #fi #fi #fi #fi
 		[structural anywhere]
 
 	rule U(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi fi
+		#fi #fi #fi
 		[structural anywhere]
 		
 	rule L(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi fi fi
+		#fi #fi #fi #fi
 		[structural anywhere]
 		
 	rule UL(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi
+		#fi #fi
 		[structural anywhere]
 		
 	rule LL(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi
+		#fi #fi
 		[structural anywhere]
 	
 	rule ULL(hexOrOctalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi
+		#fi
 		[structural anywhere]
 		
 		
 	rule U(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-int) then tv(I:Int, t(.Set, unsigned-int)) else
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi fi
+		#fi #fi #fi
 		[structural anywhere]
 	rule L(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, long-int) then tv(I:Int, t(.Set, long-int)) else
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi
+		#fi #fi
 		[structural anywhere]
 	rule UL(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-long-int) then tv(I:Int, t(.Set, unsigned-long-int)) else
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi fi		
+		#fi #fi		
 		[structural anywhere]
 	rule LL(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, long-long-int) then tv(I:Int, t(.Set, long-long-int)) else
+		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi
+		#fi
 		[structural anywhere]
 	rule ULL(DecimalConstant(I:Int)) =>
-		if withinRange(I:Int, unsigned-long-long-int) then tv(I:Int, t(.Set, unsigned-long-long-int)) else
+		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
-		fi
+		#fi
 		[structural anywhere]
 	
 	/*@ \source[n1570]{\para{6.4.4.2}{4}}
@@ -753,8 +753,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	Each of the operators \cinline{<} (less than), \cinline{>} (greater than), \cinline{<=} (less than or equal to), and \cinline{>=} (greater than or equal to) shall yield 1 if the specified relation is true and 0 if it is false. The result has type \cinline{int}.
 	*/
 	
-	declare makeTruth : #Bool -> K
-	define makeTruth(B:#Bool) => if B:#Bool then tv(1, t(.Set, int)) else tv(0, t(.Set, int)) fi [structural]
+	declare makeTruth : Bool -> K
+	define makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi [structural]
 	
 	rule tv(I1:Int, T:KResult) < tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int <Int I2:Int)
@@ -796,19 +796,19 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	//- comparison of pointers
 	// fixme could check 6.5.8:2
 	// fixme there are further restrictions on pointers
-	rule [ptr-compare-lt]: tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) < tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult)
+	rule [ptr-compare-lt]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) < tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
 			=> makeTruth(Offset:Nat <Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-lte]: tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) <= tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult)
+	rule [ptr-compare-lte]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) <= tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
 			=> makeTruth(Offset:Nat <=Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gt]: tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) > tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult)
+	rule [ptr-compare-gt]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) > tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
 			=> makeTruth(Offset:Nat >Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gte]: tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) >= tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult)
+	rule [ptr-compare-gte]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) >= tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
 			=> makeTruth(Offset:Nat >=Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
@@ -832,10 +832,10 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 		
-	op isUnknown : K -> #Bool
+	op isUnknown : K -> Bool
 	rule [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true [structural]
-	rule [isUnknown-ptr]: isUnknown(sym(_:Nat) +Nat _:Nat) => false [structural]
-	//rule [isUnknown-bito]: isUnknown(bito(_:Nat) +Nat _) => false [structural]
+	rule [isUnknown-ptr]: isUnknown(sym(_:Nat) +Int _:Nat) => false [structural]
+	//rule [isUnknown-bito]: isUnknown(bito(_:Nat) +Int _) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:Int) => false
 		when  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
@@ -876,12 +876,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
-	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) == tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult) 
+	rule < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) == tv(sym(Base:Nat) +Int Offset':Nat, T':KResult) 
 			=> makeTruth(Offset:Nat ==Int Offset':Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) != tv(sym(Base:Nat) +Nat Offset':Nat, T':KResult) 
+	rule < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) != tv(sym(Base:Nat) +Int Offset':Nat, T':KResult) 
 			=> makeTruth(Offset:Nat =/=Int Offset':Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
@@ -889,7 +889,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// next, they are part of different objects.  
 	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
-	rule [compare-eq-different-objects]: < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) == tv(sym(Base':Nat) +Nat Offset':Nat, T':KResult) 
+	rule [compare-eq-different-objects]: < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) == tv(sym(Base':Nat) +Int Offset':Nat, T':KResult) 
 			=> tv(0, t(.Set, int))
 		...</ k >
 		< mem >... 
@@ -898,10 +898,10 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:Nat =/=Int Base':Nat
-		andBool Offset:Nat <Nat Len:Nat
-		andBool Offset':Nat <Nat Len':Nat
+		andBool Offset:Nat <Int Len:Nat
+		andBool Offset':Nat <Int Len':Nat
 		[structural]
-	rule [compare-neq-different-objects]: < k > tv(sym(Base:Nat) +Nat Offset:Nat, T:KResult) != tv(sym(Base':Nat) +Nat Offset':Nat, T':KResult) 
+	rule [compare-neq-different-objects]: < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) != tv(sym(Base':Nat) +Int Offset':Nat, T':KResult) 
 			=> tv(1, t(.Set, int))
 		...</ k >
 		< mem >... 
@@ -910,8 +910,8 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:Nat =/=Int Base':Nat
-		andBool Offset:Nat <Nat Len:Nat
-		andBool Offset':Nat <Nat Len':Nat
+		andBool Offset:Nat <Int Len:Nat
+		andBool Offset':Nat <Int Len':Nat
 		[structural]
 	
 	// otherwise we can't conclude anything
@@ -1017,7 +1017,7 @@ second operand from the first.
 	define newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
 		=> t(.Set, pointerType(T:KResult))
 		
-	declare ifFromArrayInBounds : KResult Int -> #Bool
+	declare ifFromArrayInBounds : KResult Int -> Bool
 	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Nat)), pointerType(T:KResult)), I:Int)
 		=> true
 		when Offset:Int +Int I:Int <=Int Len:Nat
@@ -1037,7 +1037,7 @@ second operand from the first.
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:KResult))
 		[structural]
 	rule [pointer-difference]: 
-		computePointerDifference(sym(Block:Nat) +Nat Offset1:Nat, sym(Block:Nat) +Nat Offset2:Nat, tv(Size:Nat, _))
+		computePointerDifference(sym(Block:Nat) +Int Offset1:Nat, sym(Block:Nat) +Int Offset2:Nat, tv(Size:Nat, _))
 			=> tv(_-Int_(Offset1:Nat, Offset2:Nat) /Int Size:Nat, cfg:ptrdiffut)
 		when _-Int_(Offset1:Nat, Offset2:Nat) %Int Size:Nat ==Int 0
 		[structural]
@@ -1116,7 +1116,7 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 	// fixme tool bug, can't use L:KLabel
 	rule
 		< k > lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
-			=> lv(Loc:Nat +Nat bito(Offset:Nat), T:KResult)
+			=> lv(Loc:Nat +Int bito(Offset:Nat), T:KResult)
 		...</ k >
 		< structs >...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat))
@@ -1124,7 +1124,7 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 		[structural]
 	rule
 		< k > lv(Loc:Nat, t(_, unionType(S:Id))) . F:Id
-			=> lv(Loc:Nat +Nat bito(Offset:Nat), t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+			=> lv(Loc:Nat +Int bito(Offset:Nat), t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
 		...</ k >
 		< structs >...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Nat))

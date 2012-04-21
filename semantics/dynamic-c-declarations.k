@@ -137,7 +137,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	// c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized implicitly the same as objects that have static storage duration
 	rule
 		< k > initialize(X:Id, T:KResult, K:K)
-			=> if (F:Id ==K File-Scope) then zero(X:Id) else (.) fi 
+			=> #if (F:Id ==K File-Scope) #then zero(X:Id) #else (.) #fi 
 			~> K:K
 			~> sequencePoint
 		...</ k >

@@ -20,25 +20,25 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
-	// op _==K_ : K K -> #Bool
-	// op _==Int_ : K K -> #Bool
-	// op _==Float_ : K K -> #Bool
-	// op _==String_ : K K -> #Bool
-	// op _==Bag_ : Bag Bag -> #Bool
-	// op _==List_ : List List -> #Bool
-	// op _==CellLabel_ : CellLabel CellLabel -> #Bool
-	// op _==List{K}_ : List{K} List{K} -> #Bool
-	// op _==KLabel_ : KLabel KLabel -> #Bool
+	// op _==K_ : K K -> Bool
+	// op _==Int_ : K K -> Bool
+	// op _==Float_ : K K -> Bool
+	// op _==String_ : K K -> Bool
+	// op _==Bag_ : Bag Bag -> Bool
+	// op _==List_ : List List -> Bool
+	// op _==CellLabel_ : CellLabel CellLabel -> Bool
+	// op _==List{K}_ : List{K} List{K} -> Bool
+	// op _==KLabel_ : KLabel KLabel -> Bool
 	
-	// op _=/=K_ : K K -> #Bool
-	// op _=/=Int_ : K K -> #Bool
-	// op _=/=Float_ : K K -> #Bool
-	// op _=/=String_ : K K -> #Bool
-	// op _=/=Bag_ : Bag Bag -> #Bool
-	// op _=/=List_ : List List -> #Bool
-	// op _=/=CellLabel_ : CellLabel CellLabel -> #Bool
-	// op _=/=List{K}_ : List{K} List{K} -> #Bool
-	// op _=/=KLabel_ : KLabel KLabel -> #Bool
+	// op _=/=K_ : K K -> Bool
+	// op _=/=Int_ : K K -> Bool
+	// op _=/=Float_ : K K -> Bool
+	// op _=/=String_ : K K -> Bool
+	// op _=/=Bag_ : Bag Bag -> Bool
+	// op _=/=List_ : List List -> Bool
+	// op _=/=CellLabel_ : CellLabel CellLabel -> Bool
+	// op _=/=List{K}_ : List{K} List{K} -> Bool
+	// op _=/=KLabel_ : KLabel KLabel -> Bool
 	
 	// rule K1:K ==K K2:K => K1:K ==Bool K2:K [anywhere]
 	// rule I1:Int ==Int I2:Int => I1:Int ==Bool I2:Int [anywhere]
@@ -71,7 +71,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op typedDeclaration : Type Id -> Type // would rather this be KResult, but can't get the subsorting to work
 	
 	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-	op isAType_ : K -> #Bool 
+	op isAType_ : K -> Bool 
 	op setOfTypes : -> Set // [memo] 
 	
 	op usualArithmeticConversion : Type Type -> K
@@ -149,10 +149,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op write : K K -> K [metadata "strict=(2)"] // location, value
 	op writeByte : Nat K -> K 
 
-	declare isTypeCompatible : K K -> #Bool 
+	declare isTypeCompatible : K K -> Bool 
 	
-	declare hasBeenPromoted : Type -> #Bool
-	// op isPromotedInteger : Type -> #Bool
+	declare hasBeenPromoted : Type -> Bool
+	// op isPromotedInteger : Type -> Bool
 	
 	
 	op bitloc : Nat Nat Nat -> Nat 
@@ -175,7 +175,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op UnknownCabsLoc : -> K 
 	
 	
-	op assert : #Bool Nat -> K // check, error#
+	op assert : Bool Nat -> K // check, error#
 	
 	sort SimpleType 
 	subsort SimpleType < K
@@ -196,7 +196,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	tv(5, T:KResult)
 	*/
 	
-	op isBasicType : K -> #Bool
+	op isBasicType : K -> Bool
 	
 	// Composite types
 	op enumType : Id -> SimpleType // [ctor] 
@@ -227,7 +227,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op bitsToBytes : K -> Nat 
 	// op MYHOLE : -> Expression 
 	op l : KLabel -> K [metadata "wrapper=(builtin)"] 
-	declare _contains_ : Set K -> #Bool // [memo] 
+	declare _contains_ : Set K -> Bool // [memo] 
 	
 	op getModifiers : K -> Set
 	
@@ -270,10 +270,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// op integerTypes : -> Set // [memo] 
 	op unsignedIntegerTypes : -> Set // [memo] 
 	op signedIntegerTypes : -> Set // [memo] 
-	declare hasIntegerType : Type -> #Bool // [memo] 
-	declare hasFloatType : Type -> #Bool // [memo] 
-	declare hasUnsignedIntegerType : Type -> #Bool // [memo] 
-	declare hasSignedIntegerType : Type -> #Bool // [memo] 
+	declare hasIntegerType : Type -> Bool // [memo] 
+	declare hasFloatType : Type -> Bool // [memo] 
+	declare hasUnsignedIntegerType : Type -> Bool // [memo] 
+	declare hasSignedIntegerType : Type -> Bool // [memo] 
 	
 	op typeof : K -> K 
 	op writeToFD : Nat Nat -> K 
@@ -283,32 +283,32 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op calculateGotoMap : Id K -> K 
 	
-	declare hasCharType : Type -> #Bool 
-	declare hasWCharType : Type -> #Bool 
+	declare hasCharType : Type -> Bool 
+	declare hasWCharType : Type -> Bool 
 	// fixme make sure i use this everywhere instead of T:BaseType
-	// op isABaseType_ : K -> #Bool 
-	declare hasPointerType : Type -> #Bool 
-	declare hasArrayType : Type -> #Bool 
-	declare hasBoolType : Type -> #Bool 
-	declare hasStructType : Type -> #Bool 
-	declare hasUnionType : Type -> #Bool 
-	declare hasAggregateType : Type -> #Bool 
-	declare hasFunctionType : Type -> #Bool 
-	declare hasFunctionPointerType : Type -> #Bool 
-	declare hasBitfieldType : Type -> #Bool 
-	declare hasExternType : Type -> #Bool 
-	declare hasStaticType : Type -> #Bool 
-	declare hasConstType : Type -> #Bool
-	declare hasIncompleteType : Type -> #Bool 
-	// op hasTypedefType : Type -> #Bool 
-	declare hasArithmeticType : Type -> #Bool
+	// op isABaseType_ : K -> Bool 
+	declare hasPointerType : Type -> Bool 
+	declare hasArrayType : Type -> Bool 
+	declare hasBoolType : Type -> Bool 
+	declare hasStructType : Type -> Bool 
+	declare hasUnionType : Type -> Bool 
+	declare hasAggregateType : Type -> Bool 
+	declare hasFunctionType : Type -> Bool 
+	declare hasFunctionPointerType : Type -> Bool 
+	declare hasBitfieldType : Type -> Bool 
+	declare hasExternType : Type -> Bool 
+	declare hasStaticType : Type -> Bool 
+	declare hasConstType : Type -> Bool
+	declare hasIncompleteType : Type -> Bool 
+	// op hasTypedefType : Type -> Bool 
+	declare hasArithmeticType : Type -> Bool
 	
 	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
 	declare getFieldOffset : Id K -> Nat // these expect an aggregateInfo term as second argument
 	declare getFieldType : Id K -> Type
 	
-	declare isArithBinConversionOp : KLabel -> #Bool 
-	declare isArithUnaryOp : KLabel -> #Bool 
+	declare isArithBinConversionOp : KLabel -> Bool 
+	declare isArithUnaryOp : KLabel -> Bool 
 	op kpair : K K -> K 
 	declare promote : K -> Type // should be K, but is Type for efficiency reasons
 	declare argPromote : K -> K
@@ -333,8 +333,8 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op deleteBlock : Nat -> K // deletes the base object from memory, given a location
 	op deleteSizedBlock : Nat Nat -> K // deletes the base object from memory, given a location and it size (as a check)
 	
-	declare isConcreteNumber : Int -> #Bool 
-	declare _in_ : K List -> #Bool 
+	declare isConcreteNumber : Int -> Bool 
+	declare _in_ : K List -> Bool 
 endkm
 
 kmod COMMON-C-SETTINGS is
@@ -439,9 +439,9 @@ kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
 	
-	rule inc(sym(N:Nat) +Nat M:Nat) => sym(N:Nat +Nat 1) +Nat M:Nat [structural anywhere]
-	rule I:Int +Int (N:Nat +Nat sym(M:Nat))
-		=> absInt(N:Nat +Int I:Int) +Nat sym(M:Nat) 
+	rule inc(sym(N:Nat) +Int M:Nat) => sym(N:Nat +Int 1) +Int M:Nat [structural anywhere]
+	rule I:Int +Int (N:Nat +Int sym(M:Nat))
+		=> absInt(N:Nat +Int I:Int) +Int sym(M:Nat) 
 		when N:Nat +Int I:Int >=Int 0 
 		[structural anywhere]
 
@@ -474,8 +474,8 @@ kmod COMMON-C-SEMANTICS-MISC is
 		
 	rule AttributeWrapper(K:K, _) => K:K [structural anywhere]
 	
-	rule N:Nat +Nat bito(M:Nat) => N:Nat +Nat (M:Nat /Nat numBitsPerByte) +Nat bito(M:Nat %Nat numBitsPerByte)
-		when M:Nat >=Nat numBitsPerByte 
+	rule N:Nat +Int bito(M:Nat) => N:Nat +Int (M:Nat /Int numBitsPerByte) +Int bito(M:Nat %Int numBitsPerByte)
+		when M:Nat >=Int numBitsPerByte 
 		[structural anywhere]
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]

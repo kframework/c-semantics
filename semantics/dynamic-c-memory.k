@@ -23,7 +23,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	op extractBitsFromMem : Nat Nat -> K // loc, size in bits
 	op extractByteFromMem : Nat -> K 
 	declare getBitOffset : Nat -> Nat 
-	define getBitOffset(_:Nat +Nat bito(M:Nat)) => M:Nat [structural]
+	define getBitOffset(_:Nat +Int bito(M:Nat)) => M:Nat [structural]
 	// fixme owise!!!!
 	eq getBitOffset(_:Nat) = 0 [owise]
 	
@@ -62,14 +62,14 @@ kmod DYNAMIC-SEMANTICS-READING is
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
 	rule [read-thread-local]:
-		< k > ('read-aux => 'readActual)(sym(threadId(Id:Nat) +Nat _:Nat) +Nat _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(Id:Nat) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
 		<threadId> Id:Nat </threadId>
 		[structural ndlocal]
 	rule [read-shared]: // read global or shared data
-		< k > ('read-aux => 'readActual)(sym(threadId(0) +Nat _:Nat) +Nat _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(0) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
 		[computational ndlocal]
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Nat _:Nat) +Nat _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
 		[computational ndlocal]
 	
 	rule [read]:
@@ -125,7 +125,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural]
 	// fixme sNat
 	rule < k > joinPointerBytes-aux(T:KResult, (piece(subObject(N:Nat, sNatEnd:Nat, sNatEnd:Nat), Len:Nat),, L:List{K}), subObject(N:Nat, 0, End:Nat))
-			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:Nat, 0, End:Nat +Nat 1))
+			=> joinPointerBytes-aux(T:KResult, L:List{K}, subObject(N:Nat, 0, End:Nat +Int 1))
 		...</ k >
 		when Len:Nat ==Int numBitsPerByte
 		andBool sNatEnd:Nat ==Int End:Nat +Int 1
@@ -163,30 +163,30 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	rule [joinIntegerBytes-step]:
 		joinIntegerBytes-aux(T:KResult, (L:List{K},, piece(N:Nat, Len:Nat)), piece(N':Nat, Len':Nat))
-			=> joinIntegerBytes-aux(T:KResult, L:List{K}, piece(_bit::_(piece(N':Nat, Len':Nat), piece(N:Nat, Len:Nat)), Len:Nat +Nat Len':Nat))
-		when N':Nat >=Nat 0 // guard is here to make sure it's an actual piece
+			=> joinIntegerBytes-aux(T:KResult, L:List{K}, piece(_bit::_(piece(N':Nat, Len':Nat), piece(N:Nat, Len:Nat)), Len:Nat +Int Len':Nat))
+		when N':Nat >=Int 0 // guard is here to make sure it's an actual piece
 		[structural]
 	rule [joinIntegerBytes-done]:
 		joinIntegerBytes-aux(T:KResult, .List{K}, piece(N:Nat, Len:Nat)) 
 			=> interpret(T:KResult, piece(N:Nat, Len:Nat)) 
-		when N:Nat >=Nat 0 // guard is here to make sure it's an actual piece
+		when N:Nat >=Int 0 // guard is here to make sure it's an actual piece
 		[structural]
 	
-	rule floorLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat) => sym(N:Nat) +Nat R:Nat [structural]
+	rule floorLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat) => sym(N:Nat) +Int R:Nat [structural]
 	// fixme owise!!!
-	eq floorLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
+	eq floorLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
 	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [structural]
-	rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Nat bito(M:Nat) +Nat R:Nat)
-		=> sym(N:Nat) +Nat absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Nat R:Nat
+	rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
+		=> sym(N:Nat) +Int absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Int R:Nat
 		[structural]
 	// fixme owise!!!
-	eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Nat R:Nat) = sym(N:Nat) +Nat R:Nat [owise] 
+	eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
 	rule
 		< k > extractBitsFromMem(Loc:Nat, Size:Nat)
 			=> extractBitsFromList(
-				extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(Size:Nat +Nat getBitOffset(Loc:Nat)))
+				extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(Size:Nat +Int getBitOffset(Loc:Nat)))
 				, getBitOffset(Loc:Nat)
 				, Size:Nat
 			)
@@ -207,7 +207,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule
 		< k > extractBytesFromMem-aux(Loc:Nat, Size:Nat, Aux:List{K})
 			=> extractByteFromMem(Loc:Nat)
-			~> extractBytesFromMem-aux(Loc:Nat +Nat 1, Size:Nat -Int 1, Aux:List{K})
+			~> extractBytesFromMem-aux(Loc:Nat +Int 1, Size:Nat -Int 1, Aux:List{K})
 		...</ k >
 		when Size:Nat >Int 0
 		[structural]
@@ -229,9 +229,9 @@ kmod DYNAMIC-SEMANTICS-READING is
 	// FIXME make sure it's a byte
 	
 	rule [read-byte-fast]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
-			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
-			~> assert(Offset:Nat <Nat Size:Nat, 2)
+		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat)
+			=> assert(notBool (sym(Block:Nat) +Int Offset:Nat) in Locs:Bag, 3)
+			~> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, (_ Offset:Nat |-> V:K)) ...</ mem >
@@ -239,27 +239,27 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< buffer > .List </ buffer >
 		[structural]
 	rule [read-byte]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat)
-			=> assert(notBool (sym(Block:Nat) +Nat Offset:Nat) in Locs:Bag, 3)
-			~> assert(Offset:Nat <Nat Size:Nat, 2)
+		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat)
+			=> assert(notBool (sym(Block:Nat) +Int Offset:Nat) in Locs:Bag, 3)
+			~> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, (_ Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
-		when notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
+		when notBool sym(Block:Nat) +Int Offset:Nat in locations(Mem:List)
 		[structural]
 		
 	rule [read-byte-lazy]:
-		< k > extractByteFromMem(sym(Block:Nat) +Nat Offset:Nat) 
-			=> assert(Offset:Nat <Nat Size:Nat, 2)
+		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat) 
+			=> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), t(.Set, no-type))
 		...</ k >
 		< mem >... 
 			Block:Nat |-> memblock(mlength(Size:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
 		...</ mem >
 		< buffer > Mem:List </ buffer >
-		when notBool sym(Block:Nat) +Nat Offset:Nat in locations(Mem:List)
+		when notBool sym(Block:Nat) +Int Offset:Nat in locations(Mem:List)
 		andBool notBool $hasMapping(M:Map, Offset:Nat)
 		[structural]
 		
@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 
 	rule [alloc-lazy]:
-		< k > alloc(sym(Block:Nat) +Nat 0, Len:Nat) => .K ...</ k >
+		< k > alloc(sym(Block:Nat) +Int 0, Len:Nat) => .K ...</ k >
 		< mem >... .Map => Block:Nat |-> memblock(mlength(Len:Nat), .Map) ...</ mem >
 		[structural]
 	
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	// fixme sNat this kind of rule might be very slow without matching on sNat (it's also ugly)
 	// rule [realloc-found]:
-		// < k > realloc-aux((sNat(N:Nat) => N:Nat), sym(OldBlock:Nat) +Nat 0, sym(NewBlock:Nat) +Nat 0, _, _)
+		// < k > realloc-aux((sNat(N:Nat) => N:Nat), sym(OldBlock:Nat) +Int 0, sym(NewBlock:Nat) +Int 0, _, _)
 		// ...</ k >
 		// < mem >... 
 			// OldBlock:Nat |-> memblock(_, (_ N:Nat |-> K:K))
@@ -317,7 +317,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		// ...</ mem >
 		// [structural]
 	rule [realloc-found]:
-		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Nat 0, sym(NewBlock:Nat) +Nat 0, _, _)
+		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Int 0, sym(NewBlock:Nat) +Int 0, _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:Nat |-> memblock(_, (_ N:Nat |-> K:K))
@@ -329,7 +329,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	// fixme sNat
 	rule [realloc-unfound]:
-		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Nat 0, sym(NewBlock:Nat) +Nat 0, _, _)
+		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Int 0, sym(NewBlock:Nat) +Int 0, _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:Nat |-> memblock(_, M:Map)
@@ -338,14 +338,14 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool sNatN:Nat >Int 0
 		[structural]
 	rule [realloc-0]:
-		< k > realloc-aux(0, sym(OldBlock:Nat) +Nat 0, _, OldLen:Nat, _)
-			=> deleteSizedBlock(sym(OldBlock:Nat) +Nat 0, OldLen:Nat) 
+		< k > realloc-aux(0, sym(OldBlock:Nat) +Int 0, _, OldLen:Nat, _)
+			=> deleteSizedBlock(sym(OldBlock:Nat) +Int 0, OldLen:Nat) 
 		...</ k >
 		[structural]	
 		
 	op writeBytes : Nat K -> K [metadata "strict=(2)"] 
 	op writeBitfield : Nat Type K -> K [metadata "strict=(3)"] 
-	declare isByteLoc : Nat -> #Bool 
+	declare isByteLoc : Nat -> Bool 
 	declare splitBytes : Value -> K 
 	declare calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
 	
@@ -365,26 +365,26 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
 		<threadId> Id:Nat </threadId>
-		where Loc = sym(threadId(Id:Nat) +Nat N:Nat) +Nat Offset:Nat
+		where Loc = sym(threadId(Id:Nat) +Int N:Nat) +Int Offset:Nat
 		[structural ndlocal]
 	rule [write]: // write global or shared data
 		< k > write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
-		where Loc = sym(threadId(0) +Nat N:Nat) +Nat Offset:Nat
+		where Loc = sym(threadId(0) +Int N:Nat) +Int Offset:Nat
 		[computational ndlocal]
 	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
-		where Loc = sym(threadId(allocatedDuration) +Nat N:Nat) +Nat Offset:Nat
+		where Loc = sym(threadId(allocatedDuration) +Int N:Nat) +Int Offset:Nat
 		[computational ndlocal]
 	
 	rule [write-normal]:
 		< k > write-specific(Loc:Nat, tv(V:K, T:KResult), bitSize:Nat)
 			=> writeBytes(Loc:Nat, splitBytes(tv(V:K, T:KResult)))
 		...</ k >
-		when bitSize:Nat %Nat numBitsPerByte ==Int 0
+		when bitSize:Nat %Int numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
@@ -404,12 +404,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> makeUnknown-aux(N:Nat, T:KResult, value(byteSizeofType(T:KResult))) 
 		[structural]
 	rule
-		< k > makeUnknown-aux(sym(Block:Nat) +Nat Offset:Nat, _, Len':Nat) => .K ...</ k >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Nat Len':Nat)])) ...</ mem >
-		when Len:Nat >=Nat Offset:Nat +Nat Len':Nat
+		< k > makeUnknown-aux(sym(Block:Nat) +Int Offset:Nat, _, Len':Nat) => .K ...</ k >
+		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Int Len':Nat)])) ...</ mem >
+		when Len:Nat >=Int Offset:Nat +Int Len':Nat
 		[structural]
 		
-	declare hasUnionMarker : Type -> #Bool
+	declare hasUnionMarker : Type -> Bool
 	define hasUnionMarker(t(SetItem(fromUnion(_:Id)) _, _)) => true [structural]
 	define hasUnionMarker(t(.Set, _)) => false [structural]
 	define hasUnionMarker(t(S:Set (SetItem(L:KLabel(_:List{K}))), K:K))
@@ -422,17 +422,17 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< k > write-specific(Loc:Nat, tv((V:K,, V':K,, L:List{K}), T:KResult), bitSize:Nat)
 			=> writeBytes(Loc:Nat, dataList((V:K,, V':K,, L:List{K})))
 		...</ k >
-		when bitSize:Nat %Nat numBitsPerByte ==Int 0
+		when bitSize:Nat %Int numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:Nat)
 		andBool notBool hasBitfieldType(T:KResult)
 		[structural]
 		
-	define bitoffset(_:Nat +Nat bito(N:Nat)) => N:Nat [structural]
+	define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat [structural]
 	// fixme owise!!!
 	eq bitoffset(_:Nat) = 0 [owise] 
 	
 	// fixme owise!!!
-	define byteoffset(N:Nat +Nat bito(_:Nat)) => N:Nat [structural]
+	define byteoffset(N:Nat +Int bito(_:Nat)) => N:Nat [structural]
 	eq byteoffset(N:Nat) = N:Nat [owise] 
 		
 	declare justBits : Int Type -> Value 
@@ -450,7 +450,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	// fixme sNat
 	define 
 		justBits-aux(N:Nat, t(_, bitfieldType(T:KResult, Len:Nat))) 
-			=> N:Nat +Nat (1 <<Nat K2Nat(Len:Nat -Int 1))
+			=> N:Nat +Int (1 <<Int K2Nat(Len:Nat -Int 1))
 		when Len:Nat >Int 0
 		[structural]
 	
@@ -458,7 +458,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< k > write-specific(Loc:Nat, tv(I:Int, T:KResult), bitSize:Nat)
 			=> write-specific(Loc:Nat, tv(justBits(I:Int, T:KResult), T:KResult), bitSize:Nat)
 		...</ k >
-		when (bitSize:Nat %Nat numBitsPerByte =/=Int 0
+		when (bitSize:Nat %Int numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:KResult))
 		andBool I:Int <Int 0
@@ -472,12 +472,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 				, calculateNewBytes(
 					bitoffset(Loc:Nat)
 					, piece(N:Nat, bitSize:Nat)
-					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Nat bitoffset(Loc:Nat))
+					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Int bitoffset(Loc:Nat))
 					)
 				)
 			)
 		...</ k >
-		when bitSize:Nat %Nat numBitsPerByte =/=Int 0
+		when bitSize:Nat %Int numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:Nat))
 		orBool hasBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
@@ -515,8 +515,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	define joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K})) [structural]
 	define joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, piece(M:Nat, 1),, L:List{K})), dataList(R:List{K}))
-		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), Len:Nat +Nat 1),, L:List{K})), dataList(R:List{K}))
-		when Len:Nat <Nat numBitsPerByte 
+		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), Len:Nat +Int 1),, L:List{K})), dataList(R:List{K}))
+		when Len:Nat <Int numBitsPerByte 
 		[structural]
 	define joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, L:List{K})), dataList(R:List{K}))
 		=> joinBitsToBytes-aux(dataList(L:List{K}), dataList((R:List{K},, piece(N:Nat, Len:Nat))))
@@ -540,15 +540,15 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define splinter(N:Nat, Len:Nat) => splinter-aux(N:Nat, Len:Nat, 0) [structural]
 	define splinter-aux(_:Nat, Len:Nat, Len:Nat) => .List{K} [structural]
 	define splinter-aux(N:Nat, Len:Nat, Pos:Nat)
-		=> splinter-aux(N:Nat, Len:Nat, Pos:Nat +Nat 1),, piece(bitRange(N:Nat, Pos:Nat, Pos:Nat), 1)
-		when Pos:Nat <Nat Len:Nat 
+		=> splinter-aux(N:Nat, Len:Nat, Pos:Nat +Int 1),, piece(bitRange(N:Nat, Pos:Nat, Pos:Nat), 1)
+		when Pos:Nat <Int Len:Nat 
 		[structural]
 	
 
 	rule
-		< k > writeBytes(sym(Block:Nat) +Nat Offset:Nat, dataList((V:K,, L:List{K})))
-			=> writeByte(sym(Block:Nat) +Nat Offset:Nat, V:K)
-			~> writeBytes(sym(Block:Nat) +Nat Offset:Nat +Nat 1, dataList(L:List{K}))
+		< k > writeBytes(sym(Block:Nat) +Int Offset:Nat, dataList((V:K,, L:List{K})))
+			=> writeByte(sym(Block:Nat) +Int Offset:Nat, V:K)
+			~> writeBytes(sym(Block:Nat) +Int Offset:Nat +Int 1, dataList(L:List{K}))
 		...</ k >
 		[structural]
 	rule [write-byte-buffer]:
@@ -558,17 +558,17 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
 		< notWritable > NotWritable:Map </notWritable>
 		when notBool LOC in Locs:Bag
-		andBool Offset:Nat <Nat Len:Nat
+		andBool Offset:Nat <Int Len:Nat
 		andBool notBool mconst in Attr:Bag
 		andBool notBool $hasMapping(NotWritable, LOC)
-		where LOC = sym(Block:Nat) +Nat Offset:Nat
+		where LOC = sym(Block:Nat) +Int Offset:Nat
 		[structural]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >
-		< buffer > (bwrite(sym(Block:Nat) +Nat Offset:Nat, V:K) => .List) ...</ buffer >
+		< buffer > (bwrite(sym(Block:Nat) +Int Offset:Nat, V:K) => .List) ...</ buffer >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
-		when Offset:Nat <Nat Len:Nat
+		when Offset:Nat <Int Len:Nat
 		[structural]
 	rule
 		< k > writeBytes(_:Nat, dataList(.List{K})) => .K ...</ k >
@@ -644,7 +644,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	define 
 		splitPointerBytes-aux(I:Int, T:KResult, Len:Nat, N:Nat, L:List{K})
-			=> splitPointerBytes-aux(I:Int, T:KResult, Len:Nat -Int 1, N:Nat +Nat 1, (L:List{K},, piece(subObject(I:Int, N:Nat, N:Nat), numBitsPerByte)))
+			=> splitPointerBytes-aux(I:Int, T:KResult, Len:Nat -Int 1, N:Nat +Int 1, (L:List{K},, piece(subObject(I:Int, N:Nat, N:Nat), numBitsPerByte)))
 		when Len:Nat >Int 0
 		[structural]
 	define splitPointerBytes-aux(_, _, 0, _, L:List{K}) 
@@ -674,9 +674,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	
 	declare byteMaskSet : -> Nat
-	define byteMaskSet => (2 ^Nat numBitsPerByte) -Int 1 [structural]
+	define byteMaskSet => (2 ^Int numBitsPerByte) -Int 1 [structural]
 		
-	define isByteLoc(_:Nat +Nat bito(_:Nat)) => false [structural]
+	define isByteLoc(_:Nat +Int bito(_:Nat)) => false [structural]
 	// fixme owise!!!
 	eq isByteLoc(_:Nat) = true [owise] 
 endkm
@@ -686,23 +686,23 @@ kmod DYNAMIC-C-MEMORY-MISC is
 
 	// used by calloc
 	rule
-		< k > zeroBlock(sym(Block:Nat) +Nat 0) => .K ...</ k >
+		< k > zeroBlock(sym(Block:Nat) +Int 0) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (_ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
 		[structural]
 		
 	rule
-		< k > sizeofLocation(sym(Block:Nat) +Nat _:Nat) => tv(Len:Nat, cfg:sizeut) ...</ k >
+		< k > sizeofLocation(sym(Block:Nat) +Int _:Nat) => tv(Len:Nat, cfg:sizeut) ...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
 		[structural]
 		
 	rule [delete-sized-block]:
-		< k > deleteSizedBlock(sym(Block:Nat) +Nat _:Nat, Len:Nat) => .K ...</ k >
+		< k > deleteSizedBlock(sym(Block:Nat) +Int _:Nat, Len:Nat) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) => .Map ...</ mem >
 		< buffer > .List </ buffer > // fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
 	rule [delete-block]:
-		< k > deleteBlock(sym(Block:Nat) +Nat _:Nat) => .K ...</ k >
+		< k > deleteBlock(sym(Block:Nat) +Int _:Nat) => .K ...</ k >
 		< mem >... Block:Nat |-> _ => .Map ...</ mem >
 		< buffer > .List </ buffer >
 		[structural] 
@@ -719,7 +719,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	rule [alloc-wstring]:
 		< k > allocWString(Loc:Nat, S:List{K})
-			=> allocateType(Loc:Nat, t(.Set, arrayType(cfg:wcharut, 4 *Nat lengthList{K}(S:List{K}))))
+			=> allocateType(Loc:Nat, t(.Set, arrayType(cfg:wcharut, 4 *Int lengthList{K}(S:List{K}))))
 			~> writeWString(Loc:Nat, S:List{K})
 			~> makeUnwritable(Loc:Nat)
 		...</ k >
@@ -731,11 +731,11 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	// fixme shouldn't need both of these
 	rule [makeUnwritable-subobject]:
-		< k > makeUnwritableSubObject(lv(sym(Base:Nat) +Nat Offset:Nat, _)) => . ...</ k >
-		< notWritable > M:Map => M:Map[1 / sym(Base:Nat) +Nat Offset:Nat] </ notWritable >
+		< k > makeUnwritableSubObject(lv(sym(Base:Nat) +Int Offset:Nat, _)) => . ...</ k >
+		< notWritable > M:Map => M:Map[1 / sym(Base:Nat) +Int Offset:Nat] </ notWritable >
 		[structural]
 	rule [makeUnwritable]:
-		< k > makeUnwritable(sym(Base:Nat) +Nat 0) => .K ...</ k >
+		< k > makeUnwritable(sym(Base:Nat) +Int 0) => .K ...</ k >
 		< mem >... Base:Nat |-> memblock((.Bag => mconst) _, _) ...</ mem >
 		[structural]
 
@@ -755,15 +755,15 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	// fixme could additionally use the type to check whether that type is valid for that pointer
 	rule [check-valid-loc]:
-		< k > checkValidLoc-aux(sym(BASE) +Nat Offset:Nat) => .K ...</ k >
+		< k > checkValidLoc-aux(sym(BASE) +Int Offset:Nat) => .K ...</ k >
 		< mem >... BASE |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
 		<threadId> MyThreadId:Nat </threadId>
 		when (PtrThreadId:Nat ==Int MyThreadId:Nat 
 			orBool PtrThreadId:Nat ==Int 0
 			orBool PtrThreadId:Nat ==Int allocatedDuration
 			) // my thread, global memory, or allocated (malloced) memory
-		andBool Offset:Nat <=Nat Len:Nat // we're allowed to address one past
-		where BASE = threadId(PtrThreadId:Nat) +Nat N:Nat
+		andBool Offset:Nat <=Int Len:Nat // we're allowed to address one past
+		where BASE = threadId(PtrThreadId:Nat) +Int N:Nat
 		[structural]
 endkm
 

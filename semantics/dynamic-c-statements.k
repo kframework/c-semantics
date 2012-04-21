@@ -95,7 +95,7 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		< k > (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (if Control:K =/=K emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K) ~> popLoop)
+			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K) ~> popLoop)
 		</ k >
 		@latex("\\kBR")
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
@@ -295,7 +295,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ListItem(CurrentBlock:Nat) ActualHistory:List </ blockHistory >
-		when ActualDepth:Nat +Nat 1 =/=Int TargetDepth:Nat
+		when ActualDepth:Nat +Int 1 =/=Int TargetDepth:Nat
 		[structural large] 
 		
 	rule
@@ -309,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		@latex("\\kBR")
 		< nestingDepth > ActualDepth:Nat </ nestingDepth >
 		< blockHistory > ActualHistory:List </ blockHistory > //  (. => ListItem(TargetBlock:Nat)) 
-		when ActualDepth:Nat +Nat 1 =/=Int TargetDepth:Nat
+		when ActualDepth:Nat +Int 1 =/=Int TargetDepth:Nat
 		[structural large] 
 	
 	//  We've made it to the block above the target
@@ -457,7 +457,7 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 			C:Bag
 			< localVariables > Vars:List => .List </ localVariables >
 			< localAddresses > Addresses:Set => .Set </ localAddresses >
-			< nestingDepth > N:Nat => N:Nat +Nat 1 </ nestingDepth >
+			< nestingDepth > N:Nat => N:Nat +Int 1 </ nestingDepth >
 		</ local >
 		< blockStack > .List 
 			=> ListItem(< stackFrame > C:Bag 

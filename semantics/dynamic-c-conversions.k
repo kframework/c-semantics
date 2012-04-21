@@ -18,7 +18,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		
 
 	// op arithConversion-int : KLabel K K -> K
-	declare isArithBinOp : KLabel -> #Bool 
+	declare isArithBinOp : KLabel -> Bool 
 
 	declare arithBinOps : -> Set // [memo] 
 	declare arithBinConversionOps : -> Set // [memo] 
@@ -35,16 +35,16 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	) [structural]
 	
 	define [checkArithBinOp]:
-		isArithBinOp(KL:KLabel) => if arithBinOps contains l(KL:KLabel) then true else false fi 
+		isArithBinOp(KL:KLabel) => #if arithBinOps contains l(KL:KLabel) #then true #else false #fi 
 		[structural]
 	define [checkArithBinConversionOp]:
-		isArithBinConversionOp(KL:KLabel) => if arithBinConversionOps contains l(KL:KLabel) then true else false fi [structural]
+		isArithBinConversionOp(KL:KLabel) => #if arithBinConversionOps contains l(KL:KLabel) #then true #else false #fi [structural]
 
 	declare arithUnaryOps : -> Set // [memo] 
 	define [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
 
 	define [checkArithUnaryOp]: 
-		isArithUnaryOp(KL:KLabel) => if arithUnaryOps contains l(KL:KLabel) then true else false fi [structural]
+		isArithUnaryOp(KL:KLabel) => #if arithUnaryOps contains l(KL:KLabel) #then true #else false #fi [structural]
 	
 	
 	define hasBeenPromoted(t(_, enumType(_:Id))) => true [structural]
@@ -208,7 +208,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		when rank(T':KResult) >=Int rank(T:KResult) 
 		[structural]
 
-	declare hasSameSignedness : Type Type -> #Bool // [memo]
+	declare hasSameSignedness : Type Type -> Bool // [memo]
 	define [hasSameSignedness]: 
 		hasSameSignedness(T:KResult, T':KResult)
 			=> (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
@@ -315,7 +315,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// fixme worried about qualifiers
 	define [cast-integer-to-bool]:
 		cast(t(S:Set, bool), tv(I:Int, T:KResult))
-			=> if I:Int ==Int 0 then tv(0, t(S:Set, bool)) else tv(1, t(S:Set, bool)) fi
+			=> #if I:Int ==Int 0 #then tv(0, t(S:Set, bool)) #else tv(1, t(S:Set, bool)) #fi
 		when hasIntegerType(T:KResult)
 		[structural]
 	define [cast-non-integer-to-bool]:
@@ -418,39 +418,39 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// choice
 	define [cast-sbitfield-of-huge]:
 		cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat))))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat)))))
+			=> cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat))))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat)))))
 		andBool hasIntegerType(T':KResult)
 		andBool hasSignedIntegerType(T:KResult)
 		[structural]
 	define [cast-schar-of-huge]:
 		cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, signed-char))))
+			=> cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, signed-char))))
 		andBool hasIntegerType(T':KResult)
 		[structural]
 	define [cast-sint-of-huge]:
 		cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, short-int))))
+			=> cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, short-int))))
 		andBool hasIntegerType(T':KResult)
 		[structural]
 	define [cast-int-of-huge]:
 		cast(t(S:Set, int), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, int)))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, int))))
+			=> cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, int))))
 		andBool hasIntegerType(T':KResult)
 		[structural]
 	define [cast-long-of-huge]:
 		cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, long-int))))
+			=> cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int))))
 		andBool hasIntegerType(T':KResult)
 		[structural]
 	define [cast-llong-of-huge]:
 		cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
-			=> cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Nat absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Nat absInt(numBits(t(S:Set, long-long-int))))
+			=> cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
+		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-long-int))))
 		andBool hasIntegerType(T':KResult)
 		[structural]
 		
@@ -458,18 +458,18 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		
 	define [cast-signed-of-small]:
 		cast(T:KResult, tv(I:Int, T':KResult))
-			=> tv(I:Int +Int (2 ^Nat absInt(numBits(T:KResult))), T:KResult)
+			=> tv(I:Int +Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
 		when I:Int <Int min(T:KResult)
-		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:KResult)))
+		andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasSignedIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool notBool hasBoolType (T:KResult)
 		[structural] 
 	define [cast-signed-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
-			=> tv(_-Int_(I:Int, (2 ^Nat absInt(numBits(T:KResult)))), T:KResult)
+			=> tv(_-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))), T:KResult)
 		when I:Int >Int max(T:KResult)
-		andBool absInt(I:Int) <=Int (2 ^Nat absInt(numBits(T:KResult)))
+		andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasSignedIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool notBool hasBoolType (T:KResult)
@@ -573,7 +573,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 	
 	define [interpret-start]:
 		interpret(T:KResult, piece(N:Nat, _:Nat)) => interpret-aux(T:KResult, N:Nat)
-		when N:Nat >=Nat 0 
+		when N:Nat >=Int 0 
 		[structural]
 	
 	define [interpret-done]:
@@ -582,10 +582,10 @@ kmod DYNAMIC-C-CONVERSIONS is
 		andBool hasIntegerType(T:KResult)
 		[structural] 
 	define [interpret-too-big]:
-		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, _-Int_(I:Int, (2 ^Nat absInt(numBits(T:KResult)))))
+		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))))
 		when I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T:KResult)
-		//andBool _-Int_(I:Int, (2 ^Nat absInt(numBits(T:KResult)))) >=Int min(T:KResult)
+		//andBool _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))) >=Int min(T:KResult)
 		[structural] 
 		
 	define [arithInterpret-done]:
@@ -625,7 +625,7 @@ kmod DYNAMIC-C-CONVERSIONS is
 		[structural] 
 	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Nat, T:KResult)) => tv(I:Int, T:KResult)
 		when hasSignedIntegerType(T:KResult)
-		// andBool I:Int <=Int (2 ^Nat absInt(numBits(T:KResult)))
+		// andBool I:Int <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool I:Int <=Int max(T:KResult)
 		andBool I:Int >=Int min(T:KResult)
 		[structural] 

@@ -50,8 +50,8 @@ kmod FIXED-WIDTH-SYNTAX is
 	op ssize : Nat -> NzNat
 	
 	macro umin(_) = 0
-	macro umax(N:Nat) = (2 ^Nat N:Nat) -Int 1
-	macro usize(N:Nat) = 2 ^Nat N:Nat
+	macro umax(N:Nat) = (2 ^Int N:Nat) -Int 1
+	macro usize(N:Nat) = 2 ^Int N:Nat
 endkm
 
 
@@ -59,31 +59,31 @@ kmod FIXED-UNSIGNED-ARITHMETIC is
 	including FIXED-WIDTH-SYNTAX
 	// rule [fixed-unsigned-addition-normal]:
 		// N:Nat +uInt[W:Nat] N':Nat => Result:Nat
-		// if Result:Nat <=Nat umax(W:Nat)
-		// where Result:Nat = (N:Nat +Nat N':Nat)
+		// if Result:Nat <=Int umax(W:Nat)
+		// where Result:Nat = (N:Nat +Int N':Nat)
 	// rule [fixed-unsigned-addition-overflow]:
-		// N:Nat +uInt[W:Nat] N':Nat => Result:Nat %Nat usize(W:Nat)
-		// if Result:Nat >Nat umax(W:Nat)
-		// where Result:Nat = (N:Nat +Nat N':Nat)
+		// N:Nat +uInt[W:Nat] N':Nat => Result:Nat %Int usize(W:Nat)
+		// if Result:Nat >Int umax(W:Nat)
+		// where Result:Nat = (N:Nat +Int N':Nat)
 		
 	// rule [fixed-unsigned-multiplication-normal]:
 		// N:Nat *uInt[W:Nat] N':Nat => Result:Nat
-		// if Result:Nat <=Nat umax(W:Nat)
-		// where Result:Nat = (N:Nat *Nat N':Nat)
+		// if Result:Nat <=Int umax(W:Nat)
+		// where Result:Nat = (N:Nat *Int N':Nat)
 	// rule [fixed-unsigned-multiplication-overflow]:
-		// N:Nat *uInt[W:Nat] N':Nat => Result:Nat %Nat usize(W:Nat)
-		// if Result:Nat >Nat umax(W:Nat)
-		// where Result:Nat = (N:Nat *Nat N':Nat)
+		// N:Nat *uInt[W:Nat] N':Nat => Result:Nat %Int usize(W:Nat)
+		// if Result:Nat >Int umax(W:Nat)
+		// where Result:Nat = (N:Nat *Int N':Nat)
 		
 	// rule [fixed-unsigned-division-normal]:
 		// N:Nat /uInt[W:Nat] N':NzNat => Result:Nat
-		// where Result:Nat = (N:Nat /Nat N':NzNat)
+		// where Result:Nat = (N:Nat /Int N':NzNat)
 	// rule [fixed-unsigned-division-divz]:
 		// _ /uInt[W:Nat] 0 => divideByZero
 		
 	// rule [fixed-unsigned-modulo-normal]:
 		// N:Nat %uInt[W:Nat] N':NzNat => Result:Nat
-		// where Result:Nat = (N:Nat %Nat N':NzNat)
+		// where Result:Nat = (N:Nat %Int N':NzNat)
 	// rule [fixed-unsigned-modulo-divz]:
 		// _ %uInt[W:Nat] 0 => divideByZero
 		
@@ -93,7 +93,7 @@ kmod FIXED-UNSIGNED-ARITHMETIC is
 		// where Result:Int = (N:Nat -Int N':Nat)
 	// rule [fixed-unsigned-subtraction-underflow]:
 		// N:Nat -uInt[W:Nat] N':Nat 
-		// => N:Nat +Nat usize(W:Nat) -uInt[W:Nat] N':Nat 
+		// => N:Nat +Int usize(W:Nat) -uInt[W:Nat] N':Nat 
 		// if Result:Int <Int umin(W:Nat)
 		// where Result:Int = (N:Nat -Int N':Nat)
 endkm
@@ -139,10 +139,10 @@ kmod FIXED-UNSIGNED-BITWISE is
 	
 	// rule [fixed-unsigned-bitwise-and]:
 		// N:Nat &uInt[W:Nat] N':Nat => Result:Nat
-		// where Result:Nat = (N:Nat &Nat N':Nat)
+		// where Result:Nat = (N:Nat &Int N':Nat)
 	// rule [fixed-unsigned-bitwise-or]:
 		// N:Nat |uInt[W:Nat] N':Nat => Result:Nat
-		// where Result:Nat = (N:Nat |Nat N':Nat)
+		// where Result:Nat = (N:Nat |Int N':Nat)
 	// rule [fixed-unsigned-bitwise-xor]:
 		// N:Nat ^uInt[W:Nat] N':Nat => Result:Nat
 		// where Result:Nat = (N:Nat xorNat N':Nat)
@@ -153,12 +153,12 @@ kmod FIXED-UNSIGNED-BITWISE is
 	// // can shift by signed or unsigned of any non-negative width
 	// rule [fixed-unsigned-shift-right]:
 		// N:Nat >>uInt[W:Nat] N':Nat => Result:Nat
-		// if N':Nat <Nat W:Nat
-		// where Result:Nat = (N:Nat >>Nat N':Nat)
+		// if N':Nat <Int W:Nat
+		// where Result:Nat = (N:Nat >>Int N':Nat)
 	// rule [fixed-unsigned-shift-left]:
 		// N:Nat <<uInt[W:Nat] N':Nat => Result:Nat
-		// if N':Nat <Nat W:Nat
-		// where Result:Nat = (N:Nat <<Nat N':Nat)
+		// if N':Nat <Int W:Nat
+		// where Result:Nat = (N:Nat <<Int N':Nat)
 
 endkm
 
@@ -181,11 +181,11 @@ kmod FIXED-SIGNED-BITWISE is
 	// // can shift by signed or unsigned of any non-negative width
 	// rule [fixed-signed-shift-right]:
 		// N:Int >>sInt[W:Nat] N':Nat => Result:Int
-		// if N':Nat <Nat W:Nat
+		// if N':Nat <Int W:Nat
 		// where Result:Int = (N:Int >>Int N':Nat)
 	// rule [fixed-signed-shift-left]:
 		// N:Int <<sInt[W:Nat] N':Nat => Result:Int
-		// if N':Nat <Nat W:Nat
+		// if N':Nat <Int W:Nat
 		// where Result:Int = (N:Int <<Int N':Nat)
 endkm
 
@@ -237,7 +237,7 @@ kmod FIXED-C-STYLE-TWOS-COMPLEMENT is
 	including FIXED-WIDTH-SYNTAX
 	
 	// rule [fixed-unsigned-negation-normal]:
-		// -uInt[W:Nat] N:Nat => absInt(Result:Int +Int usize(W:Nat)) %Nat usize(W:Nat)
+		// -uInt[W:Nat] N:Nat => absInt(Result:Int +Int usize(W:Nat)) %Int usize(W:Nat)
 		// where Result:Int = (-Int N:Nat)
 endkm
 	
@@ -245,9 +245,9 @@ kmod FIXED-C-STYLE is
 	including FIXED-C-STYLE-ARITHMETIC
 	including FIXED-C-STYLE-BITWISE
 	
-	macro smin(N:Nat) = -Int (2 ^Nat absInt(_-Int_(N:Nat, 1)))
-	macro smax(N:Nat) = (2 ^Nat absInt(N:Nat -Int 1)) -Int 1
-	macro ssize(N:Nat) = 2 ^Nat N:Nat
+	macro smin(N:Nat) = -Int (2 ^Int absInt(_-Int_(N:Nat, 1)))
+	macro smax(N:Nat) = (2 ^Int absInt(N:Nat -Int 1)) -Int 1
+	macro ssize(N:Nat) = 2 ^Int N:Nat
 endkm
 
 

@@ -1,16 +1,5 @@
 kmod COMMON-C-SYNTAX is
-	including #BOOL
-	including #EXT-BOOL
-	including #NAT
-	including #INT
-	including #RAT
-	including #FLOAT
-	including #STRING
-	including #CONVERSION
-	including #RANDOM
-	including #ID
-	including K
-	//including K-PROPER
+	// including K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
 	
 	tags ndlocal ndheat computational structural interpRule anywhere
 	
@@ -261,8 +250,8 @@ and decl_type =
 	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
 	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
 	op PointerType : K -> DeclType [metadata "strict=()"]
-	op Prototype : K K #Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
-	context Prototype(_, List((_:List{K},, HOLE,, _:List{K})), _:#Bool)
+	op Prototype : K K Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
+	context Prototype(_, List((_:List{K},, HOLE,, _:List{K})), _:Bool)
 	
 	op NotVariadic : -> K
 	op Variadic : -> K

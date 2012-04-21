@@ -57,7 +57,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< computation > BlockStatement(Block:K)
 			=> Block:K ~> popBlock
 		...</ computation >
-		< nestingDepthGoto > N:Nat => N:Nat +Nat 1 </ nestingDepthGoto >
+		< nestingDepthGoto > N:Nat => N:Nat +Int 1 </ nestingDepthGoto >
 		< blockHistoryGoto > ListItem(OldNum:Nat) ...</ blockHistoryGoto >
 		[structural] 
 	rule
@@ -158,13 +158,13 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 				< computationTail >
 					Computation(Post:K)
 					~> loopMarked
-					~> For(ForNum:Nat, Pre:K, (if Control:K =/=K emptyValue then Control:K else tv(1, t(.Set, int)) fi), Post:K, S:K)
+					~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K)
 					~> popLoop
 					~> K:K 
 					~> Tail:K 
 				</ computationTail >
 				B:Bag
-				< nestingDepthGoto > N:Nat +Nat 1 </ nestingDepthGoto >
+				< nestingDepthGoto > N:Nat +Int 1 </ nestingDepthGoto >
 				< blockHistoryGoto > ListItem(ForNum:Nat) ListItem(Num:Nat) OldBlockHistory:List </ blockHistoryGoto >
 				< loopStackGoto > ListItem(kpair(Num:Nat, (K:K ~> Tail:K))) OldLoopStack:List </ loopStackGoto >
 			</ gotoCalculation >

@@ -75,7 +75,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 			=> writeToFD(1, asciiCharString(firstChar(S:String)))
 			~> printString(butFirstChar(S:String))
 		...</ k >
-		when lengthString(S:String) >Nat 0
+		when lengthString(S:String) >Int 0
 		[structural]
 	rule
 		< k > printString("") => writeToFD(1, 10) ...</ k >
@@ -199,7 +199,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 					< continuation > K:K </ continuation >
 					C:Bag
 			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
-			=> ignoreLocals ~> if I:Int ==Int 0 then tv(1, t(.Set, int)) else tv(I:Int, t(.Set, int)) fi ~> K:K
+			=> ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
 		</ k >
 		< threadLocal >
 			_ => C:Bag
@@ -415,7 +415,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 			=> writeString(Dest:KResult, substrString(S:String, 0, Len:Nat -Int 1) +String "\0")
 			~> tv(lengthString(S:String), t(.Set, int))
 		...</ k >
-		when Len:Nat >Nat 0
+		when Len:Nat >Int 0
 		[structural]
 	rule [snprintf-done-0]:
 		< k > snprintf(formattedResult(S:String), _, 0)
@@ -812,7 +812,7 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 	// rule [printf-%c]:
 		// < k > printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, t(_, int)), V:KResult),, _))
 			// => writeToFD(1, C:Nat)
-			// ~> printf-aux(Len:Nat +Nat 1, Loc:Nat, V:KResult)
+			// ~> printf-aux(Len:Nat +Int 1, Loc:Nat, V:KResult)
 		// ...</ k >
 		// [structural]
 	rule [format-%c]:
@@ -931,8 +931,8 @@ The malloc function returns either a null pointer or a pointer to the allocated 
 			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
 		...</ k >
 		< malloced >... .Map => Loc |-> Len:Nat ...</ malloced >
-		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
-		where Loc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
+		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
+		where Loc = sym(threadId(allocatedDuration) +Int Fresh:Nat) +Int 0
 		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
@@ -954,9 +954,9 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
 		...</ k >
 		< malloced >... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</ malloced >
-		< freshNat > Fresh:Nat => Fresh:Nat +Nat 1 </ freshNat >
+		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
 		when OldLoc:Nat =/=Int NullPointer
-		where NewLoc = sym(threadId(allocatedDuration) +Nat Fresh:Nat) +Nat 0
+		where NewLoc = sym(threadId(allocatedDuration) +Int Fresh:Nat) +Int 0
 		[structural]
 	rule [realloc-null]:
 		< k > prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
@@ -967,7 +967,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 	op calloc-aux : -> K
 	rule [calloc]:
 		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, _),, tv(Size:Nat, _)))
-			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Nat Size:Nat, cfg:sizeut))
+			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Int Size:Nat, cfg:sizeut))
 			~> calloc-aux
 		...</ k >
 		[structural]
@@ -992,7 +992,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		< k > prepareBuiltin((Identifier("rand")), .List{K})
 			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(t(.Set, int)), t(.Set, int))
 		...</ k >
-		< randNat > Fresh:Nat => Fresh:Nat +Nat 1 </ randNat >
+		< randNat > Fresh:Nat => Fresh:Nat +Int 1 </ randNat >
 		[structural]
 		
 	rule [srand]:
@@ -1018,13 +1018,13 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 		
 	rule [strcpy-pre]:
 		< k > (.K => read(Src:Nat, t(.Set, char)))
-			~> strcpy(_, (Src:Nat => Src:Nat +Nat 1), _)
+			~> strcpy(_, (Src:Nat => Src:Nat +Int 1), _)
 		...</ k >
 		[structural]
 	
 	rule [strcpy-some]:
 		< k > (tv(I:Int, T:KResult) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:KResult)))
-			~> strcpy((Dest:Nat => Dest:Nat +Nat 1), _, _)
+			~> strcpy((Dest:Nat => Dest:Nat +Int 1), _, _)
 		...</ k >
 		when I:Int =/=Int 0
 		[structural]
@@ -1061,7 +1061,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</ k >
 		<threadId> MyId:Nat </threadId>
-		< nextThreadId > Fresh:Nat => Fresh:Nat +Nat 1 </ nextThreadId >
+		< nextThreadId > Fresh:Nat => Fresh:Nat +Int 1 </ nextThreadId >
 		[structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
@@ -1083,7 +1083,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		</ thread >
 		(.Bag =>
 		< thread >
-			< nextLoc > sym(threadId(ThreadId:Nat) +Nat 0) +Nat 0 </ nextLoc >
+			< nextLoc > sym(threadId(ThreadId:Nat) +Int 0) +Int 0 </ nextLoc >
 			< threadId > ThreadId:Nat </ threadId >
 			C:Bag
 			< k > Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </ k >

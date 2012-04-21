@@ -24,7 +24,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule [writeToFD-char]:
 		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
 		< fid > FD:Nat </ fid >
-		< buff > S:String => S:String +String charString(N:Nat %Nat 256) </ buff >
+		< buff > S:String => S:String +String charString(N:Nat %Int 256) </ buff >
 		[structural]
 	rule [writeToFD-string]:
 		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
@@ -188,7 +188,7 @@ If they are declared, the parameters to the main function shall obey the followi
 		[structural]
 	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := Constant(StringLiteral(S:String)))
-			~> incomingArguments-aux(L:List{K}, N:Nat +Nat 1)
+			~> incomingArguments-aux(L:List{K}, N:Nat +Int 1)
 		[structural]
 	rule incomingArguments-aux(.List{K}, N:Nat) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
@@ -204,9 +204,9 @@ If they are declared, the parameters to the main function shall obey the followi
 			< threads >
 				< thread >
 					< threadId > 1 </ threadId >
-					< nextLoc > sym(threadId(1) +Nat 0) +Nat 0 </ nextLoc >
+					< nextLoc > sym(threadId(1) +Int 0) +Int 0 </ nextLoc >
 					< k > klistToK(P:List{K})
-							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Nat 1), Specifier(List(.List{K}))))), NoInit))))
+							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
@@ -219,7 +219,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					...</threadLocal>
 				...</ thread >
 			</ threads >
-			<nextSharedLoc> sym(threadId(0) +Nat 0) +Nat 0 </nextSharedLoc>
+			<nextSharedLoc> sym(threadId(0) +Int 0) +Int 0 </nextSharedLoc>
 		...</ T >
 		< files >
 			<fileCommands> .K </fileCommands>
