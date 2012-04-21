@@ -177,8 +177,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 	eq floorLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
 	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [structural]
+	// fixme possible bug here with new builtins
+	// rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
+		// => sym(N:Nat) +Int absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Int R:Nat
+		// [structural]
 	rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
-		=> sym(N:Nat) +Int absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Int R:Nat
+		=> sym(N:Nat) +Int (M:Nat /Int numBitsPerByte) +Int R:Nat
 		[structural]
 	// fixme owise!!!
 	eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
@@ -303,7 +307,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule [realloc-start]:
 		< k > realloc(Old:K, New:K, OldLen:Nat, NewLen:Nat)
 			=> alloc(New:K, NewLen:Nat)
-			~> realloc-aux(minNat(OldLen:Nat, NewLen:Nat), Old:K, New:K, OldLen:Nat, NewLen:Nat)
+			~> realloc-aux(minInt(OldLen:Nat, NewLen:Nat), Old:K, New:K, OldLen:Nat, NewLen:Nat)
 		...</ k >
 		[structural]
 		

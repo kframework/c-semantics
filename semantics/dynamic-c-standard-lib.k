@@ -117,7 +117,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
 
 	rule [atan2]:
 		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
-			=> tv(atanFloat(F:Float, F':Float), t(.Set, double))
+			=> tv(atan2Float(F:Float, F':Float), t(.Set, double))
 		...</ k >
 		[structural]
 

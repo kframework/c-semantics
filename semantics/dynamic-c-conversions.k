@@ -487,19 +487,19 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// fixme
 	define
 		cast(T:KResult, tv(V:Float, t(S:Set, double))) 
-			=> cast(T:KResult, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
 		andBool notBool hasBoolType (T:KResult)
 		[structural] 
 	define
 		cast(T:KResult, tv(V:Float, t(S:Set, float))) 
-			=> cast(T:KResult, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
 		andBool notBool hasBoolType (T:KResult)
 		[structural] 
 	define
 		cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
-			=> cast(T:KResult, tv(truncRat(Float2Rat(V:Float)), t(S:Set, long-long-int)))
+			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
 		andBool notBool hasBoolType (T:KResult)
 		[structural] 
@@ -508,17 +508,17 @@ kmod DYNAMIC-SEMANTICS-CAST is
 
 	define [cast-int-to-float]:
 		cast(t(S:Set, float), tv(I:Int, T:KResult)) 
-			=> tv(Rat2Float(I:Int), t(S:Set, float))
+			=> tv(Int2Float(I:Int), t(S:Set, float))
 		when hasIntegerType(T:KResult)
 		[structural] 
 	define [cast-int-to-double]:
 		cast(t(S:Set, double), tv(I:Int, T:KResult)) 
-			=> tv(Rat2Float(I:Int), t(S:Set, double))
+			=> tv(Int2Float(I:Int), t(S:Set, double))
 		when hasIntegerType(T:KResult)
 		[structural] 
 	define [cast-int-to-long-double]:
 		cast(t(S:Set, long-double), tv(I:Int, T:KResult)) 
-			=> tv(Rat2Float(I:Int), t(S:Set, long-double))
+			=> tv(Int2Float(I:Int), t(S:Set, long-double))
 		when hasIntegerType(T:KResult)
 		[structural] 
 	

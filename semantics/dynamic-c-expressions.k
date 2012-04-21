@@ -510,7 +510,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		
 	op hexOrOctalConstant : K -> K
 	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural anywhere]
-	rule OctalConstant(N:Nat) => hexOrOctalConstant(truncRat(String2Rat(Rat2String(N:Nat, 10), 8))) [structural anywhere] // truncRat is just for sorts
+	rule OctalConstant(N:Nat) => hexOrOctalConstant(String2Rat(Rat2String(N:Nat, 10), 8)) [structural anywhere] // truncRat is just for sorts
 	
 	rule NoSuffix(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
@@ -1101,7 +1101,7 @@ second operand from the first.
 	rule [unaryMinus-int]: - tv(I:Int, T:KResult) => arithInterpret(T:KResult, 0 -Int I:Int)
 		when hasBeenPromoted(T:KResult)
 		[structural]
-	rule [unaryMinus-float]: - tv(F:Float, T:KResult) => arithInterpret(T:KResult, -Float_(F:Float))
+	rule [unaryMinus-float]: - tv(F:Float, T:KResult) => arithInterpret(T:KResult, 0.0 -Float F:Float)
 		[structural]
 endkm
 
