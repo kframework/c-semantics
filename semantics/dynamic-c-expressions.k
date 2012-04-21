@@ -998,7 +998,7 @@ second operand from the first.
 		andBool T':KResult =/=K void
 		[structural]
 	rule < k > tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
-			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), -Int I:Int, sizeofType(T':KResult)) 
+			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
 		...</ k >
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
@@ -1062,7 +1062,7 @@ second operand from the first.
 		andBool min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int
 		andBool I2:Int =/=Int 0
 		[structural]
-	rule - tv(I1:Int, T:KResult) => arithInterpret(T:KResult, -Int_(I1:Int))
+	rule - tv(I1:Int, T:KResult) => arithInterpret(T:KResult, 0 -Int I1:Int)
 		when hasBeenPromoted(T:KResult)
 		[structural]
 		
@@ -1098,7 +1098,7 @@ second operand from the first.
 	/*@ \source[n1570]{\para{6.5.3.3}{3}}
 	The result of the unary \cinline{-} operator is the negative of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
 	*/
-	rule [unaryMinus-int]: - tv(I:Int, T:KResult) => arithInterpret(T:KResult, -Int I:Int)
+	rule [unaryMinus-int]: - tv(I:Int, T:KResult) => arithInterpret(T:KResult, 0 -Int I:Int)
 		when hasBeenPromoted(T:KResult)
 		[structural]
 	rule [unaryMinus-float]: - tv(F:Float, T:KResult) => arithInterpret(T:KResult, -Float_(F:Float))

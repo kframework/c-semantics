@@ -169,7 +169,14 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 	
 	//- derived
-	define bitsToBytes(N:Nat) => absInt(ceilingRat(N:Nat /Rat numBitsPerByte)) [structural]
+	define 
+		bitsToBytes(N:Nat) => absInt(N:Nat /Int numBitsPerByte)
+		when numBitsPerByte dividesInt N:Nat
+		[structural]
+	define 
+		bitsToBytes(N:Nat) => absInt((N:Nat /Int numBitsPerByte) +Int 1) 
+		when notBool numBitsPerByte dividesInt N:Nat
+		[structural]
 		
 	define numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char)) [structural]
 	define numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int)) [structural]
@@ -185,16 +192,16 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define min(t(_, bool)) => 0 [structural]
 	define max(t(_, bool)) => 1 [structural]
 	
-	define min(t(_, signed-char)) => -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
+	define min(t(_, signed-char)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, signed-char)), 1))) [structural]
 	// rule min(t(_, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
 	define max(t(_, signed-char)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1) [structural]
-	define min(t(_, short-int)) => -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
+	define min(t(_, short-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, short-int)), 1))) [structural]
 	define max(t(_, short-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1) [structural]
-	define min(t(_, int)) => -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, int)), 1))) [structural]
+	define min(t(_, int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, int)), 1))) [structural]
 	define max(t(_, int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, int)), 1)), 1) [structural]
-	define min(t(_, long-int)) => -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-int)), 1))) [structural]
+	define min(t(_, long-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-int)), 1))) [structural]
 	define max(t(_, long-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, long-int)), 1)), 1) [structural]
-	define min(t(_, long-long-int)) => -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-long-int)), 1))) [structural]
+	define min(t(_, long-long-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-long-int)), 1))) [structural]
 	define max(t(_, long-long-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)), 1) [structural]
 	
 	define min(t(_, unsigned-char)) => 0 [structural]
@@ -302,19 +309,19 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define [pointerToString]:
 		pointerToString(sym(N:Nat) +Int M:Nat)
 			=> "[sym(" +String subPointerToString(N:Nat) +String ") + " 
-			+String Int2String(M:Nat, 10) +String "]"
+			+String Int2String(M:Nat) +String "]"
 		[structural]
 		
 	declare subPointerToString : Nat -> String
 	define [subPointerToString-auto]:
 		subPointerToString(threadId(N:Nat) +Int N':Nat)
-			=> "threadId(" +String Int2String(N:Nat, 10) +String ") +Int " 
-			+String Int2String(N':Nat, 10)
+			=> "threadId(" +String Int2String(N:Nat) +String ") +Int " 
+			+String Int2String(N':Nat)
 		when N:Nat =/=Int allocatedDuration
 		[structural]
 	define [sub-pointerToString-allocated]:
 		subPointerToString(threadId(allocatedDuration) +Int N':Nat)
-			=> "threadId(allocatedDuration) +Int " +String Int2String(N':Nat, 10)
+			=> "threadId(allocatedDuration) +Int " +String Int2String(N':Nat)
 		[structural]
 	
 	define [pointerToString-done]:
@@ -374,7 +381,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
 	
-	define min(t(_, bitfieldType(T:KResult, N:Nat))) => -Int (2 ^Int absInt(_-Int_(N:Nat, 1)))
+	define min(t(_, bitfieldType(T:KResult, N:Nat))) => 0 -Int (2 ^Int absInt(_-Int_(N:Nat, 1)))
 		when hasSignedIntegerType(T:KResult)
 		[structural]
 	define max(t(_, bitfieldType(T:KResult, N:Nat))) => _-Int_(2 ^Int absInt(_-Int_(N:Nat, 1)), 1)
@@ -491,7 +498,7 @@ kmod COMMON-C-BITSIZE is
 	define toString(Identifier(S:String)) => S:String [structural]
 	define toString(S:String) => S:String [structural]
 	define toString(Num:Nat) => Int2String(Num:Nat) [structural]
-	define Int2String(sym(N:Nat), M:#NzNat) => "sym(" +String Int2String(N:Nat, M:#NzNat) +String ")" [structural]
+	define Int2String(sym(N:Nat)) => "sym(" +String Int2String(N:Nat) +String ")" [structural]
 	
 	
 	define listToK(K:K) => klistToK(getList{K}(K:K)) [structural]
