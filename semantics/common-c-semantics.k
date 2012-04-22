@@ -67,6 +67,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	define false andBool _ => false
 	define _ andBool false => false
 	
+	// nontermination
+	// define 'isInt(K:K) => true
+		// when 'isNat(K:K)
+		
 	// these are used for runtime settings
 	op kccSettingSimpleType : String -> SimpleType
 	op kccSettingNzNat : String -> #NzNat
@@ -92,8 +96,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	declare ListToK : List -> K 
 	op Map : Map -> K 
 	op piece : Nat Nat -> Nat 
+	define 'isInt(piece(_, _)) => true
 	
 	op unknown : Nat -> Nat // [ctor] 
+	define 'isInt(unknown(_)) => true
 	
 	op skipval : -> KResult
 	op debug : -> K 
@@ -103,7 +109,9 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	//op bignum : -> Type 
 
 	define 'isNat(sym(N:Nat) +Int M:Nat) => true
+	define 'isInt(sym(N:Nat) +Int M:Nat) => true
 	define 'isNat(sym(N:Nat) +Int bito(N':Nat) +Int M:Nat) => true
+	define 'isInt(sym(N:Nat) +Int bito(N':Nat) +Int M:Nat) => true
 	op sym : Nat -> Nat
 	op bito : Nat -> Nat 
 
@@ -133,8 +141,10 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unnamed : Nat -> Id 
 	
 	op NullPointerConstant : -> Nat 
+	define 'isInt(NullPointerConstant) => true
 	
 	op NullPointer : -> Nat 
+	define 'isInt(NullPointer) => true
 	
 	op emptyValue : -> Value 
 	op allocate : Type K -> K
@@ -449,8 +459,8 @@ endkm
 kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
-	define (sym(Base:Int) +Int Offset:Int) +Int Offset':Int 
-		=> sym(Base:Int) +Int (Offset:Int +Int Offset':Int)
+	define (sym(Base:Nat) +Int Offset:Int) +Int Offset':Int 
+		=> sym(Base:Nat) +Int (Offset:Int +Int Offset':Int)
 		[structural]
 	define (threadId(N:Int) +Int M:Int) +Int N':Int
 		=> threadId(N:Int) +Int (M:Int +Int N':Int)

@@ -319,19 +319,19 @@ or equivalent;9) or in some other implementation-defined manner
   // < done > ListItem(# ""(.List{K})) </ done > 
   // < (sending).CellLabel > ListItem(# "Hello world\n"(.List{K})) </ (sending).CellLabel > </ file > 
 	
-	op listToString : List -> String
-	op listToString-aux : List String -> String
+	declare listToString : List -> String
+	declare listToString-aux : List String -> String
 	
-	rule [listToString-start]:
+	define [listToString-start]:
 		listToString(L:List) => listToString-aux(L:List, "")
 		[structural]
 		
-	rule [listToString-one]:
+	define [listToString-one]:
 		listToString-aux(ListItem(S:String) L:List, S':String)
 			=> listToString-aux(L:List, S':String +String S:String)
 		[structural]
 		
-	rule [listToString-done]:
+	define [listToString-done]:
 		listToString-aux(.List, S:String) => S:String
 		[structural]
 		

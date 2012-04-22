@@ -11,7 +11,10 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	declare locations : List -> Set
 	op read-aux : K K K -> K
 	
-	declare subObject : K K K -> Nat // object, start piece, end piece
+	op subObject : K K K -> Nat // object, start piece, end piece
+	define 'isInt(subObject(_, _, _)) => true
+	define 'isInt(encodedPointer(_)) => true
+	define 'isInt(encodedFloat(_)) => true
 	
 	define [locations-none]: locations(.List) => .Set [structural]
 	define [locations-some]: locations(bwrite(Loc:Nat, _) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
@@ -751,7 +754,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	rule
 		< k > checkDerefLoc(Loc:Nat) => checkValidLoc(Loc:Nat) ...</ k >
-		when Loc:Nat =/=Int NullPointer
+		when Loc:Nat =/=K NullPointer
 		[structural]
 	
 	rule [check-valid-loc-null]:
@@ -764,7 +767,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		<threadId> MyThreadId:Nat </threadId>
 		when (PtrThreadId:Nat ==Int MyThreadId:Nat 
 			orBool PtrThreadId:Nat ==Int 0
-			orBool PtrThreadId:Nat ==Int allocatedDuration
+			orBool PtrThreadId:Nat ==K allocatedDuration
 			) // my thread, global memory, or allocated (malloced) memory
 		andBool Offset:Nat <=Int Len:Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Nat) +Int N:Nat
