@@ -11,16 +11,16 @@ endkm
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
-	define sym(N:Nat) +Int M:Nat <Int sym(N:Nat) +Int M':Nat => true
+	define loc(N:Nat, M:Nat, 0) <Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat <Int M':Nat
 		[structural]
-	define sym(N:Nat) +Int M:Nat <=Int sym(N:Nat) +Int M':Nat => true
+	define loc(N:Nat, M:Nat, 0) <=Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat <=Int M':Nat
 		[structural]
-	define sym(N:Nat) +Int M:Nat >Int sym(N:Nat) +Int M':Nat => true
+	define loc(N:Nat, M:Nat, 0) >Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat >Int M':Nat
 		[structural]
-	define sym(N:Nat) +Int M:Nat >=Int sym(N:Nat) +Int M':Nat => true
+	define loc(N:Nat, M:Nat, 0) >=Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat >=Int M':Nat
 		[structural]
 	
@@ -152,8 +152,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		...</ k >
 		[structural]
 	
-	define isConcreteNumber(sym(_:Nat) +Int _:Nat) => false [structural]
-	define isConcreteNumber(bito(_:Nat) +Int _:Nat) => false [structural]
+	define isConcreteNumber(loc(_:Nat, _:Nat, _:Nat)) => false [structural]
 	define isConcreteNumber(I:Int) => true
 		when  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
@@ -309,7 +308,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	// fixme might be messing things up elsewhere
 	declare pointerToString : Nat -> String
 	define [pointerToString]:
-		pointerToString(sym(N:Nat) +Int M:Nat)
+		pointerToString(loc(N:Nat, M:Nat, 0))
 			=> "[sym(" +String subPointerToString(N:Nat) +String ") + " 
 			+String Int2String(M:Nat) +String "]"
 		[structural]
@@ -432,9 +431,6 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		l('qualifiedType)
 	) [structural]
 	
-	rule bito(0) => 0 [structural anywhere] // FIXME need to check this is okay in all circumstances
-	
-	
 	rule assert(true, _:Nat) => .K [structural anywhere]
 endkm
 
@@ -500,7 +496,7 @@ kmod COMMON-C-BITSIZE is
 	define toString(Identifier(S:String)) => S:String [structural]
 	define toString(S:String) => S:String [structural]
 	define toString(Num:Nat) => Int2String(Num:Nat) [structural]
-	define Int2String(sym(N:Nat)) => "sym(" +String Int2String(N:Nat) +String ")" [structural]
+	// define Int2String(sym(N:Nat)) => "sym(" +String Int2String(N:Nat) +String ")" [structural]
 	
 	
 	define listToK(K:K) => klistToK(getList{K}(K:K)) [structural]

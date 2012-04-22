@@ -108,15 +108,22 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unnamedBitField : -> Id // [ctor] 
 	//op bignum : -> Type 
 
-	define 'isNat(sym(N:Nat) +Int M:Nat) => true
-	define 'isInt(sym(N:Nat) +Int M:Nat) => true
-	define 'isNat(sym(N:Nat) +Int bito(N':Nat) +Int M:Nat) => true
-	define 'isInt(sym(N:Nat) +Int bito(N':Nat) +Int M:Nat) => true
-	op sym : Nat -> Nat
-	op bito : Nat -> Nat 
+	// define 'isNat(sym(N:Nat) +Int M:Nat) => true
+	// define 'isInt(sym(N:Nat) +Int M:Nat) => true
+	// define 'isNat((sym(N:Nat) +Int bito(N':Nat)) +Int M:Nat) => true
+	// define 'isInt((sym(N:Nat) +Int bito(N':Nat)) +Int M:Nat) => true
+	op loc : K K K -> Nat // Base, byte offset, bit offset
+	define 'isInt(loc(_, _, _)) => true
+	// op sym : Nat -> Nat
+	// op bito : Nat -> K
+	
+	// fixme maybe if we keep it reduced here, things can go faster
+	declare _+bits_ : K K -> K
+	define loc(Base:Nat, Offset:Nat, BitOffset:Nat) +bits N:Nat
+		=> loc(Base:Nat, Offset:Nat, BitOffset:Nat +Int N:Nat)
 
-	declare bitoffset : Nat -> Nat 
-	declare byteoffset : Nat -> Nat
+	//declare bitoffset : Nat -> Nat 
+	//declare byteoffset : Nat -> Nat
 	op enumItem : Id Value -> Value 
 	op resolveReferences : -> K 
 	
@@ -459,18 +466,25 @@ endkm
 kmod COMMON-C-SEMANTICS-MISC is
 	including COMMON-INCLUDE 
 	
-	define (sym(Base:Nat) +Int Offset:Int) +Int Offset':Int 
-		=> sym(Base:Nat) +Int (Offset:Int +Int Offset':Int)
-		[structural]
+	define loc(Base:Nat, ByOff:Nat, BiOff:Nat) +Int Offset:Int
+		=> loc(Base:Nat, ByOff:Nat +Int Offset:Int, BiOff:Nat)
+	// define (sym(Base:Nat) +Int Offset:Int) +Int Offset':Int 
+		// => sym(Base:Nat) +Int (Offset:Int +Int Offset':Int)
+		// [structural]
+	// define (sym(Base:Nat) +Int Offset:Int) +Int bito(I:Int)
+		// => (sym(Base:Nat) +Int bito(I:Int)) +Int Offset:Int
+		// [structural]
+	// define loc(Base:Nat, ByOff:Nat, BiOff:Nat) +Int bito(Offset:Int)
+		// => loc(Base:Nat, ByOff:Nat, BiOff:Nat +Int Offset:Int)
 	define (threadId(N:Int) +Int M:Int) +Int N':Int
 		=> threadId(N:Int) +Int (M:Int +Int N':Int)
 	define (allocatedDuration +Int M:Int) +Int N':Int
 		=> allocatedDuration +Int (M:Int +Int N':Int)
-	rule inc(sym(N:Nat) +Int M:Nat) => sym(N:Nat +Int 1) +Int M:Nat [structural anywhere]
-	rule I:Int +Int (N:Nat +Int sym(M:Nat))
-		=> sym(M:Nat) +Int absInt(N:Nat +Int I:Int)
-		when N:Nat +Int I:Int >=Int 0 
-		[structural anywhere]
+	define inc(loc(N:Nat, M:Nat, M':Nat)) => loc(N:Nat +Int 1, M:Nat, M':Nat)
+	// rule I:Int +Int (N:Nat +Int sym(M:Nat))
+		// => sym(M:Nat) +Int absInt(N:Nat +Int I:Int)
+		// when N:Nat +Int I:Int >=Int 0 
+		// [structural anywhere]
 
 	rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural anywhere]
 
@@ -501,9 +515,12 @@ kmod COMMON-C-SEMANTICS-MISC is
 		
 	rule AttributeWrapper(K:K, _) => K:K [structural anywhere]
 	
-	rule N:Nat +Int bito(M:Nat) => N:Nat +Int (M:Nat /Int numBitsPerByte) +Int bito(M:Nat %Int numBitsPerByte)
-		when M:Nat >=Int numBitsPerByte 
-		[structural anywhere]
+	// rule N:Nat +Int bito(M:Nat) => N:Nat +Int (M:Nat /Int numBitsPerByte) +Int bito(M:Nat %Int numBitsPerByte)
+		// when M:Nat >=Int numBitsPerByte 
+		// [structural anywhere]
+	define loc(Base:Nat, Offset:Nat, BitOffset:Nat)
+		=> loc(Base:Nat, Offset:Nat +Int BitOffset:Nat /Int numBitsPerByte, BitOffset:Nat %Int numBitsPerByte)
+		when BitOffset:Nat >=Int numBitsPerByte
 	
 	// rule FieldName((Identifier("___missing_field_name") => AnonAggregate)) [structural]
 	// rule BitFieldName((Identifier("___missing_field_name") => #NoName), _) [structural]

@@ -796,19 +796,19 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	//- comparison of pointers
 	// fixme could check 6.5.8:2
 	// fixme there are further restrictions on pointers
-	rule [ptr-compare-lt]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) < tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
+	rule [ptr-compare-lt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) < tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat <Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-lte]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) <= tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
+	rule [ptr-compare-lte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) <= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat <=Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gt]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) > tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
+	rule [ptr-compare-gt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) > tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat >Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gte]: tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) >= tv(sym(Base:Nat) +Int Offset':Nat, T':KResult)
+	rule [ptr-compare-gte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) >= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat >=Int Offset':Nat)
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
@@ -834,8 +834,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	op isUnknown : K -> Bool
 	rule [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true [structural]
-	rule [isUnknown-ptr]: isUnknown(sym(_:Nat) +Int _:Nat) => false [structural]
-	//rule [isUnknown-bito]: isUnknown(bito(_:Nat) +Int _) => false [structural]
+	rule [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false [structural]
 	rule [isUnknown-int]: isUnknown(I:Int) => false
 		when  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
@@ -876,12 +875,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
-	rule < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) == tv(sym(Base:Nat) +Int Offset':Nat, T':KResult) 
+	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat ==Int Offset':Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		[structural]
-	rule < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) != tv(sym(Base:Nat) +Int Offset':Nat, T':KResult) 
+	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat =/=Int Offset':Nat)
 		...</ k >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
@@ -889,25 +888,27 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// next, they are part of different objects.  
 	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
-	rule [compare-eq-different-objects]: < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) == tv(sym(Base':Nat) +Int Offset':Nat, T':KResult) 
+	rule [compare-eq-different-objects]: 
+		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(0, t(.Set, int))
 		...</ k >
 		< mem >... 
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
-			...</ mem >
+		...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:Nat =/=Int Base':Nat
 		andBool Offset:Nat <Int Len:Nat
 		andBool Offset':Nat <Int Len':Nat
 		[structural]
-	rule [compare-neq-different-objects]: < k > tv(sym(Base:Nat) +Int Offset:Nat, T:KResult) != tv(sym(Base':Nat) +Int Offset':Nat, T':KResult) 
+	rule [compare-neq-different-objects]: 
+		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(1, t(.Set, int))
 		...</ k >
 		< mem >... 
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
-			...</ mem >
+		...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
 		andBool Base:Nat =/=Int Base':Nat
 		andBool Offset:Nat <Int Len:Nat
@@ -1037,7 +1038,7 @@ second operand from the first.
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:KResult))
 		[structural]
 	rule [pointer-difference]: 
-		computePointerDifference(sym(Block:Nat) +Int Offset1:Nat, sym(Block:Nat) +Int Offset2:Nat, tv(Size:Nat, _))
+		computePointerDifference(loc(Base:Nat, Offset1:Nat, 0), loc(Base:Nat, Offset2:Nat, 0), tv(Size:Nat, _))
 			=> tv(_-Int_(Offset1:Nat, Offset2:Nat) /Int Size:Nat, cfg:ptrdiffut)
 		when _-Int_(Offset1:Nat, Offset2:Nat) %Int Size:Nat ==Int 0
 		[structural]
@@ -1116,7 +1117,7 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 	// fixme tool bug, can't use L:KLabel
 	rule
 		< k > lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
-			=> lv(Loc:Nat +Int bito(Offset:Nat), T:KResult)
+			=> lv(Loc:Nat +bits Offset:Nat, T:KResult)
 		...</ k >
 		< structs >...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat))
@@ -1124,7 +1125,7 @@ kmod DYNAMIC-SEMANTICS-MEMBERS is
 		[structural]
 	rule
 		< k > lv(Loc:Nat, t(_, unionType(S:Id))) . F:Id
-			=> lv(Loc:Nat +Int bito(Offset:Nat), t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+			=> lv(Loc:Nat +bits Offset:Nat, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
 		...</ k >
 		< structs >...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Nat))

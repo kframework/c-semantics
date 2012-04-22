@@ -77,7 +77,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00005]:
-		< k => finalComputation > extractByteFromMem(sym(Block:Nat) +Int _:Nat) ...</ k => finalComputation >
+		< k => finalComputation > extractByteFromMem(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:Nat)
@@ -90,7 +90,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00007]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Int _:Nat) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
 		< mem > M:Map </ mem >
 		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
 		when notBool $hasMapping(M:Map, Block:Nat)
@@ -108,7 +108,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00010]:
-		< k => finalComputation > checkValidLoc-aux(sym(Block:Nat) +Int Offset:Nat) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(loc(Block:Nat, Offset:Nat, _:Nat)) ...</ k => finalComputation >
 		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, _) ...</ mem >
 		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
 		when Offset:Nat >Int Size:Nat
@@ -179,7 +179,7 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00020]:
-		< k => finalComputation > writeByte(sym(Block:Nat) +Int Offset:Nat, _) ...</ k => finalComputation >
+		< k => finalComputation > writeByte(loc(Block:Nat, Offset:Nat, _:Nat), _) ...</ k => finalComputation >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >		
 		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
 		when notBool Offset:Nat <Int Len:Nat
@@ -271,28 +271,28 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(sym(Base:Nat) +Int _:Nat, T:KResult) < tv(sym(Base':Nat) +Int _:Nat, T:KResult)
+			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) < tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
 		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(sym(Base:Nat) +Int _:Nat, T:KResult) > tv(sym(Base':Nat) +Int _:Nat, T:KResult)
+			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) > tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
 		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(sym(Base:Nat) +Int _:Nat, T:KResult) <= tv(sym(Base':Nat) +Int _:Nat, T:KResult)
+			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) <= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
 		when Base:Nat =/=Int Base':Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(sym(Base:Nat) +Int _:Nat, T:KResult) >= tv(sym(Base':Nat) +Int _:Nat, T:KResult)
+			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) >= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
 		when Base:Nat =/=Int Base':Nat
@@ -363,9 +363,9 @@ kmod DYNAMIC-C-ERRORS is
 		
 	rule [err00045]:
 		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
-		< mem >... Block:Nat |-> memblock(mconst _:Bag, _) ...</ mem >
+		< mem >... Base:Nat |-> memblock(mconst _:Bag, _) ...</ mem >
 		(.Bag => < errorCell > Error("00045", "Trying to modify an object declared with const type.") </ errorCell >)
-		where LOC = sym(Block:Nat) +Int Offset:Nat
+		where LOC = loc(Base:Nat, _:Nat, _:Nat)
 		[structural]
 		
 	rule [err00046]:

@@ -932,7 +932,7 @@ The malloc function returns either a null pointer or a pointer to the allocated 
 		...</ k >
 		< malloced >... .Map => Loc |-> Len:Nat ...</ malloced >
 		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
-		where Loc = sym(threadId(allocatedDuration) +Int Fresh:Nat) +Int 0
+		where Loc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
 		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
@@ -956,7 +956,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		< malloced >... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</ malloced >
 		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
 		when OldLoc:Nat =/=Int NullPointer
-		where NewLoc = sym(threadId(allocatedDuration) +Int Fresh:Nat) +Int 0
+		where NewLoc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
 		[structural]
 	rule [realloc-null]:
 		< k > prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
@@ -1083,7 +1083,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		</ thread >
 		(.Bag =>
 		< thread >
-			< nextLoc > sym(threadId(ThreadId:Nat) +Int 0) +Int 0 </ nextLoc >
+			< nextLoc > loc(threadId(ThreadId:Nat) +Int 0, 0, 0) </ nextLoc >
 			< threadId > ThreadId:Nat </ threadId >
 			C:Bag
 			< k > Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </ k >

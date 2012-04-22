@@ -204,7 +204,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			< threads >
 				< thread >
 					< threadId > 1 </ threadId >
-					< nextLoc > sym(threadId(1) +Int 0) +Int 0 </ nextLoc >
+					< nextLoc > loc(threadId(1) +Int 0, 0, 0) </ nextLoc >
 					< k > klistToK(P:List{K})
 							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
@@ -219,7 +219,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					...</threadLocal>
 				...</ thread >
 			</ threads >
-			<nextSharedLoc> sym(threadId(0) +Int 0) +Int 0 </nextSharedLoc>
+			<nextSharedLoc> loc(threadId(0) +Int 0, 0, 0) </nextSharedLoc>
 		...</ T >
 		< files >
 			<fileCommands> .K </fileCommands>

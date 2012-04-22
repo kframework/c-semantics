@@ -16,6 +16,12 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	define 'isInt(encodedPointer(_)) => true
 	define 'isInt(encodedFloat(_)) => true
 	
+	// fixme would be better to keep canonical
+	declare getBitOffset : Nat -> Nat 
+	define getBitOffset(loc(_:Nat, _:Nat, M:Nat)) => M:Nat %Int numBitsPerByte
+	declare getByteOffset : Nat -> Nat 
+	define getByteOffset(loc(_:Nat, M:Nat, N:Nat)) => M +Int N:Nat /Int numBitsPerByte
+	
 	define [locations-none]: locations(.List) => .Set [structural]
 	define [locations-some]: locations(bwrite(Loc:Nat, _) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
 endkm
@@ -25,10 +31,6 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	op extractBitsFromMem : Nat Nat -> K // loc, size in bits
 	op extractByteFromMem : Nat -> K 
-	declare getBitOffset : Nat -> Nat 
-	define getBitOffset(_:Nat +Int bito(M:Nat)) => M:Nat [structural]
-	// fixme owise!!!!
-	eq getBitOffset(_:Nat) = 0 [owise]
 	
 	op extractBitsFromList-aux : K Int Int List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
@@ -65,14 +67,14 @@ kmod DYNAMIC-SEMANTICS-READING is
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
 	rule [read-thread-local]:
-		< k > ('read-aux => 'readActual)(sym(threadId(Id:Nat) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(loc(threadId(Id:Nat) +Int _:Nat, _:Nat, _:Nat),, _,, _) ...</ k >
 		<threadId> Id:Nat </threadId>
 		[structural ndlocal]
 	rule [read-shared]: // read global or shared data
-		< k > ('read-aux => 'readActual)(sym(threadId(0) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(loc(threadId(0) +Int _:Nat, _:Nat, _:Nat),, _,, _) ...</ k >
 		[computational ndlocal]
 	rule [read-allocated]: // read data of "allocated" duration
-		< k > ('read-aux => 'readActual)(sym(threadId(allocatedDuration) +Int _:Nat) +Int _:Nat,, _,, _) ...</ k >
+		< k > ('read-aux => 'readActual)(loc(threadId(allocatedDuration) +Int _:Nat, _:Nat, _:Nat),, _,, _) ...</ k >
 		[computational ndlocal]
 	
 	rule [read]:
@@ -175,20 +177,25 @@ kmod DYNAMIC-SEMANTICS-READING is
 		when N:Nat >=Int 0 // guard is here to make sure it's an actual piece
 		[structural]
 	
-	rule floorLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat) => sym(N:Nat) +Int R:Nat [anywhere structural]
-	// fixme owise!!!
-	eq floorLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
+	define floorLoc(loc(Base:Nat, Offset:Nat, BitOffset:Nat)) => loc(Base:Nat, Offset:Nat, 0)
+		when BitOffset:Nat <Int numBitsPerByte
+	// eq floorLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
-	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [anywhere structural]
+	define [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer
 	// fixme possible bug here with new builtins
 	// rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
 		// => sym(N:Nat) +Int absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Int R:Nat
 		// [structural]
-	rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
-		=> sym(N:Nat) +Int (M:Nat /Int numBitsPerByte) +Int R:Nat
-		[structural]
+	// fixme I don't think this is correct
+	// define [ceilingLoc-base]: 
+		// ceilingLoc(loc(N:Nat, R:Nat, 0))
+			// => loc(N:Nat, R:Nat, 0)
+	define [ceilingLoc]:
+		ceilingLoc(loc(N:Nat, R:Nat, M:Nat))
+		=> loc(N:Nat, (M:Nat /Int numBitsPerByte) +Int R:Nat, 0)
+
 	// fixme owise!!!
-	eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
+	// eq [ceilingLocNormal]: ceilingLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
 	rule
 		< k > extractBitsFromMem(Loc:Nat, Size:Nat)
@@ -236,8 +243,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 	// FIXME make sure it's a byte
 	
 	rule [read-byte-fast]:
-		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat)
-			=> assert(notBool (sym(Block:Nat) +Int Offset:Nat) in Locs:Bag, 3)
+		< k > extractByteFromMem(loc(Block:Nat, Offset:Nat, 0))
+			=> assert(notBool (loc(Block:Nat, Offset:Nat, 0) in Locs:Bag), 3)
 			~> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
@@ -246,19 +253,19 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< buffer > .List </ buffer >
 		[structural]
 	rule [read-byte]:
-		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat)
-			=> assert(notBool (sym(Block:Nat) +Int Offset:Nat) in Locs:Bag, 3)
+		< k > extractByteFromMem(loc(Block:Nat, Offset:Nat, 0))
+			=> assert(notBool (loc(Block:Nat, Offset:Nat, 0)) in Locs:Bag, 3)
 			~> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, (_ Offset:Nat |-> V:K)) ...</ mem >
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
-		when notBool sym(Block:Nat) +Int Offset:Nat in locations(Mem:List)
+		when notBool loc(Block:Nat, Offset:Nat, 0) in locations(Mem:List)
 		[structural]
 		
 	rule [read-byte-lazy]:
-		< k > extractByteFromMem(sym(Block:Nat) +Int Offset:Nat) 
+		< k > extractByteFromMem(loc(Block:Nat, Offset:Nat, 0)) 
 			=> assert(Offset:Nat <Int Size:Nat, 2)
 			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), t(.Set, no-type))
 		...</ k >
@@ -266,7 +273,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 			Block:Nat |-> memblock(mlength(Size:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
 		...</ mem >
 		< buffer > Mem:List </ buffer >
-		when notBool sym(Block:Nat) +Int Offset:Nat in locations(Mem:List)
+		when notBool loc(Block:Nat, Offset:Nat, 0) in locations(Mem:List)
 		andBool notBool $hasMapping(M:Map, Offset:Nat)
 		[structural]
 		
@@ -302,7 +309,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 
 	rule [alloc-lazy]:
-		< k > alloc(sym(Block:Nat) +Int 0, Len:Nat) => .K ...</ k >
+		< k > alloc(loc(Block:Nat, 0, 0), Len:Nat) => .K ...</ k >
 		< mem >... .Map => Block:Nat |-> memblock(mlength(Len:Nat), .Map) ...</ mem >
 		[structural]
 	
@@ -324,7 +331,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		// ...</ mem >
 		// [structural]
 	rule [realloc-found]:
-		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Int 0, sym(NewBlock:Nat) +Int 0, _, _)
+		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), loc(OldBlock:Nat, 0, 0), loc(NewBlock:Nat, 0, 0), _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:Nat |-> memblock(_, (_ N:Nat |-> K:K))
@@ -336,7 +343,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	// fixme sNat
 	rule [realloc-unfound]:
-		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), sym(OldBlock:Nat) +Int 0, sym(NewBlock:Nat) +Int 0, _, _)
+		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), loc(OldBlock:Nat, 0, 0), loc(NewBlock:Nat, 0, 0), _, _)
 		...</ k >
 		< mem >... 
 			OldBlock:Nat |-> memblock(_, M:Map)
@@ -345,8 +352,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool sNatN:Nat >Int 0
 		[structural]
 	rule [realloc-0]:
-		< k > realloc-aux(0, sym(OldBlock:Nat) +Int 0, _, OldLen:Nat, _)
-			=> deleteSizedBlock(sym(OldBlock:Nat) +Int 0, OldLen:Nat) 
+		< k > realloc-aux(0, loc(OldBlock:Nat, 0, 0), _, OldLen:Nat, _)
+			=> deleteSizedBlock(loc(OldBlock:Nat, 0, 0), OldLen:Nat) 
 		...</ k >
 		[structural]	
 		
@@ -372,19 +379,19 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
 		<threadId> Id:Nat </threadId>
-		where Loc = sym(threadId(Id:Nat) +Int N:Nat) +Int Offset:Nat
+		where Loc = loc(threadId(Id:Nat) +Int N:Nat, Offset:Nat, BitOffset:Nat)
 		[structural ndlocal]
 	rule [write]: // write global or shared data
 		< k > write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
-		where Loc = sym(threadId(0) +Int N:Nat) +Int Offset:Nat
+		where Loc = loc(threadId(0) +Int N:Nat, Offset:Nat, BitOffset:Nat)
 		[computational ndlocal]
 	rule [write-allocated]: // write data of "allocated" duration
 		< k > write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 			=> write-specific(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
 		...</ k >
-		where Loc = sym(threadId(allocatedDuration) +Int N:Nat) +Int Offset:Nat
+		where Loc = loc(threadId(allocatedDuration) +Int N:Nat, Offset:Nat, BitOffset:Nat)
 		[computational ndlocal]
 	
 	rule [write-normal]:
@@ -411,7 +418,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> makeUnknown-aux(N:Nat, T:KResult, value(byteSizeofType(T:KResult))) 
 		[structural]
 	rule
-		< k > makeUnknown-aux(sym(Block:Nat) +Int Offset:Nat, _, Len':Nat) => .K ...</ k >
+		< k > makeUnknown-aux(loc(Block:Nat, Offset:Nat, 0), _, Len':Nat) => .K ...</ k >
 		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Int Len':Nat)])) ...</ mem >
 		when Len:Nat >=Int Offset:Nat +Int Len':Nat
 		[structural]
@@ -434,13 +441,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool notBool hasBitfieldType(T:KResult)
 		[structural]
 		
-	define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat [structural]
-	// fixme owise!!!
-	eq bitoffset(_:Nat) = 0 [owise] 
+	// define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat [structural]
+	// // fixme owise!!!
+	// eq bitoffset(_:Nat) = 0 [owise] 
 	
 	// fixme owise!!!
-	define byteoffset(N:Nat +Int bito(_:Nat)) => N:Nat [structural]
-	eq byteoffset(N:Nat) = N:Nat [owise] 
+	// define byteoffset(N:Nat +Int bito(_:Nat)) => N:Nat [structural]
+	// eq byteoffset(N:Nat) = N:Nat [owise] 
 		
 	declare justBits : Int Type -> Value 
 	declare justBits-aux : Int Type -> Value 
@@ -477,9 +484,9 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 				Loc:Nat
 				, T:KResult
 				, calculateNewBytes(
-					bitoffset(Loc:Nat)
+					getBitOffset(Loc:Nat)
 					, piece(N:Nat, bitSize:Nat)
-					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Int bitoffset(Loc:Nat))
+					, extractBytesFromMem(floorLoc(Loc:Nat), bitsToBytes(bitSize:Nat +Int getBitOffset(Loc:Nat))
 					)
 				)
 			)
@@ -492,7 +499,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		
 	rule
 		< k > writeBitfield(Loc:Nat, _, dataList(L:List{K}))
-			=> writeBytes(byteoffset(Loc:Nat), dataList(L:List{K}))
+			// => writeBytes(getByteOffset(Loc:Nat), dataList(L:List{K}))
+			=> writeBytes(floorLoc(Loc:Nat), dataList(L:List{K}))
 		...</ k >
 		[structural] 
 		
@@ -553,28 +561,28 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 
 	rule
-		< k > writeBytes(sym(Block:Nat) +Int Offset:Nat, dataList((V:K,, L:List{K})))
-			=> writeByte(sym(Block:Nat) +Int Offset:Nat, V:K)
-			~> writeBytes(sym(Block:Nat) +Int Offset:Nat +Int 1, dataList(L:List{K}))
+		< k > writeBytes(Loc:Nat, dataList((V:K,, L:List{K})))
+			=> writeByte(Loc:Nat, V:K)
+			~> writeBytes(Loc:Nat +Int 1, dataList(L:List{K}))
 		...</ k >
 		[structural]
 	rule [write-byte-buffer]:
 		< k > writeByte(LOC, V:K) => .K ...</ k >
 		< buffer >... (.List => bwrite(LOC, V:K)) </ buffer >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) Attr:Bag, _) ...</ mem >		
+		< mem >... Base:Nat |-> memblock(mlength(Len:Nat) Attr:Bag, _) ...</ mem >		
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
 		< notWritable > NotWritable:Map </notWritable>
 		when notBool LOC in Locs:Bag
 		andBool Offset:Nat <Int Len:Nat
 		andBool notBool mconst in Attr:Bag
 		andBool notBool $hasMapping(NotWritable, LOC)
-		where LOC = sym(Block:Nat) +Int Offset:Nat
+		where LOC = loc(Base:Nat, Offset:Nat, 0)
 		[structural]
 		
 	rule [commit-byte]:
 		< blocked > false </ blocked >
-		< buffer > (bwrite(sym(Block:Nat) +Int Offset:Nat, V:K) => .List) ...</ buffer >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
+		< buffer > (bwrite(loc(Base:Nat, Offset:Nat, 0), V:K) => .List) ...</ buffer >
+		< mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
 		when Offset:Nat <Int Len:Nat
 		[structural]
 	rule
@@ -683,9 +691,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare byteMaskSet : -> Nat
 	define byteMaskSet => (2 ^Int numBitsPerByte) -Int 1 [structural]
 		
-	define isByteLoc(_:Nat +Int bito(_:Nat)) => false [structural]
-	// fixme owise!!!
-	eq isByteLoc(_:Nat) = true [owise] 
+	define isByteLoc(Loc:Nat) => getBitOffset(Loc:Nat) ==Int 0 [structural]
 endkm
 
 kmod DYNAMIC-C-MEMORY-MISC is
@@ -693,24 +699,24 @@ kmod DYNAMIC-C-MEMORY-MISC is
 
 	// used by calloc
 	rule
-		< k > zeroBlock(sym(Block:Nat) +Int 0) => .K ...</ k >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, (_ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
+		< k > zeroBlock(loc(Base:Nat, 0, 0)) => .K ...</ k >
+		< mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (_ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
 		[structural]
 		
 	rule
-		< k > sizeofLocation(sym(Block:Nat) +Int _:Nat) => tv(Len:Nat, cfg:sizeut) ...</ k >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
+		< k > sizeofLocation(loc(Base:Nat, _:Nat, _:Nat)) => tv(Len:Nat, cfg:sizeut) ...</ k >
+		< mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
 		[structural]
 		
 	rule [delete-sized-block]:
-		< k > deleteSizedBlock(sym(Block:Nat) +Int _:Nat, Len:Nat) => .K ...</ k >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) => .Map ...</ mem >
+		< k > deleteSizedBlock(loc(Base:Nat, _:Nat, _:Nat), Len:Nat) => .K ...</ k >
+		< mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) => .Map ...</ mem >
 		< buffer > .List </ buffer > // fixme could make this more relaxed by checking of block is in buffer, not just empty
 		[structural] 
 	
 	rule [delete-block]:
-		< k > deleteBlock(sym(Block:Nat) +Int _:Nat) => .K ...</ k >
-		< mem >... Block:Nat |-> _ => .Map ...</ mem >
+		< k > deleteBlock(loc(Base:Nat, _:Nat, _:Nat)) => .K ...</ k >
+		< mem >... Base:Nat |-> _ => .Map ...</ mem >
 		< buffer > .List </ buffer >
 		[structural] 
 	
@@ -737,12 +743,13 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		< env >... X:Id |-> Loc:Nat ...</ env>
 		[structural]
 	// fixme shouldn't need both of these
+	// fixme could do better with bitfields
 	rule [makeUnwritable-subobject]:
-		< k > makeUnwritableSubObject(lv(sym(Base:Nat) +Int Offset:Nat, _)) => . ...</ k >
-		< notWritable > M:Map => M:Map[1 / sym(Base:Nat) +Int Offset:Nat] </ notWritable >
+		< k > makeUnwritableSubObject(lv(loc(Base:Nat, Offset:Nat, _), _)) => . ...</ k >
+		< notWritable > M:Map => M:Map[1 / loc(Base:Nat, Offset:Nat, 0)] </ notWritable >
 		[structural]
 	rule [makeUnwritable]:
-		< k > makeUnwritable(sym(Base:Nat) +Int 0) => .K ...</ k >
+		< k > makeUnwritable(loc(Base:Nat, 0, 0)) => .K ...</ k >
 		< mem >... Base:Nat |-> memblock((.Bag => mconst) _, _) ...</ mem >
 		[structural]
 
@@ -762,7 +769,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	// fixme could additionally use the type to check whether that type is valid for that pointer
 	rule [check-valid-loc]:
-		< k > checkValidLoc-aux(sym(BASE) +Int Offset:Nat) => .K ...</ k >
+		< k > checkValidLoc-aux(loc(BASE, Offset:Nat, 0)) => .K ...</ k >
 		< mem >... BASE |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
 		<threadId> MyThreadId:Nat </threadId>
 		when (PtrThreadId:Nat ==Int MyThreadId:Nat 
