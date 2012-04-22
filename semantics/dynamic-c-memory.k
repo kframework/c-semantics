@@ -175,11 +175,11 @@ kmod DYNAMIC-SEMANTICS-READING is
 		when N:Nat >=Int 0 // guard is here to make sure it's an actual piece
 		[structural]
 	
-	rule floorLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat) => sym(N:Nat) +Int R:Nat [structural]
+	rule floorLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat) => sym(N:Nat) +Int R:Nat [anywhere structural]
 	// fixme owise!!!
 	eq floorLoc(sym(N:Nat) +Int R:Nat) = sym(N:Nat) +Int R:Nat [owise] 
 	
-	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [structural]
+	rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer [anywhere structural]
 	// fixme possible bug here with new builtins
 	// rule [ceilingLoc-bito]: ceilingLoc(sym(N:Nat) +Int bito(M:Nat) +Int R:Nat)
 		// => sym(N:Nat) +Int absInt(floorRat(M:Nat /Rat numBitsPerByte)) +Int R:Nat
@@ -290,7 +290,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	rule allocateType(Loc:Nat, T:KResult) => alloc(Loc:Nat, value(byteSizeofType(T:KResult))) 
 		[structural]
 	rule [allocateTypeIfAbsent-absent]:
-		< k > allocateTypeIfAbsent(Loc:Nat +Int 0, T:KResult) 
+		< k > allocateTypeIfAbsent(Loc:Nat, T:KResult) 
 			=> alloc(Loc:Nat, value(byteSizeofType(T:KResult))) 
 		...</ k >
 		< mem > Mem:Map </ mem >

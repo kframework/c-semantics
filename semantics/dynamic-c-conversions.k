@@ -535,13 +535,13 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, T':KResult)) 
 			=> tv(N:Nat, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:Nat =/=Int NullPointerConstant
+		andBool N:Nat =/=K NullPointerConstant
 		[structural] 
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:Nat ==Int NullPointerConstant
+		andBool N:Nat ==K NullPointerConstant
 		[structural] 
 	
 	// fixme needs to check size
