@@ -818,14 +818,14 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	*/
 	
 	rule tv(I1:Int, T:KResult) == tv(I2:Int, T:KResult)
-		=> makeTruth(I1:Int ==Int I2:Int)
+		=> makeTruth(I1:Int ==K I2:Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) != tv(I2:Int, T:KResult)
-		=> makeTruth(I1:Int =/=Int I2:Int)
+		=> makeTruth(I1:Int =/=K I2:Int)
 		when (
 			hasBeenPromoted(T:KResult)
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
@@ -854,22 +854,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	
 	// if one of the pointers is null, it's also straightforward
 	rule tv(NullPointer, T:KResult) == tv(N:Nat, T':KResult)
-		=> makeTruth(NullPointer ==Int N:Nat)
+		=> makeTruth(NullPointer ==K N:Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(NullPointer, T:KResult) != tv(N:Nat, T':KResult)
-		=> makeTruth(NullPointer =/=Int N:Nat)
+		=> makeTruth(NullPointer =/=K N:Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:Nat, T:KResult) == tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer ==Int N:Nat)
+		=> makeTruth(NullPointer ==K N:Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
 	rule tv(N:Nat, T:KResult) != tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer =/=Int N:Nat)
+		=> makeTruth(NullPointer =/=K N:Nat)
 		when hasPointerType(T:KResult) 
 		andBool hasPointerType(T':KResult)
 		[structural]
@@ -922,26 +922,26 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:Nat ==Int NullPointerConstant
+		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:Nat ==Int NullPointerConstant
+		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
 		andBool hasPointerType(T':KResult)
-		andBool N:Nat ==Int NullPointerConstant
+		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(_, T:KResult) != (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when hasPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
-		andBool N:Nat ==Int NullPointerConstant
+		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule
 		tv(F1:Float, T:KResult) == tv(F2:Float, T:KResult) => makeTruth(F1:Float ==Float F2:Float)
