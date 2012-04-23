@@ -831,13 +831,6 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
-		
-	op isUnknown : K -> Bool
-	rule [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true [structural]
-	rule [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false [structural]
-	rule [isUnknown-int]: isUnknown(I:Int) => false
-		when  I:Int <=Int 0 orBool I:Int >Int 0
-		[structural]
 	
 	// if they're identical, we know for sure they are the same
 	rule tv(N:Nat, T:KResult) == tv(N:Nat, T':KResult)
@@ -897,7 +890,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:Nat =/=Int Base':Nat
+		andBool Base:Nat =/=K Base':Nat
 		andBool Offset:Nat <Int Len:Nat
 		andBool Offset':Nat <Int Len':Nat
 		[structural]
@@ -910,7 +903,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >
 		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
-		andBool Base:Nat =/=Int Base':Nat
+		andBool Base:Nat =/=K Base':Nat
 		andBool Offset:Nat <Int Len:Nat
 		andBool Offset':Nat <Int Len':Nat
 		[structural]

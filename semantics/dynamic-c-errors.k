@@ -274,28 +274,28 @@ kmod DYNAMIC-C-ERRORS is
 			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) < tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00030", "Cannot compare pointers with different base objects using '<'.") </ errorCell >)
-		when Base:Nat =/=Int Base':Nat
+		when Base:Nat =/=K Base':Nat
 		[structural]
 	rule [err00031]:
 		< k => finalComputation > 
 			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) > tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00031", "Cannot compare pointers with different base objects using '>'.") </ errorCell >)
-		when Base:Nat =/=Int Base':Nat
+		when Base:Nat =/=K Base':Nat
 		[structural]
 	rule [err00032]:
 		< k => finalComputation > 
 			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) <= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00032", "Cannot compare pointers with different base objects using '<='.") </ errorCell >)
-		when Base:Nat =/=Int Base':Nat
+		when Base:Nat =/=K Base':Nat
 		[structural]
 	rule [err00033]:
 		< k => finalComputation > 
 			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) >= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
 		...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00033", "Cannot compare pointers with different base objects using '>='.") </ errorCell >)
-		when Base:Nat =/=Int Base':Nat
+		when Base:Nat =/=K Base':Nat
 		[structural]
 		
 	rule [err00034]:
@@ -380,10 +380,6 @@ kmod DYNAMIC-C-ERRORS is
 		< notWritable >... Loc:Nat |-> _ ...</notWritable>
 		(.Bag => < errorCell > Error("00047", "Trying to modify an object declared with const type.") </ errorCell >)
 		[structural]
-		
-	op isUnknown : Nat -> Bool
-	eq isUnknown(unknown(_:Nat)) = true
-	eq isUnknown(_:Nat) = false [owise]
 	
 	op datarace : Nat Nat Nat Nat -> K 
 

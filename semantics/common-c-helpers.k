@@ -11,6 +11,16 @@ endkm
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
+	declare isUnknown : K -> Bool
+	define [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true
+	define [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false
+	define [isUnknown-int]: isUnknown(I:Int) => false
+		when I:Int <=Int 0 orBool I:Int >Int 0
+
+	// op isUnknown : Nat -> Bool
+	// eq isUnknown(unknown(_:Nat)) = true
+	// eq isUnknown(_:Nat) = false [owise]
+	
 	define loc(N:Nat, M:Nat, 0) <Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat <Int M':Nat
 		[structural]
@@ -318,7 +328,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		subPointerToString(threadId(N:Nat) +Int N':Nat)
 			=> "threadId(" +String Int2String(N:Nat) +String ") +Int " 
 			+String Int2String(N':Nat)
-		when N:Nat =/=Int allocatedDuration
+		when N:Nat =/=K allocatedDuration
 		[structural]
 	define [sub-pointerToString-allocated]:
 		subPointerToString(threadId(allocatedDuration) +Int N':Nat)

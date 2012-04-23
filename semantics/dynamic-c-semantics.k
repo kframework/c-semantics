@@ -26,6 +26,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< fid > FD:Nat </ fid >
 		< buff > S:String => S:String +String charString(N:Nat %Int 256) </ buff >
 		[structural]
+	// fixme not sure this should be ... on <buf> cell
 	rule [writeToFD-string]:
 		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
 		< fid > FD:Nat </ fid >
