@@ -543,7 +543,7 @@ kmod COMMON-C-SEMANTICS is
 	including COMMON-C-TYPING
 	
 	op eval : K -> Bag 
-	op eval : K List{K} String -> Bag
+	op eval : K List{K} String Int -> Bag
 	op callMain : Nat Id K -> K
 	op incomingArguments : List{K} -> K
 	

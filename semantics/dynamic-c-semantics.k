@@ -199,8 +199,8 @@ If they are declared, the parameters to the main function shall obey the followi
 	op syntaxNat : Nat -> K
 	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
 	
-	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "") [structural]
-	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String) =>
+	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
+	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String, IsInterp:Int) =>
 		< T >
 			< threads >
 				< thread >
@@ -223,7 +223,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			<nextSharedLoc> loc(threadId(0) +Int 0, 0, 0) </nextSharedLoc>
 		...</ T >
 		< files >
-			<fileCommands> .K </fileCommands>
+			<fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
 			<file>...
 				<fid> 0 </fid>
 				<uri> "stdin:/" +String "/" +String "/" </uri>
