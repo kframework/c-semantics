@@ -205,11 +205,11 @@ kmod DYNAMIC-C-ERRORS is
 		when hasSignedIntegerType(T:KResult)
 		andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
 		[structural]
-		
+	
 	rule [err00024]:
 		< k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00024", "Bitwise & used on a symbolic number (address) or float.") </ errorCell >)
-		when notBool isConcreteNumber(I':Int)
+		when notBool isConcreteNumber(I:Int) orBool notBool isConcreteNumber(I':Int)
 		[structural]
 		
 	rule [err00025]:
@@ -225,28 +225,23 @@ kmod DYNAMIC-C-ERRORS is
 		when T:K =/=K int andBool T:K =/=K void
 		[structural]
 		
-	op isArgvType : Type -> Bool
+	declare isArgvType : Type -> Bool
 	
-	rule isArgvType(t(_, T:K)) => false
+	define isArgvType(t(_, T:K)) => false
 		when notBool (
 			getKLabel(T:K) ==KLabel 'incompleteArrayType 
 			orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
 		)
-		[structural]
 		
-	rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
+	define isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==KLabel 'pointerType
-		[structural]
-	rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
+	define isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=K char
-		[structural]
 		
-	rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
+	define isArgvType(t(_, pointerType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==KLabel 'pointerType
-		[structural]
-	rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
+	define isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=K char
-		[structural]
 	
 	rule [err00027]:
 		< k => finalComputation >

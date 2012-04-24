@@ -98,6 +98,8 @@ sub performTest {
 	my $kccCompileRetval = $?;
 	# my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
 	
+	print "$testName\t";
+	
 	my $lookForError=0;
 	if ($#allFilenames == 0) { # no logic to make this work for multiple translation units
 		open(TEST, "<$testName") or return reportFailure($testName, $timer, "Failure---could not open $testName for reading.");
@@ -131,7 +133,7 @@ sub performTest {
 		}
 	}
 	
-	my $kccRunOutput = `$kccFilename 2>&1`;
+	my $kccRunOutput = `timeout 10m $kccFilename 2>&1`;
 	$kccRunOutput =~ s/^VOLATILE.*//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {
@@ -197,7 +199,7 @@ sub reportFailure {
 	$message = encode($message);
 	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<failure>$message</failure>";
-	print "$name failed\n";
+	print "failed\n";
 	return reportAny($name, $timer, $inner);	
 }
 sub reportError {
@@ -206,7 +208,7 @@ sub reportError {
 	$message = encode($message);
 	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
 	my $inner = "<error>$message</error>";
-	print "$name errored\n";
+	print "errored\n";
 	return reportAny($name, $timer, $inner);	
 }
 sub reportSuccess {
@@ -214,7 +216,7 @@ sub reportSuccess {
 	$globalNumPassed++;
 	$message = encode($message);
 	my $inner = "$message";
-	print "$name passed\n";
+	print "passed\n";
 	return reportAny($name, $timer, $inner);	
 }
 

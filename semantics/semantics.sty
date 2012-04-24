@@ -5,14 +5,15 @@
 \usepackage{etex}
 \usepackage{courier}
 \usepackage{booktabs}
-%\usepackage{geometry}
- 
-%\newgeometry{papersize={16in,8.5in},textwidth=15.75in,textheight=7.7in}
+\usepackage[margin=1in]{geometry}
+
+%\newgeometry{margin=1in}
 % overrides
 \renewcommand{\ellipses}{\mathrel{\cdot\kern-2pt\cdot\kern-2pt\cdot}}
 \renewcommand{\kallLarge}{\ballLarge}
 \renewcommand{\mall}[3]{\left\langle{#3}\right\rangle_{\sf #2}}
-\renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}\bigskip}
+\renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}}
+\renewcommand{\ruleAttributes}[1]{\par{}\hspace{2em} [#1]}
 
 \newcommand{\mycomment}[1]{#1}
 \providecommand{\kctor}{}
@@ -45,7 +46,6 @@
 \newcommand{\cdisplay}[1]{\lstinline`#1`}
 % 
 \newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
-
 \newcommand{\source}[2][]{%
 	\paragraph[]{%
 		\ifthenelse{\equal{#1}{}}{}{%
@@ -53,6 +53,11 @@
 		}%
 		#2%
 	}%
+}
+\newcommand{\fromStandard}[2]{%
+\begin{tikzpicture}
+    \node[comment]{\begin{minipage}{50em}#1 #2\end{minipage}};
+  \end{tikzpicture}%
 }
 
 \newcommand{\para}[2]{%

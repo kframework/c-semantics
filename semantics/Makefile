@@ -53,22 +53,26 @@ endif
 # @echo > k-includes.k
 #@echo "load $(K_PRELUDE)" >> k-includes.k
 #@echo "load $(K_SOCKETS)" >> k-includes.k
-
-%.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
-%.tex: check-vars $(K_MAUDE) c.k %.k Makefile
-	@rm -f temp-c-$*.tex
+temp-c-%.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
+temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
+#@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
 	$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
-	@sed -i 's|}mybracket|}\\mybracket|' temp-c-$*.tex
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' temp-c-$*.tex
-# @sed -i 's|\\begin{kdefinition}||' temp-c-$*.tex
-# @sed -i 's|\\end{kdefinition}||' temp-c-$*.tex
-	@mv temp-c-$*.tex $@
+	
+%.tex: temp-c-%.tex Makefile
+	@echo "Modifying latex..."
+	@cp $< $@.temp
+	@sed -i 's|\\documentclass{article}|\\documentclass[landscape]{article}|' $@.temp
+	@sed -i 's|\\usepackage\[poster,|\\usepackage\[|' $@.temp
+	@sed -i 's|\\newpage||' $@.temp
+	@sed -i 's|}mybracket|}\\mybracket|' $@.temp
+	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
+	@mv $@.temp $@
 
 %.pdf: %.tex semantics.sty
 	@echo "Compiling latex..."
 	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
-	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
+#@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 	@mv temp-c-$*.pdf $@
 	@echo "Done."
 
@@ -104,24 +108,29 @@ all.tex:
 
 	
 common-pdf-modules: \
-common-c-syntax.pdf \
+c.pdf \
 common-c-configuration.pdf \
-dynamic-c-configuration.pdf \
-common-c-helpers.pdf \
-common-c-statements.pdf \
-dynamic-c-statements.pdf \
-common-c-expressions.pdf \
-dynamic-c-expressions.pdf \
 common-c-declarations.pdf \
-dynamic-c-declarations.pdf \
-common-c-typing.pdf \
-dynamic-c-typing.pdf \
-dynamic-c-conversions.pdf \
-dynamic-c-memory.pdf \
-dynamic-c-standard-lib.pdf \
+common-c-expressions.pdf \
+common-c-helpers.pdf \
 common-c-semantics.pdf \
+common-c-sized-operations.pdf \
+common-c-statements.pdf \
+common-c-syntax.pdf \
+common-c-typing.pdf \
+c-syntax.pdf \
+dynamic-c-configuration.pdf \
+dynamic-c-conversions.pdf \
+dynamic-c-declarations.pdf \
+dynamic-c-errors.pdf \
+dynamic-c-expressions.pdf \
+dynamic-c-ltl.pdf \
+dynamic-c-memory.pdf \
 dynamic-c-semantics.pdf \
-c.pdf
+dynamic-c-standard-lib.pdf \
+dynamic-c-statements.pdf \
+dynamic-c-typing.pdf
+
 # c-syntax.pdf
 #
 

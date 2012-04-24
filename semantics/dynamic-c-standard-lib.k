@@ -955,7 +955,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		...</ k >
 		< malloced >... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</ malloced >
 		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
-		when OldLoc:Nat =/=Int NullPointer
+		when OldLoc:Nat =/=K NullPointer
 		where NewLoc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
 		[structural]
 	rule [realloc-null]:
