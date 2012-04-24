@@ -103,6 +103,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	
 	op skipval : -> KResult
 	op debug : -> K 
+	op debug-m : K -> K
 	op discard : -> K 
 	op File-Scope : -> Id // [ctor] 
 	op unnamedBitField : -> Id // [ctor] 

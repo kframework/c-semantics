@@ -169,6 +169,8 @@ if (defined($ENV{'PROFILE'})) {
 if (defined($ENV{'DEBUG'})) {
         $isInterp = 0;
 	print $fileCommand "break select debug .\n";
+	print $fileCommand "break select debug-k .\n";
+	print $fileCommand "break select debug-m .\n";
 	print $fileCommand "set break on .\n";
 }
 if (defined($ENV{'TRACEMAUDE'})) {

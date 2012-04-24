@@ -15,6 +15,7 @@ endkm
 
 kmod COMMON-SEMANTICS-PROCESS-LABELS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+	// now that we can have different strictnesses in different cells, maybe this can be redone easily
 /*
 	things I have to keep track of:
 		in goto map:

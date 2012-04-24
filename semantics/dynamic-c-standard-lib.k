@@ -907,6 +907,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 	rule [debug]:
 		< k > prepareBuiltin(Identifier("__debug"), _) => skipval ...</ k >
 		[interpRule]
+	rule [debug-k]:
+		< k > debug => .K ...</ k >
+		[interpRule]
+	rule [debug-m]:
+		< k > debug-m(_) => .K ...</ k >
+		[interpRule]
 	
 	rule [exit]:
 		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _ 

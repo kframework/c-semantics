@@ -49,10 +49,11 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	
 	declare getIdOfDeclaration : K -> K 
 	declare getIdOfName : K -> K 
-	define getIdOfDeclaration(DeclarationDefinition(InitNameGroup(_, List(K:K)))) => getIdOfName(K:K) [structural]
-	define getIdOfName(InitName(K:K, _)) => getIdOfName(K:K) [structural]
-	define getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K) [structural] 
-	define getIdOfName(Name(X:Id, _)) => X:Id [structural]
+	define getIdOfDeclaration(DeclarationDefinition(InitNameGroup(_, List(K:K))))
+		=> getIdOfName(K:K)
+	define getIdOfName(InitName(K:K, _)) => getIdOfName(K:K)
+	define getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K)
+	define getIdOfName(Name(X:Id, _)) => X:Id
 	
 	// this maintains byte order
 	declare fillToBytes-aux : K List{K} -> K

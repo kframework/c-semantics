@@ -60,6 +60,7 @@ foreach my $fullFilename (@files) {
 	performTest($dirname, $baseFilename, @allFilenames);
 } 
 open(OUT, ">$outputFilename"); #open for write, overwrite
+binmode OUT, ":utf8";
 print OUT "<?xml version='1.0' encoding='UTF-8' ?>\n";
 print OUT "<testsuite name='$testSuite' time='$globalTotalTime'>\n";
 print OUT "$globalTests";
@@ -133,7 +134,7 @@ sub performTest {
 		}
 	}
 	
-	my $kccRunOutput = `timeout 10m $kccFilename 2>&1`;
+	my $kccRunOutput = `timeout 15m $kccFilename 2>&1`;
 	$kccRunOutput =~ s/^VOLATILE.*//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {

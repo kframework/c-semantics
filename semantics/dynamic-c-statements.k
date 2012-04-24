@@ -355,9 +355,6 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< blockHistory > ListItem(TargetBlock:Nat) ...</ blockHistory >
 		when getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
-		
-	// op getIdString : K -> String 
-	// rule getIdString(Identifier(S:String)) => S:String [structural]
 	
 	op enableInits : -> K 
 	
@@ -367,7 +364,12 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		[structural] 
 	
 	rule
-		< k > (. => Decl:K ~> enableInits) ~> addVariablesForBlock(TargetBlock:Nat, 
+		< k > (. => // debug-m("before decl") ~> 
+				Decl:K
+				// ~> debug-m("after decl")
+				~> enableInits
+			)
+			~> addVariablesForBlock(TargetBlock:Nat, 
 				((ListItem(frozenDeclaration(_:Nat, TargetBlock:Nat, Decl:K)) => .List) _)
 			)
 		...</ k >
