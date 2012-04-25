@@ -3,6 +3,11 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
 use Text::Diff;
 use XML::LibXML;
+# use Unicode::Escape;
+#use Encoding::FixLatin qw(fix_latin);
+require Encode;
+use Devel::Peek qw(Dump);
+
 
 # use XML::Writer;
 
@@ -60,10 +65,20 @@ foreach my $fullFilename (@files) {
 	performTest($dirname, $baseFilename, @allFilenames);
 } 
 open(OUT, ">$outputFilename"); #open for write, overwrite
-binmode OUT, ":utf8";
+# binmode OUT, ':utf8';
 print OUT "<?xml version='1.0' encoding='UTF-8' ?>\n";
 print OUT "<testsuite name='$testSuite' time='$globalTotalTime'>\n";
-print OUT "$globalTests";
+# Dump $globalTests;
+# utf8::downgrade($globalTests);
+# utf8::downgrade($globalTests);
+# my $utf8_string = fix_latin($globalTests);
+# $globalTests =~ s/([^\x00-\x7f])/foo/g;
+# sprintf("&#%d;", ord($1))
+# $globalTests =~ s/./foo/g;
+# $globalTests = "";
+# my $utf8_string = Encode::decode('utf8', $globalTests, 6);
+my $utf8_string = $globalTests;
+print OUT "$utf8_string";
 print OUT "</testsuite>\n";
 close OUT;
 
@@ -134,7 +149,7 @@ sub performTest {
 		}
 	}
 	
-	my $kccRunOutput = `timeout 15m $kccFilename 2>&1`;
+	my $kccRunOutput = `timeout 20m $kccFilename 2>&1`;
 	$kccRunOutput =~ s/^VOLATILE.*//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {
@@ -233,6 +248,7 @@ sub reportAny {
 
 sub encode {
 	my ($str) = (@_);
+	$str =~ s/([^\x00-\x7f])/sprintf("&#%d;", ord($1))/eg;
 	my $doc = XML::LibXML::Document->new('1.0', 'UTF-8');
 	my $node = $doc->createTextNode($str);
 	return $node->toString();
