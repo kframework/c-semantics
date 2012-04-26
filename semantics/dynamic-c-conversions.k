@@ -393,7 +393,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
 		when hasBitfieldType(T:KResult)
-		andBool I:Int <Int min(innerType(T:KResult))
+		andBool I:Int <Int min(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
 	define [cast-uchar-of-small]:
@@ -427,7 +427,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when hasBitfieldType(T:KResult)
-		andBool I:Int >Int max(innerType(T:KResult))
+		andBool I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
 	define [cast-uchar-of-big]:
@@ -464,7 +464,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
 		when hasBitfieldType(T:KResult)
-		andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(innerType(T:KResult))))
+		andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasIntegerType(T':KResult)
 		andBool hasSignedIntegerType(innerType(T:KResult))
 	define [cast-schar-of-huge]:
