@@ -12,7 +12,7 @@ K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
 K_PL_META_LEVEL = $(K_BASE)/core/maude/lib/pl-meta-level
 
 
-K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K_TCP).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
+K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
@@ -176,10 +176,10 @@ c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILE
 	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
 	@echo "Done".
 
-c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) Makefile
+c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
 	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
-c-total-nd.maude: check-vars c-compiled-nd.maude $(K_BASE_FILES) Makefile
+c-total-nd.maude: check-vars c-compiled-nd.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
 semantics: c-total.maude c-total-nd.maude

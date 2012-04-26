@@ -20,56 +20,11 @@ endkm
 kmod COMMON-SEMANTIC-SYNTAX is
 	including COMMON-INCOMING-MODULES 
 	
-	// op _==K_ : K K -> Bool
-	// op _==Int_ : K K -> Bool
-	// op _==Float_ : K K -> Bool
-	// op _==String_ : K K -> Bool
-	// op _==Bag_ : Bag Bag -> Bool
-	// op _==List_ : List List -> Bool
-	// op _==CellLabel_ : CellLabel CellLabel -> Bool
-	// op _==List{K}_ : List{K} List{K} -> Bool
-	// op _==KLabel_ : KLabel KLabel -> Bool
-	
-	// op _=/=K_ : K K -> Bool
-	// op _=/=Int_ : K K -> Bool
-	// op _=/=Float_ : K K -> Bool
-	// op _=/=String_ : K K -> Bool
-	// op _=/=Bag_ : Bag Bag -> Bool
-	// op _=/=List_ : List List -> Bool
-	// op _=/=CellLabel_ : CellLabel CellLabel -> Bool
-	// op _=/=List{K}_ : List{K} List{K} -> Bool
-	// op _=/=KLabel_ : KLabel KLabel -> Bool
-	
-	// rule K1:K ==K K2:K => K1:K ==Bool K2:K [anywhere]
-	// rule I1:Int ==Int I2:Int => I1:Int ==Bool I2:Int [anywhere]
-	// rule F1:Float ==Float F2:Float => F1:Float ==Bool F2:Float [anywhere]
-	// rule S1:String ==String S2:String => S1:String ==Bool S2:String [anywhere]
-	// rule B1:Bag ==Bag B2:Bag => B1:Bag ==Bool B2:Bag [anywhere]
-	// rule L1:List ==List L2:List => L1:List ==Bool L2:List [anywhere]
-	// rule L1:CellLabel ==CellLabel L2:CellLabel => L1:CellLabel ==Bool L2:CellLabel [anywhere]
-	// rule L1:List{K} ==List{K} L2:List{K} => L1:List{K} ==Bool L2:List{K} [anywhere]
-	// rule KL1:KLabel ==KLabel KL2:KLabel => KL1:KLabel ==Bool KL2:KLabel [anywhere]
-	
-	// rule K1:K =/=K K2:K => K1:K =/=Bool K2:K [anywhere]
-	// rule I1:Int =/=Int I2:Int => I1:Int =/=Bool I2:Int [anywhere]
-	// rule F1:Float =/=Float F2:Float => F1:Float =/=Bool F2:Float [anywhere]
-	// rule S1:String =/=String S2:String => S1:String =/=Bool S2:String [anywhere]
-	// rule B1:Bag =/=Bag B2:Bag => B1:Bag =/=Bool B2:Bag [anywhere]
-	// rule L1:List =/=List L2:List => L1:List =/=Bool L2:List [anywhere]
-	// rule L1:CellLabel =/=CellLabel L2:CellLabel => L1:CellLabel =/=Bool L2:CellLabel [anywhere]
-	// rule L1:List{K} =/=List{K} L2:List{K} => L1:List{K} =/=Bool L2:List{K} [anywhere]
-	// rule KL1:KLabel =/=KLabel KL2:KLabel => KL1:KLabel =/=Bool KL2:KLabel [anywhere]
-	
-	
 	// fixme super sketchy
 	define true orBool _ => true
 	define _ orBool true => true
 	define false andBool _ => false
 	define _ andBool false => false
-	
-	// nontermination
-	// define 'isInt(K:K) => true
-		// when 'isNat(K:K)
 		
 	// these are used for runtime settings
 	op kccSettingSimpleType : String -> SimpleType
@@ -422,32 +377,7 @@ kmod COMMON-C-SETTINGS is
 	define [max]: max(t(S:Set, enumType(_:Id))) => max(t(S:Set, int)) [structural]
 	
 	declare rank : Type -> Int 
-		
-	define rank(t(_, bool)) => 0 [structural]
-	define rank(t(_, signed-char)) => 1 [structural]
-	define rank(t(_, unsigned-char)) => 1 [structural]
-	define rank(t(_, short-int)) => 2 [structural]
-	define rank(t(_, unsigned-short-int)) => 2 [structural]
-	define rank(t(_, int)) => 3 [structural]
-	define rank(t(_, unsigned-int)) => 3 [structural]
-	define rank(t(_, long-int)) => 4 [structural]
-	define rank(t(_, unsigned-long-int)) => 4 [structural]
-	define rank(t(_, long-long-int)) => 5 [structural]
-	define rank(t(_, unsigned-long-long-int)) => 5 [structural]
 	
-	define rank(t(S:Set, enumType(_:Id))) => rank(t(S:Set, int)) [structural]
-	//C99 6.3.1.1
-	
-	/*
-	// no two signed are the same
-	rank of signed shall be greater than rank of signed with less precision
-	rank(long-long-int) > rank(long int) > rank(int) > rank(short int) > rank(signed-char)
-	rank unsigned is same as signed
-	rank(char) == rank(signed char) == rank(unsigned-char)
-	rank(_Bool) < rank(char)
-	rank(enumType) == rank compatible int type
-	transitive
-	*/
 endkm
 
 // load common-c-sized-operations

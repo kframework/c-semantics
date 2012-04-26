@@ -318,7 +318,7 @@ sub runWrapper {
 sub runDebugger {
 	my ($command) = (@_);
 	print "Running $command\n";
-	exec($command);
+	exec("java -jar /home/grosu/celliso2/k-framework-daily/trunk/core/java/ioserver.jar 7500 & $command");
 }
 
 sub writeToFile {
