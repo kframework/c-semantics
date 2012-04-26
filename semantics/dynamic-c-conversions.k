@@ -631,12 +631,10 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, t(_, pointerType(_)))) 
 			=> tv(N:Nat, t(S:Set, pointerType(T:KResult)))
-
 endkm
 
-kmod DYNAMIC-C-CONVERSIONS is
-	including DYNAMIC-SEMANTICS-CAST 
-	including DYNAMIC-SEMANTICS-PROMOTIONS 
+kmod DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 
 	// fixme not sure about this
 	// interpret is used to "cast" values read from memory
@@ -732,4 +730,13 @@ kmod DYNAMIC-C-CONVERSIONS is
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
 	define unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
 	define signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
+
+endkm
+
+kmod DYNAMIC-C-CONVERSIONS is
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+	including DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
+	including DYNAMIC-SEMANTICS-CAST
+	including DYNAMIC-SEMANTICS-PROMOTIONS 
+	including DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 endkm
