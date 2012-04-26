@@ -835,6 +835,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	define [innerType-pointerType]:
 		innerType(t(_, pointerType(T:KResult))) => T:KResult 
 		[structural]
+	define [innerType-bitfieldType]:
+		innerType(t(_, bitfieldType(T:KResult, _:Nat))) => T:KResult 
+		[structural]
 
 	context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
 	rule

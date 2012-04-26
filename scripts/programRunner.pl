@@ -87,9 +87,12 @@ if (defined($ENV{'PRINTMAUDE'})) {
 	exit(0);
 }
 my $iolog_flag = "";
-if (defined($ENV{'IOLOG'})) {
-	$iolog_flag = "--createLogs ";
-}
+my $fileIOLog = File::Temp->new( TEMPLATE => 'tmp-kcc-iolog-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+push(@temporaryFiles, $fileIOLog);
+# temporary hack for bad io server: assume log
+# if (defined($ENV{'IOLOG'})) {
+	$iolog_flag = "--createLogs --logfileName $fileIOLog";
+#}
 
 # these are compile time settings and are set by the compile script using this file as a template
 my $IO_SERVER="EXTERN_IO_SERVER";

@@ -297,14 +297,12 @@ integer type.
 	*/	
 	define [arithmeticConversion-unsigned-ge-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
-		when T:KResult =/=K T':KResult
-		andBool hasSignedIntegerType(T:KResult) 
+		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) >=Int rank(T:KResult)
 	define [arithmeticConversion-unsigned-ge-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
-		when T:KResult =/=K T':KResult
-		andBool hasUnsignedIntegerType(T:KResult) 
+		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) >=Int rank(T':KResult)
 	
@@ -317,16 +315,14 @@ integer type.
 	*/
 	define [arithmeticConversion-signed-big-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
-		when T:KResult =/=K T':KResult
-		andBool hasSignedIntegerType(T:KResult) 
+		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
 		andBool min(T:KResult) <=Int min(T':KResult)
 		andBool max(T:KResult) >=Int max(T':KResult)
 	define [arithmeticConversion-signed-big-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
-		when T:KResult =/=K T':KResult
-		andBool hasUnsignedIntegerType(T:KResult) 
+		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) <Int rank(T':KResult)
 		andBool min(T':KResult) <=Int min(T:KResult)
@@ -341,15 +337,13 @@ integer type.
 	*/
 	define [arithmeticConversion-to-unsigned-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T:KResult)
-		when T:KResult =/=K T':KResult
-		andBool hasSignedIntegerType(T:KResult) 
+		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
 		andBool (min(T:KResult) >Int min(T':KResult) orBool max(T:KResult) <Int max(T':KResult))
 	define [arithmeticConversion-to-unsigned-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T':KResult)
-		when T:KResult =/=K T':KResult
-		andBool hasUnsignedIntegerType(T:KResult) 
+		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
 		andBool rank(T:KResult) <Int rank(T':KResult)
 		andBool (min(T':KResult) >Int min(T:KResult) orBool max(T':KResult) <Int max(T:KResult))
@@ -396,11 +390,12 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
 	}*/
 	define [cast-ubitfield-of-small]:
-		cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int +Int max(t(S:Set, bitfieldType(T:KResult, Len:Nat))) +Int 1, T':KResult))
-		when I:Int <Int min(t(S:Set, bitfieldType(T:KResult, Len:Nat)))
+		cast(T:KResult, tv(I:Int, T':KResult)) 
+			=> cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
+		when hasBitfieldType(T:KResult)
+		andBool I:Int <Int min(innerType(T:KResult))
 		andBool hasIntegerType(T':KResult)
-		andBool hasUnsignedIntegerType(T:KResult)
+		andBool hasUnsignedIntegerType(innerType(T:KResult))
 	define [cast-uchar-of-small]:
 		cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
@@ -429,11 +424,12 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	
 
 	define [cast-ubitfield-of-big]:
-		cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int, T':KResult)) 
-			=> tv(I:Int %Int (max(t(S:Set, bitfieldType(T:KResult, Len:Nat))) +Int 1), t(S:Set, bitfieldType(T:KResult, Len:Nat)))
-		when I:Int >Int max(t(S:Set, bitfieldType(T:KResult, Len:Nat)))
+		cast(T:KResult, tv(I:Int, T':KResult)) 
+			=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
+		when hasBitfieldType(T:KResult)
+		andBool I:Int >Int max(innerType(T:KResult))
 		andBool hasIntegerType(T':KResult)
-		andBool hasUnsignedIntegerType(T:KResult)
+		andBool hasUnsignedIntegerType(innerType(T:KResult))
 	define [cast-uchar-of-big]:
 		cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-char)) +Int 1), t(S:Set, unsigned-char))
@@ -465,11 +461,12 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	}*/
 	// choice
 	define [cast-sbitfield-of-huge]:
-		cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int, T':KResult)) 
-			=> cast(t(S:Set, bitfieldType(T:KResult, Len:Nat)), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat))))), T':KResult)) 
-		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, bitfieldType(T:KResult, Len:Nat)))))
+		cast(T:KResult, tv(I:Int, T':KResult)) 
+			=> cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
+		when hasBitfieldType(T:KResult)
+		andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(innerType(T:KResult))))
 		andBool hasIntegerType(T':KResult)
-		andBool hasSignedIntegerType(T:KResult)
+		andBool hasSignedIntegerType(innerType(T:KResult))
 	define [cast-schar-of-huge]:
 		cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 

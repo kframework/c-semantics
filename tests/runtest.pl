@@ -149,7 +149,7 @@ sub performTest {
 		}
 	}
 	
-	my $kccRunOutput = `timeout 20m $kccFilename 2>&1`;
+	my $kccRunOutput = `timeout 13m $kccFilename 2>&1`;
 	$kccRunOutput =~ s/^VOLATILE.*//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {
