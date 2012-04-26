@@ -57,7 +57,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	context readActual(_, _, value(HOLE))
 	rule read(Loc:Nat, T:KResult) => read-aux(Loc:Nat, T:KResult, value(bitSizeofType(T:KResult))) 
-		when notBool(hasFunctionType(T:KResult))
+		when notBool(isFunctionType(T:KResult))
 		[structural]
 	
 	
@@ -81,13 +81,13 @@ kmod DYNAMIC-SEMANTICS-READING is
 		< k > readActual(Loc:Nat, T:KResult, bitSize:Nat)
 			=> concretize(T:KResult, extractBytesFromMem(Loc:Nat, bitsToBytes(bitSize:Nat)))
 		...</ k >
-		when notBool hasBitfieldType(T:KResult)
+		when notBool isBitfieldType(T:KResult)
 		[structural]
 	rule [read-bitfield]:
 		< k > readActual(Loc:Nat, T:KResult, bitSize:Nat)
 			=> concretize(T:KResult, fillToBytes(extractBitsFromMem(Loc:Nat, bitSize:Nat))) 
 		...</ k >
-		when hasBitfieldType(T:KResult)
+		when isBitfieldType(T:KResult)
 		[structural]
 	
 		
@@ -97,21 +97,21 @@ kmod DYNAMIC-SEMANTICS-READING is
 			=> joinIntegerBytes(T:KResult, L:List{K}) 
 		...</ k >
 		when hasIntegerType(T:KResult) 
-		andBool notBool hasBitfieldType(T:KResult) 
+		andBool notBool isBitfieldType(T:KResult) 
 		[structural]
 	rule 
 		< k > concretize(t(S:Set, bitfieldType(T:KResult, Len:Nat)), dataList(L:List{K})) 
 			=> joinIntegerBytes(t(S:Set, bitfieldType(T:KResult, Len:Nat)), reverseList(L:List{K})) 
 		...</ k >
 		//if // hasIntegerType(T:KResult) // redundant
-		//hasBitfieldType(T:KResult) 
+		//isBitfieldType(T:KResult) 
 		[structural]
 		
 	// FIXME very unsafe, not checking size of list or its contents
 	rule < k > concretize(T:KResult, dataList((piece(encodedFloat(F:Float), Len:Nat),, _))) 
 			=> tv(F:Float, T:KResult)
 		...</ k >
-		when hasFloatType(T:KResult)
+		when isFloatType(T:KResult)
 		andBool Len:Nat ==Int numBitsPerByte 
 		[structural]
 
@@ -121,7 +121,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule < k > concretize(T:KResult, dataList(L:List{K}))
 			=> joinPointerBytes(T:KResult, L:List{K})
 		...</ k >
-		when hasPointerType(T:KResult)
+		when isPointerType(T:KResult)
 		[structural]
 	rule < k > joinPointerBytes(T:KResult, (piece(N:Nat, Len:Nat),, L:List{K}))
 			=> joinPointerBytes-aux(T:KResult, L:List{K}, N:Nat)
@@ -144,12 +144,12 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule < k > concretize(t(S:Set, structType(S:Id)), dataList(L:List{K})) 
 			=> tv(L:List{K}, t(S:Set, structType(S:Id))) 
 		...</ k >
-		// if hasStructType(T:KResult)
+		// if isStructType(T:KResult)
 		[structural]
 	rule < k > concretize(t(S:Set, unionType(S:Id)), dataList(L:List{K})) 
 			=> tv(L:List{K}, t(S:Set, unionType(S:Id)))
 		...</ k >
-		// if hasUnionType(T:KResult)
+		// if isUnionType(T:KResult)
 		[structural]
 
 	// FIXME assuming bytes?
@@ -163,7 +163,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	rule [joinIntegerBytes-unknown-char]:
 		joinIntegerBytes-aux(T:KResult, piece(unknown(Len:Nat), Len:Nat), piece(0, 0))
 			=> tv(piece(unknown(Len:Nat), Len:Nat), T:KResult)
-		when hasCharType(T:KResult)
+		when isCharType(T:KResult)
 		[structural]
 	
 	rule [joinIntegerBytes-step]:
@@ -366,7 +366,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	op write-aux : K Value K -> K [metadata "strict=(2)"]
 	rule write(lv(Dest:Nat, T':KResult), tv(V:List{K}, T:KResult)) 
 		=> write-aux(Dest:Nat, tv(V:List{K}, T:KResult), value(bitSizeofType(T:KResult))) 
-		when notBool hasConstType(T':KResult)
+		when notBool isConstType(T':KResult)
 		[structural]
 	context write-aux(_, _, value(HOLE))
 	
@@ -400,7 +400,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		when bitSize:Nat %Int numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:Nat)
-		andBool notBool hasBitfieldType(T:KResult)
+		andBool notBool isBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
 		[structural]
 	rule [write-normal-union-field]:
@@ -438,7 +438,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		when bitSize:Nat %Int numBitsPerByte ==Int 0
 		andBool isByteLoc(Loc:Nat)
-		andBool notBool hasBitfieldType(T:KResult)
+		andBool notBool isBitfieldType(T:KResult)
 		[structural]
 		
 	// define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat [structural]
@@ -474,7 +474,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		when (bitSize:Nat %Int numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:Nat))
-		orBool hasBitfieldType(T:KResult))
+		orBool isBitfieldType(T:KResult))
 		andBool I:Int <Int 0
 		[structural]
 	
@@ -493,7 +493,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		when bitSize:Nat %Int numBitsPerByte =/=Int 0
 		orBool notBool(isByteLoc(Loc:Nat))
-		orBool hasBitfieldType(T:KResult)
+		orBool isBitfieldType(T:KResult)
 		andBool notBool hasUnionMarker(T:KResult)
 		[structural]
 		
@@ -593,7 +593,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define [splitBytes-char]:
 		splitBytes(tv(N:Nat, T:KResult))
 			=> dataList(piece(N:Nat, numBitsPerByte))
-		when hasCharType(T:KResult)
+		when isCharType(T:KResult)
 		[structural] 
 	define [splitBytes-int]:
 		splitBytes(tv(I:Int, T:KResult)) 
@@ -605,7 +605,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define [splitBytes-float]:
 		splitBytes(tv(F:Float, T:KResult)) 
 			=> splitFloatBytes(F:Float, T:KResult, value(byteSizeofType(T:KResult)))
-		when hasFloatType(T:KResult)
+		when isFloatType(T:KResult)
 		[structural] 
 	define [splitBytes-pointer]:
 		splitBytes(tv(I:Int, t(S:Set, pointerType(T:KResult)))) 
@@ -614,7 +614,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	define [splitBytes-struct]:
 		splitBytes(tv(L:List{K}, t(S:Set, structType(S:Id)))) 
 			=> splitStructBytes(dataList(L:List{K}), t(S:Set, structType(S:Id)), value(byteSizeofType(t(S:Set, structType(S:Id)))))
-		// if hasStructType(T:KResult)
+		// if isStructType(T:KResult)
 		[structural]
 	define [splitBytes-union]:
 		splitBytes(tv(L:List{K}, t(S:Set, unionType(S:Id)))) 

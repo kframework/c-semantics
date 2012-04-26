@@ -19,10 +19,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	rule [reval-skipval]: reval(skipval) => skipval [structural]
 	rule [reval-emptyval]: reval(emptyValue) => emptyValue [structural]
-	// rule [reval-tv-normal]: reval(tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult) if notBool hasArrayType(T:KResult) andBool notBool hasFunctionType(T:KResult) [structural]
+	// rule [reval-tv-normal]: reval(tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult) if notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) [structural]
 	rule [reval-tv-normal]: reval(tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult) [structural] 
 	// tvs can't be arrays or functions
-	// rule [peval-tv-normal]: peval(tv(V:List{K}, T:KResult)) => tv(V:List{K}, T:KResult) if notBool hasArrayType(T:KResult) andBool notBool hasFunctionType(T:KResult) [structural]
+	// rule [peval-tv-normal]: peval(tv(V:List{K}, T:KResult)) => tv(V:List{K}, T:KResult) if notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) [structural]
 	rule [peval-tv-normal]: peval(tv(V:List{K}, T:KResult)) => tv(V:List{K}, T:KResult) [structural]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
@@ -30,10 +30,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	}
 	*/
 	rule reval(lv(Loc:Nat, T:KResult)) => read(Loc:Nat, unqualifyType(T:KResult)) 
-		when notBool hasArrayType(T:KResult) andBool notBool hasFunctionType(T:KResult) 
+		when notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) 
 		[structural]
 	rule peval(lv(Loc:Nat, T:KResult)) => lv(Loc:Nat, T:KResult) 
-		when notBool hasArrayType(T:KResult) andBool notBool hasFunctionType(T:KResult) 
+		when notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) 
 		[structural]
 
 	
@@ -42,10 +42,10 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	}
 	*/
 	rule [reval-lv-array]: reval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
-		when hasArrayType(T:KResult) 
+		when isArrayType(T:KResult) 
 		[structural]
 	rule [peval-lv-array]: peval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
-		when hasArrayType(T:KResult) 
+		when isArrayType(T:KResult) 
 		[structural]
 	// should never get to the situation where we have tv(..., arrayType)
 	
@@ -56,11 +56,11 @@ kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	*/
 	rule [reval-function]: 
 		reval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(.Set, pointerType(T:KResult))) 
-		when hasFunctionType(T:KResult) 
+		when isFunctionType(T:KResult) 
 		[structural]
 	rule [peval-function]: 
 		peval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(.Set, pointerType(T:KResult))) 
-		when hasFunctionType(T:KResult) 
+		when isFunctionType(T:KResult) 
 	[structural]
 	
 endkm
@@ -187,15 +187,15 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	// fixme, not handling qualifiers correctly
 	define
 		retype(T:KResult) => t(.Set, pointerType(innerType(T:KResult)))
-		when hasArrayType(T:KResult)
+		when isArrayType(T:KResult)
 		[structural]
 	define
 		retype(T:KResult) => t(.Set, pointerType(T:KResult))
-		when hasFunctionType(T:KResult)
+		when isFunctionType(T:KResult)
 		[structural]
 	define
 		retype(T:KResult) => T:KResult
-		when notBool (hasArrayType(T:KResult) orBool hasFunctionType(T:KResult))
+		when notBool (isArrayType(T:KResult) orBool isFunctionType(T:KResult))
 		[structural]	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
 	The first operand is evaluated; there is a sequence point between its evaluation and the evaluation of the second or third operand (whichever is evaluated). The second operand is evaluated only if the first compares unequal to 0; the third operand is evaluated only if the first compares equal to 0; the result is the value of the second or third operand (whichever is evaluated), converted to the type described below.
@@ -216,8 +216,8 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 			~> E:K ? E1:K : E2:K
 		...</ k >
 		when T1:KResult =/=K T2:KResult
-		andBool hasArithmeticType(T1:KResult)
-		andBool hasArithmeticType(T2:KResult)
+		andBool isArithmeticType(T1:KResult)
+		andBool isArithmeticType(T2:KResult)
 		[structural]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
@@ -230,14 +230,14 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 			~> E:K ? tv(0, T1:KResult) : E2:K
 		...</ k >
 		when hasIntegerType(T1:KResult)
-		andBool hasPointerType(T2:KResult)
+		andBool isPointerType(T2:KResult)
 		[structural]
 	rule [conditional-right-is-null]:
 		< k > (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
 			~> E:K ? E1:K : tv(0, T2:KResult)
 		...</ k >
 		when hasIntegerType(T2:KResult)
-		andBool hasPointerType(T1:KResult)
+		andBool isPointerType(T1:KResult)
 		[structural]
 		
 	// fixme, this is wrong
@@ -245,8 +245,8 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		when hasPointerType(T1:KResult)
-		andBool hasPointerType(T2:KResult)
+		when isPointerType(T1:KResult)
+		andBool isPointerType(T2:KResult)
 		[structural]
 		
 	// this should take care of the void/struct cases
@@ -254,7 +254,7 @@ kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		< k > (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
 			~> E:K ? E1:K : E2:K
 		...</ k >
-		when notBool hasPointerType(T:KResult)
+		when notBool isPointerType(T:KResult)
 		[structural]
 	rule
 		< k > convertedType(T:KResult) ~> E:K ? E1:K : E2:K
@@ -311,7 +311,7 @@ kmod DYNAMIC-SEMANTICS-IDENTIFIERS is
 		< env > Env:Map </ env >
 		< types >... X:Id |-> T:KResult ...</ types >
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
-		when hasFunctionType(T:KResult)
+		when isFunctionType(T:KResult)
 		andBool notBool $hasMapping(Env:Map, X:Id)
 		[structural]
 endkm
@@ -339,7 +339,7 @@ kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		< k > Call(tv(Loc:Nat, t(_, pointerType(T:KResult))), List(L:List{KResult}))
 			=> application(readFunction(Loc:Nat), L:List{KResult})
 		...</ k >
-		when hasFunctionType(T:KResult)
+		when isFunctionType(T:KResult)
 		[structural]
 
 	rule [populateFromGlobal]:
@@ -789,22 +789,22 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule tv(I1:Int, T:KResult) < tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int <Int I2:Int)
 		when hasBeenPromoted(T:KResult)
-		orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) <= tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int <=Int I2:Int)
 		when hasBeenPromoted(T:KResult)
-		orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) > tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int >Int I2:Int)
 		when hasBeenPromoted(T:KResult)
-		orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) >= tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int >=Int I2:Int)
 		when hasBeenPromoted(T:KResult)
-		orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule
 		tv(F1:Float, T:KResult) < tv(F2:Float, T:KResult)
@@ -828,19 +828,19 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	// fixme there are further restrictions on pointers
 	rule [ptr-compare-lt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) < tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat <Int Offset':Nat)
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 	rule [ptr-compare-lte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) <= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat <=Int Offset':Nat)
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 	rule [ptr-compare-gt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) > tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat >Int Offset':Nat)
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 	rule [ptr-compare-gte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) >= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
 			=> makeTruth(Offset:Nat >=Int Offset':Nat)
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.5.9}{3}}}{
@@ -852,49 +852,49 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		=> makeTruth(I1:Int ==K I2:Int)
 		when (
 			hasBeenPromoted(T:KResult)
-			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+			orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) != tv(I2:Int, T:KResult)
 		=> makeTruth(I1:Int =/=K I2:Int)
 		when (
 			hasBeenPromoted(T:KResult)
-			orBool (hasPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
+			orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 	
 	// if they're identical, we know for sure they are the same
 	rule tv(N:Nat, T:KResult) == tv(N:Nat, T':KResult)
 		=> tv(1, t(.Set, int))
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 	rule tv(N:Nat, T:KResult) != tv(N:Nat, T':KResult)
 		=> tv(0, t(.Set, int))
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 	
 	// if one of the pointers is null, it's also straightforward
 	rule tv(NullPointer, T:KResult) == tv(N:Nat, T':KResult)
 		=> makeTruth(NullPointer ==K N:Nat)
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 	rule tv(NullPointer, T:KResult) != tv(N:Nat, T':KResult)
 		=> makeTruth(NullPointer =/=K N:Nat)
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 	rule tv(N:Nat, T:KResult) == tv(NullPointer, T':KResult)
 		=> makeTruth(NullPointer ==K N:Nat)
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 	rule tv(N:Nat, T:KResult) != tv(NullPointer, T':KResult)
 		=> makeTruth(NullPointer =/=K N:Nat)
-		when hasPointerType(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) 
+		andBool isPointerType(T':KResult)
 		[structural]
 		
 	// otherwise, there are a number of cases.  
@@ -902,12 +902,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat ==Int Offset':Nat)
 		...</ k >
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat =/=Int Offset':Nat)
 		...</ k >
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 		
 	// next, they are part of different objects.  
@@ -920,7 +920,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		andBool Base:Nat =/=K Base':Nat
 		andBool Offset:Nat <Int Len:Nat
 		andBool Offset':Nat <Int Len':Nat
@@ -933,7 +933,7 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >
-		when hasPointerType(T:KResult) andBool hasPointerType(T':KResult)
+		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		andBool Base:Nat =/=K Base':Nat
 		andBool Offset:Nat <Int Len:Nat
 		andBool Offset':Nat <Int Len':Nat
@@ -946,12 +946,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule [equal-null-left]:
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		andBool isPointerType(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
-		when hasPointerType(T:KResult) 
+		when isPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
@@ -959,12 +959,12 @@ kmod DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 	rule [nequal-null-left]: 
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when hasBeenPromoted(T:KResult) 
-		andBool hasPointerType(T':KResult)
+		andBool isPointerType(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(_, T:KResult) != (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
-		when hasPointerType(T:KResult) 
+		when isPointerType(T:KResult) 
 		andBool hasBeenPromoted(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]

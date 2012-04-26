@@ -207,8 +207,8 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 			=> L:KLabel(cast(finalType, tv(V:K, T:KResult)),, cast(finalType, tv(V':K, T':KResult)))
 		...</ k >
 		when isArithBinConversionOp(L:KLabel)
-		andBool (hasIntegerType(T:KResult) orBool hasFloatType(T:KResult))
-		andBool (hasIntegerType(T':KResult) orBool hasFloatType(T':KResult))
+		andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
+		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		andBool (T:KResult =/=K T':KResult)
 		where finalType = usualArithmeticConversion(T:KResult, T':KResult)
 		[structural]
@@ -256,8 +256,8 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	
 	define usualArithmeticConversion(T:KResult, T':KResult)
 			=> usualArithmeticConversion-aux(promote(T:KResult), promote(T':KResult))
-			when notBool hasFloatType(T:KResult)
-			andBool notBool hasFloatType(T':KResult)
+			when notBool isFloatType(T:KResult)
+			andBool notBool isFloatType(T':KResult)
 		
 	/*@ 
 	\begin{itemize}
@@ -384,7 +384,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int 
 		andBool hasIntegerType(T':KResult)
 		andBool hasIntegerType(T:KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
 	Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
@@ -392,7 +392,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define [cast-ubitfield-of-small]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
-		when hasBitfieldType(T:KResult)
+		when isBitfieldType(T:KResult)
 		andBool I:Int <Int min(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
@@ -426,7 +426,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define [cast-ubitfield-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
-		when hasBitfieldType(T:KResult)
+		when isBitfieldType(T:KResult)
 		andBool I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
@@ -463,7 +463,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define [cast-sbitfield-of-huge]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
-		when hasBitfieldType(T:KResult)
+		when isBitfieldType(T:KResult)
 		andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasIntegerType(T':KResult)
 		andBool hasSignedIntegerType(innerType(T:KResult))
@@ -502,7 +502,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasSignedIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 		[structural] 
 	define [cast-signed-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
@@ -511,7 +511,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasSignedIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 
 	// this is starting to get into sketchy land
 	define [cast-unknown-integer]:
@@ -528,17 +528,17 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(T:KResult, tv(V:Float, t(S:Set, double))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 	define
 		cast(T:KResult, tv(V:Float, t(S:Set, float))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 	define
 		cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 	
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
@@ -613,7 +613,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 		cast(T:KResult, tv(N:Nat, t(_, pointerType(_))))
 			=> tv(N:Nat, T:KResult)
 		when hasIntegerType(T:KResult)
-		andBool notBool hasBoolType (T:KResult)
+		andBool notBool isBoolType (T:KResult)
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
 	A pointer to an object type may be converted to a pointer to a different object type. If the resulting pointer is not correctly aligned for the referenced type, the behavior is undefined. Otherwise, when converted back again, the result shall compare equal to the original pointer. When a pointer to an object is converted to a pointer to a character type, the result points to the lowest addressed byte of the object. Successive increments of the result, up to the size of the object, yield pointers to the remaining bytes of the object.

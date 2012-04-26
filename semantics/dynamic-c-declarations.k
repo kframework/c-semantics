@@ -66,7 +66,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		...</ k > 
 		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
 		< localAddresses >... .Set => SetItem(Loc:Nat) ...</ localAddresses >
-		when notBool hasArrayType(T:KResult)
+		when notBool isArrayType(T:KResult)
 		[structural] 
 		
 	rule [bind-one-check-type]:
@@ -78,14 +78,14 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	declare promoteList : List{KResult} -> List{K} 
 	define [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> cast(argPromote(t(S:Set, T:K)), tv(V:List{K}, t(S:Set, T:K))),, promoteList(L:List{KResult})
-		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool hasBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
+		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool isBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
 		orBool T:K ==K float 
 		[structural]
 	define [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
 		=> (tv(V:List{K}, t(S:Set, T:K)),, promoteList(L:List{KResult}))
 		when (notBool(hasIntegerType(t(S:Set, T:K))) 
 			andBool notBool T:K ==K float
-			andBool notBool hasArrayType(t(S:Set, T:K))
+			andBool notBool isArrayType(t(S:Set, T:K))
 		) 
 		orBool rank(t(S:Set, T:K)) >=Int rank(t(.Set, int))
 		orBool T:K ==K double 
@@ -159,7 +159,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zeroType(Name:K, T:KResult) 
 			=> Computation(AllowWrite(Name:K) := tv(0.0, t(.Set, float))) ...</ k >
-		when hasFloatType(T:KResult)
+		when isFloatType(T:KResult)
 		[structural] 
 		
 	op zeroStruct : K List{KResult} -> K 
@@ -199,11 +199,11 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		< k > zeroType(Name:K, T:KResult) 
 			=> Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult)) ...</ k >
-		when hasPointerType(T:KResult)
+		when isPointerType(T:KResult)
 		[structural]
 	rule
 		< k > zeroType(Name:K, T:KResult) => .K ...</ k >
-		when hasFunctionType(T:KResult)
+		when isFunctionType(T:KResult)
 		[structural]
 		
 	// fixme snat

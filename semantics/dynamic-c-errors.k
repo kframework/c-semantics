@@ -86,7 +86,7 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00006]:
 		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:Nat), Len:Nat)), _:K) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </ errorCell >)
-		when notBool hasCharType(T:KResult)
+		when notBool isCharType(T:KResult)
 		[structural]
 		
 	rule [err00007]:
@@ -104,7 +104,7 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00009]:
 		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Nat), Len:Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00009", "Reading uninitialized memory.") </ errorCell >)
-		when hasFloatType(T:KResult)
+		when isFloatType(T:KResult)
 		[structural]
 		
 	rule [err00010]:
@@ -118,26 +118,26 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00011]:
 		< k => finalComputation > tv(_, T:KResult) < tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00011", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
-		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural]
 	rule [err00012]:
 		< k => finalComputation > tv(_, T:KResult) <= tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00012", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
-		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00013]:
 		< k => finalComputation > tv(_, T:KResult) > tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00013", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
-		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 	rule [err00014]:
 		< k => finalComputation > tv(_, T:KResult) >= tv(_, T':KResult) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00014", "Directly comparing an integer type with a pointer type.") </ errorCell >)
-		when (hasIntegerType(T:KResult) andBool hasPointerType(T':KResult))
-		orBool (hasPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
 		[structural] 
 		
 	rule [err00015]:
@@ -346,8 +346,8 @@ kmod DYNAMIC-C-ERRORS is
 		< k => finalComputation > types((T1:KResult,, T2:KResult))  ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </ errorCell >)
 		when T1:KResult =/=K T2:KResult
-		andBool (hasStructType(T1:KResult) orBool hasUnionType(T1:KResult))
-		andBool (hasStructType(T2:KResult) orBool hasUnionType(T2:KResult))
+		andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
+		andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
 		[structural]
 		
 	rule [err00044]:
@@ -366,7 +366,7 @@ kmod DYNAMIC-C-ERRORS is
 	rule [err00046]:
 		< k => finalComputation > concretize(T:KResult, dataList((piece(N:Nat, Len:Nat),, _))) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </ errorCell >)
-		when hasFloatType(T:KResult)
+		when isFloatType(T:KResult)
 		andBool N:Nat >=Int 0
 		[structural]
 		

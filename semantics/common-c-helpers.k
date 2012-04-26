@@ -362,7 +362,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 
 	define hasUnsignedIntegerType(t(S:Set, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
-		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
+		andBool (setOfTypes contains l(getKLabel(T:K)) orBool isFloatType(t(S:Set, T:K)))
 		[structural]
 	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => true
 		when hasUnsignedIntegerType(T:KResult) ==Bool true
@@ -377,7 +377,7 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 	define hasSignedIntegerType(t(_, enumType(_:Id))) => true [structural] // choice fixme
 	define hasSignedIntegerType(t(S:Set, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
-		andBool (setOfTypes contains l(getKLabel(T:K)) orBool hasFloatType(t(S:Set, T:K)))
+		andBool (setOfTypes contains l(getKLabel(T:K)) orBool isFloatType(t(S:Set, T:K)))
 		[structural]
 	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => true
 		when hasSignedIntegerType(T:KResult) ==Bool true

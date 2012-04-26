@@ -255,7 +255,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op unsignedIntegerTypes : -> Set // [memo] 
 	op signedIntegerTypes : -> Set // [memo] 
 	declare hasIntegerType : Type -> Bool // [memo] 
-	declare hasFloatType : Type -> Bool // [memo] 
+	declare isFloatType : Type -> Bool // [memo] 
 	declare hasUnsignedIntegerType : Type -> Bool // [memo] 
 	declare hasSignedIntegerType : Type -> Bool // [memo] 
 	
@@ -267,25 +267,25 @@ kmod COMMON-SEMANTIC-SYNTAX is
 
 	op calculateGotoMap : Id K -> K 
 	
-	declare hasCharType : Type -> Bool 
-	declare hasWCharType : Type -> Bool 
+	declare isCharType : Type -> Bool 
+	declare isWCharType : Type -> Bool 
 	// fixme make sure i use this everywhere instead of T:BaseType
 	// op isABaseType_ : K -> Bool 
-	declare hasPointerType : Type -> Bool 
-	declare hasArrayType : Type -> Bool 
-	declare hasBoolType : Type -> Bool 
-	declare hasStructType : Type -> Bool 
-	declare hasUnionType : Type -> Bool 
-	declare hasAggregateType : Type -> Bool 
-	declare hasFunctionType : Type -> Bool 
-	declare hasFunctionPointerType : Type -> Bool 
-	declare hasBitfieldType : Type -> Bool 
-	declare hasExternType : Type -> Bool 
-	declare hasStaticType : Type -> Bool 
-	declare hasConstType : Type -> Bool
-	declare hasIncompleteType : Type -> Bool 
+	declare isPointerType : Type -> Bool 
+	declare isArrayType : Type -> Bool 
+	declare isBoolType : Type -> Bool 
+	declare isStructType : Type -> Bool 
+	declare isUnionType : Type -> Bool 
+	declare isAggregateType : Type -> Bool 
+	declare isFunctionType : Type -> Bool 
+	declare isFunctionPointerType : Type -> Bool 
+	declare isBitfieldType : Type -> Bool 
+	declare isExternType : Type -> Bool 
+	declare isStaticType : Type -> Bool 
+	declare isConstType : Type -> Bool
+	declare isIncompleteType : Type -> Bool 
 	// op hasTypedefType : Type -> Bool 
-	declare hasArithmeticType : Type -> Bool
+	declare isArithmeticType : Type -> Bool
 	
 	op aggregateInfo : List{K} Map Map -> K // first map is for type, second map is for offset
 	declare getFieldOffset : Id K -> Nat // these expect an aggregateInfo term as second argument
