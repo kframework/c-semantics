@@ -66,6 +66,7 @@ temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
 	@sed -i 's|\\usepackage\[poster,|\\usepackage\[|' $@.temp
 	@sed -i 's|\\newpage||' $@.temp
 	@sed -i 's|}mybracket|}\\mybracket|' $@.temp
+	@sed -i 's|\\mathrel{}||g' $@.temp
 	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
 	@mv $@.temp $@
 
