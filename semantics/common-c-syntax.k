@@ -4,100 +4,95 @@ kmod COMMON-C-SYNTAX is
 	tags ndlocal ndheat computational structural interpRule anywhere
 	
 	// these are semantic
-	// op reval : K -> K // [strict]
-	// op peval : K -> K // [strict]
-	op reval : K -> K [metadata "strict=()"]
-	op peval : K -> K [metadata "strict=()"]
+	syntax K ::= "reval" "(" K ")" [semantic klabel(reval) strict]
+	syntax K ::= "peval" "(" K ")" [semantic klabel(peval) strict]
 	
 	// the rest are syntactic
-	sort C
-	op AttributeWrapper : K K -> C // new // K, List
+	// sort C
+	syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel(AttributeWrapper)]
+	// syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel(AttributeWrapper)] // new // K, List
 	
 	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
 	
-	// Sorts directly from CABS
-	sort CabsLoc
-	sort TypeSpecifier
-	sort Storage
-	// sort FunSpecifier // not used, even by cabs
-	sort CVSpecifier
-	sort SpecifierElem
-	sort Specifier
-	sort DeclType
-	sort NameGroup
-	sort FieldGroup
-	sort InitNameGroup
-	sort Name
-	sort InitName
-	sort SingleName
-	sort EnumItem
-	sort Definition
-	sort Block
-	sort AsmDetails
-	sort Statement
-	sort PureStatement
-	sort PureEnumItem
-	sort ForClause
-	// sort BinaryOperator // not used by us
-	// sort UnaryOperator // not used by us
-	// sort Expression
-	sort Constant
-	sort InitExpression
-	sort InitWhat
-	// sort Attribute
+	// // Sorts directly from CABS
+	// sort CabsLoc
+	// sort TypeSpecifier
+	// sort Storage
+	// // sort FunSpecifier // not used, even by cabs
+	// sort CVSpecifier
+	// sort SpecifierElem
+	// sort Specifier
+	// sort DeclType
+	// sort NameGroup
+	// sort FieldGroup
+	// sort InitNameGroup
+	// sort Name
+	// sort InitName
+	// sort SingleName
+	// sort EnumItem
+	// sort Definition
+	// sort Block
+	// sort AsmDetails
+	// sort Statement
+	// sort PureStatement
+	// sort PureEnumItem
+	// sort ForClause
+	// // sort BinaryOperator // not used by us
+	// // sort UnaryOperator // not used by us
+	// // sort Expression
+	// sort Constant
+	// sort InitExpression
+	// sort InitWhat
+	// // sort Attribute
 	
-	// Additional sorts
-	sort Program
-	sort TranslationUnit
-	sort IntConstant
-	sort InitFragment
-	sort FieldName
-	sort PureDefinition
+	// // Additional sorts
+	// sort Program
+	// sort TranslationUnit
+	// sort IntConstant
+	// sort InitFragment
+	// sort FieldName
+	// sort PureDefinition
 	
-	// sort C
-	subsort Id < C
-	// moved heating/cooling to common-c-semantics.k
-	
-	// op List : List{K} -> C [metadata "strict=() hybrid=()"]
-	// op List : List{K} -> C [metadata "hybrid=()"]
-	op List : List{K} -> C
+	// // sort C
+	syntax C ::= Id
+	syntax C ::= "List" "(" List{K} ")" [klabel(List)]
 	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
-	op StmtCons : K K -> K
+	syntax K ::= "StmtCons" "(" K "," K ")" [klabel(StmtCons)]
 	
-	subsort SpecifierElem < KResult
+	syntax KResult ::= SpecifierElem
 	
-	subsort CabsLoc < C
-	subsort TypeSpecifier < C
-	subsort Storage < C
-	subsort CVSpecifier < C
-	subsort SpecifierElem < C
-	subsort Specifier < C
-	subsort DeclType < C
-	subsort NameGroup < C
-	subsort FieldGroup < C
-	subsort InitNameGroup < C
-	subsort Name < C
-	subsort InitName < C
-	subsort SingleName < C
-	subsort EnumItem < C
-	subsort Definition < C
-	subsort Block < C
-	subsort AsmDetails < C
-	subsort Statement < C
-	subsort PureStatement < C
-	subsort PureEnumItem < C
-	subsort ForClause < C
-	subsort Expression < C
-	subsort Constant < C
-	subsort InitExpression < C
-	subsort InitWhat < C
-	subsort Program < C
-	subsort TranslationUnit < C
-	subsort IntConstant < C
-	subsort InitFragment < C
-	subsort FieldName < C
-	subsort PureDefinition < C
+	syntax C ::= CabsLoc
+	syntax C ::= TypeSpecifier
+	syntax C ::= Storage
+	syntax C ::= CVSpecifier
+	syntax C ::= SpecifierElem
+	syntax C ::= Specifier
+	syntax C ::= DeclType
+	syntax C ::= NameGroup
+	syntax C ::= FieldGroup
+	syntax C ::= InitNameGroup
+	syntax C ::= Name
+	syntax C ::= InitName
+	syntax C ::= SingleName
+	// syntax C ::= EnumItem
+	syntax C ::= Definition
+	syntax C ::= Block
+	// syntax C ::= AsmDetails
+	syntax C ::= Statement
+	syntax C ::= PureStatement
+	syntax C ::= PureEnumItem
+	syntax C ::= ForClause
+	syntax C ::= Expression
+	syntax C ::= Constant
+	syntax C ::= InitExpression
+	// syntax C ::= InitWhat
+	syntax C ::= Program
+	syntax C ::= TranslationUnit
+	syntax C ::= IntConstant
+	syntax C ::= InitFragment
+	syntax C ::= FieldName
+	syntax C ::= PureDefinition
 
 // -------------------------------------------------
 // Below, I give the declaration as found in cabs.ml first, followed by the K version
@@ -111,8 +106,7 @@ type cabsloc = {
 	}
 */
 	// sort CabsLoc
-	op CabsLoc : String Int Int Int -> CabsLoc
-	// syntax CabsLoc ::= `CabsLoc ( String , Int , Int , Int )
+	syntax CabsLoc ::= "CabsLoc" "(" String "," Int "," Int "," Int ")" [klabel(CabsLoc)]
 	
 /*
 type typeSpecifier = (* Merge all specifiers into one type *)
@@ -129,19 +123,19 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| Tunsigned
 	| Tnamed of string
 */
-	op Void : -> TypeSpecifier // [ctor]
-	op Char : -> TypeSpecifier // [ctor]
-	op Bool : -> TypeSpecifier // [ctor]
-	op Short : -> TypeSpecifier // [ctor]
-	op Int : -> TypeSpecifier // [ctor]
-	op Long : -> TypeSpecifier // [ctor]
-	op Float : -> TypeSpecifier // [ctor]
-	op Double : -> TypeSpecifier // [ctor]
-	op Signed : -> TypeSpecifier // [ctor]
-	op Unsigned : -> TypeSpecifier // [ctor]
-	op inf : -> Float
+	syntax TypeSpecifier ::= "Void"
+	syntax TypeSpecifier ::= "Char"
+	syntax TypeSpecifier ::= "Bool"
+	syntax TypeSpecifier ::= "Short"
+	syntax TypeSpecifier ::= "Int"
+	syntax TypeSpecifier ::= "Long"
+	syntax TypeSpecifier ::= "Float"
+	syntax TypeSpecifier ::= "Double"
+	syntax TypeSpecifier ::= "Signed"
+	syntax TypeSpecifier ::= "Unsigned"
+	syntax Float ::= "inf"
 	// macro inf = Infinity
-	op Named : Id -> TypeSpecifier // [ctor]
+	syntax TypeSpecifier ::= "Named" "(" Id ")" [klabel(Named)]
 /*
 	(* each of the following three kinds of specifiers contains a field 
 	* or item list iff it corresponds to a definition (as opposed to
@@ -154,50 +148,42 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	| TtypeofE of expression                      (* GCC __typeof__ *)
 	| TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */	
-	op StructRef : Id -> TypeSpecifier // [ctor] // new
-	// op StructDef : Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
-	op StructDef : Id K -> TypeSpecifier // [ctor] // new // Id, List
+	syntax TypeSpecifier ::= "StructRef" "(" Id ")" [klabel(StructRef)] // new
+	syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")" [klabel(StructDef)] // new // Id, List
 	context StructDef(_:Id, List((_:List{K},, HOLE,, _:List{K})))
-	op UnionRef : Id -> TypeSpecifier // [ctor] // new
-	// op UnionDef : Id K -> TypeSpecifier [metadata "strict=(2)" ctor] // new // Id, List
-	op UnionDef : Id K -> TypeSpecifier // [ctor] // new // Id, List
+	syntax TypeSpecifier ::= "UnionRef" "(" Id ")" [klabel(UnionRef)] // new
+	syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")" [klabel(UnionDef)] // new // Id, List
 	context UnionDef(_:Id, List((_:List{K},, HOLE,, _:List{K})))
-	op EnumRef : Id -> TypeSpecifier // [ctor] // new
-	op EnumDef : Id K -> TypeSpecifier // [ctor] // new // Id, List
-	op TypeofExpression : K -> TypeSpecifier // [ctor]
-	op TypeofType : K K -> TypeSpecifier // [ctor]
+	syntax TypeSpecifier ::= "EnumRef" "(" Id ")" [klabel(EnumRef)] // new
+	syntax TypeSpecifier ::= "EnumDef" "(" Id "," K ")" [klabel(EnumDef)] // new // Id, List
+	syntax TypeSpecifier ::= "TypeofExpression" "(" K ")" [klabel(TypeofExpression)]
+	syntax TypeSpecifier ::= "TypeofType" "(" K "," K ")" [klabel(TypeofType)]
 	
-	op Complex : -> TypeSpecifier // [ctor]
-	op Imaginary : -> TypeSpecifier // [ctor]
-	op TAtomic : K K -> TypeSpecifier // [ctor]
-	op Atomic : -> TypeSpecifier // [ctor] // this will be used as the actual modifier
-	op AlignasExpression : K -> TypeSpecifier // [ctor]
-	op AlignasType : K K -> TypeSpecifier // [ctor]
+	syntax TypeSpecifier ::= "Complex"
+	syntax TypeSpecifier ::= "Imaginary"
+	syntax TypeSpecifier ::= "TAtomic" "(" K "," K ")" [klabel(TAtomic)]
+	syntax TypeSpecifier ::= "Atomic" // this will be used as the actual modifier
+	syntax TypeSpecifier ::= "AlignasExpression" "(" K ")" [klabel(AlignasExpression)]
+	syntax TypeSpecifier ::= "AlignasType" "(" K "," K ")" [klabel(AlignasType)]
 
 /*
 and storage =
 	NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
 */
-	op NoStorage : -> Storage // [ctor]
-	op Auto : -> Storage // [ctor]
-	op Static : -> Storage // [ctor]
-	op Extern : -> Storage // [ctor]
-	op Register : -> Storage // [ctor]
-	op ThreadLocal : -> Storage // [ctor]
-	
-/*
-and funspec = 
-	INLINE | VIRTUAL | EXPLICIT
-*/
-	// Not sure what this is from, maybe C++_  It's not used elsewhere in cabs.
+	syntax Storage ::= "NoStorage"
+	syntax Storage ::= "Auto"
+	syntax Storage ::= "Static"
+	syntax Storage ::= "Extern"
+	syntax Storage ::= "Register"
+	syntax Storage ::= "ThreadLocal"
 	
 /*
 and cvspec =
 	CV_CONST | CV_VOLATILE | CV_RESTRICT
 */
-	op Const : -> CVSpecifier
-	op Volatile : -> CVSpecifier
-	op Restrict : -> CVSpecifier
+	syntax CVSpecifier ::= "Const"
+	syntax CVSpecifier ::= "Volatile"
+	syntax CVSpecifier ::= "Restrict"
 	
 /*
 and spec_elem =
@@ -209,20 +195,19 @@ and spec_elem =
 	| SpecType of typeSpecifier
 	| SpecPattern of String       (* specifier pattern variable *)
 */
-	op SpecTypedef : -> SpecifierElem
+	syntax SpecifierElem ::= "SpecTypedef"
 	// the following are because I flattened SpecifierElem
-	subsort CVSpecifier < SpecifierElem
-	// subsort Attribute < SpecifierElem
-	subsort Storage < SpecifierElem
-	op Inline : -> SpecifierElem
-	op Noreturn : -> SpecifierElem
-	subsort TypeSpecifier < SpecifierElem
-	op SpecPattern : Id -> SpecifierElem
+	syntax SpecifierElem ::= CVSpecifier
+	syntax SpecifierElem ::= Storage
+	syntax SpecifierElem ::= "Inline"
+	syntax SpecifierElem ::= "Noreturn"
+	syntax SpecifierElem ::= TypeSpecifier
+	syntax SpecifierElem ::= "SpecPattern" "(" Id ")" [klabel(SpecPattern)]
 	
 /*
 	and specifier = spec_elem list
 */
-	op Specifier : K -> Specifier
+	syntax Specifier ::= "Specifier" "(" K ")" [klabel(Specifier)]
 	context Specifier(List((_:List{K},, HOLE,, _:List{K})))
 	
 /*
@@ -245,38 +230,38 @@ and decl_type =
 			(* Prints "decl (args[, ...])".
 			 * decl is never a PTR.*)
 */
-	op JustBase : -> K
-	op FunctionType : K -> DeclType [metadata "strict=()"]
-	op ArrayType : K K K -> DeclType [metadata "strict=(1)"] // third argument should also be strict, but not doing anything with [strict 5] yet
-	context ArrayType(_, (HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	op PointerType : K -> DeclType [metadata "strict=()"]
-	op Prototype : K K Bool -> DeclType [metadata "strict=(1)"] // K, List, Bool
+	syntax K ::= "JustBase"
+	syntax DeclType ::= "FunctionType" "(" K ")" [strict klabel(FunctionType)]
+	syntax DeclType ::= "ArrayType" "(" K "," K "," K ")" [klabel(ArrayType) strict(1)] // third argument should also be strict, but not doing anything with [strict 5] yet
+	context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
+	syntax DeclType ::= "PointerType" "(" K ")" [strict klabel(PointerType)]
+	syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [strict(1) klabel(Prototype)] // K, List, Bool
 	context Prototype(_, List((_:List{K},, HOLE,, _:List{K})), _:Bool)
 	
-	op NotVariadic : -> K
-	op Variadic : -> K
+	syntax K ::= "NotVariadic"
+	syntax K ::= "Variadic"
 	
 	
 /*
 and name_group = specifier * name list
 */
-	op NameGroup : K K -> NameGroup [metadata "strict=(1)"] // K, List
+	syntax NameGroup ::= "NameGroup" "(" K "," K ")" [strict(1) klabel(NameGroup)] // K, List
 	context NameGroup(_, List((_:List{K},, HOLE,, _:List{K})))
 	
 /*
 	(* The optional expression is the bitfield *)
 and field_group = specifier * (name * expression option) list
 */
-	op FieldGroup : K K -> FieldGroup [metadata "strict=(1)"] // K, List
-	op FieldName : K -> FieldName // new
-	op BitFieldName : K K -> FieldName // new
+	syntax FieldGroup ::= "FieldGroup" "(" K "," K ")" [strict(1) klabel(FieldGroup)] // K, List
+	syntax FieldName ::= "FieldName" "(" K ")" [klabel(FieldName)] // new
+	syntax FieldName ::= "BitFieldName" "(" K "," K ")" [klabel(BitFieldName)] // new
 	
 /*
 	(* like name_group, except the declared variables are allowed to have initializers *)
 	(* e.g.: Int x=1, y=2; *)
 and init_name_group = specifier * init_name list
 */
-	op InitNameGroup : K K -> InitNameGroup [metadata "strict=(1)"] // K, List
+	syntax InitNameGroup ::= "InitNameGroup" "(" K "," K ")" [strict(1) klabel(InitNameGroup)] // K, List
 	
 /*
 	(* The decl_type is in the order in which they are printed. Only the name of
@@ -286,38 +271,35 @@ and init_name_group = specifier * init_name list
 	(* the string, and decl_type will be PTR([], JUSTBASE) *)
 and name = String * decl_type * attribute list * cabsloc
 */
-	op Name : K K -> Name // first argument is id, second is basetype
-	//op AnonymousName : K -> Name // new, argument is type
-	op AnonymousName : -> K // new, argument is type
-	op #NoName : -> Id [metadata "latex=(renameTo \\#NoName)"] // new
-	// latex "\llbracket\,{#1}\,\rrbracket"
-	op #NoName : Nat -> Id [metadata "latex=(renameTo \\#NoName\\mybracket{_})"] // new
-	op Identifier : String -> Id // new	
-	// op NameLoc : K K -> Name // new
+	syntax Name ::= "Name" "(" K "," K ")" [klabel(Name)] // first argument is id, second is basetype
+	syntax K ::= "AnonymousName" // new, argument is type
+	syntax Id ::= "#NoName" // new
+	// [metadata "latex=(renameTo \\#NoName)"] 
+	syntax Id ::= "#NoName" "(" Nat ")" [klabel(#NoName)] // new
+	// metadata "latex=(renameTo \\#NoName\\mybracket{_})"
+	syntax Id ::= "Identifier" "(" String ")" [klabel(Identifier)] // new	
 	
 	macro AnonymousName = #NoName
-	//macro AnonymousName(K:K) = Name(#NoName, K:K)
 	
 /*
 	(* A variable declarator ("name") with an initializer *)
 and init_name = name * init_expression
 */
-	op InitName : K K -> InitName
-	context InitName(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	syntax InitName ::= "InitName" "(" K "," K ")" [klabel(InitName)]
+	context InitName(_, (HOLE => reval(HOLE))) [ndheat]
 	
 /*
 	(* Single names are for declarations that cannot come in groups, like
 	 * function parameters and functions *)
 and single_name = specifier * name
 */
-	op SingleName : K K -> SingleName [metadata "strict=(1)"]
+	syntax SingleName ::= "SingleName" "(" K "," K ")" [strict(1) klabel(SingleName)]
 	
 /*
 and enum_item = String * expression * cabsloc
 */
-	op EnumItem : Id -> PureEnumItem // this one has no init
-	op EnumItemInit : Id K -> PureEnumItem // this one has an init
-	//op EnumItemLoc : K K -> EnumItem // new
+	syntax PureEnumItem ::= "EnumItem" "(" Id ")" [klabel(EnumItem)] // this one has no init
+	syntax PureEnumItem ::= "EnumItemInit" "(" Id "," K ")" [klabel(EnumItemInit)] // this one has an init
 		
 /*
 	(*
@@ -337,46 +319,46 @@ and enum_item = String * expression * cabsloc
 	 (* expression transformer: source and destination *)
 	 | EXPRTRANSFORMER of expression * expression * cabsloc
 */
-	op FunctionDefinition : K K -> PureDefinition [metadata "strict=(1)"]
-	op DeclarationDefinition : K -> PureDefinition
-	op Typedef : K -> PureDefinition
-	op OnlyTypedef : K -> PureDefinition
-	op GlobAsm : String -> PureDefinition
-	op Pragma : K -> PureDefinition
-	op Linkage : String K -> PureDefinition // seems to be unused
-	op Transformer : K K -> PureDefinition // seems to be unused
-	op ExpressionTransformer : K K -> PureDefinition
-	op LTLAnnotation : K -> PureDefinition // name
+	syntax PureDefinition ::= "FunctionDefinition" "(" K "," K ")" [strict(1) klabel(FunctionDefinition)]
+	syntax PureDefinition ::= "DeclarationDefinition" "(" K ")" [klabel(DeclarationDefinition)]
+	syntax PureDefinition ::= "Typedef" "(" K ")" [klabel(Typedef)]
+	syntax PureDefinition ::= "OnlyTypedef" "(" K ")" [klabel(OnlyTypedef)]
+	syntax PureDefinition ::= "GlobAsm" "(" String ")" [klabel(GlobAsm)]
+	syntax PureDefinition ::= "Pragma" "(" K ")" [klabel(Pragma)]
+	syntax PureDefinition ::= "Linkage" "(" String "," K ")" [klabel(Linkage)] // seems to be unused
+	syntax PureDefinition ::= "Transformer" "(" K "," K ")" [klabel(Transformer)] // seems to be unused
+	syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")" [klabel(ExpressionTransformer)]
+	syntax PureDefinition ::= "LTLAnnotation" "(" K ")" [klabel(LTLAnnotation)] // name
 	
 	// new
 
-	op LTL-Atom : K -> Expression 
-	op LTL-Builtin : K -> Expression
+	syntax Expression ::= "LTL-Atom" "(" K ")" [klabel(LTL-Atom)] 
+	syntax Expression ::= "LTL-Builtin" "(" K ")" [klabel(LTL-Builtin)]
 	
-	op LTL-True : -> Expression
-	op LTL-False : -> Expression
-	op LTL-And : K K -> Expression
-	op LTL-Or : K K -> Expression
-	op LTL-Not : K -> Expression
-	op LTL-Next : K -> Expression
-	op LTL-Always : K -> Expression
-	op LTL-Eventually : K -> Expression
-	op LTL-Until : K K -> Expression
-	op LTL-Release : K K -> Expression
-	op LTL-Implies : K K -> Expression
-	op LTL-Equiv : K K -> Expression
-	op LTL-WeakUntil : K K -> Expression
+	syntax Expression ::= "LTL-True"
+	syntax Expression ::= "LTL-False"
+	syntax Expression ::= "LTL-And" "(" K "," K ")" [klabel(LTL-And)]
+	syntax Expression ::= "LTL-Or" "(" K "," K ")" [klabel(LTL-Or)]
+	syntax Expression ::= "LTL-Not" "(" K ")" [klabel(LTL-Not)]
+	syntax Expression ::= "LTL-Next" "(" K ")" [klabel(LTL-Next)]
+	syntax Expression ::= "LTL-Always" "(" K ")" [klabel(LTL-Always)]
+	syntax Expression ::= "LTL-Eventually" "(" K ")" [klabel(LTL-Eventually)]
+	syntax Expression ::= "LTL-Until" "(" K "," K ")" [klabel(LTL-Until)]
+	syntax Expression ::= "LTL-Release" "(" K "," K ")" [klabel(LTL-Release)]
+	syntax Expression ::= "LTL-Implies" "(" K "," K ")" [klabel(LTL-Implies)]
+	syntax Expression ::= "LTL-Equiv" "(" K "," K ")" [klabel(LTL-Equiv)]
+	syntax Expression ::= "LTL-WeakUntil" "(" K "," K ")" [klabel(LTL-WeakUntil)]
 	
-	op DefinitionLoc : K K -> Definition // new
-	op DefinitionLocRange : K K K -> Definition // new
+	syntax Definition ::= "DefinitionLoc" "(" K "," K ")" [klabel(DefinitionLoc)] // new
+	syntax Definition ::= "DefinitionLocRange" "(" K "," K "," K ")" [klabel(DefinitionLocRange)] // new
 	
 /*
 (* the String is a file name, and then the list of toplevel forms *)
 and file = String * definition list
 */
 	// name, code, source
-	op TranslationUnit : String K K String -> TranslationUnit // new: Filename, strings, ast, code
-	op Program : K -> Program // new // List
+	syntax TranslationUnit ::= "TranslationUnit" "(" String "," K "," K "," String ")" [klabel(TranslationUnit)] // new: Filename, strings, ast, code
+	syntax Program ::= "Program" "(" K ")" [klabel(Program)] // new // List
 
 /*
 	(* A block contains a list of local label declarations ( GCC's ({ __label__ 
@@ -387,20 +369,7 @@ and block =
 	  bstmts: statement list
 	} 
 */
-	op Block : Nat K K -> Block // Nat, list, list
-	
-/*
-	(* GCC asm directives have lots of extra information to guide the optimizer *)
-and asm_details =
-	{ aoutputs: (string option * String * expression) list; 
-	(* optional name, constraints and expressions for outputs *)
-	ainputs: (string option * String * expression) list; 
-	(* optional name, constraints and expressions for inputs *)
-	aclobbers: String list 
-	(* clobbered registers *)
-	}
-*/
-	// TODO
+	syntax Block ::= "Block" "(" Nat "," K "," K ")" [klabel(Block)] // Nat, list, list
 
 /*
 and statement =
@@ -409,30 +378,30 @@ and statement =
 	| BLOCK of block * cabsloc
 	| SEQUENCE of statement * statement * cabsloc
 */
-	op Nop : -> PureStatement
-	op Computation : K -> PureStatement
+	syntax PureStatement ::= "Nop"
+	syntax PureStatement ::= "Computation" "(" K ")" [klabel(Computation)]
 	context Computation((HOLE => reval(HOLE))) // not sure why i had this commented out before...
-	op BlockStatement : K -> PureStatement
-	op Sequence : K K -> PureStatement
+	syntax PureStatement ::= "BlockStatement" "(" K ")" [klabel(BlockStatement)]
+	syntax PureStatement ::= "Sequence" "(" K "," K ")" [klabel(Sequence)]
 /*
 	| IF of expression * statement * statement * cabsloc
 	| WHILE of expression * statement * cabsloc
 	| DOWHILE of expression * statement * cabsloc
 	| FOR of for_clause * expression * expression * statement * cabsloc
 */
-	op IfThenElse : K K K -> PureStatement
+	syntax PureStatement ::= "IfThenElse" "(" K "," K "," K ")" [klabel(IfThenElse)]
 	context IfThenElse((HOLE => reval(HOLE)), _, _)
-	op While : K K -> PureStatement
-	op DoWhile : K K -> PureStatement
-	op For : Nat K K K K -> PureStatement // id, ...
+	syntax PureStatement ::= "While" "(" K "," K ")" [klabel(While)]
+	syntax PureStatement ::= "DoWhile" "(" K "," K ")" [klabel(DoWhile)]
+	syntax PureStatement ::= "For" "(" Nat "," K "," K "," K "," K ")" [klabel(For)] // id, ...
 /*
 	| BREAK of cabsloc
 	| CONTINUE of cabsloc
 	| RETURN of expression * cabsloc
 */
-	op Break : -> PureStatement
-	op Continue : -> PureStatement
-	op Return : K -> PureStatement
+	syntax PureStatement ::= "Break"
+	syntax PureStatement ::= "Continue"
+	syntax PureStatement ::= "Return" "(" K ")" [klabel(Return)]
 	context Return((HOLE => reval(HOLE)))
 /*
 	| SWITCH of expression * statement * cabsloc
@@ -440,43 +409,30 @@ and statement =
 	| CASERANGE of expression * expression * statement * cabsloc
 	| DEFAULT of statement * cabsloc
 */
-	op Switch : K K K -> PureStatement // unique switch id
+	syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [klabel(Switch)] // unique switch id
 	context Switch(_, (HOLE => reval(HOLE)), _)
-	op Case : Nat Nat K K -> PureStatement // unique switch id, unique case id, exp, statement
-	op CaseRange : K K K -> PureStatement // gcc extension
-	op Default : Nat K -> PureStatement // unique switch id, statement
+	syntax PureStatement ::= "Case" "(" Nat "," Nat "," K "," K ")" [klabel(Case)] // unique switch id, unique case id, exp, statement
+	syntax PureStatement ::= "CaseRange" "(" K "," K "," K ")" [klabel(CaseRange)] // gcc extension
+	syntax PureStatement ::= "Default" "(" Nat "," K ")" [klabel(Default)] // unique switch id, statement
 /*
 	| LABEL of String * statement * cabsloc
 	| GOTO of String * cabsloc
 	| COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
 	| DEFINITION of definition (*definition or declaration of a variable or type*)
 */
-	op Label : Id K -> PureStatement
-	op Goto : K -> PureStatement // Id
-	op CompGoto : K -> PureStatement
-	// op LocalDefinition : K -> PureStatement  // renamed from "DEFINITION"
-/*
-	| ASM of attribute list * (* typically only volatile and const *)
-		  String list * (* template *)
-		  asm_details option * (* extra details to guide GCC's optimizer *)
-		  cabsloc
-	| TRY_EXCEPT of block * expression * block * cabsloc
-	| TRY_FINALLY of block * block * cabsloc
-*/
-	// TODO not handling Asm
-	op TryExcept : K K K -> PureStatement
-	op TryFinally : K K -> PureStatement
+	syntax PureStatement ::= "Label" "(" Id "," K ")" [klabel(Label)]
+	syntax PureStatement ::= "Goto" "(" K ")" [klabel(Goto)] // Id
+	syntax PureStatement ::= "CompGoto" "(" K ")" [klabel(CompGoto)]
 	
 	// this wraps all statements with their location in the original file
-	op StatementLoc : K K -> Statement // new
+	syntax Statement ::= "StatementLoc" "(" K "," K ")" [klabel(StatementLoc)] // new
 	
 /*
 and for_clause = 
 	FC_EXP of expression
 	| FC_DECL of definition
 */
-	op ForClauseExpression : K -> ForClause
-	//op ForClauseDeclaration : K -> ForClause
+	syntax ForClause ::= "ForClauseExpression" "(" K ")" [klabel(ForClauseExpression)]
 	
 /*
 and binary_operator =
@@ -491,10 +447,10 @@ and binary_operator =
 and expression =
 	NOTHING
 */
-	op OffsetOf : K K K -> Expression [metadata "strict=(1)"]
-	op ExpressionLoc : K K -> Expression // new
+	syntax Expression ::= "OffsetOf" "(" K "," K "," K ")" [strict(1) klabel(OffsetOf)]
+	syntax Expression ::= "ExpressionLoc" "(" K "," K ")" [klabel(ExpressionLoc)] // new
 
-	op NothingExpression : -> Expression
+	syntax Expression ::= "NothingExpression"
 /*
 	| UNARY of unary_operator * expression
 
@@ -503,163 +459,118 @@ and unary_operator =
 	| PREINCR | PREDECR | POSINCR | POSDECR
 */
 	syntax Expression ::= "-" K [prec(22)]
-	// op -_ : K -> Expression [prec 22]
 	context -_((HOLE => reval(HOLE)))
 	syntax Expression ::= "+" K [prec(22)]
-	// op +_ : K -> Expression [prec 22]
 	context +_((HOLE => reval(HOLE)))
 	syntax Expression ::= "!" K [prec(22)]
-	// op !_ : K -> Expression [prec 22]
 	context !_((HOLE => reval(HOLE)))
 	syntax Expression ::= "~" K [prec(22)]
-	// op ~_ : K -> Expression [prec 22]
 	context ~_((HOLE => reval(HOLE)))
 	syntax Expression ::= "*" K [prec(22)]
-	// op *_ : K -> Expression [prec 22]
 	context *_((HOLE => reval(HOLE)))
 	syntax Expression ::= "&" K [strict prec(22)]
-	// op &_ : K -> Expression [prec 22 metadata "strict=()"]
 	syntax Expression ::= "++" K [prec(22)]
 	syntax Expression ::= "--" K [prec(22)]
-	// op ++_ : K -> Expression [prec 22]
-	// op --_ : K -> Expression [prec 22]
 	syntax Expression ::= K "++"
-	// op _++ : K -> Expression
 	context _++((HOLE => peval(HOLE)))
 	syntax Expression ::= K "--"
-	// op _-- : K -> Expression
 	context _--((HOLE => peval(HOLE)))
 	
-/*
-	| LABELADDR of String  (* GCC's && Label *)
-*/
-	// TODO not handling && Label
 /*
 	| BINARY of binary_operator * expression * expression
 */
 	syntax Expression ::= K "*" K [prec(31) gather(E e)]
 	syntax Expression ::= K "/" K [prec(31) gather(E e)]
 	syntax Expression ::= K "%" K [prec(31) gather(E e)]
-	// op _*_ : K K -> Expression [prec 31 gather(E e)]
-	// op _/_ : K K -> Expression [prec 31 gather(E e)]
-	// op _%_ : K K -> Expression [prec 31 gather(E e)]
-	context _*_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _*_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _/_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _/_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _%_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _%_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _*_((HOLE => reval(HOLE)), _) [ndheat]
+	context _*_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _/_((HOLE => reval(HOLE)), _) [ndheat]
+	context _/_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _%_((HOLE => reval(HOLE)), _) [ndheat]
+	context _%_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "+" K [prec(33) gather(E e)]
 	syntax Expression ::= K "-" K [prec(33) gather(E e)]
-	// op _+_ : K K -> Expression [prec 33 gather(E e)]
-	// op _-_ : K K -> Expression [prec 33 gather(E e)]
-	context _+_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _+_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _-_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _-_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _+_((HOLE => reval(HOLE)), _) [ndheat]
+	context _+_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _-_((HOLE => reval(HOLE)), _) [ndheat]
+	context _-_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "<<" K [prec(35) gather(E e)]
-	// op _<<_ : K K -> Expression [prec 35 gather(E e)]
-	context _<<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _<<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _<<_((HOLE => reval(HOLE)), _) [ndheat]
+	context _<<_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K ">>" K [prec(35) gather(E e)]
-	// op _>>_ : K K -> Expression [prec 35 gather(E e)]
-	context _>>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _>>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _>>_((HOLE => reval(HOLE)), _) [ndheat]
+	context _>>_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "<" K [prec(37) gather(E e)]
 	syntax Expression ::= K "<=" K [prec(37) gather(E e)]
-	// op _<_ : K K -> Expression [prec 37 gather(E e)]
-	// op _<=_ : K K -> Expression [prec 37 gather(E e)]
-	context _<_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _<_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _<=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _<=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _<_((HOLE => reval(HOLE)), _) [ndheat]
+	context _<_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _<=_((HOLE => reval(HOLE)), _) [ndheat]
+	context _<=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K ">" K [prec(37) gather(E e)]
 	syntax Expression ::= K ">=" K [prec(37) gather(E e)]
-	// op _>_ : K K -> Expression [prec 37 gather(E e)]
-	// op _>=_ : K K -> Expression [prec 37 gather(E e)]
-	context _>_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _>_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _>=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _>=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _>_((HOLE => reval(HOLE)), _) [ndheat]
+	context _>_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _>=_((HOLE => reval(HOLE)), _) [ndheat]
+	context _>=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "==" K [prec(39) gather(E e)]
 	syntax Expression ::= K "!=" K [prec(39) gather(E e)]
-	// op _==_ : K K -> Expression [prec 39 gather(E e)]
-	// op _!=_ : K K -> Expression [prec 39 gather(E e)]
-	context _==_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _==_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
-	context _!=_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _!=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _==_((HOLE => reval(HOLE)), _) [ndheat]
+	context _==_(_, (HOLE => reval(HOLE))) [ndheat]
+	context _!=_((HOLE => reval(HOLE)), _) [ndheat]
+	context _!=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "&" K [prec(41) gather(E e)]
-	// op _&_ : K K -> Expression [prec 41 gather(E e)]
-	context _&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _&_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _&_((HOLE => reval(HOLE)), _) [ndheat]
+	context _&_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "^" K [prec(43) gather(E e)]
-	// op _^_ : K K -> Expression [prec 43 gather(E e)]
-	context _^_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _^_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _^_((HOLE => reval(HOLE)), _) [ndheat]
+	context _^_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "|" K [prec(45) gather(E e)]
-	// op _|_ : K K -> Expression [prec 45 gather(E e)]
-	context _|_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	context _|_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _|_((HOLE => reval(HOLE)), _) [ndheat]
+	context _|_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 	syntax Expression ::= K "&&" K [prec(47) gather(E e)]
-	// op _&&_ : K K -> Expression [prec 47 gather(E e)]
-	context _&&_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _&&_((HOLE => reval(HOLE)), _) [ndheat]
 	
 	syntax Expression ::= K "||" K [prec(49) gather(E e)]
-	// op _||_ : K K -> Expression [prec 49 gather(E e)]
-	context _||_((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
+	context _||_((HOLE => reval(HOLE)), _) [ndheat]
 	
 	syntax Expression ::= K "*=" K [prec(53)]
 	syntax Expression ::= K "/=" K [prec(53)]
 	syntax Expression ::= K "%=" K [prec(53)]
 	syntax Expression ::= K "+=" K [prec(53)]
 	syntax Expression ::= K "-=" K [prec(53)]
-	// op _*=_ : K K -> Expression [prec 53]
-	// op _/=_  : K K -> Expression [prec 53]
-	// op _%=_  : K K -> Expression [prec 53]
-	// op _+=_ : K K -> Expression [prec 53]
-	// op _-=_ : K K -> Expression [prec 53]
 	syntax Expression ::= K "<<=" K [prec(53)]
 	syntax Expression ::= K "&=" K [prec(53)]
 	syntax Expression ::= K "^=" K [prec(53)]
 	syntax Expression ::= K "|=" K [prec(53)]
 	syntax Expression ::= K ">>=" K [prec(53)]
-	// op _<<=_ : K K -> Expression [prec 53]
-	// op _&=_ : K K -> Expression [prec 53]
-	// op _^=_ : K K -> Expression [prec 53]
-	// op _|=_ : K K -> Expression [prec 53]
-	// op _>>=_ : K K -> Expression [prec 53]
 	syntax Expression ::= K ":=" K [prec(53)]
-	// op _:=_ : K K -> Expression [prec 53]
-	context _:=_((HOLE => peval(HOLE)), _) [metadata "ndheat=()"]
-	context _:=_(_, (HOLE => reval(HOLE))) [metadata "ndheat=()"]
+	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
+	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 /*
 	| QUESTION of expression * expression * expression
 */
 	syntax Expression ::= K "?" K ":" K [prec(51) gather(e & E)]
-	// op _?_:_ : K K K -> Expression [prec 51 gather(e & E)]
-	// syntax Expression ::= K ? K : K [prec 51 gather(e & E)]
 	context _?_:_((HOLE => reval(HOLE)), _, _)
 
 /*
 	(* A CAST can actually be a constructor expression *)
 	| CAST of (specifier * decl_type) * init_expression
 */
-	op Cast : K K K -> Expression [metadata "strict=(1)"]
+	syntax Expression ::= "Cast" "(" K "," K "," K ")" [strict(1) klabel(Cast)]
 	context Cast(_, _, (HOLE => reval(HOLE)))
 	
-	op CompoundLiteral : K K K K -> Expression [metadata "strict=(2)"] // new // comp-lit id, spec, decl, init
+	syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")" [strict(2) klabel(CompoundLiteral)] // new // comp-lit id, spec, decl, init
 /*
 	(* There is a special form of CALL in which the function called is
 	   __builtin_va_arg and the second argument is sizeof(T). This 
@@ -667,56 +578,51 @@ and unary_operator =
 	| CALL of expression * expression list
 */
 
-	op Call : K K -> Expression // K, List
-	context Call((HOLE => reval(HOLE)), _) [metadata "ndheat=()"]
-	// context Call(_, (_ :: (HOLE:C => reval(HOLE)) :: _)) [metadata "ndheat=()"]
-	context Call(_, List((_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))) [metadata "ndheat=()"]
+	syntax Expression ::= "Call" "(" K "," K ")" [klabel(Call)] // K, List
+	context Call((HOLE => reval(HOLE)), _) [ndheat]
+	context Call(_, List((_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))) [ndheat]
 /*
 	| COMMA of expression list
 */
-	op Comma : K -> Expression // List
-	// context Comma((HOLE:C => reval(HOLE)) :: _) [metadata "ndheat=()"]
-	// context 'Comma('_::_((HOLE:C => reval(HOLE)),, _)) [metadata "ndheat=()"]
-	context Comma(List(((HOLE => reval(HOLE)),, _:List{K}))) [metadata "ndheat=()"]
+	syntax Expression ::= "Comma" "(" K ")" [klabel(Comma)] // List
+	context Comma(List(((HOLE => reval(HOLE)),, _:List{K}))) [ndheat]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
 	| VARIABLE of string
 */
-	op Constant : K -> Expression
-	// context Constant((HOLE => reval(HOLE)))
+	syntax Expression ::= "Constant" "(" K ")" [klabel(Constant)]
 	// String constants aren't revals
 	// for paren, just putting parentheses
-	subsort Id < Expression
+	syntax Expression ::= Id
 /*
 	| EXPR_SIZEOF of expression
 	| TYPE_SIZEOF of specifier * decl_type
 	| EXPR_ALIGNOF of expression
 	| TYPE_ALIGNOF of specifier * decl_type
 */
-	op SizeofExpression : K -> Expression
-	op SizeofType : K K -> Expression [metadata "strict=(1)"]
-	op AlignofExpression : K -> Expression
-	op AlignofType : K K -> Expression
+	syntax Expression ::= "SizeofExpression" "(" K ")" [klabel(SizeofExpression)]
+	syntax Expression ::= "SizeofType" "(" K "," K ")" [strict(1) klabel(SizeofType)]
+	syntax Expression ::= "AlignofExpression" "(" K ")" [klabel(AlignofExpression)]
+	syntax Expression ::= "AlignofType" "(" K "," K ")" [klabel(AlignofType)]
 /*
 	| INDEX of expression * expression
 */
-	op _`[_`] : K K -> Expression
-	// op ArrayIndex : K K -> Expression
+	syntax Expression ::= K "[" K "]"
 /*
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
 */
-	op _._ : K Id -> Expression
+	syntax Expression ::= K "." Id
 	context _._((HOLE => peval(HOLE)), _:Id)
-	op _->_ : K Id -> Expression
+	syntax Expression ::= K "->" Id
 	context _->_((HOLE => reval(HOLE)), _:Id)
 /*
 	| GNU_BODY of block
 	| EXPR_PATTERN of String     (* pattern variable, and name *)
 */
-	op GnuBody : K -> Expression
-	op ExpressionPattern : String -> Expression
+	syntax Expression ::= "GnuBody" "(" K ")" [klabel(GnuBody)]
+	syntax Expression ::= "ExpressionPattern" "(" String ")" [klabel(ExpressionPattern)]
 	
 /*
 and constant =
@@ -727,27 +633,25 @@ and constant =
 	| CONST_STRING of string
 	| CONST_WSTRING of int64 list 
 */
-	op DecimalConstant : K -> IntConstant // new
-	op OctalConstant : K -> IntConstant // new
-	op HexConstant : K -> IntConstant // new // expected to be string
+	syntax IntConstant ::= "DecimalConstant" "(" K ")" [klabel(DecimalConstant)] // new
+	syntax IntConstant ::= "OctalConstant" "(" K ")" [klabel(OctalConstant)] // new
+	syntax IntConstant ::= "HexConstant" "(" K ")" [klabel(HexConstant)] // new // expected to be string
 	
-	op DecimalFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
-	op HexFloatConstant : String Int Float -> IntConstant // new; significand, exponent, approx
+	syntax IntConstant ::= "DecimalFloatConstant" "(" String "," Int "," Float ")" [klabel(DecimalFloatConstant)] // new; significand, exponent, approx
+	syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")" [klabel(HexFloatConstant)] // new; significand, exponent, approx
 	
-	op U : K -> Constant // new
-	op L : K -> Constant // new
-	op F : K -> Constant // new
-	op LL : K -> Constant // new
-	op UL : K -> Constant // new
-	op ULL : K -> Constant // new
-	op NoSuffix : K -> Constant // new
+	syntax Constant ::= "U" "(" K ")" [klabel(U)] // new
+	syntax Constant ::= "L" "(" K ")" [klabel(L)] // new
+	syntax Constant ::= "F" "(" K ")" [klabel(F)] // new
+	syntax Constant ::= "LL" "(" K ")" [klabel(LL)] // new
+	syntax Constant ::= "UL" "(" K ")" [klabel(UL)] // new
+	syntax Constant ::= "ULL" "(" K ")" [klabel(ULL)] // new
+	syntax Constant ::= "NoSuffix" "(" K ")" [klabel(NoSuffix)] // new
 	
-	//op IntLiteral : K -> Constant
-	//op FloatLiteral : K -> Constant
-	op CharLiteral : Int -> Constant
-	op WCharLiteral : Int -> Constant
-	op StringLiteral : String -> Constant
-	op WStringLiteral : List{K} -> Constant
+	syntax Constant ::= "CharLiteral" "(" Int ")" [klabel(CharLiteral)]
+	syntax Constant ::= "WCharLiteral" "(" Int ")" [klabel(WCharLiteral)]
+	syntax Constant ::= "StringLiteral" "(" String ")" [klabel(StringLiteral)]
+	syntax Constant ::= "WStringLiteral" "(" List{K} ")" [klabel(WStringLiteral)]
 	
 
 /*
@@ -756,10 +660,10 @@ and init_expression =
   | SINGLE_INIT of expression
   | COMPOUND_INIT of (initwhat * init_expression) list
 */
-	op NoInit : -> KResult // InitExpression
-	op SingleInit : K -> InitExpression [metadata "hybrid=() strict=()"]
-	op CompoundInit : K -> InitExpression [metadata "hybrid=() strict=()"] // List
-	op InitFragment : K K -> InitFragment // new; (initwhat * init_expression)
+	syntax KResult ::= "NoInit" // InitExpression
+	syntax InitExpression ::= "SingleInit" "(" K ")" [hybrid strict klabel(SingleInit)]
+	syntax InitExpression ::= "CompoundInit" "(" K ")" [hybrid strict klabel(CompoundInit)] // List
+	syntax InitFragment ::= "InitFragment" "(" K "," K ")" [klabel(InitFragment)] // new; (initwhat * init_expression)
 	
 /*
 and initwhat =
@@ -768,60 +672,55 @@ and initwhat =
 	| ATINDEX_INIT of expression * initwhat
 	| ATINDEXRANGE_INIT of expression * expression
 */
-	op NextInit : -> KResult
-	op InFieldInit : Id K -> KResult
-	op AtIndexInit : K K -> KResult
-	op AtIndexRangeInit : K K -> KResult // nonstandard
+	syntax KResult ::= "NextInit"
+	syntax KResult ::= "InFieldInit" "(" Id "," K ")" [klabel(InFieldInit)]
+	syntax KResult ::= "AtIndexInit" "(" K "," K ")" [klabel(AtIndexInit)]
+	syntax KResult ::= "AtIndexRangeInit" "(" K "," K ")" [klabel(AtIndexRangeInit)] // nonstandard
 
 	
 /*
 and attribute = String * expression list
 */
-	op Attribute : String K -> C // String, List
+	syntax C ::= "Attribute" "(" String "," K ")" [klabel(Attribute)] // String, List
 	
-	
-	
-	op CodeLoc : K K -> K
+	syntax K ::= "CodeLoc" "(" K "," K ")" [klabel(CodeLoc)]
 	macro DefinitionLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	macro StatementLoc(K:K, L:K) = CodeLoc(K:K, L:K)
-	// macro ExpressionLoc(K:K, L:K) = CodeLoc(K:K, L:K)	
 	macro DefinitionLocRange(K:K, _, L:K) = CodeLoc(K:K, L:K)
-	// macro EnumItemLoc(K:K, L:K) = CodeLoc(K:K, L:K)
 	
 	
 	/*@ This macro defines an important identity from (n1570) 6.5.3.2.  As a syntactic macro, it should run on programs before they even start to reduce. */
 	macro &(*(K:K)) = K:K
-	
-	
+		
 
 	/*@ The below macros simply transform the prefix AST names to the infix/mixfix names we use from now on */
 	
 	// all these macros are temporary while I adjust the semantics to the new grammar
-	op Conditional : K K K -> Expression
+	syntax Expression ::= "Conditional" "(" K "," K "," K ")" [klabel(Conditional)]
 	macro Conditional(K1:K, K2:K, K3:K) = K1:K ? K2:K : K3:K
 	
-	op ArrayIndex : K K -> Expression
+	syntax Expression ::= "ArrayIndex" "(" K "," K ")" [klabel(ArrayIndex)]
 	macro ArrayIndex(K1:K, K2:K) = K1:K[K2:K]
 	
-	op Negative : K -> Expression
+	syntax Expression ::= "Negative" "(" K ")" [klabel(Negative)]
 	macro Negative(K:K) = - K:K
-	op Positive : K -> Expression
+	syntax Expression ::= "Positive" "(" K ")" [klabel(Positive)]
 	macro Positive(K:K) = + K:K
-	op LogicalNot : K -> Expression
+	syntax Expression ::= "LogicalNot" "(" K ")" [klabel(LogicalNot)]
 	macro LogicalNot(K:K) = ! K:K
-	op BitwiseNot : K -> Expression
+	syntax Expression ::= "BitwiseNot" "(" K ")" [klabel(BitwiseNot)]
 	macro BitwiseNot(K:K) = ~ K:K
-	op Dereference : K -> Expression
+	syntax Expression ::= "Dereference" "(" K ")" [klabel(Dereference)]
 	macro Dereference(K:K) = * K:K
-	op Reference : K -> Expression
+	syntax Expression ::= "Reference" "(" K ")" [klabel(Reference)]
 	macro Reference(K:K) = & K:K
-	op PreIncrement : K -> Expression
+	syntax Expression ::= "PreIncrement" "(" K ")" [klabel(PreIncrement)]
 	macro PreIncrement(K:K) = ++ K:K
-	op PreDecrement : K -> Expression
+	syntax Expression ::= "PreDecrement" "(" K ")" [klabel(PreDecrement)]
 	macro PreDecrement(K:K) = -- K:K
-	op PostIncrement : K -> Expression
+	syntax Expression ::= "PostIncrement" "(" K ")" [klabel(PostIncrement)]
 	macro PostIncrement(K:K) = K:K ++
-	op PostDecrement : K -> Expression
+	syntax Expression ::= "PostDecrement" "(" K ")" [klabel(PostDecrement)]
 	macro PostDecrement(K:K) = K:K --
 
 	ops Multiply : K K -> Expression
@@ -887,13 +786,7 @@ and attribute = String * expression list
 	
 	ops Dot : K Id -> Expression
 	macro Dot(K:K, X:Id) = K:K . X:Id
-	op Arrow : K Id -> Expression
+	syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel(Arrow)]
 	macro Arrow(K:K, X:Id) = K:K -> X:Id
-	
-	
-	
-	
-	
-	
-	
+
 endkm
