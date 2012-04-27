@@ -1,11 +1,11 @@
-kmod DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE is
+module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE is
 	including DYNAMIC-INCLUDE
 	
 	declare hasSameSignedness : Type Type -> Bool // [memo]
 	declare correspondingUnsignedType : Type -> Type 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
+module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
 	define [hasSameSignedness]: 
@@ -23,14 +23,14 @@ kmod DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
 		correspondingUnsignedType(t(S:Set, long-long-int))
 			=> t(S:Set, unsigned-long-long-int)
 	
-endkm
+end module
 
 	/*@ \fromStandard{\source[n1570]{\para{6.3}{1--2}}}{
 	Several operators convert operand values from one type to another automatically. This subclause specifies the result required from such an implicit conversion, as well as those that result from a cast operation (an explicit conversion). The list in 6.3.1.8 summarizes the conversions performed by most ordinary operators; it is supplemented as required by the discussion of each operator in 6.5.
 
 Conversion of an operand value to a compatible type causes no change to the value or the representation.
 	}*/
-kmod DYNAMIC-SEMANTICS-PROMOTIONS is
+module DYNAMIC-SEMANTICS-PROMOTIONS is
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 
 	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
@@ -70,7 +70,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 		isArithBinConversionOp(KL:KLabel) => #if arithBinConversionOps contains l(KL:KLabel) #then true #else false #fi [structural]
 
 	declare arithUnaryOps : -> Set // [memo] 
-	define [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_)) [structural]
+	define [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_))
 
 	define [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => #if arithUnaryOps contains l(KL:KLabel) #then true #else false #fi [structural]
@@ -266,7 +266,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	\item If both operands have the same type, then no further conversion is needed.
 	\end{itemize}\end{itemize}
 	*/
-	define [arithConversion-int-done]: usualArithmeticConversion-aux(T:KResult, T:KResult) => T:KResult [structural]
+	define [arithConversion-int-done]: usualArithmeticConversion-aux(T:KResult, T:KResult) => T:KResult
 		
 	define [maxType-left]:
 		maxType(T:KResult, T':KResult) => T:KResult
@@ -348,9 +348,9 @@ integer type.
 		andBool rank(T:KResult) <Int rank(T':KResult)
 		andBool (min(T':KResult) >Int min(T:KResult) orBool max(T':KResult) <Int max(T:KResult))
 		
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-CAST is 
+module DYNAMIC-SEMANTICS-CAST is 
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	//- switch assumes casts can happen anywhere
 	
@@ -516,7 +516,7 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	// this is starting to get into sketchy land
 	define [cast-unknown-integer]:
 		cast(T:KResult, tv(piece(unknown(Len:Nat), Len:Nat), T':KResult)) 
-			=> tv(piece(unknown(K2Nat(bitSizeofType(T:KResult))), K2Nat(bitSizeofType(T:KResult))), T:KResult)
+			=> tv(piece(unknown(bitSizeofType(T:KResult)), bitSizeofType(T:KResult)), T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
 	
@@ -628,9 +628,9 @@ kmod DYNAMIC-SEMANTICS-CAST is
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, t(_, pointerType(_)))) 
 			=> tv(N:Nat, t(S:Set, pointerType(T:KResult)))
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
+module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 
 	// fixme not sure about this
@@ -725,15 +725,15 @@ kmod DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 		// must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
-	define unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int) [structural]
-	define signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int) [structural]
+	define unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int)
+	define signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int)
 
-endkm
+end module
 
-kmod DYNAMIC-C-CONVERSIONS is
+module DYNAMIC-C-CONVERSIONS is
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	including DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
 	including DYNAMIC-SEMANTICS-CAST
 	including DYNAMIC-SEMANTICS-PROMOTIONS 
 	including DYNAMIC-SEMANTICS-CONVERSIONS-MISC
-endkm
+end module

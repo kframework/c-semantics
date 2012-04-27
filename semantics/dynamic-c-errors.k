@@ -1,4 +1,4 @@
-kmod DYNAMIC-SEMANTICS-ERRORS-INCLUDE is
+module DYNAMIC-SEMANTICS-ERRORS-INCLUDE is
 	including COMMON-C-SEMANTICS
 
 	including DYNAMIC-C-SEMANTICS-MISC
@@ -10,9 +10,9 @@ kmod DYNAMIC-SEMANTICS-ERRORS-INCLUDE is
 	including DYNAMIC-C-CONVERSIONS 
 	including DYNAMIC-C-STANDARD-LIBRARY
 
-endkm
+end module
 
-kmod DYNAMIC-C-ERRORS is
+module DYNAMIC-C-ERRORS is
 	including DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
 	declare Error : String String -> K
@@ -40,15 +40,15 @@ kmod DYNAMIC-C-ERRORS is
 	syntax CellLabel ::= "halted-k" [klabel(halted-k)] 
 	syntax CellLabel ::= "halted-T" [klabel(halted-T)]
 	declare halt_ : Bag -> Bag
-	define halt < k => halted-k > _:K </ k => halted-k > [structural]
+	define halt < k => halted-k > _:K </ k => halted-k >
 	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
 		when L:CellLabel =/=CellLabel k 
 		[structural]
-	define halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel > [structural]
-	define halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel > [structural]
-	define halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel > [structural]
-	define halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel > [structural]
-	define halt .Bag => .Bag [structural]
+	define halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
+	define halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
+	define halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
+	define halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
+	define halt .Bag => .Bag
 	
 	rule [halt-start]:
 		< T => halted-T >...
@@ -416,4 +416,4 @@ kmod DYNAMIC-C-ERRORS is
 		[metadata "computational=()"]		
 
 
-endkm
+end module

@@ -2,17 +2,17 @@ load dynamic-c-configuration
 load common-c-semantics
 require /modules/uris
 
-kmod DYNAMIC-SEMANTIC-SYNTAX is
+module DYNAMIC-SEMANTIC-SYNTAX is
 	including COMMON-INCLUDE
 	including URIS
-endkm
+end module
 
-kmod DYNAMIC-INCLUDE is
+module DYNAMIC-INCLUDE is
 	including DYNAMIC-SEMANTIC-SYNTAX
 	including DYNAMIC-C-CONFIGURATION
-endkm
+end module
 
-kmod DYNAMIC-C-SEMANTICS-MISC is
+module DYNAMIC-C-SEMANTICS-MISC is
 	including DYNAMIC-INCLUDE 
 			
 	rule [sequencePoint]:
@@ -41,7 +41,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 	rule [readFromFD-empty-buff]:
 		< k > readFromFD(FD:Nat) ...</ k >
 		< fid > FD:Nat </ fid >
-		< buff > "" => "" +String charString(K2Nat(#fReadByte(FD:Nat))) </ buff >
+		< buff > "" => "" +String charString(#fReadByte(FD:Nat)) </ buff >
 		[structural]
 	rule [readFromFD-eof]:
 		< k > readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</ k >
@@ -49,15 +49,9 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		< buff > #EOF </ buff >
 		[structural]
 	rule [make-eof]:
-		"" +String charString(K2Nat(#EOF))
+		"" +String charString(#EOF)
 			=> #EOF
 		[structural anywhere]
-	// rule [readFromFD-char-eof]:
-		// < k > readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</ k > // -1 should be EOF
-		// < fid > FD:Nat </ fid >
-		// < buff > S:String => butFirstChar(S:String) </ buff >
-		// if S:String ==Bool ""
-		// [structural]
 		
 	syntax K ::= "f-sent" "(" Nat "," String ")" [klabel(f-sent)]
 	syntax K ::= "f-flush" "(" Nat ")" [klabel(f-flush)]
@@ -104,45 +98,14 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		
 	declare string2List : String -> List{K}
 	declare string2List-aux : String List{K} -> List{K}
-	define string2List(S:String) => string2List-aux(S:String, .List{K}) [structural]
-	define string2List-aux("", L:List{K}) => L:List{K} [structural]
+	define string2List(S:String) => string2List-aux(S:String, .List{K})
+	define string2List-aux("", L:List{K}) => L:List{K}
 	define 
 		string2List-aux(S:String, L:List{K})
 			=> string2List-aux(butFirstChar(S:String), (L:List{K},, firstChar(S:String)))
 		when S:String =/=String ""
 		[structural]
-		
-	// syntax K ::= "flushString" "(" Nat "," String ")" [klabel(flushString)]
-	
-	// rule [flush-out-start]: 
-		// < k > .K => flushString(1, S:String) ...</ k >
-		// <fid> 1 </fid>
-		// <buff> S:String => "" </buff>
-		// <mode> "w" </mode>
-		// if S:String =/=Bool ""
-		// [structural]
-		
-	// syntax K ::= "flushSuccess" "(" Nat "," K ")" [klabel(flushSuccess)]
-	
-	// rule [flush-success]: 
-		// < k > flushSuccess(FD:Nat, S:String) => .K ...</ k >
-		// <fid> FD:Nat </fid>
-		// <done> Done:String => Done:String +String S:String </done>
-		// [structural]
-		
-	// rule [flush-out-one]: 
-		// < k > (.K 
-				// => #fPutByte(FD:Nat, charToAscii(firstChar(S:String))) 
-				// ~> flushSuccess(FD:Nat, firstChar(S:String))
-			// )
-			// ~> flushString(FD:Nat, (S:String => butFirstChar(S:String)))
-		// ...</ k >
-		// if S:String =/=Bool ""
-		// [structural]
-	// rule [flush-out-done]: 
-		// < k > flushString(_, "") => .K ...</ k >
-		// [structural]
-endkm
+end module
 
 load dynamic-c-expressions
 load dynamic-c-conversions
@@ -156,7 +119,7 @@ load dynamic-c-declarations
 // this must be below the others
 load dynamic-c-errors
 
-kmod DYNAMIC-C-SEMANTICS is
+module DYNAMIC-C-SEMANTICS is
 	including COMMON-C-SEMANTICS
 	including DYNAMIC-INCLUDE
 	
@@ -301,36 +264,5 @@ or equivalent;9) or in some other implementation-defined manner
 		...</ files >
 		(.Bag =>
 			< output > S2:String +String listToString(L:List) +String S2'':String </ output >
-			//< unflushedOutput > listToString(L:List) +String S2'':String </ unflushedOutput >
-		)
-		
- // < buff > # ""(.List{K}) </ buff > 
-  // < fid > # 0(.List{K}) </ fid > 
-  // < mode > # "r"(.List{K}) </ mode > 
-  // < pos > # 0(.List{K}) </ pos > 
-  // < uri > # "stdin:///"(.List{K}) </ uri > 
-  // < done > ListItem(# ""(.List{K})) </ done > 
-  // < (sending).CellLabel > (.).List </ (sending).CellLabel > </ file > 
- // < file > 
-  // < buff > # ""(.List{K}) </ buff > 
-  // < fid > # 1(.List{K}) </ fid > 
-  // < mode > # "w"(.List{K}) </ mode > 
-  // < pos > # 0(.List{K}) </ pos > 
-  // < uri > # "stdout:///"(.List{K}) </ uri > 
-  // < done > ListItem(# ""(.List{K})) </ done > 
-  // < (sending).CellLabel > ListItem(# "Hello world\n"(.List{K})) </ (sending).CellLabel > </ file > 
-	
-	// declare listToString : List -> String
-	// declare listToString-aux : List String -> String
-	
-	// define [listToString-start]:
-		// listToString(L:List) => listToString-aux(L:List, "")
-		
-	// define [listToString-one]:
-		// listToString-aux(ListItem(S:String) L:List, S':String)
-			// => listToString-aux(L:List, S':String +String S:String)
-		
-	// define [listToString-done]:
-		// listToString-aux(.List, S:String) => S:String
-		
-endkm
+		)		
+end module

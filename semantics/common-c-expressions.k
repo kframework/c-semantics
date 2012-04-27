@@ -1,10 +1,10 @@
-kmod COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
+module COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
 	including COMMON-INCLUDE 
 
-endkm
+end module
 
-kmod COMMON-C-EXPRESSIONS is
+module COMMON-C-EXPRESSIONS is
 	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	rule NothingExpression => emptyValue [structural anywhere]
-endkm
+end module

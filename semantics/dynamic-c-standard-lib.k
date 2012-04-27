@@ -1,20 +1,20 @@
 // load maudeLib/TCPSupport
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
+module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	// including #SOCKET
 	// including #TCP-INTERFACE
 	
-	syntax C ::= "vararg" "(" K ")" [metadata "hybrid=() strict=()" klabel(vararg)]
-	syntax C ::= "nextvarg" "(" Nat "," K ")" [metadata "strict=(2)" klabel(nextvarg)] // loc, type
-	syntax C ::= "vpair" "(" K "," K ")" [metadata "hybrid=() strict=()" klabel(vpair)]
+	syntax C ::= "vararg" "(" K ")" [hybrid strict klabel(vararg)]
+	syntax C ::= "nextvarg" "(" Nat "," K ")" [strict(2) klabel(nextvarg)] // loc, type
+	syntax C ::= "vpair" "(" K "," K ")" [hybrid strict klabel(vpair)]
 	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" [klabel(prepareBuiltin)]
 	declare incSymbolic : K -> K
 	syntax K ::= "printString" "(" K ")" [klabel(printString)]
 	
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
+module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
@@ -80,9 +80,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	rule
 		< k > printString("") => writeToFD(1, 10) ...</ k >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
+module DYNAMIC-C-STANDARD-LIBRARY-MATH is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [sqrt]:
@@ -151,9 +151,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-MATH is
 		...</ k >
 		[structural]
 
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
+module DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
@@ -186,7 +186,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 		</ threadLocal >
 		[structural]
 
-	syntax K ::= "longjmp-aux" "(" K "," K ")" [metadata "strict=()" klabel(longjmp-aux)]
+	syntax K ::= "longjmp-aux" "(" K "," K ")" [strict klabel(longjmp-aux)]
 	rule [longjmp-prepare]:
 		< k > prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
 			=> longjmp-aux(reval(*(V:KResult)), V':KResult)
@@ -205,9 +205,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 			_ => C:Bag
 		</ threadLocal >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
+module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 		
 	////////////////////////////--
@@ -228,7 +228,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		...</ k >
 		[structural]
 	
-	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" [klabel(va-inc-aux)] // [metadata "strict=(3)"]
+	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" [klabel(va-inc-aux)] // [strict(3)]
 	context va-inc-aux(_, _, (HOLE => reval(HOLE)))
 	// fixme can do lots of checks here too
 	
@@ -273,12 +273,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 				=> skipval
 		...</ k >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
+module DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-	syntax K ::= "offsetOf" "(" K "," K ")" [metadata "strict=(1)" klabel(offsetOf)]
+	syntax K ::= "offsetOf" "(" K "," K ")" [strict(1) klabel(offsetOf)]
 	rule
 		< k > OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</ k >
 		[structural]
@@ -293,10 +293,10 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 		[structural]
 	rule < k > offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</ k >
 		[structural]
-endkm
+end module
 
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
+module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	rule [putchar]:
@@ -340,7 +340,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [metadata "strict=(3)" klabel(fsl-open-file-aux)]
+	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3) klabel(fsl-open-file-aux)]
 	
 	rule [fslOpenFile-aux]:
 		< k > fsl-open-file(str(Filename:String), str(Mode:String))
@@ -363,7 +363,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ files >
 		[structural]
 
-	syntax K ::= "fsl-open-file" "(" K "," K ")" [metadata "strict=()" klabel(fsl-open-file)]
+	syntax K ::= "fsl-open-file" "(" K "," K ")" [strict klabel(fsl-open-file)]
 
 	//////////////////////////--	
 
@@ -391,7 +391,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	syntax K ::= "sprintf" "(" K "," K ")" [metadata "strict=(1)" klabel(sprintf)]
+	syntax K ::= "sprintf" "(" K "," K ")" [strict(1) klabel(sprintf)]
 	rule [sprintf]:
 		< k > prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
 			=> sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
@@ -404,7 +404,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	syntax K ::= "snprintf" "(" K "," K "," Nat ")" [metadata "strict=(1)" klabel(snprintf)]
+	syntax K ::= "snprintf" "(" K "," K "," Nat ")" [strict(1) klabel(snprintf)]
 	rule [snprintf]:
 		< k > prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Nat, _),, Format:KResult,, VarArgs:KResult))
 			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Nat)
@@ -423,11 +423,11 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	syntax K ::= "new-printf-aux" "(" K ")" [metadata "strict=()" klabel(new-printf-aux)]
-	syntax K ::= "formatter" "(" K "," K ")" [metadata "strict=(1)" klabel(formatter)]
-	syntax K ::= "formatter-aux" "(" K ")" [metadata "strict=()" klabel(formatter-aux)]
+	syntax K ::= "new-printf-aux" "(" K ")" [strict klabel(new-printf-aux)]
+	syntax K ::= "formatter" "(" K "," K ")" [strict(1) klabel(formatter)]
+	syntax K ::= "formatter-aux" "(" K ")" [strict klabel(formatter-aux)]
 	syntax K ::= "formatter-next" "(" K ")" [klabel(formatter-next)]
-	syntax K ::= "formatter-arg" "(" K ")" [metadata "strict=(1)" klabel(formatter-arg)]
+	syntax K ::= "formatter-arg" "(" K ")" [strict(1) klabel(formatter-arg)]
 	rule 
 		< k > formatter-next(vararg(tv(Loc:Nat, _)))
 			=> formatter-arg(nextvarg(Loc:Nat, getFormatType))
@@ -883,10 +883,10 @@ A \texttt{\%} character is written. No argument is converted. The complete conve
 		<formatState> "%" </formatState>
 		<formatLength> Length:String => Length:String +String "l" </formatLength>
 		[structural]
-endkm
+end module
 
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
+module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [debug]:
@@ -994,9 +994,9 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		[structural]
 
 
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
+module DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	// fixme should detect overlaps
@@ -1025,9 +1025,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
 		...</ k >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
+module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	////////////////////////////--
@@ -1132,7 +1132,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ thread >
 		[metadata "computational=()"]
 
-	syntax K ::= "testAndSet" "(" K "," K "," K ")" [metadata "strict=(1)" klabel(testAndSet)]
+	syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
 	rule [test-and-set-start]:
 		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
 			=> testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
@@ -1145,9 +1145,9 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			~> Retval:KResult
 		...</ k >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-TIME is
+module DYNAMIC-C-STANDARD-LIBRARY-TIME is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	// fixme, just a placeholder
@@ -1157,16 +1157,16 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-TIME is
 		...</ k >
 		[structural]
 	
-endkm
+end module
 
-kmod DYNAMIC-C-STANDARD-LIBRARY-MISC is
+module DYNAMIC-C-STANDARD-LIBRARY-MISC is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-endkm
+end module
 
 ////////////////////////////////
 //- C standard library
-kmod DYNAMIC-C-STANDARD-LIBRARY is
+module DYNAMIC-C-STANDARD-LIBRARY is
 	including DYNAMIC-INCLUDE
 	including DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	
@@ -1181,4 +1181,4 @@ kmod DYNAMIC-C-STANDARD-LIBRARY is
 	including DYNAMIC-C-STANDARD-LIBRARY-TIME
 	
 	including DYNAMIC-C-STANDARD-LIBRARY-MISC
-endkm
+end module

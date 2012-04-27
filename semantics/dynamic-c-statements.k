@@ -1,12 +1,12 @@
-kmod DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
+module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	including DYNAMIC-INCLUDE
 
 	syntax K ::= "pushBlock" [klabel(pushBlock)] 
 	syntax K ::= "addToHistory" "(" Nat ")" [klabel(addToHistory)]
-endkm 
+end module 
  
-kmod DYNAMIC-SEMANTICS-IF-THEN is
+module DYNAMIC-SEMANTICS-IF-THEN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 		
 	/*@ \source[n1570]{\para{6.8}{4}}
@@ -27,9 +27,9 @@ kmod DYNAMIC-SEMANTICS-IF-THEN is
 		< k > IfThenElse((V:KResult => simplifyTruth(V:KResult)), _, _) ...</ k >
 		when isNotTruthValue(V:KResult)
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-WHILE is
+module DYNAMIC-SEMANTICS-WHILE is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \source[n1570]{\para{6.8.5.1}{1}}
@@ -49,9 +49,9 @@ kmod DYNAMIC-SEMANTICS-WHILE is
 		...</ k >
 		[metadata "computational=()"]
 		// [structural]  // rule so that looping programs see repetition
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-DO-WHILE is
+module DYNAMIC-SEMANTICS-DO-WHILE is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@\source[n1570]{\para{6.8.5.2}{1}}
@@ -71,9 +71,9 @@ kmod DYNAMIC-SEMANTICS-DO-WHILE is
 		...</ k >
 		[metadata "computational=()"]
 		// [structural]  // rule so that looping programs see repetition
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-FOR is
+module DYNAMIC-SEMANTICS-FOR is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \source[n1570]{\para{6.8.5.2}{1}}
@@ -109,15 +109,15 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 		< blockHistory > ListItem(Num:Nat) ...</ blockHistory >
 		[metadata "computational=()"]
 		// [structural] // rule so that looping programs see repetition 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-SWITCH is
+module DYNAMIC-SEMANTICS-SWITCH is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
-	syntax K ::= "handleSwitch" "(" Nat "," K ")" [metadata "strict=(2)" klabel(handleSwitch)] //  switch num, promoted value of controlling exp, int value of exp
+	syntax K ::= "handleSwitch" "(" Nat "," K ")" [strict(2) klabel(handleSwitch)] //  switch num, promoted value of controlling exp, int value of exp
 	syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")" [klabel(handleSwitch-aux)] 
 	
 	/*@ \source[n1570]{\para{6.8.5.2}{4}}
@@ -193,9 +193,9 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	rule [default-fall-through]:
 		< k > Default(_:Nat, K:K) => K:K ...</ k >
 		[structural] 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-GOTO is
+module DYNAMIC-SEMANTICS-GOTO is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \source[n1570]{\para{6.8.6.1}{2}}
@@ -384,9 +384,9 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		< k > addVariablesForBlock(_:Nat, .List) => .K ...</ k >
 		[structural] 
 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-RETURN is
+module DYNAMIC-SEMANTICS-RETURN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 
 	
@@ -442,9 +442,9 @@ kmod DYNAMIC-SEMANTICS-RETURN is
 			) => .List
 		...</ callStack >
 		[structural large] 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-BLOCKS is
+module DYNAMIC-SEMANTICS-BLOCKS is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	rule 
@@ -496,9 +496,9 @@ kmod DYNAMIC-SEMANTICS-BLOCKS is
 		< k > Block(BlockNum:Nat, _, List(Statements:List{K})) => klistToK(Statements:List{K}) ...</ k >
 		< blockHistory > .List => ListItem(BlockNum:Nat) ...</ blockHistory >
 		[structural] 
-endkm
+end module
 
-kmod DYNAMIC-C-STATEMENTS is
+module DYNAMIC-C-STATEMENTS is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	including DYNAMIC-SEMANTICS-IF-THEN 
 	including DYNAMIC-SEMANTICS-FOR 
@@ -561,4 +561,4 @@ kmod DYNAMIC-C-STATEMENTS is
 	rule [break]:
 		< k > Break => popLoop ...</ k >
 		[structural] 
-endkm
+end module

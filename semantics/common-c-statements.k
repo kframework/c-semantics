@@ -1,4 +1,4 @@
-kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
+module COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	
 	syntax Statement ::= "loopMarked" [klabel(loopMarked)] 
@@ -10,10 +10,10 @@ kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	
 	
 	syntax K ::= "caseHelper" "(" Nat ")" [klabel(caseHelper)] 
-endkm 
+end module 
 
 
-kmod COMMON-SEMANTICS-PROCESS-LABELS is
+module COMMON-SEMANTICS-PROCESS-LABELS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	// now that we can have different strictnesses in different cells, maybe this can be redone easily
 /*
@@ -281,9 +281,9 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< blockHistoryGoto > BlockHistory:List </ blockHistoryGoto >
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, l('Default)))
 		[structural]
-endkm
+end module
  
-kmod COMMON-C-STATEMENTS is
+module COMMON-C-STATEMENTS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	including COMMON-SEMANTICS-PROCESS-LABELS
 	
@@ -298,4 +298,4 @@ kmod COMMON-C-STATEMENTS is
 	*/
 	rule [skip-label]: < k > Label(L:Id, K:K) => K:K ...</ k >
 		[structural]
-endkm
+end module

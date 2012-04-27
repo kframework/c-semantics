@@ -53,7 +53,7 @@ endif
 # @echo > k-includes.k
 #@echo "load $(K_PRELUDE)" >> k-includes.k
 #@echo "load $(K_SOCKETS)" >> k-includes.k
-temp-c-%.tex: PDF_MODULES=`grep -o '^kmod.* is' $*.k | grep -o ' .* '`
+temp-c-%.tex: PDF_MODULES=`grep -o '^module.* is' $*.k | grep -o ' .* '`
 temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
 #@rm -f temp-c-$*.tex
 	@echo "Creating latex..."

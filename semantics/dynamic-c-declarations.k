@@ -1,10 +1,10 @@
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE is
+module DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE
 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
+module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 
 	// empty binding
@@ -91,7 +91,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		orBool T:K ==K double 
 		orBool T:K ==K long-double
 		[structural]
-	define promoteList(.List{K}) => .List{K} [structural]
+	define promoteList(.List{K}) => .List{K}
 	
 	syntax K ::= "bindVariadic" "(" K "," List{KResult} ")" [klabel(bindVariadic)] 
 	syntax K ::= "bindVariadic-pre" "(" K "," List{K} ")" [klabel(bindVariadic-pre)] 
@@ -128,9 +128,9 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	rule [bind-variadic-done]:
 		< k > bindVariadic(_, .List{K}) => sequencePoint ...</ k > 
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
+module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	
@@ -223,22 +223,22 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 			=> .K
 		...</ k >
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
+module DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endkm
+end module
 
 
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION is
+module DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS is
+module DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endkm
+end module
 
-kmod DYNAMIC-C-DECLARATIONS is
+module DYNAMIC-C-DECLARATIONS is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE
 	
 	including DYNAMIC-SEMANTICS-DECLARATIONS-BINDING 
@@ -246,4 +246,4 @@ kmod DYNAMIC-C-DECLARATIONS is
 	including DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
 	including DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS 
 	including DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION 
-endkm
+end module

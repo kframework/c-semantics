@@ -1,4 +1,4 @@
-kmod DYNAMIC-MEMORY-INCLUDE is
+module DYNAMIC-MEMORY-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	
 	// returns the bytes in the order in which they are in memory
@@ -22,11 +22,11 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	declare getByteOffset : Nat -> Nat 
 	define getByteOffset(loc(_:Nat, M:Nat, N:Nat)) => M +Int N:Nat /Int numBitsPerByte
 	
-	define [locations-none]: locations(.List) => .Set [structural]
-	define [locations-some]: locations(bwrite(Loc:Nat, _) L:List) => SetItem(Loc:Nat) locations(L:List) [structural]
-endkm
+	define [locations-none]: locations(.List) => .Set
+	define [locations-some]: locations(bwrite(Loc:Nat, _) L:List) => SetItem(Loc:Nat) locations(L:List)
+end module
 
-kmod DYNAMIC-SEMANTICS-READING is
+module DYNAMIC-SEMANTICS-READING is
 	including DYNAMIC-MEMORY-INCLUDE 
 	
 	syntax K ::= "extractBitsFromMem" "(" Nat "," Nat ")" [klabel(extractBitsFromMem)] // loc, size in bits
@@ -232,8 +232,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural]		
 	
 	declare values : List{K} -> List{K} 
-	define values((tv(K:K, _),, L:List{KResult})) => (K:K,, values(L:List{KResult})) [structural]
-	define values(.List{K}) => .List{K} [structural]
+	define values((tv(K:K, _),, L:List{KResult})) => (K:K,, values(L:List{KResult}))
+	define values(.List{K}) => .List{K}
 	rule
 		< k > extractBytesFromMem-aux(_, 0, Aux:List{KResult}) 
 			=> dataList(values(Aux:List{KResult})) 
@@ -288,9 +288,9 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural]
 		//[interpRule] // for speed in interpretation; forces local buffer to be flushed before a read
 
-endkm
+end module
 
-kmod DYNAMIC-SEMANTICS-WRITING is
+module DYNAMIC-SEMANTICS-WRITING is
 	including DYNAMIC-MEMORY-INCLUDE 
 	context alloc(_, value(HOLE)) 
 
@@ -357,13 +357,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		[structural]	
 		
-	syntax K ::= "writeBytes" "(" Nat "," K ")" [metadata "strict=(2)" klabel(writeBytes)] 
-	syntax K ::= "writeBitfield" "(" Nat "," Type "," K ")" [metadata "strict=(3)" klabel(writeBitfield)] 
+	syntax K ::= "writeBytes" "(" Nat "," K ")" [strict(2) klabel(writeBytes)] 
+	syntax K ::= "writeBitfield" "(" Nat "," Type "," K ")" [strict(3) klabel(writeBitfield)] 
 	declare isByteLoc : Nat -> Bool 
 	declare splitBytes : Value -> K 
-	declare calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
+	declare calculateNewBytes : Nat K K -> K [strict(3)] 
 	
-	syntax K ::= "write-aux" "(" K "," Value "," K ")" [metadata "strict=(2)" klabel(write-aux)]
+	syntax K ::= "write-aux" "(" K "," Value "," K ")" [strict(2) klabel(write-aux)]
 	rule write(lv(Dest:Nat, T':KResult), tv(V:List{K}, T:KResult)) 
 		=> write-aux(Dest:Nat, tv(V:List{K}, T:KResult), value(bitSizeofType(T:KResult))) 
 		when notBool isConstType(T':KResult)
@@ -424,8 +424,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 		
 	declare hasUnionMarker : Type -> Bool
-	define hasUnionMarker(t(SetItem(fromUnion(_:Id)) _, _)) => true [structural]
-	define hasUnionMarker(t(.Set, _)) => false [structural]
+	define hasUnionMarker(t(SetItem(fromUnion(_:Id)) _, _)) => true
+	define hasUnionMarker(t(.Set, _)) => false
 	define hasUnionMarker(t(S:Set (SetItem(L:KLabel(_:List{K}))), K:K))
 		=> hasUnionMarker(t(S:Set, K:K))
 		when L:KLabel =/=KLabel 'fromUnion
@@ -441,12 +441,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		andBool notBool isBitfieldType(T:KResult)
 		[structural]
 		
-	// define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat [structural]
+	// define bitoffset(_:Nat +Int bito(N:Nat)) => N:Nat
 	// // fixme owise!!!
 	// eq bitoffset(_:Nat) = 0 [owise] 
 	
 	// fixme owise!!!
-	// define byteoffset(N:Nat +Int bito(_:Nat)) => N:Nat [structural]
+	// define byteoffset(N:Nat +Int bito(_:Nat)) => N:Nat
 	// eq byteoffset(N:Nat) = N:Nat [owise] 
 		
 	declare justBits : Int Type -> Value 
@@ -464,7 +464,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	// fixme sNat
 	define 
 		justBits-aux(N:Nat, t(_, bitfieldType(T:KResult, Len:Nat))) 
-			=> N:Nat +Int (1 <<Int K2Nat(Len:Nat -Int 1))
+			=> N:Nat +Int (1 <<Int (Len:Nat -Int 1))
 		when Len:Nat >Int 0
 		[structural]
 	
@@ -509,8 +509,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> calculateNewBytes-aux(Len:Nat, dataList(explodeToBits(N:Nat)), dataList(explodeToBits(L:List{K})), .List{K})
 		[structural]
 	
-	define reverseList(.List{K}) => .List{K} [structural]
-	define reverseList((K:K,, L:List{K})) => reverseList(L:List{K}),, K:K [structural]
+	define reverseList(.List{K}) => .List{K}
+	define reverseList((K:K,, L:List{K})) => reverseList(L:List{K}),, K:K
 	
 	declare joinBitsToBytes : List{K} -> K 
 	declare joinBitsToBytes-aux : K K -> K 
@@ -528,7 +528,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		=> joinBitsToBytes((Result:List{K},, L:List{K})) 
 		[structural]
 	
-	define joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K})) [structural]
+	define joinBitsToBytes(L:List{K}) => joinBitsToBytes-aux(dataList(L:List{K}), dataList(.List{K}))
 	define joinBitsToBytes-aux(dataList((piece(N:Nat, Len:Nat),, piece(M:Nat, 1),, L:List{K})), dataList(R:List{K}))
 		=> joinBitsToBytes-aux(dataList((piece(_bit::_(piece(N:Nat, Len:Nat), piece(M:Nat, 1)), Len:Nat +Int 1),, L:List{K})), dataList(R:List{K}))
 		when Len:Nat <Int numBitsPerByte 
@@ -542,18 +542,18 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	
 	
-	define explodeToBits((K:K,, L:NeList{K})) => (explodeToBits(K:K),, explodeToBits(L:NeList{K})) [structural]
+	define explodeToBits((K:K,, L:NeList{K})) => (explodeToBits(K:K),, explodeToBits(L:NeList{K}))
 	define explodeToBits(piece(N:Nat, Len:Nat))
 		=> splinter(N:Nat, Len:Nat)
 		when Len:Nat >Int 0
 		[structural]
-	define explodeToBits(piece(N:Nat, 0)) => .List{K} [structural]
-	define explodeToBits(.List{K}) => .List{K} [structural]
+	define explodeToBits(piece(N:Nat, 0)) => .List{K}
+	define explodeToBits(.List{K}) => .List{K}
 	
 	declare splinter : Nat Nat -> List{K} 
 	declare splinter-aux : Nat Nat Nat -> List{K} 
-	define splinter(N:Nat, Len:Nat) => splinter-aux(N:Nat, Len:Nat, 0) [structural]
-	define splinter-aux(_:Nat, Len:Nat, Len:Nat) => .List{K} [structural]
+	define splinter(N:Nat, Len:Nat) => splinter-aux(N:Nat, Len:Nat, 0)
+	define splinter-aux(_:Nat, Len:Nat, Len:Nat) => .List{K}
 	define splinter-aux(N:Nat, Len:Nat, Pos:Nat)
 		=> splinter-aux(N:Nat, Len:Nat, Pos:Nat +Int 1),, piece(bitRange(N:Nat, Pos:Nat, Pos:Nat), 1)
 		when Pos:Nat <Int Len:Nat 
@@ -624,7 +624,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	declare splitIntegerBytes : K K K -> K 
 	declare splitIntegerBytes-aux : K K K List{K} -> K 
 	//context splitIntegerBytes(_, _, value(HOLE)) 
-	define splitIntegerBytes(I:Int, T:KResult, Len:Nat) => splitIntegerBytes-aux(I:Int, T:KResult, Len:Nat, .List{K}) [structural]
+	define splitIntegerBytes(I:Int, T:KResult, Len:Nat) => splitIntegerBytes-aux(I:Int, T:KResult, Len:Nat, .List{K})
 	define 
 		splitIntegerBytes-aux(I:Int, T:KResult, Len:Nat, L:List{K})
 			=> splitIntegerBytes-aux(I:Int >>Int numBitsPerByte, T:KResult, Len:Nat -Int 1, (L:List{K},, lowestByte(I:Int, T:KResult)))
@@ -689,12 +689,12 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	
 	declare byteMaskSet : -> Nat
-	define byteMaskSet => (2 ^Int numBitsPerByte) -Int 1 [structural]
+	define byteMaskSet => (2 ^Int numBitsPerByte) -Int 1
 		
-	define isByteLoc(Loc:Nat) => getBitOffset(Loc:Nat) ==Int 0 [structural]
-endkm
+	define isByteLoc(Loc:Nat) => getBitOffset(Loc:Nat) ==Int 0
+end module
 
-kmod DYNAMIC-C-MEMORY-MISC is
+module DYNAMIC-C-MEMORY-MISC is
 	including DYNAMIC-MEMORY-INCLUDE 
 
 	// used by calloc
@@ -779,11 +779,11 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		andBool Offset:Nat <=Int Len:Nat // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Nat) +Int N:Nat
 		[structural]
-endkm
+end module
 
-kmod DYNAMIC-C-MEMORY is
+module DYNAMIC-C-MEMORY is
 	including DYNAMIC-MEMORY-INCLUDE 
 	including DYNAMIC-C-MEMORY-MISC 
 	including DYNAMIC-SEMANTICS-WRITING 
 	including DYNAMIC-SEMANTICS-READING 
-endkm
+end module

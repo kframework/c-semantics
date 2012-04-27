@@ -1,9 +1,9 @@
 // FIXME need to automatically pad structs
-kmod DYNAMIC-SEMANTICS-TYPE-INCLUDE is
+module DYNAMIC-SEMANTICS-TYPE-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	including COMMON-SEMANTICS-TYPE-INCLUDE
-endkm
+end module
 
-kmod DYNAMIC-C-TYPING is
+module DYNAMIC-C-TYPING is
 	including DYNAMIC-SEMANTICS-TYPE-INCLUDE 
-endkm
+end module

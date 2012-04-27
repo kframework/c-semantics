@@ -1,5 +1,5 @@
 // FIXME need to automatically pad structs
-kmod COMMON-SEMANTICS-TYPE-INCLUDE is
+module COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
 	syntax K ::= "MYHOLE" [klabel(MYHOLE)] 
@@ -36,9 +36,9 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 		l('_++),, l('_--),, l('--_),, l('++_)
 	) 
 	[structural]
-endkm
+end module
 
-kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
+module COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
 	syntax K ::= "giveGlobalType" "(" K "," Type ")" [klabel(giveGlobalType)] 
@@ -83,9 +83,9 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 		< k > giveLocalType(X:Id, T:KResult) => .K ...</ k >
 		< types > M:Map => M:Map[T:KResult / X:Id] </ types >
 		[structural]	
-endkm
+end module
 
-kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
+module COMMON-SEMANTICS-TYPE-STRICTNESS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE
 
 	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
@@ -98,9 +98,9 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 		< k > (T:KResult => .) ~> evalToType ...</ k >
 		< type > waitingOnDeclType => T:KResult ...</ type >
 		[structural]
-endkm
+end module
 
-kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
+module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")" [klabel(canonicalizeType-aux)] 
@@ -291,28 +291,28 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		
 	declare canonicalizeSpecifier : Bag -> K 
 	// C99 6.7.2:2
-	define canonicalizeSpecifier(BagItem(Void)) => t(.Set, void) [structural]
-	define canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool) [structural]
-	define canonicalizeSpecifier(BagItem(Char)) => t(.Set, char) [structural]
-	define canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char) [structural]
-	define canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char) [structural]
+	define canonicalizeSpecifier(BagItem(Void)) => t(.Set, void)
+	define canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool)
+	define canonicalizeSpecifier(BagItem(Char)) => t(.Set, char)
+	define canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char)
+	define canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char)
 	
 	// rule canonicalizeSpecifier(BagItem(atomic(t(S:Set, T:K)))) => t(S:Set SetItem(Atomic), T:K) [structural]
 	
 	rule BagItem(atomic(_)) => .Bag [structural anywhere]
 	rule BagItem(alignas(_)) => .Bag [structural anywhere]
 	
-	define canonicalizeSpecifier(BagItem(Double)) => t(.Set, double) [structural]
-	define canonicalizeSpecifier(BagItem(Float)) => t(.Set, float) [structural]
-	define canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => t(.Set, long-double) [structural]
+	define canonicalizeSpecifier(BagItem(Double)) => t(.Set, double)
+	define canonicalizeSpecifier(BagItem(Float)) => t(.Set, float)
+	define canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => t(.Set, long-double)
 	
-	define canonicalizeSpecifier(BagItem(Complex) BagItem(Double)) => t(SetItem(Complex), double) [structural]
-	define canonicalizeSpecifier(BagItem(Complex) BagItem(Float)) => t(SetItem(Complex), float) [structural]
-	define canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double)) => t(SetItem(Complex), long-double) [structural]
+	define canonicalizeSpecifier(BagItem(Complex) BagItem(Double)) => t(SetItem(Complex), double)
+	define canonicalizeSpecifier(BagItem(Complex) BagItem(Float)) => t(SetItem(Complex), float)
+	define canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double)) => t(SetItem(Complex), long-double)
 	
-	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double)) => t(SetItem(Imaginary), double) [structural]
-	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float)) => t(SetItem(Imaginary), float) [structural]
-	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double)) => t(SetItem(Imaginary), long-double) [structural]
+	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double)) => t(SetItem(Imaginary), double)
+	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float)) => t(SetItem(Imaginary), float)
+	define canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double)) => t(SetItem(Imaginary), long-double)
 	
 	define canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
 		when B:Bag ==Bag BagItem(Short)
@@ -353,12 +353,12 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		when B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long)
 		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
 		[structural]
-endkm
+end module
 
-kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
+module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
-	syntax K ::= "BitFieldType" "(" K "," K ")" [metadata "strict=()" klabel(BitFieldType)] 
+	syntax K ::= "BitFieldType" "(" K "," K ")" [strict klabel(BitFieldType)] 
 	
 	rule
 		< k > Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</ k >
@@ -388,30 +388,30 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		=> pushTypeDown(T:KResult, makeFunctionType((L:List{KResult},, t(.Set, variadic)))) 
 		[structural anywhere]
 	
-	define [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:KResult, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Nat)) [structural]
-	define [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:KResult)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:KResult, K:KLabel))) [structural]
-	define [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:KResult)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:KResult, K:KLabel))) [structural]
-	define [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:KResult, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:KResult, K:KLabel), K:K)) [structural]
-	define [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:KResult, L:List{KResult})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:KResult, K:KLabel), L:List{KResult})) [structural]
-	define [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id))) [structural]
-	define [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id))) [structural]
-	define [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:Id))) [structural]
+	define [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:KResult, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Nat))
+	define [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:KResult)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:KResult, K:KLabel)))
+	define [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:KResult)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:KResult, K:KLabel)))
+	define [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:KResult, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:KResult, K:KLabel), K:K))
+	define [pushdown-function]: pushTypeDown(t(S:Set, functionType(T:KResult, L:List{KResult})), K:KLabel) => t(S:Set, functionType(pushTypeDown(T:KResult, K:KLabel), L:List{KResult}))
+	define [pushdown-struct]: pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, structType(X:Id)))
+	define [pushdown-union]: pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, unionType(X:Id)))
+	define [pushdown-enum]: pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) => K:KLabel(t(S:Set, enumType(X:Id)))
 	
-	define [pushdown-typedef]: pushTypeDown(t(S:Set, typedefType(X:Id, t(S':Set, T:K))), K:KLabel) => K:KLabel(t(S:Set S':Set, T:K)) [structural]
+	define [pushdown-typedef]: pushTypeDown(t(S:Set, typedefType(X:Id, t(S':Set, T:K))), K:KLabel) => K:KLabel(t(S:Set S':Set, T:K))
 	
 	define [pushdown-basic]: pushTypeDown(T:KResult, K:KLabel) => K:KLabel(T:KResult) 
 		when isBasicType(T:KResult)
 		[structural]
 	
-	define makeArrayType(N:Nat)(T:KResult) => t(.Set, arrayType(T:KResult, N:Nat)) [structural]
-	define makeFunctionType(L:List{KResult})(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:List{KResult}))) [structural]
-	define makePointerType(T:KResult) => t(.Set, pointerType(T:KResult)) [structural]
-	define makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult)) [structural]
+	define makeArrayType(N:Nat)(T:KResult) => t(.Set, arrayType(T:KResult, N:Nat))
+	define makeFunctionType(L:List{KResult})(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:List{KResult})))
+	define makePointerType(T:KResult) => t(.Set, pointerType(T:KResult))
+	define makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult))
 	
 	declare giveNamesToArgs : List{KResult} -> List{KResult}
 	declare giveNamesToArgs-aux : Nat List{KResult} -> List{KResult}
 	
-	define giveNamesToArgs(L:List{KResult}) => giveNamesToArgs-aux(0, L:List{KResult}) [structural]
+	define giveNamesToArgs(L:List{KResult}) => giveNamesToArgs-aux(0, L:List{KResult})
 	define giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
 		=> typedDeclaration(T:KResult, X:Id),, giveNamesToArgs-aux(N:Nat, L:List{KResult})
 		when X:Id =/=K #NoName
@@ -446,8 +446,8 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		
 	declare fillUnionBitHoles : List{KResult} -> List{KResult} 
 	declare fillUnionBitHoles-aux : Nat List{KResult} -> List{KResult} 
-	define fillUnionBitHoles(.List{K}) => .List{K} [structural]
-	define fillUnionBitHoles((K:K,, L:List{K})) => fillUnionBitHoles-aux(0, (K:K,, L:List{K})) [structural]
+	define fillUnionBitHoles(.List{K}) => .List{K}
+	define fillUnionBitHoles((K:K,, L:List{K})) => fillUnionBitHoles-aux(0, (K:K,, L:List{K}))
 	define fillUnionBitHoles-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
 			=> typedDeclaration(T:KResult, X:Id)
 			,, fillUnionBitHoles-aux(N:Nat, L:List{KResult})
@@ -523,7 +523,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:KResult)), X:Id)) 
 		=> typedDeclaration(t(S:Set, flexibleArrayType(T:KResult)), X:Id) 
 		[structural]
-	define incompleteToFlexibleArrayMember(.List{K}) => .List{K} [structural]
+	define incompleteToFlexibleArrayMember(.List{K}) => .List{K}
 	
 	rule
 		< k > StructDef(X:Id, List(L:List{KResult}))
@@ -548,19 +548,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		NameAndType(X:Id, T:KResult) => typedDeclaration(T:KResult, X:Id)
 		[structural anywhere] 
 	
-	define [extract-basic]: extractActualType(T:KResult) => T:KResult when isBasicType(T:KResult) [structural]
-	define [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id)) [structural]
-	define [extract-struct]: extractActualType(t(S:Set, structType(X:Id))) => t(S:Set, structType(X:Id)) [structural]
-	define [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id)) [structural]
-	define [extract-array]: extractActualType(t(S:Set, arrayType(T:KResult, N:Nat))) => t(S:Set, arrayType(extractActualType(T:KResult), N:Nat)) [structural]
-	define [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:KResult))) => t(S:Set, incompleteArrayType(extractActualType(T:KResult))) [structural]
-	define [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:KResult, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:KResult), N:Nat)) [structural]
-	define [extract-function]: extractActualType(t(S:Set, functionType(T:KResult, List:List{KResult}))) => t(S:Set, functionType(extractActualType(T:KResult), List:List{KResult})) [structural]
-	define [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:KResult))) => t(S:Set, pointerType(extractActualType(T:KResult))) [structural]
-	define [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) => t(S:Set, qualifiedType(extractActualType(T:KResult), K:K)) [structural]
-	define [extract-typedef]: extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) => extractActualType(t(S:Set S':Set, T:K)) [structural]
+	define [extract-basic]: extractActualType(T:KResult) => T:KResult when isBasicType(T:KResult)
+	define [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id))
+	define [extract-struct]: extractActualType(t(S:Set, structType(X:Id))) => t(S:Set, structType(X:Id))
+	define [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id))
+	define [extract-array]: extractActualType(t(S:Set, arrayType(T:KResult, N:Nat))) => t(S:Set, arrayType(extractActualType(T:KResult), N:Nat))
+	define [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:KResult))) => t(S:Set, incompleteArrayType(extractActualType(T:KResult)))
+	define [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:KResult, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:KResult), N:Nat))
+	define [extract-function]: extractActualType(t(S:Set, functionType(T:KResult, List:List{KResult}))) => t(S:Set, functionType(extractActualType(T:KResult), List:List{KResult}))
+	define [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:KResult))) => t(S:Set, pointerType(extractActualType(T:KResult)))
+	define [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) => t(S:Set, qualifiedType(extractActualType(T:KResult), K:K))
+	define [extract-typedef]: extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) => extractActualType(t(S:Set S':Set, T:K))
 		
-	syntax K ::= "NameAndType" "(" K "," K ")" [metadata "strict=(2)" klabel(NameAndType)] 
+	syntax K ::= "NameAndType" "(" K "," K ")" [strict(2) klabel(NameAndType)] 
 		
 	rule
 		SingleName(T:KResult, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:KResult, K:K))
@@ -581,9 +581,9 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 			=> NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
 		[structural anywhere] 
 	rule FieldName(K:K) => K:K [structural anywhere]
-endkm
+end module
 
-kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
+module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	rule
@@ -778,9 +778,9 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< type > & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</ type >
 		[structural]
 		
-endkm
+end module
 
-kmod COMMON-C-TYPING is
+module COMMON-C-TYPING is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	including COMMON-SEMANTICS-TYPE-STRICTNESS 
 	including COMMON-SEMANTICS-TYPE-DECLARATIONS 
@@ -865,7 +865,7 @@ kmod COMMON-C-TYPING is
 	syntax K ::= "addGlobalAggregate" "(" Id "," K ")" [klabel(addGlobalAggregate)] 
 	syntax K ::= "addLocalAggregate" "(" Id "," K ")" [klabel(addLocalAggregate)] 
 	
-	syntax K ::= "addStruct-aux" "(" Id "," List{KResult} "," K "," Map "," Map "," List{KResult} ")" [metadata "strict=(3)" klabel(addStruct-aux)]
+	syntax K ::= "addStruct-aux" "(" Id "," List{KResult} "," K "," Map "," Map "," List{KResult} ")" [strict(3) klabel(addStruct-aux)]
 	syntax K ::= "addUnion-aux" "(" Id "," List{KResult} "," Map "," Map "," List{KResult} ")" [klabel(addUnion-aux)]
 	rule
 		< k > addStruct(S:Id, L:List{KResult}) 
@@ -1094,4 +1094,4 @@ kmod COMMON-C-TYPING is
 		
 	
 	define getModifiers(t(S:Set, _)) => S:Set
-endkm
+end module

@@ -1,4 +1,4 @@
-kmod COMMON-C-CONFIGURATION is
+module COMMON-C-CONFIGURATION is
 	including C-SYNTAX
 
 	syntax CellLabel ::= "stackFrame" | "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
@@ -131,4 +131,4 @@ kmod COMMON-C-CONFIGURATION is
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
 	
-endkm
+end module

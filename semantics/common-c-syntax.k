@@ -1,4 +1,4 @@
-kmod COMMON-C-SYNTAX is
+module COMMON-C-SYNTAX is
 	// including K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
 	
 	tags ndlocal ndheat computational structural interpRule anywhere
@@ -743,4 +743,4 @@ and attribute = String * expression list
 	syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel(Arrow)]
 	macro Arrow(K:K, X:Id) = K:K -> X:Id
 
-endkm
+end module
