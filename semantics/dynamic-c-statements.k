@@ -2,8 +2,8 @@ kmod DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	including DYNAMIC-INCLUDE
 
-	op pushBlock : -> K 
-	op addToHistory : Nat -> K
+	syntax K ::= "pushBlock" [klabel(pushBlock)] 
+	syntax K ::= "addToHistory" "(" Nat ")" [klabel(addToHistory)]
 endkm 
  
 kmod DYNAMIC-SEMANTICS-IF-THEN is
@@ -117,8 +117,8 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
-	op handleSwitch : Nat K -> K [metadata "strict=(2)"] //  switch num, promoted value of controlling exp, int value of exp
-	op handleSwitch-aux : K Value K -> K 
+	syntax K ::= "handleSwitch" "(" Nat "," K ")" [metadata "strict=(2)" klabel(handleSwitch)] //  switch num, promoted value of controlling exp, int value of exp
+	syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")" [klabel(handleSwitch-aux)] 
 	
 	/*@ \source[n1570]{\para{6.8.5.2}{4}}
 	A \cinline{switch} statement causes control to jump to, into, or past the statement that is the switch body, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
@@ -148,7 +148,7 @@ kmod DYNAMIC-SEMANTICS-SWITCH is
 		< k > tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</ k >
 		[structural]
 		
-	op tryCase : K Value K -> K //  K to be evaluated, val it should be, casehelper
+	syntax K ::= "tryCase" "(" K "," Value "," K ")" [klabel(tryCase)] //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
 		< k > (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:KResult, Map((_ ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .Map))))
@@ -240,10 +240,10 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 				
 	*/
 
-	op processGoto : K -> K 
-	op processGotoDown : K -> K 
+	syntax K ::= "processGoto" "(" K ")" [klabel(processGoto)] 
+	syntax K ::= "processGotoDown" "(" K ")" [klabel(processGotoDown)] 
 
-	op processGotoSameBlock : List List -> K //  declaration stack, actual local variables
+	syntax K ::= "processGotoSameBlock" "(" List "," List ")" [klabel(processGotoSameBlock)] //  declaration stack, actual local variables
 	rule
 		< k > Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </ k >
 		< currentFunction > F:Id </ currentFunction >
@@ -333,7 +333,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		andBool sNatDepth:Nat ==Int Depth:Nat +Int 1
 		[structural] 
 		
-	op addVariablesForBlock : Nat List -> K 
+	syntax K ::= "addVariablesForBlock" "(" Nat "," List ")" [klabel(addVariablesForBlock)] 
 	
 	//  skip variables from other blocks
 	rule
@@ -356,7 +356,7 @@ kmod DYNAMIC-SEMANTICS-GOTO is
 		when getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 	
-	op enableInits : -> K 
+	syntax K ::= "enableInits" [klabel(enableInits)] 
 	
 	rule
 		< k > enableInits => .K ...</ k >

@@ -3,7 +3,7 @@
 kmod COMMON-SEMANTICS-HELPERS-INCLUDE is
 	// including #COMMON-SEMANTICS-HELPERS-BUILTINS
 	// op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
-	op _bit::_ : Nat Nat -> Nat
+	syntax Nat ::= Nat "bit::" Nat
 	including COMMON-NOHELPER-INCLUDE
 endkm
 
@@ -11,13 +11,25 @@ endkm
 kmod COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
+	declare stringToList : String -> List
+	declare listToString : List -> String
+	
+	define stringToList("") => .List
+	define stringToList(S:String)
+			=> ListItem(firstChar(S:String)) stringToList(butFirstChar(S:String))
+		when S:String =/=String ""
+		
+	define listToString(.List) => ""
+	define listToString((ListItem(S:String) L:List))
+			=> S:String +String listToString(L:List)
+	
 	declare isUnknown : K -> Bool
 	define [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true
 	define [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false
 	define [isUnknown-int]: isUnknown(I:Int) => false
 		when I:Int <=Int 0 orBool I:Int >Int 0
 
-	// op isUnknown : Nat -> Bool
+	// syntax Bool ::= "isUnknown" "(" Nat ")" [klabel(isUnknown)]
 	// eq isUnknown(unknown(_:Nat)) = true
 	// eq isUnknown(_:Nat) = false [owise]
 	
@@ -142,8 +154,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		when N:Nat >=Int 0
 		[structural]
 	
-	op extractField-pre : List{K} Type Nat K -> K [metadata "strict=(4)"]
-	op extractField-aux : List{K} Type Nat Nat List{K} -> K
+	syntax K ::= "extractField-pre" "(" List{K} "," Type "," Nat "," K ")" [metadata "strict=(4)" klabel(extractField-pre)]
+	syntax K ::= "extractField-aux" "(" List{K} "," Type "," Nat "," Nat "," List{K} ")" [klabel(extractField-aux)]
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
@@ -264,10 +276,10 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	// getString returns the string without the null terminator
-	op getString : K -> K
-	op getString-aux : K String -> K [metadata "strict=(1)"]
+	syntax K ::= "getString" "(" K ")" [klabel(getString)]
+	syntax K ::= "getString-aux" "(" K "," String ")" [metadata "strict=(1)" klabel(getString-aux)]
 	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural anywhere]
-	op str : String -> Value
+	syntax Value ::= "str" "(" String ")" [klabel(str)]
 	
 	rule [getString-pre]:
 		< k > (.K => read(Loc:Nat, t(.Set, char)))
@@ -289,8 +301,8 @@ kmod COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	// writeString and writeWString expect the user to add the '\0' to the end of the strings passed
-	op writeString : K String -> K [metadata "strict=(1)"]
-	op writeWString : K List{K} -> K [metadata "strict=(1)"]
+	syntax K ::= "writeString" "(" K "," String ")" [metadata "strict=(1)" klabel(writeString)]
+	syntax K ::= "writeWString" "(" K "," List{K} ")" [metadata "strict=(1)" klabel(writeWString)]
 
 	rule [write-string]:
 		< k > writeString(tv(Loc:Nat, T:KResult), S:String)
@@ -462,8 +474,8 @@ kmod COMMON-C-BITSIZE is
 		[structural]	
 	
 		
-	op maxBitSizeofList : List{KResult} -> K 
-	op maxBitSizeofList-aux : List{KResult} Nat -> K 
+	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")" [klabel(maxBitSizeofList)] 
+	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Nat ")" [klabel(maxBitSizeofList-aux)] 
 	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
 	rule
 		< k > maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Nat)

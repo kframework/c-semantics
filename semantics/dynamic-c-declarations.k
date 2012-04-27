@@ -10,7 +10,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// empty binding
 	// fixme not really a sequence point
 	
-	op bind-aux : Nat List{KResult} List{KResult} -> K 
+	syntax K ::= "bind-aux" "(" Nat "," List{KResult} "," List{KResult} ")" [klabel(bind-aux)] 
 	rule
 		< k > bind(L:List{KResult}, L':List{KResult}) 
 			=> bind-aux(NullPointer, L:List{KResult}, L':List{KResult}) ...</ k > 
@@ -93,8 +93,8 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural]
 	define promoteList(.List{K}) => .List{K} [structural]
 	
-	op bindVariadic : K List{KResult} -> K 
-	op bindVariadic-pre : K List{K} -> K 
+	syntax K ::= "bindVariadic" "(" K "," List{KResult} ")" [klabel(bindVariadic)] 
+	syntax K ::= "bindVariadic-pre" "(" K "," List{K} ")" [klabel(bindVariadic-pre)] 
 	
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
@@ -149,7 +149,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		< types >... Name:K |-> T:KResult ...</ types >
 		[structural] 
 		
-	op zeroType : K Type -> K 
+	syntax K ::= "zeroType" "(" K "," Type ")" [klabel(zeroType)] 
 	
 	rule
 		< k > zeroType(Name:K, T:KResult) 
@@ -162,7 +162,7 @@ kmod DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		when isFloatType(T:KResult)
 		[structural] 
 		
-	op zeroStruct : K List{KResult} -> K 
+	syntax K ::= "zeroStruct" "(" K "," List{KResult} ")" [klabel(zeroStruct)] 
 	
 	// c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
 	// -- if it has pointer type, it is initialized to a null pointer;

@@ -5,12 +5,12 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	// including #SOCKET
 	// including #TCP-INTERFACE
 	
-	op vararg : K -> C [metadata "hybrid=() strict=()"]
-	op nextvarg : Nat K -> C [metadata "strict=(2)"] // loc, type
-	op vpair : K K -> C [metadata "hybrid=() strict=()"]
-	op prepareBuiltin : Id List{K} -> K
+	syntax C ::= "vararg" "(" K ")" [metadata "hybrid=() strict=()" klabel(vararg)]
+	syntax C ::= "nextvarg" "(" Nat "," K ")" [metadata "strict=(2)" klabel(nextvarg)] // loc, type
+	syntax C ::= "vpair" "(" K "," K ")" [metadata "hybrid=() strict=()" klabel(vpair)]
+	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" [klabel(prepareBuiltin)]
 	declare incSymbolic : K -> K
-	op printString : K -> K
+	syntax K ::= "printString" "(" K ")" [klabel(printString)]
 	
 endkm
 
@@ -19,7 +19,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
-	op nextvarg-aux : K Type K K -> C // offset, type, length, checklength
+	syntax C ::= "nextvarg-aux" "(" K "," Type "," K "," K ")" [klabel(nextvarg-aux)] // offset, type, length, checklength
 	context nextvarg-aux(_, _, value(HOLE), _)
 	context nextvarg-aux(_, _, _, value(HOLE))
 	
@@ -159,9 +159,9 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
 	// fixme obviously need to rework configuration to make this easy
-	op Bag : Bag -> K
+	syntax K ::= "Bag" "(" Bag ")" [klabel(Bag)]
 	
-	op ignoreLocals : -> K
+	syntax K ::= "ignoreLocals" [klabel(ignoreLocals)]
 	
 	// there seems to be a problem here related to locals.  what if longjmp is never called?
 	rule [ignoreLocals]:
@@ -186,7 +186,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 		</ threadLocal >
 		[structural]
 
-	op longjmp-aux : K K -> K [metadata "strict=()"]
+	syntax K ::= "longjmp-aux" "(" K "," K ")" [metadata "strict=()" klabel(longjmp-aux)]
 	rule [longjmp-prepare]:
 		< k > prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
 			=> longjmp-aux(reval(*(V:KResult)), V':KResult)
@@ -228,7 +228,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		...</ k >
 		[structural]
 	
-	op va-inc-aux : K K K -> K // [metadata "strict=(3)"]
+	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" [klabel(va-inc-aux)] // [metadata "strict=(3)"]
 	context va-inc-aux(_, _, (HOLE => reval(HOLE)))
 	// fixme can do lots of checks here too
 	
@@ -278,7 +278,7 @@ endkm
 kmod DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-	op offsetOf : K K -> K [metadata "strict=(1)"]
+	syntax K ::= "offsetOf" "(" K "," K ")" [metadata "strict=(1)" klabel(offsetOf)]
 	rule
 		< k > OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</ k >
 		[structural]
@@ -340,7 +340,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	op fsl-open-file-aux : String String K -> K [metadata "strict=(3)"]
+	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [metadata "strict=(3)" klabel(fsl-open-file-aux)]
 	
 	rule [fslOpenFile-aux]:
 		< k > fsl-open-file(str(Filename:String), str(Mode:String))
@@ -363,7 +363,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ files >
 		[structural]
 
-	op fsl-open-file : K K -> K [metadata "strict=()"]
+	syntax K ::= "fsl-open-file" "(" K "," K ")" [metadata "strict=()" klabel(fsl-open-file)]
 
 	//////////////////////////--	
 
@@ -391,7 +391,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	op sprintf : K K -> K [metadata "strict=(1)"]
+	syntax K ::= "sprintf" "(" K "," K ")" [metadata "strict=(1)" klabel(sprintf)]
 	rule [sprintf]:
 		< k > prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
 			=> sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
@@ -404,7 +404,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	op snprintf : K K Nat -> K [metadata "strict=(1)"]
+	syntax K ::= "snprintf" "(" K "," K "," Nat ")" [metadata "strict=(1)" klabel(snprintf)]
 	rule [snprintf]:
 		< k > prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Nat, _),, Format:KResult,, VarArgs:KResult))
 			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Nat)
@@ -423,11 +423,11 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</ k >
 		[structural]
 	
-	op new-printf-aux : K -> K [metadata "strict=()"]
-	op formatter : K K -> K [metadata "strict=(1)"]
-	op formatter-aux : K -> K [metadata "strict=()"]
-	op formatter-next : K -> K
-	op formatter-arg : K -> K [metadata "strict=(1)"]
+	syntax K ::= "new-printf-aux" "(" K ")" [metadata "strict=()" klabel(new-printf-aux)]
+	syntax K ::= "formatter" "(" K "," K ")" [metadata "strict=(1)" klabel(formatter)]
+	syntax K ::= "formatter-aux" "(" K ")" [metadata "strict=()" klabel(formatter-aux)]
+	syntax K ::= "formatter-next" "(" K ")" [klabel(formatter-next)]
+	syntax K ::= "formatter-arg" "(" K ")" [metadata "strict=(1)" klabel(formatter-arg)]
 	rule 
 		< k > formatter-next(vararg(tv(Loc:Nat, _)))
 			=> formatter-arg(nextvarg(Loc:Nat, getFormatType))
@@ -441,21 +441,6 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	
-	op stringToList : String -> List
-	op listToString : List -> String
-	
-	rule stringToList("") => .List
-		[structural]
-	rule stringToList(S:String) 
-			=> ListItem(firstChar(S:String)) stringToList(butFirstChar(S:String))
-		when S:String =/=String ""
-		[structural]
-		
-	rule listToString(.List) => ""
-		[structural]
-	rule listToString((ListItem(S:String) L:List))
-			=> S:String +String listToString(L:List)
-		[structural]
 	
 	rule [format-start]:
 		< k > formatter(str(S:String), VarArgs:KResult)
@@ -468,7 +453,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		)
 		[structural]
 	
-	op formattedResult : K -> Value
+	syntax Value ::= "formattedResult" "(" K ")" [klabel(formattedResult)]
 	
 	rule [format-done]:
 		< k > formatter-aux(_) 
@@ -579,8 +564,8 @@ Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \text
 If a length modifier appears with any conversion specifier other than as specified above, the behavior is undefined.
 */
 
-	op getFormatType : -> K
-	op getFormatType-aux : K K -> K 
+	syntax K ::= "getFormatType" [klabel(getFormatType)]
+	syntax K ::= "getFormatType-aux" "(" K "," K ")" [klabel(getFormatType-aux)] 
 	rule 
 		<k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
 		<formatLength> Length:K </formatLength>
@@ -970,7 +955,7 @@ The \cinline|realloc| function returns a pointer to the new object (which may ha
 		...</ k >
 		[structural]
 
-	op calloc-aux : -> K
+	syntax K ::= "calloc-aux" [klabel(calloc-aux)]
 	rule [calloc]:
 		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, _),, tv(Size:Nat, _)))
 			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Int Size:Nat, cfg:sizeut))
@@ -1015,7 +1000,7 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	// fixme should detect overlaps
-	op strcpy : K K K -> K
+	syntax K ::= "strcpy" "(" K "," K "," K ")" [klabel(strcpy)]
 	rule [strcpy-start]:
 		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(_, pointerType(_))),, tv(Src:Nat, t(_, pointerType(_)))))
 			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
@@ -1058,8 +1043,8 @@ kmod DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	ops threadRunning threadClosed : -> K
 	ops threadJoining : Nat -> K
 	
-	op threadId : Nat Nat -> Nat // parent, new
-	op spawn-aux : Nat Value Value -> K
+	syntax Nat ::= "threadId" "(" Nat "," Nat ")" [klabel(threadId)] // parent, new
+	syntax K ::= "spawn-aux" "(" Nat "," Value "," Value ")" [klabel(spawn-aux)]
 	// threadId(MyId:Nat, Fresh:Nat)
 	rule [thrd-create-start]:
 		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
@@ -1110,7 +1095,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		< threadId > ThreadId:Nat </ threadId >
 		[structural]
 		
-	op join-aux : Nat Value -> K
+	syntax K ::= "join-aux" "(" Nat "," Value ")" [klabel(join-aux)]
 		
 	rule [thrd-join-start]:
 		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
@@ -1147,7 +1132,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</ thread >
 		[metadata "computational=()"]
 
-	op testAndSet : K K K -> K [metadata "strict=(1)"]
+	syntax K ::= "testAndSet" "(" K "," K "," K ")" [metadata "strict=(1)" klabel(testAndSet)]
 	rule [test-and-set-start]:
 		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
 			=> testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)

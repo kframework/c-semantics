@@ -1,12 +1,12 @@
 kmod DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	including DYNAMIC-INCLUDE
-	op assign : K K -> K
-	op compoundLiteral : Nat -> Id
+	syntax K ::= "assign" "(" K "," K ")" [klabel(assign)]
+	syntax Id ::= "compoundLiteral" "(" Nat ")" [klabel(compoundLiteral)]
 	
-	op lvGetOffset : K K Type -> K
-	op tvGetOffset : K K Type -> K
+	syntax K ::= "lvGetOffset" "(" K "," K "," Type ")" [klabel(lvGetOffset)]
+	syntax K ::= "tvGetOffset" "(" K "," K "," Type ")" [klabel(tvGetOffset)]
 
-	op fromArray : Int Nat -> K // offset, length
+	syntax K ::= "fromArray" "(" Int "," Nat ")" [klabel(fromArray)] // offset, length
 	
 	declare arrayLength : KResult -> Nat
 	define arrayLength(t(_:Set, arrayType(_:KResult, N:Nat))) => N:Nat
@@ -68,7 +68,7 @@ endkm
 kmod DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	op handleCompoundLiteral : K -> K [metadata "strict=()"]
+	syntax K ::= "handleCompoundLiteral" "(" K ")" [metadata "strict=()" klabel(handleCompoundLiteral)]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3}}}{
 	A postfix expression that consists of a parenthesized type name followed by a brace-enclosed list of initializers is a compound literal. It provides an unnamed object whose value is given by the initializer list.
@@ -171,10 +171,10 @@ endkm
 kmod DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	op getTypes : List{K} -> K
-	op types : List{K} -> K
+	syntax K ::= "getTypes" "(" List{K} ")" [klabel(getTypes)]
+	syntax K ::= "types" "(" List{K} ")" [klabel(types)]
 	context types((_,, HOLE,, _))
-	op convertedType : K -> K [metadata "strict=()"]
+	syntax K ::= "convertedType" "(" K ")" [metadata "strict=()" klabel(convertedType)]
 	
 	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
 	
@@ -273,7 +273,7 @@ kmod DYNAMIC-SEMANTICS-SIZEOF is
 	*/
 	
 	rule sizeofType(T:KResult) => cast(cfg:sizeut, byteSizeofType(T:KResult)) [structural]
-	op byteSizeofType-aux : K -> K [metadata "strict=()"]
+	syntax K ::= "byteSizeofType-aux" "(" K ")" [metadata "strict=()" klabel(byteSizeofType-aux)]
 	rule byteSizeofType(T:KResult) => byteSizeofType-aux(bitSizeofType(T:KResult)) [structural]
 	rule byteSizeofType-aux(tv(N:Nat, T:KResult)) => tv(bitsToBytes(N:Nat), T:KResult)
 		[structural]
@@ -319,7 +319,7 @@ endkm
 kmod DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	op application : K List{KResult} -> K [metadata "strict=(1)"]
+	syntax K ::= "application" "(" K "," List{KResult} ")" [metadata "strict=(1)" klabel(application)]
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
 	A postfix expression followed by parentheses \cinline{()} containing a possibly empty, comma-separated list of expressions is a function call. The postfix expression denotes the called function. The list of expressions specifies the arguments to the function.
 	}
@@ -396,7 +396,7 @@ kmod DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
 	A postfix expression followed by an expression in square brackets \cinline{[]} is a subscripted designation of an element of an array object. The definition of the subscript operator \cinline{[]} is that \cinline{E1[E2]} is identical to \cinline{(*((E1)+(E2)))}. Because of the conversion rules that apply to the binary \cinline{+} operator, if \cinline{E1} is an array object (equivalently, a pointer to the initial element of an array object) and \cinline{E2} is an integer, \cinline{E1[E2]} designates the \cinline{E2}-th element of \cinline{E1} (counting from zero).
 	}
 	*/
-	// op subscript : K K K K -> K [metadata "strict=(3 4)"]
+	// syntax K ::= "subscript" "(" K "," K "," K "," K ")" [metadata "strict=(3 4)" klabel(subscript)]
 	rule [array-subscript]:
 		< k > E1:K[E2:K]
 			=> *(E1:K + E2:K) 
@@ -431,7 +431,7 @@ kmod DYNAMIC-SEMANTICS-LITERALS is
 		when notBool($hasMapping(M:Map, S:String))
 		[structural]
 		
-	op wstring : List{K} -> K 
+	syntax K ::= "wstring" "(" List{K} ")" [klabel(wstring)] 
 	rule [const-wstring-notfound]:
 		< k > (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
 			~> Constant(WStringLiteral(S:List{K}))
@@ -527,7 +527,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		[structural]
 		
 		
-	op hexOrOctalConstant : K -> K
+	syntax K ::= "hexOrOctalConstant" "(" K ")" [klabel(hexOrOctalConstant)]
 	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural anywhere]
 	rule OctalConstant(N:Nat) => hexOrOctalConstant(String2Rat(Rat2String(N:Nat, 10), 8)) [structural anywhere] // truncRat is just for sorts
 	
@@ -615,7 +615,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	}
 	*/
 	
-	op reducedFloat : Float -> K
+	syntax K ::= "reducedFloat" "(" Float ")" [klabel(reducedFloat)]
 	rule DecimalFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
 	rule HexFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
 	
@@ -665,7 +665,7 @@ kmod DYNAMIC-SEMANTICS-ASSIGNMENT is
 	Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the simple assignment expression \cinline{E1 = E1 op (E2)}, except that the lvalue \cinline{E1} is evaluated only once, and with respect to an indeterminately-sequenced function call, the operation of a compound assignment is a single evaluation. If \cinline{E1} has an atomic type, compound assignment is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
 	}
 	*/
-	op compoundAssignment : KLabel K K -> K
+	syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")" [klabel(compoundAssignment)]
 	// these should not be nd, in order to keep the operations together
 	context compoundAssignment(_, (HOLE => peval(HOLE)), _)
 	context compoundAssignment(_, _, (HOLE => reval(HOLE)))
@@ -1010,7 +1010,7 @@ second operand from the first.
 	}
 	*/
 	
-	op addToPointer : K Type K K -> K [metadata "strict=(4)"]
+	syntax K ::= "addToPointer" "(" K "," Type "," K "," K ")" [metadata "strict=(4)" klabel(addToPointer)]
 	rule < k > tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
 			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
 		...</ k >
@@ -1058,7 +1058,7 @@ second operand from the first.
 	}
 	*/
 
-	op computePointerDifference : Int Int K -> K [metadata "strict=(3)"] // ptr1, ptr2, size of ptr type
+	syntax K ::= "computePointerDifference" "(" Int "," Int "," K ")" [metadata "strict=(3)" klabel(computePointerDifference)] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: 
 		tv(I1:Int, t(_, pointerType(T:KResult))) - tv(I2:Int, t(_, pointerType(T:KResult)))
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:KResult))
@@ -1220,9 +1220,9 @@ kmod DYNAMIC-SEMANTICS-INCREMENT-AND-DECREMENT is
 	*/
 	rule -- E:K => E:K -= tv(1, t(.Set, int)) [structural]
 
-	op postOpRef : K KLabel -> K
-	op postInc : K K Type -> K [metadata "strict=(2)"]
-	op postDec : K K Type -> K [metadata "strict=(2)"]
+	syntax K ::= "postOpRef" "(" K "," KLabel ")" [klabel(postOpRef)]
+	syntax K ::= "postInc" "(" K "," K "," Type ")" [metadata "strict=(2)" klabel(postInc)]
+	syntax K ::= "postDec" "(" K "," K "," Type ")" [metadata "strict=(2)" klabel(postDec)]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{2}}}{
 	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.

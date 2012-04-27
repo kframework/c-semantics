@@ -2,15 +2,15 @@
 kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	op MYHOLE : -> K 
+	syntax K ::= "MYHOLE" [klabel(MYHOLE)] 
 	
-	op addStruct : Id List{KResult} -> K
-	op addUnion : Id List{KResult} -> K
-	op canonicalizeType : Bag -> K
+	syntax K ::= "addStruct" "(" Id "," List{KResult} ")" [klabel(addStruct)]
+	syntax K ::= "addUnion" "(" Id "," List{KResult} ")" [klabel(addUnion)]
+	syntax K ::= "canonicalizeType" "(" Bag ")" [klabel(canonicalizeType)]
 	
 	declare extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
 	
-	op evalToType : -> K 
+	syntax K ::= "evalToType" [klabel(evalToType)] 
 	
 	// declare typeStrictUnaryOperators : -> Set // [memo] 
 	// define typeStrictUnaryOperators => Set(
@@ -41,8 +41,8 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
-	op giveGlobalType : K Type -> K 
-	op giveLocalType : K Type -> K 
+	syntax K ::= "giveGlobalType" "(" K "," Type ")" [klabel(giveGlobalType)] 
+	syntax K ::= "giveLocalType" "(" K "," Type ")" [klabel(giveLocalType)] 
 	
 	// FIXME these are here until I decide how to handle qualified types
 	rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:K), Volatile)) 
@@ -88,7 +88,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE
 
-	op waitingOnDeclType : -> K 
+	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
 	rule [type-Cast-heat]:
 		< k > (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</ k >
 		< type > Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</ type >
@@ -103,7 +103,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
-	op canonicalizeType-aux : Bag K Bag Bag Bag -> K 
+	syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")" [klabel(canonicalizeType-aux)] 
 	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
 
 		
@@ -129,8 +129,8 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		...</ k >
 		[structural]
 		
-	op atomic : Type -> K
-	op alignas : Type -> K
+	syntax K ::= "atomic" "(" Type ")" [klabel(atomic)]
+	syntax K ::= "alignas" "(" Type ")" [klabel(alignas)]
 	
 	rule
 		< k > (T:KResult => .K)
@@ -358,7 +358,7 @@ endkm
 kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 
-	op BitFieldType : K K -> K [metadata "strict=()"] 
+	syntax K ::= "BitFieldType" "(" K "," K ")" [metadata "strict=()" klabel(BitFieldType)] 
 	
 	rule
 		< k > Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</ k >
@@ -432,7 +432,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		< declarationTypeHolder > T:KResult => .K ...</ declarationTypeHolder >
 		[structural]
 
-	op extractActualTypeFreezer : -> K 
+	syntax K ::= "extractActualTypeFreezer" [klabel(extractActualTypeFreezer)] 
 	rule
 		< k > DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</ k >
 		< declarationTypeHolder > (. => T:KResult) ...</ declarationTypeHolder >
@@ -560,7 +560,7 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) => t(S:Set, qualifiedType(extractActualType(T:KResult), K:K)) [structural]
 	define [extract-typedef]: extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) => extractActualType(t(S:Set S':Set, T:K)) [structural]
 		
-	op NameAndType : K K -> K [metadata "strict=(2)"] 
+	syntax K ::= "NameAndType" "(" K "," K ")" [metadata "strict=(2)" klabel(NameAndType)] 
 		
 	rule
 		SingleName(T:KResult, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:KResult, K:K))
@@ -862,11 +862,11 @@ kmod COMMON-C-TYPING is
 		< k > Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</ k >
 		[structural]
 			
-	op addGlobalAggregate : Id K -> K 
-	op addLocalAggregate : Id K -> K 
+	syntax K ::= "addGlobalAggregate" "(" Id "," K ")" [klabel(addGlobalAggregate)] 
+	syntax K ::= "addLocalAggregate" "(" Id "," K ")" [klabel(addLocalAggregate)] 
 	
-	op addStruct-aux : Id List{KResult} K Map Map List{KResult} -> K [metadata "strict=(3)"]
-	op addUnion-aux : Id List{KResult} Map Map List{KResult} -> K
+	syntax K ::= "addStruct-aux" "(" Id "," List{KResult} "," K "," Map "," Map "," List{KResult} ")" [metadata "strict=(3)" klabel(addStruct-aux)]
+	syntax K ::= "addUnion-aux" "(" Id "," List{KResult} "," Map "," Map "," List{KResult} ")" [klabel(addUnion-aux)]
 	rule
 		< k > addStruct(S:Id, L:List{KResult}) 
 			=> addStruct-aux(S:Id, L:List{KResult}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{KResult})

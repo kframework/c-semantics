@@ -1,15 +1,15 @@
 kmod COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	
-	op loopMarked : -> Statement 
-	op genLabel : Nat K -> K //  switchid, value (tv or 'Default)
-	op popLoop : -> K
-	op popBlock : -> K
-	op frozenDeclaration : Nat Nat K -> K //  nestingDepth, currentBlock, decl
-	op gotoObject : Nat List K List List -> K //  nestingDepth, block history, continuation, loop stack, decl stack
+	syntax Statement ::= "loopMarked" [klabel(loopMarked)] 
+	syntax K ::= "genLabel" "(" Nat "," K ")" [klabel(genLabel)] //  switchid, value (tv or 'Default)
+	syntax K ::= "popLoop" [klabel(popLoop)]
+	syntax K ::= "popBlock" [klabel(popBlock)]
+	syntax K ::= "frozenDeclaration" "(" Nat "," Nat "," K ")" [klabel(frozenDeclaration)] //  nestingDepth, currentBlock, decl
+	syntax K ::= "gotoObject" "(" Nat "," List "," K "," List "," List ")" [klabel(gotoObject)] //  nestingDepth, block history, continuation, loop stack, decl stack
 	
 	
-	op caseHelper : Nat -> K 
+	syntax K ::= "caseHelper" "(" Nat ")" [klabel(caseHelper)] 
 endkm 
 
 
@@ -31,7 +31,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		
 */
 	
-	op waitingOnGotoMap : -> K 
+	syntax K ::= "waitingOnGotoMap" [klabel(waitingOnGotoMap)] 
 	rule 
 		< k > calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</ k >
 		< gotoMap > M:Map => M:Map[Map(.Map) / kpair(Tu:K, F:Id)] </ gotoMap >
@@ -53,7 +53,7 @@ kmod COMMON-SEMANTICS-PROCESS-LABELS is
 		< currentFunction > _ => File-Scope </ currentFunction >
 		[structural] 
 
-	op endBlockForGoto : Nat -> K 
+	syntax K ::= "endBlockForGoto" "(" Nat ")" [klabel(endBlockForGoto)] 
 	rule 
 		< computation > BlockStatement(Block:K)
 			=> Block:K ~> popBlock

@@ -37,8 +37,8 @@ kmod DYNAMIC-C-ERRORS is
 		[structural]
 	
 		
-	op halted-k : -> CellLabel 
-	op halted-T : -> CellLabel
+	syntax CellLabel ::= "halted-k" [klabel(halted-k)] 
+	syntax CellLabel ::= "halted-T" [klabel(halted-T)]
 	declare halt_ : Bag -> Bag
 	define halt < k => halted-k > _:K </ k => halted-k > [structural]
 	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
@@ -376,7 +376,7 @@ kmod DYNAMIC-C-ERRORS is
 		(.Bag => < errorCell > Error("00047", "Trying to modify an object declared with const type.") </ errorCell >)
 		[structural]
 	
-	op datarace : Nat Nat Nat Nat -> K 
+	syntax K ::= "datarace" "(" Nat "," Nat "," Nat "," Nat ")" [klabel(datarace)] 
 
 	// fixme possible to miss dataraces with bitfields
 	rule [read-write-race]:

@@ -2,16 +2,16 @@ kmod DYNAMIC-MEMORY-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	
 	// returns the bytes in the order in which they are in memory
-	op extractBytesFromMem : Nat Nat -> K // loc, size in bytes
-	op encodedPointer : Int -> Nat
-	op encodedFloat : Float -> Nat
+	syntax K ::= "extractBytesFromMem" "(" Nat "," Nat ")" [klabel(extractBytesFromMem)] // loc, size in bytes
+	syntax Nat ::= "encodedPointer" "(" Int ")" [klabel(encodedPointer)]
+	syntax Nat ::= "encodedFloat" "(" Float ")" [klabel(encodedFloat)]
 	declare explodeToBits : List{K} -> List{K}
 	declare reverseList : List{K} -> List{K}
-	op bwrite : Nat K -> ListItem
+	syntax ListItem ::= "bwrite" "(" Nat "," K ")" [klabel(bwrite)]
 	declare locations : List -> Set
-	op read-aux : K K K -> K
+	syntax K ::= "read-aux" "(" K "," K "," K ")" [klabel(read-aux)]
 	
-	op subObject : K K K -> Nat // object, start piece, end piece
+	syntax Nat ::= "subObject" "(" K "," K "," K ")" [klabel(subObject)] // object, start piece, end piece
 	define 'isInt(subObject(_, _, _)) => true
 	define 'isInt(encodedPointer(_)) => true
 	define 'isInt(encodedFloat(_)) => true
@@ -29,10 +29,10 @@ endkm
 kmod DYNAMIC-SEMANTICS-READING is
 	including DYNAMIC-MEMORY-INCLUDE 
 	
-	op extractBitsFromMem : Nat Nat -> K // loc, size in bits
-	op extractByteFromMem : Nat -> K 
+	syntax K ::= "extractBitsFromMem" "(" Nat "," Nat ")" [klabel(extractBitsFromMem)] // loc, size in bits
+	syntax K ::= "extractByteFromMem" "(" Nat ")" [klabel(extractByteFromMem)] 
 	
-	op extractBitsFromList-aux : K Int Int List{K} -> K // datalist, offset in bits into list, number of bits to extract, accumulator
+	syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List{K} ")" [klabel(extractBitsFromList-aux)] // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:Nat, M:Nat) 
 		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:Nat, M:Nat, .List{K})
 		[structural]
@@ -62,7 +62,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	
 	
-	op readActual : K K K -> K
+	syntax K ::= "readActual" "(" K "," K "," K ")" [klabel(readActual)]
 	
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read
 	*/
@@ -91,7 +91,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural]
 	
 		
-	op joinIntegerBytes : Type List{K} -> K 
+	syntax K ::= "joinIntegerBytes" "(" Type "," List{K} ")" [klabel(joinIntegerBytes)] 
 	rule 
 		< k > concretize(T:KResult, dataList(L:List{K})) 
 			=> joinIntegerBytes(T:KResult, L:List{K}) 
@@ -115,8 +115,8 @@ kmod DYNAMIC-SEMANTICS-READING is
 		andBool Len:Nat ==Int numBitsPerByte 
 		[structural]
 
-	op joinPointerBytes : Type List{K} -> K
-	op joinPointerBytes-aux : Type List{K} K -> K
+	syntax K ::= "joinPointerBytes" "(" Type "," List{K} ")" [klabel(joinPointerBytes)]
+	syntax K ::= "joinPointerBytes-aux" "(" Type "," List{K} "," K ")" [klabel(joinPointerBytes-aux)]
 	// fixme should also check sizes are appropriate
 	rule < k > concretize(T:KResult, dataList(L:List{K}))
 			=> joinPointerBytes(T:KResult, L:List{K})
@@ -153,7 +153,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 		[structural]
 
 	// FIXME assuming bytes?
-	op joinIntegerBytes-aux : Type List{K} K -> K 
+	syntax K ::= "joinIntegerBytes-aux" "(" Type "," List{K} "," K ")" [klabel(joinIntegerBytes-aux)] 
 	rule [joinIntegerBytes-start]:
 		joinIntegerBytes(T:KResult, L:List{K}) 
 			=> joinIntegerBytes-aux(T:KResult, L:List{K}, piece(0, 0)) 
@@ -209,7 +209,7 @@ kmod DYNAMIC-SEMANTICS-READING is
 	
 	// context extractBytesFromMem-aux(_, _, (_,, HOLE,, _)) 
 	// this next op should use Nats, but the context doesn't allow it.  See issue 54
-	op extractBytesFromMem-aux : K K List{K} -> K // loc, size in bytes, aux list
+	syntax K ::= "extractBytesFromMem-aux" "(" K "," K "," List{K} ")" [klabel(extractBytesFromMem-aux)] // loc, size in bytes, aux list
 	
 	rule
 		< k > extractBytesFromMem(Loc:Nat, Size:Nat) 
@@ -313,7 +313,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		< mem >... .Map => Block:Nat |-> memblock(mlength(Len:Nat), .Map) ...</ mem >
 		[structural]
 	
-	op realloc-aux : K K K K K -> K
+	syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")" [klabel(realloc-aux)]
 	rule [realloc-start]:
 		< k > realloc(Old:K, New:K, OldLen:Nat, NewLen:Nat)
 			=> alloc(New:K, NewLen:Nat)
@@ -357,13 +357,13 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		...</ k >
 		[structural]	
 		
-	op writeBytes : Nat K -> K [metadata "strict=(2)"] 
-	op writeBitfield : Nat Type K -> K [metadata "strict=(3)"] 
+	syntax K ::= "writeBytes" "(" Nat "," K ")" [metadata "strict=(2)" klabel(writeBytes)] 
+	syntax K ::= "writeBitfield" "(" Nat "," Type "," K ")" [metadata "strict=(3)" klabel(writeBitfield)] 
 	declare isByteLoc : Nat -> Bool 
 	declare splitBytes : Value -> K 
 	declare calculateNewBytes : Nat K K -> K [metadata "strict=(3)"] 
 	
-	op write-aux : K Value K -> K [metadata "strict=(2)"]
+	syntax K ::= "write-aux" "(" K "," Value "," K ")" [metadata "strict=(2)" klabel(write-aux)]
 	rule write(lv(Dest:Nat, T':KResult), tv(V:List{K}, T:KResult)) 
 		=> write-aux(Dest:Nat, tv(V:List{K}, T:KResult), value(bitSizeofType(T:KResult))) 
 		when notBool isConstType(T':KResult)
@@ -372,7 +372,7 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 	
 	
 	
-	op write-specific : Nat Value Nat -> K
+	syntax K ::= "write-specific" "(" Nat "," Value "," Nat ")" [klabel(write-specific)]
 	
 	rule [write-thread-local]:
 		< k > write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Nat)
@@ -410,8 +410,8 @@ kmod DYNAMIC-SEMANTICS-WRITING is
 		when isByteLoc(Loc:Nat)
 		[structural]
 		
-	op makeUnknown : Nat Type -> K
-	op makeUnknown-aux : Nat Type K -> K // should be Nat Type K
+	syntax K ::= "makeUnknown" "(" Nat "," Type ")" [klabel(makeUnknown)]
+	syntax K ::= "makeUnknown-aux" "(" Nat "," Type "," K ")" [klabel(makeUnknown-aux)] // should be Nat Type K
 	context makeUnknown-aux(_:Nat, _, value(HOLE))
 	
 	rule makeUnknown(N:Nat, T:KResult)
@@ -754,7 +754,7 @@ kmod DYNAMIC-C-MEMORY-MISC is
 		[structural]
 
 	
-	op checkValidLoc-aux : K -> K
+	syntax K ::= "checkValidLoc-aux" "(" K ")" [klabel(checkValidLoc-aux)]
 	
 	rule
 		< k > checkValidLoc(Loc:Nat) => checkValidLoc-aux(ceilingLoc(Loc:Nat)) ...</ k >

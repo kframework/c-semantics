@@ -46,7 +46,7 @@ kmod DYNAMIC-SEMANTICS-PROMOTIONS is
 	define [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
 		when hasIntegerType(T:KResult)
 
-	// op arithConversion-int : KLabel K K -> K
+	// syntax K ::= "arithConversion-int" "(" KLabel "," K "," K ")" [klabel(arithConversion-int)]
 	declare isArithBinOp : KLabel -> Bool 
 
 	declare arithBinOps : -> Set // [memo] 

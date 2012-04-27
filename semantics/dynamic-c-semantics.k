@@ -59,9 +59,9 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		// if S:String ==Bool ""
 		// [structural]
 		
-	op f-sent : Nat String -> K
-	op f-flush : Nat -> K
-	op f-sendString : Nat String -> K
+	syntax K ::= "f-sent" "(" Nat "," String ")" [klabel(f-sent)]
+	syntax K ::= "f-flush" "(" Nat ")" [klabel(f-flush)]
+	syntax K ::= "f-sendString" "(" Nat "," String ")" [klabel(f-sendString)]
 	
 	// can't lex string2List{K} correctly in #fPrint(N:Nat,, string2List{K}(S:String))
 	rule [flush]:
@@ -112,7 +112,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		when S:String =/=String ""
 		[structural]
 		
-	// op flushString : Nat String -> K
+	// syntax K ::= "flushString" "(" Nat "," String ")" [klabel(flushString)]
 	
 	// rule [flush-out-start]: 
 		// < k > .K => flushString(1, S:String) ...</ k >
@@ -122,7 +122,7 @@ kmod DYNAMIC-C-SEMANTICS-MISC is
 		// if S:String =/=Bool ""
 		// [structural]
 		
-	// op flushSuccess : Nat K -> K
+	// syntax K ::= "flushSuccess" "(" Nat "," K ")" [klabel(flushSuccess)]
 	
 	// rule [flush-success]: 
 		// < k > flushSuccess(FD:Nat, S:String) => .K ...</ k >
@@ -182,7 +182,7 @@ If they are declared, the parameters to the main function shall obey the followi
 \end{itemize}
 */
 	
-	op incomingArguments-aux : List{K} Nat -> K
+	syntax K ::= "incomingArguments-aux" "(" List{K} "," Nat ")" [klabel(incomingArguments-aux)]
 	
 	rule incomingArguments(L:List{K}) 
 			=> incomingArguments-aux(L:List{K}, 0) 
@@ -196,7 +196,7 @@ If they are declared, the parameters to the main function shall obey the followi
 		[structural]
 		
 		
-	op syntaxNat : Nat -> K
+	syntax K ::= "syntaxNat" "(" Nat ")" [klabel(syntaxNat)]
 	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
 	
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
@@ -320,20 +320,17 @@ or equivalent;9) or in some other implementation-defined manner
   // < done > ListItem(# ""(.List{K})) </ done > 
   // < (sending).CellLabel > ListItem(# "Hello world\n"(.List{K})) </ (sending).CellLabel > </ file > 
 	
-	declare listToString : List -> String
-	declare listToString-aux : List String -> String
+	// declare listToString : List -> String
+	// declare listToString-aux : List String -> String
 	
-	define [listToString-start]:
-		listToString(L:List) => listToString-aux(L:List, "")
-		[structural]
+	// define [listToString-start]:
+		// listToString(L:List) => listToString-aux(L:List, "")
 		
-	define [listToString-one]:
-		listToString-aux(ListItem(S:String) L:List, S':String)
-			=> listToString-aux(L:List, S':String +String S:String)
-		[structural]
+	// define [listToString-one]:
+		// listToString-aux(ListItem(S:String) L:List, S':String)
+			// => listToString-aux(L:List, S':String +String S:String)
 		
-	define [listToString-done]:
-		listToString-aux(.List, S:String) => S:String
-		[structural]
+	// define [listToString-done]:
+		// listToString-aux(.List, S:String) => S:String
 		
 endkm

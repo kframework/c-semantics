@@ -1,18 +1,18 @@
 kmod COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	including COMMON-INCLUDE 
-	op figureInitializer-aux : Id Type K -> K [metadata "strict=(3)"] // id, type, initializer
-	op declarationObject : Type K K -> K // type, translation unit it was defined in, definition
+	syntax K ::= "figureInitializer-aux" "(" Id "," Type "," K ")" [metadata "strict=(3)" klabel(figureInitializer-aux)] // id, type, initializer
+	syntax K ::= "declarationObject" "(" Type "," K "," K ")" [klabel(declarationObject)] // type, translation unit it was defined in, definition
 	
-	op external : -> K 
-	op internal : -> K 
-	op noLinkage : -> K 
+	syntax K ::= "external" [klabel(external)] 
+	syntax K ::= "internal" [klabel(internal)] 
+	syntax K ::= "noLinkage" [klabel(noLinkage)] 
 	
-	op initializer : K -> KResult 
-	op startInitializer : Type Id K -> K 
+	syntax KResult ::= "initializer" "(" K ")" [klabel(initializer)] 
+	syntax K ::= "startInitializer" "(" Type "," Id "," K ")" [klabel(startInitializer)] 
 	 
-	op doDeclare : K K -> K [metadata "strict=(1)"] 
+	syntax K ::= "doDeclare" "(" K "," K ")" [metadata "strict=(1)" klabel(doDeclare)] 
 			
-	op processFunctionBody : K -> K
+	syntax K ::= "processFunctionBody" "(" K ")" [klabel(processFunctionBody)]
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
@@ -25,7 +25,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// if it is an aggregate, every member is initialized (recursively) according to these rules;
 	// -- if it is a union, the first named member is initialized (recursively) according to these rules
 
-	op defineType : K -> K [metadata "strict=()"] 
+	syntax K ::= "defineType" "(" K ")" [metadata "strict=()" klabel(defineType)] 
 	context DeclarationDefinition(InitNameGroup(HOLE, _)) 
 	context Typedef(NameGroup(HOLE, _))
 
@@ -139,9 +139,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</ k >
 		[structural] 
 			
-	op declareFunction : Id Type K -> K 
-	op declareExternalVariable : Id Type K -> K 
-	op declareInternalVariable : Id Type K -> K 
+	syntax K ::= "declareFunction" "(" Id "," Type "," K ")" [klabel(declareFunction)] 
+	syntax K ::= "declareExternalVariable" "(" Id "," Type "," K ")" [klabel(declareExternalVariable)] 
+	syntax K ::= "declareInternalVariable" "(" Id "," Type "," K ")" [klabel(declareInternalVariable)] 
 	
 	// function definition
 	rule
@@ -226,7 +226,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 		
 	
-	op declareWithLinkage : Id Type K K -> K // id, type, possible init, linkage (external, internal, noLinkage)
+	syntax K ::= "declareWithLinkage" "(" Id "," Type "," K "," K ")" [klabel(declareWithLinkage)] // id, type, possible init, linkage (external, internal, noLinkage)
 	
 	//- internal variables
 	
@@ -281,7 +281,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 				
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
-	op reseenStatic : Id Type K Nat -> K [metadata "strict=(3)"] 
+	syntax K ::= "reseenStatic" "(" Id "," Type "," K "," Nat ")" [metadata "strict=(3)" klabel(reseenStatic)] 
 	rule
 		< k > declareInternalVariable(X:Id, T:KResult, K:K)
 			=> reseenStatic(X:Id, unqualifyType(T:KResult), figureInitializer(X:Id, removeStorageSpecifiers(T:KResult), K:K), Loc:Nat)
@@ -351,8 +351,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool isExternType(T:KResult)
 		[structural] 
 		
-	op declareOnly : Id Type K -> K 
-	op declareAndDefine : Id Type K K -> K 
+	syntax K ::= "declareOnly" "(" Id "," Type "," K ")" [klabel(declareOnly)] 
+	syntax K ::= "declareAndDefine" "(" Id "," Type "," K "," K ")" [klabel(declareAndDefine)] 
 
 	rule
 		< k > declareWithLinkage(X:Id, T:KResult, NoInit, L:K) => declareOnly(X:Id, T:KResult, L:K) ...</ k >
@@ -504,7 +504,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==K internal)
 		[structural]
 		
-	op defineAndInit : Id Type K Nat -> K [metadata "strict=(3)"] 
+	syntax K ::= "defineAndInit" "(" Id "," Type "," K "," Nat ")" [metadata "strict=(3)" klabel(defineAndInit)] 
 	rule
 		< k > declareAndDefine(X:Id, T:KResult, K:K, noLinkage)
 			=> defineAndInit(X:Id, T:KResult, figureInitializer(X:Id, T:KResult, K:K), Loc:Nat)
@@ -521,7 +521,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< localVariables >... ListItem(X:Id) ...</ localVariables >
 		[structural] 
 		
-	op justInit : K -> K [metadata "strict=(1)"]
+	syntax K ::= "justInit" "(" K ")" [metadata "strict=(1)" klabel(justInit)]
 	
 	rule
 		< k > justInit(initializerValue(X:Id, T:KResult, K:K)) => initialize(X:Id, T:KResult, K:K) ...</ k >
@@ -552,10 +552,10 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< incompleteLength > N:Nat </ incompleteLength >
 		[structural] 
 
-	op allocateAndZeroIfAbsent : Type Id -> K 
-	op addToLinkage : Id Type -> K 
-	op addToGlobalEnv : K Nat -> K 
-	op addToLocalEnv : K Nat -> K 
+	syntax K ::= "allocateAndZeroIfAbsent" "(" Type "," Id ")" [klabel(allocateAndZeroIfAbsent)] 
+	syntax K ::= "addToLinkage" "(" Id "," Type ")" [klabel(addToLinkage)] 
+	syntax K ::= "addToGlobalEnv" "(" K "," Nat ")" [klabel(addToGlobalEnv)] 
+	syntax K ::= "addToLocalEnv" "(" K "," Nat ")" [klabel(addToLocalEnv)] 
 	
 	rule
 		< k > addToEnv(X:Id, Loc:Nat) => addToGlobalEnv(X:Id, Loc:Nat) ...</ k >
@@ -578,9 +578,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		< env > E:Map => E:Map[Loc:Nat / X:Id] </ env >
 		[structural] 
 	
-	op defineUsingOldDeclaration : Type Id K -> K 
+	syntax K ::= "defineUsingOldDeclaration" "(" Type "," Id "," K ")" [klabel(defineUsingOldDeclaration)] 
 	
-	// op defineFunctionUsingOldDeclaration : Type Id K -> K 
+	// syntax K ::= "defineFunctionUsingOldDeclaration" "(" Type "," Id "," K ")" [klabel(defineFunctionUsingOldDeclaration)] 
 	// FIXME check prototypes
 	rule [function-definition]:
 		< k > FunctionDefinition(typedDeclaration(T:KResult, X:Id), Block:K) 
@@ -605,20 +605,20 @@ endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
-	op typingBody : Id Type K -> K // third argument is just for now, as a hack
+	syntax K ::= "typingBody" "(" Id "," Type "," K ")" [klabel(typingBody)] // third argument is just for now, as a hack
 	
 endkm
 
 kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
-	op te : K Type -> K 
-	op getInitializer : -> K 
-	op fillInitializer : K -> K 
-	op fillInitializer-aux : K -> K 
-	op fillInitializer : List{K} -> K 
-	op completeInitializerFragment : K K -> C 
-	op initializerFragment : K -> KResult 
+	syntax K ::= "te" "(" K "," Type ")" [klabel(te)] 
+	syntax K ::= "getInitializer" [klabel(getInitializer)] 
+	syntax K ::= "fillInitializer" "(" K ")" [klabel(fillInitializer)] 
+	syntax K ::= "fillInitializer-aux" "(" K ")" [klabel(fillInitializer-aux)] 
+	syntax K ::= "fillInitializer" "(" List{K} ")" [klabel(fillInitializer)] 
+	syntax C ::= "completeInitializerFragment" "(" K "," K ")" [klabel(completeInitializerFragment)] 
+	syntax KResult ::= "initializerFragment" "(" K ")" [klabel(initializerFragment)] 
 	
 	rule
 		< k > getInitializer => initializer(K:K) ...</ k >
@@ -649,8 +649,8 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< k > fillInitializer(.List{K}) => . ...</ k >
 		[structural] 
 	
-	op next : -> ListItem 
-	op block : -> ListItem 
+	syntax ListItem ::= "next" [klabel(next)] 
+	syntax ListItem ::= "block" [klabel(block)] 
 	
 	rule
 		< currentSubObject > 
@@ -757,7 +757,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		...</ k >
 		[structural] 
 		
-	op finishCompoundInit : List -> K 
+	syntax K ::= "finishCompoundInit" "(" List ")" [klabel(finishCompoundInit)] 
 	rule
 		< k > fillInitializer(CompoundInit(List(L:List{K})))
 			=> fillInitializer(L:List{K})
@@ -778,7 +778,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 			
 	context fillInitializer(InitFragment(HOLE, _)) 
-	op buildDesignator : K -> K 
+	syntax K ::= "buildDesignator" "(" K ")" [klabel(buildDesignator)] 
 	
 	// note that these clear the current subobject cell, because it will be repopulated when building the designator
 	rule
@@ -848,7 +848,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		when isArrayType(T:KResult)
 		[structural] 
 	
-	op popInit : -> K
+	syntax K ::= "popInit" [klabel(popInit)]
 	
 	declare getTopArrayUse : K -> Nat 
 	define getTopArrayUse(X:Id) => 0 [structural]
@@ -857,7 +857,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	define getTopArrayUse((K:K[N:Nat])[_]) => getTopArrayUse(K:K[N:Nat]) [structural]
 	define getTopArrayUse((K:K . F:Id)[_]) => getTopArrayUse(K:K) [structural]
 	
-	op initializeSingleInit : K -> K 
+	syntax K ::= "initializeSingleInit" "(" K ")" [klabel(initializeSingleInit)] 
 		
 	rule
 		< k > (.K => typeof(K:K)) ~> initializeSingleInit(K:K) ...</ k >
@@ -874,7 +874,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool notBool isUnionType(T':KResult)
 		[structural]
 	
-	op possiblyMakeConst : Type K -> K
+	syntax K ::= "possiblyMakeConst" "(" Type "," K ")" [klabel(possiblyMakeConst)]
 	
 	rule
 		<k> possiblyMakeConst(T:KResult, K) => makeUnwritableSubObject(K) ...</k>
@@ -887,14 +887,14 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		
 	// this is used to have an aggregate on the RHS of a compound init
 	// fixme want to exclude strings, but not normal arrays
-	op initFromAggregateRHS : K Type -> K 
+	syntax K ::= "initFromAggregateRHS" "(" K "," Type ")" [klabel(initFromAggregateRHS)] 
 	rule
 		< k > T:KResult ~> initializeSingleInit(K:K) => initFromAggregateRHS(K:K, T:KResult) ...</ k >
 		when isStructType(T:KResult)
 		orBool isUnionType(T:KResult)
 		[structural] 
 		
-	op initFromStructRHS : K Type -> K 
+	syntax K ::= "initFromStructRHS" "(" K "," Type ")" [klabel(initFromStructRHS)] 
 	rule
 		< k > initFromAggregateRHS(K:K, t(S:Set, structType(S:Id)))
 			=> initFromStructRHS(K:K, t(S:Set, structType(S:Id)))
@@ -902,7 +902,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		< currentSubObject > .List => findStruct(t(S:Set, structType(S:Id))) ...</ currentSubObject >
 		[structural] 
 		
-	op findStruct : Type -> ListItem 
+	syntax ListItem ::= "findStruct" "(" Type ")" [klabel(findStruct)] 
 		
 	rule
 		< currentSubObject > findStruct(T:KResult) (ListItem(te(_, T':KResult)) => .List) ...</ currentSubObject >
@@ -1019,7 +1019,7 @@ endkm
 kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
-	op canonicalizeTranslationUnitVariables : -> K 
+	syntax K ::= "canonicalizeTranslationUnitVariables" [klabel(canonicalizeTranslationUnitVariables)] 
 	rule [unpack-TranslationUnit]:
 		< k > TranslationUnit(Name:String, Strings:K, K:K, P:String) 
 			=> preDeclareStrings(Strings:K)
@@ -1039,7 +1039,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		when notBool $hasMapping(Env:Map, Name:String)
 		[structural]
 		
-	op preDeclareStrings : K -> K
+	syntax K ::= "preDeclareStrings" "(" K ")" [klabel(preDeclareStrings)]
 	
 	rule
 		< k > preDeclareStrings(List((K:K,, L:List{K})))
@@ -1052,7 +1052,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< k > preDeclareStrings(List(.List{K})) => .K ...</ k >
 		[structural]
 	
-	op resolve : K -> K 
+	syntax K ::= "resolve" "(" K ")" [klabel(resolve)] 
 	rule
 		< k > (. => resolve(Tu:K)) ~> resolveReferences ...</ k >
 		< translationUnits >... BagItem(Tu:K) => .Bag ...</ translationUnits >
@@ -1063,7 +1063,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		// < translationUnits > .Bag </ translationUnits >
 		// [structural] 
 	
-	op resolveLeftovers : -> K
+	syntax K ::= "resolveLeftovers" [klabel(resolveLeftovers)]
 	rule
 		< k > resolveReferences => resolveLeftovers ...</ k >
 		< translationUnits > .Bag </ translationUnits >
@@ -1091,11 +1091,11 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		< leftoverExterns > .Bag </ leftoverExterns >
 		[structural]
 			
-	op resolveInternal : Id K K -> K 
-	op resolveExternal : Id K Bag K -> K 
-	op resolveExternal-aux : Id K Bag K Nat K -> K [metadata "strict=(6)"] 
+	syntax K ::= "resolveInternal" "(" Id "," K "," K ")" [klabel(resolveInternal)] 
+	syntax K ::= "resolveExternal" "(" Id "," K "," Bag "," K ")" [klabel(resolveExternal)] 
+	syntax K ::= "resolveExternal-aux" "(" Id "," K "," Bag "," K "," Nat "," K ")" [metadata "strict=(6)" klabel(resolveExternal-aux)]
 	
-	op recordFunctionTranslationUnitInformation : K Type K K -> K // name, type, context, where defined
+	syntax K ::= "recordFunctionTranslationUnitInformation" "(" K "," Type "," K "," K ")" [klabel(recordFunctionTranslationUnitInformation)] // name, type, context, where defined
 	rule
 		< k > recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, DefTu:K) => .K ...</ k >
 		< functionTranslationUnits >... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</ functionTranslationUnits >
@@ -1109,9 +1109,9 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	// fixme
 	// should be adding to env after figuring initializer
 	// should be changing env to be correct env before figuring initializer
-	op allocateWithInit : K Nat -> K [metadata "strict=()"] 
-	op noAllocateWithInit : K Nat -> K [metadata "strict=()"] 
-	op resolveInternal-aux : Id K K K -> K [metadata "strict=(4)"] 
+	syntax K ::= "allocateWithInit" "(" K "," Nat ")" [metadata "strict=()" klabel(allocateWithInit)] 
+	syntax K ::= "noAllocateWithInit" "(" K "," Nat ")" [metadata "strict=()" klabel(noAllocateWithInit)] 
+	syntax K ::= "resolveInternal-aux" "(" Id "," K "," K "," K ")" [metadata "strict=(4)" klabel(resolveInternal-aux)] 
 	rule
 		< k > resolveInternal(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K))
 			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInitializer(X:Id, T:KResult, K:K))
@@ -1247,7 +1247,7 @@ kmod COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		andBool notBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
 		[structural] 
-	op leftover : K K K -> K
+	syntax K ::= "leftover" "(" K "," K "," K ")" [klabel(leftover)]
 	rule [resolve-extern-object-nomapping]:
 		< k > resolve(Tu:K) ...</ k >
 		< preLinkage >... Tu:K |-> Map((_ (X:Id |-> external => .))) ...</ preLinkage >
@@ -1291,8 +1291,8 @@ endkm
 kmod COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
-	op fillEnums : K -> K 
-	op fillEnums-aux : K K -> K 
+	syntax K ::= "fillEnums" "(" K ")" [klabel(fillEnums)] 
+	syntax K ::= "fillEnums-aux" "(" K "," K ")" [klabel(fillEnums-aux)] 
 	rule
 		< k > EnumDef(X:Id, L:K) => fillEnums(EnumDef(X:Id, L:K)) ...</ k >
 		[structural] 
