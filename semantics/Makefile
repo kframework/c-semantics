@@ -24,7 +24,7 @@ COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "c
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k common-c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k
-DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k dynamic-c-ltl.k
+DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-configuration.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude .k kcompile_* \
@@ -125,7 +125,6 @@ dynamic-c-conversions.pdf \
 dynamic-c-declarations.pdf \
 dynamic-c-errors.pdf \
 dynamic-c-expressions.pdf \
-dynamic-c-ltl.pdf \
 dynamic-c-memory.pdf \
 dynamic-c-semantics.pdf \
 dynamic-c-standard-lib.pdf \
