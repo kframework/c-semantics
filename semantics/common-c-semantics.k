@@ -157,7 +157,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	// Basic types
 	syntax SimpleType ::= "bool"
 	syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" | "long-int" | "long-long-int"
-	syntax SimpleType ::= "float double" | "long-double"
+	syntax SimpleType ::= "float" | "double" | "long-double"
 	syntax SimpleType ::= "signed-char" | "unsigned-char"
 	syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" | "unsigned-long-int" | "unsigned-long-long-int"
 	syntax SimpleType ::= "no-type" [klabel(no-type)]
