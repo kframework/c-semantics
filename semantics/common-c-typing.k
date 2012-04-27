@@ -4,29 +4,29 @@ kmod COMMON-SEMANTICS-TYPE-INCLUDE is
 	
 	op MYHOLE : -> K 
 	
-	op addStruct : Id List{KResult} -> K 
-	op addUnion : Id List{KResult} -> K 
-	op canonicalizeType : Bag -> K 
+	op addStruct : Id List{KResult} -> K
+	op addUnion : Id List{KResult} -> K
+	op canonicalizeType : Bag -> K
 	
 	declare extractActualType : Type -> Type // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
 	
 	op evalToType : -> K 
 	
-	declare typeStrictUnaryOperators : -> Set // [memo] 
-	define typeStrictUnaryOperators => Set(
-		l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
-	)
-	[structural]
+	// declare typeStrictUnaryOperators : -> Set // [memo] 
+	// define typeStrictUnaryOperators => Set(
+		// l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
+	// )
+	// [structural]
 	
-	declare typeStrictBinaryOperators : -> Set // [memo] 
-	define typeStrictBinaryOperators => Set(
-		l('_*_),, l('_/_),, l('_%_),,
-		l('_+_),, l('_-_),,
-		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
-		l('_&_),, l('_|_),, l('_^_),,
-		l('_`[_`])
-	)
-	[structural]
+	// declare typeStrictBinaryOperators : -> Set // [memo] 
+	// define typeStrictBinaryOperators => Set(
+		// l('_*_),, l('_/_),, l('_%_),,
+		// l('_+_),, l('_-_),,
+		// l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
+		// l('_&_),, l('_|_),, l('_^_),,
+		// l('_`[_`])
+	// )
+	// [structural]
 	
 	declare typeStrictLeftBinaryOperators : -> Set // [memo] 
 	define typeStrictLeftBinaryOperators => Set(
@@ -71,14 +71,14 @@ kmod COMMON-SEMANTICS-TYPE-DECLARATIONS is
 			...</ k >
 		< currentFunction > Fun:Id </ currentFunction >
 		// when notBool isStaticType(T:KResult)
-		[structural] 
+		[structural]
 		
 	rule
 		< k > giveGlobalType(X:Id, T:KResult) => .K ...</ k >
 		< types > M:Map => M:Map[T:KResult / X:Id] </ types >
 		< gtypes >... Tu:K |-> Map((M':Map => M':Map[T:KResult / X:Id])) ...</ gtypes >
 		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-		[structural] 
+		[structural]
 	rule
 		< k > giveLocalType(X:Id, T:KResult) => .K ...</ k >
 		< types > M:Map => M:Map[T:KResult / X:Id] </ types >
@@ -92,91 +92,12 @@ kmod COMMON-SEMANTICS-TYPE-STRICTNESS is
 	rule [type-Cast-heat]:
 		< k > (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</ k >
 		< type > Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</ type >
-		[structural] 
+		[structural]
 		
 	rule [type-Cast-cool]:
 		< k > (T:KResult => .) ~> evalToType ...</ k >
 		< type > waitingOnDeclType => T:KResult ...</ type >
-		[structural] 
-		
-	rule [type-ternary-heat-left]:
-		< type > K1:K ? K2:K : K3:K => K2:K ~> K1:K ? MYHOLE : K3:K ...</ type >
-		when notBool isTypeResult(K2:K)
-		[structural] 
-	rule [type-ternary-cool-left]:
-		< type > T:KResult ~> K1:K ? MYHOLE : K3:K => K1:K ? T:KResult : K3:K ...</ type >
-		when isTypeResult(T:KResult)
-		[structural] 
-	rule [type-ternary-heat-right]:
-		< type > K1:K ? K2:K : K3:K => K3:K ~> K1:K ? K2:K : MYHOLE ...</ type >
-		when notBool isTypeResult(K3:K)
-		[structural] 
-	rule [type-ternary-cool-right]:
-		< type > T:KResult ~> K1:K ? K2:K : MYHOLE => K1:K ? K2:K : T:KResult ...</ type >
-		when isTypeResult(T:KResult)
-		[structural] 
-		
-	rule [type-bin-arith-heat-left]:
-		< type > L:KLabel(K:K,, K':K) => K:K ~> L:KLabel(MYHOLE,, K':K) ...</ type >
-		when notBool isTypeResult(K:K)
-		andBool typeStrictBinaryOperators contains l(L:KLabel)
-		[structural] 
-	rule [type-bin-arith-cool-left]:
-		< type > T:KResult ~> L:KLabel(MYHOLE,, K:K) => L:KLabel(T:KResult,, K:K) ...</ type >
-		when isTypeResult(T:KResult)
-		andBool typeStrictBinaryOperators contains l(L:KLabel)
-		[structural] 
-	rule [type-bin-arith-heat-right]:
-		< type > L:KLabel(K:K,, K':K) => K':K ~> L:KLabel(K:K,, MYHOLE) ...</ type >
-		when notBool isTypeResult(K':K)
-		andBool typeStrictBinaryOperators contains l(L:KLabel)
-		[structural] 
-	rule [type-bin-arith-cool-right]:
-		< type > T:KResult ~> L:KLabel(K:K,, MYHOLE) => L:KLabel(K:K,, T:KResult) ...</ type >
-		when isTypeResult(T:KResult)
-		andBool typeStrictBinaryOperators contains l(L:KLabel)
-		[structural] 
-		
-	rule [type-unary-arith-heat]:
-		< type > L:KLabel(K:K) => K:K ~> L:KLabel(MYHOLE) ...</ type >
-		when notBool isTypeResult(K:K)
-		andBool typeStrictUnaryOperators contains l(L:KLabel)
-		[structural] 
-	rule [type-unary-arith-cool]:
-		< type > T:KResult ~> L:KLabel(MYHOLE) => L:KLabel(T:KResult) ...</ type >
-		when isTypeResult(T:KResult)
-		andBool typeStrictUnaryOperators contains l(L:KLabel)
-		[structural] 
-		
-	rule [type-bin-left-arith-heat]:
-		< type > L:KLabel(K:K,, Args:List{K}) => K:K ~> L:KLabel(MYHOLE,, Args:List{K}) ...</ type >
-		when notBool isTypeResult(K:K)
-		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural] 
-	rule [type-bin-left-arith-cool]:
-		< type > T:KResult ~> L:KLabel(MYHOLE,, Args:List{K}) => L:KLabel(T:KResult,, Args:List{K}) ...</ type >
-		when isTypeResult(T:KResult)
-		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural] 
-
-		
-	rule [type-dot-heat]:
-		< type > K:K . X:Id => K:K ~> MYHOLE . X:Id ...</ type >
-		when notBool isTypeResult(K:K)
-		[structural] 
-	rule [type-dot-cool]:
-		< type > T:KResult ~> MYHOLE . X:Id => T:KResult . X:Id ...</ type >
-		when isTypeResult(T:KResult)
 		[structural]
-		
-	rule [type-call-heat]:
-		< type > Call(K:K, L:K) => K:K ~> Call(MYHOLE, L:K) ...</ type >
-		when notBool isTypeResult(K:K)
-		[structural] 
-	rule [type-call-cool]:
-		< type > T:KResult ~> Call(MYHOLE, L:K) => Call(T:KResult, L:K) ...</ type >
-		when isTypeResult(T:KResult)
-		[structural] 
 endkm
 
 kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
@@ -188,7 +109,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		
 	rule
 		< k > canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
-		[structural] 
+		[structural]
 		
 
 	
@@ -215,19 +136,19 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		< k > (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
 		...</ k >
-			when isTypeResult(T:KResult)
+			when 'isTypeResult(T:KResult)
 		[structural]
 	rule
 		< k > (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
 		...</ k >
-			when isTypeResult(T:KResult)
+			when 'isTypeResult(T:KResult)
 		[structural]
 	rule
 		< k > (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
 		...</ k >
-			when isTypeResult(T:KResult)
+			when 'isTypeResult(T:KResult)
 		[structural]
 		
 	// specifier, modifier, storage
@@ -254,7 +175,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool (getKLabel(T:K) ==KLabel 'EnumRef)
 		orBool (getKLabel(T:K) ==KLabel 'Named)
 		orBool (getKLabel(T:K) ==KLabel 'Attribute)
-		[structural] 
+		[structural]
 
 	rule
 		< k > canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</ k >
@@ -267,7 +188,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool T:K ==K Auto
 		orBool T:K ==K Register
 		orBool T:K ==K ThreadLocal
-		[structural] 
+		[structural]
 		
 	rule
 		< k > canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</ k >
@@ -305,19 +226,19 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			=> t(.Set, structType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 	rule
 		< k > canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
 			=> t(.Set, enumType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 	rule
 		< k > canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
 			=> t(.Set, unionType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 		
 	rule
 		< k > canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
@@ -325,7 +246,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			~> t(.Set, enumType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, _)))) ...</ k >
@@ -333,7 +254,7 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		when L:KLabel ==KLabel 'StructDef
 		orBool L:KLabel ==KLabel 'EnumDef
 		orBool L:KLabel ==KLabel 'UnionDef
-		[structural] 
+		[structural]
 	
 	rule
 		< k > canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
@@ -341,14 +262,14 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 			~> t(.Set, structType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 	rule
 		< k > canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
 			=> UnionDef(X:Id, L:K)
 			~> t(.Set, unionType(X:Id))
 		...</ k >
 		when X:Id =/=K Identifier("")
-		[structural] 
+		[structural]
 		
 
 	// FIXME what good is this_
@@ -362,11 +283,11 @@ kmod COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule 
 		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</ k >
 		when B:Bag =/=Bag .Bag
-		[structural] 
+		[structural]
 		
 	rule
 		< k > canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult ...</ k >
-		[structural] 
+		[structural]
 		
 	declare canonicalizeSpecifier : Bag -> K 
 	// C99 6.7.2:2
@@ -509,19 +430,19 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule 
 		< k > JustBase => T:KResult ...</ k >
 		< declarationTypeHolder > T:KResult => .K ...</ declarationTypeHolder >
-		[structural] 
+		[structural]
 
 	op extractActualTypeFreezer : -> K 
 	rule
 		< k > DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</ k >
 		< declarationTypeHolder > (. => T:KResult) ...</ declarationTypeHolder >
-		[structural] 
+		[structural]
 	
 	rule
 		< k > T:KResult ~> extractActualTypeFreezer 
 			=> extractActualType(T:KResult)
 		...</ k >
-		[structural] 
+		[structural]
 		
 	declare fillUnionBitHoles : List{KResult} -> List{KResult} 
 	declare fillUnionBitHoles-aux : Nat List{KResult} -> List{KResult} 
@@ -609,18 +530,18 @@ kmod COMMON-SEMANTICS-TYPE-INTERPRETATION is
 			=> addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{KResult})))
 			~> giveType(X:Id, t(.Set, structType(X:Id)))
 		...</ k >
-		[structural] 
+		[structural]
 	rule
 		< k > UnionDef(X:Id, List(L:List{KResult}))
 			=> addUnion(X:Id, fillUnionBitHoles(L:List{KResult}))
 			~> giveType(X:Id, t(.Set, unionType(X:Id)))
 		...</ k >
-		[structural] 
+		[structural]
 
 	// the K will resolve to a type, so throw it away
 	rule
 		< k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
-		[structural] 
+		[structural]
 		
 			
 	rule
@@ -668,60 +589,59 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< k > typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</ k >
 		(.Bag => < type > K:K </ type >)
-		[structural] 
+		[structural]
 	rule
-		< k > evalToType ~> typeof(MYHOLE) => T:KResult ...</ k >
-		(< type > T:KResult </ type > => .Bag)
-		when isTypeResult T:KResult
-		[structural] 
+		< k > evalToType ~> typeof(MYHOLE) => T:TypeResult ...</ k >
+		(< type > T:TypeResult </ type > => .Bag)
+		[structural]
 
 	rule
 		< type > emptyValue => t(.Set, void) ...</ type > 
-		[structural] 
+		[structural]
 		
 	rule
 		< type > T:KResult << _ => T:KResult ...</ type >
-		[structural] 
+		[structural]
 	rule
 		< type > T:KResult >> _ => T:KResult ...</ type >
-		[structural] 
+		[structural]
 		
 	rule
 		< type > tv(_, T:KResult) => T:KResult ...</ type >
-		[structural] 
+		[structural]
 	
 	rule
 		< type > SizeofExpression(_) => cfg:sizeut ...</ type >
-		[structural] 
+		[structural]
 
 	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
-		[structural] 
+		[structural]
 	rule 
 		< type > arithInterpret(T:KResult, _) => T:KResult ...</ type > 
 		[structural]
 	rule
 		< type > t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
-		[structural] 
+		[structural]
 	rule
 		< type > T':KResult + t(S:Set, pointerType(T:KResult)) => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
-		[structural] 
+		[structural]
 	rule
 		< type > t(S:Set, pointerType(T:KResult)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
-		[structural] 
+		[structural]
 	rule
 		< type > t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</ type >
 		[structural]
 	rule
 		< type > t(S:Set, arrayType(T:KResult, _:Nat)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
-		[structural] 
+		[structural]
 	rule
 		< type > T':KResult + t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
-		[structural] 
+		[structural]
 	rule
 		< type > t(S:Set, arrayType(T:KResult, _:Nat)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
 		when hasIntegerType(T':KResult)
@@ -738,11 +658,11 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		< type > K:K => T:KResult ...</ type >
 		< types >... K:K |-> T:KResult ...</ types >
-		[structural] 
+		[structural]
 			
 	rule
 		< type > Comma(List((_,, K:K))) => K:K ...</ type >
-		[structural] 
+		[structural]
 
 	rule [type-call-func]:
 		< type > Call(t(_, functionType(T:KResult, _:List{KResult})), _) => T:KResult ...</ type >
@@ -753,26 +673,23 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		< structs >... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
 		...</ structs >
-		[structural] 
+		[structural]
 	rule [type-union-dot]:
 		< type > t(_, unionType(S:Id)) . F:Id => T:KResult ...</ type >
 		< structs >... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
 		...</ structs >
-		[structural] 
+		[structural]
 	
 	rule [type-deref-type]:
-		< type > *(t(_, pointerType(T:KResult))) => T:KResult ...</ type >
-		[structural] 
-	rule [type-deref-array-type]:
-		< type > *(t(_, arrayType(T:KResult, _:Nat))) => T:KResult ...</ type >
-		[structural] 
+		< type > * T:KResult => innerType(T:KResult) ...</ type >
+		[structural]
 
 	rule [type-compound-literal]:
 		< type > CompoundLiteral(_, Specifier:K, DeclType:K, _)
 			=> Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
 		...</ type >
-		[structural] 
+		[structural]
 	
 	rule [type-assignment]:
 		< type > L:KLabel(K:K,, _) 
@@ -789,7 +706,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		when isArithBinConversionOp(L:KLabel)
 		andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
-		[structural] 
+		[structural]
 		
 	rule [type-ternary-arithmetic]:
 		< type > _:K ? T:KResult : T':KResult => usualArithmeticConversion(T:KResult, T':KResult) ...</ type >
@@ -797,13 +714,16 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		[structural]
 	rule [type-ternary-identical]:
-		< type > _:K ? T:KResult : T:KResult => T:KResult ...</ type >
-		when isTypeResult(T:KResult)
-		andBool notBool isArrayType(T:KResult)
+		< type > _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</ type >
+		when notBool isArrayType(T:TypeResult)
 		[structural]
 		
-	rule [type-ternary-array-left]: < type > _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</ type > [structural]
-	rule [type-ternary-array-right]: < type > _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</ type > [structural]
+	rule [type-ternary-array-left]: 
+		< type > _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</ type > 
+		[structural]
+	rule [type-ternary-array-right]: 
+		< type > _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</ type >
+		[structural]
 		
 	rule [type-ternary-pointer]: // not safe, could be incompatible types
 		< type > _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult)) => t(S:Set, pointerType(T:KResult)) ...</ type >
@@ -841,6 +761,10 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 			orBool L:KLabel ==KLabel ('++_)
 		)
 		[structural]
+	
+	rule
+		< type > !(_:K) => t(.Set, int) ...</ type >
+		[structural]
 		
 	rule
 		< type > L:KLabel(_:K,, _:K) => t(.Set, int) ...</ type >
@@ -851,8 +775,7 @@ kmod COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 		
 	rule [type-address]:
-		< type > & T:KResult => t(.Set, pointerType(T:KResult)) ...</ type >
-		when isTypeResult(T:KResult)
+		< type > & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</ type >
 		[structural]
 		
 endkm
@@ -868,7 +791,7 @@ kmod COMMON-C-TYPING is
 	rule [ExpressionLoc-type]:
 		< type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
 		< currentProgramLoc > _ => L:CabsLoc </ currentProgramLoc >
-		[structural] 
+		[structural]
 		
 	/*@ \source[n1570]{\para{6.2.7}{1}}
 	Two types have compatible type if their types are the same. Additional rules for determining whether two types are compatible are described in 6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for declarators.  Moreover, two structure, union, or enumerated types declared in separate translation units are compatible if their tags and members satisfy the following requirements: If one is declared with a tag, the other shall be declared with the same tag. If both are completed anywhere within their respective translation units, then the following additional requirements apply: there shall be a one-to-one correspondence between their members such that each pair of corresponding members are declared with compatible types; if one member of the pair is declared with an alignment specifier, the other is declared with an equivalent alignment specifier; and if one member of the pair is declared with a name, the other is declared with the same name. For two structures, corresponding members shall be declared in the same order. For two structures or unions, corresponding bit-fields shall have the same widths. For two enumerations, corresponding members shall have the same values.
@@ -937,7 +860,7 @@ kmod COMMON-C-TYPING is
 		[structural]
 	rule 
 		< k > Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</ k >
-		[structural] 
+		[structural]
 			
 	op addGlobalAggregate : Id K -> K 
 	op addLocalAggregate : Id K -> K 
@@ -1005,173 +928,170 @@ kmod COMMON-C-TYPING is
 		< k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
 		< structs > M':Map => M':Map[K:K / X:Id] </ structs >
 		< gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
-		[structural] 
+		[structural]
 	rule
 		< k > addLocalAggregate(X:Id, K:K) => . ...</ k >
 		< structs > M:Map => M:Map[K:K / X:Id] </ structs >
-		[structural] 
+		[structural]
 		
-	define isTypeResult t(_, T:K) => true
+	define 'isTypeResult(t(_, T:K)) => true
 		when setOfTypes contains l(getKLabel(T:K)) 
-		[structural]
-	define isTypeResult T:KResult => true when isBasicType(T:KResult) [structural]
-	define isTypeResult K:K => false
+	define 'isTypeResult(T:KResult) => true when isBasicType(T:KResult)
+	define 'isTypeResult(K:K) => false
 		when getKLabel(K:K) =/=KLabel 't
-		[structural]
-	define isTypeResult t(S:Set, T:K) => false
+	define 'isTypeResult(t(S:Set, T:K)) => false
 		when notBool setOfTypes contains l(getKLabel(T:K))
 		andBool notBool isBasicType(t(S:Set, T:K)) 
-		[structural]
 			
 
-	define isFloatType(t(_, float)) => true [structural]
-	define isFloatType(t(_, double)) => true [structural]
-	define isFloatType(t(_, long-double)) => true [structural]
+	define isFloatType(t(_, float)) => true 
+	define isFloatType(t(_, double)) => true 
+	define isFloatType(t(_, long-double)) => true 
 	define isFloatType(t(_, T:K)) => false
 		when T:K =/=K float
 		andBool T:K =/=K double
 		andBool T:K =/=K long-double
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
-		[structural]
+		
 	
-	define [isCharType-char]: isCharType(t(_, char)) => true [structural]
-	define [isCharType-qualified]: isCharType(t(_, qualifiedType(T:KResult, _))) => isCharType(T:KResult) [structural]
-	define [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true [structural]
-	define [isCharType-signed-char]: isCharType(t(_, signed-char)) => true [structural]
+	define [isCharType-char]: isCharType(t(_, char)) => true 
+	define [isCharType-qualified]: isCharType(t(_, qualifiedType(T:KResult, _))) => isCharType(T:KResult) 
+	define [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true 
+	define [isCharType-signed-char]: isCharType(t(_, signed-char)) => true 
 	define [isCharType-other]: isCharType(t(_, T:K)) => false
 		when T:K =/=K char
 		andBool T:K =/=K unsigned-char
 		andBool T:K =/=K signed-char
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 		
 	define [isWCharType-wchar]: isWCharType(t(_, T:K)) => true 
 		when T:K ==K simpleType(cfg:wcharut)
-		[structural]
+		
 	define [isWCharType-other]: isWCharType(t(_, T:K)) => false
 		when T:K =/=K simpleType(cfg:wcharut)
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
-	define [isWCharType-qualified]: isWCharType(t(_, qualifiedType(T:KResult, _))) => isWCharType(T:KResult) [structural]
+		
+	define [isWCharType-qualified]: isWCharType(t(_, qualifiedType(T:KResult, _))) => isWCharType(T:KResult) 
 	
-	define [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true [structural]
-	define [isPointerType-qualified]: isPointerType(t(_, qualifiedType(T:KResult, _))) => isPointerType(T:KResult) [structural]
+	define [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true 
+	define [isPointerType-qualified]: isPointerType(t(_, qualifiedType(T:KResult, _))) => isPointerType(T:KResult) 
 	define [isPointerType-other]: isPointerType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'pointerType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 	
-	define [isBoolType-bool]: isBoolType(t(_, bool)) => true [structural]
-	define [isBoolType-qualifiedType]: isBoolType(t(_, qualifiedType(T:KResult, _))) => isBoolType(T:KResult) [structural]
+	define [isBoolType-bool]: isBoolType(t(_, bool)) => true 
+	define [isBoolType-qualifiedType]: isBoolType(t(_, qualifiedType(T:KResult, _))) => isBoolType(T:KResult) 
 	define [isBoolType-other]: isBoolType(t(_, T:K)) => false
 		when T:K =/=K bool 
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 	
-	define [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Nat))) => true [structural]
-	define [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true [structural]
-	define [isArrayType-flexibleArray]: isArrayType(t(_, flexibleArrayType(_))) => true [structural]
-	define [isArrayType-qualified]: isArrayType(t(_, qualifiedType(T:KResult, _))) => isArrayType(T:KResult) [structural]
+	define [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Nat))) => true 
+	define [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true 
+	define [isArrayType-flexibleArray]: isArrayType(t(_, flexibleArrayType(_))) => true 
+	define [isArrayType-qualified]: isArrayType(t(_, qualifiedType(T:KResult, _))) => isArrayType(T:KResult) 
 	define [isArrayType-other]: isArrayType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'arrayType 
 		andBool getKLabel(T:K) =/=KLabel 'incompleteArrayType 
 		andBool getKLabel(T:K) =/=KLabel 'flexibleArrayType 
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
 		
-	define isAggregateType(T:KResult) => isArrayType(T:KResult) orBool isStructType(T:KResult) [structural]
 		
-	define [isStructType-struct]: isStructType(t(_, structType(_:Id))) => true [structural]
-	define [isStructType-qualified]: isStructType(t(_, qualifiedType(T:KResult, _))) => isStructType(T:KResult) [structural]
+	define isAggregateType(T:KResult) => isArrayType(T:KResult) orBool isStructType(T:KResult) 
+		
+	define [isStructType-struct]: isStructType(t(_, structType(_:Id))) => true 
+	define [isStructType-qualified]: isStructType(t(_, qualifiedType(T:KResult, _))) => isStructType(T:KResult) 
 	define [isStructType-other]: isStructType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'structType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
 		
-	define [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true [structural]
-	define [isUnionType-qualified]: isUnionType(t(_, qualifiedType(T:KResult, _))) => isUnionType(T:KResult) [structural]
+		
+	define [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
+	define [isUnionType-qualified]: isUnionType(t(_, qualifiedType(T:KResult, _))) => isUnionType(T:KResult) 
 	define [isUnionType-other]: isUnionType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'unionType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 
-	define [isIncompleteType-true]: isIncompleteType(t(_, incompleteArrayType(_))) => true [structural]
-	define [isIncompleteType-qualified]: isIncompleteType(t(_, qualifiedType(T:KResult, _))) => isIncompleteType(T:KResult) [structural]
+	define [isIncompleteType-true]: isIncompleteType(t(_, incompleteArrayType(_))) => true 
+	define [isIncompleteType-qualified]: isIncompleteType(t(_, qualifiedType(T:KResult, _))) => isIncompleteType(T:KResult) 
 	define [isIncompleteType-false]: isIncompleteType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'incompleteArrayType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 		
 	define [isExternType-qualified]: isExternType(t(_, qualifiedType(T:KResult, K:K))) => #if (K:K ==K Extern) #then (true) #else (isExternType(T:KResult)) #fi 
-		[structural]
+		
 	define [isExternType-false]: isExternType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 		
 	define [isStaticType-qualified]: 
 		isStaticType(t(_, qualifiedType(T:KResult, K:K))) 
 			=> #if (K:K ==K Static) #then (true) #else (isStaticType(T:KResult)) #fi
-		[structural]
+		
 	define [isStaticType-false]: isStaticType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
+		
 	
 	define [isConstType-qualified]: 
 		isConstType(t(_, qualifiedType(T:KResult, K:K))) => isConstType(T:KResult)
-		[structural]
+		
 	define [isConstType-false]: 
 		isConstType(t(S:Set, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
 		andBool notBool Const in S:Set
-		[structural]
+		
 	define [isConstType-true]: 
 		isConstType(t(SetItem(Const) _, T:K)) => true
-		[structural]		
+				
 	
 		
-	define [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Nat))) => true [structural]
+	define [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Nat))) => true 
 	define [isBitfieldType-false]: isBitfieldType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
-		[structural]
 		
-	define [isFunctionType-true]: isFunctionType(t(_, functionType(_, _:List{KResult}))) => true [structural]
-	define [isFunctionType-prototype]: isFunctionType(t(_, prototype(T:KResult))) => isFunctionType(T:KResult) [structural]
-	define [isFunctionType-qualified]: isFunctionType(t(_, qualifiedType(T:KResult, _))) => isFunctionType(T:KResult) [structural]
+		
+	define [isFunctionType-true]: isFunctionType(t(_, functionType(_, _:List{KResult}))) => true 
+	define [isFunctionType-prototype]: isFunctionType(t(_, prototype(T:KResult))) => isFunctionType(T:KResult) 
+	define [isFunctionType-qualified]: isFunctionType(t(_, qualifiedType(T:KResult, _))) => isFunctionType(T:KResult) 
 	define [isFunctionType-false]: isFunctionType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'functionType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
 		andBool getKLabel(T:K) =/=KLabel 'prototype 
-		[structural]
 		
-	define [isFunctionPointerType-fp]: isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:List{KResult}))))) => true [structural]
-	define [isFunctionPointerType-qualified]: isFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => isFunctionPointerType(T:KResult) [structural]
-	define [isFunctionPointerType-qualified-pointer]: isFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => isFunctionPointerType(t(.Set, pointerType(T:KResult))) [structural]
+		
+	define [isFunctionPointerType-fp]: isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:List{KResult}))))) => true 
+	define [isFunctionPointerType-qualified]: isFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => isFunctionPointerType(T:KResult) 
+	define [isFunctionPointerType-qualified-pointer]: isFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => isFunctionPointerType(t(.Set, pointerType(T:KResult))) 
 	define [isFunctionPointerType-notPointer]: isFunctionPointerType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'pointerType
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
-		[structural]
+		
 	define [isFunctionPointerType-notFunction]: isFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
 		when getKLabel(T:K) =/=KLabel 'functionType 
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType
-		[structural]
+		
 		
 	// /*@ \source[n1570]{\para{6.2.5}{18}}
 	// Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
 	// */
 	define isArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool isFloatType(T:KResult)
-		[structural]
+		
 		
 		
 			
-	define unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
+	define unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
 	define unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
-		[structural]
 		
-	define removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult [structural]
+		
+	define removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
 	define removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
 		when getKLabel(T:K) =/=KLabel 'qualifiedType
-		[structural]
+		
 	
 	define getModifiers(t(S:Set, _)) => S:Set
 endkm

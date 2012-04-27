@@ -37,7 +37,7 @@ kmod COMMON-SEMANTIC-SYNTAX is
 	op typedDeclaration : Type Id -> Type // would rather this be KResult, but can't get the subsorting to work
 	
 	op DeclType : K K -> K [metadata "strict=(1)"] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
-	op isTypeResult_ : K -> Bool 
+	// op 'isTypeResult_ : K -> Bool 
 	op setOfTypes : -> Set // [memo] 
 	
 	op usualArithmeticConversion : Type Type -> K

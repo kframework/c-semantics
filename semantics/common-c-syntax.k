@@ -8,58 +8,17 @@ kmod COMMON-C-SYNTAX is
 	syntax K ::= "peval" "(" K ")" [semantic klabel(peval) strict]
 	
 	// the rest are syntactic
-	// sort C
 	syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel(AttributeWrapper)]
-	// syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel(AttributeWrapper)] // new // K, List
 	
-	// The resulting sorts can really be replaced with K, but i've left them in for now since they don't hurt anything and are somewhat documenting
-	
-	// // Sorts directly from CABS
-	// sort CabsLoc
-	// sort TypeSpecifier
-	// sort Storage
-	// // sort FunSpecifier // not used, even by cabs
-	// sort CVSpecifier
-	// sort SpecifierElem
-	// sort Specifier
-	// sort DeclType
-	// sort NameGroup
-	// sort FieldGroup
-	// sort InitNameGroup
-	// sort Name
-	// sort InitName
-	// sort SingleName
-	// sort EnumItem
-	// sort Definition
-	// sort Block
-	// sort AsmDetails
-	// sort Statement
-	// sort PureStatement
-	// sort PureEnumItem
-	// sort ForClause
-	// // sort BinaryOperator // not used by us
-	// // sort UnaryOperator // not used by us
-	// // sort Expression
-	// sort Constant
-	// sort InitExpression
-	// sort InitWhat
-	// // sort Attribute
-	
-	// // Additional sorts
-	// sort Program
-	// sort TranslationUnit
-	// sort IntConstant
-	// sort InitFragment
-	// sort FieldName
-	// sort PureDefinition
-	
-	// // sort C
+	// sort C
 	syntax C ::= Id
 	syntax C ::= "List" "(" List{K} ")" [klabel(List)]
 	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
 	syntax K ::= "StmtCons" "(" K "," K ")" [klabel(StmtCons)]
 	
+	//@ this production ensures that a TypeResult sort is created, together with an 'isTypeResult predicate
+	syntax TypeResult ::= "dummyTypeProduction"
 	syntax KResult ::= SpecifierElem
 	
 	syntax C ::= CabsLoc
@@ -75,10 +34,8 @@ kmod COMMON-C-SYNTAX is
 	syntax C ::= Name
 	syntax C ::= InitName
 	syntax C ::= SingleName
-	// syntax C ::= EnumItem
 	syntax C ::= Definition
 	syntax C ::= Block
-	// syntax C ::= AsmDetails
 	syntax C ::= Statement
 	syntax C ::= PureStatement
 	syntax C ::= PureEnumItem
@@ -86,7 +43,6 @@ kmod COMMON-C-SYNTAX is
 	syntax C ::= Expression
 	syntax C ::= Constant
 	syntax C ::= InitExpression
-	// syntax C ::= InitWhat
 	syntax C ::= Program
 	syntax C ::= TranslationUnit
 	syntax C ::= IntConstant
@@ -105,7 +61,6 @@ type cabsloc = {
 		lineOffsetEnd : int;
 	}
 */
-	// sort CabsLoc
 	syntax CabsLoc ::= "CabsLoc" "(" String "," Int "," Int "," Int ")" [klabel(CabsLoc)]
 	
 /*
@@ -331,7 +286,6 @@ and enum_item = String * expression * cabsloc
 	syntax PureDefinition ::= "LTLAnnotation" "(" K ")" [klabel(LTLAnnotation)] // name
 	
 	// new
-
 	syntax Expression ::= "LTL-Atom" "(" K ")" [klabel(LTL-Atom)] 
 	syntax Expression ::= "LTL-Builtin" "(" K ")" [klabel(LTL-Builtin)]
 	
@@ -458,30 +412,30 @@ and unary_operator =
 	MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
 	| PREINCR | PREDECR | POSINCR | POSDECR
 */
-	syntax Expression ::= "-" K [prec(22)]
+	syntax Expression ::= "-" K [metadata "type-strict=()" prec(22)]
 	context -_((HOLE => reval(HOLE)))
-	syntax Expression ::= "+" K [prec(22)]
+	syntax Expression ::= "+" K [metadata "type-strict=()" prec(22)]
 	context +_((HOLE => reval(HOLE)))
-	syntax Expression ::= "!" K [prec(22)]
+	syntax Expression ::= "!" K [metadata "type-strict=()" prec(22)]
 	context !_((HOLE => reval(HOLE)))
-	syntax Expression ::= "~" K [prec(22)]
+	syntax Expression ::= "~" K [metadata "type-strict=()" prec(22)]
 	context ~_((HOLE => reval(HOLE)))
-	syntax Expression ::= "*" K [prec(22)]
+	syntax Expression ::= "*" K [metadata "type-strict=()" prec(22)]
 	context *_((HOLE => reval(HOLE)))
-	syntax Expression ::= "&" K [strict prec(22)]
-	syntax Expression ::= "++" K [prec(22)]
-	syntax Expression ::= "--" K [prec(22)]
-	syntax Expression ::= K "++"
+	syntax Expression ::= "&" K [metadata "type-strict=()" strict prec(22)]
+	syntax Expression ::= "++" K [metadata "type-strict=()" prec(22)]
+	syntax Expression ::= "--" K [metadata "type-strict=()" prec(22)]
+	syntax Expression ::= K "++" [metadata "type-strict=()"]
 	context _++((HOLE => peval(HOLE)))
-	syntax Expression ::= K "--"
+	syntax Expression ::= K "--" [metadata "type-strict=()"]
 	context _--((HOLE => peval(HOLE)))
 	
 /*
 	| BINARY of binary_operator * expression * expression
 */
-	syntax Expression ::= K "*" K [prec(31) gather(E e)]
-	syntax Expression ::= K "/" K [prec(31) gather(E e)]
-	syntax Expression ::= K "%" K [prec(31) gather(E e)]
+	syntax Expression ::= K "*" K [metadata "type-strict=()" prec(31) gather(E e)]
+	syntax Expression ::= K "/" K [metadata "type-strict=()" prec(31) gather(E e)]
+	syntax Expression ::= K "%" K [metadata "type-strict=()" prec(31) gather(E e)]
 	context _*_((HOLE => reval(HOLE)), _) [ndheat]
 	context _*_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _/_((HOLE => reval(HOLE)), _) [ndheat]
@@ -489,78 +443,78 @@ and unary_operator =
 	context _%_((HOLE => reval(HOLE)), _) [ndheat]
 	context _%_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "+" K [prec(33) gather(E e)]
-	syntax Expression ::= K "-" K [prec(33) gather(E e)]
+	syntax Expression ::= K "+" K [metadata "type-strict=()" prec(33) gather(E e)]
+	syntax Expression ::= K "-" K [metadata "type-strict=()" prec(33) gather(E e)]
 	context _+_((HOLE => reval(HOLE)), _) [ndheat]
 	context _+_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _-_((HOLE => reval(HOLE)), _) [ndheat]
 	context _-_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "<<" K [prec(35) gather(E e)]
+	syntax Expression ::= K "<<" K [metadata "type-strict=(1)" prec(35) gather(E e)]
 	context _<<_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<<_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K ">>" K [prec(35) gather(E e)]
+	syntax Expression ::= K ">>" K [metadata "type-strict=(1)" prec(35) gather(E e)]
 	context _>>_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>>_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "<" K [prec(37) gather(E e)]
-	syntax Expression ::= K "<=" K [prec(37) gather(E e)]
+	syntax Expression ::= K "<" K [metadata "type-strict=()" prec(37) gather(E e)]
+	syntax Expression ::= K "<=" K [metadata "type-strict=()" prec(37) gather(E e)]
 	context _<_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _<=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K ">" K [prec(37) gather(E e)]
-	syntax Expression ::= K ">=" K [prec(37) gather(E e)]
+	syntax Expression ::= K ">" K [metadata "type-strict=()" prec(37) gather(E e)]
+	syntax Expression ::= K ">=" K [metadata "type-strict=()" prec(37) gather(E e)]
 	context _>_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _>=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "==" K [prec(39) gather(E e)]
-	syntax Expression ::= K "!=" K [prec(39) gather(E e)]
+	syntax Expression ::= K "==" K [metadata "type-strict=()" prec(39) gather(E e)]
+	syntax Expression ::= K "!=" K [metadata "type-strict=()" prec(39) gather(E e)]
 	context _==_((HOLE => reval(HOLE)), _) [ndheat]
 	context _==_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _!=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _!=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "&" K [prec(41) gather(E e)]
+	syntax Expression ::= K "&" K [metadata "type-strict=()" prec(41) gather(E e)]
 	context _&_((HOLE => reval(HOLE)), _) [ndheat]
 	context _&_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "^" K [prec(43) gather(E e)]
+	syntax Expression ::= K "^" K [metadata "type-strict=()" prec(43) gather(E e)]
 	context _^_((HOLE => reval(HOLE)), _) [ndheat]
 	context _^_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "|" K [prec(45) gather(E e)]
+	syntax Expression ::= K "|" K [metadata "type-strict=()" prec(45) gather(E e)]
 	context _|_((HOLE => reval(HOLE)), _) [ndheat]
 	context _|_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "&&" K [prec(47) gather(E e)]
+	syntax Expression ::= K "&&" K [metadata "type-strict=()" prec(47) gather(E e)]
 	context _&&_((HOLE => reval(HOLE)), _) [ndheat]
 	
-	syntax Expression ::= K "||" K [prec(49) gather(E e)]
+	syntax Expression ::= K "||" K [metadata "type-strict=()" prec(49) gather(E e)]
 	context _||_((HOLE => reval(HOLE)), _) [ndheat]
 	
-	syntax Expression ::= K "*=" K [prec(53)]
-	syntax Expression ::= K "/=" K [prec(53)]
-	syntax Expression ::= K "%=" K [prec(53)]
-	syntax Expression ::= K "+=" K [prec(53)]
-	syntax Expression ::= K "-=" K [prec(53)]
-	syntax Expression ::= K "<<=" K [prec(53)]
-	syntax Expression ::= K "&=" K [prec(53)]
-	syntax Expression ::= K "^=" K [prec(53)]
-	syntax Expression ::= K "|=" K [prec(53)]
-	syntax Expression ::= K ">>=" K [prec(53)]
-	syntax Expression ::= K ":=" K [prec(53)]
+	syntax Expression ::= K "*=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "/=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "%=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "+=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "-=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "<<=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "&=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "^=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "|=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K ">>=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K ":=" K [metadata "type-strict=(1)" prec(53)]
 	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
 	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 /*
 	| QUESTION of expression * expression * expression
 */
-	syntax Expression ::= K "?" K ":" K [prec(51) gather(e & E)]
+	syntax Expression ::= K "?" K ":" K [metadata "type-strict=(2 3)" prec(51) gather(e & E)]
 	context _?_:_((HOLE => reval(HOLE)), _, _)
 
 /*
@@ -578,7 +532,7 @@ and unary_operator =
 	| CALL of expression * expression list
 */
 
-	syntax Expression ::= "Call" "(" K "," K ")" [klabel(Call)] // K, List
+	syntax Expression ::= "Call" "(" K "," K ")" [metadata "type-strict=(1)" klabel(Call) ] // K, List
 	context Call((HOLE => reval(HOLE)), _) [ndheat]
 	context Call(_, List((_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))) [ndheat]
 /*
@@ -608,12 +562,12 @@ and unary_operator =
 /*
 	| INDEX of expression * expression
 */
-	syntax Expression ::= K "[" K "]"
+	syntax Expression ::= K "[" K "]" [metadata "type-strict=()"]
 /*
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
 */
-	syntax Expression ::= K "." Id
+	syntax Expression ::= K "." Id [metadata "type-strict=(1)"]
 	context _._((HOLE => peval(HOLE)), _:Id)
 	syntax Expression ::= K "->" Id
 	context _->_((HOLE => reval(HOLE)), _:Id)
