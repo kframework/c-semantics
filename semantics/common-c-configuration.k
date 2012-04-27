@@ -1,21 +1,7 @@
 kmod COMMON-C-CONFIGURATION is
 	including C-SYNTAX
-	
-	op k : -> CellLabel
-	op stackFrame : -> CellLabel
-	op continuation : -> CellLabel
-	op stackCurrentFunction : -> CellLabel
-	op stackCurrentProgramLoc : -> CellLabel
-	op currentProgramLoc : -> CellLabel 
-	op structs : -> CellLabel
-	
-	ops gotoMap gotoCalculation currentFunction computation : -> CellLabel
-	ops currentTranslationUnit calculateGotoMap nestingDepthGoto blockHistoryGoto declarationStack : -> CellLabel
-	ops computationTail loopStackGoto externalLocations internalLocations : -> CellLabel
-	ops blockHistory shouldInit nextSharedLoc preLinkage declarationOrder declarations preTypes : -> CellLabel
-	ops nextLoc localVariables externalDefinitions internalDefinitions : -> CellLabel
-	ops localAddresses incompleteLength genv env control savedInitialization typedBody currentObject currentSubObject callStack functionTranslationUnits translationUnits gtypes functions programText types type freshNat declarationTypeHolder gstructs  : -> CellLabel
-	
+
+	syntax CellLabel ::= "stackFrame" | "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
 	
 	configuration 
 		<T> 
@@ -144,12 +130,5 @@ kmod COMMON-C-CONFIGURATION is
 		//<unflushedOutput color="lightgray"> "" </unflushedOutput>
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
-	
-	ops files input output resultValue errorCell xmessages : -> CellLabel
-	
-	subsort Id Int String Float Bool #Rat < K
-	//subsort String < Builtins
-	
-	subsort C < K
 	
 endkm
