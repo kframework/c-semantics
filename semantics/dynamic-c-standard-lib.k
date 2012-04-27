@@ -1,5 +1,3 @@
-// load maudeLib/TCPSupport
-
 module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	including DYNAMIC-INCLUDE 
 	// including #SOCKET
@@ -1164,9 +1162,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-MISC is
 
 end module
 
+
+module DYNAMIC-C-STANDARD-LIBRARY is
 ////////////////////////////////
 //- C standard library
-module DYNAMIC-C-STANDARD-LIBRARY is
 	including DYNAMIC-INCLUDE
 	including DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	

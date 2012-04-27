@@ -1,5 +1,5 @@
-// FIXME need to automatically pad structs
 module COMMON-SEMANTICS-TYPE-INCLUDE is
+	// FIXME need to automatically pad structs
 	including COMMON-INCLUDE 
 	
 	syntax K ::= "MYHOLE" [klabel(MYHOLE)] 

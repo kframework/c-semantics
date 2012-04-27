@@ -1,6 +1,5 @@
-// require maudeLib/common-c-builtins
-
 module COMMON-SEMANTICS-HELPERS-INCLUDE is
+	// require maudeLib/common-c-builtins
 	// including #COMMON-SEMANTICS-HELPERS-BUILTINS
 	// op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
 	syntax Nat ::= Nat "bit::" Nat
