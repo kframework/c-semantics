@@ -375,8 +375,8 @@ module COMMON-C-SEMANTICS-MISC is
 	rule [expression-loc]: ExpressionLoc(K:K, _) => K:K [structural anywhere]
 
 	rule [CodeLoc-k]:
-		< k > CodeLoc(K:K, L:CabsLoc) => K:K ...</ k >
-		< currentProgramLoc > _ => L:CabsLoc </ currentProgramLoc >
+		<k> CodeLoc(K:K, L:CabsLoc) => K:K ...</k>
+		<currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
 		[structural]
 		
 		
@@ -386,7 +386,7 @@ module COMMON-C-SEMANTICS-MISC is
 \broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
 	*/
 	rule [Pragma]:
-		< k > Pragma(_:K) => .K ...</ k >
+		<k> Pragma(_:K) => .K ...</k>
 		[structural]
 		
 	rule AttributeWrapper(K:K, _) => K:K [structural anywhere]

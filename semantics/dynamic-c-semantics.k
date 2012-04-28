@@ -16,37 +16,37 @@ module DYNAMIC-C-SEMANTICS-MISC is
 	including DYNAMIC-INCLUDE 
 			
 	rule [sequencePoint]:
-		< k > sequencePoint => .K ...</ k >
-		< locsWrittenTo > _ => .Bag </ locsWrittenTo >
+		<k> sequencePoint => .K ...</k>
+		<locsWrittenTo> _ => .Bag </locsWrittenTo>
 		[structural ndlocal]
 
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
-		< k > writeToFD(FD:Nat, N:Nat) => .K ...</ k >
-		< fid > FD:Nat </ fid >
-		< buff > S:String => S:String +String charString(N:Nat %Int 256) </ buff >
+		<k> writeToFD(FD:Nat, N:Nat) => .K ...</k>
+		<fid> FD:Nat </fid>
+		<buff> S:String => S:String +String charString(N:Nat %Int 256) </buff>
 		[structural]
 	// fixme not sure this should be ... on <buf> cell
 	rule [writeToFD-string]:
-		< k > writeToFD(FD:Nat, S':String) => .K ...</ k >
-		< fid > FD:Nat </ fid >
-		< buff > S:String => S:String +String S':String ...</ buff >
+		<k> writeToFD(FD:Nat, S':String) => .K ...</k>
+		<fid> FD:Nat </fid>
+		<buff> S:String => S:String +String S':String ...</buff>
 		[structural]
 	rule [readFromFD-char]:
-		< k > readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</ k >
-		< fid > FD:Nat </ fid >
-		< buff > S:String => butFirstChar(S:String) </ buff >
+		<k> readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</k>
+		<fid> FD:Nat </fid>
+		<buff> S:String => butFirstChar(S:String) </buff>
 		when lengthString(S:String) >Int 0 // don't compare with "" in order to only treat string sort
 		[structural]
 	rule [readFromFD-empty-buff]:
-		< k > readFromFD(FD:Nat) ...</ k >
-		< fid > FD:Nat </ fid >
-		< buff > "" => "" +String charString(#fReadByte(FD:Nat)) </ buff >
+		<k> readFromFD(FD:Nat) ...</k>
+		<fid> FD:Nat </fid>
+		<buff> "" => "" +String charString(#fReadByte(FD:Nat)) </buff>
 		[structural]
 	rule [readFromFD-eof]:
-		< k > readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</ k >
-		< fid > FD:Nat </ fid >
-		< buff > #EOF </ buff >
+		<k> readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</k>
+		<fid> FD:Nat </fid>
+		<buff> #EOF </buff>
 		[structural]
 	rule [make-eof]:
 		"" +String charString(#EOF)
@@ -164,28 +164,28 @@ If they are declared, the parameters to the main function shall obey the followi
 	
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
 	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String, IsInterp:Int) =>
-		< T >
-			< threads >
-				< thread >
-					< threadId > 1 </ threadId >
-					< nextLoc > loc(threadId(1) +Int 0, 0, 0) </ nextLoc >
-					< k > klistToK(P:List{K})
+		<T>
+			<threads>
+				<thread>
+					<threadId> 1 </threadId>
+					<nextLoc> loc(threadId(1) +Int 0, 0, 0) </nextLoc>
+					<k> klistToK(P:List{K})
 							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
 							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
-					</ k >
-					< threadLocal >
-						< control >
-							< currentFunction > File-Scope </ currentFunction >
-							< currentProgramLoc > UnknownCabsLoc </ currentProgramLoc >
-						...</ control >
+					</k>
+					<threadLocal>
+						<control>
+							<currentFunction> File-Scope </currentFunction>
+							<currentProgramLoc> UnknownCabsLoc </currentProgramLoc>
+						...</control>
 					...</threadLocal>
-				...</ thread >
-			</ threads >
+				...</thread>
+			</threads>
 			<nextSharedLoc> loc(threadId(0) +Int 0, 0, 0) </nextSharedLoc>
-		...</ T >
-		< files >
+		...</T>
+		<files>
 			<fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
 			<file>...
 				<fid> 0 </fid>
@@ -203,8 +203,8 @@ If they are declared, the parameters to the main function shall obey the followi
 				<uri> "stdout:/" +String "/" +String "/" </uri>
 				<mode> "w" </mode>
 			...</file>
-		</ files >
-		< xmessages > .K </ xmessages >
+		</files>
+		<xmessages> .K </xmessages>
 		[structural]
 
 /*@ \source{C99 5.1.2.2.1:1}
@@ -217,11 +217,11 @@ or equivalent;9) or in some other implementation-defined manner
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	
-	rule < k > callMain(N:Nat, X:Id, Args:K)
+	rule <k> callMain(N:Nat, X:Id, Args:K)
 			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
-		...</ k >
-		< functionTranslationUnits >... Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) ...</ functionTranslationUnits >
-		< currentTranslationUnit > _ => Tu:K </ currentTranslationUnit >
+		...</k>
+		<functionTranslationUnits>... Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) ...</functionTranslationUnits>
+		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
 		[structural]
 	
 	// FIXME i think these are slightly different
@@ -248,12 +248,12 @@ or equivalent;9) or in some other implementation-defined manner
 	// fixme I'm not sure threads clean up their memory
 	
 	rule [terminate]:
-		(< T >... < threads >... < thread >... 
-			< threadId > 1 </ threadId > // main's thread, not the global "thread"
-			< k > V:KResult </ k >
-		...</ thread > ...</ threads > ...</ T >
-			=> < resultValue > V:KResult </ resultValue >)
-		< files >...
+		(<T>... <threads>... <thread>... 
+			<threadId> 1 </threadId> // main's thread, not the global "thread"
+			<k> V:KResult </k>
+		...</thread> ...</threads> ...</T>
+			=> <resultValue> V:KResult </resultValue>)
+		<files>...
 			<fileCommands> _ => .K </fileCommands> // to prevent further io commands from firing
 			<file>... // stdout
 				<fid> 1 </fid>
@@ -261,8 +261,8 @@ or equivalent;9) or in some other implementation-defined manner
 				<sending> L:List </sending>
 				<done> ListItem(S2:String) </done>
 			...</file>
-		...</ files >
+		...</files>
 		(.Bag =>
-			< output > S2:String +String listToString(L:List) +String S2'':String </ output >
+			<output> S2:String +String listToString(L:List) +String S2'':String </output>
 		)		
 end module

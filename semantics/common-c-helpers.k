@@ -161,20 +161,20 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
-		< k > extractField(L:List{K}, 't(_,, L:KLabel(S:Id)), F:Id)
+		<k> extractField(L:List{K}, 't(_,, L:KLabel(S:Id)), F:Id)
 			=> extractField-pre(L:List{K}, T:KResult, Offset:Nat, bitSizeofType(T:KResult)) 
-		...</ k >
-		< structs >... 
+		...</k>
+		<structs>... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat)) 
-		...</ structs >
+		...</structs>
 		when L:KLabel ==KLabel 'unionType
 		orBool L:KLabel ==KLabel 'structType
 		[structural]
 
 	rule
-		< k > extractField-pre(L:List{K}, T:KResult, Offset:Nat, tv(Len:Nat, _))
+		<k> extractField-pre(L:List{K}, T:KResult, Offset:Nat, tv(Len:Nat, _))
 			=> concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Nat, Len:Nat)))
-		...</ k >
+		...</k>
 		[structural]
 	
 	define isConcreteNumber(loc(_:Nat, _:Nat, _:Nat)) => false
@@ -191,7 +191,7 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		// [structural]
 	
 	rule [discard]:
-		< k > V:KResult ~> discard => .K ...</ k >
+		<k> V:KResult ~> discard => .K ...</k>
 		[structural]
 	
 	//- derived
@@ -284,22 +284,22 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	syntax Value ::= "str" "(" String ")" [klabel(str)]
 	
 	rule [getString-pre]:
-		< k > (.K => read(Loc:Nat, t(.Set, char)))
+		<k> (.K => read(Loc:Nat, t(.Set, char)))
 			~> getString-aux(tv((Loc:Nat => Loc:Nat +Int 1), _), S:String)
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule [getString]:
-		< k > tv(N:Nat, _) 
+		<k> tv(N:Nat, _) 
 			~> getString-aux(tv(Loc:Nat, _), S:String)
 			=> getString-aux(tv(Loc:Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Nat))
-		...</ k >
+		...</k>
 		when N:Nat =/=Int 0
 		[structural]
 	rule [getString-done]:
-		< k > tv(0, _) ~> getString-aux(tv(Loc:Nat, _), S:String)
+		<k> tv(0, _) ~> getString-aux(tv(Loc:Nat, _), S:String)
 			=> str(S:String)
-		...</ k >
+		...</k>
 		[structural]
 		
 	// writeString and writeWString expect the user to add the '\0' to the end of the strings passed
@@ -307,26 +307,26 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	syntax K ::= "writeWString" "(" K "," List{K} ")" [strict(1) klabel(writeWString)]
 
 	rule [write-string]:
-		< k > writeString(tv(Loc:Nat, T:KResult), S:String)
+		<k> writeString(tv(Loc:Nat, T:KResult), S:String)
 			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(t(.Set, char))))) 
 				:= tv(charToAscii(firstChar(S:String)), t(.Set, char)))
 			~> writeString(tv(Loc:Nat +Int 1, T:KResult), butFirstChar(S:String))
-		...</ k >
+		...</k>
 		when S:String =/=String ""
 		[structural]
 	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
-		< k > writeWString(tv(Loc:Nat, T:KResult), (N:Nat,, S:List{K}))
+		<k> writeWString(tv(Loc:Nat, T:KResult), (N:Nat,, S:List{K}))
 			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(cfg:wcharut)))) 
 				:= tv(N:Nat, cfg:wcharut))
 			~> writeWString(tv(Loc:Nat +Int 4, T:KResult), S:List{K})
-		...</ k >
+		...</k>
 		[structural] 
 	rule [write-empty-string]:
-		< k > writeString(_, "") => .K ...</ k >
+		<k> writeString(_, "") => .K ...</k>
 		[structural]
 	rule [write-empty-wstring]:
-		< k > writeWString(_, .List{K}) => .K ...</ k >
+		<k> writeWString(_, .List{K}) => .K ...</k>
 		[structural]
 		
 	
@@ -480,18 +480,18 @@ module COMMON-C-BITSIZE is
 	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Nat ")" [klabel(maxBitSizeofList-aux)] 
 	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
 	rule
-		< k > maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Nat)
+		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Nat)
 			=> bitSizeofType(T:KResult) 
 			~> maxBitSizeofList-aux(L:List{KResult}, N:Nat) 
-		...</ k >
+		...</k>
 		[structural] 
 	rule
-		< k > (tv(N':Nat, _) => .) 
+		<k> (tv(N':Nat, _) => .) 
 			~> maxBitSizeofList-aux(L:List{KResult}, (N:Nat => maxInt(N:Nat, N':Nat))) 
-		...</ k >
+		...</k>
 		[structural] 
 	rule
-		< k > maxBitSizeofList-aux(.List{K}, N:Nat) => tv(N:Nat, cfg:largestUnsigned) ...</ k >
+		<k> maxBitSizeofList-aux(.List{K}, N:Nat) => tv(N:Nat, cfg:largestUnsigned) ...</k>
 		[structural] 
 	
 	rule bitSizeofType(t(_, arrayType(T:KResult, N:Nat))) => bitSizeofType(T:KResult) * tv(N:Nat, cfg:largestUnsigned) [structural anywhere]
@@ -504,12 +504,12 @@ module COMMON-C-BITSIZE is
 	rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural anywhere]
 
 	rule
-		< k > bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:List{KResult}) ...</ k >
-		< structs >... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</ structs >
+		<k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:List{KResult}) ...</k>
+		<structs>... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</structs>
 		[structural] 
 	rule
-		< k > bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:List{KResult}) ...</ k >
-		< structs >... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</ structs >
+		<k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:List{KResult}) ...</k>
+		<structs>... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</structs>
 		[structural]
 		
 	// define K2Nat(N:Nat) => N:Nat

@@ -22,14 +22,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	context nextvarg-aux(_, _, _, value(HOLE))
 	
 	rule [nextvarg-start]:
-		< k > nextvarg(Loc:Nat, T:KResult)
+		<k> nextvarg(Loc:Nat, T:KResult)
 			=> nextvarg-aux(Loc:Nat, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc:Nat)))
-		...</ k >
+		...</k>
 		[structural]
 	rule [nextvarg]:
-		< k > nextvarg-aux(Loc:Nat, T:KResult, Len:Nat, Len:Nat)
+		<k> nextvarg-aux(Loc:Nat, T:KResult, Len:Nat, Len:Nat)
 			=> vpair(read(Loc:Nat, T:KResult), vararg(tv(inc(Loc:Nat), t(.Set, pointerType(t(.Set, void))))))
-		...</ k >
+		...</k>
 		[structural]
 	
 
@@ -63,20 +63,20 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 		[structural]
 		
 	rule [prepareBuiltin]:
-		< k > handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:List{KResult})))
+		<k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:List{KResult})))
 			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{KResult})))
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule
-		< k > printString(S:String)
+		<k> printString(S:String)
 			=> writeToFD(1, asciiCharString(firstChar(S:String)))
 			~> printString(butFirstChar(S:String))
-		...</ k >
+		...</k>
 		when lengthString(S:String) >Int 0
 		[structural]
 	rule
-		< k > printString("") => writeToFD(1, 10) ...</ k >
+		<k> printString("") => writeToFD(1, 10) ...</k>
 		[structural]
 end module
 
@@ -84,69 +84,69 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [sqrt]:
-		< k > prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
 			=> tv(sqrtFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [log]:
-		< k > prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
 			=> tv(logFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [exp]:
-		< k > prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
 			=> tv(expFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [atan]:
-		< k > prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
 			=> tv(atanFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [asin]:
-		< k > prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
 			=> tv(asinFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [atan2]:
-		< k > prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+		<k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
 			=> tv(atan2Float(F:Float, F':Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [tan]:
-		< k > prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
 			=> tv(tanFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 	[structural]
 
 	rule [floor]:
-		< k > prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
 			=> tv(floorFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [cos]:
-		< k > prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
 			=> tv(cosFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [fmod]:
-		< k > prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+		<k> prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
 			=> tv(F:Float %Float F':Float, t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [sin]:
-		< k > prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
+		<k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
 			=> tv(sinFloat(F:Float), t(.Set, double))
-		...</ k >
+		...</k>
 		[structural]
 
 end module
@@ -163,45 +163,45 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 	
 	// there seems to be a problem here related to locals.  what if longjmp is never called?
 	rule [ignoreLocals]:
-		< k > ignoreLocals => .K ...</ k >
-		< localAddresses > Locals:Set => .Set </ localAddresses >
+		<k> ignoreLocals => .K ...</k>
+		<localAddresses> Locals:Set => .Set </localAddresses>
 		[structural]
 	
 	// fixme doesn't check if loc:Nat is const
 	rule [setjmp]:
-		< k > (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
+		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
 			=> ignoreLocals
 				~> writeByte(Loc:Nat, Bag(
 					C:Bag
-					< continuation > K:K </ continuation >
+					<continuation> K:K </continuation>
 				))
 				~> tv(0, t(.Set, int))
 			)
 			~> K:K
-		</ k >
-		< threadLocal >
+		</k>
+		<threadLocal>
 			C:Bag
-		</ threadLocal >
+		</threadLocal>
 		[structural]
 
 	syntax K ::= "longjmp-aux" "(" K "," K ")" [strict klabel(longjmp-aux)]
 	rule [longjmp-prepare]:
-		< k > prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
+		<k> prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
 			=> longjmp-aux(reval(*(V:KResult)), V':KResult)
-		...</ k >
+		...</k>
 		[structural]
 	
 	// fixme: memory leak here with extra ignoreLocals.  needed for recursive setjmp/longjmp as in Looping.c
 	rule [longjmp]:
-		< k > longjmp-aux(tv(Bag(
-					< continuation > K:K </ continuation >
+		<k> longjmp-aux(tv(Bag(
+					<continuation> K:K </continuation>
 					C:Bag
 			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
 			=> ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
-		</ k >
-		< threadLocal >
+		</k>
+		<threadLocal>
 			_ => C:Bag
-		</ threadLocal >
+		</threadLocal>
 		[structural]
 end module
 
@@ -220,10 +220,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	// fixme can add lots of checks here
 	// tool fixme, change Value to K and unquote error
 	rule [va-start]:
-		< k > prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
+		<k> prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
 				=> Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
 				~> skipval
-		...</ k >
+		...</k>
 		[structural]
 	
 	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" [klabel(va-inc-aux)] // [strict(3)]
@@ -232,44 +232,44 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	
 	// this doesn't work because when we read apLoc, the object has already changed
 	rule
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+		<k> prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
 				=> Computation(*(ApLoc:KResult) := incSymbolic(ApLoc:KResult))
 				~> ApLoc:KResult
-		...</ k >
+		...</k>
 		[structural]
 	
 	rule [va-inc-start]:
-		< k > prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+		<k> prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
 				=> va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
-		...</ k >
+		...</k>
 		[structural]
 				
 	rule [va-inc]:
-		< k > va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
+		<k> va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
 			=> Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
 			~> Ap:KResult
-		...</ k >
+		...</k>
 		[structural]				
 		
 	// fixme can do lots of checks here too
 	rule [va-copy]:
-		< k > prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
+		<k> prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
 				=> Computation(*(ApLoc:KResult) := Other:KResult)
 				~> skipval
-		...</ k >
+		...</k>
 		[structural]
 		
 	// fixme can do lots of checks here too
 	// tool fixme, shouldn't let me compile empty rule
 	// rule
-		// < k > prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
+		// <k> prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
 				// ~> skipval
-		// ...</ k >
+		// ...</k>
 		// [structural]
 	rule [va-end]:
-		< k > prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
+		<k> prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
 				=> skipval
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -278,18 +278,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 
 	syntax K ::= "offsetOf" "(" K "," K ")" [strict(1) klabel(offsetOf)]
 	rule
-		< k > OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</ k >
+		<k> OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</k>
 		[structural]
 	// fixme should check for bitfield offset
 	rule
-		< k > offsetOf(t(_, structType(S:Id)), F:Id)
+		<k> offsetOf(t(_, structType(S:Id)), F:Id)
 			=> tv(bitsToBytes(Offset:Nat), cfg:sizeut)
-		...</ k >
-		< structs >...
+		...</k>
+		<structs>...
 			S:Id |-> aggregateInfo(_, _, (_ F:Id |-> Offset:Nat))
-		...</ structs >
+		...</structs>
 		[structural]
-	rule < k > offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</ k >
+	rule <k> offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</k>
 		[structural]
 end module
 
@@ -298,59 +298,59 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	rule [putchar]:
-		< k > prepareBuiltin((Identifier("putchar")), tv(N:Nat, _))
+		<k> prepareBuiltin((Identifier("putchar")), tv(N:Nat, _))
 			=> writeToFD(1, N:Nat) 
 			~> tv(N:Nat, t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [fslPutc]:
-		< k > prepareBuiltin((Identifier("__fslPutc")), (tv(N:Nat, _),, tv(H:Nat, _)))
+		<k> prepareBuiltin((Identifier("__fslPutc")), (tv(N:Nat, _),, tv(H:Nat, _)))
 			=> writeToFD(H:Nat, N:Nat)
 			~> tv(N:Nat, t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [getchar]:
-		< k > prepareBuiltin((Identifier("getchar")), .List{K}) 
+		<k> prepareBuiltin((Identifier("getchar")), .List{K}) 
 			=> flush(1)
 			~> readFromFD(0) 
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [fslFGetC]:
-		< k > prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Nat, _),, tv(Offset:Nat, _)))
+		<k> prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Nat, _),, tv(Offset:Nat, _)))
 			=> readFromFD(FD:Nat)
 			// => #fReadByte(FD:Nat)
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [fslCloseFile]:
-		< k > prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Nat, t(_, int))) 
+		<k> prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Nat, t(_, int))) 
 			=> tv(0, t(.Set, int))
-		...</ k >
-		(< file >... < fid > FD:Nat </ fid > ...</ file > => .Bag)
+		...</k>
+		(<file>... <fid> FD:Nat </fid> ...</file> => .Bag)
 		[structural]
 
 	rule [fslOpenFile-pre]:
-		< k > prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
+		<k> prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
 			=> fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
-		...</ k >
+		...</k>
 		[structural]
 	
 	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3) klabel(fsl-open-file-aux)]
 	
 	rule [fslOpenFile-aux]:
-		< k > fsl-open-file(str(Filename:String), str(Mode:String))
+		<k> fsl-open-file(str(Filename:String), str(Mode:String))
 			=> fsl-open-file-aux("file:" +String Filename:String, Mode:String, #open("file:" +String Filename:String +String "#" +String Mode:String))
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [fslOpenFile]:
-		< k > fsl-open-file-aux(Name:String, Mode:String, tv(FD:Nat, _)) 
+		<k> fsl-open-file-aux(Name:String, Mode:String, tv(FD:Nat, _)) 
 			=> tv(FD:Nat, t(.Set, int)) 
-		...</ k >
-		< files >...
+		...</k>
+		<files>...
 			(.Bag => 
 				<file>...
 					<fid> FD:Nat </fid>
@@ -358,7 +358,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 					<mode> Mode:String </mode>
 				...</file>
 			)
-		...</ files >
+		...</files>
 		[structural]
 
 	syntax K ::= "fsl-open-file" "(" K "," K ")" [strict klabel(fsl-open-file)]
@@ -370,55 +370,55 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	// on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
 	// fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
 	rule [printf]:
-		< k > prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
+		<k> prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
 			=> new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
-		...</ k >
+		...</k>
 		[structural]
 		
 	// rule [printf-done]:
-		// < k > tv(0, _) ~> printf-aux(Len:Nat, _, _) 
+		// <k> tv(0, _) ~> printf-aux(Len:Nat, _, _) 
 			// => flush(1)
 			// ~> tv(Len:Nat, t(.Set, int)) 
-		// ...</ k >
+		// ...</k>
 		// [structural]
 	rule [printf-done]:
-		< k > new-printf-aux(formattedResult(S:String))
+		<k> new-printf-aux(formattedResult(S:String))
 			=> writeToFD(1, S:String)
 			~> flush(1)
 			~> tv(lengthString(S:String), t(.Set, int)) 
-		...</ k >
+		...</k>
 		[structural]
 	
 	syntax K ::= "sprintf" "(" K "," K ")" [strict(1) klabel(sprintf)]
 	rule [sprintf]:
-		< k > prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
+		<k> prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
 			=> sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
-		...</ k >
+		...</k>
 		[structural]
 	rule [sprintf-done]:
-		< k > sprintf(formattedResult(S:String), Dest:KResult)
+		<k> sprintf(formattedResult(S:String), Dest:KResult)
 			=> writeString(Dest:KResult, S:String +String "\0")
 			~> tv(lengthString(S:String), t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 	
 	syntax K ::= "snprintf" "(" K "," K "," Nat ")" [strict(1) klabel(snprintf)]
 	rule [snprintf]:
-		< k > prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Nat, _),, Format:KResult,, VarArgs:KResult))
+		<k> prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Nat, _),, Format:KResult,, VarArgs:KResult))
 			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Nat)
-		...</ k >
+		...</k>
 		[structural]
 	rule [snprintf-done-nz]:
-		< k > snprintf(formattedResult(S:String), Dest:KResult, Len:Nat)
+		<k> snprintf(formattedResult(S:String), Dest:KResult, Len:Nat)
 			=> writeString(Dest:KResult, substrString(S:String, 0, Len:Nat -Int 1) +String "\0")
 			~> tv(lengthString(S:String), t(.Set, int))
-		...</ k >
+		...</k>
 		when Len:Nat >Int 0
 		[structural]
 	rule [snprintf-done-0]:
-		< k > snprintf(formattedResult(S:String), _, 0)
+		<k> snprintf(formattedResult(S:String), _, 0)
 			=> tv(lengthString(S:String), t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 	
 	syntax K ::= "new-printf-aux" "(" K ")" [strict klabel(new-printf-aux)]
@@ -427,23 +427,23 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	syntax K ::= "formatter-next" "(" K ")" [klabel(formatter-next)]
 	syntax K ::= "formatter-arg" "(" K ")" [strict(1) klabel(formatter-arg)]
 	rule 
-		< k > formatter-next(vararg(tv(Loc:Nat, _)))
+		<k> formatter-next(vararg(tv(Loc:Nat, _)))
 			=> formatter-arg(nextvarg(Loc:Nat, getFormatType))
-		...</ k >
+		...</k>
 		[structural]
 	rule 
-		< k > formatter-arg(vpair(tv(K:K, _), V':KResult))
+		<k> formatter-arg(vpair(tv(K:K, _), V':KResult))
 			=> formatter-aux(V':KResult)
-		...</ k >
+		...</k>
 		<formatArg> _ => K:K </formatArg>
 		[structural]
 
 	
 	
 	rule [format-start]:
-		< k > formatter(str(S:String), VarArgs:KResult)
+		<k> formatter(str(S:String), VarArgs:KResult)
 			=> formatter-aux(VarArgs:KResult)
-		...</ k >
+		...</k>
 		(.Bag => 
 			<formatting>...
 				<format> stringToList(S:String) </format>
@@ -454,9 +454,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	syntax Value ::= "formattedResult" "(" K ")" [klabel(formattedResult)]
 	
 	rule [format-done]:
-		< k > formatter-aux(_) 
+		<k> formatter-aux(_) 
 			=> formattedResult(listToString(Result:List))
-		...</ k >
+		...</k>
 		(
 			<formatting>...
 				<format> .List </format>
@@ -469,7 +469,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [format-normal]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem(S:String) => .List ...</format>
 		<formatResult>... .List => ListItem(S:String) </formatResult>
 		<formatState> "normal" </formatState>
@@ -477,14 +477,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 		
 	rule [format-reset]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatModifiers> _ => .Map </formatModifiers>
 		<formatLength> _ => "" </formatLength>
 		<formatState> "reset" => "normal" </formatState>
 		[structural]
 
 	rule [format-%]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem("%") => .List ...</format>
 		<formatState> "normal" => "%" </formatState>
 		[structural]
@@ -525,14 +525,14 @@ For other conversions, the behavior is undefined.
 
 	// fixme ignoring 0 flag for now
 	rule [format-%0]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem("0") => .List ...</format>
 		<formatState> "%" </formatState>
 		[structural]
 		
 	// ignoring num width
 	rule [format-width]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem(C:Char) => .List ...</format>
 		<formatState> "%" </formatState>
 		when charToAscii(C:Char) >Int asciiCharString("0")
@@ -613,15 +613,15 @@ The \cinline{int} argument is converted to signed decimal in the style \emph{[-]
 \end{description}
 	*/
 	rule [format-%d-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem(S:String) => .List ...</format>
 		<formatState> "%" => "%d" </formatState>
 		when S:String ==String "d" orBool S:String ==String "i"
 		[structural]
 	rule [format-%d]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(Rat2String(D:Int, 10)) </formatResult>
 		<formatState> "%d" => "reset" </formatState>
@@ -634,53 +634,53 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 \end{description}
 	*/
 	rule [format-%o-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("o") => .List ...</format>
 		<formatState> "%" => "%o" </formatState>
 		[structural]
 	rule [format-%o]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
 		<formatState> "%o" => "reset" </formatState>
 		[structural]
 	rule [format-%u-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("u") => .List ...</format>
 		<formatState> "%" => "%u" </formatState>
 		[structural]
 	rule [format-%u]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(Rat2String(D:Int, 10)) </formatResult>
 		<formatState> "%u" => "reset" </formatState>
 		[structural]
 	rule [format-%x-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("x") => .List ...</format>
 		<formatState> "%" => "%x" </formatState>
 		[structural]
 	rule [format-%x]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
 		<formatState> "%x" => "reset" </formatState>
 		[structural]
 	rule [format-%X-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("X") => .List ...</format>
 		<formatState> "%" => "%X" </formatState>
 		[structural]
 	rule [format-%X]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
 		<formatState> "%X" => "reset" </formatState>
@@ -695,27 +695,27 @@ A \cinline{double} argument representing an infinity is converted in one of the 
 \end{description}
 	*/
 	rule [format-%f-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("f") => .List ...</format>
 		<formatState> "%" => "%f" </formatState>
 		[structural]
 	rule [format-%f]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Float => .K </formatArg>
 		<formatResult>... .List => ListItem(Float2String(D:Float)) </formatResult>
 		<formatState> "%f" => "reset" </formatState>
 		[structural]
 	rule [format-%F-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("F") => .List ...</format>
 		<formatState> "%" => "%F" </formatState>
 		[structural]
 	rule [format-%F]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Float => .K </formatArg>
 		<formatResult>... .List => ListItem(toUpperCase(Float2String(D:Float))) </formatResult>
 		<formatState> "%F" => "reset" </formatState>
@@ -744,27 +744,27 @@ A \cinline{double} argument representing an infinity or NaN is converted in the 
 \end{description}
 	*/
 	rule [format-%g-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("g") => .List ...</format>
 		<formatState> "%" => "%g" </formatState>
 		[structural]
 	rule [format-%g]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Float => .K </formatArg>
 		<formatResult>... .List => ListItem(Float2String(D:Float)) </formatResult>
 		<formatState> "%g" => "reset" </formatState>
 		[structural]
 	rule [format-%G-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("G") => .List ...</format>
 		<formatState> "%" => "%G" </formatState>
 		[structural]
 	rule [format-%G]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Float => .K </formatArg>
 		<formatResult>... .List => ListItem(toUpperCase(Float2String(D:Float))) </formatResult>
 		<formatState> "%G" => "reset" </formatState>
@@ -785,21 +785,21 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 \end{description}
 	*/
 	rule [format-%c-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
-		...</ k >
+		...</k>
 		<format> ListItem("c") => .List ...</format>
 		<formatState> "%" => "%c" </formatState>
 		[structural]
 	// // need to cast to unsigned-char
 	// rule [printf-%c]:
-		// < k > printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, t(_, int)), V:KResult),, _))
+		// <k> printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, t(_, int)), V:KResult),, _))
 			// => writeToFD(1, C:Nat)
 			// ~> printf-aux(Len:Nat +Int 1, Loc:Nat, V:KResult)
-		// ...</ k >
+		// ...</k>
 		// [structural]
 	rule [format-%c]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> C:Int => .K </formatArg>
 		<formatResult>... .List => ListItem(charString(((C:Int %Int 256) +Int 256) %Int 256)) </formatResult>
 		<formatState> "%c" => "reset" </formatState>
@@ -814,23 +814,23 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
 \end{description}
 	*/
 	rule [format-%s-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)		
-		...</ k >
+		...</k>
 		<format> ListItem("s") => .List ...</format>
 		<formatState> "%" => "%s" </formatState>
 		[structural]
 	rule [format-%s]:
-		< k > (.K => getString(Loc:Nat))
+		<k> (.K => getString(Loc:Nat))
 			~> formatter-aux(_)
-		...</ k >
+		...</k>
 		<formatArg> Loc:Nat => .K </formatArg>
 		<formatState> "%s" => "%s-read" </formatState>
 		[structural]
 	rule [format-%s-done]:
-		< k > (str(S:String) => .K)
+		<k> (str(S:String) => .K)
 			~> formatter-aux(_)
-		...</ k >
+		...</k>
 		<formatResult>... .List => ListItem(S:String) </formatResult>
 		<formatState> "%s-read" => "reset" </formatState>
 		[structural]
@@ -842,14 +842,14 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
 \end{description}
 	*/
 	rule [format-%p-start]:
-		< k > formatter-aux(V:KResult)
+		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)		
-		...</ k >
+		...</k>
 		<format> ListItem("p") => .List ...</format>
 		<formatState> "%" => "%p" </formatState>
 		[structural]
 	rule [format-%p]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<formatArg> Loc:Nat => .K </formatArg>
 		<formatResult>... .List => ListItem(pointerToString(Loc:Nat)) </formatResult>
 		<formatState> "%p" => "reset" </formatState>
@@ -869,14 +869,14 @@ A \texttt{\%} character is written. No argument is converted. The complete conve
 \end{description}
 	*/
 	rule [format-%%]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem("%") => .List ...</format>
 		<formatResult>... .List => ListItem("%") </formatResult>
 		<formatState> "%" => "reset" </formatState>
 		[structural]
 
 	rule [format-%l]:
-		< k > formatter-aux(_) ...</ k >
+		<k> formatter-aux(_) ...</k>
 		<format> ListItem("l") => .List ...</format>
 		<formatState> "%" </formatState>
 		<formatLength> Length:String => Length:String +String "l" </formatLength>
@@ -888,26 +888,26 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [debug]:
-		< k > prepareBuiltin(Identifier("__debug"), _) => skipval ...</ k >
+		<k> prepareBuiltin(Identifier("__debug"), _) => skipval ...</k>
 		[interpRule]
 	rule [debug-k]:
-		< k > debug => .K ...</ k >
+		<k> debug => .K ...</k>
 		[interpRule]
 	rule [debug-m]:
-		< k > debug-m(_) => .K ...</ k >
+		<k> debug-m(_) => .K ...</k>
 		[interpRule]
 	
 	rule [exit]:
-		< k > prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _ 
+		<k> prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _ 
 			=> tv(I:Int, t(.Set, int)) 
-		</ k >
+		</k>
 		[structural]
 
 	rule [abort]:
-		< k > prepareBuiltin((Identifier("abort")), .List{K}) ~> _
+		<k> prepareBuiltin((Identifier("abort")), .List{K}) ~> _
 			=> printString("Aborted")
 			~> tv(134, t(.Set, int))
-		</ k >
+		</k>
 	
 	/*@ \source[n1570]{\para{7.22.3.4}{2--3}}
 	The \cinline{malloc} function allocates space for an object whose size is specified by \cinline{size} and whose value is indeterminate.
@@ -915,19 +915,19 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 The malloc function returns either a null pointer or a pointer to the allocated space.
 	*/
 	rule [malloc]:
-		< k > prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
+		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
 			=> alloc(Loc, Len:Nat)
 			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
-		...</ k >
-		< malloced >... .Map => Loc |-> Len:Nat ...</ malloced >
-		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
+		...</k>
+		<malloced>... .Map => Loc |-> Len:Nat ...</malloced>
+		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
 		where Loc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
 		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
-		// < k > prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
+		// <k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
 			// => tv(NullPointer, t(.Set, pointerType(void)))
-		// ...</ k >
+		// ...</k>
 		// [structural]
 		
 	/*@ \source[n1570]{\para{7.22.3.5}{2--4}}
@@ -938,57 +938,57 @@ If \cinline|ptr| is a null pointer, the \cinline|realloc| function behaves like 
 The \cinline|realloc| function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
 	*/
 	rule [realloc]:
-		< k > prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Nat, _),, tv(NewLen:Nat, T:KResult)))
+		<k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Nat, _),, tv(NewLen:Nat, T:KResult)))
 			=> realloc(OldLoc:Nat, NewLoc, OldLen:Nat, NewLen:Nat)
 			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
-		...</ k >
-		< malloced >... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</ malloced >
-		< freshNat > Fresh:Nat => Fresh:Nat +Int 1 </ freshNat >
+		...</k>
+		<malloced>... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</malloced>
+		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
 		when OldLoc:Nat =/=K NullPointer
 		where NewLoc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
 		[structural]
 	rule [realloc-null]:
-		< k > prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
+		<k> prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
 			=> prepareBuiltin((Identifier("malloc")), Len:KResult)
-		...</ k >
+		...</k>
 		[structural]
 
 	syntax K ::= "calloc-aux" [klabel(calloc-aux)]
 	rule [calloc]:
-		< k > prepareBuiltin((Identifier("calloc")), (tv(N:Nat, _),, tv(Size:Nat, _)))
+		<k> prepareBuiltin((Identifier("calloc")), (tv(N:Nat, _),, tv(Size:Nat, _)))
 			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Int Size:Nat, cfg:sizeut))
 			~> calloc-aux
-		...</ k >
+		...</k>
 		[structural]
 	rule [calloc-aux]:
-		< k > (.K => zeroBlock(Loc:Nat)) 
+		<k> (.K => zeroBlock(Loc:Nat)) 
 			~> tv(Loc:Nat, t(_, pointerType(t(_, void))))
 			~> (calloc-aux => .K)
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [free]:
-		< k > prepareBuiltin((Identifier("free")), tv(Loc:Nat, t(_, pointerType(_))))
+		<k> prepareBuiltin((Identifier("free")), tv(Loc:Nat, t(_, pointerType(_))))
 			=> deleteSizedBlock(Loc:Nat, Len:Nat) 
 			~> skipval
-		...</ k >
-		< malloced >... Loc:Nat |-> Len:Nat => .Map ...</ malloced >
+		...</k>
+		<malloced>... Loc:Nat |-> Len:Nat => .Map ...</malloced>
 		[structural]
 		
 	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	// fixme should use RAND_MAX
 	rule [rand]:
-		< k > prepareBuiltin((Identifier("rand")), .List{K})
+		<k> prepareBuiltin((Identifier("rand")), .List{K})
 			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(t(.Set, int)), t(.Set, int))
-		...</ k >
-		< randNat > Fresh:Nat => Fresh:Nat +Int 1 </ randNat >
+		...</k>
+		<randNat> Fresh:Nat => Fresh:Nat +Int 1 </randNat>
 		[structural]
 		
 	rule [srand]:
-		< k > prepareBuiltin((Identifier("srand")), tv(N:Nat, t(.Set, unsigned-int)))
+		<k> prepareBuiltin((Identifier("srand")), tv(N:Nat, t(.Set, unsigned-int)))
 			=> skipval
-		...</ k >
-		< randNat > _ => N:Nat </ randNat >
+		...</k>
+		<randNat> _ => N:Nat </randNat>
 		[structural]
 
 
@@ -1000,28 +1000,28 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	// fixme should detect overlaps
 	syntax K ::= "strcpy" "(" K "," K "," K ")" [klabel(strcpy)]
 	rule [strcpy-start]:
-		< k > prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(_, pointerType(_))),, tv(Src:Nat, t(_, pointerType(_)))))
+		<k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(_, pointerType(_))),, tv(Src:Nat, t(_, pointerType(_)))))
 			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule [strcpy-pre]:
-		< k > (.K => read(Src:Nat, t(.Set, char)))
+		<k> (.K => read(Src:Nat, t(.Set, char)))
 			~> strcpy(_, (Src:Nat => Src:Nat +Int 1), _)
-		...</ k >
+		...</k>
 		[structural]
 	
 	rule [strcpy-some]:
-		< k > (tv(I:Int, T:KResult) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:KResult)))
+		<k> (tv(I:Int, T:KResult) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:KResult)))
 			~> strcpy((Dest:Nat => Dest:Nat +Int 1), _, _)
-		...</ k >
+		...</k>
 		when I:Int =/=Int 0
 		[structural]
 	rule [strcpy-done]:
-		< k > tv(0, T:KResult) ~> strcpy(Dest:Nat, _, Orig:Nat)
+		<k> tv(0, T:KResult) ~> strcpy(Dest:Nat, _, Orig:Nat)
 			=> write(lv(Dest:Nat, t(.Set, char)), tv(0, T:KResult)) 
 			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -1045,103 +1045,103 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	syntax K ::= "spawn-aux" "(" Nat "," Value "," Value ")" [klabel(spawn-aux)]
 	// threadId(MyId:Nat, Fresh:Nat)
 	rule [thrd-create-start]:
-		< k > prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
+		<k> prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
 			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:Nat, t(.Set, int)))
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
-		...</ k >
+		...</k>
 		<threadId> MyId:Nat </threadId>
-		< nextThreadId > Fresh:Nat => Fresh:Nat +Int 1 </ nextThreadId >
+		<nextThreadId> Fresh:Nat => Fresh:Nat +Int 1 </nextThreadId>
 		[structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 */
 		
 	rule [thrd-create]:
-		< thread >
-			< nextLoc > _:Nat </ nextLoc >
-			< threadId > _:Nat </ threadId >
+		<thread>
+			<nextLoc> _:Nat </nextLoc>
+			<threadId> _:Nat </threadId>
 			C:Bag
-			< k > spawn-aux(ThreadId:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</ k >
-			< threadLocal >
-				< callStack > _:List </ callStack >
+			<k> spawn-aux(ThreadId:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
+			<threadLocal>
+				<callStack> _:List </callStack>
 				C'':Bag // just calculateGoto I think
-				< control >
+				<control>
 					C':Bag
-				</ control >
-			</ threadLocal >
-		</ thread >
+				</control>
+			</threadLocal>
+		</thread>
 		(.Bag =>
-		< thread >
-			< nextLoc > loc(threadId(ThreadId:Nat) +Int 0, 0, 0) </ nextLoc >
-			< threadId > ThreadId:Nat </ threadId >
+		<thread>
+			<nextLoc> loc(threadId(ThreadId:Nat) +Int 0, 0, 0) </nextLoc>
+			<threadId> ThreadId:Nat </threadId>
 			C:Bag
-			< k > Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </ k >
-			< threadLocal >
-				< callStack > .List </ callStack >
-				< control >
+			<k> Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </k>
+			<threadLocal>
+				<callStack> .List </callStack>
+				<control>
 					C':Bag
-				</ control >
-			</ threadLocal >
-		</ thread >)
-		< threadStatus > Status:Map => Status:Map[threadRunning / ThreadId:Nat] </ threadStatus >
+				</control>
+			</threadLocal>
+		</thread>)
+		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Nat] </threadStatus>
 		[metadata "computational=()"]
 		
 	rule [thrd-current]:
-		< k > prepareBuiltin((Identifier("thrd_current")), .List{K})
+		<k> prepareBuiltin((Identifier("thrd_current")), .List{K})
 			=> tv(ThreadId:Nat, t(.Set, int))
-		...</ k >
-		< threadId > ThreadId:Nat </ threadId >
+		...</k>
+		<threadId> ThreadId:Nat </threadId>
 		[structural]
 		
 	syntax K ::= "join-aux" "(" Nat "," Value ")" [klabel(join-aux)]
 		
 	rule [thrd-join-start]:
-		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
+		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
 			=> join-aux(ThreadId:Nat, ResultPointer:KResult)
-		...</ k >
-		< threadId > MyId:Nat </ threadId >
-		< joiningMap > Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </ joiningMap >
-		< detachingMap > Detaching:Map </ detachingMap >
+		...</k>
+		<threadId> MyId:Nat </threadId>
+		<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
+		<detachingMap> Detaching:Map </detachingMap>
 		when notBool $hasMapping(Joining:Map, ThreadId:Nat)
 		andBool notBool $hasMapping(Detaching:Map, ThreadId:Nat)
 		[structural]
 	
 	rule [thrd-join-error]:
-		< k > prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
+		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
 			=> thrd-error
-		...</ k >
-		< joiningMap > Joining:Map </ joiningMap >
-		< detachingMap > Detaching:Map </ detachingMap >
+		...</k>
+		<joiningMap> Joining:Map </joiningMap>
+		<detachingMap> Detaching:Map </detachingMap>
 		when $hasMapping(Joining:Map, ThreadId:Nat)
 		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
 		[metadata "computational=()"]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd-join]:
-		< thread >...
-			< k > join-aux(ThreadId:Nat, ResultPointer:KResult)
+		<thread>...
+			<k> join-aux(ThreadId:Nat, ResultPointer:KResult)
 				=> Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:KResult))
 				~> thrd-success
-			...</ k >
-		...</ thread >
-		< thread >...
-			< k > V:KResult </ k >
-			< threadId > ThreadId:Nat </ threadId >
-		...</ thread >
+			...</k>
+		...</thread>
+		<thread>...
+			<k> V:KResult </k>
+			<threadId> ThreadId:Nat </threadId>
+		...</thread>
 		[metadata "computational=()"]
 
 	syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
 	rule [test-and-set-start]:
-		< k > prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
+		<k> prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
 			=> testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule [test-and-set]:
-		< k > testAndSet(Retval:KResult, Loc:KResult, V:KResult)
+		<k> testAndSet(Retval:KResult, Loc:KResult, V:KResult)
 			=> Computation((* Loc:KResult) := V:KResult)
 			~> Retval:KResult
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -1150,9 +1150,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-TIME is
 	
 	// fixme, just a placeholder
 	rule [time]:
-		< k > prepareBuiltin((Identifier("time")), _:KResult)
+		<k> prepareBuiltin((Identifier("time")), _:KResult)
 			=> tv(0, t(.Set, long-long-int))
-		...</ k >
+		...</k>
 		[structural]
 	
 end module

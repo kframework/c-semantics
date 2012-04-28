@@ -66,22 +66,22 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS is
 	
 	
 	rule
-		< k > giveType(X:Id, T:KResult) => 
+		<k> giveType(X:Id, T:KResult) => 
 			#if (Fun:Id ==K File-Scope) #then giveGlobalType(X:Id, unqualifyType(T:KResult)) #else giveLocalType(X:Id, unqualifyType(T:KResult)) #fi
-			...</ k >
-		< currentFunction > Fun:Id </ currentFunction >
+			...</k>
+		<currentFunction> Fun:Id </currentFunction>
 		// when notBool isStaticType(T:KResult)
 		[structural]
 		
 	rule
-		< k > giveGlobalType(X:Id, T:KResult) => .K ...</ k >
-		< types > M:Map => M:Map[T:KResult / X:Id] </ types >
-		< gtypes >... Tu:K |-> Map((M':Map => M':Map[T:KResult / X:Id])) ...</ gtypes >
-		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		<k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
+		<types> M:Map => M:Map[T:KResult / X:Id] </types>
+		<gtypes>... Tu:K |-> Map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
+		<currentTranslationUnit> Tu:K </currentTranslationUnit>
 		[structural]
 	rule
-		< k > giveLocalType(X:Id, T:KResult) => .K ...</ k >
-		< types > M:Map => M:Map[T:KResult / X:Id] </ types >
+		<k> giveLocalType(X:Id, T:KResult) => .K ...</k>
+		<types> M:Map => M:Map[T:KResult / X:Id] </types>
 		[structural]	
 end module
 
@@ -90,13 +90,13 @@ module COMMON-SEMANTICS-TYPE-STRICTNESS is
 
 	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
 	rule [type-Cast-heat]:
-		< k > (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</ k >
-		< type > Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</ type >
+		<k> (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</k>
+		<type> Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</type>
 		[structural]
 		
 	rule [type-Cast-cool]:
-		< k > (T:KResult => .) ~> evalToType ...</ k >
-		< type > waitingOnDeclType => T:KResult ...</ type >
+		<k> (T:KResult => .) ~> evalToType ...</k>
+		<type> waitingOnDeclType => T:KResult ...</type>
 		[structural]
 end module
 
@@ -108,52 +108,52 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 
 		
 	rule
-		< k > canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</ k >
+		<k> canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</k>
 		[structural]
 		
 
 	
 	rule
-		< k > (.K => DeclType(K1:K, K2:K))
+		<k> (.K => DeclType(K1:K, K2:K))
 			~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))), _, _, _, _) 
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > (.K => DeclType(K1:K, K2:K))
+		<k> (.K => DeclType(K1:K, K2:K))
 			~> canonicalizeType-aux((_:Bag BagItem(AlignasType(K1:K, K2:K))), _, _, _, _) 
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > (.K => typeof(K1:K))
+		<k> (.K => typeof(K1:K))
 			~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K1:K))), _, _, _, _) 
-		...</ k >
+		...</k>
 		[structural]
 		
 	syntax K ::= "atomic" "(" Type ")" [klabel(atomic)]
 	syntax K ::= "alignas" "(" Type ")" [klabel(alignas)]
 	
 	rule
-		< k > (T:KResult => .K)
+		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
-		...</ k >
+		...</k>
 			when 'isTypeResult(T:KResult)
 		[structural]
 	rule
-		< k > (T:KResult => .K)
+		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
-		...</ k >
+		...</k>
 			when 'isTypeResult(T:KResult)
 		[structural]
 	rule
-		< k > (T:KResult => .K)
+		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
-		...</ k >
+		...</k>
 			when 'isTypeResult(T:KResult)
 		[structural]
 		
 	// specifier, modifier, storage
 	rule
-		< k > canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, (_ (.Bag => BagItem(T:K))), _, _) ...</ k >
+		<k> canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, (_ (.Bag => BagItem(T:K))), _, _) ...</k>
 		when false
 		orBool (T:K ==K Void)
 		orBool (T:K ==K Bool)
@@ -178,7 +178,7 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural]
 
 	rule
-		< k > canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</ k >
+		<k> canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</k>
 		when T:K ==K Extern
 		orBool T:K ==K Static
 		orBool T:K ==K Const
@@ -191,7 +191,7 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural]
 		
 	rule
-		< k > canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</ k >
+		<k> canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
 		when Q:K ==K Extern
 		orBool Q:K ==K Static
 		orBool Q:K ==K Volatile
@@ -202,7 +202,7 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		orBool Q:K ==K ThreadLocal
 		[structural]
 	rule
-		< k > canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</ k >
+		<k> canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
 		when Q:K ==K Const
 		[structural]
 		
@@ -214,60 +214,60 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural anywhere]
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(Named(X:Id)))
+		<k> canonicalizeSpecifier(BagItem(Named(X:Id)))
 			=> t(.Set, typedefType(X:Id, T:KResult))
-		...</ k >
-		< types >... typedef(X:Id) |-> T:KResult ...</ types >
+		...</k>
+		<types>... typedef(X:Id) |-> T:KResult ...</types>
 		when X:Id =/=K Identifier("")
 		[structural]
 		
 	rule
-		< k > canonicalizeSpecifier(BagItem(StructRef(X:Id)))
+		<k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
 			=> t(.Set, structType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 	rule
-		< k > canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
+		<k> canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
 			=> t(.Set, enumType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 	rule
-		< k > canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
+		<k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
 			=> t(.Set, unionType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 		
 	rule
-		< k > canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
+		<k> canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
 			=> EnumDef(X:Id, L:K)
 			~> t(.Set, enumType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, _)))) ...</ k >
-		< freshNat > N:Nat => N:Nat +Int 1 </ freshNat >
+		<k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, _)))) ...</k>
+		<freshNat> N:Nat => N:Nat +Int 1 </freshNat>
 		when L:KLabel ==KLabel 'StructDef
 		orBool L:KLabel ==KLabel 'EnumDef
 		orBool L:KLabel ==KLabel 'UnionDef
 		[structural]
 	
 	rule
-		< k > canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
+		<k> canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
 			=> StructDef(X:Id, L:K)
 			~> t(.Set, structType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 	rule
-		< k > canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
+		<k> canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
 			=> UnionDef(X:Id, L:K)
 			~> t(.Set, unionType(X:Id))
-		...</ k >
+		...</k>
 		when X:Id =/=K Identifier("")
 		[structural]
 		
@@ -281,12 +281,12 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	rule BagItem(Attribute(_:String, _)) => .Bag [structural anywhere]
 
 	rule 
-		< k > canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</ k >
+		<k> canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</k>
 		when B:Bag =/=Bag .Bag
 		[structural]
 		
 	rule
-		< k > canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult ...</ k >
+		<k> canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult ...</k>
 		[structural]
 		
 	declare canonicalizeSpecifier : Bag -> K 
@@ -361,7 +361,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	syntax K ::= "BitFieldType" "(" K "," K ")" [strict klabel(BitFieldType)] 
 	
 	rule
-		< k > Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</ k >
+		<k> Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</k>
 		[structural]
 		
 	rule BitFieldType(T:KResult, tv(N:Nat, _)) => t(.Set, bitfieldType(T:KResult, N:Nat)) [structural anywhere]
@@ -428,20 +428,20 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 	
 	rule 
-		< k > JustBase => T:KResult ...</ k >
-		< declarationTypeHolder > T:KResult => .K ...</ declarationTypeHolder >
+		<k> JustBase => T:KResult ...</k>
+		<declarationTypeHolder> T:KResult => .K ...</declarationTypeHolder>
 		[structural]
 
 	syntax K ::= "extractActualTypeFreezer" [klabel(extractActualTypeFreezer)] 
 	rule
-		< k > DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</ k >
-		< declarationTypeHolder > (. => T:KResult) ...</ declarationTypeHolder >
+		<k> DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</k>
+		<declarationTypeHolder> (. => T:KResult) ...</declarationTypeHolder>
 		[structural]
 	
 	rule
-		< k > T:KResult ~> extractActualTypeFreezer 
+		<k> T:KResult ~> extractActualTypeFreezer 
 			=> extractActualType(T:KResult)
-		...</ k >
+		...</k>
 		[structural]
 		
 	declare fillUnionBitHoles : List{KResult} -> List{KResult} 
@@ -526,21 +526,21 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define incompleteToFlexibleArrayMember(.List{K}) => .List{K}
 	
 	rule
-		< k > StructDef(X:Id, List(L:List{KResult}))
+		<k> StructDef(X:Id, List(L:List{KResult}))
 			=> addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:List{KResult})))
 			~> giveType(X:Id, t(.Set, structType(X:Id)))
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > UnionDef(X:Id, List(L:List{KResult}))
+		<k> UnionDef(X:Id, List(L:List{KResult}))
 			=> addUnion(X:Id, fillUnionBitHoles(L:List{KResult}))
 			~> giveType(X:Id, t(.Set, unionType(X:Id)))
-		...</ k >
+		...</k>
 		[structural]
 
 	// the K will resolve to a type, so throw it away
 	rule
-		< k > OnlyTypedef(K:K) => K:K ~> discard ...</ k >
+		<k> OnlyTypedef(K:K) => K:K ~> discard ...</k>
 		[structural]
 		
 			
@@ -587,114 +587,114 @@ module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	rule
-		< k > typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</ k >
-		(.Bag => < type > K:K </ type >)
+		<k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
+		(.Bag => <type> K:K </type>)
 		[structural]
 	rule
-		< k > evalToType ~> typeof(MYHOLE) => T:TypeResult ...</ k >
-		(< type > T:TypeResult </ type > => .Bag)
+		<k> evalToType ~> typeof(MYHOLE) => T:TypeResult ...</k>
+		(<type> T:TypeResult </type> => .Bag)
 		[structural]
 
 	rule
-		< type > emptyValue => t(.Set, void) ...</ type > 
+		<type> emptyValue => t(.Set, void) ...</type> 
 		[structural]
 		
 	rule
-		< type > T:KResult << _ => T:KResult ...</ type >
+		<type> T:KResult << _ => T:KResult ...</type>
 		[structural]
 	rule
-		< type > T:KResult >> _ => T:KResult ...</ type >
+		<type> T:KResult >> _ => T:KResult ...</type>
 		[structural]
 		
 	rule
-		< type > tv(_, T:KResult) => T:KResult ...</ type >
+		<type> tv(_, T:KResult) => T:KResult ...</type>
 		[structural]
 	
 	rule
-		< type > SizeofExpression(_) => cfg:sizeut ...</ type >
+		<type> SizeofExpression(_) => cfg:sizeut ...</type>
 		[structural]
 
-	rule < type > E1:K[E2:K] => *(E1:K + E2:K) ...</ type > 
+	rule <type> E1:K[E2:K] => *(E1:K + E2:K) ...</type> 
 		[structural]
 	rule 
-		< type > arithInterpret(T:KResult, _) => T:KResult ...</ type > 
+		<type> arithInterpret(T:KResult, _) => T:KResult ...</type> 
 		[structural]
 	rule
-		< type > t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		< type > T':KResult + t(S:Set, pointerType(T:KResult)) => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> T':KResult + t(S:Set, pointerType(T:KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		< type > t(S:Set, pointerType(T:KResult)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> t(S:Set, pointerType(T:KResult)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		< type > t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</ type >
+		<type> t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</type>
 		[structural]
 	rule
-		< type > t(S:Set, arrayType(T:KResult, _:Nat)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> t(S:Set, arrayType(T:KResult, _:Nat)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		< type > T':KResult + t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> T':KResult + t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		< type > t(S:Set, arrayType(T:KResult, _:Nat)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> t(S:Set, arrayType(T:KResult, _:Nat)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 
 	// c99 6.4.5
 	rule
-		< type > Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) ...</ type >
+		<type> Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) ...</type>
 		[structural]
 	rule
-		< type > Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) ...</ type >
+		<type> Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) ...</type>
 		[structural]
 		
 	rule
-		< type > K:K => T:KResult ...</ type >
-		< types >... K:K |-> T:KResult ...</ types >
+		<type> K:K => T:KResult ...</type>
+		<types>... K:K |-> T:KResult ...</types>
 		[structural]
 			
 	rule
-		< type > Comma(List((_,, K:K))) => K:K ...</ type >
+		<type> Comma(List((_,, K:K))) => K:K ...</type>
 		[structural]
 
 	rule [type-call-func]:
-		< type > Call(t(_, functionType(T:KResult, _:List{KResult})), _) => T:KResult ...</ type >
+		<type> Call(t(_, functionType(T:KResult, _:List{KResult})), _) => T:KResult ...</type>
 		[structural]
 		 		
 	rule [type-struct-dot]:
-		< type > t(_, structType(S:Id)) . F:Id => T:KResult ...</ type >
-		< structs >... 
+		<type> t(_, structType(S:Id)) . F:Id => T:KResult ...</type>
+		<structs>... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
-		...</ structs >
+		...</structs>
 		[structural]
 	rule [type-union-dot]:
-		< type > t(_, unionType(S:Id)) . F:Id => T:KResult ...</ type >
-		< structs >... 
+		<type> t(_, unionType(S:Id)) . F:Id => T:KResult ...</type>
+		<structs>... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
-		...</ structs >
+		...</structs>
 		[structural]
 	
 	rule [type-deref-type]:
-		< type > * T:KResult => innerType(T:KResult) ...</ type >
+		<type> * T:KResult => innerType(T:KResult) ...</type>
 		[structural]
 
 	rule [type-compound-literal]:
-		< type > CompoundLiteral(_, Specifier:K, DeclType:K, _)
+		<type> CompoundLiteral(_, Specifier:K, DeclType:K, _)
 			=> Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
-		...</ type >
+		...</type>
 		[structural]
 	
 	rule [type-assignment]:
-		< type > L:KLabel(K:K,, _) 
+		<type> L:KLabel(K:K,, _) 
 			=> K:K
-		...</ type >
+		...</type>
 		when Set(
 			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
 			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
@@ -702,57 +702,57 @@ module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 
 	rule 
-		< type > L:KLabel(T:KResult,, T':KResult) => usualArithmeticConversion(T:KResult, T':KResult) ...</ type >
+		<type> L:KLabel(T:KResult,, T':KResult) => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
 		when isArithBinConversionOp(L:KLabel)
 		andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		[structural]
 		
 	rule [type-ternary-arithmetic]:
-		< type > _:K ? T:KResult : T':KResult => usualArithmeticConversion(T:KResult, T':KResult) ...</ type >
+		<type> _:K ? T:KResult : T':KResult => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
 		when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		[structural]
 	rule [type-ternary-identical]:
-		< type > _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</ type >
+		<type> _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</type>
 		when notBool isArrayType(T:TypeResult)
 		[structural]
 		
 	rule [type-ternary-array-left]: 
-		< type > _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</ type > 
+		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
 		[structural]
 	rule [type-ternary-array-right]: 
-		< type > _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</ type >
+		<type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</type>
 		[structural]
 		
 	rule [type-ternary-pointer]: // not safe, could be incompatible types
-		< type > _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult)) => t(S:Set, pointerType(T:KResult)) ...</ type >
+		<type> _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
 		[structural]
 
 	rule
-		< type > L:KLabel(T:KResult) => T:KResult ...</ type > 
+		<type> L:KLabel(T:KResult) => T:KResult ...</type> 
 		when isArithUnaryOp(L:KLabel)
 		andBool isFloatType(T:KResult)
 		[structural]
 	rule
-		< type > L:KLabel(T:KResult) => promote(T:KResult) ...</ type > 
+		<type> L:KLabel(T:KResult) => promote(T:KResult) ...</type> 
 		when isArithUnaryOp(L:KLabel)
 		andBool hasIntegerType(T:KResult)
 		[structural]
 	
 	rule 
-		< type > L:KLabel(T:KResult,, _:List{K}) => T:KResult ...</ type >
+		<type> L:KLabel(T:KResult,, _:List{K}) => T:KResult ...</type>
 		when isFloatType(T:KResult)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]
 	rule 
-		< type > L:KLabel(T:KResult,, _:List{K}) => promote(T:KResult) ...</ type >
+		<type> L:KLabel(T:KResult,, _:List{K}) => promote(T:KResult) ...</type>
 		when hasIntegerType(T:KResult)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]
 		
 	rule [type-inc-dec]:
-		< type > L:KLabel(T:KResult) => T:KResult ...</ type >
+		<type> L:KLabel(T:KResult) => T:KResult ...</type>
 		when isPointerType(T:KResult)
 		andBool (
 			L:KLabel ==KLabel ('_++)
@@ -763,11 +763,11 @@ module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 	
 	rule
-		< type > !(_:K) => t(.Set, int) ...</ type >
+		<type> !(_:K) => t(.Set, int) ...</type>
 		[structural]
 		
 	rule
-		< type > L:KLabel(_:K,, _:K) => t(.Set, int) ...</ type >
+		<type> L:KLabel(_:K,, _:K) => t(.Set, int) ...</type>
 		when L:KLabel ==KLabel '_==_
 		orBool L:KLabel ==KLabel '_!=_
 		orBool L:KLabel ==KLabel '_&&_
@@ -775,7 +775,7 @@ module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 		
 	rule [type-address]:
-		< type > & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</ type >
+		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
 		[structural]
 		
 end module
@@ -789,8 +789,8 @@ module COMMON-C-TYPING is
 	including COMMON-SEMANTICS-TYPE-EXPRESSIONS 
 	
 	rule [ExpressionLoc-type]:
-		< type > ExpressionLoc(K:K, L:CabsLoc) => K:K ...</ type >
-		< currentProgramLoc > _ => L:CabsLoc </ currentProgramLoc >
+		<type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
+		<currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
 		[structural]
 		
 	/*@ \source[n1570]{\para{6.2.7}{1}}
@@ -859,7 +859,7 @@ module COMMON-C-TYPING is
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult)) 
 		[structural]
 	rule 
-		< k > Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</ k >
+		<k> Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</k>
 		[structural]
 			
 	syntax K ::= "addGlobalAggregate" "(" Id "," K ")" [klabel(addGlobalAggregate)] 
@@ -868,13 +868,13 @@ module COMMON-C-TYPING is
 	syntax K ::= "addStruct-aux" "(" Id "," List{KResult} "," K "," Map "," Map "," List{KResult} ")" [strict(3) klabel(addStruct-aux)]
 	syntax K ::= "addUnion-aux" "(" Id "," List{KResult} "," Map "," Map "," List{KResult} ")" [klabel(addUnion-aux)]
 	rule
-		< k > addStruct(S:Id, L:List{KResult}) 
+		<k> addStruct(S:Id, L:List{KResult}) 
 			=> addStruct-aux(S:Id, L:List{KResult}, tv(0, cfg:largestUnsigned), .Map, .Map, L:List{KResult})
-		...</ k >
+		...</k>
 		when L:List{KResult} =/=List{K} .List{K}
 		[structural]
 	rule
-		< k > addStruct-aux(
+		<k> addStruct-aux(
 				S:Id
 				, (typedDeclaration(T:KResult, Field:Id),, L:List{KResult})
 				, V:KResult
@@ -883,27 +883,27 @@ module COMMON-C-TYPING is
 				, L':List{KResult}
 			) 
 			=> addStruct-aux(S:Id, L:List{KResult}, V:KResult + bitSizeofType(T:KResult), Types:Map[T:KResult / Field:Id], Offsets:Map[value(V:KResult) / Field:Id], L':List{KResult})
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > addStruct-aux(S:Id, .List{K}, _, Types:Map, Offsets:Map, L:List{KResult}) 
+		<k> addStruct-aux(S:Id, .List{K}, _, Types:Map, Offsets:Map, L:List{KResult}) 
 			=> #if (F:Id ==K File-Scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
 			#fi
-		...</ k >
-		< currentFunction > F:Id </ currentFunction >
+		...</k>
+		<currentFunction> F:Id </currentFunction>
 		[structural]		
 		
 	rule
-		< k > addUnion(S:Id, L:List{KResult}) 
+		<k> addUnion(S:Id, L:List{KResult}) 
 			=> addUnion-aux(S:Id, L:List{KResult}, .Map, .Map, L:List{KResult})
-		...</ k >
+		...</k>
 		when L:List{KResult} =/=List{K} .List{K}
 		[structural]
 	rule
-		< k > addUnion-aux(
+		<k> addUnion-aux(
 				S:Id
 				, (typedDeclaration(T:KResult, Field:Id),, L:List{KResult})
 				, Types:Map
@@ -911,27 +911,27 @@ module COMMON-C-TYPING is
 				, L':List{KResult}
 			) 
 			=> addUnion-aux(S:Id, L:List{KResult}, Types:Map[T:KResult / Field:Id], Offsets:Map[0 / Field:Id], L':List{KResult})
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > addUnion-aux(S:Id, .List{K}, Types:Map, Offsets:Map, L:List{KResult}) 
+		<k> addUnion-aux(S:Id, .List{K}, Types:Map, Offsets:Map, L:List{KResult}) 
 			=> #if (F:Id ==K File-Scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map))) 
 			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L:List{KResult}, Types:Map, Offsets:Map)))
 			#fi
-		...</ k >
-		< currentFunction > F:Id </ currentFunction >
+		...</k>
+		<currentFunction> F:Id </currentFunction>
 		[structural]
 
 	rule
-		< k > addGlobalAggregate(X:Id, K:K) => . ...</ k >
-		< structs > M':Map => M':Map[K:K / X:Id] </ structs >
-		< gstructs > M:Map => M:Map[K:K / X:Id] </ gstructs >
+		<k> addGlobalAggregate(X:Id, K:K) => . ...</k>
+		<structs> M':Map => M':Map[K:K / X:Id] </structs>
+		<gstructs> M:Map => M:Map[K:K / X:Id] </gstructs>
 		[structural]
 	rule
-		< k > addLocalAggregate(X:Id, K:K) => . ...</ k >
-		< structs > M:Map => M:Map[K:K / X:Id] </ structs >
+		<k> addLocalAggregate(X:Id, K:K) => . ...</k>
+		<structs> M:Map => M:Map[K:K / X:Id] </structs>
 		[structural]
 		
 	define 'isTypeResult(t(_, T:K)) => true

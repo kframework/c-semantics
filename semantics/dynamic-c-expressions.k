@@ -76,32 +76,32 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	*/
 	// comes back from figureInit as initializerValue(id, type, inits)
 	rule
-		< k > CompoundLiteral(N:Nat, T:KResult, K:K, Init:K)
+		<k> CompoundLiteral(N:Nat, T:KResult, K:K, Init:K)
 			=> handleCompoundLiteral(figureInitializer(compoundLiteral(N:Nat), DeclType(T:KResult, K:K), Init:K))
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule
-		< k > handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
+		<k> handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Init:K)
 			~> X:Id
-		...</ k >
-		< compoundLiteralMap > M:Map => M:Map[Loc:Nat / X:Id] </ compoundLiteralMap >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		...</k>
+		<compoundLiteralMap> M:Map => M:Map[Loc:Nat / X:Id] </compoundLiteralMap>
+		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
 		when notBool $hasMapping(M:Map, X:Id)
 		[structural]
 		
 	rule
-		< k > handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
+		<k> handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Init:K)
 			~> X:Id
-		...</ k >
-		< compoundLiteralMap >... X:Id |-> Loc:Nat ...</ compoundLiteralMap >
+		...</k>
+		<compoundLiteralMap>... X:Id |-> Loc:Nat ...</compoundLiteralMap>
 		[structural]
 end module
 
@@ -119,18 +119,18 @@ module DYNAMIC-SEMANTICS-BOOLEAN is
 	}
 	*/	
 	rule
-		< k > tv(0, t(_, int)) && E:K
+		<k> tv(0, t(_, int)) && E:K
 			=> tv(0, t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > tv(1, t(_, int)) && E:K
+		<k> tv(1, t(_, int)) && E:K
 			=> sequencePoint
 			~> simplifyTruth(E:K)
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > (V:KResult => simplifyTruth(V:KResult)) && _ ...</ k >
+		<k> (V:KResult => simplifyTruth(V:KResult)) && _ ...</k>
 		when isNotTruthValue(V:KResult)
 		[structural]	
 				
@@ -141,18 +141,18 @@ module DYNAMIC-SEMANTICS-BOOLEAN is
 	}
 	*/
 	rule
-		< k > tv(0, t(_, int)) || E:K
+		<k> tv(0, t(_, int)) || E:K
 			=> sequencePoint
 			~> simplifyTruth(E:K)
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > tv(1, t(_, int)) || E:K
+		<k> tv(1, t(_, int)) || E:K
 			=> tv(1, t(.Set, int))
-		...</ k >
+		...</k>
 		[structural]
 	rule
-		< k > (V:KResult => V:KResult != tv(0, t(.Set, int))) || _ ...</ k >
+		<k> (V:KResult => V:KResult != tv(0, t(.Set, int))) || _ ...</k>
 		when isNotTruthValue(V:KResult)
 		[structural]
 
@@ -173,7 +173,7 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	context types((_,, HOLE,, _))
 	syntax K ::= "convertedType" "(" K ")" [strict klabel(convertedType)]
 	
-	rule < k > getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</ k > [structural]
+	rule <k> getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</k> [structural]
 	
 	declare wrapWithTypeOf : List{K} -> List{K}
 	define wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K}))
@@ -199,7 +199,7 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	}
 	*/	
 	rule
-		< k > (.K => getTypes((E1:K,, E2:K))) ~> E:K ? E1:K : E2:K ...</ k >
+		<k> (.K => getTypes((E1:K,, E2:K))) ~> E:K ? E1:K : E2:K ...</k>
 		[structural]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -207,9 +207,9 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	}
 	*/
 	rule
-		< k > (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
+		<k> (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
 			~> E:K ? E1:K : E2:K
-		...</ k >
+		...</k>
 		when T1:KResult =/=K T2:KResult
 		andBool isArithmeticType(T1:KResult)
 		andBool isArithmeticType(T2:KResult)
@@ -221,40 +221,40 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 	*/
 	// fixme, this is too relaxed; could be any integer zero.  need static semantics to handle this properly
 	rule [conditional-left-is-null]:
-		< k > (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
+		<k> (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
 			~> E:K ? tv(0, T1:KResult) : E2:K
-		...</ k >
+		...</k>
 		when hasIntegerType(T1:KResult)
 		andBool isPointerType(T2:KResult)
 		[structural]
 	rule [conditional-right-is-null]:
-		< k > (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
+		<k> (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
 			~> E:K ? E1:K : tv(0, T2:KResult)
-		...</ k >
+		...</k>
 		when hasIntegerType(T2:KResult)
 		andBool isPointerType(T1:KResult)
 		[structural]
 		
 	// fixme, this is wrong
 	rule
-		< k > (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
+		<k> (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
 			~> E:K ? E1:K : E2:K
-		...</ k >
+		...</k>
 		when isPointerType(T1:KResult)
 		andBool isPointerType(T2:KResult)
 		[structural]
 		
 	// this should take care of the void/struct cases
 	rule
-		< k > (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
+		<k> (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
 			~> E:K ? E1:K : E2:K
-		...</ k >
+		...</k>
 		when notBool isPointerType(T:KResult)
 		[structural]
 	rule
-		< k > convertedType(T:KResult) ~> E:K ? E1:K : E2:K
+		<k> convertedType(T:KResult) ~> E:K ? E1:K : E2:K
 			=> IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
-		...</ k >
+		...</k>
 		[structural]
 		
 end module
@@ -273,10 +273,10 @@ module DYNAMIC-SEMANTICS-SIZEOF is
 	rule byteSizeofType-aux(tv(N:Nat, T:KResult)) => tv(bitsToBytes(N:Nat), T:KResult)
 		[structural]
 	rule
-		< k > SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</ k >
+		<k> SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</k>
 		[structural]
 	rule
-		< k > SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K)) ...</ k >
+		<k> SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K)) ...</k>
 		[structural]
 end module
 
@@ -288,13 +288,13 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS is
 	}
 	*/
 	rule [lookup]:
-		< k > X:Id => lv(Loc:Nat, T:KResult) ...</ k >
-		< env >... X:Id |-> Loc:Nat ...</ env >
-		< types >... X:Id |-> T:KResult ...</ types >
+		<k> X:Id => lv(Loc:Nat, T:KResult) ...</k>
+		<env>... X:Id |-> Loc:Nat ...</env>
+		<types>... X:Id |-> T:KResult ...</types>
 		[structural]
 		
 	rule [lookup-builtin-function-notfound]:
-		< k > (.K 
+		<k> (.K 
 				=> addToEnv(X:Id, Loc:Nat)
 				~> initFunction(
 					tv(Loc:Nat, t(.Set, pointerType(T:KResult))),
@@ -302,10 +302,10 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS is
 				)
 			)
 			~> X:Id
-		...</ k >
-		< env > Env:Map </ env >
-		< types >... X:Id |-> T:KResult ...</ types >
-		< nextLoc > Loc:Nat => inc(Loc:Nat) </ nextLoc >
+		...</k>
+		<env> Env:Map </env>
+		<types>... X:Id |-> T:KResult ...</types>
+		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
 		when isFunctionType(T:KResult)
 		andBool notBool $hasMapping(Env:Map, X:Id)
 		[structural]
@@ -331,56 +331,56 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	*/
 	
 	rule [function-application-pre]:
-		< k > Call(tv(Loc:Nat, t(_, pointerType(T:KResult))), List(L:List{KResult}))
+		<k> Call(tv(Loc:Nat, t(_, pointerType(T:KResult))), List(L:List{KResult}))
 			=> application(readFunction(Loc:Nat), L:List{KResult})
-		...</ k >
+		...</k>
 		when isFunctionType(T:KResult)
 		[structural]
 
 	rule [populateFromGlobal]:
-		< k > populateFromGlobal => .K ...</ k >
-		< currentTranslationUnit > Tu:K </ currentTranslationUnit >
+		<k> populateFromGlobal => .K ...</k>
+		<currentTranslationUnit> Tu:K </currentTranslationUnit>
 		<br/>
-		< genv >... Tu:K |-> Map(G:Map) ...</ genv > < env > _ => G:Map </ env >
-		< gtypes >... Tu:K |-> Map(GT:Map) ...</ gtypes > < types > _ => GT:Map </ types >
-		< gstructs > GS:Map </ gstructs > < structs > _ => GS:Map </ structs >
+		<genv>... Tu:K |-> Map(G:Map) ...</genv> <env> _ => G:Map </env>
+		<gtypes>... Tu:K |-> Map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
+		<gstructs> GS:Map </gstructs> <structs> _ => GS:Map </structs>
 		[large structural]
 
 	rule [builtin-application]:
-		< k > application(functionPrototype(X:Id, T:KResult), L:List{KResult})
+		<k> application(functionPrototype(X:Id, T:KResult), L:List{KResult})
 			=> application(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:List{KResult})
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule [function-application]:
-		< k > application(functionObject(X:Id, t(_, functionType(R:KResult, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
+		<k> application(functionObject(X:Id, t(_, functionType(R:KResult, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
 			=> sequencePoint
 			~> populateFromGlobal
 			~> bind(L:List{KResult}, P:List{KResult})
 			~> B:K
-		</ k >
-		< callStack > .List => ListItem(
-			< stackFrame > C:Bag
-				< continuation > K:K </ continuation >
-				< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-				< stackCurrentFunction > CurrFun:K </ stackCurrentFunction >
-				< stackCurrentProgramLoc > CurrLoc:K </ stackCurrentProgramLoc >
-			</ stackFrame >
-		) ...</ callStack >
+		</k>
+		<callStack> .List => ListItem(
+			<stackFrame> C:Bag
+				<continuation> K:K </continuation>
+				<currentTranslationUnit> OldTu:K </currentTranslationUnit>
+				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+			</stackFrame>
+		) ...</callStack>
 		@latex("\\kBR")
-		(< control >
-			< currentTranslationUnit > OldTu:K </ currentTranslationUnit >
-			< currentFunction > CurrFun:K </ currentFunction >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
+		(<control>
+			<currentTranslationUnit> OldTu:K </currentTranslationUnit>
+			<currentFunction> CurrFun:K </currentFunction>
+			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
 			C:Bag
-		</ control >
+		</control>
 		=>
-		< control >
-			< currentFunction > X:Id </ currentFunction >
-			< currentTranslationUnit > Tu:K </ currentTranslationUnit >
-			< currentProgramLoc > CurrLoc:K </ currentProgramLoc >
-		...</ control >)
-		< functionTranslationUnits >... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</ functionTranslationUnits >
+		<control>
+			<currentFunction> X:Id </currentFunction>
+			<currentTranslationUnit> Tu:K </currentTranslationUnit>
+			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
+		...</control>)
+		<functionTranslationUnits>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</functionTranslationUnits>
 		[structural large]
 end module
 
@@ -392,9 +392,9 @@ module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
 	}
 	*/
 	rule [array-subscript]:
-		< k > E1:K[E2:K]
+		<k> E1:K[E2:K]
 			=> *(E1:K + E2:K) 
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -404,37 +404,37 @@ module DYNAMIC-SEMANTICS-LITERALS is
 	// here we start with a local address, put the string in memory, then change the address to be readonly
 	
 	rule [const-string-notfound]:
-		< k > (.K => allocString(Loc:Nat, S:String +String "\0"))
+		<k> (.K => allocString(Loc:Nat, S:String +String "\0"))
 			~> Constant(StringLiteral(S:String))
-		...</ k >
-		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
-		< stringLiterals >
+		...</k>
+		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
+		<stringLiterals>
 			M:Map
 			(.Map => S:String |-> lv(Loc:Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1))))
-		</ stringLiterals >
+		</stringLiterals>
 		when notBool($hasMapping(M:Map, S:String))
 		[structural]
 		
 	syntax K ::= "wstring" "(" List{K} ")" [klabel(wstring)] 
 	rule [const-wstring-notfound]:
-		< k > (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
+		<k> (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
 			~> Constant(WStringLiteral(S:List{K}))
-		...</ k >
-		< nextSharedLoc > Loc:Nat => inc(Loc:Nat) </ nextSharedLoc >
-		< stringLiterals >
+		...</k>
+		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
+		<stringLiterals>
 			M:Map
 			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Int 1))))
-		</ stringLiterals >
+		</stringLiterals>
 		when notBool($hasMapping(M:Map, wstring(S:List{K})))
 		[structural]
 		
 	rule [const-string-found]:
-		< k > Constant(StringLiteral(S:String)) => V:KResult ...</ k >
-		< stringLiterals >... S:String |-> V:KResult ...</ stringLiterals >
+		<k> Constant(StringLiteral(S:String)) => V:KResult ...</k>
+		<stringLiterals>... S:String |-> V:KResult ...</stringLiterals>
 		[structural]
 	rule [const-wstring-found]:
-		< k > Constant(WStringLiteral(S:List{K})) => V:KResult ...</ k >
-		< stringLiterals >... wstring(S:List{K}) |-> V:KResult ...</ stringLiterals >
+		<k> Constant(WStringLiteral(S:List{K})) => V:KResult ...</k>
+		<stringLiterals>... wstring(S:List{K}) |-> V:KResult ...</stringLiterals>
 		[structural]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{5}}}{
@@ -486,7 +486,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		[structural anywhere]
 	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural anywhere]
 	rule Constant(V:KResult) => V:KResult [structural anywhere]
-	rule [create-internal-value]: < k > N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</ k >
+	rule [create-internal-value]: <k> N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</k>
 		[structural] // for internal computations
 		
 	declare withinRange : Int SimpleType -> Bool
@@ -623,18 +623,18 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 	}
 	*/
 	rule [assign]:
-		< k > lv(Loc:Nat, T:KResult) := RHS
+		<k> lv(Loc:Nat, T:KResult) := RHS
 			=> write(lv(Loc:Nat, T:KResult), RHS)
 			~> RHS
-		...</ k >
+		...</k>
 		where RHS = tv(V:List{K}, T:KResult)
 		[structural]
 	rule [convert-for-assignment]:
-		< k >
+		<k>
 			lv(_, T:KResult)
 			:=
 			(tv(V:List{K}, T':KResult) => cast(T:KResult, tv(V:List{K}, T':KResult)))
-		...</ k >
+		...</k>
 		when T:KResult =/=K T':KResult
 		[structural]
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{3}}}{
@@ -653,40 +653,40 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 	context compoundAssignment(_, _, (HOLE => reval(HOLE)))
 		
 	rule [compoundAssignment-mult]:
-		< k > E1:K *= E2:K => compoundAssignment('_*_, E1:K, E2:K) ...</ k >
+		<k> E1:K *= E2:K => compoundAssignment('_*_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-div]:
-		< k > E1:K /= E2:K => compoundAssignment('_/_, E1:K, E2:K) ...</ k >
+		<k> E1:K /= E2:K => compoundAssignment('_/_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-modulo]:
-		< k > E1:K %= E2:K => compoundAssignment('_%_, E1:K, E2:K) ...</ k >
+		<k> E1:K %= E2:K => compoundAssignment('_%_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-plus]:
-		< k > E1:K += E2:K => compoundAssignment('_+_, E1:K, E2:K) ...</ k >
+		<k> E1:K += E2:K => compoundAssignment('_+_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-minus]:
-		< k > E1:K -= E2:K => compoundAssignment('_-_, E1:K, E2:K) ...</ k >
+		<k> E1:K -= E2:K => compoundAssignment('_-_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-left-shift]:
-		< k > E1:K <<= E2:K => compoundAssignment('_<<_, E1:K, E2:K) ...</ k >
+		<k> E1:K <<= E2:K => compoundAssignment('_<<_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-right-shift]:
-		< k > E1:K >>= E2:K => compoundAssignment('_>>_, E1:K, E2:K) ...</ k >
+		<k> E1:K >>= E2:K => compoundAssignment('_>>_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-bitwise-and]:
-		< k > E1:K &= E2:K => compoundAssignment('_&_, E1:K, E2:K) ...</ k >
+		<k> E1:K &= E2:K => compoundAssignment('_&_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-bitwise-xor]:
-		< k > E1:K ^= E2:K => compoundAssignment('_^_, E1:K, E2:K) ...</ k >
+		<k> E1:K ^= E2:K => compoundAssignment('_^_, E1:K, E2:K) ...</k>
 		[structural]
 	rule [compoundAssignment-bitwise-or]:
-		< k > E1:K |= E2:K => compoundAssignment('_|_, E1:K, E2:K) ...</ k >
+		<k> E1:K |= E2:K => compoundAssignment('_|_, E1:K, E2:K) ...</k>
 		[structural]
 
 	rule
-		< k > compoundAssignment(L:KLabel, V:KResult, V':KResult)
+		<k> compoundAssignment(L:KLabel, V:KResult, V':KResult)
 			=> V:KResult := L:KLabel(reval(V:KResult),, V':KResult)
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -881,23 +881,23 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
-	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
+	rule <k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat ==Int Offset':Nat)
-		...</ k >
+		...</k>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-	rule < k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
+	rule <k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
 			=> makeTruth(Offset:Nat =/=Int Offset':Nat)
-		...</ k >
+		...</k>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 		
 	// next, they are part of different objects.  
 	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
 	rule [compare-eq-different-objects]: 
-		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
+		<k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(0, t(.Set, int))
-		...</ k >
+		...</k>
 		<object>...
 			<basePtr> Base:Nat </basePtr>
 			<properties>... mlength(Len:Nat) ...</properties>
@@ -912,9 +912,9 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		andBool Offset':Nat <Int Len':Nat
 		[structural]
 	rule [compare-neq-different-objects]: 
-		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
+		<k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(1, t(.Set, int))
-		...</ k >
+		...</k>
 		<object>...
 			<basePtr> Base:Nat </basePtr>
 			<properties>... mlength(Len:Nat) ...</properties>
@@ -1001,28 +1001,28 @@ second operand from the first.
 	*/
 	
 	syntax K ::= "addToPointer" "(" K "," Type "," K "," K ")" [strict(4) klabel(addToPointer)]
-	rule < k > tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
+	rule <k> tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
 			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-		...</ k >
+		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
-	rule < k > tv(I:Int, T:KResult) + tv(Loc:Nat, t(S:Set, pointerType(T':KResult)))
+	rule <k> tv(I:Int, T:KResult) + tv(Loc:Nat, t(S:Set, pointerType(T':KResult)))
 			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-		...</ k >
+		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
-	rule < k > tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
+	rule <k> tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
 			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
-		...</ k >
+		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
 			
-	rule < k > addToPointer(Loc:Nat, T:KResult, I:Int, tv(Size:Nat, _))
+	rule <k> addToPointer(Loc:Nat, T:KResult, I:Int, tv(Size:Nat, _))
 			=> tv(Loc:Nat +Int (I:Int *Int Size:Nat), NEWTYPE)
-		...</ k >
+		...</k>
 		when ifFromArrayInBounds(T:KResult, I:Int)
 		where NEWTYPE = newFromArray(T:KResult, I:Int)
 		[structural]
@@ -1135,26 +1135,26 @@ module DYNAMIC-SEMANTICS-MEMBERS is
 			
 	// fixme tool bug, can't use L:KLabel
 	rule
-		< k > lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
+		<k> lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
 			=> lv(Loc:Nat +bits Offset:Nat, T:KResult)
-		...</ k >
-		< structs >...
+		...</k>
+		<structs>...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat))
-		...</ structs >
+		...</structs>
 		[structural]
 	rule
-		< k > lv(Loc:Nat, t(_, unionType(S:Id))) . F:Id
+		<k> lv(Loc:Nat, t(_, unionType(S:Id))) . F:Id
 			=> lv(Loc:Nat +bits Offset:Nat, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
-		...</ k >
-		< structs >...
+		...</k>
+		<structs>...
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Nat))
-		...</ structs >
+		...</structs>
 		[structural]
 		
 	rule
-		< k > tv(L:List{K}, T:KResult) . F:Id
+		<k> tv(L:List{K}, T:KResult) . F:Id
 			=> extractField(L:List{K}, T:KResult, F:Id)
-		...</ k >
+		...</k>
 		[structural]
 		
 		
@@ -1173,10 +1173,10 @@ module DYNAMIC-SEMANTICS-DEREFERENCE is
 	}
 	*/
 	rule [deref]:
-		< k > *(tv(Loc:Nat, t(_, pointerType(t(S:Set, T:K)))))
+		<k> *(tv(Loc:Nat, t(_, pointerType(t(S:Set, T:K)))))
 			=> checkDerefLoc(Loc:Nat)
 			~> lv(Loc:Nat, t(S:Set, T:K))
-		...</ k >
+		...</k>
 		when notBool T:K ==K void
 		[structural]
 end module
@@ -1190,9 +1190,9 @@ module DYNAMIC-SEMANTICS-REFERENCE is
 	*/
 
 	rule [ref]:
-		< k > &(lv(Loc:Nat, T:KResult))
+		<k> &(lv(Loc:Nat, T:KResult))
 			=> tv(Loc:Nat, t(.Set, pointerType(T:KResult)))
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -1219,30 +1219,30 @@ module DYNAMIC-SEMANTICS-INCREMENT-AND-DECREMENT is
 	}
 	*/	
 	rule [post-increment-start]:
-		< k > lv(Loc:Nat, T:KResult)++
+		<k> lv(Loc:Nat, T:KResult)++
 			=> postInc(Loc:Nat, read(Loc:Nat, T:KResult), T:KResult)
-		...</ k >
+		...</k>
 		[structural]
 	rule [post-decrement-start]:
-		< k > lv(Loc:Nat, T:KResult)--
+		<k> lv(Loc:Nat, T:KResult)--
 			=> postDec(Loc:Nat, read(Loc:Nat, T:KResult), T:KResult)
-		...</ k >
+		...</k>
 		[structural]
 
 	rule [post-increment]:
-		< k > postInc(Loc:Nat, tv(V:K, T:KResult), T:KResult)
+		<k> postInc(Loc:Nat, tv(V:K, T:KResult), T:KResult)
 			=> lv(Loc:Nat, T:KResult) := tv(V:K, T:KResult) + tv(1, t(.Set, int))
 			~> discard
 			~> tv(V:K, T:KResult)
-		...</ k >
+		...</k>
 		[structural]
 		
 	rule [post-decrement]:
-		< k > postDec(Loc:Nat, tv(V:K, T:KResult), T:KResult)
+		<k> postDec(Loc:Nat, tv(V:K, T:KResult), T:KResult)
 			=> lv(Loc:Nat, T:KResult) := tv(V:K, T:KResult) - tv(1, t(.Set, int))
 			~> discard
 			~> tv(V:K, T:KResult)
-		...</ k >
+		...</k>
 		[structural]
 end module
 
@@ -1253,11 +1253,11 @@ module DYNAMIC-SEMANTICS-SEQUENCING is
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	}
 	*/
-	rule < k > Comma(List((V:KResult,, K':K,, L:List{K}))) 
+	rule <k> Comma(List((V:KResult,, K':K,, L:List{K}))) 
 		=> sequencePoint
-		~> Comma(List((K':K,, L:List{K}))) ...</ k >
+		~> Comma(List((K':K,, L:List{K}))) ...</k>
 		[structural]
-	rule < k > Comma(List(K:K)) => K:K ...</ k >
+	rule <k> Comma(List(K:K)) => K:K ...</k>
 		[structural]
 end module
 
