@@ -75,12 +75,13 @@ module DYNAMIC-C-ERRORS is
 		< k => finalComputation > assert(false, 3) ...</ k => finalComputation >
 		(.Bag => < errorCell > Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </ errorCell >)
 		[structural]
-		
+
 	rule [err00005]:
 		< k => finalComputation > extractByteFromMem(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
-		< mem > M:Map </ mem >
+		< memory > M:Bag </ memory >
 		(.Bag => < errorCell > ICE("00005", "Referring to an object outside of its lifetime.") </ errorCell >)
-		when notBool $hasMapping(M:Map, Block:Nat)
+		// when notBool $hasMapping(M:Map, Block:Nat)
+		when notBool Block:Nat in gatherInnerCells(M:Bag, basePtr)
 		[structural]
 	
 	rule [err00006]:
@@ -91,9 +92,10 @@ module DYNAMIC-C-ERRORS is
 		
 	rule [err00007]:
 		< k => finalComputation > checkValidLoc-aux(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
-		< mem > M:Map </ mem >
+		< memory > M:Bag </ memory >
 		(.Bag => < errorCell > Error("00007", "Referring to an object outside of its lifetime.") </ errorCell >)
-		when notBool $hasMapping(M:Map, Block:Nat)
+		// when notBool $hasMapping(M:Bag, Block:Nat)
+		when notBool Block:Nat in gatherInnerCells(M:Bag, basePtr)
 		[structural]
 	
 	rule [err00008]:
@@ -108,10 +110,16 @@ module DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00010]:
-		< k => finalComputation > checkValidLoc-aux(loc(Block:Nat, Offset:Nat, _:Nat)) ...</ k => finalComputation >
-		< mem >... Block:Nat |-> memblock(mlength(Size:Nat) _, _) ...</ mem >
+		< k => finalComputation > checkValidLoc-aux(loc(Base:Nat, Offset:Nat, _:Nat)) ...</ k => finalComputation >
+		// < memory >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ memory >
+		< memory >...
+			<object>...
+				<basePtr> Base:Nat </basePtr>
+				<properties>... mlength(Len:Nat) ...</properties>
+			...</object>
+		...</ memory >
 		(.Bag => < errorCell > Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </ errorCell >)
-		when Offset:Nat >Int Size:Nat
+		when Offset:Nat >Int Len:Nat
 		[structural]
 		
 		
@@ -179,8 +187,14 @@ module DYNAMIC-C-ERRORS is
 		[structural]
 		
 	rule [err00020]:
-		< k => finalComputation > writeByte(loc(Block:Nat, Offset:Nat, _:Nat), _) ...</ k => finalComputation >
-		< mem >... Block:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >		
+		< k => finalComputation > writeByte(loc(Base:Nat, Offset:Nat, _:Nat), _) ...</ k => finalComputation >
+		// < memory >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ memory >
+		< memory >...
+			<object>...
+				<basePtr> Base:Nat </basePtr>
+				<properties>... mlength(Len:Nat) ...</properties>
+			...</object>
+		...</ memory >
 		(.Bag => < errorCell > Error("00020", "Tried to write outside the bounds of an object.") </ errorCell >)
 		when notBool Offset:Nat <Int Len:Nat
 		[structural] 
@@ -358,13 +372,13 @@ module DYNAMIC-C-ERRORS is
 		
 	rule [err00045]:
 		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
-		< mem >... Base:Nat |-> memblock(mconst _:Bag, _) ...</ mem >
-		// < mem >...
-			// <object>...
-				// <basePtr> Base:Nat </basePtr>
-				// <properties>... mconst ...</properties>
-			// ...</object>
-		// ...</ mem >
+		// < memory >... Base:Nat |-> memblock(mconst _:Bag, _) ...</ memory >
+		< memory >...
+			<object>...
+				<basePtr> Base:Nat </basePtr>
+				<properties>... mconst ...</properties>
+			...</object>
+		...</ memory >
 		(.Bag => < errorCell > Error("00045", "Trying to modify a string literal or an object declared with const type.") </ errorCell >)
 		where LOC = loc(Base:Nat, _:Nat, _:Nat)
 		[structural]

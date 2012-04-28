@@ -10,6 +10,13 @@ end module
 module COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
+	declare base : Nat -> Nat
+	define base(loc(Base:Nat, _, _)) => Base:Nat
+	
+	declare gatherInnerCells : Bag CellLabel -> Set
+	define gatherInnerCells(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel) (.Set => SetItem(K:K))
+	define gatherInnerCells(.Bag, _) => .Set
+	
 	declare stringToList : String -> List
 	declare listToString : List -> String
 	

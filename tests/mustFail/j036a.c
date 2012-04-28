@@ -1,3 +1,4 @@
+// kcc-assert-error(00019)
 #include <limits.h>
 
 int main(void){

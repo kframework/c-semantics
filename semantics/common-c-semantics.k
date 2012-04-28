@@ -132,7 +132,7 @@ module COMMON-SEMANTIC-SYNTAX is
 	// syntax Nat ::= "readOnly" [klabel(readOnly)] // fake threadid for above when location can't be written to
 		
 	syntax K ::= "initialize" "(" Id "," Type "," K ")" [klabel(initialize)] 
-	syntax K ::= "memblock" "(" Bag "," Map ")" [klabel(memblock)] // length and an array from offsets to bytes
+	// syntax K ::= "memblock" "(" Bag "," Map ")" [klabel(memblock)] // length and an array from offsets to bytes
 	syntax BagItem ::= "mlength" "(" Nat ")" [klabel(mlength)]
 	syntax BagItem ::= "mconst"
 	syntax K ::= "makeUnwritable" "(" Nat ")" [klabel(makeUnwritable)]

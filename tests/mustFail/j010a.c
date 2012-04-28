@@ -1,3 +1,4 @@
+// kcc-assert-error(00007)
 int main(void){
 	int* p = 0;
 	{
