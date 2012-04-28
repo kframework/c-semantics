@@ -150,16 +150,20 @@ exit();
 sub performSpecializations {
 	my ($file) = (@_);
 	
-	my $ioserver = catfile($myDirectory, 'wrapperAndServer.jar');
+	my $wrapperCommand = catfile($myDirectory, 'wrapperAndServer.jar');
+	my $ioServer = catfile($myDirectory, 'ioserver.jar');
 	# my $cmdlineParse = catfile($myDirectory, 'jopt-simple-3.3.jar');
 	
-	my $wrapperCommand = "java -jar $ioserver";
+	$wrapperCommand = "java -jar $wrapperCommand";
+	$ioServer = "java -jar $ioServer";
+	
 	#my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-n'} ? 1 : 0;
 	
 	#$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
-	$file =~ s?EXTERN_IO_SERVER?$wrapperCommand?g;
+	$file =~ s?EXTERN_MAUDE_WRAPPER?$wrapperCommand?g;
+	$file =~ s?EXTERN_IO_SERVER?$ioServer?g;
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
 	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
 	$file =~ s?EXTERN_ND_FLAG?$nondetFlag?g;

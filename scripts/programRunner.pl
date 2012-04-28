@@ -95,6 +95,7 @@ if (defined($ENV{'IOLOG'})) {
 
 # these are compile time settings and are set by the compile script using this file as a template
 my $IO_SERVER="EXTERN_IO_SERVER";
+my $MAUDE_WRAPPER="EXTERN_MAUDE_WRAPPER";
 # my $IOFLAG="EXTERN_COMPILED_WITH_IO";
 my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME="EXTERN_IDENTIFIER";
@@ -284,7 +285,7 @@ sub runWrapper {
 	$errorFile = File::Temp->new( TEMPLATE => 'tmp-kcc-err-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
 	push(@temporaryFiles, $errorFile);
 
-	my $command = "$IO_SERVER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked $iolog_flag";
+	my $command = "$MAUDE_WRAPPER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked $iolog_flag";
 	$childPid = open P, "$command |" or die "Error running \"$command\"!";
 	#print "for $command, pid is $childPid\n";
 	#my @data=<P>;
@@ -320,7 +321,7 @@ sub runWrapper {
 sub runDebugger {
 	my ($command) = (@_);
 	print "Running $command\n";
-	exec("java -jar /home/grosu/celliso2/k-framework-daily/trunk/core/java/ioserver.jar 7500 & $command");
+	exec("$IO_SERVER 7500 & $command ; kill %1");
 }
 
 sub writeToFile {

@@ -19,6 +19,7 @@ export C_K_BASE ?= $(K_BASE)
 
 FILES_TO_DIST = \
 	$(K_BASE)/core/java/wrapperAndServer.jar \
+	$(K_BASE)/core/java/ioserver.jar \
 	$(K_BASE)/core/java/jopt-simple-3.3.jar \
 	$(SEMANTICS_DIR)/c-total.maude \
 	$(SEMANTICS_DIR)/c-total-nd.maude \
@@ -63,8 +64,9 @@ dist: check-vars $(DIST_DIR)/dist.done
 pdf: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) pdf
 
-$(K_BASE)/core/java/wrapperAndServer.jar: $(wildcard $(K_BASE)/core/java/IOServer/src/*/*.java) $(wildcard $(K_BASE)/core/java/Wrapper/src/*/*.java) $(K_BASE)/core/java/Wrapper/Manifest.txt
+$(K_BASE)/core/java/wrapperAndServer.jar $(K_BASE)/core/java/ioserver.jar: $(wildcard $(K_BASE)/core/java/IOServer/src/*/*.java) $(wildcard $(K_BASE)/core/java/Wrapper/src/*/*.java) $(K_BASE)/core/java/Wrapper/Manifest.txt
 	@$(MAKE) -C $(K_BASE)/core/java
+	
 
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
