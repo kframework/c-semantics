@@ -248,14 +248,11 @@ module DYNAMIC-SEMANTICS-READING is
 			~> assert(Offset:Nat <Int Len:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (_ Offset:Nat |-> V:K)) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes>... Offset:Nat |-> V:K ...</bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes>... Offset:Nat |-> V:K ...</bytes>
+		...</object>
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > .List </ buffer >
 		[structural]
@@ -265,14 +262,11 @@ module DYNAMIC-SEMANTICS-READING is
 			~> assert(Offset:Nat <Int Len:Nat, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (_ Offset:Nat |-> V:K)) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes>... Offset:Nat |-> V:K ...</bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes>... Offset:Nat |-> V:K ...</bytes>
+		...</object>
 		< locsWrittenTo > Locs:Bag </ locsWrittenTo >
 		< buffer > Mem:List </ buffer >
 		when notBool loc(Base:Nat, Offset:Nat, 0) in locations(Mem:List)
@@ -283,16 +277,11 @@ module DYNAMIC-SEMANTICS-READING is
 			=> assert(Offset:Nat <Int Len:Nat, 2)
 			~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), t(.Set, no-type))
 		...</ k >
-		// < mem >... 
-			// Base:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat])) 
-		// ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat] </bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat] </bytes>
+		...</object>
 		< buffer > Mem:List </ buffer >
 		when notBool loc(Base:Nat, Offset:Nat, 0) in locations(Mem:List)
 		andBool notBool $hasMapping(M:Map, Offset:Nat)
@@ -329,12 +318,9 @@ module DYNAMIC-SEMANTICS-WRITING is
 		[structural] 
 	rule [allocateTypeIfAbsent-present]:
 		< k > allocateTypeIfAbsent(loc(Base:Nat, 0, 0), T:KResult) => .K ...</ k >
-		// < mem >... Base:Nat |-> _ ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+		...</object>
 		[structural]
 
 	rule [alloc-lazy]:
@@ -368,20 +354,14 @@ module DYNAMIC-SEMANTICS-WRITING is
 	rule [realloc-found]:
 		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), loc(OldBase:Nat, 0, 0), loc(NewBase:Nat, 0, 0), _, _)
 		...</ k >
-		// < mem >... 
-			// OldBase:Nat |-> memblock(_, (_ N:Nat |-> K:K))
-			// NewBase:Nat |-> memblock(_, (_ (.Map => sNatN:Nat -Int 1 |-> K:K)))
-		// ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> OldBase:Nat </basePtr>
-				<bytes>... N:Nat |-> K:K ...</bytes>
-			...</object>
-			<object>...
-				<basePtr> NewBase:Nat </basePtr>
-				<bytes>... .Map => sNatN:Nat -Int 1 |-> K:K ...</bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> OldBase:Nat </basePtr>
+			<bytes>... N:Nat |-> K:K ...</bytes>
+		...</object>
+		<object>...
+			<basePtr> NewBase:Nat </basePtr>
+			<bytes>... .Map => sNatN:Nat -Int 1 |-> K:K ...</bytes>
+		...</object>
 		when N:Nat ==Int sNatN:Nat -Int 1
 		andBool sNatN:Nat >Int 0
 		[structural]	
@@ -390,15 +370,10 @@ module DYNAMIC-SEMANTICS-WRITING is
 	rule [realloc-unfound]:
 		< k > realloc-aux((sNatN:Nat => sNatN:Nat -Int 1), loc(OldBase:Nat, 0, 0), loc(NewBase:Nat, 0, 0), _, _)
 		...</ k >
-		// < mem >... 
-			// OldBase:Nat |-> memblock(_, M:Map)
-		// ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> OldBase:Nat </basePtr>
-				<bytes> M:Map </bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> OldBase:Nat </basePtr>
+			<bytes> M:Map </bytes>
+		...</object>
 		when notBool $hasMapping(M:Map, sNatN:Nat -Int 1)
 		andBool sNatN:Nat >Int 0
 		[structural]
@@ -470,14 +445,11 @@ module DYNAMIC-SEMANTICS-WRITING is
 		[structural]
 	rule
 		< k > makeUnknown-aux(loc(Base:Nat, Offset:Nat, 0), _, Len':Nat) => .K ...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Int Len':Nat)])) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Int Len':Nat)] </bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Nat to (Offset:Nat +Int Len':Nat)] </bytes>
+		...</object>
 		when Len:Nat >=Int Offset:Nat +Int Len':Nat
 		[structural]
 		
@@ -627,13 +599,10 @@ module DYNAMIC-SEMANTICS-WRITING is
 	rule [write-byte-buffer]:
 		< k > writeByte(LOC, V:K) => .K ...</ k >
 		< buffer >... (.List => bwrite(LOC, V:K)) </ buffer >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) Attr:Bag, _) ...</ mem >		
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties> mlength(Len:Nat) Attr:Bag </properties>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties> mlength(Len:Nat) Attr:Bag </properties>
+		...</object>
 		< locsWrittenTo > Locs:Bag (.Bag => BagItem(LOC)) </ locsWrittenTo >
 		< notWritable > NotWritable:Map </notWritable>
 		when notBool LOC in Locs:Bag
@@ -646,14 +615,11 @@ module DYNAMIC-SEMANTICS-WRITING is
 	rule [commit-byte]:
 		< blocked > false </ blocked >
 		< buffer > (bwrite(loc(Base:Nat, Offset:Nat, 0), V:K) => .List) ...</ buffer >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (M:Map => M:Map[V:K / Offset:Nat])) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes> M:Map => M:Map[V:K / Offset:Nat] </bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes> M:Map => M:Map[V:K / Offset:Nat] </bytes>
+		...</object>
 		when Offset:Nat <Int Len:Nat
 		[structural]
 	rule
@@ -771,30 +737,23 @@ module DYNAMIC-C-MEMORY-MISC is
 	// used by calloc
 	rule
 		< k > zeroBlock(loc(Base:Nat, 0, 0)) => .K ...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, (_ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat])) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-				<bytes> _ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat] </bytes>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+			<bytes> _ => .Map[piece(0, numBitsPerByte) / 0 to Len:Nat] </bytes>
+		...</object>
 		[structural]
 		
 	rule
 		< k > sizeofLocation(loc(Base:Nat, _:Nat, _:Nat)) => tv(Len:Nat, cfg:sizeut) ...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) ...</ mem >
-		< memory >...
-			<object>...
-				<basePtr> Base:Nat </basePtr>
-				<properties>... mlength(Len:Nat) ...</properties>
-			...</object>
-		...</ memory >
+		<object>...
+			<basePtr> Base:Nat </basePtr>
+			<properties>... mlength(Len:Nat) ...</properties>
+		...</object>
 		[structural]
 		
 	rule [delete-sized-block]:
 		< k > deleteSizedBlock(loc(Base:Nat, _:Nat, _:Nat), Len:Nat) => .K ...</ k >
-		// < mem >... Base:Nat |-> memblock(mlength(Len:Nat) _, _) => .Map ...</ mem >
 		< memory >...
 			(<object>...
 				<basePtr> Base:Nat </basePtr>
@@ -844,10 +803,10 @@ module DYNAMIC-C-MEMORY-MISC is
 		[structural]
 	rule [makeUnwritable]:
 		< k > makeUnwritable(loc(Base:Nat, 0, 0)) => .K ...</ k >
-		< memory >...
+		< object >...
 			<basePtr> Base:Nat </basePtr>
 			<properties>... .Bag => mconst ...</properties>
-		...</ memory >
+		...</ object >
 		[structural]
 
 	
@@ -867,10 +826,10 @@ module DYNAMIC-C-MEMORY-MISC is
 	// fixme could additionally use the type to check whether that type is valid for that pointer
 	rule [check-valid-loc]:
 		< k > checkValidLoc-aux(loc(BASE, Offset:Nat, 0)) => .K ...</ k >
-		< memory >...
+		< object >...
 			<basePtr> BASE </basePtr>
 			<properties>... mlength(Len:Nat) ...</properties>
-		...</ memory >
+		...</ object >
 		<threadId> MyThreadId:Nat </threadId>
 		when (PtrThreadId:Nat ==Int MyThreadId:Nat 
 			orBool PtrThreadId:Nat ==Int 0
