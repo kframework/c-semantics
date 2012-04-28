@@ -359,7 +359,13 @@ module DYNAMIC-C-ERRORS is
 	rule [err00045]:
 		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
 		< mem >... Base:Nat |-> memblock(mconst _:Bag, _) ...</ mem >
-		(.Bag => < errorCell > Error("00045", "Trying to modify an object declared with const type.") </ errorCell >)
+		// < mem >...
+			// <object>...
+				// <basePtr> Base:Nat </basePtr>
+				// <properties>... mconst ...</properties>
+			// ...</object>
+		// ...</ mem >
+		(.Bag => < errorCell > Error("00045", "Trying to modify a string literal or an object declared with const type.") </ errorCell >)
 		where LOC = loc(Base:Nat, _:Nat, _:Nat)
 		[structural]
 		

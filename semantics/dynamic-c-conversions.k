@@ -516,7 +516,7 @@ module DYNAMIC-SEMANTICS-CAST is
 	// this is starting to get into sketchy land
 	define [cast-unknown-integer]:
 		cast(T:KResult, tv(piece(unknown(Len:Nat), Len:Nat), T':KResult)) 
-			=> tv(piece(unknown(bitSizeofType(T:KResult)), bitSizeofType(T:KResult)), T:KResult)
+			=> tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
 	

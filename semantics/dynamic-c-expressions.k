@@ -898,7 +898,15 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(0, t(.Set, int))
 		...</ k >
-		< mem >... 
+		< mem >...
+			// <object>...
+				// <basePtr> Base:Nat </basePtr>
+				// <properties>... mlength(Len:Nat) ...</properties>
+			// ...</object>
+			// <object>...
+				// <basePtr> Base':Nat </basePtr>
+				// <properties>... mlength(Len':Nat) ...</properties>
+			// ...</object>
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >
@@ -911,7 +919,15 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		< k > tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
 			=> tv(1, t(.Set, int))
 		...</ k >
-		< mem >... 
+		< mem >...
+			// <object>...
+				// <basePtr> Base:Nat </basePtr>
+				// <properties>... mlength(Len:Nat) ...</properties>
+			// ...</object>
+			// <object>...
+				// <basePtr> Base':Nat </basePtr>
+				// <properties>... mlength(Len':Nat) ...</properties>
+			// ...</object>
 			Base:Nat |-> memblock(mlength(Len:Nat) _, _) 
 			Base':Nat |-> memblock(mlength(Len':Nat) _, _) 
 		...</ mem >

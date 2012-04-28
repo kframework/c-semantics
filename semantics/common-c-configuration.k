@@ -11,7 +11,13 @@ module COMMON-C-CONFIGURATION is
 			<genv color="lightgray"> .Map </genv>
 			<gtypes color="lightgray"> .Map </gtypes>
 			<gstructs color="lightgray"> .Map </gstructs>
-			<mem color="red"> .Map </mem>
+			<mem color="red"> .Map
+				// <object multiplicity="*">
+					// <basePtr> 0 </basePtr>
+					// <properties> .Bag </properties>
+					// <bytes> .Map </bytes>
+				// </object>
+			</mem>
 			<notWritable> .Map </notWritable>
 			<functions color="lightgray"> .Map </functions>
 			<freshNat color="green"> 0 </freshNat>

@@ -2,7 +2,7 @@ module COMMON-SEMANTICS-TYPE-INCLUDE is
 	// FIXME need to automatically pad structs
 	including COMMON-INCLUDE 
 	
-	syntax K ::= "MYHOLE" [klabel(MYHOLE)] 
+	syntax K ::= "MYHOLE" [klabel(MYHOLE)]
 	
 	syntax K ::= "addStruct" "(" Id "," List{KResult} ")" [klabel(addStruct)]
 	syntax K ::= "addUnion" "(" Id "," List{KResult} ")" [klabel(addUnion)]

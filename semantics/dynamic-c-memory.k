@@ -414,8 +414,8 @@ module DYNAMIC-SEMANTICS-WRITING is
 	syntax K ::= "makeUnknown-aux" "(" Nat "," Type "," K ")" [klabel(makeUnknown-aux)] // should be Nat Type K
 	context makeUnknown-aux(_:Nat, _, value(HOLE))
 	
-	rule makeUnknown(N:Nat, T:KResult)
-		=> makeUnknown-aux(N:Nat, T:KResult, value(byteSizeofType(T:KResult))) 
+	rule makeUnknown(Loc:Nat, T:KResult)
+		=> makeUnknown-aux(Loc:Nat, T:KResult, value(byteSizeofType(T:KResult))) 
 		[structural]
 	rule
 		< k > makeUnknown-aux(loc(Block:Nat, Offset:Nat, 0), _, Len':Nat) => .K ...</ k >

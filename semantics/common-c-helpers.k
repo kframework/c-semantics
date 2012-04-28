@@ -27,10 +27,6 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	define [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false
 	define [isUnknown-int]: isUnknown(I:Int) => false
 		when I:Int <=Int 0 orBool I:Int >Int 0
-
-	// syntax Bool ::= "isUnknown" "(" Nat ")" [klabel(isUnknown)]
-	// eq isUnknown(unknown(_:Nat)) = true
-	// eq isUnknown(_:Nat) = false [owise]
 	
 	define loc(N:Nat, M:Nat, 0) <Int loc(N:Nat, M':Nat, 0) => true
 		when M:Nat <Int M':Nat
