@@ -37,8 +37,8 @@ module DYNAMIC-C-ERRORS is
 		[structural]
 	
 		
-	syntax CellLabel ::= "halted-k" [klabel(halted-k)] 
-	syntax CellLabel ::= "halted-T" [klabel(halted-T)]
+	syntax CellLabel ::= "halted-k"
+	syntax CellLabel ::= "halted-T"
 	declare halt_ : Bag -> Bag
 	define halt < k => halted-k > _:K </ k => halted-k >
 	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
@@ -50,14 +50,15 @@ module DYNAMIC-C-ERRORS is
 	define halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
 	define halt .Bag => .Bag
 	
+	// FIXME TOOL BUG removing spaces in inner cells causes kompile to lose track of ...s
 	rule [halt-start]:
 		< T => halted-T >...
-			<threads> 
+			< threads >
 				(B:Bag => halt B:Bag)
-				<thread>...
-					<finalComputation> _:K </finalComputation>
-				...</thread> 
-			</threads> 
+				< thread >...
+					< finalComputation > _:K </ finalComputation >
+				...</ thread > 
+			</ threads > 
 		...</ T => halted-T >
 		[structural]
 	
