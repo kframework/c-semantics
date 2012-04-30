@@ -17,6 +17,18 @@
 \renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}}
 \renewcommand{\ruleAttributes}[1]{\par{}\hspace{2em} [#1]}
 
+% \newcommand{\k@ruleLabel}[2]{%
+  % \ifthenelse{\equal{#1}{}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2}}{Rule Label: #1}}%
+% }
+
+\makeatletter
+\renewcommand{\k@ruleLabel}[2]{%
+  \ifthenelse{\equal{#1}{\textbackslash !}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2 \kattribute{#1}}}{Rule Label: #1}}\\%
+% \global\def\ignoreThisLabel{#1}%
+}
+\makeatother
+\renewcommand{\rulebox}[1]{\par\indent\parbox{8.5in}{#1}}
+
 \newcommand{\mycomment}[1]{#1}
 \providecommand{\kctor}{}
 \providecommand{\kmemo}{}

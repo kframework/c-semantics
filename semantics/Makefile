@@ -10,6 +10,7 @@ K_TCP = $(K_BASE)/core/maude/lib/TCPSupport
 K-PL-BUILTINS = $(K_BASE)/core/maude/lib/pl-builtins
 K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
 K_PL_META_LEVEL = $(K_BASE)/core/maude/lib/pl-meta-level
+K_LATEX_STYLE = $(K_BASE)/core/latex/k.sty
 
 
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
@@ -57,20 +58,24 @@ temp-c-%.tex: PDF_MODULES=`grep -o '^module.* is' $*.k | grep -o ' .* '`
 temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
 #@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	$(K_MAUDE) c.k -l C -style mm -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	$(K_MAUDE) c.k -l C -package-options "style=bubble" -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	
 %.tex: temp-c-%.tex Makefile
 	@echo "Modifying latex..."
 	@cp $< $@.temp
 	@sed -i 's|\\documentclass{article}|\\documentclass[landscape]{article}|' $@.temp
-	@sed -i 's|\\usepackage\[poster,|\\usepackage\[|' $@.temp
+#@sed -i 's|\\usepackage\[poster,|\\usepackage\[|' $@.temp
 	@sed -i 's|\\newpage||' $@.temp
 	@sed -i 's|}mybracket|}\\mybracket|' $@.temp
 	@sed -i 's|\\mathrel{}||g' $@.temp
 	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
+# get rid of the name attributes so they don't show up twice
+	@perl -i -pe 's/(\\(?:kdefine|krule){([a-zA-Z-]*)}.*)\\kattribute{\2}[ ]?/\1\3/' $@.temp
+# remove extraneous spaces at end of attributes
+	@perl -i -pe 's/(\\kattribute{[a-zA-Z-()]+})[ ]?}/\1}/' $@.temp
 	@mv $@.temp $@
 
-%.pdf: %.tex semantics.sty
+%.pdf: %.tex $(K_LATEX_STYLE) semantics.sty
 	@echo "Compiling latex..."
 	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 #@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi

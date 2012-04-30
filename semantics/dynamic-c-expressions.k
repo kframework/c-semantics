@@ -900,11 +900,11 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		...</k>
 		<object>...
 			<basePtr> Base:Nat </basePtr>
-			<properties>... mlength(Len:Nat) ...</properties>
+			<oLength> Len:Nat </oLength>
 		...</object>
 		<object>...
 			<basePtr> Base':Nat </basePtr>
-			<properties>... mlength(Len':Nat) ...</properties>
+			<oLength> Len':Nat </oLength>
 		...</object>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		andBool Base:Nat =/=K Base':Nat
@@ -917,11 +917,11 @@ module DYNAMIC-SEMANTICS-BOOLEAN-ARITHMETIC is
 		...</k>
 		<object>...
 			<basePtr> Base:Nat </basePtr>
-			<properties>... mlength(Len:Nat) ...</properties>
+			<oLength> Len:Nat </oLength>
 		...</object>
 		<object>...
 			<basePtr> Base':Nat </basePtr>
-			<properties>... mlength(Len':Nat) ...</properties>
+			<oLength> Len':Nat </oLength>
 		...</object>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		andBool Base:Nat =/=K Base':Nat

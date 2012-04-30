@@ -114,7 +114,7 @@ module DYNAMIC-C-ERRORS is
 		< k => finalComputation > checkValidLoc-aux(loc(Base:Nat, Offset:Nat, _:Nat)) ...</ k => finalComputation >
 		<object>...
 			<basePtr> Base:Nat </basePtr>
-			<properties>... mlength(Len:Nat) ...</properties>
+			<oLength> Len:Nat </oLength>
 		...</object>
 		(.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
 		when Offset:Nat >Int Len:Nat
@@ -188,7 +188,7 @@ module DYNAMIC-C-ERRORS is
 		< k => finalComputation > writeByte(loc(Base:Nat, Offset:Nat, _:Nat), _) ...</ k => finalComputation >
 		<object>...
 			<basePtr> Base:Nat </basePtr>
-			<properties>... mlength(Len:Nat) ...</properties>
+			<oLength> Len:Nat </oLength>
 		...</object>
 		(.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
 		when notBool Offset:Nat <Int Len:Nat

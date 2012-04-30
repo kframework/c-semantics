@@ -14,6 +14,7 @@ module COMMON-C-CONFIGURATION is
 			<memory color="red">
 				<object multiplicity="*">
 					<basePtr> 0 </basePtr>
+					<oLength> 0 </oLength>
 					<properties> .Bag </properties>
 					<bytes> .Map </bytes>
 				</object>
