@@ -46,7 +46,7 @@ sub linker {
 	$retval .= "op 'linked-program : -> KLabel .\n";
 	$retval .= "eq 'linked-program(.List{K}) = ";
 	$retval .= "'Program(";
-	$retval .= "'List((_`(_`)(kList(\"wklist_\"), (";
+	$retval .= "'List((_`(_`)(kList(\"List`{K`}2K_\"), (";
 	$retval .= printNested(@programNames);
 	$retval .= '))))';
 	$retval .= ')';

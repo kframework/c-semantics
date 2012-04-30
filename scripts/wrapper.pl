@@ -102,7 +102,7 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< type > (.*) <\/ type >/){
 				$haveError = 1;
 				$finalCompType = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("List`{K`}2K_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}

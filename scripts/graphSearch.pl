@@ -64,8 +64,7 @@ sub graphSearch {
 			if ($line =~ m/< output > # "(.*)"\(\.List\{K\}\) <\/ output >/) {
 				$solutions[-1]->{'output'} = $1;
 			}
-			#if ($line =~ m/< resultValue > \('tv\)\.KResultLabel\(kList\("wklist_"\)\(Rat (-?\d+)\(\.List\{K\}\)\),,\('int\)\.KResultLabel\(\.List\{K\}\)\) <\/ resultValue >/) {
-			if ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("wklist_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(wset \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/) {
+			if ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("List`{K`}2K_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/) {
 				$solutions[-1]->{'retval'} = $1;
 			}
 			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> # "(.*)"\(\.List\{K\}\)/) {

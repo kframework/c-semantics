@@ -171,7 +171,7 @@ sub elementToK {
 		$label = "_::_";
 	} elsif ($label eq 'NewList') {
 		$label = "List";
-		$prefix = '(_`(_`)(kList("wklist_"), ';
+		$prefix = '(_`(_`)(kList("List`{K`}2K_"), ';
 		$suffix = '))';
 	# } elsif ($label eq 'Identifier') {
 		# $reader->nextElement;
@@ -269,7 +269,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = '_`(_`)(kList("wklist_"), (';
+	my $retval = '_`(_`)(kList("List`{K`}2K_"), (';
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {
