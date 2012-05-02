@@ -11,9 +11,9 @@ module COMMON-C-CONFIGURATION is
 			<genv color="lightgray"> .Map </genv>
 			<gtypes color="lightgray"> .Map </gtypes>
 			<gstructs color="lightgray"> .Map </gstructs>
-			<memory color="red">
+			<memory color="red" type="Map">
 				<object multiplicity="*">
-					<basePtr> 0 </basePtr>
+					<basePtr type="Key"> 0 </basePtr>
 					<oLength> 0 </oLength>
 					<properties> .Bag </properties>
 					<bytes> .Map </bytes>
