@@ -395,7 +395,7 @@ module DYNAMIC-SEMANTICS-MEMBERS is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
 	A postfix expression followed by the \cinline{.} operator and an identifier designates a member of a structure or union object. The value is that of the named member, and is an lvalue if the first expression is an lvalue. \broken{If the first expression has qualified type, the result has the so-qualified version of the type of the designated member.}
-	}*/			
+	}*/
 	// fixme tool bug, can't use L:KLabel
 	rule
 		<k> lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
@@ -556,8 +556,7 @@ module DYNAMIC-SEMANTICS-DEREFERENCE is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
 	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
-	}
-	*/
+	}*/
 	rule [deref]:
 		<k> *(tv(Loc:Nat, t(_, pointerType(t(S:Set, T:K)))))
 			=> checkDerefLoc(Loc:Nat)

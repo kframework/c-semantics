@@ -821,23 +821,19 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	define [innerType-arrayType]:
-		innerType(t(_, arrayType(T:KResult, _:Nat))) => T:KResult 
-		[structural]
+		innerType(t(_, arrayType(T:KResult, _:Nat))) => T:KResult
 	define [innerType-incompleteArrayType]: 
-		innerType(t(_, incompleteArrayType(T:KResult))) => T:KResult 
-		[structural]
+		innerType(t(_, incompleteArrayType(T:KResult))) => T:KResult
 	define [innerType-flexibleArrayType]: 
-		innerType(t(_, flexibleArrayType(T:KResult))) => T:KResult 
-		[structural]
+		innerType(t(_, flexibleArrayType(T:KResult))) => T:KResult
 	define [innerType-qualifiedType]:
-		innerType(t(_, qualifiedType(T:KResult, _))) => innerType(T:KResult) 
-		[structural]
+		innerType(t(_, qualifiedType(T:KResult, _))) => innerType(T:KResult)
 	define [innerType-pointerType]:
-		innerType(t(_, pointerType(T:KResult))) => T:KResult 
-		[structural]
+		innerType(t(_, pointerType(T:KResult))) => T:KResult
 	define [innerType-bitfieldType]:
-		innerType(t(_, bitfieldType(T:KResult, _:Nat))) => T:KResult 
-		[structural]
+		innerType(t(_, bitfieldType(T:KResult, _:Nat))) => T:KResult
+	define [innerType-functionType]:
+		innerType(t(_, functionType(T:KResult, _:List{KResult}))) => T:KResult
 
 	context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
 	rule

@@ -85,34 +85,16 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS is
 		[structural]	
 end module
 
-module COMMON-SEMANTICS-TYPE-STRICTNESS is
-	including COMMON-SEMANTICS-TYPE-INCLUDE
-
-	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
-	rule [type-Cast-heat]:
-		<k> (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</k>
-		<type> Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</type>
-		[structural]
-		
-	rule [type-Cast-cool]:
-		<k> (T:KResult => .) ~> evalToType ...</k>
-		<type> waitingOnDeclType => T:KResult ...</type>
-		[structural]
-end module
-
 module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	including COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")" [klabel(canonicalizeType-aux)] 
 	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
 
-		
 	rule
 		<k> canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</k>
 		[structural]
-		
 
-	
 	rule
 		<k> (.K => DeclType(K1:K, K2:K))
 			~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))), _, _, _, _) 
@@ -206,9 +188,9 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		when Q:K ==K Const
 		[structural]
 		
-	/*@ \source[n1570]{\para{6.7.3}{9}}
+	/*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
 	If the specification of an array type includes any type qualifiers, the element type is so-qualified, not the array type. \ldots
-	*/
+	}*/
 	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Nat))
 		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Nat))
 		[structural anywhere]
@@ -583,220 +565,9 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	rule FieldName(K:K) => K:K [structural anywhere]
 end module
 
-module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
+module COMMON-SEMANTICS-TYPE-MISC is
+	including COMMON-SEMANTICS-TYPE-INCLUDE
 	
-	rule
-		<k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
-		(.Bag => <type> K:K </type>)
-		[structural]
-	rule
-		<k> evalToType ~> typeof(MYHOLE) => T:TypeResult ...</k>
-		(<type> T:TypeResult </type> => .Bag)
-		[structural]
-
-	rule
-		<type> emptyValue => t(.Set, void) ...</type> 
-		[structural]
-		
-	rule
-		<type> T:KResult << _ => T:KResult ...</type>
-		[structural]
-	rule
-		<type> T:KResult >> _ => T:KResult ...</type>
-		[structural]
-		
-	rule
-		<type> tv(_, T:KResult) => T:KResult ...</type>
-		[structural]
-	
-	rule
-		<type> SizeofExpression(_) => cfg:sizeut ...</type>
-		[structural]
-
-	rule <type> E1:K[E2:K] => *(E1:K + E2:K) ...</type> 
-		[structural]
-	rule 
-		<type> arithInterpret(T:KResult, _) => T:KResult ...</type> 
-		[structural]
-	rule
-		<type> t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-	rule
-		<type> T':KResult + t(S:Set, pointerType(T:KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-	rule
-		<type> t(S:Set, pointerType(T:KResult)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-	rule
-		<type> t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</type>
-		[structural]
-	rule
-		<type> t(S:Set, arrayType(T:KResult, _:Nat)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-	rule
-		<type> T':KResult + t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-	rule
-		<type> t(S:Set, arrayType(T:KResult, _:Nat)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
-		when hasIntegerType(T':KResult)
-		[structural]
-
-	// c99 6.4.5
-	rule
-		<type> Constant(StringLiteral(S:String)) 
-			=> t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) 
-		...</type>
-		[structural]
-	rule
-		<type> Constant(WStringLiteral(L:List{K})) 
-			=> t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) 
-		...</type>
-		[structural]
-		
-	rule
-		<type> K:K => T:KResult ...</type>
-		<types>... K:K |-> T:KResult ...</types>
-		[structural]
-			
-	rule
-		<type> Comma(List((_,, K:K))) => K:K ...</type>
-		[structural]
-
-	rule [type-call-func]:
-		<type> Call(t(_, functionType(T:KResult, _:List{KResult})), _) => T:KResult ...</type>
-		[structural]
-		 		
-	rule [type-struct-dot]:
-		<type> t(_, structType(S:Id)) . F:Id => T:KResult ...</type>
-		<structs>... 
-			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
-		...</structs>
-		[structural]
-	rule [type-union-dot]:
-		<type> t(_, unionType(S:Id)) . F:Id => T:KResult ...</type>
-		<structs>... 
-			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
-		...</structs>
-		[structural]
-	
-	rule [type-deref-type]:
-		<type> * T:KResult => innerType(T:KResult) ...</type>
-		[structural]
-
-	rule [type-compound-literal]:
-		<type> CompoundLiteral(_, Specifier:K, DeclType:K, _)
-			=> Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
-		...</type>
-		[structural]
-	
-	rule [type-assignment]:
-		<type> L:KLabel(K:K,, _) 
-			=> K:K
-		...</type>
-		when Set(
-			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		) contains l(L:KLabel)
-		[structural]
-
-	rule 
-		<type> L:KLabel(T:KResult,, T':KResult) => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
-		when isArithBinConversionOp(L:KLabel)
-		andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
-		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
-		[structural]
-		
-	rule [type-ternary-arithmetic]:
-		<type> _:K ? T:KResult : T':KResult => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
-		when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
-		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
-		[structural]
-	rule [type-ternary-identical]:
-		<type> _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</type>
-		when notBool isArrayType(T:TypeResult)
-		[structural]
-		
-	rule [type-ternary-array-left]: 
-		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
-		[structural]
-	rule [type-ternary-array-right]: 
-		<type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</type>
-		[structural]
-		
-	rule [type-ternary-pointer]: // not safe, could be incompatible types
-		<type> _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
-		[structural]
-
-	rule
-		<type> L:KLabel(T:KResult) => T:KResult ...</type> 
-		when isArithUnaryOp(L:KLabel)
-		andBool isFloatType(T:KResult)
-		[structural]
-	rule
-		<type> L:KLabel(T:KResult) => promote(T:KResult) ...</type> 
-		when isArithUnaryOp(L:KLabel)
-		andBool hasIntegerType(T:KResult)
-		[structural]
-	
-	rule 
-		<type> L:KLabel(T:KResult,, _:List{K}) => T:KResult ...</type>
-		when isFloatType(T:KResult)
-		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural]
-	rule 
-		<type> L:KLabel(T:KResult,, _:List{K}) => promote(T:KResult) ...</type>
-		when hasIntegerType(T:KResult)
-		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
-		[structural]
-		
-	rule [type-inc-dec]:
-		<type> L:KLabel(T:KResult) => T:KResult ...</type>
-		when isPointerType(T:KResult)
-		andBool (
-			L:KLabel ==KLabel ('_++)
-			orBool L:KLabel ==KLabel ('_--)
-			orBool L:KLabel ==KLabel ('--_)
-			orBool L:KLabel ==KLabel ('++_)
-		)
-		[structural]
-	
-	rule
-		<type> !(_:K) => t(.Set, int) ...</type>
-		[structural]
-		
-	rule
-		<type> L:KLabel(_:K,, _:K) => t(.Set, int) ...</type>
-		when L:KLabel ==KLabel '_==_
-		orBool L:KLabel ==KLabel '_!=_
-		orBool L:KLabel ==KLabel '_&&_
-		orBool L:KLabel ==KLabel '_||_
-		[structural]
-		
-	rule [type-address]:
-		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
-		[structural]
-		
-end module
-
-module COMMON-C-TYPING is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
-	including COMMON-SEMANTICS-TYPE-STRICTNESS 
-	including COMMON-SEMANTICS-TYPE-DECLARATIONS 
-	including COMMON-SEMANTICS-TYPE-CANONICALIZATION 
-	including COMMON-SEMANTICS-TYPE-INTERPRETATION 
-	including COMMON-SEMANTICS-TYPE-EXPRESSIONS 
-	
-	rule [ExpressionLoc-type]:
-		<type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
-		<currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
-		[structural]
-		
 	/*@ \source[n1570]{\para{6.2.7}{1}}
 	Two types have compatible type if their types are the same. Additional rules for determining whether two types are compatible are described in 6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for declarators.  Moreover, two structure, union, or enumerated types declared in separate translation units are compatible if their tags and members satisfy the following requirements: If one is declared with a tag, the other shall be declared with the same tag. If both are completed anywhere within their respective translation units, then the following additional requirements apply: there shall be a one-to-one correspondence between their members such that each pair of corresponding members are declared with compatible types; if one member of the pair is declared with an alignment specifier, the other is declared with an equivalent alignment specifier; and if one member of the pair is declared with a name, the other is declared with the same name. For two structures, corresponding members shall be declared in the same order. For two structures or unions, corresponding bit-fields shall have the same widths. For two enumerations, corresponding members shall have the same values.
 	
@@ -1080,10 +851,7 @@ module COMMON-C-TYPING is
 	// Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
 	// */
 	define isArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool isFloatType(T:KResult)
-		
-		
-		
-			
+
 	define unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
 	define unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
 		when getKLabel(T:K) =/=KLabel 'qualifiedType 
@@ -1095,4 +863,14 @@ module COMMON-C-TYPING is
 		
 	
 	define getModifiers(t(S:Set, _)) => S:Set
+end module
+
+
+module COMMON-C-TYPING is
+	including COMMON-SEMANTICS-TYPE-INCLUDE
+	
+	including COMMON-SEMANTICS-TYPE-DECLARATIONS 
+	including COMMON-SEMANTICS-TYPE-CANONICALIZATION 
+	including COMMON-SEMANTICS-TYPE-INTERPRETATION
+	including COMMON-SEMANTICS-TYPE-MISC
 end module

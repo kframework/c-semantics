@@ -15,6 +15,12 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS is
 	rule [skip-label]: 
 		<k> Label(L:Id, K:K) => K:K ...</k>
 		[structural]
+	rule [case-fall-through]:
+		<k> Case(_:Nat, _:Nat, _, K:K) => K:K ...</k>
+		[structural] 
+	rule [default-fall-through]:
+		<k> Default(_:Nat, K:K) => K:K ...</k>
+		[structural] 
 end module
 
 
@@ -39,6 +45,7 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 			<localAddresses> Addresses:Set => .Set </localAddresses>
 			<nestingDepth> N:Nat => N:Nat +Int 1 </nestingDepth>
 		</local>
+		<br/>
 		<blockStack> .List 
 			=> ListItem(<stackFrame> C:Bag 
 			<nestingDepth> N:Nat </nestingDepth> 
@@ -46,7 +53,7 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 			<localAddresses> Addresses:Set </localAddresses>
 			</stackFrame>)
 		...</blockStack>
-		[structural] 
+		[large structural] 
 		
 	rule [pop-block-free-memory]:
 		<k> (.K => deleteBlock(Loc:Nat)) ~> popBlock ...</k>
@@ -136,22 +143,20 @@ module DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 		
 	rule
-		<k> handleSwitch(SN:Nat, V:KResult) => handleSwitch-aux(SN:Nat, V:KResult, Map(M:Map)) ...</k>
+		<k> handleSwitch(SN:Nat, V:KResult) 
+			=> handleSwitch-aux(SN:Nat, V:KResult, Map(M:Map)) 
+		...</k>
+		<br/>
 		<currentFunction> F:Id </currentFunction>
 		<currentTranslationUnit> Tu:K </currentTranslationUnit>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</gotoMap>
 		[structural] 
 		
-	//  match found in value and type, goto it
-	//  don't need to erase the rest of K since we're GOTOing
-	rule
-		<k> tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</k>
-		[structural]
-		
 	syntax K ::= "tryCase" "(" K "," Value "," K ")" [klabel(tryCase)] //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
-		<k> (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) ~> handleSwitch-aux(SN:Nat, V:KResult, Map((_ ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .Map))))
+		<k> (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
+			~> handleSwitch-aux(SN:Nat, V:KResult, Map((_ ((genLabel(SN:Nat, Exp:K) |-> CaseHelper:K) => .Map))))
 		...</k>
 		when Exp:K =/=K l('Default)
 		[structural] 
@@ -167,11 +172,6 @@ module DYNAMIC-SEMANTICS-SWITCH is
 	rule
 		<k> handleSwitch-aux(_, _, Map(.Map)) => .K ...</k>
 		[structural] 
-
-	rule
-		<k> tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .K ...</k>
-		when V:K =/=K V':K
-		[structural] 
 		
 	rule
 		<k> handleSwitch-aux(SN:Nat, _, Map((_ ((genLabel(SN':Nat, _) |-> _) => .Map)))) ...</k>
@@ -181,18 +181,20 @@ module DYNAMIC-SEMANTICS-SWITCH is
 		<k> handleSwitch-aux(SN:Nat, _, Map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</k>
 		when L:KLabel =/=KLabel 'genLabel
 		[structural] 
-			
+
 	rule
 		<k> tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _) ...</k>
 		when T:KResult =/=K T':KResult
+		[structural]
+	rule
+		<k> tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .K ...</k>
+		when V:K =/=K V':K
 		[structural] 
-	
-	rule [case-fall-through]:
-		<k> Case(_:Nat, _:Nat, _, K:K) => K:K ...</k>
-		[structural] 
-	rule [default-fall-through]:
-		<k> Default(_:Nat, K:K) => K:K ...</k>
-		[structural] 
+	//  match found in value and type, goto it
+	//  don't need to erase the rest of K since we're GOTOing
+	rule
+		<k> tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</k>
+		[structural]
 end module
 
 module DYNAMIC-SEMANTICS-WHILE is
@@ -262,9 +264,14 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 	//  fixme fishy interaction with continue i think
 	rule [for-mark]:
 		<k> (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K) ~> popLoop)
+			=> pushBlock 
+			~> addToHistory(ForNum:Nat) 
+			~> Pre:K 
+			~> loopMarked 
+			~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K)
+			~> popLoop)
 		</k>
-		@latex("\\kBR")
+		<br/>
 		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
 		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
 		[structural large] 
@@ -376,7 +383,7 @@ module DYNAMIC-SEMANTICS-GOTO is
 			=> addVariablesForBlock(CurrentBlock:Nat, DeclStack:List)
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (Prefix:List ListItem(CurrentBlock:Nat) ActualHistory:List), K:K, LoopStack:List, DeclStack:List))
 		...</k>
-		@latex("\\kBR")
+		<br/>
 		<nestingDepth> ActualDepth:Nat </nestingDepth>
 		<blockHistory> ListItem(CurrentBlock:Nat) ActualHistory:List </blockHistory>
 		when ActualDepth:Nat +Int 1 =/=Int TargetDepth:Nat
@@ -390,7 +397,7 @@ module DYNAMIC-SEMANTICS-GOTO is
 			)
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (_ ListItem(TargetBlock:Nat) ActualHistory:List), _, _, DeclStack:List))
 		...</k>
-		@latex("\\kBR")
+		<br/>
 		<nestingDepth> ActualDepth:Nat </nestingDepth>
 		<blockHistory> ActualHistory:List </blockHistory> //  (. => ListItem(TargetBlock:Nat)) 
 		when ActualDepth:Nat +Int 1 =/=Int TargetDepth:Nat
@@ -470,8 +477,78 @@ module DYNAMIC-SEMANTICS-GOTO is
 
 end module
 
-module DYNAMIC-SEMANTICS-RETURN is
+module DYNAMIC-SEMANTICS-CONTINUE is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+
+	/*@
+\begin{lrbox}{\LstBox}
+\begin{minipage}{0.5\linewidth}
+\begin{lstlisting}[multicols=3]
+while (...) {
+	...
+	continue;
+	...
+	contin: ;
+}
+
+do {
+	...
+	continue;
+	...
+	contin: ;
+} while (...);
+
+for (...) {
+	...
+	continue;
+	...
+	contin: ;
+}
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+	\fromStandard{\source[n1570]{\para{6.8.6.2}{2}}}{
+	A \cinline{continue} statement causes a jump to the loop-continuation portion of the smallest enclosing iteration statement; that is, to the end of the loop body. More precisely, in each of the statements\\
+	\usebox{\LstBox}\\
+unless the \cinline{continue} statement shown is in an enclosed iteration statement (in which case it is interpreted within that statement), it is equivalent to \cinline{goto contin;}.
+	}
+	*/
+	rule [continue]:
+		<k> Continue ~> ((L:KLabel)(_) => .) ...</k>
+		when L:KLabel =/=KLabel 'loopMarked
+		andBool L:KLabel =/=KLabel 'popBlock
+		andBool L:KLabel =/=KLabel 'pushBlock
+		andBool L:KLabel =/=KLabel 'popLoop
+		[structural]
+	rule [continue-through-pop]:
+		<k> Continue ~> popBlock 
+			=> popBlock
+			~> Continue
+		...</k>
+		[structural]
+
+	rule [continue-done-for]:
+		<k> (Continue => Computation(Post:K)) ~> loopMarked ~> For(_:Nat, _, _, Post:K, _) ...</k>
+		[structural]
+	rule [continue-done]:
+		<k> (Continue => .K) ~> loopMarked ~> L:KLabel(_) ...</k>
+		when L:KLabel =/=KLabel 'For
+		[structural]
+		
+end module
+
+module DYNAMIC-SEMANTICS-BREAK is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+	/*@ \fromStandard{\source[n1570]{\para{6.8.6.3}{2}}}{
+	A break statement terminates execution of the smallest enclosing switch or iteration statement.
+	}*/
+	rule [break]:
+		<k> Break => popLoop ...</k>
+		[structural] 
+end module
+
+module DYNAMIC-SEMANTICS-RETURN is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 
 	/*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
 	A \cinline{return} statement terminates execution of the current function and returns control to its caller. A function may have any number of \cinline{return} statements.
@@ -499,11 +576,13 @@ module DYNAMIC-SEMANTICS-RETURN is
 
 	//  this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
 	rule [return]: 
-		<k> Return(V:KResult) ~> _ 
+		<k> Return(V:KResult) ~> _
 			=> sequencePoint 
 			~> cast(T:KResult, V:KResult) 
 			~> K:K
 		</k>
+		<gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
+		//<br/>
 		<control>
 			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
 			(<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)
@@ -513,8 +592,7 @@ module DYNAMIC-SEMANTICS-RETURN is
 			(<blockStack> .List </blockStack> => .Bag)
 			(_ => C:Bag)
 		</control>
-		@latex("\\kBR")
-		<gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
+		<br/>
 		<callStack>
 			ListItem(
 				<stackFrame>
@@ -543,39 +621,6 @@ module DYNAMIC-SEMANTICS-STATEMENTS-MISC is
 		<loopStack> ListItem(kpair(Num':Nat, _)) ...</loopStack>
 		when Num':Nat =/=Int Num:Nat
 		[structural] 
-	
-	/*@ \fromStandard{\source[n1570]{\para{6.8.6.2}{2}}}{
-	A continue statement causes a jump to the loop-continuation portion of the smallest enclosing iteration statement; that is, to the end of the loop body. \ldots
-	}
-	*/
-	rule [continue]:
-		<k> Continue ~> ((L:KLabel)(_) => .) ...</k>
-		when L:KLabel =/=KLabel 'loopMarked
-		andBool L:KLabel =/=KLabel 'popBlock
-		andBool L:KLabel =/=KLabel 'pushBlock
-		andBool L:KLabel =/=KLabel 'popLoop
-		[structural]
-	rule [continue-through-pop]:
-		<k> Continue ~> popBlock 
-			=> popBlock
-			~> Continue
-		...</k>
-		[structural]
-
-	rule [continue-done-for]:
-		<k> (Continue => Computation(Post:K)) ~> loopMarked ~> For(_:Nat, _, _, Post:K, _) ...</k>
-		[structural]
-	rule [continue-done]:
-		<k> (Continue => .K) ~> loopMarked ~> L:KLabel(_) ...</k>
-		when L:KLabel =/=KLabel 'For
-		[structural]
-		
-	/*@ \fromStandard{\source[n1570]{\para{6.8.6.3}{2}}}{
-	A break statement terminates execution of the smallest enclosing switch or iteration statement.
-	}*/
-	rule [break]:
-		<k> Break => popLoop ...</k>
-		[structural] 
 end module
 
 module DYNAMIC-C-STATEMENTS is
@@ -589,6 +634,8 @@ module DYNAMIC-C-STATEMENTS is
 	including DYNAMIC-SEMANTICS-RETURN 
 	including DYNAMIC-SEMANTICS-BLOCKS 
 	including DYNAMIC-SEMANTICS-DO-WHILE 
+	including DYNAMIC-SEMANTICS-CONTINUE
+	including DYNAMIC-SEMANTICS-BREAK
 	including DYNAMIC-SEMANTICS-STATEMENTS-MISC
 	
 end module

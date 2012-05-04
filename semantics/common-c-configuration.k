@@ -26,7 +26,7 @@ module COMMON-C-CONFIGURATION is
 			<nextThreadId color="black"> 2 </nextThreadId> // 0 is global, 1 is main
 			<malloced color="lightgray"> .Map </malloced>
 			<stringLiterals color="lightgray"> .Map </stringLiterals>
-			@latex("\\kBR")
+			<br/>
 			// <staticSemantics multiplicity="?" color="cyan">
 				<leftoverExterns color="cyan"> .Bag </leftoverExterns>
 				<translationUnits color="cyan"> .Bag </translationUnits>
@@ -39,7 +39,7 @@ module COMMON-C-CONFIGURATION is
 				<preTypes color="cyan"> .Map </preTypes>
 				<declarations color="cyan"> .Set </declarations>
 			// </staticSemantics>
-			@latex("\\kBR")
+			<br/>
 			<functionTranslationUnits color="lightgray"> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
 			<nextSharedLoc color="black"> 0 </nextSharedLoc>
 			<threadInformation color="yellow">
@@ -50,7 +50,7 @@ module COMMON-C-CONFIGURATION is
 			// <openFiles color="lightgray"> .Map </openFiles>
 			<programText color="black"> .Map </programText>
 			<compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
-			@latex("\\kBR")
+			<br/>
 			<threads color="yellow">
 				<thread multiplicity="*" color="yellow">
 					<threadId color="yellow"> 0 </threadId>
@@ -58,7 +58,7 @@ module COMMON-C-CONFIGURATION is
 					<buffer color="lightgray"> .List </buffer>
 					<blocked color="lightgray"> false </blocked>
 					<k color="green" multiplicity="?"> .K </k>
-					@latex("\\kBR")
+					<br/>
 					<threadLocal>
 						<callStack color="violet"> .List </callStack> // stack of "control" cells
 						<calculateGotoMap color="cyan">
@@ -71,7 +71,7 @@ module COMMON-C-CONFIGURATION is
 								<loopStackGoto color="cyan"> .List </loopStackGoto>
 							</gotoCalculation>
 						</calculateGotoMap>
-						@latex("\\kBR")
+						<br/>
 						<control>
 							<finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
 							<blockStack color="violet"> .List </blockStack> // stack of "local" cells
@@ -95,7 +95,7 @@ module COMMON-C-CONFIGURATION is
 								<localVariables color="lightgray"> .List </localVariables> // used to make sure we don't declare a variable twice in the same scope
 								<localAddresses color="lightgray"> .Set </localAddresses> // used to deallocate memory on leaving a block
 							</local>
-							@latex("\\kBR")
+							<br/>
 							<shouldInit color="lightgray"> true </shouldInit> // used to control initialization when gotoing
 							// used to figure initializers
 							<currentObject color="cyan"> .List </currentObject>
@@ -103,7 +103,7 @@ module COMMON-C-CONFIGURATION is
 							<incompleteLength color="cyan"> 0 </incompleteLength>
 							<savedInitialization color="cyan"> .K </savedInitialization>
 							<loopStack color="violet"> .List </loopStack>
-							@latex("\\kBR")
+							<br/>
 							<locsWrittenTo color="lightgray"> .Bag </locsWrittenTo>
 							<holds color="yellow"> .Map </holds>
 							<type multiplicity="?" color="cyan"> .K </type> // used for typing expressions
@@ -118,7 +118,7 @@ module COMMON-C-CONFIGURATION is
 				</thread>
 			</threads>
 		</T>
-		@latex("\\kBR")
+		<br/>
 		<xmessages color="black"> .K </xmessages>
 		<files color="lightgray">
 			<fileCommands> .K </fileCommands>

@@ -152,7 +152,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 			<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
 			<loopStackGoto> OldLoopStack:List </loopStackGoto>
 		</gotoCalculation>
-		@latex("\\kBR")
+		<br/>
 		(. =>
 			<gotoCalculation> 
 				<computation> S:K </computation> 
@@ -261,7 +261,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map(
 			(M:Map => (M:Map[caseHelper(CaseNum:Nat) / genLabel(SwitchNum:Nat, Val:K)])[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / caseHelper(CaseNum:Nat)])
 		) ...</gotoMap>
-		@latex("\\kBR")
+		<br/>
 		<currentFunction> F:Id </currentFunction>
 		<currentTranslationUnit> Tu:K </currentTranslationUnit>
 		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
