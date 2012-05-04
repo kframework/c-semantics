@@ -5,17 +5,98 @@ module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
 	syntax K ::= "pushBlock" [klabel(pushBlock)] 
 	syntax K ::= "addToHistory" "(" Nat ")" [klabel(addToHistory)]
 end module 
- 
+
+module DYNAMIC-SEMANTICS-LABELED-STATEMENTS is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+
+	/*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
+	Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
+	}*/
+	rule [skip-label]: 
+		<k> Label(L:Id, K:K) => K:K ...</k>
+		[structural]
+end module
+
+
+module DYNAMIC-SEMANTICS-BLOCKS is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+	
+	/*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
+	A \emph{compound statement} is a block.
+	}*/
+	rule 
+		<k> BlockStatement(Block:K)
+			=> pushBlock ~> Block:K ~> popBlock
+		...</k>
+		[structural]
+		
+
+	rule [push-block]:
+		<k> pushBlock => .K ...</k>
+		<local>
+			C:Bag
+			<localVariables> Vars:List => .List </localVariables>
+			<localAddresses> Addresses:Set => .Set </localAddresses>
+			<nestingDepth> N:Nat => N:Nat +Int 1 </nestingDepth>
+		</local>
+		<blockStack> .List 
+			=> ListItem(<stackFrame> C:Bag 
+			<nestingDepth> N:Nat </nestingDepth> 
+			<localVariables> Vars:List </localVariables>
+			<localAddresses> Addresses:Set </localAddresses>
+			</stackFrame>)
+		...</blockStack>
+		[structural] 
+		
+	rule [pop-block-free-memory]:
+		<k> (.K => deleteBlock(Loc:Nat)) ~> popBlock ...</k>
+		<localAddresses>... (SetItem(Loc:Nat) => .Set) ...</localAddresses>
+		[structural] 
+		
+	rule [pop-block]:
+		<k> popBlock => .K ...</k>
+		<local>
+			(_ => C:Bag)
+			(<localAddresses> .Set </localAddresses> => .Bag)
+		</local>
+		<blockStack> 
+			ListItem(<stackFrame> C:Bag </stackFrame>) => .List 
+		...</blockStack>
+		[structural] 
+		
+	/*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
+	The expression in an expression statement is evaluated as a void expression for its side effects.
+	}*/
+	rule [expression-statement]:
+		<k> Computation(_:KResult) => sequencePoint ...</k> 
+		[structural]
+
+	/*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
+	A null statement (consisting of just a semicolon) performs no operations.
+	}*/
+	rule 
+		Nop => .K
+		[structural]
+	
+	/*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
+	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (including storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
+	}*/
+	rule [dissolve-block]:
+		<k> Block(BlockNum:Nat, _, List(Statements:List{K})) => klistToK(Statements:List{K}) ...</k>
+		<blockHistory> .List => ListItem(BlockNum:Nat) ...</blockHistory>
+		[structural]
+end module
+		
 module DYNAMIC-SEMANTICS-IF-THEN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 		
-	/*@ \source[n1570]{\para{6.8}{4}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
 	\ldots There is a sequence point between the evaluation of a full expression and the evaluation of the next full expression to be evaluated.
-	*/
+	}*/
 		
-	/*@ \source[n1570]{\para{6.4.4.4}{10}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8.4.1}{10}}}{
 	In both forms, the first substatement is executed if the expression compares unequal to 0. In the \cinline{else} form, the second substatement is executed if the expression compares equal to 0. If the first substatement is reached via a label, the second substatement is not executed.
-	*/
+	}*/
 
 	rule [if-then-else-true]:
 		<k> IfThenElse(tv(1, t(_, int)), S:K, _) => sequencePoint ~> S:K ...</k>
@@ -29,88 +110,6 @@ module DYNAMIC-SEMANTICS-IF-THEN is
 		[structural]
 end module
 
-module DYNAMIC-SEMANTICS-WHILE is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
-	
-	/*@ \source[n1570]{\para{6.8.5.1}{1}}
-	The evaluation of the controlling expression takes place before each execution of the loop body.
-	*/
-	
-	rule [while-mark]:
-		<k> While(B:K, S:K) ~> K:K
-			=> loopMarked ~> While(B:K, S:K) ~> popLoop
-		</k>
-		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
-		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
-		[structural] 
-	rule [while]:
-		<k> loopMarked ~> While(B:K, S:K)
-			=> IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
-		...</k>
-		[metadata "computational=()"]
-		// [structural]  // rule so that looping programs see repetition
-end module
-
-module DYNAMIC-SEMANTICS-DO-WHILE is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
-	
-	/*@\source[n1570]{\para{6.8.5.2}{1}}
-	The evaluation of the controlling expression takes place after each execution of the loop body.
-	*/
-	
-	rule [do-while-mark]:
-		<k> DoWhile(B:K, S:K) ~> K:K
-			=> loopMarked ~> DoWhile(B:K, S:K) ~> popLoop
-		</k>
-		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
-		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
-		[structural] 
-	rule [do-while]:
-		<k> loopMarked ~> DoWhile(B:K, S:K)
-			=> S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
-		...</k>
-		[metadata "computational=()"]
-		// [structural]  // rule so that looping programs see repetition
-end module
-
-module DYNAMIC-SEMANTICS-FOR is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
-	
-	/*@ \source[n1570]{\para{6.8.5.2}{1}}
-	The statement 
-	\cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ; $\textit{expression-3}$ ) $\textit{statement}$ }
-	 behaves as follows: The expression $\textit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\textit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\textit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\textit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
-
-	\source[n1570]{\para{6.8.5.2}{1}}
-Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted $\textit{expression-2}$ is replaced by a nonzero constant.
-	*/
-	
-	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
-	
-	rule
-		<k> addToHistory(Num:Nat) => .K ...</k>
-		<blockHistory> .List => ListItem(Num:Nat) ...</blockHistory>
-		[structural] 
-	
-	//  fixme fishy interaction with continue i think
-	rule [for-mark]:
-		<k> (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
-			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K) ~> popLoop)
-		</k>
-		@latex("\\kBR")
-		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
-		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
-		[structural large] 
-		
-	rule [for]:
-		<k> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K)
-			=> IfThenElse(Control:K, (S:K ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K)), Nop)
-		...</k>
-		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
-		[metadata "computational=()"]
-		// [structural] // rule so that looping programs see repetition 
-end module
-
 module DYNAMIC-SEMANTICS-SWITCH is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
@@ -120,15 +119,16 @@ module DYNAMIC-SEMANTICS-SWITCH is
 	syntax K ::= "handleSwitch" "(" Nat "," K ")" [strict(2) klabel(handleSwitch)] //  switch num, promoted value of controlling exp, int value of exp
 	syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")" [klabel(handleSwitch-aux)] 
 	
-	/*@ \source[n1570]{\para{6.8.5.2}{4}}
-	A \cinline{switch} statement causes control to jump to, into, or past the statement that is the switch body, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
+	/*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
+	A \cinline{switch} statement causes control to jump to, into, or past the statement that is the \emph{switch body}, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
+	}
 	
-	\source[n1570]{\para{6.8.5.2}{5}}
+	\fromStandard{\source[n1570]{\para{6.8.4.2}{5}}}{
 	The integer promotions are performed on the controlling expression. The constant expression in each \cinline{case} label is converted to the promoted type of the controlling expression. If a converted value matches that of the promoted controlling expression, control jumps to the statement following the matched \cinline{case} label. Otherwise, if there is a default label, control jumps to the labeled statement. If no converted \cinline{case} constant expression matches and there is no \cinline{default} label, no part of the switch body is executed.
-	*/
+	}*/
 	
 	rule
-		<k> Switch(SN:Nat, tv(V:K, T:KResult), _) 
+		<k> Switch(SN:Nat, tv(V:K, T:KResult), _)
 			=> sequencePoint 
 			~> handleSwitch(SN:Nat, cast(promote(T:KResult), tv(V:K, T:KResult))) 
 		...</k>
@@ -195,17 +195,101 @@ module DYNAMIC-SEMANTICS-SWITCH is
 		[structural] 
 end module
 
+module DYNAMIC-SEMANTICS-WHILE is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+	
+	/*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
+	The evaluation of the controlling expression takes place before each execution of the loop body.
+	}*/
+	
+	rule [while-mark]:
+		<k> While(B:K, S:K) ~> K:K
+			=> loopMarked ~> While(B:K, S:K) ~> popLoop
+		</k>
+		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
+		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
+		[structural] 
+	rule [while]:
+		<k> loopMarked ~> While(B:K, S:K)
+			=> IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
+		...</k>
+		[computational]
+		// [structural]  // rule so that looping programs see repetition
+end module
+
+module DYNAMIC-SEMANTICS-DO-WHILE is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+	
+	/*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
+	The evaluation of the controlling expression takes place after each execution of the loop body.
+	}*/
+	
+	rule [do-while-mark]:
+		<k> DoWhile(B:K, S:K) ~> K:K
+			=> loopMarked ~> DoWhile(B:K, S:K) ~> popLoop
+		</k>
+		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
+		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
+		[structural] 
+	rule [do-while]:
+		<k> loopMarked ~> DoWhile(B:K, S:K)
+			=> S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
+		...</k>
+		[computational]
+		// [structural]  // rule so that looping programs see repetition
+end module
+
+module DYNAMIC-SEMANTICS-FOR is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+	
+	/*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
+	The statement 
+	\cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ; $\textit{expression-3}$ ) $\textit{statement}$ }
+	 behaves as follows: The expression $\textit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\textit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\textit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\textit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
+	}
+	
+	\fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
+Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted $\textit{expression-2}$ is replaced by a nonzero constant.
+	}*/
+	
+	rule ForClauseExpression(K:K) => Computation(K:K) [structural]
+	
+	rule
+		<k> addToHistory(Num:Nat) => .K ...</k>
+		<blockHistory> .List => ListItem(Num:Nat) ...</blockHistory>
+		[structural] 
+	
+	//  fixme fishy interaction with continue i think
+	rule [for-mark]:
+		<k> (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) ~> K:K
+			=> pushBlock ~> addToHistory(ForNum:Nat) ~> Pre:K ~> loopMarked ~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K) ~> popLoop)
+		</k>
+		@latex("\\kBR")
+		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
+		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
+		[structural large] 
+		
+	rule [for]:
+		<k> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K)
+			=> IfThenElse(Control:K, (S:K ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K)), Nop)
+		...</k>
+		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
+		[computational]
+		// [structural] // rule so that looping programs see repetition 
+end module
+
 module DYNAMIC-SEMANTICS-GOTO is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
-	/*@ \source[n1570]{\para{6.8.6.1}{2}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
 	A \cinline{goto} statement causes an unconditional jump to the statement prefixed by the named label in the enclosing function.
-	*/
+	}*/
 	
 	//  fixme CONFIRM It seems there are no sequence points for a goto
 	
-/*@ \source[n1570]{\para{6.2.4}{6}} For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached.
-*/
+	/*@ \fromStandard{\source[n1570]{\para{6.2.4}{6}}}{
+	For such an object that does not have a variable length array type, its lifetime extends from entry into the block with which it is associated until execution of that block ends in any way. (Entering an enclosed block or calling a function suspends, but does not end, execution of the current block.) If the block is entered recursively, a new instance of the object is created each time. The initial value of the object is indeterminate. If an initialization is specified for the object, it is performed each time the declaration or compound literal is reached in the execution of the block; otherwise, the value becomes indeterminate each time the declaration is reached.
+	}*/
 /*
 	things I have to keep track of:
 		in goto map:
@@ -249,7 +333,7 @@ module DYNAMIC-SEMANTICS-GOTO is
 		<currentFunction> F:Id </currentFunction>
 		<currentTranslationUnit> Tu:K </currentTranslationUnit>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
-		[metadata "computational=()"]
+		[computational]
 		// [structural]  // rule so that looping programs see repetition
 		
 	// - first case, when we're in the same block
@@ -389,13 +473,13 @@ end module
 module DYNAMIC-SEMANTICS-RETURN is
 	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 
-	
-	/*@ \source[n1570]{\para{6.8.6.4}{2}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
 	A \cinline{return} statement terminates execution of the current function and returns control to its caller. A function may have any number of \cinline{return} statements.
+	}
 	
-	\source[n1570]{\para{6.8.6.4}{3}}
+	\fromStandard{\source[n1570]{\para{6.8.6.4}{3}}}{
 	If a \cinline{return} statement with an expression is executed, the value of the expression is returned to the caller as the value of the function call expression. If the expression has a type different from the return type of the function in which it appears, the value is converted as if by assignment to an object having the return type of the function.
-	*/
+	}*/
 	
 	rule [return-clean-local]:
 		<k> (.K => deleteBlock(Loc:Nat)) ~> Return(V:KResult) ...</k>
@@ -444,78 +528,8 @@ module DYNAMIC-SEMANTICS-RETURN is
 		[structural large] 
 end module
 
-module DYNAMIC-SEMANTICS-BLOCKS is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
-	
-	rule 
-		<k> BlockStatement(Block:K)
-			=> pushBlock ~> Block:K ~> popBlock
-		...</k>
-		[structural] 
-	
-	rule [push-block]:
-		<k> pushBlock => .K ...</k>
-		<local>
-			C:Bag
-			<localVariables> Vars:List => .List </localVariables>
-			<localAddresses> Addresses:Set => .Set </localAddresses>
-			<nestingDepth> N:Nat => N:Nat +Int 1 </nestingDepth>
-		</local>
-		<blockStack> .List 
-			=> ListItem(<stackFrame> C:Bag 
-			<nestingDepth> N:Nat </nestingDepth> 
-			<localVariables> Vars:List </localVariables>
-			<localAddresses> Addresses:Set </localAddresses>
-			</stackFrame>)
-		...</blockStack>
-		[structural] 
-		
-	rule [pop-block-free-memory]:
-		<k> (.K => deleteBlock(Loc:Nat)) ~> popBlock ...</k>
-		<localAddresses>... (SetItem(Loc:Nat) => .Set) ...</localAddresses>
-		[structural] 
-		
-	//  this can be simplified without the debugging info
-	rule [pop-block]:
-		<k> popBlock => .K ...</k>
-		<local> 
-			(_ => C:Bag)
-			(<localAddresses> .Set </localAddresses> => .Bag)
-		</local>
-		<blockStack> ListItem(
-			<stackFrame> C:Bag </stackFrame>
-		) => .List 
-		...</blockStack>
-		[structural] 
-	
-	
-	/*@ \source[n1570]{\para{6.8}{3}}
-	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (including storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
-	*/
-	rule [dissolve-block]:
-		<k> Block(BlockNum:Nat, _, List(Statements:List{K})) => klistToK(Statements:List{K}) ...</k>
-		<blockHistory> .List => ListItem(BlockNum:Nat) ...</blockHistory>
-		[structural] 
-end module
-
-module DYNAMIC-C-STATEMENTS is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
-	including DYNAMIC-SEMANTICS-IF-THEN 
-	including DYNAMIC-SEMANTICS-FOR 
-	including DYNAMIC-SEMANTICS-WHILE 
-	including DYNAMIC-SEMANTICS-SWITCH 
-	including DYNAMIC-SEMANTICS-GOTO 
-	including DYNAMIC-SEMANTICS-RETURN 
-	including DYNAMIC-SEMANTICS-BLOCKS 
-	including DYNAMIC-SEMANTICS-DO-WHILE 
-	
-	
-	/*@ \source[n1570]{\para{6.8.3}{2}}
-	The expression in an expression statement is evaluated as a void expression for its side effects.
-	*/
-	rule [expression-statement]:
-		<k> Computation(V:KResult) => sequencePoint ...</k> 
-		[structural] 
+module DYNAMIC-SEMANTICS-STATEMENTS-MISC is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	
 	rule [popLoop]:
 		<k> popLoop ~> _ => K:K </k>
@@ -530,8 +544,9 @@ module DYNAMIC-C-STATEMENTS is
 		when Num':Nat =/=Int Num:Nat
 		[structural] 
 	
-	/*@ \source[n1570]{\para{6.8.6.2}{2}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8.6.2}{2}}}{
 	A continue statement causes a jump to the loop-continuation portion of the smallest enclosing iteration statement; that is, to the end of the loop body. \ldots
+	}
 	*/
 	rule [continue]:
 		<k> Continue ~> ((L:KLabel)(_) => .) ...</k>
@@ -555,10 +570,25 @@ module DYNAMIC-C-STATEMENTS is
 		when L:KLabel =/=KLabel 'For
 		[structural]
 		
-	/*@ \source[n1570]{\para{6.8.6.3}{2}}
+	/*@ \fromStandard{\source[n1570]{\para{6.8.6.3}{2}}}{
 	A break statement terminates execution of the smallest enclosing switch or iteration statement.
-	*/
+	}*/
 	rule [break]:
 		<k> Break => popLoop ...</k>
 		[structural] 
+end module
+
+module DYNAMIC-C-STATEMENTS is
+	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+	including DYNAMIC-SEMANTICS-LABELED-STATEMENTS
+	including DYNAMIC-SEMANTICS-IF-THEN 
+	including DYNAMIC-SEMANTICS-FOR 
+	including DYNAMIC-SEMANTICS-WHILE 
+	including DYNAMIC-SEMANTICS-SWITCH 
+	including DYNAMIC-SEMANTICS-GOTO 
+	including DYNAMIC-SEMANTICS-RETURN 
+	including DYNAMIC-SEMANTICS-BLOCKS 
+	including DYNAMIC-SEMANTICS-DO-WHILE 
+	including DYNAMIC-SEMANTICS-STATEMENTS-MISC
+	
 end module

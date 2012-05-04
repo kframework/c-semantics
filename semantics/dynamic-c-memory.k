@@ -287,7 +287,7 @@ module DYNAMIC-SEMANTICS-READING is
 		...</object>
 		<buffer> Mem:List </buffer>
 		when notBool loc(Base:Nat, Offset:Nat, 0) in locations(Mem:List)
-		andBool notBool $hasMapping(M:Map, Offset:Nat)
+		andBool notBool Offset:Nat in keys M:Map
 		[large structural]
 		
 	rule [read-byte-buffer]:
@@ -316,7 +316,6 @@ module DYNAMIC-SEMANTICS-WRITING is
 			=> alloc(Loc:Nat, value(byteSizeofType(T:KResult))) 
 		...</k>
 		<memory> Mem:Bag </memory>
-		// when notBool $hasMapping(Mem:Map, Loc:Nat)
 		when notBool base(Loc:Nat) in gatherInnerCells(Mem:Bag, basePtr)
 		[structural] 
 	rule [allocateTypeIfAbsent-present]:
@@ -379,7 +378,7 @@ module DYNAMIC-SEMANTICS-WRITING is
 			<basePtr> OldBase:Nat </basePtr>
 			<bytes> M:Map </bytes>
 		...</object>
-		when notBool $hasMapping(M:Map, sNatN:Nat -Int 1)
+		when notBool sNatN:Nat -Int 1 in keys M:Map
 		andBool sNatN:Nat >Int 0
 		[structural]
 	rule [realloc-0]:
@@ -616,7 +615,7 @@ module DYNAMIC-SEMANTICS-WRITING is
 		when notBool LOC in Locs:Bag
 		andBool Offset:Nat <Int Len:Nat
 		andBool notBool mconst in Attr:Bag
-		andBool notBool $hasMapping(NotWritable, LOC)
+		andBool notBool LOC in keys NotWritable:Map
 		where LOC = loc(Base:Nat, Offset:Nat, 0)
 		[large structural]
 		

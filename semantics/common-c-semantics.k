@@ -225,8 +225,6 @@ module COMMON-SEMANTIC-SYNTAX is
 	context cast(_, (HOLE => reval(HOLE)))
 	declare arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
 	declare interpret : Type K -> K // interpret the values of reading from mem
-	declare leftShiftInterpret : Type BaseValue K -> K 
-	declare rightShiftInterpret : Type BaseValue -> K 
 	
 	// syntax Set ::= "integerTypes" [klabel(integerTypes)]
 	syntax Set ::= "unsignedIntegerTypes" [klabel(unsignedIntegerTypes)]

@@ -50,6 +50,18 @@ ifeq ($(K_BASE),)
 	@exit 1
 endif
 
+
+temp-c-thesis.tex: PDF_FILES=\
+common-c-syntax.k \
+# common-c-configuration.k \
+dynamic-c-conversions.k \
+dynamic-c-expressions.k \
+dynamic-c-statements.k
+temp-c-thesis.tex: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES) | grep -o ' .* '`
+temp-c-thesis.tex: check-vars $(K_MAUDE) c.k $(PDF_FILES)
+	@echo "Creating latex..."
+	$(K_MAUDE) c.k -l C -package-options "style=bubble" -latex $(PDF_MODULES) -output temp-c-thesis 1> temp.kpdf.out
+	
 # k-includes.k: check-vars Makefile
 # @echo > k-includes.k
 #@echo "load $(K_PRELUDE)" >> k-includes.k
@@ -63,14 +75,22 @@ temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
 %.tex: temp-c-%.tex Makefile
 	@echo "Modifying latex..."
 	@cp $< $@.temp
-	@sed -i 's|\\documentclass{article}|\\documentclass[landscape]{article}|' $@.temp
-#@sed -i 's|\\usepackage\[poster,|\\usepackage\[|' $@.temp
-	@sed -i 's|\\newpage||' $@.temp
-	@sed -i 's|}mybracket|}\\mybracket|' $@.temp
-	@sed -i 's|\\mathrel{}||g' $@.temp
-	@sed -i 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
+	@perl -i -pe 's|\\documentclass{article}|\\documentclass[landscape]{article}|' $@.temp
+# get rid of page breaks
+	@perl -i -pe 's|\\newpage||' $@.temp
+	@perl -i -pe 's|}mybracket|}\\mybracket|' $@.temp
+	@perl -i -pe 's|\\mathrel{}||g' $@.temp
+# include my custom style file
+	@perl -i -pe 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
 # get rid of the name attributes so they don't show up twice
-	@perl -i -pe 's/(\\(?:kdefine|krule){([a-zA-Z-]*)}.*)\\kattribute{\2}[ ]?/\1\3/' $@.temp
+	@perl -i -pe 's/(\\(?:kdefine|krule){([a-zA-Z0-9-]+)}.*)\\kattribute{\2}[ ]?/\1\3/' $@.temp
+# get rid of structural annotations
+	@perl -i -pe 's/\\kattribute{structural}[ ]?//' $@.temp
+# get rid of klabel annotations
+	@perl -i -pe 's/\\kattribute{klabel\([a-zA-Z0-9-]+\)}[ ]?//' $@.temp
+# fix double quotes
+	@perl -i -pe "s/ ' '/''/g" $@.temp	
+	@perl -i -pe "s/{([^}]+)}_{([^}]+)}' '/{\1''}_{\2}/g" $@.temp	
 # remove extraneous spaces at end of attributes
 	@perl -i -pe 's/(\\kattribute{[a-zA-Z-()]+})[ ]?}/\1}/' $@.temp
 	@mv $@.temp $@

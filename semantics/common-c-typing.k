@@ -649,10 +649,14 @@ module COMMON-SEMANTICS-TYPE-EXPRESSIONS is
 
 	// c99 6.4.5
 	rule
-		<type> Constant(StringLiteral(S:String)) => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) ...</type>
+		<type> Constant(StringLiteral(S:String)) 
+			=> t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) 
+		...</type>
 		[structural]
 	rule
-		<type> Constant(WStringLiteral(L:List{K})) => t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) ...</type>
+		<type> Constant(WStringLiteral(L:List{K})) 
+			=> t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) 
+		...</type>
 		[structural]
 		
 	rule
@@ -857,9 +861,6 @@ module COMMON-C-TYPING is
 	define isTypeCompatible(T:KResult, T':KResult) => true
 		when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult)) 
-		[structural]
-	rule 
-		<k> Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</k>
 		[structural]
 			
 	syntax K ::= "addGlobalAggregate" "(" Id "," K ")" [klabel(addGlobalAggregate)] 

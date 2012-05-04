@@ -25,13 +25,16 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
 	
 end module
 
-	/*@ \fromStandard{\source[n1570]{\para{6.3}{1--2}}}{
+
+module DYNAMIC-SEMANTICS-PROMOTIONS is
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+	// \csection{6}{3}{0}{0}{Conversions}
+	/*@
+	\fromStandard{\source[n1570]{\para{6.3}{1--2}}}{
 	Several operators convert operand values from one type to another automatically. This subclause specifies the result required from such an implicit conversion, as well as those that result from a cast operation (an explicit conversion). The list in 6.3.1.8 summarizes the conversions performed by most ordinary operators; it is supplemented as required by the discussion of each operator in 6.5.
 
 Conversion of an operand value to a compatible type causes no change to the value or the representation.
 	}*/
-module DYNAMIC-SEMANTICS-PROMOTIONS is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 
 	// "integer promotions" are used when doing arithmetic conversions, and for unary ~, +, -
 	// "usual arithmetic conversions" are used when doing binary arithmetic on numbers, and are used to find a common type
@@ -75,7 +78,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS is
 	define [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => #if arithUnaryOps contains l(KL:KLabel) #then true #else false #fi [structural]
 	
-	
+	// \csection{6}{3}{1}{0}{Arithmetic operands}
+	// \csection{6}{3}{1}{1}{Boolean, characters, and integers}
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{1}}}{
 	Every integer type has an integer conversion rank defined as follows:
 	\begin{itemize}
@@ -350,11 +354,10 @@ integer type.
 		
 end module
 
-module DYNAMIC-SEMANTICS-CAST is 
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
-	//- switch assumes casts can happen anywhere
+module DYNAMIC-SEMANTICS-CONVERSION is
+	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	
-
+	//- switch assumes casts can happen anywhere
 	define
 		cast(T:KResult, tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult)
 		
@@ -640,30 +643,24 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 	
 	define [interpret-start]:
 		interpret(T:KResult, piece(N:Nat, _:Nat)) => interpret-aux(T:KResult, N:Nat)
-		when N:Nat >=Int 0 
-		[structural]
+		when N:Nat >=Int 0
 	
 	define [interpret-done]:
 		interpret-aux(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int
 		andBool hasIntegerType(T:KResult)
-		[structural] 
 	define [interpret-too-big]:
 		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))))
 		when I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T:KResult)
-		//andBool _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))) >=Int min(T:KResult)
-		[structural] 
 		
 	define [arithInterpret-done]:
 		arithInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int
 		andBool hasIntegerType(T:KResult)
-		[structural] 
 		
 	define [arithInterpret-unknown]:
 		arithInterpret(T:KResult, piece(unknown(N:Nat), N:Nat)) => tv(piece(unknown(N:Nat), N:Nat), T:KResult)
-		[structural]
 		
 	// these could be so much better...
 	rule [bnot-unknown]: ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
@@ -685,43 +682,25 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 	rule [and-unknown-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0
 		when N:Nat =/=Int 0 [structural anywhere]
 		
-	// c99 6.5.7:4 The result of E1 << E2 is E1 left-shifted E2 bit positions; vacated bits are filled with zeros. If E1 has an unsigned type, the value of the result is E1 times 2^(E2), reduced modulo one more than the maximum value representable in the result type. If E1 has a signed type and nonnegative value, and E1 times 2^(E2) is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined. 
-	// e1 = 2147483647; e1 * 2^(1) = 2147483647 * 2 = 4294967294
-	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
-		when hasUnsignedIntegerType(T:KResult)
-		[structural] 
-	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Nat, T:KResult)) => tv(I:Int, T:KResult)
-		when hasSignedIntegerType(T:KResult)
-		// andBool I:Int <=Int (2 ^Int absInt(numBits(T:KResult)))
-		andBool I:Int <=Int max(T:KResult)
-		andBool I:Int >=Int min(T:KResult)
-		[structural] 
-		
-	// c99 6.5.7:5 The result of E1 >> E2 is E1 right-shifted E2 bit positions. If E1 has an unsigned type or if E1 has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of E1 / 2^(E2). If E1 has a signed type and a negative value, the resulting value is implementation-defined
-	define rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
-		when hasIntegerType(T:KResult)
-		[structural] 
+
 	
 	// fixme
 	define [arithInterpret-float]: arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
 		when (T:K ==K double)
 		orBool T:K ==K float
 		orBool T:K ==K long-double
-		[structural] 
 	// signed arithmetic isn't supposed to overflow
 	define [arithInterpret-unsigned-big]:
 		arithInterpret(T:KResult, I:Int) 
 		=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
 		andBool I:Int >Int max(T:KResult)
-		[structural] 
 	define [arithInterpret-unsigned-small]:
 		arithInterpret(T:KResult, I:Int) 
 		=> arithInterpret(T:KResult, _+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)))
 		//=> tv(_+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
 		andBool I:Int <Int min(T:KResult)
-		[structural]
 		// must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
@@ -733,7 +712,7 @@ end module
 module DYNAMIC-C-CONVERSIONS is
 	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	including DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
-	including DYNAMIC-SEMANTICS-CAST
+	including DYNAMIC-SEMANTICS-CONVERSION
 	including DYNAMIC-SEMANTICS-PROMOTIONS 
 	including DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 end module

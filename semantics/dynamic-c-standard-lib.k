@@ -154,6 +154,18 @@ end module
 module DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
+	/*@ 
+	\fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
+	The header \header{<setjmp.h>} defines the macro \cinline{setjmp}, and declares one function and one type, for bypassing the normal function call and return discipline.
+
+The type declared is
+\cdisplay{jmp_buf}
+which is an array type suitable for holding the information needed to restore a calling environment. The environment of a call to the \cinline{setjmp} macro consists of information sufficient for a call to the \cinline{longjmp} function to return execution to the correct block and invocation of that block, were it called recursively. It does not include the state of the floating-point status flags, of open files, or of any other component of the abstract machine.
+
+It is unspecified whether \cinline{setjmp} is a macro or an identifier declared with external linkage. If a macro definition is suppressed in order to access an actual function, or a program defines an external identifier with the name \cinline{setjmp}, the behavior is undefined.
+	}*/
+	
+	
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
 	// fixme obviously need to rework configuration to make this easy
@@ -166,7 +178,35 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
 		<k> ignoreLocals => .K ...</k>
 		<localAddresses> Locals:Set => .Set </localAddresses>
 		[structural]
+		
+	/*@ 
+	\begin{lrbox}{\LstBox}
+ 	\begin{lstlisting}
+ 	#include <setjmp.h>
+ 	int setjmp(jmp_buf env);
+ 	\end{lstlisting}
+	\end{lrbox}	
+	\fromStandard{\source[n1570]{\para{7.13.1.1}{1--5}}}{
+	\Synopsis
+	\usebox{\LstBox}
 	
+	\Description
+	The \cinline{setjmp} macro saves its calling environment in its \cinline{jmp_buf} argument for later use by the \cinline{longjmp} function.
+	
+	\Returns
+	If the return is from a direct invocation, the \cinline{setjmp} macro returns the value zero. If the return is from a call to the \cinline{longjmp} function, the \cinline{setjmp} macro returns a nonzero value.
+	
+	\Limits
+	An invocation of the \cinline{setjmp} macro shall appear only in one of the following contexts:
+	\begin{itemize}
+	\item the entire controlling expression of a selection or iteration statement;
+	\item one operand of a relational or equality operator with the other operand an integer constant expression, with the resulting expression being the entire controlling expression of a selection or iteration statement;
+	\item the operand of a unary \cinline{!} operator with the resulting expression being the entire controlling expression of a selection or iteration statement; or
+	\item the entire expression of an expression statement (possibly cast to \cinline{void}).
+	\end{itemize}
+
+	If the invocation appears in any other context, the behavior is undefined.
+	}*/
 	// fixme doesn't check if loc:Nat is const
 	rule [setjmp]:
 		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
@@ -208,6 +248,16 @@ end module
 module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 		
+	/*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
+	The header \header{<stdarg.h>} declares a type and defines four macros, for advancing through a list of arguments whose number and types are not known to the called function when it is translated.
+
+A function may be called with a variable number of arguments of varying types. As described in 6.9.1, its parameter list contains one or more parameters. The rightmost parameter plays a special role in the access mechanism, and will be designated $\mathit{parmN}$ in this description.
+
+The type declared is
+\cdisplay{va_list}
+which is a complete object type suitable for holding information needed by the macros \cinline{va_start}, \cinline{va_arg}, \cinline{va_end}, and \cinline{va_copy}. If access to the varying arguments is desired, the called function shall declare an object (generally referred to as ap in this subclause) having type \cinline{va_list}. The object \cinline{ap} may be passed as an argument to another function; if that function invokes the \cinline{va_arg} macro with parameter \cinline{ap}, the value of \cinline{ap} in the calling function is indeterminate and shall be passed to the \cinline{va_end} macro prior to any further reference to \cinline{ap}.
+	}*/
+	
 	////////////////////////////--
 	// Stdarg.h
 	////////////////////////////--
@@ -215,6 +265,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
 		// ,, "__va_start"
 		// ,, "__va_end"
 		// ,, "__va_copy"
+		
+		
+	/*@ \fromStandard{\source[n1570]{\para{7.16.1}{1}}}{
+	The \cinline{va_start} and \cinline{va_arg} macros described in this subclause shall be implemented as macros, not functions. It is unspecified whether \cinline{va_copy} and \cinline{va_end} are macros or identifiers declared with external linkage. If a macro definition is suppressed in order to access an actual function, or a program defines an external identifier with the same name, the behavior is undefined. Each invocation of the \cinline{va_start} and \cinline{va_copy} macros shall be matched by a corresponding invocation of the \cinline{va_end} macro in the same function.
+	}*/
 		
 	// va_list __va_start(va_list* ap, void* pN);
 	// fixme can add lots of checks here
@@ -1084,7 +1139,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			</threadLocal>
 		</thread>)
 		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Nat] </threadStatus>
-		[metadata "computational=()"]
+		[computational]
 		
 	rule [thrd-current]:
 		<k> prepareBuiltin((Identifier("thrd_current")), .List{K})
@@ -1102,8 +1157,8 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<threadId> MyId:Nat </threadId>
 		<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
 		<detachingMap> Detaching:Map </detachingMap>
-		when notBool $hasMapping(Joining:Map, ThreadId:Nat)
-		andBool notBool $hasMapping(Detaching:Map, ThreadId:Nat)
+		when notBool ThreadId:Nat in keys Joining:Map
+		andBool notBool ThreadId:Nat in keys Detaching:Map
 		[structural]
 	
 	rule [thrd-join-error]:
@@ -1112,9 +1167,9 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</k>
 		<joiningMap> Joining:Map </joiningMap>
 		<detachingMap> Detaching:Map </detachingMap>
-		when $hasMapping(Joining:Map, ThreadId:Nat)
-		orBool $hasMapping(Detaching:Map, ThreadId:Nat)
-		[metadata "computational=()"]
+		when ThreadId:Nat in keys Joining:Map
+		orBool ThreadId:Nat in keys Detaching:Map
+		[computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd-join]:
@@ -1128,7 +1183,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			<k> V:KResult </k>
 			<threadId> ThreadId:Nat </threadId>
 		...</thread>
-		[metadata "computational=()"]
+		[computational]
 
 	syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
 	rule [test-and-set-start]:

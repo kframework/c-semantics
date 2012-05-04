@@ -407,7 +407,7 @@ module DYNAMIC-C-ERRORS is
 		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
 		and End2 = Loc':Nat +Int bitsToBytes(BitSize':Nat)
-		[metadata "computational=()"]
+		[computational]
 		
 	rule [write-write-race]:
 		<T> 
@@ -425,7 +425,7 @@ module DYNAMIC-C-ERRORS is
 		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
 		and End2 = Loc':Nat +Int bitsToBytes(BitSize':Nat)
-		[metadata "computational=()"]		
+		[computational]		
 
 
 end module

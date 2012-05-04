@@ -287,15 +287,4 @@ module COMMON-C-STATEMENTS is
 	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	including COMMON-SEMANTICS-PROCESS-LABELS
 	
-	/*@ \source[n1570]{\para{6.8.3}{3}}
-	A null statement (consisting of just a semicolon) performs no operations.
-	*/
-	rule Nop => .K
-		[structural] 
-
-	/*@ \source[n1570]{\para{6.8.1}{4}}
-	Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
-	*/
-	rule [skip-label]: <k> Label(L:Id, K:K) => K:K ...</k>
-		[structural]
 end module

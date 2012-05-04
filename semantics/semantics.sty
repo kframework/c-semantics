@@ -8,18 +8,23 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[pdftex]{hyperref}
 %\usepackage{enumitem}
+\usepackage{xparse}
 
 %\newgeometry{margin=1in}
 % overrides
 \renewcommand{\ellipses}{\mathrel{\cdot\kern-2pt\cdot\kern-2pt\cdot}}
-\renewcommand{\kallLarge}{\ballLarge}
+%\renewcommand{\kallLarge}{\ballLarge}
 \renewcommand{\mall}[3]{\left\langle{#3}\right\rangle_{\sf #2}}
 \renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}}
 \renewcommand{\ruleAttributes}[1]{\par{}\hspace{2em} [#1]}
+\renewcommand{\rulebox}[1]{\par\indent\parbox[b]{8.5in}{#1}}
+\renewcommand{\wrapRules}[1]{\par{\parbox[b]{8.5in}{#1}}}
 
 % \newcommand{\k@ruleLabel}[2]{%
   % \ifthenelse{\equal{#1}{}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2}}{Rule Label: #1}}%
 % }
+\newsavebox{\LstBox} % for listings in tikz
+
 
 \makeatletter
 \renewcommand{\k@ruleLabel}[2]{%
@@ -27,12 +32,33 @@
 % \global\def\ignoreThisLabel{#1}%
 }
 \makeatother
-\renewcommand{\rulebox}[1]{\par\indent\parbox{8.5in}{#1}}
 
 \newcommand{\mycomment}[1]{#1}
 \providecommand{\kctor}{}
 \providecommand{\kmemo}{}
 \providecommand{\kstrat}[1]{}
+
+\setcounter{secnumdepth}{5}
+\newcommand{\csection}[5]{%
+	\providecommand{\mysection}{}
+	\ifthenelse{\equal{#1}{0}}{}{\setcounter{section}{#1 - 1}\renewcommand{\mysection}{\section{#5}}}
+	\ifthenelse{\equal{#2}{0}}{}{\setcounter{section}{#1}\setcounter{subsection}{#2 - 1}\renewcommand{\mysection}{\subsection{#5}}}
+	\ifthenelse{\equal{#3}{0}}{}{\setcounter{subsection}{#2}\setcounter{subsubsection}{#3 - 1}\renewcommand{\mysection}{\subsubsection{#5}}}
+	\ifthenelse{\equal{#4}{0}}{}{\setcounter{subsubsection}{#3}\setcounter{paragraph}{#4 - 1}\renewcommand{\mysection}{\paragraph{#5\newline}}}
+	\mysection
+}
+
+% \newcommand{\Synopsis}{\paragraph{Synopsis}}
+% \newcommand{\Description}{\paragraph{Description}}
+% \newcommand{\Returns}{\paragraph{Returns}}
+% \newcommand{\Limits}{\paragraph{Environmental Limits}}
+\newcommand{\Synopsis}{{Synopsis}}
+\newcommand{\Description}{{Description}}
+\newcommand{\Returns}{{Returns}}
+\newcommand{\Limits}{{Environmental Limits}}
+\newcommand{\Constraints}{{Constraints}}
+\newcommand{\Semantics}{{Semantics}}
+
 
 % configuration
 \lstdefinelanguage{k}{
@@ -58,10 +84,11 @@
 \newcommand{\cinline}[1]{\lstinline`#1`}
 \newcommand{\clisting}[1]{\lstinline`#1`}
 \newcommand{\cdisplay}[1]{\lstinline`#1`}
+\newcommand{\header}[1]{\texttt{#1}}
 % 
 \newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
 \newcommand{\source}[2][]{%
-	\paragraph[]{%
+	\textbf{%
 		\ifthenelse{\equal{#1}{}}{}{%
 			(#1) %
 		}%
@@ -71,7 +98,7 @@
 \newcommand{\fromStandard}[2]{%
 \begin{tikzpicture}
     \node[comment]{\begin{minipage}{8.5in}#1 #2\end{minipage}};
-  \end{tikzpicture}%
+  \end{tikzpicture}\par
 }
 
 \newcommand{\para}[2]{%
@@ -79,3 +106,4 @@
 }
 
 \newcommand{\broken}[1]{{\color{red}#1}}
+\newcommand{\negative}[1]{{\color{red}#1}}

@@ -21,9 +21,9 @@ module COMMON-C-CONFIGURATION is
 			</memory>
 			<notWritable> .Map </notWritable>
 			<functions color="lightgray"> .Map </functions>
-			<freshNat color="green"> 0 </freshNat>
-			<randNat color="green"> 0 </randNat>
-			<nextThreadId color="green"> 2 </nextThreadId> // 0 is global, 1 is main
+			<freshNat color="black"> 0 </freshNat>
+			<randNat color="black"> 0 </randNat>
+			<nextThreadId color="black"> 2 </nextThreadId> // 0 is global, 1 is main
 			<malloced color="lightgray"> .Map </malloced>
 			<stringLiterals color="lightgray"> .Map </stringLiterals>
 			@latex("\\kBR")
@@ -41,7 +41,7 @@ module COMMON-C-CONFIGURATION is
 			// </staticSemantics>
 			@latex("\\kBR")
 			<functionTranslationUnits color="lightgray"> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
-			<nextSharedLoc color="green"> 0 </nextSharedLoc>
+			<nextSharedLoc color="black"> 0 </nextSharedLoc>
 			<threadInformation color="yellow">
 				<threadStatus color="yellow"> .Map </threadStatus>
 				<joiningMap color="yellow"> .Map </joiningMap>
@@ -54,10 +54,10 @@ module COMMON-C-CONFIGURATION is
 			<threads color="yellow">
 				<thread multiplicity="*" color="yellow">
 					<threadId color="yellow"> 0 </threadId>
-					<nextLoc color="green"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
+					<nextLoc color="black"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
 					<buffer color="lightgray"> .List </buffer>
 					<blocked color="lightgray"> false </blocked>
-					<k color="red" multiplicity="?"> .K </k>
+					<k color="green" multiplicity="?"> .K </k>
 					@latex("\\kBR")
 					<threadLocal>
 						<callStack color="violet"> .List </callStack> // stack of "control" cells
