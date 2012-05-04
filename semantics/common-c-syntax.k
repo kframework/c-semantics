@@ -508,12 +508,6 @@ and unary_operator =
 	syntax Expression ::= K "|=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K ">>=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K ":=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Set ::= "assignmentLabels"
-	macro 
-		assignmentLabels = Set(
-			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		)
 	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
 	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]
 	

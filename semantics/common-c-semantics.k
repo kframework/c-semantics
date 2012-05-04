@@ -190,6 +190,13 @@ module COMMON-SEMANTIC-SYNTAX is
 	// metadata "wrapper=(builtin)"
 	declare _contains_ : Set K -> Bool
 	
+	syntax Set ::= "assignmentLabels"
+	macro 
+		assignmentLabels = Set(
+			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
+			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
+		)
+	
 	syntax Set ::= "getModifiers" "(" K ")" [klabel(getModifiers)]
 	
 	syntax K ::= "AllowWrite" "(" K ")" [strict klabel(AllowWrite)]
