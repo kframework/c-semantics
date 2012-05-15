@@ -36,7 +36,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
 		<gotoMap> M:Map => M:Map[Map(.Map) / kpair(Tu:K, F:Id)] </gotoMap>
 		<currentFunction> _ => F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<calculateGotoMap>
 			. => (<gotoCalculation>... <computation> K:K ~> Return(NothingExpression) </computation> ...</gotoCalculation>)
 		</calculateGotoMap>
@@ -247,7 +247,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<declarationStack> DeclStack:List </declarationStack>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / Target:Id])) ...</gotoMap>
 		<currentFunction> F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, Target:Id)
@@ -263,7 +263,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		) ...</gotoMap>
 		<br/>
 		<currentFunction> F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, Val:K))
@@ -276,7 +276,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<declarationStack> DeclStack:List </declarationStack>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / genLabel(SwitchNum:Nat, l('Default))])) ...</gotoMap>
 		<currentFunction> F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, l('Default)))

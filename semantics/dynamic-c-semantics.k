@@ -168,7 +168,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			<threads>
 				<thread>
 					<threadId> 1 </threadId>
-					<nextLoc> loc(threadId(1) +Int 0, 0, 0) </nextLoc>
+					<nextLoc> firstLoc(1) </nextLoc>
 					<k> klistToK(P:List{K})
 							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))))
 							~> resolveReferences					
@@ -183,7 +183,7 @@ If they are declared, the parameters to the main function shall obey the followi
 					...</threadLocal>
 				...</thread>
 			</threads>
-			<nextSharedLoc> loc(threadId(0) +Int 0, 0, 0) </nextSharedLoc>
+			<nextSharedLoc> firstLoc(0) </nextSharedLoc>
 		...</T>
 		<files>
 			<fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
@@ -221,7 +221,7 @@ or equivalent;9) or in some other implementation-defined manner
 			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
 		...</k>
 		<functionTranslationUnits>... Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) ...</functionTranslationUnits>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		[structural]
 	
 	// FIXME i think these are slightly different

@@ -344,7 +344,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 
 	rule [populateFromGlobal]:
 		<k> populateFromGlobal => .K ...</k>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<br/>
 		<genv>... Tu:K |-> Map(G:Map) ...</genv> <env> _ => G:Map </env>
 		<gtypes>... Tu:K |-> Map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
@@ -367,14 +367,14 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		<callStack> .List => ListItem(
 			<stackFrame> C:Bag
 				<continuation> K:K </continuation>
-				<currentTranslationUnit> OldTu:K </currentTranslationUnit>
+				<currTU> OldTu:K </currTU>
 				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
 				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
 			</stackFrame>
 		) ...</callStack>
 		<br/>
 		(<control>
-			<currentTranslationUnit> OldTu:K </currentTranslationUnit>
+			<currTU> OldTu:K </currTU>
 			<currentFunction> CurrFun:K </currentFunction>
 			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
 			C:Bag
@@ -382,7 +382,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		=>
 		<control>
 			<currentFunction> X:Id </currentFunction>
-			<currentTranslationUnit> Tu:K </currentTranslationUnit>
+			<currTU> Tu:K </currTU>
 			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
 		...</control>)
 		<functionTranslationUnits>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</functionTranslationUnits>

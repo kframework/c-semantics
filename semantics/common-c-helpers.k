@@ -10,6 +10,11 @@ end module
 module COMMON-SEMANTICS-HELPERS-MISC is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 
+	declare firstLoc : K -> K
+	define
+		firstLoc(ThreadId:Nat)
+			=> loc(threadId(ThreadId:Nat) +Int 0, 0, 0)
+	
 	declare base : Nat -> Nat
 	define base(loc(Base:Nat, _, _)) => Base:Nat
 	

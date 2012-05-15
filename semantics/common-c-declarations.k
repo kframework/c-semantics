@@ -246,7 +246,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</k>
 		<internalLocations>... Tu:K |-> Map((_ kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</internalLocations>
 		<blockHistory> ListItem(BlockNum:Nat) ...</blockHistory>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		[structural] 
@@ -260,7 +260,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<internalLocations>... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:Nat / kpair(X:Id, BlockNum:Nat)])) ...</internalLocations>
 		<blockHistory> ListItem(BlockNum:Nat) ...</blockHistory>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Nat))
@@ -273,7 +273,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<internalLocations>... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:Nat / kpair(X:Id, BlockNum:Nat)])) ...</internalLocations>
 		<blockHistory> ListItem(BlockNum:Nat) ...</blockHistory>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool K:K =/=K NoInit
@@ -288,7 +288,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</k>
 		<internalLocations>... Tu:K |-> Map((_ kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</internalLocations>
 		<blockHistory> ListItem(BlockNum:Nat) ...</blockHistory>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool K:K =/=K NoInit
@@ -327,7 +327,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareWithLinkage(X:Id, T:KResult, K:K, external)
 		...</k>
 		<preLinkage>... Tu:K |-> Map(Linkage:Map) ...</preLinkage>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when notBool isStaticType(T:KResult)
 		andBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Linkage:Map, X:Id)
@@ -338,7 +338,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 			=> declareWithLinkage(X:Id, T:KResult, K:K, Linkage:Map(X:Id))
 		...</k>
 		<preLinkage>... Tu:K |-> Map(Linkage:Map) ...</preLinkage>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when notBool isStaticType(T:KResult)
 		andBool isExternType(T:KResult)
 		andBool $hasMapping(Linkage:Map, X:Id)
@@ -357,13 +357,13 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		<k> declareWithLinkage(X:Id, T:KResult, NoInit, L:K) => declareOnly(X:Id, T:KResult, L:K) ...</k>
 		<declarationOrder>... Tu:K |-> ListToK(_ (. => ListItem(X:Id))) ...</declarationOrder>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when L:K =/=K noLinkage
 		[structural] 
 	rule
 		<k> declareWithLinkage(X:Id, T:KResult, K:K, L:K) => declareAndDefine(X:Id, T:KResult, K:K, L:K) ...</k>
 		<declarationOrder>... Tu:K |-> ListToK(_ (. => ListItem(X:Id))) ...</declarationOrder>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when K:K =/=K NoInit
 		andBool L:K =/=K noLinkage
 		[structural] 
@@ -372,13 +372,13 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		<k> declareWithLinkage(X:Id, T:KResult, NoInit, L:K) => declareOnly(X:Id, T:KResult, L:K) ...</k>
 		// <declarationOrder>... Tu:K |-> ListToK(_ (. => ListItem(X:Id))) ...</declarationOrder>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when L:K ==K noLinkage
 		[structural] 
 	rule
 		<k> declareWithLinkage(X:Id, T:KResult, K:K, L:K) => declareAndDefine(X:Id, T:KResult, K:K, L:K) ...</k>
 		// <declarationOrder>... Tu:K |-> ListToK(_ (. => ListItem(X:Id))) ...</declarationOrder>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when K:K =/=K NoInit
 		andBool L:K ==K noLinkage
 		[structural] 
@@ -398,7 +398,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<declarations>... .Set => SetItem(X:Id) ...</declarations>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Linkage:Map, X:Id) 
 				orBool Linkage:Map(X:Id) ==K external
 			)
@@ -415,7 +415,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		...</k>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map(Types:Map) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Linkage:Map, X:Id) 
 				orBool Linkage:Map(X:Id) ==K external
 			)
@@ -430,7 +430,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<declarations>... .Set => SetItem(X:Id) ...</declarations>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when notBool $hasMapping(Linkage:Map, X:Id) 
 		orBool Linkage:Map(X:Id) ==K internal
 		[structural] 
@@ -471,7 +471,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<externalDefinitions> Def:Map => Def:Map (X:Id |-> declarationObject(unqualifyType(T:KResult), Tu:K, K:K)) </externalDefinitions>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[external / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==K external)
 		[structural]
@@ -486,7 +486,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<internalDefinitions>... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) ...</internalDefinitions>
 		<preLinkage>... Tu:K |-> Map(Linkage:Map) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool Linkage:Map(X:Id) ==K internal
 		[structural]
@@ -499,7 +499,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<internalDefinitions>... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) ...</internalDefinitions>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==K internal)
 		[structural]
@@ -570,7 +570,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	rule
 		<k> addToGlobalEnv(X:Id, Loc:Nat) => . ...</k>
 		<genv>... Tu:K |-> Map((M':Map => M':Map[Loc:Nat / X:Id])) ...</genv>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<env> E:Map => E:Map[Loc:Nat / X:Id] </env>
 		[structural] 
 	rule
@@ -1021,7 +1021,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			=> preDeclareStrings(Strings:K)
 			~> klistToK(eraseKLabel('StmtCons, K:K))
 		...</k>
-		<currentTranslationUnit> _ => Name:String </currentTranslationUnit>
+		<currTU> _ => Name:String </currTU>
 		<declarationOrder> DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </declarationOrder>
 		<internalLocations> ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </internalLocations>
 		<functionTranslationUnits> Funs:Map => Funs:Map[Map(.) / Name:String] </functionTranslationUnits> 
@@ -1071,7 +1071,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			~> giveType(X:Id, unqualifyType(T:KResult))
 			) ~> resolveLeftovers 
 		...</k>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		<externalLocations>... X:Id |-> Loc:Nat ...</externalLocations>
 		<leftoverExterns>... BagItem(leftover(Tu:K, X:Id, T:KResult)) => .Bag ...</leftoverExterns>
 		[structural]
@@ -1112,7 +1112,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<k> resolveInternal(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K))
 			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInitializer(X:Id, T:KResult, K:K))
 		...</k>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		[structural] 
 	rule
 		<k> resolveInternal-aux(X:Id, Tu:K, declarationObject(_, Tu:K, _), initializerValue(X:Id, T:KResult, K:K))
@@ -1123,7 +1123,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, Tu:K)
 		...</k>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		[structural] 
 			
 	rule
@@ -1139,7 +1139,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu':K, DefTu:K)
 			) ~> resolveExternal-aux(X:Id, Tu:K, ((BagItem(Tu':K) => .) Units:Bag), declarationObject(_, DefTu:K, _), Loc:Nat, initializerValue(X:Id, T:KResult, K:K))
 		...</k>
-		<currentTranslationUnit> _ => Tu':K </currentTranslationUnit>
+		<currTU> _ => Tu':K </currTU>
 		<preLinkage>... Tu':K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		[structural] 
 	rule
@@ -1150,7 +1150,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			~> initialize(X:Id, T:KResult, K:K)
 			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, DefTu:K)
 		...</k>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		<externalLocations> Locs:Map => Locs:Map[Loc:Nat / X:Id] </externalLocations>
 		when notBool $hasMapping(Locs:Map, X:Id)
 		[structural] 
@@ -1212,7 +1212,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			)
 			~> resolve(Tu:K) 
 		...</k>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		<preLinkage>... Tu:K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((_ X:Id |-> t(S:Set, prototype(T:KResult)))) ...</preTypes>
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .) _) ...</declarationOrder>
@@ -1234,7 +1234,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<preTypes>... Tu:K |-> Map((_ X:Id |-> T:KResult)) ...</preTypes>
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .) _) ...</declarationOrder>
 		<externalDefinitions> Defs:Map </externalDefinitions>
-		<currentTranslationUnit> _ => Tu:K </currentTranslationUnit>
+		<currTU> _ => Tu:K </currTU>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
 		<externalLocations> Locs:Map => Locs:Map[Loc:Nat / X:Id] </externalLocations>
 		when notBool $hasMapping(Locs:Map, X:Id)

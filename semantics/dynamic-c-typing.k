@@ -45,8 +45,9 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 		// <type> arithInterpret(T:KResult, _) => T:KResult ...</type> 
 		// [structural]
 	
-	/*@ %\begin{rulesGroup}
-	\fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
+	// mb latexComment("String") : KSentence [metadata "foo"] 
+	//! \begin{rulesGroup}
+	/*@	\fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
 	The integer promotions are performed on each of the operands. The type of the result is that of the promoted left operand. \ldots
 	}*/	
 	rule
@@ -55,7 +56,7 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		<type> T:KResult >> _ => promote(T:KResult) ...</type>
 		[structural]
-	//@ %\end{rulesGroup}
+	//! \end{rulesGroup}
 	
 	/*@ %\begin{rulesGroup}
 	\fromStandard{\source[n1570]{\para{6.5.3.4}{5}}}{

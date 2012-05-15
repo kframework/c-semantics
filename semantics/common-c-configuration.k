@@ -110,7 +110,7 @@ module COMMON-C-CONFIGURATION is
 							<declarationTypeHolder color="cyan"> .K </declarationTypeHolder> // holds the innermost type while we unroll the type around it
 							
 							// general information
-							<currentTranslationUnit color="lightgray"> "" </currentTranslationUnit>
+							<currTU color="lightgray"> "" </currTU>
 							<currentFunction color="lightgray"> .K </currentFunction>
 							<currentProgramLoc color="black"> .K </currentProgramLoc>
 						</control>

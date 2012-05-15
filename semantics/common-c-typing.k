@@ -77,7 +77,7 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS is
 		<k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
 		<types> M:Map => M:Map[T:KResult / X:Id] </types>
 		<gtypes>... Tu:K |-> Map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		[structural]
 	rule
 		<k> giveLocalType(X:Id, T:KResult) => .K ...</k>

@@ -1052,6 +1052,7 @@ end module
 module DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
+	// try to use getString
 	// fixme should detect overlaps
 	syntax K ::= "strcpy" "(" K "," K "," K ")" [klabel(strcpy)]
 	rule [strcpy-start]:
@@ -1104,42 +1105,31 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:Nat, t(.Set, int)))
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</k>
+		<br/>
 		<threadId> MyId:Nat </threadId>
 		<nextThreadId> Fresh:Nat => Fresh:Nat +Int 1 </nextThreadId>
-		[structural]
+		[large structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 */
-		
+	
 	rule [thrd-create]:
-		<thread>
-			<nextLoc> _:Nat </nextLoc>
-			<threadId> _:Nat </threadId>
-			C:Bag
+		<thread>...
 			<k> spawn-aux(ThreadId:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
-			<threadLocal>
-				<callStack> _:List </callStack>
-				C'':Bag // just calculateGoto I think
-				<control>
-					C':Bag
-				</control>
-			</threadLocal>
-		</thread>
-		(.Bag =>
-		<thread>
-			<nextLoc> loc(threadId(ThreadId:Nat) +Int 0, 0, 0) </nextLoc>
-			<threadId> ThreadId:Nat </threadId>
-			C:Bag
-			<k> Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </k>
-			<threadLocal>
-				<callStack> .List </callStack>
-				<control>
-					C':Bag
-				</control>
-			</threadLocal>
-		</thread>)
+			<currTU> Tu:K </currTU>
+		...</thread>
+		<genv> Env:Map </genv>
 		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Nat] </threadStatus>
-		[computational]
+		<br/>
+		(.Bag =>
+		<thread>...
+			<nextLoc> firstLoc(ThreadId:Nat) </nextLoc>
+			<threadId> ThreadId:Nat </threadId>
+			<k> Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </k>
+			<env> Env:Map </env>
+			<currTU> Tu:K </currTU>
+		...</thread>)
+		[large computational]
 		
 	rule [thrd-current]:
 		<k> prepareBuiltin((Identifier("thrd_current")), .List{K})
@@ -1154,28 +1144,33 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
 			=> join-aux(ThreadId:Nat, ResultPointer:KResult)
 		...</k>
+		<br/>
 		<threadId> MyId:Nat </threadId>
 		<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
 		<detachingMap> Detaching:Map </detachingMap>
 		when notBool ThreadId:Nat in keys Joining:Map
 		andBool notBool ThreadId:Nat in keys Detaching:Map
-		[structural]
+		[large structural]
 	
 	rule [thrd-join-error]:
 		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
 			=> thrd-error
 		...</k>
+		<br/>
 		<joiningMap> Joining:Map </joiningMap>
 		<detachingMap> Detaching:Map </detachingMap>
 		when ThreadId:Nat in keys Joining:Map
 		orBool ThreadId:Nat in keys Detaching:Map
-		[computational]
+		[large computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
-	rule [thrd-join]:
+	rule [thrd-join-non-null]:
 		<thread>...
 			<k> join-aux(ThreadId:Nat, ResultPointer:KResult)
-				=> Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:KResult))
+				=> #if (ResultPointer:KResult ==K NullPointer) 
+					#then Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:KResult)) 
+					#else .K
+				#fi
 				~> thrd-success
 			...</k>
 		...</thread>

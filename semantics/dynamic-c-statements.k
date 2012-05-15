@@ -148,7 +148,7 @@ module DYNAMIC-SEMANTICS-SWITCH is
 		...</k>
 		<br/>
 		<currentFunction> F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</gotoMap>
 		[structural] 
 		
@@ -206,7 +206,9 @@ module DYNAMIC-SEMANTICS-WHILE is
 	
 	rule [while-mark]:
 		<k> While(B:K, S:K) ~> K:K
-			=> loopMarked ~> While(B:K, S:K) ~> popLoop
+			=> loopMarked 
+			~> While(B:K, S:K) 
+			~> popLoop
 		</k>
 		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
 		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
@@ -215,8 +217,8 @@ module DYNAMIC-SEMANTICS-WHILE is
 		<k> loopMarked ~> While(B:K, S:K)
 			=> IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
 		...</k>
-		[computational]
-		// [structural]  // rule so that looping programs see repetition
+		// [computational]
+		[structural]  // rule so that looping programs see repetition
 end module
 
 module DYNAMIC-SEMANTICS-DO-WHILE is
@@ -228,7 +230,9 @@ module DYNAMIC-SEMANTICS-DO-WHILE is
 	
 	rule [do-while-mark]:
 		<k> DoWhile(B:K, S:K) ~> K:K
-			=> loopMarked ~> DoWhile(B:K, S:K) ~> popLoop
+			=> loopMarked 
+			~> DoWhile(B:K, S:K) 
+			~> popLoop
 		</k>
 		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
 		<loopStack> .List => ListItem(kpair(Num:Nat, K:K)) ...</loopStack>
@@ -237,8 +241,8 @@ module DYNAMIC-SEMANTICS-DO-WHILE is
 		<k> loopMarked ~> DoWhile(B:K, S:K)
 			=> S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
 		...</k>
-		[computational]
-		// [structural]  // rule so that looping programs see repetition
+		// [computational]
+		[structural]  // rule so that looping programs see repetition
 end module
 
 module DYNAMIC-SEMANTICS-FOR is
@@ -281,8 +285,8 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 			=> IfThenElse(Control:K, (S:K ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K)), Nop)
 		...</k>
 		<blockHistory> ListItem(Num:Nat) ...</blockHistory>
-		[computational]
-		// [structural] // rule so that looping programs see repetition 
+		// [computational]
+		[structural] // rule so that looping programs see repetition 
 end module
 
 module DYNAMIC-SEMANTICS-GOTO is
@@ -338,10 +342,10 @@ module DYNAMIC-SEMANTICS-GOTO is
 	rule
 		<k> Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </k>
 		<currentFunction> F:Id </currentFunction>
-		<currentTranslationUnit> Tu:K </currentTranslationUnit>
+		<currTU> Tu:K </currTU>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
-		[computational]
-		// [structural]  // rule so that looping programs see repetition
+		// [computational]
+		[structural]  // rule so that looping programs see repetition
 		
 	// - first case, when we're in the same block
 	rule
@@ -588,7 +592,7 @@ module DYNAMIC-SEMANTICS-RETURN is
 			(<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)
 			<currentFunction> (F:Id => CurrFun:K) </currentFunction>
 			<currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
-			(<currentTranslationUnit> Tu:K </currentTranslationUnit> => .Bag)
+			(<currTU> Tu:K </currTU> => .Bag)
 			(<blockStack> .List </blockStack> => .Bag)
 			(_ => C:Bag)
 		</control>
