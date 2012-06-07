@@ -1106,7 +1106,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</k>
 		<br/>
-		<threadId> MyId:Nat </threadId>
+		//<threadId> MyId:Nat </threadId>
 		<nextThreadId> Fresh:Nat => Fresh:Nat +Int 1 </nextThreadId>
 		[large structural]
 /*
@@ -1144,31 +1144,31 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
 			=> join-aux(ThreadId:Nat, ResultPointer:KResult)
 		...</k>
-		<br/>
-		<threadId> MyId:Nat </threadId>
-		<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
-		<detachingMap> Detaching:Map </detachingMap>
-		when notBool ThreadId:Nat in keys Joining:Map
-		andBool notBool ThreadId:Nat in keys Detaching:Map
-		[large structural]
+		//<br/>
+		//<threadId> MyId:Nat </threadId>
+		//<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
+		//<detachingMap> Detaching:Map </detachingMap>
+		//when notBool ThreadId:Nat in keys Joining:Map
+		//andBool notBool ThreadId:Nat in keys Detaching:Map
+		[structural]
 	
-	rule [thrd-join-error]:
-		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
-			=> thrd-error
-		...</k>
-		<br/>
-		<joiningMap> Joining:Map </joiningMap>
-		<detachingMap> Detaching:Map </detachingMap>
-		when ThreadId:Nat in keys Joining:Map
-		orBool ThreadId:Nat in keys Detaching:Map
-		[large computational]
+	// rule [thrd-join-error]:
+		// <k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
+			// => thrd-error
+		// ...</k>
+		// <br/>
+		// <joiningMap> Joining:Map </joiningMap>
+		// //<detachingMap> Detaching:Map </detachingMap>
+		// when ThreadId:Nat in keys Joining:Map
+		// //orBool ThreadId:Nat in keys Detaching:Map
+		// [large computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	rule [thrd-join-non-null]:
 		<thread>...
 			<k> join-aux(ThreadId:Nat, ResultPointer:KResult)
-				=> #if (ResultPointer:KResult ==K NullPointer) 
-					#then Computation((* ResultPointer:KResult) := cast(t(.Set, int), V:KResult)) 
+				=> #if (ResultPointer:KResult =/=K NullPointer) 
+					#then Computation((* ResultPointer:KResult) := V:KResult) 
 					#else .K
 				#fi
 				~> thrd-success
@@ -1180,19 +1180,46 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</thread>
 		[computational]
 
-	syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
-	rule [test-and-set-start]:
-		<k> prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
-			=> testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
+	rule [mtx-init]:
+		<k> prepareBuiltin((Identifier("mtx_init")), (tv(Loc:Nat, _),, tv(Type:Int, _)))
+			=> thrd-success
 		...</k>
+		<mutexes> M:Map (. => Loc:Nat |-> Type:Int) </mutexes>
+		when notBool Loc:Nat in keys M:Map
+		andBool Type:Int ==Int cfg:mtxPlain // only handling plain mutexes for now
 		[structural]
+	rule [mtx-lock]:
+		<k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Nat, _)))
+			=> thrd-success
+		...</k>
+		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
+		<glocks> B:Bag (.Bag => BagItem(Loc:Nat)) </glocks>
+		<locks>... .Bag => BagItem(Loc:Nat) ...</locks>
+		when notBool Loc:Nat in B:Bag
+		andBool Type:Int ==Int cfg:mtxPlain
+		[computational]
+	rule [mtx-unlock]:
+		<k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Nat, _)))
+			=> thrd-success
+		...</k>
+		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
+		<glocks>... BagItem(Loc:Nat) => .Bag ...</glocks>
+		<locks>... BagItem(Loc:Nat) => .Bag ...</locks>
+		when Type:Int ==Int cfg:mtxPlain
+		[computational]
+	// syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
+	// rule [test-and-set-start]:
+		// <k> prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
+			// => testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
+		// ...</k>
+		// [structural]
 		
-	rule [test-and-set]:
-		<k> testAndSet(Retval:KResult, Loc:KResult, V:KResult)
-			=> Computation((* Loc:KResult) := V:KResult)
-			~> Retval:KResult
-		...</k>
-		[structural]
+	// rule [test-and-set]:
+		// <k> testAndSet(Retval:KResult, Loc:KResult, V:KResult)
+			// => Computation((* Loc:KResult) := V:KResult)
+			// ~> Retval:KResult
+		// ...</k>
+		// [structural]
 end module
 
 module DYNAMIC-C-STANDARD-LIBRARY-TIME is

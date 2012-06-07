@@ -1,6 +1,8 @@
 /* 
 implementation of threads.h functions
 look in threads.h for documentation
+
+not currently used
 */
 
 #include <threads.h>

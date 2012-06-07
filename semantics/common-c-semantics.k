@@ -325,6 +325,9 @@ module COMMON-C-SETTINGS is
 	
 	define [numBytes-enum]: numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int))
 	
+	declare cfg:mtxPlain : -> Int
+	define [cfg-mtxPlain]: cfg:mtxPlain => 0
+	
 	declare cfg:sizeut : -> Type
 	define [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int)
 	
