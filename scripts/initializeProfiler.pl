@@ -59,7 +59,7 @@ while(<MYINPUTFILE>) {
 			$isLibrary = 1;
 		}
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:supercool|superheat|heating|cooling)=\([^)]*\)).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:supercool|superheat|heating|cooling|superheated)=\([^)]*\)).*\]\.\s*$/){
 		$kind = $1;
 		if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:hole)=\([^)]*\)).*\]\.\s*$/){
 			$kind = "$kind($1)";

@@ -125,7 +125,7 @@ sub handleEq {
 			$locationFrom = $2;
 			$locationTo = $2;
 		}
-		if ($line =~ m/((?:supercool|superheat|cooling|heating)=\([^\)]*\))/){
+		if ($line =~ m/((?:supercool|superheat|cooling|heating|superheated)=\([^\)]*\))/){
 			$kind = $1;
 		} elsif ($line =~ m/(structural|computational)/) {
 			$kind = $1;

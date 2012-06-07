@@ -140,7 +140,6 @@ common-c-declarations.pdf \
 common-c-expressions.pdf \
 common-c-helpers.pdf \
 common-c-semantics.pdf \
-common-c-sized-operations.pdf \
 common-c-statements.pdf \
 common-c-syntax.pdf \
 common-c-typing.pdf \
@@ -178,7 +177,9 @@ c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
 	@echo "Done".
 
 c-compiled.maude: c-compiled.maude.tmp
-	@grep -o '^ \(eq\|ceq\|rl\|crl\) .* label [^ ][^ ]* ' c-compiled.maude.tmp | grep -o ' label [^ ][^ ]*' | grep -o '[^ ]*$$' | sort | uniq -d > duplicateLabels.txt
+# @grep -o '^ \(eq\|ceq\|rl\|crl\) .* label [^ ][^ ]* ' c-compiled.maude.tmp | grep -o ' label [^ ][^ ]*' | grep -o '[^ ]*$$' | sort | uniq -d > duplicateLabels.txt
+# does not get all labels, but will hopefully find duplicates :(
+	@sed -n 's/^ \(eq\|ceq\|rl\|crl\) .* label \([^ ][^ ]*\) .*\(superheated\).*$$/\2:\3/p' c-compiled.maude.tmp | sort | uniq -d > duplicateLabels.txt
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
 
