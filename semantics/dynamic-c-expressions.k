@@ -340,7 +340,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			=> application(readFunction(Loc:Nat), L:List{KResult})
 		...</k>
 		when isFunctionType(T:KResult)
-		[structural]
+		[computational]
 
 	rule [populateFromGlobal]:
 		<k> populateFromGlobal => .K ...</k>

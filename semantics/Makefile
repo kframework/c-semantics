@@ -20,7 +20,7 @@ K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "interpRule"
 # -lib maudeLib/common-c-builtins.maude
 # -transition "computational"
-COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "computational" -superheat "ndheat" -supercool "ndlocal"
+COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
 #-lib maudeLib/common-c-builtins.maude
 
 COMMON_C_FILES = c-syntax.k \

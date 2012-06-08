@@ -1,7 +1,7 @@
 module COMMON-C-SYNTAX is
 	// including K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
 	
-	tags ndlocal ndheat computational structural interpRule anywhere
+	tags ndlocal ndheat computational structural interpRule anywhere observable
 	
 	// these are semantic
 	syntax K ::= "reval" "(" K ")" [semantic klabel(reval) strict]
