@@ -395,14 +395,16 @@ module DYNAMIC-C-ERRORS is
 		<T> 
 			_ 
 			<threads> 
-				_
+			(	_
 				<thread> _ <k> read-aux(Loc:Nat, _, BitSize:Nat) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread>
+				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread> => .Bag)
 			</threads> 
 		</T>
-		=> <errorCell> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </errorCell>
-		when (Start1 <=Int Start2 andBool End1 >=Int Start2)
-		orBool (Start1 >Int Start2 andBool Start1 <=Int End2)
+		(.Bag => <errorCell> Error("00048", "Have a read-write datarace.")
+		// ~> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) 
+		</errorCell>)
+		when (Start1 <=Int Start2 andBool Start2 <Int End1)
+		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
 		where Start1 = Loc:Nat
 		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat
@@ -413,14 +415,16 @@ module DYNAMIC-C-ERRORS is
 		<T> 
 			_ 
 			<threads> 
-				_
+			(	_
 				<thread> _ <k> write-aux(Loc:Nat, _, BitSize:Nat) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread>
+				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread> => .Bag)
 			</threads> 
 		</T>
-		=> <errorCell> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) </errorCell>
-		when (Start1 <=Int Start2 andBool End1 >=Int Start2)
-		orBool (Start1 >Int Start2 andBool Start1 <=Int End2)
+		(.Bag => <errorCell> Error("00049", "Have a write-write datarace.")
+		// ~> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) 
+		</errorCell>)
+		when (Start1 <=Int Start2 andBool Start2 <Int End1)
+		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
 		where Start1 = Loc:Nat
 		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
 		and Start2 = Loc':Nat

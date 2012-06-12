@@ -1117,6 +1117,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<thread>...
 			<k> spawn-aux(ThreadId:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
 			<currTU> Tu:K </currTU>
+			<buffer> .List </buffer>
 		...</thread>
 		<genv> Env:Map </genv>
 		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Nat] </threadStatus>
@@ -1164,15 +1165,40 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		// [large computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
-	rule [thrd-join-non-null]:
+	// rule [thrd-join-null]:
+		// <thread>...
+			// <k> join-aux(ThreadId:Nat, tv(NullPointer, _))
+				// => thrd-success
+			// ...</k>
+		// ...</thread>
+		// <thread>...
+			// <k> V:KResult </k>
+			// <threadId> ThreadId:Nat </threadId>
+		// ...</thread>
+		// [computational]
+	// rule [thrd-join-non-null]:
+		// <thread>...
+			// <k> join-aux(ThreadId:Nat, ResultPointer:KResult)
+				// => Computation((* ResultPointer:KResult) := V:KResult)
+				// ~> thrd-success
+			// ...</k>
+		// ...</thread>
+		// <thread>...
+			// <k> V:KResult </k>
+			// <threadId> ThreadId:Nat </threadId>
+		// ...</thread>
+		// if ResultPointer =/=K NullPointer
+		// [computational]
+	rule [thrd-join]:
 		<thread>...
-			<k> join-aux(ThreadId:Nat, ResultPointer:KResult)
-				=> #if (ResultPointer:KResult =/=K NullPointer) 
-					#then Computation((* ResultPointer:KResult) := V:KResult) 
+			<k> join-aux(ThreadId:Nat, tv(Loc:Nat, _))
+				=> #if (Loc:Nat =/=K NullPointer) 
+					#then Computation((* Loc:Nat) := V:KResult) 
 					#else .K
 				#fi
 				~> thrd-success
 			...</k>
+			<buffer> .List </buffer>
 		...</thread>
 		<thread>...
 			<k> V:KResult </k>
@@ -1192,6 +1218,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Nat, _)))
 			=> thrd-success
 		...</k>
+		<buffer> .List </buffer>
 		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
 		<glocks> B:Bag (.Bag => BagItem(Loc:Nat)) </glocks>
 		<locks>... .Bag => BagItem(Loc:Nat) ...</locks>
@@ -1202,6 +1229,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Nat, _)))
 			=> thrd-success
 		...</k>
+		<buffer> .List </buffer>
 		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
 		<glocks>... BagItem(Loc:Nat) => .Bag ...</glocks>
 		<locks>... BagItem(Loc:Nat) => .Bag ...</locks>

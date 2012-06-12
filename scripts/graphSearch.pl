@@ -36,6 +36,8 @@ sub graphSearch {
 	my $currentRule = "";
 	my $currentRuleName;
 	my @currentArc;
+	
+	my $seenMain = 0;
 
 	my @solutions;
 
@@ -127,21 +129,31 @@ sub graphSearch {
 				my $arcNumber = $1;
 				$currentStateDestination = $2;
 				$currentRule = $3;
-				$arcs{$currentStateNumber}{$currentStateDestination} = "";
+				if ($seenMain) {
+					$arcs{$currentStateNumber}{$currentStateDestination} = "";
+				}
 				$state = "arc";
 				$currentRuleName = "";
 			} else {
 				$currentRule .= $line;
 				if ($line =~ m/label ([\w-]+).*\] \.\)$/) {
 					$currentRuleName = $1;
-					$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+					if ($currentRuleName eq "call-main") {
+						%states = ();
+						$seenMain = 1; 
+					}
+					if ($seenMain) {
+						$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+					}
 				}
 				if ($line =~ m/metadata .*heating/) {
 					if ($line =~ m/freezer\("\(([^\)]+)\)\./) {
 						$currentRuleName = $1;
 					}
 					$currentRuleName .= ' heat';
-					$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+					if ($seenMain) {
+						$arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+					}
 				}
 			}
 			next;

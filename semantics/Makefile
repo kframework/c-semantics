@@ -21,6 +21,7 @@ COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "inte
 # -lib maudeLib/common-c-builtins.maude
 # -transition "computational"
 COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
+COMPILE_C_ND_THREAD = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational"
 #-lib maudeLib/common-c-builtins.maude
 
 COMMON_C_FILES = c-syntax.k \
@@ -170,18 +171,17 @@ c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/common-c-builtins"
 	@$(APPEND_LINE) c-compiled.maude.1 "load maudeLib/modelcheck"
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
-#@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_MODEL_CHECKER)"
-#@$(INSERT_LINE) 2 c-compiled.maude.1 "load $(K_PL_META_LEVEL)"
-#@$(INSERT_LINE) $(FIRST_LINE) c-compiled.maude.1 "load maudeLib/TCPSupport" 
 	@cp c-compiled.maude.1 c-compiled.maude.tmp
 	@echo "Done".
 
 c-compiled.maude: c-compiled.maude.tmp
-# @grep -o '^ \(eq\|ceq\|rl\|crl\) .* label [^ ][^ ]* ' c-compiled.maude.tmp | grep -o ' label [^ ][^ ]*' | grep -o '[^ ]*$$' | sort | uniq -d > duplicateLabels.txt
 # does not get all labels, but will hopefully find duplicates :(
 	@sed -n 's/^ \(eq\|ceq\|rl\|crl\) .* label \([^ ][^ ]*\) .*\(superheated\).*$$/\2:\3/p' c-compiled.maude.tmp | sort | uniq -d > duplicateLabels.txt
 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 	@mv c-compiled.maude.tmp c-compiled.maude
+
+c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
+	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
 c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
@@ -194,31 +194,45 @@ c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILE
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/common-c-builtins"
 	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
-#@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
-#@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
-#@$(INSERT_LINE) 2 c-compiled-nd.maude "load $(K_PL_MODEL_CHECKER)"
-#@$(INSERT_LINE) 3 c-compiled-nd.maude "load $(K_SOCKETS)"
-#@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/TCPSupport"
 	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
 	@echo "Done".
-
-c-total.maude: check-vars c-compiled.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
-	@echo "c-compiled.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
-
+	
 c-total-nd.maude: check-vars c-compiled-nd.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
 
-semantics: c-total.maude c-total-nd.maude
+	
+c-compiled-nd-thread.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+	@echo "Compiling the C definition with thread-nondeterminism..."
+	@$(COMPILE_C_ND_THREAD)
+	@mv c-compiled.maude c-compiled-nd-thread.maude.0
+	
+c-compiled-nd-thread.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd-thread.maude.0`
+c-compiled-nd-thread.maude: check-vars c-compiled-nd-thread.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+	@cp c-compiled-nd-thread.maude.0 c-compiled-nd-thread.maude.1
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/common-c-builtins"
+	@$(APPEND_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/modelcheck"
+	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load $(K_PL_META_LEVEL)"
+	@cp c-compiled-nd-thread.maude.1 c-compiled-nd-thread.maude
+	@echo "Done".
+	
+c-total-nd-thread.maude: check-vars c-compiled-nd-thread.maude $(K_BASE_FILES) $(K_TCP).maude Makefile
+	@echo "c-compiled-nd-thread.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
+	
 
-fast-nd: c-total.maude
+
+semantics: c-total.maude c-total-nd.maude c-total-nd-thread.maude
+
+fast: c-total.maude
 	@cp c-total.maude c-total-nd.maude
+	@cp c-total.maude c-total-nd-thread.maude
 
-fast-normal: c-total-nd.maude
+nd: c-total-nd.maude
 	@cp c-total-nd.maude c-total.maude
+	@cp c-total-nd.maude c-total-nd-thread.maude
 
-fast: c-total.maude fast-nd
-
-nd: c-total-nd.maude fast-normal
+thread: c-total-nd-thread.maude
+	@cp c-total-nd-thread.maude c-total.maude
+	@cp c-total-nd-thread.maude c-total-nd.maude
 
 clean:
 	rm -rf $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp

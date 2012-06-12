@@ -23,6 +23,7 @@ FILES_TO_DIST = \
 	$(K_BASE)/core/java/jopt-simple-3.3.jar \
 	$(SEMANTICS_DIR)/c-total.maude \
 	$(SEMANTICS_DIR)/c-total-nd.maude \
+	$(SEMANTICS_DIR)/c-total-nd-thread.maude \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
@@ -46,6 +47,9 @@ fast: dist
 
 nd: WHICH_SEMANTICS="nd"
 nd: dist
+
+thread: WHICH_SEMANTICS="thread"
+thread: dist
 
 check-vars:
 ifeq ($(C_K_BASE),)

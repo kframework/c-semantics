@@ -15,6 +15,7 @@
 
 //#define NUM_PHILOSOPHERS	3
 #define MAX_PHILOSOPHERS 10
+#define MAX_MEALS 1
 
 int NUM_PHILOSOPHERS;
 
@@ -41,7 +42,8 @@ int total_number_of_meals = 0;
  */
 void philosopher(void* arg) {
 	int n = ((phil_arg*)arg)->n;
-	while(total_number_of_meals < 5) {
+	//while(total_number_of_meals < MAX_MEALS) {
+	while(1) {
 		/* Hungry */
 		
 		// obtain chopsticks
@@ -56,7 +58,7 @@ void philosopher(void* arg) {
 		}
 		
 		/* Eating */
-		total_number_of_meals++;
+		// total_number_of_meals++;
 		
 		// release chopsticks
 		mtx_unlock(&chopstick[n]);
@@ -98,7 +100,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	// Produce the final report.
-	printf("Total meals served = %d\n", total_number_of_meals );
+	// printf("Total meals served = %d\n", total_number_of_meals );
 
 	return 0;
 }

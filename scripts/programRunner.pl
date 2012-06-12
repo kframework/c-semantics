@@ -63,6 +63,7 @@ if (defined($ENV{'HELP'})) {
 	print "DEBUGON --- debugs a particular semantic rule\n";
 	print "PLAIN --- prints out entire output without filtering it\n";
 	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
+	print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting\n";
 	print "PROFILE --- performs semantic profiling using this program\n";
 	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
 	print "PRINTMAUDE --- simply prints out the raw Maude code; only of use to developers\n";
@@ -139,6 +140,8 @@ my $fileMaudeDefinition;
 if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
         $isInterp = 0;
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
+} elsif (defined($ENV{'THREADSEARCH'})) {
+	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd-thread.maude");
 } else {
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
 }
@@ -184,7 +187,7 @@ if (defined($ENV{'DEBUGON'})) {
 	print $fileCommand "set break on .\n";
 }
 
-if (defined($ENV{'SEARCH'})) {
+if (defined($ENV{'SEARCH'}) or defined($ENV{'THREADSEARCH'})) {
 	print $fileCommand $searchLine;
 	print $fileCommand "show search graph .\n"
 } elsif (defined($ENV{'MODELCHECK'})) {
@@ -210,7 +213,7 @@ my $maudeCommand = "true; maude -no-wrap -no-banner " . rel2abs($fileRunner) . "
 if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUDE'})) {
 	#io
 	exit runDebugger($maudeCommand);
-} elsif (defined($ENV{'SEARCH'})) {
+} elsif (defined($ENV{'SEARCH'}) or defined($ENV{'THREADSEARCH'})) {
 	my $intermediateOutputFile = "tmpSearchResults.txt";
 	my $graphOutputFile = "tmpSearchResults.dot";
 	# if (! $ND_FLAG) {

@@ -216,28 +216,35 @@ or equivalent;9) or in some other implementation-defined manner
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	
-	rule <k> callMain(N:Nat, X:Id, Args:K)
+	rule [call-main]:
+		<k> callMain(N:Nat, X:Id, Args:K)
 			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
 		...</k>
-		<functionTranslationUnits>... Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) ...</functionTranslationUnits>
+		<functionTranslationUnits>... 
+			Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) 
+		...</functionTranslationUnits>
 		<currTU> _ => Tu:K </currTU>
-		[structural]
+		[computational]
 	
 	// FIXME i think these are slightly different
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Nat, X:Id, _) 
-		=> Call(Identifier("main"), List(.List{K}))
+	rule
+		callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Nat, X:Id, _) 
+			=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:Nat, X:Id, _) 
-		=> Call(Identifier("main"), List(.List{K}))
+	rule
+		callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:Nat, X:Id, _) 
+			=> Call(Identifier("main"), List(.List{K}))
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
+	rule
+		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:Nat,, X:Id)))
 		when T:KResult ==K t(.Set, char)
 		[structural]
-	rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
+	rule
+		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
 			=> Args:K 
 			~> Call(Identifier("main"), List((N:Nat,, X:Id)))
 		when T:KResult ==K t(.Set, char)
@@ -263,5 +270,6 @@ or equivalent;9) or in some other implementation-defined manner
 		...</files>
 		(.Bag =>
 			<output> S2:String +String listToString(L:List) +String S2'':String </output>
-		)		
+		)
+		[computational]
 end module
