@@ -131,16 +131,17 @@ push(@temporaryFiles, $fileInput);
 my $traceFile;
 if (defined($ENV{'TRACEMAUDE'})) {
 	$traceFile = File::Temp->new( TEMPLATE => 'tmp-kcc-trace-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-        $isInterp = 0;
+	$isInterp = 0;
 	push(@temporaryFiles, $traceFile);
 }
 
 my $fileMaudeDefinition;
 
 if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
-        $isInterp = 0;
+	$isInterp = 0;
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
 } elsif (defined($ENV{'THREADSEARCH'})) {
+	$isInterp = 0;
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd-thread.maude");
 } else {
 	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
@@ -173,7 +174,7 @@ if (defined($ENV{'PROFILE'})) {
 	print $fileCommand "set profile on .\n";
 }
 if (defined($ENV{'DEBUG'})) {
-        $isInterp = 0;
+	$isInterp = 0;
 	print $fileCommand "break select debug .\n";
 	print $fileCommand "break select debug-k .\n";
 	print $fileCommand "break select debug-m .\n";

@@ -620,7 +620,7 @@ module DYNAMIC-SEMANTICS-WRITING is
 		[large structural]
 		
 	rule [commit-byte]:
-		<blocked> false </blocked>
+		// <blocked> false </blocked>
 		<buffer> (bwrite(loc(Base:Nat, Offset:Nat, 0), V:K) => .List) ...</buffer>
 		<object>...
 			<basePtr> Base:Nat </basePtr>

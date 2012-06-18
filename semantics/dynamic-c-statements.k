@@ -53,7 +53,7 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 			<localAddresses> Addresses:Set </localAddresses>
 			</stackFrame>)
 		...</blockStack>
-		[large structural] 
+		[structural large] 
 		
 	rule [pop-block-free-memory]:
 		<k> (.K => deleteBlock(Loc:Nat)) ~> popBlock ...</k>
@@ -150,7 +150,7 @@ module DYNAMIC-SEMANTICS-SWITCH is
 		<currentFunction> F:Id </currentFunction>
 		<currTU> Tu:K </currTU>
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</gotoMap>
-		[structural] 
+		[structural large] 
 		
 	syntax K ::= "tryCase" "(" K "," Value "," K ")" [klabel(tryCase)] //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
@@ -354,12 +354,13 @@ module DYNAMIC-SEMANTICS-GOTO is
 			~> K:K
 		</k>
 		<nestingDepth> Depth:Nat </nestingDepth>
+		<br/>
 		<blockHistory> ListItem(CurrentBlock:Nat) BlockHistory:List </blockHistory>
 		<loopStack> _ => LoopStack:List </loopStack>
 		<localVariables> Vars:List </localVariables>
 		when L:KLabel ==KLabel 'processGoto
 		orBool L:KLabel ==KLabel 'processGotoDown
-		[structural] 
+		[structural large] 
 		
 	// - second case, we're in a different block
 	
@@ -377,9 +378,10 @@ module DYNAMIC-SEMANTICS-GOTO is
 		<k> (. => popBlock) 
 			~> processGoto(gotoObject(TargetDepth:Nat, Prefix:List ListItem(BlockNum:Nat) TargetBlockHistory:List, _, _, _))
 		...</k>
+		<br/>
 		<blockHistory> ListItem(BlockNum:Nat) ActualHistory:List </blockHistory>
 		when TargetBlockHistory:List =/=List ActualHistory:List
-		[structural] 
+		[structural large] 
 			
 	//  once we share a history, we start to push
 	rule
@@ -420,13 +422,14 @@ module DYNAMIC-SEMANTICS-GOTO is
 			~> addVariablesForBlock(TargetBlock:Nat, DeclStack:List)
 			~> K:K
 		</k>
+		<br/>
 		<nestingDepth> Depth:Nat </nestingDepth>
 		<blockHistory> BlockHistory:List </blockHistory>
 		<loopStack> _ => LoopStack:List </loopStack>
 		when (L:KLabel ==KLabel 'processGoto
 		orBool L:KLabel ==KLabel 'processGotoDown)
 		andBool sNatDepth:Nat ==Int Depth:Nat +Int 1
-		[structural] 
+		[structural large] 
 		
 	syntax K ::= "addVariablesForBlock" "(" Nat "," List ")" [klabel(addVariablesForBlock)] 
 	
@@ -468,11 +471,12 @@ module DYNAMIC-SEMANTICS-GOTO is
 				((ListItem(frozenDeclaration(_:Nat, TargetBlock:Nat, Decl:K)) => .List) _)
 			)
 		...</k>
+		<br/>
 		<localVariables> Vars:List </localVariables>
 		<blockHistory> ListItem(TargetBlock:Nat) ...</blockHistory>
 		<shouldInit> _ => false </shouldInit>
 		when notBool getIdOfDeclaration(Decl:K) in Vars:List
-		[structural]
+		[structural large]
 		
 	//  fixme this is wrong
 	rule
@@ -586,7 +590,7 @@ module DYNAMIC-SEMANTICS-RETURN is
 			~> K:K
 		</k>
 		<gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
-		//<br/>
+		<br/>
 		<control>
 			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
 			(<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)

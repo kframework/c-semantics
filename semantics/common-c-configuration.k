@@ -4,9 +4,7 @@ module COMMON-C-CONFIGURATION is
 	syntax CellLabel ::= "stackFrame" | "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
 	
 	configuration 
-		<T> 
-			// <modelChecking multiplicity="?"> .K </modelChecking>
-			// <busy> .Bag </busy>
+		<T>
 			<gotoMap color="lightgray"> .Map </gotoMap>
 			<genv color="lightgray"> .Map </genv>
 			<gtypes color="lightgray"> .Map </gtypes>
@@ -27,29 +25,24 @@ module COMMON-C-CONFIGURATION is
 			<malloced color="lightgray"> .Map </malloced>
 			<stringLiterals color="lightgray"> .Map </stringLiterals>
 			<br/>
-			// <staticSemantics multiplicity="?" color="cyan">
-				<leftoverExterns color="cyan"> .Bag </leftoverExterns>
-				<translationUnits color="cyan"> .Bag </translationUnits>
-				<declarationOrder color="cyan"> .Map </declarationOrder>
-				<externalDefinitions color="cyan"> .Map </externalDefinitions>
-				<internalDefinitions color="cyan"> .Map </internalDefinitions>
-				<internalLocations color="cyan"> .Map </internalLocations>
-				<externalLocations color="cyan"> .Map </externalLocations>
-				<preLinkage color="cyan"> .Map </preLinkage>
-				<preTypes color="cyan"> .Map </preTypes>
-				<declarations color="cyan"> .Set </declarations>
-			// </staticSemantics>
+			<leftoverExterns color="cyan"> .Bag </leftoverExterns>
+			<translationUnits color="cyan"> .Bag </translationUnits>
+			<declarationOrder color="cyan"> .Map </declarationOrder>
+			<externalDefinitions color="cyan"> .Map </externalDefinitions>
+			<internalDefinitions color="cyan"> .Map </internalDefinitions>
+			<internalLocations color="cyan"> .Map </internalLocations>
+			<externalLocations color="cyan"> .Map </externalLocations>
+			<preLinkage color="cyan"> .Map </preLinkage>
+			<preTypes color="cyan"> .Map </preTypes>
+			<declarations color="cyan"> .Set </declarations>
 			<br/>
 			<functionTranslationUnits color="lightgray"> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
 			<nextSharedLoc color="black"> 0 </nextSharedLoc>
 			<threadInformation color="yellow">
 				<threadStatus color="yellow"> .Map </threadStatus>
-				//<joiningMap color="yellow"> .Map </joiningMap>
-				//<detachingMap color="yellow"> .Map </detachingMap>
 				<mutexes color="yellow"> .Map </mutexes>
 				<glocks color="yellow"> .Bag </glocks>
 			</threadInformation>
-			// <openFiles color="lightgray"> .Map </openFiles>
 			<programText color="black"> .Map </programText>
 			<compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
 			<br/>
@@ -58,7 +51,6 @@ module COMMON-C-CONFIGURATION is
 					<threadId color="yellow"> 0 </threadId>
 					<nextLoc color="black"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
 					<buffer color="lightgray"> .List </buffer>
-					<blocked color="lightgray"> false </blocked>
 					<k color="green" multiplicity="?"> .K </k>
 					<br/>
 					<threadLocal>

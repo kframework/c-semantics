@@ -371,6 +371,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			~> bind(L:List{KResult}, P:List{KResult})
 			~> B:K
 		</k>
+		<br/>
 		<callStack> .List => ListItem(
 			<stackFrame> C:Bag
 				<continuation> K:K </continuation>
