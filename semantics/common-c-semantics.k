@@ -288,8 +288,8 @@ module COMMON-SEMANTIC-SYNTAX is
 	syntax K ::= "realloc" "(" K "," K "," K "," K ")" [klabel(realloc)] // should be K K 
 	
 	// these are also used by compound literals
-	syntax KResult ::= "initializerValue" "(" Id "," Type "," K ")" [klabel(initializerValue)] 
-	syntax K ::= "figureInitializer" "(" Id "," K "," K ")" [strict(2) klabel(figureInitializer)] // id, type, initializer
+	syntax KResult ::= "initValue" "(" Id "," Type "," K ")" [klabel(initValue)] 
+	syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2) klabel(figureInit)] // id, type, initializer
 	
 		
 	syntax K ::= "append" "(" Nat "," Nat "," Value ")" [klabel(append)] // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
