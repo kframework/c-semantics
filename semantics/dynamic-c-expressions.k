@@ -495,15 +495,15 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	
 	/*@ We use \kinline{compoundLiteral(N:Nat)} here as the identifier of the compound literal.
 	*/
-	// comes back from figureInit as initializerValue(id, type, inits)
+	// comes back from figureInit as initValue(id, type, inits)
 	rule
 		<k> CompoundLiteral(N:Nat, T:KResult, K:K, Init:K)
-			=> handleCompoundLiteral(figureInitializer(compoundLiteral(N:Nat), DeclType(T:KResult, K:K), Init:K))
+			=> handleCompoundLiteral(figureInit(compoundLiteral(N:Nat), DeclType(T:KResult, K:K), Init:K))
 		...</k>
 		[structural]
 		
 	rule
-		<k> handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
+		<k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
@@ -517,7 +517,7 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 		[large structural]
 		
 	rule
-		<k> handleCompoundLiteral(initializerValue(X:Id, T:KResult, Init:K))
+		<k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Init:K)
@@ -581,7 +581,7 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC is
 	}*/		
 	rule [unaryPlus-int]: 
 		+ tv(I:Int, T:KResult) => arithInterpret(T:KResult, I:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	rule [unaryPlus-float]: 
 		+ tv(F:Float, T:KResult) => tv(F:Float, T:KResult)
@@ -592,7 +592,7 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC is
 	}*/
 	rule [unaryMinus-int]: 
 		- tv(I:Int, T:KResult) => arithInterpret(T:KResult, 0 -Int I:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	rule [unaryMinus-float]: 
 		- tv(F:Float, T:KResult) => arithInterpret(T:KResult, 0.0 -Float F:Float)
@@ -602,7 +602,7 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC is
 	The result of the \cinline{\~} operator is the bitwise complement of its (promoted) operand (that is, each bit in the result is set if and only if the corresponding bit in the converted operand is not set). The integer promotions are performed on the operand, and the result has the promoted type. If the promoted type is an unsigned type, the expression \cinline{\~E} is equivalent to the maximum value representable in that type minus \cinline{E}.
 	}*/
 	rule ~ tv(I:Int, T:KResult) => arithInterpret(T:KResult, ~Int I:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{
@@ -668,13 +668,13 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS is
 	}*/
 	
 	rule tv(I1:Int, T:KResult) * tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int *Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	rule tv(F1:Float, T:KResult) * tv(F2:Float, T:KResult) => arithInterpret(T:KResult, F1:Float *Float F2:Float)
 		[structural]
 		
 	rule tv(I1:Int, T:KResult) / tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int /Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		andBool I2:Int =/=Int 0
 		[structural]
 	rule tv(F1:Float, T:KResult) / tv(F2:Float, T:KResult) => arithInterpret(T:KResult, F1:Float /Float F2:Float)
@@ -687,7 +687,7 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS is
 		[structural anywhere]
 		
 	rule tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int %Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		andBool min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int
 		andBool I2:Int =/=Int 0
 		[structural]
@@ -793,11 +793,11 @@ second operand from the first.
 		
 	rule 
 		tv(I1:Int, T:KResult) + tv(I2:Int, T:KResult) => arithInterpret(T:KResult, _+Int_(I1:Int,I2:Int))
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	rule 
 		_-_(tv(I1:Int, T:KResult), tv(I2:Int, T:KResult)) => arithInterpret(T:KResult, _-Int_(I1:Int,I2:Int))
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	rule 
 		tv(F1:Float, T:KResult) + tv(F2:Float, T:KResult) => arithInterpret(T:KResult, F1:Float +Float F2:Float)
@@ -822,7 +822,7 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
 	rule 
 		tv(I:Int, T:KResult) << tv(N:Nat, T':KResult)
 			=> leftShiftInterpret(T:KResult, I:Int <<Int N:Nat, tv(I:Int, T:KResult))
-		when hasBeenPromoted(T:KResult) andBool hasBeenPromoted(T':KResult)
+		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
 		andBool N:Nat <Int numBits(T:KResult)
 		[structural]
 	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
@@ -839,7 +839,7 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
 	rule
 		tv(I:Int, T:KResult) >> tv(N:Nat, T':KResult) 
 			=> rightShiftInterpret(T:KResult, I:Int >>Int N:Nat)
-		when hasBeenPromoted(T:KResult) andBool hasBeenPromoted(T':KResult)
+		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
 		andBool N:Nat <Int numBits(T:KResult)
 		[structural]
 	define rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
@@ -868,22 +868,22 @@ module DYNAMIC-SEMANTICS-RELATIONAL is
 		
 	rule tv(I1:Int, T:KResult) < tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int <Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) <= tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int <=Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) > tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int >Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) >= tv(I2:Int, T:KResult)
 			=> makeTruth(I1:Int >=Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		[structural]
 	rule
@@ -937,14 +937,14 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	rule tv(I1:Int, T:KResult) == tv(I2:Int, T:KResult)
 		=> makeTruth(I1:Int ==K I2:Int)
 		when (
-			hasBeenPromoted(T:KResult)
+			isPromoted(T:KResult)
 			orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
 	rule tv(I1:Int, T:KResult) != tv(I2:Int, T:KResult)
 		=> makeTruth(I1:Int =/=K I2:Int)
 		when (
-			hasBeenPromoted(T:KResult)
+			isPromoted(T:KResult)
 			orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
 		) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
 		[structural]
@@ -1053,27 +1053,27 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
-		when hasBeenPromoted(T:KResult) 
+		when isPromoted(T:KResult) 
 		andBool isPointerType(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when isPointerType(T:KResult) 
-		andBool hasBeenPromoted(T':KResult)
+		andBool isPromoted(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
 		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
-		when hasBeenPromoted(T:KResult) 
+		when isPromoted(T:KResult) 
 		andBool isPointerType(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
 		tv(_, T:KResult) != (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
 		when isPointerType(T:KResult) 
-		andBool hasBeenPromoted(T':KResult)
+		andBool isPromoted(T':KResult)
 		andBool N:Nat ==K NullPointerConstant
 		[structural]
 end module
@@ -1087,7 +1087,7 @@ module DYNAMIC-SEMANTICS-BITWISE is
 	The result of the binary \cinline{&} operator is the bitwise AND of the operands (that is, each bit in the result is set if and only if each of the corresponding bits in the converted operands is set).
 	}*/
 	rule tv(I1:Int, T:KResult) & tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int &Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.11}{3--4}}}{
@@ -1096,7 +1096,7 @@ module DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{^} operator is the bitwise exclusive OR of the operands (that is, each bit in the result is set if and only if exactly one of the corresponding bits in the converted operands is set).	
 	}*/
 	rule tv(I1:Int, T:KResult) ^ tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int xorInt I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.12}{3--4}}}{
@@ -1105,7 +1105,7 @@ module DYNAMIC-SEMANTICS-BITWISE is
 	The result of the \cinline{|} operator is the bitwise inclusive OR of the operands (that is, each bit in the result is set if and only if at least one of the corresponding bits in the converted operands is set).
 	}*/
 	rule tv(I1:Int, T:KResult) | tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int |Int I2:Int)
-		when hasBeenPromoted(T:KResult)
+		when isPromoted(T:KResult)
 		[structural]
 end module
 

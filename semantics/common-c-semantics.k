@@ -40,7 +40,7 @@ module COMMON-SEMANTIC-SYNTAX is
 	
 	syntax K ::= "checkValidLoc" "(" K ")" [klabel(checkValidLoc)]
 	syntax K ::= "checkDerefLoc" "(" K ")" [klabel(checkDerefLoc)]
-	syntax ListItem ::= "ListItem" "(" BagItem ")" [klabel(ListItem)]
+	syntax ListItem ::= "ListItem" "(" Bag ")" [klabel(ListItem)]
 	declare ListToK : List -> K 
 	syntax K ::= "Map" "(" Map ")" [klabel(Map)] 
 	syntax Nat ::= "piece" "(" Nat "," Nat ")" [klabel(piece)] 

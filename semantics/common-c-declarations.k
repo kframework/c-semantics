@@ -1,6 +1,6 @@
 module COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	including COMMON-INCLUDE 
-	syntax K ::= "figureInitializer-aux" "(" Id "," Type "," K ")" [strict(3) klabel(figureInitializer-aux)] // id, type, initializer
+	syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3) klabel(figureInit-aux)] // id, type, initializer
 	syntax K ::= "declarationObject" "(" Type "," K "," K ")" [klabel(declarationObject)] // type, translation unit it was defined in, definition
 	
 	syntax K ::= "external" [klabel(external)] 
@@ -8,7 +8,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	syntax K ::= "noLinkage" [klabel(noLinkage)] 
 	
 	syntax KResult ::= "initializer" "(" K ")" [klabel(initializer)] 
-	syntax K ::= "startInitializer" "(" Type "," Id "," K ")" [klabel(startInitializer)] 
+	syntax K ::= "startInit" "(" Type "," Id "," K ")" [klabel(startInit)] 
 	 
 	syntax K ::= "doDeclare" "(" K "," K ")" [strict(1) klabel(doDeclare)] 
 			
@@ -30,73 +30,73 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	context Typedef(NameGroup(HOLE, _))
 
 	rule
-		<k> figureInitializer(X:Id, T:KResult, CodeLoc(K:K, L:K)) 
+		<k> figureInit(X:Id, T:KResult, CodeLoc(K:K, L:K)) 
 			=> CodeLoc(.K, L:K)
-			~> figureInitializer(X:Id, T:KResult, K:K) 
+			~> figureInit(X:Id, T:KResult, K:K) 
 		...</k>
 		[structural]
 		
 	
 	// aggregates
 	rule
-		<k> figureInitializer(X:Id, T:KResult, CompoundInit(L:K))
+		<k> figureInit(X:Id, T:KResult, CompoundInit(L:K))
 			=> giveType(X:Id, T:KResult)
-			~> figureInitializer-aux(X:Id, T:KResult, startInitializer(T:KResult, X:Id, CompoundInit(L:K)))
+			~> figureInit-aux(X:Id, T:KResult, startInit(T:KResult, X:Id, CompoundInit(L:K)))
 		...</k>
 		when (isAggregateType(T:KResult) orBool isUnionType(T:KResult)) 
 		//andBool notBool isIncompleteType(T:KResult)
 		[structural] 
 	rule
-		<k> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(StringLiteral(S:String)))) 
-			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+		<k> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(StringLiteral(S:String)))) 
+			=> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
 		...</k>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <=Int Len:Nat
 		[structural]
 	rule
-		<k> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
-			=> figureInitializer(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
+		<k> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
 		...</k>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) <=Int Len:Nat
 		[structural] 
 	
 	rule
-		<k> figureInitializer(X:Id, t(_, (incompleteArrayType(T:KResult) 
+		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
 			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Constant(StringLiteral(S:String)))) 
 		...</k>
 		when isCharType(T:KResult)
 		[structural]
 	rule
-		<k> figureInitializer(X:Id, t(_, (incompleteArrayType(T:KResult) 
+		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
 			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Int 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
 		...</k>
 		when isWCharType(T:KResult)
 		[structural] 
 		
 	rule
-		<k> figureInitializer(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
-			=> figureInitializer(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), SingleInit(Constant(StringLiteral(S:String))))
+		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+			=> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), SingleInit(Constant(StringLiteral(S:String))))
 		...</k>
 		[structural] 
 		
 	// this comes from function declarations.  should probably adjust this
 	rule
-		<k> figureInitializer(X:Id, T:KResult, initializer(K:K))
-			=> figureInitializer-aux(X:Id, T:KResult, initializer(K:K))
+		<k> figureInit(X:Id, T:KResult, initializer(K:K))
+			=> figureInit-aux(X:Id, T:KResult, initializer(K:K))
 		...</k>
 		[structural] 
 
 	rule
-		<k> figureInitializer-aux(X:Id, T:KResult, initializer(K:K))
-			=> initializerValue(X:Id, T:KResult, K:K)
+		<k> figureInit-aux(X:Id, T:KResult, initializer(K:K))
+			=> initValue(X:Id, T:KResult, K:K)
 		...</k>
 		when notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		andBool notBool isConstType(T:KResult)
 		[structural]
 	rule
-		<k> figureInitializer-aux(X:Id, T:KResult, initializer(K:K))
-			=> initializerValue(X:Id, T:KResult, (K:K ~> makeUnwritableVar(X:Id)))
+		<k> figureInit-aux(X:Id, T:KResult, initializer(K:K))
+			=> initValue(X:Id, T:KResult, (K:K ~> makeUnwritableVar(X:Id)))
 		...</k>
 		when notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		andBool isConstType(T:KResult)
@@ -104,15 +104,15 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	// base types
 	rule
-		<k> figureInitializer(X:Id, T:KResult, SingleInit(K:K))
-			=> figureInitializer-aux(X:Id, T:KResult, initializer(Computation(AllowWrite(X:Id) := K:K)))
+		<k> figureInit(X:Id, T:KResult, SingleInit(K:K))
+			=> figureInit-aux(X:Id, T:KResult, initializer(Computation(AllowWrite(X:Id) := K:K)))
 		...</k>
 		when notBool isArrayType(T:KResult)
 		[structural] 
 	// c1x 6.7.8:11
 	rule
-		<k> figureInitializer(X:Id, T:KResult, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
-			=> figureInitializer-aux(X:Id, T:KResult, initializer(Computation(AllowWrite(X:Id) := K:K)))
+		<k> figureInit(X:Id, T:KResult, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
+			=> figureInit-aux(X:Id, T:KResult, initializer(Computation(AllowWrite(X:Id) := K:K)))
 		...</k>
 		when notBool (isAggregateType(T:KResult) orBool isUnionType(T:KResult))
 		[structural] 
@@ -271,7 +271,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	rule
 		<k> declareInternalVariable(X:Id, T:KResult, K:K)
-			=> defineAndInit(X:Id, unqualifyType(T:KResult), figureInitializer(X:Id, removeStorageSpecifiers(T:KResult), K:K), Loc:Nat)
+			=> defineAndInit(X:Id, unqualifyType(T:KResult), figureInit(X:Id, removeStorageSpecifiers(T:KResult), K:K), Loc:Nat)
 		...</k>
 		<br/>
 		<internalLocations>... Tu:K |-> Map((Locs:Map => Locs:Map[Loc:Nat / kpair(X:Id, BlockNum:Nat)])) ...</internalLocations>
@@ -288,7 +288,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	syntax K ::= "reseenStatic" "(" Id "," Type "," K "," Nat ")" [strict(3) klabel(reseenStatic)] 
 	rule
 		<k> declareInternalVariable(X:Id, T:KResult, K:K)
-			=> reseenStatic(X:Id, unqualifyType(T:KResult), figureInitializer(X:Id, removeStorageSpecifiers(T:KResult), K:K), Loc:Nat)
+			=> reseenStatic(X:Id, unqualifyType(T:KResult), figureInit(X:Id, removeStorageSpecifiers(T:KResult), K:K), Loc:Nat)
 		...</k>
 		<br/>
 		<internalLocations>... Tu:K |-> Map((_ kpair(X:Id, BlockNum:Nat) |-> Loc:Nat)) ...</internalLocations>
@@ -300,7 +300,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural large] 
 		
 	rule
-		<k> reseenStatic(X:Id, _, initializerValue(X:Id, T:KResult, _), Loc:Nat)
+		<k> reseenStatic(X:Id, _, initValue(X:Id, T:KResult, _), Loc:Nat)
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 		...</k>
@@ -523,7 +523,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	syntax K ::= "defineAndInit" "(" Id "," Type "," K "," Nat ")" [strict(3) klabel(defineAndInit)] 
 	rule
 		<k> declareAndDefine(X:Id, T:KResult, K:K, noLinkage)
-			=> defineAndInit(X:Id, T:KResult, figureInitializer(X:Id, T:KResult, K:K), Loc:Nat)
+			=> defineAndInit(X:Id, T:KResult, figureInit(X:Id, T:KResult, K:K), Loc:Nat)
 		...</k>
 		<br/>
 		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
@@ -533,7 +533,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural large] 
 	rule // this happens when we jump before a variable declaration with an initialization in the same block
 		<k> declareAndDefine(X:Id, T:KResult, K:K, noLinkage)
-			=> justInit(figureInitializer(X:Id, T:KResult, K:K))
+			=> justInit(figureInit(X:Id, T:KResult, K:K))
 		...</k>
 		<localVariables>... ListItem(X:Id) ...</localVariables>
 		[structural] 
@@ -541,11 +541,11 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	syntax K ::= "justInit" "(" K ")" [strict(1) klabel(justInit)]
 	
 	rule
-		<k> justInit(initializerValue(X:Id, T:KResult, K:K)) => initialize(X:Id, T:KResult, K:K) ...</k>
+		<k> justInit(initValue(X:Id, T:KResult, K:K)) => initialize(X:Id, T:KResult, K:K) ...</k>
 		[structural]
 		
 	rule
-		<k> defineAndInit(X:Id, _, initializerValue(X:Id, T:KResult, K:K), Loc:Nat)
+		<k> defineAndInit(X:Id, _, initValue(X:Id, T:KResult, K:K), Loc:Nat)
 			=> allocateTypeIfAbsent(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
@@ -555,7 +555,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural] 
 		
 	rule
-		<k> defineAndInit(X:Id, _, initializerValue(X:Id, T:KResult, _), Loc:Nat)
+		<k> defineAndInit(X:Id, _, initValue(X:Id, T:KResult, _), Loc:Nat)
 			=> allocateTypeIfAbsent(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
@@ -564,7 +564,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		[structural]
 		
 	rule
-		<k> figureInitializer-aux(_:Id, t(_, (incompleteArrayType(T:KResult) => arrayType(T:KResult, N:Nat))), initializer(K:K))
+		<k> figureInit-aux(_:Id, t(_, (incompleteArrayType(T:KResult) => arrayType(T:KResult, N:Nat))), initializer(K:K))
 		...</k>
 		<incompleteLength> N:Nat </incompleteLength>
 		[structural] 
@@ -630,24 +630,24 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	syntax K ::= "te" "(" K "," Type ")" [klabel(te)] 
-	syntax K ::= "getInitializer" [klabel(getInitializer)] 
-	syntax K ::= "fillInitializer" "(" K ")" [klabel(fillInitializer)] 
-	syntax K ::= "fillInitializer-aux" "(" K ")" [klabel(fillInitializer-aux)] 
-	syntax K ::= "fillInitializer" "(" List{K} ")" [klabel(fillInitializer)] 
-	syntax C ::= "completeInitializerFragment" "(" K "," K ")" [klabel(completeInitializerFragment)] 
+	syntax K ::= "getInit" [klabel(getInit)] 
+	syntax K ::= "fillInit" "(" K ")" [klabel(fillInit)] 
+	syntax K ::= "fillInit-aux" "(" K ")" [klabel(fillInit-aux)] 
+	syntax K ::= "fillInit" "(" List{K} ")" [klabel(fillInit)] 
+	syntax C ::= "completeInitFragment" "(" K "," K ")" [klabel(completeInitFragment)] 
 	syntax KResult ::= "initializerFragment" "(" K ")" [klabel(initializerFragment)] 
 	
 	rule
-		<k> getInitializer => initializer(K:K) ...</k>
+		<k> getInit => initializer(K:K) ...</k>
 		<savedInitialization> K:K => . </savedInitialization> 
 		<currentObject> _:List => . </currentObject> 
 		<currentSubObject> _:List => . </currentSubObject> 
 		[structural] 
 
 	rule
-		<k> startInitializer(T:KResult, X:Id, CompoundInit(List(L:List{K})))
-			=> fillInitializer(L:List{K}) 
-			~> getInitializer
+		<k> startInit(T:KResult, X:Id, CompoundInit(List(L:List{K})))
+			=> fillInit(L:List{K}) 
+			~> getInit
 		...</k>
 		<incompleteLength> _ => 0 </incompleteLength>
 		<br/>
@@ -658,13 +658,13 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large] 
 	
 	rule
-		<k> fillInitializer((InitFragment(K:K, Exp:K),, L:List{K}))
-			=> fillInitializer(InitFragment(K:K, Exp:K)) 
-			~> fillInitializer(L:List{K})
+		<k> fillInit((InitFragment(K:K, Exp:K),, L:List{K}))
+			=> fillInit(InitFragment(K:K, Exp:K)) 
+			~> fillInit(L:List{K})
 		...</k>
 		[structural] 
 	rule
-		<k> fillInitializer(.List{K}) => . ...</k>
+		<k> fillInit(.List{K}) => . ...</k>
 		[structural] 
 	
 	syntax ListItem ::= "next" [klabel(next)] 
@@ -774,15 +774,15 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural] 
 		
 	rule
-		<k> fillInitializer(InitFragment(NextInit, Exp:K)) 
-			=> fillInitializer(Exp:K) 
+		<k> fillInit(InitFragment(NextInit, Exp:K)) 
+			=> fillInit(Exp:K) 
 		...</k>
 		[structural] 
 		
 	syntax K ::= "finishCompoundInit" "(" List ")" [klabel(finishCompoundInit)] 
 	rule
-		<k> fillInitializer(CompoundInit(List(L:List{K})))
-			=> fillInitializer(L:List{K})
+		<k> fillInit(CompoundInit(List(L:List{K})))
+			=> fillInit(L:List{K})
 			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:KResult)) Remainder:ListItem)
 		...</k>
@@ -800,13 +800,13 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		<currentSubObject> (_ => L:List) </currentSubObject>
 		[structural] 
 			
-	context fillInitializer(InitFragment(HOLE, _)) 
+	context fillInit(InitFragment(HOLE, _)) 
 	syntax K ::= "buildDesignator" "(" K ")" [klabel(buildDesignator)] 
 	
 	// note that these clear the current subobject cell, because it will be repopulated when building the designator
 	rule
-		<k> fillInitializer(InitFragment(InFieldInit(F:Id, K':K), Exp:K))
-			=> fillInitializer(InitFragment(buildDesignator(InFieldInit(F:Id, K':K)), Exp:K))
+		<k> fillInit(InitFragment(InFieldInit(F:Id, K':K), Exp:K))
+			=> fillInit(InitFragment(buildDesignator(InFieldInit(F:Id, K':K)), Exp:K))
 		...</k>
 		<br/>
 		<currentObject> ListItem(te(K:K, T:KResult)) ...</currentObject>
@@ -815,8 +815,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large] 
 	// fixme does this need to worry about incompleteLength_
 	rule
-		<k> fillInitializer(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
-			=> fillInitializer(InitFragment(buildDesignator(AtIndexInit(Index:K, K':K)), Exp:K))
+		<k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
+			=> fillInit(InitFragment(buildDesignator(AtIndexInit(Index:K, K':K)), Exp:K))
 		...</k>
 		<br/>
 		<currentObject> ListItem(te(K:K, T:KResult)) ...</currentObject>
@@ -944,62 +944,62 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large] 
 	
 	rule
-		<k> fillInitializer(SingleInit(K:K)) => initializeSingleInit(K:K) ...</k>
+		<k> fillInit(SingleInit(K:K)) => initializeSingleInit(K:K) ...</k>
 		when getKLabel(K:K) =/=KLabel 'Constant
 		[structural] 
 
 	rule [fillInit-string-array-eq]:
-		<k> fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
+		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) ==Int Len:Nat
 		[structural] 
 	rule [fillInit-wstring-array-eq]:
-		<k> fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) ==Int Len:Nat
 		[structural] 
 	rule [fillInit-string-array-lt]:
-		<k> fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInitializer(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInit(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <Int Len:Nat
 		[structural] 
 	rule [fillInit-wstring-array-lt]:
-		<k> fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInitializer(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInit(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) <Int Len:Nat
 		[structural] 
 	rule [fillInit-string-char]:
-		<k> fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		[structural large] 
 	rule [fillInit-wstring-wchar]:
-		<k> fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInitializer-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
+			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		[structural large]
 	rule [fillInitAux-string-some]:
-		<k> fillInitializer-aux(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInitializer(SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))) 
-			~> fillInitializer-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
+		<k> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
+			=> fillInit(SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))) 
+			~> fillInit-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1007,9 +1007,9 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool isCharType(T:KResult)
 		[structural large]
 	rule [fillInitAux-wstring-some]:
-		<k> fillInitializer-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
-			=> fillInitializer(SingleInit(tv(N:Nat, cfg:wcharut)))
-			~> fillInitializer-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
+		<k> fillInit-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
+			=> fillInit(SingleInit(tv(N:Nat, cfg:wcharut)))
+			~> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1017,16 +1017,16 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large]
 	// fixme not sure what happens in the case of   char *x = "";
 	rule [fillInitAux-string-done]:
-		<k> fillInitializer-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</k>
+		<k> fillInit-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</k>
 		[structural]
 	rule [fillInitAux-wstring-done]:
-		<k> fillInitializer-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</k>
+		<k> fillInit-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</k>
 		[structural] 
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
 	// alternatively, i've added the condition below which might be enough
 	rule [fillInit-string-notchar]:
-		<k> fillInitializer(SingleInit(Constant(StringLiteral(S:String))))
+		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
 			=> initializeSingleInit(Constant(StringLiteral(S:String)))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1034,7 +1034,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool (isBasicType(T:KResult) orBool isPointerType(T:KResult) orBool isBitfieldType(T:KResult))
 		[structural] 
 	rule [fillinit-wstring-notwchar]:
-		<k> fillInitializer(SingleInit(Constant(WStringLiteral(S:List{K}))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
 			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1144,12 +1144,12 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	syntax K ::= "resolveInternal-aux" "(" Id "," K "," K "," K ")" [strict(4) klabel(resolveInternal-aux)] 
 	rule
 		<k> resolveInternal(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K))
-			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInitializer(X:Id, T:KResult, K:K))
+			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInit(X:Id, T:KResult, K:K))
 		...</k>
 		<currTU> _ => Tu:K </currTU>
 		[structural] 
 	rule
-		<k> resolveInternal-aux(X:Id, Tu:K, declarationObject(_, Tu:K, _), initializerValue(X:Id, T:KResult, K:K))
+		<k> resolveInternal-aux(X:Id, Tu:K, declarationObject(_, Tu:K, _), initValue(X:Id, T:KResult, K:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
@@ -1162,7 +1162,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			
 	rule
 		<k> resolveExternal(X:Id, Tu:K, Units:Bag, declarationObject(T:KResult, DefTu:K, K:K))
-			=> resolveExternal-aux(X:Id, Tu:K, Units:Bag, declarationObject(T:KResult, DefTu:K, K:K), Loc:Nat, figureInitializer(X:Id, T:KResult, K:K))
+			=> resolveExternal-aux(X:Id, Tu:K, Units:Bag, declarationObject(T:KResult, DefTu:K, K:K), Loc:Nat, figureInit(X:Id, T:KResult, K:K))
 		...</k>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
 		[structural] 
@@ -1171,13 +1171,13 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu':K, DefTu:K)
-			) ~> resolveExternal-aux(X:Id, Tu:K, ((BagItem(Tu':K) => .) Units:Bag), declarationObject(_, DefTu:K, _), Loc:Nat, initializerValue(X:Id, T:KResult, K:K))
+			) ~> resolveExternal-aux(X:Id, Tu:K, ((BagItem(Tu':K) => .) Units:Bag), declarationObject(_, DefTu:K, _), Loc:Nat, initValue(X:Id, T:KResult, K:K))
 		...</k>
 		<currTU> _ => Tu':K </currTU>
 		<preLinkage>... Tu':K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		[structural] 
 	rule
-		<k> resolveExternal-aux(X:Id, Tu:K, .Bag, declarationObject(_, DefTu:K, _), Loc:Nat, initializerValue(X:Id, T:KResult, K:K))
+		<k> resolveExternal-aux(X:Id, Tu:K, .Bag, declarationObject(_, DefTu:K, _), Loc:Nat, initValue(X:Id, T:KResult, K:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)

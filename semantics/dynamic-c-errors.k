@@ -165,14 +165,14 @@ module DYNAMIC-C-ERRORS is
 		< k => finalComputation > tv(I1:Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => <errorCell> Error("00017", "Division by 0.") </errorCell>)
 		when hasIntegerType(T:KResult)
-		andBool hasBeenPromoted(T:KResult)
+		andBool isPromoted(T:KResult)
 		[structural]
 	
 	rule [err00018]:
 		< k => finalComputation > tv(I1:Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
 		(.Bag => <errorCell> Error("00018", "Modulus by 0.") </errorCell>)
 		when hasIntegerType(T:KResult)
-		andBool hasBeenPromoted(T:KResult)
+		andBool isPromoted(T:KResult)
 		[structural]
 		
 	rule [err00019]:
@@ -180,7 +180,7 @@ module DYNAMIC-C-ERRORS is
 		(.Bag => <errorCell> Error("00019", "Signed overflow.") </errorCell>)
 		when hasIntegerType(T:KResult)
 		andBool notBool (min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int)
-		andBool hasBeenPromoted(T:KResult)
+		andBool isPromoted(T:KResult)
 		andBool I2:Int =/=Int 0
 		[structural]
 		

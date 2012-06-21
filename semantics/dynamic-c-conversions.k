@@ -120,21 +120,21 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	The integer promotions preserve value including sign. As discussed earlier, whether a ``plain'' \cinline{char} is treated as signed is implementation-defined.
 	}*/
 	
-	define hasBeenPromoted(t(_, enumType(_:Id))) => true
-	define hasBeenPromoted(t(_, int)) => true
-	define hasBeenPromoted(t(_, unsigned-int)) => true
-	define hasBeenPromoted(t(_, long-int)) => true
-	define hasBeenPromoted(t(_, unsigned-long-int)) => true
-	define hasBeenPromoted(t(_, long-long-int)) => true
-	define hasBeenPromoted(t(_, unsigned-long-long-int)) => true
+	define isPromoted(t(_, enumType(_:Id))) => true
+	define isPromoted(t(_, int)) => true
+	define isPromoted(t(_, unsigned-int)) => true
+	define isPromoted(t(_, long-int)) => true
+	define isPromoted(t(_, unsigned-long-int)) => true
+	define isPromoted(t(_, long-long-int)) => true
+	define isPromoted(t(_, unsigned-long-long-int)) => true
 	
-	define hasBeenPromoted(t(_, bool)) => false
-	define hasBeenPromoted(t(_, signed-char)) => false
-	define hasBeenPromoted(t(_, unsigned-char)) => false
-	define hasBeenPromoted(t(_, short-int)) => false
-	define hasBeenPromoted(t(_, unsigned-short-int)) => false
+	define isPromoted(t(_, bool)) => false
+	define isPromoted(t(_, signed-char)) => false
+	define isPromoted(t(_, unsigned-char)) => false
+	define isPromoted(t(_, short-int)) => false
+	define isPromoted(t(_, unsigned-short-int)) => false
 	
-	define hasBeenPromoted(t(_, bitfieldType(_, _:Nat))) => false
+	define isPromoted(t(_, bitfieldType(_, _:Nat))) => false
 	
 	rule [promote-unary]:
 		<k> L:KLabel(
@@ -142,7 +142,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 			)
 		...</k> 
 		when isArithUnaryOp(L:KLabel)
-		andBool notBool hasBeenPromoted(T:KResult)
+		andBool notBool isPromoted(T:KResult)
 		//andBool hasIntegerType(T:KResult)
 		[structural]
 	rule [promote-binary-left]:
@@ -152,8 +152,8 @@ Conversion of an operand value to a compatible type causes no change to the valu
 			)
 			...</k> 
 		when isArithBinOp(L:KLabel)
-		andBool notBool hasBeenPromoted(T:KResult)
-		//andBool hasIntegerType(T:KResult) // implicity in notBool hasBeenPromoted
+		andBool notBool isPromoted(T:KResult)
+		//andBool hasIntegerType(T:KResult) // implicity in notBool isPromoted
 		[structural]
 	rule [promote-binary-right]:
 		<k> L:KLabel(
@@ -162,7 +162,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 			) 
 			...</k>
 		when isArithBinOp(L:KLabel)
-		andBool notBool hasBeenPromoted(T:KResult)
+		andBool notBool isPromoted(T:KResult)
 		//andBool hasIntegerType(T:KResult)
 		[structural]
 
