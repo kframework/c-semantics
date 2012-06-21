@@ -119,7 +119,7 @@ module COMMON-SEMANTIC-SYNTAX is
 
 	declare isTypeCompatible : K K -> Bool 
 	
-	declare hasBeenPromoted : Type -> Bool
+	declare isPromoted : Type -> Bool
 	// syntax Bool ::= "isPromotedInteger" "(" Type ")" [klabel(isPromotedInteger)]
 	
 	
