@@ -47,15 +47,21 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		//andBool notBool isIncompleteType(T:KResult)
 		[structural] 
 	rule
-		<k> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(StringLiteral(S:String)))) 
-			=> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+		<k> figureInit(
+			X:Id, 
+			t(Se:Set, arrayType(T:KResult, Len:Nat)), 
+			(SingleInit(Constant(StringLiteral(S:String))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+		)
 		...</k>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <=Int Len:Nat
 		[structural]
 	rule
-		<k> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), SingleInit(Constant(WStringLiteral(S:List{K})))) 
-			=> figureInit(X:Id, t(Se:Set, arrayType(T:KResult, Len:Nat)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
+		<k> figureInit(
+			X:Id, 
+			t(Se:Set, arrayType(T:KResult, Len:Nat)), 
+			(SingleInit(Constant(WStringLiteral(S:List{K}))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
+		)
 		...</k>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) <=Int Len:Nat
@@ -513,6 +519,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<declarations>... .Set => SetItem(X:Id) ...</declarations>
 		<br/>
 		<internalDefinitions>... Tu:K |-> Map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) ...</internalDefinitions>
+		<br/>
 		<preLinkage>... Tu:K |-> Map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
 		<currTU> Tu:K </currTU>
@@ -937,8 +944,10 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		<k> initFromStructRHS(K':K, t(_, structType(S:Id)))
 			=> .K
 		...</k>
+		<currentSubObject> 
+			findStruct(t(_, structType(S:Id))) ListItem(te(K:K, t(_, structType(S:Id)))) => next 
+		...</currentSubObject>
 		<br/>
-		<currentSubObject> findStruct(t(_, structType(S:Id))) ListItem(te(K:K, t(_, structType(S:Id)))) => next ...</currentSubObject>
 		<incompleteLength> N:Nat => maxInt(N:Nat, getTopArrayUse(K:K)) </incompleteLength>
 		<savedInitialization>... .K => Computation(AllowWrite(K:K) := K':K) </savedInitialization> 
 		[structural large] 
@@ -1057,7 +1066,8 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<br/>
 		<declarationOrder> DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </declarationOrder>
 		<internalLocations> ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </internalLocations>
-		<functionTranslationUnits> Funs:Map => Funs:Map[Map(.) / Name:String] </functionTranslationUnits> 
+		<functionTranslationUnits> Funs:Map => Funs:Map[Map(.) / Name:String] </functionTranslationUnits>
+		<br/>
 		<translationUnits>... . => BagItem(Name:String) ...</translationUnits>
 		<preLinkage> Linkage:Map => Linkage:Map[Map(.) / Name:String] </preLinkage>
 		<preTypes> Types:Map => Types:Map[Map(.) / Name:String] </preTypes>
@@ -1125,14 +1135,14 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	syntax K ::= "resolveExternal" "(" Id "," K "," Bag "," K ")" [klabel(resolveExternal)] 
 	syntax K ::= "resolveExternal-aux" "(" Id "," K "," Bag "," K "," Nat "," K ")" [metadata "strict=(6)" klabel(resolveExternal-aux)]
 	
-	syntax K ::= "recordFunctionTranslationUnitInformation" "(" K "," Type "," K "," K ")" [klabel(recordFunctionTranslationUnitInformation)] // name, type, context, where defined
+	syntax K ::= "recordFunTUInfo" "(" K "," Type "," K "," K ")" [klabel(recordFunTUInfo)] // name, type, context, where defined
 	rule
-		<k> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, DefTu:K) => .K ...</k>
+		<k> recordFunTUInfo(X:Id, T:KResult, Tu:K, DefTu:K) => .K ...</k>
 		<functionTranslationUnits>... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</functionTranslationUnits>
 		when isFunctionType(T:KResult)
 		[structural] 
 	rule
-		<k> recordFunctionTranslationUnitInformation(_, T:KResult, _, _) => .K ...</k>
+		<k> recordFunTUInfo(_, T:KResult, _, _) => .K ...</k>
 		when notBool isFunctionType(T:KResult)
 		[structural] 
 	
@@ -1146,48 +1156,53 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<k> resolveInternal(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K))
 			=> resolveInternal-aux(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInit(X:Id, T:KResult, K:K))
 		...</k>
+		<br/>
 		<currTU> _ => Tu:K </currTU>
-		[structural] 
+		[structural large] 
 	rule
 		<k> resolveInternal-aux(X:Id, Tu:K, declarationObject(_, Tu:K, _), initValue(X:Id, T:KResult, K:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, K:K)
-			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, Tu:K)
+			~> recordFunTUInfo(X:Id, T:KResult, Tu:K, Tu:K)
 		...</k>
+		<br/>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
 		<currTU> _ => Tu:K </currTU>
-		[structural] 
+		[structural large] 
 			
 	rule
 		<k> resolveExternal(X:Id, Tu:K, Units:Bag, declarationObject(T:KResult, DefTu:K, K:K))
 			=> resolveExternal-aux(X:Id, Tu:K, Units:Bag, declarationObject(T:KResult, DefTu:K, K:K), Loc:Nat, figureInit(X:Id, T:KResult, K:K))
 		...</k>
+		<br/>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
-		[structural] 
+		[structural large] 
 	rule
 		<k> ( .K
 			=> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
-			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu':K, DefTu:K)
+			~> recordFunTUInfo(X:Id, T:KResult, Tu':K, DefTu:K)
 			) ~> resolveExternal-aux(X:Id, Tu:K, ((BagItem(Tu':K) => .) Units:Bag), declarationObject(_, DefTu:K, _), Loc:Nat, initValue(X:Id, T:KResult, K:K))
 		...</k>
+		<br/>
 		<currTU> _ => Tu':K </currTU>
 		<preLinkage>... Tu':K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
-		[structural] 
+		[structural large] 
 	rule
 		<k> resolveExternal-aux(X:Id, Tu:K, .Bag, declarationObject(_, DefTu:K, _), Loc:Nat, initValue(X:Id, T:KResult, K:K))
 			=> allocateType(Loc:Nat, T:KResult)
 			~> addToEnv(X:Id, Loc:Nat)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, K:K)
-			~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, DefTu:K)
+			~> recordFunTUInfo(X:Id, T:KResult, Tu:K, DefTu:K)
 		...</k>
+		<br/>
 		<currTU> _ => Tu:K </currTU>
 		<externalLocations> Locs:Map => Locs:Map[Loc:Nat / X:Id] </externalLocations>
 		when notBool $hasMapping(Locs:Map, X:Id)
-		[structural] 
+		[structural large] 
 	rule
 		<k> resolveExternal-aux(X:Id, _, ((BagItem(Tu:K) => .) Units:Bag), _, _:Nat, _) ...</k>
 		<preLinkage>... Tu:K |-> Map(M:Map) ...</preLinkage>
@@ -1246,16 +1261,17 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	rule
 		<k> (.K => 
 				giveType(X:Id, T:KResult)
-				~> recordFunctionTranslationUnitInformation(X:Id, T:KResult, Tu:K, Tu:K)  // fixme fake Tu
+				~> recordFunTUInfo(X:Id, T:KResult, Tu:K, Tu:K)  // fixme fake Tu
 			)
 			~> resolve(Tu:K) 
 		...</k>
 		<br/>
-		<currTU> _ => Tu:K </currTU>
 		<preLinkage>... Tu:K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((_ X:Id |-> t(S:Set, prototype(T:KResult)))) ...</preTypes>
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .) _) ...</declarationOrder>
+		<br/>
 		<externalDefinitions> Defs:Map </externalDefinitions>
+		<currTU> _ => Tu:K </currTU>
 		when isFunctionType(T:KResult)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
 		[structural large] 
@@ -1273,6 +1289,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<preLinkage>... Tu:K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((_ X:Id |-> T:KResult)) ...</preTypes>
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .) _) ...</declarationOrder>
+		<br/>
 		<externalDefinitions> Defs:Map </externalDefinitions>
 		<currTU> _ => Tu:K </currTU>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
@@ -1289,12 +1306,13 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<preLinkage>... Tu:K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
 		<preTypes>... Tu:K |-> Map((_ X:Id |-> T:KResult)) ...</preTypes>
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .) _) ...</declarationOrder>
+		<br/>
 		<externalDefinitions> Defs:Map </externalDefinitions>
 		<leftoverExterns>... .Bag => BagItem(leftover(Tu:K, X:Id, T:KResult)) ...</leftoverExterns>
 		when notBool isFunctionType(T:KResult)
 		andBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
-		[structural] 
+		[structural large] 
 		
 	rule
 		<k> resolve(Tu:K) => . ...</k>
