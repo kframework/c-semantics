@@ -47,11 +47,10 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 		</local>
 		<br/>
 		<blockStack> .List 
-			=> ListItem(<stackFrame> C:Bag 
+			=> ListItem(C:Bag 
 			<nestingDepth> N:Nat </nestingDepth> 
 			<localVariables> Vars:List </localVariables>
-			<localAddresses> Addresses:Set </localAddresses>
-			</stackFrame>)
+			<localAddresses> Addresses:Set </localAddresses>)
 		...</blockStack>
 		[structural large] 
 		
@@ -67,7 +66,7 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 			(<localAddresses> .Set </localAddresses> => .Bag)
 		</local>
 		<blockStack> 
-			ListItem(<stackFrame> C:Bag </stackFrame>) => .List 
+			ListItem(C:Bag) => .List 
 		...</blockStack>
 		[structural] 
 		
@@ -574,10 +573,7 @@ module DYNAMIC-SEMANTICS-RETURN is
 	rule [fetch-all-locals]:
 		<k> Return(V:KResult) ...</k>
 		<localAddresses> .Set => Addresses:Set </localAddresses>
-		<blockStack> ListItem(<stackFrame> 
-			_
-			<localAddresses> Addresses:Set </localAddresses>
-			</stackFrame>)
+		<blockStack> ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
 			=> .List
 		...</blockStack>
 		[structural] 
@@ -603,12 +599,10 @@ module DYNAMIC-SEMANTICS-RETURN is
 		<br/>
 		<callStack>
 			ListItem(
-				<stackFrame>
-					<continuation> K:K </continuation>
-					C:Bag
-					<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-					<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-				</stackFrame>
+				<continuation> K:K </continuation>
+				C:Bag
+				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
 			) => .List
 		...</callStack>
 		[structural large] 

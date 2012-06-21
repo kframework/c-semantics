@@ -373,12 +373,11 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		</k>
 		<br/>
 		<callStack> .List => ListItem(
-			<stackFrame> C:Bag
-				<continuation> K:K </continuation>
-				<currTU> OldTu:K </currTU>
-				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-			</stackFrame>
+			C:Bag
+			<continuation> K:K </continuation>
+			<currTU> OldTu:K </currTU>
+			<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+			<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
 		) ...</callStack>
 		<br/>
 		(<control>

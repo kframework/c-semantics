@@ -333,7 +333,7 @@ and statement =
 	| SEQUENCE of statement * statement * cabsloc
 */
 	syntax PureStatement ::= "Nop"
-	syntax PureStatement ::= "Computation" "(" K ")" [klabel(Computation)]
+	syntax PureStatement ::= "Computation" "(" K ")" [latex "{{#1}};" klabel(Computation)]
 	context Computation((HOLE => reval(HOLE))) // not sure why i had this commented out before...
 	syntax PureStatement ::= "BlockStatement" "(" K ")" [klabel(BlockStatement)]
 	syntax PureStatement ::= "Sequence" "(" K "," K ")" [klabel(Sequence)]
@@ -545,7 +545,7 @@ and unary_operator =
 	| PAREN of expression
 	| VARIABLE of string
 */
-	syntax Expression ::= "Constant" "(" K ")" [klabel(Constant)]
+	syntax Expression ::= "Constant" "(" K ")" [klabel(Constant)] // [latex "{#1}" klabel(Constant)]
 	// String constants aren't revals
 	// for paren, just putting parentheses
 	syntax Expression ::= Id

@@ -35,6 +35,11 @@
 \end{framed}%
 }
 
+\renewcommand{\builtinIfThenElseFi}[3]{\begin{array}{ll}\terminal{if}&{#1}\\\terminal{then}&{#2}\\\terminal{else}&\\&{#3}\\\terminal{fi}&\end{array}}
+
+\renewcommand{\reduceTop}[2]{\reduce{#1}{#2}}
+
+
 \makeatletter
 \renewcommand{\k@ruleLabel}[2]{%
   \ifthenelse{\equal{#1}{\textbackslash !}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2 \kattribute{#1}}}{Rule Label: #1}}\\%

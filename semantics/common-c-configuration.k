@@ -1,7 +1,7 @@
 module COMMON-C-CONFIGURATION is
 	including C-SYNTAX
 
-	syntax CellLabel ::= "stackFrame" | "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
+	syntax CellLabel ::= "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
 	
 	configuration 
 		<T>
