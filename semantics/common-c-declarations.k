@@ -608,7 +608,18 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	// FIXME check prototypes
 	rule [function-definition]:
 		<k> FunctionDefinition(typedDeclaration(T:KResult, X:Id), Block:K) 
-			=> declareFunction(
+			=> createNewFun(X:Id, T:KResult, BODY)
+			~> calculateGotoMap(X:Id, BODY)
+		...</k>
+		when isFunctionType(T:KResult)
+		where BODY = safeBody(X:Id, Block:K)
+		[structural]
+
+	syntax K ::= "createNewFun" "(" K "," K "," K ")" [klabel(createNewFun)]
+	
+	define
+		createNewFun(X:Id, T:KResult, Block:K)
+		=> declareFunction(
 				X:Id, 
 				T:KResult, 
 				initializer(initFunction(
@@ -616,15 +627,21 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 					functionObject(
 						X:Id, 
 						unqualifyType(T:KResult), 
-						BODY
+						Block:K
 					)
 				))
 			)
-			~> calculateGotoMap(X:Id, BODY)
-		...</k>
-		when isFunctionType(T:KResult)
-		where BODY = (Block:K ~> Return(#if (X:Id ==K Identifier("main")) #then tv(0, t(.Set, int)) #else NothingExpression #fi))
-		[structural] 
+		
+	syntax K ::= "safeBody" "(" K "," K ")" [klabel(safeBody)] 
+	define 
+		safeBody(X:Id, Block:K) 
+		=> Block:K 
+		~> Return(NothingExpression)
+		when X:Id =/=K Identifier("main")
+	define 
+		safeBody(Identifier("main"), Block:K) 
+		=> Block:K 
+		~> Return(tv(0, t(.Set, int)))
 end module
 
 module COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
@@ -895,8 +912,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	// fixme want to exclude strings, but not normal arrays
 	rule
 		<k> T':KResult ~> initializeSingleInit(K':K) => . ...</k>
-		<br/>
 		<currentSubObject> (.List => next) ListItem(te(K:K, T:KResult)) ...</currentSubObject>
+		<br/>
 		<incompleteLength> N:Nat => maxInt(N:Nat, getTopArrayUse(K:K)) </incompleteLength>
 		<savedInitialization>... .K => Computation(AllowWrite(K:K) := K':K) ~> possiblyMakeConst(T:KResult, K:K) </savedInitialization>
 		when (isBasicType(T:KResult) orBool isPointerType(T:KResult) orBool isBitfieldType(T:KResult))
@@ -944,6 +961,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		<k> initFromStructRHS(K':K, t(_, structType(S:Id)))
 			=> .K
 		...</k>
+		<br/>
 		<currentSubObject> 
 			findStruct(t(_, structType(S:Id))) ListItem(te(K:K, t(_, structType(S:Id)))) => next 
 		...</currentSubObject>
@@ -1007,14 +1025,25 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large]
 	rule [fillInitAux-string-some]:
 		<k> fillInit-aux(SingleInit(Lit(StringLit(S:String))))
-			=> fillInit(SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))) 
-			~> fillInit-aux(SingleInit(Lit(StringLit(butFirstChar(S:String))))) 
+			=> fillInit(initHead(S:String, T:KResult)) 
+			~> fillInit-aux(initTail(S:String))
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
 		when S:String =/=String ""
 		andBool isCharType(T:KResult)
 		[structural large]
+		
+	syntax K ::= "initHead" "(" K "," K ")"
+	syntax K ::= "initTail" "(" K ")"
+	define
+		initHead(S:String, T:KResult)
+		=> SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))
+	
+	define 
+		initTail(S:String)
+		=> SingleInit(Lit(StringLit(butFirstChar(S:String))))
+		
 	rule [fillInitAux-wstring-some]:
 		<k> fillInit-aux(SingleInit(Lit(WStringLit((N:Nat,, S:List{K})))))
 			=> fillInit(SingleInit(tv(N:Nat, cfg:wcharut)))
@@ -1071,9 +1100,11 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<translationUnits>... . => BagItem(Name:String) ...</translationUnits>
 		<preLinkage> Linkage:Map => Linkage:Map[Map(.) / Name:String] </preLinkage>
 		<preTypes> Types:Map => Types:Map[Map(.) / Name:String] </preTypes>
+		<br/>
 		<internalDefinitions> Def:Map => Def:Map[Map(.) / Name:String] </internalDefinitions>
 		<genv> Env:Map => Env:Map[Map(.) / Name:String] </genv>
 		<gtypes> Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</gtypes>
+		<br/>
 		<programText> M:Map => M:Map[P:String / Name:String] </programText>
 		when notBool $hasMapping(Env:Map, Name:String)
 		[structural large]

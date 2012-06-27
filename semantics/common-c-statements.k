@@ -153,6 +153,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<gotoCalculation>
 			<computation> (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) => .K) ~> K:K </computation>
 			<computationTail> Tail:K </computationTail>
+			<br/>
 			B:Bag
 			<nestingDepthGoto> N:Nat </nestingDepthGoto>
 			<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
@@ -161,7 +162,8 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<br/>
 		(. =>
 			<gotoCalculation> 
-				<computation> S:K </computation> 
+				<computation> S:K </computation>
+				<br/>
 				<computationTail>
 					Computation(Post:K)
 					~> loopMarked
@@ -170,6 +172,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 					~> K:K 
 					~> Tail:K 
 				</computationTail>
+				<br/>
 				B:Bag
 				<nestingDepthGoto> N:Nat +Int 1 </nestingDepthGoto>
 				<blockHistoryGoto> ListItem(ForNum:Nat) ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
@@ -190,12 +193,14 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		(. =>
 			<gotoCalculation> 
 				<computation> S:K </computation>
+				<br/>
 				<computationTail>
 					IfThenElse(E:K, (loopMarked ~> DoWhile(E:K, S:K)), Nop)
 					~> popLoop
 					~> K:K 
 					~> Tail:K 
 				</computationTail>
+				<br/>
 				B:Bag
 				<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
 				<loopStackGoto> ListItem(kpair(Num:Nat, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
