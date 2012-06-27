@@ -97,12 +97,12 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 
 	// c99 6.4.5
 	rule
-		<type> Constant(StringLiteral(S:String)) 
+		<type> Lit(StringLit(S:String)) 
 			=> t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) 
 		...</type>
 		[structural]
 	rule
-		<type> Constant(WStringLiteral(L:List{K})) 
+		<type> Lit(WStringLit(L:List{K})) 
 			=> t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) 
 		...</type>
 		[structural]

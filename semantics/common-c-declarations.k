@@ -50,7 +50,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<k> figureInit(
 			X:Id, 
 			t(Se:Set, arrayType(T:KResult, Len:Nat)), 
-			(SingleInit(Constant(StringLiteral(S:String))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+			(SingleInit(Lit(StringLit(S:String))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Lit(StringLit(S:String)))))))
 		)
 		...</k>
 		when isCharType(T:KResult)
@@ -60,7 +60,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<k> figureInit(
 			X:Id, 
 			t(Se:Set, arrayType(T:KResult, Len:Nat)), 
-			(SingleInit(Constant(WStringLiteral(S:List{K}))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
+			(SingleInit(Lit(WStringLit(S:List{K}))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Lit(WStringLit(S:List{K})))))))
 		)
 		...</k>
 		when isWCharType(T:KResult)
@@ -69,20 +69,20 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 	
 	rule
 		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Constant(StringLiteral(S:String)))) 
+			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Lit(StringLit(S:String)))) 
 		...</k>
 		when isCharType(T:KResult)
 		[structural]
 	rule
 		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Int 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Int 1))), SingleInit(Lit(WStringLit(S:List{K})))) 
 		...</k>
 		when isWCharType(T:KResult)
 		[structural] 
 		
 	rule
-		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
-			=> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), SingleInit(Constant(StringLiteral(S:String))))
+		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(List(InitFragment(NextInit, SingleInit(Lit(StringLit(S:String)))))))
+			=> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), SingleInit(Lit(StringLit(S:String))))
 		...</k>
 		[structural] 
 		
@@ -954,61 +954,61 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 	
 	rule
 		<k> fillInit(SingleInit(K:K)) => initializeSingleInit(K:K) ...</k>
-		when getKLabel(K:K) =/=KLabel 'Constant
+		when getKLabel(K:K) =/=KLabel 'Lit
 		[structural] 
 
 	rule [fillInit-string-array-eq]:
-		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
+		<k> fillInit(SingleInit(Lit(StringLit(S:String))))
+			=> fillInit-aux(SingleInit(Lit(StringLit(S:String))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) ==Int Len:Nat
 		[structural] 
 	rule [fillInit-wstring-array-eq]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
+		<k> fillInit(SingleInit(Lit(WStringLit(S:List{K}))))
+			=> fillInit-aux(SingleInit(Lit(WStringLit(S:List{K}))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) ==Int Len:Nat
 		[structural] 
 	rule [fillInit-string-array-lt]:
-		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInit(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		<k> fillInit(SingleInit(Lit(StringLit(S:String))))
+			=> fillInit(SingleInit(Lit(StringLit(S:String +String "\0"))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <Int Len:Nat
 		[structural] 
 	rule [fillInit-wstring-array-lt]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Lit(WStringLit(S:List{K}))))
+			=> fillInit(SingleInit(Lit(WStringLit((S:List{K},, 0)))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Nat)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		andBool lengthList{K}(S:List{K}) <Int Len:Nat
 		[structural] 
 	rule [fillInit-string-char]:
-		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
-			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
+		<k> fillInit(SingleInit(Lit(StringLit(S:String))))
+			=> fillInit-aux(SingleInit(Lit(StringLit(S:String +String "\0"))))
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		[structural large] 
 	rule [fillInit-wstring-wchar]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Lit(WStringLit(S:List{K}))))
+			=> fillInit-aux(SingleInit(Lit(WStringLit((S:List{K},, 0)))))
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
 		[structural large]
 	rule [fillInitAux-string-some]:
-		<k> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
+		<k> fillInit-aux(SingleInit(Lit(StringLit(S:String))))
 			=> fillInit(SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))) 
-			~> fillInit-aux(SingleInit(Constant(StringLiteral(butFirstChar(S:String))))) 
+			~> fillInit-aux(SingleInit(Lit(StringLit(butFirstChar(S:String))))) 
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1016,9 +1016,9 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		andBool isCharType(T:KResult)
 		[structural large]
 	rule [fillInitAux-wstring-some]:
-		<k> fillInit-aux(SingleInit(Constant(WStringLiteral((N:Nat,, S:List{K})))))
+		<k> fillInit-aux(SingleInit(Lit(WStringLit((N:Nat,, S:List{K})))))
 			=> fillInit(SingleInit(tv(N:Nat, cfg:wcharut)))
-			~> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			~> fillInit-aux(SingleInit(Lit(WStringLit(S:List{K})))) 
 		...</k>
 		<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1026,25 +1026,25 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		[structural large]
 	// fixme not sure what happens in the case of   char *x = "";
 	rule [fillInitAux-string-done]:
-		<k> fillInit-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</k>
+		<k> fillInit-aux(SingleInit(Lit(StringLit("")))) => .K ...</k>
 		[structural]
 	rule [fillInitAux-wstring-done]:
-		<k> fillInit-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</k>
+		<k> fillInit-aux(SingleInit(Lit(WStringLit(.List{K})))) => .K ...</k>
 		[structural] 
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
 	// alternatively, i've added the condition below which might be enough
 	rule [fillInit-string-notchar]:
-		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
-			=> initializeSingleInit(Constant(StringLiteral(S:String)))
+		<k> fillInit(SingleInit(Lit(StringLit(S:String))))
+			=> initializeSingleInit(Lit(StringLit(S:String)))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
 		when notBool isCharType(T:KResult)
 		andBool (isBasicType(T:KResult) orBool isPointerType(T:KResult) orBool isBitfieldType(T:KResult))
 		[structural] 
 	rule [fillinit-wstring-notwchar]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
+		<k> fillInit(SingleInit(Lit(WStringLit(S:List{K}))))
+			=> initializeSingleInit(Lit(WStringLit(S:List{K})))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
 		when notBool isWCharType(T:KResult)
