@@ -545,7 +545,7 @@ and unary_operator =
 	| PAREN of expression
 	| VARIABLE of string
 */
-	syntax Expression ::= "Lit" "(" K ")" [klabel(Lit)] // [latex "{#1}" klabel(Constant)]
+	syntax Expression ::= "Constant" "(" K ")" [klabel(Constant)] // [latex "{#1}" klabel(Constant)]
 	// String constants aren't revals
 	// for paren, just putting parentheses
 	syntax Expression ::= Id
@@ -604,8 +604,8 @@ and constant =
 	
 	syntax Constant ::= "CharLiteral" "(" Int ")" [klabel(CharLiteral)]
 	syntax Constant ::= "WCharLiteral" "(" Int ")" [klabel(WCharLiteral)]
-	syntax Constant ::= "StringLit" "(" String ")" [klabel(StringLit)]
-	syntax Constant ::= "WStringLit" "(" List{K} ")" [klabel(WStringLit)]
+	syntax Constant ::= "StringLiteral" "(" String ")" [klabel(StringLiteral)]
+	syntax Constant ::= "WStringLiteral" "(" List{K} ")" [klabel(WStringLiteral)]
 	
 
 /*
@@ -617,7 +617,7 @@ and init_expression =
 	syntax KResult ::= "NoInit" // InitExpression
 	syntax InitExpression ::= "SingleInit" "(" K ")" [hybrid strict klabel(SingleInit)]
 	syntax InitExpression ::= "CompoundInit" "(" K ")" [hybrid strict klabel(CompoundInit)] // List
-	syntax InitFragment ::= "InitFragment" "(" K "," K ")" [latex "{#2} @ {#1}" klabel(InitFragment)] // new; (initwhat * init_expression)
+	syntax InitFragment ::= "InitFragment" "(" K "," K ")" [klabel(InitFragment)] // new; (initwhat * init_expression)
 	
 /*
 and initwhat =

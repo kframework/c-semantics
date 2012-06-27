@@ -227,7 +227,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:Nat, t(.Set, int))))
 		[structural anywhere]
 	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural anywhere]
-	rule Lit(V:KResult) => V:KResult [structural anywhere]
+	rule Constant(V:KResult) => V:KResult [structural anywhere]
 	rule [create-internal-value]: <k> N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</k>
 		[structural] // for internal computations
 	
@@ -237,7 +237,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	
 	rule [const-string-notfound]:
 		<k> (.K => allocString(Loc:Nat, S:String +String "\0"))
-			~> Lit(StringLit(S:String))
+			~> Constant(StringLiteral(S:String))
 		...</k>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
 		<br/>
@@ -251,7 +251,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	syntax K ::= "wstring" "(" List{K} ")" [klabel(wstring)] 
 	rule [const-wstring-notfound]:
 		<k> (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
-			~> Lit(WStringLit(S:List{K}))
+			~> Constant(WStringLiteral(S:List{K}))
 		...</k>
 		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
 		<br/>
@@ -263,11 +263,11 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		[large structural]
 		
 	rule [const-string-found]:
-		<k> Lit(StringLit(S:String)) => V:KResult ...</k>
+		<k> Constant(StringLiteral(S:String)) => V:KResult ...</k>
 		<stringLiterals>... S:String |-> V:KResult ...</stringLiterals>
 		[structural]
 	rule [const-wstring-found]:
-		<k> Lit(WStringLit(S:List{K})) => V:KResult ...</k>
+		<k> Constant(WStringLiteral(S:List{K})) => V:KResult ...</k>
 		<stringLiterals>... wstring(S:List{K}) |-> V:KResult ...</stringLiterals>
 		[structural]
 end module

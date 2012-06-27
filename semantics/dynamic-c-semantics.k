@@ -150,7 +150,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			=> incomingArguments-aux(L:List{K}, 0) 
 		[structural]
 	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
-			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := Lit(StringLit(S:String)))
+			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := Constant(StringLiteral(S:String)))
 			~> incomingArguments-aux(L:List{K}, N:Nat +Int 1)
 		[structural]
 	rule incomingArguments-aux(.List{K}, N:Nat) 

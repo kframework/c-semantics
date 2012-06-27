@@ -124,7 +124,7 @@ and printTranslationUnit (filename : string) (sourceCode : string) defs =
 and printStrings x =
 	(* List.map (fun element -> print_string (element ^ "\n")) !stringLiterals;
 	print_string "printed strings\n"; *)
-	printNewList (fun x -> wrap (x :: []) "Lit") !stringLiterals
+	printNewList (fun x -> wrap (x :: []) "Constant") !stringLiterals
 and printSource (sourceCode : string) =
 	printCell "SourceCode" [] (printRawString sourceCode)
 and printDefs defs =
@@ -319,13 +319,13 @@ and printConstant const =
 	| CONST_STRING s -> handleStringLiteral s
 	| CONST_WSTRING ws -> handleWStringLiteral ws
 and handleStringLiteral s =
-	let result = wrap [printRawString s] "StringLit" in
+	let result = wrap [printRawString s] "StringLiteral" in
 	(* List.map (fun element -> print_string (element ^ "\n")) !stringLiterals;
 	print_string "inside string handler\n"; *)
 	stringLiterals := result :: !stringLiterals;
 	result
 and handleWStringLiteral ws =
-	let result = wrap [printRawString (string_of_list_of_int64 ws)] "WStringLit" in
+	let result = wrap [printRawString (string_of_list_of_int64 ws)] "WStringLiteral" in
 	stringLiterals := result :: !stringLiterals;
 	result	
 and splitFloat (xs, i) =
@@ -468,7 +468,7 @@ and printExpression exp =
 		__builtin_va_arg and the second argument is sizeof(T). This 
 		should be printed as just T *)
 	| COMMA (expList) -> wrap ((printExpressionList expList) :: []) "Comma"
-	| CONSTANT (const) -> wrap (printConstant const :: []) "Lit"
+	| CONSTANT (const) -> wrap (printConstant const :: []) "Constant"
 	| VARIABLE name -> wrap ((printIdentifier name) :: []) "Variable"
 	| EXPR_SIZEOF exp1 -> wrap ((printExpression exp1) :: []) "SizeofExpression"
 	| TYPE_SIZEOF (spec, declType) -> wrap ((printSpecifier spec) :: (printDeclType declType) :: []) "SizeofType"
