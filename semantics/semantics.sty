@@ -38,6 +38,9 @@
 \end{framed}%
 }
 
+\renewcommand{\builtinKra}[2]{\begin{array}{@{}c@{}}{#1}\\\ensuremath{\kra}{#2}\end{array}}
+\renewcommand{\builtinAnd}[2]{\begin{array}{@{}c@{}}{#1}\\\mathrel{\wedge_{\scriptstyle\it Bool}}{#2}\end{array}}
+\renewcommand{\builtinOr}[2]{{\begin{array}{@{}c@{}}{#1}\\\mathrel{\vee_{\scriptstyle\it Bool}}{#2}\end{array}}}
 \renewcommand{\builtinIfThenElseFi}[3]{\begin{array}{ll}\terminal{if}&{#1}\\\terminal{then}&{#2}\\\terminal{else}&\\&{#3}\\\terminal{fi}&\end{array}}
 
 \renewcommand{\reduceTop}[2]{\reduce{#1}{#2}}

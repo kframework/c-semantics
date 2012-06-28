@@ -61,7 +61,7 @@ dynamic-c-statements.k
 temp-c-thesis.tex: PDF_MODULES=`grep -o '^kmod.* is' $(PDF_FILES) | grep -o ' .* '`
 temp-c-thesis.tex: check-vars $(K_MAUDE) c.k $(PDF_FILES)
 	@echo "Creating latex..."
-	$(K_MAUDE) c.k -l C -package-options "style=bubble" -latex $(PDF_MODULES) -output temp-c-thesis 1> temp.kpdf.out
+	$(K_MAUDE) c.k -l C -package-options "style=bubble,magicTight" -latex $(PDF_MODULES) -output temp-c-thesis 1> temp.kpdf.out
 	
 # k-includes.k: check-vars Makefile
 # @echo > k-includes.k
@@ -71,7 +71,7 @@ temp-c-%.tex: PDF_MODULES=`grep -o '^module.* is' $*.k | grep -o ' .* '`
 temp-c-%.tex: check-vars $(K_MAUDE) c.k %.k
 #@rm -f temp-c-$*.tex
 	@echo "Creating latex..."
-	$(K_MAUDE) c.k -l C -package-options "style=bubble" -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
+	$(K_MAUDE) c.k -l C -package-options "style=bubble,magicTight" -latex $(PDF_MODULES) -output temp-c-$* 1> temp.kpdf.out
 	
 %.tex: temp-c-%.tex Makefile
 	@echo "Modifying latex..."
