@@ -424,10 +424,10 @@ and unary_operator =
 	context *_((HOLE => reval(HOLE)))
 	syntax Expression ::= "&" K [metadata "type-strict=()" strict prec(22)]
 	syntax Expression ::= "++" K [metadata "type-strict=()" prec(22)]
-	syntax Expression ::= "--" K [metadata "type-strict=()" prec(22)]
+	syntax Expression ::= "--" K [metadata "type-strict=()" latex "\terminal{-{}-}{#1}" prec(22)]
 	syntax Expression ::= K "++" [metadata "type-strict=()"]
 	context _++((HOLE => peval(HOLE)))
-	syntax Expression ::= K "--" [metadata "type-strict=()"]
+	syntax Expression ::= K "--" [metadata "type-strict=()" latex "{#1}\terminal{-{}-}" ]
 	context _--((HOLE => peval(HOLE)))
 	
 /*
@@ -643,7 +643,7 @@ and attribute = String * expression list
 	macro DefinitionLocRange(K:K, _, L:K) = CodeLoc(K:K, L:K)
 	
 	
-	/*@ This macro defines an important identity from (n1570) 6.5.3.2.  As a syntactic macro, it should run on programs before they even start to reduce. */
+	/*@ This macro defines an important identity from \source[n1570]{\para{6.5.3.2}{3}}.  As a syntactic macro, it should run on programs before they even start to reduce. */
 	macro &(*(K:K)) = K:K
 		
 

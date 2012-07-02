@@ -232,8 +232,11 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	
 	// here we start with a local address, put the string in memory, then change the address to be readonly
 	
-	/*@ \fromStandard{\source[n1570]{\para{6.4.5}{3--5}}}{\ldots}*/
-	
+	/*@ \fromStandard{\source[n1570]{\para{6.4.5}{6}}}{For character string literals, the array elements have
+type \cinline{char}, and are initialized with the individual bytes of the multibyte character sequence. 
+\ldots
+For wide string literals prefixed by the letter \cinline{L}, the array elements have type \cinline{wchar_t} and are initialized with the sequence of wide characters corresponding to the multibyte character sequence\ldots
+}*/	
 	rule [const-string-notfound]:
 		<k> (.K => allocString(Loc:Nat, S:String +String "\0"))
 			~> Constant(StringLiteral(S:String))
@@ -489,11 +492,9 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	All the semantic rules for initializer lists in 6.7.9 also apply to compound literals.
 	
 	String literals, and compound literals with const-qualified types, need not designate distinct objects.
-	}
-	*/
+	}*/
 	
-	/*@ We use \kinline{compoundLiteral(N:Nat)} here as the identifier of the compound literal.
-	*/
+	/*@ We use \kinline{compoundLiteral(N:Nat)} here as the identifier of the compound literal.*/
 	// comes back from figureInit as initValue(id, type, inits)
 	rule
 		<k> CompoundLiteral(N:Nat, T:KResult, K:K, Init:K)
@@ -509,11 +510,11 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 			~> initialize(X:Id, T:KResult, Init:K)
 			~> X:Id
 		...</k>
-		<br/>
+		//<br/>
 		<compoundLiteralMap> M:Map => M:Map[Loc:Nat / X:Id] </compoundLiteralMap>
 		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
 		when notBool X:Id in keys M:Map
-		[large structural]
+		[structural]
 		
 	rule
 		<k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
@@ -536,8 +537,7 @@ module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{3}}}{
 	The prefix \cinline{--} operator is analogous to the prefix \cinline{++} operator, except that the value of the operand is decremented.
-	}
-	*/
+	}*/
 	rule -- E:K => E:K -= tv(1, t(.Set, int)) [structural]
 end module
 
@@ -775,8 +775,7 @@ second operand from the first.
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
 	When two pointers are subtracted, both shall point to elements of the same array object, or one past the last element of the array object; the result is the difference of the subscripts of the two array elements. The size of the result is implementation-defined, and its type (a signed integer type) is \cinline{ptrdiff_t} defined in the \cinline{<stddef.h>} header. If the result is not representable in an object of that type, the behavior is undefined. In other words, if the expressions \cinline{P} and \cinline{Q} point to, respectively, the $i$-th and $j$-th elements of an array object, the expression \cinline{(P)-(Q)} has the value $i-j$ provided the value fits in an object of type \cinline{ptrdiff_t}. Moreover, if the expression P points either to an element of an array object or one past the last element of an array object, and the expression \cinline{Q} points to the last element of the same array object, the expression \cinline{((Q)+1)-(P)} has the same value as \cinline{((Q)-(P))+1} and as \cinline{-((P)-((Q)+1))}, and has the value zero if the expression \cinline{P} points one past the last element of the array object, even though the expression \cinline{(Q)+1} does not point to an element of the array object.
-	}
-	*/
+	}*/
 
 	syntax K ::= "computePointerDifference" "(" Int "," Int "," K ")" [strict(3) klabel(computePointerDifference)] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: 
@@ -1111,15 +1110,13 @@ end module
 module DYNAMIC-SEMANTICS-LOGICAL is
 	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	/*@ Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.
-	*/
+	/*@ Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.*/
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.13}{3--4}}}{
 	The \cinline{&&} operator shall yield 1 if both of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
 	
 	Unlike the bitwise binary \cinline{&} operator, the \cinline{&&} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares equal to 0, the second operand is not evaluated.
-	}
-	*/	
+	} */	
 	rule
 		<k> tv(0, t(_, int)) && E:K
 			=> tv(0, t(.Set, int))
@@ -1140,8 +1137,7 @@ module DYNAMIC-SEMANTICS-LOGICAL is
 	The \cinline{||} operator shall yield 1 if either of its operands compare unequal to 0; otherwise, it yields 0. The result has type \cinline{int}.
 
 	Unlike the bitwise \cinline{|} operator, the \cinline{||} operator guarantees left-to-right evaluation; if the second operand is evaluated, there is a sequence point between the evaluations of the first and second operands. If the first operand compares unequal to 0, the second operand is not evaluated.
-	}
-	*/
+	}*/
 	rule
 		<k> tv(0, t(_, int)) || E:K
 			=> sequencePoint
@@ -1209,9 +1205,8 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 		[structural]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
-	\broken{If both the second and third operands are pointers or one is a null pointer constant and the other is a pointer, the result type is a pointer to a type qualified with all the type qualifiers of the types referenced by both operands. Furthermore, if both operands are pointers to compatible types or to differently qualified versions of compatible types, the result type is a pointer to an appropriately qualified version of the composite type}; if one operand is a null pointer constant, the result has the type of the other operand; \broken{otherwise, one operand is a pointer to void or a qualified version of void, in which case the result type is a pointer to an appropriately qualified version of void.}
-	}
-	*/
+	\broken{If both the second and third operands are pointers or one is a null pointer constant and the other is a pointer, the result type is a pointer to a type qualified with all the type qualifiers of the types referenced by both operands. Furthermore, if both operands are pointers to compatible types or to differently qualified versions of compatible types, the result type is a pointer to an appropriately qualified version of the composite type}; if one operand is a null pointer constant, the result has the type of the other operand; \broken{otherwise, one operand is a pointer to void or a qualified version of \cinline{void}, in which case the result type is a pointer to an appropriately qualified version of \cinline{void}.}
+	}*/
 	// fixme, this is too relaxed; could be any integer zero.  need static semantics to handle this properly
 	rule [conditional-left-is-null]:
 		<k> (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
@@ -1256,13 +1251,11 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
 	An assignment operator stores a value in the object designated by the left operand. \broken{An assignment expression has the value of the left operand after the assignment}, but is not an lvalue. The type of an assignment expression is the type the left operand would have after lvalue conversion. The side effect of updating the stored value of the left operand is sequenced after the value computations of the left and right operands. The evaluations of the operands are unsequenced.
-	}
-	*/
+	}*/
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
 	Insimple assignment (\cinline{=}), the value of the right operand is converted to the type of the assignment expression and replaces the value stored in the object designated by the left operand.
-	}
-	*/
+	}*/
 	rule [assign]:
 		<k> lv(Loc:Nat, T:KResult) := RHS
 			=> write(lv(Loc:Nat, T:KResult), RHS)
@@ -1280,14 +1273,12 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 		[structural]
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{3}}}{
 	\broken{If the value being stored in an object is read from another object that overlaps in any way the storage of the first object, then the overlap shall be exact and the two objects shall have qualified or unqualified versions of a compatible type; otherwise, the behavior is undefined.}
-	}
-	*/
+	}*/
 	
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
 	Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the simple assignment expression \cinline{E1 = E1 op (E2)}, except that the lvalue \cinline{E1} is evaluated only once, and with respect to an indeterminately-sequenced function call, the operation of a compound assignment is a single evaluation. If \cinline{E1} has an atomic type, compound assignment is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
-	}
-	*/
+	}*/
 	syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")" [klabel(compoundAssignment)]
 	// these should not be nd, in order to keep the operations together
 	context compoundAssignment(_, (HOLE => peval(HOLE)), _)
