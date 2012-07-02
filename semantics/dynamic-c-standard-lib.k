@@ -557,11 +557,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 \end{itemize}
 	*/
 
-	/*@ \source[n1570]{\para{7.21.6.1}{5}}
+	/*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{5}}}{
 	As noted above, a field width, or precision, or both, may be indicated by an asterisk. In this case, an \cinline{int} argument supplies the field width or precision. The arguments specifying field width, or precision, or both, shall appear (in that order) before the argument (if any) to be converted. A negative field width argument is taken as a \texttt{-} flag followed by a positive field width. A negative precision argument is taken as if the precision were omitted.
-	*/
+	}*/
 	
-	/*@ \source[n1570]{\para{7.21.6.1}{6}}
+	/*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{6}}}{
 	The flag characters and their meanings are:
 \begin{description}
 \item[\texttt{-}]
@@ -576,7 +576,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 \broken{For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, \texttt{X}, \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, and \texttt{G} conversions, leading zeros (following any indication of sign or base) are used to pad to the field width rather than performing space padding, except when converting an infinity or NaN. If the \texttt{0} and \texttt{-} flags both appear, the \texttt{0} flag is ignored. For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X} conversions, if a precision is specified, the \texttt{0} flag is ignored.}
 \end{description}
 For other conversions, the behavior is undefined.
-*/
+}*/
 
 	// fixme ignoring 0 flag for now
 	rule [format-%0]:
@@ -964,20 +964,21 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 			~> tv(134, t(.Set, int))
 		</k>
 	
-	/*@ \source[n1570]{\para{7.22.3.4}{2--3}}
+	/*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
 	The \cinline{malloc} function allocates space for an object whose size is specified by \cinline{size} and whose value is indeterminate.
 
 The malloc function returns either a null pointer or a pointer to the allocated space.
-	*/
+	}*/
 	rule [malloc]:
 		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
 			=> alloc(Loc, Len:Nat)
 			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
 		...</k>
+		<br/>
 		<malloced>... .Map => Loc |-> Len:Nat ...</malloced>
 		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
 		where Loc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
-		[structural]
+		[structural large]
 	// might want this for searching purposes
 	// rule [malloc-null]:
 		// <k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
@@ -985,23 +986,24 @@ The malloc function returns either a null pointer or a pointer to the allocated 
 		// ...</k>
 		// [structural]
 		
-	/*@ \source[n1570]{\para{7.22.3.5}{2--4}}
-	The \cinline{realloc} function deallocates the old object pointed to by \cinline|ptr| and returns a pointer to a new object that has the size specified by \cinline|size|. The contents of the new object shall be the same as that of the old object prior to deallocation, up to the lesser of the new and old sizes. Any bytes in the new object beyond the size of the old object have indeterminate values.
+	/*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
+	The \cinline{realloc} function deallocates the old object pointed to by \cinline{ptr} and returns a pointer to a new object that has the size specified by \cinline{size}. The contents of the new object shall be the same as that of the old object prior to deallocation, up to the lesser of the new and old sizes. Any bytes in the new object beyond the size of the old object have indeterminate values.
 
-If \cinline|ptr| is a null pointer, the \cinline|realloc| function behaves like the \cinline|malloc| function for the specified size. Otherwise, if \cinline|ptr| does not match a pointer earlier returned by a memory management function, or if the space has been deallocated by a call to the \cinline|free| or \cinline|realloc| function, the behavior is undefined. If memory for the new object cannot be allocated, the old object is not deallocated and its value is unchanged.
+If \cinline{ptr} is a null pointer, the \cinline{realloc} function behaves like the \cinline{malloc} function for the specified size. Otherwise, if \cinline{ptr} does not match a pointer earlier returned by a memory management function, or if the space has been deallocated by a call to the \cinline{free} or \cinline{realloc} function, the behavior is undefined. If memory for the new object cannot be allocated, the old object is not deallocated and its value is unchanged.
 
-The \cinline|realloc| function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
-	*/
+The \cinline{realloc} function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
+	}*/
 	rule [realloc]:
 		<k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Nat, _),, tv(NewLen:Nat, T:KResult)))
 			=> realloc(OldLoc:Nat, NewLoc, OldLen:Nat, NewLen:Nat)
 			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
 		...</k>
+		<br/>
 		<malloced>... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</malloced>
 		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
 		when OldLoc:Nat =/=K NullPointer
 		where NewLoc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
-		[structural]
+		[structural large]
 	rule [realloc-null]:
 		<k> prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
 			=> prepareBuiltin((Identifier("malloc")), Len:KResult)
@@ -1105,10 +1107,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:Nat, t(.Set, int)))
 			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</k>
-		<br/>
+		//<br/>
 		//<threadId> MyId:Nat </threadId>
 		<nextThreadId> Fresh:Nat => Fresh:Nat +Int 1 </nextThreadId>
-		[large structural]
+		[structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 */

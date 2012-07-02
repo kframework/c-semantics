@@ -133,7 +133,7 @@ module DYNAMIC-C-SEMANTICS is
 	including DYNAMIC-C-STANDARD-LIBRARY
 	// including DYNAMIC-C-LTL
 	
-/*@ \source{C99 5.1.2.2.1:2}
+/*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
 If they are declared, the parameters to the main function shall obey the following constraints:
 \begin{itemize}
 \item The value of \cinline{argc} shall be nonnegative.
@@ -142,7 +142,7 @@ If they are declared, the parameters to the main function shall obey the followi
 \item If the value of argc is greater than zero, the string pointed to by \cinline{argv[0]} represents the program name; \cinline{argv[0][0]} shall be the null character if the program name is not available from the host environment. If the value of \cinline{argc} is greater than one, the strings pointed to by \cinline{argv[1]} through \cinline{argv[argc-1]} represent the program parameters.
 \item The parameters \cinline{argc} and \cinline{argv} and the strings pointed to by the \cinline{argv} array shall be modifiable by the program, and retain their last-stored values between program startup and program termination.
 \end{itemize}
-*/
+}*/
 	
 	syntax K ::= "incomingArguments-aux" "(" List{K} "," Nat ")" [klabel(incomingArguments-aux)]
 	
@@ -161,19 +161,29 @@ If they are declared, the parameters to the main function shall obey the followi
 	syntax K ::= "syntaxNat" "(" Nat ")" [klabel(syntaxNat)]
 	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
 	
+	syntax K ::= "pgmArgs" "(" List{K} ")"
+	define
+		pgmArgs(L:List{K})
+		=> DeclarationDefinition(InitNameGroup(
+			Specifier(List(Char)), 
+			List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))
+		))
+		[structural]
+	
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
 	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String, IsInterp:Int) =>
-		<T>
+		<T>...
 			<threads>
-				<thread>
-					<threadId> 1 </threadId>
-					<nextLoc> firstLoc(1) </nextLoc>
+				<thread>...
 					<k> klistToK(P:List{K})
-							~> DeclarationDefinition(InitNameGroup(Specifier(List(Char)), List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))))
+							~> pgmArgs(L:List{K})
 							~> resolveReferences					
 							// ~> incomingArguments(L:List{K})
-							~> callMain(lengthList{K}(L:List{K}), Identifier("#incomingArgumentsArray"), incomingArguments(L:List{K}))
+							~> callMain(lengthList{K}(L:List{K}), incomingArguments(L:List{K}))
 					</k>
+					<br/>
+					<threadId> 1 </threadId>
+					<nextLoc> firstLoc(1) </nextLoc>
 					<threadLocal>
 						<control>
 							<currentFunction> File-Scope </currentFunction>
@@ -184,6 +194,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			</threads>
 			<nextSharedLoc> firstLoc(0) </nextSharedLoc>
 		...</T>
+		<br/>
 		<files>
 			<fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
 			<file>...
@@ -204,7 +215,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			...</file>
 		</files>
 		<xmessages> .K </xmessages>
-		[structural]
+		[structural large]
 
 /*@ \source{C99 5.1.2.2.1:1}
 The function called at program startup is named main. The implementation declares no prototype for this function. It shall be defined with a return type of int and with no parameters:
@@ -217,12 +228,12 @@ or equivalent;9) or in some other implementation-defined manner
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	
 	rule [call-main]:
-		<k> callMain(N:Nat, X:Id, Args:K)
-			=> callMain-aux(typeof(Identifier("main")), N:Nat, X:Id, Args:K)
+		<k> callMain(N:Nat, Args:K)
+			=> callMain-aux(typeof(Identifier("main")), N:Nat, Identifier("#incomingArgumentsArray"), Args:K)
 		...</k>
-		<functionTranslationUnits>... 
+		<funTUs>... 
 			Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) 
-		...</functionTranslationUnits>
+		...</funTUs>
 		<currTU> _ => Tu:K </currTU>
 		[computational]
 	

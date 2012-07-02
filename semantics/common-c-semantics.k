@@ -422,7 +422,7 @@ module COMMON-C-SEMANTICS is
 	
 	syntax Bag ::= "eval" "(" K ")" [klabel(eval)] 
 	syntax Bag ::= "eval" "(" K "," List{K} "," String "," Int ")" [klabel(eval)]
-	syntax K ::= "callMain" "(" Nat "," Id "," K ")" [klabel(callMain)]
+	syntax K ::= "callMain" "(" Nat "," K ")" [klabel(callMain)]
 	syntax K ::= "incomingArguments" "(" List{K} ")" [klabel(incomingArguments)]
 	
 	syntax KLabel ::= "TranslationUnitName" "(" String ")" [klabel(TranslationUnitName)]

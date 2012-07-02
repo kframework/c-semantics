@@ -478,9 +478,9 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		andBool notBool isExternType(T:KResult)
 		[structural] 
 	
-	/*@ \source[n1570]{\para{6.2.2}{4}}
+	/*@ \fromStandard{\source[n1570]{\para{6.2.2}{4}}}{
 	For an identifier declared with the storage-class specifier \cinline{extern} in a scope in which a prior declaration of that identifier is visible, if the prior declaration specifies internal or external linkage, the linkage of the identifier at the later declaration is the same as the linkage specified at the prior declaration. If no prior declaration is visible, or if the prior declaration specifies no linkage, then the identifier has external linkage. 
-	*/
+	}*/
 	// exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
 	// case when it has no previous linkage, or previous linkage is external
 	rule
@@ -1100,7 +1100,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		<declarationOrder> DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </declarationOrder>
 		<internalLocations> ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </internalLocations>
 		<br/>
-		<functionTranslationUnits> Funs:Map => Funs:Map[Map(.) / Name:String] </functionTranslationUnits>
+		<funTUs> Funs:Map => Funs:Map[Map(.) / Name:String] </funTUs>
 		<translationUnits>... . => BagItem(Name:String) ...</translationUnits>
 		<preLinkage> Linkage:Map => Linkage:Map[Map(.) / Name:String] </preLinkage>
 		<preTypes> Types:Map => Types:Map[Map(.) / Name:String] </preTypes>
@@ -1172,7 +1172,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 	syntax K ::= "recordFunTUInfo" "(" K "," Type "," K "," K ")" [klabel(recordFunTUInfo)] // name, type, context, where defined
 	rule
 		<k> recordFunTUInfo(X:Id, T:KResult, Tu:K, DefTu:K) => .K ...</k>
-		<functionTranslationUnits>... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</functionTranslationUnits>
+		<funTUs>... Tu:K |-> Map((Funs:Map => Funs:Map[DefTu:K / X:Id])) ...</funTUs>
 		when isFunctionType(T:KResult)
 		[structural] 
 	rule

@@ -93,7 +93,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item The rank of any enumerated type shall equal the rank of the compatible integer type (see 6.7.2.2).
 	\item The rank of any extended signed integer type relative to another extended signed integer type with the same precision is implementation-defined, but still subject to the other rules for determining the integer conversion rank.
 	\item For all integer types T1, T2, and T3, if T1 has greater rank than T2 and T2 has greater rank than T3, then T1 has greater rank than T3.
-	\end{itemize}
+	\end{itemize}%
 	}*/
 	define rank(t(_, bool)) => 0
 	define rank(t(_, signed-char)) => 1
@@ -220,7 +220,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	/*@ 
 	\begin{itemize}
 	\item First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double.
-	\end{itemize}
+	\end{itemize}%
 	*/
 	define usualArithmeticConversion(t(_, long-double), _) => t(.Set, long-double)
 	define usualArithmeticConversion(_, t(_, long-double)) => t(.Set, long-double)
@@ -228,7 +228,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	/*@ 
 	\begin{itemize}
 	\item Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double.
-	\end{itemize}
+	\end{itemize}%
 	*/
 	define
 		usualArithmeticConversion(t(_, double), t(_, T:K)) => t(.Set, double)
@@ -240,7 +240,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	/*@ 
 	\begin{itemize}
 	\item Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
-	\end{itemize}
+	\end{itemize}%
 	*/
 	define
 		usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
@@ -254,7 +254,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	/*@ 
 	\begin{itemize}
 	\item Otherwise, the integer promotions are performed on both operands. Then the following rules are applied to the promoted operands:
-	\end{itemize}
+	\end{itemize}%
 	*/
 	declare usualArithmeticConversion-aux : K K -> K
 	
@@ -268,7 +268,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item \ldots
 	\begin{itemize}
 	\item If both operands have the same type, then no further conversion is needed.
-	\end{itemize}\end{itemize}
+	\end{itemize}\end{itemize}%
 	*/
 	define [arithConversion-int-done]: usualArithmeticConversion-aux(T:KResult, T:KResult) => T:KResult
 		
@@ -297,7 +297,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\begin{itemize}
 	\item Otherwise, if the operand that has unsigned integer type has rank greater or equal to the rank of the type of the other operand, then the operand with signed integer type is converted to the type of the operand with unsigned
 integer type.
-	\end{itemize}\end{itemize}
+	\end{itemize}\end{itemize}%
 	*/	
 	define [arithmeticConversion-unsigned-ge-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
@@ -315,7 +315,7 @@ integer type.
 	\item \ldots
 	\begin{itemize}
 	\item Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type.
-	\end{itemize}\end{itemize}
+	\end{itemize}\end{itemize}%
 	*/
 	define [arithmeticConversion-signed-big-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
@@ -337,7 +337,7 @@ integer type.
 	\item \ldots
 	\begin{itemize}
 	\item Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type.
-	\end{itemize}\end{itemize}
+	\end{itemize}\end{itemize}%
 	*/
 	define [arithmeticConversion-to-unsigned-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T:KResult)
@@ -562,8 +562,7 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
 	When a value of real floating type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined. Results of some implicit conversions may be represented in greater range and precision than that required by the new type (see 6.3.1.8 and 6.8.6.4).
-	}
-	*/
+	}*/
 	// fixme all floats same precision
 	define
 		cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
@@ -585,8 +584,7 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
 	An integer constant expression with the value 0, or such an expression cast to type \cinline{void *}, is called a null pointer constant. If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.
-	}
-	*/
+	}*/
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
@@ -609,8 +607,7 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
 	Any pointer type may be converted to an integer type. Except as previously specified, the result is implementation-defined. If the result cannot be represented in the integer type, the behavior is undefined. The result need not be in the range of values of any integer type.
-	}
-	*/
+	}*/
 	// fixme needs to check size
 	define
 		cast(T:KResult, tv(N:Nat, t(_, pointerType(_))))

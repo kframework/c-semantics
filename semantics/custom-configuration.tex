@@ -1,0 +1,27 @@
+\documentclass[landscape]{article}
+ \usepackage[style=bubble,magicTight]{/home/grosu/celliso2/k/branches/k2/core/latex/k}
+ 
+ \input{semantics.sty}
+\begin{document}
+ %\begin{kdefinition}
+ 
+ \newcommand{\myAfterT}{\kBR \kallLarge[lightgray]{files}{\kallLarge[white]{fileCommands}{\dotCt{K}}\kallLarge[white]{file *}{\kallLarge[white]{fid}{\dotCt{K}}\kallLarge[white]{uri}{\dotCt{K}}\kallLarge[white]{pos}{\constant[\#Zero]{0}}\kallLarge[white]{mode}{\myquote{r}}\kallLarge[white]{buff}{\myquote{}}\kallLarge[white]{sending}{\dotCt{List}}\kallLarge[white]{done}{{{\myquote{}}}}}}\kBR \kallLarge[lightgray]{input}{\myquote{}}\kallLarge[lightgray]{output}{\myquote{}}\kallLarge[red]{resultValue}{\dotCt{K}}\kallLarge[black]{errorCell ?}{\dotCt{K}}\kallLarge[black]{xmessages}{\dotCt{K}}}
+ 
+  \newcommand{\myThread}{\kallLarge[yellow]{thread *}{\kallLarge[yellow]{threadId}{\constant[\#Zero]{0}}\kallLarge[black]{nextLoc}{\constant[\#Zero]{0}}\kallLarge[lightgray]{buffer}{\dotCt{List}}\kallLarge[green]{k ?}{\dotCt{K}}\kBR \kallLarge[white]{threadLocal}{\kallLarge[violet]{callStack}{\dotCt{List}}\kallLarge[white]{locks}{\dotCt{Bag}}\kBR \kallLarge[cyan]{calculateGotoMap}{\kallLarge[cyan]{gotoCalculation *}{\kallLarge[cyan]{computation}{\dotCt{K}}\!\!\!\!\kallLarge[cyan]{computationTail}{\dotCt{K}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{declarationStack}{\dotCt{List}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{nestingDepthGoto}{\constant[\#Zero]{0}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{blockHistoryGoto}{\dotCt{List}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{loopStackGoto}{\dotCt{List}}}}\kBR \kallLarge[white]{control}{\kallLarge[lightgray]{finalComputation ?}{\dotCt{K}}\kallLarge[violet]{blockStack}{\dotCt{List}}\kallLarge[violet]{loopStack}{\dotCt{List}}\kallLarge[lightgray]{shouldInit}{\constant[\#Bool]{true}}\kallLarge[lightgray]{currTU}{\myquote{}}\kallLarge[lightgray]{currentFunction}{\dotCt{K}}\kBR \kallLarge[white]{local}{\kallLarge[red]{env}{\dotCt{Map}}\kallLarge[lightgray]{types}{\dotCt{Map}}\kallLarge[lightgray]{structs}{\dotCt{Map}}\kallLarge[lightgray]{nestingDepth}{\constant[\#Zero]{0}}\!\!\!\!\kallLarge[lightgray]{blockHistory}{\dotCt{List}}\!\!\!\!\kallLarge[lightgray]{localVariables}{\dotCt{List}}\!\!\!\!\kallLarge[lightgray]{localAddresses}{\dotCt{Set}}}\kBR \kallLarge[white]{formatting ?}{\kallLarge[white]{format}{\dotCt{List}}\kallLarge[white]{formatArg}{\dotCt{K}}\!\!\!\!\kallLarge[white]{formatResult}{\dotCt{List}}\!\!\!\!\kallLarge[white]{formatState}{\myquote{normal}}\ \kallLarge[white]{formatModifiers}{\dotCt{Map}}\!\!\!\!\kallLarge[white]{formatLength}{\myquote{}}}\kBR \kallLarge[cyan]{currentObject}{\dotCt{List}}\!\!\!\!\kallLarge[cyan]{currentSubObject}{\dotCt{List}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{incompleteLength}{\constant[\#Zero]{0}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{savedInitialization}{\dotCt{K}}\!\!\!\!\!\!\!\!\kallLarge[cyan]{type ?}{\dotCt{K}}\kallLarge[cyan]{declarationTypeHolder}{\dotCt{K}}\kBR \kallLarge[lightgray]{locsWrittenTo}{\dotCt{Bag}}\kallLarge[yellow]{holds}{\dotCt{Map}}\kallLarge[black]{currentProgramLoc}{\dotCt{K}}}}}}
+  
+ \begin{lrbox}{\LstBox}
+ 	\myThread
+	\end{lrbox}	
+ 
+
+ 
+ %\begin{module}{\moduleName{COMMON-C-CONFIGURATION}}
+ %\including{\moduleName{C-SYNTAX}}
+ \kconfig{
+ \kallLarge[white]{T}{\kallLarge[lightgray]{gotoMap}{\dotCt{Map}}\kallLarge[lightgray]{genv}{\dotCt{Map}}\kallLarge[lightgray]{gtypes}{\dotCt{Map}}\kallLarge[lightgray]{gstructs}{\dotCt{Map}}\kallLarge[white]{notWritable}{\dotCt{Map}}\kallLarge[lightgray]{funTUs}{\dotCt{Map}}\kallLarge[lightgray]{functions}{\dotCt{Map}}\kallLarge[lightgray]{malloced}{\dotCt{Map}}\kBR \kallLarge[black]{freshNat}{\constant[\#Zero]{0}}\kallLarge[black]{randNat}{\constant[\#Zero]{0}}\kallLarge[black]{nextThreadId}{\constant[\#Nat]{2}}\!\!\!\!\kallLarge[black]{nextSharedLoc}{\constant[\#Zero]{0}}\!\!\!\!\!\!\kallLarge[lightgray]{stringLiterals}{\dotCt{Map}}\!\!\!\!\kallLarge[black]{programText}{\dotCt{Map}}\!\!\!\!\kallLarge[lightgray]{compoundLiteralMap}{\dotCt{Map}}\kBR \kallLarge[red]{memory}{\kallLarge[white]{object *}{\kallLarge[white]{basePtr}{\constant[\#Zero]{0}}\kallLarge[white]{oLength}{\constant[\#Zero]{0}}\kallLarge[white]{properties}{\dotCt{Bag}}\kallLarge[white]{bytes}{\dotCt{Map}}}}\kallLarge[yellow]{threadInformation}{\kallLarge[yellow]{threadStatus}{\dotCt{Map}}\kallLarge[yellow]{mutexes}{\dotCt{Map}}\kallLarge[yellow]{glocks}{\dotCt{Bag}}}\kBR \kallLarge[yellow]{threads}{\kallLarge[yellow]{thread *}{\mbox{See below\ldots}}}\ \ \kallLarge[cyan]{translationUnits}{\dotCt{Bag}}\!\!\!\!\kallLarge[cyan]{declarationOrder}{\dotCt{Map}}\!\!\!\!\kallLarge[cyan]{externalDefinitions}{\dotCt{Map}}\!\!\!\!\kallLarge[cyan]{internalDefinitions}{\dotCt{Map}}\kBR \kallLarge[cyan]{internalLocations}{\dotCt{Map}}\!\!\!\!\kallLarge[cyan]{externalLocations}{\dotCt{Map}}\!\!\!\!\kallLarge[cyan]{preLinkage}{\dotCt{Map}}\kallLarge[cyan]{preTypes}{\dotCt{Map}}\kallLarge[cyan]{declarations}{\dotCt{Set}}\kallLarge[cyan]{leftoverExterns}{\dotCt{Bag}}}\myAfterT
+ }
+ 
+ \usebox{\LstBox}
+ %\end{module}
+ %\end{kdefinition}
+ \end{document}

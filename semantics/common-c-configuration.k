@@ -36,7 +36,7 @@ module COMMON-C-CONFIGURATION is
 			<preTypes color="cyan"> .Map </preTypes>
 			<declarations color="cyan"> .Set </declarations>
 			<br/>
-			<functionTranslationUnits color="lightgray"> .Map </functionTranslationUnits> // map from current tu to (map from id to where function was defined)			
+			<funTUs color="lightgray"> .Map </funTUs> // map from current tu to (map from id to where function was defined)			
 			<nextSharedLoc color="black"> 0 </nextSharedLoc>
 			<threadInformation color="yellow">
 				<threadStatus color="yellow"> .Map </threadStatus>

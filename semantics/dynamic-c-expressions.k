@@ -27,8 +27,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
-	}
-	*/
+	}*/
 	rule reval(lv(Loc:Nat, T:KResult)) => read(Loc:Nat, unqualifyType(T:KResult)) 
 		when notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) 
 		[structural]
@@ -392,7 +391,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 			<currTU> Tu:K </currTU>
 			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
 		...</control>)
-		<functionTranslationUnits>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</functionTranslationUnits>
+		<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
 		[structural large]
 end module
 
