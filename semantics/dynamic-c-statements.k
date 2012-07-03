@@ -397,7 +397,7 @@ module DYNAMIC-SEMANTICS-GOTO is
 	rule
 		<k> ( . 
 				=> pushBlock
-				~> addToHistory(TargetBlock:Nat)
+				~> addToHistory(TargetBlk:Nat)
 				~> addVariablesForBlock(TargetBlk:Nat, DeclStk:List)
 			)
 			~> processGotoDown(gotoObject(TargetDepth:Nat, (_ ListItem(TargetBlk:Nat) ActualHist:List), _, _, DeclStk:List))
