@@ -162,15 +162,29 @@ If they are declared, the parameters to the main function shall obey the followi
 	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
 	
 	syntax K ::= "pgmArgs" "(" List{K} ")"
+	syntax K ::= "argName" "(" List{K} ")"
+	define
+		argName(L:List{K})
+		=> Name(
+			Identifier("#incomingArgumentsArray"), 
+			PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))
+		)
 	define
 		pgmArgs(L:List{K})
 		=> DeclarationDefinition(InitNameGroup(
 			Specifier(List(Char)), 
-			List(InitName(Name(Identifier("#incomingArgumentsArray"), PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))), NoInit))
+			List(InitName(argName(L:List{K}), NoInit))
 		))
 		[structural]
-	
+
 	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
+		
+	/*@ These helpers are used to get around a bug in \K related to successive ``/''s in strings. */
+	syntax K ::= "stdinStr" | "stdoutStr"
+	
+	define stdinStr => "stdin:/" +String "/" +String "/"
+	define stdoutStr => "stdout:/" +String "/" +String "/"
+	
 	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String, IsInterp:Int) =>
 		<T>...
 			<threads>
@@ -197,24 +211,25 @@ If they are declared, the parameters to the main function shall obey the followi
 		<br/>
 		<files>
 			<fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
+			<br/>
 			<file>...
 				<fid> 0 </fid>
-				<uri> "stdin:/" +String "/" +String "/" </uri>
+				<uri> stdinStr </uri>
 				<mode> "r" </mode>
 				<buff> Input:String </buff>
 			...</file>
 			<file>...
 				<fid> 1 </fid>
-				<uri> "stdout:/" +String "/" +String "/" </uri>
+				<uri> stdoutStr </uri>
 				<mode> "w" </mode>
 			...</file>
 			<file>...
 				<fid> 2 </fid>
-				<uri> "stdout:/" +String "/" +String "/" </uri>
+				<uri> stdoutStr </uri>
 				<mode> "w" </mode>
 			...</file>
 		</files>
-		<xmessages> .K </xmessages>
+		//<xmessages> .K </xmessages>
 		[structural large]
 
 /*@ \source{C99 5.1.2.2.1:1}

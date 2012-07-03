@@ -65,7 +65,6 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 	rule
 		<type> SizeofExpression(_) => cfg:sizeut ...</type>
 		[structural]
-	//@ %\end{rulesGroup}
 
 	rule
 		<type> t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>

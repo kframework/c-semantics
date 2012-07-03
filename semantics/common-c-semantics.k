@@ -27,7 +27,7 @@ module COMMON-SEMANTIC-SYNTAX is
 	syntax K	 ::= "fromUnion" "(" Id ")" [klabel(fromUnion)]
 		
 	// Types
-	syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [klabel(typedDeclaration)] // would rather this be KResult, but can't get the subsorting to work
+	syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex "\terminal{typedDecl}\!({#1},{#2}\!)" klabel(typedDeclaration)] // would rather this be KResult, but can't get the subsorting to work
 	
 	syntax K ::= "DeclType" "(" K "," K ")" [strict(1) klabel(DeclType)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	// op 'isTypeResult_ : K -> Bool 
@@ -388,11 +388,11 @@ module COMMON-C-SEMANTICS-MISC is
 		[structural]
 		
 		
-	/*@ \source[n1570]{\para{6.10.6}{1}}
+	/*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
 	A preprocessing directive of the form
 	\cdisplay{# pragma pp-tokensoptnew-line}
 \broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
-	*/
+	}*/
 	rule [Pragma]:
 		<k> Pragma(_:K) => .K ...</k>
 		[structural]

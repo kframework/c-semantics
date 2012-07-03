@@ -398,13 +398,13 @@ module DYNAMIC-SEMANTICS-GOTO is
 		<k> ( . 
 				=> pushBlock
 				~> addToHistory(TargetBlock:Nat)
-				~> addVariablesForBlock(TargetBlock:Nat, DeclStack:List)
+				~> addVariablesForBlock(TargetBlk:Nat, DeclStk:List)
 			)
-			~> processGotoDown(gotoObject(TargetDepth:Nat, (_ ListItem(TargetBlock:Nat) ActualHistory:List), _, _, DeclStack:List))
+			~> processGotoDown(gotoObject(TargetDepth:Nat, (_ ListItem(TargetBlk:Nat) ActualHist:List), _, _, DeclStk:List))
 		...</k>
 		<br/>
 		<nestingDepth> ActualDepth:Nat </nestingDepth>
-		<blockHistory> ActualHistory:List </blockHistory> //  (. => ListItem(TargetBlock:Nat)) 
+		<blockHistory> ActualHist:List </blockHistory> //  (. => ListItem(TargetBlock:Nat)) 
 		when ActualDepth:Nat +Int 1 =/=Int TargetDepth:Nat
 		[structural large] 
 	
@@ -470,12 +470,12 @@ module DYNAMIC-SEMANTICS-GOTO is
 				((ListItem(frozenDeclaration(_:Nat, TargetBlock:Nat, Decl:K)) => .List) _)
 			)
 		...</k>
-		<br/>
+		//<br/>
 		<localVariables> Vars:List </localVariables>
 		<blockHistory> ListItem(TargetBlock:Nat) ...</blockHistory>
 		<shouldInit> _ => false </shouldInit>
 		when notBool getIdOfDeclaration(Decl:K) in Vars:List
-		[structural large]
+		[structural]
 		
 	//  fixme this is wrong
 	rule

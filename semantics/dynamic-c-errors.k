@@ -17,8 +17,6 @@ module DYNAMIC-C-ERRORS is
 
 	declare Error : String String -> K
 	define Error(Name:String, Msg:String)  => 
-		//"=====================================================\n"
-		//+String "ERROR! KCC encountered an error while executing this program.\n"
 		"Error: " 
 		+String Name:String 
 		+String "\n"
@@ -27,13 +25,8 @@ module DYNAMIC-C-ERRORS is
 		[structural]
 	declare ICE : String String -> K
 	define ICE(Name:String, Msg:String) =>
-		"Error: "
-		+String Name:String
-		+String "\n"
-		+String "Description: " 
-		+String Msg:String
-		+String "\n"
-		+String "NOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
+		Error(Name:String, Msg:String)
+		+String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
 		[structural]
 	
 		

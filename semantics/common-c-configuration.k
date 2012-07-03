@@ -114,7 +114,7 @@ module COMMON-C-CONFIGURATION is
 			</threads>
 		</T>
 		<br/>
-		<xmessages color="black"> .K </xmessages>
+		//<xmessages color="black"> .K </xmessages>
 		<files color="lightgray">
 			<fileCommands> .K </fileCommands>
 			<file multiplicity="*">

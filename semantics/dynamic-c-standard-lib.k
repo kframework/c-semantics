@@ -824,7 +824,7 @@ A \cinline{double} argument representing an infinity or NaN is converted in the 
 		<formatResult>... .List => ListItem(toUpperCase(Float2String(D:Float))) </formatResult>
 		<formatState> "%G" => "reset" </formatState>
 		[structural]
-	/*@ \source[n1570]{\para{7.21.6.1}{8}}
+	/* \source[n1570]{\para{7.21.6.1}{8}}
 \begin{description}
 \item[\texttt{a},\texttt{A}]
 \ldots
@@ -969,16 +969,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 
 The malloc function returns either a null pointer or a pointer to the allocated space.
 	}*/
+	syntax K ::= "newAlloc" "(" Nat ")"
+	define newAlloc(Fresh:Nat) => loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
+	
 	rule [malloc]:
 		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
-			=> alloc(Loc, Len:Nat)
-			~> tv(Loc, t(.Set, pointerType(t(.Set, void))))
+			=> alloc(newAlloc(Fresh:Nat), Len:Nat)
+			~> tv(newAlloc(Fresh:Nat), t(.Set, pointerType(t(.Set, void))))
 		...</k>
-		<br/>
-		<malloced>... .Map => Loc |-> Len:Nat ...</malloced>
+		//<br/>
+		<malloced>... .Map => newAlloc(Fresh:Nat) |-> Len:Nat ...</malloced>
 		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
-		where Loc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
-		[structural large]
+		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
 		// <k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
@@ -995,15 +997,16 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
 	}*/
 	rule [realloc]:
 		<k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Nat, _),, tv(NewLen:Nat, T:KResult)))
-			=> realloc(OldLoc:Nat, NewLoc, OldLen:Nat, NewLen:Nat)
-			~> tv(NewLoc, t(.Set, pointerType(t(.Set, void))))
+			=> realloc(OldLoc:Nat, newAlloc(Fresh:Nat), OldLen:Nat, NewLen:Nat)
+			~> tv(newAlloc(Fresh:Nat), t(.Set, pointerType(t(.Set, void))))
 		...</k>
-		<br/>
-		<malloced>... (OldLoc:Nat => NewLoc) |-> (OldLen:Nat => NewLen:Nat) ...</malloced>
+		//<br/>
+		<malloced>... (OldLoc:Nat => newAlloc(Fresh:Nat)) |-> (OldLen:Nat => NewLen:Nat) ...</malloced>
 		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
 		when OldLoc:Nat =/=K NullPointer
-		where NewLoc = loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
-		[structural large]
+		[structural]
+		
+	
 	rule [realloc-null]:
 		<k> prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
 			=> prepareBuiltin((Identifier("malloc")), Len:KResult)

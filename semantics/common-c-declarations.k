@@ -537,12 +537,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		<k> declareAndDefine(X:Id, T:KResult, K:K, noLinkage)
 			=> defineAndInit(X:Id, T:KResult, figureInit(X:Id, T:KResult, K:K), Loc:Nat)
 		...</k>
-		<br/>
+		//<br/>
 		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
 		<localVariables> Vars:List (. => ListItem(X:Id)) </localVariables>
 		<localAddresses>... .Set => SetItem(Loc:Nat) ...</localAddresses>
 		when notBool X:Id in Vars:List // again, this should be needed statically, but not dynamically
-		[structural large] 
+		[structural] 
 	rule // this happens when we jump before a variable declaration with an initialization in the same block
 		<k> declareAndDefine(X:Id, T:KResult, K:K, noLinkage)
 			=> justInit(figureInit(X:Id, T:KResult, K:K))
