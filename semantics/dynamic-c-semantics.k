@@ -232,13 +232,28 @@ If they are declared, the parameters to the main function shall obey the followi
 		//<xmessages> .K </xmessages>
 		[structural large]
 
-/*@ \source{C99 5.1.2.2.1:1}
-The function called at program startup is named main. The implementation declares no prototype for this function. It shall be defined with a return type of int and with no parameters:
-\clisting{int main(void) { ... }}
+/*@ 
+\begin{lrbox}{\LstBox}
+\begin{lstlisting}
+int main(void) { ... }
+\end{lstlisting}
+\end{lrbox}
+\begin{lrbox}{\LstBoxb}
+\begin{lstlisting}
+int main(int argc, char *argv[]) { ... }
+\end{lstlisting}
+\end{lrbox}
+\fromStandard{\source[n1570]{\para{5.1.2.2.1}{1}}}{
+The function called at program startup is named \cinline{main}. The implementation declares no prototype for this function. It shall be defined with a return type of \cinline{int} and with no parameters:
+
+\usebox{\LstBox}
+
 or with two parameters (referred to here as \cinline{argc} and \cinline{argv}, though any names may be used, as they are local to the function in which they are declared):
-\clisting{int main(int argc, char *argv[]) { ... }}
-or equivalent;9) or in some other implementation-defined manner
-*/
+
+\usebox{\LstBoxb}
+
+or equivalent; or in some other implementation-defined manner.
+}*/
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	

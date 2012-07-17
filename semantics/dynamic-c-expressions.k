@@ -13,8 +13,9 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	declare arrayLength : KResult -> Nat
 	define arrayLength(t(_:Set, arrayType(_:KResult, N:Nat))) => N:Nat
-	define arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
-	define arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232 // need "infinity"
+	/*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
+	define arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
+	define arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
@@ -50,8 +51,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
 	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
-	}
-	*/
+	}*/
 	rule [reval-function]: 
 		reval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(.Set, pointerType(T:KResult))) 
 		when isFunctionType(T:KResult) 
@@ -331,10 +331,10 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	}*/
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{6}}}{
-	\broken{If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (\cinline{, ...}) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
+	\broken{If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type \cinline{float} are promoted to \cinline{double}. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (\cinline{, ...}) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
 	\begin{itemize}
 	\item one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
-	\item both types are pointers to qualified or unqualified versions of a character type or void.
+	\item both types are pointers to qualified or unqualified versions of a character type or \cinline{void}.
 	\end{itemize}
 	}}*/
 	
@@ -354,11 +354,11 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	rule [populateFromGlobal]:
 		<k> populateFromGlobal => .K ...</k>
 		<currTU> Tu:K </currTU>
-		<br/>
+		//<br/>
 		<genv>... Tu:K |-> Map(G:Map) ...</genv> <env> _ => G:Map </env>
 		<gtypes>... Tu:K |-> Map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
 		<gstructs> GS:Map </gstructs> <structs> _ => GS:Map </structs>
-		[large structural]
+		[structural]
 
 	rule [builtin-application]:
 		<k> application'(functionPrototype(X:Id, T:KResult), L:List{KResult})

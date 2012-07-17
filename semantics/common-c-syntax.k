@@ -450,11 +450,11 @@ and unary_operator =
 	context _-_((HOLE => reval(HOLE)), _) [ndheat]
 	context _-_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "<<" K [metadata "type-strict=(1)" prec(35) gather(E e)]
+	syntax Expression ::= K "<<" K [metadata "type-strict=(1)" latex "{{#1}}\ll{{#2}}" prec(35) gather(E e)]
 	context _<<_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<<_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K ">>" K [metadata "type-strict=(1)" prec(35) gather(E e)]
+	syntax Expression ::= K ">>" K [metadata "type-strict=(1)" latex "{{#1}}\gg{{#2}}" prec(35) gather(E e)]
 	context _>>_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>>_(_, (HOLE => reval(HOLE))) [ndheat]
 	
@@ -502,11 +502,11 @@ and unary_operator =
 	syntax Expression ::= K "%=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K "+=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K "-=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "<<=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K "<<=" K [metadata "type-strict=(1)" latex "{{#1}}\terminal{$\gg$=}{{#2}}" prec(53)]
 	syntax Expression ::= K "&=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K "^=" K [metadata "type-strict=(1)" prec(53)]
 	syntax Expression ::= K "|=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K ">>=" K [metadata "type-strict=(1)" prec(53)]
+	syntax Expression ::= K ">>=" K [metadata "type-strict=(1)" latex "{{#1}}\terminal{$\ll$=}{{#2}}" prec(53)]
 	syntax Expression ::= K ":=" K [metadata "type-strict=(1)" prec(53)]
 	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
 	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]

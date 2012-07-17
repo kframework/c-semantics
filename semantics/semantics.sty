@@ -5,7 +5,7 @@
 \usepackage{etex}
 \usepackage{courier}
 \usepackage{booktabs}
-\usepackage[legalpaper, margin=1in, showframe]{geometry}
+\usepackage[legalpaper, margin=1in]{geometry} % showframe
 \usepackage[pdftex]{hyperref}
 %\usepackage{enumitem}
 \usepackage{xparse}
@@ -31,6 +31,7 @@
   % \ifthenelse{\equal{#1}{}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2}}{Rule Label: #1}}%
 % }
 \newsavebox{\LstBox} % for listings in tikz
+\newsavebox{\LstBoxb} % for listings in tikz
 
 \newenvironment{rulesGroup}{%
 \begin{framed}%
@@ -190,5 +191,7 @@
 	\S#1\thinspace \P#2%
 }
 
-\newcommand{\broken}[1]{{\color{red}#1}}
-\newcommand{\negative}[1]{{\color{red}#1}}
+%\newcommand{\broken}[1]{{\color{red}#1}}
+%\newcommand{\negative}[1]{{\color{red}#1}}
+\newcommand{\broken}[1]{{#1}}
+\newcommand{\negative}[1]{{#1}}
