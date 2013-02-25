@@ -1,0 +1,30 @@
+int main() 
+{
+  unsigned int i0 ;
+  unsigned int i1 ;
+  unsigned int i2 ;
+  unsigned int i3 ;
+  unsigned int i4 ;
+  unsigned int i5 ;
+  unsigned int i6 ;
+  unsigned int i7 ;
+  unsigned int i_8 ;
+
+  {
+  i0 = 256U;
+  i1 = i0 + 1024U;
+  i2 = i1 + 4294967040U;
+  i3 = i2 -2147483648U;
+  i4 = i3 -2048U;
+  i5 = i4 * 256U;
+  i6 = i5 + 100U;
+  i7 = i6 / 256U;
+  i_8 = i6 % 256U;
+  
+  if (i_8)
+    return 0;
+  else
+    return 1;
+}
+}
+
