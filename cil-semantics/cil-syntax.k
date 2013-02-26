@@ -76,7 +76,8 @@ module CIL-SYNTAX
                | "sizeof" "(" Type ")"    [strict, prefer]
                /* 
                 * NOTE: this grammar allows "sizeof (int) 1", which is not
-                * allowed by the official C grammar (not sure way)
+                * allowed by the official C grammar (not sure why, it only
+                * allows "sizeof ((int) 1)")
                 */
                | "sizeof" Exp
                > "(" Type ")" Exp         [strict, prefer]
@@ -111,13 +112,16 @@ module CIL-SYNTAX
                > left:
                  Exp "?" Exp ":" Exp      [strict(1), left]
                /*
-               | AlignOf of typ  (* This corresponds to the GCC __alignof_. *)
-               | AlignOfE of exp
-               */
+                * TODO: this is a GCC feature which is not yet supported 
+                | AlignOf of typ  (* This corresponds to the GCC __alignof_. *)
+                | AlignOfE of exp
+                */
   syntax Exps ::= List{Exp,","}   [strict]
   syntax Const ::= Int
-                 /* FIXME: parse 0U, 0L, ... as lexical tokens instead of
-                  * grammar productions. */
+                 /*
+                  * FIXME: parse 0U, 0L, ... as lexical tokens instead of
+                  * grammar productions.
+                  */
                  | Int"U"
                  | String
   /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
@@ -148,15 +152,18 @@ module CIL-SYNTAX
                 | Label ":" Stmt
                 | ";"
                 /*
-                | TryFinally of block * block * location
-                | TryExcept of block * (instr list * exp) * block * location
-                */
+                 * TODO: support try blocks
+                 | TryFinally of block * block * location
+                 | TryExcept of block * (instr list * exp) * block * location
+                 */
   syntax Stmts ::= List{Stmt, ""}   [right]
   syntax Instr ::= LVal "=" Exp ";"       [strict(2)]
                  | LVal "=" FunCall ";"   [strict(2)]
                  | FunCall ";"            [strict]
-  /* TODO: FunCall is strict only in the second argument because we do not
-   * support function pointers yet. */
+  /*
+   * TODO: FunCall is strict only in the second argument because we do not
+   * support function pointers yet.
+   */
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
   syntax Label ::= CId
