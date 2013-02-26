@@ -45,6 +45,9 @@ module CIL
       </make-goto-table-task>
     </make-goto-table>
 
-  syntax KResult ::= TypedValue | NoConverionLeftValue | BasicType
+  syntax KResult ::= TypedValue
+                   | NoConverionLeftValue
+                   | BasicType
+                   | PtrType
 endmodule
 

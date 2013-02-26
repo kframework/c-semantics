@@ -16,6 +16,9 @@ endmodule
 module CIL-EXP
   imports CIL-PROMOTION
 
+  syntax K ::= "noLeftValueConversion"
+
+
   /* constant */
   /* TODO: typed constant */
   rule I:Int => tv(int, mi((width(int)), I))    [structural]
@@ -34,7 +37,19 @@ module CIL-EXP
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
-  rule &nclv(T:Type, P:Ptr) => tv(T*, P)
+  rule &nclv(T:Type, P:Ptr) => tv(T*, P) [structural]
+  
+  /* dereference */
+  rule *tv(T:Type*, P:Ptr) => lv(T, P) [structural]
+
+  context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
+  rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
+    
+  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
+  when KLabel(KList) =/=K noLeftValueConversion
+
+  rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
+  [structural]
 
   /*
    * Arithmetic operators semantics.

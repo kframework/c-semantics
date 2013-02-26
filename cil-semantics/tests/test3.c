@@ -1,5 +1,9 @@
 int main(void) 
-{ 
-  return 0;
+{
+  int x, *p = &x;
+  x = 0;
+  ++*p;
+  x += *p;
+  return *p;
 }
 

@@ -7,9 +7,8 @@ module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
   imports CIL-COMMON
 
-
-  rule G:Global Gs:Globals => G ~> Gs   [structural]
-  rule .Globals => .K    [structural]
+  rule G:Global Gs:Globals => G ~> Gs [structural]
+  rule .Globals => .K [structural]
 
 
   /*
@@ -52,8 +51,8 @@ module CIL-DECL
 
   syntax Label ::= "$breakLabel" "(" Int ")"
                  | "$continueLabel" "(" Int ")"
-  syntax Bool ::= isWhileFlow(K)  [function,label(isWhileFlow)]
-  syntax K ::= visitWhileFlow(K, Label, Label)  [function,label(visitWhileFlow)]
+  syntax Bool ::= isWhileFlow(K) [function]
+  syntax K ::= visitWhileFlow(K, Label, Label) [function]
   rule isWhileFlow(break;) => true
   rule isWhileFlow(continue;) => true
   rule isWhileFlow(while(_:Exp) _:Stmt) => true
@@ -185,115 +184,15 @@ module CIL-DECL
   /*
    * Variable declarations (without initializers).
    */
-  rule VD:VarDecl VDs:VarDecls => VD ~> VDs   [structural]
-  rule .VarDecls => .K    [structural]
+  rule VD:VarDecl VDs:VarDecls => VD ~> VDs [structural]
+  rule .VarDecls => .K [structural]
 
-  rule T:Type X:CId; => bindLocal(X, newObject(T))
-  syntax K ::= bindLocal(CId, K)    [strict(2)]
+  rule T:Type X:CId; => bindLocal(T, X, newObject(T))
+  syntax K ::= bindLocal(Type, CId, K) [strict(3)]
   rule
-    <k> bindLocal(X:CId, tv(T:Type*, P:Ptr)) => .K ...</k>
+    <k> bindLocal(T:Type, X:CId, tv(T*, P:Ptr)) => .K ...</k>
     <env>... .Map => X |-> P ...</env>
     <type-env>... .Map => X |-> T ...</type-env>
   [structural]
-
-
-  /*
-   * Memory management.
-   */
-  syntax K ::= Object(Type, Map)
-  syntax K ::= newObject(Type)
-             | "$newObject" "(" Type "," Int "," Type ")"   [strict(3)]
-             | castObject(Type, Ptr)
-             | deleteObject(Ptr)
-  rule newObject(T:Type) => $newObject(T, Base, T)
-  when fresh(Base:Int)
-  [structural]
-  rule
-    <k>
-      $newObject(T1:Type, Base:Int, T2:Type)
-    =>
-      tv(T1*, Ptr(BasePtr(Base, (byteWidth(T2))), (0)))
-    ...</k>
-    <heap>...
-      .Bag
-    =>
-      <object>
-        <base-ptr> BasePtr(Base, (byteWidth(T2))) </base-ptr>
-        <object-type> T1 </object-type>
-        <bytes> Map(#rangeList(byteWidth(T2))) </bytes>
-      </object>
-    ...</heap>
-  [structural]
-  rule
-    <k> deleteObject(Ptr(BP:BasePtr, (0))) => .K ...</k>
-    <heap>...
-      <object>...
-        <base-ptr> BP </base-ptr>
-      ...</object>
-    =>
-      .Bag
-    ...</heap>
-  [structural]
-
-
-  /*
-   * Memory access.
-   */
-  syntax K ::= "load" "(" Type "," Ptr ")"
-             | "$load" "(" Type "," Ptr "," Type")"    [strict(3)]
-             | "$load" "(" Type "," Ptr "," Nat "," List ")"
-             | "store" "(" Type "," Ptr "," Value ")"   [strict(1)]
-             | "$store" "(" Ptr "," List ")"
-
-  /* TODO: check beforehand that load/store would be successful */
-  rule
-    store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
-  [structural]
-  rule
-    <k>
-      $store(
-          Ptr(BP:BasePtr, (Offset:Nat => Offset +Int 1)),
-          (ListItem(N:Nat) => .List) L:List)
-    ...</k>
-    <heap>...
-      <object>...
-        <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> (_ => N) ...</bytes>
-      ...</object>
-    ...</heap>
-  [structural]
-  rule $store(_:Ptr, .List) => .K   [structural]
-
-  rule load(T:Type, P:Ptr) => $load(T, P, T) [structural]
-  rule
-    $load(T1:Type, P:Ptr, T2:Type) => $load(T1, P, (byteWidth(T2)), .List)
-  [structural]
-  rule
-    <k>
-      $load(
-          _:Type,
-          Ptr(BP:BasePtr, (Offset:Nat => Offset +Int 1)),
-          (M:Nat => M:Nat -Int 1),
-          L:List (.List => ListItem(N:Nat)))
-    ...</k>
-    <heap>...
-      <object>...
-        <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> N ...</bytes>
-      ...</object>
-    ...</heap>
-  when M >Int 0
-  [structural]
-  rule
-    $load(T:Type, _:Ptr, (0), L:List) => tv(T, bytes2Value(T, L))
-  [structural]
-
-  //context (HOLE => HOLE ~> noLeftValueConversion) = _;
-  context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
-  rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
-    
-  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
-  when KLabel(KList) =/=K noLeftValueConversion
-  
 endmodule
 

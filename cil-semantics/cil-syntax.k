@@ -17,7 +17,7 @@ module CIL-SYNTAX
   syntax NvType ::= BasicType
                   | PtrType 
                   | ArrayType
-  syntax BasicType ::= "char"   [function]
+  syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
   syntax IntType ::= SignedIntType
