@@ -42,16 +42,12 @@ module CIL-SYNTAX
 
 
   /* TODO: simplify */
-/*
-  syntax FunDef ::= Type CId "(" Params ")" FunBody 
-  syntax FunBody ::= "{" VarDecls Block "}"
-*/
   syntax FunDef ::= Type CId "(" Params ")" FunBody 
                   | Type CId "(" Void ")" FunBody
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
-  rule T:Type F:CId(void) FB:FunBody => T F(.Params) FB    [macro]
-  rule T:Type F:CId(Ps:Params) B:Block => T F(Ps) { .VarDecls B }    [macro]
+  rule T:Type F:CId(void) FB:FunBody => T F(.Params) FB [macro]
+  rule T:Type F:CId(Ps:Params) B:Block => T F(Ps) { .VarDecls B } [macro]
 
   syntax Param ::= Type CId
   syntax Params ::= List{Param,","}
@@ -141,7 +137,7 @@ module CIL-SYNTAX
   syntax Stmt ::= Instr 
                 | "return" Exp ";"                    [strict]
                 | "return" ";"
-                | "goto" CId ";"
+                | "goto" Label ";"
                 | "break" ";"
                 | "continue" ";"
                 | "if" "(" Exp ")" Stmt "else" Stmt   [avoid]

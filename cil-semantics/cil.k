@@ -13,7 +13,6 @@ module CIL
   syntax K ::= "wrapper" "(" KList ")"
   configuration
     <frame>
-      //<k> $PGM:File ~> #token("CId",, "main")(.Exps) </k>
       <k> $PGM:File ~> main(.Exps) </k>
       <frame-fun-id> .K </frame-fun-id> // CId
       <env> .Map </env> // Map{CId, Ptr}

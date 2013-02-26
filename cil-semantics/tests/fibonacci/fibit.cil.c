@@ -22,23 +22,22 @@ int fibit(int n )
 //#line  8
     c = 2;
 //#line  8
-l10:
     while (1) {
-////#line  8
-//      if (c <= n) {
-//
-//      } else {
-////#line  8
-//        break;
-//      }
-////#line  9
-//      next = first + second;
-////#line  10
-//      first = second;
-////#line  11
-//      second = next;
-////#line  8
-//      c = c + 1;
+//#line  8
+      if (c <= n) {
+
+      } else {
+//#line  8
+        break;
+      }
+//#line  9
+      next = first + second;
+//#line  10
+      first = second;
+//#line  11
+      second = next;
+//#line  8
+      c = c + 1;
     }
   }
 //#line  15
@@ -46,7 +45,7 @@ l10:
 }
 }
 //#line  18 "fibit.c"
-int main() 
+int main(void) 
 { 
   int tmp ;
 

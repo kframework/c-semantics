@@ -138,6 +138,17 @@ module CIL-EXP
     bool2mint(geqMInt(MI1, MI2))
 
 
+  /* Relation operators */
+  rule
+    tv(T:Type, MI1:MInt) == tv(T, MI2:MInt)
+  =>
+    bool2mint(MI1 ==MInt MI2)
+  rule
+    tv(T:Type, MI1:MInt) != tv(T, MI2:MInt)
+  =>
+    bool2mint(MI1 =/=MInt MI2)
+
+
   rule !tv(T:Type, I:Int) => norm(int, #if I ==Int 0 #then 1 #else 0 #fi)
 
 
