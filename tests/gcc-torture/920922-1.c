@@ -1,0 +1,15 @@
+#include <stdlib.h>
+unsigned long*
+f(p)unsigned long*p;
+{
+  unsigned long a = (*p++) >> 24;
+  return p + a;
+}
+
+int main ()
+{
+  unsigned long x = 0x80000000UL;
+  if (f(&x) != &x + 0x81)
+    abort();
+  exit(0);
+}

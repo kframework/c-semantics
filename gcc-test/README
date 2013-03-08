@@ -1,0 +1,152 @@
+We created this test suite by using gcc 4.4.6 and performing the following filters:
+
+
+
+mv `grep -l '__builtin_memcpy' *.c` notportable/
+mv `grep -l '__builtin_memcmp' *.c` notportable/
+mv `grep -l '__builtin_malloc' *.c` notportable/
+mv `grep -l '__builtin_va_arg' *.c` notportable/
+mv `grep -l '__builtin_va_start' *.c` notportable/
+mv `grep -l '__builtin_va_list' *.c` notportable/
+mv `grep -l '__builtin_memset' *.c` notportable/
+mv `grep -l '__builtin_abs' *.c` notportable/
+mv `grep -l '__builtin_strlen' *.c` notportable/
+mv `grep -l '__builtin_strcpy' *.c` notportable/
+mv `grep -l '__builtin_strcmp' *.c` notportable/
+mv `grep -l '__builtin_offsetof' *.c` notportable/
+
+mv `grep -l '__builtin_va_arg_pack' *.c` notportable/
+mv `grep -l '__builtin_copysign' *.c` notportable/
+mv `grep -l '__builtin_expect' *.c` notportable/
+mv `grep -l '__builtin_isinf' *.c` notportable/
+mv `grep -l '__builtin_alloca' *.c` notportable/
+mv `grep -l '__builtin_signbit' *.c` notportable/
+mv `grep -l '__builtin_return_address' *.c` notportable/
+mv `grep -l '__builtin_ffs' *.c` notportable/
+mv `grep -l '__builtin_types_compatible_p' *.c` notportable/
+mv `grep -l '__builtin_prefetch' *.c` notportable/
+mv `grep -l '__builtin_constant_p' *.c` notportable/
+mv `grep -l '__builtin_classify_type' *.c` notportable/
+mv `grep -l '__builtin_conjf' *.c` notportable/
+
+need to rename __builtin_abort() to abort() and __builtin_exit(X) to exit(X)
+
+mv `grep -l 'vector_size(' *.c` notportable/
+
+mv `grep -l 'alloca (' *.c` notportable/
+mv `grep -l 'alloca(' *.c` notportable/
+
+mv nest*.c notportable/
+
+mv `grep -l 'vfprintf' *.c` stdlib/
+
+mv `grep -l '<sys' *.c` notportable/
+
+mv `grep -l 'asm(' *.c` notportable/
+mv `grep -l 'asm (' *.c` notportable/
+mv `grep -l 'asm volatile (' *.c` notportable/
+mv `grep -l 'asm volatile(' *.c` notportable/
+mv `grep -l '__asm' *.c` notportable/
+
+mv `grep -l 'typeof' *.c` notportable/
+
+mv `grep -l '_complex' *.c` notportable/
+
+# gcc 4.1.2 fails to compile these
+mv 20020412-1.c 20030714-1.c 20080529-1.c 991014-1.c align-3.c anon-1.c call-trap-1.c va-arg-22.c va-arg-trap-1.c nocompile/
+
+# icc 11.1 fialed to compile these
+mv 20000822-1.c 20010209-1.c 20010605-1.c 20030501-1.c 20040520-1.c 20041124-1.c 20041201-1.c 20050121-1.c 20050316-1.c 20050316-2.c 20050316-3.c 20050604-1.c 20050607-1.c 20060420-1.c 20070614-1.c 20090219-1.c 920415-1.c 920428-2.c 920501-7.c 920612-2.c 920721-4.c 921017-1.c 921215-1.c 931002-1.c 960405-1.c comp-goto-2.c  complex-6.c medce-1.c pr22061-3.c pr22061-4.c pr23135.c pr24135.c simd-1.c simd-2.c nocompile/
+
+# clang 2.8 couldn't compile these
+mv 20000223-1.c 20000314-3.c 20000801-3.c 20000917-1.c 20001121-1.c 20001203-2.c 20010924-1.c 20020206-1.c 20020320-1.c 20030109-1.c 20040302-1.c 20040308-1.c 20040423-1.c 20041212-1.c 20041218-2.c 20050106-1.c 20050107-1.c 20050119-1.c 20050119-2.c 20050613-1.c 20051113-1.c 20070919-1.c 20071210-1.c 20091229-1.c 920302-1.c 920501-3.c 920501-4.c 920501-5.c 920603-1.c 920721-3.c 920728-1.c 920731-1.c 920909-1.c 921124-1.c 930406-1.c 930408-1.c 930429-2.c 930513-2.c 930526-1.c 930529-1.c 930622-1.c 930719-1.c 931228-1.c 950512-1.c 950906-1.c 951003-1.c 960218-1.c 960416-1.c 961112-1.c 961223-1.c 980526-1.c 980605-1.c 980608-1.c 990208-1.c comp-goto-1.c complex-1.c complex-2.c complex-5.c complex-7.c compndlit-1.c fprintf-1.c inst-check.c int-compare.c loop-2.c loop-2c.c loop-2d.c loop-3.c loop-3b.c loop-3c.c mod-1.c p18298.c pr17133.c pr19687.c pr21173.c pr23324.c pr28982b.c pr33382.c pr34154.c pr42570.c printf-1.c printf-chk-1.c restrict-1.c unroll-1.c va-arg-7.c va-arg-8.c zero-struct-1.c zero-struct-2.c zerolen-1.c zerolen-2.c nocompile/
+
+for f in *.c; do
+	../../scripts/insert.sh 1 $f '#include "fsl-header.h"'
+done
+
+# fix declaration, abort had wrong signature
+gcc.full/921110-1.c
+
+
+
+
+grep -L 'void exit\|stdlib' *.c > noExit.txt
+grep -L 'void[[:space:]]\+exit\|stdlib' *.c
+when programs used functions like strcmp or malloc, I included the appropriate headers
+
+921110-1.c:extern int abort();
+
+for f in `grep -L 'void exit\|stdlib' *.c`; do
+	../../scripts/insert.sh 1 $f 'void exit(int status);'
+	#../../scripts/insert.sh 1 $f 'void abort(void);'
+done
+
+
+if the function had no return type and no return statement, i made the return type void
+if the function had a return typeand no return statement, i returned 0
+
+fixed main prototype in switch-1.c
+
+undefined:
+20000910-1.c: invalid pointer: "while (i-- > a)" causes an invalid pointer to be created (it winds up pointing before the object a)
+20020508-2.c: signed overflow:  left shift
+20020508-3.c: signed overflow:  left shift
+20030316-1.c: signed overflow:  when long int is 4 bytes
+20030404-1.c: uninitialized:   reading j and i, but they weren't initialized
+20040409-1.c: signed overflow:  "return x - INT_MIN" when int is 4 bytes
+20040409-2.c: signed overflow: 
+20040409-3.c: signed overflow: 
+20060110-1.c: signed overflow:  "long long b = (0x1234567876543210LL << 32) >> 32;"
+20060110-2.c: signed overflow: 
+20100430-1.c: uninitialized:  "info->buf.pst2[i].ss[j]"
+920612-1.c: signed overflow:  "++j"
+920711-1.c: signed overflow:  when long int is 4 bytes
+920730-1.c: signed overflow: 
+950704-1.c: signed overflow: 
+960317-1.c: signed overflow:  left shifting a negative number "-1 << bitcount"
+loop-15.c: invalid pointer:  "*end-- = *temp--;" causes invalid pointer
+loop-2e.c: invalid pointer:  uses a random number as a pointer
+pr22061-2.c: uninitialized:  "(*x)++" reads uninitialized x 
+pr22493-1.c: signed overflow:
+pr23047.c: signed overflow:
+
+
+
+implementation:
+20050215-1.c: &s an int and a pointer
+20071030-1.c: reads 0 int as float
+20081117-1.c: extended bitfield type
+921202-1.c: messed up signatures
+930126-1.c: extends bitfield type
+930930-2.c: reading float as integer
+940115-1.c: comparing null pointer with 1 converted to a pointer
+950710-1.c: bad pointer difference:  between two different objects "(char *) &b - (char *) &a"
+960608-1.c: bitfield
+980701-1.c: subtracting null from a pointer
+991118-1.c: bitfield
+991228-1.c: union
+bf-pack-1.c: bitfield
+bf-sign-2.c: bitfield
+bf64-1.c: bitfield
+bitfld-3.c: bitfield
+cbrt.c: reading float as integer
+
+
+
+potential:
+941014-2.c: ptr as int arith
+pr23467.c: ptr arith
+
+recopy:
+20020404-1.c
+
+actual error:
+921110-1.c
+
+
+
+
+
+
+
