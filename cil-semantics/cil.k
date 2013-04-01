@@ -44,6 +44,12 @@ module CIL
         </make-goto-table-while-continuation>
       </make-goto-table-task>
     </make-goto-table>
+    <propagate-constants>
+      <propagate-constants-enabled> false </propagate-constants-enabled>
+      <propagate-constants-stmts> .Stmts </propagate-constants-stmts>
+      <after-stmts> .Stmts </after-stmts>
+      <constant-table> .Map </constant-table> // Map{CId, Value}
+    </propagate-constants>
 
   syntax KResult ::= TypedValue
                    | NoConverionLeftValue

@@ -1,11 +1,13 @@
 require "modules/k-functional-visitor.k"
 
 require "cil-common.k"
+//require "cil-const-propagation.k"
 
 
 module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
   imports CIL-COMMON
+  //imports CIL-CONST-PROPAGATION
 
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
@@ -19,6 +21,7 @@ module CIL-DECL
       T:Type F:CId(Ps:Params) FB:FunBody
     =>
       lower-break-continue-to-goto-control(F) ~> make-goto-table-control(F)
+      //~> propagate-constants(F)
     ...</k>
     <frame-fun-id> _ => F </frame-fun-id>
     <funs>...

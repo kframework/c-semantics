@@ -124,6 +124,7 @@ module CIL-SYNTAX
                   */
                  | Int"U"
                  | String
+                 | Float
   /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
   syntax LVal ::= CId
                 | "*" Exp           [strict]

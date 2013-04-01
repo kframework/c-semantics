@@ -9,13 +9,13 @@ module CIL-COMMON-PTR
    * @invariant: 0 <= Offset <= BasePtr.Size
    * @immutable: BasePtr
    */
-  syntax Ptr ::= "Ptr" "(" BasePtr "," Nat ")"
+  syntax Ptr ::= "Ptr" "(" BasePtr "," Int ")"
                 | "Null"
   /*
    * BasePtr of Base * Size
    * @immutable: Base, Size 
    */
-  syntax BasePtr ::= "BasePtr" "(" Int "," Nat ")"
+  syntax BasePtr ::= "BasePtr" "(" Int "," Int ")"
 
   syntax Ptr ::= "PtrAdd" "(" Ptr "," Int "," Exp ")"   [function]
   syntax Int ::= "PtrSub" "(" Ptr "," Ptr "," Exp ")"   [function]
@@ -29,22 +29,22 @@ module CIL-COMMON-PTR
   /* Addition of pointer and index is defined only if there result Offset is in
    * the range [0, Size] */
   rule
-    PtrAdd(Ptr(BasePtr(Base:Int, Size:Nat), Offset:Nat), I:Int, M:Nat)
+    PtrAdd(Ptr(BasePtr(Base:Int, Size:Int), Offset:Int), I:Int, M:Int)
   =>
     Ptr(BasePtr(Base, Size), (Offset +Int I *Int M))
   when 0 <=Int Offset +Int I *Int M andBool Offset +Int I *Int M <=Int Size
 
   /* Subtraction of pointers is defined only for the same BasePtr. */
   rule
-    PtrSub(Ptr(BP:BasePtr, Offset1:Nat), Ptr(BP, Offset2:Nat), M:Nat)
+    PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), M:Int)
   =>
     (Offset1 -Int Offset2) /Int M
   when (Offset1 -Int Offset2) %Int M ==Int 0
 
   /* Structural equality of addresses */
   rule
-    Ptr(BasePtr(Base1:Int, Size1:Nat), Offset1:Nat)
-    ==Ptr Ptr(BasePtr(Base2:Int, Size2:Nat), Offset2:Nat)
+    Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
+    ==Ptr Ptr(BasePtr(Base2:Int, Size2:Int), Offset2:Int)
   =>
     Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
   rule Null ==Ptr Null => true
@@ -54,19 +54,19 @@ module CIL-COMMON-PTR
 
   /* Relational operations on pointers are defined only for the same BasePtr. */
   rule
-    PtrLt(Ptr(BP:BasePtr, Offset1:Nat), Ptr(BP, Offset2:Nat))
+    PtrLt(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int))
   =>
     Offset1 <Int Offset2
   rule
-    PtrLeq(Ptr(BP:BasePtr, Offset1:Nat), Ptr(BP, Offset2:Nat))
+    PtrLeq(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int))
   =>
     Offset1 <=Int Offset2
   rule
-    PtrGt(Ptr(BP:BasePtr, Offset1:Nat), Ptr(BP, Offset2:Nat))
+    PtrGt(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int))
   =>
     Offset1 >Int Offset2
   rule
-    PtrGeq(Ptr(BP:BasePtr, Offset1:Nat), Ptr(BP, Offset2:Nat))
+    PtrGeq(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int))
   =>
     Offset1 >=Int Offset2
 endmodule
@@ -138,8 +138,8 @@ module CIL-COMMON-MMU
   syntax List ::= #rangeList(Int, Int, Int)                       [function]
                 | #rangeList(Int, Int)                            [function]
                 | #rangeList(Int)                                 [function]
-                | "$rangeList" "(" Int "," Int "," Nat ")"        [function]
-                | "$downrangeList" "(" Int "," Int "," Nat ")"    [function]
+                | "$rangeList" "(" Int "," Int "," Int ")"        [function]
+                | "$downrangeList" "(" Int "," Int "," Int ")"    [function]
   rule #rangeList(I:Int) => #rangeList(0, I, 1)
   rule #rangeList(I:Int, J:Int) => #rangeList(I, J, 1)
   rule #rangeList(I:Int, J:Int, K:Int) => $rangeList(I, J, K)
@@ -147,16 +147,16 @@ module CIL-COMMON-MMU
   rule #rangeList(I:Int, J:Int, K:Int) => $downrangeList(I, J, (0 -Int K))
   when K <Int 0 andBool I >Int J
   rule
-    $rangeList(I:Int, J:Int, K:Nat)
+    $rangeList(I:Int, J:Int, K:Int)
   =>
-    ListItem(I) $rangeList(I +Int K, J:Int, K:Nat)
+    ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
   when I <Int J 
   rule $rangeList(I:Int, J:Int, _) => .List
   when I >=Int J
   rule
-    $downrangeList(I:Int, J:Int, K:Nat)
+    $downrangeList(I:Int, J:Int, K:Int)
   =>
-    ListItem(I) $downrangeList(I -Int K, J:Int, K:Nat)
+    ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
   when I >Int J 
   rule $downrangeList(I:Int, J:Int, _) => .List
   when I <=Int J
@@ -209,7 +209,7 @@ module CIL-COMMON-MMU
    */
   syntax K ::= "load" "(" Type "," Ptr ")"
              | "$load" "(" Type "," Ptr "," Type")"             [strict(3)]
-             | "$load" "(" Type "," Ptr "," Nat "," List ")"
+             | "$load" "(" Type "," Ptr "," Int "," List ")"
              | "store" "(" Type "," Ptr "," Value ")"           [strict(1)]
              | "$store" "(" Ptr "," List ")"
 
@@ -220,7 +220,7 @@ module CIL-COMMON-MMU
   rule
     <k>
       $store(
-          Ptr(BP:BasePtr, (Offset:Nat => Offset +Int 1)),
+          Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (ListItem(I:Int) => .List) L:List)
     ...</k>
     <heap>...
@@ -240,8 +240,8 @@ module CIL-COMMON-MMU
     <k>
       $load(
           _:Type,
-          Ptr(BP:BasePtr, (Offset:Nat => Offset +Int 1)),
-          (M:Nat => M:Nat -Int 1),
+          Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
+          (M:Int => M:Int -Int 1),
           L:List (.List => ListItem(I:Int)))
     ...</k>
     <heap>...

@@ -8,7 +8,7 @@ require "cil-common.k"
 module CIL-PROMOTION
   imports CIL-COMMON
 
-  syntax K ::= "typeinfo" "(" Nat "," Nat "," Nat ")"
+  syntax K ::= "typeinfo" "(" Int "," Int "," Int ")"
 
   /* empty: implicit casts inserted by cilly */
 endmodule
@@ -58,7 +58,7 @@ module CIL-EXP
   rule +tv(T:Type, MI:MInt) => tv(T, MI)
   /* Unary minus */
   /* FIXME standard is unclear about the semantics of unary minus */
-  // rule -tv(T:Type, mi(N:Nat, I:Int)) => tv(T:Type, mi(N, )) 
+  // rule -tv(T:Type, mi(N:Int, I:Int)) => tv(T:Type, mi(N, )) 
 
   /* Addition */
   rule
@@ -128,9 +128,9 @@ module CIL-EXP
   /* TODO: check for defined behaviour */
   /*
   rule ~tv(T:Type, I:Int) => norm(T, ~Int I)
-  rule tv(T:Type, MI:MInt) << tv(_, mi(I2:Nat)) => tv(T, I <<Int N)
+  rule tv(T:Type, MI:MInt) << tv(_, mi(I2:Int)) => tv(T, I <<Int N)
   when N <Int width(T)
-  rule tv(T:Type, I:Int) >> tv(_, N:Nat) => norm(T, I <<Int N)
+  rule tv(T:Type, I:Int) >> tv(_, N:Int) => norm(T, I <<Int N)
   when N <Int width(T)
   */
 
@@ -178,11 +178,11 @@ module CIL-EXP
    */
   /* the rule for signed integer types is implementation defined */
   rule
-    (T:SignedIntType) tv(_:Type, mi(_:Nat, I:Int))
+    (T:SignedIntType) tv(_:Type, mi(_:Int, I:Int))
   =>
     tv(T, sMInt(mi((width(T)), I)))
   rule
-    (T:UnsignedIntType) tv(_:Type, mi(_:Nat, I:Int))
+    (T:UnsignedIntType) tv(_:Type, mi(_:Int, I:Int))
   =>
     tv(T, uMInt(mi((width(T)), I)))
   rule (T:FloatingType) tv(_:Type, F:Int) => tv(T, F)
@@ -191,7 +191,7 @@ module CIL-EXP
 
   rule tv(T:Type, F1:Float) * tv(T, F2:Float) => tv(T, F1 *Float F2)
   rule tv(T:Type, F1:Float) / tv(T, F2:Float) => tv(T, F1 /Float F2)
-  when F2 =/=Int 0
+  when F2 =/=Float 0.0
 
   rule tv(T:Type, F1:Float) + tv(T, F2:Float) => tv(T, F1 +Float F2)
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)

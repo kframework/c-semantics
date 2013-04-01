@@ -41,7 +41,7 @@ module CIL-IMPLEMENTATION
   syntax MInt ::= bytes2SignedMInt(List)      [function]
                 | bytes2UnsignedMInt(List)    [function]
   rule
-    bytes2UnsignedMInt(ListItem(M:Nat) L:List)
+    bytes2UnsignedMInt(ListItem(M:Int) L:List)
   =>
     mi((wMInt(bytes2UnsignedMInt(L)) +Int byteWidthMacro),
        (iMInt(bytes2UnsignedMInt(L)) <<Int byteWidthMacro) +Int M)
@@ -50,7 +50,7 @@ module CIL-IMPLEMENTATION
 
   syntax List ::= "MInt2Bytes" "(" MInt ")" [function]
   rule
-    MInt2Bytes(mi(N:Nat, I:Int))
+    MInt2Bytes(mi(N:Int, I:Int))
   =>
     ListItem(I modInt (1 <<Int byteWidthMacro))
     MInt2Bytes(mi((N -Int byteWidthMacro), I >>Int byteWidthMacro))
@@ -70,13 +70,13 @@ module CIL-IMPLEMENTATION
 
   /* implement conversions */
   rule
-    value2Bytes(T:PtrType, Ptr(BasePtr(Base:Int, (Size:Nat)), (Offset:Nat)))
+    value2Bytes(T:PtrType, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
   =>
     ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
   rule
     bytes2Value(
         T:PtrType,
-        ListItem(Base:Int) ListItem(Size:Nat) ListItem(Offset:Nat) ListItem(0))
+        ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
   =>
     Ptr(BasePtr(Base, (Size)), (Offset))
 endmodule
