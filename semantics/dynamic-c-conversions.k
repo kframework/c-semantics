@@ -134,7 +134,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	define isPromoted(t(_, short-int)) => false
 	define isPromoted(t(_, unsigned-short-int)) => false
 	
-	define isPromoted(t(_, bitfieldType(_, _:Nat))) => false
+	define isPromoted(t(_, bitfieldType(_, _:Int))) => false
 	
 	rule [promote-unary]:
 		<k> L:KLabel(
@@ -179,10 +179,10 @@ Conversion of an operand value to a compatible type causes no change to the valu
 		when rank(T:KResult) >Int rank(t(.Set, int))
 
 	define [promote-bitfield-fits]:
-		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat))) => t(.Set, int)
+		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, int)
 		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
-		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat)))
-		andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat)))
+		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+		andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
 	// fixme unclear what 6.3.1.1:3 means
 
 	define [promote-lte-int-nofits]:
@@ -194,11 +194,11 @@ Conversion of an operand value to a compatible type causes no change to the valu
 		)
 
 	define [promote-bitfield-nofits]:
-		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat))) => t(.Set, unsigned-int)
+		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, unsigned-int)
 		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
 		andBool notBool (
-			min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat)))
-			andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Nat)))
+			min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+			andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
 		)
 	
 	// fixme these could be done more cleanly
@@ -518,7 +518,7 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 
 	// this is starting to get into sketchy land
 	define [cast-unknown-integer]:
-		cast(T:KResult, tv(piece(unknown(Len:Nat), Len:Nat), T':KResult)) 
+		cast(T:KResult, tv(piece(unknown(Len:Int), Len:Int), T':KResult)) 
 			=> tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool hasIntegerType(T':KResult)
@@ -586,10 +586,10 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 	An integer constant expression with the value 0, or such an expression cast to type \cinline{void *}, is called a null pointer constant. If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.
 	}*/
 	define
-		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, T':KResult)) 
+		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:Nat ==K NullPointerConstant
+		andBool N:Int ==K NullPointerConstant
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
 	Conversion of a null pointer to another pointer type yields a null pointer of that type. Any two null pointers shall compare equal.
@@ -600,18 +600,18 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 	}*/
 	// choice implementation defined behavior
 	define
-		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, T':KResult)) 
-			=> tv(N:Nat, t(S:Set, pointerType(T:KResult)))
+		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
+			=> tv(N:Int, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
-		andBool N:Nat =/=K NullPointerConstant
+		andBool N:Int =/=K NullPointerConstant
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
 	Any pointer type may be converted to an integer type. Except as previously specified, the result is implementation-defined. If the result cannot be represented in the integer type, the behavior is undefined. The result need not be in the range of values of any integer type.
 	}*/
 	// fixme needs to check size
 	define
-		cast(T:KResult, tv(N:Nat, t(_, pointerType(_))))
-			=> tv(N:Nat, T:KResult)
+		cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
+			=> tv(N:Int, T:KResult)
 		when hasIntegerType(T:KResult)
 		andBool notBool isBoolType (T:KResult)
 		
@@ -626,8 +626,8 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 	// choice
 	// needs to handle alignment
 	define
-		cast(t(S:Set, pointerType(T:KResult)), tv(N:Nat, t(_, pointerType(_)))) 
-			=> tv(N:Nat, t(S:Set, pointerType(T:KResult)))
+		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, t(_, pointerType(_)))) 
+			=> tv(N:Int, t(S:Set, pointerType(T:KResult)))
 end module
 
 module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
@@ -639,8 +639,8 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 	declare interpret-aux : Type K -> K 
 	
 	define [interpret-start]:
-		interpret(T:KResult, piece(N:Nat, _:Nat)) => interpret-aux(T:KResult, N:Nat)
-		when N:Nat >=Int 0
+		interpret(T:KResult, piece(N:Int, _:Int)) => interpret-aux(T:KResult, N:Int)
+		when N:Int >=Int 0
 	
 	define [interpret-done]:
 		interpret-aux(T:KResult, I:Int) => tv(I:Int, T:KResult)
@@ -657,27 +657,27 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 		andBool hasIntegerType(T:KResult)
 		
 	define [arithInterpret-unknown]:
-		arithInterpret(T:KResult, piece(unknown(N:Nat), N:Nat)) => tv(piece(unknown(N:Nat), N:Nat), T:KResult)
+		arithInterpret(T:KResult, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T:KResult)
 		
 	// these could be so much better...
-	rule [bnot-unknown]: ~Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
+	rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
 	
-	rule [xor-unknown-right]: N:Nat xorInt piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
-	rule [or-unknown-right]: N:Nat |Int piece(unknown(Len:Nat), Len:Nat) => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
-	rule [and-unknown-zero-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0
-		when N:Nat ==Int 0 
+	rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [and-unknown-zero-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
+		when N:Int ==Int 0 
 		[structural anywhere]
-	rule [and-unknown-right]: N:Nat &Int piece(unknown(Len:Nat), Len:Nat) => 0
-		when N:Nat =/=Int 0 
+	rule [and-unknown-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
+		when N:Int =/=Int 0 
 		[structural anywhere]
 
-	rule [xor-unknown-left]: piece(unknown(Len:Nat), Len:Nat) xorInt N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
-	rule [or-unknown-left]: piece(unknown(Len:Nat), Len:Nat) |Int N:Nat => piece(unknown(Len:Nat), Len:Nat) [structural anywhere]
-	rule [and-unknown-zero-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0
-		when N:Nat ==Int 0 
+	rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
+		when N:Int ==Int 0 
 		[structural anywhere]
-	rule [and-unknown-left]: piece(unknown(Len:Nat), Len:Nat) &Int N:Nat => 0
-		when N:Nat =/=Int 0 [structural anywhere]
+	rule [and-unknown-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
+		when N:Int =/=Int 0 [structural anywhere]
 		
 
 	

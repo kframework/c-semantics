@@ -2,7 +2,7 @@ module COMMON-SEMANTICS-HELPERS-INCLUDE is
 	// require maudeLib/common-c-builtins
 	// including #COMMON-SEMANTICS-HELPERS-BUILTINS
 	// op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
-	syntax Nat ::= Nat "bit::" Nat
+	syntax Int ::= Int "bit::" Int
 	including COMMON-NOHELPER-INCLUDE
 end module
 
@@ -12,11 +12,11 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 
 	declare firstLoc : K -> K
 	define
-		firstLoc(ThreadId:Nat)
-			=> loc(threadId(ThreadId:Nat) +Int 0, 0, 0)
+		firstLoc(ThreadId:Int)
+			=> loc(threadId(ThreadId:Int) +Int 0, 0, 0)
 	
-	declare base : Nat -> Nat
-	define base(loc(Base:Nat, _, _)) => Base:Nat
+	declare base : Int -> Int
+	define base(loc(Base:Int, _, _)) => Base:Int
 	
 	declare gatherInnerCells : Bag CellLabel -> Set
 	define gatherInnerCells(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel) (.Set => SetItem(K:K))
@@ -35,22 +35,22 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 			=> S:String +String listToString(L:List)
 	
 	declare isUnknown : K -> Bool
-	define [isUnknown-piece]: isUnknown(piece(_:Nat, _:Nat)) => true
-	define [isUnknown-ptr]: isUnknown(loc(_:Nat, _:Nat, _:Nat)) => false
+	define [isUnknown-piece]: isUnknown(piece(_:Int, _:Int)) => true
+	define [isUnknown-ptr]: isUnknown(loc(_:Int, _:Int, _:Int)) => false
 	define [isUnknown-int]: isUnknown(I:Int) => false
 		when I:Int <=Int 0 orBool I:Int >Int 0
 	
-	define loc(N:Nat, M:Nat, 0) <Int loc(N:Nat, M':Nat, 0) => true
-		when M:Nat <Int M':Nat
+	define loc(N:Int, M:Int, 0) <Int loc(N:Int, M':Int, 0) => true
+		when M:Int <Int M':Int
 		[structural]
-	define loc(N:Nat, M:Nat, 0) <=Int loc(N:Nat, M':Nat, 0) => true
-		when M:Nat <=Int M':Nat
+	define loc(N:Int, M:Int, 0) <=Int loc(N:Int, M':Int, 0) => true
+		when M:Int <=Int M':Int
 		[structural]
-	define loc(N:Nat, M:Nat, 0) >Int loc(N:Nat, M':Nat, 0) => true
-		when M:Nat >Int M':Nat
+	define loc(N:Int, M:Int, 0) >Int loc(N:Int, M':Int, 0) => true
+		when M:Int >Int M':Int
 		[structural]
-	define loc(N:Nat, M:Nat, 0) >=Int loc(N:Nat, M':Nat, 0) => true
-		when M:Nat >=Int M':Nat
+	define loc(N:Int, M:Int, 0) >=Int loc(N:Int, M':Int, 0) => true
+		when M:Int >=Int M':Int
 		[structural]
 	
 	declare simplifyTruth : K -> K
@@ -81,21 +81,21 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 			=> fillToBytes-aux(dataList(L:List{K}), .List{K}) 
 		[structural]
 	define [fillToBytes-foundByte]:
-		fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat))), L':List{K})
-			=> fillToBytes-aux(dataList(L:List{K}), (piece(N:Nat, Len:Nat),, L':List{K}))
-		when Len:Nat ==Int numBitsPerByte
+		fillToBytes-aux(dataList((L:List{K},, piece(N:Int, Len:Int))), L':List{K})
+			=> fillToBytes-aux(dataList(L:List{K}), (piece(N:Int, Len:Int),, L':List{K}))
+		when Len:Int ==Int numBitsPerByte
 		[structural]
 	
 	define [fillToBytes-addBit]:
-		fillToBytes-aux(dataList(piece(N:Nat, Len:Nat)), L':List{K})
-			=> fillToBytes-aux(dataList((piece(0, 1),, piece(N:Nat, Len:Nat))), L':List{K})
-		when Len:Nat <Int numBitsPerByte
+		fillToBytes-aux(dataList(piece(N:Int, Len:Int)), L':List{K})
+			=> fillToBytes-aux(dataList((piece(0, 1),, piece(N:Int, Len:Int))), L':List{K})
+		when Len:Int <Int numBitsPerByte
 		[structural]
 		
 	define [fillToBytes-combineBits]:
-		fillToBytes-aux(dataList((L:List{K},, piece(N:Nat, Len:Nat),, piece(N':Nat, Len':Nat))), L':List{K})
-			=> fillToBytes-aux(dataList((L:List{K},, piece(_bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)), Len:Nat +Int Len':Nat))), L':List{K})
-		when Len:Nat +Int Len':Nat <=Int numBitsPerByte
+		fillToBytes-aux(dataList((L:List{K},, piece(N:Int, Len:Int),, piece(N':Int, Len':Int))), L':List{K})
+			=> fillToBytes-aux(dataList((L:List{K},, piece(_bit::_(piece(N:Int, Len:Int), piece(N':Int, Len':Int)), Len:Int +Int Len':Int))), L':List{K})
+		when Len:Int +Int Len':Int <=Int numBitsPerByte
 		[structural]
 				
 	define [fillToBytes-done]:
@@ -104,85 +104,85 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		[structural]
 		
 	// coallesce bitranges that are adjacent
-	define _bit::_(piece(bitRange(N:Nat, sNatTo:Nat, To':Nat), Len:Nat), piece(bitRange(N:Nat, From:Nat, To:Nat), Len':Nat))
-		=> piece(bitRange(N:Nat, From:Nat, To':Nat), Len:Nat +Int Len':Nat)
-		when Len:Nat +Int Len':Nat <=Int numBitsPerByte
-		andBool sNatTo:Nat ==Int To:Nat +Int 1
+	define _bit::_(piece(bitRange(N:Int, sNatTo:Int, To':Int), Len:Int), piece(bitRange(N:Int, From:Int, To:Int), Len':Int))
+		=> piece(bitRange(N:Int, From:Int, To':Int), Len:Int +Int Len':Int)
+		when Len:Int +Int Len':Int <=Int numBitsPerByte
+		andBool sNatTo:Int ==Int To:Int +Int 1
 		[structural]
 	
-	define piece(N:Nat bit:: N':Nat, Len:Nat) bit:: piece(N'':Nat, Len':Nat)
-		=> piece((N:Nat bit:: N':Nat) bit:: piece(N'':Nat, Len':Nat), Len:Nat +Int Len':Nat)
+	define piece(N:Int bit:: N':Int, Len:Int) bit:: piece(N'':Int, Len':Int)
+		=> piece((N:Int bit:: N':Int) bit:: piece(N'':Int, Len':Int), Len:Int +Int Len':Int)
 		[structural]
 
-	define piece(N'':Nat, Len':Nat) bit:: piece(N:Nat bit:: N':Nat, Len:Nat)
-		=> piece((piece(N'':Nat, Len':Nat) bit:: N:Nat) bit:: N':Nat, Len:Nat +Int Len':Nat)
+	define piece(N'':Int, Len':Int) bit:: piece(N:Int bit:: N':Int, Len:Int)
+		=> piece((piece(N'':Int, Len':Int) bit:: N:Int) bit:: N':Int, Len:Int +Int Len':Int)
 		[structural]
 
-	define bitRange(N:Nat bit:: piece(_:Nat, Len:Nat), Pos:Nat, Pos:Nat)
-		=> bitRange(N:Nat, absInt(Pos:Nat -Int Len:Nat), absInt(Pos:Nat -Int Len:Nat))
-		when Pos:Nat >Int 0
-		andBool Pos:Nat -Int Len:Nat >=Int 0
+	define bitRange(N:Int bit:: piece(_:Int, Len:Int), Pos:Int, Pos:Int)
+		=> bitRange(N:Int, absInt(Pos:Int -Int Len:Int), absInt(Pos:Int -Int Len:Int))
+		when Pos:Int >Int 0
+		andBool Pos:Int -Int Len:Int >=Int 0
 		[structural]
 		
-	define bitRange(_:Nat bit:: piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1)
-	define bitRange(piece(N:Nat, 1), 0, 0) => piece(N:Nat, 1)
+	define bitRange(_:Int bit:: piece(N:Int, 1), 0, 0) => piece(N:Int, 1)
+	define bitRange(piece(N:Int, 1), 0, 0) => piece(N:Int, 1)
 		
-	define bitRange(piece(bitRange(N:Nat, Start:Nat, End:Nat), Len:Nat), 0, 0)
-		=> bitRange(piece(bitRange(N:Nat, Start:Nat, Start:Nat), 1), 0, 0)
-		when Start:Nat +Int Len:Nat ==Int End:Nat +Int 1
+	define bitRange(piece(bitRange(N:Int, Start:Int, End:Int), Len:Int), 0, 0)
+		=> bitRange(piece(bitRange(N:Int, Start:Int, Start:Int), 1), 0, 0)
+		when Start:Int +Int Len:Int ==Int End:Int +Int 1
 		[structural]
 	
-	define bitRange(N:Nat, Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
-		when N:Nat >=Int 0
+	define bitRange(N:Int, Pos:Int, Pos:Int) => 1 &Int (N:Int >>Int Pos:Int)
+		when N:Int >=Int 0
 		[structural]
-	define bitRange(piece(N:Nat, 1), Pos:Nat, Pos:Nat) => 1 &Int (N:Nat >>Int Pos:Nat)
-		when N:Nat >=Int 0
-		[structural]
-		
-	define bitRange(N:Nat, 0, To:Nat) => N:Nat
-		when To:Nat +Int 1 ==Int numBitsPerByte
-		[structural]
-	
-	define bitRange(_:Nat bit:: piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
-		=> bitRange(piece(N:Nat, Len:Nat), Start:Nat, End:Nat)
-		when End:Nat +Int 1 <=Int Len:Nat
-		[structural]
-	
-	define bitRange(piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
-		=> piece(N:Nat, End:Nat +Int 1)
-		when sNatEnd:Nat ==Int End:Nat +Int 1
-		[structural]
-	define bitRange(_:Nat bit:: piece(N:Nat, sNatEnd:Nat), 0, End:Nat)
-		=> piece(N:Nat, End:Nat +Int 1)
-		when sNatEnd:Nat ==Int End:Nat +Int 1
+	define bitRange(piece(N:Int, 1), Pos:Int, Pos:Int) => 1 &Int (N:Int >>Int Pos:Int)
+		when N:Int >=Int 0
 		[structural]
 		
-	define bitRange(piece(N:Nat, Len:Nat), Pos:Nat, Pos:Nat) => (N:Nat >>Int Pos:Nat) &Int 1
-		when N:Nat >=Int 0
+	define bitRange(N:Int, 0, To:Int) => N:Int
+		when To:Int +Int 1 ==Int numBitsPerByte
 		[structural]
 	
-	syntax K ::= "extractField-pre" "(" List{K} "," Type "," Nat "," K ")" [strict(4) klabel(extractField-pre)]
-	syntax K ::= "extractField-aux" "(" List{K} "," Type "," Nat "," Nat "," List{K} ")" [klabel(extractField-aux)]
+	define bitRange(_:Int bit:: piece(N:Int, Len:Int), Start:Int, End:Int)
+		=> bitRange(piece(N:Int, Len:Int), Start:Int, End:Int)
+		when End:Int +Int 1 <=Int Len:Int
+		[structural]
+	
+	define bitRange(piece(N:Int, sNatEnd:Int), 0, End:Int)
+		=> piece(N:Int, End:Int +Int 1)
+		when sNatEnd:Int ==Int End:Int +Int 1
+		[structural]
+	define bitRange(_:Int bit:: piece(N:Int, sNatEnd:Int), 0, End:Int)
+		=> piece(N:Int, End:Int +Int 1)
+		when sNatEnd:Int ==Int End:Int +Int 1
+		[structural]
+		
+	define bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) => (N:Int >>Int Pos:Int) &Int 1
+		when N:Int >=Int 0
+		[structural]
+	
+	syntax K ::= "extractField-pre" "(" List{K} "," Type "," Int "," K ")" [strict(4) klabel(extractField-pre)]
+	syntax K ::= "extractField-aux" "(" List{K} "," Type "," Int "," Int "," List{K} ")" [klabel(extractField-aux)]
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
 		<k> extractField(L:List{K}, 't(_,, L:KLabel(S:Id)), F:Id)
-			=> extractField-pre(L:List{K}, T:KResult, Offset:Nat, bitSizeofType(T:KResult)) 
+			=> extractField-pre(L:List{K}, T:KResult, Offset:Int, bitSizeofType(T:KResult)) 
 		...</k>
 		<structs>... 
-			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat)) 
+			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int)) 
 		...</structs>
 		when L:KLabel ==KLabel 'unionType
 		orBool L:KLabel ==KLabel 'structType
 		[structural]
 
 	rule
-		<k> extractField-pre(L:List{K}, T:KResult, Offset:Nat, tv(Len:Nat, _))
-			=> concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Nat, Len:Nat)))
+		<k> extractField-pre(L:List{K}, T:KResult, Offset:Int, tv(Len:Int, _))
+			=> concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:List{K}), Offset:Int, Len:Int)))
 		...</k>
 		[structural]
 	
-	define isConcreteNumber(loc(_:Nat, _:Nat, _:Nat)) => false
+	define isConcreteNumber(loc(_:Int, _:Int, _:Int)) => false
 	define isConcreteNumber(I:Int) => true
 		when  I:Int <=Int 0 orBool I:Int >Int 0
 		[structural]
@@ -201,12 +201,12 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	
 	//- derived
 	define 
-		bitsToBytes(N:Nat) => absInt(N:Nat /Int numBitsPerByte)
-		when numBitsPerByte dividesInt N:Nat
+		bitsToBytes(N:Int) => absInt(N:Int /Int numBitsPerByte)
+		when numBitsPerByte dividesInt N:Int
 		[structural]
 	define 
-		bitsToBytes(N:Nat) => absInt((N:Nat /Int numBitsPerByte) +Int 1) 
-		when notBool numBitsPerByte dividesInt N:Nat
+		bitsToBytes(N:Int) => absInt((N:Int /Int numBitsPerByte) +Int 1) 
+		when notBool numBitsPerByte dividesInt N:Int
 		[structural]
 		
 	define numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
@@ -218,7 +218,7 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	define numBits(t(S:Set, T:K)) => numBytes(t(S:Set, T:K)) *Int numBitsPerByte
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		[structural]
-	define numBits(t(_, bitfieldType(_, N:Nat))) => N:Nat
+	define numBits(t(_, bitfieldType(_, N:Int))) => N:Int
 
 	define min(t(_, bool)) => 0
 	define max(t(_, bool)) => 1
@@ -253,7 +253,7 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		firstChar(S:String) => substrString(S:String, 0, 1)
 		[structural]
 	define [nthChar]:
-		nthChar(S:String, N:Nat) => substrString(S:String, N:Nat, 1)
+		nthChar(S:String, N:Int) => substrString(S:String, N:Int, 1)
 		[structural]
 	define [charToAscii]:
 		charToAscii(C:Char) => asciiString(C:Char)
@@ -289,20 +289,20 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	syntax Value ::= "str" "(" String ")" [klabel(str)]
 	
 	rule [getString-pre]:
-		<k> (.K => read(Loc:Nat, t(.Set, char)))
-			~> getString-aux(tv((Loc:Nat => Loc:Nat +Int 1), _), S:String)
+		<k> (.K => read(Loc:Int, t(.Set, char)))
+			~> getString-aux(tv((Loc:Int => Loc:Int +Int 1), _), S:String)
 		...</k>
 		[structural]
 		
 	rule [getString]:
-		<k> tv(N:Nat, _) 
-			~> getString-aux(tv(Loc:Nat, _), S:String)
-			=> getString-aux(tv(Loc:Nat, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Nat))
+		<k> tv(N:Int, _) 
+			~> getString-aux(tv(Loc:Int, _), S:String)
+			=> getString-aux(tv(Loc:Int, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Int))
 		...</k>
-		when N:Nat =/=Int 0
+		when N:Int =/=Int 0
 		[structural]
 	rule [getString-done]:
-		<k> tv(0, _) ~> getString-aux(tv(Loc:Nat, _), S:String)
+		<k> tv(0, _) ~> getString-aux(tv(Loc:Int, _), S:String)
 			=> str(S:String)
 		...</k>
 		[structural]
@@ -312,19 +312,19 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	syntax K ::= "writeWString" "(" K "," List{K} ")" [strict(1) klabel(writeWString)]
 
 	rule [write-string]:
-		<k> writeString(tv(Loc:Nat, T:KResult), S:String)
-			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(t(.Set, char))))) 
+		<k> writeString(tv(Loc:Int, T:KResult), S:String)
+			=> Computation(*(tv(Loc:Int, t(.Set, pointerType(t(.Set, char))))) 
 				:= tv(charToAscii(firstChar(S:String)), t(.Set, char)))
-			~> writeString(tv(Loc:Nat +Int 1, T:KResult), butFirstChar(S:String))
+			~> writeString(tv(Loc:Int +Int 1, T:KResult), butFirstChar(S:String))
 		...</k>
 		when S:String =/=String ""
 		[structural]
 	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
-		<k> writeWString(tv(Loc:Nat, T:KResult), (N:Nat,, S:List{K}))
-			=> Computation(*(tv(Loc:Nat, t(.Set, pointerType(cfg:wcharut)))) 
-				:= tv(N:Nat, cfg:wcharut))
-			~> writeWString(tv(Loc:Nat +Int 4, T:KResult), S:List{K})
+		<k> writeWString(tv(Loc:Int, T:KResult), (N:Int,, S:List{K}))
+			=> Computation(*(tv(Loc:Int, t(.Set, pointerType(cfg:wcharut)))) 
+				:= tv(N:Int, cfg:wcharut))
+			~> writeWString(tv(Loc:Int +Int 4, T:KResult), S:List{K})
 		...</k>
 		[structural] 
 	rule [write-empty-string]:
@@ -336,32 +336,32 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		
 	
 	// fixme might be messing things up elsewhere
-	declare pointerToString : Nat -> String
+	declare pointerToString : Int -> String
 	define [pointerToString]:
-		pointerToString(loc(N:Nat, M:Nat, 0))
-			=> "[sym(" +String subPointerToString(N:Nat) +String ") + " 
-			+String Int2String(M:Nat) +String "]"
+		pointerToString(loc(N:Int, M:Int, 0))
+			=> "[sym(" +String subPointerToString(N:Int) +String ") + " 
+			+String Int2String(M:Int) +String "]"
 		[structural]
 		
-	declare subPointerToString : Nat -> String
+	declare subPointerToString : Int -> String
 	define [subPointerToString-auto]:
-		subPointerToString(threadId(N:Nat) +Int N':Nat)
-			=> "threadId(" +String Int2String(N:Nat) +String ") +Int " 
-			+String Int2String(N':Nat)
-		when N:Nat =/=K allocatedDuration
+		subPointerToString(threadId(N:Int) +Int N':Int)
+			=> "threadId(" +String Int2String(N:Int) +String ") +Int " 
+			+String Int2String(N':Int)
+		when N:Int =/=K allocatedDuration
 		[structural]
 	define [sub-pointerToString-allocated]:
-		subPointerToString(threadId(allocatedDuration) +Int N':Nat)
-			=> "threadId(allocatedDuration) +Int " +String Int2String(N':Nat)
+		subPointerToString(threadId(allocatedDuration) +Int N':Int)
+			=> "threadId(allocatedDuration) +Int " +String Int2String(N':Int)
 		[structural]
 	
 	define [pointerToString-done]:
 		pointerToString(NullPointer) => "NullPointer" [structural]
 		
 		
-	define N:Nat to N:Nat => .List{K}
-	define N:Nat to N':Nat => (N:Nat,,((N:Nat +Int 1) to N':Nat))
-		when N:Nat <Int N':Nat
+	define N:Int to N:Int => .List{K}
+	define N:Int to N':Int => (N:Int,,((N:Int +Int 1) to N':Int))
+		when N:Int <Int N':Int
 		[structural]
 
 	// Note: it only makes sense to memo this if the sets are just used to represent categories
@@ -383,10 +383,10 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool isFloatType(t(S:Set, T:K)))
 		[structural]
-	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => true
+	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:Int))) => true
 		when hasUnsignedIntegerType(T:KResult) ==Bool true
 		[structural]
-	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => false
+	define hasUnsignedIntegerType(t(_, bitfieldType(T:KResult, _:Int))) => false
 		when hasUnsignedIntegerType(T:KResult) ==Bool false
 		[structural]
 	
@@ -398,36 +398,36 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		andBool (setOfTypes contains l(getKLabel(T:K)) orBool isFloatType(t(S:Set, T:K)))
 		[structural]
-	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => true
+	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:Int))) => true
 		when hasSignedIntegerType(T:KResult) ==Bool true
 		[structural]
-	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:Nat))) => false
+	define hasSignedIntegerType(t(_, bitfieldType(T:KResult, _:Int))) => false
 		when hasSignedIntegerType(T:KResult) ==Bool false
 		[structural]
 
-	define min(t(_, bitfieldType(T:KResult, N:Nat))) => 0
+	define min(t(_, bitfieldType(T:KResult, N:Int))) => 0
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
-	define max(t(_, bitfieldType(T:KResult, N:Nat))) => _-Int_(2 ^Int absInt(N:Nat), 1)
+	define max(t(_, bitfieldType(T:KResult, N:Int))) => _-Int_(2 ^Int absInt(N:Int), 1)
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
 	
-	define min(t(_, bitfieldType(T:KResult, N:Nat))) => 0 -Int (2 ^Int absInt(_-Int_(N:Nat, 1)))
+	define min(t(_, bitfieldType(T:KResult, N:Int))) => 0 -Int (2 ^Int absInt(_-Int_(N:Int, 1)))
 		when hasSignedIntegerType(T:KResult)
 		[structural]
-	define max(t(_, bitfieldType(T:KResult, N:Nat))) => _-Int_(2 ^Int absInt(_-Int_(N:Nat, 1)), 1)
+	define max(t(_, bitfieldType(T:KResult, N:Int))) => _-Int_(2 ^Int absInt(_-Int_(N:Int, 1)), 1)
 		when hasSignedIntegerType(T:KResult)
 		[structural]
 		
 		
 	define NullPointerConstant => 0
 	
-	define _bit::_(piece(N:Nat, Len:Nat), piece(N':Nat, Len':Nat)) 
-		=> piece((N:Nat <<Int Len':Nat) |Int N':Nat, Len:Nat +Int Len':Nat)
-		when N:Nat >=Int 0 andBool N':Nat >=Int 0 
+	define _bit::_(piece(N:Int, Len:Int), piece(N':Int, Len':Int)) 
+		=> piece((N:Int <<Int Len':Int) |Int N':Int, Len:Int +Int Len':Int)
+		when N:Int >=Int 0 andBool N':Int >=Int 0 
 		[structural] 
-	define _bit::_(piece(0, 0), N:Nat) => N:Nat 
-	define piece(piece(N:Nat, Len:Nat), Len:Nat) => piece(N:Nat, Len:Nat) 
+	define _bit::_(piece(0, 0), N:Int) => N:Int 
+	define piece(piece(N:Int, Len:Int), Len:Int) => piece(N:Int, Len:Int) 
 	define value(tv(V:List{K}, _)) => V:List{K}
 	define type(tv(_, T:KResult)) => T:KResult
 
@@ -461,49 +461,49 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 		l('qualifiedType)
 	) [structural]
 	
-	rule assert(true, _:Nat) => .K [structural anywhere]
+	rule assert(true, _:Int) => .K [structural anywhere]
 end module
 
 module COMMON-C-BITSIZE is
 	including COMMON-SEMANTICS-HELPERS-INCLUDE
 	
 	declare bitSizeofList : List{KResult} -> K
-	declare bitSizeofList-aux : K Nat List{KResult} -> K [strict(1)]
+	declare bitSizeofList-aux : K Int List{KResult} -> K [strict(1)]
 	
 	
 	define bitSizeofList(L:List{KResult}) => bitSizeofList-aux(.K, 0, L:List{KResult})
 		[structural]
-	define bitSizeofList-aux((.K => bitSizeofType(T:KResult)), _:Nat, ((T:KResult => .List{K}),, _:List{KResult}))
+	define bitSizeofList-aux((.K => bitSizeofType(T:KResult)), _:Int, ((T:KResult => .List{K}),, _:List{KResult}))
 		[structural]
-	define bitSizeofList-aux((tv(Len':Nat, _) => .K), (Len:Nat => Len:Nat +Int Len':Nat), _)
+	define bitSizeofList-aux((tv(Len':Int, _) => .K), (Len:Int => Len:Int +Int Len':Int), _)
 		[structural]
-	define bitSizeofList-aux(.K, Len:Nat, .List{K}) => tv(Len:Nat, cfg:largestUnsigned)
+	define bitSizeofList-aux(.K, Len:Int, .List{K}) => tv(Len:Int, cfg:largestUnsigned)
 		[structural]	
 	
 		
 	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")" [klabel(maxBitSizeofList)] 
-	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Nat ")" [klabel(maxBitSizeofList-aux)] 
+	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Int ")" [klabel(maxBitSizeofList-aux)] 
 	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
 	rule
-		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Nat)
+		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Int)
 			=> bitSizeofType(T:KResult) 
-			~> maxBitSizeofList-aux(L:List{KResult}, N:Nat) 
+			~> maxBitSizeofList-aux(L:List{KResult}, N:Int) 
 		...</k>
 		[structural] 
 	rule
-		<k> (tv(N':Nat, _) => .) 
-			~> maxBitSizeofList-aux(L:List{KResult}, (N:Nat => maxInt(N:Nat, N':Nat))) 
+		<k> (tv(N':Int, _) => .) 
+			~> maxBitSizeofList-aux(L:List{KResult}, (N:Int => maxInt(N:Int, N':Int))) 
 		...</k>
 		[structural] 
 	rule
-		<k> maxBitSizeofList-aux(.List{K}, N:Nat) => tv(N:Nat, cfg:largestUnsigned) ...</k>
+		<k> maxBitSizeofList-aux(.List{K}, N:Int) => tv(N:Int, cfg:largestUnsigned) ...</k>
 		[structural] 
 	
-	rule bitSizeofType(t(_, arrayType(T:KResult, N:Nat))) => bitSizeofType(T:KResult) * tv(N:Nat, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural anywhere]
 	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural anywhere]
 	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
 	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, bitfieldType(_, N:Nat))) => tv(N:Nat, cfg:largestUnsigned) [structural anywhere]
+	rule bitSizeofType(t(_, bitfieldType(_, N:Int))) => tv(N:Int, cfg:largestUnsigned) [structural anywhere]
 	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural anywhere]
 	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural anywhere]
 	rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural anywhere]
@@ -517,16 +517,16 @@ module COMMON-C-BITSIZE is
 		<structs>... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</structs>
 		[structural]
 		
-	// define K2Nat(N:Nat) => N:Nat
+	// define K2Int(N:Int) => N:Int
 
-	define getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Nat))) => N:Nat
+	define getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N:Int
 	define getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T:KResult
 
 		
 	define toString(Identifier(S:String)) => S:String
 	define toString(S:String) => S:String
-	define toString(Num:Nat) => Int2String(Num:Nat)
-	// define Int2String(sym(N:Nat)) => "sym(" +String Int2String(N:Nat) +String ")"
+	define toString(Num:Int) => Int2String(Num:Int)
+	// define Int2String(sym(N:Int)) => "sym(" +String Int2String(N:Int) +String ")"
 	
 	
 	define listToK(K:K) => klistToK(getList{K}(K:K))

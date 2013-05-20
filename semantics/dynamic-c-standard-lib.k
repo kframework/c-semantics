@@ -4,7 +4,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	// including #TCP-INTERFACE
 	
 	syntax C ::= "vararg" "(" K ")" [hybrid strict klabel(vararg)]
-	syntax C ::= "nextvarg" "(" Nat "," K ")" [strict(2) klabel(nextvarg)] // loc, type
+	syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2) klabel(nextvarg)] // loc, type
 	syntax C ::= "vpair" "(" K "," K ")" [hybrid strict klabel(vpair)]
 	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" [klabel(prepareBuiltin)]
 	declare incSymbolic : K -> K
@@ -22,13 +22,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	context nextvarg-aux(_, _, _, value(HOLE))
 	
 	rule [nextvarg-start]:
-		<k> nextvarg(Loc:Nat, T:KResult)
-			=> nextvarg-aux(Loc:Nat, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc:Nat)))
+		<k> nextvarg(Loc:Int, T:KResult)
+			=> nextvarg-aux(Loc:Int, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc:Int)))
 		...</k>
 		[structural]
 	rule [nextvarg]:
-		<k> nextvarg-aux(Loc:Nat, T:KResult, Len:Nat, Len:Nat)
-			=> vpair(read(Loc:Nat, T:KResult), vararg(tv(inc(Loc:Nat), t(.Set, pointerType(t(.Set, void))))))
+		<k> nextvarg-aux(Loc:Int, T:KResult, Len:Int, Len:Int)
+			=> vpair(read(Loc:Int, T:KResult), vararg(tv(inc(Loc:Int), t(.Set, pointerType(t(.Set, void))))))
 		...</k>
 		[structural]
 	
@@ -59,7 +59,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 
 	context incSymbolic((HOLE => reval(HOLE)))
 	define [incSymbolic]:
-		incSymbolic(tv(Loc:Nat, T:KResult)) => tv(inc(Loc:Nat), T:KResult)
+		incSymbolic(tv(Loc:Int, T:KResult)) => tv(inc(Loc:Int), T:KResult)
 		[structural]
 		
 	rule [prepareBuiltin]:
@@ -207,11 +207,11 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 
 	If the invocation appears in any other context, the behavior is undefined.
 	}*/
-	// fixme doesn't check if loc:Nat is const
+	// fixme doesn't check if loc:Int is const
 	rule [setjmp]:
-		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Nat, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
+		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Int, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
 			=> ignoreLocals
-				~> writeByte(Loc:Nat, Bag(
+				~> writeByte(Loc:Int, Bag(
 					C:Bag
 					<continuation> K:K </continuation>
 				))
@@ -338,10 +338,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 	// fixme should check for bitfield offset
 	rule
 		<k> offsetOf(t(_, structType(S:Id)), F:Id)
-			=> tv(bitsToBytes(Offset:Nat), cfg:sizeut)
+			=> tv(bitsToBytes(Offset:Int), cfg:sizeut)
 		...</k>
 		<structs>...
-			S:Id |-> aggregateInfo(_, _, (_ F:Id |-> Offset:Nat))
+			S:Id |-> aggregateInfo(_, _, (_ F:Id |-> Offset:Int))
 		...</structs>
 		[structural]
 	rule <k> offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</k>
@@ -353,16 +353,16 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	rule [putchar]:
-		<k> prepareBuiltin((Identifier("putchar")), tv(N:Nat, _))
-			=> writeToFD(1, N:Nat) 
-			~> tv(N:Nat, t(.Set, int))
+		<k> prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
+			=> writeToFD(1, N:Int) 
+			~> tv(N:Int, t(.Set, int))
 		...</k>
 		[structural]
 
 	rule [fslPutc]:
-		<k> prepareBuiltin((Identifier("__fslPutc")), (tv(N:Nat, _),, tv(H:Nat, _)))
-			=> writeToFD(H:Nat, N:Nat)
-			~> tv(N:Nat, t(.Set, int))
+		<k> prepareBuiltin((Identifier("__fslPutc")), (tv(N:Int, _),, tv(H:Int, _)))
+			=> writeToFD(H:Int, N:Int)
+			~> tv(N:Int, t(.Set, int))
 		...</k>
 		[structural]
 
@@ -374,17 +374,17 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslFGetC]:
-		<k> prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Nat, _),, tv(Offset:Nat, _)))
-			=> readFromFD(FD:Nat)
-			// => #fReadByte(FD:Nat)
+		<k> prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Int, _),, tv(Offset:Int, _)))
+			=> readFromFD(FD:Int)
+			// => #fReadByte(FD:Int)
 		...</k>
 		[structural]
 
 	rule [fslCloseFile]:
-		<k> prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Nat, t(_, int))) 
+		<k> prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Int, t(_, int))) 
 			=> tv(0, t(.Set, int))
 		...</k>
-		(<file>... <fid> FD:Nat </fid> ...</file> => .Bag)
+		(<file>... <fid> FD:Int </fid> ...</file> => .Bag)
 		[structural]
 
 	rule [fslOpenFile-pre]:
@@ -402,13 +402,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 
 	rule [fslOpenFile]:
-		<k> fsl-open-file-aux(Name:String, Mode:String, tv(FD:Nat, _)) 
-			=> tv(FD:Nat, t(.Set, int)) 
+		<k> fsl-open-file-aux(Name:String, Mode:String, tv(FD:Int, _)) 
+			=> tv(FD:Int, t(.Set, int)) 
 		...</k>
 		<files>...
 			(.Bag => 
 				<file>...
-					<fid> FD:Nat </fid>
+					<fid> FD:Int </fid>
 					<uri> Name:String </uri>
 					<mode> Mode:String </mode>
 				...</file>
@@ -431,9 +431,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		[structural]
 		
 	// rule [printf-done]:
-		// <k> tv(0, _) ~> printf-aux(Len:Nat, _, _) 
+		// <k> tv(0, _) ~> printf-aux(Len:Int, _, _) 
 			// => flush(1)
-			// ~> tv(Len:Nat, t(.Set, int)) 
+			// ~> tv(Len:Int, t(.Set, int)) 
 		// ...</k>
 		// [structural]
 	rule [printf-done]:
@@ -457,18 +457,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 		...</k>
 		[structural]
 	
-	syntax K ::= "snprintf" "(" K "," K "," Nat ")" [strict(1) klabel(snprintf)]
+	syntax K ::= "snprintf" "(" K "," K "," Int ")" [strict(1) klabel(snprintf)]
 	rule [snprintf]:
-		<k> prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Nat, _),, Format:KResult,, VarArgs:KResult))
-			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Nat)
+		<k> prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
+			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Int)
 		...</k>
 		[structural]
 	rule [snprintf-done-nz]:
-		<k> snprintf(formattedResult(S:String), Dest:KResult, Len:Nat)
-			=> writeString(Dest:KResult, substrString(S:String, 0, Len:Nat -Int 1) +String "\0")
+		<k> snprintf(formattedResult(S:String), Dest:KResult, Len:Int)
+			=> writeString(Dest:KResult, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
 			~> tv(lengthString(S:String), t(.Set, int))
 		...</k>
-		when Len:Nat >Int 0
+		when Len:Int >Int 0
 		[structural]
 	rule [snprintf-done-0]:
 		<k> snprintf(formattedResult(S:String), _, 0)
@@ -482,8 +482,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
 	syntax K ::= "formatter-next" "(" K ")" [klabel(formatter-next)]
 	syntax K ::= "formatter-arg" "(" K ")" [strict(1) klabel(formatter-arg)]
 	rule 
-		<k> formatter-next(vararg(tv(Loc:Nat, _)))
-			=> formatter-arg(nextvarg(Loc:Nat, getFormatType))
+		<k> formatter-next(vararg(tv(Loc:Int, _)))
+			=> formatter-arg(nextvarg(Loc:Int, getFormatType))
 		...</k>
 		[structural]
 	rule 
@@ -848,9 +848,9 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 		[structural]
 	// // need to cast to unsigned-char
 	// rule [printf-%c]:
-		// <k> printf-%c(Len:Nat, Loc:Nat, (vpair(tv(C:Nat, t(_, int)), V:KResult),, _))
-			// => writeToFD(1, C:Nat)
-			// ~> printf-aux(Len:Nat +Int 1, Loc:Nat, V:KResult)
+		// <k> printf-%c(Len:Int, Loc:Int, (vpair(tv(C:Int, t(_, int)), V:KResult),, _))
+			// => writeToFD(1, C:Int)
+			// ~> printf-aux(Len:Int +Int 1, Loc:Int, V:KResult)
 		// ...</k>
 		// [structural]
 	rule [format-%c]:
@@ -876,10 +876,10 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
 		<formatState> "%" => "%s" </formatState>
 		[structural]
 	rule [format-%s]:
-		<k> (.K => getString(Loc:Nat))
+		<k> (.K => getString(Loc:Int))
 			~> formatter-aux(_)
 		...</k>
-		<formatArg> Loc:Nat => .K </formatArg>
+		<formatArg> Loc:Int => .K </formatArg>
 		<formatState> "%s" => "%s-read" </formatState>
 		[structural]
 	rule [format-%s-done]:
@@ -905,8 +905,8 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
 		[structural]
 	rule [format-%p]:
 		<k> formatter-aux(_) ...</k>
-		<formatArg> Loc:Nat => .K </formatArg>
-		<formatResult>... .List => ListItem(pointerToString(Loc:Nat)) </formatResult>
+		<formatArg> Loc:Int => .K </formatArg>
+		<formatResult>... .List => ListItem(pointerToString(Loc:Int)) </formatResult>
 		<formatState> "%p" => "reset" </formatState>
 		[structural]
 		
@@ -969,21 +969,21 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
 
 The malloc function returns either a null pointer or a pointer to the allocated space.
 	}*/
-	syntax K ::= "newAlloc" "(" Nat ")"
-	define newAlloc(Fresh:Nat) => loc(threadId(allocatedDuration) +Int Fresh:Nat, 0, 0)
+	syntax K ::= "newAlloc" "(" Int ")"
+	define newAlloc(Fresh:Int) => loc(threadId(allocatedDuration) +Int Fresh:Int, 0, 0)
 	
 	rule [malloc]:
-		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
-			=> alloc(newAlloc(Fresh:Nat), Len:Nat)
-			~> tv(newAlloc(Fresh:Nat), t(.Set, pointerType(t(.Set, void))))
+		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
+			=> alloc(newAlloc(Fresh:Int), Len:Int)
+			~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
 		...</k>
 		//<br/>
-		<malloced>... .Map => newAlloc(Fresh:Nat) |-> Len:Nat ...</malloced>
-		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
+		<malloced>... .Map => newAlloc(Fresh:Int) |-> Len:Int ...</malloced>
+		<freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
 		[structural]
 	// might want this for searching purposes
 	// rule [malloc-null]:
-		// <k> prepareBuiltin((Identifier("malloc")), tv(Len:Nat, T:KResult))
+		// <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
 			// => tv(NullPointer, t(.Set, pointerType(void)))
 		// ...</k>
 		// [structural]
@@ -996,14 +996,14 @@ If \cinline{ptr} is a null pointer, the \cinline{realloc} function behaves like 
 The \cinline{realloc} function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
 	}*/
 	rule [realloc]:
-		<k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Nat, _),, tv(NewLen:Nat, T:KResult)))
-			=> realloc(OldLoc:Nat, newAlloc(Fresh:Nat), OldLen:Nat, NewLen:Nat)
-			~> tv(newAlloc(Fresh:Nat), t(.Set, pointerType(t(.Set, void))))
+		<k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Int, _),, tv(NewLen:Int, T:KResult)))
+			=> realloc(OldLoc:Int, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
+			~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
 		...</k>
 		//<br/>
-		<malloced>... (OldLoc:Nat => newAlloc(Fresh:Nat)) |-> (OldLen:Nat => NewLen:Nat) ...</malloced>
-		<freshNat> Fresh:Nat => Fresh:Nat +Int 1 </freshNat>
-		when OldLoc:Nat =/=K NullPointer
+		<malloced>... (OldLoc:Int => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) ...</malloced>
+		<freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
+		when OldLoc:Int =/=K NullPointer
 		[structural]
 		
 	
@@ -1015,40 +1015,40 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
 
 	syntax K ::= "calloc-aux" [klabel(calloc-aux)]
 	rule [calloc]:
-		<k> prepareBuiltin((Identifier("calloc")), (tv(N:Nat, _),, tv(Size:Nat, _)))
-			=> prepareBuiltin((Identifier("malloc")), tv(N:Nat *Int Size:Nat, cfg:sizeut))
+		<k> prepareBuiltin((Identifier("calloc")), (tv(N:Int, _),, tv(Size:Int, _)))
+			=> prepareBuiltin((Identifier("malloc")), tv(N:Int *Int Size:Int, cfg:sizeut))
 			~> calloc-aux
 		...</k>
 		[structural]
 	rule [calloc-aux]:
-		<k> (.K => zeroBlock(Loc:Nat)) 
-			~> tv(Loc:Nat, t(_, pointerType(t(_, void))))
+		<k> (.K => zeroBlock(Loc:Int)) 
+			~> tv(Loc:Int, t(_, pointerType(t(_, void))))
 			~> (calloc-aux => .K)
 		...</k>
 		[structural]
 
 	rule [free]:
-		<k> prepareBuiltin((Identifier("free")), tv(Loc:Nat, t(_, pointerType(_))))
-			=> deleteSizedBlock(Loc:Nat, Len:Nat) 
+		<k> prepareBuiltin((Identifier("free")), tv(Loc:Int, t(_, pointerType(_))))
+			=> deleteSizedBlock(Loc:Int, Len:Int) 
 			~> skipval
 		...</k>
-		<malloced>... Loc:Nat |-> Len:Nat => .Map ...</malloced>
+		<malloced>... Loc:Int |-> Len:Int => .Map ...</malloced>
 		[structural]
 		
 	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	// fixme should use RAND_MAX
 	rule [rand]:
 		<k> prepareBuiltin((Identifier("rand")), .List{K})
-			=> tv(absInt(randomRandom(Fresh:Nat)) %Int max(t(.Set, int)), t(.Set, int))
+			=> tv(absInt(randomRandom(Fresh:Int)) %Int max(t(.Set, int)), t(.Set, int))
 		...</k>
-		<randNat> Fresh:Nat => Fresh:Nat +Int 1 </randNat>
+		<randNat> Fresh:Int => Fresh:Int +Int 1 </randNat>
 		[structural]
 		
 	rule [srand]:
-		<k> prepareBuiltin((Identifier("srand")), tv(N:Nat, t(.Set, unsigned-int)))
+		<k> prepareBuiltin((Identifier("srand")), tv(N:Int, t(.Set, unsigned-int)))
 			=> skipval
 		...</k>
-		<randNat> _ => N:Nat </randNat>
+		<randNat> _ => N:Int </randNat>
 		[structural]
 
 
@@ -1061,27 +1061,27 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING is
 	// fixme should detect overlaps
 	syntax K ::= "strcpy" "(" K "," K "," K ")" [klabel(strcpy)]
 	rule [strcpy-start]:
-		<k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:Nat, t(_, pointerType(_))),, tv(Src:Nat, t(_, pointerType(_)))))
-			=> strcpy(Dest:Nat, Src:Nat, Dest:Nat)
+		<k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:Int, t(_, pointerType(_))),, tv(Src:Int, t(_, pointerType(_)))))
+			=> strcpy(Dest:Int, Src:Int, Dest:Int)
 		...</k>
 		[structural]
 		
 	rule [strcpy-pre]:
-		<k> (.K => read(Src:Nat, t(.Set, char)))
-			~> strcpy(_, (Src:Nat => Src:Nat +Int 1), _)
+		<k> (.K => read(Src:Int, t(.Set, char)))
+			~> strcpy(_, (Src:Int => Src:Int +Int 1), _)
 		...</k>
 		[structural]
 	
 	rule [strcpy-some]:
-		<k> (tv(I:Int, T:KResult) => write(lv(Dest:Nat, t(.Set, char)), tv(I:Int, T:KResult)))
-			~> strcpy((Dest:Nat => Dest:Nat +Int 1), _, _)
+		<k> (tv(I:Int, T:KResult) => write(lv(Dest:Int, t(.Set, char)), tv(I:Int, T:KResult)))
+			~> strcpy((Dest:Int => Dest:Int +Int 1), _, _)
 		...</k>
 		when I:Int =/=Int 0
 		[structural]
 	rule [strcpy-done]:
-		<k> tv(0, T:KResult) ~> strcpy(Dest:Nat, _, Orig:Nat)
-			=> write(lv(Dest:Nat, t(.Set, char)), tv(0, T:KResult)) 
-			~> tv(Orig:Nat, t(.Set, pointerType(t(.Set, char))))
+		<k> tv(0, T:KResult) ~> strcpy(Dest:Int, _, Orig:Int)
+			=> write(lv(Dest:Int, t(.Set, char)), tv(0, T:KResult)) 
+			~> tv(Orig:Int, t(.Set, pointerType(t(.Set, char))))
 		...</k>
 		[structural]
 end module
@@ -1092,7 +1092,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	////////////////////////////--
 	// Threads
 	////////////////////////////--
-	ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Nat
+	ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Int
 	macro thrd-success = tv(0, t(.Set, int))
 	macro thrd-error = tv(1, t(.Set, int))
 	macro thrd-timeout = tv(2, t(.Set, int))
@@ -1100,19 +1100,19 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
 	macro thrd-nomem = tv(4, t(.Set, int))
 	
 	ops threadRunning threadClosed : -> K
-	ops threadJoining : Nat -> K
+	ops threadJoining : Int -> K
 	
-	syntax Nat ::= "threadId" "(" Nat "," Nat ")" [klabel(threadId)] // parent, new
-	syntax K ::= "spawn-aux" "(" Nat "," Value "," Value ")" [klabel(spawn-aux)]
-	// threadId(MyId:Nat, Fresh:Nat)
+	syntax Int ::= "threadId" "(" Int "," Int ")" [klabel(threadId)] // parent, new
+	syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")" [klabel(spawn-aux)]
+	// threadId(MyId:Int, Fresh:Int)
 	rule [thrd-create-start]:
 		<k> prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
-			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:Nat, t(.Set, int)))
-			~> spawn-aux(Fresh:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult)
+			=> Computation((* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
+			~> spawn-aux(Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
 		...</k>
 		//<br/>
-		//<threadId> MyId:Nat </threadId>
-		<nextThreadId> Fresh:Nat => Fresh:Nat +Int 1 </nextThreadId>
+		//<threadId> MyId:Int </threadId>
+		<nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
 		[structural]
 /*
 See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
@@ -1120,17 +1120,17 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 	
 	rule [thrd-create]:
 		<thread>...
-			<k> spawn-aux(ThreadId:Nat, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
+			<k> spawn-aux(ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
 			<currTU> Tu:K </currTU>
 			<buffer> .List </buffer>
 		...</thread>
 		<genv> Env:Map </genv>
-		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Nat] </threadStatus>
+		<threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Int] </threadStatus>
 		<br/>
 		(.Bag =>
 		<thread>...
-			<nextLoc> firstLoc(ThreadId:Nat) </nextLoc>
-			<threadId> ThreadId:Nat </threadId>
+			<nextLoc> firstLoc(ThreadId:Int) </nextLoc>
+			<threadId> ThreadId:Int </threadId>
 			<k> Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </k>
 			<env> Env:Map </env>
 			<currTU> Tu:K </currTU>
@@ -1139,66 +1139,66 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		
 	rule [thrd-current]:
 		<k> prepareBuiltin((Identifier("thrd_current")), .List{K})
-			=> tv(ThreadId:Nat, t(.Set, int))
+			=> tv(ThreadId:Int, t(.Set, int))
 		...</k>
-		<threadId> ThreadId:Nat </threadId>
+		<threadId> ThreadId:Int </threadId>
 		[structural]
 		
-	syntax K ::= "join-aux" "(" Nat "," Value ")" [klabel(join-aux)]
+	syntax K ::= "join-aux" "(" Int "," Value ")" [klabel(join-aux)]
 		
 	rule [thrd-join-start]:
-		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, ResultPointer:KResult))
-			=> join-aux(ThreadId:Nat, ResultPointer:KResult)
+		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
+			=> join-aux(ThreadId:Int, ResultPointer:KResult)
 		...</k>
 		//<br/>
-		//<threadId> MyId:Nat </threadId>
-		//<joiningMap> Joining:Map => Joining:Map[MyId:Nat / ThreadId:Nat] </joiningMap>
+		//<threadId> MyId:Int </threadId>
+		//<joiningMap> Joining:Map => Joining:Map[MyId:Int / ThreadId:Int] </joiningMap>
 		//<detachingMap> Detaching:Map </detachingMap>
-		//when notBool ThreadId:Nat in keys Joining:Map
-		//andBool notBool ThreadId:Nat in keys Detaching:Map
+		//when notBool ThreadId:Int in keys Joining:Map
+		//andBool notBool ThreadId:Int in keys Detaching:Map
 		[structural]
 	
 	// rule [thrd-join-error]:
-		// <k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Nat, t(_, int)),, _))
+		// <k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, _))
 			// => thrd-error
 		// ...</k>
 		// <br/>
 		// <joiningMap> Joining:Map </joiningMap>
 		// //<detachingMap> Detaching:Map </detachingMap>
-		// when ThreadId:Nat in keys Joining:Map
-		// //orBool ThreadId:Nat in keys Detaching:Map
+		// when ThreadId:Int in keys Joining:Map
+		// //orBool ThreadId:Int in keys Detaching:Map
 		// [large computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	// rule [thrd-join-null]:
 		// <thread>...
-			// <k> join-aux(ThreadId:Nat, tv(NullPointer, _))
+			// <k> join-aux(ThreadId:Int, tv(NullPointer, _))
 				// => thrd-success
 			// ...</k>
 		// ...</thread>
 		// <thread>...
 			// <k> V:KResult </k>
-			// <threadId> ThreadId:Nat </threadId>
+			// <threadId> ThreadId:Int </threadId>
 		// ...</thread>
 		// [computational]
 	// rule [thrd-join-non-null]:
 		// <thread>...
-			// <k> join-aux(ThreadId:Nat, ResultPointer:KResult)
+			// <k> join-aux(ThreadId:Int, ResultPointer:KResult)
 				// => Computation((* ResultPointer:KResult) := V:KResult)
 				// ~> thrd-success
 			// ...</k>
 		// ...</thread>
 		// <thread>...
 			// <k> V:KResult </k>
-			// <threadId> ThreadId:Nat </threadId>
+			// <threadId> ThreadId:Int </threadId>
 		// ...</thread>
 		// if ResultPointer =/=K NullPointer
 		// [computational]
 	rule [thrd-join]:
 		<thread>...
-			<k> join-aux(ThreadId:Nat, tv(Loc:Nat, _))
-				=> #if (Loc:Nat =/=K NullPointer) 
-					#then Computation((* Loc:Nat) := V:KResult) 
+			<k> join-aux(ThreadId:Int, tv(Loc:Int, _))
+				=> #if (Loc:Int =/=K NullPointer) 
+					#then Computation((* Loc:Int) := V:KResult) 
 					#else .K
 				#fi
 				~> thrd-success
@@ -1207,37 +1207,37 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		...</thread>
 		<thread>...
 			<k> V:KResult </k>
-			<threadId> ThreadId:Nat </threadId>
+			<threadId> ThreadId:Int </threadId>
 		...</thread>
 		[computational]
 
 	rule [mtx-init]:
-		<k> prepareBuiltin((Identifier("mtx_init")), (tv(Loc:Nat, _),, tv(Type:Int, _)))
+		<k> prepareBuiltin((Identifier("mtx_init")), (tv(Loc:Int, _),, tv(Type:Int, _)))
 			=> thrd-success
 		...</k>
-		<mutexes> M:Map (. => Loc:Nat |-> Type:Int) </mutexes>
-		when notBool Loc:Nat in keys M:Map
+		<mutexes> M:Map (. => Loc:Int |-> Type:Int) </mutexes>
+		when notBool Loc:Int in keys M:Map
 		andBool Type:Int ==Int cfg:mtxPlain // only handling plain mutexes for now
 		[structural]
 	rule [mtx-lock]:
-		<k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Nat, _)))
+		<k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
 			=> thrd-success
 		...</k>
 		<buffer> .List </buffer>
-		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
-		<glocks> B:Bag (.Bag => BagItem(Loc:Nat)) </glocks>
-		<locks>... .Bag => BagItem(Loc:Nat) ...</locks>
-		when notBool Loc:Nat in B:Bag
+		<mutexes>... Loc:Int |-> Type:Int ...</mutexes>
+		<glocks> B:Bag (.Bag => BagItem(Loc:Int)) </glocks>
+		<locks>... .Bag => BagItem(Loc:Int) ...</locks>
+		when notBool Loc:Int in B:Bag
 		andBool Type:Int ==Int cfg:mtxPlain
 		[computational]
 	rule [mtx-unlock]:
-		<k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Nat, _)))
+		<k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))
 			=> thrd-success
 		...</k>
 		<buffer> .List </buffer>
-		<mutexes>... Loc:Nat |-> Type:Int ...</mutexes>
-		<glocks>... BagItem(Loc:Nat) => .Bag ...</glocks>
-		<locks>... BagItem(Loc:Nat) => .Bag ...</locks>
+		<mutexes>... Loc:Int |-> Type:Int ...</mutexes>
+		<glocks>... BagItem(Loc:Int) => .Bag ...</glocks>
+		<locks>... BagItem(Loc:Int) => .Bag ...</locks>
 		when Type:Int ==Int cfg:mtxPlain
 		[computational]
 	// syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]

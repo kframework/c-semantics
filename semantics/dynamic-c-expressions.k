@@ -1,18 +1,18 @@
 module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	including DYNAMIC-INCLUDE
 	syntax K ::= "assign" "(" K "," K ")" [klabel(assign)]
-	syntax Id ::= "compoundLiteral" "(" Nat ")" [klabel(compoundLiteral)]
+	syntax Id ::= "compoundLiteral" "(" Int ")" [klabel(compoundLiteral)]
 	
 	syntax K ::= "lvGetOffset" "(" K "," K "," Type ")" [klabel(lvGetOffset)]
 	syntax K ::= "tvGetOffset" "(" K "," K "," Type ")" [klabel(tvGetOffset)]
 
-	syntax K ::= "fromArray" "(" Int "," Nat ")" [klabel(fromArray)] // offset, length
+	syntax K ::= "fromArray" "(" Int "," Int ")" [klabel(fromArray)] // offset, length
 	
 	declare makeTruth : Bool -> K
 	define makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
 	
-	declare arrayLength : KResult -> Nat
-	define arrayLength(t(_:Set, arrayType(_:KResult, N:Nat))) => N:Nat
+	declare arrayLength : KResult -> Int
+	define arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N:Int
 	/*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
 	define arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
 	define arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
@@ -29,10 +29,10 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
 	}*/
-	rule reval(lv(Loc:Nat, T:KResult)) => read(Loc:Nat, unqualifyType(T:KResult)) 
+	rule reval(lv(Loc:Int, T:KResult)) => read(Loc:Int, unqualifyType(T:KResult)) 
 		when notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) 
 		[structural]
-	rule peval(lv(Loc:Nat, T:KResult)) => lv(Loc:Nat, T:KResult) 
+	rule peval(lv(Loc:Int, T:KResult)) => lv(Loc:Int, T:KResult) 
 		when notBool isArrayType(T:KResult) andBool notBool isFunctionType(T:KResult) 
 		[structural]
 
@@ -40,10 +40,10 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a string literal used to initialize an array, an expression that has type ``array of type'' is converted to an expression with type ``pointer to type'' that points to the initial element of the array object and is not an lvalue. If the array object has register storage class, the behavior is undefined.
 	}*/
-	rule [reval-lv-array]: reval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
+	rule [reval-lv-array]: reval(lv(Loc:Int, T:KResult)) => tv(Loc:Int, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
 		when isArrayType(T:KResult) 
 		[structural]
-	rule [peval-lv-array]: peval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
+	rule [peval-lv-array]: peval(lv(Loc:Int, T:KResult)) => tv(Loc:Int, t(SetItem(fromArray(0, arrayLength(T:KResult))), pointerType(innerType(T:KResult))))
 		when isArrayType(T:KResult) 
 		[structural]
 	// should never get to the situation where we have tv(..., arrayType)
@@ -53,11 +53,11 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 	A function designator is an expression that has function type.  Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, or the unary \cinline{&} operator, a function designator with type ``function returning T'' is converted to an expression that has type ``pointer to a function returning T''.
 	}*/
 	rule [reval-function]: 
-		reval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(.Set, pointerType(T:KResult))) 
+		reval(lv(Loc:Int, T:KResult)) => tv(Loc:Int, t(.Set, pointerType(T:KResult))) 
 		when isFunctionType(T:KResult) 
 		[structural]
 	rule [peval-function]: 
-		peval(lv(Loc:Nat, T:KResult)) => tv(Loc:Nat, t(.Set, pointerType(T:KResult))) 
+		peval(lv(Loc:Int, T:KResult)) => tv(Loc:Int, t(.Set, pointerType(T:KResult))) 
 		when isFunctionType(T:KResult) 
 		[structural]
 	
@@ -79,7 +79,7 @@ module DYNAMIC-SEMANTICS-LITERALS is
 		
 	syntax K ::= "hexOrOctalConstant" "(" K ")" [klabel(hexOrOctalConstant)]
 	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural anywhere]
-	rule OctalConstant(N:Nat) => hexOrOctalConstant(String2Rat(Rat2String(N:Nat, 10), 8)) [structural anywhere]
+	rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural anywhere]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
 	
@@ -222,12 +222,12 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
 	An integer character constant has type \cinline{int}. The value of an integer character constant containing a single character that maps to a single-byte execution character is the numerical value of the representation of the mapped character interpreted as an integer. The value of an integer character constant containing more than one character (e.g., \cinline{'ab'}), or containing a character or escape sequence that does not map to a single-byte execution character, is implementation-defined. If an integer character constant contains a single character or escape sequence, its value is the one that results when an object with type \cinline{char} whose value is that of the single character or escape sequence is converted to type \cinline{int}.
 	}*/
-	rule CharLiteral(N:Nat) 
-		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:Nat, t(.Set, int))))
+	rule CharLiteral(N:Int) 
+		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:Int, t(.Set, int))))
 		[structural anywhere]
-	rule WCharLiteral(N:Nat) => tv(N:Nat, cfg:wcharut) [structural anywhere]
+	rule WCharLiteral(N:Int) => tv(N:Int, cfg:wcharut) [structural anywhere]
 	rule Constant(V:KResult) => V:KResult [structural anywhere]
-	rule [create-internal-value]: <k> N:Nat => tv(N:Nat, cfg:largestUnsigned) ...</k>
+	rule [create-internal-value]: <k> N:Int => tv(N:Int, cfg:largestUnsigned) ...</k>
 		[structural] // for internal computations
 	
 	// here we start with a local address, put the string in memory, then change the address to be readonly
@@ -238,28 +238,28 @@ type \cinline{char}, and are initialized with the individual bytes of the multib
 For wide string literals prefixed by the letter \cinline{L}, the array elements have type \cinline{wchar_t} and are initialized with the sequence of wide characters corresponding to the multibyte character sequence\ldots
 }*/	
 	rule [const-string-notfound]:
-		<k> (.K => allocString(Loc:Nat, S:String +String "\0"))
+		<k> (.K => allocString(Loc:Int, S:String +String "\0"))
 			~> Constant(StringLiteral(S:String))
 		...</k>
-		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
+		<nextSharedLoc> Loc:Int => inc(Loc:Int) </nextSharedLoc>
 		<br/>
 		<stringLiterals>
 			M:Map
-			(.Map => S:String |-> lv(Loc:Nat, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1))))
+			(.Map => S:String |-> lv(Loc:Int, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1))))
 		</stringLiterals>
 		when notBool S:String in keys M:Map
 		[large structural]
 		
 	syntax K ::= "wstring" "(" List{K} ")" [klabel(wstring)] 
 	rule [const-wstring-notfound]:
-		<k> (.K => allocWString(Loc:Nat, (S:List{K},, 0)))
+		<k> (.K => allocWString(Loc:Int, (S:List{K},, 0)))
 			~> Constant(WStringLiteral(S:List{K}))
 		...</k>
-		<nextSharedLoc> Loc:Nat => inc(Loc:Nat) </nextSharedLoc>
+		<nextSharedLoc> Loc:Int => inc(Loc:Int) </nextSharedLoc>
 		<br/>
 		<stringLiterals>
 			M:Map
-			(.Map => wstring(S:List{K}) |-> lv(Loc:Nat, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Int 1))))
+			(.Map => wstring(S:List{K}) |-> lv(Loc:Int, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Int 1))))
 		</stringLiterals>
 		when notBool wstring(S:List{K}) in keys M:Map
 		[large structural]
@@ -281,16 +281,16 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS is
 	An identifier is a primary expression, provided it has been declared as designating an object (in which case it is an lvalue) or a function (in which case it is a function designator).
 	}*/
 	rule [lookup]:
-		<k> X:Id => lv(Loc:Nat, T:KResult) ...</k>
-		<env>... X:Id |-> Loc:Nat ...</env>
+		<k> X:Id => lv(Loc:Int, T:KResult) ...</k>
+		<env>... X:Id |-> Loc:Int ...</env>
 		<types>... X:Id |-> T:KResult ...</types>
 		[structural]
 		
 	rule [lookup-builtin-function-notfound]:
 		<k> (.K 
-				=> addToEnv(X:Id, Loc:Nat)
+				=> addToEnv(X:Id, Loc:Int)
 				~> initFunction(
-					tv(Loc:Nat, t(.Set, pointerType(T:KResult))),
+					tv(Loc:Int, t(.Set, pointerType(T:KResult))),
 					functionPrototype(X:Id, T:KResult)
 				)
 			)
@@ -299,7 +299,7 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS is
 		<br/>
 		<env> Env:Map </env>
 		<types>... X:Id |-> T:KResult ...</types>
-		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
+		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		when isFunctionType(T:KResult)
 		andBool notBool X:Id in keys Env:Map
 		[large structural]
@@ -339,8 +339,8 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 	}}*/
 	
 	rule [function-application-pre]:
-		<k> Call(tv(Loc:Nat, t(_, pointerType(T:KResult))), List(L:List{KResult}))
-			=> application(readFunction(Loc:Nat), L:List{KResult})
+		<k> Call(tv(Loc:Int, t(_, pointerType(T:KResult))), List(L:List{KResult}))
+			=> application(readFunction(Loc:Int), L:List{KResult})
 		...</k>
 		when isFunctionType(T:KResult)
 		[structural]
@@ -407,19 +407,19 @@ module DYNAMIC-SEMANTICS-MEMBERS is
 	}*/
 	// fixme tool bug, can't use L:KLabel
 	rule
-		<k> lv(Loc:Nat, t(_, structType(S:Id))) . F:Id
-			=> lv(Loc:Nat +bits Offset:Nat, T:KResult)
+		<k> lv(Loc:Int, t(_, structType(S:Id))) . F:Id
+			=> lv(Loc:Int +bits Offset:Int, T:KResult)
 		...</k>
 		<structs>...
-			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Nat))
+			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
 		...</structs>
 		[structural]
 	rule
-		<k> lv(Loc:Nat, t(_, unionType(S:Id))) . F:Id
-			=> lv(Loc:Nat +bits Offset:Nat, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+		<k> lv(Loc:Int, t(_, unionType(S:Id))) . F:Id
+			=> lv(Loc:Int +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
 		...</k>
 		<structs>...
-			S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Nat))
+			S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
 		...</structs>
 		[structural]
 		
@@ -447,13 +447,13 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT is
 	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
 	}*/	
 	rule [post-increment-start]:
-		<k> lv(Loc:Nat, T:KResult)++
-			=> postInc(Loc:Nat, read(Loc:Nat, T:KResult), T:KResult)
+		<k> lv(Loc:Int, T:KResult)++
+			=> postInc(Loc:Int, read(Loc:Int, T:KResult), T:KResult)
 		...</k>
 		[structural]
 	rule [post-increment]:
-		<k> postInc(Loc:Nat, tv(V:K, T:KResult), T:KResult)
-			=> lv(Loc:Nat, T:KResult) := tv(V:K, T:KResult) + tv(1, t(.Set, int))
+		<k> postInc(Loc:Int, tv(V:K, T:KResult), T:KResult)
+			=> lv(Loc:Int, T:KResult) := tv(V:K, T:KResult) + tv(1, t(.Set, int))
 			~> discard
 			~> tv(V:K, T:KResult)
 		...</k>
@@ -463,13 +463,13 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT is
 	The postfix \cinline{--} operator is analogous to the postfix \cinline{++} operator, except that the value of the operand is decremented (that is, the value 1 of the appropriate type is subtracted from it).
 	}*/	
 	rule [post-decrement-start]:
-		<k> lv(Loc:Nat, T:KResult)--
-			=> postDec(Loc:Nat, read(Loc:Nat, T:KResult), T:KResult)
+		<k> lv(Loc:Int, T:KResult)--
+			=> postDec(Loc:Int, read(Loc:Int, T:KResult), T:KResult)
 		...</k>
 		[structural]
 	rule [post-decrement]:
-		<k> postDec(Loc:Nat, tv(V:K, T:KResult), T:KResult)
-			=> lv(Loc:Nat, T:KResult) := tv(V:K, T:KResult) - tv(1, t(.Set, int))
+		<k> postDec(Loc:Int, tv(V:K, T:KResult), T:KResult)
+			=> lv(Loc:Int, T:KResult) := tv(V:K, T:KResult) - tv(1, t(.Set, int))
 			~> discard
 			~> tv(V:K, T:KResult)
 		...</k>
@@ -494,36 +494,36 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 	String literals, and compound literals with const-qualified types, need not designate distinct objects.
 	}*/
 	
-	/*@ We use \kinline{compoundLiteral(N:Nat)} here as the identifier of the compound literal.*/
+	/*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the compound literal.*/
 	// comes back from figureInit as initValue(id, type, inits)
 	rule
-		<k> CompoundLiteral(N:Nat, T:KResult, K:K, Init:K)
-			=> handleCompoundLiteral(figureInit(compoundLiteral(N:Nat), DeclType(T:KResult, K:K), Init:K))
+		<k> CompoundLiteral(N:Int, T:KResult, K:K, Init:K)
+			=> handleCompoundLiteral(figureInit(compoundLiteral(N:Int), DeclType(T:KResult, K:K), Init:K))
 		...</k>
 		[structural]
 		
 	rule
 		<k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
-			=> allocateType(Loc:Nat, T:KResult)
-			~> addToEnv(X:Id, Loc:Nat)
+			=> allocateType(Loc:Int, T:KResult)
+			~> addToEnv(X:Id, Loc:Int)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Init:K)
 			~> X:Id
 		...</k>
 		//<br/>
-		<compoundLiteralMap> M:Map => M:Map[Loc:Nat / X:Id] </compoundLiteralMap>
-		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
+		<compoundLiteralMap> M:Map => M:Map[Loc:Int / X:Id] </compoundLiteralMap>
+		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		when notBool X:Id in keys M:Map
 		[structural]
 		
 	rule
 		<k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
-			=> addToEnv(X:Id, Loc:Nat)
+			=> addToEnv(X:Id, Loc:Int)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Init:K)
 			~> X:Id
 		...</k>
-		<compoundLiteralMap>... X:Id |-> Loc:Nat ...</compoundLiteralMap>
+		<compoundLiteralMap>... X:Id |-> Loc:Int ...</compoundLiteralMap>
 		[structural]
 end module
 
@@ -550,8 +550,8 @@ module DYNAMIC-SEMANTICS-REFERENCE is
 	}
 	*/
 	rule [ref]:
-		<k> &(lv(Loc:Nat, T:KResult))
-			=> tv(Loc:Nat, t(.Set, pointerType(T:KResult)))
+		<k> &(lv(Loc:Int, T:KResult))
+			=> tv(Loc:Int, t(.Set, pointerType(T:KResult)))
 		...</k>
 		[structural]
 end module
@@ -564,9 +564,9 @@ module DYNAMIC-SEMANTICS-DEREFERENCE is
 	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
 	}*/
 	rule [deref]:
-		<k> *(tv(Loc:Nat, t(_, pointerType(t(S:Set, T:K)))))
-			=> checkDerefLoc(Loc:Nat)
-			~> lv(Loc:Nat, t(S:Set, T:K))
+		<k> *(tv(Loc:Int, t(_, pointerType(t(S:Set, T:K)))))
+			=> checkDerefLoc(Loc:Int)
+			~> lv(Loc:Int, t(S:Set, T:K))
 		...</k>
 		when notBool T:K ==K void
 		[structural]
@@ -630,7 +630,7 @@ module DYNAMIC-SEMANTICS-SIZEOF is
 		byteSizeofType(T:KResult) => byteSizeofType-aux(bitSizeofType(T:KResult)) 
 		[structural]
 	rule 
-		byteSizeofType-aux(tv(N:Nat, T:KResult)) => tv(bitsToBytes(N:Nat), T:KResult)
+		byteSizeofType-aux(tv(N:Int, T:KResult)) => tv(bitsToBytes(N:Int), T:KResult)
 		[structural]
 	rule
 		<k> SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</k>
@@ -679,10 +679,10 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS is
 	rule tv(F1:Float, T:KResult) / tv(F2:Float, T:KResult) => arithInterpret(T:KResult, F1:Float /Float F2:Float)
 		[structural]
 	// fixme this seems out of place and strange
-	rule piece(unknown(N:Nat), N:Nat) /Int M:Nat 
-		=> piece(unknown(N:Nat), N:Nat)
-		when M:Nat =/=Int 0
-		andBool isConcreteNumber(M:Nat)
+	rule piece(unknown(N:Int), N:Int) /Int M:Int 
+		=> piece(unknown(N:Int), N:Int)
+		when M:Int =/=Int 0
+		andBool isConcreteNumber(M:Int)
 		[structural anywhere]
 		
 	rule tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int %Int I2:Int)
@@ -731,45 +731,45 @@ second operand from the first.
 	}*/
 	
 	syntax K ::= "addToPointer" "(" K "," Type "," K "," K ")" [strict(4) klabel(addToPointer)]
-	rule <k> tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
-			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
+	rule <k> tv(Loc:Int, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
+			=> addToPointer(Loc:Int, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
 		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
-	rule <k> tv(I:Int, T:KResult) + tv(Loc:Nat, t(S:Set, pointerType(T':KResult)))
-			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
+	rule <k> tv(I:Int, T:KResult) + tv(Loc:Int, t(S:Set, pointerType(T':KResult)))
+			=> addToPointer(Loc:Int, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
 		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
-	rule <k> tv(Loc:Nat, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
-			=> addToPointer(Loc:Nat, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
+	rule <k> tv(Loc:Int, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
+			=> addToPointer(Loc:Int, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
 		...</k>
 		when hasIntegerType(T:KResult)
 		andBool T':KResult =/=K void
 		[structural]
 			
-	rule <k> addToPointer(Loc:Nat, T:KResult, I:Int, tv(Size:Nat, _))
-			=> tv(Loc:Nat +Int (I:Int *Int Size:Nat), NEWTYPE)
+	rule <k> addToPointer(Loc:Int, T:KResult, I:Int, tv(Size:Int, _))
+			=> tv(Loc:Int +Int (I:Int *Int Size:Int), NEWTYPE)
 		...</k>
 		when ifFromArrayInBounds(T:KResult, I:Int)
 		where NEWTYPE = newFromArray(T:KResult, I:Int)
 		[structural]
 		
 	declare newFromArray : KResult Int -> KResult
-	define newFromArray(t(SetItem(fromArray(Offset:Int, Len:Nat)), pointerType(T:KResult)), I:Int) 
-		=> t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Nat)), pointerType(T:KResult))
+	define newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int) 
+		=> t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), pointerType(T:KResult))
 	define newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
 		=> t(.Set, pointerType(T:KResult))
 		
 	declare ifFromArrayInBounds : KResult Int -> Bool
-	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Nat)), pointerType(T:KResult)), I:Int)
+	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
 		=> true
-		when Offset:Int +Int I:Int <=Int Len:Nat
-	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Nat)), pointerType(T:KResult)), I:Int)
+		when Offset:Int +Int I:Int <=Int Len:Int
+	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
 		=> false
-		when Offset:Int +Int I:Int >Int Len:Nat
+		when Offset:Int +Int I:Int >Int Len:Int
 	define ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:Int)
 		=> true
 		
@@ -783,9 +783,9 @@ second operand from the first.
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:KResult))
 		[structural]
 	rule [pointer-difference]: 
-		computePointerDifference(loc(Base:Nat, Offset1:Nat, 0), loc(Base:Nat, Offset2:Nat, 0), tv(Size:Nat, _))
-			=> tv(_-Int_(Offset1:Nat, Offset2:Nat) /Int Size:Nat, cfg:ptrdiffut)
-		when _-Int_(Offset1:Nat, Offset2:Nat) %Int Size:Nat ==Int 0
+		computePointerDifference(loc(Base:Int, Offset1:Int, 0), loc(Base:Int, Offset2:Int, 0), tv(Size:Int, _))
+			=> tv(_-Int_(Offset1:Int, Offset2:Int) /Int Size:Int, cfg:ptrdiffut)
+		when _-Int_(Offset1:Int, Offset2:Int) %Int Size:Int ==Int 0
 		[structural]
 	
 		
@@ -818,14 +818,14 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
 	The result of \cinline{E1 << E2} is \cinline{E1} left-shifted \cinline{E2} bit positions; vacated bits are filled with zeros. If \cinline{E1} has an unsigned type, the value of the result is $\text{\cinline{E1}}\times 2^\text{\cinline{E2}}$, reduced modulo one more than the maximum value representable in the result type. If \cinline{E1} has a signed type and nonnegative value, and $\text{\cinline{E1}}\times 2^\text{\cinline{E2}}$ is representable in the result type, then that is the resulting value; otherwise, the behavior is undefined.
 	}*/
 	rule 
-		tv(I:Int, T:KResult) << tv(N:Nat, T':KResult)
-			=> leftShiftInterpret(T:KResult, I:Int <<Int N:Nat, tv(I:Int, T:KResult))
+		tv(I:Int, T:KResult) << tv(N:Int, T':KResult)
+			=> leftShiftInterpret(T:KResult, I:Int <<Int N:Int, tv(I:Int, T:KResult))
 		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-		andBool N:Nat <Int numBits(T:KResult)
+		andBool N:Int <Int numBits(T:KResult)
 		[structural]
 	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
-	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Nat, T:KResult)) => tv(I:Int, T:KResult)
+	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int, T:KResult)
 		when hasSignedIntegerType(T:KResult)
 		// andBool I:Int <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool I:Int <=Int max(T:KResult)
@@ -835,10 +835,10 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
 	The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted \cinline{E2} bit positions. If \cinline{E1} has an unsigned type or if \cinline{E1} has a signed type and a nonnegative value, the value of the result is the integral part of the quotient of $\text{\cinline{E1}} / 2^\text{\cinline{E2}}$. If \cinline{E1} has a signed type and a negative value, the resulting value is implementation-defined.
 	}*/
 	rule
-		tv(I:Int, T:KResult) >> tv(N:Nat, T':KResult) 
-			=> rightShiftInterpret(T:KResult, I:Int >>Int N:Nat)
+		tv(I:Int, T:KResult) >> tv(N:Int, T':KResult) 
+			=> rightShiftInterpret(T:KResult, I:Int >>Int N:Int)
 		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-		andBool N:Nat <Int numBits(T:KResult)
+		andBool N:Int <Int numBits(T:KResult)
 		[structural]
 	define rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when hasIntegerType(T:KResult)
@@ -904,20 +904,20 @@ module DYNAMIC-SEMANTICS-RELATIONAL is
 	//- comparison of pointers
 	// fixme could check 6.5.8:2
 	// fixme there are further restrictions on pointers
-	rule [ptr-compare-lt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) < tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
-			=> makeTruth(Offset:Nat <Int Offset':Nat)
+	rule [ptr-compare-lt]: tv(loc(Base:Int, Offset:Int, 0), T:KResult) < tv(loc(Base:Int, Offset':Int, 0), T':KResult)
+			=> makeTruth(Offset:Int <Int Offset':Int)
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-lte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) <= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
-			=> makeTruth(Offset:Nat <=Int Offset':Nat)
+	rule [ptr-compare-lte]: tv(loc(Base:Int, Offset:Int, 0), T:KResult) <= tv(loc(Base:Int, Offset':Int, 0), T':KResult)
+			=> makeTruth(Offset:Int <=Int Offset':Int)
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gt]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) > tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
-			=> makeTruth(Offset:Nat >Int Offset':Nat)
+	rule [ptr-compare-gt]: tv(loc(Base:Int, Offset:Int, 0), T:KResult) > tv(loc(Base:Int, Offset':Int, 0), T':KResult)
+			=> makeTruth(Offset:Int >Int Offset':Int)
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-	rule [ptr-compare-gte]: tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) >= tv(loc(Base:Nat, Offset':Nat, 0), T':KResult)
-			=> makeTruth(Offset:Nat >=Int Offset':Nat)
+	rule [ptr-compare-gte]: tv(loc(Base:Int, Offset:Int, 0), T:KResult) >= tv(loc(Base:Int, Offset':Int, 0), T':KResult)
+			=> makeTruth(Offset:Int >=Int Offset':Int)
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
 end module
@@ -962,48 +962,48 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	For the purposes of these operators, a pointer to an object that is not an element of an array behaves the same as a pointer to the first element of an array of length one with the type of the object as its element type.
 	}*/
 	// if they're identical, we know for sure they are the same
-	rule tv(N:Nat, T:KResult) == tv(N:Nat, T':KResult)
+	rule tv(N:Int, T:KResult) == tv(N:Int, T':KResult)
 		=> tv(1, t(.Set, int))
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
-	rule tv(N:Nat, T:KResult) != tv(N:Nat, T':KResult)
+	rule tv(N:Int, T:KResult) != tv(N:Int, T':KResult)
 		=> tv(0, t(.Set, int))
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
 	
 	// if one of the pointers is null, it's also straightforward
-	rule tv(NullPointer, T:KResult) == tv(N:Nat, T':KResult)
-		=> makeTruth(NullPointer ==K N:Nat)
+	rule tv(NullPointer, T:KResult) == tv(N:Int, T':KResult)
+		=> makeTruth(NullPointer ==K N:Int)
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
-	rule tv(NullPointer, T:KResult) != tv(N:Nat, T':KResult)
-		=> makeTruth(NullPointer =/=K N:Nat)
+	rule tv(NullPointer, T:KResult) != tv(N:Int, T':KResult)
+		=> makeTruth(NullPointer =/=K N:Int)
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
-	rule tv(N:Nat, T:KResult) == tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer ==K N:Nat)
+	rule tv(N:Int, T:KResult) == tv(NullPointer, T':KResult)
+		=> makeTruth(NullPointer ==K N:Int)
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
-	rule tv(N:Nat, T:KResult) != tv(NullPointer, T':KResult)
-		=> makeTruth(NullPointer =/=K N:Nat)
+	rule tv(N:Int, T:KResult) != tv(NullPointer, T':KResult)
+		=> makeTruth(NullPointer =/=K N:Int)
 		when isPointerType(T:KResult) 
 		andBool isPointerType(T':KResult)
 		[structural]
 		
 	// otherwise, there are a number of cases.  
 	// First, they are part of the same object		
-	rule <k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
-			=> makeTruth(Offset:Nat ==Int Offset':Nat)
+	rule <k> tv(loc(Base:Int, Offset:Int, 0), T:KResult) == tv(loc(Base:Int, Offset':Int, 0), T':KResult) 
+			=> makeTruth(Offset:Int ==Int Offset':Int)
 		...</k>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-	rule <k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base:Nat, Offset':Nat, 0), T':KResult) 
-			=> makeTruth(Offset:Nat =/=Int Offset':Nat)
+	rule <k> tv(loc(Base:Int, Offset:Int, 0), T:KResult) != tv(loc(Base:Int, Offset':Int, 0), T':KResult) 
+			=> makeTruth(Offset:Int =/=Int Offset':Int)
 		...</k>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
@@ -1011,38 +1011,38 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	// next, they are part of different objects.  
 	// here, if the two objects are alive, and our pointers are in bounds, we can conclude something.  if one of the objects is dead, we can't conclude anything (the address could have been reused)
 	rule [compare-eq-different-objects]: 
-		<k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) == tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
+		<k> tv(loc(Base:Int, Offset:Int, 0), T:KResult) == tv(loc(Base':Int, Offset':Int, 0), T':KResult) 
 			=> tv(0, t(.Set, int))
 		...</k>
 		<object>...
-			<basePtr> Base:Nat </basePtr>
-			<oLength> Len:Nat </oLength>
+			<basePtr> Base:Int </basePtr>
+			<oLength> Len:Int </oLength>
 		...</object>
 		<object>...
-			<basePtr> Base':Nat </basePtr>
-			<oLength> Len':Nat </oLength>
+			<basePtr> Base':Int </basePtr>
+			<oLength> Len':Int </oLength>
 		...</object>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
-		andBool Base:Nat =/=K Base':Nat
-		andBool Offset:Nat <Int Len:Nat
-		andBool Offset':Nat <Int Len':Nat
+		andBool Base:Int =/=K Base':Int
+		andBool Offset:Int <Int Len:Int
+		andBool Offset':Int <Int Len':Int
 		[structural]
 	rule [compare-neq-different-objects]: 
-		<k> tv(loc(Base:Nat, Offset:Nat, 0), T:KResult) != tv(loc(Base':Nat, Offset':Nat, 0), T':KResult) 
+		<k> tv(loc(Base:Int, Offset:Int, 0), T:KResult) != tv(loc(Base':Int, Offset':Int, 0), T':KResult) 
 			=> tv(1, t(.Set, int))
 		...</k>
 		<object>...
-			<basePtr> Base:Nat </basePtr>
-			<oLength> Len:Nat </oLength>
+			<basePtr> Base:Int </basePtr>
+			<oLength> Len:Int </oLength>
 		...</object>
 		<object>...
-			<basePtr> Base':Nat </basePtr>
-			<oLength> Len':Nat </oLength>
+			<basePtr> Base':Int </basePtr>
+			<oLength> Len':Int </oLength>
 		...</object>
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
-		andBool Base:Nat =/=K Base':Nat
-		andBool Offset:Nat <Int Len:Nat
-		andBool Offset':Nat <Int Len':Nat
+		andBool Base:Int =/=K Base':Int
+		andBool Offset:Int <Int Len:Int
+		andBool Offset':Int <Int Len':Int
 		[structural]
 	
 	// otherwise we can't conclude anything
@@ -1050,29 +1050,29 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	//- comparison of ints with pointers
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
-		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
+		(tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
 		when isPromoted(T:KResult) 
 		andBool isPointerType(T':KResult)
-		andBool N:Nat ==K NullPointerConstant
+		andBool N:Int ==K NullPointerConstant
 		[structural]
 	rule [equal-null-right]:
-		tv(_, T:KResult) == (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
+		tv(_, T:KResult) == (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
 		when isPointerType(T:KResult) 
 		andBool isPromoted(T':KResult)
-		andBool N:Nat ==K NullPointerConstant
+		andBool N:Int ==K NullPointerConstant
 		[structural]
 	
 	rule [nequal-null-left]: 
-		(tv(N:Nat, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
+		(tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
 		when isPromoted(T:KResult) 
 		andBool isPointerType(T':KResult)
-		andBool N:Nat ==K NullPointerConstant
+		andBool N:Int ==K NullPointerConstant
 		[structural]
 	rule [nequal-null-right]: 
-		tv(_, T:KResult) != (tv(N:Nat, T':KResult) => tv(NullPointer, T:KResult))
+		tv(_, T:KResult) != (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
 		when isPointerType(T:KResult) 
 		andBool isPromoted(T':KResult)
-		andBool N:Nat ==K NullPointerConstant
+		andBool N:Int ==K NullPointerConstant
 		[structural]
 end module
 
@@ -1257,8 +1257,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 	Insimple assignment (\cinline{=}), the value of the right operand is converted to the type of the assignment expression and replaces the value stored in the object designated by the left operand.
 	}*/
 	rule [assign]:
-		<k> lv(Loc:Nat, T:KResult) := RHS
-			=> write(lv(Loc:Nat, T:KResult), RHS)
+		<k> lv(Loc:Int, T:KResult) := RHS
+			=> write(lv(Loc:Int, T:KResult), RHS)
 			~> RHS
 		...</k>
 		where RHS = tv(V:List{K}, T:KResult)

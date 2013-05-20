@@ -38,7 +38,7 @@ mod #MODEL-CHECK is
 							--- < modelChecking > (.).K </ modelChecking > --- so equations match
 							< threads > B2:Bag
 								< thread > B3:Bag
-									< k > '_!=_(A:K,, 'syntaxNat(# 0(.List{K}))) ~> 'debug(.List{K}) </ k >
+									< k > '_!=_(A:K,, 'syntaxInt(# 0(.List{K}))) ~> 'debug(.List{K}) </ k >
 								</ thread >
 							</ threads >
 						</ T >
@@ -50,6 +50,6 @@ mod #MODEL-CHECK is
 		)
 	) .
 	
-	--- red getTermRP(metaRewrite(upModule('C, false), upTerm('syntaxNat(Rat 0(.List{K}))), unbounded)) .
+	--- red getTermRP(metaRewrite(upModule('C, false), upTerm('syntaxInt(Rat 0(.List{K}))), unbounded)) .
 
 endm

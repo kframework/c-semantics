@@ -10,17 +10,17 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// empty binding
 	// fixme not really a sequence point
 	
-	syntax K ::= "bind-aux" "(" Nat "," List{KResult} "," List{KResult} ")" [klabel(bind-aux)] 
+	syntax K ::= "bind-aux" "(" Int "," List{KResult} "," List{KResult} ")" [klabel(bind-aux)] 
 	rule
 		<k> bind(L:List{KResult}, L':List{KResult}) 
 			=> bind-aux(NullPointer, L:List{KResult}, L':List{KResult}) ...</k> 
 		[structural] 
 	
 	rule [bind-empty-void]:
-		<k> bind-aux(_:Nat, .List{K}, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .List{K}, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
 		[structural] 
 	rule [bind-empty]:
-		<k> bind-aux(_:Nat, .List{K}, .List{K}) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .List{K}, .List{K}) => sequencePoint ...</k> 
 		[structural] 
 		
 		
@@ -30,12 +30,12 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	rule [bind-coerce-array]:
 		bind-aux(
-			_:Nat
+			_:Int
 			, L:List{KResult}
 			, (
 				_:List{KResult}
 				,, typedDeclaration(
-					(t(_, (arrayType(T:KResult, _:Nat) => pointerType(T:KResult))))
+					(t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult))))
 					, X:Id
 				)
 				,, _:List{KResult}
@@ -44,7 +44,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural anywhere] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
-			_:Nat
+			_:Int
 			, L:List{KResult}
 			, (
 				_:List{KResult} 
@@ -57,21 +57,21 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 		[structural anywhere] 
 		
 	rule [bind-one]:
-		<k> true ~> bind-aux(_:Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
-			=> allocateType(Loc:Nat, T:KResult)
-			~> addToEnv(X:Id, Loc:Nat)
+		<k> true ~> bind-aux(_:Int, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+			=> allocateType(Loc:Int, T:KResult)
+			~> addToEnv(X:Id, Loc:Int)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:List{K}, T':KResult)))
-			~> bind-aux(Loc:Nat, L:List{KResult}, P:List{KResult})
+			~> bind-aux(Loc:Int, L:List{KResult}, P:List{KResult})
 		...</k> 
-		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
-		<localAddresses>... .Set => SetItem(Loc:Nat) ...</localAddresses>
+		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
+		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
 		when notBool isArrayType(T:KResult)
 		[structural] 
 		
 	rule [bind-one-check-type]:
 		<k> (.K => isTypeCompatible(T:KResult, T':KResult)) 
-			~> bind-aux(_:Nat, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+			~> bind-aux(_:Int, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
 		...</k> 
 		[structural] 
 	
@@ -99,14 +99,14 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
-		<k> bind-aux(Loc:Nat, L:List{KResult}, t(_, variadic))
-			=> bindVariadic-pre(Loc:Nat, promoteList(L:List{KResult}))
+		<k> bind-aux(Loc:Int, L:List{KResult}, t(_, variadic))
+			=> bindVariadic-pre(Loc:Int, promoteList(L:List{KResult}))
 		...</k>
 		[structural] 
 
 	rule [bind-variadic-start]:
-		<k> bindVariadic-pre(Loc:Nat, L:List{KResult}) 
-			=> bindVariadic(Loc:Nat, L:List{KResult})
+		<k> bindVariadic-pre(Loc:Int, L:List{KResult}) 
+			=> bindVariadic(Loc:Int, L:List{KResult})
 		...</k>
 		[structural]
 	
@@ -115,13 +115,13 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING is
 	// this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
 	rule [bind-variadic]:
 		<k> (.K 
-				=> allocateType(Loc:Nat, Type)
-				~> Computation(*(tv(Loc:Nat, t(.Set, pointerType(Type)))) := V:KResult)
+				=> allocateType(Loc:Int, Type)
+				~> Computation(*(tv(Loc:Int, t(.Set, pointerType(Type)))) := V:KResult)
 			) 
 			~> bindVariadic(_, ((V:KResult => .List{K}),, _:List{KResult})) 
 		...</k>
-		<nextLoc> Loc:Nat => inc(Loc:Nat) </nextLoc>
-		<localAddresses>... .Set => SetItem(Loc:Nat) ...</localAddresses>
+		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
+		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
 		where Type = type(V:KResult)
 		[structural]
 	
@@ -208,11 +208,11 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL is
 		
 	// fixme snat
 	rule
-		<k> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Nat))) 
-			=> zeroType(Name:K[Len:Nat -Int 1], T:KResult)
-			~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Nat -Int 1))) 
+		<k> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
+			=> zeroType(Name:K[Len:Int -Int 1], T:KResult)
+			~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
 		...</k>
-		when Len:Nat >Int 0
+		when Len:Int >Int 0
 		[structural] 
 	rule
 		<k> zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .K ...</k>

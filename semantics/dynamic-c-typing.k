@@ -82,15 +82,15 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 		<type> t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</type>
 		[structural]
 	rule
-		<type> t(S:Set, arrayType(T:KResult, _:Nat)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+		<type> t(S:Set, arrayType(T:KResult, _:Int)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		<type> T':KResult + t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult)) ...</type>
+		<type> T':KResult + t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 	rule
-		<type> t(S:Set, arrayType(T:KResult, _:Nat)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+		<type> t(S:Set, arrayType(T:KResult, _:Int)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
 		when hasIntegerType(T':KResult)
 		[structural]
 
@@ -179,10 +179,10 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 		[structural]
 		
 	rule [type-ternary-array-left]: 
-		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
+		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
 		[structural]
 	rule [type-ternary-array-right]: 
-		<type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Nat)) => t(S:Set, pointerType(T:KResult))) ...</type>
+		<type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) ...</type>
 		[structural]
 		
 	rule [type-ternary-pointer]: // not safe, could be incompatible types

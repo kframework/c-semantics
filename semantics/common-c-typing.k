@@ -191,8 +191,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 	/*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
 	If the specification of an array type includes any type qualifiers, the element type is so-qualified, not the array type. \ldots
 	}*/
-	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Nat))
-		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Nat))
+	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
+		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
 		[structural anywhere]
 	
 	rule
@@ -231,8 +231,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		[structural]
 	
 	rule
-		<k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Nat)),, _)))) ...</k>
-		<freshNat> N:Nat => N:Nat +Int 1 </freshNat>
+		<k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Int)),, _)))) ...</k>
+		<freshNat> N:Int => N:Int +Int 1 </freshNat>
 		when L:KLabel ==KLabel 'StructDef
 		orBool L:KLabel ==KLabel 'EnumDef
 		orBool L:KLabel ==KLabel 'UnionDef
@@ -346,18 +346,18 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		<k> Specifier(List(L:List{K})) => canonicalizeType(Bag(L:List{K})) ...</k>
 		[structural]
 		
-	rule BitFieldType(T:KResult, tv(N:Nat, _)) => t(.Set, bitfieldType(T:KResult, N:Nat)) [structural anywhere]
+	rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural anywhere]
 	
-	declare makeArrayType : Nat -> KLabel 
+	declare makeArrayType : Int -> KLabel 
 	declare makeFunctionType : List{KResult} -> KLabel 
 	declare pushTypeDown : Type KLabel -> Type 
 	declare makePointerType : -> KLabel
 	declare makeIncompleteArrayType : -> KLabel
 	
 	// fixme, throwing away specifier
-	rule ArrayType(T:KResult, tv(N:Nat, _), _) 
-		=> pushTypeDown(T:KResult, makeArrayType(N:Nat)) 
-		when N:Nat >Int 0
+	rule ArrayType(T:KResult, tv(N:Int, _), _) 
+		=> pushTypeDown(T:KResult, makeArrayType(N:Int)) 
+		when N:Int >Int 0
 		[structural anywhere]
 	rule ArrayType(T:KResult, emptyValue, _) => pushTypeDown(T:KResult, makeIncompleteArrayType) [structural anywhere]
 	rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural anywhere]
@@ -370,7 +370,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		=> pushTypeDown(T:KResult, makeFunctionType((L:List{KResult},, t(.Set, variadic)))) 
 		[structural anywhere]
 	
-	define [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:KResult, N:Nat)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Nat))
+	define [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:KResult, N:Int)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Int))
 	define [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:KResult)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:KResult, K:KLabel)))
 	define [pushdown-pointer]: pushTypeDown(t(S:Set, pointerType(T:KResult)), K:KLabel) => t(S:Set, pointerType(pushTypeDown(T:KResult, K:KLabel)))
 	define [pushdown-qualified]: pushTypeDown(t(S:Set, qualifiedType(T:KResult, K:K)), K:KLabel) => t(S:Set, qualifiedType(pushTypeDown(T:KResult, K:KLabel), K:K))
@@ -385,27 +385,27 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		when isBasicType(T:KResult)
 		[structural]
 	
-	define makeArrayType(N:Nat)(T:KResult) => t(.Set, arrayType(T:KResult, N:Nat))
+	define makeArrayType(N:Int)(T:KResult) => t(.Set, arrayType(T:KResult, N:Int))
 	define makeFunctionType(L:List{KResult})(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:List{KResult})))
 	define makePointerType(T:KResult) => t(.Set, pointerType(T:KResult))
 	define makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult))
 	
 	declare giveNamesToArgs : List{KResult} -> List{KResult}
-	declare giveNamesToArgs-aux : Nat List{KResult} -> List{KResult}
+	declare giveNamesToArgs-aux : Int List{KResult} -> List{KResult}
 	
 	define giveNamesToArgs(L:List{KResult}) => giveNamesToArgs-aux(0, L:List{KResult})
-	define giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
-		=> typedDeclaration(T:KResult, X:Id),, giveNamesToArgs-aux(N:Nat, L:List{KResult})
+	define giveNamesToArgs-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
+		=> typedDeclaration(T:KResult, X:Id),, giveNamesToArgs-aux(N:Int, L:List{KResult})
 		when X:Id =/=K #NoName
 		[structural]
-	define giveNamesToArgs-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
-		=> typedDeclaration(T:KResult, #NoName(N:Nat)),, giveNamesToArgs-aux(N:Nat +Int 1, L:List{KResult})
+	define giveNamesToArgs-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
+		=> typedDeclaration(T:KResult, #NoName(N:Int)),, giveNamesToArgs-aux(N:Int +Int 1, L:List{KResult})
 		when X:Id ==K #NoName
 		[structural]
-	define giveNamesToArgs-aux(_:Nat, t(.Set, variadic))
+	define giveNamesToArgs-aux(_:Int, t(.Set, variadic))
 		=> t(.Set, variadic)
 		[structural]
-	define giveNamesToArgs-aux(_:Nat, .List{K})
+	define giveNamesToArgs-aux(_:Int, .List{K})
 		=> .List{K}
 		[structural]
 	
@@ -427,25 +427,25 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 		[structural]
 		
 	declare fillUnionBitHoles : List{KResult} -> List{KResult} 
-	declare fillUnionBitHoles-aux : Nat List{KResult} -> List{KResult} 
+	declare fillUnionBitHoles-aux : Int List{KResult} -> List{KResult} 
 	define fillUnionBitHoles(.List{K}) => .List{K}
 	define fillUnionBitHoles((K:K,, L:List{K})) => fillUnionBitHoles-aux(0, (K:K,, L:List{K}))
-	define fillUnionBitHoles-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
+	define fillUnionBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
 			=> typedDeclaration(T:KResult, X:Id)
-			,, fillUnionBitHoles-aux(N:Nat, L:List{KResult})
+			,, fillUnionBitHoles-aux(N:Int, L:List{KResult})
 		when notBool isBitfieldType(T:KResult)
 		[structural]
-	define fillUnionBitHoles-aux(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id)
-			,, fillUnionBitHoles-aux(maxInt(N:Nat, N':Nat), L:List{KResult})
+	define fillUnionBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, L:List{KResult})) 
+			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id)
+			,, fillUnionBitHoles-aux(maxInt(N:Int, N':Int), L:List{KResult})
 		[structural]
-	define fillUnionBitHoles-aux(N:Nat, .List{K}) 
+	define fillUnionBitHoles-aux(N:Int, .List{K}) 
 		=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), NEARESTMULT)), #NoName)
-		where NEARESTMULT = N:Nat +Int (absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)
+		where NEARESTMULT = N:Int +Int (absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)
 		[structural]
 	
 	declare fillBitHoles : List{KResult} -> List{KResult} 
-	declare fillBitHoles-aux : Nat List{KResult} -> List{KResult} 
+	declare fillBitHoles-aux : Int List{KResult} -> List{KResult} 
 	define [fillBitHoles-none]:
 		fillBitHoles(.List{K}) => .List{K} 
 		[structural]
@@ -465,35 +465,35 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	
 	// if we have seen bitfields
 	define [fillBitHoles-aux-not-bitfield]:
-		fillBitHoles-aux(N:Nat, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
+		fillBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:List{KResult})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
 			,, fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:List{KResult}))
 		when notBool isBitfieldType(T:KResult) 
 		[structural]
 	
 	define [fillBitHoles-aux-bitfield-normal]:
-		fillBitHoles-aux(N:Nat, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Nat)), X:Id)
-			,, fillBitHoles-aux(N:Nat +Int N':Nat, L:List{KResult})
-		when N':Nat =/=Int 0 
+		fillBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, L:List{KResult})) 
+			=> typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id)
+			,, fillBitHoles-aux(N:Int +Int N':Int, L:List{KResult})
+		when N':Int =/=Int 0 
 		[structural]
 		
 	define [fillBitHoles-bitfield-zero]:
-		fillBitHoles-aux(N:Nat, (typedDeclaration(t(_, bitfieldType(T:KResult, N':Nat)), _:Id),, L:List{KResult})) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
+		fillBitHoles-aux(N:Int, (typedDeclaration(t(_, bitfieldType(T:KResult, N':Int)), _:Id),, L:List{KResult})) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
 			,, fillBitHoles(L:List{KResult})
-		when N':Nat ==Int 0
+		when N':Int ==Int 0
 		[structural]
 	
 	define [fillBitHoles-done]:
-		fillBitHoles-aux(N:Nat, .List{K}) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Nat %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName) 
+		fillBitHoles-aux(N:Int, .List{K}) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName) 
 		[structural]
 
 	
-	rule typedDeclaration(t(_, bitfieldType(_, N:Nat)), #NoName)
-		,, typedDeclaration(t(_, bitfieldType(_, N':Nat)), #NoName) 
-			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Nat +Int N':Nat)), #NoName) 
+	rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName)
+		,, typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
+			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Int +Int N':Int)), #NoName) 
 		[structural anywhere]
 	
 	// fixme chould check for some struct contraints here
@@ -534,9 +534,9 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 	define [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id))
 	define [extract-struct]: extractActualType(t(S:Set, structType(X:Id))) => t(S:Set, structType(X:Id))
 	define [extract-union]: extractActualType(t(S:Set, unionType(X:Id))) => t(S:Set, unionType(X:Id))
-	define [extract-array]: extractActualType(t(S:Set, arrayType(T:KResult, N:Nat))) => t(S:Set, arrayType(extractActualType(T:KResult), N:Nat))
+	define [extract-array]: extractActualType(t(S:Set, arrayType(T:KResult, N:Int))) => t(S:Set, arrayType(extractActualType(T:KResult), N:Int))
 	define [extract-incompleteArray]: extractActualType(t(S:Set, incompleteArrayType(T:KResult))) => t(S:Set, incompleteArrayType(extractActualType(T:KResult)))
-	define [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:KResult, N:Nat))) => t(S:Set, bitfieldType(extractActualType(T:KResult), N:Nat))
+	define [extract-bitfield]: extractActualType(t(S:Set, bitfieldType(T:KResult, N:Int))) => t(S:Set, bitfieldType(extractActualType(T:KResult), N:Int))
 	define [extract-function]: extractActualType(t(S:Set, functionType(T:KResult, List:List{KResult}))) => t(S:Set, functionType(extractActualType(T:KResult), List:List{KResult}))
 	define [extract-pointer]:  extractActualType(t(S:Set, pointerType(T:KResult))) => t(S:Set, pointerType(extractActualType(T:KResult)))
 	define [extract-qualified]: extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) => t(S:Set, qualifiedType(extractActualType(T:KResult), K:K))
@@ -602,10 +602,10 @@ module COMMON-SEMANTICS-TYPE-MISC is
 		=> isTypeCompatible(T:KResult, T':KResult) 
 		[structural]
 
-	define [typeCompatible-array-right]: isTypeCompatible(T:KResult, t(S:Set, arrayType(T':KResult, _:Nat)))
+	define [typeCompatible-array-right]: isTypeCompatible(T:KResult, t(S:Set, arrayType(T':KResult, _:Int)))
 		=> isTypeCompatible(T:KResult, t(S:Set, pointerType(T':KResult))) 
 		[structural]
-	define [typeCompatible-array-left]: isTypeCompatible(t(S:Set, arrayType(T:KResult, _:Nat)), T':KResult)
+	define [typeCompatible-array-left]: isTypeCompatible(t(S:Set, arrayType(T:KResult, _:Int)), T':KResult)
 		=> isTypeCompatible(t(S:Set, pointerType(T:KResult)), T':KResult) 
 		[structural]
 	
@@ -760,7 +760,7 @@ module COMMON-SEMANTICS-TYPE-MISC is
 		andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
 		
 	
-	define [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Nat))) => true 
+	define [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
 	define [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true 
 	define [isArrayType-flexibleArray]: isArrayType(t(_, flexibleArrayType(_))) => true 
 	define [isArrayType-qualified]: isArrayType(t(_, qualifiedType(T:KResult, _))) => isArrayType(T:KResult) 
@@ -821,7 +821,7 @@ module COMMON-SEMANTICS-TYPE-MISC is
 				
 	
 		
-	define [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Nat))) => true 
+	define [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
 	define [isBitfieldType-false]: isBitfieldType(t(_, T:K)) => false
 		when getKLabel(T:K) =/=KLabel 'bitfieldType
 		

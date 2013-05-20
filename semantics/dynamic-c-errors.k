@@ -74,52 +74,52 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 
 	rule [err00005]:
-		< k => finalComputation > extractByteFromMem(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
+		< k => finalComputation > extractByteFromMem(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
 		<memory> M:Bag </memory>
 		<br/>
 		(.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-		// when notBool $hasMapping(M:Map, Block:Nat)
-		when notBool Block:Nat in gatherInnerCells(M:Bag, basePtr)
+		// when notBool $hasMapping(M:Map, Block:Int)
+		when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
 		[structural large]
 	
 	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:Nat), Len:Nat)), _:K) ...</ k => finalComputation >
+		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:Int), Len:Int)), _:K) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </errorCell>)
 		when notBool isCharType(T:KResult)
 		[structural large]
 		
 	rule [err00007]:
-		< k => finalComputation > checkValidLoc-aux(loc(Block:Nat, _:Nat, _:Nat)) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
 		<memory> M:Bag </memory>
 		<br/>
 		(.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-		// when notBool $hasMapping(M:Bag, Block:Nat)
-		when notBool Block:Nat in gatherInnerCells(M:Bag, basePtr)
+		// when notBool $hasMapping(M:Bag, Block:Int)
+		when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
 		[structural large]
 	
 	rule [err00008]:
-		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Nat), Len:Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00008", "Reading uninitialized memory.") </errorCell>)
 		[structural large]
 	
 	rule [err00009]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Nat), Len:Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00009", "Reading uninitialized memory.") </errorCell>)
 		when isFloatType(T:KResult)
 		[structural large]
 		
 	rule [err00010]:
-		< k => finalComputation > checkValidLoc-aux(loc(Base:Nat, Offset:Nat, _:Nat)) ...</ k => finalComputation >
+		< k => finalComputation > checkValidLoc-aux(loc(Base:Int, Offset:Int, _:Int)) ...</ k => finalComputation >
 		<object>...
-			<basePtr> Base:Nat </basePtr>
-			<oLength> Len:Nat </oLength>
+			<basePtr> Base:Int </basePtr>
+			<oLength> Len:Int </oLength>
 		...</object>
 		<br/>
 		(.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
-		when Offset:Nat >Int Len:Nat
+		when Offset:Int >Int Len:Int
 		[structural large]
 		
 		
@@ -162,11 +162,11 @@ module DYNAMIC-C-ERRORS is
 		
 		
 	rule [err00016]:
-		< k => finalComputation > writeByte(Loc:Nat, _) ...</ k => finalComputation >
+		< k => finalComputation > writeByte(Loc:Int, _) ...</ k => finalComputation >
 		<locsWrittenTo> Locs:Bag </locsWrittenTo>
 		<br/>
 		(.Bag => <errorCell> Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </errorCell>)
-		when Loc:Nat in Locs:Bag
+		when Loc:Int in Locs:Bag
 		[structural large] 
 		
 	rule [err00017]:
@@ -196,14 +196,14 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 		
 	rule [err00020]:
-		< k => finalComputation > writeByte(loc(Base:Nat, Offset:Nat, _:Nat), _) ...</ k => finalComputation >
+		< k => finalComputation > writeByte(loc(Base:Int, Offset:Int, _:Int), _) ...</ k => finalComputation >
 		<object>...
-			<basePtr> Base:Nat </basePtr>
-			<oLength> Len:Nat </oLength>
+			<basePtr> Base:Int </basePtr>
+			<oLength> Len:Int </oLength>
 		...</object>
 		<br/>
 		(.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
-		when notBool Offset:Nat <Int Len:Nat
+		when notBool Offset:Int <Int Len:Int
 		[structural large] 
 		
 	rule [err00021]:
@@ -223,7 +223,7 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 		
 	rule [err00023]:
-		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Nat, T:KResult)) ...</ k => finalComputation >
+		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </errorCell>)
 		when hasSignedIntegerType(T:KResult)
@@ -238,14 +238,14 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 		
 	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:Nat, _:Id, _) ...</ k => finalComputation >
+		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:List{KResult})), _:Int, _:Id, _) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00025", "Main must return an int.") </errorCell>)
 		when T:K =/=K int
 		[structural large]
 	rule [err00026]:
 		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:List{KResult}))), _:Nat, _:Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:List{KResult}))), _:Int, _:Id, _) 
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </errorCell>)
@@ -272,7 +272,7 @@ module DYNAMIC-C-ERRORS is
 	
 	rule [err00027]:
 		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Nat, _:Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Int, _:Id, _) 
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </errorCell>)
@@ -280,14 +280,14 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 	rule [err00028]:
 		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:List{KResult}))), _:Nat, _:Id, _) 
+			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:List{KResult}))), _:Int, _:Id, _) 
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00028", "Main can only have zero or two arguments.") </errorCell>)
 		[structural large]
 	rule [err00029]:
 		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id)))), _:Nat, _:Id, _)
+			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id)))), _:Int, _:Id, _)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00029", "Main can only have zero or two arguments.") </errorCell>)
@@ -296,35 +296,35 @@ module DYNAMIC-C-ERRORS is
 		
 	rule [err00030]:
 		< k => finalComputation > 
-			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) < tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
+			tv(loc(Base:Int, _:Int, _:Int), T:KResult) < tv(loc(Base':Int, _:Int, _:Int), T:KResult)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00030", "Cannot compare pointers with different base objects using '<'.") </errorCell>)
-		when Base:Nat =/=K Base':Nat
+		when Base:Int =/=K Base':Int
 		[structural large]
 	rule [err00031]:
 		< k => finalComputation > 
-			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) > tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
+			tv(loc(Base:Int, _:Int, _:Int), T:KResult) > tv(loc(Base':Int, _:Int, _:Int), T:KResult)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00031", "Cannot compare pointers with different base objects using '>'.") </errorCell>)
-		when Base:Nat =/=K Base':Nat
+		when Base:Int =/=K Base':Int
 		[structural large]
 	rule [err00032]:
 		< k => finalComputation > 
-			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) <= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
+			tv(loc(Base:Int, _:Int, _:Int), T:KResult) <= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00032", "Cannot compare pointers with different base objects using '<='.") </errorCell>)
-		when Base:Nat =/=K Base':Nat
+		when Base:Int =/=K Base':Int
 		[structural large]
 	rule [err00033]:
 		< k => finalComputation > 
-			tv(loc(Base:Nat, _:Nat, _:Nat), T:KResult) >= tv(loc(Base':Nat, _:Nat, _:Nat), T:KResult)
+			tv(loc(Base:Int, _:Int, _:Int), T:KResult) >= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00033", "Cannot compare pointers with different base objects using '>='.") </errorCell>)
-		when Base:Nat =/=K Base':Nat
+		when Base:Int =/=K Base':Int
 		[structural large]
 		
 	rule [err00034]:
@@ -338,7 +338,7 @@ module DYNAMIC-C-ERRORS is
 		
 	rule [err00035]:
 		< k => finalComputation > 
-			write(lv(Dest:Nat, t(SetItem(Const) _, _)), _)
+			write(lv(Dest:Int, t(SetItem(Const) _, _)), _)
 		...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00035", "Trying to write through a const lvalue.") </errorCell>)
@@ -395,7 +395,7 @@ module DYNAMIC-C-ERRORS is
 		[structural large]
 		
 	rule [err00044]:
-		< k => finalComputation > addToPointer(Loc:Nat, T:KResult, I:Int, tv(Size:Nat, _))  ...</ k => finalComputation >
+		< k => finalComputation > addToPointer(Loc:Int, T:KResult, I:Int, tv(Size:Int, _))  ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00044", "An array subscript is out of range.") </errorCell>)
 		when notBool ifFromArrayInBounds(T:KResult, I:Int)
@@ -404,30 +404,30 @@ module DYNAMIC-C-ERRORS is
 	rule [err00045]:
 		< k => finalComputation > writeByte(LOC, V:K)  ...</ k => finalComputation >
 		<object>...
-			<basePtr> Base:Nat </basePtr>
+			<basePtr> Base:Int </basePtr>
 			<properties>... mconst ...</properties>
 		...</object>
 		<br/>
 		(.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
-		where LOC = loc(Base:Nat, _:Nat, _:Nat)
+		where LOC = loc(Base:Int, _:Int, _:Int)
 		[structural large]
 		
 	rule [err00046]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(N:Nat, Len:Nat),, _))) ...</ k => finalComputation >
+		< k => finalComputation > concretize(T:KResult, dataList((piece(N:Int, Len:Int),, _))) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
 		when isFloatType(T:KResult)
-		andBool N:Nat >=Int 0
+		andBool N:Int >=Int 0
 		[structural large]
 		
 	rule [err00047]:
-		< k => finalComputation > writeByte(Loc:Nat, V:K)  ...</ k => finalComputation >
-		<notWritable>... Loc:Nat |-> _ ...</notWritable>
+		< k => finalComputation > writeByte(Loc:Int, V:K)  ...</ k => finalComputation >
+		<notWritable>... Loc:Int |-> _ ...</notWritable>
 		<br/>
 		(.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
 		[structural large]
 	
-	syntax K ::= "datarace" "(" Nat "," Nat "," Nat "," Nat ")" [klabel(datarace)] 
+	syntax K ::= "datarace" "(" Int "," Int "," Int "," Int ")" [klabel(datarace)] 
 
 	// fixme possible to miss dataraces with bitfields
 	rule [read-write-race]:
@@ -435,20 +435,20 @@ module DYNAMIC-C-ERRORS is
 			_ 
 			<threads> 
 			(	_
-				<thread> _ <k> read-aux(Loc:Nat, _, BitSize:Nat) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread> => .Bag)
+				<thread> _ <k> read-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
+				<thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
 			</threads> 
 		</T>
 		<br/>
 		(.Bag => <errorCell> Error("00048", "Have a read-write datarace.")
-		// ~> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) 
+		// ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
 		</errorCell>)
 		when (Start1 <=Int Start2 andBool Start2 <Int End1)
 		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
-		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
-		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Int bitsToBytes(BitSize':Nat)
+		where Start1 = Loc:Int
+		and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
+		and Start2 = Loc':Int
+		and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
 		[computational large]
 		
 	rule [write-write-race]:
@@ -456,20 +456,20 @@ module DYNAMIC-C-ERRORS is
 			_ 
 			<threads> 
 			(	_
-				<thread> _ <k> write-aux(Loc:Nat, _, BitSize:Nat) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Nat, _, BitSize':Nat) ...</k> </thread> => .Bag)
+				<thread> _ <k> write-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
+				<thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
 			</threads> 
 		</T>
 		<br/>
 		(.Bag => <errorCell> Error("00049", "Have a write-write datarace.")
-		// ~> datarace(Loc:Nat, BitSize:Nat, Loc':Nat, BitSize':Nat) 
+		// ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
 		</errorCell>)
 		when (Start1 <=Int Start2 andBool Start2 <Int End1)
 		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
-		where Start1 = Loc:Nat
-		and End1 = Loc:Nat +Int bitsToBytes(BitSize:Nat)
-		and Start2 = Loc':Nat
-		and End2 = Loc':Nat +Int bitsToBytes(BitSize':Nat)
+		where Start1 = Loc:Int
+		and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
+		and Start2 = Loc':Int
+		and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
 		[computational large]		
 
 
