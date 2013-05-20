@@ -22,29 +22,29 @@ module DYNAMIC-C-SEMANTICS-MISC is
 
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
-		<k> writeToFD(FD:Nat, N:Nat) => .K ...</k>
-		<fid> FD:Nat </fid>
-		<buff> S:String => S:String +String charString(N:Nat %Int 256) </buff>
+		<k> writeToFD(FD:Int, N:Int) => .K ...</k>
+		<fid> FD:Int </fid>
+		<buff> S:String => S:String +String charString(N:Int %Int 256) </buff>
 		[observable]
 	rule [writeToFD-string]:
-		<k> writeToFD(FD:Nat, S':String) => .K ...</k>
-		<fid> FD:Nat </fid>
+		<k> writeToFD(FD:Int, S':String) => .K ...</k>
+		<fid> FD:Int </fid>
 		<buff> S:String => S:String +String S':String </buff>
 		[observable]
 	rule [readFromFD-char]:
-		<k> readFromFD(FD:Nat) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</k>
-		<fid> FD:Nat </fid>
+		<k> readFromFD(FD:Int) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</k>
+		<fid> FD:Int </fid>
 		<buff> S:String => butFirstChar(S:String) </buff>
 		when lengthString(S:String) >Int 0 // don't compare with "" in order to only treat string sort
 		[observable]
 	rule [readFromFD-empty-buff]:
-		<k> readFromFD(FD:Nat) ...</k>
-		<fid> FD:Nat </fid>
-		<buff> "" => "" +String charString(#fReadByte(FD:Nat)) </buff>
+		<k> readFromFD(FD:Int) ...</k>
+		<fid> FD:Int </fid>
+		<buff> "" => "" +String charString(#fReadByte(FD:Int)) </buff>
 		[structural]
 	rule [readFromFD-eof]:
-		<k> readFromFD(FD:Nat) => tv(-1, t(.Set, int)) ...</k>
-		<fid> FD:Nat </fid>
+		<k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
+		<fid> FD:Int </fid>
 		<buff> #EOF </buff>
 		[observable]
 	rule [make-eof]:
@@ -52,43 +52,43 @@ module DYNAMIC-C-SEMANTICS-MISC is
 			=> #EOF
 		[structural anywhere]
 		
-	syntax K ::= "f-sent" "(" Nat "," String ")" [klabel(f-sent)]
-	syntax K ::= "f-flush" "(" Nat ")" [klabel(f-flush)]
-	syntax K ::= "f-sendString" "(" Nat "," String ")" [klabel(f-sendString)]
+	syntax K ::= "f-sent" "(" Int "," String ")" [klabel(f-sent)]
+	syntax K ::= "f-flush" "(" Int ")" [klabel(f-flush)]
+	syntax K ::= "f-sendString" "(" Int "," String ")" [klabel(f-sendString)]
 	
-	// can't lex string2List{K} correctly in #fPrint(N:Nat,, string2List{K}(S:String))
+	// can't lex string2List{K} correctly in #fPrint(N:Int,, string2List{K}(S:String))
 	rule [flush]:
-		<k> flush(N:Nat) => .K ...</k>
+		<k> flush(N:Int) => .K ...</k>
 		<fileCommands>... .K
-			=> f-sendString(N:Nat, S:String)
-			~> f-sent(N:Nat, S:String)
-			~> f-flush(N:Nat)
+			=> f-sendString(N:Int, S:String)
+			~> f-sent(N:Int, S:String)
+			~> f-flush(N:Int)
 		</fileCommands>
-		<fid> N:Nat </fid>
+		<fid> N:Int </fid>
 		<buff> S:String => "" </buff>
 		<sending>... .List => ListItem(S:String) </sending>
 		[structural]
 	rule [sendString-one]:
-		<fileCommands> f-sendString(N:Nat, S:String) 
-			=> #fPutByte(N:Nat, charToAscii(firstChar(S:String)))
-			~> f-sendString(N:Nat, butFirstChar(S:String))
+		<fileCommands> f-sendString(N:Int, S:String) 
+			=> #fPutByte(N:Int, charToAscii(firstChar(S:String)))
+			~> f-sendString(N:Int, butFirstChar(S:String))
 		...</fileCommands>
 		when S:String =/=String ""
 		[structural]
 	rule [sendString-done]:
-		<fileCommands> f-sendString(N:Nat, "") => .K ...</fileCommands>
+		<fileCommands> f-sendString(N:Int, "") => .K ...</fileCommands>
 		[structural]
 
 	rule [f-sent]:
 		<files>...
-			<fileCommands> f-sent(N:Nat, S:String) => .K ...</fileCommands>
-			<fid> N:Nat </fid>
+			<fileCommands> f-sent(N:Int, S:String) => .K ...</fileCommands>
+			<fid> N:Int </fid>
 			<sending> ListItem(S:String) => .List ...</sending>
 			<done>... .List => ListItem(S:String) </done>
 		...</files>
 		[structural]
 	rule [f-flush]:
-		<fileCommands> f-flush(N:Nat) => #flush(N:Nat) ...</fileCommands>
+		<fileCommands> f-flush(N:Int) => #flush(N:Int) ...</fileCommands>
 		[structural]
 		
 	rule [combine-done]:
@@ -144,22 +144,22 @@ If they are declared, the parameters to the main function shall obey the followi
 \end{itemize}
 }*/
 	
-	syntax K ::= "incomingArguments-aux" "(" List{K} "," Nat ")" [klabel(incomingArguments-aux)]
+	syntax K ::= "incomingArguments-aux" "(" List{K} "," Int ")" [klabel(incomingArguments-aux)]
 	
 	rule incomingArguments(L:List{K}) 
 			=> incomingArguments-aux(L:List{K}, 0) 
 		[structural]
-	rule incomingArguments-aux((S:String,, L:List{K}), N:Nat) 
-			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := Constant(StringLiteral(S:String)))
-			~> incomingArguments-aux(L:List{K}, N:Nat +Int 1)
+	rule incomingArguments-aux((S:String,, L:List{K}), N:Int) 
+			=> Computation(Identifier("#incomingArgumentsArray")[N:Int] := Constant(StringLiteral(S:String)))
+			~> incomingArguments-aux(L:List{K}, N:Int +Int 1)
 		[structural]
-	rule incomingArguments-aux(.List{K}, N:Nat) 
-			=> Computation(Identifier("#incomingArgumentsArray")[N:Nat] := NullPointer)
+	rule incomingArguments-aux(.List{K}, N:Int) 
+			=> Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointer)
 		[structural]
 		
 		
-	syntax K ::= "syntaxNat" "(" Nat ")" [klabel(syntaxNat)]
-	rule [syntaxNat]: syntaxNat(N:Nat) => NoSuffix(DecimalConstant(N:Nat)) [structural]
+	syntax K ::= "syntaxInt" "(" Int ")" [klabel(syntaxInt)]
+	rule [syntaxInt]: syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
 	
 	syntax K ::= "pgmArgs" "(" List{K} ")"
 	syntax K ::= "argName" "(" List{K} ")"
@@ -167,7 +167,7 @@ If they are declared, the parameters to the main function shall obey the followi
 		argName(L:List{K})
 		=> Name(
 			Identifier("#incomingArgumentsArray"), 
-			PointerType(ArrayType(JustBase, syntaxNat((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))
+			PointerType(ArrayType(JustBase, syntaxInt((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))
 		)
 	define
 		pgmArgs(L:List{K})
@@ -258,8 +258,8 @@ or equivalent; or in some other implementation-defined manner.
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
 	
 	rule [call-main]:
-		<k> callMain(N:Nat, Args:K)
-			=> callMain-aux(typeof(Identifier("main")), N:Nat, Identifier("#incomingArgumentsArray"), Args:K)
+		<k> callMain(N:Int, Args:K)
+			=> callMain-aux(typeof(Identifier("main")), N:Int, Identifier("#incomingArgumentsArray"), Args:K)
 		...</k>
 		<funTUs>... 
 			Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) 
@@ -271,23 +271,23 @@ or equivalent; or in some other implementation-defined manner.
 	// fixme void isn't supposed to have a name
 	// fixme figure out type of string
 	rule
-		callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Nat, X:Id, _) 
+		callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
 			=> Call(Identifier("main"), List(.List{K}))
 		[structural]
 	rule
-		callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:Nat, X:Id, _) 
+		callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:Int, X:Id, _) 
 			=> Call(Identifier("main"), List(.List{K}))
 		[structural]
 	rule
-		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
+		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
 			=> Args:K 
-			~> Call(Identifier("main"), List((N:Nat,, X:Id)))
+			~> Call(Identifier("main"), List((N:Int,, X:Id)))
 		when T:KResult ==K t(.Set, char)
 		[structural]
 	rule
-		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Nat, X:Id, Args:K)
+		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
 			=> Args:K 
-			~> Call(Identifier("main"), List((N:Nat,, X:Id)))
+			~> Call(Identifier("main"), List((N:Int,, X:Id)))
 		when T:KResult ==K t(.Set, char)
 		[structural]
 

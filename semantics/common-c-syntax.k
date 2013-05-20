@@ -230,7 +230,7 @@ and name = String * decl_type * attribute list * cabsloc
 	syntax K ::= "AnonymousName" // new, argument is type
 	syntax Id ::= "#NoName" // new
 	// [metadata "latex=(renameTo \\#NoName)"] 
-	syntax Id ::= "#NoName" "(" Nat ")" [klabel(#NoName)] // new
+	syntax Id ::= "#NoName" "(" Int ")" [klabel(#NoName)] // new
 	// metadata "latex=(renameTo \\#NoName\\mybracket{_})"
 	syntax Id ::= "Identifier" "(" String ")" [klabel(Identifier)] // new	
 	
@@ -323,7 +323,7 @@ and block =
 	  bstmts: statement list
 	} 
 */
-	syntax Block ::= "Block" "(" Nat "," K "," K ")" [klabel(Block)] // Nat, list, list
+	syntax Block ::= "Block" "(" Int "," K "," K ")" [klabel(Block)] // Int, list, list
 
 /*
 and statement =
@@ -347,7 +347,7 @@ and statement =
 	context IfThenElse((HOLE => reval(HOLE)), _, _)
 	syntax PureStatement ::= "While" "(" K "," K ")" [klabel(While)]
 	syntax PureStatement ::= "DoWhile" "(" K "," K ")" [klabel(DoWhile)]
-	syntax PureStatement ::= "For" "(" Nat "," K "," K "," K "," K ")" [klabel(For)] // id, ...
+	syntax PureStatement ::= "For" "(" Int "," K "," K "," K "," K ")" [klabel(For)] // id, ...
 /*
 	| BREAK of cabsloc
 	| CONTINUE of cabsloc
@@ -365,9 +365,9 @@ and statement =
 */
 	syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [klabel(Switch)] // unique switch id
 	context Switch(_, (HOLE => reval(HOLE)), _)
-	syntax PureStatement ::= "Case" "(" Nat "," Nat "," K "," K ")" [klabel(Case)] // unique switch id, unique case id, exp, statement
+	syntax PureStatement ::= "Case" "(" Int "," Int "," K "," K ")" [klabel(Case)] // unique switch id, unique case id, exp, statement
 	syntax PureStatement ::= "CaseRange" "(" K "," K "," K ")" [klabel(CaseRange)] // gcc extension
-	syntax PureStatement ::= "Default" "(" Nat "," K ")" [klabel(Default)] // unique switch id, statement
+	syntax PureStatement ::= "Default" "(" Int "," K ")" [klabel(Default)] // unique switch id, statement
 /*
 	| LABEL of String * statement * cabsloc
 	| GOTO of String * cabsloc

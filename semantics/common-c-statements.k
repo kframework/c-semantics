@@ -2,14 +2,14 @@ module COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	including COMMON-INCLUDE 
 	
 	syntax Statement ::= "loopMarked" [klabel(loopMarked)] 
-	syntax K ::= "genLabel" "(" Nat "," K ")" [klabel(genLabel)] //  switchid, value (tv or 'Default)
+	syntax K ::= "genLabel" "(" Int "," K ")" [klabel(genLabel)] //  switchid, value (tv or 'Default)
 	syntax K ::= "popLoop" [klabel(popLoop)]
 	syntax K ::= "popBlock" [klabel(popBlock)]
-	syntax K ::= "frozenDeclaration" "(" Nat "," Nat "," K ")" [klabel(frozenDeclaration)] //  nestingDepth, currentBlock, decl
-	syntax K ::= "gotoObject" "(" Nat "," List "," K "," List "," List ")" [latex "\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!)" klabel(gotoObject)] //  nestingDepth, block history, continuation, loop stack, decl stack
+	syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")" [klabel(frozenDeclaration)] //  nestingDepth, currentBlock, decl
+	syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex "\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!)" klabel(gotoObject)] //  nestingDepth, block history, continuation, loop stack, decl stack
 	
 	
-	syntax K ::= "case" "(" Nat ")" [klabel(case)] 
+	syntax K ::= "case" "(" Int ")" [klabel(case)] 
 end module 
 
 
@@ -54,24 +54,24 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<currentFunction> _ => File-Scope </currentFunction>
 		[structural] 
 
-	syntax K ::= "endBlockForGoto" "(" Nat ")" [klabel(endBlockForGoto)] 
+	syntax K ::= "endBlockForGoto" "(" Int ")" [klabel(endBlockForGoto)] 
 	rule 
 		<computation> BlockStatement(Block:K)
 			=> Block:K ~> popBlock
 		...</computation>
-		<nestingDepthGoto> N:Nat => N:Nat +Int 1 </nestingDepthGoto>
-		<blockHistoryGoto> ListItem(OldNum:Nat) ...</blockHistoryGoto>
+		<nestingDepthGoto> N:Int => N:Int +Int 1 </nestingDepthGoto>
+		<blockHistoryGoto> ListItem(OldNum:Int) ...</blockHistoryGoto>
 		[structural] 
 	rule
-		<computation> Block(Num:Nat, _, List(L:List{K})) => klistToK(L:List{K}) ...</computation> 
-		<blockHistoryGoto> . => ListItem(Num:Nat) ...</blockHistoryGoto>
+		<computation> Block(Num:Int, _, List(L:List{K})) => klistToK(L:List{K}) ...</computation> 
+		<blockHistoryGoto> . => ListItem(Num:Int) ...</blockHistoryGoto>
 		//  <declarationStack>... .List => ListItem(.K) </declarationStack>
 		[structural] 
 		
 	rule
 		<computation> popBlock => .K ...</computation>
 		<nestingDepthGoto> I:Int => I:Int -Int 1 </nestingDepthGoto>
-		<blockHistoryGoto> (_:ListItem => .List) ListItem(Num:Nat) ...</blockHistoryGoto>
+		<blockHistoryGoto> (_:ListItem => .List) ListItem(Num:Int) ...</blockHistoryGoto>
 		when I:Int >Int 0
 		[structural] 
 		
@@ -101,39 +101,39 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<br/>
 		<declarationStack>... 
 			.List 
-			=> ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, DeclarationDefinition(InitNameGroup(T:K, List(K:K))))) 
+			=> ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(InitNameGroup(T:K, List(K:K))))) 
 		</declarationStack>
 		//<br/>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
-		<blockHistoryGoto> ListItem(BlockNum:Nat) ...</blockHistoryGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
+		<blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
 		[structural large]
 	// rule
 		// <computation> DeclarationDefinition(K:K) => .K ...</computation>
 		// <declarationStack>... .List 
-			// => ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, DeclarationDefinition(K:K))) 
+			// => ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(K:K))) 
 		// </declarationStack>
-		// <nestingDepthGoto> Depth:Nat </nestingDepthGoto>
-		// <blockHistoryGoto> ListItem(BlockNum:Nat) ...</blockHistoryGoto>
+		// <nestingDepthGoto> Depth:Int </nestingDepthGoto>
+		// <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
 		// [structural]
 		
 	rule
 		<computation> OnlyTypedef(K:K) => .K ...</computation>
 		<declarationStack>... .List 
-			=> ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, OnlyTypedef(K:K))) 
+			=> ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, OnlyTypedef(K:K))) 
 		</declarationStack>
 		//<br/>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
-		<blockHistoryGoto> ListItem(BlockNum:Nat) ...</blockHistoryGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
+		<blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
 		[structural] 
 		
 	rule [compute-label-typedef]:
 		<computation> Typedef(K:K) => .K ...</computation>
 		<declarationStack>... .List 
-			=> ListItem(frozenDeclaration(Depth:Nat, BlockNum:Nat, Typedef(K:K))) 
+			=> ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, Typedef(K:K))) 
 		</declarationStack>
 		//<br/>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
-		<blockHistoryGoto> ListItem(BlockNum:Nat) ...</blockHistoryGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
+		<blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
 		[structural] 
 		
 	rule [compute-label-ignore-non-statement]:
@@ -151,12 +151,12 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 	// - should do this with a split
 	rule [compute-label-for]:
 		<gotoCalculation>
-			<computation> (For(ForNum:Nat, Pre:K, Control:K, Post:K, S:K) => .K) ~> K:K </computation>
+			<computation> (For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) => .K) ~> K:K </computation>
 			<computationTail> Tail:K </computationTail>
 			<br/>
 			B:Bag
-			<nestingDepthGoto> N:Nat </nestingDepthGoto>
-			<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
+			<nestingDepthGoto> N:Int </nestingDepthGoto>
+			<blockHistoryGoto> ListItem(Num:Int) OldBlockHistory:List </blockHistoryGoto>
 			<loopStackGoto> OldLoopStack:List </loopStackGoto>
 		</gotoCalculation>
 		<br/>
@@ -167,16 +167,16 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 				<computationTail>
 					Computation(Post:K)
 					~> loopMarked
-					~> For(ForNum:Nat, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K)
+					~> For(ForNum:Int, Pre:K, (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi), Post:K, S:K)
 					~> popLoop
 					~> K:K 
 					~> Tail:K 
 				</computationTail>
 				<br/>
 				B:Bag
-				<nestingDepthGoto> N:Nat +Int 1 </nestingDepthGoto>
-				<blockHistoryGoto> ListItem(ForNum:Nat) ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
-				<loopStackGoto> ListItem(kpair(Num:Nat, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
+				<nestingDepthGoto> N:Int +Int 1 </nestingDepthGoto>
+				<blockHistoryGoto> ListItem(ForNum:Int) ListItem(Num:Int) OldBlockHistory:List </blockHistoryGoto>
+				<loopStackGoto> ListItem(kpair(Num:Int, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
 			</gotoCalculation>
 		)
 		[structural large] 
@@ -186,7 +186,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 			<computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
 			<computationTail> Tail:K </computationTail>
 			B:Bag
-			<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
+			<blockHistoryGoto> ListItem(Num:Int) OldBlockHistory:List </blockHistoryGoto>
 			<loopStackGoto> OldLoopStack:List </loopStackGoto>
 		</gotoCalculation>
 		<br/>
@@ -202,8 +202,8 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 				</computationTail>
 				<br/>
 				B:Bag
-				<blockHistoryGoto> ListItem(Num:Nat) OldBlockHistory:List </blockHistoryGoto>
-				<loopStackGoto> ListItem(kpair(Num:Nat, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
+				<blockHistoryGoto> ListItem(Num:Int) OldBlockHistory:List </blockHistoryGoto>
+				<loopStackGoto> ListItem(kpair(Num:Int, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
 			</gotoCalculation>
 		)
 		[structural large]
@@ -212,8 +212,8 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<computation> (. => S:K ~> loopMarked) ~> While(E:K, S:K) ~> (. => popLoop) ~> K:K </computation>
 		//<br/>
 		<computationTail> Tail:K </computationTail>
-		<blockHistoryGoto> ListItem(Num:Nat) ...</blockHistoryGoto>
-		<loopStackGoto> (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</loopStackGoto>
+		<blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>
+		<loopStackGoto> (. => ListItem(kpair(Num:Int, (K:K ~> Tail:K)))) ...</loopStackGoto>
 		[structural] 
 	rule [compute-label-while-done]:
 		<computation> (loopMarked ~> While(E:K, S:K) => .K) ~> popLoop ~> K:K </computation>
@@ -245,8 +245,8 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 	rule [compute-label-switch]:
 		<computation> (Switch(_, E:K, S:K) => S:K ~> popLoop) ~> K:K </computation>
 		<computationTail> Tail:K </computationTail>
-		<blockHistoryGoto> ListItem(Num:Nat) ...</blockHistoryGoto>
-		<loopStackGoto> (. => ListItem(kpair(Num:Nat, (K:K ~> Tail:K)))) ...</loopStackGoto>
+		<blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>
+		<loopStackGoto> (. => ListItem(kpair(Num:Int, (K:K ~> Tail:K)))) ...</loopStackGoto>
 		[structural] 
 		
 	rule [compute-label-poploop]:
@@ -260,49 +260,49 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<loopStackGoto> LoopStack:List </loopStackGoto>
 		<declarationStack> DeclStack:List </declarationStack>
 		<br/>
-		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / Target:Id])) ...</gotoMap>
+		<gotoMap>... kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Int, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / Target:Id])) ...</gotoMap>
 		<br/>
 		<currentFunction> F:Id </currentFunction>
 		<currTU> Tu:K </currTU>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, Target:Id)
 		[structural large]
 		
 	rule
-		<computation> (Case(SwitchNum:Nat, CaseNum:Nat, Val:K, S:K) => S:K) ~> K:K </computation>
+		<computation> (Case(SwitchNum:Int, CaseNum:Int, Val:K, S:K) => S:K) ~> K:K </computation>
 		<computationTail> Tail:K </computationTail>
 		<loopStackGoto> LoopStack:List </loopStackGoto>
 		<declarationStack> DeclStack:List </declarationStack>
 		<br/>
 		<gotoMap>... 
 			kpair(Tu:K, F:Id) |-> Map(
-			(M:Map => (M:Map[case(CaseNum:Nat) / genLabel(SwitchNum:Nat, Val:K)])[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / case(CaseNum:Nat)])
+			(M:Map => (M:Map[case(CaseNum:Int) / genLabel(SwitchNum:Int, Val:K)])[gotoObject(Depth:Int, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / case(CaseNum:Int)])
 		) 
 		...</gotoMap>
 		<br/>
 		<currentFunction> F:Id </currentFunction>
 		<currTU> Tu:K </currTU>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
-		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, Val:K))
+		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, Val:K))
 		//  andBool hasIntegerType(T:KResult)
 		[structural large] 
 	rule
-		<computation> (Default(SwitchNum:Nat, S:K) => S:K) ~> K:K </computation>
+		<computation> (Default(SwitchNum:Int, S:K) => S:K) ~> K:K </computation>
 		<computationTail> Tail:K </computationTail>
 		<loopStackGoto> LoopStack:List </loopStackGoto>
 		<declarationStack> DeclStack:List </declarationStack>
 		<br/>
 		<gotoMap>... 
-			kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Nat, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / genLabel(SwitchNum:Nat, l('Default))])) 
+			kpair(Tu:K, F:Id) |-> Map((M:Map => M:Map[gotoObject(Depth:Int, BlockHistory:List, (S:K ~> K:K ~> Tail:K), LoopStack:List, DeclStack:List) / genLabel(SwitchNum:Int, l('Default))])) 
 		...</gotoMap>
 		<br/>
 		<currentFunction> F:Id </currentFunction>
 		<currTU> Tu:K </currTU>
-		<nestingDepthGoto> Depth:Nat </nestingDepthGoto>
+		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
-		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Nat, l('Default)))
+		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, l('Default)))
 		[structural large]
 end module
  
