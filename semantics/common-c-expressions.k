@@ -1,10 +1,10 @@
-module COMMON-SEMANTICS-EXPRESSIONS-INCLUDE is
-	including COMMON-INCLUDE 
+module COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
+	imports COMMON-INCLUDE 
 
-end module
+endmodule
 
-module COMMON-C-EXPRESSIONS is
-	including COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
+module COMMON-C-EXPRESSIONS
+	imports COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	rule NothingExpression => emptyValue [structural anywhere]
-end module
+endmodule

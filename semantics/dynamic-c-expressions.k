@@ -1,5 +1,5 @@
-module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
-	including DYNAMIC-INCLUDE
+module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+	imports DYNAMIC-INCLUDE
 	syntax K ::= "assign" "(" K "," K ")" [klabel(assign)]
 	syntax Id ::= "compoundLiteral" "(" Int ")" [klabel(compoundLiteral)]
 	
@@ -61,10 +61,10 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE is
 		when isFunctionType(T:KResult) 
 		[structural]
 	
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-LITERALS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-LITERALS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 		
 	declare withinRange : Int SimpleType -> Bool
 	define withinRange(I:Int, T:K) => (I:Int <=Int max(t(.Set, T:K))) andBool (I:Int >=Int min(t(.Set, T:K)))
@@ -272,10 +272,10 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 		<k> Constant(WStringLiteral(S:List{K})) => V:KResult ...</k>
 		<stringLiterals>... wstring(S:List{K}) |-> V:KResult ...</stringLiterals>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-IDENTIFIERS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-IDENTIFIERS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
 	An identifier is a primary expression, provided it has been declared as designating an object (in which case it is an lvalue) or a function (in which case it is a function designator).
@@ -303,10 +303,10 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS is
 		when isFunctionType(T:KResult)
 		andBool notBool X:Id in keys Env:Map
 		[large structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
 	A postfix expression followed by an expression in square brackets \cinline{[]} is a subscripted designation of an element of an array object. The definition of the subscript operator \cinline{[]} is that \cinline{E1[E2]} is identical to \cinline{(*((E1)+(E2)))}. Because of the conversion rules that apply to the binary \cinline{+} operator, if \cinline{E1} is an array object (equivalently, a pointer to the initial element of an array object) and \cinline{E2} is an integer, \cinline{E1[E2]} designates the \cinline{E2}-th element of \cinline{E1} (counting from zero).
@@ -318,11 +318,11 @@ module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING is
 			=> *(E1:K + E2:K) 
 		...</k>
 		[structural]
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-FUNCTION-CALLS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	syntax K ::= "application" "(" K "," List{KResult} ")" [strict(1) klabel(application)]
 	syntax K ::= "application'" "(" K "," List{KResult} ")" [strict(1) klabel(application')]
@@ -396,11 +396,11 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS is
 		...</control>)
 		<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
 		[structural large]
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-MEMBERS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-MEMBERS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
 	A postfix expression followed by the \cinline{.} operator and an identifier designates a member of a structure or union object. The value is that of the named member, and is an lvalue if the first expression is an lvalue. \broken{If the first expression has qualified type, the result has the so-qualified version of the type of the designated member.}
@@ -434,10 +434,10 @@ module DYNAMIC-SEMANTICS-MEMBERS is
 	A postfix expression followed by the \cinline{->} operator and an identifier designates a member of a structure or union object. The value is that of the named member of the object to which the first expression points, and is an lvalue. \broken{If the first expression is a pointer to a qualified type, the result has the so-qualified version of the type of the designated member.}
 	}*/
 	macro K:K -> F:Id = (* K:K) . F:Id
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	syntax K ::= "postOpRef" "(" K "," KLabel ")" [klabel(postOpRef)]
 	syntax K ::= "postInc" "(" K "," K "," Type ")" [strict(2) klabel(postInc)]
@@ -475,10 +475,10 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT is
 		...</k>
 		[structural]
 	
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	syntax K ::= "handleCompoundLiteral" "(" K ")" [strict klabel(handleCompoundLiteral)]
 	
@@ -525,10 +525,10 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL is
 		...</k>
 		<compoundLiteralMap>... X:Id |-> Loc:Int ...</compoundLiteralMap>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{
 	The value of the operand of the prefix \cinline{++} operator is incremented. The result is the new value of the operand after incrementation. The expression \cinline{++E} is equivalent to \cinline{(E+=1)}. See the discussions of additive operators and compound assignment for information on constraints, types, side effects, and conversions and the effects of operations on pointers.
@@ -539,11 +539,11 @@ module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT is
 	The prefix \cinline{--} operator is analogous to the prefix \cinline{++} operator, except that the value of the operand is decremented.
 	}*/
 	rule -- E:K => E:K -= tv(1, t(.Set, int)) [structural]
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-REFERENCE is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-REFERENCE
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
 	The unary \cinline{&} operator yields the address of its operand. If the operand has type ``type'', the result has type ``pointer to type''. \broken{If the operand is the result of a unary \cinline{*} operator, neither that operator nor the \cinline{&} operator is evaluated and the result is as if both were omitted, except that the constraints on the operators still apply and the result is not an lvalue. Similarly, if the operand is the result of a \cinline{[]} operator, neither the \cinline{&} operator nor the unary \cinline{*} that is implied by the \cinline{[]} is evaluated and the result is as if the \cinline{&} operator were removed and the \cinline{[]} operator were changed to a \cinline{+} operator.} Otherwise, the result is a pointer to the object or function designated by its operand.
@@ -554,11 +554,11 @@ module DYNAMIC-SEMANTICS-REFERENCE is
 			=> tv(Loc:Int, t(.Set, pointerType(T:KResult)))
 		...</k>
 		[structural]
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-DEREFERENCE is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-DEREFERENCE
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
 	The unary \cinline{*} operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ``pointer to type'', the result has type ``type''. If an invalid value has been assigned to the pointer, the behavior of the unary \cinline{*} operator is undefined.
@@ -570,10 +570,10 @@ module DYNAMIC-SEMANTICS-DEREFERENCE is
 		...</k>
 		when notBool T:K ==K void
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{2}}}{
 	The result of the unary \cinline{+} operator is the value of its (promoted) operand. The integer promotions are performed on the operand, and the result has the promoted type.
@@ -609,10 +609,10 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC is
 	}*/
 	rule !(E:K) => tv(0, t(.Set, int)) == E:K
 		[structural]
-end module
+endmodule
 	
-module DYNAMIC-SEMANTICS-SIZEOF is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-SIZEOF
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
 	The \cinline{sizeof} operator yields the size (in bytes) of its operand, which may be an expression or the parenthesized name of a type. The size is determined from the type of the operand. The result is an integer. If the type of the operand is a variable length array type, the operand is evaluated; otherwise, the operand is not evaluated and the result is an integer constant.
@@ -638,10 +638,10 @@ module DYNAMIC-SEMANTICS-SIZEOF is
 	rule
 		<k> SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K)) ...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CAST is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-CAST
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{
 	Preceding an expression by a parenthesized type name converts the value of the expression to the named type. This construction is called a cast.  A cast that specifies no conversion has no effect on the type or value of an expression.
@@ -651,10 +651,10 @@ module DYNAMIC-SEMANTICS-CAST is
 	rule
 		<k> Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
 	The usual arithmetic conversions are performed on the operands.
@@ -690,10 +690,10 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS is
 		andBool min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int
 		andBool I2:Int =/=Int 0
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
 	For addition, either both operands shall have arithmetic type, or one operand shall be a pointer to a complete object type and the other shall have integer type.
@@ -803,10 +803,10 @@ second operand from the first.
 	rule 
 		_-_(tv(F1:Float, T:KResult), tv(F2:Float, T:KResult)) => arithInterpret(T:KResult, _-Float_(F1:Float, F2:Float))
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-BITWISE-SHIFT
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	declare leftShiftInterpret : Type BaseValue K -> K 
 	declare rightShiftInterpret : Type BaseValue -> K 
@@ -842,11 +842,11 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT is
 		[structural]
 	define rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when hasIntegerType(T:KResult)
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-RELATIONAL is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-RELATIONAL
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.8}{3}}}{
 	If both of the operands have arithmetic type, the usual arithmetic conversions are performed.
@@ -920,11 +920,11 @@ module DYNAMIC-SEMANTICS-RELATIONAL is
 			=> makeTruth(Offset:Int >=Int Offset':Int)
 		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
 		[structural]
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-EQUALITY is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-EQUALITY
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	/*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
 	The \cinline{==} (equal to) and \cinline{!=} (not equal to) operators are analogous to the relational operators except for their lower precedence. Each of the operators yields 1 if the specified relation is true and 0 if it is false. The result has type \cinline{int}. For any pair of operands, exactly one of the relations is true.
@@ -957,7 +957,7 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 	/*@ \fromStandard{\source[n1570]{\para{6.5.9}{5--7}}}{
 	Otherwise, at least one operand is a pointer. If one operand is a pointer and the other is a null pointer constant, the null pointer constant is converted to the type of the pointer. If one operand is a pointer to an object type and the other is a pointer to a qualified or unqualified version of \cinline{void}, the former is converted to the type of the latter.
 
-	Two pointers compare equal if and only if both are null pointers, both are pointers to the same object (including a pointer to an object and a subobject at its beginning) or function, both are pointers to one past the last element of the same array object, or one is a pointer to one past the end of one array object and the other is a pointer to the start of a different array object that happens to immediately follow the first array object in the address space.
+	Two pointers compare equal if and only if both are null pointers, both are pointers to the same object (imports a pointer to an object and a subobject at its beginning) or function, both are pointers to one past the last element of the same array object, or one is a pointer to one past the end of one array object and the other is a pointer to the start of a different array object that happens to immediately follow the first array object in the address space.
 
 	For the purposes of these operators, a pointer to an object that is not an element of an array behaves the same as a pointer to the first element of an array of length one with the type of the object as its element type.
 	}*/
@@ -1074,10 +1074,10 @@ module DYNAMIC-SEMANTICS-EQUALITY is
 		andBool isPromoted(T':KResult)
 		andBool N:Int ==K NullPointerConstant
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-BITWISE is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE				
+module DYNAMIC-SEMANTICS-BITWISE
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE				
 
 	/*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
 	The usual arithmetic conversions are performed on the operands.
@@ -1105,10 +1105,10 @@ module DYNAMIC-SEMANTICS-BITWISE is
 	rule tv(I1:Int, T:KResult) | tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int |Int I2:Int)
 		when isPromoted(T:KResult)
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-LOGICAL is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-LOGICAL
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ Here, we wrapped the controlling expressions with \kinline{simplifyTruth} when heating them, so that we are guaranteed the values in those locations are either \kinline{tv(0, int)} or \kinline{tv(1, int)}.*/
 		
@@ -1154,10 +1154,10 @@ module DYNAMIC-SEMANTICS-LOGICAL is
 		when isNotTruthValue(V:KResult)
 		[structural]
 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	syntax K ::= "getTypes" "(" List{K} ")" [klabel(getTypes)]
 	syntax K ::= "types" "(" List{K} ")" [klabel(types)]
@@ -1244,10 +1244,10 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION is
 			=> IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
 		...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-ASSIGNMENT is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-ASSIGNMENT
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
 	An assignment operator stores a value in the object designated by the left operand. \broken{An assignment expression has the value of the left operand after the assignment}, but is not an lvalue. The type of an assignment expression is the type the left operand would have after lvalue conversion. The side effect of updating the stored value of the left operand is sequenced after the value computations of the left and right operands. The evaluations of the operands are unsequenced.
@@ -1320,10 +1320,10 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT is
 			=> V:KResult := L:KLabel(reval(V:KResult),, V':KResult)
 		...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-SEQUENCING is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-SEQUENCING
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
@@ -1334,32 +1334,32 @@ module DYNAMIC-SEMANTICS-SEQUENCING is
 		[structural]
 	rule <k> Comma(List(K:K)) => K:K ...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-EXPRESSIONS is
-	including DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module DYNAMIC-C-EXPRESSIONS
+	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	including DYNAMIC-SEMANTICS-COMPOUND-LITERAL
-	including DYNAMIC-SEMANTICS-LOGICAL
-	including DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
-	including DYNAMIC-SEMANTICS-SIZEOF
-	including DYNAMIC-SEMANTICS-IDENTIFIERS
-	including DYNAMIC-SEMANTICS-FUNCTION-CALLS
-	including DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
-	including DYNAMIC-SEMANTICS-CAST
-	including DYNAMIC-SEMANTICS-ASSIGNMENT
-	including DYNAMIC-SEMANTICS-LITERALS
-	including DYNAMIC-SEMANTICS-BITWISE
-	including DYNAMIC-SEMANTICS-BITWISE-SHIFT
-	including DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
-	including DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
-	including DYNAMIC-SEMANTICS-RELATIONAL
-	including DYNAMIC-SEMANTICS-EQUALITY
-	including DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
-	including DYNAMIC-SEMANTICS-MEMBERS
-	including DYNAMIC-SEMANTICS-DEREFERENCE
-	including DYNAMIC-SEMANTICS-REFERENCE
-	including DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
-	including DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
-	including DYNAMIC-SEMANTICS-SEQUENCING
-end module
+	imports DYNAMIC-SEMANTICS-COMPOUND-LITERAL
+	imports DYNAMIC-SEMANTICS-LOGICAL
+	imports DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
+	imports DYNAMIC-SEMANTICS-SIZEOF
+	imports DYNAMIC-SEMANTICS-IDENTIFIERS
+	imports DYNAMIC-SEMANTICS-FUNCTION-CALLS
+	imports DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
+	imports DYNAMIC-SEMANTICS-CAST
+	imports DYNAMIC-SEMANTICS-ASSIGNMENT
+	imports DYNAMIC-SEMANTICS-LITERALS
+	imports DYNAMIC-SEMANTICS-BITWISE
+	imports DYNAMIC-SEMANTICS-BITWISE-SHIFT
+	imports DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
+	imports DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
+	imports DYNAMIC-SEMANTICS-RELATIONAL
+	imports DYNAMIC-SEMANTICS-EQUALITY
+	imports DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
+	imports DYNAMIC-SEMANTICS-MEMBERS
+	imports DYNAMIC-SEMANTICS-DEREFERENCE
+	imports DYNAMIC-SEMANTICS-REFERENCE
+	imports DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
+	imports DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
+	imports DYNAMIC-SEMANTICS-SEQUENCING
+endmodule

@@ -3,25 +3,33 @@ INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 APPEND_LINE = $(SCRIPTS_DIR)/append.sh
 FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
 
-K_MAUDE = $(K_BASE)/core/kompile
-K_PRELUDE = $(K_BASE)/core/maude/lib/k-prelude
-K_SOCKETS = $(K_BASE)/core/maude/lib/socket
-K_TCP = $(K_BASE)/core/maude/lib/TCPSupport
-K-PL-BUILTINS = $(K_BASE)/core/maude/lib/pl-builtins
-K_PL_MODEL_CHECKER = $(K_BASE)/core/maude/lib/k-model-checker
-K_PL_META_LEVEL = $(K_BASE)/core/maude/lib/pl-meta-level
-K_LATEX_STYLE = $(K_BASE)/core/latex/k.sty
+K_MAUDE = $(K_BASE)/bin/kompile
+K_PRELUDE = $(K_BASE)/bin/maude/lib/k-prelude
+K_SOCKETS = $(K_BASE)/bin/maude/lib/socket
+K_TCP = $(K_BASE)/bin/maude/lib/TCPSupport
+# chathhorn
+#K-PL-BUILTINS = $(K_BASE)/maude/lib/pl-builtins
+K-PL-BUILTINS = $(K_BASE)/bin/maude/lib/builtins
+K_PL_MODEL_CHECKER = $(K_BASE)/bin/maude/lib/k-model-checker
+K_PL_META_LEVEL = $(K_BASE)/bin/maude/lib/pl-meta-level
+K_LATEX_STYLE = $(K_BASE)/include/latex/k.sty
 
 
 K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C
-COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "interpRule"
-# -lib maudeLib/common-c-builtins.maude
-# -transition "computational"
-COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
-COMPILE_C_ND_THREAD = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational"
+
+#chathhorn
+#COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "interpRule"
+COMPILE_C = $(K_MAUDE) c.k -l C -transition "interpRule"
+
+#chathhorn
+#COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
+COMPILE_C_ND = $(K_MAUDE) c.k -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
+#chathhorn
+#COMPILE_C_ND_THREAD = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational"
+COMPILE_C_ND_THREAD = $(K_MAUDE) c.k -l C -transition "observable computational"
 #-lib maudeLib/common-c-builtins.maude
 
 COMMON_C_FILES = c-syntax.k \

@@ -1,5 +1,5 @@
-module DYNAMIC-MEMORY-INCLUDE is
-	including DYNAMIC-INCLUDE 
+module DYNAMIC-MEMORY-INCLUDE
+	imports DYNAMIC-INCLUDE 
 	
 	// returns the bytes in the order in which they are in memory
 	syntax K ::= "extractBytesFromMem" "(" Int "," Int ")" [klabel(extractBytesFromMem)] // loc, size in bytes
@@ -24,10 +24,10 @@ module DYNAMIC-MEMORY-INCLUDE is
 	
 	define [locations-none]: locations(.List) => .Set
 	define [locations-some]: locations(bwrite(Loc:Int, _) L:List) => SetItem(Loc:Int) locations(L:List)
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-READING is
-	including DYNAMIC-MEMORY-INCLUDE 
+module DYNAMIC-SEMANTICS-READING
+	imports DYNAMIC-MEMORY-INCLUDE 
 	
 	syntax K ::= "extractBitsFromMem" "(" Int "," Int ")" [klabel(extractBitsFromMem)] // loc, size in bits
 	syntax K ::= "extractByteFromMem" "(" Int ")" [klabel(extractByteFromMem)] 
@@ -300,10 +300,10 @@ module DYNAMIC-SEMANTICS-READING is
 		[structural]
 		//[interpRule] // for speed in interpretation; forces local buffer to be flushed before a read
 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-WRITING is
-	including DYNAMIC-MEMORY-INCLUDE 
+module DYNAMIC-SEMANTICS-WRITING
+	imports DYNAMIC-MEMORY-INCLUDE 
 	context alloc(_, value(HOLE)) 
 
 	rule 
@@ -735,10 +735,10 @@ module DYNAMIC-SEMANTICS-WRITING is
 	define byteMaskSet => (2 ^Int numBitsPerByte) -Int 1
 		
 	define isByteLoc(Loc:Int) => getBitOffset(Loc:Int) ==Int 0
-end module
+endmodule
 
-module DYNAMIC-C-MEMORY-MISC is
-	including DYNAMIC-MEMORY-INCLUDE 
+module DYNAMIC-C-MEMORY-MISC
+	imports DYNAMIC-MEMORY-INCLUDE 
 
 	// used by calloc
 	rule
@@ -845,11 +845,11 @@ module DYNAMIC-C-MEMORY-MISC is
 		andBool Offset:Int <=Int Len:Int // we're allowed to address one past
 		where BASE = threadId(PtrThreadId:Int) +Int N:Int
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-MEMORY is
-	including DYNAMIC-MEMORY-INCLUDE 
-	including DYNAMIC-C-MEMORY-MISC 
-	including DYNAMIC-SEMANTICS-WRITING 
-	including DYNAMIC-SEMANTICS-READING 
-end module
+module DYNAMIC-C-MEMORY
+	imports DYNAMIC-MEMORY-INCLUDE 
+	imports DYNAMIC-C-MEMORY-MISC 
+	imports DYNAMIC-SEMANTICS-WRITING 
+	imports DYNAMIC-SEMANTICS-READING 
+endmodule

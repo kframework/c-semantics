@@ -1,12 +1,12 @@
-module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE is
-	including DYNAMIC-INCLUDE
+module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+	imports DYNAMIC-INCLUDE
 	
 	declare hasSameSignedness : Type Type -> Bool // [memo]
 	declare correspondingUnsignedType : Type -> Type 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
+module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
 	define [hasSameSignedness]: 
 		hasSameSignedness(T:KResult, T':KResult)
@@ -23,11 +23,11 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS is
 		correspondingUnsignedType(t(S:Set, long-long-int))
 			=> t(S:Set, unsigned-long-long-int)
 	
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-PROMOTIONS is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-PROMOTIONS
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	// \csection{6}{3}{0}{0}{Conversions}
 	/*@
 	\fromStandard{\source[n1570]{\para{6.3}{1--2}}}{
@@ -117,7 +117,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	If an \cinline{int} can represent all values of the original type (as restricted by the width, for a bit-field), the value is converted to an \cinline{int}; otherwise, it is converted to an \cinline{unsigned int}. These are called the integer promotions. All other types are unchanged by the integer promotions.
 	}*/
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{3}}}{
-	The integer promotions preserve value including sign. As discussed earlier, whether a ``plain'' \cinline{char} is treated as signed is implementation-defined.
+	The integer promotions preserve value imports sign. As discussed earlier, whether a ``plain'' \cinline{char} is treated as signed is implementation-defined.
 	}*/
 	
 	define isPromoted(t(_, enumType(_:Id))) => true
@@ -352,10 +352,10 @@ integer type.
 		andBool rank(T:KResult) <Int rank(T':KResult)
 		andBool (min(T':KResult) >Int min(T:KResult) orBool max(T':KResult) <Int max(T:KResult))
 		
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CONVERSION is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-CONVERSION
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	
 	//- switch assumes casts can happen anywhere
 	define
@@ -628,10 +628,10 @@ module DYNAMIC-SEMANTICS-CONVERSION is
 	define
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, t(_, pointerType(_)))) 
 			=> tv(N:Int, t(S:Set, pointerType(T:KResult)))
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 
 	// fixme not sure about this
 	// interpret is used to "cast" values read from memory
@@ -704,12 +704,12 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC is
 	define unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int)
 	define signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int)
 
-end module
+endmodule
 
-module DYNAMIC-C-CONVERSIONS is
-	including DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
-	including DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
-	including DYNAMIC-SEMANTICS-CONVERSION
-	including DYNAMIC-SEMANTICS-PROMOTIONS 
-	including DYNAMIC-SEMANTICS-CONVERSIONS-MISC
-end module
+module DYNAMIC-C-CONVERSIONS
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
+	imports DYNAMIC-SEMANTICS-CONVERSION
+	imports DYNAMIC-SEMANTICS-PROMOTIONS 
+	imports DYNAMIC-SEMANTICS-CONVERSIONS-MISC
+endmodule

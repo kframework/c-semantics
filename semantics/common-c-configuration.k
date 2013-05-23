@@ -1,5 +1,5 @@
-module COMMON-C-CONFIGURATION is
-	including C-SYNTAX
+module COMMON-C-CONFIGURATION
+	imports C-SYNTAX
 
 	syntax CellLabel ::= "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
 	
@@ -133,4 +133,4 @@ module COMMON-C-CONFIGURATION is
 		<resultValue color="red"> .K </resultValue>
 		<errorCell multiplicity="?" color="black"> .K </errorCell>
 	
-end module
+endmodule

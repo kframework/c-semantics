@@ -1,5 +1,5 @@
-load common-c-syntax
+require "common-c-syntax.k"
 
-module C-SYNTAX is
-	including COMMON-C-SYNTAX
-end module
+module C-SYNTAX
+	imports COMMON-C-SYNTAX
+endmodule
