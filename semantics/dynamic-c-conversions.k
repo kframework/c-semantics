@@ -49,7 +49,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	define [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
 		when hasIntegerType(T:KResult)
 
-	// syntax K ::= "arithConversion-int" "(" KLabel "," K "," K ")" [klabel(arithConversion-int)]
+	// syntax K ::= "arithConversion-int" "(" KLabel "," K "," K ")"
 	declare isArithBinOp : KLabel -> Bool 
 
 	declare arithBinOps : -> Set // [memo] 

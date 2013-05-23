@@ -7,7 +7,7 @@ endmodule
 module DYNAMIC-SEMANTICS-TYPE-STRICTNESS
 	imports DYNAMIC-SEMANTICS-TYPE-INCLUDE
 
-	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
+	syntax K ::= "waitingOnDeclType"
 	rule [type-Cast-heat]:
 		<k> (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</k>
 		<type> Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</type>

@@ -2,16 +2,16 @@ module DYNAMIC-MEMORY-INCLUDE
 	imports DYNAMIC-INCLUDE 
 	
 	// returns the bytes in the order in which they are in memory
-	syntax K ::= "extractBytesFromMem" "(" Int "," Int ")" [klabel(extractBytesFromMem)] // loc, size in bytes
-	syntax Int ::= "encodedPointer" "(" Int ")" [klabel(encodedPointer)]
-	syntax Int ::= "encodedFloat" "(" Float ")" [klabel(encodedFloat)]
+	syntax K ::= "extractBytesFromMem" "(" Int "," Int ")" // loc, size in bytes
+	syntax Int ::= "encodedPointer" "(" Int ")"
+	syntax Int ::= "encodedFloat" "(" Float ")"
 	declare explodeToBits : List{K} -> List{K}
 	declare reverseList : List{K} -> List{K}
-	syntax ListItem ::= "bwrite" "(" Int "," K ")" [klabel(bwrite)]
+	syntax ListItem ::= "bwrite" "(" Int "," K ")"
 	declare locations : List -> Set
-	syntax K ::= "read-aux" "(" K "," K "," K ")" [klabel(read-aux)]
+	syntax K ::= "read-aux" "(" K "," K "," K ")"
 	
-	syntax Int ::= "subObject" "(" K "," K "," K ")" [klabel(subObject)] // object, start piece, end piece
+	syntax Int ::= "subObject" "(" K "," K "," K ")" // object, start piece, end piece
 	define 'isInt(subObject(_, _, _)) => true
 	define 'isInt(encodedPointer(_)) => true
 	define 'isInt(encodedFloat(_)) => true
@@ -29,10 +29,10 @@ endmodule
 module DYNAMIC-SEMANTICS-READING
 	imports DYNAMIC-MEMORY-INCLUDE 
 	
-	syntax K ::= "extractBitsFromMem" "(" Int "," Int ")" [klabel(extractBitsFromMem)] // loc, size in bits
-	syntax K ::= "extractByteFromMem" "(" Int ")" [klabel(extractByteFromMem)] 
+	syntax K ::= "extractBitsFromMem" "(" Int "," Int ")" // loc, size in bits
+	syntax K ::= "extractByteFromMem" "(" Int ")" 
 	
-	syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List{K} ")" [klabel(extractBitsFromList-aux)] // datalist, offset in bits into list, number of bits to extract, accumulator
+	syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List{K} ")" // datalist, offset in bits into list, number of bits to extract, accumulator
 	rule extractBitsFromList(dataList(L:List{K}), N:Int, M:Int) 
 		=> extractBitsFromList-aux(dataList(explodeToBits(L:List{K})), N:Int, M:Int, .List{K})
 		[structural]
@@ -62,7 +62,7 @@ module DYNAMIC-SEMANTICS-READING
 	
 	
 	
-	syntax K ::= "readActual" "(" K "," K "," K ")" [klabel(readActual)]
+	syntax K ::= "readActual" "(" K "," K "," K ")"
 	
 	/*@ These rules figure out whether the read should be structural or computational, depending on what is being read */
 	rule [read-thread-local]:
@@ -90,7 +90,7 @@ module DYNAMIC-SEMANTICS-READING
 		[structural]
 	
 		
-	syntax K ::= "joinIntegerBytes" "(" Type "," List{K} ")" [klabel(joinIntegerBytes)] 
+	syntax K ::= "joinIntegerBytes" "(" Type "," List{K} ")"
 	rule 
 		<k> concretize(T:KResult, dataList(L:List{K})) 
 			=> joinIntegerBytes(T:KResult, L:List{K}) 
@@ -114,8 +114,8 @@ module DYNAMIC-SEMANTICS-READING
 		andBool Len:Int ==Int numBitsPerByte 
 		[structural]
 
-	syntax K ::= "joinPointerBytes" "(" Type "," List{K} ")" [klabel(joinPointerBytes)]
-	syntax K ::= "joinPointerBytes-aux" "(" Type "," List{K} "," K ")" [klabel(joinPointerBytes-aux)]
+	syntax K ::= "joinPointerBytes" "(" Type "," List{K} ")"
+	syntax K ::= "joinPointerBytes-aux" "(" Type "," List{K} "," K ")"
 	// fixme should also check sizes are appropriate
 	rule <k> concretize(T:KResult, dataList(L:List{K}))
 			=> joinPointerBytes(T:KResult, L:List{K})
@@ -152,7 +152,7 @@ module DYNAMIC-SEMANTICS-READING
 		[structural]
 
 	// FIXME assuming bytes?
-	syntax K ::= "joinIntegerBytes-aux" "(" Type "," List{K} "," K ")" [klabel(joinIntegerBytes-aux)] 
+	syntax K ::= "joinIntegerBytes-aux" "(" Type "," List{K} "," K ")"
 	rule [joinIntegerBytes-start]:
 		joinIntegerBytes(T:KResult, L:List{K}) 
 			=> joinIntegerBytes-aux(T:KResult, L:List{K}, piece(0, 0)) 
@@ -208,7 +208,7 @@ module DYNAMIC-SEMANTICS-READING
 	
 	// context extractBytesFromMem-aux(_, _, (_,, HOLE,, _)) 
 	// this next op should use Nats, but the context doesn't allow it.  See issue 54
-	syntax K ::= "extractBytesFromMem-aux" "(" K "," K "," List{K} ")" [klabel(extractBytesFromMem-aux)] // loc, size in bytes, aux list
+	syntax K ::= "extractBytesFromMem-aux" "(" K "," K "," List{K} ")" // loc, size in bytes, aux list
 	
 	rule
 		<k> extractBytesFromMem(Loc:Int, Size:Int) 
@@ -336,7 +336,7 @@ module DYNAMIC-SEMANTICS-WRITING
 		...</memory>
 		[structural]
 	
-	syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")" [klabel(realloc-aux)]
+	syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")"
 	rule [realloc-start]:
 		<k> realloc(Old:K, New:K, OldLen:Int, NewLen:Int)
 			=> alloc(New:K, NewLen:Int)
@@ -386,13 +386,13 @@ module DYNAMIC-SEMANTICS-WRITING
 		...</k>
 		[structural]	
 		
-	syntax K ::= "writeBytes" "(" Int "," K ")" [strict(2) klabel(writeBytes)] 
-	syntax K ::= "writeBitfield" "(" Int "," Type "," K ")" [strict(3) klabel(writeBitfield)] 
+	syntax K ::= "writeBytes" "(" Int "," K ")" [strict(2)] 
+	syntax K ::= "writeBitfield" "(" Int "," Type "," K ")" [strict(3)] 
 	declare isByteLoc : Int -> Bool 
 	declare splitBytes : Value -> K 
 	declare calculateNewBytes : Int K K -> K [latex "\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}" strict(3)] 
 	
-	syntax K ::= "write-aux" "(" K "," Value "," K ")" [strict(2) klabel(write-aux)]
+	syntax K ::= "write-aux" "(" K "," Value "," K ")" [strict(2)]
 	rule write(lv(Dest:Int, T':KResult), tv(V:List{K}, T:KResult)) 
 		=> write-aux(Dest:Int, tv(V:List{K}, T:KResult), value(bitSizeofType(T:KResult))) 
 		when notBool isConstType(T':KResult)
@@ -401,7 +401,7 @@ module DYNAMIC-SEMANTICS-WRITING
 	
 	
 	
-	syntax K ::= "write-specific" "(" Int "," Value "," Int ")" [klabel(write-specific)]
+	syntax K ::= "write-specific" "(" Int "," Value "," Int ")"
 	
 	rule [write-thread-local]:
 		<k> write-aux(Loc, tv(L:List{K}, T:KResult), bitSize:Int)
@@ -439,8 +439,8 @@ module DYNAMIC-SEMANTICS-WRITING
 		when isByteLoc(Loc:Int)
 		[structural]
 		
-	syntax K ::= "makeUnknown" "(" Int "," Type ")" [klabel(makeUnknown)]
-	syntax K ::= "makeUnknown-aux" "(" Int "," Type "," K ")" [klabel(makeUnknown-aux)] // should be Nat Type K
+	syntax K ::= "makeUnknown" "(" Int "," Type ")"
+	syntax K ::= "makeUnknown-aux" "(" Int "," Type "," K ")" // should be Nat Type K
 	context makeUnknown-aux(_:Int, _, value(HOLE))
 	
 	rule makeUnknown(Loc:Int, T:KResult)
@@ -816,7 +816,7 @@ module DYNAMIC-C-MEMORY-MISC
 		[structural]
 
 	
-	syntax K ::= "checkValidLoc-aux" "(" K ")" [klabel(checkValidLoc-aux)]
+	syntax K ::= "checkValidLoc-aux" "(" K ")"
 	
 	rule
 		<k> checkValidLoc(Loc:Int) => checkValidLoc-aux(ceilingLoc(Loc:Int)) ...</k>

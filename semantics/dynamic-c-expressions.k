@@ -1,12 +1,12 @@
 module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	imports DYNAMIC-INCLUDE
-	syntax K ::= "assign" "(" K "," K ")" [klabel(assign)]
-	syntax Id ::= "compoundLiteral" "(" Int ")" [klabel(compoundLiteral)]
+	syntax K ::= "assign" "(" K "," K ")"
+	syntax Id ::= "compoundLiteral" "(" Int ")"
 	
-	syntax K ::= "lvGetOffset" "(" K "," K "," Type ")" [klabel(lvGetOffset)]
-	syntax K ::= "tvGetOffset" "(" K "," K "," Type ")" [klabel(tvGetOffset)]
+	syntax K ::= "lvGetOffset" "(" K "," K "," Type ")"
+	syntax K ::= "tvGetOffset" "(" K "," K "," Type ")"
 
-	syntax K ::= "fromArray" "(" Int "," Int ")" [klabel(fromArray)] // offset, length
+	syntax K ::= "fromArray" "(" Int "," Int ")" // offset, length
 	
 	declare makeTruth : Bool -> K
 	define makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
@@ -77,7 +77,7 @@ module DYNAMIC-SEMANTICS-LITERALS
 		when firstChar(S:String) =/=String "0"
 		orBool lengthString(S:String) ==Int 1
 		
-	syntax K ::= "hexOrOctalConstant" "(" K ")" [klabel(hexOrOctalConstant)]
+	syntax K ::= "hexOrOctalConstant" "(" K ")"
 	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural anywhere]
 	rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural anywhere]
 
@@ -208,7 +208,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.2}{4}}}{
 	An unsuffixed floating constant has type \cinline{double}. If suffixed by the letter \cinline{f} or \cinline{F}, it has type \cinline{float}. If suffixed by the letter \cinline{l} or \cinline{L}, it has type \cinline{long double}.
 	}*/
-	syntax K ::= "reducedFloat" "(" Float ")" [klabel(reducedFloat)]
+	syntax K ::= "reducedFloat" "(" Float ")"
 	rule DecimalFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
 	rule HexFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
 	
@@ -250,7 +250,7 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 		when notBool S:String in keys M:Map
 		[large structural]
 		
-	syntax K ::= "wstring" "(" List{K} ")" [klabel(wstring)] 
+	syntax K ::= "wstring" "(" List{K} ")"
 	rule [const-wstring-notfound]:
 		<k> (.K => allocWString(Loc:Int, (S:List{K},, 0)))
 			~> Constant(WStringLiteral(S:List{K}))
@@ -324,8 +324,8 @@ endmodule
 module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	syntax K ::= "application" "(" K "," List{KResult} ")" [strict(1) klabel(application)]
-	syntax K ::= "application'" "(" K "," List{KResult} ")" [strict(1) klabel(application')]
+	syntax K ::= "application" "(" K "," List{KResult} ")" [strict(1)]
+	syntax K ::= "application'" "(" K "," List{KResult} ")" [strict(1)]
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
 	A postfix expression followed by parentheses \cinline{()} containing a possibly empty, comma-separated list of expressions is a function call. The postfix expression denotes the called function. The list of expressions specifies the arguments to the function.
 	}*/
@@ -439,9 +439,9 @@ endmodule
 module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	syntax K ::= "postOpRef" "(" K "," KLabel ")" [klabel(postOpRef)]
-	syntax K ::= "postInc" "(" K "," K "," Type ")" [strict(2) klabel(postInc)]
-	syntax K ::= "postDec" "(" K "," K "," Type ")" [strict(2) klabel(postDec)]
+	syntax K ::= "postOpRef" "(" K "," KLabel ")"
+	syntax K ::= "postInc" "(" K "," K "," Type ")" [strict(2)]
+	syntax K ::= "postDec" "(" K "," K "," Type ")" [strict(2)]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{2}}}{
 	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
@@ -480,7 +480,7 @@ endmodule
 module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	syntax K ::= "handleCompoundLiteral" "(" K ")" [strict klabel(handleCompoundLiteral)]
+	syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
 	A postfix expression that consists of a parenthesized type name followed by a brace-enclosed list of initializers is a \emph{compound literal}. It provides an unnamed object whose value is given by the initializer list.
@@ -625,7 +625,7 @@ module DYNAMIC-SEMANTICS-SIZEOF
 	rule 
 		sizeofType(T:KResult) => cast(cfg:sizeut, byteSizeofType(T:KResult)) 
 		[structural]
-	syntax K ::= "byteSizeofType-aux" "(" K ")" [strict klabel(byteSizeofType-aux)]
+	syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
 	rule 
 		byteSizeofType(T:KResult) => byteSizeofType-aux(bitSizeofType(T:KResult)) 
 		[structural]
@@ -730,7 +730,7 @@ second operand from the first.
 	When an expression that has integer type is added to or subtracted from a pointer, the result has the type of the pointer operand. If the pointer operand points to an element of an array object, and the array is large enough, the result points to an element offset from the original element such that the difference of the subscripts of the resulting and original array elements equals the integer expression. In other words, if the expression \cinline{P} points to the $i$-th element of an array object, the expressions \cinline{(P)+N} (equivalently, \cinline{N+(P)}) and \cinline{(P)-N} (where \cinline{N} has the value $n$) point to, respectively, the $i+n$-th and $i-n$-th elements of the array object, provided they exist. Moreover, if the expression \cinline{P} points to the last element of an array object, the expression \cinline{(P)+1} points one past the last element of the array object, and if the expression \cinline{Q} points one past the last element of an array object, the expression \cinline{(Q)-1} points to the last element of the array object. If both the pointer operand and the result point to elements of the same array object, or one past the last element of the array object, the evaluation shall not produce an overflow; otherwise, the behavior is undefined. If the result points one past the last element of the array object, it shall not be used as the operand of a unary \cinline{*} operator that is evaluated.
 	}*/
 	
-	syntax K ::= "addToPointer" "(" K "," Type "," K "," K ")" [strict(4) klabel(addToPointer)]
+	syntax K ::= "addToPointer" "(" K "," Type "," K "," K ")" [strict(4)]
 	rule <k> tv(Loc:Int, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
 			=> addToPointer(Loc:Int, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
 		...</k>
@@ -777,7 +777,7 @@ second operand from the first.
 	When two pointers are subtracted, both shall point to elements of the same array object, or one past the last element of the array object; the result is the difference of the subscripts of the two array elements. The size of the result is implementation-defined, and its type (a signed integer type) is \cinline{ptrdiff_t} defined in the \cinline{<stddef.h>} header. If the result is not representable in an object of that type, the behavior is undefined. In other words, if the expressions \cinline{P} and \cinline{Q} point to, respectively, the $i$-th and $j$-th elements of an array object, the expression \cinline{(P)-(Q)} has the value $i-j$ provided the value fits in an object of type \cinline{ptrdiff_t}. Moreover, if the expression P points either to an element of an array object or one past the last element of an array object, and the expression \cinline{Q} points to the last element of the same array object, the expression \cinline{((Q)+1)-(P)} has the same value as \cinline{((Q)-(P))+1} and as \cinline{-((P)-((Q)+1))}, and has the value zero if the expression \cinline{P} points one past the last element of the array object, even though the expression \cinline{(Q)+1} does not point to an element of the array object.
 	}*/
 
-	syntax K ::= "computePointerDifference" "(" Int "," Int "," K ")" [strict(3) klabel(computePointerDifference)] // ptr1, ptr2, size of ptr type
+	syntax K ::= "computePointerDifference" "(" Int "," Int "," K ")" [strict(3)] // ptr1, ptr2, size of ptr type
 	rule [start-pointer-difference]: 
 		tv(I1:Int, t(_, pointerType(T:KResult))) - tv(I2:Int, t(_, pointerType(T:KResult)))
 			=> computePointerDifference(I1:Int, I2:Int, sizeofType(T:KResult))
@@ -1159,10 +1159,10 @@ endmodule
 module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	syntax K ::= "getTypes" "(" List{K} ")" [klabel(getTypes)]
-	syntax K ::= "types" "(" List{K} ")" [klabel(types)]
+	syntax K ::= "getTypes" "(" List{K} ")"
+	syntax K ::= "types" "(" List{K} ")"
 	context types((_,, HOLE,, _))
-	syntax K ::= "convertedType" "(" K ")" [strict klabel(convertedType)]
+	syntax K ::= "convertedType" "(" K ")" [strict]
 	
 	rule <k> getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</k> [structural]
 	
@@ -1279,7 +1279,7 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
 	/*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
 	Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the simple assignment expression \cinline{E1 = E1 op (E2)}, except that the lvalue \cinline{E1} is evaluated only once, and with respect to an indeterminately-sequenced function call, the operation of a compound assignment is a single evaluation. If \cinline{E1} has an atomic type, compound assignment is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
 	}*/
-	syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")" [klabel(compoundAssignment)]
+	syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")"
 	// these should not be nd, in order to keep the operations together
 	context compoundAssignment(_, (HOLE => peval(HOLE)), _)
 	context compoundAssignment(_, _, (HOLE => reval(HOLE)))

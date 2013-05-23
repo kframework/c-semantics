@@ -161,8 +161,8 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		when N:Int >=Int 0
 		[structural]
 	
-	syntax K ::= "extractField-pre" "(" List{K} "," Type "," Int "," K ")" [strict(4) klabel(extractField-pre)]
-	syntax K ::= "extractField-aux" "(" List{K} "," Type "," Int "," Int "," List{K} ")" [klabel(extractField-aux)]
+	syntax K ::= "extractField-pre" "(" List{K} "," Type "," Int "," K ")" [strict(4)]
+	syntax K ::= "extractField-aux" "(" List{K} "," Type "," Int "," Int "," List{K} ")"
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
@@ -283,10 +283,10 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		[structural]
 		
 	// getString returns the string without the null terminator
-	syntax K ::= "getString" "(" K ")" [klabel(getString)]
-	syntax K ::= "getString-aux" "(" K "," String ")" [strict(1) klabel(getString-aux)]
+	syntax K ::= "getString" "(" K ")"
+	syntax K ::= "getString-aux" "(" K "," String ")" [strict(1)]
 	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural anywhere]
-	syntax Value ::= "str" "(" String ")" [klabel(str)]
+	syntax Value ::= "str" "(" String ")"
 	
 	rule [getString-pre]:
 		<k> (.K => read(Loc:Int, t(.Set, char)))
@@ -308,8 +308,8 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		[structural]
 		
 	// writeString and writeWString expect the user to add the '\0' to the end of the strings passed
-	syntax K ::= "writeString" "(" K "," String ")" [strict(1) klabel(writeString)]
-	syntax K ::= "writeWString" "(" K "," List{K} ")" [strict(1) klabel(writeWString)]
+	syntax K ::= "writeString" "(" K "," String ")" [strict(1)]
+	syntax K ::= "writeWString" "(" K "," List{K} ")" [strict(1)]
 
 	rule [write-string]:
 		<k> writeString(tv(Loc:Int, T:KResult), S:String)
@@ -481,8 +481,8 @@ module COMMON-C-BITSIZE
 		[structural]	
 	
 		
-	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")" [klabel(maxBitSizeofList)] 
-	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Int ")" [klabel(maxBitSizeofList-aux)] 
+	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")"
+	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Int ")"
 	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
 	rule
 		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Int)

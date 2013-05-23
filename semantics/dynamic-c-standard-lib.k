@@ -3,12 +3,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	// imports #SOCKET
 	// imports #TCP-INTERFACE
 	
-	syntax C ::= "vararg" "(" K ")" [hybrid strict klabel(vararg)]
-	syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2) klabel(nextvarg)] // loc, type
-	syntax C ::= "vpair" "(" K "," K ")" [hybrid strict klabel(vpair)]
-	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" [klabel(prepareBuiltin)]
+	syntax C ::= "vararg" "(" K ")" [hybrid strict]
+	syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2)] // loc, type
+	syntax C ::= "vpair" "(" K "," K ")" [hybrid strict]
+	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" 
 	declare incSymbolic : K -> K
-	syntax K ::= "printString" "(" K ")" [klabel(printString)]
+	syntax K ::= "printString" "(" K ")"
 	
 endmodule
 
@@ -17,7 +17,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
-	syntax C ::= "nextvarg-aux" "(" K "," Type "," K "," K ")" [klabel(nextvarg-aux)] // offset, type, length, checklength
+	syntax C ::= "nextvarg-aux" "(" K "," Type "," K "," K ")" // offset, type, length, checklength
 	context nextvarg-aux(_, _, value(HOLE), _)
 	context nextvarg-aux(_, _, _, value(HOLE))
 	
@@ -169,9 +169,9 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
 	// fixme obviously need to rework configuration to make this easy
-	syntax K ::= "Bag" "(" Bag ")" [klabel(Bag)]
+	syntax K ::= "Bag" "(" Bag ")"
 	
-	syntax K ::= "ignoreLocals" [klabel(ignoreLocals)]
+	syntax K ::= "ignoreLocals"
 	
 	// there seems to be a problem here related to locals.  what if longjmp is never called?
 	rule [ignoreLocals]:
@@ -224,7 +224,7 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 		</threadLocal>
 		[structural]
 
-	syntax K ::= "longjmp-aux" "(" K "," K ")" [strict klabel(longjmp-aux)]
+	syntax K ::= "longjmp-aux" "(" K "," K ")" [strict]
 	rule [longjmp-prepare]:
 		<k> prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
 			=> longjmp-aux(reval(*(V:KResult)), V':KResult)
@@ -281,7 +281,7 @@ which is a complete object type suitable for holding information needed by the m
 		...</k>
 		[structural]
 	
-	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" [klabel(va-inc-aux)] // [strict(3)]
+	syntax K ::= "va-inc-aux" "(" K "," K "," K ")" // [strict(3)]
 	context va-inc-aux(_, _, (HOLE => reval(HOLE)))
 	// fixme can do lots of checks here too
 	
@@ -331,7 +331,7 @@ endmodule
 module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
 	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-	syntax K ::= "offsetOf" "(" K "," K ")" [strict(1) klabel(offsetOf)]
+	syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
 	rule
 		<k> OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</k>
 		[structural]
@@ -393,7 +393,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		...</k>
 		[structural]
 	
-	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3) klabel(fsl-open-file-aux)]
+	syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3)]
 	
 	rule [fslOpenFile-aux]:
 		<k> fsl-open-file(str(Filename:String), str(Mode:String))
@@ -416,7 +416,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		...</files>
 		[structural]
 
-	syntax K ::= "fsl-open-file" "(" K "," K ")" [strict klabel(fsl-open-file)]
+	syntax K ::= "fsl-open-file" "(" K "," K ")" [strict]
 
 	//////////////////////////--	
 
@@ -444,7 +444,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		...</k>
 		[structural]
 	
-	syntax K ::= "sprintf" "(" K "," K ")" [strict(1) klabel(sprintf)]
+	syntax K ::= "sprintf" "(" K "," K ")" [strict(1)]
 	rule [sprintf]:
 		<k> prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
 			=> sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
@@ -457,7 +457,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		...</k>
 		[structural]
 	
-	syntax K ::= "snprintf" "(" K "," K "," Int ")" [strict(1) klabel(snprintf)]
+	syntax K ::= "snprintf" "(" K "," K "," Int ")" [strict(1)]
 	rule [snprintf]:
 		<k> prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
 			=> snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Int)
@@ -476,11 +476,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		...</k>
 		[structural]
 	
-	syntax K ::= "new-printf-aux" "(" K ")" [strict klabel(new-printf-aux)]
-	syntax K ::= "formatter" "(" K "," K ")" [strict(1) klabel(formatter)]
-	syntax K ::= "formatter-aux" "(" K ")" [strict klabel(formatter-aux)]
-	syntax K ::= "formatter-next" "(" K ")" [klabel(formatter-next)]
-	syntax K ::= "formatter-arg" "(" K ")" [strict(1) klabel(formatter-arg)]
+	syntax K ::= "new-printf-aux" "(" K ")" [strict]
+	syntax K ::= "formatter" "(" K "," K ")" [strict(1)]
+	syntax K ::= "formatter-aux" "(" K ")" [strict]
+	syntax K ::= "formatter-next" "(" K ")"
+	syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
 	rule 
 		<k> formatter-next(vararg(tv(Loc:Int, _)))
 			=> formatter-arg(nextvarg(Loc:Int, getFormatType))
@@ -506,7 +506,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		)
 		[structural]
 	
-	syntax Value ::= "formattedResult" "(" K ")" [klabel(formattedResult)]
+	syntax Value ::= "formattedResult" "(" K ")"
 	
 	rule [format-done]:
 		<k> formatter-aux(_) 
@@ -617,8 +617,8 @@ Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \text
 If a length modifier appears with any conversion specifier other than as specified above, the behavior is undefined.
 */
 
-	syntax K ::= "getFormatType" [klabel(getFormatType)]
-	syntax K ::= "getFormatType-aux" "(" K "," K ")" [klabel(getFormatType-aux)] 
+	syntax K ::= "getFormatType"
+	syntax K ::= "getFormatType-aux" "(" K "," K ")"
 	rule 
 		<k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
 		<formatLength> Length:K </formatLength>
@@ -1013,7 +1013,7 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
 		...</k>
 		[structural]
 
-	syntax K ::= "calloc-aux" [klabel(calloc-aux)]
+	syntax K ::= "calloc-aux"
 	rule [calloc]:
 		<k> prepareBuiltin((Identifier("calloc")), (tv(N:Int, _),, tv(Size:Int, _)))
 			=> prepareBuiltin((Identifier("malloc")), tv(N:Int *Int Size:Int, cfg:sizeut))
@@ -1059,7 +1059,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
 	
 	// try to use getString
 	// fixme should detect overlaps
-	syntax K ::= "strcpy" "(" K "," K "," K ")" [klabel(strcpy)]
+	syntax K ::= "strcpy" "(" K "," K "," K ")"
 	rule [strcpy-start]:
 		<k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:Int, t(_, pointerType(_))),, tv(Src:Int, t(_, pointerType(_)))))
 			=> strcpy(Dest:Int, Src:Int, Dest:Int)
@@ -1102,8 +1102,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
 	ops threadRunning threadClosed : -> K
 	ops threadJoining : Int -> K
 	
-	syntax Int ::= "threadId" "(" Int "," Int ")" [klabel(threadId)] // parent, new
-	syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")" [klabel(spawn-aux)]
+	syntax Int ::= "threadId" "(" Int "," Int ")" // parent, new
+	syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
 	// threadId(MyId:Int, Fresh:Int)
 	rule [thrd-create-start]:
 		<k> prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
@@ -1144,7 +1144,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<threadId> ThreadId:Int </threadId>
 		[structural]
 		
-	syntax K ::= "join-aux" "(" Int "," Value ")" [klabel(join-aux)]
+	syntax K ::= "join-aux" "(" Int "," Value ")"
 		
 	rule [thrd-join-start]:
 		<k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
@@ -1240,7 +1240,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<locks>... BagItem(Loc:Int) => .Bag ...</locks>
 		when Type:Int ==Int cfg:mtxPlain
 		[computational]
-	// syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1) klabel(testAndSet)]
+	// syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1)]
 	// rule [test-and-set-start]:
 		// <k> prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
 			// => testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
