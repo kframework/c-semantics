@@ -52,9 +52,9 @@ module DYNAMIC-C-SEMANTICS-MISC
 			=> #EOF
 		[structural anywhere]
 		
-	syntax K ::= "f-sent" "(" Int "," String ")" [klabel(f-sent)]
-	syntax K ::= "f-flush" "(" Int ")" [klabel(f-flush)]
-	syntax K ::= "f-sendString" "(" Int "," String ")" [klabel(f-sendString)]
+	syntax K ::= "f-sent" "(" Int "," String ")"
+	syntax K ::= "f-flush" "(" Int ")"
+	syntax K ::= "f-sendString" "(" Int "," String ")"
 	
 	// can't lex string2List{K} correctly in #fPrint(N:Int,, string2List{K}(S:String))
 	rule [flush]:
@@ -144,7 +144,7 @@ If they are declared, the parameters to the main function shall obey the followi
 \end{itemize}
 }*/
 	
-	syntax K ::= "incomingArguments-aux" "(" List{K} "," Int ")" [klabel(incomingArguments-aux)]
+	syntax K ::= "incomingArguments-aux" "(" List{K} "," Int ")"
 	
 	rule incomingArguments(L:List{K}) 
 			=> incomingArguments-aux(L:List{K}, 0) 
@@ -158,7 +158,7 @@ If they are declared, the parameters to the main function shall obey the followi
 		[structural]
 		
 		
-	syntax K ::= "syntaxInt" "(" Int ")" [klabel(syntaxInt)]
+	syntax K ::= "syntaxInt" "(" Int ")"
 	rule [syntaxInt]: syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
 	
 	syntax K ::= "pgmArgs" "(" List{K} ")"

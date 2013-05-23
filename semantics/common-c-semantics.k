@@ -20,43 +20,43 @@ module COMMON-SEMANTIC-SYNTAX
 	define _ andBool false => false
 
 	// these are used for runtime settings
-	// syntax SimpleType ::= "kccSettingSimpleType" "(" String ")" [klabel(kccSettingSimpleType)]
-	// syntax #NzNat ::= "kccSettingNzNat" "(" String ")" [klabel(kccSettingNzNat)]
-	// syntax Int ::= "kccSettingInt" "(" String ")" [klabel(kccSettingInt)]
+	// syntax SimpleType ::= "kccSettingSimpleType" "(" String ")"
+	// syntax #NzNat ::= "kccSettingNzNat" "(" String ")"
+	// syntax Int ::= "kccSettingInt" "(" String ")"
 	
-	syntax K	 ::= "fromUnion" "(" Id ")" [klabel(fromUnion)]
+	syntax K	 ::= "fromUnion" "(" Id ")"
 		
 	// Types
-	syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex "\terminal{typedDecl}\!({#1},{#2}\!)" klabel(typedDeclaration)] // would rather this be KResult, but can't get the subsorting to work
+	syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex "\terminal{typedDecl}\!({#1},{#2}\!)"] // would rather this be KResult, but can't get the subsorting to work
 	
-	syntax K ::= "DeclType" "(" K "," K ")" [strict(1) klabel(DeclType)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+	syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
 	// op 'isTypeResult_ : K -> Bool 
 	syntax Set ::= "setOfTypes"
 	
-	syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [klabel(usualArithmeticConversion)]
-	syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1) klabel(callMain-aux)] // having to put this out here so errors can see it
-	syntax K ::= "initFunction" "(" K "," K ")" [strict klabel(initFunction)]
+	syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")"
+	syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)] // having to put this out here so errors can see it
+	syntax K ::= "initFunction" "(" K "," K ")" [strict]
 	syntax K ::= "populateFromGlobal"
 	
-	syntax K ::= "checkValidLoc" "(" K ")" [klabel(checkValidLoc)]
-	syntax K ::= "checkDerefLoc" "(" K ")" [klabel(checkDerefLoc)]
-	syntax ListItem ::= "ListItem" "(" Bag ")" [klabel(ListItem)]
+	syntax K ::= "checkValidLoc" "(" K ")"
+	syntax K ::= "checkDerefLoc" "(" K ")"
+	syntax ListItem ::= "ListItem" "(" Bag ")"
 	declare ListToK : List -> K 
-	syntax K ::= "Map" "(" Map ")" [klabel(Map)] 
-	syntax Int ::= "piece" "(" Int "," Int ")" [klabel(piece)] 
+	syntax K ::= "Map" "(" Map ")"
+	syntax Int ::= "piece" "(" Int "," Int ")"
 	define 'isInt(piece(_, _)) => true
 	
-	syntax Int ::= "unknown" "(" Int ")" [klabel(unknown)] // [ctor] 
+	syntax Int ::= "unknown" "(" Int ")"
 	define 'isInt(unknown(_)) => true
 	
 	syntax KResult ::= "skipval"
 	syntax K ::= "debug"
-	syntax K ::= "debug-m" "(" K ")" [klabel(debug-m)]
+	syntax K ::= "debug-m" "(" K ")"
 	syntax K ::= "discard"
 	syntax Id ::= "File-Scope" // [ctor] 
 	syntax Id ::= "unnamedBitField" // [ctor] 
 
-	syntax Int ::= "loc" "(" K "," K "," K ")" [klabel(loc)] // Base, byte offset, bit offset
+	syntax Int ::= "loc" "(" K "," K "," K ")" // Base, byte offset, bit offset
 	define 'isInt(loc(_, _, _)) => true
 	
 	// fixme maybe if we keep it reduced here, things can go faster
@@ -66,86 +66,86 @@ module COMMON-SEMANTIC-SYNTAX
 
 	//declare bitoffset : Int -> Int 
 	//declare byteoffset : Int -> Int
-	syntax Value ::= "enumItem" "(" Id "," Value ")" [klabel(enumItem)] 
+	syntax Value ::= "enumItem" "(" Id "," Value ")"
 	syntax K ::= "resolveReferences"
 	
-	syntax String ::= "toString" "(" K ")" [klabel(toString)] 
+	syntax String ::= "toString" "(" K ")"
 	
-	syntax Type ::= "maxType" "(" Type "," Type ")" [klabel(maxType)] 
+	syntax Type ::= "maxType" "(" Type "," Type ")"
 	
-	syntax Int ::= "bitRange" "(" Int "," Int "," Int ")" [klabel(bitRange)] // original number, from, to inclusive
+	syntax Int ::= "bitRange" "(" Int "," Int "," Int ")" // original number, from, to inclusive
 	
-	syntax K ::= "fillToBytes" "(" K ")" [strict klabel(fillToBytes)] 
+	syntax K ::= "fillToBytes" "(" K ")" [strict] 
 	
-	syntax Int ::= "floorLoc" "(" Int ")" [klabel(floorLoc)] // loc with possible bit offset returning base byte	
-	syntax Int ::= "ceilingLoc" "(" Int ")" [klabel(ceilingLoc)] // loc with possible bit offset returning upperbounded byte	
-	syntax K ::= "readFunction" "(" Int ")" [klabel(readFunction)] 
+	syntax Int ::= "floorLoc" "(" Int ")" // loc with possible bit offset returning base byte	
+	syntax Int ::= "ceilingLoc" "(" Int ")" // loc with possible bit offset returning upperbounded byte	
+	syntax K ::= "readFunction" "(" Int ")"
 	
 	declare innerType : Type -> Type
 	
-	// syntax KResult ::= "AttributeValue" "(" String "," List{K} ")" [klabel(AttributeValue)] 
+	// syntax KResult ::= "AttributeValue" "(" String "," List{K} ")"
 	
-	syntax K ::= "extractBitsFromList" "(" K "," Int "," Int ")" [strict(1) klabel(extractBitsFromList)] // data, offset, size in bits
-	syntax Id ::= "typedef" "(" Id ")" [klabel(typedef)] 
-	syntax Id ::= "unnamed" "(" Int ")" [klabel(unnamed)] 
+	syntax K ::= "extractBitsFromList" "(" K "," Int "," Int ")" [strict(1)] // data, offset, size in bits
+	syntax Id ::= "typedef" "(" Id ")"
+	syntax Id ::= "unnamed" "(" Int ")"
 	
-	syntax Int ::= "NullPointerConstant" [klabel(NullPointerConstant)] 
+	syntax Int ::= "NullPointerConstant"
 	define 'isInt(NullPointerConstant) => true
 	
 	syntax Int ::= "NullPointer"
 	define 'isInt(NullPointer) => true
 	
-	syntax Value ::= "emptyValue" [klabel(emptyValue)] 
-	syntax K ::= "allocate" "(" Type "," K ")" [klabel(allocate)]
+	syntax Value ::= "emptyValue"
+	syntax K ::= "allocate" "(" Type "," K ")"
 	
-	syntax K ::= "zero" "(" K ")" [klabel(zero)] 
-	syntax K ::= "zeroBlock" "(" Int ")" [klabel(zeroBlock)] 
+	syntax K ::= "zero" "(" K ")"
+	syntax K ::= "zeroBlock" "(" Int ")"
 		
-	syntax K ::= "value" "(" K ")" [klabel(value)] 
+	syntax K ::= "value" "(" K ")"
 		
-	syntax K ::= "sizeofLocation" "(" K ")" [klabel(sizeofLocation)]
-	syntax Type ::= "type" "(" K ")" [klabel(type)] 
+	syntax K ::= "sizeofLocation" "(" K ")"
+	syntax Type ::= "type" "(" K ")"
 	
-	syntax K ::= "flush" "(" Int ")" [klabel(flush)]
+	syntax K ::= "flush" "(" Int ")"
 	
-	syntax K ::= "allocateType" "(" Int "," Type ")" [klabel(allocateType)] 
-	syntax K ::= "allocateTypeIfAbsent" "(" Int "," Type ")" [klabel(allocateTypeIfAbsent)] 
-	syntax K ::= "giveType" "(" Id "," Type ")" [klabel(giveType)] 
-	syntax K ::= "addToEnv" "(" Id "," Int ")" [klabel(addToEnv)] 
+	syntax K ::= "allocateType" "(" Int "," Type ")"
+	syntax K ::= "allocateTypeIfAbsent" "(" Int "," Type ")"
+	syntax K ::= "giveType" "(" Id "," Type ")"
+	syntax K ::= "addToEnv" "(" Id "," Int ")"
 	
-	syntax K ::= "read" "(" K "," K ")" [strict(2) klabel(read)] // location, type
-	syntax K ::= "write" "(" K "," K ")" [strict(2) klabel(write)] // location, value
-	syntax K ::= "writeByte" "(" Int "," K ")" [klabel(writeByte)] 
+	syntax K ::= "read" "(" K "," K ")" [strict(2)] // location, type
+	syntax K ::= "write" "(" K "," K ")" [strict(2)] // location, value
+	syntax K ::= "writeByte" "(" Int "," K ")" 
 
 	declare isTypeCompatible : K K -> Bool 
 	
 	declare isPromoted : Type -> Bool
-	// syntax Bool ::= "isPromotedInteger" "(" Type ")" [klabel(isPromotedInteger)]
+	// syntax Bool ::= "isPromotedInteger" "(" Type ")"
 	
 	
-	syntax Int ::= "inc" "(" Int ")" [klabel(inc)] 
+	syntax Int ::= "inc" "(" Int ")"
 	
 	define 'isInt(threadId(N:Int) +Int M:Int) => true
 	define 'isInt(allocatedDuration +Int M:Int) => true
-	syntax Int ::= "threadId" "(" Int ")" [klabel(threadId)] // used for symbolic locations based on threadid
-	syntax Int ::= "allocatedDuration" [klabel(allocatedDuration)] // fake threadid for above when location is of allocated duration
-	// syntax Int ::= "readOnly" [klabel(readOnly)] // fake threadid for above when location can't be written to
+	syntax Int ::= "threadId" "(" Int ")" // used for symbolic locations based on threadid
+	syntax Int ::= "allocatedDuration" // fake threadid for above when location is of allocated duration
+	// syntax Int ::= "readOnly" // fake threadid for above when location can't be written to
 		
-	syntax K ::= "initialize" "(" Id "," Type "," K ")" [klabel(initialize)] 
-	// syntax K ::= "memblock" "(" Bag "," Map ")" [klabel(memblock)] // length and an array from offsets to bytes
-	syntax BagItem ::= "mlength" "(" Int ")" [klabel(mlength)]
+	syntax K ::= "initialize" "(" Id "," Type "," K ")"
+	// syntax K ::= "memblock" "(" Bag "," Map ")" // length and an array from offsets to bytes
+	syntax BagItem ::= "mlength" "(" Int ")" 
 	syntax BagItem ::= "mconst"
-	syntax K ::= "makeUnwritable" "(" Int ")" [klabel(makeUnwritable)]
-	syntax K ::= "makeUnwritableSubObject" "(" K ")" [klabel(makeUnwritableSubObject)]
-	syntax K ::= "makeUnwritableVar" "(" K ")" [klabel(makeUnwritableVar)]
+	syntax K ::= "makeUnwritable" "(" Int ")" 
+	syntax K ::= "makeUnwritableSubObject" "(" K ")" 
+	syntax K ::= "makeUnwritableVar" "(" K ")"
 	context makeUnwritableSubObject((HOLE => peval(HOLE)))
 	
-	syntax K ::= "listToK" "(" K ")" [klabel(listToK)] 
-	syntax K ::= "klistToK" "(" List{K} ")" [klabel(klistToK)] 
+	syntax K ::= "listToK" "(" K ")"
+	syntax K ::= "klistToK" "(" List{K} ")"
 	syntax K ::= "UnknownCabsLoc"
 	
 	
-	syntax K ::= "assert" "(" Bool "," Int ")" [klabel(assert)] // check, error#
+	syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
 	
 	// Basic types
 	syntax SimpleType ::= "bool"
@@ -155,38 +155,38 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" | "unsigned-long-int" | "unsigned-long-long-int"
 	syntax SimpleType ::= "no-type"
 	
-	syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel(t)]
+	syntax Type ::= "t" "(" Set "," SimpleType ")"
 	
-	syntax Bool ::= "isBasicType" "(" K ")" [klabel(isBasicType)]
+	syntax Bool ::= "isBasicType" "(" K ")"
 	
 	// Composite types
-	syntax SimpleType ::= "enumType" "(" Id ")" [klabel(enumType)] // [ctor] 
-	syntax SimpleType ::= "arrayType" "(" Type "," Int ")" [klabel(arrayType)] // [ctor] 
-	syntax SimpleType ::= "incompleteArrayType" "(" Type ")" [klabel(incompleteArrayType)] // [ctor] 
-	syntax SimpleType ::= "flexibleArrayType" "(" Type ")" [klabel(flexibleArrayType)] // [ctor] 
-	syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" [klabel(bitfieldType)] // [ctor] 
-	syntax SimpleType ::= "functionType" "(" Type "," List{KResult} ")" [klabel(functionType)] // [ctor] 
-	syntax SimpleType ::= "pointerType" "(" Type ")" [klabel(pointerType)] // [ctor] 
-	syntax SimpleType ::= "structType" "(" Id ")" [klabel(structType)] // [ctor] 
-	syntax SimpleType ::= "unionType" "(" Id ")" [klabel(unionType)] // [ctor] 
-	syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" [klabel(qualifiedType)] // [ctor]
+	syntax SimpleType ::= "enumType" "(" Id ")" // [ctor] 
+	syntax SimpleType ::= "arrayType" "(" Type "," Int ")" // [ctor] 
+	syntax SimpleType ::= "incompleteArrayType" "(" Type ")" // [ctor] 
+	syntax SimpleType ::= "flexibleArrayType" "(" Type ")" // [ctor] 
+	syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" // [ctor] 
+	syntax SimpleType ::= "functionType" "(" Type "," List{KResult} ")" // [ctor] 
+	syntax SimpleType ::= "pointerType" "(" Type ")" // [ctor] 
+	syntax SimpleType ::= "structType" "(" Id ")" // [ctor] 
+	syntax SimpleType ::= "unionType" "(" Id ")" // [ctor] 
+	syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" // [ctor]
 	
 	declare unqualifyType : K -> Type // takes a type, but sometimes things like maps give K
 	declare removeStorageSpecifiers : K -> Type
 	
 	// these aren't real types, but are values that can appear in type contexts
-	syntax SimpleType ::= "prototype" "(" Type ")" [klabel(prototype)] 
-	syntax SimpleType ::= "typedefType" "(" Id "," Type ")" [klabel(typedefType)] 
+	syntax SimpleType ::= "prototype" "(" Type ")"
+	syntax SimpleType ::= "typedefType" "(" Id "," Type ")"
 	syntax SimpleType ::= "variadic"
 
-	syntax KResult ::= "dataList" "(" List{K} ")" [klabel(dataList)] 
+	syntax KResult ::= "dataList" "(" List{K} ")"
 	
-	// syntax Int ::= "K2Int" "(" K ")" [klabel(K2Int)]
-	syntax K ::= "sizeofType" "(" K ")" [strict klabel(sizeofType)] // generates a tv(size, cfg:sizeut)
-	syntax K ::= "bitSizeofType" "(" K ")" [strict klabel(bitSizeofType)] // needs to be heated to top of K for struct and union types
-	syntax K ::= "byteSizeofType" "(" K ")" [strict klabel(byteSizeofType)] 
-	syntax Int ::= "bitsToBytes" "(" K ")" [klabel(bitsToBytes)] 
-	syntax K ::= "l" "(" KLabel ")" [klabel(l)]
+	// syntax Int ::= "K2Int" "(" K ")"
+	syntax K ::= "sizeofType" "(" K ")" [strict] // generates a tv(size, cfg:sizeut)
+	syntax K ::= "bitSizeofType" "(" K ")" [strict] // needs to be heated to top of K for struct and union types
+	syntax K ::= "byteSizeofType" "(" K ")" [strict] 
+	syntax Int ::= "bitsToBytes" "(" K ")" 
+	syntax K ::= "l" "(" KLabel ")"
 	// metadata "wrapper=(builtin)"
 	declare _contains_ : Set K -> Bool
 	
@@ -197,9 +197,9 @@ module COMMON-SEMANTIC-SYNTAX
 			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
 		)
 	
-	syntax Set ::= "getModifiers" "(" K ")" [klabel(getModifiers)]
+	syntax Set ::= "getModifiers" "(" K ")"
 	
-	syntax K ::= "AllowWrite" "(" K ")" [strict klabel(AllowWrite)]
+	syntax K ::= "AllowWrite" "(" K ")" [strict]
 	
 	rule AllowWrite(lv(N:Int, T:KResult)) => lv(N:Int, stripConst(T:KResult)) [structural anywhere]
 
@@ -211,19 +211,19 @@ module COMMON-SEMANTIC-SYNTAX
 		when notBool Const in S:Set
 		[structural]
 	
-	syntax K ::= "bind" "(" List{KResult} "," List{KResult} ")" [klabel(bind)] 
-	syntax Value ::= "tv" "(" List{K} "," Type ")" [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})" klabel(tv)]
-	syntax Value ::= "lv" "(" List{K} "," Type ")" [klabel(lv)]
-	syntax K ::= "concretize" "(" Type "," K ")" [strict(2) klabel(concretize)] 
-	syntax Value ::= "functionObject" "(" Id "," Type "," K ")" [klabel(functionObject)] 
-	syntax Value ::= "functionPrototype" "(" Id "," Type ")" [klabel(functionPrototype)] 
+	syntax K ::= "bind" "(" List{KResult} "," List{KResult} ")"
+	syntax Value ::= "tv" "(" List{K} "," Type ")" [metadata "latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})"]
+	syntax Value ::= "lv" "(" List{K} "," Type ")"
+	syntax K ::= "concretize" "(" Type "," K ")" [strict(2)] 
+	syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
+	syntax Value ::= "functionPrototype" "(" Id "," Type ")"
 	
-	syntax Char ::= "firstChar" "(" String ")" [klabel(firstChar)] 
-	syntax Char ::= "nthChar" "(" String "," Int ")" [klabel(nthChar)] 
-	syntax String ::= "butFirstChar" "(" String ")" [klabel(butFirstChar)] 
-	syntax Int ::= "charToAscii" "(" String ")" [klabel(charToAscii)] 
-	syntax Char ::= "stringToChar" "(" String ")" [klabel(stringToChar)] 
-	syntax Int ::= "asciiCharString" "(" String ")" [klabel(asciiCharString)] 
+	syntax Char ::= "firstChar" "(" String ")"
+	syntax Char ::= "nthChar" "(" String "," Int ")"
+	syntax String ::= "butFirstChar" "(" String ")"
+	syntax Int ::= "charToAscii" "(" String ")"
+	syntax Char ::= "stringToChar" "(" String ")"
+	syntax Int ::= "asciiCharString" "(" String ")"
 	
 	
 	
@@ -233,21 +233,21 @@ module COMMON-SEMANTIC-SYNTAX
 	declare arithInterpret : Type BaseValue -> K // interpret the result of arithmetic as in 6.5.4
 	declare interpret : Type K -> K // interpret the values of reading from mem
 	
-	// syntax Set ::= "integerTypes" [klabel(integerTypes)]
-	syntax Set ::= "unsignedIntegerTypes" [klabel(unsignedIntegerTypes)]
-	syntax Set ::= "signedIntegerTypes" [klabel(signedIntegerTypes)]
+	// syntax Set ::= "integerTypes"
+	syntax Set ::= "unsignedIntegerTypes"
+	syntax Set ::= "signedIntegerTypes"
 	declare hasIntegerType : Type -> Bool
 	declare isFloatType : Type -> Bool
 	declare hasUnsignedIntegerType : Type -> Bool
 	declare hasSignedIntegerType : Type -> Bool
 	
-	syntax K ::= "typeof" "(" K ")" [klabel(typeof)] 
-	syntax K ::= "writeToFD" "(" Int "," Int ")" [klabel(writeToFD)] 
-	syntax K ::= "writeToFD" "(" Int "," String ")" [klabel(writeToFD)] 
-	syntax K ::= "readFromFD" "(" Int ")" [klabel(readFromFD)] 
-	syntax K ::= "readFromFD" "(" Int "," Int ")" [klabel(readFromFD)] 
+	syntax K ::= "typeof" "(" K ")"
+	syntax K ::= "writeToFD" "(" Int "," Int ")"
+	syntax K ::= "writeToFD" "(" Int "," String ")"
+	syntax K ::= "readFromFD" "(" Int ")"
+	syntax K ::= "readFromFD" "(" Int "," Int ")"
 
-	syntax K ::= "calculateGotoMap" "(" Id "," K ")" [klabel(calculateGotoMap)] 
+	syntax K ::= "calculateGotoMap" "(" Id "," K ")"
 	
 	declare isCharType : Type -> Bool 
 	declare isWCharType : Type -> Bool 
@@ -266,35 +266,35 @@ module COMMON-SEMANTIC-SYNTAX
 	declare isIncompleteType : Type -> Bool 
 	declare isArithmeticType : Type -> Bool
 	
-	syntax K ::= "aggregateInfo" "(" List{K} "," Map "," Map ")" [klabel(aggregateInfo)] // first map is for type, second map is for offset
+	syntax K ::= "aggregateInfo" "(" List{K} "," Map "," Map ")" // first map is for type, second map is for offset
 	declare getFieldOffset : Id K -> Int // these expect an aggregateInfo term as second argument
 	declare getFieldType : Id K -> Type
 	
 	declare isArithBinConversionOp : KLabel -> Bool 
 	declare isArithUnaryOp : KLabel -> Bool 
-	syntax K ::= "kpair" "(" K "," K ")" [klabel(kpair)] 
+	syntax K ::= "kpair" "(" K "," K ")"
 	declare promote : K -> Type // should be K, but is Type for efficiency reasons
 	declare argPromote : K -> K
-	syntax K ::= "extractField" "(" List{K} "," K "," Id ")" [klabel(extractField)] // bytes of struct, type, field id
-	syntax K ::= "allocString" "(" Int "," String ")" [klabel(allocString)] 
-	syntax K ::= "allocWString" "(" Int "," List{K} ")" [klabel(allocWString)] 
+	syntax K ::= "extractField" "(" List{K} "," K "," Id ")"  // bytes of struct, type, field id
+	syntax K ::= "allocString" "(" Int "," String ")"
+	syntax K ::= "allocWString" "(" Int "," List{K} ")"
 	syntax K ::= "sequencePoint"
 	
-	syntax K ::= "handleBuiltin" "(" Id "," Type ")" [klabel(handleBuiltin)] 
+	syntax K ::= "handleBuiltin" "(" Id "," Type ")"
 	
 	declare min : Type -> Int
 	declare max : Type -> Int
-	syntax K ::= "alloc" "(" K "," K ")" [klabel(alloc)] // should be K K 
-	syntax K ::= "realloc" "(" K "," K "," K "," K ")" [klabel(realloc)] // should be K K 
+	syntax K ::= "alloc" "(" K "," K ")" // should be K K 
+	syntax K ::= "realloc" "(" K "," K "," K "," K ")" // should be K K 
 	
 	// these are also used by compound literals
-	syntax KResult ::= "initValue" "(" Id "," Type "," K ")" [klabel(initValue)] 
-	syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2) klabel(figureInit)] // id, type, initializer
+	syntax KResult ::= "initValue" "(" Id "," Type "," K ")"
+	syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2)] // id, type, initializer
 	
 		
-	syntax K ::= "append" "(" Int "," Int "," Value ")" [klabel(append)] // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
-	syntax K ::= "deleteBlock" "(" Int ")" [klabel(deleteBlock)] // deletes the base object from memory, given a location
-	syntax K ::= "deleteSizedBlock" "(" Int "," Int ")" [klabel(deleteSizedBlock)] // deletes the base object from memory, given a location and it size (as a check)
+	syntax K ::= "append" "(" Int "," Int "," Value ")" // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
+	syntax K ::= "deleteBlock" "(" Int ")" // deletes the base object from memory, given a location
+	syntax K ::= "deleteSizedBlock" "(" Int "," Int ")" // deletes the base object from memory, given a location and it size (as a check)
 	
 	declare isConcreteNumber : Int -> Bool
 endmodule
@@ -420,11 +420,11 @@ module COMMON-C-SEMANTICS
 	imports COMMON-C-DECLARATIONS
 	imports COMMON-C-TYPING
 	
-	syntax Bag ::= "eval" "(" K ")" [klabel(eval)] 
-	syntax Bag ::= "eval" "(" K "," List{K} "," String "," Int ")" [klabel(eval)]
-	syntax K ::= "callMain" "(" Int "," K ")" [klabel(callMain)]
-	syntax K ::= "incomingArguments" "(" List{K} ")" [klabel(incomingArguments)]
+	syntax Bag ::= "eval" "(" K ")"
+	syntax Bag ::= "eval" "(" K "," List{K} "," String "," Int ")"
+	syntax K ::= "callMain" "(" Int "," K ")"
+	syntax K ::= "incomingArguments" "(" List{K} ")"
 	
-	syntax KLabel ::= "TranslationUnitName" "(" String ")" [klabel(TranslationUnitName)]
+	syntax KLabel ::= "TranslationUnitName" "(" String ")"
 		
 endmodule

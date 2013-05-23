@@ -1,15 +1,13 @@
 module COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	imports COMMON-INCLUDE 
 	
-	syntax Statement ::= "loopMarked" [klabel(loopMarked)] 
-	syntax K ::= "genLabel" "(" Int "," K ")" [klabel(genLabel)] //  switchid, value (tv or 'Default)
-	syntax K ::= "popLoop" [klabel(popLoop)]
-	syntax K ::= "popBlock" [klabel(popBlock)]
-	syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")" [klabel(frozenDeclaration)] //  nestingDepth, currentBlock, decl
-	syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex "\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!)" klabel(gotoObject)] //  nestingDepth, block history, continuation, loop stack, decl stack
-	
-	
-	syntax K ::= "case" "(" Int ")" [klabel(case)] 
+	syntax Statement ::= "loopMarked"
+	syntax K ::= "genLabel" "(" Int "," K ")" //  switchid, value (tv or 'Default)
+	syntax K ::= "popLoop"
+	syntax K ::= "popBlock"
+	syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")" //  nestingDepth, currentBlock, decl
+	syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex "\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!)"] //  nestingDepth, block history, continuation, loop stack, decl stack
+	syntax K ::= "case" "(" Int ")"
 endmodule 
 
 
@@ -31,7 +29,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		
 */
 	
-	syntax K ::= "waitingOnGotoMap" [klabel(waitingOnGotoMap)] 
+	syntax K ::= "waitingOnGotoMap"
 	rule 
 		<k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
 		<gotoMap> M:Map => M:Map[Map(.Map) / kpair(Tu:K, F:Id)] </gotoMap>
@@ -54,7 +52,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		<currentFunction> _ => File-Scope </currentFunction>
 		[structural] 
 
-	syntax K ::= "endBlockForGoto" "(" Int ")" [klabel(endBlockForGoto)] 
+	syntax K ::= "endBlockForGoto" "(" Int ")"
 	rule 
 		<computation> BlockStatement(Block:K)
 			=> Block:K ~> popBlock

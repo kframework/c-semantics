@@ -425,7 +425,7 @@ module DYNAMIC-C-ERRORS
 		(.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
 		[structural large]
 	
-	syntax K ::= "datarace" "(" Int "," Int "," Int "," Int ")" [klabel(datarace)] 
+	syntax K ::= "datarace" "(" Int "," Int "," Int "," Int ")"
 
 	// fixme possible to miss dataraces with bitfields
 	rule [read-write-race]:

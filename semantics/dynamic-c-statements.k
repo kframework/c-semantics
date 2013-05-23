@@ -2,8 +2,8 @@ module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	imports COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	imports DYNAMIC-INCLUDE
 
-	syntax K ::= "pushBlock" [klabel(pushBlock)] 
-	syntax K ::= "addToHistory" "(" Int ")" [latex "\terminal{addToHist}\!({#1}\!)" klabel(addToHistory)]
+	syntax K ::= "pushBlock"
+	syntax K ::= "addToHistory" "(" Int ")" [latex "\terminal{addToHist}\!({#1}\!)"]
 endmodule 
 
 module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
@@ -122,8 +122,8 @@ module DYNAMIC-SEMANTICS-SWITCH
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
 	
-	syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2) klabel(handleSwitch)] //  switch num, promoted value of controlling exp, int value of exp
-	syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")" [klabel(handleSwitch-aux)] 
+	syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] //  switch num, promoted value of controlling exp, int value of exp
+	syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
 	A \cinline{switch} statement causes control to jump to, into, or past the statement that is the \emph{switch body}, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
@@ -151,7 +151,7 @@ module DYNAMIC-SEMANTICS-SWITCH
 		<gotoMap>... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</gotoMap>
 		[structural] 
 		
-	syntax K ::= "tryCase" "(" K "," Value "," K ")" [klabel(tryCase)] //  K to be evaluated, val it should be, casehelper
+	syntax K ::= "tryCase" "(" K "," Value "," K ")" //  K to be evaluated, val it should be, casehelper
 	context tryCase((HOLE => reval(HOLE)), _, _)
 	rule
 		<k> (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
@@ -334,10 +334,10 @@ module DYNAMIC-SEMANTICS-GOTO
 				
 	*/
 
-	syntax K ::= "processGoto" "(" K ")" [klabel(processGoto)] 
-	syntax K ::= "processGotoDown" "(" K ")" [klabel(processGotoDown)] 
+	syntax K ::= "processGoto" "(" K ")"
+	syntax K ::= "processGotoDown" "(" K ")"
 
-	syntax K ::= "processGotoSameBlock" "(" List "," List ")" [klabel(processGotoSameBlock)] //  declaration stack, actual local variables
+	syntax K ::= "processGotoSameBlock" "(" List "," List ")" //  declaration stack, actual local variables
 	rule
 		<k> Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </k>
 		<currentFunction> F:Id </currentFunction>
@@ -430,7 +430,7 @@ module DYNAMIC-SEMANTICS-GOTO
 		andBool sIntDepth:Int ==Int Depth:Int +Int 1
 		[structural] 
 		
-	syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex "\terminal{addVarsForBlock}\!({#1},{#2}\!)" klabel(addVariablesForBlock)] 
+	syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex "\terminal{addVarsForBlock}\!({#1},{#2}\!)"] 
 	
 	//  skip variables from other blocks
 	rule
@@ -453,7 +453,7 @@ module DYNAMIC-SEMANTICS-GOTO
 		when getIdOfDeclaration(Decl:K) in Vars:List
 		[structural]
 	
-	syntax K ::= "enableInits" [klabel(enableInits)] 
+	syntax K ::= "enableInits"
 	
 	rule
 		<k> enableInits => .K ...</k>
