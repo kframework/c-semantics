@@ -1,6 +1,6 @@
-module COMMON-SEMANTICS-TYPE-INCLUDE is
+module COMMON-SEMANTICS-TYPE-INCLUDE
 	// FIXME need to automatically pad structs
-	including COMMON-INCLUDE 
+	imports COMMON-INCLUDE 
 	
 	syntax K ::= "MYHOLE" [klabel(MYHOLE)]
 	
@@ -36,10 +36,10 @@ module COMMON-SEMANTICS-TYPE-INCLUDE is
 		l('_++),, l('_--),, l('--_),, l('++_)
 	) 
 	[structural]
-end module
+endmodule
 
-module COMMON-SEMANTICS-TYPE-DECLARATIONS is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
+module COMMON-SEMANTICS-TYPE-DECLARATIONS
+	imports COMMON-SEMANTICS-TYPE-INCLUDE 
 
 	syntax K ::= "giveGlobalType" "(" K "," Type ")" [klabel(giveGlobalType)] 
 	syntax K ::= "giveLocalType" "(" K "," Type ")" [klabel(giveLocalType)] 
@@ -83,10 +83,10 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS is
 		<k> giveLocalType(X:Id, T:KResult) => .K ...</k>
 		<types> M:Map => M:Map[T:KResult / X:Id] </types>
 		[structural]	
-end module
+endmodule
 
-module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
+module COMMON-SEMANTICS-TYPE-CANONICALIZATION
+	imports COMMON-SEMANTICS-TYPE-INCLUDE 
 	
 	syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")" [klabel(canonicalizeType-aux)] 
 	context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
@@ -335,10 +335,10 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION is
 		when B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long)
 		orBool B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int) 
 		[structural]
-end module
+endmodule
 
-module COMMON-SEMANTICS-TYPE-INTERPRETATION is
-	including COMMON-SEMANTICS-TYPE-INCLUDE 
+module COMMON-SEMANTICS-TYPE-INTERPRETATION
+	imports COMMON-SEMANTICS-TYPE-INCLUDE 
 
 	syntax K ::= "BitFieldType" "(" K "," K ")" [strict klabel(BitFieldType)] 
 	
@@ -563,10 +563,10 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION is
 			=> NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
 		[structural anywhere] 
 	rule FieldName(K:K) => K:K [structural anywhere]
-end module
+endmodule
 
-module COMMON-SEMANTICS-TYPE-MISC is
-	including COMMON-SEMANTICS-TYPE-INCLUDE
+module COMMON-SEMANTICS-TYPE-MISC
+	imports COMMON-SEMANTICS-TYPE-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
 	Two types have compatible type if their types are the same. Additional rules for determining whether two types are compatible are described in 6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for declarators.  Moreover, two structure, union, or enumerated types declared in separate translation units are compatible if their tags and members satisfy the following requirements: If one is declared with a tag, the other shall be declared with the same tag. If both are completed anywhere within their respective translation units, then the following additional requirements apply: there shall be a one-to-one correspondence between their members such that each pair of corresponding members are declared with compatible types; if one member of the pair is declared with an alignment specifier, the other is declared with an equivalent alignment specifier; and if one member of the pair is declared with a name, the other is declared with the same name. For two structures, corresponding members shall be declared in the same order. For two structures or unions, corresponding bit-fields shall have the same widths. For two enumerations, corresponding members shall have the same values.
@@ -863,14 +863,14 @@ module COMMON-SEMANTICS-TYPE-MISC is
 		
 	
 	define getModifiers(t(S:Set, _)) => S:Set
-end module
+endmodule
 
 
-module COMMON-C-TYPING is
-	including COMMON-SEMANTICS-TYPE-INCLUDE
+module COMMON-C-TYPING
+	imports COMMON-SEMANTICS-TYPE-INCLUDE
 	
-	including COMMON-SEMANTICS-TYPE-DECLARATIONS 
-	including COMMON-SEMANTICS-TYPE-CANONICALIZATION 
-	including COMMON-SEMANTICS-TYPE-INTERPRETATION
-	including COMMON-SEMANTICS-TYPE-MISC
-end module
+	imports COMMON-SEMANTICS-TYPE-DECLARATIONS 
+	imports COMMON-SEMANTICS-TYPE-CANONICALIZATION 
+	imports COMMON-SEMANTICS-TYPE-INTERPRETATION
+	imports COMMON-SEMANTICS-TYPE-MISC
+endmodule

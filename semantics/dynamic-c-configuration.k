@@ -1,8 +1,6 @@
-load common-c-configuration
+require "common-c-configuration.k"
 
-module DYNAMIC-C-CONFIGURATION is
-	including C-SYNTAX
-	including COMMON-C-CONFIGURATION
-	
-
-end module
+module DYNAMIC-C-CONFIGURATION
+	imports C-SYNTAX
+	imports COMMON-C-CONFIGURATION
+endmodule

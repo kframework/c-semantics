@@ -1,7 +1,7 @@
-module COMMON-C-SYNTAX is
-	// including K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
+module COMMON-C-SYNTAX
+	// imports K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
 	
-	tags ndlocal ndheat computational structural interpRule anywhere observable
+	//tags ndlocal ndheat computational structural interpRule anywhere observable
 	
 	// these are semantic
 	syntax K ::= "reval" "(" K ")" [semantic klabel(reval) strict]
@@ -526,7 +526,7 @@ and unary_operator =
 	
 	syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")" [strict(2) klabel(CompoundLiteral)] // new // comp-lit id, spec, decl, init
 /*
-	(* There is a special form of CALL in which the function called is
+	(* There is a special form of CALL in which the function called
 	   __builtin_va_arg and the second argument is sizeof(T). This 
 	   should be printed as just T *)
 	| CALL of expression * expression list
@@ -743,4 +743,4 @@ and attribute = String * expression list
 	syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel(Arrow)]
 	macro Arrow(K:K, X:Id) = K:K -> X:Id
 
-end module
+endmodule

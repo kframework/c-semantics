@@ -17,10 +17,12 @@ export C_K_BASE ?= $(K_BASE)
 #FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 #VPATH = programs
 
+
+# chathhorn
 FILES_TO_DIST = \
-	$(K_BASE)/core/java/wrapperAndServer.jar \
-	$(K_BASE)/core/java/ioserver.jar \
-	$(K_BASE)/core/java/jopt-simple-3.3.jar \
+	legacy/java/wrapperAndServer.jar \
+	legacy/java/ioserver.jar \
+	legacy/java/jopt-simple-3.3.jar \
 	$(SEMANTICS_DIR)/c-total.maude \
 	$(SEMANTICS_DIR)/c-total-nd.maude \
 	$(SEMANTICS_DIR)/c-total-nd-thread.maude \

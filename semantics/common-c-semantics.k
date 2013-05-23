@@ -1,13 +1,13 @@
-module COMMON-INCOMING-MODULES is
-	including K
-	including C-SYNTAX 
-	including COMMON-C-CONFIGURATION 
-	including K-CONTEXTS 
+module COMMON-INCOMING-MODULES
+	imports K
+	imports C-SYNTAX 
+	imports COMMON-C-CONFIGURATION 
+	imports K-CONTEXTS 
 	
-end module
+endmodule
 
-module COMMON-SEMANTIC-SYNTAX is
-	including COMMON-INCOMING-MODULES 
+module COMMON-SEMANTIC-SYNTAX
+	imports COMMON-INCOMING-MODULES 
 	
 	syntax BaseValue ::= Int | Float
 	syntax C ::= BaseValue | Type | Value
@@ -297,10 +297,10 @@ module COMMON-SEMANTIC-SYNTAX is
 	syntax K ::= "deleteSizedBlock" "(" Int "," Int ")" [klabel(deleteSizedBlock)] // deletes the base object from memory, given a location and it size (as a check)
 	
 	declare isConcreteNumber : Int -> Bool
-end module
+endmodule
 
-module COMMON-C-SETTINGS is
-	including COMMON-SEMANTIC-SYNTAX 
+module COMMON-C-SETTINGS
+	imports COMMON-SEMANTIC-SYNTAX 
 	
 	// S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either"
 	// fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
@@ -351,24 +351,24 @@ module COMMON-C-SETTINGS is
 	
 	declare rank : Type -> Int 
 	
-end module
+endmodule
 
 // load common-c-sized-operations
 
-module COMMON-NOHELPER-INCLUDE is
-	including COMMON-SEMANTIC-SYNTAX
-	including COMMON-C-SETTINGS
-end module
+module COMMON-NOHELPER-INCLUDE
+	imports COMMON-SEMANTIC-SYNTAX
+	imports COMMON-C-SETTINGS
+endmodule
 
-load common-c-helpers
+require "common-c-helpers.k"
 
-module COMMON-INCLUDE is
-	including COMMON-NOHELPER-INCLUDE
-	including COMMON-C-HELPERS
-end module
+module COMMON-INCLUDE
+	imports COMMON-NOHELPER-INCLUDE
+	imports COMMON-C-HELPERS
+endmodule
 
-module COMMON-C-SEMANTICS-MISC is
-	including COMMON-INCLUDE 
+module COMMON-C-SEMANTICS-MISC
+	imports COMMON-INCLUDE 
 	
 	define loc(Base:Int, ByOff:Int, BiOff:Int) +Int Offset:Int
 		=> loc(Base:Int, ByOff:Int +Int Offset:Int, BiOff:Int)
@@ -404,21 +404,21 @@ module COMMON-C-SEMANTICS-MISC is
 		when BitOffset:Int >=Int numBitsPerByte
 	
 	rule Identifier("___missing_field_name") => #NoName [structural anywhere]
-end module
+endmodule
 
-load common-c-statements
-load common-c-expressions
-load common-c-declarations
-load common-c-typing
+require "common-c-statements.k"
+require "common-c-expressions.k"
+require "common-c-declarations.k"
+require "common-c-typing.k"
 
-module COMMON-C-SEMANTICS is
-	including COMMON-INCLUDE 
+module COMMON-C-SEMANTICS
+	imports COMMON-INCLUDE 
 	
-	including COMMON-C-SEMANTICS-MISC
-	including COMMON-C-EXPRESSIONS
-	including COMMON-C-STATEMENTS
-	including COMMON-C-DECLARATIONS
-	including COMMON-C-TYPING
+	imports COMMON-C-SEMANTICS-MISC
+	imports COMMON-C-EXPRESSIONS
+	imports COMMON-C-STATEMENTS
+	imports COMMON-C-DECLARATIONS
+	imports COMMON-C-TYPING
 	
 	syntax Bag ::= "eval" "(" K ")" [klabel(eval)] 
 	syntax Bag ::= "eval" "(" K "," List{K} "," String "," Int ")" [klabel(eval)]
@@ -427,4 +427,4 @@ module COMMON-C-SEMANTICS is
 	
 	syntax KLabel ::= "TranslationUnitName" "(" String ")" [klabel(TranslationUnitName)]
 		
-end module
+endmodule

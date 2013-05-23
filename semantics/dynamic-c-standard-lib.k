@@ -1,7 +1,7 @@
-module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
-	including DYNAMIC-INCLUDE 
-	// including #SOCKET
-	// including #TCP-INTERFACE
+module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+	imports DYNAMIC-INCLUDE 
+	// imports #SOCKET
+	// imports #TCP-INTERFACE
 	
 	syntax C ::= "vararg" "(" K ")" [hybrid strict klabel(vararg)]
 	syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2) klabel(nextvarg)] // loc, type
@@ -10,10 +10,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE is
 	declare incSymbolic : K -> K
 	syntax K ::= "printString" "(" K ")" [klabel(printString)]
 	
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule reval(vararg(K:K)) => vararg(K:K) [structural]
 	// fixme had to make this K because of the context bug
@@ -78,10 +78,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS is
 	rule
 		<k> printString("") => writeToFD(1, 10) ...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-MATH is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-MATH
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [sqrt]:
 		<k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
@@ -149,16 +149,16 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH is
 		...</k>
 		[structural]
 
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-SETJMP is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	/*@ 
 	\fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
 	The header \header{<setjmp.h>} defines the macro \cinline{setjmp}, and declares one function and one type, for bypassing the normal function call and return discipline.
 
-The type declared is
+The type declared
 \cdisplay{jmp_buf}
 which is an array type suitable for holding the information needed to restore a calling environment. The environment of a call to the \cinline{setjmp} macro consists of information sufficient for a call to the \cinline{longjmp} function to return execution to the correct block and invocation of that block, were it called recursively. It does not include the state of the floating-point status flags, of open files, or of any other component of the abstract machine.
 
@@ -243,17 +243,17 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 			_ => C:Bag
 		</threadLocal>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-STDARG is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-STDARG
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 		
 	/*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
 	The header \header{<stdarg.h>} declares a type and defines four macros, for advancing through a list of arguments whose number and types are not known to the called function when it is translated.
 
 A function may be called with a variable number of arguments of varying types. As described in 6.9.1, its parameter list contains one or more parameters. The rightmost parameter plays a special role in the access mechanism, and will be designated $\mathit{parmN}$ in this description.
 
-The type declared is
+The type declared
 \cdisplay{va_list}
 which is a complete object type suitable for holding information needed by the macros \cinline{va_start}, \cinline{va_arg}, \cinline{va_end}, and \cinline{va_copy}. If access to the varying arguments is desired, the called function shall declare an object (generally referred to as ap in this subclause) having type \cinline{va_list}. The object \cinline{ap} may be passed as an argument to another function; if that function invokes the \cinline{va_arg} macro with parameter \cinline{ap}, the value of \cinline{ap} in the calling function is indeterminate and shall be passed to the \cinline{va_end} macro prior to any further reference to \cinline{ap}.
 	}*/
@@ -326,10 +326,10 @@ which is a complete object type suitable for holding information needed by the m
 				=> skipval
 		...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	syntax K ::= "offsetOf" "(" K "," K ")" [strict(1) klabel(offsetOf)]
 	rule
@@ -346,11 +346,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF is
 		[structural]
 	rule <k> offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</k>
 		[structural]
-end module
+endmodule
 
 
-module DYNAMIC-C-STANDARD-LIBRARY-STDIO is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-STDIO
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
 	rule [putchar]:
 		<k> prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
@@ -863,9 +863,9 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
 	/*@ \source[n1570]{\para{7.21.6.1}{8}}
 \begin{description}
 \item[\texttt{s}]
-If no \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of character type. Characters from the array are written up to (but not including) the terminating null character. \broken{If the precision is specified, no more than that many bytes are written.} If the precision is not specified or is greater than the size of the array, the array shall contain a null character.
+If no \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of character type. Characters from the array are written up to (but not imports) the terminating null character. \broken{If the precision is specified, no more than that many bytes are written.} If the precision is not specified or is greater than the size of the array, the array shall contain a null character.
 
-\broken{If an \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of \cinline{wchar_t} type. Wide characters from the array are converted to multibyte characters (each as if by a call to the \cinline{wcrtomb} function, with the conversion state described by an \cinline{mbstate_t} object initialized to zero before the first wide character is converted) up to and including a terminating null wide character. The resulting multibyte characters are written up to (but not including) the terminating null character (byte). If no precision is specified, the array shall contain a null wide character. If a precision is specified, no more than that many bytes are written (including shift sequences, if any), and the array shall contain a null wide character if, to equal the multibyte character sequence length given by the precision, the function would need to access a wide character one past the end of the array. In no case is a partial multibyte character written.}
+\broken{If an \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of \cinline{wchar_t} type. Wide characters from the array are converted to multibyte characters (each as if by a call to the \cinline{wcrtomb} function, with the conversion state described by an \cinline{mbstate_t} object initialized to zero before the first wide character is converted) up to and imports a terminating null wide character. The resulting multibyte characters are written up to (but not imports) the terminating null character (byte). If no precision is specified, the array shall contain a null wide character. If a precision is specified, no more than that many bytes are written (imports shift sequences, if any), and the array shall contain a null wide character if, to equal the multibyte character sequence length given by the precision, the function would need to access a wide character one past the end of the array. In no case is a partial multibyte character written.}
 \end{description}
 	*/
 	rule [format-%s-start]:
@@ -936,11 +936,11 @@ A \texttt{\%} character is written. No argument is converted. The complete conve
 		<formatState> "%" </formatState>
 		<formatLength> Length:String => Length:String +String "l" </formatLength>
 		[structural]
-end module
+endmodule
 
 
-module DYNAMIC-C-STANDARD-LIBRARY-STDLIB is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	rule [debug]:
 		<k> prepareBuiltin(Identifier("__debug"), _) => skipval ...</k>
@@ -1052,10 +1052,10 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
 		[structural]
 
 
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-STRING is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-STRING
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	// try to use getString
 	// fixme should detect overlaps
@@ -1084,10 +1084,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING is
 			~> tv(Orig:Int, t(.Set, pointerType(t(.Set, char))))
 		...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-THREADS is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-THREADS
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	////////////////////////////--
 	// Threads
@@ -1253,10 +1253,10 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 			// ~> Retval:KResult
 		// ...</k>
 		// [structural]
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-TIME is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-TIME
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	
 	// fixme, just a placeholder
 	rule [time]:
@@ -1265,29 +1265,29 @@ module DYNAMIC-C-STANDARD-LIBRARY-TIME is
 		...</k>
 		[structural]
 	
-end module
+endmodule
 
-module DYNAMIC-C-STANDARD-LIBRARY-MISC is
-	including DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+module DYNAMIC-C-STANDARD-LIBRARY-MISC
+	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
-end module
+endmodule
 
 
-module DYNAMIC-C-STANDARD-LIBRARY is
+module DYNAMIC-C-STANDARD-LIBRARY
 ////////////////////////////////
 //- C standard library
-	including DYNAMIC-INCLUDE
-	including DYNAMIC-C-STANDARD-LIBRARY-HELPERS
+	imports DYNAMIC-INCLUDE
+	imports DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	
-	including DYNAMIC-C-STANDARD-LIBRARY-MATH
-	including DYNAMIC-C-STANDARD-LIBRARY-SETJMP
-	including DYNAMIC-C-STANDARD-LIBRARY-STDARG
-	including DYNAMIC-C-STANDARD-LIBRARY-STDDEF
-	including DYNAMIC-C-STANDARD-LIBRARY-STDIO 
-	including DYNAMIC-C-STANDARD-LIBRARY-STDLIB
-	including DYNAMIC-C-STANDARD-LIBRARY-STRING
-	including DYNAMIC-C-STANDARD-LIBRARY-THREADS
-	including DYNAMIC-C-STANDARD-LIBRARY-TIME
+	imports DYNAMIC-C-STANDARD-LIBRARY-MATH
+	imports DYNAMIC-C-STANDARD-LIBRARY-SETJMP
+	imports DYNAMIC-C-STANDARD-LIBRARY-STDARG
+	imports DYNAMIC-C-STANDARD-LIBRARY-STDDEF
+	imports DYNAMIC-C-STANDARD-LIBRARY-STDIO 
+	imports DYNAMIC-C-STANDARD-LIBRARY-STDLIB
+	imports DYNAMIC-C-STANDARD-LIBRARY-STRING
+	imports DYNAMIC-C-STANDARD-LIBRARY-THREADS
+	imports DYNAMIC-C-STANDARD-LIBRARY-TIME
 	
-	including DYNAMIC-C-STANDARD-LIBRARY-MISC
-end module
+	imports DYNAMIC-C-STANDARD-LIBRARY-MISC
+endmodule

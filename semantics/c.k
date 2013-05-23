@@ -1,11 +1,11 @@
-load c-syntax
-load dynamic-c-semantics
+require "c-syntax.k"
+require "dynamic-c-semantics.k"
 
-module C-SEMANTICS is
-	including DYNAMIC-C-CONFIGURATION
-	including DYNAMIC-C-SEMANTICS
-end module
+module C-SEMANTICS
+	imports DYNAMIC-C-CONFIGURATION
+	imports DYNAMIC-C-SEMANTICS
+endmodule
 
-module C is 
-	including C-SEMANTICS 
-end module
+module C
+	imports C-SEMANTICS 
+endmodule

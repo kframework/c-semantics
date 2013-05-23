@@ -1,5 +1,5 @@
-module COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
-	including COMMON-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-INCLUDE
+	imports COMMON-INCLUDE 
 	syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3) klabel(figureInit-aux)] // id, type, initializer
 	syntax K ::= "declarationObject" "(" Type "," K "," K ")" [latex "\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)}" klabel(declarationObject)] // type, translation unit it was defined in, definition
 	
@@ -13,10 +13,10 @@ module COMMON-SEMANTICS-DECLARATIONS-INCLUDE is
 	syntax K ::= "doDeclare" "(" K "," K ")" [strict(1) klabel(doDeclare)] 
 			
 	syntax K ::= "processFunctionBody" "(" K ")" [klabel(processFunctionBody)]
-end module
+endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-GENERAL
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 
 	// c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes of this subclause unnamed members of objects of structure and union type do not participate in initialization.  Unnamed members of structure objects have indeterminate value even after initialization
 	// c99 6.7.8:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static storage duration is not initialized explicitly, then:
@@ -647,16 +647,16 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL is
 		safeBody(Identifier("main"), Block:K) 
 		=> Block:K 
 		~> Return(tv(0, t(.Set, int)))
-end module
+endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	syntax K ::= "typingBody" "(" Id "," Type "," K ")" [klabel(typingBody)] // third argument is just for now, as a hack
 	
-end module
+endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	syntax K ::= "te" "(" K "," Type ")" [klabel(te)] 
 	syntax K ::= "getInit" [klabel(getInit)] 
@@ -1084,11 +1084,11 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS is
 		when notBool isWCharType(T:KResult)
 		andBool (isBasicType(T:KResult) orBool isPointerType(T:KResult) orBool isBitfieldType(T:KResult))
 		[structural]
-end module
+endmodule
 
 
-module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	syntax K ::= "canonicalizeTranslationUnitVariables" [klabel(canonicalizeTranslationUnitVariables)] 
 	rule [unpack-TranslationUnit]:
@@ -1375,10 +1375,10 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION is
 		[structural]
 	
 	
-end module
+endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-ENUMS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-SEMANTICS-DECLARATIONS-ENUMS
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	syntax K ::= "fillEnums" "(" K ")" [klabel(fillEnums)] 
 	syntax K ::= "fillEnums-aux" "(" K "," K ")" [klabel(fillEnums-aux)] 
@@ -1404,14 +1404,14 @@ module COMMON-SEMANTICS-DECLARATIONS-ENUMS is
 	rule
 		<k> fillEnums-aux(EnumDef(X:Id, List(.List{K})), _) => .K ...</k> 
 		[structural] 
-end module
+endmodule
 
-module COMMON-C-DECLARATIONS is
-	including COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
+module COMMON-C-DECLARATIONS
+	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
-	including COMMON-SEMANTICS-DECLARATIONS-GENERAL 
-	including COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY
-	including COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
-	including COMMON-SEMANTICS-DECLARATIONS-ENUMS 
-	including COMMON-SEMANTICS-DECLARATIONS-RESOLUTION 
-end module
+	imports COMMON-SEMANTICS-DECLARATIONS-GENERAL 
+	imports COMMON-SEMANTICS-DECLARATIONS-FUNTION-BODY
+	imports COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
+	imports COMMON-SEMANTICS-DECLARATIONS-ENUMS 
+	imports COMMON-SEMANTICS-DECLARATIONS-RESOLUTION 
+endmodule

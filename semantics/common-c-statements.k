@@ -1,5 +1,5 @@
-module COMMON-SEMANTICS-STATEMENTS-INCLUDE is
-	including COMMON-INCLUDE 
+module COMMON-SEMANTICS-STATEMENTS-INCLUDE
+	imports COMMON-INCLUDE 
 	
 	syntax Statement ::= "loopMarked" [klabel(loopMarked)] 
 	syntax K ::= "genLabel" "(" Int "," K ")" [klabel(genLabel)] //  switchid, value (tv or 'Default)
@@ -10,11 +10,11 @@ module COMMON-SEMANTICS-STATEMENTS-INCLUDE is
 	
 	
 	syntax K ::= "case" "(" Int ")" [klabel(case)] 
-end module 
+endmodule 
 
 
-module COMMON-SEMANTICS-PROCESS-LABELS is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+module COMMON-SEMANTICS-PROCESS-LABELS
+	imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
 	// now that we can have different strictnesses in different cells, maybe this can be redone easily
 /*
 	things I have to keep track of:
@@ -304,10 +304,10 @@ module COMMON-SEMANTICS-PROCESS-LABELS is
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, l('Default)))
 		[structural large]
-end module
+endmodule
  
-module COMMON-C-STATEMENTS is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE 
-	including COMMON-SEMANTICS-PROCESS-LABELS
+module COMMON-C-STATEMENTS
+	imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+	imports COMMON-SEMANTICS-PROCESS-LABELS
 	
-end module
+endmodule

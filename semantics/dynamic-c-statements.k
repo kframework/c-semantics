@@ -1,13 +1,13 @@
-module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE is
-	including COMMON-SEMANTICS-STATEMENTS-INCLUDE
-	including DYNAMIC-INCLUDE
+module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+	imports COMMON-SEMANTICS-STATEMENTS-INCLUDE
+	imports DYNAMIC-INCLUDE
 
 	syntax K ::= "pushBlock" [klabel(pushBlock)] 
 	syntax K ::= "addToHistory" "(" Int ")" [latex "\terminal{addToHist}\!({#1}\!)" klabel(addToHistory)]
-end module 
+endmodule 
 
-module DYNAMIC-SEMANTICS-LABELED-STATEMENTS is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 
 	/*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
 	Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
@@ -21,11 +21,11 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS is
 	rule [default-fall-through]:
 		<k> Default(_:Int, K:K) => K:K ...</k>
 		[structural] 
-end module
+endmodule
 
 
-module DYNAMIC-SEMANTICS-BLOCKS is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module DYNAMIC-SEMANTICS-BLOCKS
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
 	A \emph{compound statement} is a block.
@@ -85,16 +85,16 @@ module DYNAMIC-SEMANTICS-BLOCKS is
 		[structural]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
-	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (including storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
+	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (imports storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
 	}*/
 	rule [dissolve-block]:
 		<k> Block(BlockNum:Int, _, List(Statements:List{K})) => klistToK(Statements:List{K}) ...</k>
 		<blockHistory> .List => ListItem(BlockNum:Int) ...</blockHistory>
 		[structural]
-end module
+endmodule
 		
-module DYNAMIC-SEMANTICS-IF-THEN is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-IF-THEN
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
 	\ldots There is a sequence point between the evaluation of a full expression and the evaluation of the next full expression to be evaluated.
@@ -114,10 +114,10 @@ module DYNAMIC-SEMANTICS-IF-THEN is
 		<k> IfThenElse((V:KResult => simplifyTruth(V:KResult)), _, _) ...</k>
 		when isNotTruthValue(V:KResult)
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-SWITCH is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-SWITCH
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	//  fixme shouldn't there be sequence points here?
 	//  fixme not doing promoting or conversion
@@ -194,10 +194,10 @@ module DYNAMIC-SEMANTICS-SWITCH is
 	rule
 		<k> tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</k>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-WHILE is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-WHILE
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
 	The evaluation of the controlling expression takes place before each execution of the loop body.
@@ -218,10 +218,10 @@ module DYNAMIC-SEMANTICS-WHILE is
 		...</k>
 		// [computational]
 		[structural]  // rule so that looping programs see repetition
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-DO-WHILE is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-DO-WHILE
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
 	The evaluation of the controlling expression takes place after each execution of the loop body.
@@ -242,15 +242,15 @@ module DYNAMIC-SEMANTICS-DO-WHILE is
 		...</k>
 		// [computational]
 		[structural]  // rule so that looping programs see repetition
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-FOR is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-FOR
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
 	The statement 
 	\cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ; $\textit{expression-3}$ ) $\textit{statement}$ }
-	 behaves as follows: The expression $\textit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\textit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\textit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, including the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\textit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
+	 behaves as follows: The expression $\textit{expression-2}$ is the controlling expression that is evaluated before each execution of the loop body. The expression $\textit{expression-3}$ is evaluated as a void expression after each execution of the loop body. If $\textit{clause-1}$ is a declaration, the scope of any identifiers it declares is the remainder of the declaration and the entire loop, imports the other two expressions; it is reached in the order of execution before the first evaluation of the controlling expression. If $\textit{clause-1}$ is an expression, it is evaluated as a void expression before the first evaluation of the controlling expression.
 	}
 	
 	\fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
@@ -286,10 +286,10 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 		<blockHistory> ListItem(Num:Int) ...</blockHistory>
 		// [computational]
 		[structural] // rule so that looping programs see repetition 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-GOTO is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-GOTO
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
 	A \cinline{goto} statement causes an unconditional jump to the statement prefixed by the named label in the enclosing function.
@@ -482,10 +482,10 @@ module DYNAMIC-SEMANTICS-GOTO is
 		<k> addVariablesForBlock(_:Int, .List) => .K ...</k>
 		[structural] 
 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-CONTINUE is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module DYNAMIC-SEMANTICS-CONTINUE
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
 
 	/*@
 \begin{lrbox}{\LstBox}
@@ -542,20 +542,20 @@ unless the \cinline{continue} statement shown is in an enclosed iteration statem
 		when L:KLabel =/=KLabel 'For
 		[structural]
 		
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-BREAK is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module DYNAMIC-SEMANTICS-BREAK
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	/*@ \fromStandard{\source[n1570]{\para{6.8.6.3}{2}}}{
 	A break statement terminates execution of the smallest enclosing switch or iteration statement.
 	}*/
 	rule [break]:
 		<k> Break => popLoop ...</k>
 		[structural] 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-RETURN is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module DYNAMIC-SEMANTICS-RETURN
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 
 	/*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
 	A \cinline{return} statement terminates execution of the current function and returns control to its caller. A function may have any number of \cinline{return} statements.
@@ -606,10 +606,10 @@ module DYNAMIC-SEMANTICS-RETURN is
 			) => .List
 		...</callStack>
 		[structural large] 
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-STATEMENTS-MISC is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module DYNAMIC-SEMANTICS-STATEMENTS-MISC
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	
 	rule [popLoop]:
 		<k> popLoop ~> _ => K:K </k>
@@ -623,21 +623,21 @@ module DYNAMIC-SEMANTICS-STATEMENTS-MISC is
 		<loopStack> ListItem(kpair(Num':Int, _)) ...</loopStack>
 		when Num':Int =/=Int Num:Int
 		[structural] 
-end module
+endmodule
 
-module DYNAMIC-C-STATEMENTS is
-	including DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
-	including DYNAMIC-SEMANTICS-LABELED-STATEMENTS
-	including DYNAMIC-SEMANTICS-IF-THEN 
-	including DYNAMIC-SEMANTICS-FOR 
-	including DYNAMIC-SEMANTICS-WHILE 
-	including DYNAMIC-SEMANTICS-SWITCH 
-	including DYNAMIC-SEMANTICS-GOTO 
-	including DYNAMIC-SEMANTICS-RETURN 
-	including DYNAMIC-SEMANTICS-BLOCKS 
-	including DYNAMIC-SEMANTICS-DO-WHILE 
-	including DYNAMIC-SEMANTICS-CONTINUE
-	including DYNAMIC-SEMANTICS-BREAK
-	including DYNAMIC-SEMANTICS-STATEMENTS-MISC
+module DYNAMIC-C-STATEMENTS
+	imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+	imports DYNAMIC-SEMANTICS-LABELED-STATEMENTS
+	imports DYNAMIC-SEMANTICS-IF-THEN 
+	imports DYNAMIC-SEMANTICS-FOR 
+	imports DYNAMIC-SEMANTICS-WHILE 
+	imports DYNAMIC-SEMANTICS-SWITCH 
+	imports DYNAMIC-SEMANTICS-GOTO 
+	imports DYNAMIC-SEMANTICS-RETURN 
+	imports DYNAMIC-SEMANTICS-BLOCKS 
+	imports DYNAMIC-SEMANTICS-DO-WHILE 
+	imports DYNAMIC-SEMANTICS-CONTINUE
+	imports DYNAMIC-SEMANTICS-BREAK
+	imports DYNAMIC-SEMANTICS-STATEMENTS-MISC
 	
-end module
+endmodule

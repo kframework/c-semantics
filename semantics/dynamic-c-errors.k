@@ -1,19 +1,17 @@
-module DYNAMIC-SEMANTICS-ERRORS-INCLUDE is
-	including COMMON-C-SEMANTICS
+module DYNAMIC-SEMANTICS-ERRORS-INCLUDE
+	imports COMMON-C-SEMANTICS
+	imports DYNAMIC-C-SEMANTICS-MISC
+	imports DYNAMIC-C-EXPRESSIONS
+	imports DYNAMIC-C-TYPING 
+	imports DYNAMIC-C-DECLARATIONS 
+	imports DYNAMIC-C-MEMORY 
+	imports DYNAMIC-C-STATEMENTS 
+	imports DYNAMIC-C-CONVERSIONS 
+	imports DYNAMIC-C-STANDARD-LIBRARY
+endmodule
 
-	including DYNAMIC-C-SEMANTICS-MISC
-	including DYNAMIC-C-EXPRESSIONS
-	including DYNAMIC-C-TYPING 
-	including DYNAMIC-C-DECLARATIONS 
-	including DYNAMIC-C-MEMORY 
-	including DYNAMIC-C-STATEMENTS 
-	including DYNAMIC-C-CONVERSIONS 
-	including DYNAMIC-C-STANDARD-LIBRARY
-
-end module
-
-module DYNAMIC-C-ERRORS is
-	including DYNAMIC-SEMANTICS-ERRORS-INCLUDE
+module DYNAMIC-C-ERRORS
+	imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
 	declare Error : String String -> K
 	define Error(Name:String, Msg:String)  => 
@@ -473,4 +471,4 @@ module DYNAMIC-C-ERRORS is
 		[computational large]		
 
 
-end module
+endmodule

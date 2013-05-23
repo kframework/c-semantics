@@ -1,14 +1,14 @@
-module COMMON-SEMANTICS-HELPERS-INCLUDE is
+module COMMON-SEMANTICS-HELPERS-INCLUDE
 	// require maudeLib/common-c-builtins
-	// including #COMMON-SEMANTICS-HELPERS-BUILTINS
+	// imports #COMMON-SEMANTICS-HELPERS-BUILTINS
 	// op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
 	syntax Int ::= Int "bit::" Int
-	including COMMON-NOHELPER-INCLUDE
-end module
+	imports COMMON-NOHELPER-INCLUDE
+endmodule
 
 
-module COMMON-SEMANTICS-HELPERS-MISC is
-	including COMMON-SEMANTICS-HELPERS-INCLUDE
+module COMMON-SEMANTICS-HELPERS-MISC
+	imports COMMON-SEMANTICS-HELPERS-INCLUDE
 
 	declare firstLoc : K -> K
 	define
@@ -462,10 +462,10 @@ module COMMON-SEMANTICS-HELPERS-MISC is
 	) [structural]
 	
 	rule assert(true, _:Int) => .K [structural anywhere]
-end module
+endmodule
 
-module COMMON-C-BITSIZE is
-	including COMMON-SEMANTICS-HELPERS-INCLUDE
+module COMMON-C-BITSIZE
+	imports COMMON-SEMANTICS-HELPERS-INCLUDE
 	
 	declare bitSizeofList : List{KResult} -> K
 	declare bitSizeofList-aux : K Int List{KResult} -> K [strict(1)]
@@ -532,11 +532,11 @@ module COMMON-C-BITSIZE is
 	define listToK(K:K) => klistToK(getList{K}(K:K))
 	define klistToK((K:K,, L:List{K})) => K:K ~> klistToK(L:List{K})
 	define klistToK(.List{K}) => .K
-end module
+endmodule
 
 
-module COMMON-C-HELPERS is
-	including COMMON-SEMANTICS-HELPERS-INCLUDE
-	including COMMON-C-BITSIZE
-	including COMMON-SEMANTICS-HELPERS-MISC
-end module
+module COMMON-C-HELPERS
+	imports COMMON-SEMANTICS-HELPERS-INCLUDE
+	imports COMMON-C-BITSIZE
+	imports COMMON-SEMANTICS-HELPERS-MISC
+endmodule

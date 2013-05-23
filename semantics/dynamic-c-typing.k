@@ -1,11 +1,11 @@
-module DYNAMIC-SEMANTICS-TYPE-INCLUDE is
+module DYNAMIC-SEMANTICS-TYPE-INCLUDE
 	// FIXME need to automatically pad structs
-	including DYNAMIC-INCLUDE 
-	including COMMON-SEMANTICS-TYPE-INCLUDE
-end module
+	imports DYNAMIC-INCLUDE 
+	imports COMMON-SEMANTICS-TYPE-INCLUDE
+endmodule
 
-module DYNAMIC-SEMANTICS-TYPE-STRICTNESS is
-	including DYNAMIC-SEMANTICS-TYPE-INCLUDE
+module DYNAMIC-SEMANTICS-TYPE-STRICTNESS
+	imports DYNAMIC-SEMANTICS-TYPE-INCLUDE
 
 	syntax K ::= "waitingOnDeclType" [klabel(waitingOnDeclType)] 
 	rule [type-Cast-heat]:
@@ -17,10 +17,10 @@ module DYNAMIC-SEMANTICS-TYPE-STRICTNESS is
 		<k> (T:KResult => .) ~> evalToType ...</k>
 		<type> waitingOnDeclType => T:KResult ...</type>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
-	including DYNAMIC-SEMANTICS-TYPE-INCLUDE
+module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
+	imports DYNAMIC-SEMANTICS-TYPE-INCLUDE
 	
 	rule
 		<k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
@@ -238,21 +238,21 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS is
 		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
 		[structural]
 		
-end module
+endmodule
 
-module DYNAMIC-SEMANTICS-TYPE-MISC is
-	including  DYNAMIC-SEMANTICS-TYPE-INCLUDE
+module DYNAMIC-SEMANTICS-TYPE-MISC
+	imports  DYNAMIC-SEMANTICS-TYPE-INCLUDE
 	
 	rule [ExpressionLoc-type]:
 		<type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
 		<currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
 		[structural]
-end module
+endmodule
 
-module DYNAMIC-C-TYPING is
-	including DYNAMIC-SEMANTICS-TYPE-INCLUDE
+module DYNAMIC-C-TYPING
+	imports DYNAMIC-SEMANTICS-TYPE-INCLUDE
 	
-	including DYNAMIC-SEMANTICS-TYPE-STRICTNESS
-	including DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
-	including DYNAMIC-SEMANTICS-TYPE-MISC
-end module
+	imports DYNAMIC-SEMANTICS-TYPE-STRICTNESS
+	imports DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
+	imports DYNAMIC-SEMANTICS-TYPE-MISC
+endmodule

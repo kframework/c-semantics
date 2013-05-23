@@ -1,19 +1,19 @@
-load dynamic-c-configuration
-load common-c-semantics
-require /modules/uris
+require "dynamic-c-configuration.k"
+require "common-c-semantics.k"
+require "modules/uris.k"
 
-module DYNAMIC-SEMANTIC-SYNTAX is
-	including COMMON-INCLUDE
-	including URIS
-end module
+module DYNAMIC-SEMANTIC-SYNTAX
+	imports COMMON-INCLUDE
+	imports URIS
+endmodule
 
-module DYNAMIC-INCLUDE is
-	including DYNAMIC-SEMANTIC-SYNTAX
-	including DYNAMIC-C-CONFIGURATION
-end module
+module DYNAMIC-INCLUDE
+	imports DYNAMIC-SEMANTIC-SYNTAX
+	imports DYNAMIC-C-CONFIGURATION
+endmodule
 
-module DYNAMIC-C-SEMANTICS-MISC is
-	including DYNAMIC-INCLUDE 
+module DYNAMIC-C-SEMANTICS-MISC
+	imports DYNAMIC-INCLUDE 
 			
 	rule [sequencePoint]:
 		<k> sequencePoint => .K ...</k>
@@ -104,7 +104,7 @@ module DYNAMIC-C-SEMANTICS-MISC is
 			=> string2List-aux(butFirstChar(S:String), (L:List{K},, firstChar(S:String)))
 		when S:String =/=String ""
 		[structural]
-end module
+endmodule
 
 load dynamic-c-expressions
 load dynamic-c-conversions
@@ -118,20 +118,20 @@ load dynamic-c-declarations
 // this must be below the others
 load dynamic-c-errors
 
-module DYNAMIC-C-SEMANTICS is
-	including COMMON-C-SEMANTICS
-	including DYNAMIC-INCLUDE
+module DYNAMIC-C-SEMANTICS
+	imports COMMON-C-SEMANTICS
+	imports DYNAMIC-INCLUDE
 	
-	including DYNAMIC-C-SEMANTICS-MISC
-	including DYNAMIC-C-EXPRESSIONS
-	including DYNAMIC-C-ERRORS
-	including DYNAMIC-C-TYPING 
-	including DYNAMIC-C-DECLARATIONS 
-	including DYNAMIC-C-MEMORY 
-	including DYNAMIC-C-STATEMENTS 
-	including DYNAMIC-C-CONVERSIONS 
-	including DYNAMIC-C-STANDARD-LIBRARY
-	// including DYNAMIC-C-LTL
+	imports DYNAMIC-C-SEMANTICS-MISC
+	imports DYNAMIC-C-EXPRESSIONS
+	imports DYNAMIC-C-ERRORS
+	imports DYNAMIC-C-TYPING 
+	imports DYNAMIC-C-DECLARATIONS 
+	imports DYNAMIC-C-MEMORY 
+	imports DYNAMIC-C-STATEMENTS 
+	imports DYNAMIC-C-CONVERSIONS 
+	imports DYNAMIC-C-STANDARD-LIBRARY
+	// imports DYNAMIC-C-LTL
 	
 /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
 If they are declared, the parameters to the main function shall obey the following constraints:
@@ -313,4 +313,4 @@ or equivalent; or in some other implementation-defined manner.
 			<output> S2:String +String listToString(L:List) +String S2'':String </output>
 		)
 		[computational]
-end module
+endmodule
