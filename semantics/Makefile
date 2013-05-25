@@ -8,14 +8,14 @@ K_PRELUDE = $(K_BASE)/bin/maude/lib/k-prelude
 K_SOCKETS = $(K_BASE)/bin/maude/lib/socket
 K_TCP = $(K_BASE)/bin/maude/lib/TCPSupport
 # chathhorn
-#K-PL-BUILTINS = $(K_BASE)/maude/lib/pl-builtins
-K-PL-BUILTINS = $(K_BASE)/bin/maude/lib/builtins
+#K_PL_BUILTINS = $(K_BASE)/maude/lib/pl-builtins
+K_PL_BUILTINS = $(K_BASE)/bin/maude/lib/builtins
 K_PL_MODEL_CHECKER = $(K_BASE)/bin/maude/lib/k-model-checker
 K_PL_META_LEVEL = $(K_BASE)/bin/maude/lib/pl-meta-level
 K_LATEX_STYLE = $(K_BASE)/include/latex/k.sty
 
 
-K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K-PL-BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
+K_BASE_FILES = $(K_PRELUDE).maude $(K_SOCKETS).maude $(K_PL_BUILTINS).maude $(K_PL_MODEL_CHECKER).maude $(K_PL_META_LEVEL).maude
 K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #COMPILE_C = perl -d:DProf $(K_MAUDE) c.k -u -language C

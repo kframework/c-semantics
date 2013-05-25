@@ -1,3 +1,5 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	imports DYNAMIC-INCLUDE
 	syntax K ::= "assign" "(" K "," K ")"
@@ -8,14 +10,14 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
 	syntax K ::= "fromArray" "(" Int "," Int ")" // offset, length
 	
-	declare makeTruth : Bool -> K
-	define makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
+	syntax K ::= makeTruth(Bool) [function]
+	rule makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
 	
-	declare arrayLength : KResult -> Int
-	define arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N:Int
+	syntax Int ::= arrayLength(K) [function]
+	rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N:Int
 	/*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
-	define arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
-	define arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
+	rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
+	rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
 	
 	// fixme Whoah!  What about char types?  What is this about?
 	// If the lvalue designates an object of automatic storage duration that could have been declared with the register storage class (never had its address taken), and that object is uninitialized (not declared with an initializer and no assignment to it has been performed prior to use), the behavior is undefined.
@@ -23,8 +25,8 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
 	rule [reval-skipval]: reval(skipval) => skipval [structural]
 	rule [reval-emptyval]: reval(emptyValue) => emptyValue [structural]
-	rule [reval-tv-normal]: reval(tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult) [structural] 
-	rule [peval-tv-normal]: peval(tv(V:List{K}, T:KResult)) => tv(V:List{K}, T:KResult) [structural]
+	rule [reval-tv-normal]: reval(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult) [structural] 
+	rule [peval-tv-normal]: peval(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult) [structural]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
 	Except when it is the operand of the \cinline{sizeof} operator, the \cinline{_Alignof} operator, the unary \cinline{&} operator, the \cinline{++} operator, the \cinline{--} operator, or the left operand of the \cinline{.} operator or an assignment operator, an lvalue that does not have an array type is converted to the value stored in the designated object (and is no longer an lvalue); this is called lvalue conversion.  If the lvalue has qualified type, the value has the unqualified version of the type of the lvalue; additionally, if the lvalue has atomic type, the value has the non-atomic version of the type of the lvalue; otherwise, the value has the type of the lvalue. \ldots
@@ -66,14 +68,14 @@ endmodule
 module DYNAMIC-SEMANTICS-LITERALS
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 		
-	declare withinRange : Int SimpleType -> Bool
-	define withinRange(I:Int, T:K) => (I:Int <=Int max(t(.Set, T:K))) andBool (I:Int >=Int min(t(.Set, T:K)))
+	syntax Bool ::= withinRange(Int, SimpleType) [function]
+	rule withinRange(I:Int, T:K) => (I:Int <=Int max(t(.Set, T:K))) andBool (I:Int >=Int min(t(.Set, T:K)))
 	
-	declare simplifyForHex : String -> String
-	define simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
+	syntax String ::= simplifyForHex(String) [function]
+	rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
 		when firstChar(S:String) ==String "0"
 		andBool lengthString(S:String) >Int 1
-	define simplifyForHex(S:String) => S:String
+	rule simplifyForHex(S:String) => S:String
 		when firstChar(S:String) =/=String "0"
 		orBool lengthString(S:String) ==Int 1
 		
@@ -250,18 +252,18 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 		when notBool S:String in keys M:Map
 		[large structural]
 		
-	syntax K ::= "wstring" "(" List{K} ")"
+	syntax K ::= "wstring" "(" KList ")"
 	rule [const-wstring-notfound]:
-		<k> (.K => allocWString(Loc:Int, (S:List{K},, 0)))
-			~> Constant(WStringLiteral(S:List{K}))
+		<k> (.K => allocWString(Loc:Int, (S:KList,, 0)))
+			~> Constant(WStringLiteral(S:KList))
 		...</k>
 		<nextSharedLoc> Loc:Int => inc(Loc:Int) </nextSharedLoc>
 		<br/>
 		<stringLiterals>
 			M:Map
-			(.Map => wstring(S:List{K}) |-> lv(Loc:Int, t(.Set, arrayType(cfg:wcharut, lengthList{K}(S:List{K}) +Int 1))))
+			(.Map => wstring(S:KList) |-> lv(Loc:Int, t(.Set, arrayType(cfg:wcharut, lengthKList(S:KList) +Int 1))))
 		</stringLiterals>
-		when notBool wstring(S:List{K}) in keys M:Map
+		when notBool wstring(S:KList) in keys M:Map
 		[large structural]
 		
 	rule [const-string-found]:
@@ -269,8 +271,8 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 		<stringLiterals>... S:String |-> V:KResult ...</stringLiterals>
 		[structural]
 	rule [const-wstring-found]:
-		<k> Constant(WStringLiteral(S:List{K})) => V:KResult ...</k>
-		<stringLiterals>... wstring(S:List{K}) |-> V:KResult ...</stringLiterals>
+		<k> Constant(WStringLiteral(S:KList)) => V:KResult ...</k>
+		<stringLiterals>... wstring(S:KList) |-> V:KResult ...</stringLiterals>
 		[structural]
 endmodule
 
@@ -424,8 +426,8 @@ module DYNAMIC-SEMANTICS-MEMBERS
 		[structural]
 		
 	rule
-		<k> tv(L:List{K}, T:KResult) . F:Id
-			=> extractField(L:List{K}, T:KResult, F:Id)
+		<k> tv(L:KList, T:KResult) . F:Id
+			=> extractField(L:KList, T:KResult, F:Id)
 		...</k>
 		[structural]
 		
@@ -433,7 +435,7 @@ module DYNAMIC-SEMANTICS-MEMBERS
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
 	A postfix expression followed by the \cinline{->} operator and an identifier designates a member of a structure or union object. The value is that of the named member of the object to which the first expression points, and is an lvalue. \broken{If the first expression is a pointer to a qualified type, the result has the so-qualified version of the type of the designated member.}
 	}*/
-	macro K:K -> F:Id = (* K:K) . F:Id
+	rule K:K -> F:Id = (* K:K) . F:Id [macro]
 endmodule
 
 module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
@@ -757,20 +759,20 @@ second operand from the first.
 		where NEWTYPE = newFromArray(T:KResult, I:Int)
 		[structural]
 		
-	declare newFromArray : KResult Int -> KResult
-	define newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int) 
+	syntax KResult ::= newFromArray(K, Int) [function]
+	rule newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int) 
 		=> t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), pointerType(T:KResult))
-	define newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
+	rule newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
 		=> t(.Set, pointerType(T:KResult))
 		
-	declare ifFromArrayInBounds : KResult Int -> Bool
-	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
+	syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
+	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
 		=> true
 		when Offset:Int +Int I:Int <=Int Len:Int
-	define ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
+	rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
 		=> false
 		when Offset:Int +Int I:Int >Int Len:Int
-	define ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:Int)
+	rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:Int)
 		=> true
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
@@ -808,8 +810,8 @@ endmodule
 module DYNAMIC-SEMANTICS-BITWISE-SHIFT
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 	
-	declare leftShiftInterpret : Type BaseValue K -> K 
-	declare rightShiftInterpret : Type BaseValue -> K 
+	syntax K ::= leftShiftInterpret(Type, BaseValue, K) [function]
+	syntax K ::= rightShiftInterpret(Type, BaseValue) [function]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
 	The integer promotions are performed on each of the operands. The type of the result is that of the promoted left operand. If the value of the right operand is negative or is greater than or equal to the width of the promoted left operand, the behavior is undefined
@@ -823,9 +825,9 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
 		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
 		andBool N:Int <Int numBits(T:KResult)
 		[structural]
-	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
+	rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
-	define leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int, T:KResult)
+	rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int, T:KResult)
 		when hasSignedIntegerType(T:KResult)
 		// andBool I:Int <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool I:Int <=Int max(T:KResult)
@@ -840,7 +842,7 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
 		when isPromoted(T:KResult) andBool isPromoted(T':KResult)
 		andBool N:Int <Int numBits(T:KResult)
 		[structural]
-	define rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
+	rule rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when hasIntegerType(T:KResult)
 endmodule
 
@@ -1159,29 +1161,29 @@ endmodule
 module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	syntax K ::= "getTypes" "(" List{K} ")"
-	syntax K ::= "types" "(" List{K} ")"
+	syntax K ::= "getTypes" "(" KList ")"
+	syntax K ::= "types" "(" KList ")"
 	context types((_,, HOLE,, _))
 	syntax K ::= "convertedType" "(" K ")" [strict]
 	
-	rule <k> getTypes(L:List{K}) => types(wrapWithTypeOf(L:List{K})) ...</k> [structural]
+	rule <k> getTypes(L:KList) => types(wrapWithTypeOf(L:KList)) ...</k> [structural]
 	
-	declare wrapWithTypeOf : List{K} -> List{K}
-	define wrapWithTypeOf((K:K,, L:List{K})) => (retype(typeof(K:K)),, wrapWithTypeOf(L:List{K}))
-	define wrapWithTypeOf(.List{K}) => .List{K}
+	syntax KList ::=  wrapWithTypeOf(KList) [function]
+	rule wrapWithTypeOf((K:K,, L:KList)) => (retype(typeof(K:K)),, wrapWithTypeOf(L:KList))
+	rule wrapWithTypeOf(.KList) => .KList
 	
-	declare retype : K -> K [strict]
+	syntax K ::= retype(K) [strict]
 	
 	// fixme, not handling qualifiers correctly
-	define
+	rule
 		retype(T:KResult) => t(.Set, pointerType(innerType(T:KResult)))
 		when isArrayType(T:KResult)
 		[structural]
-	define
+	rule
 		retype(T:KResult) => t(.Set, pointerType(T:KResult))
 		when isFunctionType(T:KResult)
 		[structural]
-	define
+	rule
 		retype(T:KResult) => T:KResult
 		when notBool (isArrayType(T:KResult) orBool isFunctionType(T:KResult))
 		[structural]	
@@ -1261,13 +1263,13 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
 			=> write(lv(Loc:Int, T:KResult), RHS)
 			~> RHS
 		...</k>
-		where RHS = tv(V:List{K}, T:KResult)
+		where RHS = tv(V:KList, T:KResult)
 		[structural]
 	rule [convert-for-assignment]:
 		<k>
 			lv(_, T:KResult)
 			:=
-			(tv(V:List{K}, T':KResult) => cast(T:KResult, tv(V:List{K}, T':KResult)))
+			(tv(V:KList, T':KResult) => cast(T:KResult, tv(V:KList, T':KResult)))
 		...</k>
 		when T:KResult =/=K T':KResult
 		[structural]
@@ -1328,9 +1330,9 @@ module DYNAMIC-SEMANTICS-SEQUENCING
 	/*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	}*/
-	rule <k> Comma(List((V:KResult,, K':K,, L:List{K}))) 
+	rule <k> Comma(List((V:KResult,, K':K,, L:KList))) 
 		=> sequencePoint
-		~> Comma(List((K':K,, L:List{K}))) ...</k>
+		~> Comma(List((K':K,, L:KList))) ...</k>
 		[structural]
 	rule <k> Comma(List(K:K)) => K:K ...</k>
 		[structural]

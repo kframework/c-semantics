@@ -1,13 +1,15 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 	imports DYNAMIC-INCLUDE 
 	// imports #SOCKET
 	// imports #TCP-INTERFACE
 	
-	syntax C ::= "vararg" "(" K ")" [hybrid strict]
+	syntax C ::= "vararg" "(" K ")" [hybrid, strict]
 	syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2)] // loc, type
-	syntax C ::= "vpair" "(" K "," K ")" [hybrid strict]
-	syntax K ::= "prepareBuiltin" "(" Id "," List{K} ")" 
-	declare incSymbolic : K -> K
+	syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
+	syntax K ::= "prepareBuiltin" "(" Id "," KList ")" 
+	syntax K ::= incSymbolic(K)
 	syntax K ::= "printString" "(" K ")"
 	
 endmodule
@@ -34,31 +36,31 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 	
 
 	// context 'prepareBuiltin(_:Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE)),, _:List`{K`}))
-	context prepareBuiltin(_:Id, (_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))
+	context prepareBuiltin(_:Id, (_:KList,, (HOLE => reval(HOLE)),, _:KList))
 	
-	declare idsFromDeclList : List{K} -> List{K}
+	syntax KList ::= idsFromDeclList(KList) [function]
 	
-	define [idsFromDeclList-one]:
-		idsFromDeclList((L:List{K},, typedDeclaration(t(_, T:K), X:Id)))
-			=> idsFromDeclList(L:List{K}),, X:Id
+	rule [idsFromDeclList-one]:
+		idsFromDeclList((L:KList,, typedDeclaration(t(_, T:K), X:Id)))
+			=> idsFromDeclList(L:KList),, X:Id
 		when T:K =/=K void
 		[structural]
-	define [idsFromDeclList-void]:
-		idsFromDeclList((L:List{K},, typedDeclaration(t(_, void), X:Id)))
-			=> idsFromDeclList(L:List{K})
+	rule [idsFromDeclList-void]:
+		idsFromDeclList((L:KList,, typedDeclaration(t(_, void), X:Id)))
+			=> idsFromDeclList(L:KList)
 		[structural]
-	define [idsFromDeclList-vararg]:
-		idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
-			=> idsFromDeclList((L:List{K},, typedDeclaration(T:KResult, X:Id)))
+	rule [idsFromDeclList-vararg]:
+		idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
+			=> idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
 			,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
 			// assumes variadic args are placed in incremental blocks
 		[structural]
-	define [idsFromDeclList-done]:
-		idsFromDeclList(.List{K}) => .List{K} [structural]
+	rule [idsFromDeclList-done]:
+		idsFromDeclList(.KList) => .KList [structural]
 	
 
 	context incSymbolic((HOLE => reval(HOLE)))
-	define [incSymbolic]:
+	rule [incSymbolic]:
 		incSymbolic(tv(Loc:Int, T:KResult)) => tv(inc(Loc:Int), T:KResult)
 		[structural]
 		
@@ -367,7 +369,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 		[structural]
 
 	rule [getchar]:
-		<k> prepareBuiltin((Identifier("getchar")), .List{K}) 
+		<k> prepareBuiltin((Identifier("getchar")), .KList) 
 			=> flush(1)
 			~> readFromFD(0) 
 		...</k>
@@ -959,7 +961,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
 		[structural]
 
 	rule [abort]:
-		<k> prepareBuiltin((Identifier("abort")), .List{K}) ~> _
+		<k> prepareBuiltin((Identifier("abort")), .KList) ~> _
 			=> printString("Aborted")
 			~> tv(134, t(.Set, int))
 		</k>
@@ -969,8 +971,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
 
 The malloc function returns either a null pointer or a pointer to the allocated space.
 	}*/
-	syntax K ::= "newAlloc" "(" Int ")"
-	define newAlloc(Fresh:Int) => loc(threadId(allocatedDuration) +Int Fresh:Int, 0, 0)
+	syntax K ::= "newAlloc" "(" Int ")" [function]
+	rule newAlloc(Fresh:Int) => loc(threadId(allocatedDuration) +Int Fresh:Int, 0, 0)
 	
 	rule [malloc]:
 		<k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
@@ -1038,7 +1040,7 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
 	// Returns a pseudo-random integral number in the range 0 to RAND_MAX
 	// fixme should use RAND_MAX
 	rule [rand]:
-		<k> prepareBuiltin((Identifier("rand")), .List{K})
+		<k> prepareBuiltin((Identifier("rand")), .KList)
 			=> tv(absInt(randomRandom(Fresh:Int)) %Int max(t(.Set, int)), t(.Set, int))
 		...</k>
 		<randNat> Fresh:Int => Fresh:Int +Int 1 </randNat>
@@ -1092,15 +1094,17 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
 	////////////////////////////--
 	// Threads
 	////////////////////////////--
-	ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Int
-	macro thrd-success = tv(0, t(.Set, int))
-	macro thrd-error = tv(1, t(.Set, int))
-	macro thrd-timeout = tv(2, t(.Set, int))
-	macro thrd-busy = tv(3, t(.Set, int))
-	macro thrd-nomem = tv(4, t(.Set, int))
+	// ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Int
+      syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" | "thrd-busy" | "thrd-nomem"
+	rule thrd-success => tv(0, t(.Set, int)) [macro]
+	rule thrd-error => tv(1, t(.Set, int)) [macro]
+	rule thrd-timeout => tv(2, t(.Set, int)) [macro]
+	rule thrd-busy => tv(3, t(.Set, int)) [macro]
+	rule thrd-nomem => tv(4, t(.Set, int)) [macro]
 	
-	ops threadRunning threadClosed : -> K
-	ops threadJoining : Int -> K
+	// ops threadRunning threadClosed : -> K
+      syntax K ::= "threadRunning"
+	// ops threadJoining : Int -> K
 	
 	syntax Int ::= "threadId" "(" Int "," Int ")" // parent, new
 	syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
@@ -1138,7 +1142,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		[large computational]
 		
 	rule [thrd-current]:
-		<k> prepareBuiltin((Identifier("thrd_current")), .List{K})
+		<k> prepareBuiltin((Identifier("thrd_current")), .KList)
 			=> tv(ThreadId:Int, t(.Set, int))
 		...</k>
 		<threadId> ThreadId:Int </threadId>

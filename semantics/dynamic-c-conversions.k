@@ -1,25 +1,27 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	imports DYNAMIC-INCLUDE
 	
-	declare hasSameSignedness : Type Type -> Bool // [memo]
-	declare correspondingUnsignedType : Type -> Type 
+	syntax Bool ::= hasSameSignedness(Type, Type) [function] // [memo]
+	syntax Type ::= correspondingUnsignedType(Type) [function] 
 endmodule
 
 module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
 	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE 
 	
-	define [hasSameSignedness]: 
+	rule [hasSameSignedness]: 
 		hasSameSignedness(T:KResult, T':KResult)
 			=> (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
 		orBool (hasUnsignedIntegerType(T:KResult) andBool hasUnsignedIntegerType(T':KResult))
 	
-	define [correspondingUnsigned-int]: 
+	rule [correspondingUnsigned-int]: 
 		correspondingUnsignedType(t(S:Set, int)) 
 			=> t(S:Set, unsigned-int)
-	define [correspondingUnsigned-long-int]: 
+	rule [correspondingUnsigned-long-int]: 
 		correspondingUnsignedType(t(S:Set, long-int))
 			=> t(S:Set, unsigned-long-int)
-	define [correspondingUnsigned-long-long-int]: 
+	rule [correspondingUnsigned-long-long-int]: 
 		correspondingUnsignedType(t(S:Set, long-long-int))
 			=> t(S:Set, unsigned-long-long-int)
 	
@@ -43,21 +45,21 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	
 		
 		
-	define [argPromote-float]: argPromote(t(_, float)) => t(.Set, double)
-	define [argPromote-double]: argPromote(t(_, double)) => t(.Set, double)
-	define [argPromote-long-double]: argPromote(t(_, long-double)) => t(.Set, long-double)
-	define [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
+	rule [argPromote-float]: argPromote(t(_, float)) => t(.Set, double)
+	rule [argPromote-double]: argPromote(t(_, double)) => t(.Set, double)
+	rule [argPromote-long-double]: argPromote(t(_, long-double)) => t(.Set, long-double)
+	rule [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
 		when hasIntegerType(T:KResult)
 
 	// syntax K ::= "arithConversion-int" "(" KLabel "," K "," K ")"
-	declare isArithBinOp : KLabel -> Bool 
+	syntax Bool ::= isArithBinOp(KLabel) [function]
 
-	declare arithBinOps : -> Set // [memo] 
-	declare arithBinConversionOps : -> Set // [memo] 
+	syntax Set ::= "arithBinOps" [function] // memo
+	syntax Set ::= "arithBinConversionOps" [function] // memo
 
-	define [arithBinOps]:
+	rule [arithBinOps]:
 		arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
-	define [arithBinConversionOps]:
+	rule [arithBinConversionOps]:
 		arithBinConversionOps => Set(
 		l('_*_),, l('_/_),, l('_%_),,
 		l('_+_),, l('_-_),,
@@ -66,16 +68,16 @@ Conversion of an operand value to a compatible type causes no change to the valu
 		l('_&_),, l('_|_),, l('_^_)
 	) [structural]
 	
-	define [checkArithBinOp]:
+	rule [checkArithBinOp]:
 		isArithBinOp(KL:KLabel) => #if arithBinOps contains l(KL:KLabel) #then true #else false #fi 
 		[structural]
-	define [checkArithBinConversionOp]:
+	rule [checkArithBinConversionOp]:
 		isArithBinConversionOp(KL:KLabel) => #if arithBinConversionOps contains l(KL:KLabel) #then true #else false #fi [structural]
 
-	declare arithUnaryOps : -> Set // [memo] 
-	define [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_))
+	syntax Set ::= "arithUnaryOps" [function]// [memo] 
+	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_))
 
-	define [checkArithUnaryOp]: 
+	rule [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => #if arithUnaryOps contains l(KL:KLabel) #then true #else false #fi [structural]
 	
 	// \csection{6}{3}{1}{0}{Arithmetic operands}
@@ -95,18 +97,18 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item For all integer types T1, T2, and T3, if T1 has greater rank than T2 and T2 has greater rank than T3, then T1 has greater rank than T3.
 	\end{itemize}%
 	}*/
-	define rank(t(_, bool)) => 0
-	define rank(t(_, signed-char)) => 1
-	define rank(t(_, unsigned-char)) => 1
-	define rank(t(_, short-int)) => 2
-	define rank(t(_, unsigned-short-int)) => 2
-	define rank(t(_, int)) => 3
-	define rank(t(_, unsigned-int)) => 3
-	define rank(t(_, long-int)) => 4
-	define rank(t(_, unsigned-long-int)) => 4
-	define rank(t(_, long-long-int)) => 5
-	define rank(t(_, unsigned-long-long-int)) => 5
-	define rank(t(S:Set, enumType(_:Id))) => rank(t(S:Set, int))
+	rule rank(t(_, bool)) => 0
+	rule rank(t(_, signed-char)) => 1
+	rule rank(t(_, unsigned-char)) => 1
+	rule rank(t(_, short-int)) => 2
+	rule rank(t(_, unsigned-short-int)) => 2
+	rule rank(t(_, int)) => 3
+	rule rank(t(_, unsigned-int)) => 3
+	rule rank(t(_, long-int)) => 4
+	rule rank(t(_, unsigned-long-int)) => 4
+	rule rank(t(_, long-long-int)) => 5
+	rule rank(t(_, unsigned-long-long-int)) => 5
+	rule rank(t(S:Set, enumType(_:Id))) => rank(t(S:Set, int))
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
 	The following may be used in an expression wherever an int or unsigned int may be used:
@@ -120,21 +122,21 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	The integer promotions preserve value imports sign. As discussed earlier, whether a ``plain'' \cinline{char} is treated as signed is implementation-defined.
 	}*/
 	
-	define isPromoted(t(_, enumType(_:Id))) => true
-	define isPromoted(t(_, int)) => true
-	define isPromoted(t(_, unsigned-int)) => true
-	define isPromoted(t(_, long-int)) => true
-	define isPromoted(t(_, unsigned-long-int)) => true
-	define isPromoted(t(_, long-long-int)) => true
-	define isPromoted(t(_, unsigned-long-long-int)) => true
+	rule isPromoted(t(_, enumType(_:Id))) => true
+	rule isPromoted(t(_, int)) => true
+	rule isPromoted(t(_, unsigned-int)) => true
+	rule isPromoted(t(_, long-int)) => true
+	rule isPromoted(t(_, unsigned-long-int)) => true
+	rule isPromoted(t(_, long-long-int)) => true
+	rule isPromoted(t(_, unsigned-long-long-int)) => true
 	
-	define isPromoted(t(_, bool)) => false
-	define isPromoted(t(_, signed-char)) => false
-	define isPromoted(t(_, unsigned-char)) => false
-	define isPromoted(t(_, short-int)) => false
-	define isPromoted(t(_, unsigned-short-int)) => false
+	rule isPromoted(t(_, bool)) => false
+	rule isPromoted(t(_, signed-char)) => false
+	rule isPromoted(t(_, unsigned-char)) => false
+	rule isPromoted(t(_, short-int)) => false
+	rule isPromoted(t(_, unsigned-short-int)) => false
 	
-	define isPromoted(t(_, bitfieldType(_, _:Int))) => false
+	rule isPromoted(t(_, bitfieldType(_, _:Int))) => false
 	
 	rule [promote-unary]:
 		<k> L:KLabel(
@@ -168,24 +170,24 @@ Conversion of an operand value to a compatible type causes no change to the valu
 
 		
 	// <= so enums become ints
-	define [promote-lte-int-fits]:
+	rule [promote-lte-int-fits]:
 		promote(T:KResult) => t(.Set, int)
 		when rank(T:KResult) <=Int rank(t(.Set, int))
 		andBool min(t(.Set, int)) <=Int min(T:KResult) 
 		andBool max(t(.Set, int)) >=Int max(T:KResult)		
 
-	define [promote-gt-int]:
+	rule [promote-gt-int]:
 		promote(T:KResult) => T:KResult
 		when rank(T:KResult) >Int rank(t(.Set, int))
 
-	define [promote-bitfield-fits]:
+	rule [promote-bitfield-fits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, int)
 		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
 		andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
 		andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
 	// fixme unclear what 6.3.1.1:3 means
 
-	define [promote-lte-int-nofits]:
+	rule [promote-lte-int-nofits]:
 		promote(T:KResult) => t(.Set, unsigned-int)
 		when rank(T:KResult) <=Int rank(t(.Set, int))
 		andBool notBool (
@@ -193,7 +195,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 			andBool max(t(.Set, int)) >=Int max(T:KResult)		
 		)
 
-	define [promote-bitfield-nofits]:
+	rule [promote-bitfield-nofits]:
 		promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, unsigned-int)
 		when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
 		andBool notBool (
@@ -222,18 +224,18 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double.
 	\end{itemize}%
 	*/
-	define usualArithmeticConversion(t(_, long-double), _) => t(.Set, long-double)
-	define usualArithmeticConversion(_, t(_, long-double)) => t(.Set, long-double)
+	rule usualArithmeticConversion(t(_, long-double), _) => t(.Set, long-double)
+	rule usualArithmeticConversion(_, t(_, long-double)) => t(.Set, long-double)
 		
 	/*@ 
 	\begin{itemize}
 	\item Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double.
 	\end{itemize}%
 	*/
-	define
+	rule
 		usualArithmeticConversion(t(_, double), t(_, T:K)) => t(.Set, double)
 		when long-double =/=K T:K
-	define
+	rule
 		usualArithmeticConversion(T:K, t(_, double)) => t(.Set, double)
 		when long-double =/=K T:K
 		
@@ -242,11 +244,11 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
 	\end{itemize}%
 	*/
-	define
+	rule
 		usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
 		when long-double =/=K T:K
 		andBool double =/=K T:K
-	define
+	rule
 		usualArithmeticConversion(t(_, T:K), t(_, float)) => t(.Set, float)
 		when long-double =/=K T:K
 		andBool double =/=K T:K
@@ -256,9 +258,9 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item Otherwise, the integer promotions are performed on both operands. Then the following rules are applied to the promoted operands:
 	\end{itemize}%
 	*/
-	declare usualArithmeticConversion-aux : K K -> K
+	syntax K ::= "usualArithmeticConversion-aux" "(" K "," K ")" [function]
 	
-	define usualArithmeticConversion(T:KResult, T':KResult)
+	rule usualArithmeticConversion(T:KResult, T':KResult)
 			=> usualArithmeticConversion-aux(promote(T:KResult), promote(T':KResult))
 			when notBool isFloatType(T:KResult)
 			andBool notBool isFloatType(T':KResult)
@@ -270,12 +272,12 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item If both operands have the same type, then no further conversion is needed.
 	\end{itemize}\end{itemize}%
 	*/
-	define [arithConversion-int-done]: usualArithmeticConversion-aux(T:KResult, T:KResult) => T:KResult
+	rule [arithConversion-int-done]: usualArithmeticConversion-aux(T:KResult, T:KResult) => T:KResult
 		
-	define [maxType-left]:
+	rule [maxType-left]:
 		maxType(T:KResult, T':KResult) => T:KResult
 		when rank(T:KResult) >=Int rank(T':KResult) 
-	define [maxType-right]:
+	rule [maxType-right]:
 		maxType(T:KResult, T':KResult) => T':KResult
 		when rank(T':KResult) >=Int rank(T:KResult) 
 		
@@ -286,7 +288,7 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	\item Otherwise, if both operands have signed integer types or both have unsigned integer types, the operand with the type of lesser integer conversion rank is converted to the type of the operand with greater rank.
 	\end{itemize}\end{itemize}
 	*/
-	define [arithmeticConversion-same-signedness]:
+	rule [arithmeticConversion-same-signedness]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => maxType(T:KResult, T':KResult)
 		when T:KResult =/=K T':KResult
 		andBool hasSameSignedness(T:KResult, T':KResult)
@@ -299,12 +301,12 @@ Conversion of an operand value to a compatible type causes no change to the valu
 integer type.
 	\end{itemize}\end{itemize}%
 	*/	
-	define [arithmeticConversion-unsigned-ge-right]:
+	rule [arithmeticConversion-unsigned-ge-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
 		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) >=Int rank(T:KResult)
-	define [arithmeticConversion-unsigned-ge-left]:
+	rule [arithmeticConversion-unsigned-ge-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
 		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
@@ -317,14 +319,14 @@ integer type.
 	\item Otherwise, if the type of the operand with signed integer type can represent all of the values of the type of the operand with unsigned integer type, then the operand with unsigned integer type is converted to the type of the operand with signed integer type.
 	\end{itemize}\end{itemize}%
 	*/
-	define [arithmeticConversion-signed-big-left]:
+	rule [arithmeticConversion-signed-big-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
 		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
 		andBool min(T:KResult) <=Int min(T':KResult)
 		andBool max(T:KResult) >=Int max(T':KResult)
-	define [arithmeticConversion-signed-big-right]:
+	rule [arithmeticConversion-signed-big-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
 		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
@@ -339,13 +341,13 @@ integer type.
 	\item Otherwise, both operands are converted to the unsigned integer type corresponding to the type of the operand with signed integer type.
 	\end{itemize}\end{itemize}%
 	*/
-	define [arithmeticConversion-to-unsigned-left]:
+	rule [arithmeticConversion-to-unsigned-left]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T:KResult)
 		when hasSignedIntegerType(T:KResult) 
 		andBool hasUnsignedIntegerType(T':KResult) 
 		andBool rank(T':KResult) <Int rank(T:KResult)
 		andBool (min(T:KResult) >Int min(T':KResult) orBool max(T:KResult) <Int max(T':KResult))
-	define [arithmeticConversion-to-unsigned-right]:
+	rule [arithmeticConversion-to-unsigned-right]:
 		usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T':KResult)
 		when hasUnsignedIntegerType(T:KResult) 
 		andBool hasSignedIntegerType(T':KResult) 
@@ -358,31 +360,31 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
 	
 	//- switch assumes casts can happen anywhere
-	define
-		cast(T:KResult, tv(L:List{K}, T:KResult)) => tv(L:List{K}, T:KResult)
+	rule
+		cast(T:KResult, tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
 		
-	define
-		cast(t(S:Set, T:K), tv(L:List{K}, t(_, T:K))) => tv(L:List{K}, t(S:Set, T:K))
+	rule
+		cast(t(S:Set, T:K), tv(L:KList, t(_, T:K))) => tv(L:KList, t(S:Set, T:K))
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
 	When any scalar value is converted to \cinline{_Bool}, the result is 0 if the value compares equal to 0; otherwise, the result is 1.
 	}*/
 	// cleanme only need one rule
 	// fixme worried about qualifiers
-	define [cast-integer-to-bool]:
+	rule [cast-integer-to-bool]:
 		cast(t(S:Set, bool), tv(I:Int, T:KResult))
 			=> #if I:Int ==Int 0 #then tv(0, t(S:Set, bool)) #else tv(1, t(S:Set, bool)) #fi
 		when hasIntegerType(T:KResult)
-	define [cast-non-integer-to-bool]:
-		cast(t(S:Set, bool), tv(L:List{K}, T:KResult)) 
-			=> cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:List{K}, T:KResult))
+	rule [cast-non-integer-to-bool]:
+		cast(t(S:Set, bool), tv(L:KList, T:KResult)) 
+			=> cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:KList, T:KResult))
 		when notBool hasIntegerType(T:KResult)
 	
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{1}}}{
 	When a value with integer type is converted to another integer type other than \cinline{_Bool}, if the value can be represented by the new type, it is unchanged.
 	}*/
-	define [cast-integer-no-value-change]:
+	rule [cast-integer-no-value-change]:
 		cast(T:KResult, tv(I:Int, T':KResult)) => tv(I:Int, T:KResult)
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int 
 		andBool hasIntegerType(T':KResult)
@@ -392,68 +394,68 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
 	Otherwise, if the new type is unsigned, the value is converted by repeatedly adding or subtracting one more than the maximum value that can be represented in the new type until the value is in the range of the new type.
 	}*/
-	define [cast-ubitfield-of-small]:
+	rule [cast-ubitfield-of-small]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
 		when isBitfieldType(T:KResult)
 		andBool I:Int <Int min(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
-	define [cast-uchar-of-small]:
+	rule [cast-uchar-of-small]:
 		cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
 		when I:Int <Int min(t(S:Set, unsigned-char))
 		andBool hasIntegerType(T':KResult)
-	define [cast-usint-of-small]:
+	rule [cast-usint-of-small]:
 		cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-short-int), tv(I:Int +Int max(t(S:Set, unsigned-short-int)) +Int 1, T':KResult))
 		when I:Int <Int min(t(S:Set, unsigned-short-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-uint-of-small]:
+	rule [cast-uint-of-small]:
 		cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-int), tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T':KResult))
 		when I:Int <Int min(t(S:Set, unsigned-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-ulong-of-small]:
+	rule [cast-ulong-of-small]:
 		cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T':KResult))
 		when I:Int <Int min(t(S:Set, unsigned-long-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-ullong-of-small]:
+	rule [cast-ullong-of-small]:
 		cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, unsigned-long-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T':KResult))
 		when I:Int <Int min(t(S:Set, unsigned-long-long-int))
 		andBool hasIntegerType(T':KResult)		
 	
 
-	define [cast-ubitfield-of-big]:
+	rule [cast-ubitfield-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when isBitfieldType(T:KResult)
 		andBool I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T':KResult)
 		andBool hasUnsignedIntegerType(innerType(T:KResult))
-	define [cast-uchar-of-big]:
+	rule [cast-uchar-of-big]:
 		cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-char)) +Int 1), t(S:Set, unsigned-char))
 		when I:Int >Int max(t(S:Set, unsigned-char))
 		andBool hasIntegerType(T':KResult)
-	define [cast-usint-of-big]:
+	rule [cast-usint-of-big]:
 		cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1), t(S:Set, unsigned-short-int))
 		when I:Int >Int max(t(S:Set, unsigned-short-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-uint-of-big]:
+	rule [cast-uint-of-big]:
 		cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1), t(S:Set, unsigned-int))
 		when I:Int >Int max(t(S:Set, unsigned-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-ulong-of-big]:
+	rule [cast-ulong-of-big]:
 		cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1), t(S:Set, unsigned-long-int))
 		when I:Int >Int max(t(S:Set, unsigned-long-int))
 		andBool hasIntegerType(T':KResult)
-	define [cast-ullong-of-big]:
+	rule [cast-ullong-of-big]:
 		cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
 			=> tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1), t(S:Set, unsigned-long-long-int))
 		when I:Int >Int max(t(S:Set, unsigned-long-long-int))
@@ -463,34 +465,34 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	Otherwise, the new type is signed and the value cannot be represented in it; either the result is implementation-defined or an implementation-defined signal is raised.
 	}*/
 	// choice
-	define [cast-sbitfield-of-huge]:
+	rule [cast-sbitfield-of-huge]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
 		when isBitfieldType(T:KResult)
 		andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasIntegerType(T':KResult)
 		andBool hasSignedIntegerType(innerType(T:KResult))
-	define [cast-schar-of-huge]:
+	rule [cast-schar-of-huge]:
 		cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
 		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, signed-char))))
 		andBool hasIntegerType(T':KResult)
-	define [cast-sint-of-huge]:
+	rule [cast-sint-of-huge]:
 		cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
 		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, short-int))))
 		andBool hasIntegerType(T':KResult)
-	define [cast-int-of-huge]:
+	rule [cast-int-of-huge]:
 		cast(t(S:Set, int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
 		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, int))))
 		andBool hasIntegerType(T':KResult)
-	define [cast-long-of-huge]:
+	rule [cast-long-of-huge]:
 		cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
 			=> cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
 		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int))))
 		andBool hasIntegerType(T':KResult)
-	define [cast-llong-of-huge]:
+	rule [cast-llong-of-huge]:
 		cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
 			=> cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
 		when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-long-int))))
@@ -498,7 +500,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 		
 		
 		
-	define [cast-signed-of-small]:
+	rule [cast-signed-of-small]:
 		cast(T:KResult, tv(I:Int, T':KResult))
 			=> tv(I:Int +Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
 		when I:Int <Int min(T:KResult)
@@ -507,7 +509,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 		andBool hasIntegerType(T':KResult)
 		andBool notBool isBoolType (T:KResult)
 		[structural] 
-	define [cast-signed-of-big]:
+	rule [cast-signed-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
 			=> tv(_-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))), T:KResult)
 		when I:Int >Int max(T:KResult)
@@ -517,7 +519,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 		andBool notBool isBoolType (T:KResult)
 
 	// this is starting to get into sketchy land
-	define [cast-unknown-integer]:
+	rule [cast-unknown-integer]:
 		cast(T:KResult, tv(piece(unknown(Len:Int), Len:Int), T':KResult)) 
 			=> tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
 		when hasIntegerType(T:KResult)
@@ -527,17 +529,17 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	When a finite value of real floating type is converted to an integer type other than \cinline{_Bool}, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.
 	}*/
 	// fixme
-	define
+	rule
 		cast(T:KResult, tv(V:Float, t(S:Set, double))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
 		andBool notBool isBoolType (T:KResult)
-	define
+	rule
 		cast(T:KResult, tv(V:Float, t(S:Set, float))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
 		andBool notBool isBoolType (T:KResult)
-	define
+	rule
 		cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
 			=> cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
 		when hasIntegerType(T:KResult)
@@ -547,15 +549,15 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	/*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
 	When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined. Results of some implicit conversions may be represented in greater range and precision than that required by the new type (see 6.3.1.8 and 6.8.6.4).
 	}*/
-	define [cast-int-to-float]:
+	rule [cast-int-to-float]:
 		cast(t(S:Set, float), tv(I:Int, T:KResult)) 
 			=> tv(Int2Float(I:Int), t(S:Set, float))
 		when hasIntegerType(T:KResult)
-	define [cast-int-to-double]:
+	rule [cast-int-to-double]:
 		cast(t(S:Set, double), tv(I:Int, T:KResult)) 
 			=> tv(Int2Float(I:Int), t(S:Set, double))
 		when hasIntegerType(T:KResult)
-	define [cast-int-to-long-double]:
+	rule [cast-int-to-long-double]:
 		cast(t(S:Set, long-double), tv(I:Int, T:KResult)) 
 			=> tv(Int2Float(I:Int), t(S:Set, long-double))
 		when hasIntegerType(T:KResult)
@@ -564,7 +566,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	When a value of real floating type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined. Results of some implicit conversions may be represented in greater range and precision than that required by the new type (see 6.3.1.8 and 6.8.6.4).
 	}*/
 	// fixme all floats same precision
-	define
+	rule
 		cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
 			=> tv(F:Float, t(S:Set, T':K))
 		when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
@@ -573,7 +575,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
 	The (nonexistent) value of a void expression (an expression that has type \cinline{void}) shall not be used in any way, and implicit or explicit conversions (except to \cinline{void}) shall not be applied to such an expression. If an expression of any other type is evaluated as a void expression, its value or designator is discarded. (A void expression is evaluated for its side effects.)
 	}*/	
-	define
+	rule
 		cast(t(_, void), _:KResult) => skipval
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
@@ -585,7 +587,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	/*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
 	An integer constant expression with the value 0, or such an expression cast to type \cinline{void *}, is called a null pointer constant. If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.
 	}*/
-	define
+	rule
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
 			=> tv(NullPointer, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
@@ -599,7 +601,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	An integer may be converted to any pointer type. Except as previously specified, the result is implementation-defined, might not be correctly aligned, might not point to an entity of the referenced type, and might be a trap representation.
 	}*/
 	// choice implementation defined behavior
-	define
+	rule
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
 			=> tv(N:Int, t(S:Set, pointerType(T:KResult)))
 		when hasIntegerType(T':KResult)
@@ -609,7 +611,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	Any pointer type may be converted to an integer type. Except as previously specified, the result is implementation-defined. If the result cannot be represented in the integer type, the behavior is undefined. The result need not be in the range of values of any integer type.
 	}*/
 	// fixme needs to check size
-	define
+	rule
 		cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
 			=> tv(N:Int, T:KResult)
 		when hasIntegerType(T:KResult)
@@ -625,7 +627,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 	// possibly not true with other endiannesses
 	// choice
 	// needs to handle alignment
-	define
+	rule
 		cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, t(_, pointerType(_)))) 
 			=> tv(N:Int, t(S:Set, pointerType(T:KResult)))
 endmodule
@@ -636,27 +638,27 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 	// fixme not sure about this
 	// interpret is used to "cast" values read from memory
 	// shouldn't need to do the < min one since values start positive
-	declare interpret-aux : Type K -> K 
+	syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
 	
-	define [interpret-start]:
+	rule [interpret-start]:
 		interpret(T:KResult, piece(N:Int, _:Int)) => interpret-aux(T:KResult, N:Int)
 		when N:Int >=Int 0
 	
-	define [interpret-done]:
+	rule [interpret-done]:
 		interpret-aux(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int
 		andBool hasIntegerType(T:KResult)
-	define [interpret-too-big]:
+	rule [interpret-too-big]:
 		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))))
 		when I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T:KResult)
 		
-	define [arithInterpret-done]:
+	rule [arithInterpret-done]:
 		arithInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int
 		andBool hasIntegerType(T:KResult)
 		
-	define [arithInterpret-unknown]:
+	rule [arithInterpret-unknown]:
 		arithInterpret(T:KResult, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T:KResult)
 		
 	// these could be so much better...
@@ -682,17 +684,17 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 
 	
 	// fixme
-	define [arithInterpret-float]: arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
+	rule [arithInterpret-float]: arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
 		when (T:K ==K double)
 		orBool T:K ==K float
 		orBool T:K ==K long-double
 	// signed arithmetic isn't supposed to overflow
-	define [arithInterpret-unsigned-big]:
+	rule [arithInterpret-unsigned-big]:
 		arithInterpret(T:KResult, I:Int) 
 		=> tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
 		andBool I:Int >Int max(T:KResult)
-	define [arithInterpret-unsigned-small]:
+	rule [arithInterpret-unsigned-small]:
 		arithInterpret(T:KResult, I:Int) 
 		=> arithInterpret(T:KResult, _+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)))
 		//=> tv(_+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)), T:KResult)
@@ -701,8 +703,8 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 		// must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
-	define unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int)
-	define signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int)
+	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int)
+	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int)
 
 endmodule
 

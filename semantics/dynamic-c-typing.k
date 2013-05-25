@@ -1,3 +1,5 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-TYPE-INCLUDE
 	// FIXME need to automatically pad structs
 	imports DYNAMIC-INCLUDE 
@@ -101,8 +103,8 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		...</type>
 		[structural]
 	rule
-		<type> Constant(WStringLiteral(L:List{K})) 
-			=> t(.Set, arrayType(cfg:wcharut, lengthList{K}(L:List{K}) +Int 1)) 
+		<type> Constant(WStringLiteral(L:KList)) 
+			=> t(.Set, arrayType(cfg:wcharut, lengthKList(L:KList) +Int 1)) 
 		...</type>
 		[structural]
 		
@@ -201,12 +203,12 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		[structural]
 	
 	rule 
-		<type> L:KLabel(T:KResult,, _:List{K}) => T:KResult ...</type>
+		<type> L:KLabel(T:KResult,, _:KList) => T:KResult ...</type>
 		when isFloatType(T:KResult)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]
 	rule 
-		<type> L:KLabel(T:KResult,, _:List{K}) => promote(T:KResult) ...</type>
+		<type> L:KLabel(T:KResult,, _:KList) => promote(T:KResult) ...</type>
 		when hasIntegerType(T:KResult)
 		andBool typeStrictLeftBinaryOperators contains l(L:KLabel)
 		[structural]

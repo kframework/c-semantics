@@ -5,15 +5,15 @@ module COMMON-C-SYNTAX
 	
 	// these are semantic
       // TODO(chathhorn) removing semantic tags, not sure what they means
-	syntax K ::= "reval" "(" K ")" [strict]
-	syntax K ::= "peval" "(" K ")" [strict]
+	syntax K ::= "reval" "(" K ")" [semantic, strict]
+	syntax K ::= "peval" "(" K ")" [semantic, strict]
 	
 	// the rest are syntactic
 	syntax C ::= "AttributeWrapper" "(" K "," K ")"
 	
 	// sort C
 	syntax C ::= Id
-	syntax C ::= "List" "(" List{K} ")"
+	syntax C ::= "List" "(" KList ")"
 	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
 	syntax K ::= "StmtCons" "(" K "," K ")"
@@ -90,7 +90,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 	syntax TypeSpecifier ::= "Signed"
 	syntax TypeSpecifier ::= "Unsigned"
 	syntax Float ::= "inf"
-	// macro inf = Infinity
+	// rule inf => Infinity [macro]
 	syntax TypeSpecifier ::= "Named" "(" Id ")"
 /*
 	(* each of the following three kinds of specifiers contains a field 
@@ -106,10 +106,10 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 */	
 	syntax TypeSpecifier ::= "StructRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")" // new // Id, List
-	context StructDef(_:Id, List((_:List{K},, HOLE,, _:List{K})))
+	context StructDef(_:Id, List((_:KList,, HOLE,, _:KList)))
 	syntax TypeSpecifier ::= "UnionRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")" // new // Id, List
-	context UnionDef(_:Id, List((_:List{K},, HOLE,, _:List{K})))
+	context UnionDef(_:Id, List((_:KList,, HOLE,, _:KList)))
 	syntax TypeSpecifier ::= "EnumRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "EnumDef" "(" Id "," K ")" // new // Id, List
 	syntax TypeSpecifier ::= "TypeofExpression" "(" K ")"
@@ -164,7 +164,7 @@ and spec_elem =
 	and specifier = spec_elem list
 */
 	syntax Specifier ::= "Specifier" "(" K ")"
-	context Specifier(List((_:List{K},, HOLE,, _:List{K})))
+	context Specifier(List((_:KList,, HOLE,, _:KList)))
 	
 /*
 and decl_type =
@@ -192,7 +192,7 @@ and decl_type =
 	context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
 	syntax DeclType ::= "PointerType" "(" K ")" [strict]
 	syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [strict(1)] // K, List, Bool
-	context Prototype(_, List((_:List{K},, HOLE,, _:List{K})), _:Bool)
+	context Prototype(_, List((_:KList,, HOLE,, _:KList)), _:Bool)
 	
 	syntax K ::= "NotVariadic"
 	syntax K ::= "Variadic"
@@ -202,7 +202,7 @@ and decl_type =
 and name_group = specifier * name list
 */
 	syntax NameGroup ::= "NameGroup" "(" K "," K ")" [strict(1)] // K, List
-	context NameGroup(_, List((_:List{K},, HOLE,, _:List{K})))
+	context NameGroup(_, List((_:KList,, HOLE,, _:KList)))
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -235,7 +235,7 @@ and name = String * decl_type * attribute list * cabsloc
 	// metadata "latex=(renameTo \\#NoName\\mybracket{_})"
 	syntax Id ::= "Identifier" "(" String ")" // new	
 	
-	macro AnonymousName = #NoName
+	rule AnonymousName => #NoName [macro]
 	
 /*
 	(* A variable declarator ("name") with an initializer *)
@@ -334,7 +334,7 @@ and statement =
 	| SEQUENCE of statement * statement * cabsloc
 */
 	syntax PureStatement ::= "Nop"
-	syntax PureStatement ::= "Computation" "(" K ")" [latex "{{#1}};"]
+	syntax PureStatement ::= "Computation" "(" K ")" [latex({{#1}};)]
 	context Computation((HOLE => reval(HOLE))) // not sure why i had this commented out before...
 	syntax PureStatement ::= "BlockStatement" "(" K ")"
 	syntax PureStatement ::= "Sequence" "(" K "," K ")"
@@ -413,30 +413,43 @@ and unary_operator =
 	MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
 	| PREINCR | PREDECR | POSINCR | POSDECR
 */
-	syntax Expression ::= "-" K [metadata "type-strict=()" prec(22)]
+      // type-strict=()
+	syntax Expression ::= "-" K [prec(22)]
 	context -_((HOLE => reval(HOLE)))
-	syntax Expression ::= "+" K [metadata "type-strict=()" prec(22)]
+      // type-strict=()
+	syntax Expression ::= "+" K [prec(22)]
 	context +_((HOLE => reval(HOLE)))
-	syntax Expression ::= "!" K [metadata "type-strict=()" prec(22)]
+      // type-strict=()
+	syntax Expression ::= "!" K [prec(22)]
 	context !_((HOLE => reval(HOLE)))
-	syntax Expression ::= "~" K [metadata "type-strict=()" prec(22)]
+      // type-strict=()
+	syntax Expression ::= "~" K [prec(22)]
 	context ~_((HOLE => reval(HOLE)))
-	syntax Expression ::= "*" K [metadata "type-strict=()" prec(22)]
+      // type-strict=()
+	syntax Expression ::= "*" K [prec(22)]
 	context *_((HOLE => reval(HOLE)))
-	syntax Expression ::= "&" K [metadata "type-strict=()" strict prec(22)]
-	syntax Expression ::= "++" K [metadata "type-strict=()" prec(22)]
-	syntax Expression ::= "--" K [metadata "type-strict=()" latex "\terminal{-{}-}{#1}" prec(22)]
-	syntax Expression ::= K "++" [metadata "type-strict=()"]
+      // type-strict=()
+	syntax Expression ::= "&" K [strict, prec(22)]
+      // type-strict=()
+	syntax Expression ::= "++" K [prec(22)]
+      // type-strict=()
+	syntax Expression ::= "--" K [latex(\terminal{-{}-}{#1}), prec(22)]
+      // type-strict=()
+	syntax Expression ::= K "++" 
 	context _++((HOLE => peval(HOLE)))
-	syntax Expression ::= K "--" [metadata "type-strict=()" latex "{#1}\terminal{-{}-}" ]
+      // type-strict=()
+	syntax Expression ::= K "--" [latex({#1}\terminal{-{}-}) ]
 	context _--((HOLE => peval(HOLE)))
 	
 /*
 	| BINARY of binary_operator * expression * expression
 */
-	syntax Expression ::= K "*" K [metadata "type-strict=()" prec(31) gather(E e)]
-	syntax Expression ::= K "/" K [metadata "type-strict=()" prec(31) gather(E e)]
-	syntax Expression ::= K "%" K [metadata "type-strict=()" prec(31) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "*" K [prec(31), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "/" K [prec(31), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "%" K [prec(31), gather(E e)]
 	context _*_((HOLE => reval(HOLE)), _) [ndheat]
 	context _*_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _/_((HOLE => reval(HOLE)), _) [ndheat]
@@ -444,78 +457,105 @@ and unary_operator =
 	context _%_((HOLE => reval(HOLE)), _) [ndheat]
 	context _%_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "+" K [metadata "type-strict=()" prec(33) gather(E e)]
-	syntax Expression ::= K "-" K [metadata "type-strict=()" prec(33) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "+" K [prec(33), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "-" K [prec(33), gather(E e)]
 	context _+_((HOLE => reval(HOLE)), _) [ndheat]
 	context _+_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _-_((HOLE => reval(HOLE)), _) [ndheat]
 	context _-_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "<<" K [metadata "type-strict=(1)" latex "{{#1}}\ll{{#2}}" prec(35) gather(E e)]
+      // type-strict=(1)
+	syntax Expression ::= K "<<" K [latex({{#1}}\ll{{#2}}), prec(35), gather(E e)]
 	context _<<_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<<_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K ">>" K [metadata "type-strict=(1)" latex "{{#1}}\gg{{#2}}" prec(35) gather(E e)]
+      // type-strict=(1)
+	syntax Expression ::= K ">>" K [latex({{#1}}\gg{{#2}}), prec(35), gather(E e)]
 	context _>>_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>>_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "<" K [metadata "type-strict=()" prec(37) gather(E e)]
-	syntax Expression ::= K "<=" K [metadata "type-strict=()" prec(37) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "<" K [prec(37), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "<=" K [prec(37), gather(E e)]
 	context _<_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _<=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _<=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K ">" K [metadata "type-strict=()" prec(37) gather(E e)]
-	syntax Expression ::= K ">=" K [metadata "type-strict=()" prec(37) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K ">" K [prec(37), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K ">=" K [prec(37), gather(E e)]
 	context _>_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _>=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _>=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "==" K [metadata "type-strict=()" prec(39) gather(E e)]
-	syntax Expression ::= K "!=" K [metadata "type-strict=()" prec(39) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "==" K [prec(39), gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "!=" K [prec(39), gather(E e)]
 	context _==_((HOLE => reval(HOLE)), _) [ndheat]
 	context _==_(_, (HOLE => reval(HOLE))) [ndheat]
 	context _!=_((HOLE => reval(HOLE)), _) [ndheat]
 	context _!=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "&" K [metadata "type-strict=()" prec(41) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "&" K [prec(41), gather(E e)]
 	context _&_((HOLE => reval(HOLE)), _) [ndheat]
 	context _&_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "^" K [metadata "type-strict=()" prec(43) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "^" K [prec(43), gather(E e)]
 	context _^_((HOLE => reval(HOLE)), _) [ndheat]
 	context _^_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "|" K [metadata "type-strict=()" prec(45) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "|" K [prec(45), gather(E e)]
 	context _|_((HOLE => reval(HOLE)), _) [ndheat]
 	context _|_(_, (HOLE => reval(HOLE))) [ndheat]
 	
-	syntax Expression ::= K "&&" K [metadata "type-strict=()" prec(47) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "&&" K [prec(47), gather(E e)]
 	context _&&_((HOLE => reval(HOLE)), _) [ndheat]
 	
-	syntax Expression ::= K "||" K [metadata "type-strict=()" prec(49) gather(E e)]
+      // type-strict=()
+	syntax Expression ::= K "||" K [prec(49), gather(E e)]
 	context _||_((HOLE => reval(HOLE)), _) [ndheat]
 	
-	syntax Expression ::= K "*=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "/=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "%=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "+=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "-=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "<<=" K [metadata "type-strict=(1)" latex "{{#1}}\terminal{$\gg$=}{{#2}}" prec(53)]
-	syntax Expression ::= K "&=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "^=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K "|=" K [metadata "type-strict=(1)" prec(53)]
-	syntax Expression ::= K ">>=" K [metadata "type-strict=(1)" latex "{{#1}}\terminal{$\ll$=}{{#2}}" prec(53)]
-	syntax Expression ::= K ":=" K [metadata "type-strict=(1)" prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "*=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "/=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "%=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "+=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "-=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "<<=" K [latex({{#1}}\terminal{$\gg$=}{{#2}}), prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "&=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "^=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K "|=" K [prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K ">>=" K [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)]
+      // type-strict=(1)
+	syntax Expression ::= K ":=" K [prec(53)]
 	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
 	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]
 	
 /*
 	| QUESTION of expression * expression * expression
 */
-	syntax Expression ::= K "?" K ":" K [metadata "type-strict=(2 3)" prec(51) gather(e & E)]
+      // type-strict=(2 3)
+	syntax Expression ::= K "?" K ":" K [prec(51), gather(e & E)]
 	context _?_:_((HOLE => reval(HOLE)), _, _)
 
 /*
@@ -533,20 +573,21 @@ and unary_operator =
 	| CALL of expression * expression list
 */
 
-	syntax Expression ::= "Call" "(" K "," K ")" [metadata "type-strict=(1)"] // K, List
+      // type-strict=(1)
+	syntax Expression ::= "Call" "(" K "," K ")" // K, List
 	context Call((HOLE => reval(HOLE)), _) [ndheat]
-	context Call(_, List((_:List{K},, (HOLE => reval(HOLE)),, _:List{K}))) [ndheat]
+	context Call(_, List((_:KList,, (HOLE => reval(HOLE)),, _:KList))) [ndheat]
 /*
 	| COMMA of expression list
 */
 	syntax Expression ::= "Comma" "(" K ")" // List
-	context Comma(List(((HOLE => reval(HOLE)),, _:List{K}))) [ndheat]
+	context Comma(List(((HOLE => reval(HOLE)),, _:KList))) [ndheat]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
 	| VARIABLE of string
 */
-	syntax Expression ::= "Constant" "(" K ")" // [latex "{#1}"]
+	syntax Expression ::= "Constant" "(" K ")" // [latex({#1})]
 	// String constants aren't revals
 	// for paren, just putting parentheses
 	syntax Expression ::= Id
@@ -563,12 +604,14 @@ and unary_operator =
 /*
 	| INDEX of expression * expression
 */
-	syntax Expression ::= K "[" K "]" [metadata "type-strict=()"]
+      // type-strict=()
+	syntax Expression ::= K "[" K "]"
 /*
 	| MEMBEROF of expression * string
 	| MEMBEROFPTR of expression * string
 */
-	syntax Expression ::= K "." Id [metadata "type-strict=(1)"]
+      // type-strict=(1)
+	syntax Expression ::= K "." Id
 	context _._((HOLE => peval(HOLE)), _:Id)
 	syntax Expression ::= K "->" Id
 	context _->_((HOLE => reval(HOLE)), _:Id)
@@ -606,7 +649,7 @@ and constant =
 	syntax Constant ::= "CharLiteral" "(" Int ")"
 	syntax Constant ::= "WCharLiteral" "(" Int ")"
 	syntax Constant ::= "StringLiteral" "(" String ")"
-	syntax Constant ::= "WStringLiteral" "(" List{K} ")"
+	syntax Constant ::= "WStringLiteral" "(" KList ")"
 	
 
 /*
@@ -616,8 +659,8 @@ and init_expression =
   | COMPOUND_INIT of (initwhat * init_expression) list
 */
 	syntax KResult ::= "NoInit" // InitExpression
-	syntax InitExpression ::= "SingleInit" "(" K ")" [hybrid strict]
-	syntax InitExpression ::= "CompoundInit" "(" K ")" [hybrid strict] // List
+	syntax InitExpression ::= "SingleInit" "(" K ")" [hybrid, strict]
+	syntax InitExpression ::= "CompoundInit" "(" K ")" [hybrid, strict] // List
 	syntax InitFragment ::= "InitFragment" "(" K "," K ")" // new; (initwhat * init_expression)
 	
 /*
@@ -639,109 +682,139 @@ and attribute = String * expression list
 	syntax C ::= "Attribute" "(" String "," K ")" // String, List
 	
 	syntax K ::= "CodeLoc" "(" K "," K ")"
-	macro DefinitionLoc(K:K, L:K) = CodeLoc(K:K, L:K)
-	macro StatementLoc(K:K, L:K) = CodeLoc(K:K, L:K)
-	macro DefinitionLocRange(K:K, _, L:K) = CodeLoc(K:K, L:K)
+	rule DefinitionLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro]
+	rule StatementLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro]
+	rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro]
 	
 	
 	/*@ This macro defines an important identity from \source[n1570]{\para{6.5.3.2}{3}}.  As a syntactic macro, it should run on programs before they even start to reduce. */
-	macro &(*(K:K)) = K:K
+	rule &(*(K:K)) => K:K [macro]
 		
 
-	/*@ The below macros simply transform the prefix AST names to the infix/mixfix names we use from now on */
+	/*@ The below rules simply transform the prefix AST names to the infix/mixfix names we use from now on */
 	
-	// all these macros are temporary while I adjust the semantics to the new grammar
+	// all these rules are temporary while I adjust the semantics to the new grammar
 	syntax Expression ::= "Conditional" "(" K "," K "," K ")"
-	macro Conditional(K1:K, K2:K, K3:K) = K1:K ? K2:K : K3:K
+	rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro]
 	
 	syntax Expression ::= "ArrayIndex" "(" K "," K ")"
-	macro ArrayIndex(K1:K, K2:K) = K1:K[K2:K]
+	rule ArrayIndex(K1:K, K2:K) => K1:K[K2:K] [macro]
 	
 	syntax Expression ::= "Negative" "(" K ")"
-	macro Negative(K:K) = - K:K
+	rule Negative(K:K) => - K:K [macro]
 	syntax Expression ::= "Positive" "(" K ")"
-	macro Positive(K:K) = + K:K
+	rule Positive(K:K) => + K:K [macro]
 	syntax Expression ::= "LogicalNot" "(" K ")"
-	macro LogicalNot(K:K) = ! K:K
+	rule LogicalNot(K:K) => ! K:K [macro]
 	syntax Expression ::= "BitwiseNot" "(" K ")"
-	macro BitwiseNot(K:K) = ~ K:K
+	rule BitwiseNot(K:K) => ~ K:K [macro]
 	syntax Expression ::= "Dereference" "(" K ")"
-	macro Dereference(K:K) = * K:K
+	rule Dereference(K:K) => * K:K [macro]
 	syntax Expression ::= "Reference" "(" K ")"
-	macro Reference(K:K) = & K:K
+	rule Reference(K:K) => & K:K [macro]
 	syntax Expression ::= "PreIncrement" "(" K ")"
-	macro PreIncrement(K:K) = ++ K:K
+	rule PreIncrement(K:K) => ++ K:K [macro]
 	syntax Expression ::= "PreDecrement" "(" K ")"
-	macro PreDecrement(K:K) = -- K:K
+	rule PreDecrement(K:K) => -- K:K [macro]
 	syntax Expression ::= "PostIncrement" "(" K ")"
-	macro PostIncrement(K:K) = K:K ++
+	rule PostIncrement(K:K) => K:K ++ [macro]
 	syntax Expression ::= "PostDecrement" "(" K ")"
-	macro PostDecrement(K:K) = K:K --
+	rule PostDecrement(K:K) => K:K -- [macro]
 
-	ops Multiply : K K -> Expression
-	macro Multiply(K1:K, K2:K) = K1:K * K2:K
-	ops Divide : K K -> Expression
-	macro Divide(K1:K, K2:K) = K1:K / K2:K
-	ops Modulo : K K -> Expression
-	macro Modulo(K1:K, K2:K) = K1:K % K2:K
-	ops Plus : K K -> Expression
-	macro Plus(K1:K, K2:K) = K1:K + K2:K
-	ops Minus : K K -> Expression
-	macro Minus(K1:K, K2:K) = K1:K - K2:K
-	ops LeftShift : K K -> Expression
-	macro LeftShift(K1:K, K2:K) = K1:K << K2:K
-	ops RightShift : K K -> Expression
-	macro RightShift(K1:K, K2:K) = K1:K >> K2:K
-	ops LessThan : K K -> Expression
-	macro LessThan(K1:K, K2:K) = K1:K < K2:K
-	ops LessThanOrEqual : K K -> Expression
-	macro LessThanOrEqual(K1:K, K2:K) = K1:K <= K2:K
-	ops GreaterThan : K K -> Expression
-	macro GreaterThan(K1:K, K2:K) = K1:K > K2:K
-	ops GreaterThanOrEqual : K K -> Expression
-	macro GreaterThanOrEqual(K1:K, K2:K) = K1:K >= K2:K
-	ops Equality : K K -> Expression
-	macro Equality(K1:K, K2:K) = K1:K == K2:K
-	ops NotEquality : K K -> Expression
-	macro NotEquality(K1:K, K2:K) = K1:K != K2:K
-	ops BitwiseAnd : K K -> Expression
-	macro BitwiseAnd(K1:K, K2:K) = K1:K & K2:K
-	ops BitwiseXor : K K -> Expression
-	macro BitwiseXor(K1:K, K2:K) = K1:K ^ K2:K
-	ops BitwiseOr : K K -> Expression
-	macro BitwiseOr(K1:K, K2:K) = K1:K | K2:K
-	ops LogicalAnd : K K -> Expression
-	macro LogicalAnd(K1:K, K2:K) = K1:K && K2:K
-	ops LogicalOr : K K -> Expression
-	macro LogicalOr(K1:K, K2:K) = K1:K || K2:K
+	// ops Multiply : K K -> Expression
+      syntax Expression ::= "Multiply" "(" K "," K ")"
+	rule Multiply(K1:K, K2:K) => K1:K * K2:K [macro]
+	// ops Divide : K K -> Expression
+      syntax Expression ::= "Divide" "(" K "," K ")"
+	rule Divide(K1:K, K2:K) => K1:K / K2:K [macro]
+	// ops Modulo : K K -> Expression
+      syntax Expression ::= "Modulo" "(" K "," K ")"
+	rule Modulo(K1:K, K2:K) => K1:K % K2:K [macro]
+	// ops Plus : K K -> Expression
+      syntax Expression ::= "Plus" "(" K "," K ")"
+	rule Plus(K1:K, K2:K) => K1:K + K2:K [macro]
+	// ops Minus : K K -> Expression
+      syntax Expression ::= "Minus" "(" K "," K ")"
+	rule Minus(K1:K, K2:K) => K1:K - K2:K [macro]
+	// ops LeftShift : K K -> Expression
+      syntax Expression ::= "LeftShift" "(" K "," K ")"
+	rule LeftShift(K1:K, K2:K) => K1:K << K2:K [macro]
+	// ops RightShift : K K -> Expression
+      syntax Expression ::= "RightShift" "(" K "," K ")"
+	rule RightShift(K1:K, K2:K) => K1:K >> K2:K [macro]
+	// ops LessThan : K K -> Expression
+      syntax Expression ::= "LessThan" "(" K "," K ")"
+	rule LessThan(K1:K, K2:K) => K1:K < K2:K [macro]
+	// ops LessThanOrEqual : K K -> Expression
+      syntax Expression ::= "LessThanOrEqual" "(" K "," K ")"
+	rule LessThanOrEqual(K1:K, K2:K) => K1:K <= K2:K [macro]
+	// ops GreaterThan : K K -> Expression
+      syntax Expression ::= "GreaterThan" "(" K "," K ")"
+	rule GreaterThan(K1:K, K2:K) => K1:K > K2:K [macro]
+	// ops GreaterThanOrEqual : K K -> Expression
+      syntax Expression ::= "GreaterThanOrEqual" "(" K "," K ")"
+	rule GreaterThanOrEqual(K1:K, K2:K) => K1:K >= K2:K [macro]
+	// ops Equality : K K -> Expression
+      syntax Expression ::= "Equality" "(" K "," K ")"
+	rule Equality(K1:K, K2:K) => K1:K == K2:K [macro]
+	// ops NotEquality : K K -> Expression
+      syntax Expression ::= "NotEquality" "(" K "," K ")"
+	rule NotEquality(K1:K, K2:K) => K1:K != K2:K [macro]
+	// ops BitwiseAnd : K K -> Expression
+      syntax Expression ::= "BitwiseAnd" "(" K "," K ")"
+	rule BitwiseAnd(K1:K, K2:K) => K1:K & K2:K [macro]
+	// ops BitwiseXor : K K -> Expression
+      syntax Expression ::= "BitwiseXor" "(" K "," K ")"
+	rule BitwiseXor(K1:K, K2:K) => K1:K ^ K2:K [macro]
+	// ops BitwiseOr : K K -> Expression
+      syntax Expression ::= "BitwiseOr" "(" K "," K ")"
+	rule BitwiseOr(K1:K, K2:K) => K1:K | K2:K [macro]
+	// ops LogicalAnd : K K -> Expression
+      syntax Expression ::= "LogicalAnd" "(" K "," K ")"
+	rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro]
+	// ops LogicalOr : K K -> Expression
+      syntax Expression ::= "LogicalOr" "(" K "," K ")"
+	rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro]
 	
 
-	ops Assign : K K -> Expression
-	macro Assign(K1:K, K2:K) = K1:K := K2:K
-	ops AssignMultiply : K K -> Expression
-	macro AssignMultiply(K1:K, K2:K) = K1:K *= K2:K
-	ops AssignDivide : K K -> Expression
-	macro AssignDivide(K1:K, K2:K) = K1:K /= K2:K
-	ops AssignModulo : K K -> Expression
-	macro AssignModulo(K1:K, K2:K) = K1:K %= K2:K
-	ops AssignPlus : K K -> Expression
-	macro AssignPlus(K1:K, K2:K) = K1:K += K2:K
-	ops AssignMinus : K K -> Expression
-	macro AssignMinus(K1:K, K2:K) = K1:K -= K2:K
-	ops AssignBitwiseAnd : K K -> Expression
-	macro AssignBitwiseAnd(K1:K, K2:K) = K1:K &= K2:K
-	ops AssignBitwiseXor : K K -> Expression
-	macro AssignBitwiseXor(K1:K, K2:K) = K1:K ^= K2:K
-	ops AssignBitwiseOr : K K -> Expression
-	macro AssignBitwiseOr(K1:K, K2:K) = K1:K |= K2:K
-	ops AssignLeftShift : K K -> Expression
-	macro AssignLeftShift(K1:K, K2:K) = K1:K <<= K2:K
-	ops AssignRightShift : K K -> Expression
-	macro AssignRightShift(K1:K, K2:K) = K1:K >>= K2:K
+	// ops Assign : K K -> Expression
+      syntax Expression ::= "Assign" "(" K "," K ")"
+	rule Assign(K1:K, K2:K) => K1:K := K2:K [macro]
+	// ops AssignMultiply : K K -> Expression
+      syntax Expression ::= "AssignMultiply" "(" K "," K ")"
+	rule AssignMultiply(K1:K, K2:K) => K1:K *= K2:K [macro]
+	// ops AssignDivide : K K -> Expression
+      syntax Expression ::= "AssignDivide" "(" K "," K ")"
+	rule AssignDivide(K1:K, K2:K) => K1:K /= K2:K [macro]
+	// ops AssignModulo : K K -> Expression
+      syntax Expression ::= "AssignModulo" "(" K "," K ")"
+	rule AssignModulo(K1:K, K2:K) => K1:K %= K2:K [macro]
+	// ops AssignPlus : K K -> Expression
+      syntax Expression ::= "AssignPlus" "(" K "," K ")"
+	rule AssignPlus(K1:K, K2:K) => K1:K += K2:K [macro]
+	// ops AssignMinus : K K -> Expression
+      syntax Expression ::= "AssignMinus" "(" K "," K ")"
+	rule AssignMinus(K1:K, K2:K) => K1:K -= K2:K [macro]
+	// ops AssignBitwiseAnd : K K -> Expression
+      syntax Expression ::= "AssignBitwiseAnd" "(" K "," K ")"
+	rule AssignBitwiseAnd(K1:K, K2:K) => K1:K &= K2:K [macro]
+	// ops AssignBitwiseXor : K K -> Expression
+      syntax Expression ::= "AssignBitwiseXor" "(" K "," K ")"
+	rule AssignBitwiseXor(K1:K, K2:K) => K1:K ^= K2:K [macro]
+	// ops AssignBitwiseOr : K K -> Expression
+      syntax Expression ::= "AssignBitwiseOr" "(" K "," K ")"
+	rule AssignBitwiseOr(K1:K, K2:K) => K1:K |= K2:K [macro]
+	// ops AssignLeftShift : K K -> Expression
+      syntax Expression ::= "AssignLeftShift" "(" K "," K ")"
+	rule AssignLeftShift(K1:K, K2:K) => K1:K <<= K2:K [macro]
+	// ops AssignRightShift : K K -> Expression
+      syntax Expression ::= "AssignRightShift" "(" K "," K ")"
+	rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro]
 	
-	ops Dot : K Id -> Expression
-	macro Dot(K:K, X:Id) = K:K . X:Id
+	// ops Dot : K Id -> Expression
+	syntax Expression ::= "Dot" "(" K "," Id ")"
+	rule Dot(K:K, X:Id) => K:K . X:Id [macro]
 	syntax Expression ::= "Arrow" "(" K "," Id ")"
-	macro Arrow(K:K, X:Id) = K:K -> X:Id
+	rule Arrow(K:K, X:Id) => K:K -> X:Id [macro]
 
 endmodule
