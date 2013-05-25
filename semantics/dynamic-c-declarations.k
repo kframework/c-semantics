@@ -1,3 +1,5 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE
 	imports DYNAMIC-INCLUDE 
 	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE
@@ -16,10 +18,10 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		[structural] 
 	
 	rule [bind-empty-void]:
-		<k> bind-aux(_:Int, .List{K}, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .KList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
 		[structural] 
 	rule [bind-empty]:
-		<k> bind-aux(_:Int, .List{K}, .List{K}) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .KList, .KList) => sequencePoint ...</k> 
 		[structural] 
 		
 		
@@ -56,11 +58,11 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		[structural anywhere] 
 		
 	rule [bind-one]:
-		<k> true ~> bind-aux(_:Int, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+		<k> true ~> bind-aux(_:Int, (tv(V:KList, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
 			=> allocateType(Loc:Int, T:KResult)
 			~> addToEnv(X:Id, Loc:Int)
 			~> giveType(X:Id, T:KResult)
-			~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:List{K}, T':KResult)))
+			~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:KList, T':KResult)))
 			~> bind-aux(Loc:Int, L:List{KResult}, P:List{KResult})
 		...</k> 
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
@@ -70,18 +72,18 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		
 	rule [bind-one-check-type]:
 		<k> (.K => isTypeCompatible(T:KResult, T':KResult)) 
-			~> bind-aux(_:Int, (tv(V:List{K}, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+			~> bind-aux(_:Int, (tv(V:KList, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
 		...</k> 
 		[structural] 
 	
-	declare promoteList : List{KResult} -> List{K} 
-	define [promoteList-needs-promoting]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
-		=> cast(argPromote(t(S:Set, T:K)), tv(V:List{K}, t(S:Set, T:K))),, promoteList(L:List{KResult})
+	syntax KList ::= promoteList(List{KResult}) [function]
+	rule [promoteList-needs-promoting]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:List{KResult})) 
+		=> cast(argPromote(t(S:Set, T:K)), tv(V:KList, t(S:Set, T:K))),, promoteList(L:List{KResult})
 		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool isBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
 		orBool T:K ==K float 
 		[structural]
-	define [promoteList-promoted]: promoteList((tv(V:List{K}, t(S:Set, T:K)),, L:List{KResult})) 
-		=> (tv(V:List{K}, t(S:Set, T:K)),, promoteList(L:List{KResult}))
+	rule [promoteList-promoted]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:List{KResult})) 
+		=> (tv(V:KList, t(S:Set, T:K)),, promoteList(L:List{KResult}))
 		when (notBool(hasIntegerType(t(S:Set, T:K))) 
 			andBool notBool T:K ==K float
 			andBool notBool isArrayType(t(S:Set, T:K))
@@ -90,10 +92,10 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		orBool T:K ==K double 
 		orBool T:K ==K long-double
 		[structural]
-	define promoteList(.List{K}) => .List{K}
+	rule promoteList(.KList) => .KList
 	
 	syntax K ::= "bindVariadic" "(" K "," List{KResult} ")"
-	syntax K ::= "bindVariadic-pre" "(" K "," List{K} ")"
+	syntax K ::= "bindVariadic-pre" "(" K "," KList ")"
 	
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
@@ -117,7 +119,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 				=> allocateType(Loc:Int, Type)
 				~> Computation(*(tv(Loc:Int, t(.Set, pointerType(Type)))) := V:KResult)
 			) 
-			~> bindVariadic(_, ((V:KResult => .List{K}),, _:List{KResult})) 
+			~> bindVariadic(_, ((V:KResult => .KList),, _:List{KResult})) 
 		...</k>
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
@@ -125,7 +127,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		[structural]
 	
 	rule [bind-variadic-done]:
-		<k> bindVariadic(_, .List{K}) => sequencePoint ...</k> 
+		<k> bindVariadic(_, .KList) => sequencePoint ...</k> 
 		[structural]
 endmodule
 
@@ -192,7 +194,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
 		...</k>
 		[structural] 
 	rule
-		<k> zeroStruct(Name:K, .List{K}) => .K ...</k>
+		<k> zeroStruct(Name:K, .KList) => .K ...</k>
 		[structural] 
 
 	rule

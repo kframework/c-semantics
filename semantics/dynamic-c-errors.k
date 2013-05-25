@@ -1,3 +1,5 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 	imports COMMON-C-SEMANTICS
 	imports DYNAMIC-C-SEMANTICS-MISC
@@ -13,16 +15,16 @@ endmodule
 module DYNAMIC-C-ERRORS
 	imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
-	declare Error : String String -> K
-	define Error(Name:String, Msg:String)  => 
+	syntax K ::= Error(String, String) [function]
+	rule Error(Name:String, Msg:String)  => 
 		"Error: " 
 		+String Name:String 
 		+String "\n"
 		+String "Description: " 
 		+String Msg:String
 		[structural]
-	declare ICE : String String -> K
-	define ICE(Name:String, Msg:String) =>
+	syntax K ::= ICE(String, String) [function]
+	rule ICE(Name:String, Msg:String) =>
 		Error(Name:String, Msg:String)
 		+String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
 		[structural]
@@ -30,16 +32,16 @@ module DYNAMIC-C-ERRORS
 		
 	syntax CellLabel ::= "halted-k"
 	syntax CellLabel ::= "halted-T"
-	declare halt_ : Bag -> Bag
-	define halt < k => halted-k > _:K </ k => halted-k >
-	define halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
+	syntax Bag ::= "halt" Bag [function]
+	rule halt < k => halted-k > _:K </ k => halted-k >
+	rule halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
 		when L:CellLabel =/=CellLabel k 
 		[structural]
-	define halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
-	define halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
-	define halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
-	define halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
-	define halt .Bag => .Bag
+	rule halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
+	rule halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
+	rule halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
+	rule halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
+	rule halt .Bag => .Bag
 	
 	// FIXME TOOL BUG removing spaces in inner cells causes kompile to lose track of ...s
 	rule [halt-start]:
@@ -81,7 +83,7 @@ module DYNAMIC-C-ERRORS
 		[structural large]
 	
 	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:List{K},, piece(unknown(Len:Int), Len:Int)), _:K) ...</ k => finalComputation >
+		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </errorCell>)
 		when notBool isCharType(T:KResult)
@@ -250,22 +252,22 @@ module DYNAMIC-C-ERRORS
 		when T:K =/=K int andBool T:K =/=K void
 		[structural large]
 		
-	declare isArgvType : Type -> Bool
+	syntax Bool ::= isArgvType(Type) [function]
 	
-	define isArgvType(t(_, T:K)) => false
+	rule isArgvType(t(_, T:K)) => false
 		when notBool (
 			getKLabel(T:K) ==KLabel 'incompleteArrayType 
 			orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
 		)
 		
-	define isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
+	rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==KLabel 'pointerType
-	define isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
+	rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=K char
 		
-	define isArgvType(t(_, pointerType(t(_, T:K)))) => false
+	rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
 		when notBool getKLabel(T:K) ==KLabel 'pointerType
-	define isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
+	rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
 		when T:K =/=K char
 	
 	rule [err00027]:
@@ -361,12 +363,12 @@ module DYNAMIC-C-ERRORS
 		[structural large]
 	
 	rule [err00039]:
-		< k => finalComputation > addUnion(S:Id, .List{K})  ...</ k => finalComputation >
+		< k => finalComputation > addUnion(S:Id, .KList)  ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00039", "Unions cannot be empty.") </errorCell>)
 		[structural large]
 	rule [err00040]:
-		< k => finalComputation > addStruct(S:Id, .List{K})  ...</ k => finalComputation >
+		< k => finalComputation > addStruct(S:Id, .KList)  ...</ k => finalComputation >
 		<br/>
 		(.Bag => <errorCell> Error("00040", "Structs cannot be empty.") </errorCell>)
 		[structural large]

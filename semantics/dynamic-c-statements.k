@@ -1,9 +1,11 @@
+require "dynamic-c-semantics.k"
+
 module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 	imports COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	imports DYNAMIC-INCLUDE
 
 	syntax K ::= "pushBlock"
-	syntax K ::= "addToHistory" "(" Int ")" [latex "\terminal{addToHist}\!({#1}\!)"]
+	syntax K ::= "addToHistory" "(" Int ")" [latex(\terminal{addToHist}\!({#1}\!))]
 endmodule 
 
 module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
@@ -88,7 +90,7 @@ module DYNAMIC-SEMANTICS-BLOCKS
 	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (imports storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
 	}*/
 	rule [dissolve-block]:
-		<k> Block(BlockNum:Int, _, List(Statements:List{K})) => klistToK(Statements:List{K}) ...</k>
+		<k> Block(BlockNum:Int, _, List(Statements:KList)) => klistToK(Statements:KList) ...</k>
 		<blockHistory> .List => ListItem(BlockNum:Int) ...</blockHistory>
 		[structural]
 endmodule
@@ -430,7 +432,7 @@ module DYNAMIC-SEMANTICS-GOTO
 		andBool sIntDepth:Int ==Int Depth:Int +Int 1
 		[structural] 
 		
-	syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex "\terminal{addVarsForBlock}\!({#1},{#2}\!)"] 
+	syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
 	
 	//  skip variables from other blocks
 	rule

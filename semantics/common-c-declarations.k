@@ -1,7 +1,9 @@
+require "common-c-semantics.k"
+
 module COMMON-SEMANTICS-DECLARATIONS-INCLUDE
 	imports COMMON-INCLUDE 
 	syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)] // id, type, initializer
-	syntax K ::= "declarationObject" "(" Type "," K "," K ")" [latex "\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)}"] // type, translation unit it was defined in, definition
+	syntax K ::= "declarationObject" "(" Type "," K "," K ")" [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})] // type, translation unit it was defined in, definition
 	
 	syntax K ::= "external"
 	syntax K ::= "internal"
@@ -60,11 +62,11 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<k> figureInit(
 			X:Id, 
 			t(Se:Set, arrayType(T:KResult, Len:Int)), 
-			(SingleInit(Constant(WStringLiteral(S:List{K}))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:List{K})))))))
+			(SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
 		)
 		...</k>
 		when isWCharType(T:KResult)
-		andBool lengthList{K}(S:List{K}) <=Int Len:Int
+		andBool lengthKList(S:KList) <=Int Len:Int
 		[structural] 
 	
 	rule
@@ -75,7 +77,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		[structural]
 	rule
 		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthList{K}(S:List{K}) +Int 1))), SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			=> arrayType(T:KResult, lengthKList(S:KList) +Int 1))), SingleInit(Constant(WStringLiteral(S:KList)))) 
 		...</k>
 		when isWCharType(T:KResult)
 		[structural] 
@@ -123,20 +125,20 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		when notBool (isAggregateType(T:KResult) orBool isUnionType(T:KResult))
 		[structural] 
 		
-	rule DeclarationDefinition(InitNameGroup(T:KResult, List((K:K,, K':K,, L:List{K}))))
+	rule DeclarationDefinition(InitNameGroup(T:KResult, List((K:K,, K':K,, L:KList))))
 		=> DeclarationDefinition(InitNameGroup(T:KResult, List(K:K)))
-		~> DeclarationDefinition(InitNameGroup(T:KResult, List((K':K,, L:List{K}))))
+		~> DeclarationDefinition(InitNameGroup(T:KResult, List((K':K,, L:KList))))
 		[structural]
 	rule 
 		DeclarationDefinition(InitNameGroup(T:KResult, List(InitName(Name:K, Exp:K))))
 			=> doDeclare(SingleName(T:KResult, Name:K), Exp:K)
 		[structural]
 			
-	rule Typedef(NameGroup(T:KResult, List((K:K,, L:List{K})))) 
+	rule Typedef(NameGroup(T:KResult, List((K:K,, L:KList)))) 
 		=> defineType(SingleName(T:KResult, K:K))
-		~> Typedef(NameGroup(T:KResult, List(L:List{K})))
+		~> Typedef(NameGroup(T:KResult, List(L:KList)))
 		[structural]
-	rule Typedef(NameGroup(T:KResult, List(.List{K}))) => .K
+	rule Typedef(NameGroup(T:KResult, List(.KList))) => .K
 		[structural]
 
 	rule
@@ -622,7 +624,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 
 	syntax K ::= "createNewFun" "(" K "," K "," K ")"
 	
-	define
+	rule
 		createNewFun(X:Id, T:KResult, Block:K)
 		=> declareFunction(
 				X:Id, 
@@ -638,12 +640,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 			)
 		
 	syntax K ::= "safeBody" "(" K "," K ")"
-	define 
+	rule 
 		safeBody(X:Id, Block:K) 
 		=> Block:K 
 		~> Return(NothingExpression)
 		when X:Id =/=K Identifier("main")
-	define 
+	rule 
 		safeBody(Identifier("main"), Block:K) 
 		=> Block:K 
 		~> Return(tv(0, t(.Set, int)))
@@ -662,7 +664,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 	syntax K ::= "getInit"
 	syntax K ::= "fillInit" "(" K ")"
 	syntax K ::= "fillInit-aux" "(" K ")"
-	syntax K ::= "fillInit" "(" List{K} ")"
+	syntax K ::= "fillInit" "(" KList ")"
 	syntax C ::= "completeInitFragment" "(" K "," K ")"
 	syntax KResult ::= "initializerFragment" "(" K ")"
 	
@@ -674,8 +676,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		[structural] 
 
 	rule
-		<k> startInit(T:KResult, X:Id, CompoundInit(List(L:List{K})))
-			=> fillInit(L:List{K}) 
+		<k> startInit(T:KResult, X:Id, CompoundInit(List(L:KList)))
+			=> fillInit(L:KList) 
 			~> getInit
 		...</k>
 		<incompleteLength> _ => 0 </incompleteLength>
@@ -687,13 +689,13 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		[structural] 
 	
 	rule
-		<k> fillInit((InitFragment(K:K, Exp:K),, L:List{K}))
+		<k> fillInit((InitFragment(K:K, Exp:K),, L:KList))
 			=> fillInit(InitFragment(K:K, Exp:K)) 
-			~> fillInit(L:List{K})
+			~> fillInit(L:KList)
 		...</k>
 		[structural] 
 	rule
-		<k> fillInit(.List{K}) => . ...</k>
+		<k> fillInit(.KList) => . ...</k>
 		[structural] 
 	
 	syntax ListItem ::= "next"
@@ -810,8 +812,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		
 	syntax K ::= "finishCompoundInit" "(" List ")"
 	rule
-		<k> fillInit(CompoundInit(List(L:List{K})))
-			=> fillInit(L:List{K})
+		<k> fillInit(CompoundInit(List(L:KList)))
+			=> fillInit(L:KList)
 			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:KResult)) Remainder:ListItem)
 		...</k>
@@ -875,19 +877,19 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<currentSubObject> (block => .List) ...</currentSubObject>
 		[structural] 
 		
-	define [innerType-arrayType]:
+	rule [innerType-arrayType]:
 		innerType(t(_, arrayType(T:KResult, _:Int))) => T:KResult
-	define [innerType-incompleteArrayType]: 
+	rule [innerType-incompleteArrayType]: 
 		innerType(t(_, incompleteArrayType(T:KResult))) => T:KResult
-	define [innerType-flexibleArrayType]: 
+	rule [innerType-flexibleArrayType]: 
 		innerType(t(_, flexibleArrayType(T:KResult))) => T:KResult
-	define [innerType-qualifiedType]:
+	rule [innerType-qualifiedType]:
 		innerType(t(_, qualifiedType(T:KResult, _))) => innerType(T:KResult)
-	define [innerType-pointerType]:
+	rule [innerType-pointerType]:
 		innerType(t(_, pointerType(T:KResult))) => T:KResult
-	define [innerType-bitfieldType]:
+	rule [innerType-bitfieldType]:
 		innerType(t(_, bitfieldType(T:KResult, _:Int))) => T:KResult
-	define [innerType-functionType]:
+	rule [innerType-functionType]:
 		innerType(t(_, functionType(T:KResult, _:List{KResult}))) => T:KResult
 
 	context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
@@ -901,12 +903,12 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 	
 	syntax K ::= "popInit"
 	
-	declare getTopArrayUse : K -> Int 
-	define getTopArrayUse(X:Id) => 0
-	define getTopArrayUse(X:Id[N:Int]) => N:Int +Int 1 // +1 for length instead of index
-	define getTopArrayUse(K:K . F:Id) => getTopArrayUse(K:K)
-	define getTopArrayUse((K:K[N:Int])[_]) => getTopArrayUse(K:K[N:Int])
-	define getTopArrayUse((K:K . F:Id)[_]) => getTopArrayUse(K:K)
+	syntax Int ::= getTopArrayUse(K) [function]
+	rule getTopArrayUse(X:Id) => 0
+	rule getTopArrayUse(X:Id[N:Int]) => N:Int +Int 1 // +1 for length instead of index
+	rule getTopArrayUse(K:K . F:Id) => getTopArrayUse(K:K)
+	rule getTopArrayUse((K:K[N:Int])[_]) => getTopArrayUse(K:K[N:Int])
+	rule getTopArrayUse((K:K . F:Id)[_]) => getTopArrayUse(K:K)
 	
 	syntax K ::= "initializeSingleInit" "(" K ")"
 		
@@ -989,12 +991,12 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		andBool lengthString(S:String) ==Int Len:Int
 		[structural] 
 	rule [fillInit-wstring-array-eq]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K}))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
-		andBool lengthList{K}(S:List{K}) ==Int Len:Int
+		andBool lengthKList(S:KList) ==Int Len:Int
 		[structural] 
 	rule [fillInit-string-array-lt]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
@@ -1005,12 +1007,12 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		andBool lengthString(S:String) <Int Len:Int
 		[structural] 
 	rule [fillInit-wstring-array-lt]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+			=> fillInit(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
 		when isWCharType(T:KResult)
-		andBool lengthList{K}(S:List{K}) <Int Len:Int
+		andBool lengthKList(S:KList) <Int Len:Int
 		[structural] 
 	rule [fillInit-string-char]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
@@ -1021,8 +1023,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		when isCharType(T:KResult)
 		[structural] 
 	rule [fillInit-wstring-wchar]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:List{K},, 0)))))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
 		...</k>
 		//<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
@@ -1041,18 +1043,18 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		
 	syntax K ::= "initHead" "(" K "," K ")"
 	syntax K ::= "initTail" "(" K ")"
-	define
+	rule
 		initHead(S:String, T:KResult)
 		=> SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))
 	
-	define 
+	rule 
 		initTail(S:String)
 		=> SingleInit(Constant(StringLiteral(butFirstChar(S:String))))
 		
 	rule [fillInitAux-wstring-some]:
-		<k> fillInit-aux(SingleInit(Constant(WStringLiteral((N:Int,, S:List{K})))))
+		<k> fillInit-aux(SingleInit(Constant(WStringLiteral((N:Int,, S:KList)))))
 			=> fillInit(SingleInit(tv(N:Int, cfg:wcharut)))
-			~> fillInit-aux(SingleInit(Constant(WStringLiteral(S:List{K})))) 
+			~> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList)))) 
 		...</k>
 		//<br/>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
@@ -1063,7 +1065,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<k> fillInit-aux(SingleInit(Constant(StringLiteral("")))) => .K ...</k>
 		[structural]
 	rule [fillInitAux-wstring-done]:
-		<k> fillInit-aux(SingleInit(Constant(WStringLiteral(.List{K})))) => .K ...</k>
+		<k> fillInit-aux(SingleInit(Constant(WStringLiteral(.KList)))) => .K ...</k>
 		[structural] 
 		
 	// this rule assumes all unrollings have already occurred, so it needs to be a rule
@@ -1077,8 +1079,8 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		andBool (isBasicType(T:KResult) orBool isPointerType(T:KResult) orBool isBitfieldType(T:KResult))
 		[structural] 
 	rule [fillinit-wstring-notwchar]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:List{K}))))
-			=> initializeSingleInit(Constant(WStringLiteral(S:List{K})))
+		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+			=> initializeSingleInit(Constant(WStringLiteral(S:KList)))
 		...</k>
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ...</currentSubObject>
 		when notBool isWCharType(T:KResult)
@@ -1115,14 +1117,14 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 	syntax K ::= "preDeclareStrings" "(" K ")"
 	
 	rule
-		<k> preDeclareStrings(List((K:K,, L:List{K})))
+		<k> preDeclareStrings(List((K:K,, L:KList)))
 			=> K:K
 			~> discard
-			~> preDeclareStrings(List(L:List{K}))
+			~> preDeclareStrings(List(L:KList))
 		...</k>
 		[structural]
 	rule
-		<k> preDeclareStrings(List(.List{K})) => .K ...</k>
+		<k> preDeclareStrings(List(.KList)) => .K ...</k>
 		[structural]
 	
 	syntax K ::= "resolve" "(" K ")"
@@ -1167,7 +1169,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 			
 	syntax K ::= "resolveInternal" "(" Id "," K "," K ")"
 	syntax K ::= "resolveExternal" "(" Id "," K "," Bag "," K ")"
-	syntax K ::= "resolveExternal'" "(" Id "," K "," Bag "," K "," Int "," K ")" [metadata "strict=(6)"]
+	syntax K ::= "resolveExternal'" "(" Id "," K "," Bag "," K "," Int "," K ")" [strict(6)]
 	
 	syntax K ::= "recordFunTUInfo" "(" K "," Type "," K "," K ")" // name, type, context, where defined
 	rule
@@ -1389,20 +1391,20 @@ module COMMON-SEMANTICS-DECLARATIONS-ENUMS
 		<k> fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</k> 
 		[structural]
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItem(E:Id),, L:List{K}))), K:K) 
+		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItem(E:Id),, L:KList))), K:K) 
 			=> doDeclare(typedDeclaration(t(.Set, int), E:Id), SingleInit(K:K))
-			~> fillEnums-aux(EnumDef(X:Id, List(L:List{K})), K:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:Id, List(L:KList)), K:K + tv(1, t(.Set, int)))
 		...</k>
 		[structural] 
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItemInit(E:Id, Exp:K),, L:List{K}))), _)
+		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItemInit(E:Id, Exp:K),, L:KList))), _)
 			=> doDeclare(typedDeclaration(t(.Set, int), E:Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:Id, List(L:List{K})), Exp:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:Id, List(L:KList)), Exp:K + tv(1, t(.Set, int)))
 		...</k>
 		when Exp:K =/=K NothingExpression
 		[structural] 
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List(.List{K})), _) => .K ...</k> 
+		<k> fillEnums-aux(EnumDef(X:Id, List(.KList)), _) => .K ...</k> 
 		[structural] 
 endmodule
 

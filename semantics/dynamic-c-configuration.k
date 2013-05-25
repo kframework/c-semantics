@@ -1,4 +1,5 @@
 require "common-c-configuration.k"
+require "c-syntax.k"
 
 module DYNAMIC-C-CONFIGURATION
 	imports C-SYNTAX

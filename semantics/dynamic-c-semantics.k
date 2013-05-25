@@ -1,6 +1,18 @@
 require "dynamic-c-configuration.k"
 require "common-c-semantics.k"
-require "modules/uris.k"
+//require "modules/uris.k"
+
+require "dynamic-c-expressions.k"
+require "dynamic-c-conversions.k"
+require "dynamic-c-statements.k"
+require "dynamic-c-standard-lib.k"
+require "dynamic-c-typing.k"
+require "dynamic-c-memory.k"
+require "dynamic-c-declarations.k"
+// require "dynamic-c-ltl.k"
+
+// this must be below the others
+require "dynamic-c-errors.k"
 
 module DYNAMIC-SEMANTIC-SYNTAX
 	imports COMMON-INCLUDE
@@ -56,7 +68,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 	syntax K ::= "f-flush" "(" Int ")"
 	syntax K ::= "f-sendString" "(" Int "," String ")"
 	
-	// can't lex string2List{K} correctly in #fPrint(N:Int,, string2List{K}(S:String))
+	// can't lex string2KList correctly in #fPrint(N:Int,, string2KList(S:String))
 	rule [flush]:
 		<k> flush(N:Int) => .K ...</k>
 		<fileCommands>... .K
@@ -95,28 +107,15 @@ module DYNAMIC-C-SEMANTICS-MISC
 		<done> (ListItem(S:String) ListItem(S':String) => ListItem(S:String +String S':String)) ...</done>
 		[structural]
 		
-	declare string2List : String -> List{K}
-	declare string2List-aux : String List{K} -> List{K}
-	define string2List(S:String) => string2List-aux(S:String, .List{K})
-	define string2List-aux("", L:List{K}) => L:List{K}
-	define 
-		string2List-aux(S:String, L:List{K})
-			=> string2List-aux(butFirstChar(S:String), (L:List{K},, firstChar(S:String)))
+	syntax List ::= string2List(String) [function] | "string2List-aux" "(" String "," KList ")" [function]
+	rule string2List(S:String) => string2List-aux(S:String, .KList)
+	rule string2List-aux("", L:KList) => L:KList
+	rule 
+		string2List-aux(S:String, L:KList)
+			=> string2List-aux(butFirstChar(S:String), (L:KList,, firstChar(S:String)))
 		when S:String =/=String ""
 		[structural]
 endmodule
-
-load dynamic-c-expressions
-load dynamic-c-conversions
-load dynamic-c-statements
-load dynamic-c-standard-lib
-load dynamic-c-typing
-load dynamic-c-memory
-load dynamic-c-declarations
-// load dynamic-c-ltl
-
-// this must be below the others
-load dynamic-c-errors
 
 module DYNAMIC-C-SEMANTICS
 	imports COMMON-C-SEMANTICS
@@ -144,16 +143,16 @@ If they are declared, the parameters to the main function shall obey the followi
 \end{itemize}
 }*/
 	
-	syntax K ::= "incomingArguments-aux" "(" List{K} "," Int ")"
+	syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
 	
-	rule incomingArguments(L:List{K}) 
-			=> incomingArguments-aux(L:List{K}, 0) 
+	rule incomingArguments(L:KList) 
+			=> incomingArguments-aux(L:KList, 0) 
 		[structural]
-	rule incomingArguments-aux((S:String,, L:List{K}), N:Int) 
+	rule incomingArguments-aux((S:String,, L:KList), N:Int) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Int] := Constant(StringLiteral(S:String)))
-			~> incomingArguments-aux(L:List{K}, N:Int +Int 1)
+			~> incomingArguments-aux(L:KList, N:Int +Int 1)
 		[structural]
-	rule incomingArguments-aux(.List{K}, N:Int) 
+	rule incomingArguments-aux(.KList, N:Int) 
 			=> Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointer)
 		[structural]
 		
@@ -161,39 +160,39 @@ If they are declared, the parameters to the main function shall obey the followi
 	syntax K ::= "syntaxInt" "(" Int ")"
 	rule [syntaxInt]: syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
 	
-	syntax K ::= "pgmArgs" "(" List{K} ")"
-	syntax K ::= "argName" "(" List{K} ")"
-	define
-		argName(L:List{K})
+	syntax K ::= "pgmArgs" "(" KList ")" [function]
+	syntax K ::= "argName" "(" KList ")" [function]
+	rule
+		argName(L:KList)
 		=> Name(
 			Identifier("#incomingArgumentsArray"), 
-			PointerType(ArrayType(JustBase, syntaxInt((lengthList{K} L:List{K}) +Int 1), Specifier(List(.List{K}))))
+			PointerType(ArrayType(JustBase, syntaxInt((lengthKList L:KList) +Int 1), Specifier(List(.KList))))
 		)
-	define
-		pgmArgs(L:List{K})
+	rule
+		pgmArgs(L:KList)
 		=> DeclarationDefinition(InitNameGroup(
 			Specifier(List(Char)), 
-			List(InitName(argName(L:List{K}), NoInit))
+			List(InitName(argName(L:KList), NoInit))
 		))
 		[structural]
 
-	rule [eval-noInput]: eval(K:K) => eval(K:K, .List{K}, "", 0) [structural]
+	rule [eval-noInput]: eval(K:K) => eval(K:K, .KList, "", 0) [structural]
 		
 	/*@ These helpers are used to get around a bug in \K related to successive ``/''s in strings. */
-	syntax K ::= "stdinStr" | "stdoutStr"
+	syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
 	
-	define stdinStr => "stdin:/" +String "/" +String "/"
-	define stdoutStr => "stdout:/" +String "/" +String "/"
+	rule stdinStr => "stdin:/" +String "/" +String "/"
+	rule stdoutStr => "stdout:/" +String "/" +String "/"
 	
-	rule [eval-input]: eval(Program(List(P:List{K})), L:List{K}, Input:String, IsInterp:Int) =>
+	rule [eval-input]: eval(Program(List(P:KList)), L:KList, Input:String, IsInterp:Int) =>
 		<T>...
 			<threads>
 				<thread>...
-					<k> klistToK(P:List{K})
-							~> pgmArgs(L:List{K})
+					<k> klistToK(P:KList)
+							~> pgmArgs(L:KList)
 							~> resolveReferences					
-							// ~> incomingArguments(L:List{K})
-							~> callMain(lengthList{K}(L:List{K}), incomingArguments(L:List{K}))
+							// ~> incomingArguments(L:KList)
+							~> callMain(lengthKList(L:KList), incomingArguments(L:KList))
 					</k>
 					<br/>
 					<threadId> 1 </threadId>
@@ -272,11 +271,11 @@ or equivalent; or in some other implementation-defined manner.
 	// fixme figure out type of string
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
-			=> Call(Identifier("main"), List(.List{K}))
+			=> Call(Identifier("main"), List(.KList))
 		[structural]
 	rule
-		callMain-aux(t(.Set, functionType(t(.Set, int), .List{K})), N:Int, X:Id, _) 
-			=> Call(Identifier("main"), List(.List{K}))
+		callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
+			=> Call(Identifier("main"), List(.KList))
 		[structural]
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)

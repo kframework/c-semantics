@@ -1,3 +1,5 @@
+require "common-c-semantics.k"
+
 module COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	imports COMMON-INCLUDE 
 	
@@ -6,7 +8,7 @@ module COMMON-SEMANTICS-STATEMENTS-INCLUDE
 	syntax K ::= "popLoop"
 	syntax K ::= "popBlock"
 	syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")" //  nestingDepth, currentBlock, decl
-	syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex "\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!)"] //  nestingDepth, block history, continuation, loop stack, decl stack
+	syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))] //  nestingDepth, block history, continuation, loop stack, decl stack
 	syntax K ::= "case" "(" Int ")"
 endmodule 
 
@@ -61,7 +63,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		<blockHistoryGoto> ListItem(OldNum:Int) ...</blockHistoryGoto>
 		[structural] 
 	rule
-		<computation> Block(Num:Int, _, List(L:List{K})) => klistToK(L:List{K}) ...</computation> 
+		<computation> Block(Num:Int, _, List(L:KList)) => klistToK(L:KList) ...</computation> 
 		<blockHistoryGoto> . => ListItem(Num:Int) ...</blockHistoryGoto>
 		//  <declarationStack>... .List => ListItem(.K) </declarationStack>
 		[structural] 
@@ -80,16 +82,16 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 
 	// this rule is different than the dynamic one because we don't enforce T to be reduced yet
 	rule
-		<computation> DeclarationDefinition(InitNameGroup(T:K, List((K:K,, K':K,, L:List{K}))))
+		<computation> DeclarationDefinition(InitNameGroup(T:K, List((K:K,, K':K,, L:KList))))
 			=> DeclarationDefinition(InitNameGroup(T:K, List(K:K)))
-			~> DeclarationDefinition(InitNameGroup(T:K, List((K':K,, L:List{K}))))
+			~> DeclarationDefinition(InitNameGroup(T:K, List((K':K,, L:KList))))
 		...</computation>
 		[structural]
 		
 	// rule
-		// <computation> Typedef(NameGroup(T:K, List((K:K,, K':K,, L:List{K}))))
+		// <computation> Typedef(NameGroup(T:K, List((K:K,, K':K,, L:KList))))
 			// => Typedef(nameGroup-aux(T:K, K:K))
-			// ~> Typedef(NameGroup(T:K, List(K':K,, L:List{K})))
+			// ~> Typedef(NameGroup(T:K, List(K':K,, L:KList)))
 		// ...</computation>
 		// [structural] 
 
@@ -135,7 +137,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		[structural] 
 		
 	rule [compute-label-ignore-non-statement]:
-		<computation> L:KLabel(Args:List{K}) => .K ...</computation>
+		<computation> L:KLabel(Args:KList) => .K ...</computation>
 		when false
 		orBool L:KLabel ==KLabel 'Nop
 		orBool L:KLabel ==KLabel 'Computation
