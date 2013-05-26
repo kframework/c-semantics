@@ -7,8 +7,8 @@ module DYNAMIC-MEMORY-INCLUDE
 	syntax K ::= "extractBytesFromMem" "(" Int "," Int ")" // loc, size in bytes
 	syntax Int ::= "encodedPointer" "(" Int ")"
 	syntax Int ::= "encodedFloat" "(" Float ")"
-	syntax List ::= explodeToBits(KList) [function]
-	syntax List ::= reverseList(KList) [function]
+	syntax KList ::= explodeToBits(KList) [function]
+	syntax KList ::= reverseList(KList) [function]
 	syntax ListItem ::= "bwrite" "(" Int "," K ")"
 	syntax Set ::= locations(List) [function]
 	syntax K ::= "read-aux" "(" K "," K "," K ")"
@@ -232,7 +232,7 @@ module DYNAMIC-SEMANTICS-READING
 		...</k>
 		[structural]		
 	
-	syntax List ::= values(KList) [function]
+	syntax KList ::= values(KList) [function]
 	rule values((tv(K:K, _),, L:List{KResult})) => (K:K,, values(L:List{KResult}))
 	rule values(.KList) => .KList
 	rule
@@ -586,8 +586,8 @@ module DYNAMIC-SEMANTICS-WRITING
 	rule explodeToBits(piece(N:Int, 0)) => .KList
 	rule explodeToBits(.KList) => .KList
 	
-	syntax List ::= splinter(Int, Int) [function] 
-	syntax List ::= "splinter-aux" "(" Int "," Int "," Int ")" [function]
+	syntax KList ::= splinter(Int, Int) [function] 
+	syntax KList ::= "splinter-aux" "(" Int "," Int "," Int ")" [function]
 	rule splinter(N:Int, Len:Int) => splinter-aux(N:Int, Len:Int, 0)
 	rule splinter-aux(_:Int, Len:Int, Len:Int) => .KList
 	rule splinter-aux(N:Int, Len:Int, Pos:Int)

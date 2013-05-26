@@ -4,7 +4,6 @@ module COMMON-C-SYNTAX
 	//tags ndlocal ndheat computational structural interpRule anywhere observable
 	
 	// these are semantic
-      // TODO(chathhorn) removing semantic tags, not sure what they means
 	syntax K ::= "reval" "(" K ")" [semantic, strict]
 	syntax K ::= "peval" "(" K ")" [semantic, strict]
 	
@@ -189,7 +188,7 @@ and decl_type =
 	syntax K ::= "JustBase"
 	syntax DeclType ::= "FunctionType" "(" K ")" [strict]
 	syntax DeclType ::= "ArrayType" "(" K "," K "," K ")" [strict(1)] // third argument should also be strict, but not doing anything with [strict 5] yet
-	context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
+	context ArrayType(_, (HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
 	syntax DeclType ::= "PointerType" "(" K ")" [strict]
 	syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [strict(1)] // K, List, Bool
 	context Prototype(_, List((_:KList,, HOLE,, _:KList)), _:Bool)
@@ -242,7 +241,7 @@ and name = String * decl_type * attribute list * cabsloc
 and init_name = name * init_expression
 */
 	syntax InitName ::= "InitName" "(" K "," K ")"
-	context InitName(_, (HOLE => reval(HOLE))) [ndheat]
+	context InitName(_, (HOLE => reval(HOLE))) // TODO(chathhorn): [ndheat]
 	
 /*
 	(* Single names are for declarations that cannot come in groups, like
@@ -450,81 +449,81 @@ and unary_operator =
 	syntax Expression ::= K "/" K [prec(31), gather(E e)]
       // type-strict=()
 	syntax Expression ::= K "%" K [prec(31), gather(E e)]
-	context _*_((HOLE => reval(HOLE)), _) [ndheat]
-	context _*_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _/_((HOLE => reval(HOLE)), _) [ndheat]
-	context _/_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _%_((HOLE => reval(HOLE)), _) [ndheat]
-	context _%_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) * _ // TODO(chathhorn) [ndheat]
+	context _ * (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) / _ // TODO(chathhorn) [ndheat]
+	context _ / (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) % _ // TODO(chathhorn) [ndheat]
+	context _ % (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "+" K [prec(33), gather(E e)]
       // type-strict=()
 	syntax Expression ::= K "-" K [prec(33), gather(E e)]
-	context _+_((HOLE => reval(HOLE)), _) [ndheat]
-	context _+_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _-_((HOLE => reval(HOLE)), _) [ndheat]
-	context _-_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) + _ // TODO(chathhorn) [ndheat]
+	context _ + (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) - _ // TODO(chathhorn) [ndheat]
+	context _ - (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=(1)
 	syntax Expression ::= K "<<" K [latex({{#1}}\ll{{#2}}), prec(35), gather(E e)]
-	context _<<_((HOLE => reval(HOLE)), _) [ndheat]
-	context _<<_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) << _ // TODO(chathhorn) [ndheat]
+	context _ << (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=(1)
 	syntax Expression ::= K ">>" K [latex({{#1}}\gg{{#2}}), prec(35), gather(E e)]
-	context _>>_((HOLE => reval(HOLE)), _) [ndheat]
-	context _>>_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) >> _ // TODO(chathhorn) [ndheat]
+	context _ >> (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "<" K [prec(37), gather(E e)]
       // type-strict=()
 	syntax Expression ::= K "<=" K [prec(37), gather(E e)]
-	context _<_((HOLE => reval(HOLE)), _) [ndheat]
-	context _<_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _<=_((HOLE => reval(HOLE)), _) [ndheat]
-	context _<=_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) < _ // TODO(chathhorn) [ndheat]
+	context _ < (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) <= _ // TODO(chathhorn) [ndheat]
+	context _ <= (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K ">" K [prec(37), gather(E e)]
       // type-strict=()
 	syntax Expression ::= K ">=" K [prec(37), gather(E e)]
-	context _>_((HOLE => reval(HOLE)), _) [ndheat]
-	context _>_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _>=_((HOLE => reval(HOLE)), _) [ndheat]
-	context _>=_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) > _ // TODO(chathhorn) [ndheat]
+	context _ > (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) >= _ // TODO(chathhorn) [ndheat]
+	context _ >= (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "==" K [prec(39), gather(E e)]
       // type-strict=()
 	syntax Expression ::= K "!=" K [prec(39), gather(E e)]
-	context _==_((HOLE => reval(HOLE)), _) [ndheat]
-	context _==_(_, (HOLE => reval(HOLE))) [ndheat]
-	context _!=_((HOLE => reval(HOLE)), _) [ndheat]
-	context _!=_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) == _ // TODO(chathhorn) [ndheat]
+	context _ == (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+	context (HOLE => reval(HOLE)) != _ // TODO(chathhorn) [ndheat]
+	context _ != (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "&" K [prec(41), gather(E e)]
-	context _&_((HOLE => reval(HOLE)), _) [ndheat]
-	context _&_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) & _ // TODO(chathhorn) [ndheat]
+	context _ & (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "^" K [prec(43), gather(E e)]
-	context _^_((HOLE => reval(HOLE)), _) [ndheat]
-	context _^_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) ^ _ // TODO(chathhorn) [ndheat]
+	context _ ^ (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "|" K [prec(45), gather(E e)]
-	context _|_((HOLE => reval(HOLE)), _) [ndheat]
-	context _|_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => reval(HOLE)) | _ // TODO(chathhorn) [ndheat]
+	context _ | (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "&&" K [prec(47), gather(E e)]
-	context _&&_((HOLE => reval(HOLE)), _) [ndheat]
+	context (HOLE => reval(HOLE)) && _ // TODO(chathhorn) [ndheat]
 	
       // type-strict=()
 	syntax Expression ::= K "||" K [prec(49), gather(E e)]
-	context _||_((HOLE => reval(HOLE)), _) [ndheat]
+	context (HOLE => reval(HOLE)) || _ // TODO(chathhorn) [ndheat]
 	
       // type-strict=(1)
 	syntax Expression ::= K "*=" K [prec(53)]
@@ -548,8 +547,8 @@ and unary_operator =
 	syntax Expression ::= K ">>=" K [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)]
       // type-strict=(1)
 	syntax Expression ::= K ":=" K [prec(53)]
-	context _:=_((HOLE => peval(HOLE)), _) [ndheat]
-	context _:=_(_, (HOLE => reval(HOLE))) [ndheat]
+	context (HOLE => peval(HOLE)) := _ // TODO(chathhorn) [ndheat]
+	context _ := (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
 	
 /*
 	| QUESTION of expression * expression * expression
@@ -575,13 +574,13 @@ and unary_operator =
 
       // type-strict=(1)
 	syntax Expression ::= "Call" "(" K "," K ")" // K, List
-	context Call((HOLE => reval(HOLE)), _) [ndheat]
-	context Call(_, List((_:KList,, (HOLE => reval(HOLE)),, _:KList))) [ndheat]
+	context Call((HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
+	context Call(_, List((_:KList,, (HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
 	| COMMA of expression list
 */
 	syntax Expression ::= "Comma" "(" K ")" // List
-	context Comma(List(((HOLE => reval(HOLE)),, _:KList))) [ndheat]
+	context Comma(List(((HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
@@ -638,9 +637,10 @@ and constant =
 	syntax IntConstant ::= "DecimalFloatConstant" "(" String "," Int "," Float ")" // new; significand, exponent, approx
 	syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")" // new; significand, exponent, approx
 	
-	syntax Constant ::= "U" "(" K ")" // new
-	syntax Constant ::= "L" "(" K ")" // new
-	syntax Constant ::= "F" "(" K ")" // new
+      // TODO(chathhorn) @@@!!!!!AAH
+	//syntax Constant ::= "U" "(" K ")" // new
+	//syntax Constant ::= "L" "(" K ")" // new
+	//syntax Constant ::= "F" "(" K ")" // new
 	syntax Constant ::= "LL" "(" K ")" // new
 	syntax Constant ::= "UL" "(" K ")" // new
 	syntax Constant ::= "ULL" "(" K ")" // new

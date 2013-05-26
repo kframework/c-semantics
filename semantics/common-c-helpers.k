@@ -23,7 +23,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	rule gatherInnerCells(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel) (.Set => SetItem(K:K))
 	rule gatherInnerCells(.Bag, _) => .Set
 	
-	syntax List ::= stringToList(String) [function]
+	syntax KList ::= stringToList(String) [function]
 	syntax String ::= listToString(List) [function]
 	
 	rule stringToList("") => .List
