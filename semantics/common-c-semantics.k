@@ -236,7 +236,7 @@ module COMMON-SEMANTIC-SYNTAX
 	
 	
 	
-	syntax List ::=  Int "to" Int [function]
+	syntax KList ::=  Int "to" Int [function]
 	syntax K ::= cast(K, K) [strict] // as described in 6.3 // totype, fromvalue
 	context cast(_, (HOLE => reval(HOLE)))
 	syntax K ::= arithInterpret(Type, BaseValue) [function] // interpret the result of arithmetic as in 6.5.4
