@@ -49,22 +49,22 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS
 	// FIXME these are here until I decide how to handle qualified types
 	rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:K), Volatile)) 
 		=> t(S:Set S':Set, T:K) 
-		[structural anywhere]
+		[structural, anywhere]
 	rule [ignore-atomic]: t(S:Set, qualifiedType(t(S':Set, T:K), Atomic)) 
 		=> t(S:Set S':Set, T:K) 
-		[structural anywhere]
+		[structural, anywhere]
 	rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:K), Restrict)) 
 		=> t(S:Set S':Set, T:K) 
-		[structural anywhere]
+		[structural, anywhere]
 	// rule [ignore-const]: t(S:Set, qualifiedType(t(S':Set, T:K), Const)) 
 		// => t(S:Set S':Set, T:K) 
 		// [structural]
 	rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:K), Auto)) 
 		=> t(S:Set S':Set, T:K) 
-		[structural anywhere]
+		[structural, anywhere]
 	rule [ignore-register]: t(S:Set, qualifiedType(t(S':Set, T:K), Register)) 
 		=> t(S:Set S':Set, T:K)
-		[structural anywhere]
+		[structural, anywhere]
 	
 	
 	rule
@@ -195,7 +195,7 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
 	}*/
 	rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
 		=> t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
-		[structural anywhere]
+		[structural, anywhere]
 	
 	rule
 		<k> canonicalizeSpecifier(BagItem(Named(X:Id)))
@@ -257,12 +257,12 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
 		
 
 	// FIXME what good is this_
-	rule BagItem(SpecTypedef) => .Bag [structural anywhere]
+	rule BagItem(SpecTypedef) => .Bag [structural, anywhere]
 	// fixme ignoring inlines
-	rule [ignore-inline]: BagItem(Inline) => .Bag [structural anywhere]
-	rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural anywhere]
+	rule [ignore-inline]: BagItem(Inline) => .Bag [structural, anywhere]
+	rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural, anywhere]
 	// fixme should save these for later use
-	rule BagItem(Attribute(_:String, _)) => .Bag [structural anywhere]
+	rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
 
 	rule 
 		<k> canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</k>
@@ -283,8 +283,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
 	
 	// rule canonicalizeSpecifier(BagItem(atomic(t(S:Set, T:K)))) => t(S:Set SetItem(Atomic), T:K) [structural]
 	
-	rule BagItem(atomic(_)) => .Bag [structural anywhere]
-	rule BagItem(alignas(_)) => .Bag [structural anywhere]
+	rule BagItem(atomic(_)) => .Bag [structural, anywhere]
+	rule BagItem(alignas(_)) => .Bag [structural, anywhere]
 	
 	rule canonicalizeSpecifier(BagItem(Double)) => t(.Set, double)
 	rule canonicalizeSpecifier(BagItem(Float)) => t(.Set, float)
@@ -348,7 +348,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 		<k> Specifier(List(L:KList)) => canonicalizeType(Bag(L:KList)) ...</k>
 		[structural]
 		
-	rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural anywhere]
+	rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
 	
 	syntax KLabel ::= makeArrayType(Int) [function]
 	syntax KLabel ::= makeFunctionType(List{KResult}) [function]
@@ -360,17 +360,17 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 	rule ArrayType(T:KResult, tv(N:Int, _), _) 
 		=> pushTypeDown(T:KResult, makeArrayType(N:Int)) 
 		when N:Int >Int 0
-		[structural anywhere]
-	rule ArrayType(T:KResult, emptyValue, _) => pushTypeDown(T:KResult, makeIncompleteArrayType) [structural anywhere]
-	rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural anywhere]
+		[structural, anywhere]
+	rule ArrayType(T:KResult, emptyValue, _) => pushTypeDown(T:KResult, makeIncompleteArrayType) [structural, anywhere]
+	rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural, anywhere]
 	// fixme I'm assuming functiontype is always below a prototype in the ast
-	rule FunctionType(T:KResult) => T:KResult [structural anywhere]
+	rule FunctionType(T:KResult) => T:KResult [structural, anywhere]
 	rule Prototype(T:KResult, List(L:List{KResult}), false) 
 		=> pushTypeDown(T:KResult, makeFunctionType(L:List{KResult})) 
-		[structural anywhere]
+		[structural, anywhere]
 	rule Prototype(T:KResult, List(L:List{KResult}), true) 
 		=> pushTypeDown(T:KResult, makeFunctionType((L:List{KResult},, t(.Set, variadic)))) 
-		[structural anywhere]
+		[structural, anywhere]
 	
 	rule [pushdown-array]: pushTypeDown(t(S:Set, arrayType(T:KResult, N:Int)), K:KLabel) => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Int))
 	rule [pushdown-incomplete]: pushTypeDown(t(S:Set, incompleteArrayType(T:KResult)), K:KLabel) => t(S:Set, incompleteArrayType(pushTypeDown(T:KResult, K:KLabel)))
@@ -496,7 +496,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 	rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName)
 		,, typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
 			=> typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Int +Int N':Int)), #NoName) 
-		[structural anywhere]
+		[structural, anywhere]
 	
 	// fixme chould check for some struct contraints here
 	syntax List{KResult} ::= incompleteToFlexibleArrayMember(List{KResult}) [function]
@@ -530,7 +530,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 			
 	rule
 		NameAndType(X:Id, T:KResult) => typedDeclaration(T:KResult, X:Id)
-		[structural anywhere] 
+		[structural, anywhere] 
 	
 	rule [extract-basic]: extractActualType(T:KResult) => T:KResult when isBasicType(T:KResult)
 	rule [extract-enum]: extractActualType(t(S:Set, enumType(X:Id))) => t(S:Set, enumType(X:Id))
@@ -548,23 +548,23 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 		
 	rule
 		SingleName(T:KResult, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:KResult, K:K))
-		[structural anywhere] 
+		[structural, anywhere] 
 	rule [Separate-FieldGroups]:
 		FieldGroup(K:K, List((C:K,, C':K,, L:KList))) 
 			=> FieldGroup(K:K, List(C:K))
 			,, FieldGroup(K:K, List((C':K,, L:KList)))
-		[structural anywhere]
+		[structural, anywhere]
 
 	rule
 		FieldGroup(T:KResult, List(Name(X:Id, K:K))) 
 			=> NameAndType(X:Id, DeclType(T:KResult, K:K))
-		[structural anywhere]
+		[structural, anywhere]
 		
 	rule
 		FieldGroup(T:KResult, List(BitFieldName(Name(X:Id, K:K), Size:K)))
 			=> NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
-		[structural anywhere] 
-	rule FieldName(K:K) => K:K [structural anywhere]
+		[structural, anywhere] 
+	rule FieldName(K:K) => K:K [structural, anywhere]
 endmodule
 
 module COMMON-SEMANTICS-TYPE-MISC

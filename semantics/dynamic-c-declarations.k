@@ -42,7 +42,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 				,, _:List{KResult}
 			)
 		)
-		[structural anywhere] 
+		[structural, anywhere] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
 			_:Int
@@ -55,7 +55,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 				) 
 				,, _:List{KResult})
 		)
-		[structural anywhere] 
+		[structural, anywhere] 
 		
 	rule [bind-one]:
 		<k> true ~> bind-aux(_:Int, (tv(V:KList, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))

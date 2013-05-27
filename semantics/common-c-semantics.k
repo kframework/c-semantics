@@ -221,18 +221,18 @@ module COMMON-SEMANTIC-SYNTAX
 		[structural]
 	
 	syntax K ::= "bind" "(" List{KResult} "," List{KResult} ")"
-	syntax Value ::= "tv" "(" KList "," Type ")" [metadata("latex=(renameTo \\ensuremath{{_}\\mathop{:}{_}})")]
+	syntax Value ::= "tv" "(" KList "," Type ")" [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 	syntax Value ::= "lv" "(" KList "," Type ")"
 	syntax K ::= "concretize" "(" Type "," K ")" [strict(2)] 
 	syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
 	syntax Value ::= "functionPrototype" "(" Id "," Type ")"
 	
-	syntax Char ::= "firstChar" "(" String ")" [function]
-	syntax Char ::= "nthChar" "(" String "," Int ")" [function]
+	syntax String ::= firstChar(String) [function]
+	syntax String ::= "nthChar" "(" String "," Int ")" [function]
 	syntax String ::= "butFirstChar" "(" String ")" [function]
-	syntax Int ::= "charToAscii" "(" String ")" [function]
-	syntax Char ::= "stringToChar" "(" String ")" [function]
-	syntax Int ::= "asciiCharString" "(" String ")" [function]
+      // chathhorn
+	//syntax Int ::= "charToAscii" "(" String ")" [function]
+	//syntax Int ::= "asciiCharString" "(" String ")" [function]
 	
 	
 	

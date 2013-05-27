@@ -662,24 +662,24 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 		arithInterpret(T:KResult, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T:KResult)
 		
 	// these could be so much better...
-	rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
 	
-	rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
-	rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+	rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
 	rule [and-unknown-zero-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
 		when N:Int ==Int 0 
-		[structural anywhere]
+		[structural, anywhere]
 	rule [and-unknown-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
 		when N:Int =/=Int 0 
-		[structural anywhere]
+		[structural, anywhere]
 
-	rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural anywhere]
-	rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural anywhere]
+	rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+	rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
 	rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
 		when N:Int ==Int 0 
-		[structural anywhere]
+		[structural, anywhere]
 	rule [and-unknown-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
-		when N:Int =/=Int 0 [structural anywhere]
+		when N:Int =/=Int 0 [structural, anywhere]
 		
 
 	

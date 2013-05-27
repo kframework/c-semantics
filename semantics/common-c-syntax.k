@@ -414,19 +414,19 @@ and unary_operator =
 */
       // type-strict=()
 	syntax Expression ::= "-" K [prec(22)]
-	context -_((HOLE => reval(HOLE)))
+	context - (HOLE => reval(HOLE))
       // type-strict=()
 	syntax Expression ::= "+" K [prec(22)]
-	context +_((HOLE => reval(HOLE)))
+	context + (HOLE => reval(HOLE))
       // type-strict=()
 	syntax Expression ::= "!" K [prec(22)]
-	context !_((HOLE => reval(HOLE)))
+	context ! (HOLE => reval(HOLE))
       // type-strict=()
 	syntax Expression ::= "~" K [prec(22)]
-	context ~_((HOLE => reval(HOLE)))
+	context ~ (HOLE => reval(HOLE))
       // type-strict=()
 	syntax Expression ::= "*" K [prec(22)]
-	context *_((HOLE => reval(HOLE)))
+	context * (HOLE => reval(HOLE))
       // type-strict=()
 	syntax Expression ::= "&" K [strict, prec(22)]
       // type-strict=()
@@ -435,10 +435,10 @@ and unary_operator =
 	syntax Expression ::= "--" K [latex(\terminal{-{}-}{#1}), prec(22)]
       // type-strict=()
 	syntax Expression ::= K "++" 
-	context _++((HOLE => peval(HOLE)))
+	context (HOLE => peval(HOLE)) ++
       // type-strict=()
-	syntax Expression ::= K "--" [latex({#1}\terminal{-{}-}) ]
-	context _--((HOLE => peval(HOLE)))
+	syntax Expression ::= K "--" [latex({#1}\terminal{-{}-})]
+	context (HOLE => peval(HOLE)) --
 	
 /*
 	| BINARY of binary_operator * expression * expression
@@ -555,7 +555,7 @@ and unary_operator =
 */
       // type-strict=(2 3)
 	syntax Expression ::= K "?" K ":" K [prec(51), gather(e & E)]
-	context _?_:_((HOLE => reval(HOLE)), _, _)
+	context (HOLE => reval(HOLE)) ? _ : _
 
 /*
 	(* A CAST can actually be a constructor expression *)
@@ -611,9 +611,9 @@ and unary_operator =
 */
       // type-strict=(1)
 	syntax Expression ::= K "." Id
-	context _._((HOLE => peval(HOLE)), _:Id)
+	context (HOLE => peval(HOLE)) . _:Id
 	syntax Expression ::= K "->" Id
-	context _->_((HOLE => reval(HOLE)), _:Id)
+	context (HOLE => reval(HOLE)) -> _:Id
 /*
 	| GNU_BODY of block
 	| EXPR_PATTERN of String     (* pattern variable, and name *)

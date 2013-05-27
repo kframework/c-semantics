@@ -106,7 +106,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		//<br/>
 		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
-		[structural large]
+		[structural, large]
 	// rule
 		// <computation> DeclarationDefinition(K:K) => .K ...</computation>
 		// <declarationStack>... .List 
@@ -179,7 +179,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 				<loopStackGoto> ListItem(kpair(Num:Int, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
 			</gotoCalculation>
 		)
-		[structural large] 
+		[structural, large] 
 		
 	rule [compute-label-do-while]:
 		<gotoCalculation>
@@ -206,7 +206,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 				<loopStackGoto> ListItem(kpair(Num:Int, (K:K ~> Tail:K))) OldLoopStack:List </loopStackGoto>
 			</gotoCalculation>
 		)
-		[structural large]
+		[structural, large]
 		
 	rule [compute-label-while-mark]:
 		<computation> (. => S:K ~> loopMarked) ~> While(E:K, S:K) ~> (. => popLoop) ~> K:K </computation>
@@ -240,7 +240,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 				B:Bag 
 			</gotoCalculation>
 		)
-		[structural large] 
+		[structural, large] 
 		
 	rule [compute-label-switch]:
 		<computation> (Switch(_, E:K, S:K) => S:K ~> popLoop) ~> K:K </computation>
@@ -267,7 +267,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, Target:Id)
-		[structural large]
+		[structural, large]
 		
 	rule
 		<computation> (Case(SwitchNum:Int, CaseNum:Int, Val:K, S:K) => S:K) ~> K:K </computation>
@@ -287,7 +287,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, Val:K))
 		//  andBool hasIntegerType(T:KResult)
-		[structural large] 
+		[structural, large] 
 	rule
 		<computation> (Default(SwitchNum:Int, S:K) => S:K) ~> K:K </computation>
 		<computationTail> Tail:K </computationTail>
@@ -303,7 +303,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 		<nestingDepthGoto> Depth:Int </nestingDepthGoto>
 		<blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
 		when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, l('Default)))
-		[structural large]
+		[structural, large]
 endmodule
  
 module COMMON-C-STATEMENTS
