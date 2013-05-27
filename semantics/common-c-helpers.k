@@ -19,11 +19,14 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	syntax Int ::= base(Int) [function]
 	rule base(loc(Base:Int, _, _)) => Base:Int
 	
-	syntax Set ::= gatherInnerCells(Bag, CellLabel) [function]
-	rule gatherInnerCells(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel) (.Set => SetItem(K:K))
-	rule gatherInnerCells(.Bag, _) => .Set
+      // TODO(chathhorn): still at a loss here.
+      // syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
+      // syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
+      // rule gatherInnerCells((B:Bag), L:CellLabel) => gatherInnerCells-aux((B:Bag), L:CellLabel, .Set)
+      // rule gatherInnerCells-aux(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel, _ (.Set => SetItem(K:K)))
+      // rule gatherInnerCells-aux(.Bag, _, S:Set) => S
 	
-	syntax KList ::= stringToList(String) [function]
+	syntax List ::= "stringToList" "(" String ")" [function]
 	syntax String ::= listToString(List) [function]
 	
 	rule stringToList("") => .List
@@ -95,7 +98,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		
 	rule [fillToBytes-combineBits]:
 		fillToBytes-aux(dataList((L:KList,, piece(N:Int, Len:Int),, piece(N':Int, Len':Int))), L':KList)
-			=> fillToBytes-aux(dataList((L:KList,, piece(_bit::_(piece(N:Int, Len:Int), piece(N':Int, Len':Int)), Len:Int +Int Len':Int))), L':KList)
+			=> fillToBytes-aux(dataList((L:KList,, piece(piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int), Len:Int +Int Len':Int))), L':KList)
 		when Len:Int +Int Len':Int <=Int numBitsPerByte
 		[structural]
 				
@@ -105,10 +108,10 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		[structural]
 		
 	// coallesce bitranges that are adjacent
-	rule _bit::_(piece(bitRange(N:Int, sNatTo:Int, To':Int), Len:Int), piece(bitRange(N:Int, From:Int, To:Int), Len':Int))
+	rule piece(bitRange(N:Int, SuccTo:Int, To':Int), Len:Int) bit:: piece(bitRange(N:Int, From:Int, To:Int), Len':Int)
 		=> piece(bitRange(N:Int, From:Int, To':Int), Len:Int +Int Len':Int)
 		when Len:Int +Int Len':Int <=Int numBitsPerByte
-		andBool sNatTo:Int ==Int To:Int +Int 1
+		andBool SuccTo:Int ==Int To:Int +Int 1
 		[structural]
 	
 	rule piece(N:Int bit:: N':Int, Len:Int) bit:: piece(N'':Int, Len':Int)
@@ -149,13 +152,13 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		when End:Int +Int 1 <=Int Len:Int
 		[structural]
 	
-	rule bitRange(piece(N:Int, sNatEnd:Int), 0, End:Int)
+	rule bitRange(piece(N:Int, SuccEnd:Int), 0, End:Int)
 		=> piece(N:Int, End:Int +Int 1)
-		when sNatEnd:Int ==Int End:Int +Int 1
+		when SuccEnd:Int ==Int End:Int +Int 1
 		[structural]
-	rule bitRange(_:Int bit:: piece(N:Int, sNatEnd:Int), 0, End:Int)
+	rule bitRange(_:Int bit:: piece(N:Int, SuccEnd:Int), 0, End:Int)
 		=> piece(N:Int, End:Int +Int 1)
-		when sNatEnd:Int ==Int End:Int +Int 1
+		when SuccEnd:Int ==Int End:Int +Int 1
 		[structural]
 		
 	rule bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) => (N:Int >>Int Pos:Int) &Int 1
@@ -167,14 +170,14 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	
 	// fixme could speed things up by caching bitsizeoftype as well
 	rule [extractField-start]:
-		<k> extractField(L:KList, 't(_,, L:KLabel(S:Id)), F:Id)
+		<k> extractField(L:KList, 't(_,, Lb:KLabel(S:Id)), F:Id)
 			=> extractField-pre(L:KList, T:KResult, Offset:Int, bitSizeofType(T:KResult)) 
 		...</k>
 		<structs>... 
 			S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int)) 
 		...</structs>
-		when L:KLabel ==KLabel 'unionType
-		orBool L:KLabel ==KLabel 'structType
+		when Lb:KLabel ==KLabel 'unionType
+		orBool Lb:KLabel ==KLabel 'structType
 		[structural]
 
 	rule
@@ -224,69 +227,69 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	rule min(t(_, bool)) => 0
 	rule max(t(_, bool)) => 1
 	
-	rule min(t(_, signed-char)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, signed-char)), 1)))
+	rule min(t(_, signed-char)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
 	// rule min(t(_, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
-	rule max(t(_, signed-char)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, signed-char)), 1)), 1)
-	rule min(t(_, short-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, short-int)), 1)))
-	rule max(t(_, short-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, short-int)), 1)), 1)
-	rule min(t(_, int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, int)), 1)))
-	rule max(t(_, int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, int)), 1)), 1)
-	rule min(t(_, long-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-int)), 1)))
-	rule max(t(_, long-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, long-int)), 1)), 1)
-	rule min(t(_, long-long-int)) => 0 -Int (2 ^Int absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)))
-	rule max(t(_, long-long-int)) => _-Int_(2 ^Int absInt(_-Int_(numBits(t(.Set, long-long-int)), 1)), 1)
+	rule max(t(_, signed-char)) => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
+	rule min(t(_, short-int)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
+	rule max(t(_, short-int)) => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
+	rule min(t(_, int)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, int)) -Int 1))
+	rule max(t(_, int)) => (2 ^Int absInt(numBits(t(.Set, int)) -Int 1)) -Int 1
+	rule min(t(_, long-int)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1))
+	rule max(t(_, long-int)) => (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1)) -Int 1
+	rule min(t(_, long-long-int)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1))
+	rule max(t(_, long-long-int)) => (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1)) -Int 1
 	
 	rule min(t(_, unsigned-char)) => 0
-	rule max(t(_, unsigned-char)) => _-Int_(2 ^Int absInt(numBits(t(.Set, unsigned-char))), 1)
+	rule max(t(_, unsigned-char)) => 2 ^Int absInt(numBits(t(.Set, unsigned-char))) -Int 1
 	rule min(t(_, unsigned-short-int)) => 0
-	rule max(t(_, unsigned-short-int)) => _-Int_(2 ^Int absInt(numBits(t(.Set, unsigned-short-int))), 1)
+	rule max(t(_, unsigned-short-int)) => (2 ^Int absInt(numBits(t(.Set, unsigned-short-int)))) -Int 1
 	rule min(t(_, unsigned-int)) => 0
-	rule max(t(_, unsigned-int)) => _-Int_(2 ^Int absInt(numBits(t(.Set, unsigned-int))), 1)
+	rule max(t(_, unsigned-int)) => (2 ^Int absInt(numBits(t(.Set, unsigned-int)))) -Int 1
 	rule min(t(_, unsigned-long-int)) => 0
-	rule max(t(_, unsigned-long-int)) => _-Int_(2 ^Int absInt(numBits(t(.Set, unsigned-long-int))), 1)
+	rule max(t(_, unsigned-long-int)) => (2 ^Int absInt(numBits(t(.Set, unsigned-long-int)))) -Int 1
 	rule min(t(_, unsigned-long-long-int)) => 0
-	rule max(t(_, unsigned-long-long-int)) => _-Int_(2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int))), 1)
+	rule max(t(_, unsigned-long-long-int)) => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
 	
 	
-	rule stringToChar(C:Char) => C:Char
-	rule asciiCharString(S:String) => asciiString(stringToChar(S:String))
+      // TODO(chathhorn): I mucked with stuff here.
+	//rule asciiCharString(S:String) => asciiString(S:String)
 	rule [firstChar]:
 		firstChar(S:String) => substrString(S:String, 0, 1)
 		[structural]
 	rule [nthChar]:
 		nthChar(S:String, N:Int) => substrString(S:String, N:Int, 1)
 		[structural]
-	rule [charToAscii]:
-		charToAscii(C:Char) => asciiString(C:Char)
-		[structural]
+	// rule [charToAscii]:
+	// 	charToAscii(C:Char) => asciiString(C:Char)
+	// 	[structural]
 	rule [butFirstChar]:
 		butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))
 		[structural]
 		
 	syntax String ::= toUpperCase(String) [function]
-	syntax Char ::= toUpperCase(Char) [function]
+	//syntax Char ::= toUpperCase(Char) [function]
 	rule toUpperCase(S:String)
 		=> toUpperCase(firstChar(S:String)) +String toUpperCase(butFirstChar(S:String))
 		when S:String =/=String ""
 		[structural]
 	rule toUpperCase("") => ""
 		
-	rule toUpperCase(C:Char)
-		=> C:Char
-		when asciiString(C:Char) <Int asciiString("a")
-		orBool asciiString(C:Char) >Int asciiString("z")
-		[structural]
-	rule toUpperCase(C:Char)
-		=> charString(absInt(asciiString(C:Char) -Int Difference))
-		when asciiString(C:Char) >=Int asciiString("a")
-		andBool asciiString(C:Char) <=Int asciiString("z")
-		where Difference = (asciiString("a") -Int asciiString("A"))
-		[structural]
+	// rule toUpperCase(C:Char)
+	// 	=> C:Char
+	// 	when asciiString(C:Char) <Int asciiString("a")
+	// 	orBool asciiString(C:Char) >Int asciiString("z")
+	// 	[structural]
+	// rule toUpperCase(C:Char)
+	// 	=> charString(absInt(asciiString(C:Char) -Int Difference))
+	// 	when asciiString(C:Char) >=Int asciiString("a")
+	// 	andBool asciiString(C:Char) <=Int asciiString("z")
+	// 	where Difference = (asciiString("a") -Int asciiString("A"))
+	// 	[structural]
 		
 	// getString returns the string without the null terminator
 	syntax K ::= "getString" "(" K ")"
 	syntax K ::= "getString-aux" "(" K "," String ")" [strict(1)]
-	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural anywhere]
+	rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural, anywhere]
 	syntax Value ::= "str" "(" String ")"
 	
 	rule [getString-pre]:
@@ -315,7 +318,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	rule [write-string]:
 		<k> writeString(tv(Loc:Int, T:KResult), S:String)
 			=> Computation(*(tv(Loc:Int, t(.Set, pointerType(t(.Set, char))))) 
-				:= tv(charToAscii(firstChar(S:String)), t(.Set, char)))
+				:= tv(asciiString(firstChar(S:String)), t(.Set, char)))
 			~> writeString(tv(Loc:Int +Int 1, T:KResult), butFirstChar(S:String))
 		...</k>
 		when S:String =/=String ""
@@ -409,25 +412,25 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	rule min(t(_, bitfieldType(T:KResult, N:Int))) => 0
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
-	rule max(t(_, bitfieldType(T:KResult, N:Int))) => _-Int_(2 ^Int absInt(N:Int), 1)
+	rule max(t(_, bitfieldType(T:KResult, N:Int))) => (2 ^Int absInt(N:Int)) -Int 1
 		when hasUnsignedIntegerType(T:KResult)
 		[structural]
 	
-	rule min(t(_, bitfieldType(T:KResult, N:Int))) => 0 -Int (2 ^Int absInt(_-Int_(N:Int, 1)))
+	rule min(t(_, bitfieldType(T:KResult, N:Int))) => 0 -Int (2 ^Int absInt(N:Int -Int 1))
 		when hasSignedIntegerType(T:KResult)
 		[structural]
-	rule max(t(_, bitfieldType(T:KResult, N:Int))) => _-Int_(2 ^Int absInt(_-Int_(N:Int, 1)), 1)
+	rule max(t(_, bitfieldType(T:KResult, N:Int))) => (2 ^Int absInt(N:Int -Int 1)) -Int 1
 		when hasSignedIntegerType(T:KResult)
 		[structural]
 		
 		
 	rule NullPointerConstant => 0
 	
-	rule _bit::_(piece(N:Int, Len:Int), piece(N':Int, Len':Int)) 
+	rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
 		=> piece((N:Int <<Int Len':Int) |Int N':Int, Len:Int +Int Len':Int)
 		when N:Int >=Int 0 andBool N':Int >=Int 0 
 		[structural] 
-	rule _bit::_(piece(0, 0), N:Int) => N:Int 
+	rule piece(0, 0) bit:: N:Int => N:Int 
 	rule piece(piece(N:Int, Len:Int), Len:Int) => piece(N:Int, Len:Int) 
 	rule value(tv(V:KList, _)) => V:KList
 	rule type(tv(_, T:KResult)) => T:KResult
@@ -462,7 +465,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		l('qualifiedType)
 	) [structural]
 	
-	rule assert(true, _:Int) => .K [structural anywhere]
+	rule assert(true, _:Int) => .K [structural, anywhere]
 endmodule
 
 module COMMON-C-BITSIZE
@@ -482,7 +485,7 @@ module COMMON-C-BITSIZE
 		
 	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")"
 	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Int ")"
-	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural anywhere]
+	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural, anywhere]
 	rule
 		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Int)
 			=> bitSizeofType(T:KResult) 
@@ -498,14 +501,14 @@ module COMMON-C-BITSIZE
 		<k> maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned) ...</k>
 		[structural] 
 	
-	rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, bitfieldType(_, N:Int))) => tv(N:Int, cfg:largestUnsigned) [structural anywhere]
-	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural anywhere]
-	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural anywhere]
-	rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural anywhere]
+	rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, bitfieldType(_, N:Int))) => tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural, anywhere]
+	rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural, anywhere]
+	rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural, anywhere]
 
 	rule
 		<k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:List{KResult}) ...</k>

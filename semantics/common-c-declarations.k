@@ -260,7 +260,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currTU> Tu:K </currTU>
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
-		[structural large] 
+		[structural, large] 
 	rule
 		<k> declareInternalVariable(X:Id, T:KResult, NoInit)
 			=> allocateType(Loc:Int, T:KResult)
@@ -278,7 +278,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Int))
-		[structural large] 
+		[structural, large] 
 		
 	rule
 		<k> declareInternalVariable(X:Id, T:KResult, K:K)
@@ -295,7 +295,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		andBool notBool isExternType(T:KResult)
 		andBool K:K =/=K NoInit
 		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Int))
-		[structural large] 
+		[structural, large] 
 				
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
 	syntax K ::= "reseenStatic" "(" Id "," Type "," K "," Int ")" [strict(3)] 
@@ -310,7 +310,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		when isStaticType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool K:K =/=K NoInit
-		[structural large] 
+		[structural, large] 
 		
 	rule
 		<k> reseenStatic(X:Id, _, initValue(X:Id, T:KResult, _), Loc:Int)
@@ -500,7 +500,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==K external)
-		[structural large]
+		[structural, large]
 		
 	// case when it has a previous linkage (internal).  
 	rule
@@ -517,7 +517,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool Linkage:Map(X:Id) ==K internal
-		[structural large]
+		[structural, large]
 		
 	rule
 		<k> declareAndDefine(X:Id, T:KResult, K:K, internal)
@@ -532,7 +532,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currTU> Tu:K </currTU>
 		when (notBool $hasMapping(Def:Map, X:Id) orBool isFunctionType(T:KResult))
 		andBool (notBool $hasMapping(Linkage:Map, X:Id) orBool Linkage:Map(X:Id) ==K internal)
-		[structural large]
+		[structural, large]
 		
 	syntax K ::= "defineAndInit" "(" Id "," Type "," K "," Int ")" [strict(3)] 
 	rule
@@ -766,7 +766,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 			S:Id |-> aggregateInfo((_,, typedDeclaration(T:KResult, F:Id),, typedDeclaration(T':KResult, F':Id),, _), _, _)
 		...</structs> 
 		when F':Id =/=K #NoName
-		[structural large] 
+		[structural, large] 
 	 
 	rule [init-next-struct-element-noname]:
 		<currentSubObject>
@@ -777,7 +777,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<structs>...
 			S:Id |-> aggregateInfo((_,, typedDeclaration(T:KResult, F:Id),, typedDeclaration(_, #NoName),, typedDeclaration(T':KResult, F':Id),, _), _, _)
 		...</structs>
-		[structural large] 
+		[structural, large] 
 		
 	rule [init-next-struct-element-done]:
 		<currentSubObject>
@@ -787,7 +787,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<structs>...
 			S:Id |-> aggregateInfo((_,, typedDeclaration(T:KResult, F:Id)), _, _)
 		...</structs> 
-		[structural large] 
+		[structural, large] 
 	rule [init-next-struct-element-done-noname]:
 		<currentSubObject>
 			next (ListItem(te(K:K . F:Id, T:KResult)) => .) ListItem(te(K:K, t(_, structType(S:Id))))
@@ -796,7 +796,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<structs>...
 			S:Id |-> aggregateInfo((_,, typedDeclaration(T:KResult, F:Id),, typedDeclaration(_, #NoName)), _, _)
 		...</structs> 
-		[structural large] 
+		[structural, large] 
 		
 	rule [init-next-union-element-done]:
 		<currentSubObject>
@@ -975,7 +975,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<br/>
 		<incompleteLength> N:Int => maxInt(N:Int, getTopArrayUse(K:K)) </incompleteLength>
 		<savedInitialization>... .K => Computation(AllowWrite(K:K) := K':K) </savedInitialization> 
-		[structural large] 
+		[structural, large] 
 	
 	rule
 		<k> fillInit(SingleInit(K:K)) => initializeSingleInit(K:K) ...</k>
@@ -1112,7 +1112,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		<gtypes> Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</gtypes>
 		<programText> M:Map => M:Map[P:String / Name:String] </programText>
 		when notBool $hasMapping(Env:Map, Name:String)
-		[structural large]
+		[structural, large]
 		
 	syntax K ::= "preDeclareStrings" "(" K ")"
 	
@@ -1225,7 +1225,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		<br/>
 		<currTU> _ => Tu':K </currTU>
 		<preLinkage>... Tu':K |-> Map((_ (X:Id |-> external => .))) ...</preLinkage>
-		[structural large] 
+		[structural, large] 
 	rule
 		<k> resolveExternal'(X:Id, Tu:K, .Bag, declarationObject(_, DefTu:K, _), Loc:Int, initValue(X:Id, T:KResult, K:K))
 			=> allocateType(Loc:Int, T:KResult)
@@ -1268,7 +1268,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .List) _) ...</declarationOrder>
 		<preTypes>... Tu:K |-> Map((_ (X:Id |-> T:KResult => .Map))) ...</preTypes>
 		when notBool $hasMapping(Defs:Map, X:Id)
-		[structural large] 
+		[structural, large] 
 		
 	rule
 		<k> (.K => resolveExternal(X:Id, Tu:K, Units:Bag, K:K)) ~> resolve(Tu:K) ...</k>
@@ -1278,7 +1278,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		<declarationOrder>... Tu:K |-> ListToK((ListItem(X:Id) => .List) _) ...</declarationOrder>
 		<translationUnits> Units:Bag </translationUnits>
 		when notBool $hasMapping(ExtDefs:Map, X:Id)
-		[structural large] 
+		[structural, large] 
 
 	
 	// fixme this means we've declared it twice (like a prototype maybe_), but already handled it.  happening with getc in clib.c
@@ -1310,7 +1310,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		<currTU> _ => Tu:K </currTU>
 		when isFunctionType(T:KResult)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
-		[structural large] 
+		[structural, large] 
 		
 	// c1x 6.9.2:2 A declaration of an identifier for an object that has file scope without an initializer, and without a storage-class specifier or with the storage-class specifier static, constitutes a tentative definition. If a translation unit contains one or more tentative definitions for an identifier, and the translation unit contains no external definition for that identifier, then the behavior is exactly as if the translation unit contains a file scope declaration of that identifier, with the composite type as of the end of the translation unit, with an initializer equal to 0
 	rule
@@ -1335,7 +1335,7 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 		andBool notBool isIncompleteType(T:KResult)
 		andBool notBool isExternType(T:KResult)
 		andBool notBool $hasMapping(Defs:Map, X:Id)
-		[structural large] 
+		[structural, large] 
 	syntax K ::= "leftover" "(" K "," K "," K ")"
 	rule [resolve-extern-object-nomapping]:
 		<k> resolve(Tu:K) ...</k>

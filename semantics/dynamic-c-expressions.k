@@ -80,8 +80,8 @@ module DYNAMIC-SEMANTICS-LITERALS
 		orBool lengthString(S:String) ==Int 1
 		
 	syntax K ::= "hexOrOctalConstant" "(" K ")"
-	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural anywhere]
-	rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural anywhere]
+	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural, anywhere]
+	rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural, anywhere]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
 	
@@ -126,7 +126,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 	
 	rule NoSuffix(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
@@ -137,7 +137,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi #fi #fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 
 	rule U(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
@@ -145,7 +145,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 		
 	rule L(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
@@ -154,27 +154,27 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 		
 	rule UL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 		
 	rule LL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 	
 	rule ULL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
-		[structural anywhere]
+		[structural, anywhere]
 		
 		
 	rule U(DecimalConstant(I:Int)) =>
@@ -183,52 +183,52 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 	rule L(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
-		[structural anywhere]
+		[structural, anywhere]
 	rule UL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi		
-		[structural anywhere]
+		[structural, anywhere]
 	rule LL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
-		[structural anywhere]
+		[structural, anywhere]
 	rule ULL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
-		[structural anywhere]
+		[structural, anywhere]
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.2}{4}}}{
 	An unsuffixed floating constant has type \cinline{double}. If suffixed by the letter \cinline{f} or \cinline{F}, it has type \cinline{float}. If suffixed by the letter \cinline{l} or \cinline{L}, it has type \cinline{long double}.
 	}*/
 	syntax K ::= "reducedFloat" "(" Float ")"
-	rule DecimalFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
-	rule HexFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural anywhere]
+	rule DecimalFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural, anywhere]
+	rule HexFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural, anywhere]
 	
 	rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
-		[structural anywhere]
+		[structural, anywhere]
 	rule L(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
-		[structural anywhere]
+		[structural, anywhere]
 	rule F(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
-		[structural anywhere]
+		[structural, anywhere]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
 	An integer character constant has type \cinline{int}. The value of an integer character constant containing a single character that maps to a single-byte execution character is the numerical value of the representation of the mapped character interpreted as an integer. The value of an integer character constant containing more than one character (e.g., \cinline{'ab'}), or containing a character or escape sequence that does not map to a single-byte execution character, is implementation-defined. If an integer character constant contains a single character or escape sequence, its value is the one that results when an object with type \cinline{char} whose value is that of the single character or escape sequence is converted to type \cinline{int}.
 	}*/
 	rule CharLiteral(N:Int) 
 		=> cast(t(.Set, int), cast(t(.Set, char), tv(N:Int, t(.Set, int))))
-		[structural anywhere]
-	rule WCharLiteral(N:Int) => tv(N:Int, cfg:wcharut) [structural anywhere]
-	rule Constant(V:KResult) => V:KResult [structural anywhere]
+		[structural, anywhere]
+	rule WCharLiteral(N:Int) => tv(N:Int, cfg:wcharut) [structural, anywhere]
+	rule Constant(V:KResult) => V:KResult [structural, anywhere]
 	rule [create-internal-value]: <k> N:Int => tv(N:Int, cfg:largestUnsigned) ...</k>
 		[structural] // for internal computations
 	
@@ -685,7 +685,7 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
 		=> piece(unknown(N:Int), N:Int)
 		when M:Int =/=Int 0
 		andBool isConcreteNumber(M:Int)
-		[structural anywhere]
+		[structural, anywhere]
 		
 	rule tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) => arithInterpret(T:KResult, I1:Int %Int I2:Int)
 		when isPromoted(T:KResult)

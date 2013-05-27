@@ -72,7 +72,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 		
 	rule
 		<k> printString(S:String)
-			=> writeToFD(1, asciiCharString(firstChar(S:String)))
+			=> writeToFD(1, asciiString(firstChar(S:String)))
 			~> printString(butFirstChar(S:String))
 		...</k>
 		when lengthString(S:String) >Int 0
@@ -590,10 +590,10 @@ For other conversions, the behavior is undefined.
 	// ignoring num width
 	rule [format-width]:
 		<k> formatter-aux(_) ...</k>
-		<format> ListItem(C:Char) => .List ...</format>
+		<format> ListItem(C:String) => .List ...</format>
 		<formatState> "%" </formatState>
-		when charToAscii(C:Char) >Int asciiCharString("0")
-		andBool charToAscii(C:Char) <=Int asciiCharString("9")
+		when asciiString(C:String) >Int asciiString("0")
+		andBool asciiString(C:String) <=Int asciiString("9")
 		[structural]	
 
 /*@ \source[n1570]{\para{7.21.6.1}{7}}

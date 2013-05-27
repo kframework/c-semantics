@@ -30,7 +30,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 	rule [sequencePoint]:
 		<k> sequencePoint => .K ...</k>
 		<locsWrittenTo> _ => .Bag </locsWrittenTo>
-		[structural ndlocal]
+		[structural, ndlocal]
 
 	// fixme these should be computational, unless I handle that at a higher level
 	rule [writeToFD-char]:
@@ -44,7 +44,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 		<buff> S:String => S:String +String S':String </buff>
 		[observable]
 	rule [readFromFD-char]:
-		<k> readFromFD(FD:Int) => tv(charToAscii(firstChar(S:String)), t(.Set, int))  ...</k>
+		<k> readFromFD(FD:Int) => tv(asciiString(firstChar(S:String)), t(.Set, int))  ...</k>
 		<fid> FD:Int </fid>
 		<buff> S:String => butFirstChar(S:String) </buff>
 		when lengthString(S:String) >Int 0 // don't compare with "" in order to only treat string sort
@@ -62,7 +62,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 	rule [make-eof]:
 		"" +String charString(#EOF)
 			=> #EOF
-		[structural anywhere]
+		[structural, anywhere]
 		
 	syntax K ::= "f-sent" "(" Int "," String ")"
 	syntax K ::= "f-flush" "(" Int ")"
@@ -82,7 +82,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 		[structural]
 	rule [sendString-one]:
 		<fileCommands> f-sendString(N:Int, S:String) 
-			=> #fPutByte(N:Int, charToAscii(firstChar(S:String)))
+			=> #fPutByte(N:Int, asciiString(firstChar(S:String)))
 			~> f-sendString(N:Int, butFirstChar(S:String))
 		...</fileCommands>
 		when S:String =/=String ""

@@ -54,7 +54,7 @@ module DYNAMIC-SEMANTICS-BLOCKS
 			<localVariables> Vars:List </localVariables>
 			<localAddresses> Addresses:Set </localAddresses>)
 		...</blockStack>
-		[structural large] 
+		[structural, large] 
 		
 	rule [pop-block-free-memory]:
 		<k> (.K => deleteBlock(Loc:Int)) ~> popBlock ...</k>
@@ -279,7 +279,7 @@ Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An omitted 
 		<br/>
 		<blockHistory> ListItem(Num:Int) ...</blockHistory>
 		<loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
-		[structural large] 
+		[structural, large] 
 		
 	rule [for]:
 		<k> loopMarked ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)
@@ -394,7 +394,7 @@ module DYNAMIC-SEMANTICS-GOTO
 		<nestingDepth> ActualDepth:Int </nestingDepth>
 		<blockHistory> ListItem(CurrentBlock:Int) ActualHistory:List </blockHistory>
 		when ActualDepth:Int +Int 1 =/=Int TargetDepth:Int
-		[structural large] 
+		[structural, large] 
 		
 	rule
 		<k> ( . 
@@ -408,7 +408,7 @@ module DYNAMIC-SEMANTICS-GOTO
 		<nestingDepth> ActualDepth:Int </nestingDepth>
 		<blockHistory> ActualHist:List </blockHistory> //  (. => ListItem(TargetBlock:Int)) 
 		when ActualDepth:Int +Int 1 =/=Int TargetDepth:Int
-		[structural large] 
+		[structural, large] 
 	
 	//  We've made it to the block above the target
 	rule
@@ -607,7 +607,7 @@ module DYNAMIC-SEMANTICS-RETURN
 				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
 			) => .List
 		...</callStack>
-		[structural large] 
+		[structural, large] 
 endmodule
 
 module DYNAMIC-SEMANTICS-STATEMENTS-MISC
