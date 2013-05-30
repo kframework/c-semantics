@@ -11,17 +11,17 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 	// empty binding
 	// fixme not really a sequence point
 	
-	syntax K ::= "bind-aux" "(" Int "," List{KResult} "," List{KResult} ")"
+	syntax K ::= "bind-aux" "(" Int "," VTList "," VTList ")"
 	rule
-		<k> bind(L:List{KResult}, L':List{KResult}) 
-			=> bind-aux(NullPointer, L:List{KResult}, L':List{KResult}) ...</k> 
+		<k> bind(L:VTList, L':VTList) 
+			=> bind-aux(NullPointer, L:VTList, L':VTList) ...</k> 
 		[structural] 
 	
 	rule [bind-empty-void]:
-		<k> bind-aux(_:Int, .KList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .VTList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
 		[structural] 
 	rule [bind-empty]:
-		<k> bind-aux(_:Int, .KList, .KList) => sequencePoint ...</k> 
+		<k> bind-aux(_:Int, .VTList, .VTList) => sequencePoint ...</k> 
 		[structural] 
 		
 		
@@ -29,41 +29,33 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 	// -- one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
 	// -- both types are pointers to qualified or unqualified versions of a character type or void
 	
+      // chathhorn: these two rules only mutate the head of the list now.
 	rule [bind-coerce-array]:
 		bind-aux(
 			_:Int
-			, L:List{KResult}
-			, (
-				_:List{KResult}
-				,, typedDeclaration(
-					(t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult))))
-					, X:Id
-				)
-				,, _:List{KResult}
-			)
+			, L:VTList
+			, (typedDeclaration(
+                        (t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult)))), X:Id
+                  ), _:VTList)
 		)
 		[structural, anywhere] 
 	rule [bind-coerce-incompleteArray]:
 		bind-aux(
 			_:Int
-			, L:List{KResult}
-			, (
-				_:List{KResult} 
-				,, typedDeclaration(
-					(t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult))))
-					, X:Id
-				) 
-				,, _:List{KResult})
+			, L:VTList
+			, (typedDeclaration(
+                        (t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult)))), X:Id
+                  ), _:VTList)
 		)
 		[structural, anywhere] 
 		
 	rule [bind-one]:
-		<k> true ~> bind-aux(_:Int, (tv(V:KList, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+		<k> true ~> bind-aux(_:Int, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
 			=> allocateType(Loc:Int, T:KResult)
 			~> addToEnv(X:Id, Loc:Int)
 			~> giveType(X:Id, T:KResult)
 			~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:KList, T':KResult)))
-			~> bind-aux(Loc:Int, L:List{KResult}, P:List{KResult})
+			~> bind-aux(Loc:Int, L:VTList, P:VTList)
 		...</k> 
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
@@ -72,42 +64,42 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 		
 	rule [bind-one-check-type]:
 		<k> (.K => isTypeCompatible(T:KResult, T':KResult)) 
-			~> bind-aux(_:Int, (tv(V:KList, T':KResult),, L:List{KResult}), (typedDeclaration(T:KResult, X:Id),, P:List{KResult}))
+			~> bind-aux(_:Int, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
 		...</k> 
 		[structural] 
 	
-	syntax KList ::= promoteList(List{KResult}) [function]
-	rule [promoteList-needs-promoting]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:List{KResult})) 
-		=> cast(argPromote(t(S:Set, T:K)), tv(V:KList, t(S:Set, T:K))),, promoteList(L:List{KResult})
+	syntax KList ::= promoteList(VTList) [function]
+	rule [promoteList-needs-promoting]: promoteList((tv(V:KList, t(S:Set, T:K)), L:VTList)) 
+		=> cast(argPromote(t(S:Set, T:K)), tv(V:KList, t(S:Set, T:K))),, promoteList(L:VTList)
 		when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool isBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
 		orBool T:K ==K float 
 		[structural]
-	rule [promoteList-promoted]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:List{KResult})) 
-		=> (tv(V:KList, t(S:Set, T:K)),, promoteList(L:List{KResult}))
+	rule [promoteList-promoted]: promoteList((tv(V:KList, t(S:Set, T:K)), L:VTList)) 
+		=> (tv(V:KList, t(S:Set, T:K)),, promoteList(L:VTList))
 		when (notBool(hasIntegerType(t(S:Set, T:K))) 
-			andBool notBool T:K ==K float
-			andBool notBool isArrayType(t(S:Set, T:K))
+			andBool (notBool T:K ==K float)
+			andBool (notBool isArrayType(t(S:Set, T:K)))
 		) 
-		orBool rank(t(S:Set, T:K)) >=Int rank(t(.Set, int))
-		orBool T:K ==K double 
-		orBool T:K ==K long-double
+		orBool (rank(t(S:Set, T:K)) >=Int rank(t(.Set, int)))
+		orBool (T:K ==K double)
+		orBool (T:K ==K long-double)
 		[structural]
-	rule promoteList(.KList) => .KList
+	rule promoteList(.VTList) => .KList
 	
-	syntax K ::= "bindVariadic" "(" K "," List{KResult} ")"
+	syntax K ::= "bindVariadic" "(" K "," VTList ")"
 	syntax K ::= "bindVariadic-pre" "(" K "," KList ")"
 	
 	
 	// the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments	
 	rule [bind-variadic-pre]:
-		<k> bind-aux(Loc:Int, L:List{KResult}, t(_, variadic))
-			=> bindVariadic-pre(Loc:Int, promoteList(L:List{KResult}))
+		<k> bind-aux(Loc:Int, L:VTList, t(_, variadic))
+			=> bindVariadic-pre(Loc:Int, promoteList(L:VTList))
 		...</k>
 		[structural] 
 
 	rule [bind-variadic-start]:
-		<k> bindVariadic-pre(Loc:Int, L:List{KResult}) 
-			=> bindVariadic(Loc:Int, L:List{KResult})
+		<k> bindVariadic-pre(Loc:Int, L:VTList) 
+			=> bindVariadic(Loc:Int, L:VTList)
 		...</k>
 		[structural]
 	
@@ -116,18 +108,17 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 	// this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
 	rule [bind-variadic]:
 		<k> (.K 
-				=> allocateType(Loc:Int, Type)
-				~> Computation(*(tv(Loc:Int, t(.Set, pointerType(Type)))) := V:KResult)
+				=> allocateType(Loc:Int, type(V:VT))
+				~> Computation(*(tv(Loc:Int, t(.Set, pointerType(type(V:VT))))) := V:VT)
 			) 
-			~> bindVariadic(_, ((V:KResult => .KList),, _:List{KResult})) 
+			~> bindVariadic(_, ((V:VT => .), _:VTList)) 
 		...</k>
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
-		where Type = type(V:KResult)
 		[structural]
 	
 	rule [bind-variadic-done]:
-		<k> bindVariadic(_, .KList) => sequencePoint ...</k> 
+		<k> bindVariadic(_, .VTList) => sequencePoint ...</k> 
 		[structural]
 endmodule
 
@@ -163,7 +154,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
 		when isFloatType(T:KResult)
 		[structural] 
 		
-	syntax K ::= "zeroStruct" "(" K "," List{KResult} ")"
+	syntax K ::= "zeroStruct" "(" K "," VTList ")"
 	
 	// c1x 6.7.9:10 If an object that has automatic storage duration is not initialized explicitly, its value is indeterminate. If an object that has static or thread storage duration is not initialized explicitly, then:
 	// -- if it has pointer type, it is initialized to a null pointer;
@@ -173,9 +164,9 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
 	
 	rule
 		<k> zeroType(Name:K, t(_, structType(S:Id))) 
-			=> zeroStruct(Name:K, Fields:List{KResult})
+			=> zeroStruct(Name:K, Fields:VTList)
 		...</k>
-		<structs>... S:Id |-> aggregateInfo(Fields:List{KResult}, _, _) ...</structs> 
+		<structs>... S:Id |-> aggregateInfo(Fields:VTList, _, _) ...</structs> 
 		[structural] 
 		
 	rule
@@ -183,18 +174,18 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
 			=> zeroType(Name:K . F:Id, T:KResult)
 		...</k>
 		<structs>... 
-			S:Id |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
+			S:Id |-> aggregateInfo((typedDeclaration(T:KResult, F:Id), _), _, _) 
 		...</structs> 
 		[structural] 
 		
 	rule
-		<k> zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id),, L:List{KResult})) 
+		<k> zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id), L:VTList)) 
 			=> zeroType(Name:K . F:Id, T:KResult)
-			~> zeroStruct(Name:K, L:List{KResult}) 
+			~> zeroStruct(Name:K, L:VTList) 
 		...</k>
 		[structural] 
 	rule
-		<k> zeroStruct(Name:K, .KList) => .K ...</k>
+		<k> zeroStruct(Name:K, .VTList) => .K ...</k>
 		[structural] 
 
 	rule

@@ -56,14 +56,14 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 
 	syntax K ::= "endBlockForGoto" "(" Int ")"
 	rule 
-		<computation> BlockStatement(Block:K)
-			=> Block:K ~> popBlock
+		<computation> 
+                  BlockStatement(Blk:K) => Blk:K ~> popBlock
 		...</computation>
 		<nestingDepthGoto> N:Int => N:Int +Int 1 </nestingDepthGoto>
 		<blockHistoryGoto> ListItem(OldNum:Int) ...</blockHistoryGoto>
 		[structural] 
 	rule
-		<computation> Block(Num:Int, _, List(L:KList)) => klistToK(L:KList) ...</computation> 
+		<computation> Block(Num:Int, _, klist(L:KList)) => klistToK(L:KList) ...</computation> 
 		<blockHistoryGoto> . => ListItem(Num:Int) ...</blockHistoryGoto>
 		//  <declarationStack>... .List => ListItem(.K) </declarationStack>
 		[structural] 
@@ -82,26 +82,26 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 
 	// this rule is different than the dynamic one because we don't enforce T to be reduced yet
 	rule
-		<computation> DeclarationDefinition(InitNameGroup(T:K, List((K:K,, K':K,, L:KList))))
-			=> DeclarationDefinition(InitNameGroup(T:K, List(K:K)))
-			~> DeclarationDefinition(InitNameGroup(T:K, List((K':K,, L:KList))))
+		<computation> DeclarationDefinition(InitNameGroup(T:K, klist((K:K,, K':K,, L:KList))))
+			=> DeclarationDefinition(InitNameGroup(T:K, klist(K:K)))
+			~> DeclarationDefinition(InitNameGroup(T:K, klist((K':K,, L:KList))))
 		...</computation>
 		[structural]
 		
 	// rule
-		// <computation> Typedef(NameGroup(T:K, List((K:K,, K':K,, L:KList))))
+		// <computation> Typedef(NameGroup(T:K, klist((K:K,, K':K,, L:KList))))
 			// => Typedef(nameGroup-aux(T:K, K:K))
-			// ~> Typedef(NameGroup(T:K, List(K':K,, L:KList)))
+			// ~> Typedef(NameGroup(T:K, klist(K':K,, L:KList)))
 		// ...</computation>
 		// [structural] 
 
 	//  fixme would like to combine the below rules
 	rule
-		<computation> DeclarationDefinition(InitNameGroup(T:K, List(K:K))) => .K ...</computation>
+		<computation> DeclarationDefinition(InitNameGroup(T:K, klist(K:K))) => .K ...</computation>
 		<br/>
 		<declarationStack>... 
 			.List 
-			=> ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(InitNameGroup(T:K, List(K:K))))) 
+			=> ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(InitNameGroup(T:K, klist(K:K))))) 
 		</declarationStack>
 		//<br/>
 		<nestingDepthGoto> Depth:Int </nestingDepthGoto>

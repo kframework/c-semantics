@@ -12,7 +12,8 @@ require "dynamic-c-declarations.k"
 // require "dynamic-c-ltl.k"
 
 // this must be below the others
-require "dynamic-c-errors.k"
+// TODO(chathhorn): xml, ellided
+//require "dynamic-c-errors.k"
 
 module DYNAMIC-SEMANTIC-SYNTAX
 	imports COMMON-INCLUDE
@@ -59,10 +60,11 @@ module DYNAMIC-C-SEMANTICS-MISC
 		<fid> FD:Int </fid>
 		<buff> #EOF </buff>
 		[observable]
-	rule [make-eof]:
-		"" +String charString(#EOF)
-			=> #EOF
-		[structural, anywhere]
+// TODO(chathhorn): eof, ellided
+//	rule [make-eof]:
+//		"" +String charString(#EOF)
+//			=> #EOF
+//		[structural, anywhere]
 		
 	syntax K ::= "f-sent" "(" Int "," String ")"
 	syntax K ::= "f-flush" "(" Int ")"
@@ -107,12 +109,13 @@ module DYNAMIC-C-SEMANTICS-MISC
 		<done> (ListItem(S:String) ListItem(S':String) => ListItem(S:String +String S':String)) ...</done>
 		[structural]
 		
-	syntax List ::= string2List(String) [function] | "string2List-aux" "(" String "," KList ")" [function]
-	rule string2List(S:String) => string2List-aux(S:String, .KList)
-	rule string2List-aux("", L:KList) => L:KList
-	rule 
-		string2List-aux(S:String, L:KList)
-			=> string2List-aux(butFirstChar(S:String), (L:KList,, firstChar(S:String)))
+	syntax List ::= string2List(String) [function] 
+                    | "string2List-aux" "(" String "," List ")" [function]
+      //syntax "string2List" -/- [\-]
+	rule string2List(S:String) => string2List-aux(S:String, .List)
+	rule string2List-aux("", L:List) => L
+	rule string2List-aux(S:String, L:List)
+			=> string2List-aux(butFirstChar(S:String), (L:List ListItem(firstChar(S:String))))
 		when S:String =/=String ""
 		[structural]
 endmodule
@@ -123,7 +126,8 @@ module DYNAMIC-C-SEMANTICS
 	
 	imports DYNAMIC-C-SEMANTICS-MISC
 	imports DYNAMIC-C-EXPRESSIONS
-	imports DYNAMIC-C-ERRORS
+      // TODO(chathhorn): xml, ellided
+	//imports DYNAMIC-C-ERRORS
 	imports DYNAMIC-C-TYPING 
 	imports DYNAMIC-C-DECLARATIONS 
 	imports DYNAMIC-C-MEMORY 
@@ -166,13 +170,13 @@ If they are declared, the parameters to the main function shall obey the followi
 		argName(L:KList)
 		=> Name(
 			Identifier("#incomingArgumentsArray"), 
-			PointerType(ArrayType(JustBase, syntaxInt((lengthKList L:KList) +Int 1), Specifier(List(.KList))))
+			PointerType(ArrayType(JustBase, syntaxInt((lengthKList L:KList) +Int 1), Specifier(klist(.KList))))
 		)
 	rule
 		pgmArgs(L:KList)
 		=> DeclarationDefinition(InitNameGroup(
-			Specifier(List(Char)), 
-			List(InitName(argName(L:KList), NoInit))
+			Specifier(klist(Char)), 
+			klist(InitName(argName(L:KList), NoInit))
 		))
 		[structural]
 
@@ -184,7 +188,7 @@ If they are declared, the parameters to the main function shall obey the followi
 	rule stdinStr => "stdin:/" +String "/" +String "/"
 	rule stdoutStr => "stdout:/" +String "/" +String "/"
 	
-	rule [eval-input]: eval(Program(List(P:KList)), L:KList, Input:String, IsInterp:Int) =>
+	rule [eval-input]: eval(Program(klist(P:KList)), L:KList, Input:String, IsInterp:Int) =>
 		<T>...
 			<threads>
 				<thread>...
@@ -192,7 +196,7 @@ If they are declared, the parameters to the main function shall obey the followi
 							~> pgmArgs(L:KList)
 							~> resolveReferences					
 							// ~> incomingArguments(L:KList)
-							~> callMain(lengthKList(L:KList), incomingArguments(L:KList))
+							~> callMain(lengthKList L:KList, incomingArguments(L:KList))
 					</k>
 					<br/>
 					<threadId> 1 </threadId>
@@ -229,7 +233,7 @@ If they are declared, the parameters to the main function shall obey the followi
 			...</file>
 		</files>
 		//<xmessages> .K </xmessages>
-		[structural large]
+		[structural, large]
 
 /*@ 
 \begin{lrbox}{\LstBox}
@@ -271,22 +275,22 @@ or equivalent; or in some other implementation-defined manner.
 	// fixme figure out type of string
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
-			=> Call(Identifier("main"), List(.KList))
+			=> Call(Identifier("main"), klist(.KList))
 		[structural]
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
-			=> Call(Identifier("main"), List(.KList))
+			=> Call(Identifier("main"), klist(.KList))
 		[structural]
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
 			=> Args:K 
-			~> Call(Identifier("main"), List((N:Int,, X:Id)))
+			~> Call(Identifier("main"), klist((N:Int,, X:Id)))
 		when T:KResult ==K t(.Set, char)
 		[structural]
 	rule
 		callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
 			=> Args:K 
-			~> Call(Identifier("main"), List((N:Int,, X:Id)))
+			~> Call(Identifier("main"), klist((N:Int,, X:Id)))
 		when T:KResult ==K t(.Set, char)
 		[structural]
 

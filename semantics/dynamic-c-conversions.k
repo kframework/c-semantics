@@ -58,15 +58,24 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	syntax Set ::= "arithBinConversionOps" [function] // memo
 
 	rule [arithBinOps]:
-		arithBinOps => arithBinConversionOps Set(l('_<<_),, l('_>>_)) [structural]
+		arithBinOps => arithBinConversionOps (SetItem(l('_<<_)) SetItem(l('_>>_))) [structural]
 	rule [arithBinConversionOps]:
-		arithBinConversionOps => Set(
-		l('_*_),, l('_/_),, l('_%_),,
-		l('_+_),, l('_-_),,
-		l('_<_),, l('_>_),, l('_<=_),, l('_>=_),,
-		l('_==_),, l('_!=_),,
-		l('_&_),, l('_|_),, l('_^_)
-	) [structural]
+		arithBinConversionOps => 
+                  SetItem(l('_*_))
+                  SetItem(l('_/_))
+                  SetItem(l('_%_))
+                  SetItem(l('_+_))
+                  SetItem(l('_-_))
+                  SetItem(l('_<_))
+                  SetItem(l('_>_))
+                  SetItem(l('_<=_))
+                  SetItem(l('_>=_))
+                  SetItem(l('_==_))
+                  SetItem(l('_!=_))
+                  SetItem(l('_&_))
+                  SetItem(l('_|_))
+                  SetItem(l('_^_))
+	[structural]
 	
 	rule [checkArithBinOp]:
 		isArithBinOp(KL:KLabel) => #if arithBinOps contains l(KL:KLabel) #then true #else false #fi 
@@ -75,7 +84,10 @@ Conversion of an operand value to a compatible type causes no change to the valu
 		isArithBinConversionOp(KL:KLabel) => #if arithBinConversionOps contains l(KL:KLabel) #then true #else false #fi [structural]
 
 	syntax Set ::= "arithUnaryOps" [function]// [memo] 
-	rule [arithUnaryOps]: arithUnaryOps => Set(l('-_),, l('+_),, l('~_))
+	rule [arithUnaryOps]: arithUnaryOps => 
+            SetItem(l('-_))
+            SetItem(l('+_))
+            SetItem(l('~_))
 
 	rule [checkArithUnaryOp]: 
 		isArithUnaryOp(KL:KLabel) => #if arithUnaryOps contains l(KL:KLabel) #then true #else false #fi [structural]
@@ -210,13 +222,12 @@ Conversion of an operand value to a compatible type causes no change to the valu
 	}*/
 	rule
 		<k> L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
-			=> L:KLabel(cast(finalType, tv(V:K, T:KResult)),, cast(finalType, tv(V':K, T':KResult)))
+			=> L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
 		...</k>
 		when isArithBinConversionOp(L:KLabel)
 		andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		andBool (T:KResult =/=K T':KResult)
-		where finalType = usualArithmeticConversion(T:KResult, T':KResult)
 		[structural]
 
 	/*@ 
@@ -511,7 +522,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
 		[structural] 
 	rule [cast-signed-of-big]:
 		cast(T:KResult, tv(I:Int, T':KResult)) 
-			=> tv(_-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))), T:KResult)
+			=> tv(I:Int -Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
 		when I:Int >Int max(T:KResult)
 		andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
 		andBool hasSignedIntegerType(T:KResult)
@@ -649,7 +660,7 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 		when min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int
 		andBool hasIntegerType(T:KResult)
 	rule [interpret-too-big]:
-		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, _-Int_(I:Int, (2 ^Int absInt(numBits(T:KResult)))))
+		interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, I:Int -Int (2 ^Int absInt(numBits(T:KResult))))
 		when I:Int >Int max(T:KResult)
 		andBool hasIntegerType(T:KResult)
 		
@@ -696,15 +707,27 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 		andBool I:Int >Int max(T:KResult)
 	rule [arithInterpret-unsigned-small]:
 		arithInterpret(T:KResult, I:Int) 
-		=> arithInterpret(T:KResult, _+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)))
-		//=> tv(_+Int_(I:Int %Int (max(T:KResult) +Int 1), (max(T:KResult) +Int 1)), T:KResult)
+		=> arithInterpret(T:KResult, (I:Int %Int (max(T:KResult) +Int 1)) +Int (max(T:KResult) +Int 1))
+		//=> tv((I:Int %Int (max(T:KResult) +Int 1)) +Int (max(T:KResult) +Int 1), T:KResult)
 		when hasUnsignedIntegerType(T:KResult)
 		andBool I:Int <Int min(T:KResult)
 		// must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
 	// rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
-	rule unsignedIntegerTypes => Set(bool,, unsigned-char,, unsigned-short-int,, unsigned-int,, unsigned-long-int,, unsigned-long-long-int)
-	rule signedIntegerTypes => Set(char,, signed-char,, short-int,, int,, long-int,, long-long-int)
+	rule unsignedIntegerTypes => 
+            SetItem(bool)
+            SetItem(unsigned-char)
+            SetItem(unsigned-short-int)
+            SetItem(unsigned-int)
+            SetItem(unsigned-long-int)
+            SetItem(unsigned-long-long-int)
+	rule signedIntegerTypes => 
+            SetItem(char)
+            SetItem(signed-char)
+            SetItem(short-int)
+            SetItem(int)
+            SetItem(long-int)
+            SetItem(long-long-int)
 
 endmodule
 

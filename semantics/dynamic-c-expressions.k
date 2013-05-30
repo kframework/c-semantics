@@ -80,8 +80,9 @@ module DYNAMIC-SEMANTICS-LITERALS
 		orBool lengthString(S:String) ==Int 1
 		
 	syntax K ::= "hexOrOctalConstant" "(" K ")"
-	rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural, anywhere]
-	rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural, anywhere]
+      // TODO(chathhorn): hex, ellided
+	// rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural, anywhere]
+	// rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural, anywhere]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
 	
@@ -139,7 +140,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#fi #fi #fi #fi #fi #fi
 		[structural, anywhere]
 
-	rule U(hexOrOctalConstant(I:Int)) =>
+	rule ConstU(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
@@ -147,7 +148,7 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#fi #fi #fi
 		[structural, anywhere]
 		
-	rule L(hexOrOctalConstant(I:Int)) =>
+	rule ConstL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
@@ -156,52 +157,52 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 		#fi #fi #fi #fi
 		[structural, anywhere]
 		
-	rule UL(hexOrOctalConstant(I:Int)) =>
+	rule ConstUL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
 		[structural, anywhere]
 		
-	rule LL(hexOrOctalConstant(I:Int)) =>
+	rule ConstLL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
 		[structural, anywhere]
 	
-	rule ULL(hexOrOctalConstant(I:Int)) =>
+	rule ConstULL(hexOrOctalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
 		[structural, anywhere]
 		
 		
-	rule U(DecimalConstant(I:Int)) =>
+	rule ConstU(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi #fi
 		[structural, anywhere]
-	rule L(DecimalConstant(I:Int)) =>
+	rule ConstL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi
 		[structural, anywhere]
-	rule UL(DecimalConstant(I:Int)) =>
+	rule ConstUL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi #fi		
 		[structural, anywhere]
-	rule LL(DecimalConstant(I:Int)) =>
+	rule ConstLL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
 		[structural, anywhere]
-	rule ULL(DecimalConstant(I:Int)) =>
+	rule ConstULL(DecimalConstant(I:Int)) =>
 		#if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
 			tv(I:Int, t(.Set, no-type))
 		#fi
@@ -216,9 +217,9 @@ Both \cinline{u} or \cinline{U} and \cinline{ll} or \cinline{LL}	&	\cinline{unsi
 	
 	rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
 		[structural, anywhere]
-	rule L(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
+	rule ConstL(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
 		[structural, anywhere]
-	rule F(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
+	rule ConstF(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
 		[structural, anywhere]
 		
 	/*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
@@ -250,7 +251,7 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 			(.Map => S:String |-> lv(Loc:Int, t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1))))
 		</stringLiterals>
 		when notBool S:String in keys M:Map
-		[large structural]
+		[large, structural]
 		
 	syntax K ::= "wstring" "(" KList ")"
 	rule [const-wstring-notfound]:
@@ -261,10 +262,10 @@ For wide string literals prefixed by the letter \cinline{L}, the array elements 
 		<br/>
 		<stringLiterals>
 			M:Map
-			(.Map => wstring(S:KList) |-> lv(Loc:Int, t(.Set, arrayType(cfg:wcharut, lengthKList(S:KList) +Int 1))))
+			(.Map => wstring(S:KList) |-> lv(Loc:Int, t(.Set, arrayType(cfg:wcharut, (lengthKList S:KList) +Int 1))))
 		</stringLiterals>
 		when notBool wstring(S:KList) in keys M:Map
-		[large structural]
+		[large, structural]
 		
 	rule [const-string-found]:
 		<k> Constant(StringLiteral(S:String)) => V:KResult ...</k>
@@ -304,7 +305,7 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		when isFunctionType(T:KResult)
 		andBool notBool X:Id in keys Env:Map
-		[large structural]
+		[large, structural]
 endmodule
 
 module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
@@ -326,8 +327,8 @@ endmodule
 module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 	imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-	syntax K ::= "application" "(" K "," List{KResult} ")" [strict(1)]
-	syntax K ::= "application'" "(" K "," List{KResult} ")" [strict(1)]
+	syntax K ::= "application" "(" K "," VTList ")" [strict(1)]
+	syntax K ::= "application'" "(" K "," VTList ")" [strict(1)]
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
 	A postfix expression followed by parentheses \cinline{()} containing a possibly empty, comma-separated list of expressions is a function call. The postfix expression denotes the called function. The list of expressions specifies the arguments to the function.
 	}*/
@@ -341,15 +342,15 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 	}}*/
 	
 	rule [function-application-pre]:
-		<k> Call(tv(Loc:Int, t(_, pointerType(T:KResult))), List(L:List{KResult}))
-			=> application(readFunction(Loc:Int), L:List{KResult})
+		<k> Call(tv(Loc:Int, t(_, pointerType(T:KResult))), klist(L:VTList))
+			=> application(readFunction(Loc:Int), L:VTList)
 		...</k>
 		when isFunctionType(T:KResult)
 		[structural]
 	//@ this extra step is useful for putting the function name in the transition graph
 	rule [call]:
-		<k> application(Fun:KResult, L:List{KResult})
-			=> application'(Fun:KResult, L:List{KResult})
+		<k> application(Fun:KResult, L:VTList)
+			=> application'(Fun:KResult, L:VTList)
 		...</k>
 		[structural]
 
@@ -363,41 +364,42 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 		[structural]
 
 	rule [builtin-application]:
-		<k> application'(functionPrototype(X:Id, T:KResult), L:List{KResult})
-			=> application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:List{KResult})
+		<k> application'(functionPrototype(X:Id, T:KResult), L:VTList)
+			=> application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:VTList)
 		...</k>
 		[structural]
 		
-	rule [function-application]:
-		<k> application'(functionObject(X:Id, t(_, functionType(R:KResult, P:List{KResult})), B:K), L:List{KResult}) ~> K:K 
-			=> sequencePoint
-			~> populateFromGlobal
-			~> bind(L:List{KResult}, P:List{KResult})
-			~> B:K
-		</k>
-		<br/>
-		<callStack> .List => ListItem(
-			C:Bag
-			<continuation> K:K </continuation>
-			<currTU> OldTu:K </currTU>
-			<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-			<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-		) ...</callStack>
-		<br/>
-		(<control>
-			<currTU> OldTu:K </currTU>
-			<currentFunction> CurrFun:K </currentFunction>
-			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
-			C:Bag
-		</control>
-		=>
-		<control>
-			<currentFunction> X:Id </currentFunction>
-			<currTU> Tu:K </currTU>
-			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
-		...</control>)
-		<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
-		[structural large]
+            // TODO(chathhorn): xml, ellided
+//	rule [function-application]:
+//		<k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:KList)), B:K), L:VTList) ~> K:K 
+//			=> sequencePoint
+//			~> populateFromGlobal
+//			~> bind(L:VTList, P:VTList)
+//			~> B:K
+//		</k>
+//		<br/>
+//		<callStack> .List => ListItem(
+//			C:Bag
+//			<continuation> K:K </continuation>
+//			<currTU> OldTu:K </currTU>
+//			<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+//			<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+//		) ...</callStack>
+//		<br/>
+//		(<control>
+//			<currTU> OldTu:K </currTU>
+//			<currentFunction> CurrFun:K </currentFunction>
+//			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
+//			C:Bag
+//		</control>
+//		=>
+//		<control>
+//			<currentFunction> X:Id </currentFunction>
+//			<currTU> Tu:K </currTU>
+//			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
+//		...</control>)
+//		<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
+//		[structural, large]
 endmodule
 
 
@@ -435,7 +437,7 @@ module DYNAMIC-SEMANTICS-MEMBERS
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
 	A postfix expression followed by the \cinline{->} operator and an identifier designates a member of a structure or union object. The value is that of the named member of the object to which the first expression points, and is an lvalue. \broken{If the first expression is a pointer to a qualified type, the result has the so-qualified version of the type of the designated member.}
 	}*/
-	rule K:K -> F:Id = (* K:K) . F:Id [macro]
+	rule K:K -> F:Id => (* K:K) . F:Id [macro]
 endmodule
 
 module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
@@ -449,7 +451,7 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
 	The result of the postfix \cinline{++} operator is the value of the operand. As a side effect, the value of the operand object is incremented (that is, the value 1 of the appropriate type is added to it). See the discussions of additive operators and compound assignment for information on constraints, types, and conversions and the effects of operations on pointers. The value computation of the result is sequenced before the side effect of updating the stored value of the operand. With respect to an indeterminately-sequenced function call, the operation of postfix \cinline{++} is a single evaluation. Postfix \cinline{++} on an object with atomic type is a read-modify-write operation with \cinline{memory_order_seq_cst} memory order semantics.
 	}*/	
 	rule [post-increment-start]:
-		<k> lv(Loc:Int, T:KResult)++
+		<k> lv(Loc:Int, T:KResult) ++
 			=> postInc(Loc:Int, read(Loc:Int, T:KResult), T:KResult)
 		...</k>
 		[structural]
@@ -753,10 +755,9 @@ second operand from the first.
 		[structural]
 			
 	rule <k> addToPointer(Loc:Int, T:KResult, I:Int, tv(Size:Int, _))
-			=> tv(Loc:Int +Int (I:Int *Int Size:Int), NEWTYPE)
+			=> tv(Loc:Int +Int (I:Int *Int Size:Int), newFromArray(T:KResult, I:Int))
 		...</k>
 		when ifFromArrayInBounds(T:KResult, I:Int)
-		where NEWTYPE = newFromArray(T:KResult, I:Int)
 		[structural]
 		
 	syntax KResult ::= newFromArray(K, Int) [function]
@@ -786,24 +787,24 @@ second operand from the first.
 		[structural]
 	rule [pointer-difference]: 
 		computePointerDifference(loc(Base:Int, Offset1:Int, 0), loc(Base:Int, Offset2:Int, 0), tv(Size:Int, _))
-			=> tv(_-Int_(Offset1:Int, Offset2:Int) /Int Size:Int, cfg:ptrdiffut)
-		when _-Int_(Offset1:Int, Offset2:Int) %Int Size:Int ==Int 0
+			=> tv((Offset1:Int -Int Offset2:Int) /Int Size:Int, cfg:ptrdiffut)
+		when (Offset1:Int -Int Offset2:Int) %Int Size:Int ==Int 0
 		[structural]
 	
 		
 	rule 
-		tv(I1:Int, T:KResult) + tv(I2:Int, T:KResult) => arithInterpret(T:KResult, _+Int_(I1:Int,I2:Int))
+		tv(I1:Int, T:KResult) + tv(I2:Int, T:KResult) => arithInterpret(T:KResult, (I1:Int +Int I2:Int))
 		when isPromoted(T:KResult)
 		[structural]
 	rule 
-		_-_(tv(I1:Int, T:KResult), tv(I2:Int, T:KResult)) => arithInterpret(T:KResult, _-Int_(I1:Int,I2:Int))
+		tv(I1:Int, T:KResult) - tv(I2:Int, T:KResult) => arithInterpret(T:KResult, (I1:Int -Int I2:Int))
 		when isPromoted(T:KResult)
 		[structural]
 	rule 
 		tv(F1:Float, T:KResult) + tv(F2:Float, T:KResult) => arithInterpret(T:KResult, F1:Float +Float F2:Float)
 		[structural]
 	rule 
-		_-_(tv(F1:Float, T:KResult), tv(F2:Float, T:KResult)) => arithInterpret(T:KResult, _-Float_(F1:Float, F2:Float))
+		tv(F1:Float, T:KResult) - tv(F2:Float, T:KResult) => arithInterpret(T:KResult, (F1:Float -Float F2:Float))
 		[structural]
 endmodule
 
@@ -1024,10 +1025,10 @@ module DYNAMIC-SEMANTICS-EQUALITY
 			<basePtr> Base':Int </basePtr>
 			<oLength> Len':Int </oLength>
 		...</object>
-		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
-		andBool Base:Int =/=K Base':Int
-		andBool Offset:Int <Int Len:Int
-		andBool Offset':Int <Int Len':Int
+		when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
+		andBool (Base:Int =/=K Base':Int)
+		andBool (Offset:Int <Int Len:Int)
+		andBool (Offset':Int <Int Len':Int)
 		[structural]
 	rule [compare-neq-different-objects]: 
 		<k> tv(loc(Base:Int, Offset:Int, 0), T:KResult) != tv(loc(Base':Int, Offset':Int, 0), T':KResult) 
@@ -1041,10 +1042,10 @@ module DYNAMIC-SEMANTICS-EQUALITY
 			<basePtr> Base':Int </basePtr>
 			<oLength> Len':Int </oLength>
 		...</object>
-		when isPointerType(T:KResult) andBool isPointerType(T':KResult)
-		andBool Base:Int =/=K Base':Int
-		andBool Offset:Int <Int Len:Int
-		andBool Offset':Int <Int Len':Int
+		when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
+		andBool (Base:Int =/=K Base':Int)
+		andBool (Offset:Int <Int Len:Int)
+		andBool (Offset':Int <Int Len':Int)
 		[structural]
 	
 	// otherwise we can't conclude anything
@@ -1053,9 +1054,9 @@ module DYNAMIC-SEMANTICS-EQUALITY
 	// fixme there are further restrictions on pointers
 	rule [equal-null-left]:
 		(tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
-		when isPromoted(T:KResult) 
-		andBool isPointerType(T':KResult)
-		andBool N:Int ==K NullPointerConstant
+		when (isPromoted(T:KResult))
+		andBool (isPointerType(T':KResult))
+		andBool (N:Int ==K NullPointerConstant)
 		[structural]
 	rule [equal-null-right]:
 		tv(_, T:KResult) == (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
@@ -1261,9 +1262,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
 	rule [assign]:
 		<k> lv(Loc:Int, T:KResult) := RHS
 			=> write(lv(Loc:Int, T:KResult), RHS)
-			~> RHS
+			~> tv(V:KList, T:KResult)
 		...</k>
-		where RHS = tv(V:KList, T:KResult)
 		[structural]
 	rule [convert-for-assignment]:
 		<k>
@@ -1330,11 +1330,11 @@ module DYNAMIC-SEMANTICS-SEQUENCING
 	/*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	}*/
-	rule <k> Comma(List((V:KResult,, K':K,, L:KList))) 
+	rule <k> Comma(klist((V:KResult,, K':K,, L:KList))) 
 		=> sequencePoint
-		~> Comma(List((K':K,, L:KList))) ...</k>
+		~> Comma(klist((K':K,, L:KList))) ...</k>
 		[structural]
-	rule <k> Comma(List(K:K)) => K:K ...</k>
+	rule <k> Comma(klist(K:K)) => K:K ...</k>
 		[structural]
 endmodule
 

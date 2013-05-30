@@ -1,5 +1,28 @@
 require "common-c-semantics.k"
 
+module COMPAT
+	imports COMMON-SEMANTICS-HELPERS-INCLUDE
+
+      rule X:Bag ==Bag Y:Bag => Bag2K(X) ==K Bag2K(Y)
+      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
+
+      rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
+      rule toBag(.List) => .Bag
+
+      rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
+      rule toBag(.KList) => .Bag
+
+      rule lengthKList (K:K,, Kl:KList) => 1 + lengthKList Kl
+      rule lengthKList .KList => 0
+
+      rule BagItem(K:K) in (BagItem(K:K) _:Bag) => true
+      rule BagItem(K1:K) in (BagItem(K2:K) B:Bag) => BagItem(K1) in B
+            when K1 =/=K K2
+      rule _ in .Bag => false
+
+      rule K:K in B:Bag => BagItem(K) in B
+endmodule
+
 module COMMON-SEMANTICS-HELPERS-INCLUDE
 	imports COMMON-NOHELPER-INCLUDE
 	// require maudeLib/common-c-builtins
@@ -19,10 +42,10 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	syntax Int ::= base(Int) [function]
 	rule base(loc(Base:Int, _, _)) => Base:Int
 	
-      // TODO(chathhorn): still at a loss here.
-      // syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
-      // syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
-      // rule gatherInnerCells((B:Bag), L:CellLabel) => gatherInnerCells-aux((B:Bag), L:CellLabel, .Set)
+      syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
+      syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
+      // TODO(chathhorn): celllabel, ellided
+      // rule gatherInnerCells(B:Bag, L:CellLabel) => gatherInnerCells-aux(B:Bag, L:CellLabel, .Set)
       // rule gatherInnerCells-aux(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel, _ (.Set => SetItem(K:K)))
       // rule gatherInnerCells-aux(.Bag, _, S:Set) => S
 	
@@ -72,7 +95,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	
 	syntax K ::= getIdOfDeclaration(K) [function]
 	syntax K ::= getIdOfName(K) [function]
-	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(_, List(K:K))))
+	rule getIdOfDeclaration(DeclarationDefinition(InitNameGroup(_, klist(K:K))))
 		=> getIdOfName(K:K)
 	rule getIdOfName(InitName(K:K, _)) => getIdOfName(K:K)
 	rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K)
@@ -192,12 +215,11 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		[structural]
 	
 	// this should probably go in the k prelude
-
-	// rule K:K in (ListItem(K:K) _:List) => true
-	// rule K:K in .List => false
-	// rule K:K in (ListItem(K':K) L:List) => K:K in L:List
-		// when K:K =/=K K':K
-		// [structural]
+	rule K:K in (ListItem(K:K) _:List) => true
+	rule K:K in .List => false
+	rule K:K in (ListItem(K':K) L:List) => K:K in L:List
+		when K:K =/=K K':K
+		[structural]
 	
 	rule [discard]:
 		<k> V:KResult ~> discard => .K ...</k>
@@ -317,7 +339,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 
 	rule [write-string]:
 		<k> writeString(tv(Loc:Int, T:KResult), S:String)
-			=> Computation(*(tv(Loc:Int, t(.Set, pointerType(t(.Set, char))))) 
+			=> Computation((* tv(Loc:Int, t(.Set, pointerType(t(.Set, char))))) 
 				:= tv(asciiString(firstChar(S:String)), t(.Set, char)))
 			~> writeString(tv(Loc:Int +Int 1, T:KResult), butFirstChar(S:String))
 		...</k>
@@ -326,7 +348,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	// fixme this bare 4 needs to be updated to handle different size wchar_ts
 	rule [write-wstring]:
 		<k> writeWString(tv(Loc:Int, T:KResult), (N:Int,, S:KList))
-			=> Computation(*(tv(Loc:Int, t(.Set, pointerType(cfg:wcharut)))) 
+			=> Computation((* tv(Loc:Int, t(.Set, pointerType(cfg:wcharut)))) 
 				:= tv(N:Int, cfg:wcharut))
 			~> writeWString(tv(Loc:Int +Int 4, T:KResult), S:KList)
 		...</k>
@@ -374,6 +396,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 		when K1:K =/=K K2:K
 		[structural]
 	rule .Set contains K:K => false
+		[structural]
 
 	rule hasIntegerType(T:KResult) 
 		=> hasUnsignedIntegerType(T:KResult) orBool hasSignedIntegerType(T:KResult)
@@ -434,67 +457,69 @@ module COMMON-SEMANTICS-HELPERS-MISC
 	rule piece(piece(N:Int, Len:Int), Len:Int) => piece(N:Int, Len:Int) 
 	rule value(tv(V:KList, _)) => V:KList
 	rule type(tv(_, T:KResult)) => T:KResult
+ 	rule isBasicType('t(_,, K:K)) => #if (
+ 		(K:K ==K bool)
+ 		orBool (K:K ==K void)
+ 		orBool (K:K ==K char)
+ 		orBool (K:K ==K short-int)
+ 		orBool (K:K ==K int)
+ 		orBool (K:K ==K long-int)
+ 		orBool (K:K ==K long-long-int)
+ 		orBool (K:K ==K float)
+ 		orBool (K:K ==K double)
+ 		orBool (K:K ==K long-double)
+ 		orBool (K:K ==K signed-char)
+ 		orBool (K:K ==K unsigned-char)
+ 		orBool (K:K ==K unsigned-short-int)
+ 		orBool (K:K ==K unsigned-int)
+ 		orBool (K:K ==K unsigned-long-int)
+ 		orBool (K:K ==K unsigned-long-long-int)
+ 		orBool (K:K ==K no-type)
+ 		orBool (getKLabel(K:K) ==KLabel 'enumType)
+ 		) #then true #else false #fi
+ 		[structural]
 
-	rule isBasicType('t(_,, K:K)) => #if (
-		K:K ==K bool
-		orBool K:K ==K void
-		orBool K:K ==K char
-		orBool K:K ==K short-int
-		orBool K:K ==K int
-		orBool K:K ==K long-int
-		orBool K:K ==K long-long-int
-		orBool K:K ==K float
-		orBool K:K ==K double
-		orBool K:K ==K long-double
-		orBool K:K ==K signed-char
-		orBool K:K ==K unsigned-char
-		orBool K:K ==K unsigned-short-int
-		orBool K:K ==K unsigned-int
-		orBool K:K ==K unsigned-long-int
-		orBool K:K ==K unsigned-long-long-int
-		orBool K:K ==K no-type
-		orBool getKLabel(K:K) ==KLabel 'enumType
-		) #then true #else false #fi
-		[structural]
-		
-	rule setOfTypes => Set(
-		l('arrayType),, 
-		l('bitfieldType),, 
-		l('functionType),, 
-		l('pointerType),, l('structType),, l('unionType),, 
-		l('qualifiedType)
-	) [structural]
+	rule setOfTypes => 
+		SetItem(l('arrayType))
+		SetItem(l('bitfieldType))
+		SetItem(l('functionType))
+		SetItem(l('pointerType))
+            SetItem(l('structType))
+            SetItem(l('unionType))
+		SetItem(l('qualifiedType))
+	[structural]
 	
 	rule assert(true, _:Int) => .K [structural, anywhere]
 endmodule
 
 module COMMON-C-BITSIZE
 	imports COMMON-SEMANTICS-HELPERS-INCLUDE
+
+	syntax K ::= bitSizeofList(VTList)
+	syntax K ::= "bitSizeofList-aux" "(" VT "," Int "," VTList ")" [strict(1)]
 	
-	syntax K ::= bitSizeofList(List{KResult})
-	syntax K ::= "bitSizeofList-aux" "(" K "," Int "," List{KResult} ")" [strict(1)]
-	
-	rule bitSizeofList(L:List{KResult}) => bitSizeofList-aux(.K, 0, L:List{KResult})
+      // TODO(chathhorn)
+	rule bitSizeofList(L:VTList) => bitSizeofList-aux(., 0, L:VTList)
 		[structural]
-	rule bitSizeofList-aux((.K => bitSizeofType(T:KResult)), _:Int, ((T:KResult => .KList),, _:List{KResult}))
+	rule bitSizeofList-aux((. => bitSizeofType(T:VT)), _:Int, ((T:VT => .), _:VTList))
 		[structural]
-	rule bitSizeofList-aux((tv(Len':Int, _) => .K), (Len:Int => Len:Int +Int Len':Int), _)
+	rule bitSizeofList-aux((tv(Len':Int, _) => .), (Len:Int => Len:Int +Int Len':Int), _)
 		[structural]
-	rule bitSizeofList-aux(.K, Len:Int, .KList) => tv(Len:Int, cfg:largestUnsigned)
-		[structural]	
+	rule bitSizeofList-aux(., Len:Int, .VTList) => tv(Len:Int, cfg:largestUnsigned)
+		[structural]
 		
-	syntax K ::= "maxBitSizeofList" "(" List{KResult} ")"
-	syntax K ::= "maxBitSizeofList-aux" "(" List{KResult} "," Int ")"
-	rule maxBitSizeofList(L:List{KResult}) => maxBitSizeofList-aux(L:List{KResult}, 0) [structural, anywhere]
+	syntax K ::= "maxBitSizeofList" "(" KList ")"
+	syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
+	rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L:KList, 0) [structural, anywhere]
 	rule
-		<k> maxBitSizeofList-aux((T:KResult,, L:List{KResult}), N:Int)
+		<k> maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
 			=> bitSizeofType(T:KResult) 
-			~> maxBitSizeofList-aux(L:List{KResult}, N:Int) 
+			~> maxBitSizeofList-aux(L:KList, N:Int) 
 		...</k>
 		[structural] 
 	rule
 		<k> (tv(N':Int, _) => .) 
-			~> maxBitSizeofList-aux(L:List{KResult}, (N:Int => maxInt(N:Int, N':Int))) 
+			~> maxBitSizeofList-aux(L:KList, (N:Int => maxInt(N:Int, N':Int))) 
 		...</k>
 		[structural] 
 	rule
@@ -503,7 +528,7 @@ module COMMON-C-BITSIZE
 	
 	rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
 	rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural, anywhere]
-	rule bitSizeofType(t(_, functionType(_, _:List{KResult}))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
+	rule bitSizeofType(t(_, functionType(_, _:VTList))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
 	rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
 	rule bitSizeofType(t(_, bitfieldType(_, N:Int))) => tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
 	rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural, anywhere]
@@ -511,12 +536,12 @@ module COMMON-C-BITSIZE
 	rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural, anywhere]
 
 	rule
-		<k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:List{KResult}) ...</k>
-		<structs>... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</structs>
+		<k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:VTList) ...</k>
+		<structs>... S:Id |-> aggregateInfo(L:VTList, _, _) ...</structs>
 		[structural] 
 	rule
-		<k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:List{KResult}) ...</k>
-		<structs>... S:Id |-> aggregateInfo(L:List{KResult}, _, _) ...</structs>
+		<k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:VTList) ...</k>
+		<structs>... S:Id |-> aggregateInfo(L:VTList, _, _) ...</structs>
 		[structural]
 		
 	// rule K2Int(N:Int) => N:Int
@@ -530,8 +555,6 @@ module COMMON-C-BITSIZE
 	rule toString(Num:Int) => Int2String(Num:Int)
 	// rule Int2String(sym(N:Int)) => "sym(" +String Int2String(N:Int) +String ")"
 	
-	
-	rule listToK(K:K) => klistToK(getKList(K:K))
 	rule klistToK((K:K,, L:KList)) => K:K ~> klistToK(L:KList)
 	rule klistToK(.KList) => .K
 endmodule
@@ -541,4 +564,5 @@ module COMMON-C-HELPERS
 	imports COMMON-SEMANTICS-HELPERS-INCLUDE
 	imports COMMON-C-BITSIZE
 	imports COMMON-SEMANTICS-HELPERS-MISC
+      imports COMPAT
 endmodule

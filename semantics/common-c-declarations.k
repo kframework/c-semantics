@@ -52,38 +52,42 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<k> figureInit(
 			X:Id, 
 			t(Se:Set, arrayType(T:KResult, Len:Int)), 
-			(SingleInit(Constant(StringLiteral(S:String))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+			(SingleInit(Constant(StringLiteral(S:String))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
 		)
 		...</k>
 		when isCharType(T:KResult)
-		andBool lengthString(S:String) <=Int Len:Int
+		andBool (lengthString(S:String) <=Int Len:Int)
 		[structural]
-	rule
-		<k> figureInit(
-			X:Id, 
-			t(Se:Set, arrayType(T:KResult, Len:Int)), 
-			(SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
-		)
-		...</k>
-		when isWCharType(T:KResult)
-		andBool lengthKList(S:KList) <=Int Len:Int
-		[structural] 
-	
+
+// TODO(chathhorn) wstrings, ellided
+//      rule
+//            <k> figureInit(
+//                  X:Id, 
+//                  t(Se:Set, arrayType(T:KResult, Len:Int)), 
+//                  (SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
+//            )
+//            ...</k>
+//            when isWCharType(T:KResult)
+//            andBool (lengthList S <=Int Len:Int)
+//            [structural] 
+//	
 	rule
 		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
 			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Constant(StringLiteral(S:String)))) 
 		...</k>
 		when isCharType(T:KResult)
 		[structural]
-	rule
-		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
-			=> arrayType(T:KResult, lengthKList(S:KList) +Int 1))), SingleInit(Constant(WStringLiteral(S:KList)))) 
-		...</k>
-		when isWCharType(T:KResult)
-		[structural] 
+
+// TODO(chathhorn) wstrings, ellided
+//	rule
+//		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
+//			=> arrayType(T:KResult, lengthList S:KList +Int 1))), SingleInit(Constant(WStringLiteral(S:KList)))) 
+//		...</k>
+//		when isWCharType(T:KResult)
+//		[structural] 
 		
 	rule
-		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(List(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
 			=> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), SingleInit(Constant(StringLiteral(S:String))))
 		...</k>
 		[structural] 
@@ -119,26 +123,26 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		[structural] 
 	// c1x 6.7.8:11
 	rule
-		<k> figureInit(X:Id, T:KResult, CompoundInit(List(InitFragment(NextInit, SingleInit(K:K)))))
+		<k> figureInit(X:Id, T:KResult, CompoundInit(klist(InitFragment(NextInit, SingleInit(K:K)))))
 			=> figureInit-aux(X:Id, T:KResult, initializer(Computation(AllowWrite(X:Id) := K:K)))
 		...</k>
 		when notBool (isAggregateType(T:KResult) orBool isUnionType(T:KResult))
 		[structural] 
 		
-	rule DeclarationDefinition(InitNameGroup(T:KResult, List((K:K,, K':K,, L:KList))))
-		=> DeclarationDefinition(InitNameGroup(T:KResult, List(K:K)))
-		~> DeclarationDefinition(InitNameGroup(T:KResult, List((K':K,, L:KList))))
+	rule DeclarationDefinition(InitNameGroup(T:KResult, klist((K:K,, K':K,, L:KList))))
+		=> DeclarationDefinition(InitNameGroup(T:KResult, klist(K:K)))
+		~> DeclarationDefinition(InitNameGroup(T:KResult, klist((K':K,, L:KList))))
 		[structural]
 	rule 
-		DeclarationDefinition(InitNameGroup(T:KResult, List(InitName(Name:K, Exp:K))))
-			=> doDeclare(SingleName(T:KResult, Name:K), Exp:K)
+		DeclarationDefinition(InitNameGroup(T:KResult, klist(InitName(N:K, Exp:K))))
+			=> doDeclare(SingleName(T:KResult, N:K), Exp:K)
 		[structural]
 			
-	rule Typedef(NameGroup(T:KResult, List((K:K,, L:KList)))) 
+	rule Typedef(NameGroup(T:KResult, klist((K:K,, L:KList)))) 
 		=> defineType(SingleName(T:KResult, K:K))
-		~> Typedef(NameGroup(T:KResult, List(L:KList)))
+		~> Typedef(NameGroup(T:KResult, klist(L:KList)))
 		[structural]
-	rule Typedef(NameGroup(T:KResult, List(.KList))) => .K
+	rule Typedef(NameGroup(T:KResult, klist(.KList))) => .K
 		[structural]
 
 	rule
@@ -180,10 +184,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		...</k>
 		<externalLocations> Locs:Map </externalLocations> 
 		<currentFunction> F:K </currentFunction>
-		when notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
-		andBool isFunctionType(T:KResult)
-		andBool F:K =/=K File-Scope
-		andBool notBool $hasMapping(Locs:Map, X:Id)
+		when (notBool isIncompleteType(T:KResult)) // I'd like to get rid of this cleanly
+		andBool (isFunctionType(T:KResult))
+		andBool (F:K =/=K File-Scope)
+		andBool (notBool $hasMapping(Locs:Map, X:Id))
 		[structural]
 	rule
 		<k> doDeclare(typedDeclaration(T:KResult, X:Id), K:K)
@@ -291,10 +295,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
 		<nextSharedLoc> Loc:Int => inc(Loc:Int) </nextSharedLoc>
 		<currTU> Tu:K </currTU>
-		when isStaticType(T:KResult)
-		andBool notBool isExternType(T:KResult)
-		andBool K:K =/=K NoInit
-		andBool notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Int))
+		when (isStaticType(T:KResult))
+		andBool (notBool isExternType(T:KResult))
+		andBool (K:K =/=K NoInit)
+		andBool (notBool $hasMapping(Locs:Map, kpair(X:Id, BlockNum:Int)))
 		[structural, large] 
 				
 	// this is essentially defineandinit, but that checks if type has been seen for allocation
@@ -465,19 +469,19 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<nextLoc> Loc:Int => inc(Loc:Int) </nextLoc>
 		<localVariables> Vars:List (. => ListItem(X:Id)) </localVariables>
 		<localAddresses>... .Set => SetItem(Loc:Int) ...</localAddresses>
-		when notBool isIncompleteType(T:KResult)
-		andBool notBool isStaticType(T:KResult)
-		andBool notBool isExternType(T:KResult)
-		andBool notBool X:Id in Vars:List // this should be here statically, but not dynamically
+		when (notBool isIncompleteType(T:KResult))
+		andBool (notBool isStaticType(T:KResult))
+		andBool (notBool isExternType(T:KResult))
+		andBool (notBool X:Id in Vars) // this should be here statically, but not dynamically
 		[structural]
 	rule // same as above, but for the case where the variable has already been declared.  this is seen if we goto earlier in the same block
 		<k> declareOnly(X:Id, T:KResult, noLinkage)
 			=> .K
 		...</k>
 		<localVariables>... ListItem(X:Id) ...</localVariables>
-		when notBool isIncompleteType(T:KResult)
-		andBool notBool isStaticType(T:KResult)
-		andBool notBool isExternType(T:KResult)
+		when (notBool isIncompleteType(T:KResult))
+		andBool (notBool isStaticType(T:KResult))
+		andBool (notBool isExternType(T:KResult))
 		[structural] 
 	
 	/*@ \fromStandard{\source[n1570]{\para{6.2.2}{4}}}{
@@ -615,11 +619,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 	// FIXME check prototypes
 	rule [function-definition]:
 		<k> FunctionDefinition(typedDeclaration(T:KResult, X:Id), Block:K) 
-			=> createNewFun(X:Id, T:KResult, BODY)
-			~> calculateGotoMap(X:Id, BODY)
+			=> createNewFun(X:Id, T:KResult, safeBody(X:Id, Block:K))
+			~> calculateGotoMap(X:Id, safeBody(X:Id, Block:K))
 		...</k>
 		when isFunctionType(T:KResult)
-		where BODY = safeBody(X:Id, Block:K)
 		[structural]
 
 	syntax K ::= "createNewFun" "(" K "," K "," K ")"
@@ -676,7 +679,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		[structural] 
 
 	rule
-		<k> startInit(T:KResult, X:Id, CompoundInit(List(L:KList)))
+		<k> startInit(T:KResult, X:Id, CompoundInit(klist(L:KList)))
 			=> fillInit(L:KList) 
 			~> getInit
 		...</k>
@@ -812,7 +815,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		
 	syntax K ::= "finishCompoundInit" "(" List ")"
 	rule
-		<k> fillInit(CompoundInit(List(L:KList)))
+		<k> fillInit(CompoundInit(klist(L:KList)))
 			=> fillInit(L:KList)
 			// ~> debug
 			~> finishCompoundInit(next ListItem(te(K:K, T:KResult)) Remainder:ListItem)
@@ -890,7 +893,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 	rule [innerType-bitfieldType]:
 		innerType(t(_, bitfieldType(T:KResult, _:Int))) => T:KResult
 	rule [innerType-functionType]:
-		innerType(t(_, functionType(T:KResult, _:List{KResult}))) => T:KResult
+		innerType(t(_, functionType(T:KResult, _:VTList))) => T:KResult
 
 	context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
 	rule
@@ -950,10 +953,10 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		
 	syntax K ::= "initFromStructRHS" "(" K "," Type ")"
 	rule
-		<k> initFromAggregateRHS(K:K, t(S:Set, structType(S:Id)))
-			=> initFromStructRHS(K:K, t(S:Set, structType(S:Id)))
+		<k> initFromAggregateRHS(K:K, t(S:Set, structType(I:Id)))
+			=> initFromStructRHS(K:K, t(S:Set, structType(I:Id)))
 		...</k>
-		<currentSubObject> .List => findStruct(t(S:Set, structType(S:Id))) ...</currentSubObject>
+		<currentSubObject> .List => findStruct(t(S:Set, structType(I:Id))) ...</currentSubObject>
 		[structural] 
 		
 	syntax ListItem ::= "findStruct" "(" Type ")"
@@ -990,14 +993,15 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) ==Int Len:Int
 		[structural] 
-	rule [fillInit-wstring-array-eq]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList))))
-		...</k>
-		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
-		when isWCharType(T:KResult)
-		andBool lengthKList(S:KList) ==Int Len:Int
-		[structural] 
+// TODO(chathhorn): wstrings, ellided
+// 	rule [fillInit-wstring-array-eq]:
+// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+// 			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList))))
+// 		...</k>
+// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
+// 		when isWCharType(T:KResult)
+// 		andBool lengthList S:KList  ==Int Len:Int
+// 		[structural] 
 	rule [fillInit-string-array-lt]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
@@ -1006,14 +1010,15 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <Int Len:Int
 		[structural] 
-	rule [fillInit-wstring-array-lt]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-			=> fillInit(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
-		...</k>
-		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
-		when isWCharType(T:KResult)
-		andBool lengthKList(S:KList) <Int Len:Int
-		[structural] 
+// TODO(chathhorn): wstrings, ellided
+// 	rule [fillInit-wstring-array-lt]:
+// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+// 			=> fillInit(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
+// 		...</k>
+// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
+// 		when isWCharType(T:KResult)
+// 		andBool lengthList S:KList <Int Len:Int
+// 		[structural] 
 	rule [fillInit-string-char]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
@@ -1022,14 +1027,15 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		[structural] 
-	rule [fillInit-wstring-wchar]:
-		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
-		...</k>
-		//<br/>
-		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
-		when isWCharType(T:KResult)
-		[structural]
+// TODO(chathhorn): wstrings, ellided
+// 	rule [fillInit-wstring-wchar]:
+// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+// 			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
+// 		...</k>
+// 		//<br/>
+// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
+// 		when isWCharType(T:KResult)
+// 		[structural]
 	rule [fillInitAux-string-some]:
 		<k> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit(initHead(S:String, T:KResult)) 
@@ -1045,7 +1051,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 	syntax K ::= "initTail" "(" K ")"
 	rule
 		initHead(S:String, T:KResult)
-		=> SingleInit(tv(charToAscii(firstChar(S:String)), t(getModifiers(T:KResult), char)))
+		=> SingleInit(tv(asciiString(firstChar(S:String)), t(getModifiers(T:KResult), char)))
 	
 	rule 
 		initTail(S:String)
@@ -1093,38 +1099,39 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
 	imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE 
 	
 	syntax K ::= "canonicalizeTranslationUnitVariables"
-	rule [unpack-TranslationUnit]:
-		<k> TranslationUnit(Name:String, Strings:K, K:K, P:String) 
-			=> preDeclareStrings(Strings:K)
-			~> klistToK(eraseKLabel('StmtCons, K:K))
-		...</k>
-		<currTU> _ => Name:String </currTU>
-		<declarationOrder> DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </declarationOrder>
-		<internalLocations> ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </internalLocations>
-		<br/>
-		<funTUs> Funs:Map => Funs:Map[Map(.) / Name:String] </funTUs>
-		<translationUnits>... . => BagItem(Name:String) ...</translationUnits>
-		<preLinkage> Linkage:Map => Linkage:Map[Map(.) / Name:String] </preLinkage>
-		<preTypes> Types:Map => Types:Map[Map(.) / Name:String] </preTypes>
-		<br/>
-		<internalDefinitions> Def:Map => Def:Map[Map(.) / Name:String] </internalDefinitions>
-		<genv> Env:Map => Env:Map[Map(.) / Name:String] </genv>
-		<gtypes> Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</gtypes>
-		<programText> M:Map => M:Map[P:String / Name:String] </programText>
-		when notBool $hasMapping(Env:Map, Name:String)
-		[structural, large]
+      // TODO(chathhorn): eraseKLabel, ellided
+	// rule [unpack-TranslationUnit]:
+	// 	<k> TranslationUnit(Name:String, Strings:K, K:K, P:String) 
+	// 		=> preDeclareStrings(Strings:K)
+	// 		~> klistToK(eraseKLabel('StmtCons, K:K))
+	// 	...</k>
+	// 	<currTU> _ => Name:String </currTU>
+	// 	<declarationOrder> DeclOrder:Map => DeclOrder:Map[ListToK(.List) / Name:String] </declarationOrder>
+	// 	<internalLocations> ExtLoc:Map => ExtLoc:Map[Map(.) / Name:String] </internalLocations>
+	// 	<br/>
+	// 	<funTUs> Funs:Map => Funs:Map[Map(.) / Name:String] </funTUs>
+	// 	<translationUnits>... . => BagItem(Name:String) ...</translationUnits>
+	// 	<preLinkage> Linkage:Map => Linkage:Map[Map(.) / Name:String] </preLinkage>
+	// 	<preTypes> Types:Map => Types:Map[Map(.) / Name:String] </preTypes>
+	// 	<br/>
+	// 	<internalDefinitions> Def:Map => Def:Map[Map(.) / Name:String] </internalDefinitions>
+	// 	<genv> Env:Map => Env:Map[Map(.) / Name:String] </genv>
+	// 	<gtypes> Gtypes:Map => Gtypes:Map[Map(.) / Name:String]</gtypes>
+	// 	<programText> M:Map => M:Map[P:String / Name:String] </programText>
+	// 	when notBool $hasMapping(Env:Map, Name:String)
+	// 	[structural, large]
 		
 	syntax K ::= "preDeclareStrings" "(" K ")"
 	
 	rule
-		<k> preDeclareStrings(List((K:K,, L:KList)))
+		<k> preDeclareStrings(klist((K:K,, L:KList)))
 			=> K:K
 			~> discard
-			~> preDeclareStrings(List(L:KList))
+			~> preDeclareStrings(klist(L:KList))
 		...</k>
 		[structural]
 	rule
-		<k> preDeclareStrings(List(.KList)) => .K ...</k>
+		<k> preDeclareStrings(klist(.KList)) => .K ...</k>
 		[structural]
 	
 	syntax K ::= "resolve" "(" K ")"
@@ -1391,20 +1398,20 @@ module COMMON-SEMANTICS-DECLARATIONS-ENUMS
 		<k> fillEnums(K:K) => fillEnums-aux(K:K, tv(0, t(.Set, int))) ...</k> 
 		[structural]
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItem(E:Id),, L:KList))), K:K) 
+		<k> fillEnums-aux(EnumDef(X:Id, klist((EnumItem(E:Id),, L:KList))), K:K) 
 			=> doDeclare(typedDeclaration(t(.Set, int), E:Id), SingleInit(K:K))
-			~> fillEnums-aux(EnumDef(X:Id, List(L:KList)), K:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:Id, klist(L:KList)), K:K + tv(1, t(.Set, int)))
 		...</k>
 		[structural] 
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List((EnumItemInit(E:Id, Exp:K),, L:KList))), _)
+		<k> fillEnums-aux(EnumDef(X:Id, klist((EnumItemInit(E:Id, Exp:K),, L:KList))), _)
 			=> doDeclare(typedDeclaration(t(.Set, int), E:Id), SingleInit(Exp:K))
-			~> fillEnums-aux(EnumDef(X:Id, List(L:KList)), Exp:K + tv(1, t(.Set, int)))
+			~> fillEnums-aux(EnumDef(X:Id, klist(L:KList)), Exp:K + tv(1, t(.Set, int)))
 		...</k>
 		when Exp:K =/=K NothingExpression
 		[structural] 
 	rule
-		<k> fillEnums-aux(EnumDef(X:Id, List(.KList)), _) => .K ...</k> 
+		<k> fillEnums-aux(EnumDef(X:Id, klist(.KList)), _) => .K ...</k> 
 		[structural] 
 endmodule
 

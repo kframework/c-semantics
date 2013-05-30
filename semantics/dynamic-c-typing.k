@@ -104,7 +104,7 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		[structural]
 	rule
 		<type> Constant(WStringLiteral(L:KList)) 
-			=> t(.Set, arrayType(cfg:wcharut, lengthKList(L:KList) +Int 1)) 
+			=> t(.Set, arrayType(cfg:wcharut, (lengthKList L:KList) +Int 1)) 
 		...</type>
 		[structural]
 		
@@ -117,7 +117,7 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 	The left operand of a comma operator is evaluated as a void expression; there is a sequence point between its evaluation and that of the right operand. Then the right operand is evaluated; the result has its type and value.
 	}*/
 	rule
-		<type> Comma(List((_,, K:K))) => K:K ...</type>
+		<type> Comma(klist((_,, K:K))) => K:K ...</type>
 		[structural]
 
 	/*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{5}}}{
@@ -175,10 +175,11 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		[structural]
-	rule [type-ternary-identical]:
-		<type> _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</type>
-		when notBool isArrayType(T:TypeResult)
-		[structural]
+      // TODO(chathhorn): typeresult, ellided
+	// rule [type-ternary-identical]:
+	// 	<type> _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</type>
+	// 	when notBool isArrayType(T:TypeResult)
+	// 	[structural]
 		
 	rule [type-ternary-array-left]: 
 		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
@@ -217,10 +218,10 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		<type> L:KLabel(T:KResult) => T:KResult ...</type>
 		when isPointerType(T:KResult)
 		andBool (
-			L:KLabel ==KLabel ('_++)
-			orBool L:KLabel ==KLabel ('_--)
-			orBool L:KLabel ==KLabel ('--_)
-			orBool L:KLabel ==KLabel ('++_)
+			(L:KLabel ==KLabel ('_++))
+			orBool (L:KLabel ==KLabel ('_--))
+			orBool (L:KLabel ==KLabel ('--_))
+			orBool (L:KLabel ==KLabel ('++_))
 		)
 		[structural]
 	
@@ -230,15 +231,16 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		
 	rule
 		<type> L:KLabel(_:K,, _:K) => t(.Set, int) ...</type>
-		when L:KLabel ==KLabel '_==_
-		orBool L:KLabel ==KLabel '_!=_
-		orBool L:KLabel ==KLabel '_&&_
-		orBool L:KLabel ==KLabel '_||_
+		when (L:KLabel ==KLabel '_==_)
+		orBool (L:KLabel ==KLabel '_!=_)
+		orBool (L:KLabel ==KLabel '_&&_)
+		orBool (L:KLabel ==KLabel '_||_)
 		[structural]
-		
-	rule [type-address]:
-		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
-		[structural]
+
+// TODO(chathhorn): typeresult, ellided
+//	rule [type-address]:
+//		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
+//		[structural]
 		
 endmodule
 
