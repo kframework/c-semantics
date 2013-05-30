@@ -22,7 +22,7 @@ K_FILES = $(K_BASE_FILES) $(K_MAUDE)
 
 #chathhorn
 #COMPILE_C = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "interpRule"
-COMPILE_C = $(K_MAUDE) c.k -l C -transition "interpRule"
+COMPILE_C = $(K_MAUDE) -v c.k -l C -transition "interpRule"
 
 #chathhorn
 #COMPILE_C_ND = $(K_MAUDE) c.k -u -language C -anywhere "anywhere" -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"

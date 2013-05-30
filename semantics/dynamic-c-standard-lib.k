@@ -65,8 +65,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 		[structural]
 		
 	rule [prepareBuiltin]:
-		<k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:List{KResult})))
-			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:List{KResult})))
+		<k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:VTList)))
+			=> Return(prepareBuiltin(F:Id, idsFromDeclList(L:VTList)))
 		...</k>
 		[structural]
 		
@@ -84,60 +84,60 @@ endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-MATH
 	imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
-	
-	rule [sqrt]:
-		<k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
-			=> tv(sqrtFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [log]:
-		<k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
-			=> tv(logFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [exp]:
-		<k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
-			=> tv(expFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [atan]:
-		<k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
-			=> tv(atanFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [asin]:
-		<k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
-			=> tv(asinFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [atan2]:
-		<k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
-			=> tv(atan2Float(F:Float, F':Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [tan]:
-		<k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
-			=> tv(tanFloat(F:Float), t(.Set, double))
-		...</k>
-	[structural]
-
-	rule [floor]:
-		<k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
-			=> tv(floorFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
-
-	rule [cos]:
-		<k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
-			=> tv(cosFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
+// TODO(chathhorn): math, ellided
+//	rule [sqrt]:
+//		<k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
+//			=> tv(sqrtFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [log]:
+//		<k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
+//			=> tv(logFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [exp]:
+//		<k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
+//			=> tv(expFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [atan]:
+//		<k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
+//			=> tv(atanFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [asin]:
+//		<k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
+//			=> tv(asinFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [atan2]:
+//		<k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+//			=> tv(atan2Float(F:Float, F':Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [tan]:
+//		<k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
+//			=> tv(tanFloat(F:Float), t(.Set, double))
+//		...</k>
+//	[structural]
+//
+//	rule [floor]:
+//		<k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
+//			=> tv(floorFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
+//
+//	rule [cos]:
+//		<k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
+//			=> tv(cosFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
 
 	rule [fmod]:
 		<k> prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
@@ -145,11 +145,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH
 		...</k>
 		[structural]
 
-	rule [sin]:
-		<k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
-			=> tv(sinFloat(F:Float), t(.Set, double))
-		...</k>
-		[structural]
+// TODO(chathhorn): math, ellided
+//	rule [sin]:
+//		<k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
+//			=> tv(sinFloat(F:Float), t(.Set, double))
+//		...</k>
+//		[structural]
 
 endmodule
 
@@ -171,7 +172,7 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 	// The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
 	// fixme check bounds
 	// fixme obviously need to rework configuration to make this easy
-	syntax K ::= "Bag" "(" Bag ")"
+	syntax K ::= "bag" "(" Bag ")"
 	
 	syntax K ::= "ignoreLocals"
 	
@@ -210,21 +211,22 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 	If the invocation appears in any other context, the behavior is undefined.
 	}*/
 	// fixme doesn't check if loc:Int is const
-	rule [setjmp]:
-		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Int, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
-			=> ignoreLocals
-				~> writeByte(Loc:Int, Bag(
-					C:Bag
-					<continuation> K:K </continuation>
-				))
-				~> tv(0, t(.Set, int))
-			)
-			~> K:K
-		</k>
-		<threadLocal>
-			C:Bag
-		</threadLocal>
-		[structural]
+// TODO(chathhorn): xml, ellided
+//	rule [setjmp]:
+//		<k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Int, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
+//			=> ignoreLocals
+//				~> writeByte(Loc:Int, bag(
+//					C:Bag
+//					<continuation> K:K </continuation>
+//				))
+//				~> tv(0, t(.Set, int))
+//			)
+//			~> K:K
+//		</k>
+//		<threadLocal>
+//			C:Bag
+//		</threadLocal>
+//		[structural]
 
 	syntax K ::= "longjmp-aux" "(" K "," K ")" [strict]
 	rule [longjmp-prepare]:
@@ -234,17 +236,18 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
 		[structural]
 	
 	// fixme: memory leak here with extra ignoreLocals.  needed for recursive setjmp/longjmp as in Looping.c
-	rule [longjmp]:
-		<k> longjmp-aux(tv(Bag(
-					<continuation> K:K </continuation>
-					C:Bag
-			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
-			=> ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
-		</k>
-		<threadLocal>
-			_ => C:Bag
-		</threadLocal>
-		[structural]
+// TODO(chathhorn): xml, ellided
+//	rule [longjmp]:
+//		<k> longjmp-aux(tv(bag(
+//					<continuation> K:K </continuation>
+//					C:Bag
+//			), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
+//			=> ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
+//		</k>
+//		<threadLocal>
+//			_ => C:Bag
+//		</threadLocal>
+//		[structural]
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-STDARG
@@ -680,7 +683,7 @@ The \cinline{int} argument is converted to signed decimal in the style \emph{[-]
 	rule [format-%d]:
 		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
-		<formatResult>... .List => ListItem(Rat2String(D:Int, 10)) </formatResult>
+		<formatResult>... .List => ListItem(Int2String(D:Int)) </formatResult>
 		<formatState> "%d" => "reset" </formatState>
 		[structural]
 		
@@ -697,12 +700,13 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<format> ListItem("o") => .List ...</format>
 		<formatState> "%" => "%o" </formatState>
 		[structural]
-	rule [format-%o]:
-		<k> formatter-aux(_) ...</k>
-		<formatArg> D:Int => .K </formatArg>
-		<formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
-		<formatState> "%o" => "reset" </formatState>
-		[structural]
+// TODO(chathhorn): hex, ellided
+//	rule [format-%o]:
+//		<k> formatter-aux(_) ...</k>
+//		<formatArg> D:Int => .K </formatArg>
+//		<formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
+//		<formatState> "%o" => "reset" </formatState>
+//		[structural]
 	rule [format-%u-start]:
 		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -713,7 +717,7 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 	rule [format-%u]:
 		<k> formatter-aux(_) ...</k>
 		<formatArg> D:Int => .K </formatArg>
-		<formatResult>... .List => ListItem(Rat2String(D:Int, 10)) </formatResult>
+		<formatResult>... .List => ListItem(Int2String(D:Int)) </formatResult>
 		<formatState> "%u" => "reset" </formatState>
 		[structural]
 	rule [format-%x-start]:
@@ -723,12 +727,13 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<format> ListItem("x") => .List ...</format>
 		<formatState> "%" => "%x" </formatState>
 		[structural]
-	rule [format-%x]:
-		<k> formatter-aux(_) ...</k>
-		<formatArg> D:Int => .K </formatArg>
-		<formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
-		<formatState> "%x" => "reset" </formatState>
-		[structural]
+// TODO(chathhorn): hex, ellided
+//	rule [format-%x]:
+//		<k> formatter-aux(_) ...</k>
+//		<formatArg> D:Int => .K </formatArg>
+//		<formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
+//		<formatState> "%x" => "reset" </formatState>
+//		[structural]
 	rule [format-%X-start]:
 		<k> formatter-aux(V:KResult)
 			=> formatter-next(V:KResult)
@@ -736,12 +741,13 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 		<format> ListItem("X") => .List ...</format>
 		<formatState> "%" => "%X" </formatState>
 		[structural]
-	rule [format-%X]:
-		<k> formatter-aux(_) ...</k>
-		<formatArg> D:Int => .K </formatArg>
-		<formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
-		<formatState> "%X" => "reset" </formatState>
-		[structural]
+// TODO(chathhorn): hex, ellided
+//	rule [format-%X]:
+//		<k> formatter-aux(_) ...</k>
+//		<formatArg> D:Int => .K </formatArg>
+//		<formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
+//		<formatState> "%X" => "reset" </formatState>
+//		[structural]
 
 	/*@ \source[n1570]{\para{7.21.6.1}{8}}
 \begin{description}
@@ -1135,11 +1141,11 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<thread>...
 			<nextLoc> firstLoc(ThreadId:Int) </nextLoc>
 			<threadId> ThreadId:Int </threadId>
-			<k> Call(ThreadFuncPointer:KResult, List(ThreadArg:KResult)) </k>
+			<k> Call(ThreadFuncPointer:KResult, klist(ThreadArg:KResult)) </k>
 			<env> Env:Map </env>
 			<currTU> Tu:K </currTU>
 		...</thread>)
-		[large computational]
+		[large, computational]
 		
 	rule [thrd-current]:
 		<k> prepareBuiltin((Identifier("thrd_current")), .KList)
@@ -1171,7 +1177,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		// //<detachingMap> Detaching:Map </detachingMap>
 		// when ThreadId:Int in keys Joining:Map
 		// //orBool ThreadId:Int in keys Detaching:Map
-		// [large computational]
+		// [large, computational]
 	
 	// at this point, we've already "locked" the join/detach.  This is the blocking part
 	// rule [thrd-join-null]:
@@ -1231,8 +1237,8 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<mutexes>... Loc:Int |-> Type:Int ...</mutexes>
 		<glocks> B:Bag (.Bag => BagItem(Loc:Int)) </glocks>
 		<locks>... .Bag => BagItem(Loc:Int) ...</locks>
-		when notBool Loc:Int in B:Bag
-		andBool Type:Int ==Int cfg:mtxPlain
+		when (notBool Loc:Int in B:Bag)
+		andBool (Type:Int ==Int cfg:mtxPlain)
 		[computational]
 	rule [mtx-unlock]:
 		<k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))

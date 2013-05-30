@@ -7,6 +7,24 @@ require "common-c-declarations.k"
 require "common-c-typing.k"
 require "common-c-configuration.k"
 
+module COMPAT-SYNTAX
+	imports COMMON-INCOMING-MODULES 
+
+      syntax VT ::= Value | Type
+      syntax VTList ::= List{VT, ","}
+
+      syntax Bool ::= Bag "==Bag" Bag [function]
+      syntax Bool ::= Bag "=/=Bag" Bag [function]
+
+      syntax Bag ::= toBag(List) [function]
+                   | toBag(KList) [function]
+
+      syntax Int ::= "lengthKList" KList [function]
+
+      syntax Bool ::= K "in" Bag [function]
+                    | BagItem "in" Bag [function]
+endmodule
+
 module COMMON-INCOMING-MODULES
 	imports K
 	imports C-SYNTAX 
@@ -22,9 +40,9 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax BaseValue ::= Int | Float
 	syntax C ::= BaseValue | Type | Value
 	syntax KResult ::= Value | Type
-	
-	// fixme super sketchy
+
       // TODO(chathhorn): surely not necessary?
+	// fixme super sketchy
 	// define true orBool _ => true
 	// define _ orBool true => true
 	// define false andBool _ => false
@@ -41,6 +59,7 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex(\terminal{typedDecl}\!({#1},{#2}\!))] // would rather this be KResult, but can't get the subsorting to work
 	
 	syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+      syntax "DeclType" -/- [a-zA-Z\:]
 	// op 'isTypeResult_ : K -> Bool 
 	syntax Set ::= "setOfTypes" [function]
 	
@@ -151,7 +170,6 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax K ::= "makeUnwritableVar" "(" K ")"
 	context makeUnwritableSubObject((HOLE => peval(HOLE)))
 	
-	syntax K ::= "listToK" "(" K ")"
 	syntax K ::= "klistToK" "(" KList ")" 
 	syntax K ::= "UnknownCabsLoc"
 	
@@ -175,7 +193,7 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax SimpleType ::= "incompleteArrayType" "(" Type ")" // [ctor] 
 	syntax SimpleType ::= "flexibleArrayType" "(" Type ")" // [ctor] 
 	syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" // [ctor] 
-	syntax SimpleType ::= "functionType" "(" Type "," List{KResult} ")" // [ctor] 
+	syntax SimpleType ::= "functionType" "(" Type "," KList ")" // [ctor] 
 	syntax SimpleType ::= "pointerType" "(" Type ")" // [ctor] 
 	syntax SimpleType ::= "structType" "(" Id ")" // [ctor] 
 	syntax SimpleType ::= "unionType" "(" Id ")" // [ctor] 
@@ -199,13 +217,24 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax K ::= "l" "(" KLabel ")"
 	// metadata "wrapper=(builtin)"
 	syntax Bool ::= Set "contains" K [function]
+
+	syntax Bool ::= K "in" List [function] // chathhorn
 	
 	syntax Set ::= "assignmentLabels"
 	rule 
-		assignmentLabels => Set(
-			l('_:=_),, l('_*=_),, l('_/=_),, l('_%=_),, l('_+=_),, l('_-=_),, 
-			l('_<<=_),, l('_>>=_),, l('_&=_),, l('_^=_),, l('_|=_)
-		) [macro]
+		assignmentLabels => 
+			SetItem(l('_:=_))
+                  SetItem(l('_*=_))
+                  SetItem(l('_/=_))
+                  SetItem(l('_%=_))
+                  SetItem(l('_+=_))
+                  SetItem(l('_-=_))
+			SetItem(l('_<<=_))
+                  SetItem(l('_>>=_))
+                  SetItem(l('_&=_))
+                  SetItem(l('_^=_))
+                  SetItem(l('_|=_))
+		[macro]
 	
 	syntax Set ::= "getModifiers" "(" K ")" [function]
 	
@@ -220,7 +249,7 @@ module COMMON-SEMANTIC-SYNTAX
 		when notBool Const in S:Set
 		[structural]
 	
-	syntax K ::= "bind" "(" List{KResult} "," List{KResult} ")"
+	syntax K ::= "bind" "(" VTList "," VTList ")"
 	syntax Value ::= "tv" "(" KList "," Type ")" [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 	syntax Value ::= "lv" "(" KList "," Type ")"
 	syntax K ::= "concretize" "(" Type "," K ")" [strict(2)] 
@@ -343,7 +372,7 @@ module COMMON-C-SETTINGS
 	syntax Type ::= "cfg:wcharut" [function]
 	rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int)
 	
-	syntax Type ::= "simpleType" [function]
+	syntax SimpleType ::= simpleType(Type) [function]
 	rule simpleType(t(_, T:K)) => T:K
 	
 	syntax Type ::= "cfg:largestUnsigned" [function]
@@ -367,12 +396,14 @@ endmodule
 module COMMON-NOHELPER-INCLUDE
 	imports COMMON-SEMANTIC-SYNTAX
 	imports COMMON-C-SETTINGS
+      imports COMPAT-SYNTAX
 endmodule
 
 
 module COMMON-INCLUDE
 	imports COMMON-NOHELPER-INCLUDE
 	imports COMMON-C-HELPERS
+      imports COMPAT-SYNTAX
 endmodule
 
 module COMMON-C-SEMANTICS-MISC

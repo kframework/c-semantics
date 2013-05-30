@@ -90,7 +90,7 @@ module DYNAMIC-SEMANTICS-BLOCKS
 	A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (imports storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
 	}*/
 	rule [dissolve-block]:
-		<k> Block(BlockNum:Int, _, List(Statements:KList)) => klistToK(Statements:KList) ...</k>
+		<k> Block(BlockNum:Int, _, klist(Statements:KList)) => klistToK(Statements:KList) ...</k>
 		<blockHistory> .List => ListItem(BlockNum:Int) ...</blockHistory>
 		[structural]
 endmodule
@@ -412,7 +412,7 @@ module DYNAMIC-SEMANTICS-GOTO
 	
 	//  We've made it to the block above the target
 	rule
-		<k> L:KLabel(gotoObject(sIntDepth:Int, 
+		<k> L:KLabel(gotoObject(SIntDepth:Int, 
 				(ListItem(TargetBlock:Int) BlockHistory:List),
 				K:K, 
 				LoopStack:List, 
@@ -427,9 +427,9 @@ module DYNAMIC-SEMANTICS-GOTO
 		<nestingDepth> Depth:Int </nestingDepth>
 		<blockHistory> BlockHistory:List </blockHistory>
 		<loopStack> _ => LoopStack:List </loopStack>
-		when (L:KLabel ==KLabel 'processGoto
-		orBool L:KLabel ==KLabel 'processGotoDown)
-		andBool sIntDepth:Int ==Int Depth:Int +Int 1
+		when ((L:KLabel ==KLabel 'processGoto)
+		orBool (L:KLabel ==KLabel 'processGotoDown))
+		andBool (SIntDepth:Int ==Int Depth:Int +Int 1)
 		[structural] 
 		
 	syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
@@ -581,33 +581,34 @@ module DYNAMIC-SEMANTICS-RETURN
 		[structural] 
 
 	//  this is used for returns with no return value as well, since we return "emptyValue", which will hopefully be cast to void
-	rule [return]: 
-		<k> Return(V:KResult) ~> _
-			=> sequencePoint 
-			~> cast(T:KResult, V:KResult) 
-			~> K:K
-		</k>
-		<gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
-		<br/>
-		<control>
-			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
-			(<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)
-			<currentFunction> (F:Id => CurrFun:K) </currentFunction>
-			<currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
-			(<currTU> Tu:K </currTU> => .Bag)
-			(<blockStack> .List </blockStack> => .Bag)
-			(_ => C:Bag)
-		</control>
-		<br/>
-		<callStack>
-			ListItem(
-				<continuation> K:K </continuation>
-				C:Bag
-				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-			) => .List
-		...</callStack>
-		[structural, large] 
+      // TODO(chathhorn): xml, ellided
+//	rule [return]: 
+//		<k> Return(V:KResult) ~> _
+//			=> sequencePoint 
+//			~> cast(T:KResult, V:KResult) 
+//			~> K:K
+//		</k>
+//		<gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
+//		<br/>
+//		<control>
+//			//  these cells get replaced by the ones in C:Bag, so we can delete them when we match them
+//			(<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)
+//			<currentFunction> (F:Id => CurrFun:K) </currentFunction>
+//			<currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
+//			(<currTU> Tu:K </currTU> => .Bag)
+//			(<blockStack> .List </blockStack> => .Bag)
+//			(_ => C:Bag)
+//		</control>
+//		<br/>
+//		<callStack>
+//			ListItem(
+//				<continuation> K:K </continuation>
+//				C:Bag
+//				<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+//				<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+//			) => .List
+//		...</callStack>
+//		[structural, large] 
 endmodule
 
 module DYNAMIC-SEMANTICS-STATEMENTS-MISC

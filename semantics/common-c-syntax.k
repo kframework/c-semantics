@@ -12,8 +12,8 @@ module COMMON-C-SYNTAX
 	
 	// sort C
 	syntax C ::= Id
-      // chathhorn
-	syntax C ::= "list" "(" KList ")"
+      // chathhorn (List => klist)
+	syntax C ::= "klist" "(" KList ")"
 	// hybrid doesn't work with list operator, and strict doesn't do what's expected
 	
 	syntax K ::= "StmtCons" "(" K "," K ")"
@@ -106,10 +106,10 @@ type typeSpecifier = (* Merge all specifiers into one type *)
 */	
 	syntax TypeSpecifier ::= "StructRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")" // new // Id, List
-	context StructDef(_:Id, list((_:KList,, HOLE,, _:KList)))
+	context StructDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
 	syntax TypeSpecifier ::= "UnionRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")" // new // Id, List
-	context UnionDef(_:Id, list((_:KList,, HOLE,, _:KList)))
+	context UnionDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
 	syntax TypeSpecifier ::= "EnumRef" "(" Id ")" // new
 	syntax TypeSpecifier ::= "EnumDef" "(" Id "," K ")" // new // Id, List
 	syntax TypeSpecifier ::= "TypeofExpression" "(" K ")"
@@ -164,7 +164,8 @@ and spec_elem =
 	and specifier = spec_elem list
 */
 	syntax Specifier ::= "Specifier" "(" K ")"
-	context Specifier(list((_:KList,, HOLE,, _:KList)))
+      syntax "Specifier" -/- [a-zA-Z\:]
+	context Specifier(klist((_:KList,, HOLE,, _:KList)))
 	
 /*
 and decl_type =
@@ -192,7 +193,7 @@ and decl_type =
 	context ArrayType(_, (HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
 	syntax DeclType ::= "PointerType" "(" K ")" [strict]
 	syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [strict(1)] // K, List, Bool
-	context Prototype(_, list((_:KList,, HOLE,, _:KList)), _:Bool)
+	context Prototype(_, klist((_:KList,, HOLE,, _:KList)), _:Bool)
 	
 	syntax K ::= "NotVariadic"
 	syntax K ::= "Variadic"
@@ -202,7 +203,7 @@ and decl_type =
 and name_group = specifier * name list
 */
 	syntax NameGroup ::= "NameGroup" "(" K "," K ")" [strict(1)] // K, List
-	context NameGroup(_, list((_:KList,, HOLE,, _:KList)))
+	context NameGroup(_, klist((_:KList,, HOLE,, _:KList)))
 	
 /*
 	(* The optional expression is the bitfield *)
@@ -227,7 +228,9 @@ and init_name_group = specifier * init_name list
 	(* the string, and decl_type will be PTR([], JUSTBASE) *)
 and name = String * decl_type * attribute list * cabsloc
 */
+      // TODO(chathhorn): better solution?
 	syntax Name ::= "Name" "(" K "," K ")" // first argument is id, second is basetype
+      syntax "Name" -/- [a-zA-Z\:]
 	syntax K ::= "AnonymousName" // new, argument is type
 	syntax Id ::= "#NoName" // new
 	// [metadata "latex=(renameTo \\#NoName)"] 
@@ -282,6 +285,7 @@ and enum_item = String * expression * cabsloc
 	syntax PureDefinition ::= "GlobAsm" "(" String ")"
 	syntax PureDefinition ::= "Pragma" "(" K ")"
 	syntax PureDefinition ::= "Linkage" "(" String "," K ")" // seems to be unused
+      syntax "Linkage" -/- [a-zA-Z\:]
 	syntax PureDefinition ::= "Transformer" "(" K "," K ")" // seems to be unused
 	syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
 	syntax PureDefinition ::= "LTLAnnotation" "(" K ")" // name
@@ -325,6 +329,7 @@ and block =
 	} 
 */
 	syntax Block ::= "Block" "(" Int "," K "," K ")" // Int, list, list
+      syntax "Block" -/- [a-zA-Z\:]
 
 /*
 and statement =
@@ -357,6 +362,7 @@ and statement =
 	syntax PureStatement ::= "Break"
 	syntax PureStatement ::= "Continue"
 	syntax PureStatement ::= "Return" "(" K ")"
+      syntax "Return" -/- [a-zA-Z\:]
 	context Return((HOLE => reval(HOLE)))
 /*
 	| SWITCH of expression * statement * cabsloc
@@ -376,6 +382,7 @@ and statement =
 	| DEFINITION of definition (*definition or declaration of a variable or type*)
 */
 	syntax PureStatement ::= "Label" "(" Id "," K ")"
+      syntax "Label" -/- [a-zA-Z\:]
 	syntax PureStatement ::= "Goto" "(" K ")" // Id
 	syntax PureStatement ::= "CompGoto" "(" K ")"
 	
@@ -536,12 +543,12 @@ and unary_operator =
       // type-strict=(1)
 	syntax Expression ::= "Call" "(" K "," K ")" // K, List
 	context Call((HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
-	context Call(_, list((_:KList,, (HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
+	context Call(_, klist((_:KList,, (HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
 	| COMMA of expression list
 */
 	syntax Expression ::= "Comma" "(" K ")" // List
-	context Comma(list(((HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
+	context Comma(klist(((HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
 	| CONSTANT of constant
 	| PAREN of expression
@@ -598,13 +605,13 @@ and constant =
 	syntax IntConstant ::= "DecimalFloatConstant" "(" String "," Int "," Float ")" // new; significand, exponent, approx
 	syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")" // new; significand, exponent, approx
 	
-      // TODO(chathhorn) @@@!!!!!AAH
-	//syntax Constant ::= "U" "(" K ")" // new
-	//syntax Constant ::= "L" "(" K ")" // new
-	//syntax Constant ::= "F" "(" K ")" // new
-	//syntax Constant ::= "LL" "(" K ")" // new
-	//syntax Constant ::= "UL" "(" K ")" // new
-	//syntax Constant ::= "ULL" "(" K ")" // new
+	syntax Constant ::= "ConstU" "(" K ")" // new
+	syntax Constant ::= "ConstL" "(" K ")" // new
+	syntax Constant ::= "ConstF" "(" K ")" // new
+	syntax Constant ::= "ConstLL" "(" K ")" // new
+	syntax Constant ::= "ConstUL" "(" K ")" // new
+	syntax Constant ::= "ConstULL" "(" K ")" // new
+
 	syntax Constant ::= "NoSuffix" "(" K ")" // new
 	
 	syntax Constant ::= "CharLiteral" "(" Int ")"
