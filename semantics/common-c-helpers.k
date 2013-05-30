@@ -3,7 +3,7 @@ require "common-c-semantics.k"
 module COMPAT
 	imports COMMON-SEMANTICS-HELPERS-INCLUDE
 
-      rule X:Bag ==Bag Y:Bag => Bag2K(X) ==K Bag2K(Y)
+      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
       rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
 
       rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
@@ -15,12 +15,15 @@ module COMPAT
       rule lengthKList (K:K,, Kl:KList) => 1 + lengthKList Kl
       rule lengthKList .KList => 0
 
-      rule BagItem(K:K) in (BagItem(K:K) _:Bag) => true
-      rule BagItem(K1:K) in (BagItem(K2:K) B:Bag) => BagItem(K1) in B
-            when K1 =/=K K2
-      rule _ in .Bag => false
+      // rule K:K in (BagItem(K:K) _:Bag) => true
+      // rule K1:K in (BagItem(K2:K) B:Bag) => K1 in B
+      //       when K1 =/=K K2
+      // rule _ in .Bag => false
 
-      rule K:K in B:Bag => BagItem(K) in B
+      // rule BagItem(K:K) in B:Bag => K in B
+
+      rule BagItem(K) in B:Bag => K #inBag B ==K true 
+      rule K #inBag BagItem(K) _:Bag => true // TODO how could this work
 endmodule
 
 module COMMON-SEMANTICS-HELPERS-INCLUDE

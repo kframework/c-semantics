@@ -51,7 +51,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
 	rule
 		<k> waitingOnGotoMap => .K ...</k>
 		<calculateGotoMap> .Bag </calculateGotoMap>
-		<currentFunction> _ => File-Scope </currentFunction>
+		<currentFunction> _ => file-scope </currentFunction>
 		[structural] 
 
 	syntax K ::= "endBlockForGoto" "(" Int ")"

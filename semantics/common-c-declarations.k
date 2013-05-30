@@ -59,18 +59,17 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		andBool (lengthString(S:String) <=Int Len:Int)
 		[structural]
 
-// TODO(chathhorn) wstrings, ellided
-//      rule
-//            <k> figureInit(
-//                  X:Id, 
-//                  t(Se:Set, arrayType(T:KResult, Len:Int)), 
-//                  (SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
-//            )
-//            ...</k>
-//            when isWCharType(T:KResult)
-//            andBool (lengthList S <=Int Len:Int)
-//            [structural] 
-//	
+      rule
+            <k> figureInit(
+                  X:Id, 
+                  t(Se:Set, arrayType(T:KResult, Len:Int)), 
+                  (SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
+            )
+            ...</k>
+            when isWCharType(T:KResult)
+            andBool (lengthKList S <=Int Len:Int)
+            [structural] 
+	
 	rule
 		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
 			=> arrayType(T:KResult, lengthString(S:String) +Int 1))), SingleInit(Constant(StringLiteral(S:String)))) 
@@ -78,13 +77,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		when isCharType(T:KResult)
 		[structural]
 
-// TODO(chathhorn) wstrings, ellided
-//	rule
-//		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
-//			=> arrayType(T:KResult, lengthList S:KList +Int 1))), SingleInit(Constant(WStringLiteral(S:KList)))) 
-//		...</k>
-//		when isWCharType(T:KResult)
-//		[structural] 
+	rule
+		<k> figureInit(X:Id, t(_, (incompleteArrayType(T:KResult) 
+			=> arrayType(T:KResult, lengthKList S:KList +Int 1))), SingleInit(Constant(WStringLiteral(S:KList)))) 
+		...</k>
+		when isWCharType(T:KResult)
+		[structural] 
 		
 	rule
 		<k> figureInit(X:Id, t(Se:Set, incompleteArrayType(T:KResult)), CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
@@ -160,7 +158,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<k> doDeclare(typedDeclaration(T:KResult, X:Id), K:K) 
 			=> declareFunction(X:Id, T:KResult, K:K)
 		...</k>
-		<currentFunction> File-Scope </currentFunction>
+		<currentFunction> file-scope </currentFunction>
 		when notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		andBool isFunctionType(T:KResult)
 		[structural]
@@ -175,7 +173,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currentFunction> F:K </currentFunction>
 		when notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		andBool isFunctionType(T:KResult)
-		andBool F:K =/=K File-Scope
+		andBool F:K =/=K file-scope
 		[structural] 
 	// fixme i believe this is for local declarations of external library functions
 	rule
@@ -186,14 +184,14 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currentFunction> F:K </currentFunction>
 		when (notBool isIncompleteType(T:KResult)) // I'd like to get rid of this cleanly
 		andBool (isFunctionType(T:KResult))
-		andBool (F:K =/=K File-Scope)
+		andBool (F:K =/=K file-scope)
 		andBool (notBool $hasMapping(Locs:Map, X:Id))
 		[structural]
 	rule
 		<k> doDeclare(typedDeclaration(T:KResult, X:Id), K:K)
 			=> declareExternalVariable(X:Id, T:KResult, #if K:K ==K NoInit #then NoInit #else CodeLoc(K:K, L:CabsLoc) #fi)
 		...</k>
-		<currentFunction> File-Scope </currentFunction>
+		<currentFunction> file-scope </currentFunction>
 		<currentProgramLoc> L:CabsLoc </currentProgramLoc>
 		// if notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		when notBool isFunctionType(T:KResult)
@@ -205,7 +203,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<currentFunction> F:K </currentFunction>
 		// if notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
 		when notBool isFunctionType(T:KResult)
-		andBool F:K =/=K File-Scope
+		andBool F:K =/=K file-scope
 		[structural] 
 		
 	//- external variables
@@ -232,7 +230,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 		<k> declareFunction(X:Id, T:KResult, K:K)
 			=> declareWithLinkage(X:Id, T:KResult, K:K, internal)
 		...</k>
-		<currentFunction> File-Scope </currentFunction>
+		<currentFunction> file-scope </currentFunction>
 		when isStaticType(T:KResult)
 		[structural] 
 		
@@ -594,12 +592,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
 	
 	rule
 		<k> addToEnv(X:Id, Loc:Int) => addToGlobalEnv(X:Id, Loc:Int) ...</k>
-		<currentFunction> File-Scope </currentFunction>
+		<currentFunction> file-scope </currentFunction>
 		[structural] 
 	rule
 		<k> addToEnv(X:Id, Loc:Int) => addToLocalEnv(X:Id, Loc:Int) ...</k>
 		<currentFunction> F:K </currentFunction>
-		when F:K =/=K File-Scope
+		when F:K =/=K file-scope
 		[structural] 
 		
 	rule
@@ -993,15 +991,14 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) ==Int Len:Int
 		[structural] 
-// TODO(chathhorn): wstrings, ellided
-// 	rule [fillInit-wstring-array-eq]:
-// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-// 			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList))))
-// 		...</k>
-// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
-// 		when isWCharType(T:KResult)
-// 		andBool lengthList S:KList  ==Int Len:Int
-// 		[structural] 
+ 	rule [fillInit-wstring-array-eq]:
+ 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+ 			=> fillInit-aux(SingleInit(Constant(WStringLiteral(S:KList))))
+ 		...</k>
+ 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
+ 		when isWCharType(T:KResult)
+ 		andBool lengthKList S:KList  ==Int Len:Int
+ 		[structural] 
 	rule [fillInit-string-array-lt]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
@@ -1010,15 +1007,14 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		when isCharType(T:KResult)
 		andBool lengthString(S:String) <Int Len:Int
 		[structural] 
-// TODO(chathhorn): wstrings, ellided
-// 	rule [fillInit-wstring-array-lt]:
-// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-// 			=> fillInit(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
-// 		...</k>
-// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
-// 		when isWCharType(T:KResult)
-// 		andBool lengthList S:KList <Int Len:Int
-// 		[structural] 
+ 	rule [fillInit-wstring-array-lt]:
+ 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+ 			=> fillInit(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
+ 		...</k>
+ 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, arrayType(T:KResult, Len:Int)))) ...</currentSubObject>
+ 		when isWCharType(T:KResult)
+ 		andBool lengthKList S:KList <Int Len:Int
+ 		[structural] 
 	rule [fillInit-string-char]:
 		<k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit-aux(SingleInit(Constant(StringLiteral(S:String +String "\0"))))
@@ -1027,15 +1023,14 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
 		when isCharType(T:KResult)
 		[structural] 
-// TODO(chathhorn): wstrings, ellided
-// 	rule [fillInit-wstring-wchar]:
-// 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-// 			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
-// 		...</k>
-// 		//<br/>
-// 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
-// 		when isWCharType(T:KResult)
-// 		[structural]
+ 	rule [fillInit-wstring-wchar]:
+ 		<k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+ 			=> fillInit-aux(SingleInit(Constant(WStringLiteral((S:KList,, 0)))))
+ 		...</k>
+ 		//<br/>
+ 		<currentSubObject> ListItem(te(K:K, T:KResult)) ListItem(te(_, t(_, incompleteArrayType(T:KResult)))) ...</currentSubObject>
+ 		when isWCharType(T:KResult)
+ 		[structural]
 	rule [fillInitAux-string-some]:
 		<k> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
 			=> fillInit(initHead(S:String, T:KResult)) 

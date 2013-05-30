@@ -1,4 +1,5 @@
-require "dynamic-c-configuration.k"
+require "c-configuration.k"
+//require "dynamic-c-configuration.k"
 require "common-c-semantics.k"
 require "modules/uris.k"
 
@@ -22,11 +23,12 @@ endmodule
 
 module DYNAMIC-INCLUDE
 	imports DYNAMIC-SEMANTIC-SYNTAX
-	imports DYNAMIC-C-CONFIGURATION
+	imports C-CONFIGURATION
 endmodule
 
 module DYNAMIC-C-SEMANTICS-MISC
 	imports DYNAMIC-INCLUDE 
+      imports C-CONFIGURATION
 			
 	rule [sequencePoint]:
 		<k> sequencePoint => .K ...</k>
@@ -60,6 +62,7 @@ module DYNAMIC-C-SEMANTICS-MISC
 		<fid> FD:Int </fid>
 		<buff> #EOF </buff>
 		[observable]
+
 // TODO(chathhorn): eof, ellided
 //	rule [make-eof]:
 //		"" +String charString(#EOF)
@@ -72,20 +75,23 @@ module DYNAMIC-C-SEMANTICS-MISC
 	
 	// can't lex string2KList correctly in #fPrint(N:Int,, string2KList(S:String))
 	rule [flush]:
-		<k> flush(N:Int) => .K ...</k>
-		<fileCommands>... .K
-			=> f-sendString(N:Int, S:String)
-			~> f-sent(N:Int, S:String)
-			~> f-flush(N:Int)
-		</fileCommands>
-		<fid> N:Int </fid>
-		<buff> S:String => "" </buff>
-		<sending>... .List => ListItem(S:String) </sending>
+      <k> flush(N:Int) => .K ...</k>
+      <fileCommands>... .K
+            => f-sendString(N:Int, S:String)
+            ~> f-sent(N:Int, S:String)
+            ~> f-flush(N:Int)
+      </fileCommands>
+      <file>...
+            <fid> N:Int </fid>
+            <buff> S:String => "" </buff>
+            <sending>... .List => ListItem(S:String) </sending>
+      ...</file>
 		[structural]
+
 	rule [sendString-one]:
 		<fileCommands> f-sendString(N:Int, S:String) 
-			=> #fPutByte(N:Int, asciiString(firstChar(S:String)))
-			~> f-sendString(N:Int, butFirstChar(S:String))
+			=> (#fPutByte(N:Int, asciiString(firstChar(S:String)))
+			~> f-sendString(N:Int, butFirstChar(S:String)))
 		...</fileCommands>
 		when S:String =/=String ""
 		[structural]
@@ -187,7 +193,6 @@ If they are declared, the parameters to the main function shall obey the followi
 	
 	rule stdinStr => "stdin:/" +String "/" +String "/"
 	rule stdoutStr => "stdout:/" +String "/" +String "/"
-	
 	rule [eval-input]: eval(Program(klist(P:KList)), L:KList, Input:String, IsInterp:Int) =>
 		<T>...
 			<threads>
@@ -201,9 +206,9 @@ If they are declared, the parameters to the main function shall obey the followi
 					<br/>
 					<threadId> 1 </threadId>
 					<nextLoc> firstLoc(1) </nextLoc>
-					<threadLocal>
-						<control>
-							<currentFunction> File-Scope </currentFunction>
+					<threadLocal>...
+						<control>...
+							<currentFunction> file-scope </currentFunction>
 							<currentProgramLoc> UnknownCabsLoc </currentProgramLoc>
 						...</control>
 					...</threadLocal>
@@ -232,7 +237,6 @@ If they are declared, the parameters to the main function shall obey the followi
 				<mode> "w" </mode>
 			...</file>
 		</files>
-		//<xmessages> .K </xmessages>
 		[structural, large]
 
 /*@ 
@@ -259,7 +263,6 @@ or equivalent; or in some other implementation-defined manner.
 }*/
 
 	//@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
-	
 	rule [call-main]:
 		<k> callMain(N:Int, Args:K)
 			=> callMain-aux(typeof(Identifier("main")), N:Int, Identifier("#incomingArgumentsArray"), Args:K)
@@ -296,7 +299,6 @@ or equivalent; or in some other implementation-defined manner.
 
 
 	// fixme I'm not sure threads clean up their memory
-	
 	rule [terminate]:
 		(<T>... <threads>... <thread>... 
 			<threadId> 1 </threadId> // main's thread, not the global "thread"

@@ -370,36 +370,36 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 		[structural]
 		
             // TODO(chathhorn): xml, ellided
-//	rule [function-application]:
-//		<k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:KList)), B:K), L:VTList) ~> K:K 
-//			=> sequencePoint
-//			~> populateFromGlobal
-//			~> bind(L:VTList, P:VTList)
-//			~> B:K
-//		</k>
-//		<br/>
-//		<callStack> .List => ListItem(
-//			C:Bag
-//			<continuation> K:K </continuation>
-//			<currTU> OldTu:K </currTU>
-//			<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-//			<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-//		) ...</callStack>
-//		<br/>
-//		(<control>
-//			<currTU> OldTu:K </currTU>
-//			<currentFunction> CurrFun:K </currentFunction>
-//			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
-//			C:Bag
-//		</control>
-//		=>
-//		<control>
-//			<currentFunction> X:Id </currentFunction>
-//			<currTU> Tu:K </currTU>
-//			<currentProgramLoc> CurrLoc:K </currentProgramLoc>
-//		...</control>)
-//		<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
-//		[structural, large]
+	//rule [function-application]:
+	//	<k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:KList)), B:K), L:VTList) ~> K:K 
+	//		=> sequencePoint
+	//		~> populateFromGlobal
+	//		~> bind(L:VTList, P:VTList)
+	//		~> B:K
+	//	</k>
+	//	<br/>
+	//	<callStack> .List => ListItem(
+	//		C:Bag
+	//		<continuation> K:K </continuation>
+	//		<currTU> OldTu:K </currTU>
+	//		<stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+	//		<stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+	//	) ...</callStack>
+	//	<br/>
+	//	(<control>
+	//		<currTU> OldTu:K </currTU>
+	//		<currentFunction> CurrFun:K </currentFunction>
+	//		<currentProgramLoc> CurrLoc:K </currentProgramLoc>
+	//		C:Bag
+	//	</control>
+	//	=>
+	//	<control>
+	//		<currentFunction> X:Id </currentFunction>
+	//		<currTU> Tu:K </currTU>
+	//		<currentProgramLoc> CurrLoc:K </currentProgramLoc>
+	//	...</control>)
+	//	<funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
+	//	[structural, large]
 endmodule
 
 
@@ -1260,8 +1260,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
 	Insimple assignment (\cinline{=}), the value of the right operand is converted to the type of the assignment expression and replaces the value stored in the object designated by the left operand.
 	}*/
 	rule [assign]:
-		<k> lv(Loc:Int, T:KResult) := RHS
-			=> write(lv(Loc:Int, T:KResult), RHS)
+		<k> lv(Loc:Int, T:KResult) := tv(V:KList, T:KResult)
+			=> write(lv(Loc:Int, T:KResult), tv(V:KList, T:KResult))
 			~> tv(V:KList, T:KResult)
 		...</k>
 		[structural]
