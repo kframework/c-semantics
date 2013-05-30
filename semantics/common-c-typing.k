@@ -80,7 +80,7 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS
 	
 	rule
 		<k> giveType(X:Id, T:KResult) => 
-			#if (Fun:Id ==K File-Scope) #then giveGlobalType(X:Id, unqualifyType(T:KResult)) #else giveLocalType(X:Id, unqualifyType(T:KResult)) #fi
+			#if (Fun:Id ==K file-scope) #then giveGlobalType(X:Id, unqualifyType(T:KResult)) #else giveLocalType(X:Id, unqualifyType(T:KResult)) #fi
 			...</k>
 		<currentFunction> Fun:Id </currentFunction>
 		// when notBool isStaticType(T:KResult)
@@ -131,19 +131,19 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
 		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
 		...</k>
-			when 'isTypeResult(T:KResult)
+			when isTypeResult(T:KResult)
 		[structural]
 	rule
 		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
 		...</k>
-			when 'isTypeResult(T:KResult)
+			when isTypeResult(T:KResult)
 		[structural]
 	rule
 		<k> (T:KResult => .K)
 			~> canonicalizeType-aux((_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
 		...</k>
-			when 'isTypeResult(T:KResult)
+			when isTypeResult(T:KResult)
 		[structural]
 		
 	// specifier, modifier, storage
@@ -399,8 +399,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 		[structural]
 	
 	rule makeArrayType(N:Int)(T:KResult) => t(.Set, arrayType(T:KResult, N:Int))
-      // TODO(chathhorn): klabel, ellided
-	//rule makeFunctionType(L:KList)(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList)))
+	rule makeFunctionType(L:KList)(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList)))
 	rule makePointerType(T:KResult) => t(.Set, pointerType(T:KResult))
 	rule makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult))
 	
@@ -672,7 +671,7 @@ module COMMON-SEMANTICS-TYPE-MISC
 		[structural]
 	rule
 		<k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
-			=> #if (F:Id ==K File-Scope) #then 
+			=> #if (F:Id ==K file-scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L:KList, Types:Map, Offsets:Map))) 
 			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L:KList, Types:Map, Offsets:Map)))
@@ -700,7 +699,7 @@ module COMMON-SEMANTICS-TYPE-MISC
 		[structural]
 	rule
 		<k> addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
-			=> #if (F:Id ==K File-Scope) #then 
+			=> #if (F:Id ==K file-scope) #then 
 				(addGlobalAggregate(S:Id, aggregateInfo(L, Types:Map, Offsets:Map))) 
 			#else
 				(addLocalAggregate(S:Id, aggregateInfo(L, Types:Map, Offsets:Map)))
@@ -719,15 +718,15 @@ module COMMON-SEMANTICS-TYPE-MISC
 		<structs> M:Map => M:Map[K:K / X:Id] </structs>
 		[structural]
 		
-            // TODO(chathhorn): I don't think these are necessary?
-	// define 'isTypeResult(t(_, T:K)) => true
-	// 	when setOfTypes contains l(getKLabel(T:K)) 
-	// define 'isTypeResult(T:KResult) => true when isBasicType(T:KResult)
-	// define 'isTypeResult(K:K) => false
-	// 	when getKLabel(K:K) =/=KLabel 't
-	// define 'isTypeResult(t(S:Set, T:K)) => false
-	// 	when notBool setOfTypes contains l(getKLabel(T:K))
-	// 	andBool notBool isBasicType(t(S:Set, T:K)) 
+	rule isTypeResult(t(_, T:K)) => true
+		when setOfTypes contains l(getKLabel(T:K)) 
+	rule isTypeResult(T:KResult) => true 
+            when isBasicType(T:KResult)
+	rule isTypeResult(K:K) => false
+		when getKLabel(K:K) =/=KLabel 't
+	rule isTypeResult(t(S:Set, T:K)) => false
+		when (notBool setOfTypes contains l(getKLabel(T:K)))
+		andBool (notBool isBasicType(t(S:Set, T:K)))
 
 	rule isFloatType(t(_, float)) => true 
 	rule isFloatType(t(_, double)) => true 

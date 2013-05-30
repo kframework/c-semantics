@@ -245,7 +245,7 @@ module DYNAMIC-SEMANTICS-READING
 	
 	rule [read-byte-fast]:
 		<k> extractByteFromMem(loc(Base:Int, Offset:Int, 0))
-			=> assert(notBool (loc(Base:Int, Offset:Int, 0) in Locs:Bag), 3)
+			=> assert(notBool (loc(Base:Int, Offset:Int, 0) #inBag Locs:Bag), 3)
 			~> assert(Offset:Int <Int Len:Int, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</k>
@@ -260,7 +260,7 @@ module DYNAMIC-SEMANTICS-READING
 		[large, structural]
 	rule [read-byte]:
 		<k> extractByteFromMem(loc(Base:Int, Offset:Int, 0))
-			=> assert(notBool (loc(Base:Int, Offset:Int, 0)) in Locs:Bag, 3)
+			=> assert(notBool (loc(Base:Int, Offset:Int, 0)) #inBag Locs:Bag, 3)
 			~> assert(Offset:Int <Int Len:Int, 2)
 			~> tv(V:K, t(.Set, no-type))
 		...</k>
@@ -293,7 +293,7 @@ module DYNAMIC-SEMANTICS-READING
 		
 	rule [read-byte-buffer]:
 		<k> extractByteFromMem(Loc:Int) 
-			=> assert(notBool Loc:Int in Locs:Bag, 3)
+			=> assert(notBool Loc:Int #inBag Locs:Bag, 3)
 			~> tv(V:K, t(.Set, no-type))
 		...</k>
 		<locsWrittenTo> Locs:Bag </locsWrittenTo>
@@ -612,10 +612,10 @@ module DYNAMIC-SEMANTICS-WRITING
 		<locsWrittenTo> Locs:Bag (.Bag => BagItem(loc(Base:Int, Offset:Int,
             0))) </locsWrittenTo>
 		<notWritable> NotWritable:Map </notWritable>
-		when (notBool loc(Base:Int, Offset:Int, 0) in Locs:Bag)
+		when (notBool loc(Base:Int, Offset:Int, 0) #inBag Locs:Bag)
 		andBool (Offset:Int <Int Len:Int)
-		andBool (notBool mconst in Attr:Bag)
-		andBool (notBool loc(Base:Int, Offset:Int, 0) in keys NotWritable:Map)
+		andBool (notBool (mconst in Attr:Bag))
+		andBool (notBool (loc(Base:Int, Offset:Int, 0) in keys NotWritable:Map))
 		[large, structural]
 		
 	rule [commit-byte]:

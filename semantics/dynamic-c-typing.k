@@ -175,11 +175,11 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
 		andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
 		[structural]
-      // TODO(chathhorn): typeresult, ellided
-	// rule [type-ternary-identical]:
-	// 	<type> _:K ? T:TypeResult : T:TypeResult => T:TypeResult ...</type>
-	// 	when notBool isArrayType(T:TypeResult)
-	// 	[structural]
+	rule [type-ternary-identical]:
+	 	<type> _:K ? T:Type : T:Type => T:Type ...</type>
+	 	when (notBool isArrayType(T:Type))
+            andBool isTypeResult(T)
+	 	[structural]
 		
 	rule [type-ternary-array-left]: 
 		<type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
@@ -237,10 +237,10 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 		orBool (L:KLabel ==KLabel '_||_)
 		[structural]
 
-// TODO(chathhorn): typeresult, ellided
-//	rule [type-address]:
-//		<type> & T:TypeResult => t(.Set, pointerType(T:TypeResult)) ...</type>
-//		[structural]
+	rule [type-address]:
+		<type> & T:Type => t(.Set, pointerType(T:Type)) ...</type>
+            when isTypeResult(T)
+		[structural]
 		
 endmodule
 

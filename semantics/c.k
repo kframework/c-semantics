@@ -1,8 +1,9 @@
 require "c-syntax.k"
+require "c-configuration.k"
 require "dynamic-c-semantics.k"
 
 module C-SEMANTICS
-	imports DYNAMIC-C-CONFIGURATION
+	imports C-CONFIGURATION
 	imports DYNAMIC-C-SEMANTICS
 endmodule
 

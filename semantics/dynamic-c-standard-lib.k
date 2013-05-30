@@ -1237,7 +1237,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
 		<mutexes>... Loc:Int |-> Type:Int ...</mutexes>
 		<glocks> B:Bag (.Bag => BagItem(Loc:Int)) </glocks>
 		<locks>... .Bag => BagItem(Loc:Int) ...</locks>
-		when (notBool Loc:Int in B:Bag)
+		when (notBool (Loc:Int #inBag B))
 		andBool (Type:Int ==Int cfg:mtxPlain)
 		[computational]
 	rule [mtx-unlock]:

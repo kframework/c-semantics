@@ -1,11 +1,11 @@
 require "c-syntax.k"
 require "common-c-helpers.k"
+require "c-configuration.k"
 
 require "common-c-statements.k"
 require "common-c-expressions.k"
 require "common-c-declarations.k"
 require "common-c-typing.k"
-require "common-c-configuration.k"
 
 module COMPAT-SYNTAX
 	imports COMMON-INCOMING-MODULES 
@@ -21,14 +21,16 @@ module COMPAT-SYNTAX
 
       syntax Int ::= "lengthKList" KList [function]
 
-      syntax Bool ::= K "in" Bag [function]
-                    | BagItem "in" Bag [function]
+      //syntax Bool ::= K "in" Bag [function]
+      //              | BagItem "in" Bag [function]
+      syntax Bool ::= BagItem "in" Bag [function]
+                  | K "#inBag" Bag //TODO: function?!?
 endmodule
 
 module COMMON-INCOMING-MODULES
 	imports K
 	imports C-SYNTAX 
-	imports COMMON-C-CONFIGURATION 
+	imports C-CONFIGURATION 
       // TODO(chathhorn) ??
 	//imports K-CONTEXTS 
 	
@@ -83,7 +85,7 @@ module COMMON-SEMANTIC-SYNTAX
 	syntax K ::= "debug"
 	syntax K ::= "debug-m" "(" K ")"
 	syntax K ::= "discard"
-	syntax Id ::= "File-Scope" // [ctor] 
+	syntax Id ::= "file-scope" // [ctor] 
 	syntax Id ::= "unnamedBitField" // [ctor] 
 
 	syntax Int ::= "loc" "(" K "," K "," K ")" // Base, byte offset, bit offset
