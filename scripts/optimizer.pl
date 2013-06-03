@@ -4,9 +4,9 @@ $module =~ s/eq \(numBitsPerByte\).NzNat = ([^[]+) \[.*// or die "Couldn't find 
 my $numBitsPerByte = $1;
 $module =~ s/\(numBitsPerByte\).NzNat/$numBitsPerByte/g;
 
-# $module =~ s/eq _`\(_`\)\(\('cfg:largestUnsigned\)\.KResultLabel, \(\.List`\{K`\}\)\.List`\{KResult`\}\) = ([^[]+) \[.*// or die "Couldn't find largestunsigned";
+# $module =~ s/eq _`\(_`\)\(\('cfg:largestUnsigned\)\.KResultLabel, \(\.KList\)\.List`\{KResult`\}\) = ([^[]+) \[.*// or die "Couldn't find largestunsigned";
 # my $numBitsPerByte = $1;
-# $module =~ s/_`\(_`\)\(\('cfg:largestUnsigned\)\.KResultLabel, \(\.List`\{K`\}\)\.List`\{KResult`\}\)/$largestunsigned/g;
+# $module =~ s/_`\(_`\)\(\('cfg:largestUnsigned\)\.KResultLabel, \(\.KList\)\.List`\{KResult`\}\)/$largestunsigned/g;
 
 print $module;
 

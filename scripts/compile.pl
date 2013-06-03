@@ -109,8 +109,14 @@ if ($args->{'-c'}) {
 
 my $oval = $args->{'-o'} || 'a.out';
 
-my $linkTemp = "mod C-program-linked is including C .\n";
-$linkTemp .= "including #MODEL-CHECK .\n";
+# chathhorn
+#$linkTemp .= "including #MODEL-CHECK .\n";
+
+my $linkTemp = <<HDR;
+mod C-program-linked is including C .
+  op kList : #String -> KLabel [metadata "wrapper=(list)"] .
+
+HDR
 
 if (! $args->{'-s'}) {
 	push(@compiledPrograms, @stdlib);

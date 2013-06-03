@@ -158,14 +158,14 @@ close($fileInput);
 # first, set up the runner file with the right commands and set any variables
 my $commandLineArguments = "";
 for my $arg ($thisFile, @ARGV) {	
-	$commandLineArguments .= "# \"$arg\"(.List{K}),, ";
+	$commandLineArguments .= "# \"$arg\"(.KList),, ";
 }
-my $startTerm = "eval('linked-program(.List{K}), ($commandLineArguments .List{K}), # \"\Q$stdin\E\" (.List{K}), # $isInterp(.List{K}))";
+my $startTerm = "eval('linked-program(.KList), ($commandLineArguments .KList), # \"\Q$stdin\E\" (.KList), # $isInterp(.KList))";
 my $evalLine = "erew $startTerm .\n";
 my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
-my $modelLine = "red in C-program-linked : modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(# \"$ENV{'MODELCHECK'}\"(.List{K}))(.List{K}))) ) .\n";
-#my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) ) .";
-# $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.List{K}))) .\n";
+my $modelLine = "red in C-program-linked : modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(# \"$ENV{'MODELCHECK'}\"(.KList))(.KList))) ) .\n";
+#my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.KList))) ) .";
+# $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.KList))) .\n";
 
 # print $fileCommand "set print attribute on .\n";
 

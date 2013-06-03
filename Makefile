@@ -19,13 +19,13 @@ export C_K_BASE ?= $(K_BASE)
 
 
 # chathhorn
+# $(SEMANTICS_DIR)/c-total-nd.maude
+# $(SEMANTICS_DIR)/c-total-nd-thread.maude
 FILES_TO_DIST = \
 	legacy/java/wrapperAndServer.jar \
 	legacy/java/ioserver.jar \
 	legacy/java/jopt-simple-3.3.jar \
 	$(SEMANTICS_DIR)/c-total.maude \
-	$(SEMANTICS_DIR)/c-total-nd.maude \
-	$(SEMANTICS_DIR)/c-total-nd-thread.maude \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
@@ -47,8 +47,8 @@ all: dist
 fast: WHICH_SEMANTICS="fast"
 fast: dist
 
-nd: WHICH_SEMANTICS="nd"
-nd: dist
+# nd: WHICH_SEMANTICS="nd"
+# nd: dist
 
 thread: WHICH_SEMANTICS="thread"
 thread: dist

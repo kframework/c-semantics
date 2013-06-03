@@ -44,11 +44,11 @@ sub linker {
 	$retval .= $formulae;
 
 	$retval .= "op 'linked-program : -> KLabel .\n";
-	$retval .= "eq 'linked-program(.List{K}) = ";
+	$retval .= "eq 'linked-program(.KList) = ";
 	$retval .= "'Program(";
-	$retval .= "'List((_`(_`)(kList(\"List`{K`}2K_\"), (";
+	$retval .= "'klist(_`(_`)(KList2KLabel_(";
 	$retval .= printNested(@programNames);
-	$retval .= '))))';
+	$retval .= '), .KList))';
 	$retval .= ')';
 	return "$retval.\n";
 }
@@ -72,9 +72,9 @@ sub printNested {
 	my ($name, @rest) = (@_);
 
 	if (defined($name)) {
-		return "($name),, " . printNested(@rest);
+		return "_`,`,_(($name), " . printNested(@rest) .")";
 	} else {#arg
-		return '.List{K}';
+		return '.KList';
 	}
 }
 

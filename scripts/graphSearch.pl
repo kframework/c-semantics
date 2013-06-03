@@ -60,19 +60,19 @@ sub graphSearch {
 				push(@solutions, {});
 				$solutions[-1]->{'num'} = $numSolutions;
 			}
-			if ($line =~ m/< errorCell > # "(.*)"\(\.List\{K\}\) <\/ errorCell >/) {
+			if ($line =~ m/< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/) {
 				$solutions[-1]->{'error'} = $1;
 			}
-			if ($line =~ m/< output > # "(.*)"\(\.List\{K\}\) <\/ output >/) {
+			if ($line =~ m/< output > # "(.*)"\(\.KList\) <\/ output >/) {
 				$solutions[-1]->{'output'} = $1;
 			}
-			if ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("List`{K`}2K_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/) {
+			if ($line =~ m/< resultValue > \('tv\)\.KLabel\(KList2KLabel\(# (-?\d+)\(\.KList\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.KList\),,\('int\)\.KLabel\(\.KList\)\)\) <\/ resultValue >/) {
 				$solutions[-1]->{'retval'} = $1;
 			}
-			if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> # "(.*)"\(\.List\{K\}\)/) {
+			if ($line =~ m/"stdout"\(\.KList\) \|-> # "(.*)"\(\.KList\)/) {
 				$solutions[-1]->{'output'} = $1;
 			}
-			if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			if ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.KList\),,# (\d+)\(\.KList\),,# (\d+)\(\.KList\),,# (\d+)\(\.KList\)\) <\/ currentProgramLoc >/) {
 				$solutions[-1]->{'file'} = $1;
 				$solutions[-1]->{'line'} = $2;
 				# $myOffsetStart = $3;
@@ -100,11 +100,11 @@ sub graphSearch {
 				next;
 			} else {
 				$currentState .= $line;
-				if ($line =~ m/"stdout"\(\.List\{K\}\) \|-> # "(.*)"\(\.List\{K\}\)/) {
+				if ($line =~ m/"stdout"\(\.KList\) \|-> # "(.*)"\(\.KList\)/) {
 					my $currentOutput = $1;
 					$states{$currentStateNumber} = $currentOutput;
 				}
-				if ($line =~ m/< output > # "(.*)"\(\.List\{K\}\) <\/ output >/) {
+				if ($line =~ m/< output > # "(.*)"\(\.KList\) <\/ output >/) {
 					my $currentOutput = $1;
 					$goodFinal{$currentStateNumber} = "";
 					$states{$currentStateNumber} = $currentOutput;
