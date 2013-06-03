@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use strict;
 use File::Basename;
 use Encode;
@@ -17,7 +18,7 @@ my $RAT = '#';
 
 #########################################################
 # you may want to configure things inside this section
-use constant KLIST_IDENTITY => ".List{K}";
+use constant KLIST_IDENTITY => ".KList";
 use constant KLIST_SEPARATOR => ",, ";
 
 my $ltl = "";
@@ -125,7 +126,7 @@ $reader->nextElement('RawData');
 my $sourceCode = getRawData($reader);
 push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
-print "eq TranslationUnitName($filenameTerm)(.List`{K`}) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
+print "eq TranslationUnitName($filenameTerm)(.KList) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
 if ($ltl ne "") {
 	print $ltl;
 }
@@ -168,11 +169,11 @@ sub elementToK {
 		return ($inNextState, rawdataToK($reader));
 	}
 	if ($label eq 'List') {
-		$label = "_::_";
+		$label = "_::_";  # chathhorn: never used?
 	} elsif ($label eq 'NewList') {
-		$label = "List";
-		$prefix = '(_`(_`)(kList("List`{K`}2K_"), ';
-		$suffix = '))';
+		$label = "klist";
+		$prefix = '(_`(_`)(KList2KLabel_(';
+		$suffix = '), .KList))';
 	# } elsif ($label eq 'Identifier') {
 		# $reader->nextElement;
 		# my $rawData = getRawData($reader);
@@ -269,7 +270,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = '_`(_`)(kList("List`{K`}2K_"), (';
+	my $retval = '_`(_`)(kList("\'klist"), (';
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {
@@ -282,7 +283,7 @@ sub escapeWString {
 		$retval .= "$RAT $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
 	}
 	
-	$retval .= ".List{K}))";
+	$retval .= ".KList))";
 	return $retval;
 }
 

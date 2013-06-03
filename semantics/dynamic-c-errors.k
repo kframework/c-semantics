@@ -1,479 +1,479 @@
 require "dynamic-c-semantics.k"
 
 module DYNAMIC-SEMANTICS-ERRORS-INCLUDE
-	imports COMMON-C-SEMANTICS
-	imports DYNAMIC-C-SEMANTICS-MISC
-	imports DYNAMIC-C-EXPRESSIONS
-	imports DYNAMIC-C-TYPING 
-	imports DYNAMIC-C-DECLARATIONS 
-	imports DYNAMIC-C-MEMORY 
-	imports DYNAMIC-C-STATEMENTS 
-	imports DYNAMIC-C-CONVERSIONS 
-	imports DYNAMIC-C-STANDARD-LIBRARY
+     imports COMMON-C-SEMANTICS
+     imports DYNAMIC-C-SEMANTICS-MISC
+     imports DYNAMIC-C-EXPRESSIONS
+     imports DYNAMIC-C-TYPING 
+     imports DYNAMIC-C-DECLARATIONS 
+     imports DYNAMIC-C-MEMORY 
+     imports DYNAMIC-C-STATEMENTS 
+     imports DYNAMIC-C-CONVERSIONS 
+     imports DYNAMIC-C-STANDARD-LIBRARY
 endmodule
 
 module DYNAMIC-C-ERRORS
-	imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
+     imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
-	syntax K ::= Error(String, String) [function]
-	rule Error(Name:String, Msg:String)  => 
-		"Error: " 
-		+String Name:String 
-		+String "\n"
-		+String "Description: " 
-		+String Msg:String
-		[structural]
-	syntax K ::= ICE(String, String) [function]
-	rule ICE(Name:String, Msg:String) =>
-		Error(Name:String, Msg:String)
-		+String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
-		[structural]
-	
-		
-	syntax CellLabel ::= "halted-k"
-	syntax CellLabel ::= "halted-T"
-	syntax Bag ::= "halt" Bag [function]
+     syntax K ::= Error(String, String) [function]
+     rule Error(Name:String, Msg:String)  => 
+          "Error: " 
+          +String Name:String 
+          +String "\n"
+          +String "Description: " 
+          +String Msg:String
+          [structural]
+     syntax K ::= ICE(String, String) [function]
+     rule ICE(Name:String, Msg:String) =>
+          Error(Name:String, Msg:String)
+          +String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
+          [structural]
+     
+          
+     syntax CellLabel ::= "halted-k"
+     syntax CellLabel ::= "halted-T"
+     syntax Bag ::= "halt" Bag [function]
 
-      // TODO(chathhorn): xml, ellided
-	//rule halt < k => halted-k > _:K </ k => halted-k >
-	//rule halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
-	//	when L:CellLabel =/=CellLabel k 
-	//	[structural]
-	//rule halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
-	//rule halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
-	//rule halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
-	//rule halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
-	//rule halt .Bag => .Bag
-//	
-//	// FIXME TOOL BUG removing spaces in inner cells causes kompile to lose track of ...s
-//	rule [halt-start]:
-//		< T => halted-T >...
-//			< threads >
-//				(B:Bag => halt B:Bag)
-//				< thread >...
-//					< finalComputation > _:K </ finalComputation >
-//				...</ thread > 
-//			</ threads > 
-//		...</ T => halted-T >
-//		[structural]
-//	
-//	rule [err00001]:
-//		< k => finalComputation > cast(t(_, T:K), emptyValue) ...</ k => finalComputation >
-//		<br/>
-//		(.Bag => <errorCell> Error("00001", "Casting empty value to type other than void.") </errorCell>)
-//		when T:K =/=K void
-//		[structural, large]
-//		
-//	rule [err00002]:
-//		< k => finalComputation > assert(false, 2) ...</ k => finalComputation >
-//		<br/>
-//		(.Bag => <errorCell> Error("00002", "Reading outside the bounds of an object.") </errorCell>)
-//		[structural, large]
-//	rule [err00003]:
-//		< k => finalComputation > assert(false, 3) ...</ k => finalComputation >
-//		<br/>
-//		(.Bag => <errorCell> Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </errorCell>)
-//		[structural, large]
+      // TODO(chathhorn): xml, elided
+     //rule halt < k => halted-k > _:K </ k => halted-k >
+     //rule halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
+     //   when L:CellLabel =/=CellLabel k 
+     //   [structural]
+     //rule halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
+     //rule halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
+     //rule halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
+     //rule halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
+     //rule halt .Bag => .Bag
+//   
+//   // FIXME TOOL BUG removing spaces in inner cells causes kompile to lose track of ...s
+//   rule [halt-start]:
+//        < T => halted-T >...
+//             < threads >
+//                  (B:Bag => halt B:Bag)
+//                  < thread >...
+//                       < finalComputation > _:K </ finalComputation >
+//                  ...</ thread > 
+//             </ threads > 
+//        ...</ T => halted-T >
+//        [structural]
+//   
+//   rule [err00001]:
+//        < k => finalComputation > cast(t(_, T:K), emptyValue) ...</ k => finalComputation >
+//        <br/>
+//        (.Bag => <errorCell> Error("00001", "Casting empty value to type other than void.") </errorCell>)
+//        when T:K =/=K void
+//        [structural, large]
+//        
+//   rule [err00002]:
+//        < k => finalComputation > assert(false, 2) ...</ k => finalComputation >
+//        <br/>
+//        (.Bag => <errorCell> Error("00002", "Reading outside the bounds of an object.") </errorCell>)
+//        [structural, large]
+//   rule [err00003]:
+//        < k => finalComputation > assert(false, 3) ...</ k => finalComputation >
+//        <br/>
+//        (.Bag => <errorCell> Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </errorCell>)
+//        [structural, large]
 
-// TODO(chathhorn): celllabel, ellided
-//	rule [err00005]:
-//		< k => finalComputation > extractByteFromMem(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
-//		<memory> M:Bag </memory>
-//		<br/>
-//		(.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-//		// when notBool $hasMapping(M:Map, Block:Int)
-//		when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
-//		[structural, large]
-	
-	rule [err00006]:
-		< k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </errorCell>)
-		when notBool isCharType(T:KResult)
-		[structural, large]
-		
-// TODO(chathhorn): celllabel, ellided
-//	rule [err00007]:
-//		< k => finalComputation > checkValidLoc-aux(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
-//		<memory> M:Bag </memory>
-//		<br/>
-//		(.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-//		// when notBool $hasMapping(M:Bag, Block:Int)
-//		when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
-//		[structural, large]
-	
-	rule [err00008]:
-		< k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00008", "Reading uninitialized memory.") </errorCell>)
-		[structural, large]
-	
-	rule [err00009]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00009", "Reading uninitialized memory.") </errorCell>)
-		when isFloatType(T:KResult)
-		[structural, large]
-		
-	rule [err00010]:
-		< k => finalComputation > checkValidLoc-aux(loc(Base:Int, Offset:Int, _:Int)) ...</ k => finalComputation >
-		<object>...
-			<basePtr> Base:Int </basePtr>
-			<oLength> Len:Int </oLength>
-		...</object>
-		<br/>
-		(.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
-		when Offset:Int >Int Len:Int
-		[structural, large]
-		
-		
-	rule [err00011]:
-		< k => finalComputation > tv(_, T:KResult) < tv(_, T':KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00011", "Directly comparing an integer type with a pointer type.") </errorCell>)
-		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
-		[structural, large]
-	rule [err00012]:
-		< k => finalComputation > tv(_, T:KResult) <= tv(_, T':KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00012", "Directly comparing an integer type with a pointer type.") </errorCell>)
-		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
-		[structural, large] 
-	rule [err00013]:
-		< k => finalComputation > tv(_, T:KResult) > tv(_, T':KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00013", "Directly comparing an integer type with a pointer type.") </errorCell>)
-		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
-		[structural, large] 
-	rule [err00014]:
-		< k => finalComputation > tv(_, T:KResult) >= tv(_, T':KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00014", "Directly comparing an integer type with a pointer type.") </errorCell>)
-		when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-		orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
-		[structural, large] 
-		
-	rule [err00015]:
-		< k => finalComputation > arithInterpret(T:KResult, I:Int) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00015", "Signed overflow.") </errorCell>)
-		when hasSignedIntegerType(T:KResult)
-		andBool notBool (min(T:KResult) <=Int I:Int andBool max(T:KResult) >=Int I:Int)
-		[structural, large] 	
-		
-		
-	rule [err00016]:
-		< k => finalComputation > writeByte(Loc:Int, _) ...</ k => finalComputation >
-		<locsWrittenTo> Locs:Bag </locsWrittenTo>
-		<br/>
-		(.Bag => <errorCell> Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </errorCell>)
-		when Loc:Int in Locs:Bag
-		[structural, large] 
-		
-	rule [err00017]:
-		< k => finalComputation > tv(I1:Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00017", "Division by 0.") </errorCell>)
-		when hasIntegerType(T:KResult)
-		andBool isPromoted(T:KResult)
-		[structural, large]
-	
-	rule [err00018]:
-		< k => finalComputation > tv(I1:Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00018", "Modulus by 0.") </errorCell>)
-		when hasIntegerType(T:KResult)
-		andBool isPromoted(T:KResult)
-		[structural, large]
-		
-	rule [err00019]:
-		< k => finalComputation > tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00019", "Signed overflow.") </errorCell>)
-		when hasIntegerType(T:KResult)
-		andBool notBool (min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int)
-		andBool isPromoted(T:KResult)
-		andBool I2:Int =/=Int 0
-		[structural, large]
-		
-	rule [err00020]:
-		< k => finalComputation > writeByte(loc(Base:Int, Offset:Int, _:Int), _) ...</ k => finalComputation >
-		<object>...
-			<basePtr> Base:Int </basePtr>
-			<oLength> Len:Int </oLength>
-		...</object>
-		<br/>
-		(.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
-		when notBool Offset:Int <Int Len:Int
-		[structural, large] 
-		
-	rule [err00021]:
-		< k => finalComputation > Identifier(S:String) ...</ k => finalComputation >
-		<env> M:Map </env>
-		<br/>
-		(.Bag => <errorCell> Error("00021", "Trying to look up identifier  " +String S:String +String " , but no such identifier is in scope.") </errorCell>)
-		when notBool $hasMapping(M:Map, Identifier(S:String))
-		[structural, large]
-		
-	rule [err00022]:
-		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00022", "Trying to left-shift a negative signed value.") </errorCell>)
-		when hasSignedIntegerType(T:KResult)
-		andBool E1:Int <Int 0
-		[structural, large]
-		
-	rule [err00023]:
-		< k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </errorCell>)
-		when hasSignedIntegerType(T:KResult)
-		andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
-		[structural, large]
-	
-	rule [err00024]:
-		< k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic number (address) or float.") </errorCell>)
-		when notBool isConcreteNumber(I:Int) orBool notBool isConcreteNumber(I':Int)
-		[structural, large]
-		
-	rule [err00025]:
-		< k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:VTList)), _:Int, _:Id, _) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00025", "Main must return an int.") </errorCell>)
-		when T:K =/=K int
-		[structural, large]
-	rule [err00026]:
-		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:VTList))), _:Int, _:Id, _) 
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </errorCell>)
-		when T:K =/=K int andBool T:K =/=K void
-		[structural, large]
-		
-	syntax Bool ::= isArgvType(Type) [function]
-	
-	rule isArgvType(t(_, T:K)) => false
-		when notBool (
-			getKLabel(T:K) ==KLabel 'incompleteArrayType 
-			orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
-		)
-		
-	rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
-		when notBool getKLabel(T:K) ==KLabel 'pointerType
-	rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
-		when T:K =/=K char
-		
-	rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
-		when notBool getKLabel(T:K) ==KLabel 'pointerType
-	rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
-		when T:K =/=K char
-	
-	rule [err00027]:
-		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Int, _:Id, _) 
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </errorCell>)
-		when notBool isArgvType(T:KResult)
-		[structural, large]
-	rule [err00028]:
-		< k => finalComputation >
-			callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:VTList))), _:Int, _:Id, _) 
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00028", "Main can only have zero or two arguments.") </errorCell>)
-		[structural, large]
-	rule [err00029]:
-		< k => finalComputation > 
-			callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id)))), _:Int, _:Id, _)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00029", "Main can only have zero or two arguments.") </errorCell>)
-		when T:K =/=K void
-		[structural, large]
-		
-	rule [err00030]:
-		< k => finalComputation > 
-			tv(loc(Base:Int, _:Int, _:Int), T:KResult) < tv(loc(Base':Int, _:Int, _:Int), T:KResult)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00030", "Cannot compare pointers with different base objects using '<'.") </errorCell>)
-		when Base:Int =/=K Base':Int
-		[structural, large]
-	rule [err00031]:
-		< k => finalComputation > 
-			tv(loc(Base:Int, _:Int, _:Int), T:KResult) > tv(loc(Base':Int, _:Int, _:Int), T:KResult)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00031", "Cannot compare pointers with different base objects using '>'.") </errorCell>)
-		when Base:Int =/=K Base':Int
-		[structural, large]
-	rule [err00032]:
-		< k => finalComputation > 
-			tv(loc(Base:Int, _:Int, _:Int), T:KResult) <= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00032", "Cannot compare pointers with different base objects using '<='.") </errorCell>)
-		when Base:Int =/=K Base':Int
-		[structural, large]
-	rule [err00033]:
-		< k => finalComputation > 
-			tv(loc(Base:Int, _:Int, _:Int), T:KResult) >= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00033", "Cannot compare pointers with different base objects using '>='.") </errorCell>)
-		when Base:Int =/=K Base':Int
-		[structural, large]
-		
-	rule [err00034]:
-		< k => finalComputation > 
-			cast(t(_, T:K), skipval)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00034", "Casting void type to non-void type.") </errorCell>)
-		when (T:K =/=K void)
-		[structural, large]
-		
-	rule [err00035]:
-		< k => finalComputation > 
-			write(lv(Dest:Int, t(SetItem(Const) _, _)), _)
-		...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00035", "Trying to write through a const lvalue.") </errorCell>)
-		[structural, large]
-	
-	rule [err00036]:
-		< k => finalComputation > checkDerefLoc(NullPointer) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00036", "Trying to dereference a null pointer.") </errorCell>)
-		[structural, large]
-		
-	rule [err00037]:
-		< k => finalComputation > read-aux(NullPointer, _, _) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00037", "Trying to read through a null pointer.") </errorCell>)
-		[structural, large]
-		
-	rule [err00038]:
-		< k => finalComputation > ArrayType(T:KResult, tv(0, _), _)  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00038", "Arrays cannot be of 0 length.") </errorCell>)
-		[structural, large]
-	
-	rule [err00039]:
-		< k => finalComputation > addUnion(S:Id, .KList)  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00039", "Unions cannot be empty.") </errorCell>)
-		[structural, large]
-	rule [err00040]:
-		< k => finalComputation > addStruct(S:Id, .KList)  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00040", "Structs cannot be empty.") </errorCell>)
-		[structural, large]
-		
-	rule [err00041]:
-		< k => finalComputation > types((t(_, void),, t(_, T:K)))  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00041", "If one of a conditional expression's branches has void type, the other must also have void type.") </errorCell>)
-		when T:K =/=K void
-		[structural, large]
-	rule [err00042]:
-		< k => finalComputation > types((t(_, T:K),, t(_, void)))  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") </errorCell>)
-		when T:K =/=K void
-		[structural, large]
-	rule [err00043]:
-		< k => finalComputation > types((T1:KResult,, T2:KResult))  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </errorCell>)
-		when T1:KResult =/=K T2:KResult
-		andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
-		andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
-		[structural, large]
-		
-	rule [err00044]:
-		< k => finalComputation > addToPointer(Loc:Int, T:KResult, I:Int, tv(Size:Int, _))  ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00044", "An array subscript is out of range.") </errorCell>)
-		when notBool ifFromArrayInBounds(T:KResult, I:Int)
-		[structural, large]
-		
-	rule [err00045]:
-		< k => finalComputation > writeByte(loc(Base:Int, _:Int, _:Int), V:K)  ...</ k => finalComputation >
-		<object>...
-			<basePtr> Base:Int </basePtr>
-			<properties>... mconst ...</properties>
-		...</object>
-		<br/>
-		(.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
-		[structural, large]
-		
-	rule [err00046]:
-		< k => finalComputation > concretize(T:KResult, dataList((piece(N:Int, Len:Int),, _))) ...</ k => finalComputation >
-		<br/>
-		(.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
-		when isFloatType(T:KResult)
-		andBool N:Int >=Int 0
-		[structural, large]
-		
-	rule [err00047]:
-		< k => finalComputation > writeByte(Loc:Int, V:K)  ...</ k => finalComputation >
-		<notWritable>... Loc:Int |-> _ ...</notWritable>
-		<br/>
-		(.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
-		[structural, large]
-	
-	syntax K ::= "datarace" "(" Int "," Int "," Int "," Int ")"
+// TODO(chathhorn): celllabel, elided
+//   rule [err00005]:
+//        < k => finalComputation > extractByteFromMem(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
+//        <memory> M:Bag </memory>
+//        <br/>
+//        (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
+//        // when notBool $hasMapping(M:Map, Block:Int)
+//        when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
+//        [structural, large]
+     
+     rule [err00006]:
+          < k => finalComputation > joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.") </errorCell>)
+          when notBool isCharType(T:KResult)
+          [structural, large]
+          
+// TODO(chathhorn): celllabel, elided
+//   rule [err00007]:
+//        < k => finalComputation > checkValidLoc-aux(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
+//        <memory> M:Bag </memory>
+//        <br/>
+//        (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
+//        // when notBool $hasMapping(M:Bag, Block:Int)
+//        when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
+//        [structural, large]
+     
+     rule [err00008]:
+          < k => finalComputation > concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00008", "Reading uninitialized memory.") </errorCell>)
+          [structural, large]
+     
+     rule [err00009]:
+          < k => finalComputation > concretize(T:KResult, dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00009", "Reading uninitialized memory.") </errorCell>)
+          when isFloatType(T:KResult)
+          [structural, large]
+          
+     rule [err00010]:
+          < k => finalComputation > checkValidLoc-aux(loc(Base:Int, Offset:Int, _:Int)) ...</ k => finalComputation >
+          <object>...
+               <basePtr> Base:Int </basePtr>
+               <oLength> Len:Int </oLength>
+          ...</object>
+          <br/>
+          (.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
+          when Offset:Int >Int Len:Int
+          [structural, large]
+          
+          
+     rule [err00011]:
+          < k => finalComputation > tv(_, T:KResult) < tv(_, T':KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00011", "Directly comparing an integer type with a pointer type.") </errorCell>)
+          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          [structural, large]
+     rule [err00012]:
+          < k => finalComputation > tv(_, T:KResult) <= tv(_, T':KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00012", "Directly comparing an integer type with a pointer type.") </errorCell>)
+          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          [structural, large] 
+     rule [err00013]:
+          < k => finalComputation > tv(_, T:KResult) > tv(_, T':KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00013", "Directly comparing an integer type with a pointer type.") </errorCell>)
+          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          [structural, large] 
+     rule [err00014]:
+          < k => finalComputation > tv(_, T:KResult) >= tv(_, T':KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00014", "Directly comparing an integer type with a pointer type.") </errorCell>)
+          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
+          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          [structural, large] 
+          
+     rule [err00015]:
+          < k => finalComputation > arithInterpret(T:Type, I:Int) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00015", "Signed overflow.") </errorCell>)
+          when hasSignedIntegerType(T)
+          andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
+          [structural, large]      
+          
+          
+     rule [err00016]:
+          < k => finalComputation > writeByte(Loc:Int, _) ...</ k => finalComputation >
+          <locsWrittenTo> Locs:Bag </locsWrittenTo>
+          <br/>
+          (.Bag => <errorCell> Error("00016", "Unsequenced side effect on scalar object with side effect of same object.") </errorCell>)
+          when Loc:Int in Locs:Bag
+          [structural, large] 
+          
+     rule [err00017]:
+          < k => finalComputation > tv(I1:Int, T:KResult) / tv(0, T:KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00017", "Division by 0.") </errorCell>)
+          when hasIntegerType(T:KResult)
+          andBool isPromoted(T:KResult)
+          [structural, large]
+     
+     rule [err00018]:
+          < k => finalComputation > tv(I1:Int, T:KResult) % tv(0, T:KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00018", "Modulus by 0.") </errorCell>)
+          when hasIntegerType(T:KResult)
+          andBool isPromoted(T:KResult)
+          [structural, large]
+          
+     rule [err00019]:
+          < k => finalComputation > tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00019", "Signed overflow.") </errorCell>)
+          when hasIntegerType(T:KResult)
+          andBool notBool (min(T:KResult) <=Int I1:Int /Int I2:Int andBool max(T:KResult) >=Int I1:Int /Int I2:Int)
+          andBool isPromoted(T:KResult)
+          andBool I2:Int =/=Int 0
+          [structural, large]
+          
+     rule [err00020]:
+          < k => finalComputation > writeByte(loc(Base:Int, Offset:Int, _:Int), _) ...</ k => finalComputation >
+          <object>...
+               <basePtr> Base:Int </basePtr>
+               <oLength> Len:Int </oLength>
+          ...</object>
+          <br/>
+          (.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
+          when notBool Offset:Int <Int Len:Int
+          [structural, large] 
+          
+     rule [err00021]:
+          < k => finalComputation > Identifier(S:String) ...</ k => finalComputation >
+          <env> M:Map </env>
+          <br/>
+          (.Bag => <errorCell> Error("00021", "Trying to look up identifier  " +String S:String +String " , but no such identifier is in scope.") </errorCell>)
+          when notBool $hasMapping(M:Map, Identifier(S:String))
+          [structural, large]
+          
+     rule [err00022]:
+          < k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00022", "Trying to left-shift a negative signed value.") </errorCell>)
+          when hasSignedIntegerType(T:KResult)
+          andBool E1:Int <Int 0
+          [structural, large]
+          
+     rule [err00023]:
+          < k => finalComputation > leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </errorCell>)
+          when hasSignedIntegerType(T:KResult)
+          andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
+          [structural, large]
+     
+     rule [err00024]:
+          < k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic number (address) or float.") </errorCell>)
+          when notBool isConcreteNumber(I:Int) orBool notBool isConcreteNumber(I':Int)
+          [structural, large]
+          
+     rule [err00025]:
+          < k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:VTList)), _:Int, _:Id, _) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00025", "Main must return an int.") </errorCell>)
+          when T:K =/=K int
+          [structural, large]
+     rule [err00026]:
+          < k => finalComputation > 
+               callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:VTList))), _:Int, _:Id, _) 
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </errorCell>)
+          when T:K =/=K int andBool T:K =/=K void
+          [structural, large]
+          
+     syntax Bool ::= isArgvType(Type) [function]
+     
+     rule isArgvType(t(_, T:K)) => false
+          when notBool (
+               getKLabel(T:K) ==KLabel 'incompleteArrayType 
+               orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
+          )
+          
+     rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
+          when notBool getKLabel(T:K) ==KLabel 'pointerType
+     rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
+          when T:K =/=K char
+          
+     rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
+          when notBool getKLabel(T:K) ==KLabel 'pointerType
+     rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
+          when T:K =/=K char
+     
+     rule [err00027]:
+          < k => finalComputation >
+               callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Int, _:Id, _) 
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") </errorCell>)
+          when notBool isArgvType(T:KResult)
+          [structural, large]
+     rule [err00028]:
+          < k => finalComputation >
+               callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:VTList))), _:Int, _:Id, _) 
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00028", "Main can only have zero or two arguments.") </errorCell>)
+          [structural, large]
+     rule [err00029]:
+          < k => finalComputation > 
+               callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id)))), _:Int, _:Id, _)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00029", "Main can only have zero or two arguments.") </errorCell>)
+          when T:K =/=K void
+          [structural, large]
+          
+     rule [err00030]:
+          < k => finalComputation > 
+               tv(loc(Base:Int, _:Int, _:Int), T:KResult) < tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00030", "Cannot compare pointers with different base objects using '<'.") </errorCell>)
+          when Base:Int =/=K Base':Int
+          [structural, large]
+     rule [err00031]:
+          < k => finalComputation > 
+               tv(loc(Base:Int, _:Int, _:Int), T:KResult) > tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00031", "Cannot compare pointers with different base objects using '>'.") </errorCell>)
+          when Base:Int =/=K Base':Int
+          [structural, large]
+     rule [err00032]:
+          < k => finalComputation > 
+               tv(loc(Base:Int, _:Int, _:Int), T:KResult) <= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00032", "Cannot compare pointers with different base objects using '<='.") </errorCell>)
+          when Base:Int =/=K Base':Int
+          [structural, large]
+     rule [err00033]:
+          < k => finalComputation > 
+               tv(loc(Base:Int, _:Int, _:Int), T:KResult) >= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00033", "Cannot compare pointers with different base objects using '>='.") </errorCell>)
+          when Base:Int =/=K Base':Int
+          [structural, large]
+          
+     rule [err00034]:
+          < k => finalComputation > 
+               cast(t(_, T:K), skipval)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00034", "Casting void type to non-void type.") </errorCell>)
+          when (T:K =/=K void)
+          [structural, large]
+          
+     rule [err00035]:
+          < k => finalComputation > 
+               write(lv(Dest:Int, t(SetItem(Const) _, _)), _)
+          ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00035", "Trying to write through a const lvalue.") </errorCell>)
+          [structural, large]
+     
+     rule [err00036]:
+          < k => finalComputation > checkDerefLoc(NullPointer) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00036", "Trying to dereference a null pointer.") </errorCell>)
+          [structural, large]
+          
+     rule [err00037]:
+          < k => finalComputation > read-aux(NullPointer, _, _) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00037", "Trying to read through a null pointer.") </errorCell>)
+          [structural, large]
+          
+     rule [err00038]:
+          < k => finalComputation > ArrayType(T:KResult, tv(0, _), _)  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00038", "Arrays cannot be of 0 length.") </errorCell>)
+          [structural, large]
+     
+     rule [err00039]:
+          < k => finalComputation > addUnion(S:Id, .KList)  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00039", "Unions cannot be empty.") </errorCell>)
+          [structural, large]
+     rule [err00040]:
+          < k => finalComputation > addStruct(S:Id, .KList)  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00040", "Structs cannot be empty.") </errorCell>)
+          [structural, large]
+          
+     rule [err00041]:
+          < k => finalComputation > types((t(_, void),, t(_, T:K)))  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00041", "If one of a conditional expression's branches has void type, the other must also have void type.") </errorCell>)
+          when T:K =/=K void
+          [structural, large]
+     rule [err00042]:
+          < k => finalComputation > types((t(_, T:K),, t(_, void)))  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") </errorCell>)
+          when T:K =/=K void
+          [structural, large]
+     rule [err00043]:
+          < k => finalComputation > types((T1:KResult,, T2:KResult))  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </errorCell>)
+          when T1:KResult =/=K T2:KResult
+          andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
+          andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
+          [structural, large]
+          
+     rule [err00044]:
+          < k => finalComputation > addToPointer(Loc:Int, T:KResult, I:Int, tv(Size:Int, _))  ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00044", "An array subscript is out of range.") </errorCell>)
+          when notBool ifFromArrayInBounds(T:KResult, I:Int)
+          [structural, large]
+          
+     rule [err00045]:
+          < k => finalComputation > writeByte(loc(Base:Int, _:Int, _:Int), V:K)  ...</ k => finalComputation >
+          <object>...
+               <basePtr> Base:Int </basePtr>
+               <properties>... mconst ...</properties>
+          ...</object>
+          <br/>
+          (.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
+          [structural, large]
+          
+     rule [err00046]:
+          < k => finalComputation > concretize(T:KResult, dataList((piece(N:Int, Len:Int),, _))) ...</ k => finalComputation >
+          <br/>
+          (.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
+          when isFloatType(T:KResult)
+          andBool N:Int >=Int 0
+          [structural, large]
+          
+     rule [err00047]:
+          < k => finalComputation > writeByte(Loc:Int, V:K)  ...</ k => finalComputation >
+          <notWritable>... Loc:Int |-> _ ...</notWritable>
+          <br/>
+          (.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
+          [structural, large]
+     
+     syntax K ::= "datarace" "(" Int "," Int "," Int "," Int ")"
 
-	// fixme possible to miss dataraces with bitfields
-	rule [read-write-race]:
-		<T> 
-			_ 
-			<threads> 
-			(	_
-				<thread> _ <k> read-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
-			</threads> 
-		</T>
-		<br/>
-		(.Bag => <errorCell> Error("00048", "Have a read-write datarace.")
-		// ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
-		</errorCell>)
-		when (Start1 <=Int Start2 andBool Start2 <Int End1)
-		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
-		where Start1 = Loc:Int
-		and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
-		and Start2 = Loc':Int
-		and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
-		[computational, large]
-		
-	rule [write-write-race]:
-		<T> 
-			_ 
-			<threads> 
-			(	_
-				<thread> _ <k> write-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
-				<thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
-			</threads> 
-		</T>
-		<br/>
-		(.Bag => <errorCell> Error("00049", "Have a write-write datarace.")
-		// ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
-		</errorCell>)
-		when (Start1 <=Int Start2 andBool Start2 <Int End1)
-		orBool (Start1 >Int Start2 andBool End2 >Int Start1)
-		where Start1 = Loc:Int
-		and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
-		and Start2 = Loc':Int
-		and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
-		[computational, large]		
+     // fixme possible to miss dataraces with bitfields
+     rule [read-write-race]:
+          <T> 
+               _ 
+               <threads> 
+               (    _
+                    <thread> _ <k> read-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
+                    <thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
+               </threads> 
+          </T>
+          <br/>
+          (.Bag => <errorCell> Error("00048", "Have a read-write datarace.")
+          // ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
+          </errorCell>)
+          when (Start1 <=Int Start2 andBool Start2 <Int End1)
+          orBool (Start1 >Int Start2 andBool End2 >Int Start1)
+          where Start1 = Loc:Int
+          and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
+          and Start2 = Loc':Int
+          and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
+          [computational, large]
+          
+     rule [write-write-race]:
+          <T> 
+               _ 
+               <threads> 
+               (    _
+                    <thread> _ <k> write-aux(Loc:Int, _, BitSize:Int) ...</k> </thread>
+                    <thread> _ <k> write-aux(Loc':Int, _, BitSize':Int) ...</k> </thread> => .Bag)
+               </threads> 
+          </T>
+          <br/>
+          (.Bag => <errorCell> Error("00049", "Have a write-write datarace.")
+          // ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
+          </errorCell>)
+          when (Start1 <=Int Start2 andBool Start2 <Int End1)
+          orBool (Start1 >Int Start2 andBool End2 >Int Start1)
+          where Start1 = Loc:Int
+          and End1 = Loc:Int +Int bitsToBytes(BitSize:Int)
+          and Start2 = Loc':Int
+          and End2 = Loc':Int +Int bitsToBytes(BitSize':Int)
+          [computational, large]        
 
 
 endmodule

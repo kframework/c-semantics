@@ -1,11 +1,9 @@
 require "c-syntax.k"
 
 module C-CONFIGURATION
-	imports C-SYNTAX
+     imports C-SYNTAX
 
-	syntax CellLabel ::= "continuation" | "stackCurrentFunction" | "stackCurrentProgramLoc"
-	
-	configuration 
+     configuration 
 <T>
       <gotoMap color="lightgray"> .Map </gotoMap>
       <genv color="lightgray"> .Map </genv>
@@ -38,7 +36,7 @@ module C-CONFIGURATION
       <preTypes color="cyan"> .Map </preTypes>
       <declarations color="cyan"> .Set </declarations>
       <br/>
-      <funTUs color="lightgray"> .Map </funTUs> // map from current tu to (map from id to where function was defined)			
+      <funTUs color="lightgray"> .Map </funTUs> // map from current tu to (map from id to where function was defined)             
       <nextSharedLoc color="black"> 0 </nextSharedLoc>
       <threadInformation color="yellow">
             <threadStatus color="yellow"> .Map </threadStatus>
@@ -110,6 +108,11 @@ module C-CONFIGURATION
                               <currTU color="lightgray"> "" </currTU>
                               <currentFunction color="lightgray"> .K </currentFunction>
                               <currentProgramLoc color="black"> .K </currentProgramLoc>
+
+                              // chathhorn: call stack cells
+                              <continuation> .K </continuation>
+                              <stackCurrentFunction> .K </stackCurrentFunction>
+                              <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
                         </control>
                   </threadLocal>
             </thread>
@@ -134,5 +137,5 @@ module C-CONFIGURATION
 <output color="lightgray"> "" </output>
 <resultValue color="red"> .K </resultValue>
 <errorCell multiplicity="?" color="black"> .K </errorCell>
-	
+     
 endmodule

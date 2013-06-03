@@ -54,13 +54,13 @@ sub maudeOutputWrapper {
 		} elsif ($state eq "success"){
 			# if ($line =~ m/< input > .* <\/ input >/){
 				# $reduced = 1;
-			# } elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.List{K}\) <\/ unflushedOutput >/){
+			# } elsif ($line =~ m/< unflushedOutput > # "(.*)"\(\.KList\) <\/ unflushedOutput >/){
 				# my $output = $1;
 				# $output =~ s/\%/\%\%/g;
 				# $output =~ s/`/\\`/g;
 				# $output =~ s/\\\\/\\\\\\\\/g;
 				# $realOutput .= substr(`printf "x$output"`, 1);
-			if ($line =~ m/< output > # "(.*)"\(\.List{K}\) <\/ output >/){
+			if ($line =~ m/< output > # "(.*)"\(\.KList\) <\/ output >/){
 				$reduced = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
@@ -76,16 +76,16 @@ sub maudeOutputWrapper {
 					$realOutput .= "Internal Error: couldn't find stdout in semantic output\n";
 				}
 				#$realOutput .= substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< errorCell > # "(.*)"\(\.List{K}\) <\/ errorCell >/){
+			} elsif ($line =~ m/< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/){
 				$haveError = 1;
 				my $output = $1;
 				$output =~ s/\%/\%\%/g;
 				$output =~ s/`/\\`/g;
 				$output =~ s/\\\\/\\\\\\\\/g;
 				$errorCell = substr(`printf "x$output"`, 1);
-			} elsif ($line =~ m/< currentFunction > # Identifier\("(.*)"\)\(\.List\{K\}\) <\/ currentFunction >/) {
+			} elsif ($line =~ m/< currentFunction > # Identifier\("(.*)"\)\(\.KList\) <\/ currentFunction >/) {
 				$myFunc = $1;
-			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\),,# (\d+)\(\.List\{K\}\)\) <\/ currentProgramLoc >/) {
+			} elsif ($line =~ m/< currentProgramLoc > \('CabsLoc\)\.KLabel\(# "(.*)"\(\.KList\),,# (\d+)\(\.KList\),,# (\d+)\(\.KList\),,# (\d+)\(\.KList\)\) <\/ currentProgramLoc >/) {
 				$myFile = $1;
 				$myLine = $2;
 				$myOffsetStart = $3;
@@ -102,7 +102,8 @@ sub maudeOutputWrapper {
 			} elsif ($line =~ m/< type > (.*) <\/ type >/){
 				$haveError = 1;
 				$finalCompType = $1;
-			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(kList\("List`{K`}2K_"\)\(# (-?\d+)\(\.List\{K\}\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.List\{K\}\),,\('int\)\.KLabel\(\.List\{K\}\)\)\) <\/ resultValue >/){
+                  # TODO(chathhorn) broke
+			} elsif ($line =~ m/< resultValue > \('tv\)\.KLabel\(KList2KLabel\(# (-?\d+)\(\.KList\)\),,\('t\)\.KLabel\(Set2KLabel \.\(\.KList\),,\('int\)\.KLabel\(\.KList\)\)\) <\/ resultValue >/){
 				$haveResult = 1;
 				$retval = $1;
 			}
