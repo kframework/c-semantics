@@ -11,17 +11,17 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // empty binding
      // fixme not really a sequence point
      
-     syntax K ::= "bind-aux" "(" Int "," VTList "," VTList ")"
+     syntax K ::= "bind-aux" "(" SymLoc "," VTList "," VTList ")"
      rule
           <k> bind(L:VTList, L':VTList) 
                => bind-aux(NullPointer, L:VTList, L':VTList) ...</k> 
           [structural] 
      
      rule [bind-empty-void]:
-          <k> bind-aux(_:Int, .VTList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
+          <k> bind-aux(_, .VTList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
           [structural] 
      rule [bind-empty]:
-          <k> bind-aux(_:Int, .VTList, .VTList) => sequencePoint ...</k> 
+          <k> bind-aux(_, .VTList, .VTList) => sequencePoint ...</k> 
           [structural] 
           
           
@@ -32,7 +32,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
       // chathhorn: these two rules only mutate the head of the list now.
      rule [bind-coerce-array]:
           bind-aux(
-               _:Int
+               _
                , L:VTList
                , (typedDeclaration(
                         (t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult)))), X:Id
@@ -41,7 +41,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural, anywhere] 
      rule [bind-coerce-incompleteArray]:
           bind-aux(
-               _:Int
+               _
                , L:VTList
                , (typedDeclaration(
                         (t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult)))), X:Id
@@ -50,21 +50,21 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural, anywhere] 
           
      rule [bind-one]:
-          <k> true ~> bind-aux(_:Int, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
+          <k> true ~> bind-aux(_, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
                => allocateType(Loc, T:KResult)
                ~> addToEnv(X:Id, Loc)
                ~> giveType(X:Id, T:KResult)
                ~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:KList, T':KResult)))
                ~> bind-aux(Loc, L:VTList, P:VTList)
           ...</k> 
-          <nextLoc> Loc:SymLoc => inc(Loc) </nextLoc>
+          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
           when notBool isArrayType(T:KResult)
           [structural] 
           
      rule [bind-one-check-type]:
           <k> (.K => isTypeCompatible(T:KResult, T':KResult)) 
-               ~> bind-aux(_:Int, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
+               ~> bind-aux(_, (tv(V:KList, T':KResult), L:VTList), (typedDeclaration(T:KResult, X:Id), P:VTList))
           ...</k> 
           [structural] 
      
@@ -86,20 +86,20 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural]
      rule promoteList(.VTList) => .KList
      
-     syntax K ::= "bindVariadic" "(" K "," VTList ")"
-     syntax K ::= "bindVariadic-pre" "(" K "," KList ")"
+     syntax K ::= "bindVariadic" "(" SymLoc "," VTList ")"
+     syntax K ::= "bindVariadic-pre" "(" SymLoc "," KList ")"
      
      
      // the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments 
      rule [bind-variadic-pre]:
-          <k> bind-aux(Loc:Int, L:VTList, t(_, variadic))
-               => bindVariadic-pre(Loc:Int, promoteList(L:VTList))
+          <k> bind-aux(Loc:SymLoc, L:VTList, t(_, variadic))
+               => bindVariadic-pre(Loc, promoteList(L))
           ...</k>
           [structural] 
 
      rule [bind-variadic-start]:
-          <k> bindVariadic-pre(Loc:Int, L:VTList) 
-               => bindVariadic(Loc:Int, L:VTList)
+          <k> bindVariadic-pre(Loc:SymLoc, L:VTList) 
+               => bindVariadic(Loc, L)
           ...</k>
           [structural]
      
@@ -113,7 +113,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                ) 
                ~> bindVariadic(_, ((V:VT => .), _:VTList)) 
           ...</k>
-          <nextLoc> Loc:SymLoc => inc(Loc) </nextLoc>
+          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
           [structural]
      

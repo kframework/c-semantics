@@ -229,8 +229,7 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.8}{1}}}{
      Many operators that expect operands of arithmetic type cause conversions and yield result types in a similar way. The purpose is to determine a common real type for the operands and result. For the specified operands, each operand is converted, without change of type domain, to a type whose corresponding real type is the common real type. Unless explicitly stated otherwise, the common real type is also the corresponding real type of the result, whose type domain is the type domain of the operands if they are the same, and complex otherwise. This pattern is called the usual arithmetic conversions:
      }*/
-     rule
-          <k> L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
+     rule <k> L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
                => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
           ...</k>
           when isArithBinConversionOp(L:KLabel)
@@ -252,11 +251,9 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      \item Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double.
      \end{itemize}%
      */
-     rule
-          usualArithmeticConversion(t(_, double), t(_, T:K)) => t(.Set, double)
+     rule usualArithmeticConversion(t(_, double), t(_, T:K)) => t(.Set, double)
           when long-double =/=K T:K
-     rule
-          usualArithmeticConversion(T:K, t(_, double)) => t(.Set, double)
+     rule usualArithmeticConversion(T:K, t(_, double)) => t(.Set, double)
           when long-double =/=K T:K
           
      /*@ 
@@ -264,12 +261,10 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      \item Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
      \end{itemize}%
      */
-     rule
-          usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
+     rule usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
           when long-double =/=K T:K
           andBool double =/=K T:K
-     rule
-          usualArithmeticConversion(t(_, T:K), t(_, float)) => t(.Set, float)
+     rule usualArithmeticConversion(t(_, T:K), t(_, float)) => t(.Set, float)
           when long-double =/=K T:K
           andBool double =/=K T:K
 
@@ -388,11 +383,9 @@ module DYNAMIC-SEMANTICS-CONVERSION
      imports DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
      
      //- switch assumes casts can happen anywhere
-     rule
-          cast(T:KResult, tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
+     rule cast(T:KResult, tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
           
-     rule
-          cast(t(S:Set, T:K), tv(L:KList, t(_, T:K))) => tv(L:KList, t(S:Set, T:K))
+     rule cast(t(S:Set, T:K), tv(L:KList, t(_, T:K))) => tv(L:KList, t(S:Set, T:K))
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if the value compares equal to 0; otherwise, the result is 1.
@@ -502,34 +495,34 @@ module DYNAMIC-SEMANTICS-CONVERSION
           cast(T:KResult, tv(I:Int, T':KResult)) 
                => cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
           when isBitfieldType(T:KResult)
-          andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult)))
-          andBool hasIntegerType(T':KResult)
-          andBool hasSignedIntegerType(innerType(T:KResult))
+               andBool absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult)))
+               andBool hasIntegerType(T':KResult)
+               andBool hasSignedIntegerType(innerType(T:KResult))
      rule [cast-schar-of-huge]:
           cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
           when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, signed-char))))
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
      rule [cast-sint-of-huge]:
           cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
           when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, short-int))))
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
      rule [cast-int-of-huge]:
           cast(t(S:Set, int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
           when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, int))))
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
      rule [cast-long-of-huge]:
           cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
           when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int))))
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
      rule [cast-llong-of-huge]:
           cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
                => cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
           when absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-long-int))))
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
           
           
           
@@ -537,50 +530,59 @@ module DYNAMIC-SEMANTICS-CONVERSION
           cast(T:KResult, tv(I:Int, T':KResult))
                => tv(I:Int +Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
           when I:Int <Int min(T:KResult)
-          andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
-          andBool hasSignedIntegerType(T:KResult)
-          andBool hasIntegerType(T':KResult)
-          andBool notBool isBoolType (T:KResult)
+               andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
+               andBool hasSignedIntegerType(T:KResult)
+               andBool hasIntegerType(T':KResult)
+               andBool notBool isBoolType (T:KResult)
           [structural] 
      rule [cast-signed-of-big]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
                => tv(I:Int -Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
           when I:Int >Int max(T:KResult)
-          andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
-          andBool hasSignedIntegerType(T:KResult)
-          andBool hasIntegerType(T':KResult)
-          andBool notBool isBoolType (T:KResult)
+               andBool absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult)))
+               andBool hasSignedIntegerType(T:KResult)
+               andBool hasIntegerType(T':KResult)
+               andBool notBool isBoolType (T:KResult)
 
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
           cast(T:KResult, tv(piece(unknown(Len:Int), Len:Int), T':KResult)) 
                => tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
           when hasIntegerType(T:KResult)
-          andBool hasIntegerType(T':KResult)
+               andBool hasIntegerType(T':KResult)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
-     When a finite value of real floating type is converted to an integer type other than \cinline{_Bool}, the fractional part is discarded (i.e., the value is truncated toward zero). If the value of the integral part cannot be represented by the integer type, the behavior is undefined.
+     When a finite value of real floating type is converted to an integer type
+     other than \cinline{_Bool}, the fractional part is discarded (i.e., the
+     value is truncated toward zero). If the value of the integral part cannot
+     be represented by the integer type, the behavior is undefined.
      }*/
      // fixme
-     rule
-          cast(T:KResult, tv(V:Float, t(S:Set, double))) 
+     rule cast(T:KResult, tv(V:Float, t(S:Set, double))) 
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
-          andBool notBool isBoolType (T:KResult)
-     rule
-          cast(T:KResult, tv(V:Float, t(S:Set, float))) 
+               andBool notBool isBoolType (T:KResult)
+     rule cast(T:KResult, tv(V:Float, t(S:Set, float))) 
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
-          andBool notBool isBoolType (T:KResult)
-     rule
-          cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
+               andBool notBool isBoolType (T:KResult)
+     rule cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
-          andBool notBool isBoolType (T:KResult)
+               andBool notBool isBoolType (T:KResult)
      
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
-     When a value of integer type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined. Results of some implicit conversions may be represented in greater range and precision than that required by the new type (see 6.3.1.8 and 6.8.6.4).
+     When a value of integer type is converted to a real floating type, if the
+     value being converted can be represented exactly in the new type, it is
+     unchanged. If the value being converted is in the range of values that can
+     be represented but cannot be represented exactly, the result is either the
+     nearest higher or nearest lower representable value, chosen in an
+     implementation-defined manner. If the value being converted is outside the
+     range of values that can be represented, the behavior is undefined.
+     Results of some implicit conversions may be represented in greater range
+     and precision than that required by the new type (see 6.3.1.8 and
+     6.8.6.4).
      }*/
      rule [cast-int-to-float]:
           cast(t(S:Set, float), tv(I:Int, T:KResult)) 
@@ -596,72 +598,106 @@ module DYNAMIC-SEMANTICS-CONVERSION
           when hasIntegerType(T:KResult)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
-     When a value of real floating type is converted to a real floating type, if the value being converted can be represented exactly in the new type, it is unchanged. If the value being converted is in the range of values that can be represented but cannot be represented exactly, the result is either the nearest higher or nearest lower representable value, chosen in an implementation-defined manner. If the value being converted is outside the range of values that can be represented, the behavior is undefined. Results of some implicit conversions may be represented in greater range and precision than that required by the new type (see 6.3.1.8 and 6.8.6.4).
+     When a value of real floating type is converted to a real floating type,
+     if the value being converted can be represented exactly in the new type,
+     it is unchanged. If the value being converted is in the range of values
+     that can be represented but cannot be represented exactly, the result is
+     either the nearest higher or nearest lower representable value, chosen in
+     an implementation-defined manner. If the value being converted is outside
+     the range of values that can be represented, the behavior is undefined.
+     Results of some implicit conversions may be represented in greater range
+     and precision than that required by the new type (see 6.3.1.8 and
+     6.8.6.4).
      }*/
      // fixme all floats same precision
-     rule
-          cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
+     rule cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
                => tv(F:Float, t(S:Set, T':K))
           when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
           andBool (T':K ==K float orBool T':K ==K double orBool T':K ==K long-double)
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
-     The (nonexistent) value of a void expression (an expression that has type \cinline{void}) shall not be used in any way, and implicit or explicit conversions (except to \cinline{void}) shall not be applied to such an expression. If an expression of any other type is evaluated as a void expression, its value or designator is discarded. (A void expression is evaluated for its side effects.)
+     The (nonexistent) value of a void expression (an expression that has type
+     \cinline{void}) shall not be used in any way, and implicit or explicit
+     conversions (except to \cinline{void}) shall not be applied to such an
+     expression. If an expression of any other type is evaluated as a void
+     expression, its value or designator is discarded. (A void expression is
+     evaluated for its side effects.)
      }*/     
-     rule
-          cast(t(_, void), _:KResult) => skipval
+     rule cast(t(_, void), _:KResult) => skipval
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
-     A pointer to void may be converted to or from a pointer to any object type. A pointer to any object type may be converted to a pointer to void and back again; the result shall compare equal to the original pointer.
+     A pointer to void may be converted to or from a pointer to any object
+     type. A pointer to any object type may be converted to a pointer to void
+     and back again; the result shall compare equal to the original pointer.
 
-     For any qualifier $q$, a pointer to a non-$q$-qualified type may be converted to a pointer to the $q$-qualified version of the type; the values stored in the original and converted pointers shall compare equal.
+     For any qualifier $q$, a pointer to a non-$q$-qualified type may be
+     converted to a pointer to the $q$-qualified version of the type; the
+     values stored in the original and converted pointers shall compare equal.
      }*/
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
-     An integer constant expression with the value 0, or such an expression cast to type \cinline{void *}, is called a null pointer constant. If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.
+     An integer constant expression with the value 0, or such an expression
+     cast to type \cinline{void *}, is called a null pointer constant. If a
+     null pointer constant is converted to a pointer type, the resulting
+     pointer, called a null pointer, is guaranteed to compare unequal to a
+     pointer to any object or function.
      }*/
-     rule
-          cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
+     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
                => tv(NullPointer, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
-          andBool N:Int ==K NullPointerConstant
+               andBool N:Int ==K NullPointerConstant
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
-     Conversion of a null pointer to another pointer type yields a null pointer of that type. Any two null pointers shall compare equal.
+     Conversion of a null pointer to another pointer type yields a null pointer
+     of that type. Any two null pointers shall compare equal.
      }*/
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{5}}}{
-     An integer may be converted to any pointer type. Except as previously specified, the result is implementation-defined, might not be correctly aligned, might not point to an entity of the referenced type, and might be a trap representation.
+     An integer may be converted to any pointer type. Except as previously
+     specified, the result is implementation-defined, might not be correctly
+     aligned, might not point to an entity of the referenced type, and might be
+     a trap representation.
      }*/
      // choice implementation defined behavior
-     rule
-          cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
+     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
                => tv(N:Int, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
-          andBool N:Int =/=K NullPointerConstant
+               andBool N:Int =/=K NullPointerConstant
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
-     Any pointer type may be converted to an integer type. Except as previously specified, the result is implementation-defined. If the result cannot be represented in the integer type, the behavior is undefined. The result need not be in the range of values of any integer type.
+     Any pointer type may be converted to an integer type. Except as previously
+     specified, the result is implementation-defined. If the result cannot be
+     represented in the integer type, the behavior is undefined. The result
+     need not be in the range of values of any integer type.
      }*/
      // fixme needs to check size
-     rule
-          cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
+     rule cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
                => tv(N:Int, T:KResult)
           when hasIntegerType(T:KResult)
-          andBool notBool isBoolType (T:KResult)
+               andBool notBool isBoolType (T:KResult)
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
-     A pointer to an object type may be converted to a pointer to a different object type. If the resulting pointer is not correctly aligned for the referenced type, the behavior is undefined. Otherwise, when converted back again, the result shall compare equal to the original pointer. When a pointer to an object is converted to a pointer to a character type, the result points to the lowest addressed byte of the object. Successive increments of the result, up to the size of the object, yield pointers to the remaining bytes of the object.
+     A pointer to an object type may be converted to a pointer to a different
+     object type. If the resulting pointer is not correctly aligned for the
+     referenced type, the behavior is undefined. Otherwise, when converted back
+     again, the result shall compare equal to the original pointer. When a
+     pointer to an object is converted to a pointer to a character type, the
+     result points to the lowest addressed byte of the object. Successive
+     increments of the result, up to the size of the object, yield pointers to
+     the remaining bytes of the object.
      }*/
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{8}}}{
-     A pointer to a function of one type may be converted to a pointer to a function of another type and back again; the result shall compare equal to the original pointer. If a converted pointer is used to call a function whose type is not compatible with the referenced type, the behavior is undefined.
+     A pointer to a function of one type may be converted to a pointer to a
+     function of another type and back again; the result shall compare equal to
+     the original pointer. If a converted pointer is used to call a function
+     whose type is not compatible with the referenced type, the behavior is
+     undefined.
      }*/
      // fixme
      // possibly not true with other endiannesses
      // choice
      // needs to handle alignment
-     rule
-          cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, t(_, pointerType(_)))) 
+     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, t(_, pointerType(_)))) 
                => tv(N:Int, t(S:Set, pointerType(T:KResult)))
 endmodule
 
@@ -680,63 +716,60 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
      rule [interpret-done]:
           interpret-aux(T:KResult, I:Int) => tv(I:Int, T:KResult)
           when (min(T:KResult) <=Int I:Int) 
-          andBool (max(T:KResult) >=Int I:Int)
-          andBool hasIntegerType(T:KResult)
+               andBool (max(T:KResult) >=Int I:Int)
+               andBool hasIntegerType(T:KResult)
      rule [interpret-too-big]:
           interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, I:Int -Int (2 ^Int absInt(numBits(T:KResult))))
           when (I:Int >Int max(T:KResult))
-          andBool (hasIntegerType(T:KResult))
+               andBool (hasIntegerType(T:KResult))
           
-     //syntax K ::= FUCK(Bool, Bool, Bool, Bool)
-
-     //rule arithInterpret(T:Type, I:Int) => FUCK(hasIntegerType(T), hasSignedIntegerType(T), hasUnsignedIntegerType(T), hasUnsignedIntegerType(T) orBool hasSignedIntegerType(T))
-
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
-          andBool (max(T) >=Int I)
-          andBool hasIntegerType(T)
+               andBool (max(T) >=Int I)
+               andBool hasIntegerType(T)
           
      rule [arithInterpret-unknown]:
           arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T)
           
      // these could be so much better...
-     rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     
-     rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     rule [and-unknown-zero-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
-          when N:Int ==Int 0 
-          [structural, anywhere]
-     rule [and-unknown-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
-          when N:Int =/=Int 0 
-          [structural, anywhere]
+     // TODO(chathhorn) truncated Int, elided
+     // rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+     // 
+     // rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+     // rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+     // rule [and-unknown-zero-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
+     //      when N:Int ==Int 0 
+     //      [structural, anywhere]
+     // rule [and-unknown-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
+     //      when N:Int =/=Int 0 
+     //      [structural, anywhere]
 
-     rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
-          when N:Int ==Int 0 
-          [structural, anywhere]
-     rule [and-unknown-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
-          when N:Int =/=Int 0 [structural, anywhere]
+     // rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+     // rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
+     // rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
+     //      when N:Int ==Int 0 
+     //      [structural, anywhere]
+     // rule [and-unknown-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
+     //      when N:Int =/=Int 0 [structural, anywhere]
      
      // fixme
      rule [arithInterpret-float]: 
           arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
           when (T:K ==K double)
-          orBool T:K ==K float
-          orBool T:K ==K long-double
+               orBool T:K ==K float
+               orBool T:K ==K long-double
      // signed arithmetic isn't supposed to overflow
      rule [arithInterpret-unsigned-big]:
           arithInterpret(T:Type, I:Int) => tv(I:Int %Int (max(T) +Int 1), T)
           when hasUnsignedIntegerType(T)
-          andBool (I:Int >Int max(T))
+               andBool (I:Int >Int max(T))
      rule [arithInterpret-unsigned-small]:
           arithInterpret(T:Type, I:Int) 
           => arithInterpret(T, (I:Int %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
           //=> tv((I:Int %Int (max(T:KResult) +Int 1)) +Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T)
-          andBool (I:Int <Int min(T))
+               andBool (I:Int <Int min(T))
           // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
 
      // rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]

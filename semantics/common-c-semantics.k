@@ -41,7 +41,7 @@ endmodule
 module COMMON-SEMANTIC-SYNTAX
      imports COMMON-INCOMING-MODULES 
      
-     syntax BaseValue ::= Int | Float
+     syntax BaseValue ::= Int | Float | Bits
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
 
@@ -72,17 +72,18 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "initFunction" "(" K "," K ")" [strict]
      syntax K ::= "populateFromGlobal"
      
-     syntax K ::= "checkValidLoc" "(" K ")"
-     syntax K ::= "checkDerefLoc" "(" K ")"
+     syntax K ::= "checkValidLoc" "(" SymLoc ")"
+     syntax K ::= "checkDerefLoc" "(" SymLoc ")"
      syntax ListItem ::= "ListItem" "(" Bag ")"
      syntax K ::= ListToK(List)
      syntax K ::= "Map" "(" Map ")"
-     syntax Int ::= "piece" "(" Int "," Int ")"
+     syntax Bits ::= "piece" "(" Bits "," Int ")"
      //define 'isInt(piece(_, _)) => true
      
-     syntax Int ::= "unknown" "(" Int ")"
+     syntax Bits ::= "unknown" "(" Int ")"
+     syntax Bits ::= Int
      //define 'isInt(unknown(_)) => true
-     
+
      syntax KResult ::= "skipval"
      syntax K ::= "debug"
      syntax K ::= "debug-m" "(" K ")"
@@ -90,15 +91,24 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Id ::= "file-scope" // [ctor] 
      syntax Id ::= "unnamedBitField" // [ctor] 
 
-     
-     syntax SymLoc ::= "loc" "(" Int "," Int "," Int ")" // Base, byte offset, bit offset
-     syntax Int ::= SymLoc
+     syntax ThreadId ::= Int
+     syntax ThreadId ::= "allocatedDuration"
+     syntax SymBase ::= "sb" "(" Int "," ThreadId ")" [klabel('sb)]
+
+     syntax SymLoc ::= "loc" "(" SymBase "," Int "," Int ")" [klabel('loc)] // Base, byte offset, bit offset
+     syntax SymLoc ::= "NullPointer"
+     // TODO(chathhorn): move this elsewhere, rather big change.
+     syntax KResult ::= SymLoc
+
+     syntax SymLoc ::= ladd(SymLoc, Int) [function]
+     syntax SymLoc ::= linc(SymLoc) [function]
+
      //define 'isInt(loc(_, _, _)) => true
      
      // fixme maybe if we keep it reduced here, things can go faster
      syntax K ::= K "+bits" K [function]
-     rule loc(Base:Int, Offset:Int, BitOffset:Int) +bits N:Int
-          => loc(Base:Int, Offset:Int, BitOffset:Int +Int N:Int)
+     rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bits N:Int
+          => loc(Base, Offset, BitOffset +Int N)
 
      //declare bitoffset : Int -> Int 
      //declare byteoffset : Int -> Int
@@ -109,13 +119,13 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
      
-     syntax Int ::= "bitRange" "(" Int "," Int "," Int ")" // original number, from, to inclusive
+     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" // original number, from, to inclusive
      
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
      
-     syntax Int ::= "floorLoc" "(" Int ")" [function] // loc with possible bit offset returning base byte     
-     syntax Int ::= "ceilingLoc" "(" Int ")" [function] // loc with possible bit offset returning upperbounded byte     
-     syntax K ::= "readFunction" "(" Int ")"
+     syntax SymLoc ::= "floorLoc" "(" SymLoc ")" [function] // loc with possible bit offset returning base byte     
+     syntax SymLoc ::= "ceilingLoc" "(" SymLoc ")" [function] // loc with possible bit offset returning upperbounded byte     
+     syntax K ::= "readFunction" "(" SymLoc ")"
      
      syntax Type ::= innerType(Type) [function]
      
@@ -128,50 +138,45 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Int ::= "NullPointerConstant" [function]
      //define 'isInt(NullPointerConstant) => true
      
-     syntax Int ::= "NullPointer"
      //define 'isInt(NullPointer) => true
      
      syntax Value ::= "emptyValue"
      syntax K ::= "allocate" "(" Type "," K ")"
      
      syntax K ::= "zero" "(" K ")"
-     syntax K ::= "zeroBlock" "(" Int ")"
+     syntax K ::= "zeroBlock" "(" SymLoc ")"
           
      syntax K ::= "value" "(" K ")"
           
-     syntax K ::= "sizeofLocation" "(" K ")"
+     syntax K ::= "sizeofLocation" "(" SymLoc ")"
      syntax Type ::= "type" "(" K ")"
      
      syntax K ::= "flush" "(" Int ")"
      
-     syntax K ::= "allocateType" "(" Int "," Type ")"
-     syntax K ::= "allocateTypeIfAbsent" "(" Int "," Type ")"
+     syntax K ::= "allocateType" "(" SymLoc "," Type ")"
+     syntax K ::= "allocateTypeIfAbsent" "(" SymLoc "," Type ")"
      syntax K ::= "giveType" "(" Id "," Type ")"
-     syntax K ::= "addToEnv" "(" Id "," Int ")"
+     syntax K ::= "addToEnv" "(" Id "," SymLoc ")"
      
-     syntax K ::= "read" "(" K "," K ")" [strict(2)] // location, type
+     syntax K ::= "read" "(" SymLoc "," K ")" [strict(2)] // location, type
      syntax K ::= "write" "(" K "," K ")" [strict(2)] // location, value
-     syntax K ::= "writeByte" "(" Int "," K ")" 
+     syntax K ::= "writeByte" "(" SymLoc "," K ")" 
 
      syntax Bool ::= isTypeCompatible(K, K) [function]
      
      syntax Bool ::= isPromoted(Type) [function]
      // syntax Bool ::= "isPromotedInteger" "(" Type ")"
      
-     
-     syntax SymLoc ::= "inc" "(" SymLoc ")" [function]
-     
      //define 'isInt(threadId(N:Int) +Int M:Int) => true
      //define 'isInt(allocatedDuration +Int M:Int) => true
-     syntax Int ::= "threadId" "(" Int ")" // used for symbolic locations based on threadid
-     syntax Int ::= "allocatedDuration" // fake threadid for above when location is of allocated duration
+     //syntax Int ::= "threadId" "(" Int ")" // used for symbolic locations based on threadid
      // syntax Int ::= "readOnly" // fake threadid for above when location can't be written to
           
      syntax K ::= "initialize" "(" Id "," Type "," K ")"
      // syntax K ::= "memblock" "(" Bag "," Map ")" // length and an array from offsets to bytes
      syntax BagItem ::= "mlength" "(" Int ")" 
      syntax BagItem ::= "mconst"
-     syntax K ::= "makeUnwritable" "(" Int ")" 
+     syntax K ::= "makeUnwritable" "(" SymLoc ")" 
      syntax K ::= "makeUnwritableSubObject" "(" K ")" 
      syntax K ::= "makeUnwritableVar" "(" K ")"
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
@@ -219,16 +224,16 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "sizeofType" "(" K ")" [strict] // generates a tv(size, cfg:sizeut)
      syntax K ::= "bitSizeofType" "(" K ")" [strict] // needs to be heated to top of K for struct and union types
      syntax K ::= "byteSizeofType" "(" K ")" [strict] 
-     syntax Int ::= "bitsToBytes" "(" K ")" [function]
+     syntax Int ::= "bitsToBytes" "(" Int ")" [function]
      syntax K ::= "l" "(" KLabel ")"
      syntax "l" -/- [a-zA-Z]
      // metadata "wrapper=(builtin)"
      // syntax Bool ::= Set "contains" SetItem [function]
 
-     syntax Bool ::= K "in" List [function] // chathhorn
+     syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
      
-     syntax Set ::= "assignmentLabels"
+     syntax Set ::= "assignmentLabels" [function]
      rule 
           assignmentLabels => 
                SetItem(l('_:=_))
@@ -248,7 +253,7 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "AllowWrite" "(" K ")" [strict]
      
-     rule AllowWrite(lv(N:Int, T:KResult)) => lv(N:Int, stripConst(T:KResult)) [structural, anywhere]
+     rule AllowWrite(lv(N:SymLoc, T:Type)) => lv(N, stripConst(T)) [structural, anywhere]
 
      syntax Type ::= stripConst(Type) [function]
      rule stripConst(t((SetItem(Const) => .Set) _, _))
@@ -257,8 +262,9 @@ module COMMON-SEMANTIC-SYNTAX
           [structural]
      
      syntax K ::= "bind" "(" VTList "," VTList ")"
-     syntax Value ::= "tv" "(" KList "," Type ")" [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-     syntax Value ::= "lv" "(" KList "," Type ")"
+     syntax Value ::= "tv" "(" KList "," Type ")" [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+     syntax Value ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
+
      syntax K ::= "concretize" "(" Type "," K ")" [strict(2)] 
      syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
      syntax Value ::= "functionPrototype" "(" Id "," Type ")"
@@ -321,8 +327,8 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Type ::= promote(K) [function] // should be K, but is Type for efficiency reasons
      syntax K ::= argPromote(K) [function]
      syntax K ::= "extractField" "(" KList "," K "," Id ")"  // bytes of struct, type, field id
-     syntax K ::= "allocString" "(" Int "," String ")"
-     syntax K ::= "allocWString" "(" Int "," KList ")"
+     syntax K ::= "allocString" "(" SymLoc "," String ")"
+     syntax K ::= "allocWString" "(" SymLoc "," KList ")"
      syntax K ::= "sequencePoint"
      
      syntax K ::= "handleBuiltin" "(" Id "," Type ")"
@@ -338,10 +344,10 @@ module COMMON-SEMANTIC-SYNTAX
      
           
      syntax K ::= "append" "(" Int "," Int "," Value ")" // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
-     syntax K ::= "deleteBlock" "(" Int ")" // deletes the base object from memory, given a location
-     syntax K ::= "deleteSizedBlock" "(" Int "," Int ")" // deletes the base object from memory, given a location and it size (as a check)
+     syntax K ::= "deleteBlock" "(" SymLoc ")" // deletes the base object from memory, given a location
+     syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")" // deletes the base object from memory, given a location and it size (as a check)
      
-     syntax Bool ::= isConcreteNumber(Int) [function]
+     syntax Bool ::= isConcreteNumber(K) [function]
 endmodule
 
 module COMMON-C-SETTINGS
@@ -416,16 +422,21 @@ endmodule
 module COMMON-C-SEMANTICS-MISC
      imports COMMON-INCLUDE 
      
-     rule loc(Base:Int, ByOff:Int, BiOff:Int) +Int Offset:Int
-          => loc(Base:Int, ByOff:Int +Int Offset:Int, BiOff:Int)
-          [structural, anywhere]
-     rule (threadId(N:Int) +Int M:Int) +Int N':Int
-          => threadId(N:Int) +Int (M:Int +Int N':Int)
-          [structural, anywhere]
-     rule (allocatedDuration +Int M:Int) +Int N':Int
-          => allocatedDuration +Int (M:Int +Int N':Int)
-          [structural, anywhere]
-     rule inc(loc(N:Int, M:Int, M':Int)) => loc(N +Int 1, M, M)
+     // chathhorn
+     // rule loc(Base:SymBase, ByOff:Int, BiOff:Int) +Int Offset:Int
+     //      => loc(Base, ByOff +Int Offset, BiOff)
+     //      [structural, anywhere]
+     // rule (threadId(N:Int) +Int M:Int) +Int N':Int
+     //      => threadId(N:Int) +Int (M:Int +Int N':Int)
+     //      [structural, anywhere]
+     // rule (allocatedDuration +Int M:Int) +Int N':Int
+     //      => allocatedDuration +Int (M:Int +Int N':Int)
+     //      [structural, anywhere]
+
+     rule ladd(loc(Base:SymBase, ByOff:Int, BiOff:Int), Offset:Int)
+          => loc(Base, ByOff +Int Offset, BiOff)
+
+     rule linc(L:SymLoc) => ladd(L, 1)
 
      rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural, anywhere]
 
@@ -440,7 +451,12 @@ module COMMON-C-SEMANTICS-MISC
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
      A preprocessing directive of the form
      \cdisplay{# pragma pp-tokensoptnew-line}
-\broken{where the preprocessing token \cinline{STDC} does not immediately follow pragma in the directive (prior to any macro replacement)} causes the implementation to behave in an implementation-defined manner. The behavior might cause translation to fail or cause the translator or the resulting program to behave in a non-conforming manner. Any such pragma that is not recognized by the implementation is ignored.
+     \broken{where the preprocessing token \cinline{STDC} does not immediately
+     follow pragma in the directive (prior to any macro replacement)} causes the
+     implementation to behave in an implementation-defined manner. The behavior
+     might cause translation to fail or cause the translator or the resulting
+     program to behave in a non-conforming manner. Any such pragma that is not
+     recognized by the implementation is ignored.
      }*/
      rule [Pragma]:
           <k> Pragma(_:K) => .K ...</k>
@@ -448,8 +464,8 @@ module COMMON-C-SEMANTICS-MISC
           
      rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
      
-     rule loc(Base:Int, Offset:Int, BitOffset:Int)
-          => loc(Base:Int, Offset:Int +Int BitOffset:Int /Int numBitsPerByte, BitOffset:Int %Int numBitsPerByte)
+     rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
+          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte, BitOffset %Int numBitsPerByte)
           when BitOffset:Int >=Int numBitsPerByte
           [structural, anywhere]
      

@@ -48,10 +48,12 @@ module C-CONFIGURATION
       <br/>
       <threads color="yellow">
             <thread multiplicity="*" color="yellow">
-                  <threadId color="yellow"> 0 </threadId>
+                  <threadId color="yellow"> 1 </threadId>
                   <nextLoc color="black"> 0 </nextLoc> // should be initialized with a pair (threadId, 0)
                   <buffer color="lightgray"> .List </buffer>
-                  <k color="green" multiplicity="?"> .K </k>
+                  <k color="green" multiplicity="?">
+                         $PGM:K
+                  </k>
                   <br/>
                   <threadLocal>
                         <callStack color="violet"> .List </callStack> // stack of "control" cells

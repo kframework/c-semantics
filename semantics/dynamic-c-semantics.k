@@ -28,7 +28,7 @@ endmodule
 
 module DYNAMIC-C-SEMANTICS-MISC
      imports DYNAMIC-INCLUDE 
-      imports C-CONFIGURATION
+     imports C-CONFIGURATION
                
      rule [sequencePoint]:
           <k> sequencePoint => .K ...</k>
@@ -75,17 +75,17 @@ module DYNAMIC-C-SEMANTICS-MISC
      
      // can't lex string2KList correctly in #fPrint(N:Int,, string2KList(S:String))
      rule [flush]:
-      <k> flush(N:Int) => .K ...</k>
-      <fileCommands>... .K
-            => f-sendString(N:Int, S:String)
-            ~> f-sent(N:Int, S:String)
-            ~> f-flush(N:Int)
-      </fileCommands>
-      <file>...
-            <fid> N:Int </fid>
-            <buff> S:String => "" </buff>
-            <sending>... .List => ListItem(S:String) </sending>
-      ...</file>
+          <k> flush(N:Int) => .K ...</k>
+          <fileCommands>... .K
+               => f-sendString(N:Int, S:String)
+               ~> f-sent(N:Int, S:String)
+               ~> f-flush(N:Int)
+          </fileCommands>
+          <file>...
+               <fid> N:Int </fid>
+               <buff> S:String => "" </buff>
+               <sending>... .List => ListItem(S:String) </sending>
+          ...</file>
           [structural]
 
      rule [sendString-one]:
@@ -142,16 +142,38 @@ module DYNAMIC-C-SEMANTICS
      imports DYNAMIC-C-STANDARD-LIBRARY
      // imports DYNAMIC-C-LTL
      
-/*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
-If they are declared, the parameters to the main function shall obey the following constraints:
-\begin{itemize}
-\item The value of \cinline{argc} shall be nonnegative.
-\item \cinline{argv[argc]} \cinline{shall} be a null pointer.
-\item If the value of \cinline{argc} is greater than zero, the array members \cinline{argv[0]} through \cinline{argv[argc-1]} inclusive shall contain pointers to strings, which are given implementation-defined values by the host environment prior to program startup. The intent is to supply to the program information determined prior to program startup from elsewhere in the hosted environment. If the host environment is not capable of supplying strings with letters in both uppercase and lowercase, the implementation shall ensure that the strings are received in lowercase. 
-\item If the value of argc is greater than zero, the string pointed to by \cinline{argv[0]} represents the program name; \cinline{argv[0][0]} shall be the null character if the program name is not available from the host environment. If the value of \cinline{argc} is greater than one, the strings pointed to by \cinline{argv[1]} through \cinline{argv[argc-1]} represent the program parameters.
-\item The parameters \cinline{argc} and \cinline{argv} and the strings pointed to by the \cinline{argv} array shall be modifiable by the program, and retain their last-stored values between program startup and program termination.
-\end{itemize}
-}*/
+     /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
+     If they are declared, the parameters to the main function shall obey the
+     following constraints:
+     \begin{itemize}
+     \item The value of \cinline{argc} shall be nonnegative.
+
+     \item \cinline{argv[argc]} \cinline{shall} be a null pointer.
+
+     \item If the value of \cinline{argc} is greater than zero, the array
+     members \cinline{argv[0]} through \cinline{argv[argc-1]} inclusive shall
+     contain pointers to strings, which are given implementation-defined values
+     by the host environment prior to program startup. The intent is to supply
+     to the program information determined prior to program startup from
+     elsewhere in the hosted environment. If the host environment is not
+     capable of supplying strings with letters in both uppercase and lowercase,
+     the implementation shall ensure that the strings are received in
+     lowercase. 
+
+     \item If the value of argc is greater than zero, the string pointed to by
+     \cinline{argv[0]} represents the program name; \cinline{argv[0][0]} shall
+     be the null character if the program name is not available from the host
+     environment. If the value of \cinline{argc} is greater than one, the
+     strings pointed to by \cinline{argv[1]} through \cinline{argv[argc-1]}
+     represent the program parameters.
+
+     \item The parameters \cinline{argc} and \cinline{argv} and the strings
+     pointed to by the \cinline{argv} array shall be modifiable by the program,
+     and retain their last-stored values between program startup and program
+     termination.
+
+     \end{itemize}
+     }*/
      
      syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
      
@@ -166,20 +188,17 @@ If they are declared, the parameters to the main function shall obey the followi
                => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointer)
           [structural]
           
-          
      syntax K ::= "syntaxInt" "(" Int ")"
      rule [syntaxInt]: syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
      
      syntax K ::= "pgmArgs" "(" KList ")" [function]
      syntax K ::= "argName" "(" KList ")" [function]
-     rule
-          argName(L:KList)
+     rule argName(L:KList)
           => Name(
                Identifier("#incomingArgumentsArray"), 
                PointerType(ArrayType(JustBase, syntaxInt((lengthKList L:KList) +Int 1), Specifier(klist(.KList))))
           )
-     rule
-          pgmArgs(L:KList)
+     rule pgmArgs(L:KList)
           => DeclarationDefinition(InitNameGroup(
                Specifier(klist(Char)), 
                klist(InitName(argName(L:KList), NoInit))
@@ -189,21 +208,69 @@ If they are declared, the parameters to the main function shall obey the followi
       // TODO(chathhorn): I don't think this is used.
      //rule [eval-noInput]: eval(K:K) => eval(K:K, .KList, "", 0) [structural]
           
-     /*@ These helpers are used to get around a bug in \K related to successive ``/''s in strings. */
+     /*@ These helpers are used to get around a bug in \K related to successive
+     ``/''s in strings. */
      syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
      
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
-     rule [eval-input]: eval(Program(klist(P:KList)), L:KList, Input:String, IsInterp:Int) =>
-          <T>...
+     // TODO(chathhorn): eval, elided 
+     // rule [eval-input]: eval(Program(klist(P:KList)), L:KList, Input:String, IsInterp:Int) =>
+     //      <T>...
+     //           <threads>
+     //                <thread>...
+     //                     <k> klistToK(P:KList)
+     //                               ~> pgmArgs(L:KList)
+     //                               ~> resolveReferences                         
+     //                               // ~> incomingArguments(L:KList)
+     //                               ~> callMain(lengthKList L:KList, incomingArguments(L:KList))
+     //                     </k>
+     //                     <br/>
+     //                     <threadId> 1 </threadId>
+     //                     <nextLoc> firstLoc(1) </nextLoc>
+     //                     <threadLocal>...
+     //                          <control>...
+     //                               <currentFunction> file-scope </currentFunction>
+     //                               <currentProgramLoc> UnknownCabsLoc </currentProgramLoc>
+     //                          ...</control>
+     //                     ...</threadLocal>
+     //                ...</thread>
+     //           </threads>
+     //           <nextSharedLoc> firstLoc(0) </nextSharedLoc>
+     //      ...</T>
+     //      <br/>
+     //      <files>
+     //           <fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
+     //           <br/>
+     //           <file>...
+     //                <fid> 0 </fid>
+     //                <uri> stdinStr </uri>
+     //                <mode> "r" </mode>
+     //                <buff> Input:String </buff>
+     //           ...</file>
+     //           <file>...
+     //                <fid> 1 </fid>
+     //                <uri> stdoutStr </uri>
+     //                <mode> "w" </mode>
+     //           ...</file>
+     //           <file>...
+     //                <fid> 2 </fid>
+     //                <uri> stdoutStr </uri>
+     //                <mode> "w" </mode>
+     //           ...</file>
+     //      </files>
+     //      [structural, large]
+
+     rule [eval-input]: 
                <threads>
                     <thread>...
-                         <k> klistToK(P:KList)
-                                   ~> pgmArgs(L:KList)
-                                   ~> resolveReferences                         
-                                   // ~> incomingArguments(L:KList)
-                                   ~> callMain(lengthKList L:KList, incomingArguments(L:KList))
-                         </k>
+          <k> Program(klist(P:KList)) 
+               => klistToK(P)
+               // ~> pgmArgs(L:KList)
+               ~> resolveReferences                         
+               // ~> incomingArguments(L:KList)
+               ~> callMain(lengthKList ("") , incomingArguments(""))
+          </k>
                          <br/>
                          <threadId> 1 </threadId>
                          <nextLoc> firstLoc(1) </nextLoc>
@@ -216,7 +283,6 @@ If they are declared, the parameters to the main function shall obey the followi
                     ...</thread>
                </threads>
                <nextSharedLoc> firstLoc(0) </nextSharedLoc>
-          ...</T>
           <br/>
           <files>
                <fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
@@ -240,30 +306,35 @@ If they are declared, the parameters to the main function shall obey the followi
           </files>
           [structural, large]
 
-/*@ 
-\begin{lrbox}{\LstBox}
-\begin{lstlisting}
-int main(void) { ... }
-\end{lstlisting}
-\end{lrbox}
-\begin{lrbox}{\LstBoxb}
-\begin{lstlisting}
-int main(int argc, char *argv[]) { ... }
-\end{lstlisting}
-\end{lrbox}
-\fromStandard{\source[n1570]{\para{5.1.2.2.1}{1}}}{
-The function called at program startup is named \cinline{main}. The implementation declares no prototype for this function. It shall be defined with a return type of \cinline{int} and with no parameters:
+     /*@ 
+     \begin{lrbox}{\LstBox}
+     \begin{lstlisting}
+     int main(void) { ... }
+     \end{lstlisting}
+     \end{lrbox}
+     \begin{lrbox}{\LstBoxb}
+     \begin{lstlisting}
+     int main(int argc, char *argv[]) { ... }
+     \end{lstlisting}
+     \end{lrbox}
+     \fromStandard{\source[n1570]{\para{5.1.2.2.1}{1}}}{
+     The function called at program startup is named \cinline{main}. The
+     implementation declares no prototype for this function. It shall be
+     defined with a return type of \cinline{int} and with no parameters:
 
-\usebox{\LstBox}
+     \usebox{\LstBox}
 
-or with two parameters (referred to here as \cinline{argc} and \cinline{argv}, though any names may be used, as they are local to the function in which they are declared):
+     or with two parameters (referred to here as \cinline{argc} and
+     \cinline{argv}, though any names may be used, as they are local to the
+     function in which they are declared):
 
-\usebox{\LstBoxb}
+     \usebox{\LstBoxb}
 
-or equivalent; or in some other implementation-defined manner.
-}*/
+     or equivalent; or in some other implementation-defined manner.
+     }*/
 
-     //@ this bit of indirection is used to check that the main prototype is correct, and to call it with the appropriate arguments
+     /*@ this bit of indirection is used to check that the main prototype is
+      correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
                => callMain-aux(typeof(Identifier("main")), N:Int, Identifier("#incomingArgumentsArray"), Args:K)
@@ -277,27 +348,22 @@ or equivalent; or in some other implementation-defined manner.
      // FIXME i think these are slightly different
      // fixme void isn't supposed to have a name
      // fixme figure out type of string
-     rule
-          callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
                => Call(Identifier("main"), klist(.KList))
           [structural]
-     rule
-          callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
                => Call(Identifier("main"), klist(.KList))
           [structural]
-     rule
-          callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
                => Args:K 
                ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
-     rule
-          callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
                => Args:K 
                ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
-
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
