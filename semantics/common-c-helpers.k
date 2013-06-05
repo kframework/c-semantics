@@ -44,24 +44,24 @@ module COMMON-SEMANTICS-HELPERS-INCLUDE
      // require maudeLib/common-c-builtins
      // imports #COMMON-SEMANTICS-HELPERS-BUILTINS
      // op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
-     syntax Int ::= Int "bit::" Int
+     syntax Bits ::= Bits "bit::" Bits
 endmodule
 
 module COMMON-SEMANTICS-HELPERS-MISC
      imports COMMON-SEMANTICS-HELPERS-INCLUDE
 
      syntax K ::= firstLoc(K) [function]
-     rule firstLoc(ThreadId:Int) => loc(threadId(ThreadId:Int) +Int 0, 0, 0)
+     rule firstLoc(ThreadId:Int) => loc(sb(0 , ThreadId:Int), 0, 0)
      
-     syntax Int ::= base(Int) [function]
-     rule base(loc(Base:Int, _, _)) => Base:Int
+     syntax SymBase ::= base(SymLoc) [function]
+     rule base(loc(Base:SymBase, _, _)) => Base
      
-      syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
-      syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
-      // TODO(chathhorn): celllabel, elided
-      // rule gatherInnerCells(B:Bag, L:CellLabel) => gatherInnerCells-aux(B:Bag, L:CellLabel, .Set)
-      // rule gatherInnerCells-aux(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel, _ (.Set => SetItem(K:K)))
-      // rule gatherInnerCells-aux(.Bag, _, S:Set) => S
+     syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
+     syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
+     // TODO(chathhorn): celllabel, elided
+     // rule gatherInnerCells(B:Bag, L:CellLabel) => gatherInnerCells-aux(B:Bag, L:CellLabel, .Set)
+     // rule gatherInnerCells-aux(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel, _ (.Set => SetItem(K:K)))
+     // rule gatherInnerCells-aux(.Bag, _, S:Set) => S
      
      syntax List ::= "stringToList" "(" String ")" [function]
      syntax String ::= listToString(List) [function]
@@ -75,28 +75,29 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
      
-     syntax Bool ::= isUnknown(K) [function]
-     rule [isUnknown-piece]: isUnknown(piece(_:Int, _:Int)) => true
-     rule [isUnknown-ptr]: isUnknown(loc(_:Int, _:Int, _:Int)) => false
+     syntax Bool ::= isUnknown(K) [function] // Ints, Bits, SymLocs
+     rule [isUnknown-piece]: isUnknown(piece(_, _)) => true
+     rule [isUnknown-ptr]: isUnknown(loc(_:SymBase, _:Int, _:Int)) => false
      rule [isUnknown-int]: isUnknown(I:Int) => false
-          when I:Int <=Int 0 orBool I:Int >Int 0
-     
-     rule loc(N:Int, M:Int, 0) <Int loc(N:Int, M':Int, 0) => true
-          when M:Int <Int M':Int
-          [structural]
-     rule loc(N:Int, M:Int, 0) <=Int loc(N:Int, M':Int, 0) => true
-          when M:Int <=Int M':Int
-          [structural]
-     rule loc(N:Int, M:Int, 0) >Int loc(N:Int, M':Int, 0) => true
-          when M:Int >Int M':Int
-          [structural]
-     rule loc(N:Int, M:Int, 0) >=Int loc(N:Int, M':Int, 0) => true
-          when M:Int >=Int M':Int
-          [structural]
+          // TODO(chathhorn): silly sort check
+          when (I <=Int 0) orBool (I >Int 0)
+
+     // chathhorn
+     // rule loc(N:SymBase, M:Int, 0) <Int loc(N, M', 0) => true
+     //      when M:Int <Int M':Int
+     //      [structural]
+     // rule loc(N:SymBase, M:Int, 0) <=Int loc(N, M', 0) => true
+     //      when M:Int <=Int M':Int
+     //      [structural]
+     // rule loc(N:SymBase, M:Int, 0) >Int loc(N, M', 0) => true
+     //      when M:Int >Int M':Int
+     //      [structural]
+     // rule loc(N:SymBase, M:Int, 0) >=Int loc(N, M', 0) => true
+     //      when M:Int >=Int M':Int
+     //      [structural]
      
      syntax K ::= simplifyTruth(K) [function]
      rule simplifyTruth(K:K) => K:K != tv(0, t(.Set, int))
-     
      
      syntax Bool ::= isNotTruthValue(Value) [function]
      rule isNotTruthValue(tv(V:K, t(_, T:K))) 
@@ -122,21 +123,21 @@ module COMMON-SEMANTICS-HELPERS-MISC
                => fillToBytes-aux(dataList(L:KList), .KList) 
           [structural]
      rule [fillToBytes-foundByte]:
-          fillToBytes-aux(dataList((L:KList,, piece(N:Int, Len:Int))), L':KList)
-               => fillToBytes-aux(dataList(L:KList), (piece(N:Int, Len:Int),, L':KList))
-          when Len:Int ==Int numBitsPerByte
+          fillToBytes-aux(dataList((L:KList,, piece(N:Bits, Len:Int))), L':KList)
+               => fillToBytes-aux(dataList(L:KList), (piece(N, Len),, L'))
+          when Len ==Int numBitsPerByte
           [structural]
      
      rule [fillToBytes-addBit]:
-          fillToBytes-aux(dataList(piece(N:Int, Len:Int)), L':KList)
-               => fillToBytes-aux(dataList((piece(0, 1),, piece(N:Int, Len:Int))), L':KList)
+          fillToBytes-aux(dataList(piece(N:Bits, Len:Int)), L':KList)
+               => fillToBytes-aux(dataList((piece(0, 1),, piece(N, Len))), L')
           when Len:Int <Int numBitsPerByte
           [structural]
           
      rule [fillToBytes-combineBits]:
-          fillToBytes-aux(dataList((L:KList,, piece(N:Int, Len:Int),, piece(N':Int, Len':Int))), L':KList)
-               => fillToBytes-aux(dataList((L:KList,, piece(piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int), Len:Int +Int Len':Int))), L':KList)
-          when Len:Int +Int Len':Int <=Int numBitsPerByte
+          fillToBytes-aux(dataList((L:KList,, piece(N:Bits, Len:Int),, piece(N':Bits, Len':Int))), L':KList)
+               => fillToBytes-aux(dataList((L,, piece(piece(N, Len) bit:: piece(N', Len'), Len +Int Len'))), L')
+          when Len +Int Len' <=Int numBitsPerByte
           [structural]
                     
      rule [fillToBytes-done]:
@@ -145,61 +146,58 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
           
      // coallesce bitranges that are adjacent
-     rule piece(bitRange(N:Int, SuccTo:Int, To':Int), Len:Int) bit:: piece(bitRange(N:Int, From:Int, To:Int), Len':Int)
-          => piece(bitRange(N:Int, From:Int, To':Int), Len:Int +Int Len':Int)
-          when Len:Int +Int Len':Int <=Int numBitsPerByte
-          andBool SuccTo:Int ==Int To:Int +Int 1
+     rule piece(bitRange(N:Bits, SuccTo:Int, To':Int), Len:Int) bit:: piece(bitRange(N, From:Int, To:Int), Len':Int)
+          => piece(bitRange(N, From, To'), Len +Int Len')
+          when (Len +Int Len' <=Int numBitsPerByte)
+               andBool (SuccTo ==Int To +Int 1)
           [structural]
      
-     rule piece(N:Int bit:: N':Int, Len:Int) bit:: piece(N'':Int, Len':Int)
-          => piece((N:Int bit:: N':Int) bit:: piece(N'':Int, Len':Int), Len:Int +Int Len':Int)
+     rule piece(N:Bits bit:: N':Bits, Len:Int) bit:: piece(N'':Bits, Len':Int)
+          => piece((N bit:: N') bit:: piece(N'', Len'), Len +Int Len')
           [structural]
 
-     rule piece(N'':Int, Len':Int) bit:: piece(N:Int bit:: N':Int, Len:Int)
-          => piece((piece(N'':Int, Len':Int) bit:: N:Int) bit:: N':Int, Len:Int +Int Len':Int)
+     rule piece(N'':Bits, Len':Int) bit:: piece(N:Bits bit:: N':Bits, Len:Int)
+          => piece((piece(N'', Len') bit:: N) bit:: N', Len +Int Len')
           [structural]
 
-     rule bitRange(N:Int bit:: piece(_:Int, Len:Int), Pos:Int, Pos:Int)
-          => bitRange(N:Int, absInt(Pos:Int -Int Len:Int), absInt(Pos:Int -Int Len:Int))
-          when Pos:Int >Int 0
-          andBool Pos:Int -Int Len:Int >=Int 0
+     rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos:Int)
+          => bitRange(N, absInt(Pos -Int Len), absInt(Pos -Int Len))
+          when (Pos >Int 0)
+               andBool (Pos -Int Len >=Int 0)
           [structural]
           
-     rule bitRange(_:Int bit:: piece(N:Int, 1), 0, 0) => piece(N:Int, 1)
-     rule bitRange(piece(N:Int, 1), 0, 0) => piece(N:Int, 1)
+     rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N:Bits, 1)
+     rule bitRange(piece(N, 1), 0, 0) => piece(N, 1)
           
-     rule bitRange(piece(bitRange(N:Int, Start:Int, End:Int), Len:Int), 0, 0)
-          => bitRange(piece(bitRange(N:Int, Start:Int, Start:Int), 1), 0, 0)
-          when Start:Int +Int Len:Int ==Int End:Int +Int 1
+     rule bitRange(piece(bitRange(N:Bits, Start:Int, End:Int), Len:Int), 0, 0)
+          => bitRange(piece(bitRange(N, Start, Start), 1), 0, 0)
+          when Start +Int Len ==Int End +Int 1
           [structural]
      
-     rule bitRange(N:Int, Pos:Int, Pos:Int) => 1 &Int (N:Int >>Int Pos:Int)
-          when N:Int >=Int 0
+     rule bitRange(N:Int, Pos:Int, Pos:Int) => 1 &Int (N >>Int Pos)
           [structural]
-     rule bitRange(piece(N:Int, 1), Pos:Int, Pos:Int) => 1 &Int (N:Int >>Int Pos:Int)
-          when N:Int >=Int 0
+     rule bitRange(piece(N:Int, 1), Pos:Int, Pos:Int) => 1 &Int (N >>Int Pos)
           [structural]
           
-     rule bitRange(N:Int, 0, To:Int) => N:Int
-          when To:Int +Int 1 ==Int numBitsPerByte
+     rule bitRange(N:Bits, 0, To:Int) => N
+          when To +Int 1 ==Int numBitsPerByte
           [structural]
      
-     rule bitRange(_:Int bit:: piece(N:Int, Len:Int), Start:Int, End:Int)
-          => bitRange(piece(N:Int, Len:Int), Start:Int, End:Int)
-          when End:Int +Int 1 <=Int Len:Int
+     rule bitRange(_ bit:: piece(N:Bits, Len:Int), Start:Int, End:Int)
+          => bitRange(piece(N, Len), Start, End)
+          when End +Int 1 <=Int Len
           [structural]
      
-     rule bitRange(piece(N:Int, SuccEnd:Int), 0, End:Int)
-          => piece(N:Int, End:Int +Int 1)
-          when SuccEnd:Int ==Int End:Int +Int 1
+     rule bitRange(piece(N:Bits, SuccEnd:Int), 0, End:Int)
+          => piece(N, End +Int 1)
+          when SuccEnd ==Int End +Int 1
           [structural]
-     rule bitRange(_:Int bit:: piece(N:Int, SuccEnd:Int), 0, End:Int)
-          => piece(N:Int, End:Int +Int 1)
-          when SuccEnd:Int ==Int End:Int +Int 1
+     rule bitRange(_ bit:: piece(N:Bits, SuccEnd:Int), 0, End:Int)
+          => piece(N, End +Int 1)
+          when SuccEnd ==Int End +Int 1
           [structural]
           
-     rule bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) => (N:Int >>Int Pos:Int) &Int 1
-          when N:Int >=Int 0
+     rule bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) => (N >>Int Pos) &Int 1
           [structural]
      
      syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")" [strict(4)]
@@ -217,13 +215,12 @@ module COMMON-SEMANTICS-HELPERS-MISC
           orBool Lb:KLabel ==KLabel 'structType
           [structural]
 
-     rule
-          <k> extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
+     rule <k> extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
                => concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:KList), Offset:Int, Len:Int)))
           ...</k>
           [structural]
      
-     rule isConcreteNumber(loc(_:Int, _:Int, _:Int)) => false
+     rule isConcreteNumber(loc(_, _, _)) => false
      rule isConcreteNumber(I:Int) => true
           when  I:Int <=Int 0 orBool I:Int >Int 0
           [structural]
@@ -327,42 +324,43 @@ module COMMON-SEMANTICS-HELPERS-MISC
      syntax Value ::= "str" "(" String ")"
      
      rule [getString-pre]:
-          <k> (.K => read(Loc:Int, t(.Set, char)))
-               ~> getString-aux(tv((Loc:Int => Loc:Int +Int 1), _), S:String)
+          <k> (.K => read(Loc, t(.Set, char)))
+               ~> getString-aux(tv((Loc:SymLoc => linc(Loc)), _), S:String)
           ...</k>
           [structural]
           
      rule [getString]:
-          <k> tv(N:Int, _) 
-               ~> getString-aux(tv(Loc:Int, _), S:String)
-               => getString-aux(tv(Loc:Int, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Int))
+          <k> tv(N, _) 
+               ~> getString-aux(tv(Loc:SymLoc, _), S:String)
+               => getString-aux(tv(Loc, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Int))
           ...</k>
-          when N:Int =/=Int 0
+          when N =/=Int 0
           [structural]
      rule [getString-done]:
-          <k> tv(0, _) ~> getString-aux(tv(Loc:Int, _), S:String)
+          <k> tv(0, _) ~> getString-aux(tv(Loc:SymLoc, _), S:String)
                => str(S:String)
           ...</k>
           [structural]
           
-     // writeString and writeWString expect the user to add the '\0' to the end of the strings passed
+     // writeString and writeWString expect the user to add the '\0' to the end
+     // of the strings passed
      syntax K ::= "writeString" "(" K "," String ")" [strict(1)]
      syntax K ::= "writeWString" "(" K "," KList ")" [strict(1)]
 
      rule [write-string]:
-          <k> writeString(tv(Loc:Int, T:KResult), S:String)
-               => Computation((* tv(Loc:Int, t(.Set, pointerType(t(.Set, char))))) 
+          <k> writeString(Loc:SymLoc, S:String)
+               => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
                     := tv(asciiString(firstChar(S:String)), t(.Set, char)))
-               ~> writeString(tv(Loc:Int +Int 1, T:KResult), butFirstChar(S:String))
+               ~> writeString(linc(Loc), butFirstChar(S:String))
           ...</k>
           when S:String =/=String ""
           [structural]
      // fixme this bare 4 needs to be updated to handle different size wchar_ts
      rule [write-wstring]:
-          <k> writeWString(tv(Loc:Int, T:KResult), (N:Int,, S:KList))
-               => Computation((* tv(Loc:Int, t(.Set, pointerType(cfg:wcharut)))) 
-                    := tv(N:Int, cfg:wcharut))
-               ~> writeWString(tv(Loc:Int +Int 4, T:KResult), S:KList)
+          <k> writeWString(Loc:SymLoc, (N:Int,, S:KList))
+               => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+                    := tv(N, cfg:wcharut))
+               ~> writeWString(ladd(Loc, 4), S)
           ...</k>
           [structural] 
      rule [write-empty-string]:
@@ -374,23 +372,22 @@ module COMMON-SEMANTICS-HELPERS-MISC
           
      
      // fixme might be messing things up elsewhere
-     syntax String ::= pointerToString(Int) [function]
+     syntax String ::= pointerToString(SymLoc) [function]
+     syntax String ::= subPointerToString(SymBase) [function]
+
      rule [pointerToString]:
-          pointerToString(loc(N:Int, M:Int, 0))
-               => "[sym(" +String subPointerToString(N:Int) +String ") + " 
-               +String Int2String(M:Int) +String "]"
+          pointerToString(loc(N:SymBase, M:Int, 0))
+               => "[sym(" +String subPointerToString(N) +String ") + " 
+               +String Int2String(M) +String "]"
           [structural]
           
-     syntax String ::= subPointerToString(Int) [function]
      rule [subPointerToString-auto]:
-          subPointerToString(threadId(N:Int) +Int N':Int)
-               => "threadId(" +String Int2String(N:Int) +String ") +Int " 
-               +String Int2String(N':Int)
-          when N:Int =/=K allocatedDuration
+          subPointerToString(sb(B:Int, Th:Int))
+               => "sb(" +String Int2String(B) +String ", " +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
-          subPointerToString(threadId(allocatedDuration) +Int N':Int)
-               => "threadId(allocatedDuration) +Int " +String Int2String(N':Int)
+          subPointerToString(sb(B:Int, allocatedDuration))
+               => "sb(" +String Int2String(B) +String ", " +String "allocatedDuration)" 
           [structural]
      
      rule [pointerToString-done]:
@@ -586,5 +583,5 @@ module COMMON-C-HELPERS
      imports COMMON-SEMANTICS-HELPERS-INCLUDE
      imports COMMON-C-BITSIZE
      imports COMMON-SEMANTICS-HELPERS-MISC
-      imports COMPAT
+     imports COMPAT
 endmodule

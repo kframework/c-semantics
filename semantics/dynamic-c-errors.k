@@ -77,12 +77,12 @@ module DYNAMIC-C-ERRORS
 
 // TODO(chathhorn): celllabel, elided
 //   rule [err00005]:
-//        < k => finalComputation > extractByteFromMem(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
+//        < k => finalComputation > extractByteFromMem(loc(Block:SymBase, _:Int, _:Int)) ...</ k => finalComputation >
 //        <memory> M:Bag </memory>
 //        <br/>
 //        (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-//        // when notBool $hasMapping(M:Map, Block:Int)
-//        when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
+//        // when notBool $hasMapping(M:Map, Block)
+//        when notBool Block in gatherInnerCells(M:Bag, basePtr)
 //        [structural, large]
      
      rule [err00006]:
@@ -94,12 +94,12 @@ module DYNAMIC-C-ERRORS
           
 // TODO(chathhorn): celllabel, elided
 //   rule [err00007]:
-//        < k => finalComputation > checkValidLoc-aux(loc(Block:Int, _:Int, _:Int)) ...</ k => finalComputation >
+//        < k => finalComputation > checkValidLoc-aux(loc(Block:SymBase, _:Int, _:Int)) ...</ k => finalComputation >
 //        <memory> M:Bag </memory>
 //        <br/>
 //        (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-//        // when notBool $hasMapping(M:Bag, Block:Int)
-//        when notBool Block:Int in gatherInnerCells(M:Bag, basePtr)
+//        // when notBool $hasMapping(M:Bag, Block)
+//        when notBool Block in gatherInnerCells(M:Bag, basePtr)
 //        [structural, large]
      
      rule [err00008]:
@@ -116,9 +116,9 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00010]:
-          < k => finalComputation > checkValidLoc-aux(loc(Base:Int, Offset:Int, _:Int)) ...</ k => finalComputation >
+          < k => finalComputation > checkValidLoc-aux(loc(Base:SymBase, Offset:Int, _:Int)) ...</ k => finalComputation >
           <object>...
-               <basePtr> Base:Int </basePtr>
+               <basePtr> Base:SymBase </basePtr>
                <oLength> Len:Int </oLength>
           ...</object>
           <br/>
@@ -200,9 +200,9 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00020]:
-          < k => finalComputation > writeByte(loc(Base:Int, Offset:Int, _:Int), _) ...</ k => finalComputation >
+          < k => finalComputation > writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) ...</ k => finalComputation >
           <object>...
-               <basePtr> Base:Int </basePtr>
+               <basePtr> Base:SymBase </basePtr>
                <oLength> Len:Int </oLength>
           ...</object>
           <br/>
@@ -234,12 +234,12 @@ module DYNAMIC-C-ERRORS
           andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
           [structural, large]
      
-     rule [err00024]:
-          < k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
-          <br/>
-          (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic number (address) or float.") </errorCell>)
-          when notBool isConcreteNumber(I:Int) orBool notBool isConcreteNumber(I':Int)
-          [structural, large]
+     // rule [err00024]:
+     //      < k => finalComputation > arithInterpret(_, I:Int &Int I':Int) ...</ k => finalComputation >
+     //      <br/>
+     //      (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic number (address) or float.") </errorCell>)
+     //      when notBool isConcreteNumber(I:Int) orBool notBool isConcreteNumber(I':Int)
+     //      [structural, large]
           
      rule [err00025]:
           < k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:VTList)), _:Int, _:Id, _) ...</ k => finalComputation >
@@ -300,35 +300,35 @@ module DYNAMIC-C-ERRORS
           
      rule [err00030]:
           < k => finalComputation > 
-               tv(loc(Base:Int, _:Int, _:Int), T:KResult) < tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+               tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) < tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00030", "Cannot compare pointers with different base objects using '<'.") </errorCell>)
-          when Base:Int =/=K Base':Int
+          when Base =/=K Base'
           [structural, large]
      rule [err00031]:
           < k => finalComputation > 
-               tv(loc(Base:Int, _:Int, _:Int), T:KResult) > tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+               tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) > tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00031", "Cannot compare pointers with different base objects using '>'.") </errorCell>)
-          when Base:Int =/=K Base':Int
+          when Base =/=K Base'
           [structural, large]
      rule [err00032]:
           < k => finalComputation > 
-               tv(loc(Base:Int, _:Int, _:Int), T:KResult) <= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+               tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) <= tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00032", "Cannot compare pointers with different base objects using '<='.") </errorCell>)
-          when Base:Int =/=K Base':Int
+          when Base =/=K Base'
           [structural, large]
      rule [err00033]:
           < k => finalComputation > 
-               tv(loc(Base:Int, _:Int, _:Int), T:KResult) >= tv(loc(Base':Int, _:Int, _:Int), T:KResult)
+               tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) >= tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00033", "Cannot compare pointers with different base objects using '>='.") </errorCell>)
-          when Base:Int =/=K Base':Int
+          when Base =/=K Base'
           [structural, large]
           
      rule [err00034]:
@@ -342,7 +342,7 @@ module DYNAMIC-C-ERRORS
           
      rule [err00035]:
           < k => finalComputation > 
-               write(lv(Dest:Int, t(SetItem(Const) _, _)), _)
+               write(lv(Dest:SymLoc, t(SetItem(Const) _, _)), _)
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00035", "Trying to write through a const lvalue.") </errorCell>)
@@ -406,9 +406,9 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00045]:
-          < k => finalComputation > writeByte(loc(Base:Int, _:Int, _:Int), V:K)  ...</ k => finalComputation >
+          < k => finalComputation > writeByte(loc(Base:SymBase, _:Int, _:Int), V:K)  ...</ k => finalComputation >
           <object>...
-               <basePtr> Base:Int </basePtr>
+               <basePtr> Base </basePtr>
                <properties>... mconst ...</properties>
           ...</object>
           <br/>

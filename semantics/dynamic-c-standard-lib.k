@@ -6,7 +6,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      // imports #TCP-INTERFACE
      
      syntax C ::= "vararg" "(" K ")" [hybrid, strict]
-     syntax C ::= "nextvarg" "(" Int "," K ")" [strict(2)] // loc, type
+     syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
      syntax K ::= "prepareBuiltin" "(" Id "," KList ")" 
      syntax K ::= incSymbolic(K)
@@ -19,18 +19,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      
      rule reval(vararg(K:K)) => vararg(K:K) [structural]
      // fixme had to make this K because of the context bug
-     syntax C ::= "nextvarg-aux" "(" K "," Type "," K "," K ")" // offset, type, length, checklength
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" // offset, type, length, checklength
      context nextvarg-aux(_, _, value(HOLE), _)
      context nextvarg-aux(_, _, _, value(HOLE))
      
      rule [nextvarg-start]:
-          <k> nextvarg(Loc:Int, T:KResult)
-               => nextvarg-aux(Loc:Int, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc:Int)))
+          <k> nextvarg(Loc:SymLoc, T:KResult)
+               => nextvarg-aux(Loc, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc)))
           ...</k>
           [structural]
      rule [nextvarg]:
           <k> nextvarg-aux(Loc:SymLoc, T:KResult, Len:Int, Len:Int)
-               => vpair(read(Loc, T:KResult), vararg(tv(inc(Loc), t(.Set, pointerType(t(.Set, void))))))
+               => vpair(read(Loc, T:KResult), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           ...</k>
           [structural]
      
@@ -61,7 +61,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 
      context incSymbolic((HOLE => reval(HOLE)))
      rule [incSymbolic]:
-          incSymbolic(tv(Loc:SymLoc, T:KResult)) => tv(inc(Loc), T:KResult)
+          incSymbolic(tv(Loc:SymLoc, T:KResult)) => tv(linc(Loc), T:KResult)
           [structural]
           
      rule [prepareBuiltin]:
@@ -212,9 +212,9 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:Int, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
+          <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
                => ignoreLocals
-                    ~> writeByte(Loc:Int, bag(
+                    ~> writeByte(Loc, bag(
                          C:Bag
                          <continuation> K:K </continuation>
                     ))
@@ -469,28 +469,28 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           ...</k>
           [structural]
      
-     syntax K ::= "sprintf" "(" K "," K ")" [strict(1)]
+     syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]
      rule [sprintf]:
-          <k> prepareBuiltin((Identifier("sprintf")), (Dest:KResult,, Format:KResult,, VarArgs:KResult))
-               => sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult)
+          <k> prepareBuiltin((Identifier("sprintf")), (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
+               => sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest)
           ...</k>
           [structural]
      rule [sprintf-done]:
-          <k> sprintf(formattedResult(S:String), Dest:KResult)
-               => writeString(Dest:KResult, S:String +String "\0")
+          <k> sprintf(formattedResult(S:String), Dest:SymLoc)
+               => writeString(Dest, S:String +String "\0")
                ~> tv(lengthString(S:String), t(.Set, int))
           ...</k>
           [structural]
      
-     syntax K ::= "snprintf" "(" K "," K "," Int ")" [strict(1)]
+     syntax K ::= "snprintf" "(" K "," SymLoc "," Int ")" [strict(1)]
      rule [snprintf]:
-          <k> prepareBuiltin((Identifier("snprintf")), (Dest:KResult,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
-               => snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest:KResult, Len:Int)
+          <k> prepareBuiltin((Identifier("snprintf")), (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
+               => snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
           ...</k>
           [structural]
      rule [snprintf-done-nz]:
-          <k> snprintf(formattedResult(S:String), Dest:KResult, Len:Int)
-               => writeString(Dest:KResult, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
+          <k> snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
+               => writeString(Dest, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
                ~> tv(lengthString(S:String), t(.Set, int))
           ...</k>
           when Len:Int >Int 0
@@ -507,8 +507,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax K ::= "formatter-next" "(" K ")"
      syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
      rule 
-          <k> formatter-next(vararg(tv(Loc:Int, _)))
-               => formatter-arg(nextvarg(Loc:Int, getFormatType))
+          <k> formatter-next(vararg(tv(Loc:SymLoc, _)))
+               => formatter-arg(nextvarg(Loc, getFormatType))
           ...</k>
           [structural]
      rule 
@@ -949,10 +949,10 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
           <formatState> "%" => "%s" </formatState>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString(Loc:Int))
+          <k> (.K => getString(Loc))
                ~> formatter-aux(_)
           ...</k>
-          <formatArg> Loc:Int => .K </formatArg>
+          <formatArg> Loc:SymLoc => .K </formatArg>
           <formatState> "%s" => "%s-read" </formatState>
           [structural]
      rule [format-%s-done]:
@@ -978,8 +978,8 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
           [structural]
      rule [format-%p]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> Loc:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(pointerToString(Loc:Int)) </formatResult>
+          <formatArg> Loc:SymLoc => .K </formatArg>
+          <formatResult>... .List => ListItem(pointerToString(Loc)) </formatResult>
           <formatState> "%p" => "reset" </formatState>
           [structural]
           
@@ -1043,7 +1043,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
 The malloc function returns either a null pointer or a pointer to the allocated space.
      }*/
      syntax K ::= "newAlloc" "(" Int ")" [function]
-     rule newAlloc(Fresh:Int) => loc(threadId(allocatedDuration) +Int Fresh:Int, 0, 0)
+     rule newAlloc(Fresh:Int) => loc(sb(Fresh, allocatedDuration), 0, 0)
      
      rule [malloc]:
           <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
@@ -1069,14 +1069,14 @@ If \cinline{ptr} is a null pointer, the \cinline{realloc} function behaves like 
 The \cinline{realloc} function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:Int, _),, tv(NewLen:Int, T:KResult)))
-               => realloc(OldLoc:Int, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
+          <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, tv(NewLen:Int, T:KResult)))
+               => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
                ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           //<br/>
-          <malloced>... (OldLoc:Int => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) ...</malloced>
+          <malloced>... (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) ...</malloced>
           <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
-          when OldLoc:Int =/=K NullPointer
+          when OldLoc =/=K NullPointer
           [structural]
           
      
@@ -1094,18 +1094,18 @@ The \cinline{realloc} function returns a pointer to the new object (which may ha
           ...</k>
           [structural]
      rule [calloc-aux]:
-          <k> (.K => zeroBlock(Loc:Int)) 
-               ~> tv(Loc:Int, t(_, pointerType(t(_, void))))
+          <k> (.K => zeroBlock(Loc:SymLoc)) 
+               ~> tv(Loc, t(_, pointerType(t(_, void))))
                ~> (calloc-aux => .K)
           ...</k>
           [structural]
 
      rule [free]:
-          <k> prepareBuiltin((Identifier("free")), tv(Loc:Int, t(_, pointerType(_))))
-               => deleteSizedBlock(Loc:Int, Len:Int) 
+          <k> prepareBuiltin((Identifier("free")), tv(Loc:SymLoc, t(_, pointerType(_))))
+               => deleteSizedBlock(Loc, Len:Int) 
                ~> skipval
           ...</k>
-          <malloced>... Loc:Int |-> Len:Int => .Map ...</malloced>
+          <malloced>... Loc |-> Len:Int => .Map ...</malloced>
           [structural]
           
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
@@ -1132,29 +1132,29 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
      
      // try to use getString
      // fixme should detect overlaps
-     syntax K ::= "strcpy" "(" K "," K "," K ")"
+     syntax K ::= "strcpy" "(" SymLoc "," SymLoc "," SymLoc ")"
      rule [strcpy-start]:
-          <k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:Int, t(_, pointerType(_))),, tv(Src:Int, t(_, pointerType(_)))))
-               => strcpy(Dest:Int, Src:Int, Dest:Int)
+          <k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, tv(Src:SymLoc, t(_, pointerType(_)))))
+               => strcpy(Dest, Src, Dest)
           ...</k>
           [structural]
           
      rule [strcpy-pre]:
-          <k> (.K => read(Src:Int, t(.Set, char)))
-               ~> strcpy(_, (Src:Int => Src:Int +Int 1), _)
+          <k> (.K => read(Src:SymLoc, t(.Set, char)))
+               ~> strcpy(_, (Src => linc(Src)), _)
           ...</k>
           [structural]
      
      rule [strcpy-some]:
-          <k> (tv(I:Int, T:KResult) => write(lv(Dest:Int, t(.Set, char)), tv(I:Int, T:KResult)))
-               ~> strcpy((Dest:Int => Dest:Int +Int 1), _, _)
+          <k> (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
+               ~> strcpy((Dest:SymLoc => linc(Dest)), _, _)
           ...</k>
-          when I:Int =/=Int 0
+          when I =/=Int 0
           [structural]
      rule [strcpy-done]:
-          <k> tv(0, T:KResult) ~> strcpy(Dest:Int, _, Orig:Int)
-               => write(lv(Dest:Int, t(.Set, char)), tv(0, T:KResult)) 
-               ~> tv(Orig:Int, t(.Set, pointerType(t(.Set, char))))
+          <k> tv(0, T:KResult) ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
+               => write(lv(Dest, t(.Set, char)), tv(0, T)) 
+               ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
           ...</k>
           [structural]
 endmodule
@@ -1271,9 +1271,9 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           // [computational]
      rule [thrd-join]:
           <thread>...
-               <k> join-aux(ThreadId:Int, tv(Loc:Int, _))
-                    => #if (Loc:Int =/=K NullPointer) 
-                         #then Computation((* Loc:Int) := V:KResult) 
+               <k> join-aux(ThreadId:Int, tv(Loc:SymLoc, _))
+                    => #if (Loc =/=K NullPointer) 
+                         #then Computation((* Loc) := V:KResult) 
                          #else .K
                     #fi
                     ~> thrd-success
@@ -1290,19 +1290,19 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           <k> prepareBuiltin((Identifier("mtx_init")), (tv(Loc:Int, _),, tv(Type:Int, _)))
                => thrd-success
           ...</k>
-          <mutexes> M:Map (. => Loc:Int |-> Type:Int) </mutexes>
-          when notBool Loc:Int in keys M:Map
-          andBool Type:Int ==Int cfg:mtxPlain // only handling plain mutexes for now
+          <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
+          when notBool (Loc in keys M:Map)
+          andBool (Type ==Int cfg:mtxPlain) // only handling plain mutexes for now
           [structural]
      rule [mtx-lock]:
           <k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
-          <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
-          <glocks> B:Bag (.Bag => BagItem(Loc:Int)) </glocks>
-          <locks>... .Bag => BagItem(Loc:Int) ...</locks>
-          when (notBool (Loc:Int #inBag B))
+          <mutexes>... Loc |-> Type:Int ...</mutexes>
+          <glocks> B:Bag (.Bag => BagItem(Loc)) </glocks>
+          <locks>... .Bag => BagItem(Loc) ...</locks>
+          when (notBool (Loc #inBag B))
           andBool (Type:Int ==Int cfg:mtxPlain)
           [computational]
      rule [mtx-unlock]:
