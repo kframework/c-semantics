@@ -272,26 +272,27 @@ module DYNAMIC-C-SEMANTICS
                ~> callMain(lengthKList ("") , incomingArguments(""))
           </k>
                          <br/>
-                         <threadId> 1 </threadId>
-                         <nextLoc> firstLoc(1) </nextLoc>
+                         <threadId> _ => 1 </threadId>
+                         <nextLoc> _ => firstLoc(1) </nextLoc>
                          <threadLocal>...
                               <control>...
-                                   <currentFunction> file-scope </currentFunction>
-                                   <currentProgramLoc> UnknownCabsLoc </currentProgramLoc>
+                                   <currentFunction> _ => file-scope </currentFunction>
+                                   <currentProgramLoc> _ => UnknownCabsLoc </currentProgramLoc>
                               ...</control>
                          ...</threadLocal>
                     ...</thread>
                </threads>
-               <nextSharedLoc> firstLoc(0) </nextSharedLoc>
+               <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           <br/>
           <files>
-               <fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
+               <fileCommands> _ => 0 </fileCommands>
                <br/>
+               ( _ =>
                <file>...
                     <fid> 0 </fid>
                     <uri> stdinStr </uri>
                     <mode> "r" </mode>
-                    <buff> Input:String </buff>
+                    <buff> "" </buff>
                ...</file>
                <file>...
                     <fid> 1 </fid>
@@ -302,7 +303,7 @@ module DYNAMIC-C-SEMANTICS
                     <fid> 2 </fid>
                     <uri> stdoutStr </uri>
                     <mode> "w" </mode>
-               ...</file>
+               ...</file>)
           </files>
           [structural, large]
 
@@ -340,7 +341,7 @@ module DYNAMIC-C-SEMANTICS
                => callMain-aux(typeof(Identifier("main")), N:Int, Identifier("#incomingArgumentsArray"), Args:K)
           ...</k>
           <funTUs>... 
-               Tu:K |-> Map((_ Identifier("main") |-> Tu:K)) 
+               Tu:K |-> map((_ Identifier("main") |-> Tu:K)) 
           ...</funTUs>
           <currTU> _ => Tu:K </currTU>
           [computational]

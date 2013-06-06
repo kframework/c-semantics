@@ -26,6 +26,8 @@ module COMPAT-SYNTAX
      syntax Bool ::= BagItem "in" Bag [function]
                | K "#inBag" Bag //TODO: function?!?
 
+     syntax K ::= PAUSE(Bool)
+
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
 endmodule
 
@@ -44,13 +46,6 @@ module COMMON-SEMANTIC-SYNTAX
      syntax BaseValue ::= Int | Float | Bits
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
-
-     // TODO(chathhorn): surely not necessary?
-     // fixme super sketchy
-     // define true orBool _ => true
-     // define _ orBool true => true
-     // define false andBool _ => false
-     // define _ andBool false => false
 
      // these are used for runtime settings
      // syntax SimpleType ::= "kccSettingSimpleType" "(" String ")"
@@ -76,7 +71,7 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "checkDerefLoc" "(" SymLoc ")"
      syntax ListItem ::= "ListItem" "(" Bag ")"
      syntax K ::= ListToK(List)
-     syntax K ::= "Map" "(" Map ")"
+     syntax K ::= "map" "(" Map ")"
      syntax Bits ::= "piece" "(" Bits "," Int ")"
      //define 'isInt(piece(_, _)) => true
      
@@ -181,7 +176,7 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "makeUnwritableVar" "(" K ")"
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
      
-     syntax K ::= "klistToK" "(" KList ")" 
+     syntax K ::= "klistToK" "(" KList ")" [function]
      syntax K ::= "UnknownCabsLoc"
      
      
@@ -210,7 +205,7 @@ module COMMON-SEMANTIC-SYNTAX
      syntax SimpleType ::= "unionType" "(" Id ")" [klabel('unionType)] // [ctor] 
      syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" [klabel('qualifiedType)] // [ctor]
      
-     syntax Type ::= unqualifyType(K) [function] // takes a type, but sometimes things like maps give K
+     syntax KResult ::= unqualifyType(K) [function] // takes a type, but sometimes things like maps give K
      syntax Type ::= removeStorageSpecifiers(K) [function]
      
      // these aren't real types, but are values that can appear in type contexts
@@ -263,7 +258,9 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "bind" "(" VTList "," VTList ")"
      syntax Value ::= "tv" "(" KList "," Type ")" [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-     syntax Value ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
+
+     syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
+     syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
 
      syntax K ::= "concretize" "(" Type "," K ")" [strict(2)] 
      syntax Value ::= "functionObject" "(" Id "," Type "," K ")"

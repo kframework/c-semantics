@@ -18,6 +18,18 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      /*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
      rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
      rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
+
+     syntax K ::= rkludge(K) [function]
+     syntax K ::= pkludge(K) [function]
+
+     // chathhorn: to work around the new semantics for contexts.
+     rule reval(K:K) => K ~> reval(HOLE) [heat]
+     rule R:KResult ~> reval(HOLE) => reval(rkludge(R)) [cool]
+
+     rule peval(K:K) => K ~> peval(HOLE) [heat]
+     rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
+
+     rule lv(L:SymLoc, T:Type) => lval(L:SymLoc, T:Type)
      
      // fixme Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
@@ -26,10 +38,10 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
      
-     rule [reval-skipval]: reval(skipval) => skipval [structural]
-     rule [reval-emptyval]: reval(emptyValue) => emptyValue [structural]
-     rule [reval-tv-normal]: reval(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult) [structural] 
-     rule [peval-tv-normal]: peval(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult) [structural]
+     rule [reval-skipval]: rkludge(skipval) => skipval [structural]
+     rule [reval-emptyval]: rkludge(emptyValue) => emptyValue [structural]
+     rule [reval-tv-normal]: rkludge(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult) [structural] 
+     rule [peval-tv-normal]: pkludge(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult) [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -43,13 +55,13 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      value has the non-atomic version of the type of the lvalue; otherwise, the
      value has the type of the lvalue. \ldots
      }*/
-     rule reval(lv(Loc:SymLoc, T:Type)) => read(Loc, unqualifyType(T)) 
+     rule rkludge(lval(Loc:SymLoc, T:Type)) => read(Loc, unqualifyType(T))
           when notBool isArrayType(T) andBool notBool isFunctionType(T) 
           [structural]
-     rule peval(lv(Loc:SymLoc, T:Type)) => lv(Loc, T) 
+     rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
           when notBool isArrayType(T) andBool notBool isFunctionType(T) 
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
      \cinline{_Alignof} operator, or the unary \cinline{&} operator, or is a
@@ -59,10 +71,14 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      an lvalue. If the array object has register storage class, the behavior is
      undefined.
      }*/
-     rule [reval-lv-array]: reval(lv(Loc:SymLoc, T:Type)) => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
+     rule [reval-lv-array]: 
+          rkludge(lval(Loc:SymLoc, T:Type))
+          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
           when isArrayType(T) 
           [structural]
-     rule [peval-lv-array]: peval(lv(Loc:SymLoc, T:Type)) => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
+     rule [peval-lv-array]: 
+          pkludge(lval(Loc:SymLoc, T:Type))
+          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
           when isArrayType(T) 
           [structural]
      // should never get to the situation where we have tv(..., arrayType)
@@ -76,11 +92,11 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      expression that has type ``pointer to a function returning T''.
      }*/
      rule [reval-function]: 
-          reval(lv(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T))) 
+          rkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
           [structural]
      rule [peval-function]: 
-          peval(lv(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T))) 
+          pkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
           [structural]
      
@@ -94,11 +110,11 @@ module DYNAMIC-SEMANTICS-LITERALS
      
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
-          when firstChar(S:String) ==String "0"
-          andBool lengthString(S:String) >Int 1
+          when (firstChar(S:String) ==String "0")
+               andBool (lengthString(S:String) >Int 1)
      rule simplifyForHex(S:String) => S:String
-          when firstChar(S:String) =/=String "0"
-          orBool lengthString(S:String) ==Int 1
+          when (firstChar(S:String) =/=String "0")
+               orBool (lengthString(S:String) ==Int 1)
           
      syntax K ::= "hexOrOctalConstant" "(" K ")"
       // TODO(chathhorn): hex, elided
@@ -450,8 +466,8 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
           <k> populateFromGlobal => .K ...</k>
           <currTU> Tu:K </currTU>
           //<br/>
-          <genv>... Tu:K |-> Map(G:Map) ...</genv> <env> _ => G:Map </env>
-          <gtypes>... Tu:K |-> Map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
+          <genv>... Tu:K |-> map(G:Map) ...</genv> <env> _ => G:Map </env>
+          <gtypes>... Tu:K |-> map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
           <gstructs> GS:Map </gstructs> <structs> _ => GS:Map </structs>
           [structural]
 
@@ -489,7 +505,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
                <currTU> Tu:K </currTU>
                <currentProgramLoc> CurrLoc:K </currentProgramLoc>
           ...</control>)
-          <funTUs>... OldTu:K |-> Map((_ X:Id |-> Tu:K)) ...</funTUs>
+          <funTUs>... OldTu:K |-> map((_ X:Id |-> Tu:K)) ...</funTUs>
           [structural, large]
 endmodule
 
@@ -1546,6 +1562,7 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      converted to the type of the assignment expression and replaces the value
      stored in the object designated by the left operand.
      }*/
+
      rule [assign]:
           <k> lv(Loc:SymLoc, T:Type) := tv(V:KList, T)
                => write(lv(Loc, T), tv(V, T))

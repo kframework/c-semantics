@@ -89,7 +89,7 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS
      rule
           <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
-          <gtypes>... Tu:K |-> Map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
+          <gtypes>... Tu:K |-> map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
           <currTU> Tu:K </currTU>
           [structural]
      rule
@@ -361,11 +361,11 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           
      rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
      
-     syntax KLabel ::= makeArrayType(Int) [function]
-     syntax KLabel ::= makeFunctionType(KList) [function]
+     syntax KLabel ::= "makeArrayType" "(" Int ")"
+     syntax KLabel ::= "makeFunctionType" "(" KList ")"
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
-     syntax KLabel ::= "makePointerType" [function]
-     syntax KLabel ::= "makeIncompleteArrayType" [function]
+     syntax KLabel ::= "makePointerType"
+     syntax KLabel ::= "makeIncompleteArrayType"
      
      // fixme, throwing away specifier
      rule ArrayType(T:KResult, tv(N:Int, _), _) 
@@ -398,10 +398,14 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           when isBasicType(T:KResult)
           [structural]
      
-     rule makeArrayType(N:Int)(T:KResult) => t(.Set, arrayType(T:KResult, N:Int))
-     rule makeFunctionType(L:KList)(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList)))
+     rule makeArrayType(N:Int)(T:KResult) => t(.Set, arrayType(T:KResult, N:Int)) 
+          [structural, anywhere]
+     rule makeFunctionType(L:KList)(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList))) 
+          [structural, anywhere]
      rule makePointerType(T:KResult) => t(.Set, pointerType(T:KResult))
+          [structural, anywhere]
      rule makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult))
+          [structural, anywhere]
      
      syntax KList ::= giveNamesToArgs(KList) [function]
      syntax KList ::= "giveNamesToArgs-aux" "(" Int "," KList ")" [function]
@@ -433,8 +437,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           <declarationTypeHolder> (. => T:KResult) ...</declarationTypeHolder>
           [structural]
      
-     rule
-          <k> T:KResult ~> extractActualTypeFreezer 
+     rule <k> T:KResult ~> extractActualTypeFreezer 
                => extractActualType(T:KResult)
           ...</k>
           [structural]

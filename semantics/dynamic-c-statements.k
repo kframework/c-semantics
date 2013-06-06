@@ -143,41 +143,41 @@ module DYNAMIC-SEMANTICS-SWITCH
           
      rule
           <k> handleSwitch(SN:Int, V:KResult) 
-               => handleSwitch-aux(SN:Int, V:KResult, Map(M:Map)) 
+               => handleSwitch-aux(SN:Int, V:KResult, map(M:Map)) 
           ...</k>
           //<br/>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu:K, F:Id) |-> Map(M:Map) ...</gotoMap>
+          <gotoMap>... kpair(Tu:K, F:Id) |-> map(M:Map) ...</gotoMap>
           [structural] 
           
      syntax K ::= "tryCase" "(" K "," Value "," K ")" //  K to be evaluated, val it should be, casehelper
      context tryCase((HOLE => reval(HOLE)), _, _)
      rule
           <k> (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
-               ~> handleSwitch-aux(SN:Int, V:KResult, Map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
+               ~> handleSwitch-aux(SN:Int, V:KResult, map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
           ...</k>
           when Exp:K =/=K l('Default)
           [structural] 
           
      //  if all that's left is a default, do it
      rule
-          <k> handleSwitch-aux(SN:Int, _, Map((genLabel(SN:Int, l('Default)) |-> _))) 
+          <k> handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _))) 
                => Goto(genLabel(SN:Int, l('Default)))
           ...</k>
           [structural] 
      
      //  if there's nothing left, no case matches
      rule
-          <k> handleSwitch-aux(_, _, Map(.Map)) => .K ...</k>
+          <k> handleSwitch-aux(_, _, map(.Map)) => .K ...</k>
           [structural] 
           
      rule
-          <k> handleSwitch-aux(SN:Int, _, Map((_ ((genLabel(SN':Int, _) |-> _) => .Map)))) ...</k>
+          <k> handleSwitch-aux(SN:Int, _, map((_ ((genLabel(SN':Int, _) |-> _) => .Map)))) ...</k>
           when SN:Int =/=Int SN':Int
           [structural] 
      rule
-          <k> handleSwitch-aux(SN:Int, _, Map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</k>
+          <k> handleSwitch-aux(SN:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</k>
           when L:KLabel =/=KLabel 'genLabel
           [structural] 
 
@@ -381,7 +381,7 @@ module DYNAMIC-SEMANTICS-GOTO
      rule <k> Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </k>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu:K, F:Id) |-> Map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
+          <gotoMap>... kpair(Tu:K, F:Id) |-> map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
           // [computational]
           [structural]  // rule so that looping programs see repetition
           
@@ -628,7 +628,7 @@ module DYNAMIC-SEMANTICS-RETURN
                ~> cast(T:KResult, V:KResult) 
                ~> K:K
           </k>
-          <gtypes>... Tu:K |-> Map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
+          <gtypes>... Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
           <br/>
           <control>
                //  these cells get replaced by the ones in C:Bag, so we can
