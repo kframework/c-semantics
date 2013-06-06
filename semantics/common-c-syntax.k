@@ -4,8 +4,8 @@ module COMMON-C-SYNTAX
      //tags ndlocal ndheat computational structural interpRule anywhere observable
 
      // these are semantic
-     syntax K ::= "reval" "(" K ")" [semantic, strict]
-     syntax K ::= "peval" "(" K ")" [semantic, strict]
+     syntax K ::= "reval" "(" K ")" [semantic]
+     syntax K ::= "peval" "(" K ")" [semantic]
      
      // the rest are syntactic
      syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel('AttributeWrapper)]

@@ -568,7 +568,6 @@ module COMMON-C-BITSIZE
      rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N:Int
      rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T:KResult
 
-          
      rule toString(Identifier(S:String)) => S:String
      rule toString(S:String) => S:String
      rule toString(Num:Int) => Int2String(Num:Int)
