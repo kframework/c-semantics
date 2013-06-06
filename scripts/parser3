@@ -1,0 +1,196 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Spec::Functions qw(rel2abs catfile);
+use Getopt::Declare;
+use File::Basename;
+use File::Temp qw/ tempfile tempdir /;
+use File::Copy;
+
+my $myDirectory = dirname(rel2abs($0));
+
+my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
+my $cparser = catfile($myDirectory, 'cparser');
+
+my @programNames;
+my @programs;
+my $formulae;
+
+sub linker {
+	my @files = (@_);
+	my @operators;
+	my $retval = "";
+	if (scalar(@files) == 0) {
+		die "No files passed to linker\n";
+	}
+	foreach my $filename (@files) {
+		my @contents;
+		if ($filename =~ m/\.a$/) {
+			@contents = `ar -p $filename`;
+			if ($?) {
+				die "Something went wrong when trying to unarchive $filename\n";
+			}
+		} else {
+			open(my $newFile, $filename) or die "Couldn't open file $filename\n";
+			@contents = <$newFile>;
+		}
+		linkFile(@contents);
+	}
+
+	$retval .= "'Program(";
+	$retval .= "'klist(_`(_`)(KList2KLabel_(";
+	$retval .= printNested(@programs);
+	$retval .= '), .KList))';
+	$retval .= ')';
+	return $retval;
+}
+
+sub linkFile {
+	my (@contents) = (@_);
+	foreach my $line (@contents){
+            push(@programs, $line);
+	}
+}
+
+sub printNested {
+	my ($name, @rest) = (@_);
+
+	if (defined($name)) {
+		return "_`,`,_(($name), " . printNested(@rest) .")";
+	} else {#arg
+		return '.KList';
+	}
+}
+
+my @temporaryFiles = ();
+ 
+my @compiledPrograms = ();
+my @shouldBeDeleted = ();
+
+my @stdlib = ();
+push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
+push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
+
+foreach (@ARGV) { compile($_); }
+
+push(@compiledPrograms, @stdlib);
+
+my $linkingResults = linker(@compiledPrograms);
+unlink(@shouldBeDeleted);
+if ($linkingResults eq ""){
+	die "Nothing returned from linker";
+}
+
+print $linkingResults;
+
+exit();
+# ===================================================================
+
+sub compile {
+	my ($file) = (@_);
+	my $inputFile = rel2abs($file);
+	if (! -e $inputFile) {
+		die "kcc: $file: No such file or directory";
+	}
+	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
+
+	if (($suffix eq '.o') or ($suffix eq '.a')) {
+		# assuming .o or .a file
+		push(@compiledPrograms, $inputFile);
+		return;
+	}
+	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
+	my $line = <$fh>;
+	close $fh;
+
+	# assume it's a normal input file, so compile it
+	my $localOval = "$baseName.o";
+	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
+	compileProgram(0, 0, $inputFile) or die "Compilation failed";
+
+	if (! -e "program-$baseName-compiled.maude") {
+		die "Expected to find program-$baseName-compiled.maude, but did not";
+	}
+	move("program-$baseName-compiled.maude", $localOval) or die "Failed to rename the compiled program to the local output file $localOval";
+	
+	push(@compiledPrograms, $localOval);
+
+      push(@shouldBeDeleted, $localOval);
+}
+
+
+sub compileProgram {
+	my ($warnFlag, $dumpFlag, $inputFile) = (@_);
+	my $nowarn = $warnFlag;
+	my $dflag = $dumpFlag;
+	
+	my $PEDANTRY_OPTIONS = "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
+	my $GCC_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
+	
+	my $K_PROGRAM_COMPILE = "perl $xmlToK";
+	
+	my $compilationLog = File::Temp->new( TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+	push(@temporaryFiles, $compilationLog);
+	
+	my $trueFilename = $inputFile;
+	my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
+	my $fullfilename = catfile($directoryname, "$filename.c");
+	if (! -e $fullfilename) {
+		die "$filename.c not found";
+	}
+	
+	my $gccCommand = "gcc $PEDANTRY_OPTIONS $GCC_OPTIONS -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+	
+	my $retval = system($gccCommand);
+	open FILE, "$filename.warnings.log";
+	my @lines = <FILE>;
+	close FILE;
+	if ($retval) {
+		print STDERR "Error running preprocessor:\n";
+		print STDERR join("\n", @lines);
+		die();
+	}
+	if (! $nowarn) {
+		print join("\n", @lines);
+	}
+	$retval = system("$cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+	open FILE, "$filename.warnings.log";
+	@lines = <FILE>;
+	close FILE;
+	if ($retval) {
+		unlink("$filename.gen.parse.tmp");
+		unlink("$filename.warnings.log");
+		print STDERR "Error running C parser:\n";
+		print STDERR join("\n", @lines);
+		die();		
+	}
+	if (! $nowarn) {
+		print join("\n", @lines);
+	}
+	if (! $dflag) {
+		unlink("$filename.pre.gen");
+		unlink("$filename.warnings.log");
+	}
+	move("$filename.gen.parse.tmp", "$filename.gen.parse") or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
+	
+	my $PROGRAMRET = system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude");
+	open FILE, "$compilationLog" or die "Could not open $compilationLog";
+	@lines = <FILE>;
+	close FILE;
+	if (! $dflag) {
+		unlink("$filename.gen.parse");
+	}
+	if ($PROGRAMRET) {
+		print STDERR "Error compiling program:\n";
+		print STDERR join("\n", @lines);
+		unlink($compilationLog);
+		die();
+	}
+
+	return 1;
+}
+
+__END__
