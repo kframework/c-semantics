@@ -26,6 +26,11 @@ module COMPAT-SYNTAX
      syntax K ::= PAUSE(Bool)
 
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
+
+     // TODO(chathhorn): hackish, rename at least
+     syntax K ::= rkludge(K) [function, klabel('rkludge)]
+     syntax K ::= pkludge(K) [function, klabel('pkludge)]
+
 endmodule
 
 module COMMON-INCOMING-MODULES
@@ -252,7 +257,7 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "AllowWrite" "(" K ")" [strict]
      
-     rule AllowWrite(lval(N:SymLoc, T:Type)) => lval(N, stripConst(T)) [structural, anywhere]
+     rule AllowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T)) [structural, anywhere]
 
      syntax Type ::= stripConst(Type) [function]
      rule stripConst(t((SetItem(Const) => .Set) _, _))
@@ -277,10 +282,8 @@ module COMMON-SEMANTIC-SYNTAX
      //syntax Int ::= "charToAscii" "(" String ")" [function]
      //syntax Int ::= "asciiCharString" "(" String ")" [function]
      
-     
-     
      syntax KList ::=  Int "to" Int [function]
-     syntax K ::= cast(K, K) [strict] // as described in 6.3 // totype, fromvalue
+     syntax K ::= cast(K, K) [strict(1)] // as described in 6.3 // totype, fromvalue
      context cast(_, (HOLE => reval(HOLE)))
      syntax K ::= arithInterpret(Type, BaseValue) [function] // interpret the result of arithmetic as in 6.5.4
      syntax K ::= interpret(Type, K) [function] // interpret the values of reading from mem

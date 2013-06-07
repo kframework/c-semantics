@@ -540,7 +540,8 @@ and unary_operator =
       // type-strict=(1)
      syntax Expression ::= "Call" "(" K "," K ")" [klabel('Call)] // K, List
      context Call((HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
-     context Call(_, klist((_:KList,, (HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
+     // chathhorn: replaced with toRVList
+     //context Call(_, klist((_:KList,, (HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
      | COMMA of expression list
 */

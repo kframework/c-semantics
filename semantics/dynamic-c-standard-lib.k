@@ -17,7 +17,9 @@ endmodule
 module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      
-     rule reval(vararg(K:K)) => vararg(K:K) [structural]
+     // TODO(chathhorn): not pretty
+     //rule reval(vararg(K:K)) => vararg(K:K) [structural]
+     rule rkludge(vararg(K:K)) => vararg(K:K) [structural, anywhere]
      // fixme had to make this K because of the context bug
      syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" // offset, type, length, checklength
      context nextvarg-aux(_, _, value(HOLE), _)
@@ -34,7 +36,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           ...</k>
           [structural]
      
-
      // context 'prepareBuiltin(_:Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE)),, _:List`{K`}))
      context prepareBuiltin(_:Id, (_:KList,, (HOLE => reval(HOLE)),, _:KList))
      
@@ -57,7 +58,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           [structural]
      rule [idsFromDeclList-done]:
           idsFromDeclList(.KList) => .KList [structural]
-     
 
      context incSymbolic((HOLE => reval(HOLE)))
      rule [incSymbolic]:
@@ -70,15 +70,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           ...</k>
           [structural]
           
-     rule
-          <k> printString(S:String)
+     rule <k> printString(S:String)
                => writeToFD(1, asciiString(firstChar(S:String)))
                ~> printString(butFirstChar(S:String))
           ...</k>
           when lengthString(S:String) >Int 0
           [structural]
-     rule
-          <k> printString("") => writeToFD(1, 10) ...</k>
+     rule <k> printString("") => writeToFD(1, 10) ...</k>
           [structural]
 endmodule
 
@@ -244,8 +242,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
           <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
-                         C:Bag
-                         <continuation> K:K </continuation>
+                         <threadState>
+                              <threadContinuation> K:K </threadContinuation>
+                              <savedThreadLocal>C:Bag</savedThreadLocal>
+                         </threadState>
                     ))
                     ~> tv(0, t(.Set, int))
                )
@@ -267,8 +267,10 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
           <k> longjmp-aux(tv(bag(
-                         <continuation> K:K </continuation>
-                         C:Bag
+                    <threadState>
+                         <threadContinuation> K:K </threadContinuation>
+                         <savedThreadLocal>C:Bag</savedThreadLocal>
+                    </threadState>
                ), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
                => ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
           </k>

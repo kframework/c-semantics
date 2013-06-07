@@ -12,7 +12,9 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
      imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
-     Any statement may be preceded by a prefix that declares an identifier as a label name. Labels in themselves do not alter the flow of control, which continues unimpeded across them.
+     Any statement may be preceded by a prefix that declares an identifier as a
+     label name. Labels in themselves do not alter the flow of control, which
+     continues unimpeded across them.
      }*/
      rule [skip-label]: 
           <k> Label(L:Id, K:K) => K:K ...</k>
@@ -643,10 +645,12 @@ module DYNAMIC-SEMANTICS-RETURN
           <br/>
           <callStack>
                ListItem(
-                    <continuation> K:K </continuation>
-                    C:Bag
-                    <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-                    <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+                    <callStackFrame>...
+                         <continuation> K:K </continuation>
+                         <stackControl>C:Bag</stackControl>
+                         <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+                         <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+                    ...</callStackFrame>
                ) => .List
           ...</callStack>
           [structural, large] 

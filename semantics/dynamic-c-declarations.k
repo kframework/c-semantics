@@ -24,18 +24,35 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural] 
           
           
-     // n1494 6.5.2.2:6 If the expression that denotes the called function has a type that does not include a prototype, the integer promotions are performed on each argument, and arguments that have type float are promoted to double. These are called the default argument promotions. If the number of arguments does not equal the number of parameters, the behavior is undefined. If the function is defined with a type that includes a prototype, and either the prototype ends with an ellipsis (, ...) or the types of the arguments after promotion are not compatible with the types of the parameters, the behavior is undefined. If the function is defined with a type that does not include a prototype, and the types of the arguments after promotion are not compatible with those of the parameters after promotion, the behavior is undefined, except for the following cases: 
-     // -- one promoted type is a signed integer type, the other promoted type is the corresponding unsigned integer type, and the value is representable in both types;
-     // -- both types are pointers to qualified or unqualified versions of a character type or void
+     // n1494 6.5.2.2:6 If the expression that denotes the called function has
+     // a type that does not include a prototype, the integer promotions are
+     // performed on each argument, and arguments that have type float are
+     // promoted to double. These are called the default argument promotions.
+     // If the number of arguments does not equal the number of parameters, the
+     // behavior is undefined. If the function is defined with a type that
+     // includes a prototype, and either the prototype ends with an ellipsis (,
+     // ...) or the types of the arguments after promotion are not compatible
+     // with the types of the parameters, the behavior is undefined. If the
+     // function is defined with a type that does not include a prototype, and
+     // the types of the arguments after promotion are not compatible with
+     // those of the parameters after promotion, the behavior is undefined,
+     // except for the following cases: 
+     //
+     // -- one promoted type is a signed integer type, the other promoted type
+     // is the corresponding unsigned integer type, and the value is
+     // representable in both types;
+     //
+     // -- both types are pointers to qualified or unqualified versions of a
+     // character type or void
      
-      // chathhorn: these two rules only mutate the head of the list now.
+     // chathhorn: these two rules only mutate the head of the list now.
      rule [bind-coerce-array]:
           bind-aux(
                _
                , L:KList
                , (typedDeclaration(
                         (t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult)))), X:Id
-                  ),, _:KList)
+               ),, _:KList)
           )
           [structural, anywhere] 
      rule [bind-coerce-incompleteArray]:
@@ -44,7 +61,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                , L:KList
                , (typedDeclaration(
                         (t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult)))), X:Id
-                  ),, _:KList)
+               ),, _:KList)
           )
           [structural, anywhere] 
           
@@ -70,24 +87,26 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      syntax KList ::= promoteList(KList) [function]
      rule [promoteList-needs-promoting]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
           => cast(argPromote(t(S:Set, T:K)), tv(V:KList, t(S:Set, T:K))),, promoteList(L:KList)
-          when ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int)) orBool isBitfieldType(t(S:Set, T:K))) andBool hasIntegerType(t(S:Set, T:K))) 
-          orBool T:K ==K float 
+          when (T:K ==K float)
+               orElseBool (((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) orBool isBitfieldType(t(S:Set, T:K))) 
+                    andBool hasIntegerType(t(S:Set, T:K))) 
           [structural]
      rule [promoteList-promoted]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
           => (tv(V:KList, t(S:Set, T:K)),, promoteList(L:KList))
-          when (notBool(hasIntegerType(t(S:Set, T:K))) 
+          when ((notBool(hasIntegerType(t(S:Set, T:K))) 
                     andBool (notBool T:K ==K float)
                     andBool (notBool isArrayType(t(S:Set, T:K)))) 
-               orBool (rank(t(S:Set, T:K)) >=Int rank(t(.Set, int)))
                orBool (T:K ==K double)
-               orBool (T:K ==K long-double)
+               orBool (T:K ==K long-double))
+               orElseBool (rank(t(S:Set, T:K)) >=Int rank(t(.Set, int)))
           [structural]
      rule promoteList(.KList) => .KList
      
      syntax K ::= "bindVariadic" "(" SymLoc "," KList ")"
      syntax K ::= "bindVariadic-pre" "(" SymLoc "," KList ")"
      
-     // the idea here is that there should have been a previous argument, so we can use its address to append all of the variadic arguments 
+     // the idea here is that there should have been a previous argument, so we
+     // can use its address to append all of the variadic arguments 
      rule [bind-variadic-pre]:
           <k> bind-aux(Loc:SymLoc, L:KList, t(_, variadic))
                => bindVariadic-pre(Loc, promoteList(L))
@@ -102,13 +121,16 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      
      // fixme don't forget to get rid of append
      
-     // this rule assumes it will be run immediately after other normal bindings for the same function.  This is all wrong if it is computational instead of structural because of other threads interleaving
+     // this rule assumes it will be run immediately after other normal
+     // bindings for the same function.  This is all wrong if it is
+     // computational instead of structural because of other threads
+     // interleaving
      rule [bind-variadic]:
           <k> (.K 
                     => allocateType(Loc, type(V:K))
                     ~> Computation(*(tv(Loc, t(.Set, pointerType(type(V:K))))) := V:K)
                ) 
-               ~> bindVariadic(_, ((V:K => .),, _:KList)) 
+               ~> bindVariadic(_, ((V:K => .KList),, _:KList)) 
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
@@ -121,7 +143,6 @@ endmodule
 
 module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
      imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-     
      
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
