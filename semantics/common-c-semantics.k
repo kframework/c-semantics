@@ -10,9 +10,6 @@ require "common-c-typing.k"
 module COMPAT-SYNTAX
      imports COMMON-INCOMING-MODULES 
 
-     syntax VT ::= Value | Type
-     syntax VTList ::= List{VT, ","}
-
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 
@@ -95,15 +92,15 @@ module COMMON-SEMANTIC-SYNTAX
      // TODO(chathhorn): move this elsewhere, rather big change.
      syntax KResult ::= SymLoc
 
-     syntax SymLoc ::= ladd(SymLoc, Int) [function]
      syntax SymLoc ::= linc(SymLoc) [function]
 
-     //define 'isInt(loc(_, _, _)) => true
-     
      // fixme maybe if we keep it reduced here, things can go faster
-     syntax K ::= K "+bits" K [function]
+     syntax K ::= SymLoc "+bits" Int [function]
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bits N:Int
           => loc(Base, Offset, BitOffset +Int N)
+     syntax K ::= SymLoc "+bytes" Int [function]
+     rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bytes N:Int
+          => loc(Base, Offset +Int N, BitOffset)
 
      //declare bitoffset : Int -> Int 
      //declare byteoffset : Int -> Int
@@ -169,8 +166,15 @@ module COMMON-SEMANTIC-SYNTAX
           
      syntax K ::= "initialize" "(" Id "," Type "," K ")"
      // syntax K ::= "memblock" "(" Bag "," Map ")" // length and an array from offsets to bytes
-     syntax BagItem ::= "mlength" "(" Int ")" 
-     syntax BagItem ::= "mconst"
+
+     syntax BagItem ::= "mlength" "(" Int ")"  [function]
+     syntax BagItem ::= "mconst" [function]
+     syntax MemAttr ::= "mattr-length" "(" Int ")"
+                      | "mattr-const"
+
+     rule mlength(X:Int) => BagItem(mattr-length(X))
+     rule mconst => BagItem(mattr-const)
+
      syntax K ::= "makeUnwritable" "(" SymLoc ")" 
      syntax K ::= "makeUnwritableSubObject" "(" K ")" 
      syntax K ::= "makeUnwritableVar" "(" K ")"
@@ -248,7 +252,7 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "AllowWrite" "(" K ")" [strict]
      
-     rule AllowWrite(lv(N:SymLoc, T:Type)) => lv(N, stripConst(T)) [structural, anywhere]
+     rule AllowWrite(lval(N:SymLoc, T:Type)) => lval(N, stripConst(T)) [structural, anywhere]
 
      syntax Type ::= stripConst(Type) [function]
      rule stripConst(t((SetItem(Const) => .Set) _, _))
@@ -256,7 +260,7 @@ module COMMON-SEMANTIC-SYNTAX
           when notBool Const in S:Set
           [structural]
      
-     syntax K ::= "bind" "(" VTList "," VTList ")"
+     syntax K ::= "bind" "(" KList "," KList ")"
      syntax Value ::= "tv" "(" KList "," Type ")" [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
@@ -430,10 +434,8 @@ module COMMON-C-SEMANTICS-MISC
      //      => allocatedDuration +Int (M:Int +Int N':Int)
      //      [structural, anywhere]
 
-     rule ladd(loc(Base:SymBase, ByOff:Int, BiOff:Int), Offset:Int)
-          => loc(Base, ByOff +Int Offset, BiOff)
-
-     rule linc(L:SymLoc) => ladd(L, 1)
+     rule linc(loc(sb(X:Int, Th:ThreadId), ByOff:Int, BiOff:Int))
+          => loc(sb(X +Int 1, Th), ByOff, BiOff)
 
      rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural, anywhere]
 

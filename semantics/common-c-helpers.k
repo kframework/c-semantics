@@ -12,7 +12,7 @@ module COMPAT
      rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
      rule toBag(.KList) => .Bag
 
-     rule lengthKList (K:K,, Kl:KList) => 1 + lengthKList Kl
+     rule lengthKList (K:K,, Kl:KList) => 1 +Int lengthKList Kl
      rule lengthKList .KList => 0
 
      // rule K:K in (BagItem(K:K) _:Bag) => true
@@ -23,7 +23,7 @@ module COMPAT
      // rule BagItem(K:K) in B:Bag => K in B
 
      rule BagItem(K) in B:Bag => K #inBag B ==K true 
-     rule K #inBag BagItem(K) _:Bag => true // TODO(chathhorn): how could this work
+     rule K #inBag BagItem(K) _:Bag => true
 
      // eq eraseKLabel(L, L(Ks)) = eraseKLabel(L,Ks) .
      // eq eraseKLabel(L,L'(Ks)) = L'(eraseKLabel(L,Ks)) [owise] .
@@ -325,7 +325,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
      
      rule [getString-pre]:
           <k> (.K => read(Loc, t(.Set, char)))
-               ~> getString-aux(tv((Loc:SymLoc => linc(Loc)), _), S:String)
+               ~> getString-aux(tv((Loc:SymLoc => (Loc +bytes 1)), _), S:String)
           ...</k>
           [structural]
           
@@ -344,14 +344,15 @@ module COMMON-SEMANTICS-HELPERS-MISC
           
      // writeString and writeWString expect the user to add the '\0' to the end
      // of the strings passed
-     syntax K ::= "writeString" "(" K "," String ")" [strict(1)]
-     syntax K ::= "writeWString" "(" K "," KList ")" [strict(1)]
+     // chathhorn: made these non-strict (w/SymLoc), I forget why.
+     syntax K ::= "writeString" "(" SymLoc "," String ")" // [strict(1)]
+     syntax K ::= "writeWString" "(" SymLoc "," KList ")" // [strict(1)]
 
      rule [write-string]:
           <k> writeString(Loc:SymLoc, S:String)
                => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
                     := tv(asciiString(firstChar(S:String)), t(.Set, char)))
-               ~> writeString(linc(Loc), butFirstChar(S:String))
+               ~> writeString(Loc +bytes 1, butFirstChar(S:String))
           ...</k>
           when S:String =/=String ""
           [structural]
@@ -360,7 +361,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           <k> writeWString(Loc:SymLoc, (N:Int,, S:KList))
                => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
                     := tv(N, cfg:wcharut))
-               ~> writeWString(ladd(Loc, 4), S)
+               ~> writeWString(Loc +bytes 4, S)
           ...</k>
           [structural] 
      rule [write-empty-string]:
@@ -514,53 +515,48 @@ endmodule
 module COMMON-C-BITSIZE
      imports COMMON-SEMANTICS-HELPERS-INCLUDE
 
-     syntax K ::= bitSizeofList(VTList)
-     syntax K ::= "bitSizeofList-aux" "(" VT "," Int "," VTList ")" [strict(1)]
+     syntax K ::= bitSizeofList(KList)
+     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
      
       // TODO(chathhorn)
-     rule bitSizeofList(L:VTList) => bitSizeofList-aux(., 0, L:VTList)
+     rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
           [structural]
-     rule bitSizeofList-aux((. => bitSizeofType(T:VT)), _:Int, ((T:VT => .), _:VTList))
+     rule bitSizeofList-aux((. => bitSizeofType(T:K)), _:Int, ((T:K => .KList),, _:KList))
           [structural]
      rule bitSizeofList-aux((tv(Len':Int, _) => .), (Len:Int => Len:Int +Int Len':Int), _)
           [structural]
-     rule bitSizeofList-aux(., Len:Int, .VTList) => tv(Len:Int, cfg:largestUnsigned)
+     rule bitSizeofList-aux(., Len:Int, .KList) => tv(Len:Int, cfg:largestUnsigned)
           [structural]
           
      syntax K ::= "maxBitSizeofList" "(" KList ")"
      syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
      rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L:KList, 0) [structural, anywhere]
-     rule
-          <k> maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
+     rule <k> maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
                => bitSizeofType(T:KResult) 
                ~> maxBitSizeofList-aux(L:KList, N:Int) 
           ...</k>
           [structural] 
-     rule
-          <k> (tv(N':Int, _) => .) 
+     rule <k> (tv(N':Int, _) => .) 
                ~> maxBitSizeofList-aux(L:KList, (N:Int => maxInt(N:Int, N':Int))) 
           ...</k>
           [structural] 
-     rule
-          <k> maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned) ...</k>
+     rule <k> maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned) ...</k>
           [structural] 
      
      rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
      rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) => tv(0, cfg:largestUnsigned) [structural, anywhere]
-     rule bitSizeofType(t(_, functionType(_, _:VTList))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
+     rule bitSizeofType(t(_, functionType(_, _))) => tv(numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
      rule bitSizeofType(t(_, pointerType(_))) => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) [structural, anywhere]
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) => tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
      rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) => bitSizeofType(T:KResult) [structural, anywhere]
      rule bitSizeofType(T:KResult) => tv(numBits(T:KResult), cfg:largestUnsigned) when isBasicType(T:KResult) [structural, anywhere]
      rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) => bitSizeofType(T:KResult) [structural, anywhere]
 
-     rule
-          <k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:VTList) ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:VTList, _, _) ...</structs>
+     rule <k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:KList) ...</k>
+          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural] 
-     rule
-          <k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:VTList) ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:VTList, _, _) ...</structs>
+     rule <k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:KList) ...</k>
+          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural]
           
      // rule K2Int(N:Int) => N:Int

@@ -211,7 +211,7 @@ module DYNAMIC-SEMANTICS-READING
      // fixme sNat
      rule <k> extractBytesFromMem-aux(Loc:SymLoc, Size:Int, Aux:KList)
                => extractByteFromMem(Loc)
-               ~> extractBytesFromMem-aux(linc(Loc), Size -Int 1, Aux)
+               ~> extractBytesFromMem-aux(Loc +bytes 1, Size -Int 1, Aux)
           ...</k>
           when Size:Int >Int 0
           [structural]
@@ -221,10 +221,10 @@ module DYNAMIC-SEMANTICS-READING
           [structural]        
      
      syntax KList ::= values(KList) [function]
-     rule values((tv(K:K, _),, L:VTList)) => (K:K,, values(L:VTList))
+     rule values((tv(K:K, _),, L:KList)) => (K:K,, values(L:KList))
      rule values(.KList) => .KList
-     rule <k> extractBytesFromMem-aux(_, 0, Aux:VTList) 
-               => dataList(values(Aux:VTList)) 
+     rule <k> extractBytesFromMem-aux(_, 0, Aux:KList) 
+               => dataList(values(Aux:KList)) 
           ...</k>
           [structural] 
      
@@ -232,7 +232,7 @@ module DYNAMIC-SEMANTICS-READING
      
      rule [read-byte-fast]:
           <k> extractByteFromMem(loc(Base:SymBase, Offset:Int, 0))
-               => assert(notBool (loc(Base, Offset:Int, 0) #inBag Locs:Bag), 3)
+               => assert(notBool (BagItem(loc(Base, Offset:Int, 0)) in Locs:Bag), 3)
                ~> assert(Offset:Int <Int Len:Int, 2)
                ~> tv(V:K, t(.Set, no-type))
           ...</k>
@@ -247,7 +247,7 @@ module DYNAMIC-SEMANTICS-READING
           [large, structural]
      rule [read-byte]:
           <k> extractByteFromMem(loc(Base:SymBase, Offset:Int, 0))
-               => assert(notBool (loc(Base, Offset:Int, 0)) #inBag Locs:Bag, 3)
+               => assert(notBool BagItem(loc(Base, Offset:Int, 0)) in Locs:Bag, 3)
                ~> assert(Offset:Int <Int Len:Int, 2)
                ~> tv(V:K, t(.Set, no-type))
           ...</k>
@@ -280,7 +280,7 @@ module DYNAMIC-SEMANTICS-READING
           
      rule [read-byte-buffer]:
           <k> extractByteFromMem(Loc:SymLoc) 
-               => assert(notBool Loc #inBag Locs:Bag, 3)
+               => assert(notBool BagItem(Loc) in Locs:Bag, 3)
                ~> tv(V:K, t(.Set, no-type))
           ...</k>
           <locsWrittenTo> Locs:Bag </locsWrittenTo>
@@ -574,7 +574,7 @@ module DYNAMIC-SEMANTICS-WRITING
      
      rule <k> writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)))
                => writeByte(Loc, V)
-               ~> writeBytes(linc(Loc), dataList(L))
+               ~> writeBytes(Loc +bytes 1, dataList(L))
           ...</k>
           [structural]
      rule [write-byte-buffer]:
@@ -588,7 +588,7 @@ module DYNAMIC-SEMANTICS-WRITING
           ...</object>
           <locsWrittenTo> Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0))) </locsWrittenTo>
           <notWritable> NotWritable:Map </notWritable>
-          when (notBool loc(Base, Offset, 0) #inBag Locs:Bag)
+          when (notBool BagItem(loc(Base, Offset, 0)) in Locs:Bag)
                andBool (Offset:Int <Int Len:Int)
                andBool (notBool (mconst in Attr:Bag))
                andBool (notBool (loc(Base, Offset, 0) in keys NotWritable:Map))

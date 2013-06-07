@@ -13,7 +13,25 @@ module COMMON-SEMANTICS-TYPE-INCLUDE
      syntax Type ::= extractActualType(Type) [function] // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
      
      syntax K ::= "evalToType"
-     
+
+     // TODO(chathhorn): move this
+     syntax K ::= "toKRList" "(" KList ")"
+     syntax K ::= "toKRList'" "(" KList ")"
+
+     syntax KResult ::= "krlist" "(" KList ")"
+
+     rule <k> klist(L:KList) => toKRList(L) ...</k>
+
+     context toKRList'(_,, HOLE,, _)
+
+     rule <k> toKRList(L:KList) => toKRList'(L) ~> krlist(.KList) ...</k>
+
+     rule <k> toKRList'(_,, (V:KResult => .KList),, _) 
+          ~> krlist(_,, (.KList => V),, _) 
+          ...</k>
+
+     rule <k> toKRList'(.KList) => .K ...</k>
+
      // declare typeStrictUnaryOperators : -> Set // [memo] 
      // define typeStrictUnaryOperators => Set(
           // l('-_),, l('+_),, l('*_),, l('&_),, l('~_)
@@ -33,22 +51,22 @@ module COMMON-SEMANTICS-TYPE-INCLUDE
      syntax Set ::= "typeStrictLeftBinaryOperators" [function] // [memo] 
      rule typeStrictLeftBinaryOperators => 
           SetItem(l('_<<_))
-            SetItem(l('_>>_))
+          SetItem(l('_>>_))
           SetItem(l('_*=_))
-            SetItem(l('_/=_))
-            SetItem(l('_%=_))
-            SetItem(l('_+=_))
-            SetItem(l('_-=_))
+          SetItem(l('_/=_))
+          SetItem(l('_%=_))
+          SetItem(l('_+=_))
+          SetItem(l('_-=_))
           SetItem(l('_<<=_))
-            SetItem(l('_>>=_))
-            SetItem(l('_&=_))
-            SetItem(l('_^=_))
-            SetItem(l('_|=_))
+          SetItem(l('_>>=_))
+          SetItem(l('_&=_))
+          SetItem(l('_^=_))
+          SetItem(l('_|=_))
           SetItem(l('_++))
-            SetItem(l('_--))
-            SetItem(l('--_))
-            SetItem(l('++_))
-     [structural]
+          SetItem(l('_--))
+          SetItem(l('--_))
+          SetItem(l('++_))
+          [structural]
 endmodule
 
 module COMMON-SEMANTICS-TYPE-DECLARATIONS
@@ -355,8 +373,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 
      syntax K ::= "BitFieldType" "(" K "," K ")" [strict] 
      
-     rule
-          <k> Specifier(klist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
+     rule <k> Specifier(klist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
           [structural]
           
      rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
@@ -513,6 +530,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      
      // fixme chould check for some struct contraints here
      syntax KList ::= incompleteToFlexibleArrayMember(KList) [function]
+
      rule incompleteToFlexibleArrayMember((typedDeclaration(T:KResult, X:Id),, L:KList))
           => typedDeclaration(T:KResult, X:Id),, incompleteToFlexibleArrayMember(L:KList) 
           when notBool isIncompleteType(T:KResult) 
@@ -522,27 +540,23 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           [structural]
      rule incompleteToFlexibleArrayMember(.KList) => .KList
      
-     rule
-          <k> StructDef(X:Id, klist(L:KList))
-               => addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L:KList)))
+     rule <k> StructDef(X:Id, krlist(L:KList))
+               => addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L)))
                ~> giveType(X:Id, t(.Set, structType(X:Id)))
           ...</k>
           [structural]
-     rule
-          <k> UnionDef(X:Id, klist(L:KList))
-               => addUnion(X:Id, fillUnionBitHoles(L:KList))
+     rule <k> UnionDef(X:Id, krlist(L:KList))
+               => addUnion(X:Id, fillUnionBitHoles(L))
                ~> giveType(X:Id, t(.Set, unionType(X:Id)))
           ...</k>
           [structural]
 
      // the K will resolve to a type, so throw it away
-     rule
-          <k> OnlyTypedef(K:K) => K:K ~> discard ...</k>
+     rule <k> OnlyTypedef(K:K) => K:K ~> discard ...</k>
           [structural]
           
                
-     rule
-          NameAndType(X:Id, T:KResult) => typedDeclaration(T:KResult, X:Id)
+     rule NameAndType(X:Id, T:KResult) => typedDeclaration(T:KResult, X:Id)
           [structural, anywhere] 
      
      rule [extract-basic]: extractActualType(T:KResult) => T:KResult when isBasicType(T:KResult)
@@ -559,8 +573,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           
      syntax K ::= "NameAndType" "(" K "," K ")" [strict(2)] 
           
-     rule
-          SingleName(T:KResult, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:KResult, K:K))
+     rule SingleName(T:KResult, Name(X:Id, K:K)) => NameAndType(X:Id, DeclType(T:KResult, K:K))
           [structural, anywhere] 
      rule [Separate-FieldGroups]:
           FieldGroup(K:K, klist((C:K,, C':K,, L:KList))) 
@@ -568,13 +581,11 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
                ,, FieldGroup(K:K, klist((C':K,, L:KList)))
           [structural, anywhere]
 
-     rule
-          FieldGroup(T:KResult, klist(Name(X:Id, K:K))) 
+     rule FieldGroup(T:KResult, klist(Name(X:Id, K:K))) 
                => NameAndType(X:Id, DeclType(T:KResult, K:K))
           [structural, anywhere]
           
-     rule
-          FieldGroup(T:KResult, klist(BitFieldName(Name(X:Id, K:K), Size:K)))
+     rule FieldGroup(T:KResult, klist(BitFieldName(Name(X:Id, K:K), Size:K)))
                => NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
           [structural, anywhere] 
      rule FieldName(K:K) => K:K [structural, anywhere]
@@ -596,7 +607,7 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [typeCompatible-two-ints]: isTypeCompatible(T:KResult, T':KResult) 
           => true 
           when hasIntegerType(T:KResult)
-          andBool hasIntegerType(T':KResult) 
+               andBool hasIntegerType(T':KResult) 
           [structural]
      rule [typeCompatible-two-ptr]: isTypeCompatible(t(_, pointerType(_)), t(_, pointerType(_)))
           => true 
@@ -646,7 +657,7 @@ module COMMON-SEMANTICS-TYPE-MISC
           [structural]
      rule isTypeCompatible(T:KResult, T':KResult) => true
           when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
-          andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult)) 
+               andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult)) 
           [structural]
                
      syntax K ::= "addGlobalAggregate" "(" Id "," K ")"
@@ -654,14 +665,17 @@ module COMMON-SEMANTICS-TYPE-MISC
      
      syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")" [strict(3)]
      syntax K ::= "addUnion-aux" "(" Id "," KList "," Map "," Map "," KList ")"
-     rule
-          <k> addStruct(S:Id, L:KList) 
+
+     // TODO(chathhorn): why the hell was this necessary? this has got to be a BUG.
+     rule addStruct-aux(A, B, K, C, D, E) => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
+     rule K:KResult ~> addStruct-aux(A, B, HOLE, C, D, E) => addStruct-aux(A, B, K, C, D, E) [cool]
+
+     rule <k> addStruct(S:Id, L:KList) 
                => addStruct-aux(S:Id, L:KList, tv(0, cfg:largestUnsigned), .Map, .Map, L:KList)
           ...</k>
           when L:KList =/=KList .KList
           [structural]
-     rule
-          <k> addStruct-aux(
+     rule <k> addStruct-aux(
                     S:Id
                     , (typedDeclaration(T:KResult, Field:Id),, L:KList)
                     , V:KResult
@@ -669,11 +683,10 @@ module COMMON-SEMANTICS-TYPE-MISC
                     , Offsets:Map
                     , L':KList
                ) 
-               => addStruct-aux(S:Id, L:KList, V:KResult + bitSizeofType(T:KResult), Types:Map[T:KResult / Field:Id], Offsets:Map[value(V:KResult) / Field:Id], L':KList)
+               => addStruct-aux(S, L, V + bitSizeofType(T:KResult), Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
           ...</k>
           [structural]
-     rule
-          <k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
+     rule <k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
                => #if (F:Id ==K file-scope) #then 
                     (addGlobalAggregate(S:Id, aggregateInfo(L:KList, Types:Map, Offsets:Map))) 
                #else
@@ -683,25 +696,22 @@ module COMMON-SEMANTICS-TYPE-MISC
           <currentFunction> F:Id </currentFunction>
           [structural]        
           
-     rule
-          <k> addUnion(S:Id, L:KList) 
+     rule <k> addUnion(S:Id, L:KList) 
                => addUnion-aux(S:Id, L:KList, .Map, .Map, L:KList)
           ...</k>
           when L:KList =/=KList .KList
           [structural]
-     rule
-          <k> addUnion-aux(
+     rule <k> addUnion-aux(
                     S:Id
                     , (typedDeclaration(T:KResult, Field:Id),, L:KList)
                     , Types:Map
                     , Offsets:Map
                     , L':KList
                ) 
-               => addUnion-aux(S:Id, L:KList, Types:Map[T:KResult / Field:Id], Offsets:Map[0 / Field:Id], L':KList)
+               => addUnion-aux(S:Id, L, Types:Map[T:KResult / Field:Id], Offsets:Map[0 / Field:Id], L':KList)
           ...</k>
           [structural]
-     rule
-          <k> addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
+     rule <k> addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
                => #if (F:Id ==K file-scope) #then 
                     (addGlobalAggregate(S:Id, aggregateInfo(L, Types:Map, Offsets:Map))) 
                #else

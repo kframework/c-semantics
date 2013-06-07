@@ -65,8 +65,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           [structural]
           
      rule [prepareBuiltin]:
-          <k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:VTList)))
-               => Return(prepareBuiltin(F:Id, idsFromDeclList(L:VTList)))
+          <k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:KList)))
+               => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
           ...</k>
           [structural]
           
@@ -159,17 +159,29 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
 
      /*@ 
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
-     The header \header{<setjmp.h>} defines the macro \cinline{setjmp}, and declares one function and one type, for bypassing the normal function call and return discipline.
+     The header \header{<setjmp.h>} defines the macro \cinline{setjmp}, and
+     declares one function and one type, for bypassing the normal function call
+     and return discipline.
 
-The type declared
-\cdisplay{jmp_buf}
-which is an array type suitable for holding the information needed to restore a calling environment. The environment of a call to the \cinline{setjmp} macro consists of information sufficient for a call to the \cinline{longjmp} function to return execution to the correct block and invocation of that block, were it called recursively. It does not include the state of the floating-point status flags, of open files, or of any other component of the abstract machine.
+     The type declared
+     \cdisplay{jmp_buf}
+     which is an array type suitable for holding the information needed to
+     restore a calling environment. The environment of a call to the
+     \cinline{setjmp} macro consists of information sufficient for a call to
+     the \cinline{longjmp} function to return execution to the correct block
+     and invocation of that block, were it called recursively. It does not
+     include the state of the floating-point status flags, of open files, or of
+     any other component of the abstract machine.
 
-It is unspecified whether \cinline{setjmp} is a macro or an identifier declared with external linkage. If a macro definition is suppressed in order to access an actual function, or a program defines an external identifier with the name \cinline{setjmp}, the behavior is undefined.
+     It is unspecified whether \cinline{setjmp} is a macro or an identifier
+     declared with external linkage. If a macro definition is suppressed in
+     order to access an actual function, or a program defines an external
+     identifier with the name \cinline{setjmp}, the behavior is undefined.
      }*/
      
      
-     // The (apparent) return value from setjmp indicates whether control reached that point normally or from a call to longjmp
+     // The (apparent) return value from setjmp indicates whether control
+     // reached that point normally or from a call to longjmp
      // fixme check bounds
      // fixme obviously need to rework configuration to make this easy
      syntax K ::= "bag" "(" Bag ")"
@@ -194,18 +206,35 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
      \usebox{\LstBox}
      
      \Description
-     The \cinline{setjmp} macro saves its calling environment in its \cinline{jmp_buf} argument for later use by the \cinline{longjmp} function.
+     The \cinline{setjmp} macro saves its calling environment in its
+     \cinline{jmp_buf} argument for later use by the \cinline{longjmp}
+     function.
      
      \Returns
-     If the return is from a direct invocation, the \cinline{setjmp} macro returns the value zero. If the return is from a call to the \cinline{longjmp} function, the \cinline{setjmp} macro returns a nonzero value.
+     If the return is from a direct invocation, the \cinline{setjmp} macro
+     returns the value zero. If the return is from a call to the
+     \cinline{longjmp} function, the \cinline{setjmp} macro returns a nonzero
+     value.
      
      \Limits
-     An invocation of the \cinline{setjmp} macro shall appear only in one of the following contexts:
+     An invocation of the \cinline{setjmp} macro shall appear only in one of
+     the following contexts:
      \begin{itemize}
-     \item the entire controlling expression of a selection or iteration statement;
-     \item one operand of a relational or equality operator with the other operand an integer constant expression, with the resulting expression being the entire controlling expression of a selection or iteration statement;
-     \item the operand of a unary \cinline{!} operator with the resulting expression being the entire controlling expression of a selection or iteration statement; or
-     \item the entire expression of an expression statement (possibly cast to \cinline{void}).
+     \item the entire controlling expression of a selection or iteration
+     statement;
+
+     \item one operand of a relational or equality operator with the other
+     operand an integer constant expression, with the resulting expression
+     being the entire controlling expression of a selection or iteration
+     statement;
+     
+     \item the operand of a unary \cinline{!} operator with the resulting
+     expression being the entire controlling expression of a selection or
+     iteration statement; or
+     
+     \item the entire expression of an expression statement (possibly cast to
+     \cinline{void}).
+     
      \end{itemize}
 
      If the invocation appears in any other context, the behavior is undefined.
@@ -234,7 +263,8 @@ It is unspecified whether \cinline{setjmp} is a macro or an identifier declared 
           ...</k>
           [structural]
      
-     // fixme: memory leak here with extra ignoreLocals.  needed for recursive setjmp/longjmp as in Looping.c
+     // fixme: memory leak here with extra ignoreLocals.  needed for recursive
+     // setjmp/longjmp as in Looping.c
      rule [longjmp]:
           <k> longjmp-aux(tv(bag(
                          <continuation> K:K </continuation>
@@ -445,10 +475,16 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 
      //////////////////////////--  
 
-     
-     //C1X Here we might want to assume different threads cannot interleave wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly the opposite.
-     // on second thought, it probably is saying that while the shared data is protected against races, it can still be interleaved
-     // fixme despite the above, still need to handle interleaving of user data read during evaluation of printf.  should use something like a buffer to do this
+     // C1X Here we might want to assume different threads cannot interleave
+     // wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly
+     // the opposite.
+
+     // on second thought, it probably is saying that while the shared data is
+     // protected against races, it can still be interleaved
+
+     // fixme despite the above, still need to handle interleaving of user data
+     // read during evaluation of printf.  should use something like a buffer
+     // to do this
      rule [printf]:
           <k> prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
                => new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
@@ -506,13 +542,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax K ::= "formatter-aux" "(" K ")" [strict]
      syntax K ::= "formatter-next" "(" K ")"
      syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule 
-          <k> formatter-next(vararg(tv(Loc:SymLoc, _)))
+     rule <k> formatter-next(vararg(tv(Loc:SymLoc, _)))
                => formatter-arg(nextvarg(Loc, getFormatType))
           ...</k>
           [structural]
-     rule 
-          <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
+     rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
           <formatArg> _ => K:K </formatArg>
@@ -572,35 +606,67 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      // %[flags][width][.precision][length]type   
      
      /*@ \source[n1570]{\para{7.21.6.1}{4}}
-     Each conversion specification is introduced by the character \texttt{\%}. After the \texttt{\%}, the following appear in sequence:
-\begin{itemize}
-\item Zero or more flags (in any order) that modify the meaning of the conversion specification.
-\item An optional minimum field width. If the converted value has fewer characters than the field width, it is padded with spaces (by default) on the left (or right, if the left adjustment flag, described later, has been given) to the field width. The field width takes the form of an asterisk \texttt{*} (described later) or a nonnegative decimal integer.)
-\item An optional precision that gives the minimum number of digits to appear for the \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X} conversions, the number of digits to appear after the decimal-point character for \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, and \texttt{F} conversions, the maximum number of significant digits for the \texttt{g} and \texttt{G} conversions, or the maximum number of bytes to be written for s conversions. The precision takes the form of a period (\texttt{.}) followed either by an asterisk \texttt{*} (described later) or by an optional decimal integer; if only the period is specified, the precision is taken as zero. If a precision appears with any other conversion specifier, the behavior is undefined.
-\item An optional length modifier that specifies the size of the argument.
-\item A conversion specifier character that specifies the type of conversion to be applied.
-\end{itemize}
+     Each conversion specification is introduced by the character \texttt{\%}.
+     After the \texttt{\%}, the following appear in sequence:
+     \begin{itemize}
+     \item Zero or more flags (in any order) that modify the meaning of the
+     conversion specification.
+
+     \item An optional minimum field width. If the converted value has fewer
+     characters than the field width, it is padded with spaces (by default) on
+     the left (or right, if the left adjustment flag, described later, has been
+     given) to the field width. The field width takes the form of an asterisk
+     \texttt{*} (described later) or a nonnegative decimal integer.)
+
+     \item An optional precision that gives the minimum number of digits to
+     appear for the \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x},
+     and \texttt{X} conversions, the number of digits to appear after the
+     decimal-point character for \texttt{a}, \texttt{A}, \texttt{e},
+     \texttt{E}, \texttt{f}, and \texttt{F} conversions, the maximum number of
+     significant digits for the \texttt{g} and \texttt{G} conversions, or the
+     maximum number of bytes to be written for s conversions. The precision
+     takes the form of a period (\texttt{.}) followed either by an asterisk
+     \texttt{*} (described later) or by an optional decimal integer; if only
+     the period is specified, the precision is taken as zero. If a precision
+     appears with any other conversion specifier, the behavior is undefined.
+
+     \item An optional length modifier that specifies the size of the argument.
+
+     \item A conversion specifier character that specifies the type of
+     conversion to be applied.
+
+     \end{itemize}
      */
 
      /*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{5}}}{
-     As noted above, a field width, or precision, or both, may be indicated by an asterisk. In this case, an \cinline{int} argument supplies the field width or precision. The arguments specifying field width, or precision, or both, shall appear (in that order) before the argument (if any) to be converted. A negative field width argument is taken as a \texttt{-} flag followed by a positive field width. A negative precision argument is taken as if the precision were omitted.
+     As noted above, a field width, or precision, or both, may be indicated by
+     an asterisk. In this case, an \cinline{int} argument supplies the field
+     width or precision. The arguments specifying field width, or precision, or
+     both, shall appear (in that order) before the argument (if any) to be
+     converted. A negative field width argument is taken as a \texttt{-} flag
+     followed by a positive field width. A negative precision argument is taken
+     as if the precision were omitted.
      }*/
      
      /*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{6}}}{
      The flag characters and their meanings are:
      \begin{description}
+
      \item[\texttt{-}]
      \broken{The result of the conversion is left-justified within the field. (It is
      right-justified if this flag is not specified.)}
+
      \item[\texttt{+}]
      \broken{The result of a signed conversion always begins with a plus or minus
      sign. (It begins with a sign only when a negative value is converted if this
      flag is not specified.)}
+
      \item[\emph{space}]
      \broken{If the first character of a signed conversion is not a sign, or if a
      signed conversion results in no characters, a space is prefixed to the result.
      If the \emph{space} and \texttt{+} flags both appear, the \emph{space} flag is
      ignored.}
+
      \item[\texttt{\#}]
      \broken{The result is converted to an ``alternative form''. For \texttt{o}
      conversion, it increases the precision, if and only if necessary, to force the
@@ -614,6 +680,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      digit follows it.) For \texttt{g} and \texttt{G} conversions, trailing zeros
      are \emph{not} removed from the result. For other conversions, the behavior is
      undefined.}
+
      \item[\texttt{0}]
      \broken{For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x},
      \texttt{X}, \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f},
@@ -643,28 +710,75 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           andBool asciiString(C:String) <=Int asciiString("9")
           [structural]   
 
-/*@ \source[n1570]{\para{7.21.6.1}{7}}
-The length modifiers and their meanings are:
-\begin{description}
-\item[\texttt{hh}]
-\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{signed char} or \cinline{unsigned char} argument (the argument will have been promoted according to the integer promotions, but its value shall be converted to \cinline{signed char} or \cinline{unsigned char} before printing); or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{signed char} argument.}
-\item[\texttt{h}]
-\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{short int} or \cinline{unsigned short int} argument (the argument will have been promoted according to the integer promotions, but its value shall be converted to \cinline{short int} or \cinline{unsigned short int} before printing); or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{short int} argument.}
-\item[\texttt{l} (ell)]
-Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long int} or \cinline{unsigned long int} argument; that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{long int} argument; \broken{that a following \texttt{c} conversion specifier applies to a \cinline{wint_t} argument; that a following \texttt{s} conversion specifier applies to a pointer to a \cinline{wchar_t} argument}; or has no effect on a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier.
-\item[\texttt{ll} (ell-ell)]
-Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long long int} or \cinline{unsigned long long int} argument; or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{long long int} argument.
-\item[\texttt{j}]
-\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to an \cinline{intmax_t} or \cinline{uintmax_t} argument; or that a following \texttt{n} conversion specifier applies to a pointer to an \cinline{intmax_t} argument.}
-\item[\texttt{z}]
-\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{size_t} or the corresponding signed integer type argument; or that a following \texttt{n} conversion specifier applies to a pointer to a signed integer type corresponding to \cinline{size_t} argument.}
-\item[\texttt{t}]
-\broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{ptrdiff_t} or the corresponding unsigned integer type argument; or that a following \texttt{n} conversion specifier applies to a pointer to a \cinline{ptrdiff_t} argument.}
-\item[\texttt{L}]
-\broken{Specifies that a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier applies to a \cinline{long double} argument.}
-\end{description}
-If a length modifier appears with any conversion specifier other than as specified above, the behavior is undefined.
-*/
+     /*@ \source[n1570]{\para{7.21.6.1}{7}}
+     The length modifiers and their meanings are:
+     \begin{description}
+     \item[\texttt{hh}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{signed char} or \cinline{unsigned char} argument (the argument
+     will have been promoted according to the integer promotions, but its value
+     shall be converted to \cinline{signed char} or \cinline{unsigned char}
+     before printing); or that a following \texttt{n} conversion specifier
+     applies to a pointer to a \cinline{signed char} argument.}
+
+     \item[\texttt{h}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{short int} or \cinline{unsigned short int} argument (the argument
+     will have been promoted according to the integer promotions, but its value
+     shall be converted to \cinline{short int} or \cinline{unsigned short int}
+     before printing); or that a following \texttt{n} conversion specifier
+     applies to a pointer to a \cinline{short int} argument.}
+
+     \item[\texttt{l} (ell)]
+     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
+     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
+     int} or \cinline{unsigned long int} argument; that a following \texttt{n}
+     conversion specifier applies to a pointer to a \cinline{long int}
+     argument; \broken{that a following \texttt{c} conversion specifier applies
+     to a \cinline{wint_t} argument; that a following \texttt{s} conversion
+     specifier applies to a pointer to a \cinline{wchar_t} argument}; or has no
+     effect on a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E},
+     \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier.
+
+     \item[\texttt{ll} (ell-ell)]
+     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
+     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
+     long int} or \cinline{unsigned long long int} argument; or that a
+     following \texttt{n} conversion specifier applies to a pointer to a
+     \cinline{long long int} argument.
+
+     \item[\texttt{j}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to an
+     \cinline{intmax_t} or \cinline{uintmax_t} argument; or that a following
+     \texttt{n} conversion specifier applies to a pointer to an
+     \cinline{intmax_t} argument.}
+
+     \item[\texttt{z}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{size_t} or the corresponding signed integer type argument; or
+     that a following \texttt{n} conversion specifier applies to a pointer to a
+     signed integer type corresponding to \cinline{size_t} argument.}
+
+     \item[\texttt{t}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{ptrdiff_t} or the corresponding unsigned integer type argument;
+     or that a following \texttt{n} conversion specifier applies to a pointer
+     to a \cinline{ptrdiff_t} argument.}
+
+     \item[\texttt{L}]
+     \broken{Specifies that a following \texttt{a}, \texttt{A}, \texttt{e},
+     \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion
+     specifier applies to a \cinline{long double} argument.}
+
+     \end{description}
+     If a length modifier appears with any conversion specifier other than as
+     specified above, the behavior is undefined.
+     */
 
      syntax K ::= "getFormatType"
      syntax K ::= "getFormatType-aux" "(" K "," K ")"
@@ -711,10 +825,15 @@ If a length modifier appears with any conversion specifier other than as specifi
 
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{d},\texttt{i}]
-The \cinline{int} argument is converted to signed decimal in the style \emph{[-]dddd}. \broken{The precision specifies the minimum number of digits to appear; if the value being converted can be represented in fewer digits, it is expanded with leading zeros. The default precision is 1. The result of converting a zero value with a precision of zero is no characters.}
-\end{description}
+     \begin{description}
+     \item[\texttt{d},\texttt{i}]
+     The \cinline{int} argument is converted to signed decimal in the style
+     \emph{[-]dddd}. \broken{The precision specifies the minimum number of
+     digits to appear; if the value being converted can be represented in fewer
+     digits, it is expanded with leading zeros. The default precision is 1. The
+     result of converting a zero value with a precision of zero is no
+     characters.}
+     \end{description}
      */
      rule [format-%d-start]:
           <k> formatter-aux(V:KResult)
@@ -732,10 +851,18 @@ The \cinline{int} argument is converted to signed decimal in the style \emph{[-]
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{o},\texttt{u},\texttt{x},\texttt{X}]
-The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}), unsigned decimal (\texttt{u}), or unsigned hexadecimal notation (\texttt{x} or \texttt{X}) in the style \emph{dddd}; the letters \texttt{abcdef} are used for \texttt{x} conversion and the letters \texttt{ABCDEF} for \texttt{X} conversion. \broken{The precision specifies the minimum number of digits to appear; if the value being converted can be represented in fewer digits, it is expanded with leading zeros. The default precision is 1. The result of converting a zero value with a precision of zero is no characters.}
-\end{description}
+     \begin{description}
+     \item[\texttt{o},\texttt{u},\texttt{x},\texttt{X}]
+     The \cinline{unsigned int} argument is converted to unsigned octal
+     (\texttt{o}), unsigned decimal (\texttt{u}), or unsigned hexadecimal
+     notation (\texttt{x} or \texttt{X}) in the style \emph{dddd}; the letters
+     \texttt{abcdef} are used for \texttt{x} conversion and the letters
+     \texttt{ABCDEF} for \texttt{X} conversion. \broken{The precision specifies
+     the minimum number of digits to appear; if the value being converted can
+     be represented in fewer digits, it is expanded with leading zeros. The
+     default precision is 1. The result of converting a zero value with a
+     precision of zero is no characters.}
+     \end{description}
      */
      rule [format-%o-start]:
           <k> formatter-aux(V:KResult)
@@ -794,12 +921,27 @@ The \cinline{unsigned int} argument is converted to unsigned octal (\texttt{o}),
 //        [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{f},\texttt{F}]
-A \cinline{double} argument representing a floating-point number is converted to decimal notation in the style \emph{[-]ddd.ddd}, \broken{where the number of digits after the decimal-point character is equal to the precision specification. If the precision is missing, it is taken as 6; if the precision is zero and the \texttt{\#} flag is not specified, no decimal-point character appears. If a decimal-point character appears, at least one digit appears before it. The value is rounded to the appropriate number of digits.}
+     \begin{description}
+     \item[\texttt{f},\texttt{F}]
+     A \cinline{double} argument representing a floating-point number is
+     converted to decimal notation in the style \emph{[-]ddd.ddd},
+     \broken{where the number of digits after the decimal-point character is
+     equal to the precision specification. If the precision is missing, it is
+     taken as 6; if the precision is zero and the \texttt{\#} flag is not
+     specified, no decimal-point character appears. If a decimal-point
+     character appears, at least one digit appears before it. The value is
+     rounded to the appropriate number of digits.}
 
-A \cinline{double} argument representing an infinity is converted in one of the styles \emph{[-]inf} or \emph{[-]infinity}---which style is implementation-defined.  A \cinline{double} argument representing a NaN is converted in one of the styles \emph{[-]nan} or \emph{[-]nan}(\emph{n-char-sequence})---which style, and the meaning of any \emph{n-char-sequence}, is implementation-defined. The \texttt{F} conversion specifier produces \cinline{INF}, \cinline{INFINITY}, or \cinline{NAN} instead of \cinline{inf}, \cinline{infinity}, or \cinline{nan}, respectively.
-\end{description}
+     A \cinline{double} argument representing an infinity is converted in one
+     of the styles \emph{[-]inf} or \emph{[-]infinity}---which style is
+     implementation-defined.  A \cinline{double} argument representing a NaN is
+     converted in one of the styles \emph{[-]nan} or
+     \emph{[-]nan}(\emph{n-char-sequence})---which style, and the meaning of
+     any \emph{n-char-sequence}, is implementation-defined. The \texttt{F}
+     conversion specifier produces \cinline{INF}, \cinline{INFINITY}, or
+     \cinline{NAN} instead of \cinline{inf}, \cinline{infinity}, or
+     \cinline{nan}, respectively.
+     \end{description}
      */
      rule [format-%f-start]:
           <k> formatter-aux(V:KResult)
@@ -859,8 +1001,13 @@ A \cinline{double} argument representing an infinity is converted in one of the 
      precision is omitted, or 1 if the precision is zero.  Then, if a conversion
      with style \texttt{E} would have an exponent of $X$:}
      \begin{itemize}
-     \item \broken{if $P > X = -4$, the conversion is with style \texttt{f} (or \texttt{F}) and precision $P - (X + 1)$.}
-     \item \broken{otherwise, the conversion is with style \texttt{e} (or \texttt{E}) and precision $P - 1$.}
+
+     \item \broken{if $P > X = -4$, the conversion is with style \texttt{f} (or
+     \texttt{F}) and precision $P - (X + 1)$.}
+
+     \item \broken{otherwise, the conversion is with style \texttt{e} (or
+     \texttt{E}) and precision $P - 1$.}
+
      \end{itemize}
      \broken{Finally, unless the \texttt{\#} flag is used, any trailing zeros
      are removed from the fractional portion of the result and the
@@ -898,19 +1045,26 @@ A \cinline{double} argument representing an infinity is converted in one of the 
           <formatState> "%G" => "reset" </formatState>
           [structural]
      /* \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{a},\texttt{A}]
-\ldots
-\end{description}
+     \begin{description}
+     \item[\texttt{a},\texttt{A}]
+     \ldots
+     \end{description}
      */
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{c}]
-If no \texttt{l} length modifier is present, the \cinline{int} argument is converted to an \cinline{unsigned char}, and the resulting character is written. 
+     \begin{description}
+     \item[\texttt{c}]
+     If no \texttt{l} length modifier is present, the \cinline{int} argument is
+     converted to an \cinline{unsigned char}, and the resulting character is
+     written. 
 
-\broken{If an \texttt{l} length modifier is present, the \cinline{wint_t} argument is converted as if by an \texttt{ls} conversion specification with no precision and an argument that points to the initial element of a two-element array of \cinline{wchar_t}, the first element containing the \cinline{wint_t} argument to the \texttt{lc} conversion specification and the second a null wide character.}
-\end{description}
+     \broken{If an \texttt{l} length modifier is present, the \cinline{wint_t}
+     argument is converted as if by an \texttt{ls} conversion specification
+     with no precision and an argument that points to the initial element of a
+     two-element array of \cinline{wchar_t}, the first element containing the
+     \cinline{wint_t} argument to the \texttt{lc} conversion specification and
+     the second a null wide character.}
+     \end{description}
      */
      rule [format-%c-start]:
           <k> formatter-aux(V:KResult)
@@ -934,12 +1088,31 @@ If no \texttt{l} length modifier is present, the \cinline{int} argument is conve
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{s}]
-If no \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of character type. Characters from the array are written up to (but not imports) the terminating null character. \broken{If the precision is specified, no more than that many bytes are written.} If the precision is not specified or is greater than the size of the array, the array shall contain a null character.
+     \begin{description}
+     \item[\texttt{s}]
+     If no \texttt{l} length modifier is present, the argument shall be a
+     pointer to the initial element of an array of character type. Characters
+     from the array are written up to (but not imports) the terminating null
+     character. \broken{If the precision is specified, no more than that many
+     bytes are written.} If the precision is not specified or is greater than
+     the size of the array, the array shall contain a null character.
 
-\broken{If an \texttt{l} length modifier is present, the argument shall be a pointer to the initial element of an array of \cinline{wchar_t} type. Wide characters from the array are converted to multibyte characters (each as if by a call to the \cinline{wcrtomb} function, with the conversion state described by an \cinline{mbstate_t} object initialized to zero before the first wide character is converted) up to and imports a terminating null wide character. The resulting multibyte characters are written up to (but not imports) the terminating null character (byte). If no precision is specified, the array shall contain a null wide character. If a precision is specified, no more than that many bytes are written (imports shift sequences, if any), and the array shall contain a null wide character if, to equal the multibyte character sequence length given by the precision, the function would need to access a wide character one past the end of the array. In no case is a partial multibyte character written.}
-\end{description}
+     \broken{If an \texttt{l} length modifier is present, the argument shall be
+     a pointer to the initial element of an array of \cinline{wchar_t} type.
+     Wide characters from the array are converted to multibyte characters (each
+     as if by a call to the \cinline{wcrtomb} function, with the conversion
+     state described by an \cinline{mbstate_t} object initialized to zero
+     before the first wide character is converted) up to and imports a
+     terminating null wide character. The resulting multibyte characters are
+     written up to (but not imports) the terminating null character (byte). If
+     no precision is specified, the array shall contain a null wide character.
+     If a precision is specified, no more than that many bytes are written
+     (imports shift sequences, if any), and the array shall contain a null wide
+     character if, to equal the multibyte character sequence length given by
+     the precision, the function would need to access a wide character one past
+     the end of the array. In no case is a partial multibyte character
+     written.}
+     \end{description}
      */
      rule [format-%s-start]:
           <k> formatter-aux(V:KResult)
@@ -964,10 +1137,12 @@ If no \texttt{l} length modifier is present, the argument shall be a pointer to 
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{p}]
-The argument shall be a pointer to \cinline{void}. The value of the pointer is converted to a sequence of printing characters, in an implementation-defined manner.
-\end{description}
+     \begin{description}
+     \item[\texttt{p}]
+     The argument shall be a pointer to \cinline{void}. The value of the
+     pointer is converted to a sequence of printing characters, in an
+     implementation-defined manner.
+     \end{description}
      */
      rule [format-%p-start]:
           <k> formatter-aux(V:KResult)
@@ -984,17 +1159,22 @@ The argument shall be a pointer to \cinline{void}. The value of the pointer is c
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{n}]
-\broken{The argument shall be a pointer to signed integer into which is \emph{written} the number of characters written to the output stream so far by this call to \cinline{fprintf}. No argument is converted, but one is consumed. If the conversion specification includes any flags, a field width, or a precision, the behavior is undefined.}
-\end{description}
+     \begin{description}
+     \item[\texttt{n}]
+     \broken{The argument shall be a pointer to signed integer into which is
+     \emph{written} the number of characters written to the output stream so
+     far by this call to \cinline{fprintf}. No argument is converted, but one
+     is consumed. If the conversion specification includes any flags, a field
+     width, or a precision, the behavior is undefined.}
+     \end{description}
      */
      
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
-\begin{description}
-\item[\texttt{\%}]
-A \texttt{\%} character is written. No argument is converted. The complete conversion specification shall be \texttt{\%\%}.
-\end{description}
+     \begin{description}
+     \item[\texttt{\%}]
+     A \texttt{\%} character is written. No argument is converted. The complete
+     conversion specification shall be \texttt{\%\%}.
+     \end{description}
      */
      rule [format-%%]:
           <k> formatter-aux(_) ...</k>
@@ -1038,9 +1218,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           </k>
      
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
-     The \cinline{malloc} function allocates space for an object whose size is specified by \cinline{size} and whose value is indeterminate.
+     The \cinline{malloc} function allocates space for an object whose size is
+     specified by \cinline{size} and whose value is indeterminate.
 
-The malloc function returns either a null pointer or a pointer to the allocated space.
+     The malloc function returns either a null pointer or a pointer to the
+     allocated space.
      }*/
      syntax K ::= "newAlloc" "(" Int ")" [function]
      rule newAlloc(Fresh:Int) => loc(sb(Fresh, allocatedDuration), 0, 0)
@@ -1062,11 +1244,24 @@ The malloc function returns either a null pointer or a pointer to the allocated 
           // [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
-     The \cinline{realloc} function deallocates the old object pointed to by \cinline{ptr} and returns a pointer to a new object that has the size specified by \cinline{size}. The contents of the new object shall be the same as that of the old object prior to deallocation, up to the lesser of the new and old sizes. Any bytes in the new object beyond the size of the old object have indeterminate values.
+     The \cinline{realloc} function deallocates the old object pointed to by
+     \cinline{ptr} and returns a pointer to a new object that has the size
+     specified by \cinline{size}. The contents of the new object shall be the
+     same as that of the old object prior to deallocation, up to the lesser of
+     the new and old sizes. Any bytes in the new object beyond the size of the
+     old object have indeterminate values.
 
-If \cinline{ptr} is a null pointer, the \cinline{realloc} function behaves like the \cinline{malloc} function for the specified size. Otherwise, if \cinline{ptr} does not match a pointer earlier returned by a memory management function, or if the space has been deallocated by a call to the \cinline{free} or \cinline{realloc} function, the behavior is undefined. If memory for the new object cannot be allocated, the old object is not deallocated and its value is unchanged.
+     If \cinline{ptr} is a null pointer, the \cinline{realloc} function behaves
+     like the \cinline{malloc} function for the specified size. Otherwise, if
+     \cinline{ptr} does not match a pointer earlier returned by a memory
+     management function, or if the space has been deallocated by a call to the
+     \cinline{free} or \cinline{realloc} function, the behavior is undefined.
+     If memory for the new object cannot be allocated, the old object is not
+     deallocated and its value is unchanged.
 
-The \cinline{realloc} function returns a pointer to the new object (which may have the same value as a pointer to the old object), or a null pointer if the new object could not be allocated.
+     The \cinline{realloc} function returns a pointer to the new object (which
+     may have the same value as a pointer to the old object), or a null pointer
+     if the new object could not be allocated.
      }*/
      rule [realloc]:
           <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, tv(NewLen:Int, T:KResult)))
@@ -1141,13 +1336,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
           
      rule [strcpy-pre]:
           <k> (.K => read(Src:SymLoc, t(.Set, char)))
-               ~> strcpy(_, (Src => linc(Src)), _)
+               ~> strcpy(_, (Src => Src +bytes 1), _)
           ...</k>
           [structural]
      
      rule [strcpy-some]:
           <k> (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
-               ~> strcpy((Dest:SymLoc => linc(Dest)), _, _)
+               ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
           ...</k>
           when I =/=Int 0
           [structural]

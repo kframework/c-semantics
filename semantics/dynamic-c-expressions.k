@@ -19,6 +19,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
      rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
 
+     // TODO(chathhorn): rename
      syntax K ::= rkludge(K) [function]
      syntax K ::= pkludge(K) [function]
 
@@ -335,12 +336,12 @@ module DYNAMIC-SEMANTICS-LITERALS
           [large, structural]
           
      rule [const-string-found]:
-          <k> Constant(StringLiteral(S:String)) => V:KResult ...</k>
-          <stringLiterals>... S:String |-> V:KResult ...</stringLiterals>
+          <k> Constant(StringLiteral(S:String)) => V ...</k>
+          <stringLiterals>... S:String |-> V:LValue ...</stringLiterals>
           [structural]
      rule [const-wstring-found]:
-          <k> Constant(WStringLiteral(S:KList)) => V:KResult ...</k>
-          <stringLiterals>... wstring(S:KList) |-> V:KResult ...</stringLiterals>
+          <k> Constant(WStringLiteral(S:KList)) => V ...</k>
+          <stringLiterals>... wstring(S:KList) |-> V:LValue ...</stringLiterals>
           [structural]
 endmodule
 
@@ -413,8 +414,13 @@ endmodule
 module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
 
-     syntax K ::= "application" "(" K "," VTList ")" [strict(1)]
-     syntax K ::= "application'" "(" K "," VTList ")" [strict(1)]
+     syntax K ::= "application" "(" K "," KList ")" [strict(1)]
+     syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
+
+     // TODO(chathhorn): got to be a BUG
+     rule application(K:K, L:KList) => K ~> application(HOLE, L) [heat]
+     rule K:KResult ~> application(HOLE, L:KList) => application(K, L) [cool]
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
      possibly empty, comma-separated list of expressions is a function call.
@@ -449,7 +455,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      }}*/
      
      rule [function-application-pre]:
-          <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), klist(L:VTList))
+          <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), klist(L:KList))
                => application(readFunction(Loc), L)
           ...</k>
           when isFunctionType(T)
@@ -457,8 +463,8 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      //@ this extra step is useful for putting the function name in the
      // transition graph
      rule [call]:
-          <k> application(Fun:KResult, L:VTList)
-               => application'(Fun:KResult, L:VTList)
+          <k> application(Fun:KResult, L:KList)
+               => application'(Fun:KResult, L:KList)
           ...</k>
           [structural]
 
@@ -472,16 +478,16 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
           [structural]
 
      rule [builtin-application]:
-          <k> application'(functionPrototype(X:Id, T:KResult), L:VTList)
-               => application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:VTList)
+          <k> application'(functionPrototype(X:Id, T:KResult), L:KList)
+               => application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:KList)
           ...</k>
           [structural]
           
      rule [function-application]:
-          <k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:VTList)), B:K), L:VTList) ~> K:K 
+          <k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:KList)), B:K), L:KList) ~> K:K 
                => sequencePoint
                ~> populateFromGlobal
-               ~> bind(L:VTList, P:VTList)
+               ~> bind(L:KList, P:KList)
                ~> B:K
           </k>
           <br/>
@@ -521,15 +527,15 @@ module DYNAMIC-SEMANTICS-MEMBERS
      has the so-qualified version of the type of the designated member.}
      }*/
      // fixme tool bug, can't use L:KLabel
-     rule <k> lv(Loc:SymLoc, t(_, structType(S:Id))) . F:Id
-               => lv(Loc:SymLoc +bits Offset:Int, T:KResult)
+     rule <k> lval(Loc:SymLoc, t(_, structType(S:Id))) . F:Id
+               => lval(Loc:SymLoc +bits Offset:Int, T:KResult)
           ...</k>
           <structs>...
                S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
-     rule <k> lv(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
-               => lv(Loc +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+     rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
+               => lval(Loc +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
           ...</k>
           <structs>...
                S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
@@ -703,7 +709,7 @@ module DYNAMIC-SEMANTICS-REFERENCE
      }
      */
      rule [ref]:
-          <k> &(lv(Loc:SymLoc, T:Type))
+          <k> &(lval(Loc:SymLoc, T:Type))
                => tv(Loc, t(.Set, pointerType(T)))
           ...</k>
           [structural]
@@ -951,23 +957,23 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
                => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           ...</k>
           when hasIntegerType(T:KResult)
-          andBool T':KResult =/=K void
+               andBool T':KResult =/=K void
           [structural]
      rule <k> tv(I:Int, T:KResult) + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
                => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           ...</k>
           when hasIntegerType(T:KResult)
-          andBool T':KResult =/=K void
+               andBool T':KResult =/=K void
           [structural]
      rule <k> tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
                => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
           ...</k>
           when hasIntegerType(T:KResult)
-          andBool T':KResult =/=K void
+               andBool T':KResult =/=K void
           [structural]
                
      rule <k> addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))
-               => tv(ladd(Loc, (I:Int *Int Size:Int)), newFromArray(T:KResult, I:Int))
+               => tv(Loc +bytes (I:Int *Int Size:Int), newFromArray(T:KResult, I:Int))
           ...</k>
           when ifFromArrayInBounds(T:KResult, I:Int)
           [structural]
@@ -1564,13 +1570,13 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      }*/
 
      rule [assign]:
-          <k> lv(Loc:SymLoc, T:Type) := tv(V:KList, T)
+          <k> lval(Loc:SymLoc, T:Type) := tv(V:KList, T)
                => write(lv(Loc, T), tv(V, T))
                ~> tv(V, T)
           ...</k>
           [structural]
      rule [convert-for-assignment]:
-          <k> lv(_, T:Type) := (tv(V:KList, T':KResult) 
+          <k> lval(_, T:Type) := (tv(V:KList, T':KResult) 
                => cast(T, tv(V, T')))
           ...</k>
           when T =/=K T':KResult
