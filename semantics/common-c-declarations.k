@@ -833,7 +833,7 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
      rule [innerType-bitfieldType]:
           innerType(t(_, bitfieldType(T:KResult, _:Int))) => T:KResult
      rule [innerType-functionType]:
-          innerType(t(_, functionType(T:KResult, _:VTList))) => T:KResult
+          innerType(t(_, functionType(T:KResult, _:KList))) => T:KResult
 
      context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
      rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K)) 
@@ -1284,8 +1284,8 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
           andBool notBool $hasMapping(M, Loc)
           [structural]
           
-     rule <k> readFunction(Loc:SymLoc) => Fun:KResult  ...</k>
-          <functions>... Loc |-> Fun:KResult ...</functions>
+     rule <k> readFunction(Loc:SymLoc) => Fun  ...</k>
+          <functions>... Loc |-> Fun ...</functions>
           [structural]
      
 endmodule

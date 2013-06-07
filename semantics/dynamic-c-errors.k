@@ -242,14 +242,14 @@ module DYNAMIC-C-ERRORS
      //      [structural, large]
           
      rule [err00025]:
-          < k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:VTList)), _:Int, _:Id, _) ...</ k => finalComputation >
+          < k => finalComputation > callMain-aux(t(_, functionType(t(_, T:K), _:KList)), _:Int, _:Id, _) ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00025", "Main must return an int.") </errorCell>)
           when T:K =/=K int
           [structural, large]
      rule [err00026]:
           < k => finalComputation > 
-               callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:VTList))), _:Int, _:Id, _) 
+               callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:KList))), _:Int, _:Id, _) 
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".") </errorCell>)
@@ -284,7 +284,7 @@ module DYNAMIC-C-ERRORS
           [structural, large]
      rule [err00028]:
           < k => finalComputation >
-               callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:VTList))), _:Int, _:Id, _) 
+               callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:KList))), _:Int, _:Id, _) 
           ...</ k => finalComputation >
           <br/>
           (.Bag => <errorCell> Error("00028", "Main can only have zero or two arguments.") </errorCell>)

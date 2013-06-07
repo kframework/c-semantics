@@ -185,7 +185,7 @@ module DYNAMIC-C-SEMANTICS
                ~> incomingArguments-aux(L:KList, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.KList, N:Int) 
-               => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointer)
+               => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointerConstant)
           [structural]
           
      syntax K ::= "syntaxInt" "(" Int ")"
@@ -266,10 +266,9 @@ module DYNAMIC-C-SEMANTICS
                     <thread>...
           <k> Program(klist(P:KList)) 
                => klistToK(P)
-               // ~> pgmArgs(L:KList)
+               ~> pgmArgs(.KList)
                ~> resolveReferences                         
-               // ~> incomingArguments(L:KList)
-               ~> callMain(lengthKList ("") , incomingArguments(""))
+               ~> callMain(0, incomingArguments(.KList))
           </k>
                          <br/>
                          <threadId> _ => 1 </threadId>

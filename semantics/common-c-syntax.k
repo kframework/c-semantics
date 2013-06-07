@@ -1,8 +1,4 @@
 module COMMON-C-SYNTAX
-     // imports K // TODO TOOL BUG fixme if I include K, it doesn't actually include K
-     
-     //tags ndlocal ndheat computational structural interpRule anywhere observable
-
      // these are semantic
      syntax K ::= "reval" "(" K ")" [semantic]
      syntax K ::= "peval" "(" K ")" [semantic]
@@ -105,11 +101,11 @@ type typeSpecifier = (* Merge all specifiers into one type *)
      | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
 */   
      syntax TypeSpecifier ::= "StructRef" "(" Id ")" [klabel('StructRef)] // new
-     syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")" [klabel('StructDef)] // new // Id, List
-     context StructDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
+     syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")" [strict(2), klabel('StructDef)] // new // Id, List
+     //context StructDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
      syntax TypeSpecifier ::= "UnionRef" "(" Id ")" [klabel('UnionRef)] // new
-     syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")" [klabel('UnionDef)] // new // Id, List
-     context UnionDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
+     syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")" [strict(2), klabel('UnionDef)] // new // Id, List
+     //context UnionDef(_:Id, klist((_:KList,, HOLE,, _:KList)))
      syntax TypeSpecifier ::= "EnumRef" "(" Id ")" [klabel('EnumRef)] // new
      syntax TypeSpecifier ::= "EnumDef" "(" Id "," K ")" [klabel('EnumDef)] // new // Id, List
      syntax TypeSpecifier ::= "TypeofExpression" "(" K ")" [klabel('TypeofExpression)]
@@ -463,9 +459,10 @@ and unary_operator =
                          | K ">>=" K [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)] // type-strict=(1)
                          | K ":=" K [prec(53)] // type-strict=(1)
 
-      syntax "&" -/- [\&]
-      syntax "+" -/- [\+]
-      syntax "-" -/- [\-]
+     // So it'll correctly parse &, &&, +, ++, +bytes, etc.
+     syntax "&" -/- [\&]
+     syntax "+" -/- [\+a-z]
+     syntax "-" -/- [\-]
       
      context - (HOLE => reval(HOLE))
      context + (HOLE => reval(HOLE))
