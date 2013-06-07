@@ -378,11 +378,11 @@ module DYNAMIC-C-SEMANTICS
                     <fid> 1 </fid>
                     <buff> S2'':String </buff>
                     <sending> L:List </sending>
-                    <done> ListItem(S2:String) </done>
+                    <done> S2:ListItem </done>
                ...</file>
           ...</files>
-          (.Bag =>
-               <output> S2:String +String listToString(L:List) +String S2'':String </output>
-          )
+          //(.Bag =>
+               <output> _ (.List => S2 L ListItem(S2'')) </output>
+          //)
           [computational]
 endmodule

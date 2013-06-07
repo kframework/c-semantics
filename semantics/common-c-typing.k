@@ -10,27 +10,11 @@ module COMMON-SEMANTICS-TYPE-INCLUDE
      syntax K ::= "addUnion" "(" Id "," KList ")"
      syntax K ::= "canonicalizeType" "(" Bag ")"
      
-     syntax Type ::= extractActualType(Type) [function] // rules that use specifier should be careful to use extractActualType if going to be used in a typed name
+     // rules that use specifier should be careful to use extractActualType if
+     // going to be used in a typed name
+     syntax Type ::= extractActualType(Type) [function] 
      
      syntax K ::= "evalToType"
-
-     // TODO(chathhorn): move this
-     syntax K ::= "toKRList" "(" KList ")"
-     syntax K ::= "toKRList'" "(" KList ")"
-
-     syntax KResult ::= "krlist" "(" KList ")"
-
-     rule <k> klist(L:KList) => toKRList(L) ...</k>
-
-     context toKRList'(_,, HOLE,, _)
-
-     rule <k> toKRList(L:KList) => toKRList'(L) ~> krlist(.KList) ...</k>
-
-     rule <k> toKRList'(_,, (V:KResult => .KList),, _) 
-          ~> krlist(_,, (.KList => V),, _) 
-          ...</k>
-
-     rule <k> toKRList'(.KList) => .K ...</k>
 
      // declare typeStrictUnaryOperators : -> Set // [memo] 
      // define typeStrictUnaryOperators => Set(
@@ -95,23 +79,22 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS
           => t(S:Set S':Set, T:K)
           [structural, anywhere]
      
-     
-     rule
-          <k> giveType(X:Id, T:KResult) => 
-               #if (Fun:Id ==K file-scope) #then giveGlobalType(X:Id, unqualifyType(T:KResult)) #else giveLocalType(X:Id, unqualifyType(T:KResult)) #fi
-               ...</k>
+     rule <k> giveType(X:Id, T:KResult) => 
+               #if (Fun:Id ==K file-scope) 
+               #then giveGlobalType(X:Id, unqualifyType(T:KResult)) 
+               #else giveLocalType(X:Id, unqualifyType(T:KResult)) 
+               #fi
+          ...</k>
           <currentFunction> Fun:Id </currentFunction>
           // when notBool isStaticType(T:KResult)
           [structural]
           
-     rule
-          <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
+     rule <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
           <gtypes>... Tu:K |-> map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
           <currTU> Tu:K </currTU>
           [structural]
-     rule
-          <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
+     rule <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
           [structural]   
 endmodule
@@ -122,22 +105,18 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
 
-     rule
-          <k> canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</k>
+     rule <k> canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag) ...</k>
           [structural]
 
-     rule
-          <k> (.K => DeclType(K1:K, K2:K))
+     rule <k> (.K => DeclType(K1:K, K2:K))
                ~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))), _, _, _, _) 
           ...</k>
           [structural]
-     rule
-          <k> (.K => DeclType(K1:K, K2:K))
+     rule <k> (.K => DeclType(K1:K, K2:K))
                ~> canonicalizeType-aux((_:Bag BagItem(AlignasType(K1:K, K2:K))), _, _, _, _) 
           ...</k>
           [structural]
-     rule
-          <k> (.K => typeof(K1:K))
+     rule <k> (.K => typeof(K1:K))
                ~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K1:K))), _, _, _, _) 
           ...</k>
           [structural]
@@ -145,145 +124,130 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      syntax K ::= "atomic" "(" Type ")"
      syntax K ::= "alignas" "(" Type ")"
      
-     rule
-          <k> (T:KResult => .K)
+     rule <k> (T:KResult => .K)
                ~> canonicalizeType-aux((_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
           ...</k>
                when isTypeResult(T:KResult)
           [structural]
-     rule
-          <k> (T:KResult => .K)
+     rule <k> (T:KResult => .K)
                ~> canonicalizeType-aux((_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           ...</k>
                when isTypeResult(T:KResult)
           [structural]
-     rule
-          <k> (T:KResult => .K)
+     rule <k> (T:KResult => .K)
                ~> canonicalizeType-aux((_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           ...</k>
-               when isTypeResult(T:KResult)
+          when isTypeResult(T:KResult)
           [structural]
           
      // specifier, modifier, storage
-     rule
-          <k> canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, (_ (.Bag => BagItem(T:K))), _, _) ...</k>
+     rule <k> canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, (_ (.Bag => BagItem(T:K))), _, _) ...</k>
           when false
-          orBool (T:K ==K Void)
-          orBool (T:K ==K Bool)
-          orBool (T:K ==K Char)
-          orBool (T:K ==K Short)
-          orBool (T:K ==K Int)
-          orBool (T:K ==K Long)
-          orBool (T:K ==K Float)
-          orBool (T:K ==K Double)
-          orBool (T:K ==K Signed)
-          orBool (T:K ==K Unsigned)
-          orBool (T:K ==K Complex)
-          orBool (T:K ==K Imaginary)
-          orBool (getKLabel(T:K) ==KLabel 'StructDef)
-          orBool (getKLabel(T:K) ==KLabel 'UnionDef)
-          orBool (getKLabel(T:K) ==KLabel 'EnumDef)
-          orBool (getKLabel(T:K) ==KLabel 'StructRef)
-          orBool (getKLabel(T:K) ==KLabel 'UnionRef)
-          orBool (getKLabel(T:K) ==KLabel 'EnumRef)
-          orBool (getKLabel(T:K) ==KLabel 'Named)
-          orBool (getKLabel(T:K) ==KLabel 'Attribute)
+               orBool (T:K ==K Void)
+               orBool (T:K ==K Bool)
+               orBool (T:K ==K Char)
+               orBool (T:K ==K Short)
+               orBool (T:K ==K Int)
+               orBool (T:K ==K Long)
+               orBool (T:K ==K Float)
+               orBool (T:K ==K Double)
+               orBool (T:K ==K Signed)
+               orBool (T:K ==K Unsigned)
+               orBool (T:K ==K Complex)
+               orBool (T:K ==K Imaginary)
+               orBool (getKLabel(T:K) ==KLabel 'StructDef)
+               orBool (getKLabel(T:K) ==KLabel 'UnionDef)
+               orBool (getKLabel(T:K) ==KLabel 'EnumDef)
+               orBool (getKLabel(T:K) ==KLabel 'StructRef)
+               orBool (getKLabel(T:K) ==KLabel 'UnionRef)
+               orBool (getKLabel(T:K) ==KLabel 'EnumRef)
+               orBool (getKLabel(T:K) ==KLabel 'Named)
+               orBool (getKLabel(T:K) ==KLabel 'Attribute)
           [structural]
 
-     rule
-          <k> canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</k>
+     rule <k> canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, (_ .Bag => BagItem(T:K))) ...</k>
           when (T:K ==K Extern)
-          orBool (T:K ==K Static)
-          orBool (T:K ==K Const)
-          orBool (T:K ==K Volatile)
-          orBool (T:K ==K Atomic)
-          orBool (T:K ==K Restrict)
-          orBool (T:K ==K Auto)
-          orBool (T:K ==K Register)
-          orBool (T:K ==K ThreadLocal)
+               orBool (T:K ==K Static)
+               orBool (T:K ==K Const)
+               orBool (T:K ==K Volatile)
+               orBool (T:K ==K Atomic)
+               orBool (T:K ==K Restrict)
+               orBool (T:K ==K Auto)
+               orBool (T:K ==K Register)
+               orBool (T:K ==K ThreadLocal)
           [structural]
           
-     rule
-          <k> canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
+     rule <k> canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
           when (Q:K ==K Extern)
-          orBool (Q:K ==K Static)
-          orBool (Q:K ==K Volatile)
-          orBool (Q:K ==K Atomic)
-          orBool (Q:K ==K Restrict)
-          orBool (Q:K ==K Auto)
-          orBool (Q:K ==K Register)
-          orBool (Q:K ==K ThreadLocal)
+               orBool (Q:K ==K Static)
+               orBool (Q:K ==K Volatile)
+               orBool (Q:K ==K Atomic)
+               orBool (Q:K ==K Restrict)
+               orBool (Q:K ==K Auto)
+               orBool (Q:K ==K Register)
+               orBool (Q:K ==K ThreadLocal)
           [structural]
-     rule
-          <k> canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
+     rule <k> canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ BagItem(Q:K) => .Bag)) ...</k>
           when (Q:K ==K Const)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
-     If the specification of an array type includes any type qualifiers, the element type is so-qualified, not the array type. \ldots
+     If the specification of an array type includes any type qualifiers, the
+     element type is so-qualified, not the array type. \ldots
      }*/
      rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
           => t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
           [structural, anywhere]
      
-     rule
-          <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
+     rule <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
                => t(.Set, typedefType(X:Id, T:KResult))
           ...</k>
           <types>... typedef(X:Id) |-> T:KResult ...</types>
           when X:Id =/=K Identifier("")
           [structural]
           
-     rule
-          <k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
+     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
                => t(.Set, structType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
-     rule
-          <k> canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
+     rule <k> canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
                => t(.Set, enumType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
-     rule
-          <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
+     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
                => t(.Set, unionType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
           
-     rule
-          <k> canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
+     rule <k> canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
                => EnumDef(X:Id, L:K)
                ~> t(.Set, enumType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
      
-     rule
-          <k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Int)),, _)))) ...</k>
+     rule <k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Int)),, _)))) ...</k>
           <freshNat> N:Int => N:Int +Int 1 </freshNat>
           when L:KLabel ==KLabel 'StructDef
-          orBool L:KLabel ==KLabel 'EnumDef
-          orBool L:KLabel ==KLabel 'UnionDef
+               orBool L:KLabel ==KLabel 'EnumDef
+               orBool L:KLabel ==KLabel 'UnionDef
           [structural]
      
-     rule
-          <k> canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
+     rule <k> canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
                => StructDef(X:Id, L:K)
                ~> t(.Set, structType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
-     rule
-          <k> canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
+     rule <k> canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
                => UnionDef(X:Id, L:K)
                ~> t(.Set, unionType(X:Id))
           ...</k>
           when X:Id =/=K Identifier("")
           [structural]
-          
 
      // FIXME what good is this_
      rule BagItem(SpecTypedef) => .Bag [structural, anywhere]
@@ -293,13 +257,11 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      // fixme should save these for later use
      rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
 
-     rule 
-          <k> canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</k>
+     rule <k> canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _) ...</k>
           when B:Bag =/=Bag .Bag
           [structural]
           
-     rule
-          <k> canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult ...</k>
+     rule <k> canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult ...</k>
           [structural]
           
      syntax K ::= canonicalizeSpecifier(Bag) [function]
@@ -329,42 +291,42 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
 
      rule canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
           when (B:Bag ==Bag BagItem(Short))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Short))
-          orBool (B:Bag ==Bag BagItem(Short) BagItem(Int))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Short) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Short))
+               orBool (B:Bag ==Bag BagItem(Short) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Short) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-short-int)
           when (B:Bag ==Bag BagItem(Unsigned) BagItem(Short))
-          orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Short) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Short) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, int)
           when (B:Bag ==Bag BagItem(Int))
-          orBool (B:Bag ==Bag BagItem(Signed))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-int)
           when (B:Bag ==Bag BagItem(Unsigned))
-          orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, long-int)
           when (B:Bag ==Bag BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Long) BagItem(Int))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long))
+               orBool (B:Bag ==Bag BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-int)
           when (B:Bag ==Bag BagItem(Unsigned) BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, long-long-int)
           when (B:Bag ==Bag BagItem(Long) BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Long) BagItem(Long) BagItem(Int))
-          orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long))
+               orBool (B:Bag ==Bag BagItem(Long) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-long-int)
           when (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long))
-          orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int))
           [structural]
 endmodule
 
@@ -443,14 +405,12 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           => .KList
           [structural]
      
-     rule 
-          <k> JustBase => T:KResult ...</k>
+     rule <k> JustBase => T:KResult ...</k>
           <declarationTypeHolder> T:KResult => .K ...</declarationTypeHolder>
           [structural]
 
      syntax K ::= "extractActualTypeFreezer"
-     rule
-          <k> DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</k>
+     rule <k> DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</k>
           <declarationTypeHolder> (. => T:KResult) ...</declarationTypeHolder>
           [structural]
      
@@ -595,10 +555,29 @@ module COMMON-SEMANTICS-TYPE-MISC
      imports COMMON-SEMANTICS-TYPE-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
-     Two types have compatible type if their types are the same. Additional rules for determining whether two types are compatible are described in 6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for declarators.  Moreover, two structure, union, or enumerated types declared in separate translation units are compatible if their tags and members satisfy the following requirements: If one is declared with a tag, the other shall be declared with the same tag. If both are completed anywhere within their respective translation units, then the following additional requirements apply: there shall be a one-to-one correspondence between their members such that each pair of corresponding members are declared with compatible types; if one member of the pair is declared with an alignment specifier, the other is declared with an equivalent alignment specifier; and if one member of the pair is declared with a name, the other is declared with the same name. For two structures, corresponding members shall be declared in the same order. For two structures or unions, corresponding bit-fields shall have the same widths. For two enumerations, corresponding members shall have the same values.
+     Two types have compatible type if their types are the same. Additional
+     rules for determining whether two types are compatible are described in
+     6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for
+     declarators.  Moreover, two structure, union, or enumerated types declared
+     in separate translation units are compatible if their tags and members
+     satisfy the following requirements: If one is declared with a tag, the
+     other shall be declared with the same tag. If both are completed anywhere
+     within their respective translation units, then the following additional
+     requirements apply: there shall be a one-to-one correspondence between
+     their members such that each pair of corresponding members are declared
+     with compatible types; if one member of the pair is declared with an
+     alignment specifier, the other is declared with an equivalent alignment
+     specifier; and if one member of the pair is declared with a name, the
+     other is declared with the same name. For two structures, corresponding
+     members shall be declared in the same order. For two structures or unions,
+     corresponding bit-fields shall have the same widths. For two enumerations,
+     corresponding members shall have the same values.
      
      \source[n1570]{\para{6.7.3}{10}}
-     For two qualified types to be compatible, both shall have the identically qualified version of a compatible type; the order of type qualifiers within a list of specifiers or qualifiers does not affect the specified type.
+     For two qualified types to be compatible, both shall have the identically
+     qualified version of a compatible type; the order of type qualifiers
+     within a list of specifiers or qualifiers does not affect the specified
+     type.
      }*/
      
      rule [typeCompatible-identical]: isTypeCompatible(T:KResult, T:KResult) 
@@ -721,13 +700,11 @@ module COMMON-SEMANTICS-TYPE-MISC
           <currentFunction> F:Id </currentFunction>
           [structural]
 
-     rule
-          <k> addGlobalAggregate(X:Id, K:K) => . ...</k>
+     rule <k> addGlobalAggregate(X:Id, K:K) => . ...</k>
           <structs> M':Map => M':Map[K:K / X:Id] </structs>
           <gstructs> M:Map => M:Map[K:K / X:Id] </gstructs>
           [structural]
-     rule
-          <k> addLocalAggregate(X:Id, K:K) => . ...</k>
+     rule <k> addLocalAggregate(X:Id, K:K) => . ...</k>
           <structs> M:Map => M:Map[K:K / X:Id] </structs>
           [structural]
           
@@ -750,7 +727,6 @@ module COMMON-SEMANTICS-TYPE-MISC
           andBool (T:K =/=K long-double)
           andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-     
      rule [isCharType-char]: isCharType(t(_, char)) => true 
      rule [isCharType-qualified]: isCharType(t(_, qualifiedType(T:KResult, _))) => isCharType(T:KResult) 
      rule [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true 
@@ -760,7 +736,6 @@ module COMMON-SEMANTICS-TYPE-MISC
           andBool (T:K =/=K unsigned-char)
           andBool (T:K =/=K signed-char)
           andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
-          
           
      rule [isWCharType-wchar]: isWCharType(t(_, T:K)) => true 
           when T:K ==K simpleType(cfg:wcharut)
@@ -784,7 +759,6 @@ module COMMON-SEMANTICS-TYPE-MISC
           when T:K =/=K bool 
           andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-     
      rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
      rule [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true 
      rule [isArrayType-flexibleArray]: isArrayType(t(_, flexibleArrayType(_))) => true 
@@ -795,7 +769,6 @@ module COMMON-SEMANTICS-TYPE-MISC
           andBool (getKLabel(T:K) =/=KLabel 'flexibleArrayType)
           andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-          
      rule isAggregateType(T:KResult) => isArrayType(T:KResult) orBool isStructType(T:KResult) 
           
      rule [isStructType-struct]: isStructType(t(_, structType(_:Id))) => true 
@@ -804,13 +777,11 @@ module COMMON-SEMANTICS-TYPE-MISC
           when getKLabel(T:K) =/=KLabel 'structType
           andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-          
      rule [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
      rule [isUnionType-qualified]: isUnionType(t(_, qualifiedType(T:KResult, _))) => isUnionType(T:KResult) 
      rule [isUnionType-other]: isUnionType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'unionType
           andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
-          
 
      rule [isIncompleteType-true]: isIncompleteType(t(_, incompleteArrayType(_))) => true 
      rule [isIncompleteType-qualified]: isIncompleteType(t(_, qualifiedType(T:KResult, _))) => isIncompleteType(T:KResult) 
@@ -818,12 +789,10 @@ module COMMON-SEMANTICS-TYPE-MISC
           when getKLabel(T:K) =/=KLabel 'incompleteArrayType
           andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-          
      rule [isExternType-qualified]: isExternType(t(_, qualifiedType(T:KResult, K:K))) => #if (K:K ==K Extern) #then (true) #else (isExternType(T:KResult)) #fi 
           
      rule [isExternType-false]: isExternType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
-          
           
      rule [isStaticType-qualified]: 
           isStaticType(t(_, qualifiedType(T:KResult, K:K))) 
@@ -832,7 +801,6 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [isStaticType-false]: isStaticType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-     
      rule [isConstType-qualified]: 
           isConstType(t(_, qualifiedType(T:KResult, K:K))) => isConstType(T:KResult)
           
@@ -843,13 +811,10 @@ module COMMON-SEMANTICS-TYPE-MISC
           
      rule [isConstType-true]: 
           isConstType(t(SetItem(Const) _, T:K)) => true
-                    
-     
           
      rule [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
      rule [isBitfieldType-false]: isBitfieldType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'bitfieldType
-          
           
      rule [isFunctionType-true]: isFunctionType(t(_, functionType(_, _:KList))) => true 
      rule [isFunctionType-prototype]: isFunctionType(t(_, prototype(T:KResult))) => isFunctionType(T:KResult) 
@@ -858,7 +823,6 @@ module COMMON-SEMANTICS-TYPE-MISC
           when (getKLabel(T:K) =/=KLabel 'functionType)
           andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           andBool (getKLabel(T:K) =/=KLabel 'prototype)
-          
           
      rule [isFunctionPointerType-fp]: isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:KList))))) => true 
      rule [isFunctionPointerType-qualified]: isFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => isFunctionPointerType(T:KResult) 
@@ -871,9 +835,11 @@ module COMMON-SEMANTICS-TYPE-MISC
           when (getKLabel(T:K) =/=KLabel 'functionType)
           andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-          
      // /*@ \source[n1570]{\para{6.2.5}{18}}
-     // Integer and floating types are collectively called arithmetic types. Each arithmetic type belongs to one type domain: the real type domain comprises the real types, the complex type domain comprises the complex types. 
+     // Integer and floating types are collectively called arithmetic types.
+     // Each arithmetic type belongs to one type domain: the real type domain
+     // comprises the real types, the complex type domain comprises the complex
+     // types. 
      // */
      rule isArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool isFloatType(T:KResult)
 
@@ -881,12 +847,10 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-          
      rule removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
      rule removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
           when getKLabel(T:K) =/=KLabel 'qualifiedType
           
-     
      rule getModifiers(t(S:Set, _)) => S:Set
 endmodule
 

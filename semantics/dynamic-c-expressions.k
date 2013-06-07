@@ -19,15 +19,15 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
      rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
 
-     // TODO(chathhorn): rename
-     syntax K ::= rkludge(K) [function]
-     syntax K ::= pkludge(K) [function]
-
      // chathhorn: to work around the new semantics for contexts.
-     rule reval(K:K) => K ~> reval(HOLE) [heat]
+     rule reval(K:K) => K ~> reval(HOLE) 
+          when getKLabel(K) =/=KLabel 'rkludge
+          [heat]
      rule R:KResult ~> reval(HOLE) => reval(rkludge(R)) [cool]
 
-     rule peval(K:K) => K ~> peval(HOLE) [heat]
+     rule peval(K:K) => K ~> peval(HOLE)
+          when getKLabel(K) =/=KLabel 'pkludge
+          [heat]
      rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
 
      rule lv(L:SymLoc, T:Type) => lval(L:SymLoc, T:Type)
@@ -224,7 +224,6 @@ module DYNAMIC-SEMANTICS-LITERALS
                tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
-          
           
      rule ConstU(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
@@ -454,14 +453,18 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      \end{itemize}
      }}*/
      
+     // chathhorn
+     rule Call(K:K, klist(L:KList)) => toRVList(L) ~> Call(K, HOLE) [heat]
+     rule R:KResult ~> Call(K:K, HOLE) => Call(K, R) [cool]
+
      rule [function-application-pre]:
-          <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), klist(L:KList))
+          <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
                => application(readFunction(Loc), L)
           ...</k>
           when isFunctionType(T)
           [structural]
-     //@ this extra step is useful for putting the function name in the
-     // transition graph
+     /*@ this extra step is useful for putting the function name in the
+        transition graph */
      rule [call]:
           <k> application(Fun:KResult, L:KList)
                => application'(Fun:KResult, L:KList)
@@ -492,11 +495,15 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
           </k>
           <br/>
           <callStack> .List => ListItem(
-               C:Bag
-               <continuation> K:K </continuation>
-               <currTU> OldTu:K </currTU>
-               <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-               <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+               <callStackFrame>...
+                    <stackControl> 
+                         <currTU> OldTu:K </currTU>
+                         C:Bag 
+                    </stackControl>
+                    <continuation> K:K </continuation>
+                    <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
+                    <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+               ...</callStackFrame>
           ) ...</callStack>
           <br/>
           (<control>
@@ -528,14 +535,14 @@ module DYNAMIC-SEMANTICS-MEMBERS
      }*/
      // fixme tool bug, can't use L:KLabel
      rule <k> lval(Loc:SymLoc, t(_, structType(S:Id))) . F:Id
-               => lval(Loc:SymLoc +bits Offset:Int, T:KResult)
+               => lv(Loc:SymLoc +bits Offset:Int, T:KResult)
           ...</k>
           <structs>...
                S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
      rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
-               => lval(Loc +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+               => lv(Loc +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
           ...</k>
           <structs>...
                S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
@@ -1600,8 +1607,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      }*/
      syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")"
      // these should not be nd, in order to keep the operations together
-     context compoundAssignment(_, (HOLE => peval(HOLE)), _)
-     context compoundAssignment(_, _, (HOLE => reval(HOLE)))
+     //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
+     //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
           
      rule [compoundAssignment-mult]:
           <k> E1:K *= E2:K => compoundAssignment('_*_, E1:K, E2:K) ...</k>
@@ -1634,8 +1641,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
           <k> E1:K |= E2:K => compoundAssignment('_|_, E1:K, E2:K) ...</k>
           [structural]
 
-     rule <k> compoundAssignment(L:KLabel, V:KResult, V':KResult)
-               => V:KResult := L:KLabel(reval(V:KResult),, V':KResult)
+     rule <k> compoundAssignment(L:KLabel, V:K, V':K)
+               => V := L(V,, V')
           ...</k>
           [structural]
 endmodule

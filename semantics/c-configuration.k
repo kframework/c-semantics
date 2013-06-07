@@ -111,10 +111,6 @@ module C-CONFIGURATION
                               <currentFunction color="lightgray"> .K </currentFunction>
                               <currentProgramLoc color="black"> .K </currentProgramLoc>
 
-                              // chathhorn: call stack cells
-                              <continuation> .K </continuation>
-                              <stackCurrentFunction> .K </stackCurrentFunction>
-                              <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
                         </control>
                   </threadLocal>
             </thread>
@@ -122,6 +118,19 @@ module C-CONFIGURATION
 </T>
 
 <br/>
+
+// chathhorn
+<callStackFrame>
+     <continuation> .K </continuation>
+     <stackCurrentFunction> .K </stackCurrentFunction>
+     <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
+     <stackControl> .Bag </stackControl>
+</callStackFrame>
+
+<threadState>
+     <threadContinuation> .K </threadContinuation>
+     <savedThreadLocal> .Bag </savedThreadLocal>
+</threadState>
 
 <files color="lightgray">
       <fileCommands> .K </fileCommands>
@@ -135,8 +144,8 @@ module C-CONFIGURATION
             <done> ListItem("") </done>
       </file>
 </files> 
-<input color="lightgray"> "" </input>
-<output color="lightgray"> "" </output>
+<input color="lightgray" stream="stdin"> .List </input>
+<output color="lightgray" stream="stdout"> .List </output>
 <resultValue color="red"> .K </resultValue>
 <errorCell multiplicity="?" color="black"> .K </errorCell>
      

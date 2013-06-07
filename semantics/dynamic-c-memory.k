@@ -39,15 +39,15 @@ module DYNAMIC-SEMANTICS-READING
           => extractBitsFromList-aux(dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
           [structural]
      // fixme snat
-     rule <k> extractBitsFromList-aux(dataList((piece(_:Int, 1),, L:KList)), Offset:Int, NumBits:Int, .KList)
+     rule <k> extractBitsFromList-aux(dataList((piece(_, 1),, L:KList)), Offset:Int, NumBits:Int, .KList)
                => extractBitsFromList-aux(dataList(L:KList), Offset:Int -Int 1, NumBits:Int, .KList)
           ...</k>
           when Offset:Int >Int 0
           [structural] 
-     rule <k> extractBitsFromList-aux(dataList((piece(N:Int, 1),, L:KList)), 0, NumBits:Int, Done:KList)
-               => extractBitsFromList-aux(dataList(L:KList), 0, NumBits:Int -Int 1, (Done:KList,, piece(N:Int, 1)))
+     rule <k> extractBitsFromList-aux(dataList((piece(N:Bits, 1),, L:KList)), 0, NumBits:Int, Done:KList)
+               => extractBitsFromList-aux(dataList(L:KList), 0, NumBits:Int -Int 1, (Done:KList,, piece(N, 1)))
           ...</k>
-          when NumBits:Int >Int 0
+          when NumBits >Int 0
           [structural] 
      
      rule <k> extractBitsFromList-aux(_, 0, 0, Done:KList) => dataList(Done:KList) ...</k>
@@ -105,7 +105,7 @@ module DYNAMIC-SEMANTICS-READING
                => tv(F:Float, T:KResult)
           ...</k>
           when isFloatType(T:KResult)
-          andBool Len:Int ==Int numBitsPerByte 
+               andBool (Len:Int ==Int numBitsPerByte)
           [structural]
 
      syntax K ::= "joinPointerBytes" "(" Type "," KList ")"
@@ -116,8 +116,8 @@ module DYNAMIC-SEMANTICS-READING
           ...</k>
           when isPointerType(T:KResult)
           [structural]
-     rule <k> joinPointerBytes(T:KResult, (piece(N:Int, Len:Int),, L:KList))
-               => joinPointerBytes-aux(T:KResult, L:KList, N:Int)
+     rule <k> joinPointerBytes(T:KResult, (piece(N:Bits, Len:Int),, L:KList))
+               => joinPointerBytes-aux(T:KResult, L:KList, N)
           ...</k>
           when Len:Int ==Int numBitsPerByte
           [structural]
@@ -126,7 +126,7 @@ module DYNAMIC-SEMANTICS-READING
                => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
           ...</k>
           when (Len ==Int numBitsPerByte)
-          andBool (SNatEnd ==Int End +Int 1)
+               andBool (SNatEnd ==Int End +Int 1)
           [structural]
      rule <k> joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, End:Int))
                => checkValidLoc(N)
@@ -160,14 +160,16 @@ module DYNAMIC-SEMANTICS-READING
           [structural]
      
      rule [joinIntegerBytes-step]:
-          joinIntegerBytes-aux(T:KResult, (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
-               => joinIntegerBytes-aux(T:KResult, L:KList, piece(piece(N':Int, Len':Int) bit:: piece(N:Int, Len:Int), Len:Int +Int Len':Int))
-          when N':Int >=Int 0 // guard is here to make sure it's an actual piece
+          joinIntegerBytes-aux(T:KResult, (L:KList,, piece(N:Bits, Len:Int)), piece(N':Int, Len':Int))
+               => joinIntegerBytes-aux(T, L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
+          // TODO(chathhorn): (sort check) this can be removed, but for now leaving for reference
+          when N' >=Int 0 // guard is here to make sure it's an actual piece
           [structural]
      rule [joinIntegerBytes-done]:
           joinIntegerBytes-aux(T:KResult, .KList, piece(N:Int, Len:Int)) 
-               => interpret(T:KResult, piece(N:Int, Len:Int)) 
-          when N:Int >=Int 0 // guard is here to make sure it's an actual piece
+               => interpret(T, piece(N, Len)) 
+          // TODO(chathhorn): (sort check) this can be removed, but for now leaving for reference
+          when N >=Int 0 // guard is here to make sure it's an actual piece
           [structural]
      
      rule floorLoc(loc(Base:SymBase, Offset:Int, BitOffset:Int)) => loc(Base, Offset:Int, 0)
@@ -490,25 +492,26 @@ module DYNAMIC-SEMANTICS-WRITING
           when (BitSize:Int %Int numBitsPerByte =/=Int 0
                orBool notBool(isByteLoc(Loc))
                orBool isBitfieldType(T:KResult))
-               andBool I:Int <Int 0
+               andBool (I:Int <Int 0)
           [structural]
      
      rule [write-bitfield]:
-          <k> write-specific(Loc:SymLoc, tv(N:Int, T:KResult), BitSize:Int)
+          <k> write-specific(Loc:SymLoc, tv(I:Int, T:KResult), BitSize:Int)
                => writeBitfield(
                     Loc
                     , T:KResult
                     , calculateNewBytes(
                          getBitOffset(Loc)
-                         , piece(N:Int, BitSize:Int)
+                         , piece(I, BitSize:Int)
                          , extractBytesFromMem(floorLoc(Loc), bitsToBytes(BitSize:Int +Int getBitOffset(Loc))
                          )
                     )
                )
           ...</k>
           when (BitSize:Int %Int numBitsPerByte =/=Int 0)
-          orBool (notBool(isByteLoc(Loc)))
-          orBool (isBitfieldType(T:KResult) andBool notBool hasUnionMarker(T:KResult))
+               orBool (notBool(isByteLoc(Loc)))
+               orBool (isBitfieldType(T:KResult) andBool notBool hasUnionMarker(T:KResult))
+               andBool (I:Int >=Int 0)
           [structural]
           
      rule <k> writeBitfield(Loc:SymLoc, _, dataList(L:KList))

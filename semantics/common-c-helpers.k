@@ -37,6 +37,35 @@ module COMPAT
      rule eraseKLabel(L, .KList) => .KList
      rule eraseKLabel(L, .) => .
 
+     // TODO(chathhorn): ugly
+     syntax K ::= "toKRList" "(" KList ")"
+     syntax K ::= "toKRList'" "(" KList ")"
+
+     syntax K ::= "toRVList" "(" KList ")"
+     syntax K ::= "toRVList'" "(" KList ")"
+
+     syntax KResult ::= "krlist" "(" KList ")"
+     syntax KResult ::= "rvlist" "(" KList ")"
+
+     rule <k> klist(L:KList) => toKRList(L) ...</k>
+
+     context toKRList'(_,, HOLE,, _)
+     context toRVList'(_,, (HOLE => reval(HOLE)),, _)
+
+     rule <k> toKRList(L:KList) => toKRList'(L) ~> krlist(.KList) ...</k>
+     rule <k> toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList) ...</k>
+
+     rule <k> toKRList'(_,, (V:KResult => .KList),, _) 
+          ~> krlist(_,, (.KList => V),, _) 
+          ...</k>
+
+     rule <k> toRVList'(_,, (V:KResult => .KList),, _) 
+          ~> rvlist(_,, (.KList => V),, _) 
+          ...</k>
+
+     rule <k> toKRList'(.KList) => .K ...</k>
+     rule <k> toRVList'(.KList) => .K ...</k>
+
 endmodule
 
 module COMMON-SEMANTICS-HELPERS-INCLUDE
@@ -319,25 +348,25 @@ module COMMON-SEMANTICS-HELPERS-MISC
           
      // getString returns the string without the null terminator
      syntax K ::= "getString" "(" K ")"
-     syntax K ::= "getString-aux" "(" K "," String ")" [strict(1)]
-     rule [getString-start]: getString(K:K) => getString-aux(K:K, "") [structural, anywhere]
+     syntax K ::= "getString-aux" "(" SymLoc "," String ")"
+     rule getString(Loc:SymLoc) => getString-aux(Loc, "") [structural, anywhere]
+     rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "") [structural, anywhere]
      syntax Value ::= "str" "(" String ")"
      
      rule [getString-pre]:
           <k> (.K => read(Loc, t(.Set, char)))
-               ~> getString-aux(tv((Loc:SymLoc => (Loc +bytes 1)), _), S:String)
+               ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           ...</k>
           [structural]
           
      rule [getString]:
-          <k> tv(N, _) 
-               ~> getString-aux(tv(Loc:SymLoc, _), S:String)
-               => getString-aux(tv(Loc, t(.Set, pointerType(t(.Set, unsigned-char)))), S:String +String charString(N:Int))
+          <k> tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
+               => getString-aux(Loc, S +String charString(N))
           ...</k>
           when N =/=Int 0
           [structural]
      rule [getString-done]:
-          <k> tv(0, _) ~> getString-aux(tv(Loc:SymLoc, _), S:String)
+          <k> tv(0, _) ~> getString-aux(Loc:SymLoc, S:String)
                => str(S:String)
           ...</k>
           [structural]
@@ -472,11 +501,15 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
           => piece((N:Int <<Int Len':Int) |Int N':Int, Len:Int +Int Len':Int)
           when N:Int >=Int 0 andBool N':Int >=Int 0 
-          [structural] 
-     rule piece(0, 0) bit:: N:Int => N:Int 
-     rule piece(piece(N:Int, Len:Int), Len:Int) => piece(N:Int, Len:Int) 
+          [structural, anywhere]
+     rule piece(0, 0) bit:: N:Bits => N
+          [structural, anywhere]
+     rule piece(piece(N:Bits, Len:Int), Len:Int) => piece(N, Len) 
+          [structural, anywhere]
      rule value(tv(V:KList, _)) => V:KList
+          [structural, anywhere]
      rule type(tv(_, T:KResult)) => T:KResult
+          [structural, anywhere]
      rule isBasicType('t(_,, K:K)) => #if (
           (K:K ==K bool)
           orBool (K:K ==K void)
@@ -497,7 +530,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
           orBool (K:K ==K no-type)
           orBool (getKLabel(K:K) ==KLabel 'enumType)
           ) #then true #else false #fi
-          [structural]
 
      rule setOfTypes => 
           SetItem(l('arrayType))
@@ -507,7 +539,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
           SetItem(l('structType))
           SetItem(l('unionType))
           SetItem(l('qualifiedType))
-     [structural]
      
      rule assert(true, _:Int) => .K [structural, anywhere]
 endmodule
@@ -517,6 +548,11 @@ module COMMON-C-BITSIZE
 
      syntax K ::= bitSizeofList(KList)
      syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
+
+     // TODO(chathhorn): BUG? Note doesn't heat when .K.
+     rule bitSizeofList-aux(K:K, X:Int, L:KList) => K ~> bitSizeofList-aux(HOLE, X, L) 
+          when notBool (K ==K .K) [heat]
+     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:KList) => bitSizeofList-aux(K, X, L) [cool]
      
       // TODO(chathhorn)
      rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
