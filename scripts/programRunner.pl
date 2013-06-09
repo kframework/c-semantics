@@ -9,14 +9,46 @@ use File::Copy;
 # use IO::File;
 use IPC::Open3;
 
-my $thisFile = "$0";
+setpgrp;
+
+# these are compile time settings and are set by the compile script using this
+# file as a template
+my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
+my $PROGRAM_NAME="EXTERN_IDENTIFIER";
+
 my @temporaryFiles = ();
+my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
+my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
+push(@temporaryFiles, $fileInput);
+push(@temporaryFiles, $fileOutput);
+print $fileInput linkedProgram();
+
+my $thisFile = "$0";
 my $PERL_SERVER_PID = 0;
 my $childPid = 0;
 
-setpgrp;
-# END {kill 15, -$$}
-#print "my pid is $$\n";
+my $compiledDef = catfile($SCRIPTS_DIR, "c-kompiled");
+
+my @krun_args = (
+#      "-verbose", 
+#      "--output-mode", "pretty", 
+      "--output-mode", "raw", 
+      "--output", $fileOutput, 
+      "--parser", "cat", 
+      "--compiled-def", $compiledDef, 
+      "--io", 
+      $fileInput);
+
+system("krun", @krun_args);
+
+open(OUT, "<$fileOutput");
+
+for (<OUT>) {
+      if (/< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/){
+            exit($1);
+      }
+}
+
 
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
@@ -35,25 +67,23 @@ sub interruptHandler {
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
 
-# this block gets run at the end of a normally terminating program, whether it simply exits, or dies.  We use this to clean up.
+# this block gets run at the end of a normally terminating program, whether it
+# simply exits, or dies.  We use this to clean up.
 END {
 	my $retval = $?; # $? contains the value the program would normally have exited with
 	finalCleanup(); # call single cleanup point
 	exit($retval);
 }
 
-# this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
+# this subroutine can be used as a way to ensure we clean up all resources
+# whenever we exit.  This is going to be mostly temp files.  If the program
+# terminates for almost any reason, this code will be executed.
 sub finalCleanup {
 	if (!defined($ENV{'DUMPALL'})) {
 		foreach my $file (@temporaryFiles) {
 			close($file);
 			unlink ($file);
 		}
-	}
-	# print "serverid = $PERL_SERVER_PID\n";
-	if ($PERL_SERVER_PID > 0) {
-		# my $ret = kill(SIGTERM, 0); # this works, but kills this script too
-		my $ret = kill(SIGTERM, $PERL_SERVER_PID);
 	}
 }
 
@@ -87,266 +117,8 @@ if (defined($ENV{'PRINTMAUDE'})) {
 	print linkedProgram();
 	exit(0);
 }
-my $iolog_flag = "";
 if (defined($ENV{'IOLOG'})) {
-	my $fileIOLog = File::Temp->new( TEMPLATE => 'tmp-kcc-iolog-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	push(@temporaryFiles, $fileIOLog);
-	$iolog_flag = "--createLogs --logfileName $fileIOLog";
 }
 
-# these are compile time settings and are set by the compile script using this file as a template
-my $IO_SERVER="EXTERN_IO_SERVER";
-my $MAUDE_WRAPPER="EXTERN_MAUDE_WRAPPER";
-# my $IOFLAG="EXTERN_COMPILED_WITH_IO";
-my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
-my $PROGRAM_NAME="EXTERN_IDENTIFIER";
-# my $ND_FLAG=EXTERN_ND_FLAG;
-
-my $wrapperScript = catfile($SCRIPTS_DIR, 'wrapper.pl');
-require $wrapperScript;
-my $graphScript = catfile($SCRIPTS_DIR, 'graphSearch.pl');
-require $graphScript;
-
-# print defined($ENV{'PLAIN'});
-# print defined($ENV{'TRACEMAUDE'});
-my $plainOutput = (defined($ENV{'PLAIN'}) or defined($ENV{'TRACEMAUDE'})) ? 1 : 0 ;
-# print "plain: $plainOutput\n";
-my $isInterp = 1;
-my $stdin="";
-# actual start of script
-if ( -t STDIN ) {
-	$stdin=""; 
-} else {
-	$stdin=join("", <STDIN>);
-}
-
-my $fileRunner = File::Temp->new( TEMPLATE => 'tmp-kcc-runner-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileRunner);
-my $fileCommand = File::Temp->new( TEMPLATE => 'tmp-kcc-cmd-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileCommand);
-
-my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $fileInput);
-
-my $traceFile;
-if (defined($ENV{'TRACEMAUDE'})) {
-	$traceFile = File::Temp->new( TEMPLATE => 'tmp-kcc-trace-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	$isInterp = 0;
-	push(@temporaryFiles, $traceFile);
-}
-
-my $fileMaudeDefinition;
-
-if (defined($ENV{'SEARCH'}) or defined($ENV{'MODELCHECK'})) {
-	$isInterp = 0;
-	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd.maude");
-} elsif (defined($ENV{'THREADSEARCH'})) {
-	$isInterp = 0;
-	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total-nd-thread.maude");
-} else {
-	$fileMaudeDefinition = catfile($SCRIPTS_DIR, "c-total.maude");
-}
-
-print $fileRunner "load $fileMaudeDefinition\n";
-print $fileRunner "load $fileInput\n";
-close($fileRunner);
-
-# create a file consisting of just the program (the tail of this script)
-print $fileInput linkedProgram();
-close($fileInput);
-
-# first, set up the runner file with the right commands and set any variables
-my $commandLineArguments = "";
-for my $arg ($thisFile, @ARGV) {	
-	$commandLineArguments .= "# \"$arg\"(.KList),, ";
-}
-my $startTerm = "eval('linked-program(.KList), ($commandLineArguments .KList), # \"\Q$stdin\E\" (.KList), # $isInterp(.KList))";
-my $evalLine = "erew $startTerm .\n";
-my $searchLine = "search in C-program-linked : $startTerm =>! B:Bag .\n";
-my $modelLine = "red in C-program-linked : modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(# \"$ENV{'MODELCHECK'}\"(.KList))(.KList))) ) .\n";
-#my $modelLine = "--- red modelCheck(state($startTerm), k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.KList))) ) .";
-# $modelLine .= "red k2model('LTLAnnotation(Id Identifier(\"$ENV{'MODELCHECK'}\")(.KList))) .\n";
-
-# print $fileCommand "set print attribute on .\n";
-
-if (defined($ENV{'PROFILE'})) {
-	print $fileCommand "set profile on .\n";
-	print $fileCommand "set profile on .\n";
-}
-if (defined($ENV{'DEBUG'})) {
-	$isInterp = 0;
-	print $fileCommand "break select debug .\n";
-	print $fileCommand "break select debug-k .\n";
-	print $fileCommand "break select debug-m .\n";
-	print $fileCommand "set break on .\n";
-}
-if (defined($ENV{'TRACEMAUDE'})) {
-	print $fileCommand "set trace on .\n";
-}
-if (defined($ENV{'DEBUGON'})) {
-	print $fileCommand "break select $ENV{'DEBUGON'} .\n";
-	print $fileCommand "set break on .\n";
-}
-
-if (defined($ENV{'SEARCH'}) or defined($ENV{'THREADSEARCH'})) {
-	print $fileCommand $searchLine;
-	print $fileCommand "show search graph .\n"
-} elsif (defined($ENV{'MODELCHECK'})) {
-	print $fileCommand $modelLine;
-} elsif (! defined($ENV{'LOADMAUDE'})) {
-	print $fileCommand $evalLine;
-}
-if (defined($ENV{'PROFILE'})) {
-	print $fileCommand "show profile .\n";
-}
-if (! defined($ENV{'DEBUG'}) and ! defined($ENV{'DEBUGON'}) and ! defined($ENV{'LOADMAUDE'})) {
-	print $fileCommand "q\n";
-}
-
-close($fileCommand);
-
-
-# I had to add this strange true; thing to get it to work in windows.  no idea why...
-my $maudeCommand = "true; maude -no-wrap -no-banner " . rel2abs($fileRunner) . " " . rel2abs($fileCommand);
-
-# now we can actually run maude on the runner file we built
-# maude changes the way it behaves if it detects that it is working inside a pipe, so we have to call it differently depending on what we want
-if (defined($ENV{'DEBUG'}) or defined($ENV{'DEBUGON'}) or defined($ENV{'LOADMAUDE'})) {
-	#io
-	exit runDebugger($maudeCommand);
-} elsif (defined($ENV{'SEARCH'}) or defined($ENV{'THREADSEARCH'})) {
-	my $intermediateOutputFile = "tmpSearchResults.txt";
-	my $graphOutputFile = "tmpSearchResults.dot";
-	# if (! $ND_FLAG) {
-		# print "You did not compile this program with the '-n' setting.  You need to recompile this program using '-n' in order to see any non-linear state space.\n";
-	# }
-	print "Performing the search...\n";
-	my ($returnValue, @dynamicOutput) = runProgram($maudeCommand);
-	open(my $fh, ">$intermediateOutputFile");
-	print $fh join("", @dynamicOutput);
-	close($fh);
-	print "Generated $intermediateOutputFile\n";
-	print "Examining the output...\n";
-	my $graphOutput = graphSearch($graphOutputFile, @dynamicOutput);
-	print "$graphOutput\n";
-	print "Generated $graphOutputFile.\n";
-	
-	if (defined($ENV{'GRAPH'})) {
-		print "Generating graph...\n";
-		system("dot -Tps2 $graphOutputFile > tmpSearchResults.ps") == 0 or die "Running dot failed: $?";
-		print "Generated tmpSearchResults.ps.\n";
-		system("ps2pdf tmpSearchResults.ps tmpSearchResults.pdf") == 0 or die "Running ps2pdf failed: $?";
-		print "Generated tmpSearchResults.pdf\n";
-	}
-} else {
-	my ($returnValue, $signal, $screenOutput, @dynamicOutput) = runWrapper($fileRunner, $fileCommand);
-	if ($returnValue != 0 or $signal != 0) {
-		die "Dynamic execution failed: $returnValue";
-	}	
-	my ($finalReturnValue, $finalOutput) = maudeOutputWrapper($plainOutput, $screenOutput, @dynamicOutput);
-		
-	if (defined($ENV{'PROFILE'})) {
-		if (! -e "maudeProfileDBfile.sqlite") {
-			copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), "maudeProfileDBfile.sqlite");
-		}
-		my $intermediateOutputFile = File::Temp->new( TEMPLATE => 'tmp-kcc-intermediate-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-		push(@temporaryFiles, $intermediateOutputFile);
-		writeToFile($intermediateOutputFile, @dynamicOutput);
-		my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
-		`perl $profileWrapper $intermediateOutputFile $PROGRAM_NAME`;
-	}
-	
-	if (defined($ENV{'TRACEMAUDE'})) {
-		print $traceFile $finalOutput;
-		close $traceFile;
-		print "Trace placed in $traceFile\n";
-	} else {
-		print $finalOutput;
-	}
-	exit($finalReturnValue);
-}
-
-# runs a command and returns a pair (return value, output)
-sub runProgram {
-	my ($command) = (@_);
-	$childPid = open P, "$command |" or die "Error running \"$command\"!";
-	#print "for $command, pid is $childPid\n";
-	my @data=<P>;
-	close P;
-	$childPid = 0;
-	#print "child is dead\n";
-	my $returnValue = $? >> 8;
-	
-	return ($returnValue, @data);
-}
-# runs a command and returns a pair (return value, output)
-sub runWrapper {
-	my ($runner, $maudeCommand) = (@_);
-	my $outfile;
-	$outfile = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	push(@temporaryFiles, $outfile);
-	my $errorFile;
-	$errorFile = File::Temp->new( TEMPLATE => 'tmp-kcc-err-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	push(@temporaryFiles, $errorFile);
-
-	my $command = "$MAUDE_WRAPPER --commandFile $maudeCommand --maudeFile $runner --outputFile $outfile --errorFile $errorFile --moduleName C-program-linked $iolog_flag";
-	$childPid = open P, "$command |" or die "Error running \"$command\"!";
-	#print "for $command, pid is $childPid\n";
-	#my @data=<P>;
-	# while (defined(my $line = <P>)) {
-	my $screenOutput = "";
-	$| = 1; # autoflush
-	my $char;
-	while (read (P, $char, 1)) {
-		$screenOutput .= $char;
-		print "$char";
-	}
-	$| = 0; # no autoflush
-	close P;
-	#print @data;
-	$childPid = 0;
-	#print "child is dead\n";
-	my $code = $?;
-	my $returnValue = $code >> 8;
-	my $signal = ($code & 127);
-	
-	open FILE, "<", $outfile;
-	my @lines = <FILE>;
-	close FILE;
-	open FILE, "<", $errorFile;
-	my @xlines = <FILE>;
-	close FILE;
-	print @xlines;
-	
-	# print "$returnValue, $signal\n";
-	return ($returnValue, $signal, $screenOutput, @lines);
-}
-
-sub runDebugger {
-	my ($command) = (@_);
-	print "Running $command\n";
-	exec("$IO_SERVER 7500 & $command ; kill %1");
-}
-
-sub writeToFile {
-	my ($file, @data) = (@_);
-	open (MYFILE, ">$file");
-	for my $line  (@data) {
-		print MYFILE $line;
-	}
-	close (MYFILE);
-}
-
-
-sub processStaticOutput {
-	my ($str) = (@_);
-	my @staticOutput = split(/\n/, $str);
-	shift(@staticOutput);
-	shift(@staticOutput);
-	shift(@staticOutput);
-	shift(@staticOutput);
-	pop(@staticOutput);
-	return join("\n", @staticOutput);
-}
 # more stuff is added during compilation
 

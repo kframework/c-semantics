@@ -367,11 +367,13 @@ module DYNAMIC-C-SEMANTICS
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
-          (<T>... <threads>... <thread>... 
+     (<T>...
+          <thread>... 
                <threadId> 1 </threadId> // main's thread, not the global "thread"
                <k> V:KResult </k>
-          ...</thread> ...</threads> ...</T>
-               => <resultValue> V:KResult </resultValue>)
+          ...</thread>
+     ...</T> => .Bag)
+           <resultValue> .K => V </resultValue>
           <files>...
                <fileCommands> _ => .K </fileCommands> // to prevent further io commands from firing
                <file>... // stdout

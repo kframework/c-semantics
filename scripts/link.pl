@@ -1,12 +1,6 @@
 use strict;
 use File::Basename;
 
-# my $numArgs = $#ARGV + 1;
-# #$startingDir = $ARGV[0];
-# if ($numArgs < 1) {
-	# die "Need to provide file names to link\n";
-# }
-
 my @programNames;
 my @programs;
 my $formulae;
@@ -33,38 +27,18 @@ sub linker {
 		linkFile(@contents);
 	}
 
-	# foreach my $operator (@operators){
-		# $retval .= "$operator\n";
-	# }
-
-	foreach my $program (@programs){
-		$retval .= "$program\n";
-	}
-	$retval .= "op 'formulae : -> KLabel .\n";
-	$retval .= $formulae;
-
-	$retval .= "op 'linked-program : -> KLabel .\n";
-	$retval .= "eq 'linked-program(.KList) = ";
 	$retval .= "'Program(";
 	$retval .= "'klist(_`(_`)(KList2KLabel_(";
-	$retval .= printNested(@programNames);
+	$retval .= printNested(@programs);
 	$retval .= '), .KList))';
 	$retval .= ')';
-	return "$retval.\n";
+	return $retval;
 }
 
 sub linkFile {
 	my (@contents) = (@_);
 	foreach my $line (@contents){
-		if ($line =~ m/^eq Trans(.*?)=/) {
-			push(@programNames, "Trans$1");
-			push(@programs, $line);
-		}
-		# print "$line\n";
-		if ($line =~ m/^eq 'LTLAnnotation(\([^=]*\)) = (.*)\.$/) {
-			print "$1, $2\n";
-			$formulae .= "eq 'LTLAnnotation$1 = $2 .\n";
-		}
+            push(@programs, $line);
 	}
 }
 
@@ -73,12 +47,9 @@ sub printNested {
 
 	if (defined($name)) {
 		return "_`,`,_(($name), " . printNested(@rest) .")";
-	} else {#arg
+	} else {
 		return '.KList';
 	}
 }
 
-# foreach my $name (@programNames){
-	# print "$name ";
-# }
 1;

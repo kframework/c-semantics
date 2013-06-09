@@ -5,31 +5,17 @@ PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 #svnversion
 
-export C_K_BASE ?= $(K_BASE)
-
-
-# this should be defined by the user
-# K_MAUDE_BASE ?= .
-
+export C_K_BASE ?= $(C_K_BASE)
 
 #OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
 #OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
 #FILTER = $(SEMANTICS_DIR)/outputFilter.yml
 #VPATH = programs
 
-
-# chathhorn
-# $(SEMANTICS_DIR)/c-total-nd.maude
-# $(SEMANTICS_DIR)/c-total-nd-thread.maude
 FILES_TO_DIST = \
-	legacy/java/wrapperAndServer.jar \
-	legacy/java/ioserver.jar \
-	legacy/java/jopt-simple-3.3.jar \
-	$(SEMANTICS_DIR)/c-total.maude \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/link.pl \
-	$(SCRIPTS_DIR)/wrapper.pl \
 	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
@@ -46,9 +32,6 @@ all: dist
 
 fast: WHICH_SEMANTICS="fast"
 fast: dist
-
-# nd: WHICH_SEMANTICS="nd"
-# nd: dist
 
 thread: WHICH_SEMANTICS="thread"
 thread: dist
@@ -70,15 +53,12 @@ dist: check-vars $(DIST_DIR)/dist.done
 pdf: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) pdf
 
-$(K_BASE)/core/java/wrapperAndServer.jar $(K_BASE)/core/java/ioserver.jar: $(wildcard $(K_BASE)/core/java/IOServer/src/*/*.java) $(wildcard $(K_BASE)/core/java/Wrapper/src/*/*.java) $(K_BASE)/core/java/Wrapper/Manifest.txt
-	@$(MAKE) -C $(K_BASE)/core/java
-	
-
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c-kompiled $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc

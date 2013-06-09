@@ -3,10 +3,10 @@ INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 APPEND_LINE = $(SCRIPTS_DIR)/append.sh
 FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
 
-KOMPILE = $(K_BASE)/bin/kompile
+KOMPILE = $(C_K_BASE)/bin/kompile
 
-K_PL_META_LEVEL = $(K_BASE)/bin/maude/lib/pl-meta-level
-K_LATEX_STYLE = $(K_BASE)/include/latex/k.sty
+K_PL_META_LEVEL = $(C_K_BASE)/bin/maude/lib/pl-meta-level
+K_LATEX_STYLE = $(C_K_BASE)/include/latex/k.sty
 
 KOMPILE_C = $(KOMPILE) -v c.k -l C -transition "interpRule"
 
@@ -18,9 +18,7 @@ common-c-syntax.k common-c-helpers.k c-configuration.k common-c-expressions.k co
 DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-expressions.k dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k dynamic-c-standard-lib.k
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude .k kcompile_* \
-c-compiled.maude.tmp.bak c-compiled.maude.0 c-compiled.maude.1 c-compiled.maude.1.bak c-compiled-nd.maude.0 c-compiled-nd.maude.1 c-compiled-nd.maude.1.bak c-compiled-nd.maude.bak static-c.k.bak c-compiled.maude \
-duplicateLabels.txt 
+K_CLEAN_FILES = *.maude .k c-kompiled kcompile_* static-c.k.bak duplicateLabels.txt 
 
 .PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
 
@@ -29,10 +27,10 @@ duplicateLabels.txt
 all: semantics
 
 check-vars:
-ifeq ($(K_BASE),)
-	@echo "ERROR: Please set K_BASE to the full path of your K installation."
+ifeq ($(C_K_BASE),)
+	@echo "ERROR: Please set C_K_BASE to the full path of your K installation."
 	@echo "Make sure you do NOT include a trailing slash\\"
-	@echo "One way to do this is to type 'export K_BASE=/path/to/k/framework', and then rerun 'make'"
+	@echo "One way to do this is to type 'export C_K_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
 
@@ -87,11 +85,9 @@ configuration.pdf: custom-configuration.tex.orig
 
 pdf: syntax.pdf configuration.pdf statements.pdf expressions.pdf typing.pdf declarations.pdf memory.pdf library.pdf errors.pdf misc.pdf
 
-
 c-kompiled/main.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 	@$(KOMPILE_C)
-	#@mv c-compiled.maude c-compiled.maude.0
 
 # c-compiled.maude.tmp: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled.maude.0`
 # c-compiled.maude.tmp: c-compiled.maude.0 maudeLib/modelcheck.maude Makefile
@@ -108,58 +104,58 @@ c-kompiled/main.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES
 # 	@if [ -s duplicateLabels.txt ]; then echo "Error: there are duplicate labels in the semantics.  This could cause profiling to give inaccurate results."; cat duplicateLabels.txt; exit 1; fi
 # 	@mv c-compiled.maude.tmp c-compiled.maude
 
-c-total.maude: check-vars c-kompiled/main.maude $(K_BASE_FILES) Makefile
-	@echo "c-kompiled/main.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
-
-c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
-	@echo "Compiling the C definition with nondeterminism..."
-	@$(KOMPILE_C_ND)
-	@mv c-compiled.maude c-compiled-nd.maude.0
-	
-c-compiled-nd.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd.maude.0`
-c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
-	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/common-c-builtins"
-	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
-	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
-	@echo "Done".
-	
-c-total-nd.maude: check-vars c-compiled-nd.maude $(K_BASE_FILES) Makefile
-	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
-
-	
-c-compiled-nd-thread.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
-	@echo "Compiling the C definition with thread-nondeterminism..."
-	@$(KOMPILE_C_ND_THREAD)
-	@mv c-compiled.maude c-compiled-nd-thread.maude.0
-	
-c-compiled-nd-thread.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd-thread.maude.0`
-c-compiled-nd-thread.maude: check-vars c-compiled-nd-thread.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
-	@cp c-compiled-nd-thread.maude.0 c-compiled-nd-thread.maude.1
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/common-c-builtins"
-	@$(APPEND_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/modelcheck"
-	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load $(K_PL_META_LEVEL)"
-	@cp c-compiled-nd-thread.maude.1 c-compiled-nd-thread.maude
-	@echo "Done".
-	
-c-total-nd-thread.maude: check-vars c-compiled-nd-thread.maude $(K_BASE_FILES) Makefile
-	@echo "c-compiled-nd-thread.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
-	
+# c-total.maude: check-vars c-kompiled/main.maude $(K_BASE_FILES) Makefile
+# 	@echo "c-kompiled/main.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
+# 
+# c-compiled-nd.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+# 	@echo "Compiling the C definition with nondeterminism..."
+# 	@$(KOMPILE_C_ND)
+# 	@mv c-compiled.maude c-compiled-nd.maude.0
+# 	
+# c-compiled-nd.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd.maude.0`
+# c-compiled-nd.maude: check-vars c-compiled-nd.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+# 	@cp c-compiled-nd.maude.0 c-compiled-nd.maude.1
+# 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load maudeLib/common-c-builtins"
+# 	@$(APPEND_LINE) c-compiled-nd.maude.1 "load maudeLib/modelcheck"
+# 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd.maude.1 "load $(K_PL_META_LEVEL)"
+# 	@cp c-compiled-nd.maude.1 c-compiled-nd.maude
+# 	@echo "Done".
+# 	
+# c-total-nd.maude: check-vars c-compiled-nd.maude $(K_BASE_FILES) Makefile
+# 	@echo "c-compiled-nd.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
+# 
+# 	
+# c-compiled-nd-thread.maude.0: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+# 	@echo "Compiling the C definition with thread-nondeterminism..."
+# 	@$(KOMPILE_C_ND_THREAD)
+# 	@mv c-compiled.maude c-compiled-nd-thread.maude.0
+# 	
+# c-compiled-nd-thread.maude: FIRST_LINE=`perl $(FIRST_LINE_SCRIPT) c-compiled-nd-thread.maude.0`
+# c-compiled-nd-thread.maude: check-vars c-compiled-nd-thread.maude.0 $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE) Makefile
+# 	@cp c-compiled-nd-thread.maude.0 c-compiled-nd-thread.maude.1
+# 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/common-c-builtins"
+# 	@$(APPEND_LINE) c-compiled-nd-thread.maude.1 "load maudeLib/modelcheck"
+# 	@$(INSERT_LINE) $(FIRST_LINE) c-compiled-nd-thread.maude.1 "load $(K_PL_META_LEVEL)"
+# 	@cp c-compiled-nd-thread.maude.1 c-compiled-nd-thread.maude
+# 	@echo "Done".
+# 	
+# c-total-nd-thread.maude: check-vars c-compiled-nd-thread.maude $(K_BASE_FILES) Makefile
+# 	@echo "c-compiled-nd-thread.maude" | perl $(SCRIPTS_DIR)/slurpFrontEnd.pl > $@
+# 	
 #semantics: c-total.maude c-total-nd.maude c-total-nd-thread.maude
-semantics: c-total.maude 
+semantics: c-kompiled/main.maude
 
-fast: c-total.maude
-	@cp c-total.maude c-total-nd.maude
-	@cp c-total.maude c-total-nd-thread.maude
-
-nd: c-total-nd.maude
-	@cp c-total-nd.maude c-total.maude
-	@cp c-total-nd.maude c-total-nd-thread.maude
-
-thread: c-total-nd-thread.maude
-	@cp c-total-nd-thread.maude c-total.maude
-	@cp c-total-nd-thread.maude c-total-nd.maude
+# fast: c-total.maude
+# 	@cp c-total.maude c-total-nd.maude
+# 	@cp c-total.maude c-total-nd-thread.maude
+# 
+# nd: c-total-nd.maude
+# 	@cp c-total-nd.maude c-total.maude
+# 	@cp c-total-nd.maude c-total-nd-thread.maude
+# 
+# thread: c-total-nd-thread.maude
+# 	@cp c-total-nd-thread.maude c-total.maude
+# 	@cp c-total-nd-thread.maude c-total-nd.maude
 
 clean:
 	rm -rf $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES) program-*-compiled.maude.tmp

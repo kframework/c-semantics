@@ -108,7 +108,7 @@ if ($filename eq ""){
 	die "Could not find the filename in the XML\n";
 }
 
-print "---kccMarker\n";
+# print "---kccMarker\n";
 my $filenameTerm = "$STRING $filename" . paren(KLIST_IDENTITY);
 my @args = ();
 push (@args, $filenameTerm);
@@ -126,11 +126,11 @@ $reader->nextElement('RawData');
 my $sourceCode = getRawData($reader);
 push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
-print "eq TranslationUnitName($filenameTerm)(.KList) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
-if ($ltl ne "") {
-	print $ltl;
-}
-
+#print "eq TranslationUnitName($filenameTerm)(.KList) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
+print nameToLabel('TranslationUnit') . $tu ;
+# if ($ltl ne "") {
+# 	print $ltl;
+# }
 
 
 sub printStatus {

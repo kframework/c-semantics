@@ -30,14 +30,17 @@ sub interruptHandler {
 	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
 
-# this block gets run at the end of a normally terminating program, whether it simply exits, or dies.  We use this to clean up.
+# this block gets run at the end of a normally terminating program, whether it
+# simply exits, or dies.  We use this to clean up.
 END {
 	my $retval = $?; # $? contains the value the program would normally have exited with
 	finalCleanup(); # call single cleanup point
 	exit($retval);
 }
 
-# this subroutine can be used as a way to ensure we clean up all resources whenever we exit.  This is going to be mostly temp files.  If the program terminates for almost any reason, this code will be executed.
+# this subroutine can be used as a way to ensure we clean up all resources
+# whenever we exit.  This is going to be mostly temp files.  If the program
+# terminates for almost any reason, this code will be executed.
 sub finalCleanup {
 	foreach my $file (@temporaryFiles) {
 		unlink ($file);
@@ -109,25 +112,14 @@ if ($args->{'-c'}) {
 
 my $oval = $args->{'-o'} || 'a.out';
 
-# chathhorn
-#$linkTemp .= "including #MODEL-CHECK .\n";
-
-my $linkTemp = <<HDR;
-mod C-program-linked is including C .
-  op kList : #String -> KLabel [metadata "wrapper=(list)"] .
-
-HDR
-
 if (! $args->{'-s'}) {
 	push(@compiledPrograms, @stdlib);
 }
-my $linkingResults = linker(@compiledPrograms);
+my $linked = linker(@compiledPrograms);
 unlink(@shouldBeDeleted);
-if ($linkingResults eq ""){
+if ($linked eq ""){
 	die "Nothing returned from linker";
 }
-$linkTemp .= $linkingResults;
-$linkTemp .= "endm\n";
 
 open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
 my $programRunner = join("", <FILE>);
@@ -140,7 +132,7 @@ $programRunner = performSpecializations($programRunner);
 
 print $programTemp "$programRunner\n\n";
 
-print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linkTemp\nENDOFCOMPILEDPROGRAM\n }\n";
+print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linked\nENDOFCOMPILEDPROGRAM\n }\n";
 
 close($programTemp);
 
@@ -156,23 +148,11 @@ exit();
 sub performSpecializations {
 	my ($file) = (@_);
 	
-	my $wrapperCommand = catfile($myDirectory, 'wrapperAndServer.jar');
-	my $ioServer = catfile($myDirectory, 'ioserver.jar');
-	# my $cmdlineParse = catfile($myDirectory, 'jopt-simple-3.3.jar');
-	
-	$wrapperCommand = "java -jar $wrapperCommand";
-	$ioServer = "java -jar $ioServer";
-	
-	#my $ioFlag = $args->{'-i'};
 	my $mainFileName = $args->{'<files>'}[0];
 	my $nondetFlag = $args->{'-n'} ? 1 : 0;
 	
-	#$file =~ s?EXTERN_COMPILED_WITH_IO?$ioFlag?g;
-	$file =~ s?EXTERN_MAUDE_WRAPPER?$wrapperCommand?g;
-	$file =~ s?EXTERN_IO_SERVER?$ioServer?g;
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
 	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
-	$file =~ s?EXTERN_ND_FLAG?$nondetFlag?g;
 	return $file;
 }
 
@@ -185,9 +165,7 @@ sub compile {
 	}
 	my $inputDirectory = dirname($inputFile);
 	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
-	#print "basename = $baseName\n";
-	#print "inputDirectory = $inputDirectory\n";
-	#print "suffix = $suffix\n";
+
 	if (($suffix eq '.o') or ($suffix eq '.a')) {
 		# assuming .o or .a file
 		push(@compiledPrograms, $inputFile);
@@ -196,27 +174,22 @@ sub compile {
 	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
 	my $line = <$fh>;
 	close $fh;
-	# # if the file was already compiled, return
-	# if ($line =~ /^---kccMarker/) {
-		# push(@compiledPrograms, $inputFile);
-		# return;
-	# }
+
 	# assume it's a normal input file, so compile it
 	my $localOval = "$baseName.o";
-	my $compileProgramScript = catfile($myDirectory, 'compileProgram.sh');
 	compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) or die "Compilation failed";
-	# system("$compileProgramScript $warnFlag $dumpFlag $modelFlag $inputFile") == 0
-		# or die "Compilation failed: $?";
 
 	if (! -e "program-$baseName-compiled.maude") {
 		die "Expected to find program-$baseName-compiled.maude, but did not";
 	}
-	move("program-$baseName-compiled.maude", $localOval) or die "Failed to rename the compiled program to the local output file $localOval";
+	move("program-$baseName-compiled.maude", $localOval) 
+            or die "Failed to rename the compiled program to the local output file $localOval";
 	
 	push(@compiledPrograms, $localOval);
 	if ($args->{'-c'}) {
 		if ($args->{'-o'}) {
-			move($localOval, $args->{'-o'}) or die "Failed to move the generated program to its destination $oval: $!";
+			move($localOval, $args->{'-o'}) 
+                        or die "Failed to move the generated program to its destination $oval: $!";
 		}
 	} else {
 		push(@shouldBeDeleted, $localOval);
@@ -229,9 +202,6 @@ sub compileProgram {
 	my $nowarn = $warnFlag;
 	my $dflag = $dumpFlag;
 	
-	# print "dflag=$dflag\n";
-	# print "nowarn=$nowarn\n";
-
 	my $PEDANTRY_OPTIONS = "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
 	my $GCC_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
 	
@@ -252,9 +222,7 @@ sub compileProgram {
 		die "$filename.c not found";
 	}
 	
-	# print "@::gccDefines\n";
 	my $gccCommand = "gcc $PEDANTRY_OPTIONS $GCC_OPTIONS @::gccDefines @::gccIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
-	# print "$gccCommand\n";
 	my $retval = system($gccCommand);
 	open FILE, "$filename.warnings.log";
 	my @lines = <FILE>;
