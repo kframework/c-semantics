@@ -454,8 +454,8 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      }}*/
      
      // chathhorn
-     rule Call(K:K, klist(L:KList)) => toRVList(L) ~> Call(K, HOLE) [heat]
-     rule R:KResult ~> Call(K:K, HOLE) => Call(K, R) [cool]
+     rule Call(K:K, klist(L:KList)) => toRVList(L) ~> Call(K, .K)
+     rule R:KResult ~> Call(K:K, .K) => Call(K, R) 
 
      rule [function-application-pre]:
           <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
