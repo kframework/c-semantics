@@ -9,6 +9,17 @@ use File::Copy;
 # use IO::File;
 use IPC::Open3;
 
+# here we trap control-c (and others) so we can clean up when that happens
+$SIG{'ABRT'} = 'interruptHandler';
+$SIG{'BREAK'} = 'interruptHandler';
+$SIG{'TERM'} = 'interruptHandler';
+$SIG{'QUIT'} = 'interruptHandler';
+$SIG{'SEGV'} = 'interruptHandler';
+$SIG{'HUP' } = 'interruptHandler';
+$SIG{'TRAP'} = 'interruptHandler';
+$SIG{'STOP'} = 'interruptHandler';
+$SIG{'INT'} = 'interruptHandler'; # handle control-c 
+
 setpgrp;
 
 # these are compile time settings and are set by the compile script using this
@@ -48,18 +59,6 @@ for (<OUT>) {
             exit($1);
       }
 }
-
-
-# here we trap control-c (and others) so we can clean up when that happens
-$SIG{'ABRT'} = 'interruptHandler';
-$SIG{'BREAK'} = 'interruptHandler';
-$SIG{'TERM'} = 'interruptHandler';
-$SIG{'QUIT'} = 'interruptHandler';
-$SIG{'SEGV'} = 'interruptHandler';
-$SIG{'HUP' } = 'interruptHandler';
-$SIG{'TRAP'} = 'interruptHandler';
-$SIG{'STOP'} = 'interruptHandler';
-$SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
 sub interruptHandler {
 	finalCleanup(); # call single cleanup point
@@ -117,6 +116,7 @@ if (defined($ENV{'PRINTMAUDE'})) {
 	print linkedProgram();
 	exit(0);
 }
+
 if (defined($ENV{'IOLOG'})) {
 }
 

@@ -781,7 +781,7 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
      \cinline{\~E} is equivalent to the maximum value representable in that
      type minus \cinline{E}.
      }*/
-     rule ~ tv(I:Int, T:Type) => arithInterpret(T, ~Int I:Int)
+     rule ~ tv(I:Bits, T:Type) => arithInterpret(T, ~Bits I)
           when isPromoted(T)
           [structural]
 
@@ -871,17 +871,16 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
      rule tv(F1:Float, T:Type) * tv(F2:Float, T:Type) => arithInterpret(T, F1:Float *Float F2:Float)
           [structural]
           
-     rule tv(I1:Int, T:Type) / tv(I2:Int, T:Type) => arithInterpret(T, I1:Int /Int I2:Int)
-          when isPromoted(T:Type) andBool I2:Int =/=Int 0
+     rule tv(I1:Bits, T:Type) / tv(I2:Int, T:Type) => arithInterpret(T, I1 /Bits I2)
+          when isPromoted(T:Type) andBool I2 =/=Int 0
           [structural]
      rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type) => arithInterpret(T, F1:Float /Float F2:Float)
           [structural]
-     // TODO(chathhorn): truncated Int, elided
      // fixme this seems out of place and strange
-     // rule piece(unknown(N:Int), N) /Int M:Int 
-     //      => piece(unknown(N), N)
-     //      when M =/=Int 0
-     //      [structural, anywhere]
+     rule piece(unknown(N:Int), N) /Bits M:Int 
+          => piece(unknown(N), N)
+          when M =/=Int 0
+          [structural, anywhere]
           
      rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T, I1:Int %Int I2:Int)
           when isPromoted(T)
@@ -1372,7 +1371,7 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if each of
      the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Int, T:Type) & tv(I2:Int, T:Type) => arithInterpret(T, I1:Int &Int I2:Int)
+     rule tv(I1:Bits, T:Type) & tv(I2:Bits, T:Type) => arithInterpret(T, I1 &Bits I2)
           when isPromoted(T)
           [structural]
      
@@ -1383,7 +1382,7 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if exactly
      one of the corresponding bits in the converted operands is set).     
      }*/
-     rule tv(I1:Int, T:Type) ^ tv(I2:Int, T:Type) => arithInterpret(T, I1:Int xorInt I2:Int)
+     rule tv(I1:Bits, T:Type) ^ tv(I2:Bits, T:Type) => arithInterpret(T, I1 xorBits I2)
           when isPromoted(T)
           [structural]
           
@@ -1394,7 +1393,7 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if at least
      one of the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Int, T:Type) | tv(I2:Int, T:Type) => arithInterpret(T, I1:Int |Int I2:Int)
+     rule tv(I1:Bits, T:Type) | tv(I2:Bits, T:Type) => arithInterpret(T, I1 |Bits I2)
           when isPromoted(T)
           [structural]
 endmodule

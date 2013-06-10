@@ -106,16 +106,41 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{1}}}{
      Every integer type has an integer conversion rank defined as follows:
      \begin{itemize}
-     \item No two signed integer types shall have the same rank, even if they have the same representation.
-     \item The rank of a signed integer type shall be greater than the rank of any signed integer type with less precision.
-     \item The rank of \cinline{long long int} shall be greater than the rank of \cinline{long int}, which shall be greater than the rank of \cinline{int}, which shall be greater than the rank of \cinline{short int}, which shall be greater than the rank of \cinline{signed char}.
-     \item The rank of any unsigned integer type shall equal the rank of the corresponding signed integer type, if any.
-     \item The rank of any standard integer type shall be greater than the rank of any extended integer type with the same width.
-     \item The rank of \cinline{char} shall equal the rank of \cinline{signed char} and \cinline{unsigned char}.
-     \item The rank of \cinline{_Bool} shall be less than the rank of all other standard integer types.
-     \item The rank of any enumerated type shall equal the rank of the compatible integer type (see 6.7.2.2).
-     \item The rank of any extended signed integer type relative to another extended signed integer type with the same precision is implementation-defined, but still subject to the other rules for determining the integer conversion rank.
-     \item For all integer types T1, T2, and T3, if T1 has greater rank than T2 and T2 has greater rank than T3, then T1 has greater rank than T3.
+
+     \item No two signed integer types shall have the same rank, even if they
+     have the same representation.
+
+     \item The rank of a signed integer type shall be greater than the rank of
+     any signed integer type with less precision.
+
+     \item The rank of \cinline{long long int} shall be greater than the rank
+     of \cinline{long int}, which shall be greater than the rank of
+     \cinline{int}, which shall be greater than the rank of \cinline{short
+     int}, which shall be greater than the rank of \cinline{signed char}.
+
+     \item The rank of any unsigned integer type shall equal the rank of the
+     corresponding signed integer type, if any.
+
+     \item The rank of any standard integer type shall be greater than the rank
+     of any extended integer type with the same width.
+
+     \item The rank of \cinline{char} shall equal the rank of \cinline{signed
+     char} and \cinline{unsigned char}.
+
+     \item The rank of \cinline{_Bool} shall be less than the rank of all other
+     standard integer types.
+
+     \item The rank of any enumerated type shall equal the rank of the
+     compatible integer type (see 6.7.2.2).
+
+     \item The rank of any extended signed integer type relative to another
+     extended signed integer type with the same precision is
+     implementation-defined, but still subject to the other rules for
+     determining the integer conversion rank.
+
+     \item For all integer types T1, T2, and T3, if T1 has greater rank than T2
+     and T2 has greater rank than T3, then T1 has greater rank than T3.
+
      \end{itemize}%
      }*/
      rule rank(t(_, bool)) => 0
@@ -134,13 +159,26 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
      The following may be used in an expression wherever an int or unsigned int may be used:
      \begin{itemize}
-     \item An object or expression with an integer type (other than \cinline{int} or \cinline{unsigned int}) whose integer conversion rank is less than or equal to the rank of \cinline{int} and \cinline{unsigned int}.
-     \item A bit-field of type \cinline{_Bool}, \cinline{int}, \cinline{signed int}, or \cinline{unsigned int}.
+
+     \item An object or expression with an integer type (other than
+     \cinline{int} or \cinline{unsigned int}) whose integer conversion rank is
+     less than or equal to the rank of \cinline{int} and \cinline{unsigned
+     int}.
+
+     \item A bit-field of type \cinline{_Bool}, \cinline{int}, \cinline{signed
+     int}, or \cinline{unsigned int}.
+
      \end{itemize}
-     If an \cinline{int} can represent all values of the original type (as restricted by the width, for a bit-field), the value is converted to an \cinline{int}; otherwise, it is converted to an \cinline{unsigned int}. These are called the integer promotions. All other types are unchanged by the integer promotions.
+     If an \cinline{int} can represent all values of the original type (as
+     restricted by the width, for a bit-field), the value is converted to an
+     \cinline{int}; otherwise, it is converted to an \cinline{unsigned int}.
+     These are called the integer promotions. All other types are unchanged by
+     the integer promotions.
      }*/
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{3}}}{
-     The integer promotions preserve value imports sign. As discussed earlier, whether a ``plain'' \cinline{char} is treated as signed is implementation-defined.
+     The integer promotions preserve value imports sign. As discussed earlier,
+     whether a ``plain'' \cinline{char} is treated as signed is
+     implementation-defined.
      }*/
      
      rule isPromoted(t(_, enumType(_:Id))) => true
@@ -227,7 +265,15 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      // fixme these could be done more cleanly
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.8}{1}}}{
-     Many operators that expect operands of arithmetic type cause conversions and yield result types in a similar way. The purpose is to determine a common real type for the operands and result. For the specified operands, each operand is converted, without change of type domain, to a type whose corresponding real type is the common real type. Unless explicitly stated otherwise, the common real type is also the corresponding real type of the result, whose type domain is the type domain of the operands if they are the same, and complex otherwise. This pattern is called the usual arithmetic conversions:
+     Many operators that expect operands of arithmetic type cause conversions
+     and yield result types in a similar way. The purpose is to determine a
+     common real type for the operands and result. For the specified operands,
+     each operand is converted, without change of type domain, to a type whose
+     corresponding real type is the common real type. Unless explicitly stated
+     otherwise, the common real type is also the corresponding real type of the
+     result, whose type domain is the type domain of the operands if they are
+     the same, and complex otherwise. This pattern is called the usual
+     arithmetic conversions:
      }*/
      rule <k> L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
                => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
@@ -240,7 +286,9 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
 
      /*@ 
      \begin{itemize}
-     \item First, if the corresponding real type of either operand is long double, the other operand is converted, without change of type domain, to a type whose corresponding real type is long double.
+     \item First, if the corresponding real type of either operand is long
+     double, the other operand is converted, without change of type domain, to
+     a type whose corresponding real type is long double.
      \end{itemize}%
      */
      rule usualArithmeticConversion(t(_, long-double), _) => t(.Set, long-double)
@@ -248,7 +296,9 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
           
      /*@ 
      \begin{itemize}
-     \item Otherwise, if the corresponding real type of either operand is double, the other operand is converted, without change of type domain, to a type whose corresponding real type is double.
+     \item Otherwise, if the corresponding real type of either operand is
+     double, the other operand is converted, without change of type domain, to
+     a type whose corresponding real type is double.
      \end{itemize}%
      */
      rule usualArithmeticConversion(t(_, double), t(_, T:K)) => t(.Set, double)
@@ -258,7 +308,9 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
           
      /*@ 
      \begin{itemize}
-     \item Otherwise, if the corresponding real type of either operand is float, the other operand is converted, without change of type domain, to a type whose corresponding real type is float.
+     \item Otherwise, if the corresponding real type of either operand is
+     float, the other operand is converted, without change of type domain, to a
+     type whose corresponding real type is float.
      \end{itemize}%
      */
      rule usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
@@ -270,7 +322,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
 
      /*@ 
      \begin{itemize}
-     \item Otherwise, the integer promotions are performed on both operands. Then the following rules are applied to the promoted operands:
+     \item Otherwise, the integer promotions are performed on both operands.
+     Then the following rules are applied to the promoted operands:
      \end{itemize}%
      */
      syntax K ::= "usualArithmeticConversion-aux" "(" K "," K ")" [function]
@@ -733,32 +786,35 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
           arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T)
           
      // these could be so much better...
-     // TODO(chathhorn) truncated Int, elided
-     // rule [bnot-unknown]: ~Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     // 
-     // rule [xor-unknown-right]: N:Int xorInt piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     // rule [or-unknown-right]: N:Int |Int piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     // rule [and-unknown-zero-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
-     //      when N:Int ==Int 0 
-     //      [structural, anywhere]
-     // rule [and-unknown-right]: N:Int &Int piece(unknown(Len:Int), Len:Int) => 0
-     //      when N:Int =/=Int 0 
-     //      [structural, anywhere]
+     rule ~Bits X:Int => ~Int X
+     rule [bnot-unknown]: ~Bits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
+     
+     rule X:Int /Bits Y:Int => X /Int Y
 
-     // rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorInt N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     // rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Int N:Int => piece(unknown(Len:Int), Len:Int) [structural, anywhere]
-     // rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
-     //      when N:Int ==Int 0 
-     //      [structural, anywhere]
-     // rule [and-unknown-left]: piece(unknown(Len:Int), Len:Int) &Int N:Int => 0
-     //      when N:Int =/=Int 0 [structural, anywhere]
+     rule X:Int xorBits Y:Int => X xorInt Y
+     rule [xor-unknown-right]: N:Bits xorBits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
+     rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorBits N:Bits => piece(unknown(Len:Int), Len:Int)
+
+     rule X:Int |Bits Y:Int => X |Int Y
+     rule [or-unknown-right]: N:Bits |Bits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
+     rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Bits N:Bits => piece(unknown(Len:Int), Len:Int)
+
+     rule X:Int &Bits Y:Int => X &Int Y
+     rule [and-unknown-zero-right]: N:Int &Bits piece(unknown(Len:Int), Len) => 0
+          when N ==Int 0 
+     rule [and-unknown-right]: N:Int &Bits piece(unknown(Len:Int), Len) => 0
+          when N =/=Int 0 
+     rule [and-unknown-zero-left]: piece(unknown(Len:Int), Len) &Bits N:Int => 0
+          when N ==Int 0 
+     rule [and-unknown-left]: piece(unknown(Len:Int), Len) &Bits N:Int => 0
+          when N =/=Int 0
      
      // fixme
      rule [arithInterpret-float]: 
           arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
           when (T:K ==K double)
-               orBool T:K ==K float
-               orBool T:K ==K long-double
+               orBool (T:K ==K float)
+               orBool (T:K ==K long-double)
      // signed arithmetic isn't supposed to overflow
      rule [arithInterpret-unsigned-big]:
           arithInterpret(T:Type, I:Int) => tv(I:Int %Int (max(T) +Int 1), T)
