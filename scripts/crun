@@ -1,4 +1,0 @@
-#!/bin/sh
-DEF="/home/chathhorn/new/c-semantics/semantics/c-kompiled"
-krun -verbose --no-color --output-mode pretty --parser parser3  --compiled-def "$DEF" --no-deleteTempDir --log-io $@ 
-
