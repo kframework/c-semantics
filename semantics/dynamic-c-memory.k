@@ -699,7 +699,7 @@ module DYNAMIC-SEMANTICS-WRITING
           [structural]
           
      syntax K ::= lowestByte(Int, Type) [function]
-     rule lowestByte(I:Int, T:KResult) => piece(I:Int &Int byteMaskSet, numBitsPerByte)
+     rule lowestByte(I:Int, T:KResult) => piece(I &Int byteMaskSet, numBitsPerByte)
           when hasIntegerType(T:KResult) 
           [structural]
      

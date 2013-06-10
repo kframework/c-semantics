@@ -32,27 +32,31 @@ module COMPAT-SYNTAX
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
 
      syntax Bool ::= "all" "(" List "," KLabel ")" [function]
-     rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) 
-     rule all(., _) => true 
 
      syntax Bool ::= "allk" "(" KList "," KLabel ")" [function]
-     rule allk((K:K,, L:KList), Lbl:KLabel) => Lbl(K) andBool allk(L, Lbl) 
-     rule allk(.KList, _) => true 
+
+     syntax Bits ::= right:
+                    "~Bits" Bits        [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
+                    > left:
+                    Bits "/Bits" Bits   [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
+                    > left:
+                    Bits "&Bits" Bits   [function, left, latex({#1}\mathrel{\&_{\scriptstyle\it Bits}}{#2})]
+                    > left:
+                    Bits "xorBits" Bits [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
+                    > left:
+                    Bits "|Bits" Bits   [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
 endmodule
 
 module COMMON-INCOMING-MODULES
      imports K
      imports C-SYNTAX 
      imports C-CONFIGURATION 
-     // TODO(chathhorn) ??
-     //imports K-CONTEXTS 
-     
 endmodule
 
 module COMMON-SEMANTIC-SYNTAX
      imports COMMON-INCOMING-MODULES 
      
-     syntax BaseValue ::= Int | Float | Bits
+     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
 

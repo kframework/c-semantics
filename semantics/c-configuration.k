@@ -119,15 +119,15 @@ module C-CONFIGURATION
 
 <br/>
 
-// chathhorn
-<callStackFrame>
+// TODO(chathhorn): I'm not sure what to do with these. Also, multiplicity...?
+<callStackFrame multiplicity="*">
      <continuation> .K </continuation>
      <stackCurrentFunction> .K </stackCurrentFunction>
      <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
      <stackControl> .Bag </stackControl>
 </callStackFrame>
 
-<threadState>
+<threadState multiplicity="*">
      <threadContinuation> .K </threadContinuation>
      <savedThreadLocal> .Bag </savedThreadLocal>
 </threadState>

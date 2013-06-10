@@ -15,21 +15,9 @@ module COMPAT
      rule lengthKList (K:K,, Kl:KList) => 1 +Int lengthKList Kl
      rule lengthKList .KList => 0
 
-     // rule K:K in (BagItem(K:K) _:Bag) => true
-     // rule K1:K in (BagItem(K2:K) B:Bag) => K1 in B
-     //       when K1 =/=K K2
-     // rule _ in .Bag => false
-
-     // rule BagItem(K:K) in B:Bag => K in B
-
      rule BagItem(K) in B:Bag => K #inBag B ==K true 
      rule K #inBag BagItem(K) _:Bag => true
 
-     // eq eraseKLabel(L, L(Ks)) = eraseKLabel(L,Ks) .
-     // eq eraseKLabel(L,L'(Ks)) = L'(eraseKLabel(L,Ks)) [owise] .
-     // eq eraseKLabel(L, (NeKs1,,NeKs2)) = eraseKLabel(L, NeKs1),,eraseKLabel(L, NeKs2) .
-     // eq eraseKLabel(L,.List{K}) = .List{K} .
-     // eq eraseKLabel(L,.) = . .
      rule eraseKLabel(L, L(Ks)) => eraseKLabel(L, Ks)
      rule eraseKLabel(L, L'(Ks)) => L'(eraseKLabel(L, Ks))
           when L =/=KLabel L'
@@ -66,13 +54,17 @@ module COMPAT
      rule <k> toKRList'(.KList) => .K ...</k>
      rule <k> toRVList'(.KList) => .K ...</k>
 
+     rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) 
+     rule all(., _) => true 
+
+     rule allk((K:K,, L:KList), Lbl:KLabel) => Lbl(K) andBool allk(L, Lbl) 
+     rule allk(.KList, _) => true 
+
 endmodule
 
 module COMMON-SEMANTICS-HELPERS-INCLUDE
      imports COMMON-NOHELPER-INCLUDE
-     // require maudeLib/common-c-builtins
-     // imports #COMMON-SEMANTICS-HELPERS-BUILTINS
-     // op _bit::_ : K K -> K [function hook(#COMMON-SEMANTICS-HELPERS-BUILTINS:_bitList_)] .
+
      syntax Bits ::= Bits "bit::" Bits
 endmodule
 
@@ -111,30 +103,13 @@ module COMMON-SEMANTICS-HELPERS-MISC
           // TODO(chathhorn): silly sort check
           when (I <=Int 0) orBool (I >Int 0)
 
-     // chathhorn
-     // rule loc(N:SymBase, M:Int, 0) <Int loc(N, M', 0) => true
-     //      when M:Int <Int M':Int
-     //      [structural]
-     // rule loc(N:SymBase, M:Int, 0) <=Int loc(N, M', 0) => true
-     //      when M:Int <=Int M':Int
-     //      [structural]
-     // rule loc(N:SymBase, M:Int, 0) >Int loc(N, M', 0) => true
-     //      when M:Int >Int M':Int
-     //      [structural]
-     // rule loc(N:SymBase, M:Int, 0) >=Int loc(N, M', 0) => true
-     //      when M:Int >=Int M':Int
-     //      [structural]
-     
      syntax K ::= simplifyTruth(K) [function]
      rule simplifyTruth(K:K) => K:K != tv(0, t(.Set, int))
      
      syntax Bool ::= isNotTruthValue(Value) [function]
      rule isNotTruthValue(tv(V:K, t(_, T:K))) 
           => T:K =/=K int
-          orBool (
-               V:K =/=K 0
-               andBool V:K =/=K 1 
-          )
+          orBool ( V:K =/=K 0 andBool V:K =/=K 1 )
           [structural]
      
      syntax K ::= getIdOfDeclaration(K) [function]
@@ -334,18 +309,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
      rule toUpperCase("") => ""
           
-     // rule toUpperCase(C:Char)
-     //   => C:Char
-     //   when asciiString(C:Char) <Int asciiString("a")
-     //   orBool asciiString(C:Char) >Int asciiString("z")
-     //   [structural]
-     // rule toUpperCase(C:Char)
-     //   => charString(absInt(asciiString(C:Char) -Int Difference))
-     //   when asciiString(C:Char) >=Int asciiString("a")
-     //   andBool asciiString(C:Char) <=Int asciiString("z")
-     //   where Difference = (asciiString("a") -Int asciiString("A"))
-     //   [structural]
-          
      // getString returns the string without the null terminator
      syntax K ::= "getString" "(" K ")"
      syntax K ::= "getString-aux" "(" SymLoc "," String ")"
@@ -361,7 +324,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           
      rule [getString]:
           <k> tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
-               => getString-aux(Loc, S +String charString(N))
+               => getString-aux(Loc, S +String #charString(N))
           ...</k>
           when N =/=Int 0
           [structural]
@@ -429,15 +392,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when N:Int <Int N':Int
           [structural]
 
-     // Note: it only makes sense to memo this if the sets are just used to represent categories
-     // rule S:Set SetItem(K:K) contains SetItem(K:K) => true
-     //      [structural]
-     // rule S:Set SetItem(K1:K) contains SetItem(K2:K) => S contains SetItem(K2)
-     //      when K1 =/=K K2
-     //      [structural]
-     // rule .Set contains _ => false
-     //      [structural]
-
      rule hasIntegerType(T:Type) 
           => (hasUnsignedIntegerType(T) orBool hasSignedIntegerType(T))
           [structural]
@@ -445,7 +399,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule hasUnsignedIntegerType(t(_, T:K)) => true
           when (T in unsignedIntegerTypes)
           [structural]
-     // TODO(chathhorn): hack to make this "function" more total.
      rule hasUnsignedIntegerType(t(_, T:K)) => false
           when (T in signedIntegerTypes)
           [structural]
@@ -464,7 +417,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule hasSignedIntegerType(t(_, T:K)) => true
           when (T in signedIntegerTypes)
           [structural]
-     // TODO(chathhorn): hack to make this "function" more total.
      rule hasSignedIntegerType(t(_, T:K)) => false
           when (T in unsignedIntegerTypes)
           [structural]
@@ -495,12 +447,10 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when hasSignedIntegerType(T)
           [structural]
           
-          
      rule NullPointerConstant => 0
      
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
-          => piece((N:Int <<Int Len':Int) |Int N':Int, Len:Int +Int Len':Int)
-          when N:Int >=Int 0 andBool N':Int >=Int 0 
+          => piece((N <<Int Len') |Int N', Len +Int Len')
           [structural, anywhere]
      rule piece(0, 0) bit:: N:Bits => N
           [structural, anywhere]
@@ -595,15 +545,12 @@ module COMMON-C-BITSIZE
           <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural]
           
-     // rule K2Int(N:Int) => N:Int
-
      rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N:Int
      rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T:KResult
 
      rule toString(Identifier(S:String)) => S:String
      rule toString(S:String) => S:String
      rule toString(Num:Int) => Int2String(Num:Int)
-     // rule Int2String(sym(N:Int)) => "sym(" +String Int2String(N:Int) +String ")"
      
      rule klistToK((K:K,, L:KList)) => K:K ~> klistToK(L:KList)
      rule klistToK(.KList) => .K

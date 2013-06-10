@@ -1085,7 +1085,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%c]:
           <k> formatter-aux(_) ...</k>
           <formatArg> C:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(charString(((C:Int %Int 256) +Int 256) %Int 256)) </formatResult>
+          <formatResult>... .List => ListItem(#charString(((C:Int %Int 256) +Int 256) %Int 256)) </formatResult>
           <formatState> "%c" => "reset" </formatState>
           [structural]
           

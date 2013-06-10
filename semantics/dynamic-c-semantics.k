@@ -13,8 +13,7 @@ require "dynamic-c-declarations.k"
 // require "dynamic-c-ltl.k"
 
 // this must be below the others
-// TODO(chathhorn): xml, elided
-//require "dynamic-c-errors.k"
+require "dynamic-c-errors.k"
 
 module DYNAMIC-SEMANTIC-SYNTAX
      imports COMMON-INCLUDE
@@ -39,7 +38,7 @@ module DYNAMIC-C-SEMANTICS-MISC
      rule [writeToFD-char]:
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
           <fid> FD:Int </fid>
-          <buff> S:String => S:String +String charString(N:Int %Int 256) </buff>
+          <buff> S:String => S:String +String #charString(N:Int %Int 256) </buff>
           [observable]
      rule [writeToFD-string]:
           <k> writeToFD(FD:Int, S':String) => .K ...</k>
@@ -55,7 +54,7 @@ module DYNAMIC-C-SEMANTICS-MISC
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD:Int </fid>
-          <buff> "" => "" +String charString(#fReadByte(FD:Int)) </buff>
+          <buff> "" => "" +String #charString(#fReadByte(FD:Int)) </buff>
           [structural]
      rule [readFromFD-eof]:
           <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
@@ -63,11 +62,9 @@ module DYNAMIC-C-SEMANTICS-MISC
           <buff> #EOF </buff>
           [observable]
 
-// TODO(chathhorn): eof, elided
-//   rule [make-eof]:
-//        "" +String charString(#EOF)
-//             => #EOF
-//        [structural, anywhere]
+     rule [make-eof]:
+          "" +String #charString(#EOF) => #EOF
+          [structural, anywhere]
           
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-flush" "(" Int ")"
@@ -132,8 +129,7 @@ module DYNAMIC-C-SEMANTICS
      
      imports DYNAMIC-C-SEMANTICS-MISC
      imports DYNAMIC-C-EXPRESSIONS
-      // TODO(chathhorn): xml, elided
-     //imports DYNAMIC-C-ERRORS
+     imports DYNAMIC-C-ERRORS
      imports DYNAMIC-C-TYPING 
      imports DYNAMIC-C-DECLARATIONS 
      imports DYNAMIC-C-MEMORY 
