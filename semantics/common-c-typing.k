@@ -335,7 +335,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 
      syntax K ::= "BitFieldType" "(" K "," K ")" [strict] 
      
-     rule <k> Specifier(klist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
+     rule <k> Specifier(krlist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
           [structural]
           
      rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
@@ -355,10 +355,10 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural, anywhere]
      // fixme I'm assuming functiontype is always below a prototype in the ast
      rule FunctionType(T:KResult) => T:KResult [structural, anywhere]
-     rule Prototype(T:KResult, klist(L:KList), false) 
+     rule Prototype(T:KResult, krlist(L:KList), false) 
           => pushTypeDown(T:KResult, makeFunctionType(L:KList)) 
           [structural, anywhere]
-     rule Prototype(T:KResult, klist(L:KList), true) 
+     rule Prototype(T:KResult, krlist(L:KList), true) 
           => pushTypeDown(T:KResult, makeFunctionType((L:KList,, t(.Set, variadic)))) 
           [structural, anywhere]
      

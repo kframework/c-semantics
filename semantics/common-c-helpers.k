@@ -35,7 +35,7 @@ module COMPAT
      syntax KResult ::= "krlist" "(" KList ")"
      syntax KResult ::= "rvlist" "(" KList ")"
 
-     rule <k> klist(L:KList) => toKRList(L) ...</k>
+     rule klist(L:KList) => toKRList(L) 
 
      context toKRList'(_,, HOLE,, _)
      context toRVList'(_,, (HOLE => reval(HOLE)),, _)
@@ -43,12 +43,12 @@ module COMPAT
      rule <k> toKRList(L:KList) => toKRList'(L) ~> krlist(.KList) ...</k>
      rule <k> toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList) ...</k>
 
-     rule <k> toKRList'(_,, (V:KResult => .KList),, _) 
-          ~> krlist(_,, (.KList => V),, _) 
+     rule <k> toKRList'((V:KResult => .KList),, _) 
+          ~> krlist((.KList => V),, _) 
           ...</k>
 
-     rule <k> toRVList'(_,, (V:KResult => .KList),, _) 
-          ~> rvlist(_,, (.KList => V),, _) 
+     rule <k> toRVList'((V:KResult => .KList),, _) 
+          ~> rvlist((.KList => V),, _) 
           ...</k>
 
      rule <k> toKRList'(.KList) => .K ...</k>
@@ -154,21 +154,21 @@ module COMMON-SEMANTICS-HELPERS-MISC
           => piece(bitRange(N, From, To'), Len +Int Len')
           when (Len +Int Len' <=Int numBitsPerByte)
                andBool (SuccTo ==Int To +Int 1)
-          [structural]
+          [structural, anywhere]
      
      rule piece(N:Bits bit:: N':Bits, Len:Int) bit:: piece(N'':Bits, Len':Int)
           => piece((N bit:: N') bit:: piece(N'', Len'), Len +Int Len')
-          [structural]
+          [structural, anywhere]
 
      rule piece(N'':Bits, Len':Int) bit:: piece(N:Bits bit:: N':Bits, Len:Int)
           => piece((piece(N'', Len') bit:: N) bit:: N', Len +Int Len')
-          [structural]
+          [structural, anywhere]
 
      rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos:Int)
           => bitRange(N, absInt(Pos -Int Len), absInt(Pos -Int Len))
           when (Pos >Int 0)
                andBool (Pos -Int Len >=Int 0)
-          [structural]
+          [structural, anywhere]
           
      rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N:Bits, 1)
      rule bitRange(piece(N, 1), 0, 0) => piece(N, 1)
