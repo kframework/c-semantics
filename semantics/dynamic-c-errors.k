@@ -76,15 +76,17 @@ module DYNAMIC-C-ERRORS
           (.Bag => <errorCell> Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </errorCell>)
           [structural, large]
 
-// TODO(chathhorn): celllabel, elided
-//   rule [err00005]:
-//        <k> (. => ERROR) ~> extractByteFromMem(loc(Block:SymBase, _:Int, _:Int)) ...</k>
-//        <memory> M:Bag </memory>
-//        <br/>
-//        (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-//        // when notBool $hasMapping(M:Map, Block)
-//        when notBool Block in gatherInnerCells(M:Bag, basePtr)
-//        [structural, large]
+// TODO(chathhorn): idk, elided
+//      rule [err00005]:
+//           <k> (. => ERROR) ~> extractByteFromMem(loc(Block:SymBase, _:Int, _:Int)) ...</k>
+// // TODO(chathhorn): (conversion to map)
+//           // <memory> M:Bag </memory>
+//           <br/>
+//           (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
+//           // when notBool Block in gatherInnerCells(M:Bag, basePtr)
+//           <mem> M:Map </mem>
+//           when notBool SetItem(Block) in keys (M:Map)
+//           [structural, large]
      
      rule [err00006]:
           <k> (. => ERROR) ~> joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</k>
@@ -93,15 +95,17 @@ module DYNAMIC-C-ERRORS
           when notBool isCharType(T:KResult)
           [structural, large]
           
-// TODO(chathhorn): celllabel, elided
-//   rule [err00007]:
-//        <k> (. => ERROR) ~> checkValidLoc-aux(loc(Block:SymBase, _:Int, _:Int)) ...</k>
-//        <memory> M:Bag </memory>
-//        <br/>
-//        (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-//        // when notBool $hasMapping(M:Bag, Block)
-//        when notBool Block in gatherInnerCells(M:Bag, basePtr)
-//        [structural, large]
+// TODO(chathhorn): (conversion to map)
+// TODO(chathhorn): idk, elided
+//      rule [err00007]:
+//           <k> (. => ERROR) ~> checkValidLoc-aux(loc(Block:SymBase, _:Int, _:Int)) ...</k>
+//           // <memory> M:Bag </memory>
+//           <br/>
+//           (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
+//           // when notBool Block in gatherInnerCells(M:Bag, basePtr)
+//           <mem> M:Map </mem>
+//           when notBool SetItem(Block) in (keys M:Map)
+//           [structural, large]
      
      rule [err00008]:
           <k> (. => ERROR) ~> concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</k>
@@ -118,10 +122,11 @@ module DYNAMIC-C-ERRORS
           
      rule [err00010]:
           <k> (. => ERROR) ~> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, _:Int)) ...</k>
-          <object>...
-               <basePtr> Base:SymBase </basePtr>
-               <oLength> Len:Int </oLength>
-          ...</object>
+          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
+          // <object>...
+          //      <basePtr> Base:SymBase </basePtr>
+          //      <oLength> Len:Int </oLength>
+          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
           when Offset:Int >Int Len:Int
@@ -201,10 +206,11 @@ module DYNAMIC-C-ERRORS
           
      rule [err00020]:
           <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) ...</k>
-          <object>...
-               <basePtr> Base:SymBase </basePtr>
-               <oLength> Len:Int </oLength>
-          ...</object>
+          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
+          // <object>...
+          //      <basePtr> Base:SymBase </basePtr>
+          //      <oLength> Len:Int </oLength>
+          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
           when notBool Offset:Int <Int Len:Int
@@ -395,9 +401,9 @@ module DYNAMIC-C-ERRORS
           <k> (. => ERROR) ~> types((T1:KResult,, T2:KResult))  ...</k>
           <br/>
           (.Bag => <errorCell> Error("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.") </errorCell>)
-          when T1:KResult =/=K T2:KResult
-          andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
-          andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
+          when (T1:KResult =/=K T2:KResult)
+               andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
+               andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
           [structural, large]
           
      rule [err00044]:
@@ -409,10 +415,11 @@ module DYNAMIC-C-ERRORS
           
      rule [err00045]:
           <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _:Int, _:Int), V:K)  ...</k>
-          <object>...
-               <basePtr> Base </basePtr>
-               <properties>... mconst ...</properties>
-          ...</object>
+          <mem>... Base |-> memblock(_, (_ mconst), _) ...</mem>
+          // <object>...
+          //      <basePtr> Base </basePtr>
+          //      <properties>... mconst ...</properties>
+          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
           [structural, large]
@@ -422,7 +429,7 @@ module DYNAMIC-C-ERRORS
           <br/>
           (.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
           when isFloatType(T:KResult)
-          andBool N:Int >=Int 0
+               andBool (N:Int >=Int 0)
           [structural, large]
           
      rule [err00047]:

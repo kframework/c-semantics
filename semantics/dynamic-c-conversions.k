@@ -279,9 +279,9 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
                => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
           ...</k>
           when isArithBinConversionOp(L:KLabel)
-          andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
-          andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
-          andBool (T:KResult =/=K T':KResult)
+               andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
+               andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
+               andBool (T:KResult =/=K T':KResult)
           [structural]
 
      /*@ 
@@ -437,8 +437,10 @@ module DYNAMIC-SEMANTICS-CONVERSION
      
      //- switch assumes casts can happen anywhere
      rule cast(T:KResult, tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
+          [anywhere]
           
      rule cast(t(S:Set, T:K), tv(L:KList, t(_, T:K))) => tv(L:KList, t(S:Set, T:K))
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if
@@ -450,10 +452,12 @@ module DYNAMIC-SEMANTICS-CONVERSION
           cast(t(S:Set, bool), tv(I:Int, T:KResult))
                => #if I:Int ==Int 0 #then tv(0, t(S:Set, bool)) #else tv(1, t(S:Set, bool)) #fi
           when hasIntegerType(T:KResult)
+          [anywhere]
      rule [cast-non-integer-to-bool]:
           cast(t(S:Set, bool), tv(L:KList, T:KResult)) 
                => cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:KList, T:KResult))
           when notBool hasIntegerType(T:KResult)
+          [anywhere]
      
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{1}}}{
@@ -468,6 +472,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool hasIntegerType(T':KResult)
                andBool hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
@@ -482,31 +487,37 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool (I:Int <Int min(T:KResult))
                andBool hasIntegerType(T':KResult)
                andBool hasUnsignedIntegerType(innerType(T:KResult))
+          [anywhere]
      rule [cast-uchar-of-small]:
           cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-char)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-usint-of-small]:
           cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, unsigned-short-int), tv(I:Int +Int max(t(S:Set, unsigned-short-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-short-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-uint-of-small]:
           cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, unsigned-int), tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-ulong-of-small]:
           cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, unsigned-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-long-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-ullong-of-small]:
           cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, unsigned-long-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-long-long-int)))
                andBool hasIntegerType(T':KResult)          
+          [anywhere]
      
      rule [cast-ubitfield-of-big]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
@@ -515,31 +526,37 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool (I:Int >Int max(T:KResult))
                andBool hasIntegerType(T':KResult)
                andBool hasUnsignedIntegerType(innerType(T:KResult))
+          [anywhere]
      rule [cast-uchar-of-big]:
           cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
                => tv(I:Int %Int (max(t(S:Set, unsigned-char)) +Int 1), t(S:Set, unsigned-char))
           when (I:Int >Int max(t(S:Set, unsigned-char)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-usint-of-big]:
           cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
                => tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1), t(S:Set, unsigned-short-int))
           when (I:Int >Int max(t(S:Set, unsigned-short-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-uint-of-big]:
           cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
                => tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1), t(S:Set, unsigned-int))
           when (I:Int >Int max(t(S:Set, unsigned-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-ulong-of-big]:
           cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
                => tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1), t(S:Set, unsigned-long-int))
           when (I:Int >Int max(t(S:Set, unsigned-long-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-ullong-of-big]:
           cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
                => tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1), t(S:Set, unsigned-long-long-int))
           when (I:Int >Int max(t(S:Set, unsigned-long-long-int)))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{3}}}{
      Otherwise, the new type is signed and the value cannot be represented in
@@ -554,31 +571,37 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool (absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult))))
                andBool hasIntegerType(T':KResult)
                andBool hasSignedIntegerType(innerType(T:KResult))
+          [anywhere]
      rule [cast-schar-of-huge]:
           cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-sint-of-huge]:
           cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, short-int)))))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-int-of-huge]:
           cast(t(S:Set, int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, int)))))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-long-of-huge]:
           cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
                => cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int)))))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      rule [cast-llong-of-huge]:
           cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
                => cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))))
                andBool hasIntegerType(T':KResult)
+          [anywhere]
           
      rule [cast-signed-of-small]:
           cast(T:KResult, tv(I:Int, T':KResult))
@@ -588,7 +611,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool hasSignedIntegerType(T:KResult)
                andBool hasIntegerType(T':KResult)
                andBool notBool isBoolType (T:KResult)
-          [structural] 
+          [structural, anywhere] 
      rule [cast-signed-of-big]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
                => tv(I:Int -Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
@@ -597,6 +620,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool hasSignedIntegerType(T:KResult)
                andBool hasIntegerType(T':KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
 
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
@@ -604,6 +628,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
           when hasIntegerType(T:KResult)
                andBool hasIntegerType(T':KResult)
+          [anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
@@ -616,14 +641,17 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
      rule cast(T:KResult, tv(V:Float, t(S:Set, float))) 
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
      rule cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
                => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
      When a value of integer type is converted to a real floating type, if the
@@ -641,14 +669,17 @@ module DYNAMIC-SEMANTICS-CONVERSION
           cast(t(S:Set, float), tv(I:Int, T:KResult)) 
                => tv(Int2Float(I:Int), t(S:Set, float))
           when hasIntegerType(T:KResult)
+          [anywhere]
      rule [cast-int-to-double]:
           cast(t(S:Set, double), tv(I:Int, T:KResult)) 
                => tv(Int2Float(I:Int), t(S:Set, double))
           when hasIntegerType(T:KResult)
+          [anywhere]
      rule [cast-int-to-long-double]:
           cast(t(S:Set, long-double), tv(I:Int, T:KResult)) 
                => tv(Int2Float(I:Int), t(S:Set, long-double))
           when hasIntegerType(T:KResult)
+          [anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
      When a value of real floating type is converted to a real floating type,
@@ -667,6 +698,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => tv(F:Float, t(S:Set, T':K))
           when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
                andBool (T':K ==K float orBool T':K ==K double orBool T':K ==K long-double)
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
      The (nonexistent) value of a void expression (an expression that has type
@@ -677,6 +709,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      evaluated for its side effects.)
      }*/     
      rule cast(t(_, void), _:KResult) => skipval
+          [anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object
@@ -699,6 +732,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => tv(NullPointer, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
                andBool N:Int ==K NullPointerConstant
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
      Conversion of a null pointer to another pointer type yields a null pointer
@@ -716,6 +750,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => tv(N:Int, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
                andBool N:Int =/=K NullPointerConstant
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously
@@ -728,6 +763,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
                => tv(N:Int, T:KResult)
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
+          [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
      A pointer to an object type may be converted to a pointer to a different
@@ -752,6 +788,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      // needs to handle alignment
      rule cast(t(S:Set, pointerType(T:KResult)), tv(Loc:SymLoc, t(_, pointerType(_)))) 
                => tv(Loc:SymLoc, t(S:Set, pointerType(T:KResult)))
+          [anywhere]
 endmodule
 
 module DYNAMIC-SEMANTICS-CONVERSIONS-MISC

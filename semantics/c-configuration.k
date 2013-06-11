@@ -3,20 +3,24 @@ require "c-syntax.k"
 module C-CONFIGURATION
      imports C-SYNTAX
 
+     syntax K ::= memblock(Int, Bag, Map)
+
      configuration 
 <T>
       <gotoMap color="lightgray"> .Map </gotoMap>
       <genv color="lightgray"> .Map </genv>
       <gtypes color="lightgray"> .Map </gtypes>
       <gstructs color="lightgray"> .Map </gstructs>
-      <memory color="red" type="Map">
-            <object multiplicity="*">
-                        <basePtr type="Key"> 0 </basePtr>
-                        <oLength> 0 </oLength>
-                        <properties> .Bag </properties>
-                        <bytes> .Map </bytes>
-            </object>
-      </memory>
+
+      <mem> .Map </mem>
+//      <memory color="red" type="Map">
+//            <object multiplicity="*">
+//                        <basePtr type="Key"> 0 </basePtr>
+//                        <oLength> 0 </oLength>
+//                        <properties> .Bag </properties>
+//                        <bytes> .Map </bytes>
+//            </object>
+//      </memory>
       <notWritable> .Map </notWritable>
       <functions color="lightgray"> .Map </functions>
       <freshNat color="black"> 0 </freshNat>

@@ -127,7 +127,7 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
      
-     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" // original number, from, to inclusive
+     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" [function] // original number, from, to inclusive
      
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
      

@@ -1299,14 +1299,18 @@ module DYNAMIC-SEMANTICS-EQUALITY
           <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) == tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
                => tv(0, t(.Set, int))
           ...</k>
-          <object>...
-               <basePtr> Base </basePtr>
-               <oLength> Len:Int </oLength>
-          ...</object>
-          <object>...
-               <basePtr> Base' </basePtr>
-               <oLength> Len':Int </oLength>
-          ...</object>
+          <mem> ...
+               Base |-> memblock(Len:Int, _, _)
+               Base' |-> memblock(Len':Int, _, _)
+          ...</mem>
+          // <object>...
+          //      <basePtr> Base </basePtr>
+          //      <oLength> Len:Int </oLength>
+          // ...</object>
+          // <object>...
+          //      <basePtr> Base' </basePtr>
+          //      <oLength> Len':Int </oLength>
+          // ...</object>
           when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
                andBool (Base =/=K Base')
                andBool (Offset:Int <Int Len:Int)
@@ -1316,14 +1320,18 @@ module DYNAMIC-SEMANTICS-EQUALITY
           <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) != tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
                => tv(1, t(.Set, int))
           ...</k>
-          <object>...
-               <basePtr> Base </basePtr>
-               <oLength> Len:Int </oLength>
-          ...</object>
-          <object>...
-               <basePtr> Base' </basePtr>
-               <oLength> Len':Int </oLength>
-          ...</object>
+          <mem> ...
+               Base |-> memblock(Len:Int, _, _)
+               Base' |-> memblock(Len':Int, _, _)
+          ...</mem>
+          // <object>...
+          //      <basePtr> Base </basePtr>
+          //      <oLength> Len:Int </oLength>
+          // ...</object>
+          // <object>...
+          //      <basePtr> Base' </basePtr>
+          //      <oLength> Len':Int </oLength>
+          // ...</object>
           when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
                andBool (Base =/=K Base')
                andBool (Offset:Int <Int Len:Int)
@@ -1655,11 +1663,16 @@ module DYNAMIC-SEMANTICS-SEQUENCING
      operand. Then the right operand is evaluated; the result has its type and
      value.
      }*/
-     rule <k> Comma(klist((V:KResult,, K':K,, L:KList))) 
+
+     // TODO(chathhorn): ugly custom heating/cooling (this and Call).
+     rule Comma(klist(L:KList)) => toRVList(L) ~> Comma(.K)
+     rule R:KResult ~> Comma(.K) => Comma(R) 
+
+     rule <k> Comma(rvlist((V:KResult,, K':K,, L:KList))) 
           => sequencePoint
-          ~> Comma(klist((K':K,, L:KList))) ...</k>
+          ~> Comma(rvlist((K':K,, L:KList))) ...</k>
           [structural]
-     rule <k> Comma(klist(K:K)) => K:K ...</k>
+     rule <k> Comma(rvlist(K:K)) => K:K ...</k>
           [structural]
 endmodule
 

@@ -159,9 +159,9 @@ and spec_elem =
 /*
      and specifier = spec_elem list
 */
-     syntax Specifier ::= "Specifier" "(" K ")" [klabel('Specifier)]
-      syntax "Specifier" -/- [a-zA-Z\:]
-     context Specifier(klist((_:KList,, HOLE,, _:KList)))
+     syntax Specifier ::= "Specifier" "(" K ")" [strict, klabel('Specifier)]
+     syntax "Specifier" -/- [a-zA-Z\:]
+     //context Specifier(klist((_:KList,, HOLE,, _:KList)))
      
 /*
 and decl_type =
@@ -188,8 +188,8 @@ and decl_type =
      syntax DeclType ::= "ArrayType" "(" K "," K "," K ")" [klabel('ArrayType), strict(1)] // third argument should also be strict, but not doing anything with [strict 5] yet
      context ArrayType(_, (HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
      syntax DeclType ::= "PointerType" "(" K ")" [klabel('PointerType), strict]
-     syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [klabel('Prototype), strict(1)] // K, List, Bool
-     context Prototype(_, klist((_:KList,, HOLE,, _:KList)), _:Bool)
+     syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")" [klabel('Prototype), strict(1, 2)] // K, List, Bool
+     //context Prototype(_, klist((_:KList,, HOLE,, _:KList)), _:Bool)
      
      syntax K ::= "NotVariadic"
      syntax K ::= "Variadic"
@@ -198,8 +198,8 @@ and decl_type =
 /*
 and name_group = specifier * name list
 */
-     syntax NameGroup ::= "NameGroup" "(" K "," K ")" [klabel('NameGroup), strict(1)] // K, List
-     context NameGroup(_, klist((_:KList,, HOLE,, _:KList)))
+     syntax NameGroup ::= "NameGroup" "(" K "," K ")" [klabel('NameGroup), strict] // K, List
+     //context NameGroup(_, klist((_:KList,, HOLE,, _:KList)))
      
 /*
      (* The optional expression is the bitfield *)
@@ -546,7 +546,7 @@ and unary_operator =
      | COMMA of expression list
 */
      syntax Expression ::= "Comma" "(" K ")" [klabel('Comma)] // List
-     context Comma(klist(((HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
+     //context Comma(klist(((HOLE => reval(HOLE)),, _:KList))) // TODO(chathhorn) [ndheat]
 /*
      | CONSTANT of constant
      | PAREN of expression

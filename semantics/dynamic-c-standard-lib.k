@@ -2,8 +2,6 @@ require "dynamic-c-semantics.k"
 
 module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      imports DYNAMIC-INCLUDE 
-     // imports #SOCKET
-     // imports #TCP-INTERFACE
      
      syntax C ::= "vararg" "(" K ")" [hybrid, strict]
      syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
@@ -1363,16 +1361,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      // Threads
      ////////////////////////////--
      // ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Int
-      syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" | "thrd-busy" | "thrd-nomem"
+     syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, t(.Set, int)) [macro]
      rule thrd-error => tv(1, t(.Set, int)) [macro]
      rule thrd-timeout => tv(2, t(.Set, int)) [macro]
      rule thrd-busy => tv(3, t(.Set, int)) [macro]
      rule thrd-nomem => tv(4, t(.Set, int)) [macro]
      
-     // ops threadRunning threadClosed : -> K
       syntax K ::= "threadRunning"
-     // ops threadJoining : Int -> K
      
      //syntax Int ::= "threadId" "(" Int "," Int ")" // parent, new
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
@@ -1489,7 +1485,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           ...</k>
           <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
           when notBool (Loc in keys M:Map)
-          andBool (Type ==Int cfg:mtxPlain) // only handling plain mutexes for now
+               andBool (Type ==Int cfg:mtxPlain) // only handling plain mutexes for now
           [structural]
      rule [mtx-lock]:
           <k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
