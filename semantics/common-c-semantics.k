@@ -23,8 +23,6 @@ module COMPAT-SYNTAX
      syntax Bool ::= BagItem "in" Bag [function]
                | K "#inBag" Bag //TODO: function?!?
 
-     syntax K ::= PAUSE(Bool)
-
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
 
      // TODO(chathhorn): hackish, rename at least
@@ -45,6 +43,13 @@ module COMPAT-SYNTAX
                     Bits "xorBits" Bits [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
                     > left:
                     Bits "|Bits" Bits   [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
+
+     syntax Int ::= "String2Rat" "(" String "," Int ")"
+          [function, klabel('String2Rat), hook(#CONVERSION:string2Base)]
+     syntax String ::= "Rat2String" "(" Int "," Int ")"
+          [function, klabel('Rat2String), hook(#CONVERSION:base2String)]
+
+     syntax Ptr ::= Int | SymLoc
 endmodule
 
 module COMMON-INCOMING-MODULES
@@ -75,7 +80,7 @@ module COMMON-SEMANTIC-SYNTAX
      // op 'isTypeResult_ : K -> Bool 
      syntax Set ::= "setOfTypes" [function]
      
-     syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")"
+     syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)] // having to put this out here so errors can see it
      syntax K ::= "initFunction" "(" K "," K ")" [strict]
      syntax K ::= "populateFromGlobal"
@@ -125,9 +130,11 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax String ::= "toString" "(" K ")" [function]
      
+     syntax Type ::= "type" "(" K ")"
+
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
      
-     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" [function] // original number, from, to inclusive
+     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" // original number, from, to inclusive
      
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
      
@@ -157,7 +164,6 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "value" "(" K ")"
           
      syntax K ::= "sizeofLocation" "(" SymLoc ")"
-     syntax Type ::= "type" "(" K ")"
      
      syntax K ::= "flush" "(" Int ")"
      
@@ -209,8 +215,6 @@ module COMMON-SEMANTIC-SYNTAX
      syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" | "unsigned-long-int" | "unsigned-long-long-int"
      syntax SimpleType ::= "no-type"
      
-     syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
-     
      syntax Bool ::= "isBasicType" "(" K ")" [function]
      
      // Composite types
@@ -240,8 +244,6 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "bitSizeofType" "(" K ")" [strict] // needs to be heated to top of K for struct and union types
      syntax K ::= "byteSizeofType" "(" K ")" [strict] 
      syntax Int ::= "bitsToBytes" "(" Int ")" [function]
-     syntax K ::= "l" "(" KLabel ")"
-     syntax "l" -/- [a-zA-Z]
      // metadata "wrapper=(builtin)"
      // syntax Bool ::= Set "contains" SetItem [function]
 

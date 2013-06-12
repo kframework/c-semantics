@@ -118,9 +118,8 @@ module DYNAMIC-SEMANTICS-LITERALS
                orBool (lengthString(S:String) ==Int 1)
           
      syntax K ::= "hexOrOctalConstant" "(" K ")"
-      // TODO(chathhorn): hex, elided
-     // rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S:String), 16)) [structural, anywhere]
-     // rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N:Int, 10), 8)) [structural, anywhere]
+     rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S), 16)) [structural, anywhere]
+     rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N, 10), 8)) [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
      
@@ -586,7 +585,7 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/  
      rule [post-increment-start]:
-          <k> lv(Loc:SymLoc, T:Type) ++
+          <k> lval(Loc:SymLoc, T:Type) ++
                => postInc(Loc, read(Loc, T), T)
           ...</k>
           [structural]
@@ -603,7 +602,7 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
      the value 1 of the appropriate type is subtracted from it).
      }*/  
      rule [post-decrement-start]:
-          <k> lv(Loc:SymLoc, T:Type) --
+          <k> lval(Loc:SymLoc, T:Type) --
                => postDec(Loc, read(Loc, T), T)
           ...</k>
           [structural]
@@ -1205,23 +1204,21 @@ module DYNAMIC-SEMANTICS-EQUALITY
      }*/
      
      rule tv(I1:Int, T:KResult) == tv(I2:Int, T:KResult)
-          => makeTruth(I1:Int ==K I2:Int)
-          when (
-               isPromoted(T:KResult)
-               orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
-          ) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
+          => makeTruth(I1 ==K I2)
+          when isPromoted(T:KResult) 
+               orBool isPointerType(T:KResult)
           [structural]
      rule tv(I1:Int, T:KResult) != tv(I2:Int, T:KResult)
-          => makeTruth(I1:Int =/=K I2:Int)
-          when (
-               isPromoted(T:KResult)
-               orBool (isPointerType(T:KResult) andBool isConcreteNumber(I1:Int) andBool isConcreteNumber(I2:Int))
-          ) andBool notBool (isUnknown(I1:Int) orBool isUnknown(I2:Int))
+          => makeTruth(I1 =/=K I2)
+          when isPromoted(T:KResult) 
+               orBool isPointerType(T:KResult)
           [structural]
           
-     rule tv(F1:Float, T:KResult) == tv(F2:Float, T:KResult) => makeTruth(F1:Float ==Float F2:Float)
+     rule tv(F1:Float, T:KResult) == tv(F2:Float, T:KResult) 
+          => makeTruth(F1 ==Float F2)
           [structural]
-     rule tv(F1:Float, T:KResult) != tv(F2:Float, T:KResult) => makeTruth(F1:Float =/=Float F2:Float)
+     rule tv(F1:Float, T:KResult) != tv(F2:Float, T:KResult) 
+          => makeTruth(F1 =/=Float F2)
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{5--7}}}{
@@ -1245,37 +1242,37 @@ module DYNAMIC-SEMANTICS-EQUALITY
      an array of length one with the type of the object as its element type.
      }*/
      // if they're identical, we know for sure they are the same
-     rule tv(N:Int, T:KResult) == tv(N:Int, T':KResult)
+     rule tv(N:SymLoc, T:KResult) == tv(N:SymLoc, T':KResult)
           => tv(1, t(.Set, int))
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
-     rule tv(N:Int, T:KResult) != tv(N:Int, T':KResult)
+     rule tv(N:SymLoc, T:KResult) != tv(N:SymLoc, T':KResult)
           => tv(0, t(.Set, int))
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
      
      // if one of the pointers is null, it's also straightforward
-     rule tv(NullPointer, T:KResult) == tv(N:Int, T':KResult)
-          => makeTruth(NullPointer ==K N:Int)
+     rule tv(NullPointer, T:KResult) == tv(N:SymLoc, T':KResult)
+          => makeTruth(NullPointer ==K N)
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
-     rule tv(NullPointer, T:KResult) != tv(N:Int, T':KResult)
-          => makeTruth(NullPointer =/=K N:Int)
+     rule tv(NullPointer, T:KResult) != tv(N:SymLoc, T':KResult)
+          => makeTruth(NullPointer =/=K N)
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
-     rule tv(N:Int, T:KResult) == tv(NullPointer, T':KResult)
-          => makeTruth(NullPointer ==K N:Int)
+     rule tv(N:SymLoc, T:KResult) == tv(NullPointer, T':KResult)
+          => makeTruth(NullPointer ==K N)
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
-     rule tv(N:Int, T:KResult) != tv(NullPointer, T':KResult)
-          => makeTruth(NullPointer =/=K N:Int)
+     rule tv(N:SymLoc, T:KResult) != tv(NullPointer, T':KResult)
+          => makeTruth(NullPointer =/=K N)
           when isPointerType(T:KResult) 
-          andBool isPointerType(T':KResult)
+               andBool isPointerType(T':KResult)
           [structural]
           
      // otherwise, there are a number of cases.  
@@ -1344,28 +1341,28 @@ module DYNAMIC-SEMANTICS-EQUALITY
      // fixme there are further restrictions on pointers
      rule [equal-null-left]:
           (tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
-          when (isPromoted(T:KResult))
-               andBool (isPointerType(T':KResult))
-               andBool (N:Int ==K NullPointerConstant)
+          when isPromoted(T:KResult)
+               andBool isPointerType(T':KResult)
+               andBool (N ==K NullPointerConstant)
           [structural]
      rule [equal-null-right]:
           tv(_, T:KResult) == (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
           when isPointerType(T:KResult) 
                andBool isPromoted(T':KResult)
-               andBool N:Int ==K NullPointerConstant
+               andBool N ==K NullPointerConstant
           [structural]
      
      rule [nequal-null-left]: 
           (tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
           when isPromoted(T:KResult) 
                andBool isPointerType(T':KResult)
-               andBool N:Int ==K NullPointerConstant
+               andBool N ==K NullPointerConstant
           [structural]
      rule [nequal-null-right]: 
           tv(_, T:KResult) != (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
           when isPointerType(T:KResult) 
                andBool isPromoted(T':KResult)
-               andBool N:Int ==K NullPointerConstant
+               andBool N ==K NullPointerConstant
           [structural]
 endmodule
 
@@ -1593,7 +1590,7 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
           <k> lval(_, T:Type) := (tv(V:KList, T':KResult) 
                => cast(T, tv(V, T')))
           ...</k>
-          when T =/=K T':KResult
+          when T =/=K T'
           [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{3}}}{
      \broken{If the value being stored in an object is read from another object

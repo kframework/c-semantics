@@ -49,7 +49,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      rule [bind-coerce-array]:
           bind-aux(
                _
-               , L:KList
+               , _:KList
                , (typedDeclaration(
                         (t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult)))), X:Id
                ),, _:KList)
@@ -58,7 +58,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      rule [bind-coerce-incompleteArray]:
           bind-aux(
                _
-               , L:KList
+               , _:KList
                , (typedDeclaration(
                         (t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult)))), X:Id
                ),, _:KList)

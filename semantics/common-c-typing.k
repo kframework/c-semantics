@@ -711,21 +711,21 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule isTypeResult(t(_, T:K)) => true
           when l(getKLabel(T:K)) in setOfTypes
      rule isTypeResult(T:KResult) => true 
-            when isBasicType(T:KResult)
+          when isBasicType(T:KResult)
      rule isTypeResult(K:K) => false
           when getKLabel(K:K) =/=KLabel 't
      rule isTypeResult(t(S:Set, T:K)) => false
           when (notBool l(getKLabel(T:K)) in setOfTypes)
-          andBool (notBool isBasicType(t(S:Set, T:K)))
+               andBool (notBool isBasicType(t(S:Set, T:K)))
 
      rule isFloatType(t(_, float)) => true 
      rule isFloatType(t(_, double)) => true 
      rule isFloatType(t(_, long-double)) => true 
      rule isFloatType(t(_, T:K)) => false
           when (T:K =/=K float)
-          andBool (T:K =/=K double)
-          andBool (T:K =/=K long-double)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (T:K =/=K double)
+               andBool (T:K =/=K long-double)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isCharType-char]: isCharType(t(_, char)) => true 
      rule [isCharType-qualified]: isCharType(t(_, qualifiedType(T:KResult, _))) => isCharType(T:KResult) 
@@ -733,31 +733,31 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [isCharType-signed-char]: isCharType(t(_, signed-char)) => true 
      rule [isCharType-other]: isCharType(t(_, T:K)) => false
           when (T:K =/=K char)
-          andBool (T:K =/=K unsigned-char)
-          andBool (T:K =/=K signed-char)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (T:K =/=K unsigned-char)
+               andBool (T:K =/=K signed-char)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isWCharType-wchar]: isWCharType(t(_, T:K)) => true 
           when T:K ==K simpleType(cfg:wcharut)
           
      rule [isWCharType-other]: isWCharType(t(_, T:K)) => false
-          when T:K =/=K simpleType(cfg:wcharut)
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (T:K =/=K simpleType(cfg:wcharut))
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
           
      rule [isWCharType-qualified]: isWCharType(t(_, qualifiedType(T:KResult, _))) => isWCharType(T:KResult) 
      
      rule [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true 
      rule [isPointerType-qualified]: isPointerType(t(_, qualifiedType(T:KResult, _))) => isPointerType(T:KResult) 
      rule [isPointerType-other]: isPointerType(t(_, T:K)) => false
-          when getKLabel(T:K) =/=KLabel 'pointerType
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (getKLabel(T:K) =/=KLabel 'pointerType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      
      rule [isBoolType-bool]: isBoolType(t(_, bool)) => true 
      rule [isBoolType-qualifiedType]: isBoolType(t(_, qualifiedType(T:KResult, _))) => isBoolType(T:KResult) 
      rule [isBoolType-other]: isBoolType(t(_, T:K)) => false
-          when T:K =/=K bool 
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (T:K =/=K bool)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
      rule [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true 
@@ -765,29 +765,29 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [isArrayType-qualified]: isArrayType(t(_, qualifiedType(T:KResult, _))) => isArrayType(T:KResult) 
      rule [isArrayType-other]: isArrayType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'arrayType)
-          andBool (getKLabel(T:K) =/=KLabel 'incompleteArrayType)
-          andBool (getKLabel(T:K) =/=KLabel 'flexibleArrayType)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T:K) =/=KLabel 'incompleteArrayType)
+               andBool (getKLabel(T:K) =/=KLabel 'flexibleArrayType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule isAggregateType(T:KResult) => isArrayType(T:KResult) orBool isStructType(T:KResult) 
           
      rule [isStructType-struct]: isStructType(t(_, structType(_:Id))) => true 
      rule [isStructType-qualified]: isStructType(t(_, qualifiedType(T:KResult, _))) => isStructType(T:KResult) 
      rule [isStructType-other]: isStructType(t(_, T:K)) => false
-          when getKLabel(T:K) =/=KLabel 'structType
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (getKLabel(T:K) =/=KLabel 'structType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
           
      rule [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
      rule [isUnionType-qualified]: isUnionType(t(_, qualifiedType(T:KResult, _))) => isUnionType(T:KResult) 
      rule [isUnionType-other]: isUnionType(t(_, T:K)) => false
-          when getKLabel(T:K) =/=KLabel 'unionType
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (getKLabel(T:K) =/=KLabel 'unionType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
 
      rule [isIncompleteType-true]: isIncompleteType(t(_, incompleteArrayType(_))) => true 
      rule [isIncompleteType-qualified]: isIncompleteType(t(_, qualifiedType(T:KResult, _))) => isIncompleteType(T:KResult) 
      rule [isIncompleteType-false]: isIncompleteType(t(_, T:K)) => false
-          when getKLabel(T:K) =/=KLabel 'incompleteArrayType
-          andBool getKLabel(T:K) =/=KLabel 'qualifiedType 
+          when (getKLabel(T:K) =/=KLabel 'incompleteArrayType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
           
      rule [isExternType-qualified]: isExternType(t(_, qualifiedType(T:KResult, K:K))) => #if (K:K ==K Extern) #then (true) #else (isExternType(T:KResult)) #fi 
           
@@ -806,8 +806,8 @@ module COMMON-SEMANTICS-TYPE-MISC
           
      rule [isConstType-false]: 
           isConstType(t(S:Set, T:K)) => false
-          when getKLabel(T:K) =/=KLabel 'qualifiedType 
-          andBool notBool Const in S:Set
+          when (getKLabel(T:K) =/=KLabel 'qualifiedType )
+               andBool (notBool Const in S:Set)
           
      rule [isConstType-true]: 
           isConstType(t(SetItem(Const) _, T:K)) => true
@@ -821,19 +821,19 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [isFunctionType-qualified]: isFunctionType(t(_, qualifiedType(T:KResult, _))) => isFunctionType(T:KResult) 
      rule [isFunctionType-false]: isFunctionType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'functionType)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
-          andBool (getKLabel(T:K) =/=KLabel 'prototype)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T:K) =/=KLabel 'prototype)
           
      rule [isFunctionPointerType-fp]: isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:KList))))) => true 
      rule [isFunctionPointerType-qualified]: isFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => isFunctionPointerType(T:KResult) 
      rule [isFunctionPointerType-qualified-pointer]: isFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) => isFunctionPointerType(t(.Set, pointerType(T:KResult))) 
      rule [isFunctionPointerType-notPointer]: isFunctionPointerType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'pointerType)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isFunctionPointerType-notFunction]: isFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
           when (getKLabel(T:K) =/=KLabel 'functionType)
-          andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.

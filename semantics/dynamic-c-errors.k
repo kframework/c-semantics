@@ -429,7 +429,6 @@ module DYNAMIC-C-ERRORS
           <br/>
           (.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
           when isFloatType(T:KResult)
-               andBool (N:Int >=Int 0)
           [structural, large]
           
      rule [err00047]:
