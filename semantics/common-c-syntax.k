@@ -409,6 +409,116 @@ and expression =
      syntax Expression ::= "ExpressionLoc" "(" K "," K ")" [klabel('ExpressionLoc)] // new
 
      syntax Expression ::= "NothingExpression"
+
+     syntax K ::= "l" "(" KLabel ")"
+     syntax "l" -/- [a-zA-Z]
+
+     // chathhorn: hacky custom heating/cooling for type-strictness.
+     syntax Set ::= "typeStrictUnaryOps" [function]
+               | "typeStrictBinaryOps" [function]
+               | "typeStrictBinaryOpsFirst" [function]
+               | "typeStrictBinaryOpsSecond" [function]
+               | "typeStrictTernaryOpsSecond" [function]
+               | "typeStrictTernaryOpsThird" [function]
+
+     rule typeStrictUnaryOps =>
+          SetItem(l('-_))
+          SetItem(l('+_))
+          SetItem(l('!_))
+          SetItem(l('~_))
+          SetItem(l('*_))
+          SetItem(l('&_))
+          SetItem(l('++_))
+          SetItem(l('--_))
+          SetItem(l('_++))
+          SetItem(l('_--))
+
+     rule typeStrictBinaryOps =>
+          SetItem(l('_*_))
+          SetItem(l('_/_))
+          SetItem(l('_%_))
+          SetItem(l('_+_))
+          SetItem(l('_-_))
+          SetItem(l('_<_))
+          SetItem(l('_<=_))
+          SetItem(l('_>_))
+          SetItem(l('_>=_))
+          SetItem(l('_==_))
+          SetItem(l('_!=_))
+          SetItem(l('_&_))
+          SetItem(l('_^_))
+          SetItem(l('_|_))
+          SetItem(l('_&&_))
+          SetItem(l('_||_))
+          SetItem(l('_`[_`]))
+
+     rule typeStrictBinaryOpsFirst =>
+          typeStrictBinaryOps
+          SetItem(l('_<<_))
+          SetItem(l('_>>_))
+          SetItem(l('_*=_))
+          SetItem(l('_/=_))
+          SetItem(l('_%=_))
+          SetItem(l('_+=_))
+          SetItem(l('_-=_))
+          SetItem(l('_<<=_))
+          SetItem(l('_&=_))
+          SetItem(l('_^=_))
+          SetItem(l('_|=_))
+          SetItem(l('_>>=_))
+          SetItem(l('_:=_))
+          SetItem(l('Call))
+          SetItem(l('_._))
+
+     rule typeStrictBinaryOpsSecond =>
+          typeStrictBinaryOps
+
+     rule typeStrictTernaryOpsSecond =>
+          SetItem(l('_?_:_))
+
+     rule typeStrictTernaryOpsThird =>
+          SetItem(l('_?_:_))
+
+     syntax K ::= "THOLE" [klabel('THOLE)]
+     syntax K ::= PAUSE(Bool) | ASSERT(K) [strict]
+
+     rule ASSERT(true) => .K [structural, anywhere]
+
+     syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
+
+     rule <type> Lbl:KLabel(K:K) => K ~> Lbl(THOLE) ...</type>
+          when l(Lbl) in typeStrictUnaryOps
+               andBool (getKLabel(K) =/=KLabel 't)
+               andBool (getKLabel(K) =/=KLabel 'THOLE)
+     rule <type> R:Type ~> Lbl:KLabel(THOLE) => Lbl(R) ...</type>
+          when l(Lbl) in typeStrictUnaryOps
+
+     rule <type> Lbl:KLabel(K:K,, X:K) => K ~> Lbl(THOLE,, X) ...</type>
+          when l(Lbl) in typeStrictBinaryOpsFirst
+               andBool (getKLabel(K) =/=KLabel 't)
+               andBool (getKLabel(K) =/=KLabel 'THOLE)
+     rule <type> Lbl:KLabel(X:K,, K:K) => K ~>  Lbl(X,, THOLE) ...</type>
+          when l(Lbl) in typeStrictBinaryOpsSecond
+               andBool (getKLabel(K) =/=KLabel 't)
+               andBool (getKLabel(K) =/=KLabel 'THOLE)
+     rule <type> R:Type ~> Lbl:KLabel(THOLE,, X:K) => Lbl(R,, X) ...</type>
+          when l(Lbl) in typeStrictBinaryOpsFirst
+     rule <type> R:Type ~> Lbl:KLabel(X:K,, THOLE) => Lbl(X,, R) ...</type>
+          when l(Lbl) in typeStrictBinaryOpsSecond
+
+     rule <type> Lbl:KLabel(X:K,, K:K,, Y:K) => K ~> Lbl(X,, THOLE,, Y) ...</type>
+          when l(Lbl) in typeStrictTernaryOpsSecond
+               andBool (getKLabel(K) =/=KLabel 't)
+               andBool (getKLabel(K) =/=KLabel 'THOLE)
+     rule <type> Lbl:KLabel(X:K,, Y:K,, K:K) => K ~> Lbl(X,, Y,, THOLE) ...</type>
+          when l(Lbl) in typeStrictTernaryOpsThird
+               andBool (getKLabel(K) =/=KLabel 't)
+               andBool (getKLabel(K) =/=KLabel 'THOLE)
+     rule <type> R:Type ~> Lbl:KLabel(X:K,, THOLE,, Y:K) => Lbl(X,, R,, Y) ...</type>
+          when l(Lbl) in typeStrictTernaryOpsSecond
+     rule <type> R:Type ~> Lbl:KLabel(X:K,, Y:K,, THOLE) => Lbl(X,, Y,, R) ...</type>
+          when l(Lbl) in typeStrictTernaryOpsThird
+
 /*
      | UNARY of unary_operator * expression
 

@@ -55,6 +55,10 @@ system("krun", @krun_args);
 open(OUT, "<$fileOutput");
 
 for (<OUT>) {
+      if (/< k >.*<\/ k >/){
+            print "ERROR\n";
+            exit(1066);
+      }
       if (/< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/){
             exit($1);
       }

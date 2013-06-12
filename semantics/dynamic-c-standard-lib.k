@@ -491,12 +491,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           ...</k>
           [structural]
           
-     // rule [printf-done]:
-          // <k> tv(0, _) ~> printf-aux(Len:Int, _, _) 
-               // => flush(1)
-               // ~> tv(Len:Int, t(.Set, int)) 
-          // ...</k>
-          // [structural]
      rule [printf-done]:
           <k> new-printf-aux(formattedResult(S:String))
                => writeToFD(1, S:String)
@@ -871,13 +865,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <format> ListItem("o") => .List ...</format>
           <formatState> "%" => "%o" </formatState>
           [structural]
-// TODO(chathhorn): hex, elided
-//   rule [format-%o]:
-//        <k> formatter-aux(_) ...</k>
-//        <formatArg> D:Int => .K </formatArg>
-//        <formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
-//        <formatState> "%o" => "reset" </formatState>
-//        [structural]
+     rule [format-%o]:
+          <k> formatter-aux(_) ...</k>
+          <formatArg> D:Int => .K </formatArg>
+          <formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
+          <formatState> "%o" => "reset" </formatState>
+          [structural]
      rule [format-%u-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
@@ -898,13 +891,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <format> ListItem("x") => .List ...</format>
           <formatState> "%" => "%x" </formatState>
           [structural]
-// TODO(chathhorn): hex, elided
-//   rule [format-%x]:
-//        <k> formatter-aux(_) ...</k>
-//        <formatArg> D:Int => .K </formatArg>
-//        <formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
-//        <formatState> "%x" => "reset" </formatState>
-//        [structural]
+     rule [format-%x]:
+          <k> formatter-aux(_) ...</k>
+          <formatArg> D:Int => .K </formatArg>
+          <formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
+          <formatState> "%x" => "reset" </formatState>
+          [structural]
      rule [format-%X-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
@@ -912,13 +904,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <format> ListItem("X") => .List ...</format>
           <formatState> "%" => "%X" </formatState>
           [structural]
-// TODO(chathhorn): hex, elided
-//   rule [format-%X]:
-//        <k> formatter-aux(_) ...</k>
-//        <formatArg> D:Int => .K </formatArg>
-//        <formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
-//        <formatState> "%X" => "reset" </formatState>
-//        [structural]
+     rule [format-%X]:
+          <k> formatter-aux(_) ...</k>
+          <formatArg> D:Int => .K </formatArg>
+          <formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
+          <formatState> "%X" => "reset" </formatState>
+          [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}

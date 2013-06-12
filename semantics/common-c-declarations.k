@@ -583,7 +583,7 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           when isFunctionType(T:KResult)
           [structural]
 
-     syntax K ::= "createNewFun" "(" K "," K "," K ")"
+     syntax K ::= "createNewFun" "(" Id "," K "," K ")" [function]
      
      rule createNewFun(X:Id, T:KResult, Block:K)
           => declareFunction(
@@ -978,9 +978,11 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
      syntax K ::= "initTail" "(" K ")"
      rule initHead(S:String, T:KResult)
           => SingleInit(tv(asciiString(firstChar(S:String)), t(getModifiers(T:KResult), char)))
+          [anywhere]
      
      rule initTail(S:String)
           => SingleInit(Constant(StringLiteral(butFirstChar(S:String))))
+          [anywhere]
           
      rule [fillInitAux-wstring-some]:
           <k> fillInit-aux(SingleInit(Constant(WStringLiteral((N:Int,, S:KList)))))
