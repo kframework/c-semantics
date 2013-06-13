@@ -159,8 +159,10 @@ and spec_elem =
 /*
      and specifier = spec_elem list
 */
-     syntax Specifier ::= "Specifier" "(" K ")" [strict, klabel('Specifier)]
-     syntax "Specifier" -/- [a-zA-Z\:]
+     syntax Specifier ::= "Specifier" "(" K ")" [klabel('Specifier)]
+     syntax "Specifier" -/- [a-zA-Z\:] 
+     
+     // chathhorn: I don't think this ever got triggered in v2.7.
      //context Specifier(klist((_:KList,, HOLE,, _:KList)))
      
 /*
@@ -479,7 +481,7 @@ and expression =
      rule typeStrictTernaryOpsThird =>
           SetItem(l('_?_:_))
 
-     syntax K ::= "THOLE" [klabel('THOLE)]
+     syntax K ::= "THOLE"
      syntax K ::= PAUSE(Bool) | ASSERT(K) [strict]
 
      rule ASSERT(true) => .K [structural, anywhere]
@@ -489,18 +491,18 @@ and expression =
      rule <type> Lbl:KLabel(K:K) => K ~> Lbl(THOLE) ...</type>
           when l(Lbl) in typeStrictUnaryOps
                andBool (getKLabel(K) =/=KLabel 't)
-               andBool (getKLabel(K) =/=KLabel 'THOLE)
+               andBool (K =/=K THOLE)
      rule <type> R:Type ~> Lbl:KLabel(THOLE) => Lbl(R) ...</type>
           when l(Lbl) in typeStrictUnaryOps
 
      rule <type> Lbl:KLabel(K:K,, X:K) => K ~> Lbl(THOLE,, X) ...</type>
           when l(Lbl) in typeStrictBinaryOpsFirst
                andBool (getKLabel(K) =/=KLabel 't)
-               andBool (getKLabel(K) =/=KLabel 'THOLE)
+               andBool (K =/=K THOLE)
      rule <type> Lbl:KLabel(X:K,, K:K) => K ~>  Lbl(X,, THOLE) ...</type>
           when l(Lbl) in typeStrictBinaryOpsSecond
                andBool (getKLabel(K) =/=KLabel 't)
-               andBool (getKLabel(K) =/=KLabel 'THOLE)
+               andBool (K =/=K THOLE)
      rule <type> R:Type ~> Lbl:KLabel(THOLE,, X:K) => Lbl(R,, X) ...</type>
           when l(Lbl) in typeStrictBinaryOpsFirst
      rule <type> R:Type ~> Lbl:KLabel(X:K,, THOLE) => Lbl(X,, R) ...</type>
@@ -509,11 +511,11 @@ and expression =
      rule <type> Lbl:KLabel(X:K,, K:K,, Y:K) => K ~> Lbl(X,, THOLE,, Y) ...</type>
           when l(Lbl) in typeStrictTernaryOpsSecond
                andBool (getKLabel(K) =/=KLabel 't)
-               andBool (getKLabel(K) =/=KLabel 'THOLE)
+               andBool (K =/=K THOLE)
      rule <type> Lbl:KLabel(X:K,, Y:K,, K:K) => K ~> Lbl(X,, Y,, THOLE) ...</type>
           when l(Lbl) in typeStrictTernaryOpsThird
                andBool (getKLabel(K) =/=KLabel 't)
-               andBool (getKLabel(K) =/=KLabel 'THOLE)
+               andBool (K =/=K THOLE)
      rule <type> R:Type ~> Lbl:KLabel(X:K,, THOLE,, Y:K) => Lbl(X,, R,, Y) ...</type>
           when l(Lbl) in typeStrictTernaryOpsSecond
      rule <type> R:Type ~> Lbl:KLabel(X:K,, Y:K,, THOLE) => Lbl(X,, Y,, R) ...</type>

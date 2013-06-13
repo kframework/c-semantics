@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 use POSIX;
 use strict;
 use File::Spec::Functions qw(rel2abs catfile);
@@ -11,7 +11,6 @@ use IPC::Open3;
 
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
-$SIG{'BREAK'} = 'interruptHandler';
 $SIG{'TERM'} = 'interruptHandler';
 $SIG{'QUIT'} = 'interruptHandler';
 $SIG{'SEGV'} = 'interruptHandler';
@@ -32,6 +31,8 @@ my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX =>
 my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
 push(@temporaryFiles, $fileInput);
 push(@temporaryFiles, $fileOutput);
+
+# The function "linkedProgram()" is attached to the bottom of this script by kcc.
 print $fileInput linkedProgram();
 
 my $thisFile = "$0";
@@ -50,32 +51,18 @@ my @krun_args = (
       "--io", 
       $fileInput);
 
-system("krun", @krun_args);
-
-open(OUT, "<$fileOutput");
-
-for (<OUT>) {
-      if (/< k >.*<\/ k >/){
-            print "ERROR\n";
-            exit(1066);
-      }
-      if (/< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/){
-            exit($1);
-      }
-}
-
-sub interruptHandler {
-	finalCleanup(); # call single cleanup point
-	kill 1, -$$;
-	exit(1); # since we were interrupted, we should exit with a non-zero code
-}
-
 # this block gets run at the end of a normally terminating program, whether it
 # simply exits, or dies.  We use this to clean up.
 END {
 	my $retval = $?; # $? contains the value the program would normally have exited with
 	finalCleanup(); # call single cleanup point
 	exit($retval);
+}
+
+sub interruptHandler {
+	finalCleanup(); # call single cleanup point
+	kill 1, -$$;
+	exit(1); # since we were interrupted, we should exit with a non-zero code
 }
 
 # this subroutine can be used as a way to ensure we clean up all resources
@@ -123,6 +110,106 @@ if (defined($ENV{'PRINTMAUDE'})) {
 
 if (defined($ENV{'IOLOG'})) {
 }
+
+system("krun", @krun_args);
+
+open(OUT, "<$fileOutput");
+
+my $exitCode = 1;
+my $finalComp = "";
+my $finalCompGoto = "";
+my $finalCompType = "";
+
+my $errorMsg = "";
+my $errorFile = "";
+my $errorFunc = "";
+my $errorLine = "";
+
+my $haveError = 0;
+my $haveExitCode = 0;
+
+for (<OUT>) {
+      /< k > (.*) <\/ k >/ && do {
+            $haveError = 1;
+            $finalComp = $1;
+      };
+
+      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+            $haveError = 1;
+            my $output = $1;
+            $output =~ s/\%/\%\%/g;
+            $output =~ s/`/\\`/g;
+            $output =~ s/\\\\/\\\\\\\\/g;
+            $errorMsg = substr(`printf "x$output"`, 1);
+      };
+
+      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
+            $errorFunc = $1;
+      };
+      
+      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
+            $errorFile = $1;
+            $errorLine = $2;
+      };
+      
+      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+            $haveError = 1;
+            $finalComp = $1;
+      };
+      
+      /< computation > (.*) <\/ computation >/ && do {
+            $haveError = 1;
+            $finalCompGoto = $1;
+      };
+
+      /< type > (.*) <\/ type >/ && do {
+            $haveError = 1;
+            $finalCompType = $1;
+      };
+
+      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+            $haveExitCode = 1;
+            $exitCode = $1;
+      };
+}
+
+if ($haveError || !$haveExitCode) {
+      print "\n=============================================================\n";
+      print "ERROR! KCC encountered an error while executing this program.\n";
+
+      if ($errorMsg ne "") {
+            print "=============================================================\n";
+            print "$errorMsg\n";
+      }
+
+      print "=============================================================\n";
+      print "File: $errorFile\n";
+      print "Function: $errorFunc\n";
+      print "Line: $errorLine\n";
+
+      if ($finalComp ne "") {
+            print "=============================================================\n";
+            print "Final Computation:\n";
+            print substr($finalComp, 0, 1000);
+            print "\n";
+      }
+
+      if ($finalCompGoto ne "") {
+            print "=============================================================\n";
+            print "Final Goto Map Computation:\n";
+            print substr($finalCompGoto, 0, 1000);
+            print "\n";
+      }
+
+      if ($finalCompType ne "") {
+            print "=============================================================\n";
+            print "Final Type Computation:\n";
+            print substr($finalCompType, 0, 1000);
+            print "\n";
+      }
+}
+
+exit($exitCode);
 
 # more stuff is added during compilation
 

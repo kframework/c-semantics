@@ -38,9 +38,9 @@ thread: dist
 
 check-vars:
 ifeq ($(C_K_BASE),)
-	@echo "ERROR: Please set K_BASE to the full path of your K installation."
+	@echo "ERROR: Please set C_K_BASE to the full path of your K installation."
 	@echo "Make sure you do NOT include a trailing slash\\"
-	@echo "One way to do this is to type 'export K_BASE=/path/to/k/framework', and then rerun 'make'"
+	@echo "One way to do this is to type 'export C_K_BASE=/path/to/k/framework', and then rerun 'make'"
 	@exit 1
 endif
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi

@@ -190,7 +190,14 @@ sub elementToK {
 		return ($inNextState, paren("$BOOL true") . paren(KLIST_IDENTITY));
 	} elsif ($label eq 'NotVariadic') {
 		return ($inNextState, paren("$BOOL false") . paren(KLIST_IDENTITY));
-	}
+	} elsif ($label eq 'U'
+            || $label eq 'L'
+            || $label eq 'LL'
+            || $label eq 'UL'
+            || $label eq 'ULL') {
+            $label = 'Const' . $label;
+      }
+
 	my @klist = ();
 	my $depth = $reader->depth;
 	$reader->nextElement;

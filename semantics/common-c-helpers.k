@@ -180,8 +180,10 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural, anywhere]
      
      rule bitRange(N:Int, Pos:Int, Pos:Int) => 1 &Int (N >>Int Pos)
+          when N >=Int 0
           [structural, anywhere]
      rule bitRange(piece(N:Int, 1), Pos:Int, Pos:Int) => 1 &Int (N >>Int Pos)
+          when N >=Int 0
           [structural, anywhere]
           
      rule bitRange(N:Bits, 0, To:Int) => N
@@ -203,6 +205,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural, anywhere]
           
      rule bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) => (N >>Int Pos) &Int 1
+          when N >=Int 0
           [structural, anywhere]
      
      syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")" [strict(4)]
@@ -394,7 +397,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
 
      rule hasIntegerType(T:Type) 
-          => (hasUnsignedIntegerType(T) orBool hasSignedIntegerType(T))
+          => ((hasUnsignedIntegerType(T) ==K true) orBool (hasSignedIntegerType(T) ==K true))
           [structural]
      
      rule hasUnsignedIntegerType(t(_, T:K)) => true
@@ -406,7 +409,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
 
      rule hasUnsignedIntegerType(t(S:Set, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'bitfieldType)
-          andBool ((l(getKLabel(T:K)) in setOfTypes) orBool isFloatType(t(S:Set, T:K)))
+               andBool ((l(getKLabel(T:K)) in setOfTypes) orBool isFloatType(t(S:Set, T:K)))
           [structural]
      rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
           when hasUnsignedIntegerType(T) ==Bool true
@@ -425,7 +428,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
      rule hasSignedIntegerType(t(S:Set, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'bitfieldType)
-          andBool ((l(getKLabel(T:K)) in setOfTypes) orBool isFloatType(t(S:Set, T:K)))
+               andBool ((l(getKLabel(T:K)) in setOfTypes) orBool isFloatType(t(S:Set, T:K)))
           [structural]
      rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
           when hasSignedIntegerType(T) ==Bool true
@@ -452,6 +455,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
      
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
           => piece((N <<Int Len') |Int N', Len +Int Len')
+          when (N >=Int 0) andBool (N' >=Int 0)
           [structural, anywhere]
      rule piece(0, 0) bit:: N:Bits => N
           [structural, anywhere]

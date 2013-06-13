@@ -16,26 +16,24 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      
      // TODO(chathhorn): not pretty
-     //rule reval(vararg(K:K)) => vararg(K:K) [structural]
-     rule rkludge(vararg(K:K)) => vararg(K:K) [structural, anywhere]
-     // fixme had to make this K because of the context bug
+     rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]
+
      syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" // offset, type, length, checklength
      context nextvarg-aux(_, _, value(HOLE), _)
      context nextvarg-aux(_, _, _, value(HOLE))
      
      rule [nextvarg-start]:
-          <k> nextvarg(Loc:SymLoc, T:KResult)
-               => nextvarg-aux(Loc, T:KResult, value(byteSizeofType(T:KResult)), value(sizeofLocation(Loc)))
+          <k> nextvarg(Loc:SymLoc, T:Type)
+               => nextvarg-aux(Loc, T, value(byteSizeofType(T)), value(sizeofLocation(Loc)))
           ...</k>
           [structural]
      rule [nextvarg]:
-          <k> nextvarg-aux(Loc:SymLoc, T:KResult, Len:Int, Len:Int)
-               => vpair(read(Loc, T:KResult), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+          <k> nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
+               => vpair(read(Loc, T), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           ...</k>
           [structural]
      
-     // context 'prepareBuiltin(_:Id,, '_::_(_:List`{K`},, (HOLE:C => reval(HOLE)),, _:List`{K`}))
-     context prepareBuiltin(_:Id, (_:KList,, (HOLE => reval(HOLE)),, _:KList))
+     context prepareBuiltin(_, (_,, (HOLE => reval(HOLE)),, _))
      
      syntax KList ::= idsFromDeclList(KList) [function]
      
@@ -80,60 +78,59 @@ endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-MATH
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
-// TODO(chathhorn): math, elided
-//   rule [sqrt]:
-//        <k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
-//             => tv(sqrtFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [log]:
-//        <k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
-//             => tv(logFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [exp]:
-//        <k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
-//             => tv(expFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [atan]:
-//        <k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
-//             => tv(atanFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [asin]:
-//        <k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
-//             => tv(asinFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [atan2]:
-//        <k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
-//             => tv(atan2Float(F:Float, F':Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [tan]:
-//        <k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
-//             => tv(tanFloat(F:Float), t(.Set, double))
-//        ...</k>
-//   [structural]
-//
-//   rule [floor]:
-//        <k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
-//             => tv(floorFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
-//
-//   rule [cos]:
-//        <k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
-//             => tv(cosFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
+     rule [sqrt]:
+          <k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
+               => tv(sqrtFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [log]:
+          <k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
+               => tv(logFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [exp]:
+          <k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
+               => tv(expFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [atan]:
+          <k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
+               => tv(atanFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [asin]:
+          <k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
+               => tv(asinFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [atan2]:
+          <k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+               => tv(atan2Float(F:Float, F':Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [tan]:
+          <k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
+               => tv(tanFloat(F:Float), t(.Set, double))
+          ...</k>
+     [structural]
+  
+     rule [floor]:
+          <k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
+               => tv(floorFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
+  
+     rule [cos]:
+          <k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
+               => tv(cosFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
 
      rule [fmod]:
           <k> prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
@@ -141,12 +138,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH
           ...</k>
           [structural]
 
-// TODO(chathhorn): math, elided
-//   rule [sin]:
-//        <k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
-//             => tv(sinFloat(F:Float), t(.Set, double))
-//        ...</k>
-//        [structural]
+     rule [sin]:
+          <k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
+               => tv(sinFloat(F:Float), t(.Set, double))
+          ...</k>
+          [structural]
 
 endmodule
 
@@ -340,14 +336,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      context va-inc-aux(_, _, (HOLE => reval(HOLE)))
      // fixme can do lots of checks here too
      
-     // this doesn't work because when we read apLoc, the object has already changed
-     rule
-          <k> prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
-                    => Computation(*(ApLoc:KResult) := incSymbolic(ApLoc:KResult))
-                    ~> ApLoc:KResult
-          ...</k>
-          [structural]
-     
      rule [va-inc-start]:
           <k> prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
                     => va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
@@ -370,12 +358,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
           [structural]
           
      // fixme can do lots of checks here too
-     // tool fixme, shouldn't let me compile empty rule
-     // rule
-          // <k> prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
-                    // ~> skipval
-          // ...</k>
-          // [structural]
      rule [va-end]:
           <k> prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
                     => skipval
@@ -387,18 +369,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
      syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
-     rule
-          <k> OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</k>
+     rule <k> OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</k>
           [structural]
+
      // fixme should check for bitfield offset
-     rule
-          <k> offsetOf(t(_, structType(S:Id)), F:Id)
+     rule <k> offsetOf(t(_, structType(S:Id)), F:Id)
                => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           ...</k>
           <structs>...
                S:Id |-> aggregateInfo(_, _, (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
+
      rule <k> offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</k>
           [structural]
 endmodule
@@ -1280,7 +1262,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           ...</k>
           [structural]
      rule [calloc-aux]:
-          <k> (.K => zeroBlock(Loc:SymLoc)) 
+          <k> (.K => zeroBlock(Loc:SymLoc) ) 
                ~> tv(Loc, t(_, pointerType(t(_, void))))
                ~> (calloc-aux => .K)
           ...</k>
