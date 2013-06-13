@@ -44,12 +44,25 @@ module COMPAT-SYNTAX
                     > left:
                     Bits "|Bits" Bits   [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
 
+     syntax Ptr ::= Int | SymLoc
+
      syntax Int ::= "String2Rat" "(" String "," Int ")"
           [function, klabel('String2Rat), hook(#CONVERSION:string2Base)]
      syntax String ::= "Rat2String" "(" Int "," Int ")"
           [function, klabel('Rat2String), hook(#CONVERSION:base2String)]
 
-     syntax Ptr ::= Int | SymLoc
+     syntax Float ::= "sqrtFloat" "(" Float ")" [function, hook(#FLOAT:sqrtFloat)]
+     syntax Float ::= "logFloat" "(" Float ")" [function, hook(#FLOAT:logFloat)]
+     syntax Float ::= "expFloat" "(" Float ")" [function, hook(#FLOAT:expFloat)]
+     syntax Float ::= "atanFloat" "(" Float ")" [function, hook(#FLOAT:atanFloat)]
+     syntax Float ::= "acosFloat" "(" Float ")" [function, hook(#FLOAT:acosFloat)]
+     syntax Float ::= "asinFloat" "(" Float ")" [function, hook(#FLOAT:asinFloat)]
+     syntax Float ::= "tanFloat" "(" Float ")" [function, hook(#FLOAT:tanFloat)]
+     syntax Float ::= "cosFloat" "(" Float ")" [function, hook(#FLOAT:cosFloat)]
+     syntax Float ::= "sinFloat" "(" Float ")" [function, hook(#FLOAT:sinFloat)]
+     syntax Float ::= "atan2Float" "(" Float "," Float ")" [function, hook(#FLOAT:atanFloat)]
+     syntax Float ::= "floorFloat" "(" Float ")" [function, hook(#FLOAT:floorFloat)]
+
 endmodule
 
 module COMMON-INCOMING-MODULES

@@ -335,7 +335,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
 
      syntax K ::= "BitFieldType" "(" K "," K ")" [strict] 
      
-     rule <k> Specifier(krlist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
+     rule <k> Specifier(klist(L:KList)) => canonicalizeType(toBag(L)) ...</k>
           [structural]
           
      rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]

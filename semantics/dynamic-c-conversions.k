@@ -232,8 +232,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [promote-lte-int-fits]:
           promote(T:KResult) => t(.Set, int)
           when rank(T:KResult) <=Int rank(t(.Set, int))
-          andBool min(t(.Set, int)) <=Int min(T:KResult) 
-          andBool max(t(.Set, int)) >=Int max(T:KResult)          
+               andBool min(t(.Set, int)) <=Int min(T:KResult) 
+               andBool max(t(.Set, int)) >=Int max(T:KResult)          
 
      rule [promote-gt-int]:
           promote(T:KResult) => T:KResult
@@ -242,25 +242,25 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [promote-bitfield-fits]:
           promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, int)
           when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
-          andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
-          andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+               andBool min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+               andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
      // fixme unclear what 6.3.1.1:3 means
 
      rule [promote-lte-int-nofits]:
           promote(T:KResult) => t(.Set, unsigned-int)
           when rank(T:KResult) <=Int rank(t(.Set, int))
-          andBool notBool (
-               min(t(.Set, int)) <=Int min(T:KResult) 
-               andBool max(t(.Set, int)) >=Int max(T:KResult)          
-          )
+               andBool notBool (
+                    min(t(.Set, int)) <=Int min(T:KResult) 
+                    andBool max(t(.Set, int)) >=Int max(T:KResult)          
+               )
 
      rule [promote-bitfield-nofits]:
           promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int))) => t(.Set, unsigned-int)
           when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
-          andBool notBool (
-               min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
-               andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
-          )
+               andBool notBool (
+                    min(t(.Set, int)) <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+                    andBool max(t(.Set, int)) >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+               )
      
      // fixme these could be done more cleanly
 
@@ -315,10 +315,10 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      */
      rule usualArithmeticConversion(t(_, float), t(_, T:K)) => t(.Set, float)
           when long-double =/=K T:K
-          andBool double =/=K T:K
+               andBool double =/=K T:K
      rule usualArithmeticConversion(t(_, T:K), t(_, float)) => t(.Set, float)
           when long-double =/=K T:K
-          andBool double =/=K T:K
+               andBool double =/=K T:K
 
      /*@ 
      \begin{itemize}
@@ -361,7 +361,7 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [arithmeticConversion-same-signedness]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => maxType(T:KResult, T':KResult)
           when T:KResult =/=K T':KResult
-          andBool hasSameSignedness(T:KResult, T':KResult)
+               andBool hasSameSignedness(T:KResult, T':KResult)
           
      /*@
      \begin{itemize}
@@ -376,13 +376,13 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [arithmeticConversion-unsigned-ge-right]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
           when hasSignedIntegerType(T:KResult) 
-          andBool hasUnsignedIntegerType(T':KResult) 
-          andBool rank(T':KResult) >=Int rank(T:KResult)
+               andBool hasUnsignedIntegerType(T':KResult) 
+               andBool rank(T':KResult) >=Int rank(T:KResult)
      rule [arithmeticConversion-unsigned-ge-left]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
           when hasUnsignedIntegerType(T:KResult) 
-          andBool hasSignedIntegerType(T':KResult) 
-          andBool rank(T:KResult) >=Int rank(T':KResult)
+               andBool hasSignedIntegerType(T':KResult) 
+               andBool rank(T:KResult) >=Int rank(T':KResult)
      
      /*@
      \begin{itemize}
@@ -397,17 +397,17 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [arithmeticConversion-signed-big-left]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => T:KResult
           when hasSignedIntegerType(T:KResult) 
-          andBool hasUnsignedIntegerType(T':KResult) 
-          andBool rank(T':KResult) <Int rank(T:KResult)
-          andBool min(T:KResult) <=Int min(T':KResult)
-          andBool max(T:KResult) >=Int max(T':KResult)
+               andBool hasUnsignedIntegerType(T':KResult) 
+               andBool rank(T':KResult) <Int rank(T:KResult)
+               andBool min(T:KResult) <=Int min(T':KResult)
+               andBool max(T:KResult) >=Int max(T':KResult)
      rule [arithmeticConversion-signed-big-right]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => T':KResult
           when hasUnsignedIntegerType(T:KResult) 
-          andBool hasSignedIntegerType(T':KResult) 
-          andBool rank(T:KResult) <Int rank(T':KResult)
-          andBool min(T':KResult) <=Int min(T:KResult)
-          andBool max(T':KResult) >=Int max(T:KResult)
+               andBool hasSignedIntegerType(T':KResult) 
+               andBool rank(T:KResult) <Int rank(T':KResult)
+               andBool min(T':KResult) <=Int min(T:KResult)
+               andBool max(T':KResult) >=Int max(T:KResult)
      
      /*@
      \begin{itemize}
@@ -420,15 +420,15 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule [arithmeticConversion-to-unsigned-left]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T:KResult)
           when hasSignedIntegerType(T:KResult) 
-          andBool hasUnsignedIntegerType(T':KResult) 
-          andBool rank(T':KResult) <Int rank(T:KResult)
-          andBool (min(T:KResult) >Int min(T':KResult) orBool max(T:KResult) <Int max(T':KResult))
+               andBool hasUnsignedIntegerType(T':KResult) 
+               andBool rank(T':KResult) <Int rank(T:KResult)
+               andBool (min(T:KResult) >Int min(T':KResult) orBool max(T:KResult) <Int max(T':KResult))
      rule [arithmeticConversion-to-unsigned-right]:
           usualArithmeticConversion-aux(T:KResult, T':KResult) => correspondingUnsignedType(T':KResult)
           when hasUnsignedIntegerType(T:KResult) 
-          andBool hasSignedIntegerType(T':KResult) 
-          andBool rank(T:KResult) <Int rank(T':KResult)
-          andBool (min(T':KResult) >Int min(T:KResult) orBool max(T':KResult) <Int max(T:KResult))
+               andBool hasSignedIntegerType(T':KResult) 
+               andBool rank(T:KResult) <Int rank(T':KResult)
+               andBool (min(T':KResult) >Int min(T:KResult) orBool max(T':KResult) <Int max(T:KResult))
           
 endmodule
 
@@ -528,10 +528,10 @@ module DYNAMIC-SEMANTICS-CONVERSION
                andBool hasUnsignedIntegerType(innerType(T:KResult))
           [anywhere]
      rule [cast-uchar-of-big]:
-          cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(t(S:Set, unsigned-char)) +Int 1), t(S:Set, unsigned-char))
-          when (I:Int >Int max(t(S:Set, unsigned-char)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+               => tv(I %Int (max(t(S, unsigned-char)) +Int 1), t(S, unsigned-char))
+          when (I >Int max(t(S, unsigned-char)))
+               andBool hasIntegerType(T')
           [anywhere]
      rule [cast-usint-of-big]:
           cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
@@ -604,30 +604,30 @@ module DYNAMIC-SEMANTICS-CONVERSION
           [anywhere]
           
      rule [cast-signed-of-small]:
-          cast(T:KResult, tv(I:Int, T':KResult))
-               => tv(I:Int +Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
-          when (I:Int <Int min(T:KResult))
-               andBool (absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult))))
-               andBool hasSignedIntegerType(T:KResult)
-               andBool hasIntegerType(T':KResult)
-               andBool notBool isBoolType (T:KResult)
+          cast(T:Type, tv(I:Int, T':Type))
+               => tv(I +Int (2 ^Int absInt(numBits(T))), T)
+          when (I <Int min(T))
+               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
+               andBool hasSignedIntegerType(T)
+               andBool hasIntegerType(T')
+               andBool notBool isBoolType (T)
           [structural, anywhere] 
      rule [cast-signed-of-big]:
-          cast(T:KResult, tv(I:Int, T':KResult)) 
-               => tv(I:Int -Int (2 ^Int absInt(numBits(T:KResult))), T:KResult)
-          when (I:Int >Int max(T:KResult))
-               andBool (absInt(I:Int) <=Int (2 ^Int absInt(numBits(T:KResult))))
-               andBool hasSignedIntegerType(T:KResult)
-               andBool hasIntegerType(T':KResult)
-               andBool notBool isBoolType (T:KResult)
+          cast(T:Type, tv(I:Int, T':Type)) 
+               => tv(I -Int (2 ^Int absInt(numBits(T))), T)
+          when (I >Int max(T))
+               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
+               andBool hasSignedIntegerType(T)
+               andBool hasIntegerType(T')
+               andBool notBool isBoolType (T)
           [anywhere]
 
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
-          cast(T:KResult, tv(piece(unknown(Len:Int), Len:Int), T':KResult)) 
-               => tv(piece(unknown(value(bitSizeofType(T:KResult))), value(bitSizeofType(T:KResult))), T:KResult)
-          when hasIntegerType(T:KResult)
-               andBool hasIntegerType(T':KResult)
+          cast(T:Type, tv(piece(unknown(Len:Int), Len:Int), T':Type)) 
+               => tv(piece(unknown(value(bitSizeofType(T))), value(bitSizeofType(T))), T)
+          when hasIntegerType(T)
+               andBool hasIntegerType(T')
           [anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
@@ -800,17 +800,18 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
      syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
      
      rule [interpret-start]:
-          interpret(T:KResult, piece(N:Int, _:Int)) => interpret-aux(T:KResult, N:Int)
+          interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
+          when N >=Int 0
      
      rule [interpret-done]:
-          interpret-aux(T:KResult, I:Int) => tv(I:Int, T:KResult)
-          when (min(T:KResult) <=Int I:Int) 
-               andBool (max(T:KResult) >=Int I:Int)
-               andBool hasIntegerType(T:KResult)
+          interpret-aux(T:Type, I:Int) => tv(I, T)
+          when (min(T) <=Int I) 
+               andBool (max(T) >=Int I)
+               andBool hasIntegerType(T)
      rule [interpret-too-big]:
-          interpret-aux(T:KResult, I:Int) => interpret-aux(T:KResult, I:Int -Int (2 ^Int absInt(numBits(T:KResult))))
-          when (I:Int >Int max(T:KResult))
-               andBool (hasIntegerType(T:KResult))
+          interpret-aux(T:Type, I:Int) => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
+          when (I:Int >Int max(T))
+               andBool hasIntegerType(T)
           
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)

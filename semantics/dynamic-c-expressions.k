@@ -1609,7 +1609,7 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")"
+     syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")" [strict(2,3)]
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
@@ -1645,8 +1645,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
           <k> E1:K |= E2:K => compoundAssignment('_|_, E1:K, E2:K) ...</k>
           [structural]
 
-     rule <k> compoundAssignment(L:KLabel, V:K, V':K)
-               => V := L(V,, V')
+     rule <k> compoundAssignment(L:KLabel, V:KResult, V':KResult)
+               => pkludge(V) := L(rkludge(V),, rkludge(V'))
           ...</k>
           [structural]
 endmodule

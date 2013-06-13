@@ -241,7 +241,8 @@ module DYNAMIC-C-ERRORS
           [structural, large]
      
      // TODO(chathhorn) basetype, elided. This can't happen now, so I must have
-     // fucked something up.
+     // fucked something up. Actually, the configuration will probably just be
+     // a bit different when exhibiting this error.
      // rule [err00024]:
      //      <k> (. => ERROR) ~> arithInterpret(_, I:Int &Int I':Int) ...</k>
      //      <br/>
@@ -428,7 +429,7 @@ module DYNAMIC-C-ERRORS
           <k> (. => ERROR) ~> concretize(T:KResult, dataList((piece(N:Int, Len:Int),, _))) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
-          when isFloatType(T:KResult)
+          when isFloatType(T:KResult) andBool (N >=Int 0)
           [structural, large]
           
      rule [err00047]:
@@ -438,8 +439,7 @@ module DYNAMIC-C-ERRORS
           (.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
           [structural, large]
      
-     // TODO(chathhorn): surely there's no way this actually catches races.
-     // Maybe if these rules are somehow given priority?
+     // TODO(chathhorn): this is relying on the order rules are tried.
 
      syntax K ::= "datarace" "(" SymLoc "," Int "," SymLoc "," Int ")"
 
