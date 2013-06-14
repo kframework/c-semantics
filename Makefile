@@ -5,7 +5,7 @@ PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 #svnversion
 
-export C_K_BASE ?= $(C_K_BASE)
+#export C_K_BASE ?= $(C_K_BASE)
 
 #OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
 #OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
