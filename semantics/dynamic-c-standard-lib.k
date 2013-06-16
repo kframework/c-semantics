@@ -1170,7 +1170,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      allocated space.
      }*/
      syntax K ::= "newAlloc" "(" Int ")" [function]
-     rule newAlloc(Fresh:Int) => loc(sb(Fresh, allocatedDuration), 0, 0)
+     rule newAlloc(Fresh:Int) => loc(Fresh @ allocatedDuration, 0, 0)
      
      rule [malloc]:
           <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
