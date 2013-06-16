@@ -14,7 +14,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      rule makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
      
      syntax Int ::= arrayLength(K) [function]
-     rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N:Int
+     rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
      rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
      rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
@@ -30,7 +30,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
           [heat]
      rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
 
-     rule lv(L:SymLoc, T:Type) => lval(L:SymLoc, T:Type)
+     rule lv(L:SymLoc, T:Type) => lval(L, T)
      
      // fixme Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
@@ -290,7 +290,7 @@ module DYNAMIC-SEMANTICS-LITERALS
      rule WCharLiteral(N:Int) => tv(N:Int, cfg:wcharut) [structural, anywhere]
      rule Constant(V:KResult) => V:KResult [structural, anywhere]
      // chathhorn: note this rule.
-     rule [create-internal-value]: <k> N:Int => tv(N:Int, cfg:largestUnsigned) ...</k>
+     rule [create-internal-value]: N:Int => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
      
      // here we start with a local address, put the string in memory, then
@@ -402,9 +402,7 @@ module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
      row-major order (last subscript varies fastest).
      }*/
      rule [array-subscript]:
-          <k> E1:K[E2:K]
-               => *(E1:K + E2:K) 
-          ...</k>
+          E1:K[E2:K] => *(E1 + E2) 
           [structural]
 endmodule
 
@@ -457,32 +455,27 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      rule R:KResult ~> Call(K:K, .K) => Call(K, R) 
 
      rule [function-application-pre]:
-          <k> Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
-               => application(readFunction(Loc), L)
-          ...</k>
+          Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
+          => application(readFunction(Loc), L)
           when isFunctionType(T)
           [structural]
      /*@ this extra step is useful for putting the function name in the
         transition graph */
      rule [call]:
-          <k> application(Fun:KResult, L:KList)
-               => application'(Fun:KResult, L:KList)
-          ...</k>
+          application(Fun:KResult, L:KList) => application'(Fun:KResult, L:KList)
           [structural]
 
      rule [populateFromGlobal]:
           <k> populateFromGlobal => .K ...</k>
           <currTU> Tu:K </currTU>
-          //<br/>
           <genv>... Tu:K |-> map(G:Map) ...</genv> <env> _ => G:Map </env>
           <gtypes>... Tu:K |-> map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
           <gstructs> GS:Map </gstructs> <structs> _ => GS:Map </structs>
           [structural]
 
      rule [builtin-application]:
-          <k> application'(functionPrototype(X:Id, T:KResult), L:KList)
-               => application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:KList)
-          ...</k>
+          application'(functionPrototype(X:Id, T:KResult), L:KList)
+          => application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:KList)
           [structural]
           
      rule [function-application]:
@@ -548,9 +541,7 @@ module DYNAMIC-SEMANTICS-MEMBERS
           ...</structs>
           [structural]
           
-     rule <k> tv(L:KList, T:KResult) . F:Id
-               => extractField(L:KList, T:KResult, F:Id)
-          ...</k>
+     rule tv(L:KList, T:KResult) . F:Id => extractField(L:KList, T:KResult, F:Id)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
@@ -561,7 +552,7 @@ module DYNAMIC-SEMANTICS-MEMBERS
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K:K -> F:Id => (* K:K) . F:Id [macro]
+     rule K:K -> F:Id => (* K) . F [macro]
 endmodule
 
 module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
@@ -585,15 +576,12 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/  
      rule [post-increment-start]:
-          <k> lval(Loc:SymLoc, T:Type) ++
-               => postInc(Loc, read(Loc, T), T)
-          ...</k>
+          lval(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
           [structural]
      rule [post-increment]:
-          <k> postInc(Loc:SymLoc, tv(V:K, T:Type), T:Type)
-               => lv(Loc, T) := tv(V, T) + tv(1, t(.Set, int))
-               ~> discard ~> tv(V, T)
-          ...</k>
+          postInc(Loc:SymLoc, tv(V:K, T:Type), T:Type)
+          => lv(Loc, T) := tv(V, T) + tv(1, t(.Set, int))
+          ~> discard ~> tv(V, T)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{3}}}{
@@ -602,15 +590,12 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
      the value 1 of the appropriate type is subtracted from it).
      }*/  
      rule [post-decrement-start]:
-          <k> lval(Loc:SymLoc, T:Type) --
-               => postDec(Loc, read(Loc, T), T)
-          ...</k>
+          lval(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
           [structural]
      rule [post-decrement]:
-          <k> postDec(Loc:SymLoc, tv(V:K, T:Type), T:Type)
-               => lv(Loc, T) := tv(V, T) - tv(1, t(.Set, int))
-               ~> discard ~> tv(V, T)
-          ...</k>
+          postDec(Loc:SymLoc, tv(V:K, T:Type), T:Type)
+          => lv(Loc, T) := tv(V, T) - tv(1, t(.Set, int))
+          ~> discard ~> tv(V, T)
           [structural]
      
 endmodule
@@ -647,9 +632,8 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
-     rule <k> CompoundLiteral(N:Int, T:KResult, K:K, Init:K)
-               => handleCompoundLiteral(figureInit(compoundLiteral(N:Int), DeclType(T:KResult, K:K), Init:K))
-          ...</k>
+     rule CompoundLiteral(N:Int, T:KResult, K:K, Init:K)
+          => handleCompoundLiteral(figureInit(compoundLiteral(N:Int), DeclType(T:KResult, K:K), Init:K))
           [structural]
           
      rule <k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
@@ -715,9 +699,7 @@ module DYNAMIC-SEMANTICS-REFERENCE
      }
      */
      rule [ref]:
-          <k> &(lval(Loc:SymLoc, T:Type))
-               => tv(Loc, t(.Set, pointerType(T)))
-          ...</k>
+          &(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
           [structural]
 endmodule
 
@@ -734,10 +716,9 @@ module DYNAMIC-SEMANTICS-DEREFERENCE
      \cinline{*} operator is undefined.
      }*/
      rule [deref]:
-          <k> *(tv(Loc:SymLoc, t(_, pointerType(t(S:Set, T:K)))))
-               => checkDerefLoc(Loc)
-               ~> lv(Loc, t(S, T))
-          ...</k>
+          *(tv(Loc:SymLoc, t(_, pointerType(t(S:Set, T:K)))))
+          => checkDerefLoc(Loc)
+          ~> lv(Loc, t(S, T))
           when notBool T ==K void
           [structural]
 endmodule
@@ -819,9 +800,9 @@ module DYNAMIC-SEMANTICS-SIZEOF
           [structural]
      rule byteSizeofType-aux(tv(N:Int, T:KResult)) => tv(bitsToBytes(N:Int), T:KResult)
           [structural]
-     rule <k> SizeofExpression(E:K) => sizeofType(typeof(E:K)) ...</k>
+     rule SizeofExpression(E:K) => sizeofType(typeof(E:K))
           [structural]
-     rule <k> SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K)) ...</k>
+     rule SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K))
           [structural]
 endmodule
 
@@ -839,7 +820,7 @@ module DYNAMIC-SEMANTICS-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule <k> Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult) ...</k>
+     rule Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult)
           [structural]
 endmodule
 
@@ -876,12 +857,11 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
      rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type) => arithInterpret(T, F1:Float /Float F2:Float)
           [structural]
      // fixme this seems out of place and strange
-     rule piece(unknown(N:Int), N) /Bits M:Int 
-          => piece(unknown(N), N)
+     rule piece(unknown(N:Int), N) /Bits M:Int => piece(unknown(N), N)
           when M =/=Int 0
           [structural, anywhere]
           
-     rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T, I1:Int %Int I2:Int)
+     rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T, I1 %Int I2)
           when isPromoted(T)
                andBool (min(T) <=Int I1:Int /Int I2:Int) 
                andBool (max(T) >=Int I1:Int /Int I2:Int)
@@ -958,28 +938,24 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
      }*/
      
      syntax K ::= "addToPointer" "(" SymLoc "," Type "," K "," K ")" [strict(4)]
-     rule <k> tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
-               => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-          ...</k>
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
+          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
-     rule <k> tv(I:Int, T:KResult) + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
-               => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-          ...</k>
+     rule tv(I:Int, T:KResult) + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
+          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
-     rule <k> tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
-               => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
-          ...</k>
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
+          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
                
-     rule <k> addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))
-               => tv(Loc +bytes (I:Int *Int Size:Int), newFromArray(T:KResult, I:Int))
-          ...</k>
+     rule addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))
+          => tv(Loc +bytes (I:Int *Int Size:Int), newFromArray(T:KResult, I:Int))
           when ifFromArrayInBounds(T:KResult, I:Int)
           [structural]
           
@@ -1023,12 +999,12 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
      syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")" [strict(3)] // ptr1, ptr2, size of ptr type
      rule [start-pointer-difference]: 
           tv(L1:SymLoc, t(_, pointerType(T:KResult))) - tv(L2:SymLoc, t(_, pointerType(T:KResult)))
-               => computePointerDifference(L1, L2, sizeofType(T))
+          => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
      rule [pointer-difference]: 
           computePointerDifference(loc(Base:SymBase, Offset1:Int, 0), loc(Base:SymBase, Offset2:Int, 0), tv(Size:Int, _))
-               => tv((Offset1:Int -Int Offset2:Int) /Int Size:Int, cfg:ptrdiffut)
-          when (Offset1:Int -Int Offset2:Int) %Int Size:Int ==Int 0
+          => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
+          when (Offset1 -Int Offset2) %Int Size ==Int 0
           [structural]
      
      rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T, (I1:Int +Int I2:Int))
@@ -1066,17 +1042,16 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
      otherwise, the behavior is undefined.
      }*/
      rule tv(I:Int, T:KResult) << tv(N:Int, T':KResult)
-               => leftShiftInterpret(T:KResult, I:Int <<Int N:Int, tv(I:Int, T:KResult))
+          => leftShiftInterpret(T:KResult, I:Int <<Int N:Int, tv(I:Int, T:KResult))
           when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-          andBool N:Int <Int numBits(T:KResult)
+               andBool N:Int <Int numBits(T:KResult)
           [structural]
      rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T:KResult)
      rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int, T:KResult)
           when hasSignedIntegerType(T:KResult)
-          // andBool I:Int <=Int (2 ^Int absInt(numBits(T:KResult)))
-          andBool I:Int <=Int max(T:KResult)
-          andBool I:Int >=Int min(T:KResult)
+               andBool I:Int <=Int max(T:KResult)
+               andBool I:Int >=Int min(T:KResult)
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -1089,7 +1064,7 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
      rule tv(I:Int, T:KResult) >> tv(N:Int, T':KResult) 
                => rightShiftInterpret(T:KResult, I:Int >>Int N:Int)
           when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-          andBool N:Int <Int numBits(T:KResult)
+               andBool N:Int <Int numBits(T:KResult)
           [structural]
      rule rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
           when hasIntegerType(T:KResult)
@@ -1135,51 +1110,55 @@ module DYNAMIC-SEMANTICS-RELATIONAL
      }*/
           
      rule tv(I1:Int, T:KResult) < tv(I2:Int, T:KResult)
-               => makeTruth(I1:Int <Int I2:Int)
+          => makeTruth(I1:Int <Int I2:Int)
           when isPromoted(T:KResult) orBool isPointerType(T:KResult)
           [structural]
      rule tv(I1:Int, T:KResult) <= tv(I2:Int, T:KResult)
-               => makeTruth(I1:Int <=Int I2:Int)
+          => makeTruth(I1:Int <=Int I2:Int)
           when isPromoted(T:KResult) orBool isPointerType(T:KResult)
           [structural]
      rule tv(I1:Int, T:KResult) > tv(I2:Int, T:KResult)
-               => makeTruth(I1:Int >Int I2:Int)
+          => makeTruth(I1:Int >Int I2:Int)
           when isPromoted(T:KResult) orBool isPointerType(T:KResult)
           [structural]
      rule tv(I1:Int, T:KResult) >= tv(I2:Int, T:KResult)
-               => makeTruth(I1:Int >=Int I2:Int)
+          => makeTruth(I1:Int >=Int I2:Int)
           when isPromoted(T:KResult) orBool isPointerType(T:KResult)
           [structural]
      rule tv(F1:Float, T:KResult) < tv(F2:Float, T:KResult)
-               => makeTruth(F1:Float <Float F2:Float)
+          => makeTruth(F1:Float <Float F2:Float)
           [structural]
      rule tv(F1:Float, T:KResult) <= tv(F2:Float, T:KResult)
-               => makeTruth(F1:Float <=Float F2:Float)
+          => makeTruth(F1:Float <=Float F2:Float)
           [structural]
      rule tv(F1:Float, T:KResult) > tv(F2:Float, T:KResult)
-               => makeTruth(F1:Float >Float F2:Float)
+          => makeTruth(F1:Float >Float F2:Float)
           [structural]
      rule tv(F1:Float, T:KResult) >= tv(F2:Float, T:KResult)
-               => makeTruth(F1:Float >=Float F2:Float)
+          => makeTruth(F1:Float >=Float F2:Float)
           [structural]
      
      //- comparison of pointers
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
-     rule [ptr-compare-lt]: tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) < tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
-               => makeTruth(Offset:Int <Int Offset':Int)
+     rule [ptr-compare-lt]: 
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) < tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          => makeTruth(Offset:Int <Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
-     rule [ptr-compare-lte]: tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) <= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
-               => makeTruth(Offset:Int <=Int Offset':Int)
+     rule [ptr-compare-lte]: 
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) <= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          => makeTruth(Offset:Int <=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
-     rule [ptr-compare-gt]: tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) > tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
-               => makeTruth(Offset:Int >Int Offset':Int)
+     rule [ptr-compare-gt]: 
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) > tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          => makeTruth(Offset:Int >Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
-     rule [ptr-compare-gte]: tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) >= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
-               => makeTruth(Offset:Int >=Int Offset':Int)
+     rule [ptr-compare-gte]: 
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) >= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          => makeTruth(Offset:Int >=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
 endmodule
@@ -1277,14 +1256,12 @@ module DYNAMIC-SEMANTICS-EQUALITY
           
      // otherwise, there are a number of cases.  
      // First, they are part of the same object        
-     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) == tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
-               => makeTruth(Offset:Int ==Int Offset':Int)
-          ...</k>
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) == tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
+          => makeTruth(Offset:Int ==Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
-     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) != tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
-               => makeTruth(Offset:Int =/=Int Offset':Int)
-          ...</k>
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) != tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
+          => makeTruth(Offset:Int =/=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
           
@@ -1421,16 +1398,13 @@ module DYNAMIC-SEMANTICS-LOGICAL
      operands. If the first operand compares equal to 0, the second operand is
      not evaluated.
      } */ 
-     rule <k> tv(0, t(_, int)) && E:K
-               => tv(0, t(.Set, int))
-          ...</k>
+     rule tv(0, t(_, int)) && E:K => tv(0, t(.Set, int))
           [structural]
-     rule <k> tv(1, t(_, int)) && E:K
-               => sequencePoint
-               ~> simplifyTruth(E:K)
-          ...</k>
+     rule tv(1, t(_, int)) && E:K
+          => sequencePoint
+          ~> simplifyTruth(E:K)
           [structural]
-     rule <k> (V:KResult => simplifyTruth(V:KResult)) && _ ...</k>
+     rule (V:KResult => simplifyTruth(V:KResult)) && _ 
           when isNotTruthValue(V:KResult)
           [structural]   
                     
@@ -1444,16 +1418,12 @@ module DYNAMIC-SEMANTICS-LOGICAL
      operands. If the first operand compares unequal to 0, the second operand
      is not evaluated.
      }*/
-     rule <k> tv(0, t(_, int)) || E:K
-               => sequencePoint
-               ~> simplifyTruth(E:K)
-          ...</k>
+     rule tv(0, t(_, int)) || E:K
+          => sequencePoint ~> simplifyTruth(E:K)
           [structural]
-     rule <k> tv(1, t(_, int)) || E:K
-               => tv(1, t(.Set, int))
-          ...</k>
+     rule tv(1, t(_, int)) || E:K => tv(1, t(.Set, int))
           [structural]
-     rule <k> (V:KResult => V:KResult != tv(0, t(.Set, int))) || _ ...</k>
+     rule (V:KResult => V:KResult != tv(0, t(.Set, int))) || _
           when isNotTruthValue(V:KResult)
           [structural]
 
@@ -1467,7 +1437,7 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      context types((_,, HOLE,, _))
      syntax K ::= "convertedType" "(" K ")" [strict]
      
-     rule <k> getTypes(L:KList) => types(wrapWithTypeOf(L:KList)) ...</k> [structural]
+     rule getTypes(L:KList) => types(wrapWithTypeOf(L:KList)) [structural]
      
      syntax KList ::=  wrapWithTypeOf(KList) [function]
      rule wrapWithTypeOf((K:K,, L:KList)) => (retype(typeof(K:K)),, wrapWithTypeOf(L:KList))
@@ -1493,7 +1463,7 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/  
-     rule <k> (.K => getTypes((E1:K,, E2:K))) ~> E:K ? E1:K : E2:K ...</k>
+     rule (. => getTypes((E1:K,, E2:K))) ~> E:K ? E1 : E2 
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -1503,12 +1473,11 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule <k> (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
+     rule (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
                ~> E:K ? E1:K : E2:K
-          ...</k>
           when T1:KResult =/=K T2:KResult
-          andBool isArithmeticType(T1:KResult)
-          andBool isArithmeticType(T2:KResult)
+               andBool isArithmeticType(T1)
+               andBool isArithmeticType(T2)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
@@ -1527,37 +1496,32 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
      rule [conditional-left-is-null]:
-          <k> (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
+          (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
                ~> E:K ? tv(0, T1:KResult) : E2:K
-          ...</k>
           when hasIntegerType(T1:KResult)
-          andBool isPointerType(T2:KResult)
+               andBool isPointerType(T2:KResult)
           [structural]
      rule [conditional-right-is-null]:
-          <k> (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
+          (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
                ~> E:K ? E1:K : tv(0, T2:KResult)
-          ...</k>
           when hasIntegerType(T2:KResult)
-          andBool isPointerType(T1:KResult)
+               andBool isPointerType(T1:KResult)
           [structural]
           
      // fixme, this is wrong
-     rule <k> (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
+     rule (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
                ~> E:K ? E1:K : E2:K
-          ...</k>
           when isPointerType(T1:KResult)
-          andBool isPointerType(T2:KResult)
+               andBool isPointerType(T2:KResult)
           [structural]
           
      // this should take care of the void/struct cases
-     rule <k> (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
+     rule (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
                ~> E:K ? E1:K : E2:K
-          ...</k>
           when notBool isPointerType(T:KResult)
           [structural]
-     rule <k> convertedType(T:KResult) ~> E:K ? E1:K : E2:K
+     rule convertedType(T:KResult) ~> E:K ? E1:K : E2:K
                => IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
-          ...</k>
           [structural]
 endmodule
 
@@ -1581,15 +1545,11 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      }*/
 
      rule [assign]:
-          <k> lval(Loc:SymLoc, T:Type) := tv(V:KList, T)
-               => write(lv(Loc, T), tv(V, T))
-               ~> tv(V, T)
-          ...</k>
+          lval(Loc:SymLoc, T:Type) := tv(V:KList, T)
+          => write(lv(Loc, T), tv(V, T)) ~> tv(V, T)
           [structural]
      rule [convert-for-assignment]:
-          <k> lval(_, T:Type) := (tv(V:KList, T':KResult) 
-               => cast(T, tv(V, T')))
-          ...</k>
+          lval(_, T:Type) := (tv(V:KList, T':KResult) => cast(T, tv(V, T')))
           when T =/=K T'
           [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{3}}}{
@@ -1615,39 +1575,38 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
           
      rule [compoundAssignment-mult]:
-          <k> E1:K *= E2:K => compoundAssignment('_*_, E1:K, E2:K) ...</k>
+          E1:K *= E2:K => compoundAssignment('_*_, E1, E2)
           [structural]
      rule [compoundAssignment-div]:
-          <k> E1:K /= E2:K => compoundAssignment('_/_, E1:K, E2:K) ...</k>
+          E1:K /= E2:K => compoundAssignment('_/_, E1, E2)
           [structural]
      rule [compoundAssignment-modulo]:
-          <k> E1:K %= E2:K => compoundAssignment('_%_, E1:K, E2:K) ...</k>
+          E1:K %= E2:K => compoundAssignment('_%_, E1, E2)
           [structural]
      rule [compoundAssignment-plus]:
-          <k> E1:K += E2:K => compoundAssignment('_+_, E1:K, E2:K) ...</k>
+          E1:K += E2:K => compoundAssignment('_+_, E1, E2)
           [structural]
      rule [compoundAssignment-minus]:
-          <k> E1:K -= E2:K => compoundAssignment('_-_, E1:K, E2:K) ...</k>
+          E1:K -= E2:K => compoundAssignment('_-_, E1, E2)
           [structural]
      rule [compoundAssignment-left-shift]:
-          <k> E1:K <<= E2:K => compoundAssignment('_<<_, E1:K, E2:K) ...</k>
+          E1:K <<= E2:K => compoundAssignment('_<<_, E1, E2)
           [structural]
      rule [compoundAssignment-right-shift]:
-          <k> E1:K >>= E2:K => compoundAssignment('_>>_, E1:K, E2:K) ...</k>
+          E1:K >>= E2:K => compoundAssignment('_>>_, E1, E2)
           [structural]
      rule [compoundAssignment-bitwise-and]:
-          <k> E1:K &= E2:K => compoundAssignment('_&_, E1:K, E2:K) ...</k>
+          E1:K &= E2:K => compoundAssignment('_&_, E1, E2)
           [structural]
      rule [compoundAssignment-bitwise-xor]:
-          <k> E1:K ^= E2:K => compoundAssignment('_^_, E1:K, E2:K) ...</k>
+          E1:K ^= E2:K => compoundAssignment('_^_, E1, E2)
           [structural]
      rule [compoundAssignment-bitwise-or]:
-          <k> E1:K |= E2:K => compoundAssignment('_|_, E1:K, E2:K) ...</k>
+          E1:K |= E2:K => compoundAssignment('_|_, E1, E2)
           [structural]
 
-     rule <k> compoundAssignment(L:KLabel, V:KResult, V':KResult)
-               => pkludge(V) := L(rkludge(V),, rkludge(V'))
-          ...</k>
+     rule compoundAssignment(L:KLabel, V:KResult, V':KResult)
+          => pkludge(V) := L(rkludge(V),, rkludge(V'))
           [structural]
 endmodule
 
@@ -1665,11 +1624,10 @@ module DYNAMIC-SEMANTICS-SEQUENCING
      rule Comma(klist(L:KList)) => toRVList(L) ~> Comma(.K)
      rule R:KResult ~> Comma(.K) => Comma(R) 
 
-     rule <k> Comma(rvlist((V:KResult,, K':K,, L:KList))) 
-          => sequencePoint
-          ~> Comma(rvlist((K':K,, L:KList))) ...</k>
+     rule Comma(rvlist((V:KResult,, K':K,, L:KList))) 
+          => sequencePoint ~> Comma(rvlist((K':K,, L:KList)))
           [structural]
-     rule <k> Comma(rvlist(K:K)) => K:K ...</k>
+     rule Comma(rvlist(K:K)) => K
           [structural]
 endmodule
 

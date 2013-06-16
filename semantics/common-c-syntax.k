@@ -765,13 +765,15 @@ and attribute = String * expression list
      rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro]
      
      
-     /*@ This macro defines an important identity from \source[n1570]{\para{6.5.3.2}{3}}.  As a syntactic macro, it should run on programs before they even start to reduce. */
+     /*@ This macro defines an important identity from
+     \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
+     on programs before they even start to reduce. */
      rule &(*(K:K)) => K:K [macro]
           
 
-     /*@ The below rules simply transform the prefix AST names to the infix/mixfix names we use from now on */
+     /*@ The below rules simply transform the prefix AST names to the
+     infix/mixfix names we use from now on */
      
-     // all these rules are temporary while I adjust the semantics to the new grammar
      syntax Expression ::= "Conditional" "(" K "," K "," K ")" [klabel('Conditional)]
      rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro]
      
@@ -799,97 +801,67 @@ and attribute = String * expression list
      syntax Expression ::= "PostDecrement" "(" K ")" [klabel('PostDecrement)]
      rule PostDecrement(K:K) => K:K -- [macro]
 
-     // ops Multiply : K K -> Expression
-      syntax Expression ::= "Multiply" "(" K "," K ")" [klabel('Multiply)]
+     syntax Expression ::= "Multiply" "(" K "," K ")" [klabel('Multiply)]
      rule Multiply(K1:K, K2:K) => K1:K * K2:K [macro]
-     // ops Divide : K K -> Expression
-      syntax Expression ::= "Divide" "(" K "," K ")" [klabel('Divide)]
+     syntax Expression ::= "Divide" "(" K "," K ")" [klabel('Divide)]
      rule Divide(K1:K, K2:K) => K1:K / K2:K [macro]
-     // ops Modulo : K K -> Expression
-      syntax Expression ::= "Modulo" "(" K "," K ")" [klabel('Modulo)]
+     syntax Expression ::= "Modulo" "(" K "," K ")" [klabel('Modulo)]
      rule Modulo(K1:K, K2:K) => K1:K % K2:K [macro]
-     // ops Plus : K K -> Expression
-      syntax Expression ::= "Plus" "(" K "," K ")" [klabel('Plus)]
+     syntax Expression ::= "Plus" "(" K "," K ")" [klabel('Plus)]
      rule Plus(K1:K, K2:K) => K1:K + K2:K [macro]
-     // ops Minus : K K -> Expression
-      syntax Expression ::= "Minus" "(" K "," K ")" [klabel('Minus)]
+     syntax Expression ::= "Minus" "(" K "," K ")" [klabel('Minus)]
      rule Minus(K1:K, K2:K) => K1:K - K2:K [macro]
-     // ops LeftShift : K K -> Expression
-      syntax Expression ::= "LeftShift" "(" K "," K ")" [klabel('LeftShift)]
+     syntax Expression ::= "LeftShift" "(" K "," K ")" [klabel('LeftShift)]
      rule LeftShift(K1:K, K2:K) => K1:K << K2:K [macro]
-     // ops RightShift : K K -> Expression
-      syntax Expression ::= "RightShift" "(" K "," K ")" [klabel('RightShift)]
+     syntax Expression ::= "RightShift" "(" K "," K ")" [klabel('RightShift)]
      rule RightShift(K1:K, K2:K) => K1:K >> K2:K [macro]
-     // ops LessThan : K K -> Expression
-      syntax Expression ::= "LessThan" "(" K "," K ")" [klabel('LessThan)]
+     syntax Expression ::= "LessThan" "(" K "," K ")" [klabel('LessThan)]
      rule LessThan(K1:K, K2:K) => K1:K < K2:K [macro]
-     // ops LessThanOrEqual : K K -> Expression
-      syntax Expression ::= "LessThanOrEqual" "(" K "," K ")" [klabel('LessThanOrEqual)]
+     syntax Expression ::= "LessThanOrEqual" "(" K "," K ")" [klabel('LessThanOrEqual)]
      rule LessThanOrEqual(K1:K, K2:K) => K1:K <= K2:K [macro]
-     // ops GreaterThan : K K -> Expression
-      syntax Expression ::= "GreaterThan" "(" K "," K ")" [klabel('GreaterThan)]
+     syntax Expression ::= "GreaterThan" "(" K "," K ")" [klabel('GreaterThan)]
      rule GreaterThan(K1:K, K2:K) => K1:K > K2:K [macro]
-     // ops GreaterThanOrEqual : K K -> Expression
-      syntax Expression ::= "GreaterThanOrEqual" "(" K "," K ")" [klabel('GreaterThanOrEqual)]
+     syntax Expression ::= "GreaterThanOrEqual" "(" K "," K ")" [klabel('GreaterThanOrEqual)]
      rule GreaterThanOrEqual(K1:K, K2:K) => K1:K >= K2:K [macro]
-     // ops Equality : K K -> Expression
-      syntax Expression ::= "Equality" "(" K "," K ")" [klabel('Equality)]
+     syntax Expression ::= "Equality" "(" K "," K ")" [klabel('Equality)]
      rule Equality(K1:K, K2:K) => K1:K == K2:K [macro]
-     // ops NotEquality : K K -> Expression
-      syntax Expression ::= "NotEquality" "(" K "," K ")" [klabel('NotEquality)]
+     syntax Expression ::= "NotEquality" "(" K "," K ")" [klabel('NotEquality)]
      rule NotEquality(K1:K, K2:K) => K1:K != K2:K [macro]
-     // ops BitwiseAnd : K K -> Expression
-      syntax Expression ::= "BitwiseAnd" "(" K "," K ")" [klabel('BitwiseAnd)]
+     syntax Expression ::= "BitwiseAnd" "(" K "," K ")" [klabel('BitwiseAnd)]
      rule BitwiseAnd(K1:K, K2:K) => K1:K & K2:K [macro]
-     // ops BitwiseXor : K K -> Expression
-      syntax Expression ::= "BitwiseXor" "(" K "," K ")" [klabel('BitwiseXor)]
+     syntax Expression ::= "BitwiseXor" "(" K "," K ")" [klabel('BitwiseXor)]
      rule BitwiseXor(K1:K, K2:K) => K1:K ^ K2:K [macro]
-     // ops BitwiseOr : K K -> Expression
-      syntax Expression ::= "BitwiseOr" "(" K "," K ")" [klabel('BitwiseOr)]
+     syntax Expression ::= "BitwiseOr" "(" K "," K ")" [klabel('BitwiseOr)]
      rule BitwiseOr(K1:K, K2:K) => K1:K | K2:K [macro]
-     // ops LogicalAnd : K K -> Expression
-      syntax Expression ::= "LogicalAnd" "(" K "," K ")" [klabel('LogicalAnd)]
+     syntax Expression ::= "LogicalAnd" "(" K "," K ")" [klabel('LogicalAnd)]
      rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro]
-     // ops LogicalOr : K K -> Expression
-      syntax Expression ::= "LogicalOr" "(" K "," K ")" [klabel('LogicalOr)]
+     syntax Expression ::= "LogicalOr" "(" K "," K ")" [klabel('LogicalOr)]
      rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro]
      
 
-     // ops Assign : K K -> Expression
-      syntax Expression ::= "Assign" "(" K "," K ")" [klabel('Assign)]
+     syntax Expression ::= "Assign" "(" K "," K ")" [klabel('Assign)]
      rule Assign(K1:K, K2:K) => K1:K := K2:K [macro]
-     // ops AssignMultiply : K K -> Expression
-      syntax Expression ::= "AssignMultiply" "(" K "," K ")" [klabel('AssignMultiply)]
+     syntax Expression ::= "AssignMultiply" "(" K "," K ")" [klabel('AssignMultiply)]
      rule AssignMultiply(K1:K, K2:K) => K1:K *= K2:K [macro]
-     // ops AssignDivide : K K -> Expression
-      syntax Expression ::= "AssignDivide" "(" K "," K ")" [klabel('AssignDivide)]
+     syntax Expression ::= "AssignDivide" "(" K "," K ")" [klabel('AssignDivide)]
      rule AssignDivide(K1:K, K2:K) => K1:K /= K2:K [macro]
-     // ops AssignModulo : K K -> Expression
-      syntax Expression ::= "AssignModulo" "(" K "," K ")" [klabel('AssignModulo)]
+     syntax Expression ::= "AssignModulo" "(" K "," K ")" [klabel('AssignModulo)]
      rule AssignModulo(K1:K, K2:K) => K1:K %= K2:K [macro]
-     // ops AssignPlus : K K -> Expression
-      syntax Expression ::= "AssignPlus" "(" K "," K ")" [klabel('AssignPlus)]
+     syntax Expression ::= "AssignPlus" "(" K "," K ")" [klabel('AssignPlus)]
      rule AssignPlus(K1:K, K2:K) => K1:K += K2:K [macro]
-     // ops AssignMinus : K K -> Expression
-      syntax Expression ::= "AssignMinus" "(" K "," K ")" [klabel('AssignMinus)]
+     syntax Expression ::= "AssignMinus" "(" K "," K ")" [klabel('AssignMinus)]
      rule AssignMinus(K1:K, K2:K) => K1:K -= K2:K [macro]
-     // ops AssignBitwiseAnd : K K -> Expression
-      syntax Expression ::= "AssignBitwiseAnd" "(" K "," K ")" [klabel('AssignBitwiseAnd)]
+     syntax Expression ::= "AssignBitwiseAnd" "(" K "," K ")" [klabel('AssignBitwiseAnd)]
      rule AssignBitwiseAnd(K1:K, K2:K) => K1:K &= K2:K [macro]
-     // ops AssignBitwiseXor : K K -> Expression
-      syntax Expression ::= "AssignBitwiseXor" "(" K "," K ")" [klabel('AssignBitwiseXor)]
+     syntax Expression ::= "AssignBitwiseXor" "(" K "," K ")" [klabel('AssignBitwiseXor)]
      rule AssignBitwiseXor(K1:K, K2:K) => K1:K ^= K2:K [macro]
-     // ops AssignBitwiseOr : K K -> Expression
-      syntax Expression ::= "AssignBitwiseOr" "(" K "," K ")" [klabel('AssignBitwiseOr)]
+     syntax Expression ::= "AssignBitwiseOr" "(" K "," K ")" [klabel('AssignBitwiseOr)]
      rule AssignBitwiseOr(K1:K, K2:K) => K1:K |= K2:K [macro]
-     // ops AssignLeftShift : K K -> Expression
-      syntax Expression ::= "AssignLeftShift" "(" K "," K ")" [klabel('AssignLeftShift)]
+     syntax Expression ::= "AssignLeftShift" "(" K "," K ")" [klabel('AssignLeftShift)]
      rule AssignLeftShift(K1:K, K2:K) => K1:K <<= K2:K [macro]
-     // ops AssignRightShift : K K -> Expression
-      syntax Expression ::= "AssignRightShift" "(" K "," K ")" [klabel('AssignRightShift)]
+     syntax Expression ::= "AssignRightShift" "(" K "," K ")" [klabel('AssignRightShift)]
      rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro]
      
-     // ops Dot : K Id -> Expression
      syntax Expression ::= "Dot" "(" K "," Id ")" [klabel('Dot)]
      rule Dot(K:K, X:Id) => K:K . X:Id [macro]
      syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel('Arrow)]

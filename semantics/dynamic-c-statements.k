@@ -17,13 +17,13 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
      continues unimpeded across them.
      }*/
      rule [skip-label]: 
-          <k> Label(L:Id, K:K) => K:K ...</k>
+          Label(L:Id, K:K) => K
           [structural]
      rule [case-fall-through]:
-          <k> Case(_:Int, _:Int, _, K:K) => K:K ...</k>
+          Case(_:Int, _:Int, _, K:K) => K
           [structural] 
      rule [default-fall-through]:
-          <k> Default(_:Int, K:K) => K:K ...</k>
+          Default(_:Int, K:K) => K
           [structural] 
 endmodule
 
@@ -34,9 +34,8 @@ module DYNAMIC-SEMANTICS-BLOCKS
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.
      }*/
-     rule <k> BlockStatement(Block:K)
-               => pushBlock ~> Block:K ~> popBlock
-          ...</k>
+     rule BlockStatement(Block:K)
+          => pushBlock ~> Block:K ~> popBlock
           [structural]
           
 
@@ -74,20 +73,28 @@ module DYNAMIC-SEMANTICS-BLOCKS
           [structural] 
           
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
-     The expression in an expression statement is evaluated as a void expression for its side effects.
+     The expression in an expression statement is evaluated as a void expression
+     for its side effects.
      }*/
      rule [expression-statement]:
-          <k> Computation(_:KResult) => sequencePoint ...</k> 
+          Computation(_:KResult) => sequencePoint
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
      A null statement (consisting of just a semicolon) performs no operations.
      }*/
-     rule Nop => .K
+     rule Nop => .
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
-     A block allows a set of declarations and statements to be grouped into one syntactic unit.  The initializers of objects that have automatic storage duration, and the variable length array declarators of ordinary identifiers with block scope, are evaluated and the values are stored in the objects (imports storing an indeterminate value in objects without an initializer) each time the declaration is reached in the order of execution, as if it were a statement, and within each declaration in the order that declarators appear.
+     A block allows a set of declarations and statements to be grouped into one
+     syntactic unit.  The initializers of objects that have automatic storage
+     duration, and the variable length array declarators of ordinary identifiers
+     with block scope, are evaluated and the values are stored in the objects
+     (imports storing an indeterminate value in objects without an initializer)
+     each time the declaration is reached in the order of execution, as if it
+     were a statement, and within each declaration in the order that declarators
+     appear.
      }*/
      rule [dissolve-block]:
           <k> Block(BlockNum:Int, _, klist(Statements:KList)) => klistToK(Statements:KList) ...</k>
@@ -99,21 +106,25 @@ module DYNAMIC-SEMANTICS-IF-THEN
      imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
           
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
-     \ldots There is a sequence point between the evaluation of a full expression and the evaluation of the next full expression to be evaluated.
+     \ldots There is a sequence point between the evaluation of a full
+     expression and the evaluation of the next full expression to be evaluated.
      }*/
           
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.1}{10}}}{
-     In both forms, the first substatement is executed if the expression compares unequal to 0. In the \cinline{else} form, the second substatement is executed if the expression compares equal to 0. If the first substatement is reached via a label, the second substatement is not executed.
+     In both forms, the first substatement is executed if the expression
+     compares unequal to 0. In the \cinline{else} form, the second substatement
+     is executed if the expression compares equal to 0. If the first
+     substatement is reached via a label, the second substatement is not
+     executed.
      }*/
 
      rule [if-then-else-true]:
-          <k> IfThenElse(tv(1, t(_, int)), S:K, _) => sequencePoint ~> S:K ...</k>
+          IfThenElse(tv(1, t(_, int)), S:K, _) => sequencePoint ~> S
           [structural]
      rule [if-then-else-false]:
-          <k> IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S:K ...</k>
+          IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
-     rule
-          <k> IfThenElse((V:KResult => simplifyTruth(V:KResult)), _, _) ...</k>
+     rule IfThenElse((V:KResult => simplifyTruth(V:KResult)), _, _)
           when isNotTruthValue(V:KResult)
           [structural]
 endmodule
@@ -124,30 +135,39 @@ module DYNAMIC-SEMANTICS-SWITCH
      //  fixme shouldn't there be sequence points here?
      //  fixme not doing promoting or conversion
      
-     syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] //  switch num, promoted value of controlling exp, int value of exp
+     // switch num, promoted value of controlling exp, int value of exp
+     syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] 
      syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
-     A \cinline{switch} statement causes control to jump to, into, or past the statement that is the \emph{switch body}, depending on the value of a controlling expression, and on the presence of a \cinline{default} label and the values of any \cinline{case} labels on or in the switch body. A \cinline{case} or \cinline{default} label is accessible only within the closest enclosing \cinline{switch} statement.
+     A \cinline{switch} statement causes control to jump to, into, or past the
+     statement that is the \emph{switch body}, depending on the value of a
+     controlling expression, and on the presence of a \cinline{default} label
+     and the values of any \cinline{case} labels on or in the switch body. A
+     \cinline{case} or \cinline{default} label is accessible only within the
+     closest enclosing \cinline{switch} statement.
      }
      
      \fromStandard{\source[n1570]{\para{6.8.4.2}{5}}}{
-     The integer promotions are performed on the controlling expression. The constant expression in each \cinline{case} label is converted to the promoted type of the controlling expression. If a converted value matches that of the promoted controlling expression, control jumps to the statement following the matched \cinline{case} label. Otherwise, if there is a default label, control jumps to the labeled statement. If no converted \cinline{case} constant expression matches and there is no \cinline{default} label, no part of the switch body is executed.
+     The integer promotions are performed on the controlling expression. The
+     constant expression in each \cinline{case} label is converted to the
+     promoted type of the controlling expression. If a converted value matches
+     that of the promoted controlling expression, control jumps to the statement
+     following the matched \cinline{case} label. Otherwise, if there is a
+     default label, control jumps to the labeled statement. If no converted
+     \cinline{case} constant expression matches and there is no
+     \cinline{default} label, no part of the switch body is executed.
      }*/
      
-     rule
-          <k> Switch(SN:Int, tv(V:K, T:KResult), _)
-               => sequencePoint 
-               ~> handleSwitch(SN:Int, cast(promote(T:KResult), tv(V:K, T:KResult))) 
-          ...</k>
+     rule Switch(SN:Int, tv(V:K, T:KResult), _)
+          => sequencePoint 
+          ~> handleSwitch(SN:Int, cast(promote(T:KResult), tv(V:K, T:KResult))) 
           when hasIntegerType(T:KResult)
           [structural] 
           
-     rule
-          <k> handleSwitch(SN:Int, V:KResult) 
+     rule <k> handleSwitch(SN:Int, V:KResult) 
                => handleSwitch-aux(SN:Int, V:KResult, map(M:Map)) 
           ...</k>
-          //<br/>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
           <gotoMap>... kpair(Tu:K, F:Id) |-> map(M:Map) ...</gotoMap>
@@ -155,46 +175,36 @@ module DYNAMIC-SEMANTICS-SWITCH
           
      syntax K ::= "tryCase" "(" K "," Value "," K ")" //  K to be evaluated, val it should be, casehelper
      context tryCase((HOLE => reval(HOLE)), _, _)
-     rule
-          <k> (.K => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
-               ~> handleSwitch-aux(SN:Int, V:KResult, map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
-          ...</k>
+     rule (. => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
+          ~> handleSwitch-aux(SN:Int, V:KResult, map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
           when Exp:K =/=K l('Default)
           [structural] 
           
      //  if all that's left is a default, do it
-     rule
-          <k> handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _))) 
-               => Goto(genLabel(SN:Int, l('Default)))
-          ...</k>
+     rule handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _))) 
+          => Goto(genLabel(SN:Int, l('Default)))
           [structural] 
      
      //  if there's nothing left, no case matches
-     rule
-          <k> handleSwitch-aux(_, _, map(.Map)) => .K ...</k>
+     rule handleSwitch-aux(_, _, map(.Map)) => .
           [structural] 
           
-     rule
-          <k> handleSwitch-aux(SN:Int, _, map((_ ((genLabel(SN':Int, _) |-> _) => .Map)))) ...</k>
+     rule handleSwitch-aux(SN:Int, _, map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
           when SN:Int =/=Int SN':Int
           [structural] 
-     rule
-          <k> handleSwitch-aux(SN:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map)))) ...</k>
+     rule handleSwitch-aux(SN:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
           when L:KLabel =/=KLabel 'genLabel
           [structural] 
 
-     rule
-          <k> tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _) ...</k>
+     rule tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _)
           when T:KResult =/=K T':KResult
           [structural]
-     rule
-          <k> tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .K ...</k>
+     rule tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .
           when V:K =/=K V':K
           [structural] 
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule
-          <k> tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K) ...</k>
+     rule tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K)
           [structural]
 endmodule
 
@@ -215,10 +225,8 @@ module DYNAMIC-SEMANTICS-WHILE
           <loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
           [structural] 
      rule [while]:
-          <k> loopMarked ~> While(B:K, S:K)
-               => IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
-          ...</k>
-          // [computational]
+          loopMarked ~> While(B:K, S:K)
+          => IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
           [structural]  // rule so that looping programs see repetition
 endmodule
 
@@ -239,10 +247,8 @@ module DYNAMIC-SEMANTICS-DO-WHILE
           <loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
           [structural] 
      rule [do-while]:
-          <k> loopMarked ~> DoWhile(B:K, S:K)
-               => S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
-          ...</k>
-          // [computational]
+          loopMarked ~> DoWhile(B:K, S:K)
+          => S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
           [structural]  // rule so that looping programs see repetition
 endmodule
 
@@ -295,7 +301,6 @@ module DYNAMIC-SEMANTICS-FOR
                => IfThenElse(Control:K, (S:K ~> Computation(Post:K) ~> loopMarked ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)), Nop)
           ...</k>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          // [computational]
           [structural] // rule so that looping programs see repetition 
 endmodule
 
@@ -384,7 +389,6 @@ module DYNAMIC-SEMANTICS-GOTO
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
           <gotoMap>... kpair(Tu:K, F:Id) |-> map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
-          // [computational]
           [structural]  // rule so that looping programs see repetition
           
      // - first case, when we're in the same block
@@ -393,7 +397,6 @@ module DYNAMIC-SEMANTICS-GOTO
                ~> K:K
           </k>
           <nestingDepth> Depth:Int </nestingDepth>
-          //<br/>
           <blockHistory> ListItem(CurrentBlock:Int) BlockHistory:List </blockHistory>
           <loopStack> _ => LoopStack:List </loopStack>
           <localVariables> Vars:List </localVariables>
@@ -418,7 +421,6 @@ module DYNAMIC-SEMANTICS-GOTO
           <k> (. => popBlock) 
                ~> processGoto(gotoObject(TargetDepth:Int, Prefix:List ListItem(BlockNum:Int) TargetBlockHistory:List, _, _, _))
           ...</k>
-          //<br/>
           <blockHistory> ListItem(BlockNum:Int) ActualHistory:List </blockHistory>
           when TargetBlockHistory:List =/=List ActualHistory:List
           [structural] 
@@ -459,7 +461,6 @@ module DYNAMIC-SEMANTICS-GOTO
                ~> addVariablesForBlock(TargetBlock:Int, DeclStack:List)
                ~> K:K
           </k>
-          //<br/>
           <nestingDepth> Depth:Int </nestingDepth>
           <blockHistory> BlockHistory:List </blockHistory>
           <loopStack> _ => LoopStack:List </loopStack>
@@ -504,7 +505,6 @@ module DYNAMIC-SEMANTICS-GOTO
                     ((ListItem(frozenDeclaration(_:Int, TargetBlock:Int, Decl:K)) => .List) _)
                )
           ...</k>
-          //<br/>
           <localVariables> Vars:List </localVariables>
           <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
           <shouldInit> _ => false </shouldInit>
@@ -512,7 +512,7 @@ module DYNAMIC-SEMANTICS-GOTO
           [structural]
           
      //  fixme this is wrong
-     rule <k> addVariablesForBlock(_:Int, .List) => .K ...</k>
+     rule addVariablesForBlock(_:Int, .List) => .
           [structural] 
 
 endmodule
@@ -558,24 +558,22 @@ module DYNAMIC-SEMANTICS-CONTINUE
      }
      */
      rule [continue]:
-          <k> Continue ~> ((L:KLabel)(_) => .) ...</k>
-          when L:KLabel =/=KLabel 'loopMarked
-          andBool L:KLabel =/=KLabel 'popBlock
-          andBool L:KLabel =/=KLabel 'pushBlock
-          andBool L:KLabel =/=KLabel 'popLoop
+          Continue ~> ((L:KLabel)(_) => .)
+          when (L =/=KLabel 'loopMarked)
+               andBool (L =/=KLabel 'popBlock)
+               andBool (L =/=KLabel 'pushBlock)
+               andBool (L =/=KLabel 'popLoop)
           [structural]
      rule [continue-through-pop]:
-          <k> Continue ~> popBlock 
-               => popBlock
-               ~> Continue
-          ...</k>
+          Continue ~> popBlock 
+          => popBlock ~> Continue
           [structural]
 
      rule [continue-done-for]:
-          <k> (Continue => Computation(Post:K)) ~> loopMarked ~> For(_:Int, _, _, Post:K, _) ...</k>
+          (Continue => Computation(Post:K)) ~> loopMarked ~> For(_:Int, _, _, Post:K, _)
           [structural]
      rule [continue-done]:
-          <k> (Continue => .K) ~> loopMarked ~> L:KLabel(_) ...</k>
+          (Continue => .K) ~> loopMarked ~> L:KLabel(_)
           when L:KLabel =/=KLabel 'For
           [structural]
           
@@ -588,7 +586,7 @@ module DYNAMIC-SEMANTICS-BREAK
      iteration statement.
      }*/
      rule [break]:
-          <k> Break => popLoop ...</k>
+          Break => popLoop
           [structural] 
 endmodule
 

@@ -12,15 +12,14 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // fixme not really a sequence point
      
      syntax K ::= "bind-aux" "(" SymLoc "," KList "," KList ")"
-     rule <k> bind(L:KList, L':KList) 
-               => bind-aux(NullPointer, L:KList, L':KList) ...</k> 
+     rule bind(L:KList, L':KList) => bind-aux(NullPointer, L:KList, L':KList)
           [structural] 
      
      rule [bind-empty-void]:
-          <k> bind-aux(_, .KList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint ...</k> 
+          bind-aux(_, .KList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint
           [structural] 
      rule [bind-empty]:
-          <k> bind-aux(_, .KList, .KList) => sequencePoint ...</k> 
+          bind-aux(_, .KList, .KList) => sequencePoint
           [structural] 
           
           
@@ -79,9 +78,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural] 
           
      rule [bind-one-check-type]:
-          <k> (.K => isTypeCompatible(T:KResult, T':KResult)) 
+          (. => isTypeCompatible(T:KResult, T':KResult)) 
                ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), (typedDeclaration(T:KResult, X:Id),, P:KList))
-          ...</k> 
           [structural] 
      
      syntax KList ::= promoteList(KList) [function]
@@ -108,15 +106,11 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // the idea here is that there should have been a previous argument, so we
      // can use its address to append all of the variadic arguments 
      rule [bind-variadic-pre]:
-          <k> bind-aux(Loc:SymLoc, L:KList, t(_, variadic))
-               => bindVariadic-pre(Loc, promoteList(L))
-          ...</k>
+          bind-aux(Loc:SymLoc, L:KList, t(_, variadic)) => bindVariadic-pre(Loc, promoteList(L))
           [structural] 
 
      rule [bind-variadic-start]:
-          <k> bindVariadic-pre(Loc:SymLoc, L:KList) 
-               => bindVariadic(Loc, L)
-          ...</k>
+          bindVariadic-pre(Loc:SymLoc, L:KList) => bindVariadic(Loc, L)
           [structural]
      
      // fixme don't forget to get rid of append
@@ -137,7 +131,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural]
      
      rule [bind-variadic-done]:
-          <k> bindVariadic(_, .KList) => sequencePoint ...</k> 
+          bindVariadic(_, .KList) => sequencePoint
           [structural]
 endmodule
 
@@ -160,13 +154,13 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           
      syntax K ::= "zeroType" "(" K "," Type ")"
      
-     rule <k> zeroType(Name:K, T:KResult) 
-               => Computation(AllowWrite(Name:K) := tv(0, t(.Set, int))) ...</k>
-          when hasIntegerType(T:KResult)
+     rule zeroType(N:K, T:Type)
+          => Computation(AllowWrite(N) := tv(0, t(.Set, int)))
+          when hasIntegerType(T)
           [structural] 
-     rule <k> zeroType(Name:K, T:KResult) 
-               => Computation(AllowWrite(Name:K) := tv(0.0, t(.Set, float))) ...</k>
-          when isFloatType(T:KResult)
+     rule zeroType(N:K, T:Type)
+          => Computation(AllowWrite(N) := tv(0.0, t(.Set, float)))
+          when isFloatType(T)
           [structural] 
           
      syntax K ::= "zeroStruct" "(" K "," KList ")"
@@ -184,49 +178,44 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule <k> zeroType(Name:K, t(_, structType(S:Id))) 
-               => zeroStruct(Name:K, Fields:KList)
+     rule <k> zeroType(N:K, t(_, structType(S:Id))) 
+               => zeroStruct(N:K, Fields:KList)
           ...</k>
           <structs>... S:Id |-> aggregateInfo(Fields:KList, _, _) ...</structs> 
           [structural] 
           
-     rule <k> zeroType(Name:K, t(_, unionType(S:Id))) 
-               => zeroType(Name:K . F:Id, T:KResult)
+     rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
+               => zeroType(N . F:Id, T:KResult)
           ...</k>
           <structs>... 
                S:Id |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
           ...</structs> 
           [structural] 
           
-     rule <k> zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
-               => zeroType(Name:K . F:Id, T:KResult)
-               ~> zeroStruct(Name:K, L:KList) 
-          ...</k>
+     rule zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
+          => zeroType(Name:K . F:Id, T:KResult) ~> zeroStruct(Name:K, L:KList) 
           [structural] 
-     rule <k> zeroStruct(Name:K, .KList) => .K ...</k>
+     rule zeroStruct(Name:K, .KList) => .
           [structural] 
 
-     rule <k> zeroType(Name:K, T:KResult) 
-               => Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult)) ...</k>
+     rule zeroType(Name:K, T:KResult) 
+               => Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult))
           when isPointerType(T:KResult)
           [structural]
-     rule <k> zeroType(Name:K, T:KResult) => .K ...</k>
+     rule zeroType(Name:K, T:KResult) => .
           when isFunctionType(T:KResult)
           [structural]
           
      // fixme snat
-     rule <k> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
-               => zeroType(Name:K[Len:Int -Int 1], T:KResult)
-               ~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
-          ...</k>
+     rule zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
+          => zeroType(Name:K[Len:Int -Int 1], T:KResult)
+          ~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
           when Len:Int >Int 0
           [structural] 
-     rule <k> zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .K ...</k>
+     rule zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .
           [structural] 
 
-     rule <k> zeroType(Name:K, t(_, flexibleArrayType(T:KResult)))
-               => .K
-          ...</k>
+     rule zeroType(Name:K, t(_, flexibleArrayType(T:KResult))) => .
           [structural]
 endmodule
 

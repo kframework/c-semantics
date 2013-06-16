@@ -1,5 +1,4 @@
 require "c-configuration.k"
-//require "dynamic-c-configuration.k"
 require "common-c-semantics.k"
 require "modules/uris.k"
 
@@ -10,7 +9,6 @@ require "dynamic-c-standard-lib.k"
 require "dynamic-c-typing.k"
 require "dynamic-c-memory.k"
 require "dynamic-c-declarations.k"
-// require "dynamic-c-ltl.k"
 
 // this must be below the others
 require "dynamic-c-errors.k"
@@ -118,8 +116,8 @@ module DYNAMIC-C-SEMANTICS-MISC
      rule string2List(S:String) => string2List-aux(S:String, .List)
      rule string2List-aux("", L:List) => L
      rule string2List-aux(S:String, L:List)
-               => string2List-aux(butFirstChar(S:String), (L:List ListItem(firstChar(S:String))))
-          when S:String =/=String ""
+          => string2List-aux(butFirstChar(S), (L ListItem(firstChar(S))))
+          when S =/=String ""
           [structural]
 endmodule
 
@@ -136,7 +134,6 @@ module DYNAMIC-C-SEMANTICS
      imports DYNAMIC-C-STATEMENTS 
      imports DYNAMIC-C-CONVERSIONS 
      imports DYNAMIC-C-STANDARD-LIBRARY
-     // imports DYNAMIC-C-LTL
      
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
@@ -174,14 +171,14 @@ module DYNAMIC-C-SEMANTICS
      syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
      
      rule incomingArguments(L:KList) 
-               => incomingArguments-aux(L:KList, 0) 
+          => incomingArguments-aux(L:KList, 0) 
           [structural]
      rule incomingArguments-aux((S:String,, L:KList), N:Int) 
-               => Computation(Identifier("#incomingArgumentsArray")[N:Int] := Constant(StringLiteral(S:String)))
-               ~> incomingArguments-aux(L:KList, N:Int +Int 1)
+          => Computation(Identifier("#incomingArgumentsArray")[N:Int] := Constant(StringLiteral(S:String)))
+          ~> incomingArguments-aux(L:KList, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.KList, N:Int) 
-               => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointerConstant)
+          => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointerConstant)
           [structural]
           
      syntax K ::= "syntaxInt" "(" Int ")"
@@ -345,31 +342,29 @@ module DYNAMIC-C-SEMANTICS
      // fixme void isn't supposed to have a name
      // fixme figure out type of string
      rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
-               => Call(Identifier("main"), klist(.KList))
+          => Call(Identifier("main"), klist(.KList))
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
-               => Call(Identifier("main"), klist(.KList))
+          => Call(Identifier("main"), klist(.KList))
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
-               => Args:K 
-               ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
+          => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
-               => Args:K 
-               ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
+          => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
-     (<T>...
-          <thread>... 
-               <threadId> 1 </threadId> // main's thread, not the global "thread"
-               <k> V:KResult </k>
-          ...</thread>
-     ...</T> => .Bag)
-           <resultValue> .K => V </resultValue>
+          (<T>...
+               <thread>... 
+                    <threadId> 1 </threadId> // main's thread, not the global "thread"
+                    <k> V:KResult </k>
+               ...</thread>
+          ...</T> => .Bag)
+               <resultValue> .K => V </resultValue>
           <files>...
                <fileCommands> _ => .K </fileCommands> // to prevent further io commands from firing
                <file>... // stdout

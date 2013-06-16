@@ -29,10 +29,6 @@ module COMPAT-SYNTAX
      syntax K ::= rkludge(K) [function, klabel('rkludge)]
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
 
-     syntax Bool ::= "all" "(" List "," KLabel ")" [function]
-
-     syntax Bool ::= "allk" "(" KList "," KLabel ")" [function]
-
      syntax Bits ::= right:
                     "~Bits" Bits        [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
                     > left:
@@ -486,8 +482,7 @@ module COMMON-C-SEMANTICS-MISC
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule [Pragma]:
-          <k> Pragma(_:K) => .K ...</k>
+     rule [Pragma]: Pragma(_:K) => .
           [structural]
           
      rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
