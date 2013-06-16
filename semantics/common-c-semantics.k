@@ -18,8 +18,6 @@ module COMPAT-SYNTAX
 
      syntax Int ::= "lengthKList" KList [function]
 
-     //syntax Bool ::= K "in" Bag [function]
-     //            | BagItem "in" Bag [function]
      syntax Bool ::= BagItem "in" Bag [function]
                | K "#inBag" Bag //TODO: function?!?
 
@@ -74,19 +72,15 @@ module COMMON-SEMANTIC-SYNTAX
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
 
-     // these are used for runtime settings
-     // syntax SimpleType ::= "kccSettingSimpleType" "(" String ")"
-     // syntax #NzNat ::= "kccSettingNzNat" "(" String ")"
-     // syntax Int ::= "kccSettingInt" "(" String ")"
-     
      syntax K      ::= "fromUnion" "(" Id ")" [klabel('fromUnion)]
           
      // Types
-     syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex(\terminal{typedDecl}\!({#1},{#2}\!))] // would rather this be KResult, but can't get the subsorting to work
+     // would rather this be KResult, but can't get the subsorting to work
+     syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
      
-     syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+     // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+     syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] 
      syntax "DeclType" -/- [a-zA-Z\:]
-     // op 'isTypeResult_ : K -> Bool 
      syntax Set ::= "setOfTypes" [function]
      
      syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]
@@ -100,24 +94,23 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= ListToK(List)
      syntax K ::= "map" "(" Map ")"
      syntax Bits ::= "piece" "(" Bits "," Int ")"
-     //define 'isInt(piece(_, _)) => true
      
      syntax Bits ::= "unknown" "(" Int ")"
      syntax Bits ::= Int
-     //define 'isInt(unknown(_)) => true
 
      syntax KResult ::= "skipval"
      syntax K ::= "debug"
      syntax K ::= "debug-m" "(" K ")"
      syntax K ::= "discard"
-     syntax Id ::= "file-scope" // [ctor] 
-     syntax Id ::= "unnamedBitField" // [ctor] 
+     syntax Id ::= "file-scope"
+     syntax Id ::= "unnamedBitField"
 
      syntax ThreadId ::= Int
      syntax ThreadId ::= "allocatedDuration"
      syntax SymBase ::= "sb" "(" Int "," ThreadId ")" [klabel('sb)]
 
-     syntax SymLoc ::= "loc" "(" SymBase "," Int "," Int ")" [klabel('loc)] // Base, byte offset, bit offset
+     // Base, byte offset, bit offset
+     syntax SymLoc ::= "loc" "(" SymBase "," Int "," Int ")" [klabel('loc)]
      syntax SymLoc ::= "NullPointer"
      // TODO(chathhorn): move this elsewhere, rather big change.
      syntax KResult ::= SymLoc
@@ -132,8 +125,6 @@ module COMMON-SEMANTIC-SYNTAX
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bytes N:Int
           => loc(Base, Offset +Int N, BitOffset)
 
-     //declare bitoffset : Int -> Int 
-     //declare byteoffset : Int -> Int
      syntax Value ::= "enumItem" "(" Id "," Value ")"
      syntax K ::= "resolveReferences"
      
@@ -142,27 +133,26 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Type ::= "type" "(" K ")"
 
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
-     
-     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")" // original number, from, to inclusive
+
+     // original number, from, to inclusive
+     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")"
      
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
-     
-     syntax SymLoc ::= "floorLoc" "(" SymLoc ")" [function] // loc with possible bit offset returning base byte     
-     syntax SymLoc ::= "ceilingLoc" "(" SymLoc ")" [function] // loc with possible bit offset returning upperbounded byte     
+
+     // loc with possible bit offset returning base byte     
+     syntax SymLoc ::= "floorLoc" "(" SymLoc ")" [function] 
+     // loc with possible bit offset returning upperbounded byte     
+     syntax SymLoc ::= "ceilingLoc" "(" SymLoc ")" [function]
      syntax K ::= "readFunction" "(" SymLoc ")"
      
      syntax Type ::= innerType(Type) [function]
      
-     // syntax KResult ::= "AttributeValue" "(" String "," KList ")"
-     
-     syntax K ::= "extractBitsFromList" "(" K "," Int "," Int ")" [strict(1)] // data, offset, size in bits
+     // data, offset, size in bits
+     syntax K ::= "extractBitsFromList" "(" K "," Int "," Int ")" [strict(1)]
      syntax Id ::= "typedef" "(" Id ")"
      syntax Id ::= "unnamed" "(" Int ")"
      
      syntax Int ::= "NullPointerConstant" [function]
-     //define 'isInt(NullPointerConstant) => true
-     
-     //define 'isInt(NullPointer) => true
      
      syntax Value ::= "emptyValue"
      syntax K ::= "allocate" "(" Type "," K ")"
@@ -188,15 +178,8 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Bool ::= isTypeCompatible(K, K) [function]
      
      syntax Bool ::= isPromoted(Type) [function]
-     // syntax Bool ::= "isPromotedInteger" "(" Type ")"
      
-     //define 'isInt(threadId(N:Int) +Int M:Int) => true
-     //define 'isInt(allocatedDuration +Int M:Int) => true
-     //syntax Int ::= "threadId" "(" Int ")" // used for symbolic locations based on threadid
-     // syntax Int ::= "readOnly" // fake threadid for above when location can't be written to
-          
      syntax K ::= "initialize" "(" Id "," Type "," K ")"
-     // syntax K ::= "memblock" "(" Bag "," Map ")" // length and an array from offsets to bytes
 
      syntax BagItem ::= "mlength" "(" Int ")"  [function]
      syntax BagItem ::= "mconst" [function]
@@ -227,18 +210,19 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Bool ::= "isBasicType" "(" K ")" [function]
      
      // Composite types
-     syntax SimpleType ::= "enumType" "(" Id ")" [klabel('enumType)] // [ctor] 
-     syntax SimpleType ::= "arrayType" "(" Type "," Int ")" [klabel('arrayType)] // [ctor] 
-     syntax SimpleType ::= "incompleteArrayType" "(" Type ")" [klabel('incompleteArrayType)] // [ctor] 
-     syntax SimpleType ::= "flexibleArrayType" "(" Type ")" [klabel('flexibleArrayType)] // [ctor] 
-     syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" [klabel('bitfieldType)] // [ctor] 
-     syntax SimpleType ::= "functionType" "(" Type "," KList ")" [klabel('functionType)] // [ctor] 
-     syntax SimpleType ::= "pointerType" "(" Type ")" [klabel('pointerType)] // [ctor] 
-     syntax SimpleType ::= "structType" "(" Id ")" [klabel('structType)] // [ctor] 
-     syntax SimpleType ::= "unionType" "(" Id ")" [klabel('unionType)] // [ctor] 
-     syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" [klabel('qualifiedType)] // [ctor]
-     
-     syntax KResult ::= unqualifyType(K) [function] // takes a type, but sometimes things like maps give K
+     syntax SimpleType ::= "enumType" "(" Id ")" [klabel('enumType)]
+     syntax SimpleType ::= "arrayType" "(" Type "," Int ")" [klabel('arrayType)]
+     syntax SimpleType ::= "incompleteArrayType" "(" Type ")" [klabel('incompleteArrayType)]
+     syntax SimpleType ::= "flexibleArrayType" "(" Type ")" [klabel('flexibleArrayType)]
+     syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" [klabel('bitfieldType)]
+     syntax SimpleType ::= "functionType" "(" Type "," KList ")" [klabel('functionType)]
+     syntax SimpleType ::= "pointerType" "(" Type ")" [klabel('pointerType)]
+     syntax SimpleType ::= "structType" "(" Id ")" [klabel('structType)]
+     syntax SimpleType ::= "unionType" "(" Id ")" [klabel('unionType)]
+     syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" [klabel('qualifiedType)]
+
+     // takes a type, but sometimes things like maps give K
+     syntax KResult ::= unqualifyType(K) [function]
      syntax Type ::= removeStorageSpecifiers(K) [function]
      
      // these aren't real types, but are values that can appear in type contexts
@@ -247,14 +231,13 @@ module COMMON-SEMANTIC-SYNTAX
      syntax SimpleType ::= "variadic"
 
      syntax KResult ::= "dataList" "(" KList ")"
-     
-     // syntax Int ::= "K2Int" "(" K ")"
-     syntax K ::= "sizeofType" "(" K ")" [strict] // generates a tv(size, cfg:sizeut)
-     syntax K ::= "bitSizeofType" "(" K ")" [strict] // needs to be heated to top of K for struct and union types
+
+     // generates a tv(size, cfg:sizeut)
+     syntax K ::= "sizeofType" "(" K ")" [strict]
+     // needs to be heated to top of K for struct and union types
+     syntax K ::= "bitSizeofType" "(" K ")" [strict]
      syntax K ::= "byteSizeofType" "(" K ")" [strict] 
      syntax Int ::= "bitsToBytes" "(" Int ")" [function]
-     // metadata "wrapper=(builtin)"
-     // syntax Bool ::= Set "contains" SetItem [function]
 
      syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
@@ -300,15 +283,15 @@ module COMMON-SEMANTIC-SYNTAX
      syntax String ::= firstChar(String) [function]
      syntax String ::= "nthChar" "(" String "," Int ")" [function]
      syntax String ::= "butFirstChar" "(" String ")" [function]
-     // chathhorn
-     //syntax Int ::= "charToAscii" "(" String ")" [function]
-     //syntax Int ::= "asciiCharString" "(" String ")" [function]
      
      syntax KList ::=  Int "to" Int [function]
-     syntax K ::= cast(K, K) [strict(1)] // as described in 6.3 // totype, fromvalue
+     // as described in 6.3 // totype, fromvalue
+     syntax K ::= cast(K, K) [strict(1)]
      context cast(_, (HOLE => reval(HOLE)))
-     syntax K ::= arithInterpret(Type, BaseValue) [function] // interpret the result of arithmetic as in 6.5.4
-     syntax K ::= interpret(Type, K) [function] // interpret the values of reading from mem
+     // interpret the result of arithmetic as in 6.5.4
+     syntax K ::= arithInterpret(Type, BaseValue) [function]
+     // interpret the values of reading from mem
+     syntax K ::= interpret(Type, K) [function]
      
      // syntax Set ::= "integerTypes"
      syntax Set ::= "unsignedIntegerTypes" [function]
@@ -342,17 +325,21 @@ module COMMON-SEMANTIC-SYNTAX
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isIncompleteType(Type) [function]
      syntax Bool ::= isArithmeticType(Type) [function]
-     
-     syntax K ::= "aggregateInfo" "(" KList "," Map "," Map ")" // first map is for type, second map is for offset
-     syntax Int ::= getFieldOffset(Id, K) [function] // these expect an aggregateInfo term as second argument
+
+     // first map is for type, second map is for offset
+     syntax K ::= "aggregateInfo" "(" KList "," Map "," Map ")"
+     // these expect an aggregateInfo term as second argument
+     syntax Int ::= getFieldOffset(Id, K) [function]
      syntax Type ::= getFieldType(Id, K) [function]
      
      syntax Bool ::= isArithBinConversionOp(KLabel) [function]
      syntax Bool ::= isArithUnaryOp(KLabel) [function]
      syntax K ::= "kpair" "(" K "," K ")"
-     syntax Type ::= promote(K) [function] // should be K, but is Type for efficiency reasons
+     // should be K, but is Type for efficiency reasons
+     syntax Type ::= promote(K) [function]
      syntax K ::= argPromote(K) [function]
-     syntax K ::= "extractField" "(" KList "," K "," Id ")"  // bytes of struct, type, field id
+     // bytes of struct, type, field id
+     syntax K ::= "extractField" "(" KList "," K "," Id ")" 
      syntax K ::= "allocString" "(" SymLoc "," String ")"
      syntax K ::= "allocWString" "(" SymLoc "," KList ")"
      syntax K ::= "sequencePoint"
@@ -368,10 +355,14 @@ module COMMON-SEMANTIC-SYNTAX
      syntax KResult ::= "initValue" "(" Id "," Type "," K ")"
      syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2)] // id, type, initializer
      
-          
-     syntax K ::= "append" "(" Int "," Int "," Value ")" // appends a new subobject to a current object.  this is unsafe and should only be used for variadic functions
-     syntax K ::= "deleteBlock" "(" SymLoc ")" // deletes the base object from memory, given a location
-     syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")" // deletes the base object from memory, given a location and it size (as a check)
+     // appends a new subobject to a current object.  this is unsafe and should
+     // only be used for variadic functions
+     syntax K ::= "append" "(" Int "," Int "," Value ")"
+     // deletes the base object from memory, given a location
+     syntax K ::= "deleteBlock" "(" SymLoc ")"
+     // deletes the base object from memory, given a location and it size (as a
+     // check)
+     syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")"
      
      syntax Bool ::= isConcreteNumber(K) [function]
 endmodule
@@ -379,8 +370,13 @@ endmodule
 module COMMON-C-SETTINGS
      imports COMMON-SEMANTIC-SYNTAX 
      
-     // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the same range, representation, and behavior as either signed char or unsigned char.  37)... Irrespective of the choice made, char is a separate type from the other two and is not compatible with either"
-     // fixme I'm not sure what consequence being a separate type entails, so for now it will just be rewritten to the chosen type
+     // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
+     // same range, representation, and behavior as either signed char or
+     // unsigned char.  37)... Irrespective of the choice made, char is a
+     // separate type from the other two and is not compatible with either"
+     //
+     // fixme I'm not sure what consequence being a separate type entails, so
+     // for now it will just be rewritten to the chosen type
      rule char => signed-char [structural, anywhere]
 
      syntax Int ::= "numBitsPerByte" [function]
@@ -430,8 +426,6 @@ module COMMON-C-SETTINGS
      
 endmodule
 
-// load common-c-sized-operations
-
 module COMMON-NOHELPER-INCLUDE
      imports COMMON-SEMANTIC-SYNTAX
      imports COMMON-C-SETTINGS
@@ -448,17 +442,6 @@ endmodule
 module COMMON-C-SEMANTICS-MISC
      imports COMMON-INCLUDE 
      
-     // chathhorn
-     // rule loc(Base:SymBase, ByOff:Int, BiOff:Int) +Int Offset:Int
-     //      => loc(Base, ByOff +Int Offset, BiOff)
-     //      [structural, anywhere]
-     // rule (threadId(N:Int) +Int M:Int) +Int N':Int
-     //      => threadId(N:Int) +Int (M:Int +Int N':Int)
-     //      [structural, anywhere]
-     // rule (allocatedDuration +Int M:Int) +Int N':Int
-     //      => allocatedDuration +Int (M:Int +Int N':Int)
-     //      [structural, anywhere]
-
      rule linc(loc(sb(X:Int, Th:ThreadId), ByOff:Int, BiOff:Int))
           => loc(sb(X +Int 1, Th), ByOff, BiOff)
 
@@ -506,7 +489,6 @@ module COMMON-C-SEMANTICS
      
      // TODO(chathhorn): the klabel attribute doesn't seem to work on things
      // of sort Bag ...?
-     //syntax Bag ::= "eval" "(" K ")" [klabel('eval)]
      syntax Bag ::= "eval" "(" K "," KList "," String "," Int ")"
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]

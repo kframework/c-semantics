@@ -22,7 +22,6 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           bind-aux(_, .KList, .KList) => sequencePoint
           [structural] 
           
-          
      // n1494 6.5.2.2:6 If the expression that denotes the called function has
      // a type that does not include a prototype, the integer promotions are
      // performed on each argument, and arguments that have type float are
@@ -44,7 +43,6 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
      
-     // chathhorn: these two rules only mutate the head of the list now.
      rule [bind-coerce-array]:
           bind-aux(
                _
@@ -106,11 +104,13 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // the idea here is that there should have been a previous argument, so we
      // can use its address to append all of the variadic arguments 
      rule [bind-variadic-pre]:
-          bind-aux(Loc:SymLoc, L:KList, t(_, variadic)) => bindVariadic-pre(Loc, promoteList(L))
+          bind-aux(Loc:SymLoc, L:KList, t(_, variadic))
+          => bindVariadic-pre(Loc, promoteList(L))
           [structural] 
 
      rule [bind-variadic-start]:
-          bindVariadic-pre(Loc:SymLoc, L:KList) => bindVariadic(Loc, L)
+          bindVariadic-pre(Loc:SymLoc, L:KList)
+          => bindVariadic(Loc, L)
           [structural]
      
      // fixme don't forget to get rid of append
@@ -222,7 +222,6 @@ endmodule
 module DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS
      imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
 endmodule
-
 
 module DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION
      imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 

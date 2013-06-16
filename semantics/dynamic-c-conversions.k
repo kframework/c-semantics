@@ -3,7 +3,7 @@ require "dynamic-c-semantics.k"
 module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
      imports DYNAMIC-INCLUDE
      
-     syntax Bool ::= hasSameSignedness(Type, Type) [function] // [memo]
+     syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
 endmodule
 
@@ -13,15 +13,17 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
      rule [hasSameSignedness]: 
           hasSameSignedness(T:KResult, T':KResult)
           => (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
-          orBool (hasUnsignedIntegerType(T:KResult) andBool hasUnsignedIntegerType(T':KResult))
+               orBool (hasUnsignedIntegerType(T:KResult) andBool hasUnsignedIntegerType(T':KResult))
      
      rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int)) => t(S:Set, unsigned-int)
+          correspondingUnsignedType(t(S:Set, int))
+          => t(S:Set, unsigned-int)
      rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int)) => t(S:Set, unsigned-long-int)
+          correspondingUnsignedType(t(S:Set, long-int))
+          => t(S:Set, unsigned-long-int)
      rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int)) => t(S:Set, unsigned-long-long-int)
-     
+          correspondingUnsignedType(t(S:Set, long-long-int))
+          => t(S:Set, unsigned-long-long-int)
 endmodule
 
 
@@ -48,18 +50,16 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      // is another set of promotions called "default argument promotions" used
      // when calling functions where the type information is not complete. This
      // is equivalent to integer promotions + (float => double) 
-          
      rule [argPromote-float]: argPromote(t(_, float)) => t(.Set, double)
      rule [argPromote-double]: argPromote(t(_, double)) => t(.Set, double)
      rule [argPromote-long-double]: argPromote(t(_, long-double)) => t(.Set, long-double)
      rule [argPromote-integer]: argPromote(T:KResult) => promote(T:KResult)
           when hasIntegerType(T:KResult)
 
-     // syntax K ::= "arithConversion-int" "(" KLabel "," K "," K ")"
      syntax Bool ::= isArithBinOp(KLabel) [function]
 
-     syntax Set ::= "arithBinOps" [function] // memo
-     syntax Set ::= "arithBinConversionOps" [function] // memo
+     syntax Set ::= "arithBinOps" [function]
+     syntax Set ::= "arithBinConversionOps" [function]
 
      rule [arithBinOps]:
           arithBinOps => arithBinConversionOps (SetItem(l('_<<_)) SetItem(l('_>>_))) [structural]
@@ -82,10 +82,12 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      [structural]
      
      rule [checkArithBinOp]:
-          isArithBinOp(KL:KLabel) => #if l(KL:KLabel) in arithBinOps #then true #else false #fi 
+          isArithBinOp(KL:KLabel) 
+          => #if l(KL:KLabel) in arithBinOps #then true #else false #fi 
           [structural]
      rule [checkArithBinConversionOp]:
-          isArithBinConversionOp(KL:KLabel) => #if l(KL:KLabel) in arithBinConversionOps #then true #else false #fi 
+          isArithBinConversionOp(KL:KLabel) 
+          => #if l(KL:KLabel) in arithBinConversionOps #then true #else false #fi 
           [structural]
 
      syntax Set ::= "arithUnaryOps" [function]// [memo] 
@@ -95,7 +97,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
           SetItem(l('~_))
 
      rule [checkArithUnaryOp]: 
-          isArithUnaryOp(KL:KLabel) => #if l(KL:KLabel) in arithUnaryOps #then true #else false #fi 
+          isArithUnaryOp(KL:KLabel) 
+          => #if l(KL:KLabel) in arithUnaryOps #then true #else false #fi 
           [structural]
      
      // \csection{6}{3}{1}{0}{Arithmetic operands}
@@ -217,7 +220,6 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
           when isArithBinOp(L:KLabel)
                andBool notBool isPromoted(T:KResult)
           [structural]
-
           
      // <= so enums become ints
      rule [promote-lte-int-fits]:
@@ -267,7 +269,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      arithmetic conversions:
      }*/
      rule L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
-          => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
+          => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, 
+               cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
           when isArithBinConversionOp(L:KLabel)
                andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
@@ -440,12 +443,12 @@ module DYNAMIC-SEMANTICS-CONVERSION
      // fixme worried about qualifiers
      rule [cast-integer-to-bool]:
           cast(t(S:Set, bool), tv(I:Int, T:KResult))
-               => #if I:Int ==Int 0 #then tv(0, t(S:Set, bool)) #else tv(1, t(S:Set, bool)) #fi
+          => #if I:Int ==Int 0 #then tv(0, t(S:Set, bool)) #else tv(1, t(S:Set, bool)) #fi
           when hasIntegerType(T:KResult)
           [anywhere]
      rule [cast-non-integer-to-bool]:
           cast(t(S:Set, bool), tv(L:KList, T:KResult)) 
-               => cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:KList, T:KResult))
+          => cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:KList, T:KResult))
           when notBool hasIntegerType(T:KResult)
           [anywhere]
      
@@ -472,7 +475,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      rule [cast-ubitfield-of-small]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
-               => cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
+          => cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
           when isBitfieldType(T:KResult)
                andBool (I:Int <Int min(T:KResult))
                andBool hasIntegerType(T':KResult)
@@ -480,38 +483,38 @@ module DYNAMIC-SEMANTICS-CONVERSION
           [anywhere]
      rule [cast-uchar-of-small]:
           cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
+          => cast(t(S:Set, unsigned-char), tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-char)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-usint-of-small]:
           cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, unsigned-short-int), tv(I:Int +Int max(t(S:Set, unsigned-short-int)) +Int 1, T':KResult))
+          => cast(t(S:Set, unsigned-short-int), tv(I:Int +Int max(t(S:Set, unsigned-short-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-short-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-uint-of-small]:
           cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, unsigned-int), tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T':KResult))
+          => cast(t(S:Set, unsigned-int), tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-ulong-of-small]:
           cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, unsigned-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T':KResult))
+          => cast(t(S:Set, unsigned-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-long-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-ullong-of-small]:
           cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, unsigned-long-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T':KResult))
+          => cast(t(S:Set, unsigned-long-long-int), tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T':KResult))
           when (I:Int <Int min(t(S:Set, unsigned-long-long-int)))
                andBool hasIntegerType(T':KResult)          
           [anywhere]
      
      rule [cast-ubitfield-of-big]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
+          => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
           when isBitfieldType(T:KResult)
                andBool (I:Int >Int max(T:KResult))
                andBool hasIntegerType(T':KResult)
@@ -519,31 +522,31 @@ module DYNAMIC-SEMANTICS-CONVERSION
           [anywhere]
      rule [cast-uchar-of-big]:
           cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
-               => tv(I %Int (max(t(S, unsigned-char)) +Int 1), t(S, unsigned-char))
+          => tv(I %Int (max(t(S, unsigned-char)) +Int 1), t(S, unsigned-char))
           when (I >Int max(t(S, unsigned-char)))
                andBool hasIntegerType(T')
           [anywhere]
      rule [cast-usint-of-big]:
           cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1), t(S:Set, unsigned-short-int))
+          => tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1), t(S:Set, unsigned-short-int))
           when (I:Int >Int max(t(S:Set, unsigned-short-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-uint-of-big]:
           cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1), t(S:Set, unsigned-int))
+          => tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1), t(S:Set, unsigned-int))
           when (I:Int >Int max(t(S:Set, unsigned-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-ulong-of-big]:
           cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1), t(S:Set, unsigned-long-int))
+          => tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1), t(S:Set, unsigned-long-int))
           when (I:Int >Int max(t(S:Set, unsigned-long-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-ullong-of-big]:
           cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
-               => tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1), t(S:Set, unsigned-long-long-int))
+          => tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1), t(S:Set, unsigned-long-long-int))
           when (I:Int >Int max(t(S:Set, unsigned-long-long-int)))
                andBool hasIntegerType(T':KResult)
           [anywhere]
@@ -556,7 +559,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      // choice
      rule [cast-sbitfield-of-huge]:
           cast(T:KResult, tv(I:Int, T':KResult)) 
-               => cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
+          => cast(T:KResult, tv(I:Int %Int (2 ^Int absInt(numBits(T:KResult))), T':KResult)) 
           when isBitfieldType(T:KResult)
                andBool (absInt(I:Int) >Int (2 ^Int absInt(numBits(T:KResult))))
                andBool hasIntegerType(T':KResult)
@@ -564,38 +567,38 @@ module DYNAMIC-SEMANTICS-CONVERSION
           [anywhere]
      rule [cast-schar-of-huge]:
           cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
+          => cast(t(S:Set, signed-char), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, signed-char)))))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-sint-of-huge]:
           cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
+          => cast(t(S:Set, short-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, short-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, short-int)))))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-int-of-huge]:
           cast(t(S:Set, int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
+          => cast(t(S:Set, int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, int)))))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-long-of-huge]:
           cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
-               => cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
+          => cast(t(S:Set, long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int)))))
                andBool hasIntegerType(T':KResult)
           [anywhere]
      rule [cast-llong-of-huge]:
           cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
-               => cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
+          => cast(t(S:Set, long-long-int), tv(I:Int %Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))), T':KResult)) 
           when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-long-int)))))
                andBool hasIntegerType(T':KResult)
           [anywhere]
           
      rule [cast-signed-of-small]:
           cast(T:Type, tv(I:Int, T':Type))
-               => tv(I +Int (2 ^Int absInt(numBits(T))), T)
+          => tv(I +Int (2 ^Int absInt(numBits(T))), T)
           when (I <Int min(T))
                andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
                andBool hasSignedIntegerType(T)
@@ -604,7 +607,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
           [structural, anywhere] 
      rule [cast-signed-of-big]:
           cast(T:Type, tv(I:Int, T':Type)) 
-               => tv(I -Int (2 ^Int absInt(numBits(T))), T)
+          => tv(I -Int (2 ^Int absInt(numBits(T))), T)
           when (I >Int max(T))
                andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
                andBool hasSignedIntegerType(T)
@@ -615,7 +618,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
           cast(T:Type, tv(piece(unknown(Len:Int), Len:Int), T':Type)) 
-               => tv(piece(unknown(value(bitSizeofType(T))), value(bitSizeofType(T))), T)
+          => tv(piece(unknown(value(bitSizeofType(T))), value(bitSizeofType(T))), T)
           when hasIntegerType(T)
                andBool hasIntegerType(T')
           [anywhere]
@@ -628,17 +631,17 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // fixme
      rule cast(T:KResult, tv(V:Float, t(S:Set, double))) 
-               => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
+          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
           [anywhere]
      rule cast(T:KResult, tv(V:Float, t(S:Set, float))) 
-               => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
+          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
           [anywhere]
      rule cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
-               => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
+          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
           [anywhere]
@@ -657,17 +660,17 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      rule [cast-int-to-float]:
           cast(t(S:Set, float), tv(I:Int, T:KResult)) 
-               => tv(Int2Float(I:Int), t(S:Set, float))
+          => tv(Int2Float(I:Int), t(S:Set, float))
           when hasIntegerType(T:KResult)
           [anywhere]
      rule [cast-int-to-double]:
           cast(t(S:Set, double), tv(I:Int, T:KResult)) 
-               => tv(Int2Float(I:Int), t(S:Set, double))
+          => tv(Int2Float(I:Int), t(S:Set, double))
           when hasIntegerType(T:KResult)
           [anywhere]
      rule [cast-int-to-long-double]:
           cast(t(S:Set, long-double), tv(I:Int, T:KResult)) 
-               => tv(Int2Float(I:Int), t(S:Set, long-double))
+          => tv(Int2Float(I:Int), t(S:Set, long-double))
           when hasIntegerType(T:KResult)
           [anywhere]
      
@@ -685,7 +688,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // fixme all floats same precision
      rule cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
-               => tv(F:Float, t(S:Set, T':K))
+          => tv(F:Float, t(S:Set, T':K))
           when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
                andBool (T':K ==K float orBool T':K ==K double orBool T':K ==K long-double)
           [anywhere]
@@ -719,7 +722,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      pointer to any object or function.
      }*/
      rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
-               => tv(NullPointer, t(S:Set, pointerType(T:KResult)))
+          => tv(NullPointer, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
                andBool N:Int ==K NullPointerConstant
           [anywhere]
@@ -737,7 +740,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // choice implementation defined behavior
      rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
-               => tv(N:Int, t(S:Set, pointerType(T:KResult)))
+          => tv(N:Int, t(S:Set, pointerType(T:KResult)))
           when hasIntegerType(T':KResult)
                andBool N:Int =/=K NullPointerConstant
           [anywhere]
@@ -750,7 +753,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // fixme needs to check size
      rule cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
-               => tv(N:Int, T:KResult)
+          => tv(N:Int, T:KResult)
           when hasIntegerType(T:KResult)
                andBool notBool isBoolType (T:KResult)
           [anywhere]
@@ -777,7 +780,7 @@ module DYNAMIC-SEMANTICS-CONVERSION
      // choice
      // needs to handle alignment
      rule cast(t(S:Set, pointerType(T:KResult)), tv(Loc:SymLoc, t(_, pointerType(_)))) 
-               => tv(Loc:SymLoc, t(S:Set, pointerType(T:KResult)))
+          => tv(Loc:SymLoc, t(S:Set, pointerType(T:KResult)))
           [anywhere]
 endmodule
 
@@ -799,7 +802,8 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
                andBool (max(T) >=Int I)
                andBool hasIntegerType(T)
      rule [interpret-too-big]:
-          interpret-aux(T:Type, I:Int) => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
+          interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
           when (I:Int >Int max(T))
                andBool hasIntegerType(T)
           
@@ -810,21 +814,32 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
                andBool hasIntegerType(T)
           
      rule [arithInterpret-unknown]:
-          arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) => tv(piece(unknown(N:Int), N:Int), T)
+          arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
+          => tv(piece(unknown(N:Int), N:Int), T)
           
      // these could be so much better...
      rule ~Bits X:Int => ~Int X
-     rule [bnot-unknown]: ~Bits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
+     rule [bnot-unknown]: 
+          ~Bits piece(unknown(Len:Int), Len:Int) 
+          => piece(unknown(Len:Int), Len:Int)
      
      rule X:Int /Bits Y:Int => X /Int Y
 
      rule X:Int xorBits Y:Int => X xorInt Y
-     rule [xor-unknown-right]: N:Bits xorBits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
-     rule [xor-unknown-left]: piece(unknown(Len:Int), Len:Int) xorBits N:Bits => piece(unknown(Len:Int), Len:Int)
+     rule [xor-unknown-right]: 
+          N:Bits xorBits piece(unknown(Len:Int), Len:Int) 
+          => piece(unknown(Len:Int), Len:Int)
+     rule [xor-unknown-left]: 
+          piece(unknown(Len:Int), Len:Int) xorBits N:Bits 
+          => piece(unknown(Len:Int), Len:Int)
 
      rule X:Int |Bits Y:Int => X |Int Y
-     rule [or-unknown-right]: N:Bits |Bits piece(unknown(Len:Int), Len:Int) => piece(unknown(Len:Int), Len:Int)
-     rule [or-unknown-left]: piece(unknown(Len:Int), Len:Int) |Bits N:Bits => piece(unknown(Len:Int), Len:Int)
+     rule [or-unknown-right]: 
+          N:Bits |Bits piece(unknown(Len:Int), Len:Int) 
+          => piece(unknown(Len:Int), Len:Int)
+     rule [or-unknown-left]: 
+          piece(unknown(Len:Int), Len:Int) |Bits N:Bits 
+          => piece(unknown(Len:Int), Len:Int)
 
      rule X:Int &Bits Y:Int => X &Int Y
      rule [and-unknown-zero-right]: N:Int &Bits piece(unknown(Len:Int), Len) => 0
@@ -850,12 +865,11 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
      rule [arithInterpret-unsigned-small]:
           arithInterpret(T:Type, I:Int) 
           => arithInterpret(T, (I:Int %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
-          //=> tv((I:Int %Int (max(T:KResult) +Int 1)) +Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T)
                andBool (I:Int <Int min(T))
-          // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0) will work, but not sure why
+          // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0)
+          // will work, but not sure why
 
-     // rule integerTypes => signedIntegerTypes unsignedIntegerTypes [structural]
      rule unsignedIntegerTypes => 
           SetItem(bool)
           SetItem(unsigned-char)
@@ -863,6 +877,7 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
           SetItem(unsigned-int)
           SetItem(unsigned-long-int)
           SetItem(unsigned-long-long-int)
+
      rule signedIntegerTypes => 
           SetItem(char)
           SetItem(signed-char)

@@ -4,14 +4,16 @@ module COMMON-SEMANTICS-STATEMENTS-INCLUDE
      imports COMMON-INCLUDE 
      
      syntax Statement ::= "loopMarked"
-     syntax K ::= "genLabel" "(" Int "," K ")" [klabel('genLabel)] //  switchid, value (tv or 'Default)
+     //  switchid, value (tv or 'Default)
+     syntax K ::= "genLabel" "(" Int "," K ")" [klabel('genLabel)]
      syntax K ::= "popLoop"
      syntax K ::= "popBlock"
-     syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")" //  nestingDepth, currentBlock, decl
-     syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))] //  nestingDepth, block history, continuation, loop stack, decl stack
+     //  nestingDepth, currentBlock, decl
+     syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")"
+     //  nestingDepth, block history, continuation, loop stack, decl stack
+     syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")" [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
      syntax K ::= "case" "(" Int ")"
 endmodule 
-
 
 module COMMON-SEMANTICS-PROCESS-LABELS
      imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
@@ -31,7 +33,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
      When we goto, we need to take the variables on the goto path and subtract
      the variables we've already allocated in the real history.  Then we need
      to declare the remaining variables
-          
 */
      
      syntax K ::= "waitingOnGotoMap"
@@ -40,7 +41,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           <gotoMap> M:Map => M:Map[map(.Map) / kpair(Tu:K, F:Id)] </gotoMap>
           <currentFunction> _ => F:Id </currentFunction>
           <currTU> Tu:K </currTU>
-          //<br/>
           <calculateGotoMap>
                . => (<gotoCalculation>... <computation> K:K ~> Return(NothingExpression) </computation> ...</gotoCalculation>)
           </calculateGotoMap>
@@ -64,7 +64,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           [structural] 
      rule <computation> Block(Num:Int, _, klist(L:KList)) => klistToK(L:KList) ...</computation> 
           <blockHistoryGoto> . => ListItem(Num:Int) ...</blockHistoryGoto>
-          //  <declarationStack>... .List => ListItem(.K) </declarationStack>
           [structural] 
           
      rule <computation> popBlock => .K ...</computation>
@@ -79,19 +78,13 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           [structural] 
 
      // this rule is different than the dynamic one because we don't enforce T to be reduced yet
-     rule <computation> DeclarationDefinition(InitNameGroup(T:K, klist((K:K,, K':K,, L:KList))))
+     rule <computation> 
+               DeclarationDefinition(InitNameGroup(T:K, klist((K:K,, K':K,, L:KList))))
                => DeclarationDefinition(InitNameGroup(T:K, klist(K:K)))
                ~> DeclarationDefinition(InitNameGroup(T:K, klist((K':K,, L:KList))))
           ...</computation>
           [structural]
           
-     // rule
-          // <computation> Typedef(NameGroup(T:K, klist((K:K,, K':K,, L:KList))))
-               // => Typedef(nameGroup-aux(T:K, K:K))
-               // ~> Typedef(NameGroup(T:K, klist(K':K,, L:KList)))
-          // ...</computation>
-          // [structural] 
-
      //  fixme would like to combine the below rules
      rule <computation> DeclarationDefinition(InitNameGroup(T:K, klist(K:K))) => .K ...</computation>
           <br/>
@@ -99,24 +92,14 @@ module COMMON-SEMANTICS-PROCESS-LABELS
                .List 
                => ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(InitNameGroup(T:K, klist(K:K))))) 
           </declarationStack>
-          //<br/>
           <nestingDepthGoto> Depth:Int </nestingDepthGoto>
           <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
           [structural, large]
-     // rule
-          // <computation> DeclarationDefinition(K:K) => .K ...</computation>
-          // <declarationStack>... .List 
-               // => ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, DeclarationDefinition(K:K))) 
-          // </declarationStack>
-          // <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          // <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
-          // [structural]
           
      rule <computation> OnlyTypedef(K:K) => .K ...</computation>
           <declarationStack>... .List 
                => ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, OnlyTypedef(K:K))) 
           </declarationStack>
-          //<br/>
           <nestingDepthGoto> Depth:Int </nestingDepthGoto>
           <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
           [structural] 
@@ -126,7 +109,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           <declarationStack>... .List 
                => ListItem(frozenDeclaration(Depth:Int, BlockNum:Int, Typedef(K:K))) 
           </declarationStack>
-          //<br/>
           <nestingDepthGoto> Depth:Int </nestingDepthGoto>
           <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
           [structural] 
@@ -134,13 +116,13 @@ module COMMON-SEMANTICS-PROCESS-LABELS
      rule [compute-label-ignore-non-statement]:
           <computation> L:KLabel(Args:KList) => .K ...</computation>
           when false
-          orBool L:KLabel ==KLabel 'Nop
-          orBool L:KLabel ==KLabel 'Computation
-          orBool L:KLabel ==KLabel 'Break
-          orBool L:KLabel ==KLabel 'Continue
-          orBool L:KLabel ==KLabel 'Return
-          orBool L:KLabel ==KLabel 'Goto
-          orBool L:KLabel ==KLabel 'CompGoto
+               orBool (L:KLabel ==KLabel 'Nop)
+               orBool (L:KLabel ==KLabel 'Computation)
+               orBool (L:KLabel ==KLabel 'Break)
+               orBool (L:KLabel ==KLabel 'Continue)
+               orBool (L:KLabel ==KLabel 'Return)
+               orBool (L:KLabel ==KLabel 'Goto)
+               orBool (L:KLabel ==KLabel 'CompGoto)
           [structural] 
           
      // - should do this with a split
@@ -205,7 +187,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           
      rule [compute-label-while-mark]:
           <computation> (. => S:K ~> loopMarked) ~> While(E:K, S:K) ~> (. => popLoop) ~> K:K </computation>
-          //<br/>
           <computationTail> Tail:K </computationTail>
           <blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>
           <loopStackGoto> (. => ListItem(kpair(Num:Int, (K:K ~> Tail:K)))) ...</loopStackGoto>
@@ -300,5 +281,4 @@ endmodule
 module COMMON-C-STATEMENTS
      imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
      imports COMMON-SEMANTICS-PROCESS-LABELS
-     
 endmodule

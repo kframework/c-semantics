@@ -643,7 +643,6 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
                ~> initialize(X:Id, T:KResult, Init:K)
                ~> X:Id
           ...</k>
-          //<br/>
           <compoundLiteralMap> M:Map => M:Map[Loc / X:Id] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           when notBool X:Id in keys M:Map
@@ -1062,7 +1061,7 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
      value, the resulting value is implementation-defined.
      }*/
      rule tv(I:Int, T:KResult) >> tv(N:Int, T':KResult) 
-               => rightShiftInterpret(T:KResult, I:Int >>Int N:Int)
+          => rightShiftInterpret(T:KResult, I:Int >>Int N:Int)
           when isPromoted(T:KResult) andBool isPromoted(T':KResult)
                andBool N:Int <Int numBits(T:KResult)
           [structural]
@@ -1277,14 +1276,6 @@ module DYNAMIC-SEMANTICS-EQUALITY
                Base |-> memblock(Len:Int, _, _)
                Base' |-> memblock(Len':Int, _, _)
           ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <oLength> Len:Int </oLength>
-          // ...</object>
-          // <object>...
-          //      <basePtr> Base' </basePtr>
-          //      <oLength> Len':Int </oLength>
-          // ...</object>
           when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
                andBool (Base =/=K Base')
                andBool (Offset:Int <Int Len:Int)
@@ -1298,14 +1289,6 @@ module DYNAMIC-SEMANTICS-EQUALITY
                Base |-> memblock(Len:Int, _, _)
                Base' |-> memblock(Len':Int, _, _)
           ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <oLength> Len:Int </oLength>
-          // ...</object>
-          // <object>...
-          //      <basePtr> Base' </basePtr>
-          //      <oLength> Len':Int </oLength>
-          // ...</object>
           when (isPointerType(T:KResult) andBool isPointerType(T':KResult))
                andBool (Base =/=K Base')
                andBool (Offset:Int <Int Len:Int)
