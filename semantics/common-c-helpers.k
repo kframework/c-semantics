@@ -40,25 +40,15 @@ module COMPAT
      context toKRList'(_,, HOLE,, _)
      context toRVList'(_,, (HOLE => reval(HOLE)),, _)
 
-     rule <k> toKRList(L:KList) => toKRList'(L) ~> krlist(.KList) ...</k>
-     rule <k> toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList) ...</k>
+     rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
+     rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
 
-     rule <k> toKRList'(_,, (V:KResult => .KList)) 
-          ~> krlist((.KList => V),, _) 
-          ...</k>
+     rule toKRList'(_,, (V:KResult => .KList)) ~> krlist((.KList => V),, _) 
 
-     rule <k> toRVList'(_,, (V:KResult => .KList)) 
-          ~> rvlist((.KList => V),, _) 
-          ...</k>
+     rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
 
-     rule <k> toKRList'(.KList) => .K ...</k>
-     rule <k> toRVList'(.KList) => .K ...</k>
-
-     rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) 
-     rule all(., _) => true 
-
-     rule allk((K:K,, L:KList), Lbl:KLabel) => Lbl(K) andBool allk(L, Lbl) 
-     rule allk(.KList, _) => true 
+     rule toKRList'(.KList) => .
+     rule toRVList'(.KList) => .
 
 endmodule
 
@@ -145,8 +135,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
                     
      rule [fillToBytes-done]:
-          fillToBytes-aux(dataList(.KList), L:KList)
-               => dataList(L:KList)
+          fillToBytes-aux(dataList(.KList), L:KList) => dataList(L)
           [structural]
           
      // coallesce bitranges that are adjacent
@@ -223,9 +212,8 @@ module COMMON-SEMANTICS-HELPERS-MISC
           orBool Lb:KLabel ==KLabel 'structType
           [structural]
 
-     rule <k> extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
-               => concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:KList), Offset:Int, Len:Int)))
-          ...</k>
+     rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
+          => concretize(T:KResult, fillToBytes(extractBitsFromList(dataList(L:KList), Offset:Int, Len:Int)))
           [structural]
      
      rule isConcreteNumber(loc(_, _, _)) => false
@@ -241,7 +229,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
      
      rule [discard]:
-          <k> V:KResult ~> discard => .K ...</k>
+          V:KResult ~> discard => .
           [structural]
      
      //- derived
@@ -267,7 +255,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule max(t(_, bool)) => 1
      
      rule min(t(_, signed-char)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
-     // rule min(t(_, signed-char)) => kccSettingInt("_KCC_SCHAR_MIN") [structural]
      rule max(t(_, signed-char)) => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
      rule min(t(_, short-int)) => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
      rule max(t(_, short-int)) => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
@@ -290,23 +277,19 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule max(t(_, unsigned-long-long-int)) => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
      
      
-      // TODO(chathhorn): I mucked with stuff here.
-     //rule asciiCharString(S:String) => asciiString(S:String)
      rule [firstChar]:
           firstChar(S:String) => substrString(S:String, 0, 1)
           [structural]
+
      rule [nthChar]:
           nthChar(S:String, N:Int) => substrString(S:String, N:Int, 1)
           [structural]
-     // rule [charToAscii]:
-     //   charToAscii(C:Char) => asciiString(C:Char)
-     //   [structural]
+
      rule [butFirstChar]:
           butFirstChar(S:String) => substrString(S:String, 1, lengthString(S:String))
           [structural]
           
      syntax String ::= toUpperCase(String) [function]
-     //syntax Char ::= toUpperCase(Char) [function]
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String)) +String toUpperCase(butFirstChar(S:String))
           when S:String =/=String ""
@@ -321,21 +304,18 @@ module COMMON-SEMANTICS-HELPERS-MISC
      syntax Value ::= "str" "(" String ")"
      
      rule [getString-pre]:
-          <k> (.K => read(Loc, t(.Set, char)))
-               ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
-          ...</k>
+          (. => read(Loc, t(.Set, char)))
+          ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
           
      rule [getString]:
-          <k> tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
-               => getString-aux(Loc, S +String #charString(N))
-          ...</k>
+          tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
+          => getString-aux(Loc, S +String #charString(N))
           when N =/=Int 0
           [structural]
      rule [getString-done]:
-          <k> tv(0, _) ~> getString-aux(Loc:SymLoc, S:String)
-               => str(S:String)
-          ...</k>
+          tv(0, _) ~> getString-aux(Loc:SymLoc, S:String)
+          => str(S:String)
           [structural]
           
      // writeString and writeWString expect the user to add the '\0' to the end
@@ -345,46 +325,43 @@ module COMMON-SEMANTICS-HELPERS-MISC
      syntax K ::= "writeWString" "(" SymLoc "," KList ")" // [strict(1)]
 
      rule [write-string]:
-          <k> writeString(Loc:SymLoc, S:String)
-               => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
-                    := tv(asciiString(firstChar(S:String)), t(.Set, char)))
-               ~> writeString(Loc +bytes 1, butFirstChar(S:String))
-          ...</k>
+          writeString(Loc:SymLoc, S:String)
+          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               := tv(asciiString(firstChar(S:String)), t(.Set, char)))
+          ~> writeString(Loc +bytes 1, butFirstChar(S:String))
           when S:String =/=String ""
           [structural]
      // fixme this bare 4 needs to be updated to handle different size wchar_ts
      rule [write-wstring]:
-          <k> writeWString(Loc:SymLoc, (N:Int,, S:KList))
-               => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
-                    := tv(N, cfg:wcharut))
-               ~> writeWString(Loc +bytes 4, S)
-          ...</k>
+          writeWString(Loc:SymLoc, (N:Int,, S:KList))
+          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               := tv(N, cfg:wcharut))
+          ~> writeWString(Loc +bytes 4, S)
           [structural] 
      rule [write-empty-string]:
-          <k> writeString(_, "") => .K ...</k>
+          writeString(_, "") => .
           [structural]
      rule [write-empty-wstring]:
-          <k> writeWString(_, .KList) => .K ...</k>
+          writeWString(_, .KList) => .
           [structural]
           
-     
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]
      syntax String ::= subPointerToString(SymBase) [function]
 
      rule [pointerToString]:
           pointerToString(loc(N:SymBase, M:Int, 0))
-               => "[sym(" +String subPointerToString(N) +String ") + " 
+          => "[sym(" +String subPointerToString(N) +String ") + " 
                +String Int2String(M) +String "]"
           [structural]
           
      rule [subPointerToString-auto]:
           subPointerToString(sb(B:Int, Th:Int))
-               => "sb(" +String Int2String(B) +String ", " +String Int2String(Th) +String ")"
+          => "sb(" +String Int2String(B) +String ", " +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
           subPointerToString(sb(B:Int, allocatedDuration))
-               => "sb(" +String Int2String(B) +String ", " +String "allocatedDuration)" 
+          => "sb(" +String Int2String(B) +String ", " +String "allocatedDuration)" 
           [structural]
      
      rule [pointerToString-done]:
@@ -503,7 +480,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           SetItem(l('unionType))
           SetItem(l('qualifiedType))
      
-     rule assert(true, _:Int) => .K [structural, anywhere]
+     rule assert(true, _:Int) => . [structural, anywhere]
 endmodule
 
 module COMMON-C-BITSIZE
@@ -530,16 +507,13 @@ module COMMON-C-BITSIZE
      syntax K ::= "maxBitSizeofList" "(" KList ")"
      syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
      rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L:KList, 0) [structural, anywhere]
-     rule <k> maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
-               => bitSizeofType(T:KResult) 
-               ~> maxBitSizeofList-aux(L:KList, N:Int) 
-          ...</k>
+     rule maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
+          => bitSizeofType(T:KResult) ~> maxBitSizeofList-aux(L:KList, N:Int) 
           [structural] 
-     rule <k> (tv(N':Int, _) => .) 
-               ~> maxBitSizeofList-aux(L:KList, (N:Int => maxInt(N:Int, N':Int))) 
-          ...</k>
+     rule (tv(N':Int, _) => .) 
+          ~> maxBitSizeofList-aux(L:KList, (N:Int => maxInt(N:Int, N':Int))) 
           [structural] 
-     rule <k> maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned) ...</k>
+     rule maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned)
           [structural] 
      
      rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) [structural, anywhere]
@@ -558,15 +532,15 @@ module COMMON-C-BITSIZE
           <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural]
           
-     rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N:Int
-     rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T:KResult
+     rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N
+     rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T
 
-     rule toString(Identifier(S:String)) => S:String
-     rule toString(S:String) => S:String
-     rule toString(Num:Int) => Int2String(Num:Int)
+     rule toString(Identifier(S:String)) => S
+     rule toString(S:String) => S
+     rule toString(Num:Int) => Int2String(Num)
      
-     rule klistToK((K:K,, L:KList)) => K:K ~> klistToK(L:KList)
-     rule klistToK(.KList) => .K
+     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
+     rule klistToK(.KList) => .
 endmodule
 
 

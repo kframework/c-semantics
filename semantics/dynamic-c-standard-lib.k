@@ -23,14 +23,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      context nextvarg-aux(_, _, _, value(HOLE))
      
      rule [nextvarg-start]:
-          <k> nextvarg(Loc:SymLoc, T:Type)
-               => nextvarg-aux(Loc, T, value(byteSizeofType(T)), value(sizeofLocation(Loc)))
-          ...</k>
+          nextvarg(Loc:SymLoc, T:Type)
+          => nextvarg-aux(Loc, T, value(byteSizeofType(T)), value(sizeofLocation(Loc)))
           [structural]
      rule [nextvarg]:
-          <k> nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
-               => vpair(read(Loc, T), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
-          ...</k>
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
+          => vpair(read(Loc, T), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           [structural]
      
      context prepareBuiltin(_, (_,, (HOLE => reval(HOLE)),, _))
@@ -39,18 +37,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      
      rule [idsFromDeclList-one]:
           idsFromDeclList((L:KList,, typedDeclaration(t(_, T:K), X:Id)))
-               => idsFromDeclList(L:KList),, X:Id
+          => idsFromDeclList(L:KList),, X:Id
           when T:K =/=K void
           [structural]
      rule [idsFromDeclList-void]:
           idsFromDeclList((L:KList,, typedDeclaration(t(_, void), X:Id)))
-               => idsFromDeclList(L:KList)
+          => idsFromDeclList(L:KList)
           [structural]
      rule [idsFromDeclList-vararg]:
           idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
-               => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
-               ,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
-               // assumes variadic args are placed in incremental blocks
+          => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
+          // assumes variadic args are placed in incremental blocks
+          ,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
           [structural]
      rule [idsFromDeclList-done]:
           idsFromDeclList(.KList) => .KList [structural]
@@ -61,87 +59,74 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           [structural]
           
      rule [prepareBuiltin]:
-          <k> handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:KList)))
-               => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
-          ...</k>
+          handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:KList)))
+          => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
           [structural]
           
-     rule <k> printString(S:String)
-               => writeToFD(1, asciiString(firstChar(S:String)))
-               ~> printString(butFirstChar(S:String))
-          ...</k>
+     rule printString(S:String)
+          => writeToFD(1, asciiString(firstChar(S:String)))
+          ~> printString(butFirstChar(S:String))
           when lengthString(S:String) >Int 0
           [structural]
-     rule <k> printString("") => writeToFD(1, 10) ...</k>
+     rule printString("") => writeToFD(1, 10)
           [structural]
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-MATH
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      rule [sqrt]:
-          <k> prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
-               => tv(sqrtFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
+          => tv(sqrtFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [log]:
-          <k> prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
-               => tv(logFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("log")), tv(F:Float, t(_, double)))
+          => tv(logFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [exp]:
-          <k> prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
-               => tv(expFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("exp")), tv(F:Float, t(_, double)))
+          => tv(expFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [atan]:
-          <k> prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
-               => tv(atanFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("atan")), tv(F:Float, t(_, double)))
+          => tv(atanFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [asin]:
-          <k> prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
-               => tv(asinFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("asin")), tv(F:Float, t(_, double)))
+          => tv(asinFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [atan2]:
-          <k> prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
-               => tv(atan2Float(F:Float, F':Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+          => tv(atan2Float(F:Float, F':Float), t(.Set, double))
           [structural]
   
      rule [tan]:
-          <k> prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
-               => tv(tanFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
+          => tv(tanFloat(F:Float), t(.Set, double))
      [structural]
   
      rule [floor]:
-          <k> prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
-               => tv(floorFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
+          => tv(floorFloat(F:Float), t(.Set, double))
           [structural]
   
      rule [cos]:
-          <k> prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
-               => tv(cosFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("cos")), tv(F:Float, t(_, double)))
+          => tv(cosFloat(F:Float), t(.Set, double))
           [structural]
 
      rule [fmod]:
-          <k> prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
-               => tv(F:Float %Float F':Float, t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+          => tv(F:Float %Float F':Float, t(.Set, double))
           [structural]
 
      rule [sin]:
-          <k> prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
-               => tv(sinFloat(F:Float), t(.Set, double))
-          ...</k>
+          prepareBuiltin((Identifier("sin")), tv(F:Float, t(_, double)))
+          => tv(sinFloat(F:Float), t(.Set, double))
           [structural]
 
 endmodule
@@ -252,9 +237,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
 
      syntax K ::= "longjmp-aux" "(" K "," K ")" [strict]
      rule [longjmp-prepare]:
-          <k> prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
-               => longjmp-aux(reval(*(V:KResult)), V':KResult)
-          ...</k>
+          prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
+          => longjmp-aux(reval(*(V:KResult)), V':KResult)
           [structural]
      
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
@@ -326,10 +310,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      // fixme can add lots of checks here
      // tool fixme, change Value to K and unquote error
      rule [va-start]:
-          <k> prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
-                    => Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
-                    ~> skipval
-          ...</k>
+          prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
+          => Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
+          ~> skipval
           [structural]
      
      syntax K ::= "va-inc-aux" "(" K "," K "," K ")" // [strict(3)]
@@ -337,31 +320,25 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      // fixme can do lots of checks here too
      
      rule [va-inc-start]:
-          <k> prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
-                    => va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
-          ...</k>
+          prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+          => va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
           [structural]
                     
      rule [va-inc]:
-          <k> va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
-               => Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
-               ~> Ap:KResult
-          ...</k>
+          va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
+          => Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
+          ~> Ap:KResult
           [structural]                  
           
      // fixme can do lots of checks here too
      rule [va-copy]:
-          <k> prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
-                    => Computation(*(ApLoc:KResult) := Other:KResult)
-                    ~> skipval
-          ...</k>
+          prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
+          => Computation(*(ApLoc:KResult) := Other:KResult) ~> skipval
           [structural]
           
      // fixme can do lots of checks here too
      rule [va-end]:
-          <k> prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult))
-                    => skipval
-          ...</k>
+          prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult)) => skipval
           [structural]
 endmodule
 
@@ -369,7 +346,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
      syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
-     rule <k> OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id) ...</k>
+     rule OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id)
           [structural]
 
      // fixme should check for bitfield offset
@@ -381,7 +358,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
           ...</structs>
           [structural]
 
-     rule <k> offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut) ...</k>
+     rule offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut)
           [structural]
 endmodule
 
@@ -390,31 +367,23 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
      rule [putchar]:
-          <k> prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
-               => writeToFD(1, N:Int) 
-               ~> tv(N:Int, t(.Set, int))
-          ...</k>
+          prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
+          => writeToFD(1, N:Int) ~> tv(N:Int, t(.Set, int))
           [structural]
 
      rule [fslPutc]:
-          <k> prepareBuiltin((Identifier("__fslPutc")), (tv(N:Int, _),, tv(H:Int, _)))
-               => writeToFD(H:Int, N:Int)
-               ~> tv(N:Int, t(.Set, int))
-          ...</k>
+          prepareBuiltin((Identifier("__fslPutc")), (tv(N:Int, _),, tv(H:Int, _)))
+          => writeToFD(H:Int, N:Int) ~> tv(N:Int, t(.Set, int))
           [structural]
 
      rule [getchar]:
-          <k> prepareBuiltin((Identifier("getchar")), .KList) 
-               => flush(1)
-               ~> readFromFD(0) 
-          ...</k>
+          prepareBuiltin((Identifier("getchar")), .KList) 
+          => flush(1) ~> readFromFD(0) 
           [structural]
 
      rule [fslFGetC]:
-          <k> prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Int, _),, tv(Offset:Int, _)))
-               => readFromFD(FD:Int)
-               // => #fReadByte(FD:Int)
-          ...</k>
+          prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Int, _),, tv(Offset:Int, _)))
+          => readFromFD(FD:Int)
           [structural]
 
      rule [fslCloseFile]:
@@ -425,17 +394,15 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           [structural]
 
      rule [fslOpenFile-pre]:
-          <k> prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
-               => fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
-          ...</k>
+          prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
+          => fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
           [structural]
      
      syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3)]
      
      rule [fslOpenFile-aux]:
-          <k> fsl-open-file(str(Filename:String), str(Mode:String))
-               => fsl-open-file-aux("file:" +String Filename:String, Mode:String, #open("file:" +String Filename:String +String "#" +String Mode:String))
-          ...</k>
+          fsl-open-file(str(Filename:String), str(Mode:String))
+          => fsl-open-file-aux("file:" +String Filename:String, Mode:String, #open("file:" +String Filename:String +String "#" +String Mode:String))
           [structural]
 
      rule [fslOpenFile]:
@@ -468,49 +435,39 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      // read during evaluation of printf.  should use something like a buffer
      // to do this
      rule [printf]:
-          <k> prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
-               => new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
-          ...</k>
+          prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
+          => new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
           [structural]
           
      rule [printf-done]:
-          <k> new-printf-aux(formattedResult(S:String))
-               => writeToFD(1, S:String)
-               ~> flush(1)
-               ~> tv(lengthString(S:String), t(.Set, int)) 
-          ...</k>
+          new-printf-aux(formattedResult(S:String))
+               => writeToFD(1, S:String) ~> flush(1) ~> tv(lengthString(S:String), t(.Set, int)) 
           [structural]
      
      syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]
      rule [sprintf]:
-          <k> prepareBuiltin((Identifier("sprintf")), (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
-               => sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest)
-          ...</k>
+          prepareBuiltin((Identifier("sprintf")), (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
+          => sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest)
           [structural]
      rule [sprintf-done]:
-          <k> sprintf(formattedResult(S:String), Dest:SymLoc)
-               => writeString(Dest, S:String +String "\0")
-               ~> tv(lengthString(S:String), t(.Set, int))
-          ...</k>
+          sprintf(formattedResult(S:String), Dest:SymLoc)
+          => writeString(Dest, S:String +String "\0") ~> tv(lengthString(S:String), t(.Set, int))
           [structural]
      
      syntax K ::= "snprintf" "(" K "," SymLoc "," Int ")" [strict(1)]
      rule [snprintf]:
-          <k> prepareBuiltin((Identifier("snprintf")), (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
-               => snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
-          ...</k>
+          prepareBuiltin((Identifier("snprintf")), (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
+          => snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
           [structural]
      rule [snprintf-done-nz]:
-          <k> snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
-               => writeString(Dest, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
-               ~> tv(lengthString(S:String), t(.Set, int))
-          ...</k>
+          snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
+          => writeString(Dest, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
+          ~> tv(lengthString(S:String), t(.Set, int))
           when Len:Int >Int 0
           [structural]
      rule [snprintf-done-0]:
-          <k> snprintf(formattedResult(S:String), _, 0)
-               => tv(lengthString(S:String), t(.Set, int))
-          ...</k>
+          snprintf(formattedResult(S:String), _, 0)
+          => tv(lengthString(S:String), t(.Set, int))
           [structural]
      
      syntax K ::= "new-printf-aux" "(" K ")" [strict]
@@ -518,9 +475,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax K ::= "formatter-aux" "(" K ")" [strict]
      syntax K ::= "formatter-next" "(" K ")"
      syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule <k> formatter-next(vararg(tv(Loc:SymLoc, _)))
-               => formatter-arg(nextvarg(Loc, getFormatType))
-          ...</k>
+     rule formatter-next(vararg(tv(Loc:SymLoc, _)))
+          => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
      rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
@@ -758,8 +714,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 
      syntax K ::= "getFormatType"
      syntax K ::= "getFormatType-aux" "(" K "," K ")"
-     rule 
-          <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
+     rule <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
           <formatLength> Length:K </formatLength>
           <formatState> State:K </formatState>
           [structural]
@@ -1169,25 +1124,24 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      
      rule [debug]:
-          <k> prepareBuiltin(Identifier("__debug"), _) => skipval ...</k>
+          prepareBuiltin(Identifier("__debug"), _) => skipval
           [interpRule]
      rule [debug-k]:
-          <k> debug => .K ...</k>
+          debug => .
           [interpRule]
      rule [debug-m]:
-          <k> debug-m(_) => .K ...</k>
+          debug-m(_) => .
           [interpRule]
      
      rule [exit]:
-          <k> prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _ 
+          <k> prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _
                => tv(I:Int, t(.Set, int)) 
           </k>
           [structural]
 
      rule [abort]:
-          <k> prepareBuiltin((Identifier("abort")), .KList) ~> _
-               => printString("Aborted")
-               ~> tv(134, t(.Set, int))
+          <k> prepareBuiltin((Identifier("abort")), .KList) ~> _ 
+               => printString("Aborted") ~> tv(134, t(.Set, int)) 
           </k>
      
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
@@ -1205,16 +1159,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
                => alloc(newAlloc(Fresh:Int), Len:Int)
                ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          //<br/>
           <malloced>... .Map => newAlloc(Fresh:Int) |-> Len:Int ...</malloced>
           <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
           [structural]
-     // might want this for searching purposes
-     // rule [malloc-null]:
-          // <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
-               // => tv(NullPointer, t(.Set, pointerType(void)))
-          // ...</k>
-          // [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
      The \cinline{realloc} function deallocates the old object pointed to by
@@ -1241,7 +1188,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
                => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
                ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          //<br/>
           <malloced>... (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) ...</malloced>
           <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
           when OldLoc =/=K NullPointer
@@ -1249,23 +1195,20 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           
      
      rule [realloc-null]:
-          <k> prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult))
-               => prepareBuiltin((Identifier("malloc")), Len:KResult)
-          ...</k>
+          prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult)) 
+          => prepareBuiltin((Identifier("malloc")), Len:KResult)
           [structural]
 
      syntax K ::= "calloc-aux"
      rule [calloc]:
-          <k> prepareBuiltin((Identifier("calloc")), (tv(N:Int, _),, tv(Size:Int, _)))
-               => prepareBuiltin((Identifier("malloc")), tv(N:Int *Int Size:Int, cfg:sizeut))
-               ~> calloc-aux
-          ...</k>
+          prepareBuiltin((Identifier("calloc")), (tv(N:Int, _),, tv(Size:Int, _)))
+          => prepareBuiltin((Identifier("malloc")), tv(N:Int *Int Size:Int, cfg:sizeut))
+          ~> calloc-aux
           [structural]
      rule [calloc-aux]:
-          <k> (.K => zeroBlock(Loc:SymLoc) ) 
-               ~> tv(Loc, t(_, pointerType(t(_, void))))
-               ~> (calloc-aux => .K)
-          ...</k>
+          (. => zeroBlock(Loc:SymLoc) ) 
+          ~> tv(Loc, t(_, pointerType(t(_, void))))
+          ~> (calloc-aux => .K)
           [structural]
 
      rule [free]:
@@ -1302,28 +1245,23 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
      // fixme should detect overlaps
      syntax K ::= "strcpy" "(" SymLoc "," SymLoc "," SymLoc ")"
      rule [strcpy-start]:
-          <k> prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, tv(Src:SymLoc, t(_, pointerType(_)))))
-               => strcpy(Dest, Src, Dest)
-          ...</k>
+          prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, tv(Src:SymLoc, t(_, pointerType(_)))))
+          => strcpy(Dest, Src, Dest)
           [structural]
           
      rule [strcpy-pre]:
-          <k> (.K => read(Src:SymLoc, t(.Set, char)))
-               ~> strcpy(_, (Src => Src +bytes 1), _)
-          ...</k>
+          (. => read(Src:SymLoc, t(.Set, char))) ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]
      
      rule [strcpy-some]:
-          <k> (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
+          (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
                ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
-          ...</k>
           when I =/=Int 0
           [structural]
      rule [strcpy-done]:
-          <k> tv(0, T:KResult) ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
-               => write(lv(Dest, t(.Set, char)), tv(0, T)) 
-               ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
-          ...</k>
+          tv(0, T:KResult) ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
+          => write(lv(Dest, t(.Set, char)), tv(0, T)) 
+          ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
           [structural]
 endmodule
 
@@ -1333,7 +1271,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     // ops thrd-success thrd-error thrd-timeout thrd-busy thrd-nomem : -> Int
      syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, t(.Set, int)) [macro]
      rule thrd-error => tv(1, t(.Set, int)) [macro]
@@ -1341,18 +1278,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      rule thrd-busy => tv(3, t(.Set, int)) [macro]
      rule thrd-nomem => tv(4, t(.Set, int)) [macro]
      
-      syntax K ::= "threadRunning"
+     syntax K ::= "threadRunning"
      
-     //syntax Int ::= "threadId" "(" Int "," Int ")" // parent, new
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
-     // threadId(MyId:Int, Fresh:Int)
      rule [thrd-create-start]:
           <k> prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
                => Computation((* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                ~> spawn-aux(Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
           ...</k>
-          //<br/>
-          //<threadId> MyId:Int </threadId>
           <nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
           [structural]
 /*
@@ -1388,53 +1321,10 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
      syntax K ::= "join-aux" "(" Int "," Value ")"
           
      rule [thrd-join-start]:
-          <k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
-               => join-aux(ThreadId:Int, ResultPointer:KResult)
-          ...</k>
-          //<br/>
-          //<threadId> MyId:Int </threadId>
-          //<joiningMap> Joining:Map => Joining:Map[MyId:Int / ThreadId:Int] </joiningMap>
-          //<detachingMap> Detaching:Map </detachingMap>
-          //when notBool ThreadId:Int in keys Joining:Map
-          //andBool notBool ThreadId:Int in keys Detaching:Map
+          prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
+          => join-aux(ThreadId:Int, ResultPointer:KResult)
           [structural]
      
-     // rule [thrd-join-error]:
-          // <k> prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, _))
-               // => thrd-error
-          // ...</k>
-          // <br/>
-          // <joiningMap> Joining:Map </joiningMap>
-          // //<detachingMap> Detaching:Map </detachingMap>
-          // when ThreadId:Int in keys Joining:Map
-          // //orBool ThreadId:Int in keys Detaching:Map
-          // [large, computational]
-     
-     // at this point, we've already "locked" the join/detach.  This is the blocking part
-     // rule [thrd-join-null]:
-          // <thread>...
-               // <k> join-aux(ThreadId:Int, tv(NullPointer, _))
-                    // => thrd-success
-               // ...</k>
-          // ...</thread>
-          // <thread>...
-               // <k> V:KResult </k>
-               // <threadId> ThreadId:Int </threadId>
-          // ...</thread>
-          // [computational]
-     // rule [thrd-join-non-null]:
-          // <thread>...
-               // <k> join-aux(ThreadId:Int, ResultPointer:KResult)
-                    // => Computation((* ResultPointer:KResult) := V:KResult)
-                    // ~> thrd-success
-               // ...</k>
-          // ...</thread>
-          // <thread>...
-               // <k> V:KResult </k>
-               // <threadId> ThreadId:Int </threadId>
-          // ...</thread>
-          // if ResultPointer =/=K NullPointer
-          // [computational]
      rule [thrd-join]:
           <thread>...
                <k> join-aux(ThreadId:Int, tv(Loc:SymLoc, _))
@@ -1460,6 +1350,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           when notBool (Loc in keys M:Map)
                andBool (Type ==Int cfg:mtxPlain) // only handling plain mutexes for now
           [structural]
+
      rule [mtx-lock]:
           <k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
                => thrd-success
@@ -1471,6 +1362,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           when (notBool (Loc #inBag B))
           andBool (Type:Int ==Int cfg:mtxPlain)
           [computational]
+
      rule [mtx-unlock]:
           <k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))
                => thrd-success
@@ -1481,19 +1373,7 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
           <locks>... BagItem(Loc:Int) => .Bag ...</locks>
           when Type:Int ==Int cfg:mtxPlain
           [computational]
-     // syntax K ::= "testAndSet" "(" K "," K "," K ")" [strict(1)]
-     // rule [test-and-set-start]:
-          // <k> prepareBuiltin((Identifier("__test_and_set")), (Loc:KResult,, V:KResult))
-               // => testAndSet(*(Loc:KResult), Loc:KResult, V:KResult)
-          // ...</k>
-          // [structural]
-          
-     // rule [test-and-set]:
-          // <k> testAndSet(Retval:KResult, Loc:KResult, V:KResult)
-               // => Computation((* Loc:KResult) := V:KResult)
-               // ~> Retval:KResult
-          // ...</k>
-          // [structural]
+
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-TIME
@@ -1501,9 +1381,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-TIME
      
      // fixme, just a placeholder
      rule [time]:
-          <k> prepareBuiltin((Identifier("time")), _:KResult)
-               => tv(0, t(.Set, long-long-int))
-          ...</k>
+          prepareBuiltin((Identifier("time")), _:KResult) 
+          => tv(0, t(.Set, long-long-int))
           [structural]
      
 endmodule

@@ -279,7 +279,6 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           <nestingDepthGoto> Depth:Int </nestingDepthGoto>
           <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
           when notBool $hasMapping(M:Map, genLabel(SwitchNum:Int, Val:K))
-          //  andBool hasIntegerType(T:KResult)
           [structural, large] 
      rule <computation> (Default(SwitchNum:Int, S:K) => S:K) ~> K:K </computation>
           <computationTail> Tail:K </computationTail>

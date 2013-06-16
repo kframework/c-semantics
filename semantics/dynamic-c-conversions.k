@@ -12,18 +12,15 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-HELPERS
      
      rule [hasSameSignedness]: 
           hasSameSignedness(T:KResult, T':KResult)
-               => (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
+          => (hasSignedIntegerType(T:KResult) andBool hasSignedIntegerType(T':KResult))
           orBool (hasUnsignedIntegerType(T:KResult) andBool hasUnsignedIntegerType(T':KResult))
      
      rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int)) 
-               => t(S:Set, unsigned-int)
+          correspondingUnsignedType(t(S:Set, int)) => t(S:Set, unsigned-int)
      rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int))
-               => t(S:Set, unsigned-long-int)
+          correspondingUnsignedType(t(S:Set, long-int)) => t(S:Set, unsigned-long-int)
      rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int))
-               => t(S:Set, unsigned-long-long-int)
+          correspondingUnsignedType(t(S:Set, long-long-int)) => t(S:Set, unsigned-long-long-int)
      
 endmodule
 
@@ -198,33 +195,27 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      rule isPromoted(t(_, bitfieldType(_, _:Int))) => false
      
      rule [promote-unary]:
-          <k> L:KLabel(
-                    (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
-               )
-          ...</k> 
+          L:KLabel(
+               (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
+          )
           when isArithUnaryOp(L:KLabel)
-          andBool notBool isPromoted(T:KResult)
-          //andBool hasIntegerType(T:KResult)
+               andBool notBool isPromoted(T:KResult)
           [structural]
      rule [promote-binary-left]:
-          <k> L:KLabel(
-                    (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
-                    ,, _
-               )
-               ...</k> 
+          L:KLabel(
+               (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
+               ,, _
+          )
           when isArithBinOp(L:KLabel)
-          andBool notBool isPromoted(T:KResult)
-          //andBool hasIntegerType(T:KResult) // implicity in notBool isPromoted
+               andBool notBool isPromoted(T:KResult)
           [structural]
      rule [promote-binary-right]:
-          <k> L:KLabel(
-                    _,,
-                    (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
-               ) 
-               ...</k>
+          L:KLabel(
+               _,,
+               (tv(V:K, T:KResult) => tv(V:K, promote(T:KResult)))
+          ) 
           when isArithBinOp(L:KLabel)
-          andBool notBool isPromoted(T:KResult)
-          //andBool hasIntegerType(T:KResult)
+               andBool notBool isPromoted(T:KResult)
           [structural]
 
           
@@ -275,9 +266,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      the same, and complex otherwise. This pattern is called the usual
      arithmetic conversions:
      }*/
-     rule <k> L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
-               => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
-          ...</k>
+     rule L:KLabel(tv(V:K, T:KResult),, tv(V':K, T':KResult))
+          => L:KLabel(cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V:K, T:KResult)),, cast(usualArithmeticConversion(T:KResult, T':KResult), tv(V':K, T':KResult)))
           when isArithBinConversionOp(L:KLabel)
                andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
@@ -329,8 +319,8 @@ module DYNAMIC-SEMANTICS-PROMOTIONS
      syntax K ::= "usualArithmeticConversion-aux" "(" K "," K ")" [function]
      
      rule usualArithmeticConversion(T:KResult, T':KResult)
-               => usualArithmeticConversion-aux(promote(T:KResult), promote(T':KResult))
-               when notBool isFloatType(T:KResult)
+          => usualArithmeticConversion-aux(promote(T:KResult), promote(T':KResult))
+          when notBool isFloatType(T:KResult)
                andBool notBool isFloatType(T':KResult)
           
      /*@ 
