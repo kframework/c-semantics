@@ -107,7 +107,7 @@ module COMMON-SEMANTIC-SYNTAX
 
      syntax ThreadId ::= Int
      syntax ThreadId ::= "allocatedDuration"
-     syntax SymBase ::= "sb" "(" Int "," ThreadId ")" [klabel('sb)]
+     syntax SymBase ::= Int "@" ThreadId
 
      // Base, byte offset, bit offset
      syntax SymLoc ::= "loc" "(" SymBase "," Int "," Int ")" [klabel('loc)]
@@ -442,8 +442,8 @@ endmodule
 module COMMON-C-SEMANTICS-MISC
      imports COMMON-INCLUDE 
      
-     rule linc(loc(sb(X:Int, Th:ThreadId), ByOff:Int, BiOff:Int))
-          => loc(sb(X +Int 1, Th), ByOff, BiOff)
+     rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
+          => loc(X +Int 1 @ Th, ByOff, BiOff)
 
      rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural, anywhere]
 

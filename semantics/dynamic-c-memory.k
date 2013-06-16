@@ -59,14 +59,14 @@ module DYNAMIC-SEMANTICS-READING
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule [read-thread-local]:
-          <k> ('read-aux => 'readActual)(loc(sb(_, Th:Int), _:Int, _:Int),, _,, _) ...</k>
+          <k> ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) ...</k>
           <threadId> Th </threadId>
           [structural, ndlocal]
      rule [read-shared]: // read global or shared data
-          ('read-aux => 'readActual)(loc(sb(_, 0), _:Int, _:Int),, _,, _)
+          ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
           [computational, ndlocal]
      rule [read-allocated]: // read data of "allocated" duration
-          ('read-aux => 'readActual)(loc(sb(_, allocatedDuration), _:Int, _:Int),, _,, _)
+          ('read-aux => 'readActual)(loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
           [computational, ndlocal]
      
      rule [read]:
@@ -317,20 +317,20 @@ module DYNAMIC-SEMANTICS-WRITING
      syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
      
      rule [write-thread-local]:
-          <k> write-aux(loc(sb(N:Int, Th:Int), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
-               => write-specific(loc(sb(N, Th), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+          <k> write-aux(loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+               => write-specific(loc(N @ Th, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           ...</k>
           <threadId> Id:Int </threadId>
           [structural, ndlocal]
      // write global or shared data
      rule [write]:
-          write-aux(loc(sb(N:Int, 0), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
-          => write-specific(loc(sb(N, 0), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+          write-aux(loc(N:Int @ 0, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+          => write-specific(loc(N @ 0, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           [computational, ndlocal]
      // write data of "allocated" duration
      rule [write-allocated]:
-          write-aux(loc(sb(N:Int, allocatedDuration), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
-          => write-specific(loc(sb(N, allocatedDuration), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+          write-aux(loc(N:Int @ allocatedDuration, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
+          => write-specific(loc(N @ allocatedDuration, Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           [computational, ndlocal]
      
      rule [write-normal]:
@@ -676,8 +676,8 @@ module DYNAMIC-C-MEMORY-MISC
      // fixme could additionally use the type to check whether that type is
      // valid for that pointer
      rule [check-valid-loc]:
-          <k> checkValidLoc-aux(loc(sb(N:Int, PtrThreadId:ThreadId), Offset:Int, 0)) => .K ...</k>
-          <mem>... sb(N, PtrThreadId) |-> memblock(Len:Int, _, _) ...</mem>
+          <k> checkValidLoc-aux(loc(N:Int @ PtrThreadId:ThreadId, Offset:Int, 0)) => .K ...</k>
+          <mem>... N @ PtrThreadId |-> memblock(Len:Int, _, _) ...</mem>
           <threadId> MyThreadId:ThreadId </threadId>
           when (PtrThreadId ==K MyThreadId
                orBool (PtrThreadId ==K 0)

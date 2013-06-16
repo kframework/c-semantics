@@ -62,7 +62,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
      imports COMMON-SEMANTICS-HELPERS-INCLUDE
 
      syntax K ::= firstLoc(K) [function]
-     rule firstLoc(ThreadId:Int) => loc(sb(0 , ThreadId:Int), 0, 0)
+     rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
      
      syntax SymBase ::= base(SymLoc) [function]
      rule base(loc(Base:SymBase, _, _)) => Base
@@ -352,12 +352,12 @@ module COMMON-SEMANTICS-HELPERS-MISC
           [structural]
           
      rule [subPointerToString-auto]:
-          subPointerToString(sb(B:Int, Th:Int))
-          => "sb(" +String Int2String(B) +String ", " +String Int2String(Th) +String ")"
+          subPointerToString(B:Int @ Th:Int)
+          => "(" +String Int2String(B) +String " @ " +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
-          subPointerToString(sb(B:Int, allocatedDuration))
-          => "sb(" +String Int2String(B) +String ", " +String "allocatedDuration)" 
+          subPointerToString(B:Int @ allocatedDuration)
+          => "(" +String Int2String(B) +String " @ " +String "allocatedDuration)" 
           [structural]
      
      rule [pointerToString-done]:
