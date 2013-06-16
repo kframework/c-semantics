@@ -47,7 +47,8 @@ module DYNAMIC-C-SEMANTICS-MISC
           <k> readFromFD(FD:Int) => tv(asciiString(firstChar(S:String)), t(.Set, int))  ...</k>
           <fid> FD:Int </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
-          when lengthString(S:String) >Int 0 // don't compare with "" in order to only treat string sort
+          // don't compare with "" in order to only treat string sort
+          when lengthString(S:String) >Int 0
           [observable]
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
@@ -68,7 +69,8 @@ module DYNAMIC-C-SEMANTICS-MISC
      syntax K ::= "f-flush" "(" Int ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"
      
-     // can't lex string2KList correctly in #fPrint(N:Int,, string2KList(S:String))
+     // can't lex string2KList correctly in #fPrint(N:Int,,
+     // string2KList(S:String))
      rule [flush]:
           <k> flush(N:Int) => .K ...</k>
           <fileCommands>... .K
@@ -112,7 +114,6 @@ module DYNAMIC-C-SEMANTICS-MISC
           
      syntax List ::= string2List(String) [function] 
                     | "string2List-aux" "(" String "," List ")" [function]
-      //syntax "string2List" -/- [\-]
      rule string2List(S:String) => string2List-aux(S:String, .List)
      rule string2List-aux("", L:List) => L
      rule string2List-aux(S:String, L:List)
@@ -347,11 +348,13 @@ module DYNAMIC-C-SEMANTICS
      rule callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
           => Call(Identifier("main"), klist(.KList))
           [structural]
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, 
+               typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, 
+               typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
@@ -360,13 +363,15 @@ module DYNAMIC-C-SEMANTICS
      rule [terminate]:
           (<T>...
                <thread>... 
-                    <threadId> 1 </threadId> // main's thread, not the global "thread"
+                    // main's thread, not the global "thread"
+                    <threadId> 1 </threadId>
                     <k> V:KResult </k>
                ...</thread>
           ...</T> => .Bag)
-               <resultValue> .K => V </resultValue>
+          <resultValue> .K => V </resultValue>
           <files>...
-               <fileCommands> _ => .K </fileCommands> // to prevent further io commands from firing
+               // to prevent further io commands from firing
+               <fileCommands> _ => .K </fileCommands>
                <file>... // stdout
                     <fid> 1 </fid>
                     <buff> S2'':String </buff>
@@ -374,8 +379,6 @@ module DYNAMIC-C-SEMANTICS
                     <done> S2:ListItem </done>
                ...</file>
           ...</files>
-          //(.Bag =>
-               <output> _ (.List => S2 L ListItem(S2'')) </output>
-          //)
+          <output> _ (.List => S2 L ListItem(S2'')) </output>
           [computational]
 endmodule

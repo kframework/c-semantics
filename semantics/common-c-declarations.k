@@ -60,7 +60,8 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
      rule figureInit(
                X:Id, 
                t(Se:Set, arrayType(T:KResult, Len:Int)), 
-               (SingleInit(Constant(StringLiteral(S:String))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
+               (SingleInit(Constant(StringLiteral(S:String))) 
+               => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(StringLiteral(S:String)))))))
           )
           when isCharType(T:KResult)
                andBool (lengthString(S:String) <=Int Len:Int)
@@ -69,7 +70,8 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
      rule figureInit(
                X:Id, 
                t(Se:Set, arrayType(T:KResult, Len:Int)), 
-               (SingleInit(Constant(WStringLiteral(S:KList))) => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
+               (SingleInit(Constant(WStringLiteral(S:KList))) 
+               => CompoundInit(klist(InitFragment(NextInit, SingleInit(Constant(WStringLiteral(S:KList)))))))
           )
           when isWCharType(T:KResult)
                andBool (lengthKList S <=Int Len:Int)
@@ -175,14 +177,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           ...</k>
           <currentFunction> file-scope </currentFunction>
           <currentProgramLoc> L:CabsLoc </currentProgramLoc>
-          // if notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
           when notBool isFunctionType(T:KResult)
           [structural] 
      rule <k> doDeclare(typedDeclaration(T:KResult, X:Id), K:K) 
                => declareInternalVariable(X:Id, T:KResult, K:K)
           ...</k>
           <currentFunction> F:K </currentFunction>
-          // if notBool isIncompleteType(T:KResult) // I'd like to get rid of this cleanly
           when notBool isFunctionType(T:KResult)
                andBool F:K =/=K file-scope
           [structural] 
@@ -210,8 +210,6 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           when isStaticType(T:KResult)
           [structural] 
           
-          
-     
      syntax K ::= "declareWithLinkage" "(" Id "," Type "," K "," K ")" // id, type, possible init, linkage (external, internal, noLinkage)
      
      //- internal variables
@@ -300,7 +298,6 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
                andBool isExternType(T)
           [structural] 
           
-     
      //- external variables
      rule declareExternalVariable(X:Id, T:KResult, K:K)
           => declareWithLinkage(X:Id, T:KResult, K:K, external)
@@ -432,9 +429,16 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           [structural] 
      
      /*@ \fromStandard{\source[n1570]{\para{6.2.2}{4}}}{
-     For an identifier declared with the storage-class specifier \cinline{extern} in a scope in which a prior declaration of that identifier is visible, if the prior declaration specifies internal or external linkage, the linkage of the identifier at the later declaration is the same as the linkage specified at the prior declaration. If no prior declaration is visible, or if the prior declaration specifies no linkage, then the identifier has external linkage. 
+     For an identifier declared with the storage-class specifier
+     \cinline{extern} in a scope in which a prior declaration of that
+     identifier is visible, if the prior declaration specifies internal or
+     external linkage, the linkage of the identifier at the later declaration
+     is the same as the linkage specified at the prior declaration. If no prior
+     declaration is visible, or if the prior declaration specifies no linkage,
+     then the identifier has external linkage. 
      }*/
-     // exception to multiple definitions for functions since we consider prototypes to be definitions to some extent
+     // exception to multiple definitions for functions since we consider
+     // prototypes to be definitions to some extent
      // case when it has no previous linkage, or previous linkage is external
      rule <k> declareAndDefine(X:Id, T:KResult, K:K, external)
                => .
@@ -456,7 +460,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
                => .
           ...</k>
           <declarations>... .Set => SetItem(X:Id) ...</declarations>
-          <internalDefinitions>... Tu:K |-> map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) ...</internalDefinitions>
+          <internalDefinitions>... 
+               Tu:K |-> map((Def:Map 
+               => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) 
+          ...</internalDefinitions>
           <br/>
           <preLinkage>... Tu:K |-> map(Linkage:Map) ...</preLinkage>
           <preTypes>... Tu:K |-> map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
@@ -469,7 +476,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
                => .
           ...</k>
           <declarations>... .Set => SetItem(X:Id) ...</declarations>
-          <internalDefinitions>... Tu:K |-> map((Def:Map => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) ...</internalDefinitions>
+          <internalDefinitions>... 
+               Tu:K |-> map((Def:Map 
+               => Def:Map[declarationObject(unqualifyType(T:KResult), Tu:K, K:K) / X:Id])) 
+          ...</internalDefinitions>
           <br/>
           <preLinkage>... Tu:K |-> map((Linkage:Map => Linkage:Map[internal / X:Id])) ...</preLinkage>
           <preTypes>... Tu:K |-> map((Types:Map => Types:Map[T:KResult / X:Id])) ...</preTypes>
@@ -485,7 +495,8 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localVariables> Vars:List (. => ListItem(X:Id)) </localVariables>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
-          when notBool X:Id in Vars:List // again, this should be needed statically, but not dynamically
+          // again, this should be needed statically, but not dynamically
+          when notBool X:Id in Vars:List 
           [structural] 
 
      // this happens when we jump before a variable declaration with an
@@ -520,7 +531,9 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           <shouldInit> false </shouldInit>
           [structural]
           
-     rule <k> figureInit-aux(_:Id, t(_, (incompleteArrayType(T:KResult) => arrayType(T:KResult, N:Int))), initializer(K:K))
+     rule <k> 
+               figureInit-aux(_:Id, t(_, (incompleteArrayType(T:KResult) 
+               => arrayType(T:KResult, N:Int))), initializer(K:K))
           ...</k>
           <incompleteLength> N:Int </incompleteLength>
           [structural] 
@@ -549,12 +562,11 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
      
      syntax K ::= "defineUsingOldDeclaration" "(" Type "," Id "," K ")"
      
-     // syntax K ::= "defineFunctionUsingOldDeclaration" "(" Type "," Id "," K ")"
      // FIXME check prototypes
      rule [function-definition]:
           FunctionDefinition(typedDeclaration(T:KResult, X:Id), Block:K) 
-               => createNewFun(X:Id, T:KResult, safeBody(X:Id, Block:K))
-               ~> calculateGotoMap(X:Id, safeBody(X:Id, Block:K))
+          => createNewFun(X:Id, T:KResult, safeBody(X:Id, Block:K))
+          ~> calculateGotoMap(X:Id, safeBody(X:Id, Block:K))
           when isFunctionType(T:KResult)
           [structural]
 
@@ -1055,8 +1067,6 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
      // fixme
      // should be adding to env after figuring initializer
      // should be changing env to be correct env before figuring initializer
-     //syntax K ::= "allocateWithInit" "(" K "," Int ")" [strict] 
-     //syntax K ::= "noAllocateWithInit" "(" K "," Int ")" [strict] 
      syntax K ::= "resolveInternal'" "(" Id "," K "," K "," K ")" [strict(4)] 
      rule <k> resolveInternal(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K))
                => resolveInternal'(X:Id, Tu:K, declarationObject(T:KResult, Tu:K, K:K), figureInit(X:Id, T:KResult, K:K))

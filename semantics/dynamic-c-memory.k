@@ -5,7 +5,6 @@ module DYNAMIC-MEMORY-INCLUDE
      
      // returns the bytes in the order in which they are in memory
      syntax K ::= "extractBytesFromMem" "(" SymLoc "," Int ")" // loc, size in bytes
-     //syntax Bits ::= "encodedPointer" "(" Int ")"
      syntax Bits ::= "encodedFloat" "(" Float ")"
      syntax KList ::= explodeToBits(KList) [function]
      syntax KList ::= reverseList(KList) [function]
@@ -14,9 +13,6 @@ module DYNAMIC-MEMORY-INCLUDE
      syntax K ::= "read-aux" "(" SymLoc "," K "," K ")" [klabel('read-aux)]
      
      syntax Bits ::= "subObject" "(" Ptr "," K "," K ")" // object, start piece, end piece
-     //define 'isInt(subObject(_, _, _)) => true
-     //define 'isInt(encodedPointer(_)) => true
-     //define 'isInt(encodedFloat(_)) => true
      
      // fixme would be better to keep canonical
      syntax Int ::= getBitOffset(SymLoc) [function]
@@ -31,10 +27,12 @@ endmodule
 module DYNAMIC-SEMANTICS-READING
      imports DYNAMIC-MEMORY-INCLUDE 
      
-     syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")" // loc, size in bits
+     // loc, size in bits
+     syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
      syntax K ::= "extractByteFromMem" "(" SymLoc ")" 
      
-     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")" // datalist, offset in bits into list, number of bits to extract, accumulator
+     // datalist, offset in bits into list, number of bits to extract, accumulator
+     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
      rule extractBitsFromList(dataList(L:KList), N:Int, M:Int) 
           => extractBitsFromList-aux(dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
           [structural]
@@ -169,8 +167,8 @@ module DYNAMIC-SEMANTICS-READING
           )
           [structural] 
      
-     // this next op should use Nats, but the context doesn't allow it.  See issue 54
-     syntax K ::= "extractBytesFromMem-aux" "(" SymLoc "," Int "," KList ")" // loc, size in bytes, aux list
+     // loc, size in bytes, aux list
+     syntax K ::= "extractBytesFromMem-aux" "(" SymLoc "," Int "," KList ")"
      
      rule extractBytesFromMem(Loc:SymLoc, Size:Int) 
           => extractBytesFromMem-aux(Loc, Size, .KList) 
@@ -203,11 +201,6 @@ module DYNAMIC-SEMANTICS-READING
           ...</k>
           <br/>
           <mem>... Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) ...</mem>
-//          <object>...
-//               <basePtr> Base </basePtr>
-//               <oLength> Len:Int </oLength>
-//               <bytes>... Offset:Int |-> V:K ...</bytes>
-//          ...</object>
           <locsWrittenTo> Locs:Bag </locsWrittenTo>
           <buffer> .List </buffer>
           [large, structural]
@@ -219,11 +212,6 @@ module DYNAMIC-SEMANTICS-READING
           ...</k>
           <br/>
           <mem>... Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) ...</mem>
-//          <object>...
-//               <basePtr> Base </basePtr>
-//               <oLength> Len:Int </oLength>
-//               <bytes>... Offset:Int |-> V:K ...</bytes>
-//          ...</object>
           <locsWrittenTo> Locs:Bag </locsWrittenTo>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset:Int, 0) in locations(Mem:List)
@@ -236,11 +224,6 @@ module DYNAMIC-SEMANTICS-READING
           ...</k>
           <br/>
           <mem>... Base |-> memblock(Len:Int, _, M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset]) ...</mem>
-//          <object>...
-//               <basePtr> Base </basePtr>
-//               <oLength> Len:Int </oLength>
-//               <bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset] </bytes>
-//          ...</object>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset:Int, 0) in locations(Mem:List)
                andBool notBool Offset:Int in keys M:Map
@@ -271,30 +254,17 @@ module DYNAMIC-SEMANTICS-WRITING
           <k> allocateTypeIfAbsent(Loc:SymLoc, T:KResult) 
                => alloc(Loc, value(byteSizeofType(T:KResult))) 
           ...</k>
-// TODO(chathhorn): (conversion to map)
-//        <memory> Mem:Bag </memory>
-//        when notBool (SetItem(base(Loc)) in gatherInnerCells(Mem:Bag, basePtr))
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
           [structural] 
      rule [allocateTypeIfAbsent-present]:
           <k> allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), T:KResult) => .K ...</k>
           <mem>... Base |-> memblock(_, _, _) ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          // ...</object>
           [structural]
 
      rule [alloc-lazy]:
           <k> alloc(loc(Base:SymBase, 0, 0), Len:Int) => .K ...</k>
           <mem>... .Map => Base |-> memblock(Len, .Bag, .Map) ...</mem>
-          // <memory>...
-          //      (. => <object>...
-          //           <basePtr> Base </basePtr>
-          //           <oLength> Len </oLength>
-          //           <properties> .Bag </properties>
-          //      ...</object>)
-          // ...</memory>
           [structural]
      
      syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")"
@@ -305,15 +275,6 @@ module DYNAMIC-SEMANTICS-WRITING
           ...</k>
           [structural]
           
-     // fixme sNat this kind of rule might be very slow without matching on sNat (it's also ugly)
-     // rule [realloc-found]:
-          // <k> realloc-aux((sNat(N:Int) => N:Int), sym(OldBase:Int) +Int 0, sym(NewBase:Int) +Int 0, _, _)
-          // ...</k>
-          // <mem>... 
-               // OldBase:Int |-> memblock(_, (_ N:Int |-> K:K))
-               // NewBase:Int |-> memblock(_, (_ (.Map => N:Int |-> K:K)))
-          // ...</mem>
-          // [structural]
      rule [realloc-found]:
           <k> realloc-aux((SNatN:Int => SNatN:Int -Int 1), loc(OldBase:SymBase, 0, 0), loc(NewBase:SymBase, 0, 0), _, _)
           ...</k>
@@ -321,27 +282,17 @@ module DYNAMIC-SEMANTICS-WRITING
                OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
                NewBase |-> memblock(_, _, (_ (.Map => SNatN:Int -Int 1 |-> K:K)))
           ...</mem>
-          // <object>...
-          //      <basePtr> OldBase </basePtr>
-          //      <bytes>... N:Int |-> K:K ...</bytes>
-          // ...</object>
-          // <object>...
-          //      <basePtr> NewBase </basePtr>
-          //      <bytes>... .Map => SNatN:Int -Int 1 |-> K:K ...</bytes>
-          // ...</object>
           when (N ==Int SNatN -Int 1)
                andBool (SNatN >Int 0)
           [structural]   
           
      // fixme sNat
      rule [realloc-unfound]:
-          <k> realloc-aux((SNatN:Int => SNatN -Int 1), loc(OldBase:SymBase, 0, 0), loc(NewBase:SymBase, 0, 0), _, _)
+          <k> 
+               realloc-aux((SNatN:Int => SNatN -Int 1), 
+                    loc(OldBase:SymBase, 0, 0), loc(NewBase:SymBase, 0, 0), _, _)
           ...</k>
           <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
-          // <object>...
-          //      <basePtr> OldBase </basePtr>
-          //      <bytes> M:Map </bytes>
-          // ...</object>
           when (notBool SNatN:Int -Int 1 in keys M:Map)
                andBool (SNatN >Int 0)
           [structural]
@@ -371,11 +322,13 @@ module DYNAMIC-SEMANTICS-WRITING
           ...</k>
           <threadId> Id:Int </threadId>
           [structural, ndlocal]
-     rule [write]: // write global or shared data
+     // write global or shared data
+     rule [write]:
           write-aux(loc(sb(N:Int, 0), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           => write-specific(loc(sb(N, 0), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           [computational, ndlocal]
-     rule [write-allocated]: // write data of "allocated" duration
+     // write data of "allocated" duration
+     rule [write-allocated]:
           write-aux(loc(sb(N:Int, allocatedDuration), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           => write-specific(loc(sb(N, allocatedDuration), Offset:Int, BitOffset:Int), tv(L:KList, T:KResult), BitSize:Int)
           [computational, ndlocal]
@@ -401,17 +354,11 @@ module DYNAMIC-SEMANTICS-WRITING
      rule makeUnknown(Loc:SymLoc, T:KResult)
           => makeUnknown-aux(Loc, T, value(byteSizeofType(T))) 
           [structural]
-     rule
-          <k> makeUnknown-aux(loc(Base:SymBase, Offset:Int, 0), _, Len':Int) => .K ...</k>
+     rule <k> makeUnknown-aux(loc(Base:SymBase, Offset:Int, 0), _, Len':Int) => . ...</k>
           <br/>
           <mem>... Base |-> memblock(Len:Int, _, M:Map 
-                    => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset to (Offset +Int Len')]) 
+               => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset to (Offset +Int Len')]) 
           ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <oLength> Len:Int </oLength>
-          //      <bytes> M:Map => M:Map[piece(unknown(numBitsPerByte), numBitsPerByte) / Offset:Int to (Offset:Int +Int Len':Int)] </bytes>
-          // ...</object>
           when Len >=Int Offset +Int Len'
           [large, structural]
           
@@ -540,11 +487,6 @@ module DYNAMIC-SEMANTICS-WRITING
           <buffer>... (.List => bwrite(loc(Base, Offset:Int, 0), V:K)) </buffer>
           <br/>
           <mem>... Base |-> memblock(Len:Int, Attr:Bag, _) ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <oLength> Len:Int </oLength>
-          //      <properties> Attr:Bag </properties>
-          // ...</object>
           <locsWrittenTo> Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0))) </locsWrittenTo>
           <notWritable> NotWritable:Map </notWritable>
           when (notBool BagItem(loc(Base, Offset, 0)) in Locs:Bag)
@@ -554,14 +496,8 @@ module DYNAMIC-SEMANTICS-WRITING
           [large, structural]
           
      rule [commit-byte]:
-          // <blocked> false </blocked>
           <buffer> (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List) ...</buffer>
           <mem>... Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset]) ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <oLength> Len:Int </oLength>
-          //      <bytes> M:Map => M:Map[V / Offset] </bytes>
-          // ...</object>
           when Offset <Int Len
           [structural]
      rule <k> writeBytes(_, dataList(.KList)) => .K ...</k>
@@ -640,11 +576,13 @@ module DYNAMIC-SEMANTICS-WRITING
      syntax K ::= splitFloatBytes(K, K, K, KList)
      context splitFloatBytes(_, _, value(HOLE)) 
      rule splitFloatBytes(F:Float, T:KResult, Len:Int) 
-          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1, piece(encodedFloat(F:Float), numBitsPerByte)) 
+          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
+               piece(encodedFloat(F:Float), numBitsPerByte)) 
           when Len:Int >Int 0
           [structural, anywhere]
      rule splitFloatBytes(F:Float, T:KResult, Len:Int, L:KList) 
-          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1, (L:KList,, piece(unknown(numBitsPerByte), numBitsPerByte))) 
+          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
+               (L:KList,, piece(unknown(numBitsPerByte), numBitsPerByte))) 
           when Len:Int >Int 0
           [structural, anywhere]
      rule splitFloatBytes(_, T:KResult, 0, L:KList) 
@@ -677,7 +615,9 @@ module DYNAMIC-C-MEMORY-MISC
      rule [delete-sized-block]:
           <k> deleteSizedBlock(loc(Base:SymBase, _:Int, _:Int), Len:Int) => .K ...</k>
           <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
-          <buffer> .List </buffer> // fixme could make this more relaxed by checking of block is in buffer, not just empty
+          // fixme could make this more relaxed by checking of block is in
+          // buffer, not just empty
+          <buffer> .List </buffer>
           [structural] 
      
      rule [delete-block]:
@@ -720,10 +660,6 @@ module DYNAMIC-C-MEMORY-MISC
      rule [makeUnwritable]:
           <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => .K ...</k>
           <mem>... Base |-> memblock(_, (_ .Bag => mconst), _) ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <properties>... .Bag => mconst ...</properties>
-          // ...</object>
           [structural]
 
      syntax K ::= "checkValidLoc-aux" "(" SymLoc ")"
@@ -741,12 +677,7 @@ module DYNAMIC-C-MEMORY-MISC
      // valid for that pointer
      rule [check-valid-loc]:
           <k> checkValidLoc-aux(loc(sb(N:Int, PtrThreadId:ThreadId), Offset:Int, 0)) => .K ...</k>
-          //<br/>
           <mem>... sb(N, PtrThreadId) |-> memblock(Len:Int, _, _) ...</mem>
-          // <object>...
-          //      <basePtr> sb(N, PtrThreadId) </basePtr>
-          //      <oLength> Len:Int </oLength>
-          // ...</object>
           <threadId> MyThreadId:ThreadId </threadId>
           when (PtrThreadId ==K MyThreadId
                orBool (PtrThreadId ==K 0)

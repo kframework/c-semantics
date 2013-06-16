@@ -27,35 +27,6 @@ module DYNAMIC-C-ERRORS
           Error(Name:String, Msg:String)
           +String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
           
-
-     //syntax CellLabel ::= "halted-k"
-     //syntax CellLabel ::= "halted-T"
-     syntax Bag ::= "halt" Bag [function]
-
-      // TODO(chathhorn): celllabel, elided
-     //rule halt < k => halted-k > _:K </ k => halted-k >
-     //rule halt < L:CellLabel > K:K </ L:CellLabel > => < L:CellLabel > K:K </ L:CellLabel > 
-     //   when L:CellLabel =/=CellLabel k 
-     //   [structural]
-     //rule halt < L:CellLabel > B:Bag </ L:CellLabel > => < L:CellLabel > halt B:Bag </ L:CellLabel >
-     //rule halt < L:CellLabel > K:Set </ L:CellLabel > => < L:CellLabel > K:Set </ L:CellLabel >
-     //rule halt < L:CellLabel > K:Map </ L:CellLabel > => < L:CellLabel > K:Map </ L:CellLabel >
-     //rule halt < L:CellLabel > K:List </ L:CellLabel > => < L:CellLabel > K:List </ L:CellLabel >
-     //rule halt .Bag => .Bag
-//   
-//   // FIXME TOOL BUG removing spaces in inner cells causes kompile to lose track of ...s
-//   rule [halt-start]:
-//        < T => halted-T >...
-//             < threads >
-//                  (B:Bag => halt B:Bag)
-//                  < thread >...
-//                       < finalComputation > _:K </ finalComputation >
-//                  ...</ thread > 
-//             </ threads > 
-//        ...</ T => halted-T >
-//        [structural]
-//   
-
      syntax K ::= "ERROR"
 
      rule [err00001]: 
@@ -123,10 +94,6 @@ module DYNAMIC-C-ERRORS
      rule [err00010]:
           <k> (. => ERROR) ~> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, _:Int)) ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          // <object>...
-          //      <basePtr> Base:SymBase </basePtr>
-          //      <oLength> Len:Int </oLength>
-          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00010", "Found pointer that refers outside the bounds of an object + 1.") </errorCell>)
           when Offset:Int >Int Len:Int
@@ -207,10 +174,6 @@ module DYNAMIC-C-ERRORS
      rule [err00020]:
           <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          // <object>...
-          //      <basePtr> Base:SymBase </basePtr>
-          //      <oLength> Len:Int </oLength>
-          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00020", "Tried to write outside the bounds of an object.") </errorCell>)
           when notBool Offset:Int <Int Len:Int
@@ -417,10 +380,6 @@ module DYNAMIC-C-ERRORS
      rule [err00045]:
           <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _:Int, _:Int), V:K)  ...</k>
           <mem>... Base |-> memblock(_, (_ mconst), _) ...</mem>
-          // <object>...
-          //      <basePtr> Base </basePtr>
-          //      <properties>... mconst ...</properties>
-          // ...</object>
           <br/>
           (.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
           [structural, large]

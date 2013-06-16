@@ -69,10 +69,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
      
      syntax Set ::= "gatherInnerCells" "(" Bag "," CellLabel ")" [function]
      syntax Set ::= "gatherInnerCells-aux" "(" Bag "," CellLabel "," Set ")" [function]
-     // TODO(chathhorn): celllabel, elided
-     // rule gatherInnerCells(B:Bag, L:CellLabel) => gatherInnerCells-aux(B:Bag, L:CellLabel, .Set)
-     // rule gatherInnerCells-aux(((<L':CellLabel> <L:CellLabel> K:K </L:CellLabel> _ </L':CellLabel> => .Bag) _), L:CellLabel, _ (.Set => SetItem(K:K)))
-     // rule gatherInnerCells-aux(.Bag, _, S:Set) => S
      
      syntax List ::= "stringToList" "(" String ")" [function]
      syntax String ::= listToString(List) [function]

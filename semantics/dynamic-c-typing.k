@@ -34,14 +34,10 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
      // these are sort of artifacts of other things
      rule <type> emptyValue => t(.Set, void) ...</type> 
           [structural]
-     // TODO(chathhorn): not sure how this is supposed to work --
-     // something to do with type-strict
      rule <type> tv(_, T:KResult) => T:KResult ...</type>
           [structural]
      rule <type> E1:K[E2:K] => *(E1:K + E2:K) ...</type> 
           [structural]
-     // rule <type> arithInterpret(T:Type, _) => T:Type ...</type> 
-          // [structural]
      
      //! \begin{rulesGroup}
      /*@  \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
@@ -149,7 +145,8 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 
      rule [type-compound-literal]:
           <type> CompoundLiteral(_, Specifier:K, DeclType:K, _)
-               => Cast(Specifier:K, DeclType:K, emptyValue)  // sort of hackish, assumes cast will evaluate to type
+               // sort of hackish, assumes cast will evaluate to type
+               => Cast(Specifier:K, DeclType:K, emptyValue)
           ...</type>
           [structural]
      
@@ -160,14 +157,16 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
           when l(L) in assignmentLabels
           [structural]
 
-     rule <type> L:KLabel(T:KResult,, T':KResult) => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
+     rule <type> L:KLabel(T:KResult,, T':KResult) 
+               => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
           when isArithBinConversionOp(L:KLabel)
                andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
           [structural]
           
      rule [type-ternary-arithmetic]:
-          <type> _:K ? T:KResult : T':KResult => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
+          <type> _:K ? T:KResult : T':KResult 
+               => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
           when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
           [structural]
@@ -178,14 +177,18 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
           [structural]
           
      rule [type-ternary-array-left]: 
-          <type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
+          <type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int))
+               => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
           [structural]
      rule [type-ternary-array-right]: 
-          <type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult))) ...</type>
+          <type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Int))
+               => t(S:Set, pointerType(T:KResult))) ...</type>
           [structural]
           
-     rule [type-ternary-pointer]: // not safe, could be incompatible types
-          <type> _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
+     // not safe, could be incompatible types
+     rule [type-ternary-pointer]:
+          <type> _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult))
+               => t(S:Set, pointerType(T:KResult)) ...</type>
           [structural]
 
      rule <type> L:KLabel(T:KResult) => T:KResult ...</type> 

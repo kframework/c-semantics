@@ -9,7 +9,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
      syntax K ::= "prepareBuiltin" "(" Id "," KList ")" 
      syntax K ::= incSymbolic(K)
      syntax K ::= "printString" "(" K ")"
-     
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
@@ -18,7 +17,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      // TODO(chathhorn): not pretty
      rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]
 
-     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" // offset, type, length, checklength
+     // offset, type, length, checklength
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
      context nextvarg-aux(_, _, value(HOLE), _)
      context nextvarg-aux(_, _, _, value(HOLE))
      
@@ -47,8 +47,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      rule [idsFromDeclList-vararg]:
           idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
           => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
-          // assumes variadic args are placed in incremental blocks
-          ,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
+               // assumes variadic args are placed in incremental blocks
+               ,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
           [structural]
      rule [idsFromDeclList-done]:
           idsFromDeclList(.KList) => .KList [structural]
@@ -165,7 +165,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      
      syntax K ::= "ignoreLocals"
      
-     // there seems to be a problem here related to locals.  what if longjmp is never called?
+     // there seems to be a problem here related to locals.  what if longjmp is
+     // never called?
      rule [ignoreLocals]:
           <k> ignoreLocals => .K ...</k>
           <localAddresses> Locals:Set => .Set </localAddresses>
@@ -230,9 +231,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
                )
                ~> K:K
           </k>
-          <threadLocal>
-               C:Bag
-          </threadLocal>
+          <threadLocal> C:Bag </threadLocal>
           [structural]
 
      syntax K ::= "longjmp-aux" "(" K "," K ")" [strict]
@@ -252,9 +251,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
                ), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
                => ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
           </k>
-          <threadLocal>
-               _ => C:Bag
-          </threadLocal>
+          <threadLocal> _ => C:Bag </threadLocal>
           [structural]
 endmodule
 
@@ -402,7 +399,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      
      rule [fslOpenFile-aux]:
           fsl-open-file(str(Filename:String), str(Mode:String))
-          => fsl-open-file-aux("file:" +String Filename:String, Mode:String, #open("file:" +String Filename:String +String "#" +String Mode:String))
+          => fsl-open-file-aux("file:" +String Filename:String, Mode:String,
+               #open("file:" +String Filename:String +String "#" +String Mode:String))
           [structural]
 
      rule [fslOpenFile]:
@@ -777,7 +775,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(Int2String(D:Int)) </formatResult>
+          <formatResult>...
+               .List => ListItem(Int2String(D:Int))
+          </formatResult>
           <formatState> "%d" => "reset" </formatState>
           [structural]
           
@@ -805,7 +805,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%o]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(Rat2String(D:Int, 8)) </formatResult>
+          <formatResult>...
+               .List => ListItem(Rat2String(D:Int, 8))
+          </formatResult>
           <formatState> "%o" => "reset" </formatState>
           [structural]
      rule [format-%u-start]:
@@ -818,7 +820,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%u]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(Int2String(D:Int)) </formatResult>
+          <formatResult>... 
+               .List => ListItem(Int2String(D:Int))
+          </formatResult>
           <formatState> "%u" => "reset" </formatState>
           [structural]
      rule [format-%x-start]:
@@ -831,7 +835,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%x]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(Rat2String(D:Int, 16)) </formatResult>
+          <formatResult>... 
+               .List => ListItem(Rat2String(D:Int, 16)) 
+          </formatResult>
           <formatState> "%x" => "reset" </formatState>
           [structural]
      rule [format-%X-start]:
@@ -844,7 +850,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%X]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) </formatResult>
+          <formatResult>... 
+               .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) 
+          </formatResult>
           <formatState> "%X" => "reset" </formatState>
           [structural]
 
@@ -881,7 +889,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%f]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Float => .K </formatArg>
-          <formatResult>... .List => ListItem(Float2String(D:Float)) </formatResult>
+          <formatResult>... 
+               .List => ListItem(Float2String(D:Float)) 
+          </formatResult>
           <formatState> "%f" => "reset" </formatState>
           [structural]
      rule [format-%F-start]:
@@ -894,7 +904,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%F]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Float => .K </formatArg>
-          <formatResult>... .List => ListItem(toUpperCase(Float2String(D:Float))) </formatResult>
+          <formatResult>... 
+               .List => ListItem(toUpperCase(Float2String(D:Float))) 
+          </formatResult>
           <formatState> "%F" => "reset" </formatState>
           [structural]
           
@@ -956,7 +968,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%g]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Float => .K </formatArg>
-          <formatResult>... .List => ListItem(Float2String(D:Float)) </formatResult>
+          <formatResult>... 
+               .List => ListItem(Float2String(D:Float)) 
+          </formatResult>
           <formatState> "%g" => "reset" </formatState>
           [structural]
      rule [format-%G-start]:
@@ -969,9 +983,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%G]:
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Float => .K </formatArg>
-          <formatResult>... .List => ListItem(toUpperCase(Float2String(D:Float))) </formatResult>
+          <formatResult>... 
+               .List => ListItem(toUpperCase(Float2String(D:Float))) 
+          </formatResult>
           <formatState> "%G" => "reset" </formatState>
           [structural]
+
      /* \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{a},\texttt{A}]
@@ -1001,17 +1018,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <format> ListItem("c") => .List ...</format>
           <formatState> "%" => "%c" </formatState>
           [structural]
-     // // need to cast to unsigned-char
-     // rule [printf-%c]:
-          // <k> printf-%c(Len:Int, Loc:Int, (vpair(tv(C:Int, t(_, int)), V:KResult),, _))
-               // => writeToFD(1, C:Int)
-               // ~> printf-aux(Len:Int +Int 1, Loc:Int, V:KResult)
-          // ...</k>
-          // [structural]
      rule [format-%c]:
           <k> formatter-aux(_) ...</k>
           <formatArg> C:Int => .K </formatArg>
-          <formatResult>... .List => ListItem(#charString(((C:Int %Int 256) +Int 256) %Int 256)) </formatResult>
+          <formatResult>... 
+               .List => ListItem(#charString(((C:Int %Int 256) +Int 256) %Int 256)) 
+          </formatResult>
           <formatState> "%c" => "reset" </formatState>
           [structural]
           
@@ -1060,7 +1072,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> (str(S:String) => .K)
                ~> formatter-aux(_)
           ...</k>
-          <formatResult>... .List => ListItem(S:String) </formatResult>
+          <formatResult>... 
+               .List => ListItem(S:String)
+          </formatResult>
           <formatState> "%s-read" => "reset" </formatState>
           [structural]
 
@@ -1082,7 +1096,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%p]:
           <k> formatter-aux(_) ...</k>
           <formatArg> Loc:SymLoc => .K </formatArg>
-          <formatResult>... .List => ListItem(pointerToString(Loc)) </formatResult>
+          <formatResult>...
+               .List => ListItem(pointerToString(Loc))
+          </formatResult>
           <formatState> "%p" => "reset" </formatState>
           [structural]
           
@@ -1107,7 +1123,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule [format-%%]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem("%") => .List ...</format>
-          <formatResult>... .List => ListItem("%") </formatResult>
+          <formatResult>...
+               .List => ListItem("%") 
+          </formatResult>
           <formatState> "%" => "reset" </formatState>
           [structural]
 
@@ -1115,7 +1133,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem("l") => .List ...</format>
           <formatState> "%" </formatState>
-          <formatLength> Length:String => Length:String +String "l" </formatLength>
+          <formatLength>
+               Length:String => Length:String +String "l"
+          </formatLength>
           [structural]
 endmodule
 
@@ -1126,11 +1146,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      rule [debug]:
           prepareBuiltin(Identifier("__debug"), _) => skipval
           [interpRule]
-     rule [debug-k]:
-          debug => .
+     rule [debug-k]: debug => .
           [interpRule]
-     rule [debug-m]:
-          debug-m(_) => .
+     rule [debug-m]: debug-m(_) => .
           [interpRule]
      
      rule [exit]:
@@ -1184,15 +1202,17 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, tv(NewLen:Int, T:KResult)))
+          <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
+                    tv(NewLen:Int, T:KResult)))
                => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
                ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) ...</malloced>
+          <malloced>... 
+               (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) 
+          ...</malloced>
           <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
           when OldLoc =/=K NullPointer
           [structural]
-          
      
      rule [realloc-null]:
           prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult)) 
@@ -1235,7 +1255,6 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           <randNat> _ => N:Int </randNat>
           [structural]
 
-
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-STRING
@@ -1245,7 +1264,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
      // fixme should detect overlaps
      syntax K ::= "strcpy" "(" SymLoc "," SymLoc "," SymLoc ")"
      rule [strcpy-start]:
-          prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, tv(Src:SymLoc, t(_, pointerType(_)))))
+          prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, 
+               tv(Src:SymLoc, t(_, pointerType(_)))))
           => strcpy(Dest, Src, Dest)
           [structural]
           
@@ -1282,19 +1302,22 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
-          <k> prepareBuiltin((Identifier("thrd_create")), (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
+          <k> prepareBuiltin((Identifier("thrd_create")), 
+                    (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
                => Computation((* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                ~> spawn-aux(Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
           ...</k>
           <nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
           [structural]
-/*
-See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
-*/
-     
+     /*
+     See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
+     */
      rule [thrd-create]:
           <thread>...
-               <k> spawn-aux(ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) => thrd-success ...</k>
+               <k> 
+                    spawn-aux(ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) 
+                    => thrd-success 
+               ...</k>
                <currTU> Tu:K </currTU>
                <buffer> .List </buffer>
           ...</thread>
@@ -1347,8 +1370,9 @@ See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
                => thrd-success
           ...</k>
           <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
+          // only handling plain mutexes for now
           when notBool (Loc in keys M:Map)
-               andBool (Type ==Int cfg:mtxPlain) // only handling plain mutexes for now
+               andBool (Type ==Int cfg:mtxPlain) 
           [structural]
 
      rule [mtx-lock]:
@@ -1384,18 +1408,16 @@ module DYNAMIC-C-STANDARD-LIBRARY-TIME
           prepareBuiltin((Identifier("time")), _:KResult) 
           => tv(0, t(.Set, long-long-int))
           [structural]
-     
+
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-MISC
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
-
 endmodule
 
-
 module DYNAMIC-C-STANDARD-LIBRARY
-////////////////////////////////
-//- C standard library
+     ////////////////////////////////
+     //- C standard library
      imports DYNAMIC-INCLUDE
      imports DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      
