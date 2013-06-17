@@ -12,7 +12,9 @@ module DYNAMIC-SEMANTICS-TYPE-STRICTNESS
      syntax K ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
           <k> (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</k>
-          <type> Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType ...</type>
+          <type> 
+               Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType
+          ...</type>
           [structural]
           
      rule [type-Cast-cool]:
@@ -59,33 +61,56 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
      rule <type> SizeofExpression(_) => cfg:sizeut ...</type>
           [structural]
 
-     rule <type> t(S:Set, pointerType(T:KResult)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               t(S:Set, pointerType(T:KResult)) + T':KResult
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
-     rule <type> T':KResult + t(S:Set, pointerType(T:KResult)) => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               T':KResult + t(S:Set, pointerType(T:KResult))
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
-     rule <type> t(S:Set, pointerType(T:KResult)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               t(S:Set, pointerType(T:KResult)) - T':KResult
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
-     rule <type> t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult)) => cfg:ptrdiffut ...</type>
+     rule <type>
+               t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult))
+               => cfg:ptrdiffut
+          ...</type>
           [structural]
-     rule <type> t(S:Set, arrayType(T:KResult, _:Int)) + T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               t(S:Set, arrayType(T:KResult, _:Int)) + T':KResult
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
-     rule <type> T':KResult + t(S:Set, arrayType(T:KResult, _:Int)) => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               T':KResult + t(S:Set, arrayType(T:KResult, _:Int))
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
-     rule <type> t(S:Set, arrayType(T:KResult, _:Int)) - T':KResult => t(S:Set, pointerType(T:KResult)) ...</type>
+     rule <type>
+               t(S:Set, arrayType(T:KResult, _:Int)) - T':KResult
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           when hasIntegerType(T':KResult)
           [structural]
 
      // c99 6.4.5
-     rule <type> Constant(StringLiteral(S:String)) 
+     rule <type>
+               Constant(StringLiteral(S:String)) 
                => t(.Set, arrayType(t(.Set, char), lengthString(S:String) +Int 1)) 
           ...</type>
           [structural]
-     rule <type> Constant(WStringLiteral(L:KList)) 
+     rule <type>
+               Constant(WStringLiteral(L:KList)) 
                => t(.Set, arrayType(cfg:wcharut, (lengthKList L:KList) +Int 1)) 
           ...</type>
           [structural]
@@ -144,29 +169,35 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
           [structural]
 
      rule [type-compound-literal]:
-          <type> CompoundLiteral(_, Specifier:K, DeclType:K, _)
+          <type> 
+               CompoundLiteral(_, Specifier:K, DeclType:K, _)
                // sort of hackish, assumes cast will evaluate to type
                => Cast(Specifier:K, DeclType:K, emptyValue)
           ...</type>
           [structural]
      
      rule [type-assignment]:
-          <type> L:KLabel(K:K,, _)
+          <type> 
+               L:KLabel(K:K,, _)
                => K:K
           ...</type>
           when l(L) in assignmentLabels
           [structural]
 
-     rule <type> L:KLabel(T:KResult,, T':KResult) 
-               => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
+     rule <type>
+               L:KLabel(T:KResult,, T':KResult) 
+               => usualArithmeticConversion(T:KResult, T':KResult)
+          ...</type>
           when isArithBinConversionOp(L:KLabel)
                andBool (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
           [structural]
           
      rule [type-ternary-arithmetic]:
-          <type> _:K ? T:KResult : T':KResult 
-               => usualArithmeticConversion(T:KResult, T':KResult) ...</type>
+          <type>
+               _:K ? T:KResult : T':KResult 
+               => usualArithmeticConversion(T:KResult, T':KResult)
+          ...</type>
           when (hasIntegerType(T:KResult) orBool isFloatType(T:KResult))
                andBool (hasIntegerType(T':KResult) orBool isFloatType(T':KResult))
           [structural]
@@ -177,18 +208,24 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
           [structural]
           
      rule [type-ternary-array-left]: 
-          <type> _:K ? (t(S:Set, arrayType(T:KResult, _:Int))
-               => t(S:Set, pointerType(T:KResult))) : _ ...</type> 
+          <type>
+               _:K ? (t(S:Set, arrayType(T:KResult, _:Int))
+               => t(S:Set, pointerType(T:KResult))) : _
+          ...</type> 
           [structural]
      rule [type-ternary-array-right]: 
-          <type> _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Int))
-               => t(S:Set, pointerType(T:KResult))) ...</type>
+          <type>
+               _:K ? _:K : (t(S:Set, arrayType(T:KResult, _:Int))
+               => t(S:Set, pointerType(T:KResult)))
+          ...</type>
           [structural]
           
      // not safe, could be incompatible types
      rule [type-ternary-pointer]:
-          <type> _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult))
-               => t(S:Set, pointerType(T:KResult)) ...</type>
+          <type>
+               _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult))
+               => t(S:Set, pointerType(T:KResult))
+          ...</type>
           [structural]
 
      rule <type> L:KLabel(T:KResult) => T:KResult ...</type> 

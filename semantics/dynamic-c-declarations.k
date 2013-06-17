@@ -12,14 +12,17 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // fixme not really a sequence point
      
      syntax K ::= "bind-aux" "(" SymLoc "," KList "," KList ")"
-     rule bind(L:KList, L':KList) => bind-aux(NullPointer, L:KList, L':KList)
+     rule bind(L:KList, L':KList)
+          => bind-aux(NullPointer, L:KList, L':KList)
           [structural] 
      
      rule [bind-empty-void]:
-          bind-aux(_, .KList, typedDeclaration(t(.Set, void), _:Id)) => sequencePoint
+          bind-aux(_, .KList, typedDeclaration(t(.Set, void), _:Id))
+          => sequencePoint
           [structural] 
      rule [bind-empty]:
-          bind-aux(_, .KList, .KList) => sequencePoint
+          bind-aux(_, .KList, .KList)
+          => sequencePoint
           [structural] 
           
      // n1494 6.5.2.2:6 If the expression that denotes the called function has
@@ -48,7 +51,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                _
                , _:KList
                , (typedDeclaration(
-                        (t(_, (arrayType(T:KResult, _:Int) => pointerType(T:KResult)))), X:Id
+                        (t(_, (arrayType(T:KResult, _:Int)
+                        => pointerType(T:KResult)))), X:Id
                ),, _:KList)
           )
           [structural, anywhere] 
@@ -57,18 +61,22 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                _
                , _:KList
                , (typedDeclaration(
-                        (t(_, (incompleteArrayType(T:KResult) => pointerType(T:KResult)))), X:Id
+                        (t(_, (incompleteArrayType(T:KResult)
+                        => pointerType(T:KResult)))), X:Id
                ),, _:KList)
           )
           [structural, anywhere] 
           
      rule [bind-one]:
-          <k> true ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), (typedDeclaration(T:KResult, X:Id),, P:KList))
+          <k> 
+               true ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), 
+                    (typedDeclaration(T:KResult, X:Id),, P:KList))
                => allocateType(Loc, T:KResult)
-               ~> addToEnv(X:Id, Loc)
-               ~> giveType(X:Id, T:KResult)
-               ~> initialize(X:Id, T:KResult, Computation(AllowWrite(X:Id) := tv(V:KList, T':KResult)))
-               ~> bind-aux(Loc, L:KList, P:KList)
+                    ~> addToEnv(X:Id, Loc)
+                    ~> giveType(X:Id, T:KResult)
+                    ~> initialize(X:Id, T:KResult, Computation(
+                         AllowWrite(X:Id) := tv(V:KList, T':KResult)))
+                    ~> bind-aux(Loc, L:KList, P:KList)
           ...</k> 
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
@@ -77,17 +85,21 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           
      rule [bind-one-check-type]:
           (. => isTypeCompatible(T:KResult, T':KResult)) 
-               ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), (typedDeclaration(T:KResult, X:Id),, P:KList))
+               ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), 
+               (typedDeclaration(T:KResult, X:Id),, P:KList))
           [structural] 
      
      syntax KList ::= promoteList(KList) [function]
-     rule [promoteList-needs-promoting]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
-          => cast(argPromote(t(S:Set, T:K)), tv(V:KList, t(S:Set, T:K))),, promoteList(L:KList)
+     rule [promoteList-needs-promoting]: 
+          promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
+          => cast(argPromote(t(S:Set, T:K)), 
+               tv(V:KList, t(S:Set, T:K))),, promoteList(L:KList)
           when (T:K ==K float)
-               orElseBool (((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) orBool isBitfieldType(t(S:Set, T:K))) 
+               orElseBool (((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) 
+                    orBool isBitfieldType(t(S:Set, T:K))) 
                     andBool hasIntegerType(t(S:Set, T:K))) 
-          [structural]
-     rule [promoteList-promoted]: promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
+     rule [promoteList-promoted]: 
+          promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
           => (tv(V:KList, t(S:Set, T:K)),, promoteList(L:KList))
           when ((notBool(hasIntegerType(t(S:Set, T:K))) 
                     andBool (notBool T:K ==K float)
@@ -95,7 +107,6 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                orBool (T:K ==K double)
                orBool (T:K ==K long-double))
                orElseBool (rank(t(S:Set, T:K)) >=Int rank(t(.Set, int)))
-          [structural]
      rule promoteList(.KList) => .KList
      
      syntax K ::= "bindVariadic" "(" SymLoc "," KList ")"
@@ -120,9 +131,11 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      // computational instead of structural because of other threads
      // interleaving
      rule [bind-variadic]:
-          <k> (.K 
-                    => allocateType(Loc, type(V:K))
-                    ~> Computation(*(tv(Loc, t(.Set, pointerType(type(V:K))))) := V:K)
+          <k> 
+               (.K 
+               => allocateType(Loc, type(V:K))
+                    ~> Computation(
+                         *(tv(Loc, t(.Set, pointerType(type(V:K))))) := V:K)
                ) 
                ~> bindVariadic(_, ((V:K => .KList),, _:KList)) 
           ...</k>
@@ -148,7 +161,9 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           <currentFunction> F:Id </currentFunction>
           [structural] 
 
-     rule <k> zero(Name:K) => zeroType(Name:K, unqualifyType(T:KResult)) ...</k>
+     rule <k>
+               zero(Name:K) => zeroType(Name:K, unqualifyType(T:KResult))
+          ...</k>
           <types>... Name:K |-> T:KResult ...</types>
           [structural] 
           
@@ -188,7 +203,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
                => zeroType(N . F:Id, T:KResult)
           ...</k>
           <structs>... 
-               S:Id |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
+               S:Id |->
+                    aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
           ...</structs> 
           [structural] 
           

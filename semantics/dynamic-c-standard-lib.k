@@ -24,11 +24,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
-          => nextvarg-aux(Loc, T, value(byteSizeofType(T)), value(sizeofLocation(Loc)))
+          => nextvarg-aux(Loc, T, 
+               value(byteSizeofType(T)), value(sizeofLocation(Loc)))
           [structural]
      rule [nextvarg]:
           nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
-          => vpair(read(Loc, T), vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+          => vpair(read(Loc, T), 
+               vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           [structural]
      
      context prepareBuiltin(_, (_,, (HOLE => reval(HOLE)),, _))
@@ -45,10 +47,12 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           => idsFromDeclList(L:KList)
           [structural]
      rule [idsFromDeclList-vararg]:
-          idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
+          idsFromDeclList((L:KList,, 
+               typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
           => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
                // assumes variadic args are placed in incremental blocks
-               ,, vararg(incSymbolic(cast(t(.Set, pointerType(t(.Set, unsigned-char))), &(X:Id))))
+               ,, vararg(incSymbolic(cast(t(.Set, 
+               pointerType(t(.Set, unsigned-char))), &(X:Id))))
           [structural]
      rule [idsFromDeclList-done]:
           idsFromDeclList(.KList) => .KList [structural]
@@ -100,14 +104,15 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH
           [structural]
   
      rule [atan2]:
-          prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+          prepareBuiltin((Identifier("atan2")), (tv(F:Float, t(_, double)),, 
+               tv(F':Float, t(_, double))))
           => tv(atan2Float(F:Float, F':Float), t(.Set, double))
           [structural]
   
      rule [tan]:
           prepareBuiltin((Identifier("tan")), tv(F:Float, t(_, double)))
           => tv(tanFloat(F:Float), t(.Set, double))
-     [structural]
+          [structural]
   
      rule [floor]:
           prepareBuiltin((Identifier("floor")), tv(F:Float, t(_, double)))
@@ -120,7 +125,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH
           [structural]
 
      rule [fmod]:
-          prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, tv(F':Float, t(_, double))))
+          prepareBuiltin((Identifier("fmod")), (tv(F:Float, t(_, double)),, 
+               tv(F':Float, t(_, double))))
           => tv(F:Float %Float F':Float, t(.Set, double))
           [structural]
 
@@ -219,7 +225,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, t(_, pointerType(t(_, structType(Identifier("__jmp_buf_tag")))))))
+          <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, 
+                    t(_, pointerType(t(_, 
+                    structType(Identifier("__jmp_buf_tag")))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
                          <threadState>
@@ -248,8 +256,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
                          <threadContinuation> K:K </threadContinuation>
                          <savedThreadLocal>C:Bag</savedThreadLocal>
                     </threadState>
-               ), t(_, structType(Identifier("__jmp_buf_tag")))), tv(I:Int, t(_, int))) ~> _
-               => ignoreLocals ~> #if I:Int ==Int 0 #then tv(1, t(.Set, int)) #else tv(I:Int, t(.Set, int)) #fi ~> K:K
+               ), t(_, structType(Identifier("__jmp_buf_tag")))), 
+                    tv(I:Int, t(_, int))) ~> _
+               => ignoreLocals 
+                    ~> #if I:Int ==Int 0 
+                         #then tv(1, t(.Set, int)) 
+                         #else tv(I:Int, t(.Set, int)) #fi 
+                    ~> K:K
           </k>
           <threadLocal> _ => C:Bag </threadLocal>
           [structural]
@@ -264,21 +277,21 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      for advancing through a list of arguments whose number and types are not
      known to the called function when it is translated.
 
-     A function may be called with a variable number of arguments of varying types.
-     As described in 6.9.1, its parameter list contains one or more parameters. The
-     rightmost parameter plays a special role in the access mechanism, and will be
-     designated $\mathit{parmN}$ in this description.
+     A function may be called with a variable number of arguments of varying
+     types. As described in 6.9.1, its parameter list contains one or more
+     parameters. The rightmost parameter plays a special role in the access
+     mechanism, and will be designated $\mathit{parmN}$ in this description.
 
-     The type declared \cdisplay{va_list} which is a complete object type suitable
-     for holding information needed by the macros \cinline{va_start},
-     \cinline{va_arg}, \cinline{va_end}, and \cinline{va_copy}. If access to the
-     varying arguments is desired, the called function shall declare an object
-     (generally referred to as ap in this subclause) having type \cinline{va_list}.
-     The object \cinline{ap} may be passed as an argument to another function; if
-     that function invokes the \cinline{va_arg} macro with parameter \cinline{ap},
-     the value of \cinline{ap} in the calling function is indeterminate and shall be
-     passed to the \cinline{va_end} macro prior to any further reference to
-     \cinline{ap}. 
+     The type declared \cdisplay{va_list} which is a complete object type
+     suitable for holding information needed by the macros \cinline{va_start},
+     \cinline{va_arg}, \cinline{va_end}, and \cinline{va_copy}. If access to
+     the varying arguments is desired, the called function shall declare an
+     object (generally referred to as ap in this subclause) having type
+     \cinline{va_list}. The object \cinline{ap} may be passed as an argument to
+     another function; if that function invokes the \cinline{va_arg} macro with
+     parameter \cinline{ap}, the value of \cinline{ap} in the calling function
+     is indeterminate and shall be passed to the \cinline{va_end} macro prior
+     to any further reference to \cinline{ap}. 
 
      }*/
      
@@ -307,7 +320,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      // fixme can add lots of checks here
      // tool fixme, change Value to K and unquote error
      rule [va-start]:
-          prepareBuiltin((Identifier("__va_start")), (ApLoc:KResult,, ArgLoc:KResult))
+          prepareBuiltin((Identifier("__va_start")), 
+               (ApLoc:KResult,, ArgLoc:KResult))
           => Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
           ~> skipval
           [structural]
@@ -317,7 +331,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      // fixme can do lots of checks here too
      
      rule [va-inc-start]:
-          prepareBuiltin((Identifier("__va_inc")), (ApLoc:KResult,, Size:KResult))
+          prepareBuiltin((Identifier("__va_inc")), 
+               (ApLoc:KResult,, Size:KResult))
           => va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
           [structural]
                     
@@ -329,7 +344,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
           
      // fixme can do lots of checks here too
      rule [va-copy]:
-          prepareBuiltin((Identifier("__va_copy")), (ApLoc:KResult,, Other:KResult))
+          prepareBuiltin((Identifier("__va_copy")), 
+               (ApLoc:KResult,, Other:KResult))
           => Computation(*(ApLoc:KResult) := Other:KResult) ~> skipval
           [structural]
           
@@ -343,7 +359,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
      imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 
      syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
-     rule OffsetOf(T:KResult, K:K, F:Id) => offsetOf(DeclType(T:KResult, K:K), F:Id)
+     rule OffsetOf(T:KResult, K:K, F:Id)
+          => offsetOf(DeclType(T:KResult, K:K), F:Id)
           [structural]
 
      // fixme should check for bitfield offset
@@ -369,7 +386,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           [structural]
 
      rule [fslPutc]:
-          prepareBuiltin((Identifier("__fslPutc")), (tv(N:Int, _),, tv(H:Int, _)))
+          prepareBuiltin((Identifier("__fslPutc")),
+               (tv(N:Int, _),, tv(H:Int, _)))
           => writeToFD(H:Int, N:Int) ~> tv(N:Int, t(.Set, int))
           [structural]
 
@@ -379,28 +397,34 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           [structural]
 
      rule [fslFGetC]:
-          prepareBuiltin((Identifier("__fslFGetC")), (tv(FD:Int, _),, tv(Offset:Int, _)))
+          prepareBuiltin((Identifier("__fslFGetC")),
+               (tv(FD:Int, _),, tv(Offset:Int, _)))
           => readFromFD(FD:Int)
           [structural]
 
      rule [fslCloseFile]:
-          <k> prepareBuiltin((Identifier("__fslCloseFile")), tv(FD:Int, t(_, int))) 
+          <k> 
+               prepareBuiltin((Identifier("__fslCloseFile")),
+                    tv(FD:Int, t(_, int))) 
                => tv(0, t(.Set, int))
           ...</k>
           (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
           [structural]
 
      rule [fslOpenFile-pre]:
-          prepareBuiltin((Identifier("__fslOpenFile")), (Filename:KResult,, Mode:KResult))
+          prepareBuiltin((Identifier("__fslOpenFile")),
+               (Filename:KResult,, Mode:KResult))
           => fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
           [structural]
      
-     syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")" [strict(3)]
+     syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")"
+          [strict(3)]
      
      rule [fslOpenFile-aux]:
           fsl-open-file(str(Filename:String), str(Mode:String))
           => fsl-open-file-aux("file:" +String Filename:String, Mode:String,
-               #open("file:" +String Filename:String +String "#" +String Mode:String))
+               #open("file:" +String Filename:String
+                    +String "#" +String Mode:String))
           [structural]
 
      rule [fslOpenFile]:
@@ -433,34 +457,43 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      // read during evaluation of printf.  should use something like a buffer
      // to do this
      rule [printf]:
-          prepareBuiltin((Identifier("printf")), (Format:KResult,, VarArgs:KResult))
-          => new-printf-aux(formatter(getString(Format:KResult), VarArgs:KResult))
+          prepareBuiltin((Identifier("printf")),
+               (Format:KResult,, VarArgs:KResult))
+          => new-printf-aux(formatter(
+               getString(Format:KResult), VarArgs:KResult))
           [structural]
           
      rule [printf-done]:
           new-printf-aux(formattedResult(S:String))
-               => writeToFD(1, S:String) ~> flush(1) ~> tv(lengthString(S:String), t(.Set, int)) 
+               => writeToFD(1, S:String) 
+                    ~> flush(1) 
+                    ~> tv(lengthString(S:String), t(.Set, int)) 
           [structural]
      
      syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]
      rule [sprintf]:
-          prepareBuiltin((Identifier("sprintf")), (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
-          => sprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest)
+          prepareBuiltin((Identifier("sprintf")),
+               (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
+          => sprintf(formatter(
+               getString(Format:KResult), VarArgs:KResult), Dest)
           [structural]
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
-          => writeString(Dest, S:String +String "\0") ~> tv(lengthString(S:String), t(.Set, int))
+          => writeString(Dest, S:String +String "\0") 
+               ~> tv(lengthString(S:String), t(.Set, int))
           [structural]
      
      syntax K ::= "snprintf" "(" K "," SymLoc "," Int ")" [strict(1)]
      rule [snprintf]:
-          prepareBuiltin((Identifier("snprintf")), (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
-          => snprintf(formatter(getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
+          prepareBuiltin((Identifier("snprintf")), 
+               (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
+          => snprintf(formatter(
+               getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
-          ~> tv(lengthString(S:String), t(.Set, int))
+               ~> tv(lengthString(S:String), t(.Set, int))
           when Len:Int >Int 0
           [structural]
      rule [snprintf-done-0]:
@@ -476,16 +509,16 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule formatter-next(vararg(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
-     rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
+     rule <k> 
+               formatter-arg(vpair(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
           <formatArg> _ => K:K </formatArg>
           [structural]
 
-     
-     
      rule [format-start]:
-          <k> formatter(str(S:String), VarArgs:KResult)
+          <k> 
+               formatter(str(S:String), VarArgs:KResult)
                => formatter-aux(VarArgs:KResult)
           ...</k>
           (.Bag => 
@@ -575,50 +608,46 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      both, shall appear (in that order) before the argument (if any) to be
      converted. A negative field width argument is taken as a \texttt{-} flag
      followed by a positive field width. A negative precision argument is taken
-     as if the precision were omitted.
-     }*/
+     as if the precision were omitted. }*/
      
      /*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{6}}}{
      The flag characters and their meanings are:
      \begin{description}
 
-     \item[\texttt{-}]
-     \broken{The result of the conversion is left-justified within the field. (It is
-     right-justified if this flag is not specified.)}
+     \item[\texttt{-}] \broken{The result of the conversion is left-justified
+     within the field. (It is right-justified if this flag is not specified.)}
 
-     \item[\texttt{+}]
-     \broken{The result of a signed conversion always begins with a plus or minus
-     sign. (It begins with a sign only when a negative value is converted if this
-     flag is not specified.)}
+     \item[\texttt{+}] \broken{The result of a signed conversion always begins
+     with a plus or minus sign. (It begins with a sign only when a negative
+     value is converted if this flag is not specified.)}
 
-     \item[\emph{space}]
-     \broken{If the first character of a signed conversion is not a sign, or if a
-     signed conversion results in no characters, a space is prefixed to the result.
-     If the \emph{space} and \texttt{+} flags both appear, the \emph{space} flag is
-     ignored.}
+     \item[\emph{space}] \broken{If the first character of a signed conversion
+     is not a sign, or if a signed conversion results in no characters, a space
+     is prefixed to the result. If the \emph{space} and \texttt{+} flags both
+     appear, the \emph{space} flag is ignored.}
 
-     \item[\texttt{\#}]
-     \broken{The result is converted to an ``alternative form''. For \texttt{o}
-     conversion, it increases the precision, if and only if necessary, to force the
-     first digit of the result to be a zero (if the value and precision are both 0,
-     a single 0 is printed). For \texttt{x} (or \texttt{X}) conversion, a nonzero
-     result has \texttt{0x} (or \texttt{0X}) prefixed to it. For \texttt{a},
-     \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, and
-     \texttt{G} conversions, the result of converting a floating-point number always
-     contains a decimal-point character, even if no digits follow it. (Normally, a
-     decimal-point character appears in the result of these conversions only if a
-     digit follows it.) For \texttt{g} and \texttt{G} conversions, trailing zeros
-     are \emph{not} removed from the result. For other conversions, the behavior is
+     \item[\texttt{\#}] \broken{The result is converted to an ``alternative
+     form''. For \texttt{o} conversion, it increases the precision, if and only
+     if necessary, to force the first digit of the result to be a zero (if the
+     value and precision are both 0, a single 0 is printed). For \texttt{x} (or
+     \texttt{X}) conversion, a nonzero result has \texttt{0x} (or \texttt{0X})
+     prefixed to it. For \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E},
+     \texttt{f}, \texttt{F}, \texttt{g}, and \texttt{G} conversions, the result
+     of converting a floating-point number always contains a decimal-point
+     character, even if no digits follow it. (Normally, a decimal-point
+     character appears in the result of these conversions only if a digit
+     follows it.) For \texttt{g} and \texttt{G} conversions, trailing zeros are
+     \emph{not} removed from the result. For other conversions, the behavior is
      undefined.}
 
-     \item[\texttt{0}]
-     \broken{For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x},
-     \texttt{X}, \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E}, \texttt{f},
-     \texttt{F}, \texttt{g}, and \texttt{G} conversions, leading zeros (following
-     any indication of sign or base) are used to pad to the field width rather than
-     performing space padding, except when converting an infinity or NaN. If the
-     \texttt{0} and \texttt{-} flags both appear, the \texttt{0} flag is ignored.
-     For \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X}
+     \item[\texttt{0}] \broken{For \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, \texttt{X}, \texttt{a}, \texttt{A}, \texttt{e},
+     \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, and \texttt{G}
+     conversions, leading zeros (following any indication of sign or base) are
+     used to pad to the field width rather than performing space padding,
+     except when converting an infinity or NaN. If the \texttt{0} and
+     \texttt{-} flags both appear, the \texttt{0} flag is ignored. For
+     \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u}, \texttt{x}, and \texttt{X}
      conversions, if a precision is specified, the \texttt{0} flag is ignored.}
      \end{description}
      For other conversions, the behavior is undefined.
@@ -726,31 +755,52 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      rule getFormatType-aux("%g", _) => t(.Set, double) [structural]
      rule getFormatType-aux("%G", _) => t(.Set, double) [structural]
                
-     rule getFormatType-aux("%c", "") => t(.Set, int) [structural]
-     rule getFormatType-aux("%s", "") => t(.Set, pointerType(t(.Set, unsigned-char))) [structural]
+     rule getFormatType-aux("%c", "")
+          => t(.Set, int) [structural]
+     rule getFormatType-aux("%s", "")
+          => t(.Set, pointerType(t(.Set, unsigned-char))) [structural]
      
-     rule getFormatType-aux("%p", "") => t(.Set, pointerType(t(.Set, void))) [structural]
+     rule getFormatType-aux("%p", "")
+          => t(.Set, pointerType(t(.Set, void))) [structural]
      
-     rule getFormatType-aux("%d", "") => t(.Set, int) [structural]
-     rule getFormatType-aux("%o", "") => t(.Set, int) [structural]
-     rule getFormatType-aux("%u", "") => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%x", "") => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%X", "") => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%n", "") => t(.Set, pointerType(t(.Set, int))) [structural]
+     rule getFormatType-aux("%d", "")
+          => t(.Set, int) [structural]
+     rule getFormatType-aux("%o", "")
+          => t(.Set, int) [structural]
+     rule getFormatType-aux("%u", "")
+          => t(.Set, unsigned-int) [structural]
+     rule getFormatType-aux("%x", "")
+          => t(.Set, unsigned-int) [structural]
+     rule getFormatType-aux("%X", "")
+          => t(.Set, unsigned-int) [structural]
+     rule getFormatType-aux("%n", "")
+          => t(.Set, pointerType(t(.Set, int))) [structural]
      
-     rule getFormatType-aux("%d", "l") => t(.Set, long-int) [structural]
-     rule getFormatType-aux("%o", "l") => t(.Set, long-int) [structural]
-     rule getFormatType-aux("%u", "l") => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%x", "l") => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%X", "l") => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%n", "l") => t(.Set, pointerType(t(.Set, long-int))) [structural]
+     rule getFormatType-aux("%d", "l")
+          => t(.Set, long-int) [structural]
+     rule getFormatType-aux("%o", "l")
+          => t(.Set, long-int) [structural]
+     rule getFormatType-aux("%u", "l")
+          => t(.Set, unsigned-long-int) [structural]
+     rule getFormatType-aux("%x", "l")
+          => t(.Set, unsigned-long-int) [structural]
+     rule getFormatType-aux("%X", "l")
+          => t(.Set, unsigned-long-int) [structural]
+     rule getFormatType-aux("%n", "l")
+          => t(.Set, pointerType(t(.Set, long-int))) [structural]
      
-     rule getFormatType-aux("%d", "ll") => t(.Set, long-long-int) [structural]
-     rule getFormatType-aux("%o", "ll") => t(.Set, long-long-int) [structural]
-     rule getFormatType-aux("%u", "ll") => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%x", "ll") => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%X", "ll") => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%n", "ll") => t(.Set, pointerType(t(.Set, long-long-int))) [structural]
+     rule getFormatType-aux("%d", "ll")
+          => t(.Set, long-long-int) [structural]
+     rule getFormatType-aux("%o", "ll")
+          => t(.Set, long-long-int) [structural]
+     rule getFormatType-aux("%u", "ll")
+          => t(.Set, unsigned-long-long-int) [structural]
+     rule getFormatType-aux("%x", "ll")
+          => t(.Set, unsigned-long-long-int) [structural]
+     rule getFormatType-aux("%X", "ll")
+          => t(.Set, unsigned-long-long-int) [structural]
+     rule getFormatType-aux("%n", "ll")
+          => t(.Set, pointerType(t(.Set, long-long-int))) [structural]
 
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -913,17 +963,17 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{e},\texttt{E}]
-     \broken{A \cinline{double} argument representing a floating-point number is
-     converted in the style \emph{[-]d.ddde$\pm{}$dd}, where there is one digit
-     (which is nonzero if the argument is nonzero) before the decimal-point
-     character and the number of digits after it is equal to the precision; if the
-     precision is missing, it is taken as 6; if the precision is zero and the
-     \texttt{\#} flag is not specified, no decimal-point character appears. The
-     value is rounded to the appropriate number of digits. The \texttt{E} conversion
-     specifier produces a number with \texttt{E} instead of e introducing the
-     exponent. The exponent always contains at least two digits, and only as many
-     more digits as necessary to represent the exponent. If the value is zero, the
-     exponent is zero.}
+     \broken{A \cinline{double} argument representing a floating-point number
+     is converted in the style \emph{[-]d.ddde$\pm{}$dd}, where there is one
+     digit (which is nonzero if the argument is nonzero) before the
+     decimal-point character and the number of digits after it is equal to the
+     precision; if the precision is missing, it is taken as 6; if the precision
+     is zero and the \texttt{\#} flag is not specified, no decimal-point
+     character appears. The value is rounded to the appropriate number of
+     digits. The \texttt{E} conversion specifier produces a number with
+     \texttt{E} instead of e introducing the exponent. The exponent always
+     contains at least two digits, and only as many more digits as necessary to
+     represent the exponent. If the value is zero, the exponent is zero.}
 
      \broken{A double argument representing an infinity or NaN is converted in
      the style of an \texttt{f} or \texttt{F} conversion specifier.}
@@ -934,12 +984,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{g},\texttt{G}]
-     A \cinline{double} argument representing a floating-point number is converted
-     in style \texttt{f} or \texttt{e} (or in style \texttt{F} or \texttt{E} in the
-     case of a \texttt{G} conversion specifier), depending on the value converted
-     and the precision. \broken{Let $P$ equal the precision if nonzero, 6 if the
-     precision is omitted, or 1 if the precision is zero.  Then, if a conversion
-     with style \texttt{E} would have an exponent of $X$:}
+     A \cinline{double} argument representing a floating-point number is
+     converted in style \texttt{f} or \texttt{e} (or in style \texttt{F} or
+     \texttt{E} in the case of a \texttt{G} conversion specifier), depending on
+     the value converted and the precision. \broken{Let $P$ equal the precision
+     if nonzero, 6 if the precision is omitted, or 1 if the precision is zero.
+     Then, if a conversion with style \texttt{E} would have an exponent of
+     $X$:}
      \begin{itemize}
 
      \item \broken{if $P > X = -4$, the conversion is with style \texttt{f} (or
@@ -1022,7 +1073,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> formatter-aux(_) ...</k>
           <formatArg> C:Int => .K </formatArg>
           <formatResult>... 
-               .List => ListItem(#charString(((C:Int %Int 256) +Int 256) %Int 256)) 
+               .List => ListItem(#charString(((C:Int %Int 256) +Int 256) 
+                    %Int 256)) 
           </formatResult>
           <formatState> "%c" => "reset" </formatState>
           [structural]
@@ -1202,10 +1254,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
+          <k> 
+               prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
                     tv(NewLen:Int, T:KResult)))
                => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
-               ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
+                    ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
                (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) 
@@ -1215,14 +1268,17 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           [structural]
      
      rule [realloc-null]:
-          prepareBuiltin((Identifier("realloc")), (tv(NullPointer, _),, Len:KResult)) 
+          prepareBuiltin((Identifier("realloc")), 
+               (tv(NullPointer, _),, Len:KResult)) 
           => prepareBuiltin((Identifier("malloc")), Len:KResult)
           [structural]
 
      syntax K ::= "calloc-aux"
      rule [calloc]:
-          prepareBuiltin((Identifier("calloc")), (tv(N:Int, _),, tv(Size:Int, _)))
-          => prepareBuiltin((Identifier("malloc")), tv(N:Int *Int Size:Int, cfg:sizeut))
+          prepareBuiltin((Identifier("calloc")), 
+               (tv(N:Int, _),, tv(Size:Int, _)))
+          => prepareBuiltin((Identifier("malloc")),
+               tv(N:Int *Int Size:Int, cfg:sizeut))
           ~> calloc-aux
           [structural]
      rule [calloc-aux]:
@@ -1232,9 +1288,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           [structural]
 
      rule [free]:
-          <k> prepareBuiltin((Identifier("free")), tv(Loc:SymLoc, t(_, pointerType(_))))
+          <k> 
+               prepareBuiltin((Identifier("free")),
+                    tv(Loc:SymLoc, t(_, pointerType(_))))
                => deleteSizedBlock(Loc, Len:Int) 
-               ~> skipval
+                    ~> skipval
           ...</k>
           <malloced>... Loc |-> Len:Int => .Map ...</malloced>
           [structural]
@@ -1242,14 +1300,18 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
-          <k> prepareBuiltin((Identifier("rand")), .KList)
-               => tv(absInt(randomRandom(Fresh:Int)) %Int max(t(.Set, int)), t(.Set, int))
+          <k> 
+               prepareBuiltin((Identifier("rand")), .KList)
+               => tv(absInt(randomRandom(Fresh:Int)) 
+                    %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
           <randNat> Fresh:Int => Fresh:Int +Int 1 </randNat>
           [structural]
           
      rule [srand]:
-          <k> prepareBuiltin((Identifier("srand")), tv(N:Int, t(.Set, unsigned-int)))
+          <k> 
+               prepareBuiltin((Identifier("srand")),
+                    tv(N:Int, t(.Set, unsigned-int)))
                => skipval
           ...</k>
           <randNat> _ => N:Int </randNat>
@@ -1264,24 +1326,27 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
      // fixme should detect overlaps
      syntax K ::= "strcpy" "(" SymLoc "," SymLoc "," SymLoc ")"
      rule [strcpy-start]:
-          prepareBuiltin((Identifier("strcpy")), (tv(Dest:SymLoc, t(_, pointerType(_))),, 
+          prepareBuiltin((Identifier("strcpy")), 
+               (tv(Dest:SymLoc, t(_, pointerType(_))),, 
                tv(Src:SymLoc, t(_, pointerType(_)))))
           => strcpy(Dest, Src, Dest)
           [structural]
           
      rule [strcpy-pre]:
-          (. => read(Src:SymLoc, t(.Set, char))) ~> strcpy(_, (Src => Src +bytes 1), _)
+          (. => read(Src:SymLoc, t(.Set, char))) 
+          ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]
      
      rule [strcpy-some]:
           (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
-               ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
+          ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
           when I =/=Int 0
           [structural]
      rule [strcpy-done]:
-          tv(0, T:KResult) ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
+          tv(0, T:KResult) 
+               ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
           => write(lv(Dest, t(.Set, char)), tv(0, T)) 
-          ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
+               ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
           [structural]
 endmodule
 
@@ -1291,7 +1356,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" | "thrd-busy" | "thrd-nomem"
+     syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" 
+                | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, t(.Set, int)) [macro]
      rule thrd-error => tv(1, t(.Set, int)) [macro]
      rule thrd-timeout => tv(2, t(.Set, int)) [macro]
@@ -1302,10 +1368,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
-          <k> prepareBuiltin((Identifier("thrd_create")), 
-                    (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, ThreadArg:KResult))
-               => Computation((* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
-               ~> spawn-aux(Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
+          <k> 
+               prepareBuiltin((Identifier("thrd_create")), 
+                    (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, 
+                    ThreadArg:KResult))
+               => Computation(
+                    (* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
+                    ~> spawn-aux(
+                    Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
           ...</k>
           <nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
           [structural]
@@ -1315,20 +1385,25 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      rule [thrd-create]:
           <thread>...
                <k> 
-                    spawn-aux(ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) 
+                    spawn-aux(
+                         ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) 
                     => thrd-success 
                ...</k>
                <currTU> Tu:K </currTU>
                <buffer> .List </buffer>
           ...</thread>
           <genv> Env:Map </genv>
-          <threadStatus> Status:Map => Status:Map[threadRunning / ThreadId:Int] </threadStatus>
+          <threadStatus> 
+               Status:Map => Status:Map[threadRunning / ThreadId:Int]
+          </threadStatus>
           <br/>
           (.Bag =>
           <thread>...
                <nextLoc> firstLoc(ThreadId:Int) </nextLoc>
                <threadId> ThreadId:Int </threadId>
-               <k> Call(ThreadFuncPointer:KResult, klist(ThreadArg:KResult)) </k>
+               <k> 
+                    Call(ThreadFuncPointer:KResult, klist(ThreadArg:KResult)) 
+               </k>
                <env> Env:Map </env>
                <currTU> Tu:K </currTU>
           ...</thread>)
@@ -1344,7 +1419,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      syntax K ::= "join-aux" "(" Int "," Value ")"
           
      rule [thrd-join-start]:
-          prepareBuiltin((Identifier("thrd_join")), (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
+          prepareBuiltin((Identifier("thrd_join")),
+               (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
           => join-aux(ThreadId:Int, ResultPointer:KResult)
           [structural]
      
@@ -1366,7 +1442,9 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
           [computational]
 
      rule [mtx-init]:
-          <k> prepareBuiltin((Identifier("mtx_init")), (tv(Loc:Int, _),, tv(Type:Int, _)))
+          <k> 
+               prepareBuiltin((Identifier("mtx_init")),
+               (tv(Loc:Int, _),, tv(Type:Int, _)))
                => thrd-success
           ...</k>
           <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
@@ -1376,7 +1454,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
           [structural]
 
      rule [mtx-lock]:
-          <k> prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
+          <k> 
+               prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
@@ -1388,7 +1467,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
           [computational]
 
      rule [mtx-unlock]:
-          <k> prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))
+          <k> 
+               prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>

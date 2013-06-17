@@ -32,11 +32,14 @@ module DYNAMIC-C-SEMANTICS-MISC
           <locsWrittenTo> _ => .Bag </locsWrittenTo>
           [structural, ndlocal]
 
-     // fixme these should be computational, unless I handle that at a higher level
+     // fixme these should be computational, unless I handle that at a higher
+     // level
      rule [writeToFD-char]:
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
           <fid> FD:Int </fid>
-          <buff> S:String => S:String +String #charString(N:Int %Int 256) </buff>
+          <buff> 
+               S:String => S:String +String #charString(N:Int %Int 256)
+          </buff>
           [observable]
      rule [writeToFD-string]:
           <k> writeToFD(FD:Int, S':String) => .K ...</k>
@@ -44,7 +47,10 @@ module DYNAMIC-C-SEMANTICS-MISC
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
-          <k> readFromFD(FD:Int) => tv(asciiString(firstChar(S:String)), t(.Set, int))  ...</k>
+          <k> 
+               readFromFD(FD:Int) 
+               => tv(asciiString(firstChar(S:String)), t(.Set, int))  
+          ...</k>
           <fid> FD:Int </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
           // don't compare with "" in order to only treat string sort
@@ -109,7 +115,10 @@ module DYNAMIC-C-SEMANTICS-MISC
           [structural]
           
      rule [combine-done]:
-          <done> (ListItem(S:String) ListItem(S':String) => ListItem(S:String +String S':String)) ...</done>
+          <done> 
+               ListItem(S:String) ListItem(S':String) 
+               => ListItem(S:String +String S':String) 
+          ...</done>
           [structural]
           
      syntax List ::= string2List(String) [function] 
@@ -175,22 +184,28 @@ module DYNAMIC-C-SEMANTICS
           => incomingArguments-aux(L:KList, 0) 
           [structural]
      rule incomingArguments-aux((S:String,, L:KList), N:Int) 
-          => Computation(Identifier("#incomingArgumentsArray")[N:Int] := Constant(StringLiteral(S:String)))
-          ~> incomingArguments-aux(L:KList, N:Int +Int 1)
+          => Computation(
+               Identifier("#incomingArgumentsArray")[N] 
+                    := Constant(StringLiteral(S)))
+               ~> incomingArguments-aux(L:KList, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.KList, N:Int) 
-          => Computation(Identifier("#incomingArgumentsArray")[N:Int] := NullPointerConstant)
+          => Computation(
+               Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
           [structural]
           
      syntax K ::= "syntaxInt" "(" Int ")"
-     rule [syntaxInt]: syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
+     rule [syntaxInt]: 
+          syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
      
      syntax K ::= "pgmArgs" "(" KList ")" [function]
      syntax K ::= "argName" "(" KList ")" [function]
      rule argName(L:KList)
           => Name(
                Identifier("#incomingArgumentsArray"), 
-               PointerType(ArrayType(JustBase, syntaxInt((lengthKList L:KList) +Int 1), Specifier(klist(.KList))))
+               PointerType(ArrayType(JustBase, 
+                    syntaxInt((lengthKList L:KList) +Int 1), 
+                    Specifier(klist(.KList))))
           )
      rule pgmArgs(L:KList)
           => DeclarationDefinition(InitNameGroup(
@@ -269,8 +284,12 @@ module DYNAMIC-C-SEMANTICS
                          <nextLoc> _ => firstLoc(1) </nextLoc>
                          <threadLocal>...
                               <control>...
-                                   <currentFunction> _ => file-scope </currentFunction>
-                                   <currentProgramLoc> _ => UnknownCabsLoc </currentProgramLoc>
+                                   <currentFunction> 
+                                        _ => file-scope
+                                   </currentFunction>
+                                   <currentProgramLoc>
+                                        _ => UnknownCabsLoc
+                                   </currentProgramLoc>
                               ...</control>
                          ...</threadLocal>
                     ...</thread>
@@ -331,7 +350,8 @@ module DYNAMIC-C-SEMANTICS
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => callMain-aux(typeof(Identifier("main")), N:Int, Identifier("#incomingArgumentsArray"), Args:K)
+               => callMain-aux(typeof(Identifier("main")), N:Int,
+                    Identifier("#incomingArgumentsArray"), Args:K)
           ...</k>
           <funTUs>... 
                Tu:K |-> map((_ Identifier("main") |-> Tu:K)) 
@@ -342,19 +362,28 @@ module DYNAMIC-C-SEMANTICS
      // FIXME i think these are slightly different
      // fixme void isn't supposed to have a name
      // fixme figure out type of string
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
+     rule callMain-aux(t(.Set, functionType(t(.Set, int),
+               typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
           => Call(Identifier("main"), klist(.KList))
           [structural]
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
+     rule callMain-aux(t(.Set,
+               functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
           => Call(Identifier("main"), klist(.KList))
           [structural]
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, 
-               typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set, functionType(t(.Set, int),
+               (typedDeclaration(t(.Set, int), _:Id),, 
+               typedDeclaration(t(.Set,
+               incompleteArrayType(t(.Set,
+               pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]
-     rule callMain-aux(t(.Set, functionType(t(.Set, int), (typedDeclaration(t(.Set, int), _:Id),, 
-               typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+     rule callMain-aux(t(.Set,
+               functionType(t(.Set, int),
+               (typedDeclaration(t(.Set, int), _:Id),, 
+               typedDeclaration(t(.Set,
+               pointerType(t(.Set,
+               pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
           when T:KResult ==K t(.Set, char)
           [structural]

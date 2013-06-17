@@ -28,15 +28,20 @@ module COMPAT-SYNTAX
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
 
      syntax Bits ::= right:
-                    "~Bits" Bits        [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
+                    "~Bits" Bits
+                    [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
                     > left:
-                    Bits "/Bits" Bits   [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
+                    Bits "/Bits" Bits
+                    [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
                     > left:
-                    Bits "&Bits" Bits   [function, left, latex({#1}\mathrel{\&_{\scriptstyle\it Bits}}{#2})]
+                    Bits "&Bits" Bits
+                    [function, left, latex({#1}\mathrel{\&_{\scriptstyle\it Bits}}{#2})]
                     > left:
-                    Bits "xorBits" Bits [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
+                    Bits "xorBits" Bits
+                    [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
                     > left:
-                    Bits "|Bits" Bits   [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
+                    Bits "|Bits" Bits
+                    [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
 
      syntax Ptr ::= Int | SymLoc
 
@@ -76,15 +81,18 @@ module COMMON-SEMANTIC-SYNTAX
           
      // Types
      // would rather this be KResult, but can't get the subsorting to work
-     syntax Type ::= "typedDeclaration" "(" Type "," Id ")" [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
+     syntax Type ::= "typedDeclaration" "(" Type "," Id ")" 
+          [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
      
-     // represents a type before canonicalization.  as in "int *x", first arg is "Int", second arg is "PointerType(JustBase)"
+     // represents a type before canonicalization.  as in "int *x", first arg
+     // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] 
      syntax "DeclType" -/- [a-zA-Z\:]
      syntax Set ::= "setOfTypes" [function]
      
      syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]
-     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)] // having to put this out here so errors can see it
+     // having to put this out here so errors can see it
+     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initFunction" "(" K "," K ")" [strict]
      syntax K ::= "populateFromGlobal"
      
@@ -171,8 +179,10 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "giveType" "(" Id "," Type ")"
      syntax K ::= "addToEnv" "(" Id "," SymLoc ")"
      
-     syntax K ::= "read" "(" SymLoc "," K ")" [strict(2)] // location, type
-     syntax K ::= "write" "(" K "," K ")" [strict(2)] // location, value
+     // location, type
+     syntax K ::= "read" "(" SymLoc "," K ")" [strict(2)]
+     // location, value
+     syntax K ::= "write" "(" K "," K ")" [strict(2)]
      syntax K ::= "writeByte" "(" SymLoc "," K ")" 
 
      syntax Bool ::= isTypeCompatible(K, K) [function]
@@ -201,25 +211,37 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
      
      // Basic types
-     syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" | "long-int" | "long-long-int"
+     syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" 
+                         | "long-int" | "long-long-int"
      syntax SimpleType ::= "float" | "double" | "long-double"
      syntax SimpleType ::= "signed-char" | "unsigned-char"
-     syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" | "unsigned-long-int" | "unsigned-long-long-int"
+     syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" 
+                         | "unsigned-long-int" | "unsigned-long-long-int"
      syntax SimpleType ::= "no-type"
      
      syntax Bool ::= "isBasicType" "(" K ")" [function]
      
      // Composite types
-     syntax SimpleType ::= "enumType" "(" Id ")" [klabel('enumType)]
-     syntax SimpleType ::= "arrayType" "(" Type "," Int ")" [klabel('arrayType)]
-     syntax SimpleType ::= "incompleteArrayType" "(" Type ")" [klabel('incompleteArrayType)]
-     syntax SimpleType ::= "flexibleArrayType" "(" Type ")" [klabel('flexibleArrayType)]
-     syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" [klabel('bitfieldType)]
-     syntax SimpleType ::= "functionType" "(" Type "," KList ")" [klabel('functionType)]
-     syntax SimpleType ::= "pointerType" "(" Type ")" [klabel('pointerType)]
-     syntax SimpleType ::= "structType" "(" Id ")" [klabel('structType)]
-     syntax SimpleType ::= "unionType" "(" Id ")" [klabel('unionType)]
-     syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" [klabel('qualifiedType)]
+     syntax SimpleType ::= "enumType" "(" Id ")" 
+          [klabel('enumType)]
+     syntax SimpleType ::= "arrayType" "(" Type "," Int ")" 
+          [klabel('arrayType)]
+     syntax SimpleType ::= "incompleteArrayType" "(" Type ")" 
+          [klabel('incompleteArrayType)]
+     syntax SimpleType ::= "flexibleArrayType" "(" Type ")" 
+          [klabel('flexibleArrayType)]
+     syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" 
+          [klabel('bitfieldType)]
+     syntax SimpleType ::= "functionType" "(" Type "," KList ")" 
+          [klabel('functionType)]
+     syntax SimpleType ::= "pointerType" "(" Type ")" 
+          [klabel('pointerType)]
+     syntax SimpleType ::= "structType" "(" Id ")" 
+          [klabel('structType)]
+     syntax SimpleType ::= "unionType" "(" Id ")" 
+          [klabel('unionType)]
+     syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" 
+          [klabel('qualifiedType)]
 
      // takes a type, but sometimes things like maps give K
      syntax KResult ::= unqualifyType(K) [function]
@@ -262,16 +284,17 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "AllowWrite" "(" K ")" [strict]
      
-     rule AllowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T)) [structural, anywhere]
+     rule AllowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
+          [structural, anywhere]
 
      syntax Type ::= stripConst(Type) [function]
      rule stripConst(t((SetItem(Const) => .Set) _, _))
      rule stripConst(t(S:Set, T:K)) => t(S:Set, T:K)
           when notBool Const in S:Set
-          [structural]
      
      syntax K ::= "bind" "(" KList "," KList ")"
-     syntax Value ::= "tv" "(" KList "," Type ")" [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+     syntax Value ::= "tv" "(" KList "," Type ")" 
+          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
      syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
@@ -353,7 +376,8 @@ module COMMON-SEMANTIC-SYNTAX
      
      // these are also used by compound literals
      syntax KResult ::= "initValue" "(" Id "," Type "," K ")"
-     syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2)] // id, type, initializer
+     // id, type, initializer
+     syntax K ::= "figureInit" "(" Id "," K "," K ")" [strict(2)] 
      
      // appends a new subobject to a current object.  this is unsafe and should
      // only be used for variadic functions
@@ -396,7 +420,8 @@ module COMMON-C-SETTINGS
      rule [numBytes-double]: numBytes(t(_, double)) => 8
      rule [numBytes-long-double]: numBytes(t(_, long-double)) => 16
      
-     rule [numBytes-enum]: numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int))
+     rule [numBytes-enum]: 
+          numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int))
      
      syntax Int ::= "cfg:mtxPlain" [function]
      rule [cfg-mtxPlain]: cfg:mtxPlain => 0
@@ -411,7 +436,8 @@ module COMMON-C-SETTINGS
      rule simpleType(t(_, T:K)) => T:K
      
      syntax Type ::= "cfg:largestUnsigned" [function]
-     rule [cfg-largestUnsigned]: cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
+     rule [cfg-largestUnsigned]:
+          cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
 
      syntax Int ::= "cfg:ptrsize" [function]
      rule [cfg-ptrsize]: cfg:ptrsize => 4
@@ -445,15 +471,17 @@ module COMMON-C-SEMANTICS-MISC
      rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
           => loc(X +Int 1 @ Th, ByOff, BiOff)
 
-     rule [unknown-loc]: CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc [structural, anywhere]
+     rule [unknown-loc]: 
+          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
+          [structural, anywhere]
 
-     rule [expression-loc]: ExpressionLoc(K:K, _) => K:K [structural, anywhere]
+     rule [expression-loc]: ExpressionLoc(K:K, _) => K
+          [structural, anywhere]
 
      rule [CodeLoc-k]:
-          <k> CodeLoc(K:K, L:CabsLoc) => K:K ...</k>
+          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
           <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
           [structural]
-          
           
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
      A preprocessing directive of the form
@@ -471,7 +499,8 @@ module COMMON-C-SEMANTICS-MISC
      rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
      
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
-          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte, BitOffset %Int numBitsPerByte)
+          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte,
+               BitOffset %Int numBitsPerByte)
           when BitOffset:Int >=Int numBitsPerByte
           [structural, anywhere]
      
@@ -493,6 +522,7 @@ module COMMON-C-SEMANTICS
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
      
-     syntax KLabel ::= "TranslationUnitName" "(" String ")" [klabel('TranslationUnitName)]
+     syntax KLabel ::= "TranslationUnitName" "(" String ")" 
+          [klabel('TranslationUnitName)]
 
 endmodule

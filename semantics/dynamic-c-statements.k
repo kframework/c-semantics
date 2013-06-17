@@ -5,7 +5,8 @@ module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
      imports DYNAMIC-INCLUDE
 
      syntax K ::= "pushBlock"
-     syntax K ::= "addToHistory" "(" Int ")" [latex(\terminal{addToHist}\!({#1}\!))]
+     syntax K ::= "addToHistory" "(" Int ")"
+          [latex(\terminal{addToHist}\!({#1}\!))]
 endmodule 
 
 module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
@@ -96,7 +97,10 @@ module DYNAMIC-SEMANTICS-BLOCKS
      appear.
      }*/
      rule [dissolve-block]:
-          <k> Block(BlockNum:Int, _, klist(Statements:KList)) => klistToK(Statements:KList) ...</k>
+          <k> 
+               Block(BlockNum:Int, _, klist(Statements:KList))
+               => klistToK(Statements:KList)
+          ...</k>
           <blockHistory> .List => ListItem(BlockNum:Int) ...</blockHistory>
           [structural]
 endmodule
@@ -176,7 +180,8 @@ module DYNAMIC-SEMANTICS-SWITCH
      syntax K ::= "tryCase" "(" K "," Value "," K ")"
      context tryCase((HOLE => reval(HOLE)), _, _)
      rule (. => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
-          ~> handleSwitch-aux(SN:Int, V:KResult, map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
+          ~> handleSwitch-aux(SN:Int, V:KResult,
+               map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
           when Exp:K =/=K l('Default)
           [structural] 
           
@@ -189,14 +194,16 @@ module DYNAMIC-SEMANTICS-SWITCH
      rule handleSwitch-aux(_, _, map(.Map)) => .
           [structural] 
           
-     rule handleSwitch-aux(SN:Int, _, map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
+     rule handleSwitch-aux(SN:Int, _,
+               map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
           when SN:Int =/=Int SN':Int
           [structural] 
      rule handleSwitch-aux(SN:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
           when L:KLabel =/=KLabel 'genLabel
           [structural] 
 
-     rule tryCase((tv(V:K, T':KResult) => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _)
+     rule tryCase((tv(V:K, T':KResult)
+          => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _)
           when T:KResult =/=K T':KResult
           [structural]
      rule tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .
@@ -212,7 +219,8 @@ module DYNAMIC-SEMANTICS-WHILE
      imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
-     The evaluation of the controlling expression takes place before each execution of the loop body.
+     The evaluation of the controlling expression takes place before each
+     execution of the loop body.
      }*/
      
      rule [while-mark]:
@@ -234,7 +242,8 @@ module DYNAMIC-SEMANTICS-DO-WHILE
      imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
-     The evaluation of the controlling expression takes place after each execution of the loop body.
+     The evaluation of the controlling expression takes place after each
+     execution of the loop body.
      }*/
      
      rule [do-while-mark]:
@@ -257,17 +266,17 @@ module DYNAMIC-SEMANTICS-FOR
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement 
-     \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ; $\textit{expression-3}$ ) $\textit{statement}$ }
-      behaves as follows: The expression $\textit{expression-2}$ is the
-      controlling expression that is evaluated before each execution of the
-      loop body. The expression $\textit{expression-3}$ is evaluated as a void
-      expression after each execution of the loop body. If $\textit{clause-1}$
-      is a declaration, the scope of any identifiers it declares is the
-      remainder of the declaration and the entire loop, imports the other two
-      expressions; it is reached in the order of execution before the first
-      evaluation of the controlling expression. If $\textit{clause-1}$ is an
-      expression, it is evaluated as a void expression before the first
-      evaluation of the controlling expression.
+     \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ;
+     $\textit{expression-3}$ ) $\textit{statement}$ } behaves as follows: The
+     expression $\textit{expression-2}$ is the controlling expression that is
+     evaluated before each execution of the loop body. The expression
+     $\textit{expression-3}$ is evaluated as a void expression after each
+     execution of the loop body. If $\textit{clause-1}$ is a declaration, the
+     scope of any identifiers it declares is the remainder of the declaration
+     and the entire loop, imports the other two expressions; it is reached in
+     the order of execution before the first evaluation of the controlling
+     expression. If $\textit{clause-1}$ is an expression, it is evaluated as a
+     void expression before the first evaluation of the controlling expression.
      }
      
      \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
@@ -289,7 +298,9 @@ module DYNAMIC-SEMANTICS-FOR
                ~> Pre:K 
                ~> loopMarked 
                ~> For(ForNum:Int, Pre:K, 
-                    (#if Control:K =/=K emptyValue #then Control:K #else tv(1, t(.Set, int)) #fi),
+                    (#if Control:K =/=K emptyValue 
+                    #then Control:K 
+                    #else tv(1, t(.Set, int)) #fi),
                     Post:K, S:K)
                ~> popLoop)
           </k>
@@ -393,14 +404,19 @@ module DYNAMIC-SEMANTICS-GOTO
      rule <k> Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </k>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu:K, F:Id) |-> map((_ (Label:K |-> GotoInfo:K))) ...</gotoMap>
+          <gotoMap>... 
+               kpair(Tu:K, F:Id) |-> map((_ (Label:K |-> GotoInfo:K))) 
+          ...</gotoMap>
           [structural]  // rule so that looping programs see repetition
           
      // - first case, when we're in the same block
-     rule <k> L:KLabel(gotoObject(Depth:Int, (ListItem(CurrentBlock:Int) BlockHistory:List), 
-                    K:K, LoopStack:List, DeclStack:List)) ~> _ 
+     rule <k> 
+               L:KLabel(gotoObject(Depth:Int, 
+                    (ListItem(CurrentBlock:Int) BlockHistory:List), 
+                    K:K, LoopStack:List, DeclStack:List)) 
+                    ~> _ 
                => addVariablesForBlock(CurrentBlock:Int, DeclStack:List)
-               ~> K:K
+                    ~> K:K
           </k>
           <nestingDepth> Depth:Int </nestingDepth>
           <blockHistory> 
@@ -417,43 +433,56 @@ module DYNAMIC-SEMANTICS-GOTO
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
      rule [processGoto-pop-differing-1]:
-          <k> (. => popBlock) 
-               ~> processGoto(gotoObject(TargetDepth:Int, TargetBlockHistory:List, _, _, _))
+          <k> 
+               (. => popBlock) 
+               ~> processGoto(gotoObject(
+                    TargetDepth:Int, TargetBlockHistory:List, _, _, _))
           ...</k>
-          <blockHistory> ListItem(BlockNum:Int) ActualHistory:List </blockHistory>
+          <blockHistory> 
+               ListItem(BlockNum:Int) ActualHistory:List
+          </blockHistory>
           when notBool BlockNum:Int in TargetBlockHistory:List
           [structural] 
           
      //  same
      rule [processGoto-pop-differing-2]:
-          <k> (. => popBlock) 
+          <k> 
+               (. => popBlock) 
                ~> processGoto(gotoObject(TargetDepth:Int, 
-                    Prefix:List ListItem(BlockNum:Int) TargetBlockHistory:List, _, _, _))
+                    Prefix:List ListItem(BlockNum:Int)
+                    TargetBlockHistory:List, _, _, _))
           ...</k>
-          <blockHistory> ListItem(BlockNum:Int) ActualHistory:List </blockHistory>
+          <blockHistory>
+               ListItem(BlockNum:Int) ActualHistory:List
+          </blockHistory>
           when TargetBlockHistory:List =/=List ActualHistory:List
           [structural] 
                
      //  once we share a history, we start to push
-     rule <k> processGoto(gotoObject(TargetDepth:Int, 
+     rule <k> 
+               processGoto(gotoObject(TargetDepth:Int, 
                     (Prefix:List ListItem(TargetBlock:Int) ActualHistory:List),
                     K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock:Int, DeclStack:List)
-               ~> processGotoDown(gotoObject(TargetDepth:Int, 
-                    (Prefix:List ListItem(CurrentBlock:Int) ActualHistory:List),
-                    K:K, LoopStack:List, DeclStack:List))
+                    ~> processGotoDown(gotoObject(TargetDepth:Int, 
+                         (Prefix ListItem(CurrentBlock) ActualHistory),
+                         K:K, LoopStack:List, DeclStack:List))
           ...</k>
           <br/>
           <nestingDepth> ActualDepth:Int </nestingDepth>
-          <blockHistory> ListItem(CurrentBlock:Int) ActualHistory:List </blockHistory>
+          <blockHistory>
+               ListItem(CurrentBlock:Int) ActualHistory:List
+          </blockHistory>
           when ActualDepth:Int +Int 1 =/=Int TargetDepth:Int
           [structural, large] 
           
-     rule <k> ( . => pushBlock
+     rule <k> 
+               ( . => pushBlock
                ~> addToHistory(TargetBlk:Int)
                ~> addVariablesForBlock(TargetBlk:Int, DeclStk:List)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
-                    (_ ListItem(TargetBlk:Int) ActualHist:List), _, _, DeclStk:List))
+                    (_ ListItem(TargetBlk:Int) ActualHist:List), _, _,
+                    DeclStk:List))
           ...</k>
           <br/>
           <nestingDepth> ActualDepth:Int </nestingDepth>
@@ -462,16 +491,18 @@ module DYNAMIC-SEMANTICS-GOTO
           [structural, large] 
      
      //  We've made it to the block above the target
-     rule <k> L:KLabel(gotoObject(SIntDepth:Int, 
+     rule <k> 
+               L:KLabel(gotoObject(SIntDepth:Int, 
                     (ListItem(TargetBlock:Int) BlockHistory:List),
                     K:K, 
                     LoopStack:List, 
                     DeclStack:List)
-               ) ~> _
+               ) 
+                    ~> _
                => pushBlock
-               ~> addToHistory(TargetBlock:Int)
-               ~> addVariablesForBlock(TargetBlock:Int, DeclStack:List)
-               ~> K:K
+                    ~> addToHistory(TargetBlock:Int)
+                    ~> addVariablesForBlock(TargetBlock:Int, DeclStack:List)
+                    ~> K:K
           </k>
           <nestingDepth> Depth:Int </nestingDepth>
           <blockHistory> BlockHistory:List </blockHistory>
@@ -481,11 +512,14 @@ module DYNAMIC-SEMANTICS-GOTO
           andBool (SIntDepth:Int ==Int Depth:Int +Int 1)
           [structural] 
           
-     syntax K ::= "addVariablesForBlock" "(" Int "," List ")" [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
+     syntax K ::= "addVariablesForBlock" "(" Int "," List ")"
+          [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
      
      //  skip variables from other blocks
-     rule <k> addVariablesForBlock(TargetBlock:Int, 
-                    ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .) DeclStack:List)
+     rule <k> 
+               addVariablesForBlock(TargetBlock:Int, 
+                    ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .)
+                    DeclStack:List)
                )
           ...</k>
           <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
@@ -493,8 +527,11 @@ module DYNAMIC-SEMANTICS-GOTO
           [structural] 
           
      //  skip variables in the real history
-     rule <k> addVariablesForBlock(TargetBlock:Int,
-                    ((ListItem(frozenDeclaration(_:Int, TargetBlock:Int, Decl:K)) => .) DeclStack:List)
+     rule <k> 
+               addVariablesForBlock(TargetBlock:Int,
+                    ((ListItem(frozenDeclaration(
+                         _:Int, TargetBlock:Int, Decl:K)) => .)
+                    DeclStack:List)
                )
           ...</k>
           <localVariables> Vars:List </localVariables>
@@ -504,7 +541,7 @@ module DYNAMIC-SEMANTICS-GOTO
      
      syntax K ::= "enableInits"
      
-     rule <k> enableInits => .K ...</k>
+     rule <k> enableInits => . ...</k>
           <shouldInit> _ => true </shouldInit>
           [structural] 
      
@@ -512,7 +549,8 @@ module DYNAMIC-SEMANTICS-GOTO
                     ~> enableInits
                )
                ~> addVariablesForBlock(TargetBlock:Int, 
-                    ((ListItem(frozenDeclaration(_:Int, TargetBlock:Int, Decl:K)) => .List) _)
+                    ((ListItem(frozenDeclaration(
+                         _:Int, TargetBlock:Int, Decl:K)) => .List) _)
                )
           ...</k>
           <localVariables> Vars:List </localVariables>
@@ -580,7 +618,9 @@ module DYNAMIC-SEMANTICS-CONTINUE
           [structural]
 
      rule [continue-done-for]:
-          (Continue => Computation(Post:K)) ~> loopMarked ~> For(_:Int, _, _, Post:K, _)
+          (Continue => Computation(Post:K)) 
+          ~> loopMarked 
+          ~> For(_:Int, _, _, Post:K, _)
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)
@@ -625,7 +665,8 @@ module DYNAMIC-SEMANTICS-RETURN
      rule [fetch-all-locals]:
           <k> Return(V:KResult) ...</k>
           <localAddresses> .Set => Addresses:Set </localAddresses>
-          <blockStack> ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
+          <blockStack> 
+               ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
                => .List
           ...</blockStack>
           [structural] 
@@ -638,12 +679,15 @@ module DYNAMIC-SEMANTICS-RETURN
                ~> cast(T:KResult, V:KResult) 
                ~> K:K
           </k>
-          <gtypes>... Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) ...</gtypes>
+          <gtypes>... 
+               Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) 
+          ...</gtypes>
           <br/>
           <control>
                //  these cells get replaced by the ones in C:Bag, so we can
                //  delete them when we match them
-               (<local>... <localAddresses> .Set </localAddresses> ...</local> => .Bag)
+               (<local>... <localAddresses> .Set </localAddresses> ...</local> 
+               => .Bag)
                <currentFunction> (F:Id => CurrFun:K) </currentFunction>
                <currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
                (<currTU> Tu:K </currTU> => .Bag)
@@ -656,8 +700,12 @@ module DYNAMIC-SEMANTICS-RETURN
                     <callStackFrame>...
                          <continuation> K:K </continuation>
                          <stackControl>C:Bag</stackControl>
-                         <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-                         <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
+                         <stackCurrentFunction>
+                              CurrFun:K
+                         </stackCurrentFunction>
+                         <stackCurrentProgramLoc> 
+                              CurrLoc:K
+                         </stackCurrentProgramLoc>
                     ...</callStackFrame>
                ) => .List
           ...</callStack>

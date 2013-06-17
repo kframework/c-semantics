@@ -59,16 +59,28 @@ module C-CONFIGURATION
                          <calculateGotoMap color="cyan">
                               <gotoCalculation multiplicity="*" color="cyan">
                                    <computation color="cyan"> .K </computation>
-                                   <computationTail color="cyan"> .K </computationTail>
-                                   <declarationStack color="cyan"> .List </declarationStack>
-                                   <nestingDepthGoto color="cyan"> 0 </nestingDepthGoto>
-                                   <blockHistoryGoto color="cyan"> .List </blockHistoryGoto>
-                                   <loopStackGoto color="cyan"> .List </loopStackGoto>
+                                   <computationTail color="cyan">
+                                        .K
+                                   </computationTail>
+                                   <declarationStack color="cyan">
+                                        .List
+                                   </declarationStack>
+                                   <nestingDepthGoto color="cyan">
+                                        0
+                                   </nestingDepthGoto>
+                                   <blockHistoryGoto color="cyan">
+                                        .List
+                                   </blockHistoryGoto>
+                                   <loopStackGoto color="cyan">
+                                        .List
+                                   </loopStackGoto>
                               </gotoCalculation>
                          </calculateGotoMap>
                          <br/>
                          <control>
-                              <finalComputation multiplicity="?" color="lightgray"> .K </finalComputation>
+                              <finalComputation multiplicity="?" color="lightgray">
+                                   .K
+                              </finalComputation>
                               // stack of "local" cells
                               <blockStack color="violet"> .List </blockStack>
                               <local>
@@ -82,39 +94,67 @@ module C-CONFIGURATION
                                         <formatArg> .K </formatArg>
                                         <formatResult> .List </formatResult>
                                         <formatState> "normal" </formatState>
-                                        <formatModifiers> .Map </formatModifiers>
+                                        <formatModifiers>
+                                             .Map
+                                        </formatModifiers>
                                         <formatLength> "" </formatLength>
                                    </formatting>
                                    // information about the block we're in
-                                   <nestingDepth color="lightgray"> 0 </nestingDepth>
-                                   <blockHistory color="lightgray"> .List </blockHistory>
-                                   // used to make sure we don't declare a variable twice in the same scope
-                                   <localVariables color="lightgray"> .List </localVariables> 
-                                   // used to deallocate memory on leaving a block
-                                   <localAddresses color="lightgray"> .Set </localAddresses> 
+                                   <nestingDepth color="lightgray">
+                                        0
+                                   </nestingDepth>
+                                   <blockHistory color="lightgray">
+                                        .List
+                                   </blockHistory>
+                                   // used to make sure we don't declare a
+                                   // variable twice in the same scope
+                                   <localVariables color="lightgray">
+                                        .List
+                                   </localVariables> 
+                                   // used to deallocate memory on leaving a
+                                   // block
+                                   <localAddresses color="lightgray">
+                                        .Set
+                                   </localAddresses> 
                               </local>
                               <br/>
                               // used to control initialization when gotoing
                               <shouldInit color="lightgray"> true </shouldInit>
                               // used to figure initializers
-                              <currentObject color="cyan"> .List </currentObject>
-                              <currentSubObject color="cyan"> .List </currentSubObject>
-                              <incompleteLength color="cyan"> 0 </incompleteLength>
-                              <savedInitialization color="cyan"> .K </savedInitialization>
+                              <currentObject color="cyan">
+                                   .List
+                              </currentObject>
+                              <currentSubObject color="cyan">
+                                   .List
+                              </currentSubObject>
+                              <incompleteLength color="cyan">
+                                   0
+                              </incompleteLength>
+                              <savedInitialization color="cyan">
+                                   .K
+                              </savedInitialization>
                               <loopStack color="violet"> .List </loopStack>
                               <br/>
-                              <locsWrittenTo color="lightgray"> .Bag </locsWrittenTo>
+                              <locsWrittenTo color="lightgray">
+                                   .Bag
+                              </locsWrittenTo>
                               <holds color="yellow"> .Map </holds>
                               // used for typing expressions
                               <type multiplicity="?" color="cyan"> .K </type>
-                              // holds the innermost type while we unroll the type around it
-                              <declarationTypeHolder color="cyan"> .K </declarationTypeHolder>
+                              // holds the innermost type while we unroll the
+                              // type around it
+                              <declarationTypeHolder color="cyan">
+                                   .K
+                              </declarationTypeHolder>
                               
                               // general information
                               <currTU color="lightgray"> "" </currTU>
-                              <currentFunction color="lightgray"> .K </currentFunction>
-                              <currentProgramLoc color="black"> .K </currentProgramLoc>
-
+                              <currentFunction color="lightgray">
+                                   .K
+                              </currentFunction>
+                              <currentProgramLoc color="black">
+                                   .K
+                              </currentProgramLoc>
                          </control>
                     </threadLocal>
                </thread>
