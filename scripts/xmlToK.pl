@@ -186,10 +186,11 @@ sub elementToK {
 		return ($inNextState, paren("$BOOL false") . paren(KLIST_IDENTITY));
 	} elsif ($label eq 'U'
             || $label eq 'L'
+            || $label eq 'F'
             || $label eq 'LL'
             || $label eq 'UL'
             || $label eq 'ULL') {
-            $label = 'Const' . $label;
+            $label = 'Lit' . $label;
       }
 
 	my @klist = ();

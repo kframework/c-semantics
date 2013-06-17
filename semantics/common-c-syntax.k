@@ -718,12 +718,14 @@ module COMMON-C-SYNTAX
      // new; significand, exponent, approx
      syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")" [klabel('HexFloatConstant)]
      
-     syntax Constant ::= "ConstU" "(" K ")" [klabel('ConstU)] // new
-     syntax Constant ::= "ConstL" "(" K ")" [klabel('ConstL)] // new
-     syntax Constant ::= "ConstF" "(" K ")" [klabel('ConstF)] // new
-     syntax Constant ::= "ConstLL" "(" K ")" [klabel('ConstLL)] // new
-     syntax Constant ::= "ConstUL" "(" K ")" [klabel('ConstUL)] // new
-     syntax Constant ::= "ConstULL" "(" K ")" [klabel('ConstULL)] // new
+     syntax Constant ::= "LitU" "(" K ")" [klabel('LitU)] // new
+     syntax "LitU" -/- [a-zA-Z\:]
+     syntax Constant ::= "LitL" "(" K ")" [klabel('LitL)] // new
+     syntax Constant ::= "LitF" "(" K ")" [klabel('LitF)] // new
+     syntax Constant ::= "LitLL" "(" K ")" [klabel('LitLL)] // new
+     syntax "LitL" -/- [a-zA-Z\:]
+     syntax Constant ::= "LitUL" "(" K ")" [klabel('LitUL)] // new
+     syntax Constant ::= "LitULL" "(" K ")" [klabel('LitULL)] // new
 
      syntax Constant ::= "NoSuffix" "(" K ")" [klabel('NoSuffix)] // new
      
