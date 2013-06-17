@@ -54,7 +54,6 @@ module DYNAMIC-C-ERRORS
 //           // <memory> M:Bag </memory>
 //           <br/>
 //           (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-//           // when notBool Block in gatherInnerCells(M:Bag, basePtr)
 //           <mem> M:Map </mem>
 //           when notBool SetItem(Block) in keys (M:Map)
 //           [structural, large]
@@ -73,7 +72,6 @@ module DYNAMIC-C-ERRORS
 //           // <memory> M:Bag </memory>
 //           <br/>
 //           (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-//           // when notBool Block in gatherInnerCells(M:Bag, basePtr)
 //           <mem> M:Map </mem>
 //           when notBool SetItem(Block) in (keys M:Map)
 //           [structural, large]
@@ -398,8 +396,6 @@ module DYNAMIC-C-ERRORS
           (.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)
           [structural, large]
      
-     // TODO(chathhorn): this is relying on the order rules are tried.
-
      syntax K ::= "datarace" "(" SymLoc "," Int "," SymLoc "," Int ")"
 
      // TODO(chathhorn): comparing SymLocs, elided

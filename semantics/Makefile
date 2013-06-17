@@ -8,10 +8,10 @@ KOMPILE = $(C_K_BASE)/bin/kompile
 K_PL_META_LEVEL = $(C_K_BASE)/bin/maude/lib/pl-meta-level
 K_LATEX_STYLE = $(C_K_BASE)/include/latex/k.sty
 
-KOMPILE_C = $(KOMPILE) -v c.k -l C -transition "interpRule"
+KOMPILE_C = $(KOMPILE) c.k -w -v -l C -transition "interpRule"
 
-KOMPILE_C_ND = $(KOMPILE) c.k -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
-KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -l C -transition "observable computational"
+KOMPILE_C_ND = $(KOMPILE) c.k -w -v -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
+KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -w -v -l C -transition "observable computational"
 
 COMMON_C_FILES = c-syntax.k \
 common-c-syntax.k common-c-helpers.k c-configuration.k common-c-expressions.k common-c-semantics.k common-c-statements.k common-c-declarations.k common-c-typing.k

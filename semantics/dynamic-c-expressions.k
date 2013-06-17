@@ -11,13 +11,17 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      syntax K ::= "fromArray" "(" Int "," Int ")" // offset, length
      
      syntax K ::= makeTruth(Bool) [function]
-     rule makeTruth(B:Bool) => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
+     rule makeTruth(B:Bool)
+          => #if B:Bool #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
      
      syntax Int ::= arrayLength(K) [function]
      rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N
-     /*@ these large numbers are used instead of an infinity---the result of these rules shouldn't be used later anyway */
-     rule arrayLength(t(_:Set, flexibleArrayType(_:KResult))) => 36893488147419103232
-     rule arrayLength(t(_:Set, incompleteArrayType(_:KResult))) => 36893488147419103232
+     /*@ these large numbers are used instead of an infinity---the result of
+     these rules shouldn't be used later anyway */
+     rule arrayLength(t(_:Set, flexibleArrayType(_:KResult)))
+          => 36893488147419103232
+     rule arrayLength(t(_:Set, incompleteArrayType(_:KResult)))
+          => 36893488147419103232
 
      // chathhorn: to work around the new semantics for contexts.
      rule reval(K:K) => K ~> reval(HOLE) 
@@ -39,10 +43,14 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
      
-     rule [reval-skipval]: rkludge(skipval) => skipval [structural]
-     rule [reval-emptyval]: rkludge(emptyValue) => emptyValue [structural]
-     rule [reval-tv-normal]: rkludge(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult) [structural] 
-     rule [peval-tv-normal]: pkludge(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult) [structural]
+     rule [reval-skipval]: 
+          rkludge(skipval) => skipval
+     rule [reval-emptyval]:
+          rkludge(emptyValue) => emptyValue
+     rule [reval-tv-normal]:
+          rkludge(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
+     rule [peval-tv-normal]:
+          pkludge(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -74,14 +82,14 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      }*/
      rule [reval-lv-array]: 
           rkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
+          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
+               pointerType(innerType(T))))
           when isArrayType(T) 
-          [structural]
      rule [peval-lv-array]: 
           pkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))), pointerType(innerType(T))))
+          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
+               pointerType(innerType(T))))
           when isArrayType(T) 
-          [structural]
      // should never get to the situation where we have tv(..., arrayType)
      
      
@@ -95,11 +103,9 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      rule [reval-function]: 
           rkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
-          [structural]
      rule [peval-function]: 
           pkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
-          [structural]
      
 endmodule
 
@@ -107,7 +113,9 @@ module DYNAMIC-SEMANTICS-LITERALS
      imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
           
      syntax Bool ::= withinRange(Int, SimpleType) [function]
-     rule withinRange(I:Int, T:K) => (I:Int <=Int max(t(.Set, T:K))) andBool (I:Int >=Int min(t(.Set, T:K)))
+     rule withinRange(I:Int, T:K)
+          => (I:Int <=Int max(t(.Set, T:K))) 
+               andBool (I:Int >=Int min(t(.Set, T:K)))
      
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
@@ -118,8 +126,12 @@ module DYNAMIC-SEMANTICS-LITERALS
                orBool (lengthString(S:String) ==Int 1)
           
      syntax K ::= "hexOrOctalConstant" "(" K ")"
-     rule HexConstant(S:String) => hexOrOctalConstant(String2Rat(simplifyForHex(S), 16)) [structural, anywhere]
-     rule OctalConstant(N:Int) => hexOrOctalConstant(String2Rat(Rat2String(N, 10), 8)) [structural, anywhere]
+     rule HexConstant(S:String)
+          => hexOrOctalConstant(String2Rat(simplifyForHex(S), 16))
+          [structural, anywhere]
+     rule OctalConstant(N:Int)
+          => hexOrOctalConstant(String2Rat(Rat2String(N, 10), 8))
+          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
      
@@ -127,7 +139,8 @@ module DYNAMIC-SEMANTICS-LITERALS
      constant, base 8; that of a hexadecimal constant, base 16. The lexically
      first digit is the most significant.
      
-     The type of an integer constant is the first of the corresponding list in which its value can be represented.\\
+     The type of an integer constant is the first of the corresponding list in
+     which its value can be represented.\\
      \begin{tabular}{@{}lll@{}}
      \toprule
      Suffix    &    Decimal Constant    &         Octal or Hexadecimal Constant  \\
@@ -169,88 +182,118 @@ module DYNAMIC-SEMANTICS-LITERALS
      type, then the integer constant has no type.
      }*/  
      rule NoSuffix(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
-          #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, int) 
+               #then tv(I:Int, t(.Set, int)) 
+          #else #if withinRange(I:Int, long-int)
+               #then tv(I:Int, t(.Set, long-int)) 
+          #else #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int)) 
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
      
      rule NoSuffix(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, int) #then tv(I:Int, t(.Set, int)) #else
-          #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
-          #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, int)
+               #then tv(I:Int, t(.Set, int)) 
+          #else #if withinRange(I:Int, unsigned-int)
+               #then tv(I:Int, t(.Set, unsigned-int))
+          #else #if withinRange(I:Int, long-int)
+               #then tv(I:Int, t(.Set, long-int))
+          #else #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi #fi #fi #fi #fi
           [structural, anywhere]
 
      rule LitU(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-int)
+               #then tv(I:Int, t(.Set, unsigned-int))
+          #else #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
           
      rule LitL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, long-int)
+               #then tv(I:Int, t(.Set, long-int))
+          #else #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi #fi #fi
           [structural, anywhere]
           
      rule LitUL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
           
      rule LitLL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
      
      rule LitULL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
           
      rule LitU(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-int)
+               #then tv(I:Int, t(.Set, unsigned-int))
+          #else #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
      rule LitL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, long-int)
+               #then tv(I:Int, t(.Set, long-int))
+          #else #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
      rule LitUL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-int))
+          #else #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi #fi        
           [structural, anywhere]
      rule LitLL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, long-long-int)
+               #then tv(I:Int, t(.Set, long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
      rule LitULL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
-               tv(I:Int, t(.Set, no-type))
+          #if withinRange(I:Int, unsigned-long-long-int)
+               #then tv(I:Int, t(.Set, unsigned-long-long-int))
+          #else tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
      
@@ -261,8 +304,12 @@ module DYNAMIC-SEMANTICS-LITERALS
      \cinline{long double}.
      }*/
      syntax K ::= "reducedFloat" "(" Float ")"
-     rule DecimalFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural, anywhere]
-     rule HexFloatConstant(_:String, _:Int, F:Float) => reducedFloat(F:Float) [structural, anywhere]
+     rule DecimalFloatConstant(_:String, _:Int, F:Float)
+          => reducedFloat(F:Float)
+          [structural, anywhere]
+     rule HexFloatConstant(_:String, _:Int, F:Float)
+          => reducedFloat(F:Float)
+          [structural, anywhere]
      
      rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
           [structural, anywhere]
@@ -300,9 +347,9 @@ module DYNAMIC-SEMANTICS-LITERALS
      literals, the array elements have type \cinline{char}, and are initialized
      with the individual bytes of the multibyte character sequence. \ldots
 
-     For wide string literals prefixed by the letter \cinline{L}, the array elements
-     have type \cinline{wchar_t} and are initialized with the sequence of wide
-     characters corresponding to the multibyte character sequence\ldots
+     For wide string literals prefixed by the letter \cinline{L}, the array
+     elements have type \cinline{wchar_t} and are initialized with the sequence
+     of wide characters corresponding to the multibyte character sequence\ldots
 
      }*/  
           
@@ -314,7 +361,8 @@ module DYNAMIC-SEMANTICS-LITERALS
           <br/>
           <stringLiterals>
                M:Map
-               (. => S |-> lv(Loc, t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))))
+               (. => S |-> lv(Loc, t(.Set, 
+                    arrayType(t(.Set, char), lengthString(S) +Int 1))))
           </stringLiterals>
           when notBool (S in keys(M))
           [large, structural]
@@ -328,7 +376,8 @@ module DYNAMIC-SEMANTICS-LITERALS
           <br/>
           <stringLiterals>
                M:Map
-               (.Map => wstring(S:KList) |-> lv(Loc, t(.Set, arrayType(cfg:wcharut, (lengthKList S:KList) +Int 1))))
+               (.Map => wstring(S:KList) |-> lv(Loc, t(.Set, 
+                    arrayType(cfg:wcharut, (lengthKList S:KList) +Int 1))))
           </stringLiterals>
           when notBool wstring(S:KList) in keys M:Map
           [large, structural]
@@ -339,7 +388,9 @@ module DYNAMIC-SEMANTICS-LITERALS
           [structural]
      rule [const-wstring-found]:
           <k> Constant(WStringLiteral(S:KList)) => V ...</k>
-          <stringLiterals>... wstring(S:KList) |-> V:LValue ...</stringLiterals>
+          <stringLiterals>...
+               wstring(S:KList) |-> V:LValue
+          ...</stringLiterals>
           [structural]
 endmodule
 
@@ -475,15 +526,19 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 
      rule [builtin-application]:
           application'(functionPrototype(X:Id, T:KResult), L:KList)
-          => application'(functionObject(X:Id, T:KResult, handleBuiltin(X:Id, T:KResult)), L:KList)
+          => application'(functionObject(X:Id, T:KResult, 
+               handleBuiltin(X:Id, T:KResult)), L:KList)
           [structural]
           
      rule [function-application]:
-          <k> application'(functionObject(X:Id, t(_, functionType(R:Type, P:KList)), B:K), L:KList) ~> K:K 
+          <k> 
+               application'(functionObject(X:Id, 
+                    t(_, functionType(R:Type, P:KList)), B:K), L:KList) 
+                    ~> K:K 
                => sequencePoint
-               ~> populateFromGlobal
-               ~> bind(L:KList, P:KList)
-               ~> B:K
+                    ~> populateFromGlobal
+                    ~> bind(L:KList, P:KList)
+                    ~> B:K
           </k>
           <br/>
           <callStack> .List => ListItem(
@@ -530,18 +585,22 @@ module DYNAMIC-SEMANTICS-MEMBERS
                => lv(Loc:SymLoc +bits Offset:Int, T:KResult)
           ...</k>
           <structs>...
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
+               S:Id |-> aggregateInfo(_, 
+                    (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
      rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
-               => lv(Loc +bits Offset:Int, t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+               => lv(Loc +bits Offset:Int, 
+                    t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
           ...</k>
           <structs>...
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
+               S:Id |-> aggregateInfo(_, 
+                    (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
           
-     rule tv(L:KList, T:KResult) . F:Id => extractField(L:KList, T:KResult, F:Id)
+     rule tv(L:KList, T:KResult) . F:Id 
+          => extractField(L:KList, T:KResult, F:Id)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
@@ -633,26 +692,30 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
      rule CompoundLiteral(N:Int, T:KResult, K:K, Init:K)
-          => handleCompoundLiteral(figureInit(compoundLiteral(N:Int), DeclType(T:KResult, K:K), Init:K))
+          => handleCompoundLiteral(
+               figureInit(compoundLiteral(N:Int), 
+               DeclType(T:KResult, K:K), Init:K))
           [structural]
           
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
+     rule <k> 
+               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
                => allocateType(Loc, T:KResult)
-               ~> addToEnv(X:Id, Loc)
-               ~> giveType(X:Id, T:KResult)
-               ~> initialize(X:Id, T:KResult, Init:K)
-               ~> X:Id
+                    ~> addToEnv(X:Id, Loc)
+                    ~> giveType(X:Id, T:KResult)
+                    ~> initialize(X:Id, T:KResult, Init:K)
+                    ~> X:Id
           ...</k>
           <compoundLiteralMap> M:Map => M:Map[Loc / X:Id] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           when notBool X:Id in keys M:Map
           [structural]
           
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
+     rule <k> 
+               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
                => addToEnv(X, Loc)
-               ~> giveType(X, T)
-               ~> initialize(X, T, Init)
-               ~> X
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, Init)
+                    ~> X
           ...</k>
           <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
           [structural]
@@ -792,16 +855,21 @@ module DYNAMIC-SEMANTICS-SIZEOF
      \header{<stddef.h>} (and other headers).
      }*/
      
-     rule sizeofType(T:KResult) => cast(cfg:sizeut, byteSizeofType(T:KResult)) 
+     rule sizeofType(T:KResult)
+          => cast(cfg:sizeut, byteSizeofType(T:KResult)) 
           [structural]
      syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
-     rule byteSizeofType(T:KResult) => byteSizeofType-aux(bitSizeofType(T:KResult)) 
+     rule byteSizeofType(T:KResult)
+          => byteSizeofType-aux(bitSizeofType(T:KResult)) 
           [structural]
-     rule byteSizeofType-aux(tv(N:Int, T:KResult)) => tv(bitsToBytes(N:Int), T:KResult)
+     rule byteSizeofType-aux(tv(N:Int, T:KResult))
+          => tv(bitsToBytes(N:Int), T:KResult)
           [structural]
-     rule SizeofExpression(E:K) => sizeofType(typeof(E:K))
+     rule SizeofExpression(E:K)
+          => sizeofType(typeof(E:K))
           [structural]
-     rule SizeofType(T:KResult, K:K) => sizeofType(DeclType(T:KResult, K:K))
+     rule SizeofType(T:KResult, K:K)
+          => sizeofType(DeclType(T:KResult, K:K))
           [structural]
 endmodule
 
@@ -819,7 +887,8 @@ module DYNAMIC-SEMANTICS-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule Cast(T:KResult, K:K, V:KResult) => cast(DeclType(T:KResult, K:K), V:KResult)
+     rule Cast(T:KResult, K:K, V:KResult)
+          => cast(DeclType(T:KResult, K:K), V:KResult)
           [structural]
 endmodule
 
@@ -844,23 +913,29 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
      \cinline{a\%b} is undefined.
      }*/
      
-     rule tv(I1:Int, T:Type) * tv(I2:Int, T:Type) => arithInterpret(T, I1:Int *Int I2:Int)
+     rule tv(I1:Int, T:Type) * tv(I2:Int, T:Type)
+          => arithInterpret(T, I1:Int *Int I2:Int)
           when isPromoted(T)
           [structural]
-     rule tv(F1:Float, T:Type) * tv(F2:Float, T:Type) => arithInterpret(T, F1:Float *Float F2:Float)
+     rule tv(F1:Float, T:Type) * tv(F2:Float, T:Type)
+          => arithInterpret(T, F1:Float *Float F2:Float)
           [structural]
           
-     rule tv(I1:Bits, T:Type) / tv(I2:Int, T:Type) => arithInterpret(T, I1 /Bits I2)
+     rule tv(I1:Bits, T:Type) / tv(I2:Int, T:Type)
+          => arithInterpret(T, I1 /Bits I2)
           when isPromoted(T:Type) andBool I2 =/=Int 0
           [structural]
-     rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type) => arithInterpret(T, F1:Float /Float F2:Float)
+     rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type)
+          => arithInterpret(T, F1:Float /Float F2:Float)
           [structural]
      // fixme this seems out of place and strange
-     rule piece(unknown(N:Int), N) /Bits M:Int => piece(unknown(N), N)
+     rule piece(unknown(N:Int), N) /Bits M:Int
+          => piece(unknown(N), N)
           when M =/=Int 0
           [structural, anywhere]
           
-     rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type) => arithInterpret(T, I1 %Int I2)
+     rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
+          => arithInterpret(T, I1 %Int I2)
           when isPromoted(T)
                andBool (min(T) <=Int I1:Int /Int I2:Int) 
                andBool (max(T) >=Int I1:Int /Int I2:Int)
@@ -937,38 +1012,50 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
      }*/
      
      syntax K ::= "addToPointer" "(" SymLoc "," Type "," K "," K ")" [strict(4)]
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) + tv(I:Int, T:KResult)
-          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) 
+               + tv(I:Int, T:KResult)
+          => addToPointer(Loc, 
+               t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
-     rule tv(I:Int, T:KResult) + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
-          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
+     rule tv(I:Int, T:KResult) 
+               + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
+          => addToPointer(Loc, 
+               t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) - tv(I:Int, T:KResult)
-          => addToPointer(Loc, t(S:Set, pointerType(T':KResult)), 0 -Int I:Int, sizeofType(T':KResult)) 
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) 
+               - tv(I:Int, T:KResult)
+          => addToPointer(Loc, 
+               t(S:Set, pointerType(T':KResult)), 
+               0 -Int I:Int, sizeofType(T':KResult)) 
           when hasIntegerType(T:KResult)
                andBool T':KResult =/=K void
           [structural]
                
      rule addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))
-          => tv(Loc +bytes (I:Int *Int Size:Int), newFromArray(T:KResult, I:Int))
+          => tv(Loc +bytes (I:Int *Int Size:Int), 
+               newFromArray(T:KResult, I:Int))
           when ifFromArrayInBounds(T:KResult, I:Int)
           [structural]
           
      syntax KResult ::= newFromArray(K, Int) [function]
-     rule newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int) 
-          => t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), pointerType(T:KResult))
+     rule newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), 
+               pointerType(T:KResult)), I:Int) 
+          => t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), 
+               pointerType(T:KResult))
      rule newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
           => t(.Set, pointerType(T:KResult))
           
      syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
-     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
+     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
+               pointerType(T:KResult)), I:Int)
           => true
           when Offset:Int +Int I:Int <=Int Len:Int
-     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), pointerType(T:KResult)), I:Int)
+     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
+               pointerType(T:KResult)), I:Int)
           => false
           when Offset:Int +Int I:Int >Int Len:Int
      rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:Int)
@@ -995,26 +1082,34 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
      array object.
      }*/
 
-     syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")" [strict(3)] // ptr1, ptr2, size of ptr type
+     // ptr1, ptr2, size of ptr type
+     syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
+          [strict(3)]
      rule [start-pointer-difference]: 
-          tv(L1:SymLoc, t(_, pointerType(T:KResult))) - tv(L2:SymLoc, t(_, pointerType(T:KResult)))
+          tv(L1:SymLoc, t(_, pointerType(T:KResult)))
+               - tv(L2:SymLoc, t(_, pointerType(T:KResult)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
      rule [pointer-difference]: 
-          computePointerDifference(loc(Base:SymBase, Offset1:Int, 0), loc(Base:SymBase, Offset2:Int, 0), tv(Size:Int, _))
+          computePointerDifference(loc(Base:SymBase, Offset1:Int, 0),
+               loc(Base:SymBase, Offset2:Int, 0), tv(Size:Int, _))
           => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
           when (Offset1 -Int Offset2) %Int Size ==Int 0
           [structural]
      
-     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type) => arithInterpret(T, (I1:Int +Int I2:Int))
+     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
+          => arithInterpret(T, (I1:Int +Int I2:Int))
           when isPromoted(T)
           [structural]
-     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type) => arithInterpret(T, (I1:Int -Int I2:Int))
+     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
+          => arithInterpret(T, (I1:Int -Int I2:Int))
           when isPromoted(T)
           [structural]
-     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type) => arithInterpret(T, F1:Float +Float F2:Float)
+     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
+          => arithInterpret(T, F1:Float +Float F2:Float)
           [structural]
-     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type) => arithInterpret(T, (F1:Float -Float F2:Float))
+     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
+          => arithInterpret(T, (F1:Float -Float F2:Float))
           [structural]
 endmodule
 
@@ -1045,9 +1140,11 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
           when isPromoted(T:KResult) andBool isPromoted(T':KResult)
                andBool N:Int <Int numBits(T:KResult)
           [structural]
-     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
+     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult))
+          => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T:KResult)
-     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) => tv(I:Int, T:KResult)
+     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult))
+          => tv(I:Int, T:KResult)
           when hasSignedIntegerType(T:KResult)
                andBool I:Int <=Int max(T:KResult)
                andBool I:Int >=Int min(T:KResult)
@@ -1141,22 +1238,26 @@ module DYNAMIC-SEMANTICS-RELATIONAL
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
      rule [ptr-compare-lt]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) < tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               < tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
           => makeTruth(Offset:Int <Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
      rule [ptr-compare-lte]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) <= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               <= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
           => makeTruth(Offset:Int <=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
      rule [ptr-compare-gt]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) > tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               > tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
           => makeTruth(Offset:Int >Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
      rule [ptr-compare-gte]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) >= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
+          tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               >= tv(loc(Base:SymBase, Offset':Int, 0), T':KResult)
           => makeTruth(Offset:Int >=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
@@ -1255,11 +1356,13 @@ module DYNAMIC-SEMANTICS-EQUALITY
           
      // otherwise, there are a number of cases.  
      // First, they are part of the same object        
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) == tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               == tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
           => makeTruth(Offset:Int ==Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) != tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+               != tv(loc(Base:SymBase, Offset':Int, 0), T':KResult) 
           => makeTruth(Offset:Int =/=Int Offset':Int)
           when isPointerType(T:KResult) andBool isPointerType(T':KResult)
           [structural]
@@ -1269,7 +1372,9 @@ module DYNAMIC-SEMANTICS-EQUALITY
      // can conclude something.  if one of the objects is dead, we can't
      // conclude anything (the address could have been reused)
      rule [compare-eq-different-objects]: 
-          <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) == tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
+          <k> 
+               tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+                    == tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
                => tv(0, t(.Set, int))
           ...</k>
           <mem> ...
@@ -1282,7 +1387,9 @@ module DYNAMIC-SEMANTICS-EQUALITY
                andBool (Offset':Int <Int Len':Int)
           [structural]
      rule [compare-neq-different-objects]: 
-          <k> tv(loc(Base:SymBase, Offset:Int, 0), T:KResult) != tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
+          <k> 
+               tv(loc(Base:SymBase, Offset:Int, 0), T:KResult)
+                    != tv(loc(Base':SymBase, Offset':Int, 0), T':KResult) 
                => tv(1, t(.Set, int))
           ...</k>
           <mem> ...
@@ -1300,26 +1407,30 @@ module DYNAMIC-SEMANTICS-EQUALITY
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
      rule [equal-null-left]:
-          (tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
+          (tv(N:Int, T:KResult)
+          => tv(NullPointer, T':KResult)) == tv(_, T':KResult)
           when isPromoted(T:KResult)
                andBool isPointerType(T':KResult)
                andBool (N ==K NullPointerConstant)
           [structural]
      rule [equal-null-right]:
-          tv(_, T:KResult) == (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
+          tv(_, T:KResult) == (tv(N:Int, T':KResult)
+          => tv(NullPointer, T:KResult))
           when isPointerType(T:KResult) 
                andBool isPromoted(T':KResult)
                andBool N ==K NullPointerConstant
           [structural]
      
      rule [nequal-null-left]: 
-          (tv(N:Int, T:KResult) => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
+          (tv(N:Int, T:KResult)
+          => tv(NullPointer, T':KResult)) != tv(_, T':KResult)
           when isPromoted(T:KResult) 
                andBool isPointerType(T':KResult)
                andBool N ==K NullPointerConstant
           [structural]
      rule [nequal-null-right]: 
-          tv(_, T:KResult) != (tv(N:Int, T':KResult) => tv(NullPointer, T:KResult))
+          tv(_, T:KResult) != (tv(N:Int, T':KResult)
+          => tv(NullPointer, T:KResult))
           when isPointerType(T:KResult) 
                andBool isPromoted(T':KResult)
                andBool N ==K NullPointerConstant
@@ -1336,7 +1447,8 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if each of
      the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Bits, T:Type) & tv(I2:Bits, T:Type) => arithInterpret(T, I1 &Bits I2)
+     rule tv(I1:Bits, T:Type) & tv(I2:Bits, T:Type)
+          => arithInterpret(T, I1 &Bits I2)
           when isPromoted(T)
           [structural]
      
@@ -1347,7 +1459,8 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if exactly
      one of the corresponding bits in the converted operands is set).     
      }*/
-     rule tv(I1:Bits, T:Type) ^ tv(I2:Bits, T:Type) => arithInterpret(T, I1 xorBits I2)
+     rule tv(I1:Bits, T:Type) ^ tv(I2:Bits, T:Type)
+          => arithInterpret(T, I1 xorBits I2)
           when isPromoted(T)
           [structural]
           
@@ -1358,7 +1471,8 @@ module DYNAMIC-SEMANTICS-BITWISE
      operands (that is, each bit in the result is set if and only if at least
      one of the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Bits, T:Type) | tv(I2:Bits, T:Type) => arithInterpret(T, I1 |Bits I2)
+     rule tv(I1:Bits, T:Type) | tv(I2:Bits, T:Type)
+          => arithInterpret(T, I1 |Bits I2)
           when isPromoted(T)
           [structural]
 endmodule
@@ -1423,7 +1537,8 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      rule getTypes(L:KList) => types(wrapWithTypeOf(L:KList)) [structural]
      
      syntax KList ::=  wrapWithTypeOf(KList) [function]
-     rule wrapWithTypeOf((K:K,, L:KList)) => (retype(typeof(K:K)),, wrapWithTypeOf(L:KList))
+     rule wrapWithTypeOf((K:K,, L:KList))
+          => (retype(typeof(K:K)),, wrapWithTypeOf(L:KList))
      rule wrapWithTypeOf(.KList) => .KList
      
      syntax K ::= retype(K) [strict]
@@ -1456,7 +1571,8 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types((T1:KResult,, T2:KResult)) => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
+     rule (types((T1:KResult,, T2:KResult))
+          => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
                ~> E:K ? E1:K : E2:K
           when T1:KResult =/=K T2:KResult
                andBool isArithmeticType(T1)
@@ -1480,31 +1596,31 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      // semantics to handle this properly
      rule [conditional-left-is-null]:
           (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
-               ~> E:K ? tv(0, T1:KResult) : E2:K
+          ~> E:K ? tv(0, T1:KResult) : E2:K
           when hasIntegerType(T1:KResult)
                andBool isPointerType(T2:KResult)
           [structural]
      rule [conditional-right-is-null]:
           (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
-               ~> E:K ? E1:K : tv(0, T2:KResult)
+          ~> E:K ? E1:K : tv(0, T2:KResult)
           when hasIntegerType(T2:KResult)
                andBool isPointerType(T1:KResult)
           [structural]
           
      // fixme, this is wrong
      rule (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
-               ~> E:K ? E1:K : E2:K
+          ~> E:K ? E1:K : E2:K
           when isPointerType(T1:KResult)
                andBool isPointerType(T2:KResult)
           [structural]
           
      // this should take care of the void/struct cases
      rule (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
-               ~> E:K ? E1:K : E2:K
+          ~> E:K ? E1:K : E2:K
           when notBool isPointerType(T:KResult)
           [structural]
      rule convertedType(T:KResult) ~> E:K ? E1:K : E2:K
-               => IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
+          => IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
           [structural]
 endmodule
 

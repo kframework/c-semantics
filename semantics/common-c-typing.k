@@ -71,7 +71,9 @@ module COMMON-SEMANTICS-TYPE-DECLARATIONS
           
      rule <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
-          <gtypes>... Tu:K |-> map((M':Map => M':Map[T:KResult / X:Id])) ...</gtypes>
+          <gtypes>...
+               Tu:K |-> map((M':Map => M':Map[T:KResult / X:Id]))
+          ...</gtypes>
           <currTU> Tu:K </currTU>
           [structural]
      rule <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
@@ -85,34 +87,41 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
 
-     rule canonicalizeType(B:Bag) => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag)
+     rule canonicalizeType(B:Bag)
+          => canonicalizeType-aux(B:Bag, .K, .Bag, .Bag, .Bag)
           [structural]
 
      rule (. => DeclType(K1:K, K2:K))
-               ~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))), _, _, _, _) 
+               ~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))),
+               _, _, _, _) 
           [structural]
      rule (. => DeclType(K1:K, K2:K))
-               ~> canonicalizeType-aux((_:Bag BagItem(AlignasType(K1:K, K2:K))), _, _, _, _) 
+               ~> canonicalizeType-aux((_:Bag BagItem(AlignasType(K1:K, K2:K))),
+               _, _, _, _) 
           [structural]
      rule (. => typeof(K1:K))
-               ~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K1:K))), _, _, _, _) 
+               ~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K1:K))),
+               _, _, _, _) 
           [structural]
           
      syntax K ::= "atomic" "(" Type ")"
      syntax K ::= "alignas" "(" Type ")"
      
      rule (T:KResult => .)
-          ~> canonicalizeType-aux((_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, 
+          ~> canonicalizeType-aux(
+               (_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, 
                (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
      rule (T:KResult => .)
-          ~> canonicalizeType-aux((_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, 
+          ~> canonicalizeType-aux(
+               (_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, 
                (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
      rule (T:KResult => .)
-          ~> canonicalizeType-aux((_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, 
+          ~> canonicalizeType-aux(
+               (_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, 
                (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
@@ -156,7 +165,9 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
                orBool (T:K ==K ThreadLocal)
           [structural]
           
-     rule canonicalizeType-aux(.Bag, (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))), .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
+     rule canonicalizeType-aux(.Bag, 
+               (T:KResult => t(.Set, qualifiedType(T:KResult, Q:K))),
+               .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
           when (Q:K ==K Extern)
                orBool (Q:K ==K Static)
                orBool (Q:K ==K Volatile)
@@ -166,7 +177,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
                orBool (Q:K ==K Register)
                orBool (Q:K ==K ThreadLocal)
           [structural]
-     rule canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)), .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
+     rule canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)),
+               .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
           when (Q:K ==K Const)
           [structural]
           
@@ -203,7 +215,10 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
           when X:Id =/=K Identifier("")
           [structural]
      
-     rule <k> canonicalizeSpecifier(BagItem(L:KLabel(((Identifier("") => unnamed(N:Int)),, _)))) ...</k>
+     rule <k> 
+               canonicalizeSpecifier(BagItem(
+                    L:KLabel(((Identifier("") => unnamed(N:Int)),, _))))
+          ...</k>
           <freshNat> N:Int => N:Int +Int 1 </freshNat>
           when L:KLabel ==KLabel 'StructDef
                orBool L:KLabel ==KLabel 'EnumDef
@@ -227,7 +242,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      // fixme should save these for later use
      rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
 
-     rule canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)), (B:Bag => .Bag), _, _)
+     rule canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B:Bag)),
+               (B:Bag => .Bag), _, _)
           when B:Bag =/=Bag .Bag
           [structural]
           
@@ -239,23 +255,34 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      rule canonicalizeSpecifier(BagItem(Void)) => t(.Set, void)
      rule canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool)
      rule canonicalizeSpecifier(BagItem(Char)) => t(.Set, char)
-     rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char)) => t(.Set, signed-char)
-     rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char)) => t(.Set, unsigned-char)
+     rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char))
+          => t(.Set, signed-char)
+     rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char))
+          => t(.Set, unsigned-char)
      
      rule BagItem(atomic(_)) => .Bag [structural, anywhere]
      rule BagItem(alignas(_)) => .Bag [structural, anywhere]
      
-     rule canonicalizeSpecifier(BagItem(Double)) => t(.Set, double)
-     rule canonicalizeSpecifier(BagItem(Float)) => t(.Set, float)
-     rule canonicalizeSpecifier(BagItem(Long) BagItem(Double)) => t(.Set, long-double)
+     rule canonicalizeSpecifier(BagItem(Double))
+          => t(.Set, double)
+     rule canonicalizeSpecifier(BagItem(Float))
+          => t(.Set, float)
+     rule canonicalizeSpecifier(BagItem(Long) BagItem(Double))
+          => t(.Set, long-double)
 
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Double)) => t(SetItem(Complex), double)
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Float)) => t(SetItem(Complex), float)
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double)) => t(SetItem(Complex), long-double)
+     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Double))
+          => t(SetItem(Complex), double)
+     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Float))
+          => t(SetItem(Complex), float)
+     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double))
+          => t(SetItem(Complex), long-double)
 
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double)) => t(SetItem(Imaginary), double)
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float)) => t(SetItem(Imaginary), float)
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double)) => t(SetItem(Imaginary), long-double)
+     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double))
+          => t(SetItem(Imaginary), double)
+     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float))
+          => t(SetItem(Imaginary), float)
+     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double))
+          => t(SetItem(Imaginary), long-double)
 
      rule canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
           when (B:Bag ==Bag BagItem(Short))
@@ -290,11 +317,13 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
           when (B:Bag ==Bag BagItem(Long) BagItem(Long))
                orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long))
                orBool (B:Bag ==Bag BagItem(Long) BagItem(Long) BagItem(Int))
-               orBool (B:Bag ==Bag BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag
+                    BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int))
           [structural]
      rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-long-int)
           when (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long))
-               orBool (B:Bag ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int))
+               orBool (B:Bag ==Bag
+                    BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int))
           [structural]
 endmodule
 
@@ -306,7 +335,8 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      rule Specifier(klist(L:KList)) => canonicalizeType(toBag(L))
           [structural]
           
-     rule BitFieldType(T:KResult, tv(N:Int, _)) => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
+     rule BitFieldType(T:KResult, tv(N:Int, _))
+          => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
      
      syntax KLabel ::= "makeArrayType" "(" Int ")"
      syntax KLabel ::= "makeFunctionType" "(" KList ")"
@@ -319,15 +349,21 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           => pushTypeDown(T:KResult, makeArrayType(N:Int)) 
           when N:Int >Int 0
           [structural, anywhere]
-     rule ArrayType(T:KResult, emptyValue, _) => pushTypeDown(T:KResult, makeIncompleteArrayType) [structural, anywhere]
-     rule PointerType(T:KResult) => pushTypeDown(T:KResult, makePointerType) [structural, anywhere]
+     rule ArrayType(T:KResult, emptyValue, _)
+          => pushTypeDown(T:KResult, makeIncompleteArrayType)
+          [structural, anywhere]
+     rule PointerType(T:KResult)
+          => pushTypeDown(T:KResult, makePointerType)
+          [structural, anywhere]
      // fixme I'm assuming functiontype is always below a prototype in the ast
-     rule FunctionType(T:KResult) => T:KResult [structural, anywhere]
+     rule FunctionType(T:KResult) => T:KResult
+          [structural, anywhere]
      rule Prototype(T:KResult, krlist(L:KList), false) 
           => pushTypeDown(T:KResult, makeFunctionType(L:KList)) 
           [structural, anywhere]
      rule Prototype(T:KResult, krlist(L:KList), true) 
-          => pushTypeDown(T:KResult, makeFunctionType((L:KList,, t(.Set, variadic)))) 
+          => pushTypeDown(T:KResult,
+               makeFunctionType((L:KList,, t(.Set, variadic)))) 
           [structural, anywhere]
      
      rule [pushdown-array]: 
@@ -364,25 +400,33 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           when isBasicType(T:KResult)
           [structural]
      
-     rule makeArrayType(N:Int)(T:KResult) => t(.Set, arrayType(T:KResult, N:Int)) 
+     rule makeArrayType(N:Int)(T:KResult)
+          => t(.Set, arrayType(T:KResult, N:Int)) 
           [structural, anywhere]
-     rule makeFunctionType(L:KList)(T:KResult) => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList))) 
+     rule makeFunctionType(L:KList)(T:KResult)
+          => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList))) 
           [structural, anywhere]
-     rule makePointerType(T:KResult) => t(.Set, pointerType(T:KResult))
+     rule makePointerType(T:KResult)
+          => t(.Set, pointerType(T:KResult))
           [structural, anywhere]
-     rule makeIncompleteArrayType(T:KResult) => t(.Set, incompleteArrayType(T:KResult))
+     rule makeIncompleteArrayType(T:KResult)
+          => t(.Set, incompleteArrayType(T:KResult))
           [structural, anywhere]
      
      syntax KList ::= giveNamesToArgs(KList) [function]
      syntax KList ::= "giveNamesToArgs-aux" "(" Int "," KList ")" [function]
      
      rule giveNamesToArgs(L:KList) => giveNamesToArgs-aux(0, L:KList)
-     rule giveNamesToArgs-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList))
-          => typedDeclaration(T:KResult, X:Id),, giveNamesToArgs-aux(N:Int, L:KList)
+     rule giveNamesToArgs-aux(N:Int, 
+               (typedDeclaration(T:KResult, X:Id),, L:KList))
+          => typedDeclaration(T:KResult, X:Id),,
+               giveNamesToArgs-aux(N:Int, L:KList)
           when X:Id =/=K #NoName
           [structural]
-     rule giveNamesToArgs-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList))
-          => typedDeclaration(T:KResult, #NoName(N:Int)),, giveNamesToArgs-aux(N:Int +Int 1, L:KList)
+     rule giveNamesToArgs-aux(N:Int, 
+               (typedDeclaration(T:KResult, X:Id),, L:KList))
+          => typedDeclaration(T:KResult, #NoName(N:Int)),,
+               giveNamesToArgs-aux(N:Int +Int 1, L:KList)
           when X:Id ==K #NoName
           [structural]
      rule giveNamesToArgs-aux(_:Int, t(.Set, variadic))
@@ -397,30 +441,36 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           [structural]
 
      syntax K ::= "extractActualTypeFreezer"
-     rule <k> DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer ...</k>
+     rule <k>
+               DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer
+          ...</k>
           <declarationTypeHolder> (. => T:KResult) ...</declarationTypeHolder>
           [structural]
      
      rule T:KResult ~> extractActualTypeFreezer 
-          => extractActualType(T:KResult)
+          => extractActualType(T)
           [structural]
           
      syntax KList ::= fillUnionBitHoles(KList) [function]
      syntax KList ::= "fillUnionBitHoles-aux" "(" Int "," KList ")" [function]
      rule fillUnionBitHoles(.KList) => .KList
-     rule fillUnionBitHoles((K:K,, L:KList)) => fillUnionBitHoles-aux(0, (K:K,, L:KList))
-     rule fillUnionBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList)) 
-          => typedDeclaration(T:KResult, X:Id)
-          ,, fillUnionBitHoles-aux(N:Int, L:KList)
+     rule fillUnionBitHoles((K:K,, L:KList)) 
+          => fillUnionBitHoles-aux(0, (K:K,, L:KList))
+     rule fillUnionBitHoles-aux(N:Int, 
+               (typedDeclaration(T:KResult, X:Id),, L:KList)) 
+          => typedDeclaration(T:KResult, X:Id),, 
+               fillUnionBitHoles-aux(N:Int, L:KList)
           when notBool isBitfieldType(T:KResult)
           [structural]
-     rule fillUnionBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
-          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id)
-          ,, fillUnionBitHoles-aux(maxInt(N:Int, N':Int), L:KList)
+     rule fillUnionBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, 
+               bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
+          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, 
+               fillUnionBitHoles-aux(maxInt(N:Int, N':Int), L:KList)
           [structural]
      rule fillUnionBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               N:Int +Int (absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte))), #NoName)
+               N:Int +Int (absInt(numBitsPerByte -Int 
+               (N:Int %Int numBitsPerByte)) %Int numBitsPerByte))), #NoName)
           [structural]
      
      syntax KList ::= fillBitHoles(KList) [function]
@@ -445,45 +495,54 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      rule [fillBitHoles-aux-not-bitfield]:
           fillBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
-          ,, fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList))
+               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) 
+               %Int numBitsPerByte)), #NoName),,
+               fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList))
           when notBool isBitfieldType(T:KResult) 
           [structural]
      
      rule [fillBitHoles-aux-bitfield-normal]:
-          fillBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
-          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id)
-          ,, fillBitHoles-aux(N:Int +Int N':Int, L:KList)
+          fillBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, 
+               bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
+          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, 
+               fillBitHoles-aux(N:Int +Int N':Int, L:KList)
           when N':Int =/=Int 0 
           [structural]
           
      rule [fillBitHoles-bitfield-zero]:
-          fillBitHoles-aux(N:Int, (typedDeclaration(t(_, bitfieldType(T:KResult, N':Int)), _:Id),, L:KList)) 
+          fillBitHoles-aux(N:Int, (typedDeclaration(t(_, 
+               bitfieldType(T:KResult, N':Int)), _:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName)
-          ,, fillBitHoles(L:KList)
+               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) 
+               %Int numBitsPerByte)), #NoName),, 
+               fillBitHoles(L:KList)
           when N':Int ==Int 0
           [structural]
      
      rule [fillBitHoles-done]:
           fillBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) %Int numBitsPerByte)), #NoName) 
+               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte))
+               %Int numBitsPerByte)), #NoName) 
           [structural]
      
-     rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName)
-          ,, typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
-          => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), N:Int +Int N':Int)), #NoName) 
+     rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName),,
+               typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
+          => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
+               N:Int +Int N':Int)), #NoName) 
           [structural, anywhere]
      
      // fixme chould check for some struct contraints here
      syntax KList ::= incompleteToFlexibleArrayMember(KList) [function]
 
-     rule incompleteToFlexibleArrayMember((typedDeclaration(T:KResult, X:Id),, L:KList))
-          => typedDeclaration(T:KResult, X:Id),, incompleteToFlexibleArrayMember(L:KList) 
+     rule incompleteToFlexibleArrayMember((typedDeclaration(T:KResult, X:Id),, 
+               L:KList))
+          => typedDeclaration(T:KResult, X:Id),, 
+               incompleteToFlexibleArrayMember(L:KList)
           when notBool isIncompleteType(T:KResult) 
           [structural]
-     rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set, incompleteArrayType(T:KResult)), X:Id)) 
+     rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set,
+               incompleteArrayType(T:KResult)), X:Id)) 
           => typedDeclaration(t(S:Set, flexibleArrayType(T:KResult)), X:Id) 
           [structural]
      rule incompleteToFlexibleArrayMember(.KList) => .KList
@@ -609,7 +668,8 @@ module COMMON-SEMANTICS-TYPE-MISC
           [structural]
           
      rule [typeCompatible-declarations]:
-          isTypeCompatible(typedDeclaration(T:KResult, _:Id), typedDeclaration(T':KResult, _:Id))
+          isTypeCompatible(typedDeclaration(T:KResult, _:Id), 
+               typedDeclaration(T':KResult, _:Id))
           => isTypeCompatible(T:KResult, T':KResult) 
           [structural]
      rule [typeCompatible-prototypes]:
@@ -636,23 +696,28 @@ module COMMON-SEMANTICS-TYPE-MISC
           [structural]
 
      rule [typeCompatible-function-void-left]:
-          isTypeCompatible(t(_, functionType(T1:KResult, typedDeclaration(t(_, void), _:Id))),
+          isTypeCompatible(t(_, functionType(T1:KResult, 
+               typedDeclaration(t(_, void), _:Id))),
                t(_, functionType(T2:KResult, .KList)))
           => isTypeCompatible(T1:KResult, T2:KResult) 
           [structural]
      rule [typeCompatible-function-void-right]:
           isTypeCompatible(t(_, functionType(T1:KResult, .KList)),
-               t(_, functionType(T2:KResult, typedDeclaration(t(_, void), _:Id))))
+               t(_, functionType(T2:KResult, 
+               typedDeclaration(t(_, void), _:Id))))
           => isTypeCompatible(T1:KResult, T2:KResult) 
           [structural]
      rule [typeCompatible-function]:
-          isTypeCompatible(t(S:Set, functionType(T1:KResult, (T':KResult,, L:KList))),
+          isTypeCompatible(t(S:Set, functionType(T1:KResult, 
+               (T':KResult,, L:KList))),
                t(S':Set, functionType(T2:KResult, (T'':KResult,, L':KList))))
-          => isTypeCompatible(t(S:Set, functionType(T1:KResult, L:KList)), t(S':Set, functionType(T2:KResult, L':KList)))
+          => isTypeCompatible(t(S:Set, functionType(T1:KResult, L:KList)),
+               t(S':Set, functionType(T2:KResult, L':KList)))
                andBool isTypeCompatible(T':KResult, T'':KResult) 
           [structural]
      rule [typeCompatible-incompleteArray-nil]:
-          isTypeCompatible(t(_, functionType(T1:KResult, .KList)), t(_, functionType(T2:KResult, .KList)))
+          isTypeCompatible(t(_, functionType(T1:KResult, .KList)),
+               t(_, functionType(T2:KResult, .KList)))
           => isTypeCompatible(T1:KResult, T2:KResult) 
           [structural]
      rule isTypeCompatible(T:KResult, T':KResult) => true
@@ -663,15 +728,20 @@ module COMMON-SEMANTICS-TYPE-MISC
      syntax K ::= "addGlobalAggregate" "(" Id "," K ")"
      syntax K ::= "addLocalAggregate" "(" Id "," K ")"
      
-     syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")" [strict(3)]
+     syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")"
+          [strict(3)]
      syntax K ::= "addUnion-aux" "(" Id "," KList "," Map "," Map "," KList ")"
 
-     // TODO(chathhorn): why the hell was this necessary? this has got to be a BUG.
-     rule addStruct-aux(A, B, K, C, D, E) => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
-     rule K:KResult ~> addStruct-aux(A, B, HOLE, C, D, E) => addStruct-aux(A, B, K, C, D, E) [cool]
+     // TODO(chathhorn): why the hell was this necessary? this has got to be a
+     // BUG.
+     rule addStruct-aux(A, B, K, C, D, E) 
+          => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
+     rule K:KResult ~> addStruct-aux(A, B, HOLE, C, D, E)
+          => addStruct-aux(A, B, K, C, D, E) [cool]
 
      rule addStruct(S:Id, L:KList) 
-          => addStruct-aux(S:Id, L:KList, tv(0, cfg:largestUnsigned), .Map, .Map, L:KList)
+          => addStruct-aux(S:Id, L:KList,
+               tv(0, cfg:largestUnsigned), .Map, .Map, L:KList)
           when L:KList =/=KList .KList
           [structural]
      rule addStruct-aux(
@@ -682,14 +752,17 @@ module COMMON-SEMANTICS-TYPE-MISC
                , Offsets:Map
                , L':KList
           ) 
-          => addStruct-aux(S, L, V + bitSizeofType(T:KResult), Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
+          => addStruct-aux(S, L, V + bitSizeofType(T:KResult),
+               Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
           [structural]
-     rule <k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
-               => #if (F:Id ==K file-scope) #then 
-                    (addGlobalAggregate(S:Id, aggregateInfo(L:KList, Types:Map, Offsets:Map))) 
-               #else
-                    (addLocalAggregate(S:Id, aggregateInfo(L:KList, Types:Map, Offsets:Map)))
-               #fi
+     rule <k> 
+               addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
+               => #if (F:Id ==K file-scope) 
+                    #then (addGlobalAggregate(S:Id, 
+                         aggregateInfo(L:KList, Types:Map, Offsets:Map))) 
+                    #else (addLocalAggregate(S:Id, 
+                         aggregateInfo(L:KList, Types:Map, Offsets:Map)))
+                    #fi
           ...</k>
           <currentFunction> F:Id </currentFunction>
           [structural]        
@@ -705,14 +778,18 @@ module COMMON-SEMANTICS-TYPE-MISC
                , Offsets:Map
                , L':KList
           ) 
-          => addUnion-aux(S:Id, L, Types:Map[T:KResult / Field:Id], Offsets:Map[0 / Field:Id], L':KList)
+          => addUnion-aux(S:Id, L,
+               Types:Map[T:KResult / Field:Id], Offsets:Map[0 / Field:Id],
+               L':KList)
           [structural]
-     rule <k> addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
-               => #if (F:Id ==K file-scope) #then 
-                    (addGlobalAggregate(S:Id, aggregateInfo(L, Types:Map, Offsets:Map))) 
-               #else
-                    (addLocalAggregate(S:Id, aggregateInfo(L, Types:Map, Offsets:Map)))
-               #fi
+     rule <k> 
+               addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
+               => #if (F:Id ==K file-scope)
+                    #then (addGlobalAggregate(S:Id,
+                         aggregateInfo(L, Types:Map, Offsets:Map))) 
+                    #else (addLocalAggregate(S:Id,
+                         aggregateInfo(L, Types:Map, Offsets:Map)))
+                    #fi
           ...</k>
           <currentFunction> F:Id </currentFunction>
           [structural]
@@ -745,7 +822,9 @@ module COMMON-SEMANTICS-TYPE-MISC
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isCharType-char]: isCharType(t(_, char)) => true 
-     rule [isCharType-qualified]: isCharType(t(_, qualifiedType(T:KResult, _))) => isCharType(T:KResult) 
+     rule [isCharType-qualified]:
+          isCharType(t(_, qualifiedType(T:KResult, _)))
+          => isCharType(T:KResult) 
      rule [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true 
      rule [isCharType-signed-char]: isCharType(t(_, signed-char)) => true 
      rule [isCharType-other]: isCharType(t(_, T:K)) => false
@@ -761,47 +840,69 @@ module COMMON-SEMANTICS-TYPE-MISC
           when (T:K =/=K simpleType(cfg:wcharut))
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
           
-     rule [isWCharType-qualified]: isWCharType(t(_, qualifiedType(T:KResult, _))) => isWCharType(T:KResult) 
+     rule [isWCharType-qualified]:
+          isWCharType(t(_, qualifiedType(T:KResult, _)))
+          => isWCharType(T:KResult) 
      
      rule [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true 
-     rule [isPointerType-qualified]: isPointerType(t(_, qualifiedType(T:KResult, _))) => isPointerType(T:KResult) 
+     rule [isPointerType-qualified]:
+          isPointerType(t(_, qualifiedType(T:KResult, _)))
+          => isPointerType(T:KResult) 
      rule [isPointerType-other]: isPointerType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'pointerType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      
      rule [isBoolType-bool]: isBoolType(t(_, bool)) => true 
-     rule [isBoolType-qualifiedType]: isBoolType(t(_, qualifiedType(T:KResult, _))) => isBoolType(T:KResult) 
+     rule [isBoolType-qualifiedType]:
+          isBoolType(t(_, qualifiedType(T:KResult, _)))
+          => isBoolType(T:KResult) 
      rule [isBoolType-other]: isBoolType(t(_, T:K)) => false
           when (T:K =/=K bool)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
      rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
-     rule [isArrayType-incompleteArray]: isArrayType(t(_, incompleteArrayType(_))) => true 
-     rule [isArrayType-flexibleArray]: isArrayType(t(_, flexibleArrayType(_))) => true 
-     rule [isArrayType-qualified]: isArrayType(t(_, qualifiedType(T:KResult, _))) => isArrayType(T:KResult) 
+     rule [isArrayType-incompleteArray]:
+          isArrayType(t(_, incompleteArrayType(_)))
+          => true 
+     rule [isArrayType-flexibleArray]:
+          isArrayType(t(_, flexibleArrayType(_)))
+          => true 
+     rule [isArrayType-qualified]:
+          isArrayType(t(_, qualifiedType(T:KResult, _)))
+          => isArrayType(T:KResult) 
      rule [isArrayType-other]: isArrayType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'arrayType)
                andBool (getKLabel(T:K) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T:K) =/=KLabel 'flexibleArrayType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-     rule isAggregateType(T:KResult) => isArrayType(T:KResult) orBool isStructType(T:KResult) 
+     rule isAggregateType(T:KResult)
+          => isArrayType(T:KResult) orBool isStructType(T:KResult) 
           
-     rule [isStructType-struct]: isStructType(t(_, structType(_:Id))) => true 
-     rule [isStructType-qualified]: isStructType(t(_, qualifiedType(T:KResult, _))) => isStructType(T:KResult) 
+     rule [isStructType-struct]:
+          isStructType(t(_, structType(_:Id))) => true 
+     rule [isStructType-qualified]:
+          isStructType(t(_, qualifiedType(T:KResult, _)))
+          => isStructType(T:KResult) 
      rule [isStructType-other]: isStructType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'structType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
           
      rule [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
-     rule [isUnionType-qualified]: isUnionType(t(_, qualifiedType(T:KResult, _))) => isUnionType(T:KResult) 
+     rule [isUnionType-qualified]:
+          isUnionType(t(_, qualifiedType(T:KResult, _)))
+          => isUnionType(T:KResult) 
      rule [isUnionType-other]: isUnionType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'unionType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
 
-     rule [isIncompleteType-true]: isIncompleteType(t(_, incompleteArrayType(_))) => true 
-     rule [isIncompleteType-qualified]: isIncompleteType(t(_, qualifiedType(T:KResult, _))) => isIncompleteType(T:KResult) 
+     rule [isIncompleteType-true]:
+          isIncompleteType(t(_, incompleteArrayType(_)))
+          => true 
+     rule [isIncompleteType-qualified]:
+          isIncompleteType(t(_, qualifiedType(T:KResult, _)))
+          => isIncompleteType(T:KResult) 
      rule [isIncompleteType-false]: isIncompleteType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType )
@@ -815,13 +916,14 @@ module COMMON-SEMANTICS-TYPE-MISC
           
      rule [isStaticType-qualified]: 
           isStaticType(t(_, qualifiedType(T:KResult, K:K))) 
-               => #if (K:K ==K Static) #then (true) #else (isStaticType(T:KResult)) #fi
+          => #if (K:K ==K Static) #then (true) #else (isStaticType(T:KResult)) #fi
           
      rule [isStaticType-false]: isStaticType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
           
      rule [isConstType-qualified]: 
-          isConstType(t(_, qualifiedType(T:KResult, K:K))) => isConstType(T:KResult)
+          isConstType(t(_, qualifiedType(T:KResult, K:K)))
+          => isConstType(T:KResult)
           
      rule [isConstType-false]: 
           isConstType(t(S:Set, T:K)) => false
@@ -831,28 +933,46 @@ module COMMON-SEMANTICS-TYPE-MISC
      rule [isConstType-true]: 
           isConstType(t(SetItem(Const) _, T:K)) => true
           
-     rule [isBitfieldType-true]: isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
+     rule [isBitfieldType-true]:
+          isBitfieldType(t(_, bitfieldType(_, _:Int)))
+          => true 
      rule [isBitfieldType-false]: isBitfieldType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'bitfieldType
           
-     rule [isFunctionType-true]: isFunctionType(t(_, functionType(_, _:KList))) => true 
-     rule [isFunctionType-prototype]: isFunctionType(t(_, prototype(T:KResult))) => isFunctionType(T:KResult) 
-     rule [isFunctionType-qualified]: isFunctionType(t(_, qualifiedType(T:KResult, _))) => isFunctionType(T:KResult) 
+     rule [isFunctionType-true]:
+          isFunctionType(t(_, functionType(_, _:KList)))
+          => true 
+     rule [isFunctionType-prototype]:
+          isFunctionType(t(_, prototype(T:KResult)))
+          => isFunctionType(T:KResult) 
+     rule [isFunctionType-qualified]:
+          isFunctionType(t(_, qualifiedType(T:KResult, _)))
+          => isFunctionType(T:KResult) 
      rule [isFunctionType-false]: isFunctionType(t(_, T:K)) => false
           when (getKLabel(T:K) =/=KLabel 'functionType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
                andBool (getKLabel(T:K) =/=KLabel 'prototype)
           
-     rule [isFunctionPointerType-fp]: isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _:KList))))) => true 
-     rule [isFunctionPointerType-qualified]: isFunctionPointerType(t(_, qualifiedType(T:KResult, _))) => isFunctionPointerType(T:KResult) 
+     rule [isFunctionPointerType-fp]:
+          isFunctionPointerType(t(_, pointerType(t(_,
+               functionType(_, _:KList)))))
+          => true 
+     rule [isFunctionPointerType-qualified]:
+          isFunctionPointerType(t(_, qualifiedType(T:KResult, _)))
+          => isFunctionPointerType(T:KResult) 
      rule [isFunctionPointerType-qualified-pointer]: 
-          isFunctionPointerType(t(_, pointerType(t(_, qualifiedType(T:KResult, _))))) 
-          => isFunctionPointerType(t(.Set, pointerType(T:KResult))) 
-     rule [isFunctionPointerType-notPointer]: isFunctionPointerType(t(_, T:K)) => false
+          isFunctionPointerType(t(_, pointerType(t(_,
+               qualifiedType(T:KResult, _))))) 
+          => isFunctionPointerType(t(.Set, pointerType(T))) 
+     rule [isFunctionPointerType-notPointer]:
+          isFunctionPointerType(t(_, T:K))
+          => false
           when (getKLabel(T:K) =/=KLabel 'pointerType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-     rule [isFunctionPointerType-notFunction]: isFunctionPointerType(t(_, pointerType(t(_, T:K)))) => false
+     rule [isFunctionPointerType-notFunction]:
+          isFunctionPointerType(t(_, pointerType(t(_, T:K))))
+          => false
           when (getKLabel(T:K) =/=KLabel 'functionType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
@@ -862,13 +982,15 @@ module COMMON-SEMANTICS-TYPE-MISC
      // comprises the real types, the complex type domain comprises the complex
      // types. 
      // */
-     rule isArithmeticType(T:KResult) => hasIntegerType(T:KResult) orBool isFloatType(T:KResult)
+     rule isArithmeticType(T:KResult)
+          => hasIntegerType(T:KResult) orBool isFloatType(T:KResult)
 
      rule unqualifyType(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
      rule unqualifyType(t(_:Set, T:K)) => t(.Set, T:K)
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
           
-     rule removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _))) => T:KResult 
+     rule removeStorageSpecifiers(t(_:Set, qualifiedType(T:KResult, _)))
+          => T:KResult 
      rule removeStorageSpecifiers(t(S:Set, T:K)) => t(S:Set, T:K)
           when getKLabel(T:K) =/=KLabel 'qualifiedType
           

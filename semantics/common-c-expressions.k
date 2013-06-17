@@ -8,5 +8,5 @@ endmodule
 module COMMON-C-EXPRESSIONS
      imports COMMON-SEMANTICS-EXPRESSIONS-INCLUDE
 
-     rule NothingExpression => emptyValue [structural, anywhere]
+     rule NothingExpression => emptyValue
 endmodule
