@@ -187,7 +187,7 @@ module DYNAMIC-SEMANTICS-LITERALS
           #fi #fi #fi #fi #fi #fi
           [structural, anywhere]
 
-     rule ConstU(hexOrOctalConstant(I:Int)) =>
+     rule LitU(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
           #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
@@ -195,7 +195,7 @@ module DYNAMIC-SEMANTICS-LITERALS
           #fi #fi #fi
           [structural, anywhere]
           
-     rule ConstL(hexOrOctalConstant(I:Int)) =>
+     rule LitL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
           #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
           #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
@@ -204,51 +204,51 @@ module DYNAMIC-SEMANTICS-LITERALS
           #fi #fi #fi #fi
           [structural, anywhere]
           
-     rule ConstUL(hexOrOctalConstant(I:Int)) =>
+     rule LitUL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
           
-     rule ConstLL(hexOrOctalConstant(I:Int)) =>
+     rule LitLL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
      
-     rule ConstULL(hexOrOctalConstant(I:Int)) =>
+     rule LitULL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
           
-     rule ConstU(DecimalConstant(I:Int)) =>
+     rule LitU(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-int) #then tv(I:Int, t(.Set, unsigned-int)) #else
           #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
-     rule ConstL(DecimalConstant(I:Int)) =>
+     rule LitL(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, long-int) #then tv(I:Int, t(.Set, long-int)) #else
           #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
-     rule ConstUL(DecimalConstant(I:Int)) =>
+     rule LitUL(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-long-int) #then tv(I:Int, t(.Set, unsigned-long-int)) #else
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi #fi        
           [structural, anywhere]
-     rule ConstLL(DecimalConstant(I:Int)) =>
+     rule LitLL(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, long-long-int) #then tv(I:Int, t(.Set, long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi
           [structural, anywhere]
-     rule ConstULL(DecimalConstant(I:Int)) =>
+     rule LitULL(DecimalConstant(I:Int)) =>
           #if withinRange(I:Int, unsigned-long-long-int) #then tv(I:Int, t(.Set, unsigned-long-long-int)) #else
                tv(I:Int, t(.Set, no-type))
           #fi
@@ -266,9 +266,9 @@ module DYNAMIC-SEMANTICS-LITERALS
      
      rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
           [structural, anywhere]
-     rule ConstL(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
           [structural, anywhere]
-     rule ConstF(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
+     rule LitF(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
