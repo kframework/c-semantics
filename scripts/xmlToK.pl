@@ -174,12 +174,6 @@ sub elementToK {
 		$label = "klist";
 		$prefix = '(_`(_`)(KList2KLabel_(';
 		$suffix = '), .KList))';
-	# } elsif ($label eq 'Identifier') {
-		# $reader->nextElement;
-		# my $rawData = getRawData($reader);
-		# my $ident = 'Identifier' . paren($rawData);
-		# my $id = paren($ident);
-		# return ($inNextState, $id);
 	} elsif ($label eq 'WStringLiteral') {
 		$reader->nextElement;
 		$reader->read;
@@ -277,7 +271,7 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = '_`(_`)(kList("\'klist"), (';
+	my $retval = '_`(_`)(KList2KLabel_((';
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
 	for my $c (@charArray) {
@@ -290,7 +284,7 @@ sub escapeWString {
 		$retval .= "$RAT $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
 	}
 	
-	$retval .= ".KList))";
+	$retval .= ".KList)), .KList)";
 	return $retval;
 }
 

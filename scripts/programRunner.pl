@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 use POSIX;
 use strict;
 use File::Spec::Functions qw(rel2abs catfile);
