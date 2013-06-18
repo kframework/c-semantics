@@ -35,8 +35,8 @@ module DYNAMIC-SEMANTICS-BLOCKS
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.
      }*/
-     rule BlockStatement(Block:K)
-          => pushBlock ~> Block:K ~> popBlock
+     rule BlockStatement(B:K)
+          => pushBlock ~> B ~> popBlock
           [structural]
           
      rule [push-block]:
@@ -401,11 +401,11 @@ module DYNAMIC-SEMANTICS-GOTO
 
      // declaration stack, actual local variables
      syntax K ::= "processGotoSameBlock" "(" List "," List ")"
-     rule <k> Goto(Label:K) ~> _ => processGoto(GotoInfo:K) </k>
+     rule <k> Goto(Lbl:K) ~> _ => processGoto(GotoInfo:K) </k>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
           <gotoMap>... 
-               kpair(Tu:K, F:Id) |-> map((_ (Label:K |-> GotoInfo:K))) 
+               kpair(Tu:K, F:Id) |-> map((_ (Lbl:K |-> GotoInfo:K))) 
           ...</gotoMap>
           [structural]  // rule so that looping programs see repetition
           

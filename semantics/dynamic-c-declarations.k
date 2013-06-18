@@ -92,21 +92,22 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
      syntax KList ::= promoteList(KList) [function]
      rule [promoteList-needs-promoting]: 
           promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
-          => cast(argPromote(t(S:Set, T:K)), 
-               tv(V:KList, t(S:Set, T:K))),, promoteList(L:KList)
-          when (T:K ==K float)
-               orElseBool (((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) 
-                    orBool isBitfieldType(t(S:Set, T:K))) 
-                    andBool hasIntegerType(t(S:Set, T:K))) 
+          => cast(argPromote(t(S, T)), tv(V, t(S, T))),, promoteList(L)
+          when (T ==K float) 
+               orElseBool (hasIntegerType(t(S:Set, T:K)) 
+                    andBool ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) 
+                         orElseBool isBitfieldType(t(S:Set, T:K))))
+
      rule [promoteList-promoted]: 
           promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
-          => (tv(V:KList, t(S:Set, T:K)),, promoteList(L:KList))
-          when ((notBool(hasIntegerType(t(S:Set, T:K))) 
-                    andBool (notBool T:K ==K float)
-                    andBool (notBool isArrayType(t(S:Set, T:K)))) 
-               orBool (T:K ==K double)
-               orBool (T:K ==K long-double))
-               orElseBool (rank(t(S:Set, T:K)) >=Int rank(t(.Set, int)))
+          => (tv(V, t(S, T)),, promoteList(L))
+          when ((notBool(hasIntegerType(t(S, T))) 
+                    andBool (notBool T ==K float)
+                    andBool (notBool isArrayType(t(S, T)))) 
+               orBool (T ==K double)
+               orBool (T ==K long-double))
+               orElseBool (rank(t(S, T)) >=Int rank(t(.Set, int)))
+
      rule promoteList(.KList) => .KList
      
      syntax K ::= "bindVariadic" "(" SymLoc "," KList ")"
@@ -163,9 +164,9 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           [structural] 
 
      rule <k>
-               zero(Name:K) => zeroType(Name:K, unqualifyType(T:KResult))
+               zero(Sym:K) => zeroType(Sym, unqualifyType(T))
           ...</k>
-          <types>... Name:K |-> T:KResult ...</types>
+          <types>... Sym |-> T:KResult ...</types>
           [structural] 
           
      syntax K ::= "zeroType" "(" K "," Type ")"
@@ -210,14 +211,14 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           ...</structs> 
           [structural] 
           
-     rule zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
-          => zeroType(Name:K . F:Id, T:KResult) ~> zeroStruct(Name:K, L:KList) 
+     rule zeroStruct(Sym:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
+          => zeroType(Sym:K . F:Id, T:KResult) ~> zeroStruct(Sym:K, L:KList) 
           [structural] 
      rule zeroStruct(_, .KList) => .
           [structural] 
 
-     rule zeroType(Name:K, T:KResult) 
-               => Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult))
+     rule zeroType(Sym:K, T:KResult) 
+               => Computation(AllowWrite(Sym:K) := tv(NullPointer, T:KResult))
           when isPointerType(T:KResult)
           [structural]
      rule zeroType(_, T:KResult) => .
@@ -225,9 +226,9 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           [structural]
           
      // fixme snat
-     rule zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
-          => zeroType(Name:K[Len:Int -Int 1], T:KResult)
-          ~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
+     rule zeroType(Sym:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
+          => zeroType(Sym[Len:Int -Int 1], T:KResult)
+          ~> zeroType(Sym, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
           when Len:Int >Int 0
           [structural] 
      rule zeroType(_, t(_, arrayType(_:KResult, 0))) => .

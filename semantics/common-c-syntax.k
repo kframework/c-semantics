@@ -174,8 +174,8 @@ module COMMON-C-SYNTAX
      /*
      and specifier = spec_elem list
      */
-     syntax Specifier ::= "Specifier" "(" K ")" [klabel('Specifier)]
-     syntax "Specifier" -/- [a-zA-Z\:] 
+     syntax Specifier ::= "Specifier" "(" K ")" [avoid, klabel('Specifier)]
+     //syntax "Specifier" -/- [\:]
      
      /*
      and decl_type =
@@ -252,8 +252,8 @@ module COMMON-C-SYNTAX
      */
      // TODO(chathhorn): better solution?
      // first argument is id, second is basetype
-     syntax Name ::= "Name" "(" K "," K ")" [klabel('Name)]
-     syntax "Name" -/- [a-zA-Z\:]
+     syntax Name ::= "Name" "(" K "," K ")" [avoid, klabel('Name)]
+     //syntax "Name" -/- [\:]
      syntax K ::= "AnonymousName" // new, argument is type
      syntax Id ::= "#NoName" // new
      syntax Id ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
@@ -314,7 +314,7 @@ module COMMON-C-SYNTAX
      syntax PureDefinition ::= "Pragma" "(" K ")" [klabel('Pragma)]
      syntax PureDefinition ::= "Linkage" "(" String "," K ")"
           [klabel('Linkage)]
-     syntax "Linkage" -/- [a-zA-Z\:]
+     //syntax "Linkage" -/- [\:]
      syntax PureDefinition ::= "Transformer" "(" K "," K ")"
           [klabel('Transformer)]
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
@@ -379,8 +379,8 @@ module COMMON-C-SYNTAX
      } 
      */
      // Int, list, list
-     syntax Block ::= "Block" "(" Int "," K "," K ")" [klabel('Block)]
-     syntax "Block" -/- [a-zA-Z\:]
+     syntax Block ::= "Block" "(" Int "," K "," K ")" [avoid, klabel('Block)]
+     //syntax "Block" -/- [\:]
 
      /*
      and statement =
@@ -423,7 +423,7 @@ module COMMON-C-SYNTAX
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
      syntax PureStatement ::= "Return" "(" K ")" [klabel('Return)]
-     syntax "Return" -/- [a-zA-Z\:]
+     //syntax "Return" -/- [\:]
      context Return((HOLE => reval(HOLE)))
 
      /*
@@ -450,8 +450,8 @@ module COMMON-C-SYNTAX
      | COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
      | DEFINITION of definition (*definition or declaration of a variable or type*)
      */
-     syntax PureStatement ::= "Label" "(" Id "," K ")" [klabel('Label)]
-     syntax "Label" -/- [a-zA-Z\:]
+     syntax PureStatement ::= "Label" "(" Id "," K ")" [avoid, klabel('Label)]
+     //syntax "Label" -/- [\:]
      syntax PureStatement ::= "Goto" "(" K ")" [klabel('Goto)] // Id
      syntax PureStatement ::= "CompGoto" "(" K ")" [klabel('CompGoto)]
      
@@ -487,8 +487,7 @@ module COMMON-C-SYNTAX
 
      syntax Expression ::= "NothingExpression" [function]
 
-     syntax K ::= "l" "(" KLabel ")"
-     syntax "l" -/- [a-zA-Z]
+     syntax K ::= "l" "(" KLabel ")" [avoid]
 
      // chathhorn: hacky custom heating/cooling for type-strictness.
      syntax Set ::= "typeStrictUnaryOps" [function]
@@ -629,10 +628,10 @@ module COMMON-C-SYNTAX
                          | "~" K [prec(22)]
                          | "*" K [prec(22)]
                          | "&" K [strict, prec(22)]
-                         | "++" K [prec(22)]
-                         | "--" K [latex(\terminal{-{}-}{#1}), prec(22)]
-                         | K "++"
-                         | K "--" [latex({#1}\terminal{-{}-})]
+                         | "++" K [prefer, prec(22)]
+                         | "--" K [prefer, latex(\terminal{-{}-}{#1}), prec(22)]
+                         | K "++" [prefer]
+                         | K "--" [prefer, latex({#1}\terminal{-{}-})]
      /* | BINARY of binary_operator * expression * expression */
                          > K "*" K [prec(31), left]
                          | K "/" K [prec(31), left]
@@ -650,7 +649,7 @@ module COMMON-C-SYNTAX
                          > K "&" K [prec(41), left]
                          > K "^" K [prec(43), left]
                          > K "|" K [prec(45), left]
-                         > K "&&" K [prec(47), left]
+                         > K "&&" K [prefer, prec(47), left]
                          > K "||" K [prec(49), left]
      /* | QUESTION of expression * expression * expression */
                          > K "?" K ":" K [prec(51), left, gather(e & E)]
@@ -669,9 +668,9 @@ module COMMON-C-SYNTAX
                          | K ":=" K [prec(53)]
 
      // So it'll correctly parse &, &&, +, ++, +bytes, etc.
-     syntax "&" -/- [\&]
-     syntax "+" -/- [\+a-z]
-     syntax "-" -/- [\-]
+     //syntax "&" -/- [\&]
+     //syntax "+" -/- [\+a-z]
+     //syntax "-" -/- [\-]
       
      context - (HOLE => reval(HOLE))
      context + (HOLE => reval(HOLE))
@@ -823,12 +822,10 @@ module COMMON-C-SYNTAX
      syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")"
           [klabel('HexFloatConstant)]
      
-     syntax Constant ::= "LitU" "(" K ")" [klabel('LitU)] // new
-     syntax "LitU" -/- [a-zA-Z\:]
-     syntax Constant ::= "LitL" "(" K ")" [klabel('LitL)] // new
+     syntax Constant ::= "LitU" "(" K ")" [avoid, klabel('LitU)] // new
+     syntax Constant ::= "LitL" "(" K ")" [avoid, klabel('LitL)] // new
      syntax Constant ::= "LitF" "(" K ")" [klabel('LitF)] // new
      syntax Constant ::= "LitLL" "(" K ")" [klabel('LitLL)] // new
-     syntax "LitL" -/- [a-zA-Z\:]
      syntax Constant ::= "LitUL" "(" K ")" [klabel('LitUL)] // new
      syntax Constant ::= "LitULL" "(" K ")" [klabel('LitULL)] // new
 

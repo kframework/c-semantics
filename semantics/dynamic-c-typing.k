@@ -11,9 +11,9 @@ module DYNAMIC-SEMANTICS-TYPE-STRICTNESS
 
      syntax K ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
-          <k> (. => DeclType(Specifier:K, DeclType:K)) ~> evalToType ...</k>
+          <k> (. => DeclType(Spec:K, Decl:K)) ~> evalToType ...</k>
           <type> 
-               Cast(Specifier:K, DeclType:K, _) => waitingOnDeclType
+               Cast(Spec, Decl, _) => waitingOnDeclType
           ...</type>
           [structural]
           
@@ -170,9 +170,9 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
 
      rule [type-compound-literal]:
           <type> 
-               CompoundLiteral(_, Specifier:K, DeclType:K, _)
+               CompoundLiteral(_, Spec:K, Decl:K, _)
                // sort of hackish, assumes cast will evaluate to type
-               => Cast(Specifier:K, DeclType:K, emptyValue)
+               => Cast(Spec, Decl, emptyValue)
           ...</type>
           [structural]
      
