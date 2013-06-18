@@ -317,9 +317,19 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))
                +String toUpperCase(butFirstChar(S:String))
-          when S:String =/=String ""
-          [structural]
-     rule toUpperCase("") => ""
+          when lengthString(S) >Int 1
+
+     rule toUpperCase(C:String)
+          => C:String
+          when (lengthString(C) ==Int 1)
+               andBool (asciiString(C) <Int asciiString("a")
+                    orBool asciiString(C) >Int asciiString("z"))
+     rule toUpperCase(C:String)
+          => #charString(absInt(asciiString(C) 
+               -Int (asciiString("a") -Int asciiString("A"))))
+          when (lengthString(C) ==Int 1)
+               andBool (asciiString(C) >=Int asciiString("a")
+                    andBool asciiString(C) <=Int asciiString("z"))
           
      // getString returns the string without the null terminator
      syntax K ::= "getString" "(" K ")"
