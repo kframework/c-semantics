@@ -421,7 +421,7 @@ module COMMON-C-SETTINGS
      rule [numBytes-long-double]: numBytes(t(_, long-double)) => 16
      
      rule [numBytes-enum]: 
-          numBytes(t(S:Set, enumType(X:Id))) => numBytes(t(S:Set, int))
+          numBytes(t(S:Set, enumType(_:Id))) => numBytes(t(S:Set, int))
      
      syntax Int ::= "cfg:mtxPlain" [function]
      rule [cfg-mtxPlain]: cfg:mtxPlain => 0

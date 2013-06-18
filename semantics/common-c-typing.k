@@ -109,19 +109,19 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
      
      rule (T:KResult => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(TAtomic(K1:K, K2:K)) => .Bag)), _, 
+               (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _, 
                (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
      rule (T:KResult => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasType(K1:K, K2:K)) => .Bag)), _, 
+               (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _, 
                (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
      rule (T:KResult => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasExpression(K1:K)) => .Bag)), _, 
+               (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _, 
                (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
           when isTypeResult(T:KResult)
           [structural]
@@ -152,7 +152,7 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
                orBool (getKLabel(T:K) ==KLabel 'Attribute)
           [structural]
 
-     rule canonicalizeType-aux(B:Bag (BagItem(T:K) => .Bag), _, _, _, 
+     rule canonicalizeType-aux(_:Bag (BagItem(T:K) => .Bag), _, _, _, 
                (_ (.Bag => BagItem(T:K))))
           when (T:K ==K Extern)
                orBool (T:K ==K Static)
@@ -392,7 +392,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           => K:KLabel(t(S:Set, enumType(X:Id)))
      
      rule [pushdown-typedef]: 
-          pushTypeDown(t(S:Set, typedefType(X:Id, t(S':Set, T:K))), K:KLabel) 
+          pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), K:KLabel) 
           => K:KLabel(t(S:Set S':Set, T:K))
      
      rule [pushdown-basic]: 
@@ -511,7 +511,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           
      rule [fillBitHoles-bitfield-zero]:
           fillBitHoles-aux(N:Int, (typedDeclaration(t(_, 
-               bitfieldType(T:KResult, N':Int)), _:Id),, L:KList)) 
+               bitfieldType(_:KResult, N':Int)), _:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
                absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) 
                %Int numBitsPerByte)), #NoName),, 
@@ -734,9 +734,9 @@ module COMMON-SEMANTICS-TYPE-MISC
 
      // TODO(chathhorn): why the hell was this necessary? this has got to be a
      // BUG.
-     rule addStruct-aux(A, B, K, C, D, E) 
+     rule addStruct-aux(A:Id, B:KList, K:K, C:Map, D:Map, E:KList) 
           => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
-     rule K:KResult ~> addStruct-aux(A, B, HOLE, C, D, E)
+     rule K:KResult ~> addStruct-aux(A:Id, B:KList, HOLE, C:Map, D:Map, E:KList)
           => addStruct-aux(A, B, K, C, D, E) [cool]
 
      rule addStruct(S:Id, L:KList) 
@@ -922,7 +922,7 @@ module COMMON-SEMANTICS-TYPE-MISC
           when getKLabel(T:K) =/=KLabel 'qualifiedType 
           
      rule [isConstType-qualified]: 
-          isConstType(t(_, qualifiedType(T:KResult, K:K)))
+          isConstType(t(_, qualifiedType(T:KResult, _:K)))
           => isConstType(T:KResult)
           
      rule [isConstType-false]: 
@@ -931,7 +931,7 @@ module COMMON-SEMANTICS-TYPE-MISC
                andBool (notBool Const in S:Set)
           
      rule [isConstType-true]: 
-          isConstType(t(SetItem(Const) _, T:K)) => true
+          isConstType(t(SetItem(Const) _, _:K)) => true
           
      rule [isBitfieldType-true]:
           isBitfieldType(t(_, bitfieldType(_, _:Int)))

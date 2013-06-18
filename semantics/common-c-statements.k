@@ -66,7 +66,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
                   BlockStatement(Blk:K) => Blk:K ~> popBlock
           ...</computation>
           <nestingDepthGoto> N:Int => N:Int +Int 1 </nestingDepthGoto>
-          <blockHistoryGoto> ListItem(OldNum:Int) ...</blockHistoryGoto>
+          <blockHistoryGoto> ListItem(_:Int) ...</blockHistoryGoto>
           [structural] 
      rule <computation>
                Block(Num:Int, _, klist(L:KList)) => klistToK(L:KList)
@@ -77,7 +77,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
      rule <computation> popBlock => .K ...</computation>
           <nestingDepthGoto> I:Int => I:Int -Int 1 </nestingDepthGoto>
           <blockHistoryGoto>
-               (_:ListItem => .List) ListItem(Num:Int)
+               (_:ListItem => .List) ListItem(_:Int)
           ...</blockHistoryGoto>
           when I:Int >Int 0
           [structural] 
@@ -132,7 +132,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           [structural] 
           
      rule [compute-label-ignore-non-statement]:
-          <computation> L:KLabel(Args:KList) => .K ...</computation>
+          <computation> L:KLabel(_:KList) => .K ...</computation>
           when false
                orBool (L:KLabel ==KLabel 'Nop)
                orBool (L:KLabel ==KLabel 'Computation)
@@ -228,7 +228,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
      rule [compute-label-while-mark]:
           <computation>
                (. => S:K ~> loopMarked)
-               ~> While(E:K, S:K)
+               ~> While(_:K, S:K)
                ~> (. => popLoop)
                ~> K:K
           </computation>
@@ -240,7 +240,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           [structural] 
      rule [compute-label-while-done]:
           <computation>
-               (loopMarked ~> While(E:K, S:K) => .K) ~> popLoop ~> K:K
+               (loopMarked ~> While(_, _) => .K) ~> popLoop ~> _
           </computation>
           [structural] 
           
@@ -271,7 +271,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           
      rule [compute-label-switch]:
           <computation>
-               (Switch(_, E:K, S:K) => S:K ~> popLoop) ~> K:K
+               (Switch(_, _, S:K) => S:K ~> popLoop) ~> K:K
           </computation>
           <computationTail> Tail:K </computationTail>
           <blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>

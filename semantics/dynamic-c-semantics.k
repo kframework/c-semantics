@@ -99,7 +99,7 @@ module DYNAMIC-C-SEMANTICS-MISC
           when S:String =/=String ""
           [structural]
      rule [sendString-done]:
-          <fileCommands> f-sendString(N:Int, "") => .K ...</fileCommands>
+          <fileCommands> f-sendString(_:Int, "") => .K ...</fileCommands>
           [structural]
 
      rule [f-sent]:
@@ -363,11 +363,11 @@ module DYNAMIC-C-SEMANTICS
      // fixme void isn't supposed to have a name
      // fixme figure out type of string
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               typedDeclaration(t(.Set, void), _:Id))), N:Int, X:Id, _) 
+               typedDeclaration(t(.Set, void), _:Id))), _:Int, _:Id, _) 
           => Call(Identifier("main"), klist(.KList))
           [structural]
      rule callMain-aux(t(.Set,
-               functionType(t(.Set, int), .KList)), N:Int, X:Id, _) 
+               functionType(t(.Set, int), .KList)), _:Int, _:Id, _) 
           => Call(Identifier("main"), klist(.KList))
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int),

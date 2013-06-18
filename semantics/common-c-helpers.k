@@ -12,19 +12,19 @@ module COMPAT
      rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
      rule toBag(.KList) => .Bag
 
-     rule lengthKList (K:K,, Kl:KList) => 1 +Int lengthKList Kl
+     rule lengthKList (_:K,, L:KList) => 1 +Int lengthKList L
      rule lengthKList .KList => 0
 
-     rule BagItem(K) in B:Bag => K #inBag B ==K true 
-     rule K #inBag BagItem(K) _:Bag => true
+     rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
+     rule K:K #inBag BagItem(K) _:Bag => true
 
-     rule eraseKLabel(L, L(Ks)) => eraseKLabel(L, Ks)
-     rule eraseKLabel(L, L'(Ks)) => L'(eraseKLabel(L, Ks))
+     rule eraseKLabel(L:KLabel, L(Ks:KList)) => eraseKLabel(L, Ks)
+     rule eraseKLabel(L:KLabel, L':KLabel(Ks:KList)) => L'(eraseKLabel(L, Ks))
           when L =/=KLabel L'
-     rule eraseKLabel(L, (K:K,,Kl:KList)) 
-          => eraseKLabel(L, K),,eraseKLabel(L, Kl)
-     rule eraseKLabel(L, .KList) => .KList
-     rule eraseKLabel(L, .) => .
+     rule eraseKLabel(L:KLabel, (K:K,,Ks:KList)) 
+          => eraseKLabel(L, K),,eraseKLabel(L, Ks)
+     rule eraseKLabel(_, .KList) => .KList
+     rule eraseKLabel(_, .) => .
 
      // TODO(chathhorn): ugly
      syntax K ::= "toKRList" "(" KList ")"
@@ -158,9 +158,9 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when (Pos >Int 0) andBool (Pos -Int Len >=Int 0)
           [structural, anywhere]
           
-     rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N:Bits, 1)
+     rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N, 1)
           [anywhere, anywhere]
-     rule bitRange(piece(N, 1), 0, 0) => piece(N, 1)
+     rule bitRange(piece(N:Bits, 1), 0, 0) => piece(N, 1)
           [anywhere, anywhere]
           
      rule bitRange(piece(bitRange(N:Bits, Start:Int, End:Int), Len:Int), 0, 0)
@@ -193,7 +193,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when SuccEnd ==Int End +Int 1
           [structural, anywhere]
           
-     rule bitRange(piece(N:Int, Len:Int), Pos:Int, Pos:Int) 
+     rule bitRange(piece(N:Int, _), Pos:Int, Pos:Int) 
           => (N >>Int Pos) &Int 1
           when N >=Int 0
           [structural, anywhere]
@@ -229,7 +229,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
      
      // this should probably go in the k prelude
      rule K:K in (ListItem(K:K) _:List) => true
-     rule K:K in .List => false
+     rule _:K in .List => false
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
           [structural]
@@ -341,8 +341,8 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when N =/=Int 0
           [structural]
      rule [getString-done]:
-          tv(0, _) ~> getString-aux(Loc:SymLoc, S:String)
-          => str(S:String)
+          tv(0, _) ~> getString-aux(_, S:String)
+          => str(S)
           [structural]
           
      // writeString and writeWString expect the user to add the '\0' to the end
@@ -445,7 +445,7 @@ module COMMON-SEMANTICS-HELPERS-MISC
           when hasSignedIntegerType(T) ==Bool false
           [structural]
 
-     rule min(t(_, bitfieldType(T:Type, N:Int))) => 0
+     rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
           when hasUnsignedIntegerType(T)
           [structural]
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
@@ -551,7 +551,7 @@ module COMMON-C-BITSIZE
           => bitSizeofType(T:KResult) ~> maxBitSizeofList-aux(L:KList, N:Int) 
           [structural] 
      rule (tv(N':Int, _) => .) 
-               ~> maxBitSizeofList-aux(L:KList, 
+               ~> maxBitSizeofList-aux(_:KList, 
                (N:Int => maxInt(N:Int, N':Int))) 
           [structural] 
      rule maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned)
@@ -560,7 +560,7 @@ module COMMON-C-BITSIZE
      rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
           => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) 
           [structural, anywhere]
-     rule bitSizeofType(t(_, flexibleArrayType(T:KResult))) 
+     rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
           => tv(0, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, functionType(_, _))) 

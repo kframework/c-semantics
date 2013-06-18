@@ -52,7 +52,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                , _:KList
                , (typedDeclaration(
                         (t(_, (arrayType(T:KResult, _:Int)
-                        => pointerType(T:KResult)))), X:Id
+                        => pointerType(T:KResult)))), _:Id
                ),, _:KList)
           )
           [structural, anywhere] 
@@ -62,7 +62,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
                , _:KList
                , (typedDeclaration(
                         (t(_, (incompleteArrayType(T:KResult)
-                        => pointerType(T:KResult)))), X:Id
+                        => pointerType(T:KResult)))), _:Id
                ),, _:KList)
           )
           [structural, anywhere] 
@@ -85,8 +85,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           
      rule [bind-one-check-type]:
           (. => isTypeCompatible(T:KResult, T':KResult)) 
-               ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), 
-               (typedDeclaration(T:KResult, X:Id),, P:KList))
+               ~> bind-aux(_, (tv(_:KList, T':KResult),, _:KList), 
+               (typedDeclaration(T:KResult, _:Id),, _:KList))
           [structural] 
      
      syntax KList ::= promoteList(KList) [function]
@@ -153,7 +153,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
      
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
-     rule <k> initialize(X:Id, T:KResult, K:K)
+     rule <k> 
+               initialize(X:Id, _:KResult, K:K)
                => #if (F:Id ==K file-scope) #then zero(X:Id) #else (.) #fi 
                ~> K:K
                ~> sequencePoint
@@ -193,7 +194,8 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule <k> zeroType(N:K, t(_, structType(S:Id))) 
+     rule <k> 
+               zeroType(N:K, t(_, structType(S:Id))) 
                => zeroStruct(N:K, Fields:KList)
           ...</k>
           <structs>... S:Id |-> aggregateInfo(Fields:KList, _, _) ...</structs> 
@@ -211,15 +213,15 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
      rule zeroStruct(Name:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
           => zeroType(Name:K . F:Id, T:KResult) ~> zeroStruct(Name:K, L:KList) 
           [structural] 
-     rule zeroStruct(Name:K, .KList) => .
+     rule zeroStruct(_, .KList) => .
           [structural] 
 
      rule zeroType(Name:K, T:KResult) 
                => Computation(AllowWrite(Name:K) := tv(NullPointer, T:KResult))
           when isPointerType(T:KResult)
           [structural]
-     rule zeroType(Name:K, T:KResult) => .
-          when isFunctionType(T:KResult)
+     rule zeroType(_, T:KResult) => .
+          when isFunctionType(T)
           [structural]
           
      // fixme snat
@@ -228,10 +230,10 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           ~> zeroType(Name:K, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
           when Len:Int >Int 0
           [structural] 
-     rule zeroType(Name:K, t(_, arrayType(T:KResult, 0))) => .
+     rule zeroType(_, t(_, arrayType(_:KResult, 0))) => .
           [structural] 
 
-     rule zeroType(Name:K, t(_, flexibleArrayType(T:KResult))) => .
+     rule zeroType(_, t(_, flexibleArrayType(_:KResult))) => .
           [structural]
 endmodule
 

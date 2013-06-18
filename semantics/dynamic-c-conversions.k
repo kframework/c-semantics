@@ -870,18 +870,18 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
 
      rule X:Int xorBits Y:Int => X xorInt Y
      rule [xor-unknown-right]: 
-          N:Bits xorBits piece(unknown(Len:Int), Len:Int) 
+          _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len:Int), Len:Int)
      rule [xor-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) xorBits N:Bits 
+          piece(unknown(Len:Int), Len:Int) xorBits _:Bits 
           => piece(unknown(Len:Int), Len:Int)
 
      rule X:Int |Bits Y:Int => X |Int Y
      rule [or-unknown-right]: 
-          N:Bits |Bits piece(unknown(Len:Int), Len:Int) 
+          _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len:Int), Len:Int)
      rule [or-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) |Bits N:Bits 
+          piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
           => piece(unknown(Len:Int), Len:Int)
 
      rule X:Int &Bits Y:Int => X &Int Y

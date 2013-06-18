@@ -144,7 +144,7 @@ module DYNAMIC-C-ERRORS
           [structural, large] 
           
      rule [err00017]:
-          <k> (. => ERROR) ~> tv(I1:Int, T:KResult) / tv(0, T:KResult) ...</k>
+          <k> (. => ERROR) ~> tv(_:Int, T:KResult) / tv(0, T:KResult) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00017", "Division by 0.") </errorCell>)
           when hasIntegerType(T:KResult)
@@ -152,7 +152,7 @@ module DYNAMIC-C-ERRORS
           [structural, large]
      
      rule [err00018]:
-          <k> (. => ERROR) ~> tv(I1:Int, T:KResult) % tv(0, T:KResult) ...</k>
+          <k> (. => ERROR) ~> tv(_:Int, T:KResult) % tv(0, T:KResult) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00018", "Modulus by 0.") </errorCell>)
           when hasIntegerType(T:KResult)
@@ -186,7 +186,7 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00022]:
-          <k> (. => ERROR) ~> leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</k>
+          <k> (. => ERROR) ~> leftShiftInterpret(T:KResult, _:Int, tv(E1:Int, T:KResult)) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00022", "Trying to left-shift a negative signed value.") </errorCell>)
           when hasSignedIntegerType(T:KResult)
@@ -194,7 +194,7 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00023]:
-          <k> (. => ERROR) ~> leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult)) ...</k>
+          <k> (. => ERROR) ~> leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult)) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </errorCell>)
           when hasSignedIntegerType(T:KResult)
@@ -312,7 +312,7 @@ module DYNAMIC-C-ERRORS
           
      rule [err00035]:
           <k> 
-               (. => ERROR) ~> write(lv(Dest:SymLoc, t(SetItem(Const) _, _)), _)
+               (. => ERROR) ~> write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
           ...</k>
           <br/>
           (.Bag => <errorCell> Error("00035", "Trying to write through a const lvalue.") </errorCell>)
@@ -331,18 +331,18 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00038]:
-          <k> (. => ERROR) ~> ArrayType(T:KResult, tv(0, _), _)  ...</k>
+          <k> (. => ERROR) ~> ArrayType(_:KResult, tv(0, _), _)  ...</k>
           <br/>
           (.Bag => <errorCell> Error("00038", "Arrays cannot be of 0 length.") </errorCell>)
           [structural, large]
      
      rule [err00039]:
-          <k> (. => ERROR) ~> addUnion(S:Id, .KList)  ...</k>
+          <k> (. => ERROR) ~> addUnion(_:Id, .KList)  ...</k>
           <br/>
           (.Bag => <errorCell> Error("00039", "Unions cannot be empty.") </errorCell>)
           [structural, large]
      rule [err00040]:
-          <k> (. => ERROR) ~> addStruct(S:Id, .KList)  ...</k>
+          <k> (. => ERROR) ~> addStruct(_:Id, .KList)  ...</k>
           <br/>
           (.Bag => <errorCell> Error("00040", "Structs cannot be empty.") </errorCell>)
           [structural, large]
@@ -369,28 +369,28 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00044]:
-          <k> (. => ERROR) ~> addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))  ...</k>
+          <k> (. => ERROR) ~> addToPointer(_:SymLoc, T:KResult, I:Int, tv(_:Int, _))  ...</k>
           <br/>
           (.Bag => <errorCell> Error("00044", "An array subscript is out of range.") </errorCell>)
           when notBool ifFromArrayInBounds(T:KResult, I:Int)
           [structural, large]
           
      rule [err00045]:
-          <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _:Int, _:Int), V:K)  ...</k>
+          <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _:Int, _:Int), _)  ...</k>
           <mem>... Base |-> memblock(_, (_ mconst), _) ...</mem>
           <br/>
           (.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
           [structural, large]
           
      rule [err00046]:
-          <k> (. => ERROR) ~> concretize(T:KResult, dataList((piece(N:Int, Len:Int),, _))) ...</k>
+          <k> (. => ERROR) ~> concretize(T:KResult, dataList((piece(N:Int, _:Int),, _))) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00046", "Trying to reinterpret integer bytes as floating bytes.") </errorCell>)
           when isFloatType(T:KResult) andBool (N >=Int 0)
           [structural, large]
           
      rule [err00047]:
-          <k> (. => ERROR) ~> writeByte(Loc:SymLoc, V:K)  ...</k>
+          <k> (. => ERROR) ~> writeByte(Loc:SymLoc, _)  ...</k>
           <notWritable>... Loc |-> _ ...</notWritable>
           <br/>
           (.Bag => <errorCell> Error("00047", "Trying to modify an object declared with const type.") </errorCell>)

@@ -533,7 +533,7 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      rule [function-application]:
           <k> 
                application'(functionObject(X:Id, 
-                    t(_, functionType(R:Type, P:KList)), B:K), L:KList) 
+                    t(_, functionType(_:Type, P:KList)), B:K), L:KList) 
                     ~> K:K 
                => sequencePoint
                     ~> populateFromGlobal
@@ -1046,19 +1046,19 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
                pointerType(T:KResult)), I:Int) 
           => t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), 
                pointerType(T:KResult))
-     rule newFromArray(t(.Set, pointerType(T:KResult)), I:Int) 
+     rule newFromArray(t(.Set, pointerType(T:KResult)), _:Int) 
           => t(.Set, pointerType(T:KResult))
           
      syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
      rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(T:KResult)), I:Int)
+               pointerType(_:KResult)), I:Int)
           => true
           when Offset:Int +Int I:Int <=Int Len:Int
      rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(T:KResult)), I:Int)
+               pointerType(_:KResult)), I:Int)
           => false
           when Offset:Int +Int I:Int >Int Len:Int
-     rule ifFromArrayInBounds(t(.Set, pointerType(T:KResult)), _:Int)
+     rule ifFromArrayInBounds(t(.Set, pointerType(_:KResult)), _:Int)
           => true
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
@@ -1140,10 +1140,10 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
           when isPromoted(T:KResult) andBool isPromoted(T':KResult)
                andBool N:Int <Int numBits(T:KResult)
           [structural]
-     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult))
+     rule leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
           => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T:KResult)
-     rule leftShiftInterpret(T:KResult, I:Int, tv(E1:Int, T:KResult))
+     rule leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
           => tv(I:Int, T:KResult)
           when hasSignedIntegerType(T:KResult)
                andBool I:Int <=Int max(T:KResult)
@@ -1495,7 +1495,7 @@ module DYNAMIC-SEMANTICS-LOGICAL
      operands. If the first operand compares equal to 0, the second operand is
      not evaluated.
      } */ 
-     rule tv(0, t(_, int)) && E:K => tv(0, t(.Set, int))
+     rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
           => sequencePoint
@@ -1518,7 +1518,7 @@ module DYNAMIC-SEMANTICS-LOGICAL
      rule tv(0, t(_, int)) || E:K
           => sequencePoint ~> simplifyTruth(E:K)
           [structural]
-     rule tv(1, t(_, int)) || E:K => tv(1, t(.Set, int))
+     rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
           [structural]
      rule (V:KResult => V:KResult != tv(0, t(.Set, int))) || _
           when isNotTruthValue(V:KResult)
@@ -1561,7 +1561,7 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/  
-     rule (. => getTypes((E1:K,, E2:K))) ~> E:K ? E1 : E2 
+     rule (. => getTypes((E1,, E2))) ~> _ ? E1:K : E2:K 
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -1572,9 +1572,9 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      operands have void type, the result has void type.
      }*/
      rule (types((T1:KResult,, T2:KResult))
-          => convertedType(usualArithmeticConversion(T1:KResult, T2:KResult)))
-               ~> E:K ? E1:K : E2:K
-          when T1:KResult =/=K T2:KResult
+          => convertedType(usualArithmeticConversion(T1, T2)))
+               ~> _ ? _ : _
+          when T1 =/=K T2
                andBool isArithmeticType(T1)
                andBool isArithmeticType(T2)
           [structural]
@@ -1595,32 +1595,32 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
      rule [conditional-left-is-null]:
-          (types((T1:KResult,, T2:KResult)) => convertedType(T2:KResult))
-          ~> E:K ? tv(0, T1:KResult) : E2:K
-          when hasIntegerType(T1:KResult)
-               andBool isPointerType(T2:KResult)
+          (types((T1:KResult,, T2:KResult)) => convertedType(T2))
+          ~> _ ? tv(0, T1) : _
+          when hasIntegerType(T1)
+               andBool isPointerType(T2)
           [structural]
      rule [conditional-right-is-null]:
-          (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
-          ~> E:K ? E1:K : tv(0, T2:KResult)
-          when hasIntegerType(T2:KResult)
-               andBool isPointerType(T1:KResult)
+          (types((T1:KResult,, T2:KResult)) => convertedType(T1))
+          ~> _? _ : tv(0, T2)
+          when hasIntegerType(T2)
+               andBool isPointerType(T1)
           [structural]
           
      // fixme, this is wrong
-     rule (types((T1:KResult,, T2:KResult)) => convertedType(T1:KResult))
-          ~> E:K ? E1:K : E2:K
-          when isPointerType(T1:KResult)
-               andBool isPointerType(T2:KResult)
+     rule (types((T1:KResult,, T2:KResult)) => convertedType(T1))
+          ~> _? _ : _
+          when isPointerType(T1)
+               andBool isPointerType(T2)
           [structural]
           
      // this should take care of the void/struct cases
-     rule (types((T:KResult,, T:KResult)) => convertedType(T:KResult))
-          ~> E:K ? E1:K : E2:K
-          when notBool isPointerType(T:KResult)
+     rule (types((T:KResult,, T:KResult)) => convertedType(T))
+          ~> _ ? _ : _
+          when notBool isPointerType(T)
           [structural]
      rule convertedType(T:KResult) ~> E:K ? E1:K : E2:K
-          => IfThenElse(E:K, cast(T:KResult, E1:K), cast(T:KResult, E2:K))
+          => IfThenElse(E, cast(T, E1), cast(T, E2))
           [structural]
 endmodule
 
@@ -1723,7 +1723,7 @@ module DYNAMIC-SEMANTICS-SEQUENCING
      rule Comma(klist(L:KList)) => toRVList(L) ~> Comma(.K)
      rule R:KResult ~> Comma(.K) => Comma(R) 
 
-     rule Comma(rvlist((V:KResult,, K':K,, L:KList))) 
+     rule Comma(rvlist((_:KResult,, K':K,, L:KList))) 
           => sequencePoint ~> Comma(rvlist((K':K,, L:KList)))
           [structural]
      rule Comma(rvlist(K:K)) => K
