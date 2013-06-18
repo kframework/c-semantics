@@ -242,10 +242,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
           <threadLocal> C:Bag </threadLocal>
           [structural]
 
-     syntax K ::= "longjmp-aux" "(" K "," K ")" [strict]
+     syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
+     context longjmp-aux(HOLE => reval(HOLE), _)
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
-          => longjmp-aux(reval(*(V:KResult)), V':KResult)
+          => longjmp-aux(*(V:KResult), V':KResult)
           [structural]
      
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
@@ -428,15 +429,15 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           [structural]
 
      rule [fslOpenFile]:
-          <k> fsl-open-file-aux(Name:String, Mode:String, tv(FD:Int, _)) 
-               => tv(FD:Int, t(.Set, int)) 
+          <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _)) 
+               => tv(FD, t(.Set, int)) 
           ...</k>
           <files>...
                (.Bag => 
                     <file>...
-                         <fid> FD:Int </fid>
-                         <uri> Name:String </uri>
-                         <mode> Mode:String </mode>
+                         <fid> FD </fid>
+                         <uri> FileName </uri>
+                         <mode> Mode </mode>
                     ...</file>
                )
           ...</files>

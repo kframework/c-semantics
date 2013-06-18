@@ -86,8 +86,8 @@ module COMMON-SEMANTIC-SYNTAX
      
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax K ::= "DeclType" "(" K "," K ")" [strict(1)] 
-     syntax "DeclType" -/- [a-zA-Z\:]
+     syntax K ::= "DeclType" "(" K "," K ")" [avoid, strict(1)] 
+     //syntax "DeclType" -/- [\:]
      syntax Set ::= "setOfTypes" [function]
      
      syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]

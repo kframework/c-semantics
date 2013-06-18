@@ -570,40 +570,38 @@ module DYNAMIC-SEMANTICS-WRITING
           ...</mem>
           when Offset <Int Len
           [structural]
-     rule <k> writeBytes(_, dataList(.KList)) => .K ...</k>
+     rule writeBytes(_, dataList(.KList)) => .K
           [structural] 
           
      // this general rule is useful for unknowns, abstracts, etc
+     rule [splitBytes-other]:
+          splitBytes(tv((N:Bits,, .KList), T:Type))
+          => dataList(piece(N, numBitsPerByte))
+          when isCharType(T)
      rule [splitBytes-char]:
           splitBytes(tv(N:Bits, T:Type))
           => dataList(piece(N, numBitsPerByte))
           when isCharType(T) andBool (isInt(N) ==K false)
-          [structural] 
      rule [splitBytes-int]:
           splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, bitsToBytes(value(bitSizeofType(T))))
           when hasIntegerType(T)
-          [structural] 
      rule [splitBytes-float]:
           splitBytes(tv(F:Float, T:Type)) 
           => splitFloatBytes(F, T, value(byteSizeofType(T)))
           when isFloatType(T)
-          [structural] 
      rule [splitBytes-pointer]:
           splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:KResult)))) 
           => splitPointerBytes(I, t(S, pointerType(T)), 
                value(byteSizeofType(t(.Set, pointerType(T)))))
-          [structural]
      rule [splitBytes-struct]:
           splitBytes(tv(L:KList, t(S:Set, structType(I:Id)))) 
           => splitStructBytes(dataList(L), t(S, structType(I)), 
                value(byteSizeofType(t(S, structType(I)))))
-          [structural]
      rule [splitBytes-union]:
           splitBytes(tv(L:KList, t(S:Set, unionType(I:Id)))) 
           => splitStructBytes(dataList(L), t(S, unionType(I)), 
                value(byteSizeofType(t(S, unionType(I)))))
-          [structural] 
      
      syntax K ::= splitIntegerBytes(Int, Type, Int) [function]
      syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," KList ")"

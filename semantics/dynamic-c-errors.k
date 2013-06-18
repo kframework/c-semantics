@@ -16,15 +16,15 @@ module DYNAMIC-C-ERRORS
      imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
      syntax K ::= Error(String, String) [function]
-     rule Error(Name:String, Msg:String)  => 
+     rule Error(Title:String, Msg:String)  => 
           "Error: " 
-          +String Name:String 
+          +String Title
           +String "\n"
           +String "Description: " 
-          +String Msg:String
+          +String Msg
      syntax K ::= ICE(String, String) [function]
-     rule ICE(Name:String, Msg:String) =>
-          Error(Name:String, Msg:String)
+     rule ICE(Title:String, Msg:String) =>
+          Error(Title, Msg)
           +String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
           
      syntax K ::= "ERROR"
