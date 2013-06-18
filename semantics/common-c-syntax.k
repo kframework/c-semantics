@@ -104,17 +104,17 @@ module COMMON-C-SYNTAX
      syntax TypeSpecifier ::= "StructRef" "(" Id ")"
           [klabel('StructRef)] // new
      // new // Id, List
-     syntax TypeSpecifier ::= "StructDef" "(" Id "," K ")"
+     syntax C ::= "StructDef" "(" Id "," K ")"
           [strict(2), klabel('StructDef)] 
      syntax TypeSpecifier ::= "UnionRef" "(" Id ")"
           [klabel('UnionRef)] // new
      // new // Id, List
-     syntax TypeSpecifier ::= "UnionDef" "(" Id "," K ")"
+     syntax C ::= "UnionDef" "(" Id "," K ")"
           [strict(2), klabel('UnionDef)] 
      syntax TypeSpecifier ::= "EnumRef" "(" Id ")"
           [klabel('EnumRef)] // new
      // new // Id, List
-     syntax TypeSpecifier ::= "EnumDef" "(" Id "," K ")"
+     syntax C ::= "EnumDef" "(" Id "," K ")"
           [klabel('EnumDef)] 
      syntax TypeSpecifier ::= "TypeofExpression" "(" K ")"
           [klabel('TypeofExpression)]

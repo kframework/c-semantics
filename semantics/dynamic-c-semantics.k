@@ -1,6 +1,7 @@
 require "c-configuration.k"
 require "common-c-semantics.k"
-require "io/uris.k"
+//require "io/uris.k"
+require "modules/uris.k"
 
 require "dynamic-c-expressions.k"
 require "dynamic-c-conversions.k"
