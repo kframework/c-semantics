@@ -43,7 +43,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           when T:K =/=K void
           [structural]
      rule [idsFromDeclList-void]:
-          idsFromDeclList((L:KList,, typedDeclaration(t(_, void), X:Id)))
+          idsFromDeclList((L:KList,, typedDeclaration(t(_, void), _:Id)))
           => idsFromDeclList(L:KList)
           [structural]
      rule [idsFromDeclList-vararg]:
@@ -63,7 +63,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           [structural]
           
      rule [prepareBuiltin]:
-          handleBuiltin(F:Id, t(_, functionType(Return:KResult, L:KList)))
+          handleBuiltin(F:Id, t(_, functionType(_:KResult, L:KList)))
           => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
           [structural]
           
@@ -174,8 +174,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      // there seems to be a problem here related to locals.  what if longjmp is
      // never called?
      rule [ignoreLocals]:
-          <k> ignoreLocals => .K ...</k>
-          <localAddresses> Locals:Set => .Set </localAddresses>
+          <k> ignoreLocals => . ...</k>
+          <localAddresses> _ => .Set </localAddresses>
           [structural]
           
      /*@ 
@@ -337,7 +337,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
           [structural]
                     
      rule [va-inc]:
-          va-inc-aux(ApLoc:KResult, Size:KResult, Ap:KResult)
+          va-inc-aux(ApLoc:KResult, _:KResult, Ap:KResult)
           => Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
           ~> Ap:KResult
           [structural]                  
@@ -351,7 +351,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
           
      // fixme can do lots of checks here too
      rule [va-end]:
-          prepareBuiltin((Identifier("__va_end")), (ApLoc:KResult)) => skipval
+          prepareBuiltin((Identifier("__va_end")), (_:KResult)) => skipval
           [structural]
 endmodule
 
@@ -398,7 +398,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
 
      rule [fslFGetC]:
           prepareBuiltin((Identifier("__fslFGetC")),
-               (tv(FD:Int, _),, tv(Offset:Int, _)))
+               (tv(FD:Int, _),, tv(_:Int, _)))
           => readFromFD(FD:Int)
           [structural]
 
@@ -1225,7 +1225,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      rule newAlloc(Fresh:Int) => loc(Fresh @ allocatedDuration, 0, 0)
      
      rule [malloc]:
-          <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, T:KResult))
+          <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
                => alloc(newAlloc(Fresh:Int), Len:Int)
                ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>
@@ -1256,7 +1256,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      rule [realloc]:
           <k> 
                prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
-                    tv(NewLen:Int, T:KResult)))
+                    tv(NewLen:Int, _:KResult)))
                => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
                     ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
           ...</k>

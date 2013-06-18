@@ -117,7 +117,7 @@ module DYNAMIC-SEMANTICS-READING
           when (Len ==Int numBitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
           [structural]
-     rule joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, End:Int))
+     rule joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, _:Int))
           => checkValidLoc(N) ~> tv(N, T:KResult)
           [structural]
 
@@ -276,7 +276,7 @@ module DYNAMIC-SEMANTICS-WRITING
           [structural] 
      rule [allocateTypeIfAbsent-present]:
           <k> 
-               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), T:KResult) => .K 
+               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:KResult) => .K 
           ...</k>
           <mem>... Base |-> memblock(_, _, _) ...</mem>
           [structural]
@@ -314,7 +314,7 @@ module DYNAMIC-SEMANTICS-WRITING
      rule [realloc-unfound]:
           <k> 
                realloc-aux((SNatN:Int => SNatN -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), loc(NewBase:SymBase, 0, 0), _, _)
+                    loc(OldBase:SymBase, 0, 0), loc(_:SymBase, 0, 0), _, _)
           ...</k>
           <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
           when (notBool SNatN:Int -Int 1 in keys M:Map)
@@ -350,7 +350,7 @@ module DYNAMIC-SEMANTICS-WRITING
                     loc(N @ Th, Offset:Int, BitOffset:Int), 
                     tv(L:KList, T:KResult), BitSize:Int)
           ...</k>
-          <threadId> Id:Int </threadId>
+          <threadId> Th </threadId>
           [structural, ndlocal]
      // write global or shared data
      rule [write]:
@@ -435,7 +435,7 @@ module DYNAMIC-SEMANTICS-WRITING
           => justBits-aux((I +Int max(T) +Int 1), T)
           when I <Int 0 
      // fixme sNat
-     rule justBits-aux(N:Int, t(_, bitfieldType(T:Type, Len:Int))) 
+     rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int))) 
           => N +Int (1 <<Int (Len -Int 1))
           when Len >Int 0 andBool N >=Int 0
      
@@ -528,7 +528,7 @@ module DYNAMIC-SEMANTICS-WRITING
      rule explodeToBits(piece(N:Bits, Len:Int)) => splinter(N, Len)
           when Len >Int 0
           [structural]
-     rule explodeToBits(piece(N:Bits, 0)) => .KList
+     rule explodeToBits(piece(_:Bits, 0)) => .KList
      rule explodeToBits(.KList) => .KList
      
      syntax KList ::= splinter(Bits, Int) [function] 
@@ -662,7 +662,7 @@ module DYNAMIC-SEMANTICS-WRITING
                (L:KList,, piece(unknown(numBitsPerByte), numBitsPerByte))) 
           when Len:Int >Int 0
           [structural, anywhere]
-     rule splitFloatBytes(_, T:KResult, 0, L:KList) 
+     rule splitFloatBytes(_, _:KResult, 0, L:KList) 
           => dataList(L:KList) 
           [structural, anywhere]
           

@@ -18,7 +18,7 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
      continues unimpeded across them.
      }*/
      rule [skip-label]: 
-          Label(L:Id, K:K) => K
+          Label(_:Id, K:K) => K
           [structural]
      rule [case-fall-through]:
           Case(_:Int, _:Int, _, K:K) => K
@@ -198,7 +198,7 @@ module DYNAMIC-SEMANTICS-SWITCH
                map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
           when SN:Int =/=Int SN':Int
           [structural] 
-     rule handleSwitch-aux(SN:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
+     rule handleSwitch-aux(_:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
           when L:KLabel =/=KLabel 'genLabel
           [structural] 
 
@@ -206,7 +206,7 @@ module DYNAMIC-SEMANTICS-SWITCH
           => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _)
           when T:KResult =/=K T':KResult
           [structural]
-     rule tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), CaseHelper:K) => .
+     rule tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), _) => .
           when V:K =/=K V':K
           [structural] 
      //  match found in value and type, goto it
@@ -315,7 +315,7 @@ module DYNAMIC-SEMANTICS-FOR
                     (S:K ~> Computation(Post:K) ~> loopMarked 
                     ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)), Nop)
           ...</k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
+          <blockHistory> ListItem(_:Int) ...</blockHistory>
           [structural] // rule so that looping programs see repetition 
 endmodule
 
@@ -423,9 +423,8 @@ module DYNAMIC-SEMANTICS-GOTO
                ListItem(CurrentBlock:Int) BlockHistory:List
           </blockHistory>
           <loopStack> _ => LoopStack:List </loopStack>
-          <localVariables> Vars:List </localVariables>
-          when L:KLabel ==KLabel 'processGoto
-          orBool L:KLabel ==KLabel 'processGotoDown
+          when (L ==KLabel 'processGoto)
+               orBool (L ==KLabel 'processGotoDown)
           [structural] 
           
      // - second case, we're in a different block
@@ -436,10 +435,10 @@ module DYNAMIC-SEMANTICS-GOTO
           <k> 
                (. => popBlock) 
                ~> processGoto(gotoObject(
-                    TargetDepth:Int, TargetBlockHistory:List, _, _, _))
+                    _:Int, TargetBlockHistory:List, _, _, _))
           ...</k>
           <blockHistory> 
-               ListItem(BlockNum:Int) ActualHistory:List
+               ListItem(BlockNum:Int) _:List
           </blockHistory>
           when notBool BlockNum:Int in TargetBlockHistory:List
           [structural] 
@@ -448,8 +447,8 @@ module DYNAMIC-SEMANTICS-GOTO
      rule [processGoto-pop-differing-2]:
           <k> 
                (. => popBlock) 
-               ~> processGoto(gotoObject(TargetDepth:Int, 
-                    Prefix:List ListItem(BlockNum:Int)
+               ~> processGoto(gotoObject(_:Int, 
+                    _:List ListItem(BlockNum:Int)
                     TargetBlockHistory:List, _, _, _))
           ...</k>
           <blockHistory>
@@ -461,7 +460,7 @@ module DYNAMIC-SEMANTICS-GOTO
      //  once we share a history, we start to push
      rule <k> 
                processGoto(gotoObject(TargetDepth:Int, 
-                    (Prefix:List ListItem(TargetBlock:Int) ActualHistory:List),
+                    (Prefix:List ListItem(_:Int) ActualHistory:List),
                     K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock:Int, DeclStack:List)
                     ~> processGotoDown(gotoObject(TargetDepth:Int, 
@@ -519,7 +518,7 @@ module DYNAMIC-SEMANTICS-GOTO
      rule <k> 
                addVariablesForBlock(TargetBlock:Int, 
                     ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .)
-                    DeclStack:List)
+                    _:List)
                )
           ...</k>
           <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
@@ -531,7 +530,7 @@ module DYNAMIC-SEMANTICS-GOTO
                addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(
                          _:Int, TargetBlock:Int, Decl:K)) => .)
-                    DeclStack:List)
+                    _:List)
                )
           ...</k>
           <localVariables> Vars:List </localVariables>
@@ -658,12 +657,12 @@ module DYNAMIC-SEMANTICS-RETURN
      }*/
      
      rule [return-clean-local]:
-          <k> (.K => deleteBlock(Loc:SymLoc)) ~> Return(V:KResult) ...</k>
+          <k> (.K => deleteBlock(Loc:SymLoc)) ~> Return(_:KResult) ...</k>
           <localAddresses>... SetItem(Loc) => .Set ...</localAddresses>     
           [structural] 
           
      rule [fetch-all-locals]:
-          <k> Return(V:KResult) ...</k>
+          <k> Return(_:KResult) ...</k>
           <localAddresses> .Set => Addresses:Set </localAddresses>
           <blockStack> 
                ListItem(_ <localAddresses> Addresses:Set </localAddresses>)

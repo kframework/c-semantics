@@ -80,7 +80,7 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
           when hasIntegerType(T':KResult)
           [structural]
      rule <type>
-               t(_, pointerType(T:KResult)) - t(_, pointerType(T':KResult))
+               t(_, pointerType(_:KResult)) - t(_, pointerType(_:KResult))
                => cfg:ptrdiffut
           ...</type>
           [structural]
@@ -223,8 +223,8 @@ module DYNAMIC-SEMANTICS-TYPE-EXPRESSIONS
      // not safe, could be incompatible types
      rule [type-ternary-pointer]:
           <type>
-               _:K ? t(S:Set, pointerType(T:KResult)) : t(S':Set, pointerType(T':KResult))
-               => t(S:Set, pointerType(T:KResult))
+               _ ? t(S:Set, pointerType(T:KResult)) : t(_, pointerType(_:KResult))
+               => t(S, pointerType(T))
           ...</type>
           [structural]
 
