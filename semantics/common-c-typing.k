@@ -190,7 +190,8 @@ module COMMON-SEMANTICS-TYPE-CANONICALIZATION
           => t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
           [structural, anywhere]
      
-     rule <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
+     rule <k> 
+               canonicalizeSpecifier(BagItem(Named(X:Id)))
                => t(.Set, typedefType(X:Id, T:KResult))
           ...</k>
           <types>... typedef(X:Id) |-> T:KResult ...</types>
