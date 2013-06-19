@@ -837,7 +837,6 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
      
      rule [interpret-start]:
           interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-          when N >=Int 0
      
      rule [interpret-done]:
           interpret-aux(T:Type, I:Int) => tv(I, T)

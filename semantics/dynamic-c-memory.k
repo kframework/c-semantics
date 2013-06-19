@@ -145,12 +145,10 @@ module DYNAMIC-SEMANTICS-READING
      rule [joinIntegerBytes-step]:
           joinIntegerBytes-aux(T:Type, (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-          when N' >=Int 0
           [structural]
      rule [joinIntegerBytes-done]:
           joinIntegerBytes-aux(T:Type, .KList, piece(N:Int, Len:Int)) 
           => interpret(T, piece(N, Len)) 
-          when N >=Int 0
           [structural]
      
      rule floorLoc(loc(Base:SymBase, Offset:Int, BitOffset:Int))
