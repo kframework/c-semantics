@@ -114,10 +114,10 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
                andBool notBool isConstType(T:KResult)
           [structural]
      rule figureInit-aux(X:Id, T:KResult, initializer(K:K))
-          => initValue(X:Id, T:KResult, (K:K ~> makeUnwritableVar(X:Id)))
+          => initValue(X, T, (K ~> makeUnwritableVar(X)))
           // I'd like to get rid of this cleanly
-          when notBool isIncompleteType(T:KResult)
-               andBool isConstType(T:KResult)
+          when notBool isIncompleteType(T)
+               andBool isConstType(T)
           [structural]
      
      // base types

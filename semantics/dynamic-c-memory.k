@@ -543,19 +543,19 @@ module DYNAMIC-SEMANTICS-WRITING
           ...</k>
           [structural]
      rule [write-byte-buffer]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => .K ...</k>
+          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
           <buffer>...
                (.List => bwrite(loc(Base, Offset:Int, 0), V:K))
           </buffer>
           <br/>
-          <mem>... Base |-> memblock(Len:Int, Attr:Bag, _) ...</mem>
+          <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
           <locsWrittenTo>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
           </locsWrittenTo>
           <notWritable> NotWritable:Map </notWritable>
           when (notBool BagItem(loc(Base, Offset, 0)) in Locs:Bag)
                andBool (Offset:Int <Int Len:Int)
-               andBool (notBool (mconst in Attr:Bag))
+               andBool (notBool (BagItem(mconst) in Attrs))
                andBool (notBool (loc(Base, Offset, 0) in keys NotWritable:Map))
           [large, structural]
           
@@ -720,8 +720,8 @@ module DYNAMIC-C-MEMORY-MISC
      rule [alloc-string]:
           allocString(Loc:SymLoc, S:String)
           => allocateType(Loc, 
-               t(.Set, arrayType(t(.Set, char), lengthString(S:String))))
-               ~> writeString(Loc, S:String) ~> makeUnwritable(Loc)
+               t(.Set, arrayType(t(.Set, char), lengthString(S))))
+               ~> writeString(Loc, S) ~> makeUnwritable(Loc)
           [structural]
      rule [alloc-wstring]:
           allocWString(Loc:SymLoc, S:KList)
@@ -732,7 +732,7 @@ module DYNAMIC-C-MEMORY-MISC
      
      rule [makeUnwritable-var]:
           <k> makeUnwritableVar(X:Id) => makeUnwritable(Loc)  ...</k>
-          <env>... X:Id |-> Loc:SymLoc ...</ env>
+          <env>... X:Id |-> Loc:SymLoc ...</env>
           [structural]
      // fixme shouldn't need both of these
      // fixme could do better with bitfields
@@ -747,8 +747,8 @@ module DYNAMIC-C-MEMORY-MISC
           </notWritable>
           [structural]
      rule [makeUnwritable]:
-          <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => .K ...</k>
-          <mem>... Base |-> memblock(_, (_ .Bag => mconst), _) ...</mem>
+          <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>
+          <mem>... Base |-> memblock(_, _ (.Bag => BagItem(mconst)), _) ...</mem>
           [structural]
 
      syntax K ::= "checkValidLoc-aux" "(" SymLoc ")"

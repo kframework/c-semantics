@@ -556,9 +556,10 @@ module COMMON-C-SYNTAX
           SetItem(l('_?_:_))
 
      syntax K ::= "THOLE"
-     syntax K ::= PAUSE(Bool) | ASSERT(K) [strict]
 
-     rule ASSERT(true) => .K [structural, anywhere]
+     syntax K ::= PAUSE(Bool, K) | ASSERT(Bool, K)
+     
+     rule ASSERT(true, _) => .K [structural, anywhere]
 
      syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
 
