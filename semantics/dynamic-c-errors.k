@@ -183,8 +183,8 @@ module DYNAMIC-C-ERRORS
           <k> (. => ERROR) ~> leftShiftInterpret(T:KResult, _:Int, tv(E1:Int, T:KResult)) ...</k>
           <br/>
           (.Bag => <errorCell> Error("00022", "Trying to left-shift a negative signed value.") </errorCell>)
-          when hasSignedIntegerType(T:KResult)
-          andBool E1:Int <Int 0
+          when hasSignedIntegerType(T)
+               andBool E1 <Int 0
           [structural, large]
           
      rule [err00023]:
@@ -192,18 +192,29 @@ module DYNAMIC-C-ERRORS
           <br/>
           (.Bag => <errorCell> Error("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.") </errorCell>)
           when hasSignedIntegerType(T:KResult)
-          andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
+               andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
           [structural, large]
      
-     // TODO(chathhorn) basetype, elided. This can't happen now, so I must have
-     // fucked something up. Actually, the configuration will probably just be
-     // a bit different when exhibiting this error.
-     // rule [err00024]:
-     //      <k> (. => ERROR) ~> arithInterpret(_, I:Int &Int I':Int) ...</k>
-     //      <br/>
-     //      (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic number (address) or float.") </errorCell>)
-     //      when (notBool isConcreteNumber(I:Int)) orBool (notBool isConcreteNumber(I':Int))
-     //      [structural, large]
+     rule [err00024a]:
+          <k> (. => ERROR) ~> tv(_:SymLoc, _) & _ ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic address.") </errorCell>)
+          [structural, large]
+     rule [err00024b]:
+          <k> (. => ERROR) ~> _ & tv(_:SymLoc, _) ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00024", "Bitwise & used on a symbolic address.") </errorCell>)
+          [structural, large]
+     rule [err00024c]:
+          <k> (. => ERROR) ~> tv(_:Float, _) & _ ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00024", "Bitwise & used on a float.") </errorCell>)
+          [structural, large]
+     rule [err00024d]:
+          <k> (. => ERROR) ~> _ & tv(_:Float, _) ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00024", "Bitwise & used on a float.") </errorCell>)
+          [structural, large]
           
      rule [err00025]:
           <k> (. => ERROR) ~> callMain-aux(t(_, functionType(t(_, T:K), _:KList)), _:Int, _:Id, _) ...</k>

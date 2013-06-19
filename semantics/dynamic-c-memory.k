@@ -34,18 +34,28 @@ module DYNAMIC-SEMANTICS-READING
      syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
      syntax K ::= "extractByteFromMem" "(" SymLoc ")" 
      
-     // datalist, offset in bits into list, number of bits to extract, accumulator
+     // datalist, offset in bits into list, number of bits to extract,
+     // accumulator
      syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
      rule extractBitsFromList(dataList(L:KList), N:Int, M:Int) 
-          => extractBitsFromList-aux(dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
+          => extractBitsFromList-aux(
+               dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
           [structural]
      // fixme snat
-     rule extractBitsFromList-aux(dataList((piece(_, 1),, L:KList)), Offset:Int, NumBits:Int, .KList)
-          => extractBitsFromList-aux(dataList(L:KList), Offset:Int -Int 1, NumBits:Int, .KList)
+     rule extractBitsFromList-aux(
+               dataList((piece(_, 1),, L:KList)), 
+               Offset:Int, NumBits:Int, .KList)
+          => extractBitsFromList-aux(
+               dataList(L:KList), 
+               Offset:Int -Int 1, NumBits:Int, .KList)
           when Offset:Int >Int 0
           [structural] 
-     rule extractBitsFromList-aux(dataList((piece(N:Bits, 1),, L:KList)), 0, NumBits:Int, Done:KList)
-          => extractBitsFromList-aux(dataList(L:KList), 0, NumBits:Int -Int 1, (Done:KList,, piece(N, 1)))
+     rule extractBitsFromList-aux(
+               dataList((piece(N:Bits, 1),, L:KList)), 
+               0, NumBits:Int, Done:KList)
+          => extractBitsFromList-aux(
+               dataList(L:KList), 
+               0, NumBits:Int -Int 1, (Done:KList,, piece(N, 1)))
           when NumBits >Int 0
           [structural] 
      
@@ -53,7 +63,8 @@ module DYNAMIC-SEMANTICS-READING
           [structural] 
      
      context readActual(_, _, value(HOLE))
-     rule read(Loc:SymLoc, T:KResult) => read-aux(Loc, T:KResult, value(bitSizeofType(T:KResult))) 
+     rule read(Loc:SymLoc, T:KResult) 
+          => read-aux(Loc, T:KResult, value(bitSizeofType(T:KResult))) 
           when notBool(isFunctionType(T:KResult))
           [structural]
      
@@ -62,24 +73,29 @@ module DYNAMIC-SEMANTICS-READING
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule [read-thread-local]:
-          <k> ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) ...</k>
+          <k> 
+               ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
+          ...</k>
           <threadId> Th </threadId>
           [structural, ndlocal]
      rule [read-shared]: // read global or shared data
           ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
           [computational, ndlocal]
      rule [read-allocated]: // read data of "allocated" duration
-          ('read-aux => 'readActual)(loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
+          ('read-aux => 'readActual)
+               (loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
           [computational, ndlocal]
      
      rule [read]:
           readActual(Loc:SymLoc, T:KResult, BitSize:Int)
-          => concretize(T:KResult, extractBytesFromMem(Loc, bitsToBytes(BitSize:Int)))
+          => concretize(T:KResult, 
+               extractBytesFromMem(Loc, bitsToBytes(BitSize:Int)))
           when notBool isBitfieldType(T)
           [structural]
      rule [read-bitfield]:
           readActual(Loc:SymLoc, T:KResult, BitSize:Int)
-          => concretize(T:KResult, fillToBytes(extractBitsFromMem(Loc, BitSize:Int))) 
+          => concretize(T:KResult, 
+               fillToBytes(extractBitsFromMem(Loc, BitSize:Int))) 
           when isBitfieldType(T)
           [structural]
      
@@ -89,12 +105,15 @@ module DYNAMIC-SEMANTICS-READING
           when hasIntegerType(T:KResult) 
                andBool notBool isBitfieldType(T:KResult) 
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), dataList(L:KList)) 
-          => joinIntegerBytes(t(S:Set, bitfieldType(T:KResult, Len:Int)), reverseList(L:KList)) 
+     rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
+               dataList(L:KList)) 
+          => joinIntegerBytes(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
+               reverseList(L:KList)) 
           [structural]
           
      // FIXME very unsafe, not checking size of list or its contents
-     rule concretize(T:KResult, dataList((piece(encodedFloat(F:Float), Len:Int),, _))) 
+     rule concretize(T:KResult, 
+               dataList((piece(encodedFloat(F:Float), Len:Int),, _))) 
           => tv(F:Float, T:KResult)
           when isFloatType(T:KResult)
                andBool (Len:Int ==Int numBitsPerByte)
@@ -112,7 +131,9 @@ module DYNAMIC-SEMANTICS-READING
           when Len:Int ==Int numBitsPerByte
           [structural]
      // fixme sNat
-     rule joinPointerBytes-aux(T:Type, (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, L:KList), subObject(N, 0, End:Int))
+     rule joinPointerBytes-aux(T:Type, 
+               (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, 
+               L:KList), subObject(N, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
           when (Len ==Int numBitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
@@ -137,14 +158,17 @@ module DYNAMIC-SEMANTICS-READING
      
      // fixme may want to consider restricting further, or loosening
      rule [joinIntegerBytes-unknown-char]:
-          joinIntegerBytes-aux(T:Type, piece(unknown(Len:Int), Len:Int), piece(0, 0))
+          joinIntegerBytes-aux(T:Type, 
+               piece(unknown(Len:Int), Len:Int), piece(0, 0))
           => tv(piece(unknown(Len), Len), T)
           when isCharType(T)
           [structural]
      
      rule [joinIntegerBytes-step]:
-          joinIntegerBytes-aux(T:Type, (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
-          => joinIntegerBytes-aux(T, L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
+          joinIntegerBytes-aux(T:Type, 
+               (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
+          => joinIntegerBytes-aux(T, 
+               L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
           [structural]
      rule [joinIntegerBytes-done]:
           joinIntegerBytes-aux(T:Type, .KList, piece(N:Int, Len:Int)) 
@@ -197,22 +221,24 @@ module DYNAMIC-SEMANTICS-READING
      
      rule [read-byte-fast]:
           <k> extractByteFromMem(loc(Base:SymBase, Offset:Int, 0))
-               => assert(notBool (BagItem(loc(Base, Offset:Int, 0)) in Locs:Bag), 3)
-                    ~> assert(Offset:Int <Int Len:Int, 2)
-                    ~> tv(V:K, t(.Set, no-type))
+               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs), 3)
+                    ~> assert(Offset <Int Len, 2)
+                    ~> tv(V, t(.Set, no-type))
           ...</k>
           <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locsWrittenTo> Locs:Bag </locsWrittenTo>
+          <locsWrittenTo> Locs </locsWrittenTo>
           <buffer> .List </buffer>
           [large, structural]
+
      rule [read-byte]:
           <k> extractByteFromMem(loc(Base:SymBase, Offset:Int, 0))
-               => assert(notBool BagItem(loc(Base, Offset:Int, 0)) in Locs:Bag, 3)
-                    ~> assert(Offset:Int <Int Len:Int, 2)
-                    ~> tv(V:K, t(.Set, no-type))
+               => assert(notBool 
+                    (BagItem(loc(Base, Offset, 0)) in Locs), 3)
+                    ~> assert(Offset <Int Len, 2)
+                    ~> tv(V, t(.Set, no-type))
           ...</k>
           <br/>
           <mem>... 
@@ -220,7 +246,7 @@ module DYNAMIC-SEMANTICS-READING
           ...</mem>
           <locsWrittenTo> Locs:Bag </locsWrittenTo>
           <buffer> Mem:List </buffer>
-          when notBool loc(Base, Offset:Int, 0) in locations(Mem:List)
+          when notBool loc(Base, Offset, 0) in locations(Mem)
           [large, structural]
           
      rule [read-byte-lazy]:
@@ -238,22 +264,22 @@ module DYNAMIC-SEMANTICS-READING
           ...</mem>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset:Int, 0) in locations(Mem:List)
-               andBool notBool Offset:Int in keys M:Map
+               andBool notBool Offset in (keys M)
           [large, structural]
           
           // TODO(chathhorn): perf, elided
-//       rule [read-byte-buffer]:
-//            <k> extractByteFromMem(Loc:SymLoc) 
-//                 => assert(notBool BagItem(Loc) in Locs:Bag, 3)
-//                 ~> tv(V:K, t(.Set, no-type))
-//            ...</k>
-//            <locsWrittenTo> Locs:Bag </locsWrittenTo>
-//            <buffer>... bwrite(Loc, V:K) Mem:List </buffer>
-//            when notBool Loc in locations(Mem:List)
-//            [structural]
-//            // for speed in interpretation; forces local buffer to be flushed
-//            // before a read
-//            //[interpRule] 
+//        rule [read-byte-buffer]:
+//             <k> extractByteFromMem(Loc:SymLoc) 
+//                  => assert(notBool BagItem(Loc) in Locs:Bag, 3)
+//                  ~> tv(V:K, t(.Set, no-type))
+//             ...</k>
+//             <locsWrittenTo> Locs:Bag </locsWrittenTo>
+//             <buffer>... bwrite(Loc, V:K) Mem:List </buffer>
+//             when notBool Loc in locations(Mem:List)
+//             [structural]
+//             // for speed in interpretation; forces local buffer to be flushed
+//             // before a read
+//             //[interpRule] 
 
 endmodule
 
@@ -663,7 +689,8 @@ module DYNAMIC-SEMANTICS-WRITING
           [structural, anywhere]
           
      syntax Bits ::= lowestByte(Int, Type) [function]
-     rule lowestByte(I:Int, T:Type) => piece(I &Int byteMaskSet, numBitsPerByte)
+     rule lowestByte(I:Int, T:Type) 
+          => piece(I &Int byteMaskSet, numBitsPerByte)
           when hasIntegerType(T) 
           [structural]
      
@@ -748,7 +775,9 @@ module DYNAMIC-C-MEMORY-MISC
           [structural]
      rule [makeUnwritable]:
           <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>
-          <mem>... Base |-> memblock(_, _ (.Bag => BagItem(mconst)), _) ...</mem>
+          <mem>... 
+               Base |-> memblock(_, _ (.Bag => BagItem(mconst)), _) 
+          ...</mem>
           [structural]
 
      syntax K ::= "checkValidLoc-aux" "(" SymLoc ")"

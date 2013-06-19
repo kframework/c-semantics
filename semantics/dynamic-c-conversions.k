@@ -782,9 +782,13 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // choice implementation defined behavior
      rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
-          => tv(N:Int, t(S:Set, pointerType(T:KResult)))
-          when hasIntegerType(T':KResult)
-               andBool N:Int =/=K NullPointerConstant
+          => tv(N, t(S, pointerType(T)))
+          when hasIntegerType(T')
+               andBool N =/=K NullPointerConstant
+          [anywhere]
+     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:SymLoc, T':KResult)) 
+          => tv(N, t(S, pointerType(T)))
+          when hasIntegerType(T')
           [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
@@ -795,9 +799,14 @@ module DYNAMIC-SEMANTICS-CONVERSION
      }*/
      // fixme needs to check size
      rule cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
-          => tv(N:Int, T:KResult)
-          when hasIntegerType(T:KResult)
-               andBool notBool isBoolType (T:KResult)
+          => tv(N, T)
+          when hasIntegerType(T)
+               andBool notBool isBoolType (T)
+          [anywhere]
+     rule cast(T:KResult, tv(N:SymLoc, t(_, pointerType(_))))
+          => tv(N, T)
+          when hasIntegerType(T)
+               andBool notBool isBoolType (T)
           [anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{

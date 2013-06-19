@@ -513,15 +513,19 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      /*@ this extra step is useful for putting the function name in the
         transition graph */
      rule [call]:
-          application(Fun:KResult, L:KList) => application'(Fun:KResult, L:KList)
+          application(Fun:KResult, L:KList) 
+          => application'(Fun:KResult, L:KList)
           [structural]
 
      rule [populateFromGlobal]:
-          <k> populateFromGlobal => .K ...</k>
+          <k> populateFromGlobal => . ...</k>
           <currTU> Tu:K </currTU>
-          <genv>... Tu:K |-> map(G:Map) ...</genv> <env> _ => G:Map </env>
-          <gtypes>... Tu:K |-> map(GT:Map) ...</gtypes> <types> _ => GT:Map </types>
-          <gstructs> GS:Map </gstructs> <structs> _ => GS:Map </structs>
+          <genv>... Tu:K |-> map(G:Map) ...</genv> 
+          <env> _ => G:Map </env>
+          <gtypes>... Tu:K |-> map(GT:Map) ...</gtypes> 
+          <types> _ => GT:Map </types>
+          <gstructs> GS:Map </gstructs> 
+          <structs> _ => GS:Map </structs>
           [structural]
 
      rule [builtin-application]:
@@ -1136,18 +1140,19 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
      otherwise, the behavior is undefined.
      }*/
      rule tv(I:Int, T:KResult) << tv(N:Int, T':KResult)
-          => leftShiftInterpret(T:KResult, I:Int <<Int N:Int, tv(I:Int, T:KResult))
-          when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-               andBool N:Int <Int numBits(T:KResult)
+          => leftShiftInterpret(T, I <<Int N, tv(I, T))
+          when isPromoted(T) andBool isPromoted(T')
+               andBool N <Int numBits(T)
           [structural]
      rule leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
           => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
           when hasUnsignedIntegerType(T:KResult)
-     rule leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
-          => tv(I:Int, T:KResult)
-          when hasSignedIntegerType(T:KResult)
-               andBool I:Int <=Int max(T:KResult)
-               andBool I:Int >=Int min(T:KResult)
+     rule leftShiftInterpret(T:KResult, I:Int, tv(E:Int, T:KResult))
+          => tv(I, T)
+          when hasSignedIntegerType(T)
+               andBool E >=Int 0
+               andBool I <=Int max(T)
+               andBool I >=Int min(T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -1719,14 +1724,14 @@ module DYNAMIC-SEMANTICS-SEQUENCING
      value.
      }*/
 
-     // TODO(chathhorn): ugly custom heating/cooling (this and Call).
-     rule Comma(klist(L:KList)) => toRVList(L) ~> Comma(.K)
-     rule R:KResult ~> Comma(.K) => Comma(R) 
+     syntax K ::= commaEval(K) [strict]
 
-     rule Comma(rvlist((_:KResult,, K':K,, L:KList))) 
-          => sequencePoint ~> Comma(rvlist((K':K,, L:KList)))
+     rule commaEval(R:KResult) => rkludge(R)
+
+     rule Comma(klist(K:K,, _:K,, L:KList)) 
+          => commaEval(K) ~> discard ~> sequencePoint ~> Comma(klist(L))
           [structural]
-     rule Comma(rvlist(K:K)) => K
+     rule Comma(klist(K:K)) => commaEval(K)
           [structural]
 endmodule
 
