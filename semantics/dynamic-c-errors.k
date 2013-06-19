@@ -370,8 +370,8 @@ module DYNAMIC-C-ERRORS
           [structural, large]
           
      rule [err00045]:
-          <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _:Int, _:Int), _)  ...</k>
-          <mem>... Base |-> memblock(_, (_ mconst), _) ...</mem>
+          <k> (. => ERROR) ~> writeByte(loc(Base:SymBase, _, _), _)  ...</k>
+          <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
           <br/>
           (.Bag => <errorCell> Error("00045", "Trying to modify a string literal or an object declared with const type.") </errorCell>)
           [structural, large]

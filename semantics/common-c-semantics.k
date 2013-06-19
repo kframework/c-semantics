@@ -19,7 +19,7 @@ module COMPAT-SYNTAX
      syntax Int ::= "lengthKList" KList [function]
 
      syntax Bool ::= BagItem "in" Bag [function]
-               | K "#inBag" Bag //TODO: function?!?
+               | K "#inBag" Bag [function]
 
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
 
@@ -191,13 +191,7 @@ module COMMON-SEMANTIC-SYNTAX
      
      syntax K ::= "initialize" "(" Id "," Type "," K ")"
 
-     syntax BagItem ::= "mlength" "(" Int ")"  [function]
-     syntax BagItem ::= "mconst" [function]
-     syntax MemAttr ::= "mattr-length" "(" Int ")"
-                      | "mattr-const"
-
-     rule mlength(X:Int) => BagItem(mattr-length(X))
-     rule mconst => BagItem(mattr-const)
+     syntax K ::= "mconst"
 
      syntax K ::= "makeUnwritable" "(" SymLoc ")" 
      syntax K ::= "makeUnwritableSubObject" "(" K ")" 
