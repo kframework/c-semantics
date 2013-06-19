@@ -550,53 +550,53 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      
      rule StructDef(X:Id, krlist(L:KList))
           => addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L)))
-          ~> giveType(X:Id, t(.Set, structType(X:Id)))
+               ~> giveType(X:Id, t(.Set, structType(X:Id)))
           [structural]
      rule UnionDef(X:Id, krlist(L:KList))
           => addUnion(X:Id, fillUnionBitHoles(L))
-          ~> giveType(X:Id, t(.Set, unionType(X:Id)))
+               ~> giveType(X:Id, t(.Set, unionType(X:Id)))
           [structural]
 
      // the K will resolve to a type, so throw it away
-     rule OnlyTypedef(K:K) => K:K ~> discard
+     rule OnlyTypedef(K:K) => K ~> discard
           [structural]
           
-     rule NameAndType(X:Id, T:KResult) => typedDeclaration(T:KResult, X:Id)
+     rule NameAndType(X:Id, T:KResult) => typedDeclaration(T, X)
           [structural, anywhere] 
      
      rule [extract-basic]: 
-          extractActualType(T:KResult) => T:KResult 
-          when isBasicType(T:KResult)
+          extractActualType(T:KResult) => T
+          when isBasicType(T)
      rule [extract-enum]: 
           extractActualType(t(S:Set, enumType(X:Id))) 
-          => t(S:Set, enumType(X:Id))
+          => t(S, enumType(X))
      rule [extract-struct]:
           extractActualType(t(S:Set, structType(X:Id))) 
-          => t(S:Set, structType(X:Id))
+          => t(S, structType(X))
      rule [extract-union]:
           extractActualType(t(S:Set, unionType(X:Id))) 
-          => t(S:Set, unionType(X:Id))
+          => t(S, unionType(X))
      rule [extract-array]:
           extractActualType(t(S:Set, arrayType(T:KResult, N:Int))) 
-          => t(S:Set, arrayType(extractActualType(T:KResult), N:Int))
+          => t(S, arrayType(extractActualType(T), N))
      rule [extract-incompleteArray]:
           extractActualType(t(S:Set, incompleteArrayType(T:KResult))) 
-          => t(S:Set, incompleteArrayType(extractActualType(T:KResult)))
+          => t(S, incompleteArrayType(extractActualType(T)))
      rule [extract-bitfield]:
           extractActualType(t(S:Set, bitfieldType(T:KResult, N:Int))) 
-          => t(S:Set, bitfieldType(extractActualType(T:KResult), N:Int))
+          => t(S, bitfieldType(extractActualType(T), N))
      rule [extract-function]:
           extractActualType(t(S:Set, functionType(T:KResult, List:KList))) 
-          => t(S:Set, functionType(extractActualType(T:KResult), List:KList))
+          => t(S, functionType(extractActualType(T), List))
      rule [extract-pointer]:
           extractActualType(t(S:Set, pointerType(T:KResult))) 
-          => t(S:Set, pointerType(extractActualType(T:KResult)))
+          => t(S, pointerType(extractActualType(T)))
      rule [extract-qualified]:
           extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) 
-          => t(S:Set, qualifiedType(extractActualType(T:KResult), K:K))
+          => t(S, qualifiedType(extractActualType(T), K))
      rule [extract-typedef]:
           extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
-          => extractActualType(t(S:Set S':Set, T:K))
+          => extractActualType(t(S S', T))
           
      syntax K ::= "NameAndType" "(" K "," K ")" [strict(2)] 
           
@@ -605,8 +605,8 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
           [structural, anywhere] 
      rule [Separate-FieldGroups]:
           FieldGroup(K:K, klist((C:K,, C':K,, L:KList))) 
-          => FieldGroup(K:K, klist(C:K))
-          ,, FieldGroup(K:K, klist((C':K,, L:KList)))
+          => FieldGroup(K:K, klist(C:K)),, 
+               FieldGroup(K:K, klist((C':K,, L:KList)))
           [structural, anywhere]
 
      rule FieldGroup(T:KResult, klist(Name(X:Id, K:K))) 
@@ -616,7 +616,7 @@ module COMMON-SEMANTICS-TYPE-INTERPRETATION
      rule FieldGroup(T:KResult, klist(BitFieldName(Name(X:Id, K:K), Size:K)))
           => NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
           [structural, anywhere] 
-     rule FieldName(K:K) => K:K [structural, anywhere]
+     rule FieldName(K:K) => K [structural, anywhere]
 endmodule
 
 module COMMON-SEMANTICS-TYPE-MISC

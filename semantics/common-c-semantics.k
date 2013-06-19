@@ -381,8 +381,6 @@ module COMMON-SEMANTIC-SYNTAX
      // deletes the base object from memory, given a location and it size (as a
      // check)
      syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")"
-     
-     syntax Bool ::= isConcreteNumber(K) [function]
 endmodule
 
 module COMMON-C-SETTINGS

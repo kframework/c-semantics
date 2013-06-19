@@ -222,11 +222,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
                Offset:Int, Len:Int)))
           [structural]
      
-     rule isConcreteNumber(loc(_, _, _)) => false
-     rule isConcreteNumber(I:Int) => true
-          when  I:Int <=Int 0 orBool I:Int >Int 0
-          [structural]
-     
      // this should probably go in the k prelude
      rule K:K in (ListItem(K:K) _:List) => true
      rule _:K in .List => false
