@@ -47,16 +47,13 @@ module DYNAMIC-C-ERRORS
           (.Bag => <errorCell> Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </errorCell>)
           [structural, large]
 
-// TODO(chathhorn): idk, elided
-//      rule [err00005]:
-//           <k> (. => ERROR) ~> extractByteFromMem(loc(Block:SymBase, _:Int, _:Int)) ...</k>
-// // TODO(chathhorn): (conversion to map)
-//           // <memory> M:Bag </memory>
-//           <br/>
-//           (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-//           <mem> M:Map </mem>
-//           when notBool SetItem(Block) in keys (M:Map)
-//           [structural, large]
+      rule [err00005]:
+           <k> (. => ERROR) ~> extractByteFromMem(loc(B:SymBase, _:Int, _:Int)) ...</k>
+           <br/>
+           (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
+           <mem> M:Map </mem>
+           when notBool SetItem(B) in keys (M:Map)
+           [structural, large]
      
      rule [err00006]:
           <k> (. => ERROR) ~> joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</k>
@@ -65,16 +62,13 @@ module DYNAMIC-C-ERRORS
           when notBool isCharType(T:KResult)
           [structural, large]
           
-// TODO(chathhorn): (conversion to map)
-// TODO(chathhorn): idk, elided
-//      rule [err00007]:
-//           <k> (. => ERROR) ~> checkValidLoc-aux(loc(Block:SymBase, _:Int, _:Int)) ...</k>
-//           // <memory> M:Bag </memory>
-//           <br/>
-//           (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
-//           <mem> M:Map </mem>
-//           when notBool SetItem(Block) in (keys M:Map)
-//           [structural, large]
+     rule [err00007]:
+          <k> (. => ERROR) ~> checkValidLoc-aux(loc(B:SymBase, _:Int, _:Int)) ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00007", "Referring to an object outside of its lifetime.") </errorCell>)
+          <mem> M:Map </mem>
+          when notBool SetItem(B) in (keys M:Map)
+          [structural, large]
      
      rule [err00008]:
           <k> (. => ERROR) ~> concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _))) ...</k>
