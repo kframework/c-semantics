@@ -23,8 +23,8 @@ setpgrp;
 
 # these are compile time settings and are set by the compile script using this
 # file as a template
-my $SCRIPTS_DIR="EXTERN_SCRIPTS_DIR";
-my $PROGRAM_NAME="EXTERN_IDENTIFIER";
+my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
+my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
 my @temporaryFiles = ();
 my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c', UNLINK => 0 );
@@ -41,15 +41,16 @@ my $childPid = 0;
 
 my $compiledDef = catfile($SCRIPTS_DIR, "c-kompiled");
 
-my @krun_args = (
-#      "-verbose", 
-#      "--output-mode", "pretty", 
-      "--output-mode", "raw", 
-      "--output", $fileOutput, 
-      "--parser", "cat", 
-      "--compiled-def", $compiledDef, 
-      "--io", 
-      $fileInput);
+my %krun_args = (
+#     '-verbose' => '',
+#     '--output-mode' => 'pretty', 
+      '--output-mode' => 'raw', 
+      '--output' => $fileOutput, 
+      '--parser' => 'cat', 
+      '--compiled-def' => $compiledDef, 
+      '--io' => '', 
+      '' => $fileInput
+);
 
 # this block gets run at the end of a normally terminating program, whether it
 # simply exits, or dies.  We use this to clean up.
@@ -111,7 +112,15 @@ if (defined($ENV{'PRINTMAUDE'})) {
 if (defined($ENV{'IOLOG'})) {
 }
 
-system("krun", @krun_args);
+if (defined($ENV{'SEARCH'})) {
+      $krun_args{'--search'} = '';
+      delete $krun_args{'--io'};
+      $krun_args{'--no-io'} = '';
+      $krun_args{'--output-mode'} = 'pretty';
+      delete $krun_args{'--output'};
+}
+
+system("krun", grep {$_} %krun_args);
 
 open(OUT, "<$fileOutput");
 
@@ -173,7 +182,7 @@ for (<OUT>) {
       };
 }
 
-if ($haveError || !$haveExitCode) {
+if (!$ENV{'SEARCH'} && ($haveError || !$haveExitCode)) {
       print "\n=============================================================\n";
       print "ERROR! KCC encountered an error while executing this program.\n";
 
