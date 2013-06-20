@@ -5,11 +5,11 @@ installation steps not listed explicitly.
 
 ## Install Perl
 - You almost definitely will have this installed if you use linux or mac;
-  otherwise, use your package manager to install it
+  otherwise, use your package manager to install it.
 - Windows perl can be found here: http://www.activestate.com/activeperl
-- Perl is used for many of the scripts in both the C tool and in K
-- Install perl modules (probably using either ppm in windows, or cpan
-  elsewhere)
+- Perl is used for many of the scripts in both the C tool and in K.
+- Install the following perl modules (probably using either ppm in windows, or
+  cpan elsewhere).
     - XML::DOM
     - XML::LibXML::Reader
     - Regexp::Common
@@ -25,11 +25,11 @@ installation steps not listed explicitly.
 $ cpan -i XML::DOM
 </pre>
 
-(It might help to do this as sudo if it doesn't work as a normal user)
+(It might help to do this as sudo if it doesn't work as a normal user.)
 
 ## Install Ocaml (http://caml.inria.fr/):
-- OCaml is used in the C parser
-- Version 3.11.0 works; probably many others work as well
+- OCaml is used in the C parser.
+- Version 3.11.0 works; probably many others work as well.
 
 ### Example/Test:
 <pre>
@@ -41,10 +41,9 @@ $ ocaml
 </pre>
 
 ## Install K:
-- Go to http://code.google.com/p/k-framework/ and check out the K Semantic
-  Framework from http://code.google.com/p/k-framework/source/checkout
-- Follow the instructions from the README included with K to build and install
-  the framework.
+- Go to http://code.google.com/p/k-framework/source/checkout and check out the
+  K Semantic Framework.
+- See the README included with K for build and installation instructions.
 - Set C_K_BASE to the full (non-relative) path in which you installed the K
   framework.
     - E.g., run "export C_K_BASE=~/k-framework/dist"
@@ -52,7 +51,6 @@ $ ocaml
       script.  E.g., if you use the bash shell on linux, you can make this
       change stay by adding the line "export C_K_BASE=~/k-framework/trunk" to
       your ~/.bashrc file.
-    - Do NOT include a trailing '/'
 
 Now try the following tests:
 
@@ -154,7 +152,8 @@ of "dist/kcc"
 
 ### Links to help understand K:
 - http://code.google.com/p/k-framework/
-- http://fsl.cs.uiuc.edu/K See particularly:
+- http://k-framework.org/ 
+- See particularly:
     - Traian Serbanuta's thesis defense slides
       (http://fsl.cs.uiuc.edu/pubs/serbanuta-2010-thesis-slides.pdf) for a high
       level overview 
