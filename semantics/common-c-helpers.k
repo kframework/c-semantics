@@ -37,19 +37,26 @@ module COMPAT
      syntax KResult ::= "rvlist" "(" KList ")"
 
      rule klist(L:KList) => toKRList(L) 
+          [structural]
 
      context toKRList'(_,, HOLE,, _)
      context toRVList'(_,, (HOLE => reval(HOLE)),, _)
 
      rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
+          [structural]
      rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
+          [structural]
 
      rule toKRList'(_,, (V:KResult => .KList)) ~> krlist((.KList => V),, _) 
+          [structural]
 
      rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
+          [structural]
 
      rule toKRList'(.KList) => .
+          [structural]
      rule toRVList'(.KList) => .
+          [structural]
 
 endmodule
 

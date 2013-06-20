@@ -1122,11 +1122,11 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
      rule initHead(S:String, T:KResult)
           => SingleInit(tv(asciiString(firstChar(S:String)),
                t(getModifiers(T:KResult), char)))
-          [anywhere]
+          [structural, anywhere]
      
      rule initTail(S:String) 
           => SingleInit(Constant(StringLiteral(butFirstChar(S:String))))
-          [anywhere]
+          [structural, anywhere]
           
      rule [fillInitAux-wstring-some]:
           <k> 
