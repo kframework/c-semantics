@@ -149,7 +149,6 @@ sub performSpecializations {
 	my ($file) = (@_);
 	
 	my $mainFileName = $args->{'<files>'}[0];
-	my $nondetFlag = $args->{'-n'} ? 1 : 0;
 	
 	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
 	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
