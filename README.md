@@ -27,7 +27,7 @@ $ cpan -i XML::DOM
 
 (It might help to do this as sudo if it doesn't work as a normal user.)
 
-### 2. Install Ocaml (http://caml.inria.fr/):
+### 2. Install Ocaml (http://caml.inria.fr/)
 - OCaml is used in the C parser.
 - Version 3.11.0 works; probably many others work as well.
 
@@ -40,7 +40,7 @@ $ ocaml
 (press ctrl-d to exit)
 </pre>
 
-### 3. Install K:
+### 3. Install K
 - Go to http://code.google.com/p/k-framework/source/checkout and check out the
   K Semantic Framework.
 - See the README included with K for build and installation instructions.
@@ -60,7 +60,7 @@ $ make -C regressionTests
 ...
 </pre>
 
-### 4. Optional Install:
+### 4. Install optional packages
 - You may want to install Graphviz (dot), for generating images of the state
   space when searching programs.
 - You can probably do this with your package manager.
@@ -71,7 +71,7 @@ $ which dot
 /usr/bin/dot
 </pre>
 
-### 5. Build our C tool:
+### 5. Build our C tool
 - Run "make" in our main directory, the directory of this README.
 - This should take between 1 and 5 minutes on non-windows machines, and up to
   10 minutes on windows.
@@ -92,7 +92,7 @@ of "dist/kcc".
 
 # Usage
       
-### Understanding the tool:
+### Understanding the tool
 - 'kcc' is meant to to act a lot like gcc.  You use it and run programs the
   same way.
 - The programs kcc generates act like normal programs.  Both the output to
@@ -111,7 +111,7 @@ of "dist/kcc".
   deciphering the output, or help understanding why the program is defined,
   please send your .kdump file to the e-mail listed at the top of this file.
       
-### Runtime Features:
+### Runtime features
 - Running "SEARCH=1 ./a.out" will exhaustively search the state space of your
   program and generate a .pdf and .ps of the space (if you installed Graphviz).
   This is the only way to check all possible evaluation orders of a program to
@@ -134,7 +134,7 @@ of "dist/kcc".
   the collective data.  You can simply delete "maudeProfileDBfile.sqlite" file
   to start another series of tests with a fresh database.
 
-### Caveats and Misc:
+### Caveats and miscellanea
 - In order to use any file I/O, you need to compile the program with the -i
   option.  The support for file I/O is still incredibly rudimentary and very
   few functions are supported.
