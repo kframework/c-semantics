@@ -474,7 +474,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]
      rule [sprintf]:
           prepareBuiltin((Identifier("sprintf")),
-               (Dest:SymLoc,, Format:KResult,, VarArgs:KResult))
+               (tv(Dest:SymLoc, _),, Format:KResult,, VarArgs:KResult))
           => sprintf(formatter(
                getString(Format:KResult), VarArgs:KResult), Dest)
           [structural]
@@ -487,7 +487,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax K ::= "snprintf" "(" K "," SymLoc "," Int ")" [strict(1)]
      rule [snprintf]:
           prepareBuiltin((Identifier("snprintf")), 
-               (Dest:SymLoc,, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
+               (tv(Dest:SymLoc, _),, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
           => snprintf(formatter(
                getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
           [structural]
