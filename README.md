@@ -20,21 +20,21 @@ installation steps not listed explicitly.
     - Getopt::Declare
     - File::Spec::Link
 
-Example/Test:
+E.g., to install a package using cpan:
 <pre>
 $ cpan -i XML::DOM
 </pre>
 
 (It might help to do this as sudo if it doesn't work as a normal user.)
 
-### 2. Install Ocaml (http://caml.inria.fr/)
-- OCaml is used in the C parser.
-- Version 3.11.0 works; probably many others work as well.
+### 2. Install OCaml (http://caml.inria.fr/)
+- OCaml is used by the C parser.
+- Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
-Example/Test:
+To check if OCaml is installed:
 <pre>
 $ ocaml
-        Objective Caml version 3.11.0
+        Objective Caml version 4.00.0
 
 # 
 (press ctrl-d to exit)
@@ -52,20 +52,12 @@ $ ocaml
       change stay by adding the line "export C_K_BASE=~/k-framework/trunk" to
       your ~/.bashrc file.
 
-Now try the following:
-<pre>
-$ make test -C examples
-...
-$ make -C regressionTests
-...
-</pre>
-
 ### 4. Install optional packages
 - You may want to install Graphviz (dot), for generating images of the state
   space when searching programs.
 - You can probably do this with your package manager.
       
-Example/Test:
+To check if dot is installed:
 <pre>
 $ which dot
 /usr/bin/dot
@@ -80,7 +72,7 @@ $ which dot
   probably want to add it to your path like you did for Maude above:
   PATH=/path/to/c-semantics/dist:$PATH
       
-Example/Test:
+To check if kcc is behaving correctly:
 <pre>
 $ dist/kcc tests/unitTests/helloworld.c
 $ ./a.out 
@@ -115,9 +107,7 @@ of "dist/kcc".
 - Running "SEARCH=1 ./a.out" will exhaustively search the state space of your
   program and generate a .pdf and .ps of the space (if you installed Graphviz).
   This is the only way to check all possible evaluation orders of a program to
-  find undefined behavior.  You need to compile your program using the '-n'
-  flag, like "kcc -n program.c" in order to take advantage of this feature.
-  This feature is currently under development.
+  find undefined behavior. This feature is currently under development.
 
 - Running "PROFILE=1 ./a.out" will record which rules of the semantics are
   exercised during the evaluation of the program.  The program executes as
