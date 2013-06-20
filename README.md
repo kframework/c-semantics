@@ -1,29 +1,24 @@
+# Installation
+
 Please let us know if this README is insufficient, or if you needed to do any
 installation steps not listed explicitly.
 
-Send an e-mail to Chucky Ellison (celliso2@illinois.edu) with
-questions/comments/suggestions.  You can also go to
-http://code.google.com/p/c-semantics/ to submit bug reports or feature
-requests.
-
-# Installation
-
 ## Install Perl
-      - You almost definitely will have this installed if you use linux or mac;
-        otherwise, use your package manager to install it
-      - Windows perl can be found here: http://www.activestate.com/activeperl
-      - Perl is used for many of the scripts in both the C tool and in K
-      - Install perl modules (probably using either ppm in windows, or cpan
-        elsewhere)
-            - XML::DOM
-            - XML::LibXML::Reader
-            - Regexp::Common
-            - Tree::Nary
-            - Text::Diff
-            - DBI
-            - DBD::SQLite
-            - Getopt::Declare
-            - File::Spec::Link
+- You almost definitely will have this installed if you use linux or mac;
+  otherwise, use your package manager to install it
+- Windows perl can be found here: http://www.activestate.com/activeperl
+- Perl is used for many of the scripts in both the C tool and in K
+- Install perl modules (probably using either ppm in windows, or cpan
+  elsewhere)
+    - XML::DOM
+    - XML::LibXML::Reader
+    - Regexp::Common
+    - Tree::Nary
+    - Text::Diff
+    - DBI
+    - DBD::SQLite
+    - Getopt::Declare
+    - File::Spec::Link
 
 ### Example/Test:
 <pre>
@@ -33,8 +28,8 @@ $ cpan -i XML::DOM
 (It might help to do this as sudo if it doesn't work as a normal user)
 
 ## Install Ocaml (http://caml.inria.fr/):
-      - OCaml is used in the C parser
-      - Version 3.11.0 works; probably many others work as well
+- OCaml is used in the C parser
+- Version 3.11.0 works; probably many others work as well
 
 ### Example/Test:
 <pre>
@@ -46,17 +41,16 @@ $ ocaml
 </pre>
 
 ## Install Maude:
-      - Go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on
-        your machine
-      - Best to use the precompiled binaries if you can
-      - K requires at least version 2.5
-      - Once installed, add its directory to your path, and make sure you can
-        start the tool by running "maude".  This may require you to rename (or
-        alias or ln) the specific executable to "maude".
-      - We suggest you make this change "stick" by adding it to your login
-        script.  E.g., if you use the bash shell on linux, you can make this
-        change stay by adding the line "PATH=/path/to/maude/bin:$PATH" to your
-        ~/.bashrc file.
+- Go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on your
+  machine
+- Best to use the precompiled binaries if you can
+- K requires at least version 2.5
+- Once installed, add its directory to your path, and make sure you can start
+  the tool by running "maude".  This may require you to rename (or alias or ln)
+  the specific executable to "maude".
+- We suggest you make this change "stick" by adding it to your login script.
+  E.g., if you use the bash shell on linux, you can make this change stay by
+  adding the line "PATH=/path/to/maude/bin:$PATH" to your ~/.bashrc file.
       
 ### Example/Test:
 <pre>
@@ -72,25 +66,24 @@ Bye.
 </pre>
 
 ## Install K:
-      - Go to http://code.google.com/p/k-framework/ and check out the K
-        Semantic Framework from
-        http://code.google.com/p/k-framework/source/checkout
-      - Check out https://k-framework.googlecode.com/svn/tags/v2.7 to get the
-        right version
-      - You'll definitely want to download the most recent version from SVN
-        instead of using the Downloads link.
-      - The requirements given above in this file should satisfy any
-        requirements of K, but you can look at their readme for details.
-      - Set C_K_BASE to the full (non-relative) path in which you installed the
-        K framework.
-            - E.g., run "export C_K_BASE=~/k-framework/dist"
-            - We suggest you make this change "stick" by adding it to your
-              login script.  E.g., if you use the bash shell on linux, you can
-              make this change stay by adding the line "export
-              C_K_BASE=~/k-framework/trunk" to your ~/.bashrc file.
-            - Do NOT include a trailing '/'
-      - Try the following examples:
+- Go to http://code.google.com/p/k-framework/ and check out the K Semantic
+  Framework from http://code.google.com/p/k-framework/source/checkout
+- Check out https://k-framework.googlecode.com/svn/tags/v2.7 to get the right
+  version
+- You'll definitely want to download the most recent version from SVN instead
+  of using the Downloads link.
+- The requirements given above in this file should satisfy any requirements of
+  K, but you can look at their readme for details.
+- Set C_K_BASE to the full (non-relative) path in which you installed the K
+  framework.
+    - E.g., run "export C_K_BASE=~/k-framework/dist"
+    - We suggest you make this change "stick" by adding it to your login
+      script.  E.g., if you use the bash shell on linux, you can make this
+      change stay by adding the line "export C_K_BASE=~/k-framework/trunk" to
+      your ~/.bashrc file.
+    - Do NOT include a trailing '/'
 
+Now try the following tests:
 
 ### Example/Test:
 <pre>
@@ -101,9 +94,9 @@ $ make -C regressionTests
 </pre>
 
 ## Optional Install:
-      - You may want to install Graphviz (dot), for generating images of the
-        state space when searching programs.
-      - You can probably do this with your package manager
+- You may want to install Graphviz (dot), for generating images of the state
+  space when searching programs.
+- You can probably do this with your package manager
       
 ### Example/Test:
 <pre>
@@ -112,13 +105,13 @@ $ which dot
 </pre>
 
 ## Build our C tool:
-      - Run "make" in our main directory, the directory of this README
-      - This should take between 1 and 5 minutes on non-windows machines, and
-        up to 10 minutes on windows.
-      - The "make" process creates a "dist" directory which you can copy
-        elsewhere to install the C tool, or simply leave it where it is.
-        Either way, you will probably want to add it to your path like you did
-        for Maude above. PATH=/path/to/c-semantics/dist:$PATH
+- Run "make" in our main directory, the directory of this README
+- This should take between 1 and 5 minutes on non-windows machines, and up to
+  10 minutes on windows.
+- The "make" process creates a "dist" directory which you can copy elsewhere to
+  install the C tool, or simply leave it where it is. Either way, you will
+  probably want to add it to your path like you did for Maude above.
+  PATH=/path/to/c-semantics/dist:$PATH
       
 
 ### Example/Test:
@@ -134,83 +127,78 @@ of "dist/kcc"
 # Usage
       
 ## Understanding the tool:
-      - 'kcc' is meant to to act a lot like gcc.  You use it and run programs
-        the same way.
-      - The programs kcc generates act like normal programs.  Both the output
-        to stdio (e.g., printf), as well as the return value of the program
-        should be what you expect.  In terms of operational behavior, a correct
-        program compiled with kcc should act the same as one compiled with gcc.
-      - Take a look at 'kcc -h' for some compile-time options.  For most
-        programs, you only need to run "kcc program.c" and everything will
-        work.  Caveats below.
-      - After compiling a program and generating an output file "a.out",
-        running "HELP=1 ./a.out" will display some runtime options, including
-        SEARCH and PROFILE.
-      - If you try to run a program that is undefined (or one for which we are
-        missing semantics), the program will get stuck.  The message should
-        tell you where it got stuck and may give a hint as to why.  If you want
-        help deciphering the output, or help understanding why the program is
-        defined, please send your .kdump file to the e-mail listed at the top
-        of this file.
+- 'kcc' is meant to to act a lot like gcc.  You use it and run programs the
+  same way.
+- The programs kcc generates act like normal programs.  Both the output to
+  stdio (e.g., printf), as well as the return value of the program should be
+  what you expect.  In terms of operational behavior, a correct program
+  compiled with kcc should act the same as one compiled with gcc.
+- Take a look at 'kcc -h' for some compile-time options.  For most programs,
+  you only need to run "kcc program.c" and everything will work.  Caveats
+  below.
+- After compiling a program and generating an output file "a.out", running
+  "HELP=1 ./a.out" will display some runtime options, including SEARCH and
+  PROFILE.
+- If you try to run a program that is undefined (or one for which we are
+  missing semantics), the program will get stuck.  The message should tell you
+  where it got stuck and may give a hint as to why.  If you want help
+  deciphering the output, or help understanding why the program is defined,
+  please send your .kdump file to the e-mail listed at the top of this file.
       
 ## Runtime Features:
-      - Running "SEARCH=1 ./a.out" will exhaustively search the state space of
-        your program and generate a .pdf and .ps of the space (if you installed
-        Graphviz).  This is the only way to check all possible evaluation
-        orders of a program to find undefined behavior.  You need to compile
-        your program using the '-n' flag, like "kcc -n program.c" in order to
-        take advantage of this feature.  This feature is currently under
-        development.
-      - Running "PROFILE=1 ./a.out" will record which rules of the semantics
-        are exercised during the evaluation of the program.  The program
-        executes as normal, but this additional information is recorded in a
-        SQLite database "maudeProfileDBfile.sqlite" in your current directory.
-        You can access the information by running queries against the database.
-        Some sample queries are provided in the dist directory, and can be
-        tried by running, e.g., 
-<pre>
-$ cat dist/profile-executiveSummaryByProgram.sql | perl dist/accessProfiling.pl
-</pre>
+- Running "SEARCH=1 ./a.out" will exhaustively search the state space of your
+  program and generate a .pdf and .ps of the space (if you installed Graphviz).
+  This is the only way to check all possible evaluation orders of a program to
+  find undefined behavior.  You need to compile your program using the '-n'
+  flag, like "kcc -n program.c" in order to take advantage of this feature.
+  This feature is currently under development.
 
-      You can look at the provided queries and construct your own, or access
-      the database using your own programs.  Different runs of the tool are
-      kept distinct in the database, so you can run a bunch of programs and
-      then analyze the collective data.  You can simply delete
-      "maudeProfileDBfile.sqlite" file to start another series of tests with a
-      fresh database.
+- Running "PROFILE=1 ./a.out" will record which rules of the semantics are
+  exercised during the evaluation of the program.  The program executes as
+  normal, but this additional information is recorded in a SQLite database
+  "maudeProfileDBfile.sqlite" in your current directory. You can access the
+  information by running queries against the database. Some sample queries are
+  provided in the dist directory, and can be tried by running, e.g., 
+  <pre>
+  $ cat dist/profile-executiveSummaryByProgram.sql | perl dist/accessProfiling.pl
+  </pre>
+  You can look at the provided queries and construct your own, or access the
+  database using your own programs.  Different runs of the tool are kept
+  distinct in the database, so you can run a bunch of programs and then analyze
+  the collective data.  You can simply delete "maudeProfileDBfile.sqlite" file
+  to start another series of tests with a fresh database.
 
 ## Caveats and Misc:
-      - In order to use any file I/O, you need to compile the program with the
-        -i option.  The support for file I/O is still incredibly rudimentary
-        and very few functions are supported.
-      - If you are only using one of the standard library functions that we
-        directly give semantics to (printf being the most important), you can
-        prevent the tool from linking in the standard library with the -s
-        option.  This can speed up the execution time of your program.  If the
-        program needs the standard library and you use the -s option, it will
-        simply get stuck and you will see it trying to call that missing
-        function at the top of the computation.
+- In order to use any file I/O, you need to compile the program with the -i
+  option.  The support for file I/O is still incredibly rudimentary and very
+  few functions are supported.
+- If you are only using one of the standard library functions that we directly
+  give semantics to (printf being the most important), you can prevent the tool
+  from linking in the standard library with the -s option.  This can speed up
+  the execution time of your program.  If the program needs the standard
+  library and you use the -s option, it will simply get stuck and you will see
+  it trying to call that missing function at the top of the computation.
 
 ## Understanding the semantics
 
 ### Links to help understand K:
-      - http://code.google.com/p/k-framework/
-      - http://fsl.cs.uiuc.edu/K See particularly:
-            - Traian Serbanuta's thesis defense slides
-              (http://fsl.cs.uiuc.edu/pubs/serbanuta-2010-thesis-slides.pdf)
-              for a high level overview 
-            - "An Overview of the K Semantic Framework" from the Journal of
-              Logic and Algebraic Programming
-              (http://fsl.cs.uiuc.edu/pubs/rosu-serbanuta-2010-jlap.pdf) for a
-              detailed explanation
+- http://code.google.com/p/k-framework/
+- http://fsl.cs.uiuc.edu/K See particularly:
+    - Traian Serbanuta's thesis defense slides
+      (http://fsl.cs.uiuc.edu/pubs/serbanuta-2010-thesis-slides.pdf) for a high
+      level overview 
+    - "An Overview of the K Semantic Framework" from the Journal of Logic and
+      Algebraic Programming
+      (http://fsl.cs.uiuc.edu/pubs/rosu-serbanuta-2010-jlap.pdf) for a detailed
+      explanation
             
 ### Generate pdf versions of the semantics (INCOMPLETE):
-      - run 'make pdf'
-      - Currently this creates only pdfs in the /semantics directory.  
-      - The pdfs are often incorrect, in that they omit necessary parentheses.
-        Moreover, the semantics is quite messy as we are still experimenting
-        with the best way to represent things and find the most undefined
-        behavior.  However, these pdfs are sufficient for helping build an
-        understanding of the semantics.
+- run 'make pdf'
+- Currently this creates only pdfs in the /semantics directory.  
+- The pdfs are often incorrect, in that they omit necessary parentheses.
+  Moreover, the semantics is quite messy as we are still experimenting with the
+  best way to represent things and find the most undefined behavior.  However,
+  these pdfs are sufficient for helping build an understanding of the
+  semantics.
       
 For licensing information, see LICENSE.
