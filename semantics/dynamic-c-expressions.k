@@ -1728,8 +1728,9 @@ module DYNAMIC-SEMANTICS-SEQUENCING
 
      rule commaEval(R:KResult) => rkludge(R)
 
-     rule Comma(klist(K:K,, _:K,, L:KList)) 
+     rule Comma(klist(K:K,, L:KList)) 
           => commaEval(K) ~> discard ~> sequencePoint ~> Comma(klist(L))
+          when L =/=KList .KList
           [structural]
      rule Comma(klist(K:K)) => commaEval(K)
           [structural]
