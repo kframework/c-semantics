@@ -26,9 +26,9 @@ requests.
             - File::Spec::Link
 
 ### Example/Test:
-```
+<pre>
 $ cpan -i XML::DOM
-```
+</pre>
 
 (It might help to do this as sudo if it doesn't work as a normal user)
 
@@ -37,13 +37,13 @@ $ cpan -i XML::DOM
       - Version 3.11.0 works; probably many others work as well
 
 ### Example/Test:
-```
+<pre>
 $ ocaml
         Objective Caml version 3.11.0
 
 # 
 (press ctrl-d to exit)
-```
+</pre>
 
 ## Install Maude:
       - Go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on
@@ -59,8 +59,8 @@ $ ocaml
         ~/.bashrc file.
       
 ### Example/Test:
-```
-[celliso2@fsl3 ~]$ maude
+<pre>
+$ maude
                      \||||||||||||||||||/
                    --- Welcome to Maude ---
                      /||||||||||||||||||\
@@ -69,7 +69,7 @@ $ ocaml
                    Fri Apr 22 13:41:54 2011
 Maude> q
 Bye.
-```
+</pre>
 
 ## Install K:
       - Go to http://code.google.com/p/k-framework/ and check out the K
@@ -93,12 +93,12 @@ Bye.
 
 
 ### Example/Test:
-```
-[celliso2@fsl3 k-framework-read-only]$ make test -C examples
+<pre>
+$ make test -C examples
 ...
-[celliso2@fsl3 k-framework-read-only]$ make -C regressionTests
+$ make -C regressionTests
 ...
-```
+</pre>
 
 ## Optional Install:
       - You may want to install Graphviz (dot), for generating images of the
@@ -106,10 +106,10 @@ Bye.
       - You can probably do this with your package manager
       
 ### Example/Test:
-```
-[celliso2@fsl3 ~]$ which dot
+<pre>
+$ which dot
 /usr/bin/dot
-```
+</pre>
 
 ## Build our C tool:
       - Run "make" in our main directory, the directory of this README
@@ -122,11 +122,11 @@ Bye.
       
 
 ### Example/Test:
-```
+<pre>
 $ dist/kcc tests/unitTests/helloworld.c
 $ ./a.out 
 Hello world
-```
+</pre>
 
 If you chose to add dist to your path, then you can simply type "kcc" instead
 of "dist/kcc"
@@ -168,9 +168,9 @@ of "dist/kcc"
         You can access the information by running queries against the database.
         Some sample queries are provided in the dist directory, and can be
         tried by running, e.g., 
-```
+<pre>
 $ cat dist/profile-executiveSummaryByProgram.sql | perl dist/accessProfiling.pl
-```
+</pre>
 
       You can look at the provided queries and construct your own, or access
       the database using your own programs.  Different runs of the tool are
