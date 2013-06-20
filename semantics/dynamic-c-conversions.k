@@ -857,6 +857,11 @@ module DYNAMIC-SEMANTICS-CONVERSIONS-MISC
           => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
           when (I:Int >Int max(T))
                andBool hasIntegerType(T)
+     rule [interpret-too-little]:
+          interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
+          when (I:Int <Int min(T))
+               andBool hasIntegerType(T)
           
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)
