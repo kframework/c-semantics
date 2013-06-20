@@ -59,6 +59,8 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c-kompiled-nd $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c-kompiled-nd-thread $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc
@@ -103,7 +105,6 @@ cparser:
 	@-strip $(PARSER)
 
 semantics: check-vars
-#@rm -f $(SEMANTICS_DIR)/c-total-nd.maude
 	@$(MAKE) $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
 
 clean:

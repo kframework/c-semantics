@@ -39,15 +39,13 @@ my $thisFile = "$0";
 my $PERL_SERVER_PID = 0;
 my $childPid = 0;
 
-my $compiledDef = catfile($SCRIPTS_DIR, "c-kompiled");
-
 my %krun_args = (
 #     '-verbose' => '',
 #     '--output-mode' => 'pretty', 
       '--output-mode' => 'raw', 
       '--output' => $fileOutput, 
       '--parser' => 'cat', 
-      '--compiled-def' => $compiledDef, 
+      '--compiled-def' => catfile($SCRIPTS_DIR, "c-kompiled"), 
       '--io' => '', 
       '' => $fileInput
 );
@@ -118,6 +116,7 @@ if (defined($ENV{'SEARCH'})) {
       $krun_args{'--no-io'} = '';
       $krun_args{'--output-mode'} = 'pretty';
       delete $krun_args{'--output'};
+      $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
 }
 
 system("krun", grep {$_} %krun_args);
