@@ -40,40 +40,11 @@ $ ocaml
 (press ctrl-d to exit)
 </pre>
 
-## Install Maude:
-- Go to http://maude.cs.uiuc.edu/ and install the Maude rewrite system on your
-  machine
-- Best to use the precompiled binaries if you can
-- K requires at least version 2.5
-- Once installed, add its directory to your path, and make sure you can start
-  the tool by running "maude".  This may require you to rename (or alias or ln)
-  the specific executable to "maude".
-- We suggest you make this change "stick" by adding it to your login script.
-  E.g., if you use the bash shell on linux, you can make this change stay by
-  adding the line "PATH=/path/to/maude/bin:$PATH" to your ~/.bashrc file.
-      
-### Example/Test:
-<pre>
-$ maude
-                     \||||||||||||||||||/
-                   --- Welcome to Maude ---
-                     /||||||||||||||||||\
-            Maude 2.6 built: Dec  9 2010 18:28:39
-            Copyright 1997-2010 SRI International
-                   Fri Apr 22 13:41:54 2011
-Maude> q
-Bye.
-</pre>
-
 ## Install K:
 - Go to http://code.google.com/p/k-framework/ and check out the K Semantic
   Framework from http://code.google.com/p/k-framework/source/checkout
-- Check out https://k-framework.googlecode.com/svn/tags/v2.7 to get the right
-  version
-- You'll definitely want to download the most recent version from SVN instead
-  of using the Downloads link.
-- The requirements given above in this file should satisfy any requirements of
-  K, but you can look at their readme for details.
+- Follow the instructions from the README included with K to build and install
+  the framework.
 - Set C_K_BASE to the full (non-relative) path in which you installed the K
   framework.
     - E.g., run "export C_K_BASE=~/k-framework/dist"
