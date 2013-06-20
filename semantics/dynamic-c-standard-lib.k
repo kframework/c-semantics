@@ -69,7 +69,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
           
      rule printString(S:String)
           => writeToFD(1, asciiString(firstChar(S:String)))
-          ~> printString(butFirstChar(S:String))
+               ~> printString(butFirstChar(S:String))
           when lengthString(S:String) >Int 0
           [structural]
      rule printString("") => writeToFD(1, 10)
@@ -225,7 +225,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, 
+          <k> 
+               (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, 
                     t(_, pointerType(t(_, 
                     structType(Identifier("__jmp_buf_tag")))))))
                => ignoreLocals
@@ -252,7 +253,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
-          <k> longjmp-aux(tv(bag(
+          <k> 
+               longjmp-aux(tv(bag(
                     <threadState>
                          <threadContinuation> K:K </threadContinuation>
                          <savedThreadLocal>C:Bag</savedThreadLocal>
@@ -324,7 +326,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
           prepareBuiltin((Identifier("__va_start")), 
                (ApLoc:KResult,, ArgLoc:KResult))
           => Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
-          ~> skipval
+               ~> skipval
           [structural]
      
      syntax K ::= "va-inc-aux" "(" K "," K "," K ")" // [strict(3)]
@@ -340,7 +342,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
      rule [va-inc]:
           va-inc-aux(ApLoc:KResult, _:KResult, Ap:KResult)
           => Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
-          ~> Ap:KResult
+               ~> Ap:KResult
           [structural]                  
           
      // fixme can do lots of checks here too
@@ -365,7 +367,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
           [structural]
 
      // fixme should check for bitfield offset
-     rule <k> offsetOf(t(_, structType(S:Id)), F:Id)
+     rule <k> 
+               offsetOf(t(_, structType(S:Id)), F:Id)
                => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           ...</k>
           <structs>...
@@ -429,7 +432,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           [structural]
 
      rule [fslOpenFile]:
-          <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _)) 
+          <k> 
+               fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _)) 
                => tv(FD, t(.Set, int)) 
           ...</k>
           <files>...
@@ -532,7 +536,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      syntax Value ::= "formattedResult" "(" K ")"
      
      rule [format-done]:
-          <k> formatter-aux(_) 
+          <k> 
+               formatter-aux(_) 
                => formattedResult(listToString(Result:List))
           ...</k>
           (
@@ -816,7 +821,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%d-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem(S:String) => .List ...</format>
@@ -847,7 +853,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%o-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("o") => .List ...</format>
@@ -862,7 +869,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <formatState> "%o" => "reset" </formatState>
           [structural]
      rule [format-%u-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("u") => .List ...</format>
@@ -877,7 +885,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <formatState> "%u" => "reset" </formatState>
           [structural]
      rule [format-%x-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("x") => .List ...</format>
@@ -892,7 +901,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <formatState> "%x" => "reset" </formatState>
           [structural]
      rule [format-%X-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("X") => .List ...</format>
@@ -931,7 +941,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%f-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("f") => .List ...</format>
@@ -946,7 +957,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <formatState> "%f" => "reset" </formatState>
           [structural]
      rule [format-%F-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("F") => .List ...</format>
@@ -1011,7 +1023,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%g-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("g") => .List ...</format>
@@ -1026,7 +1039,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <formatState> "%g" => "reset" </formatState>
           [structural]
      rule [format-%G-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("G") => .List ...</format>
@@ -1064,7 +1078,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%c-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("c") => .List ...</format>
@@ -1108,21 +1123,24 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%s-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)       
           ...</k>
           <format> ListItem("s") => .List ...</format>
           <formatState> "%" => "%s" </formatState>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString(Loc))
+          <k> 
+               (.K => getString(Loc))
                ~> formatter-aux(_)
           ...</k>
           <formatArg> Loc:SymLoc => .K </formatArg>
           <formatState> "%s" => "%s-read" </formatState>
           [structural]
      rule [format-%s-done]:
-          <k> (str(S:String) => .K)
+          <k> 
+               (str(S:String) => .K)
                ~> formatter-aux(_)
           ...</k>
           <formatResult>... 
@@ -1140,7 +1158,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
      \end{description}
      */
      rule [format-%p-start]:
-          <k> formatter-aux(V:KResult)
+          <k> 
+               formatter-aux(V:KResult)
                => formatter-next(V:KResult)       
           ...</k>
           <format> ListItem("p") => .List ...</format>
@@ -1205,13 +1224,15 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
           [interpRule]
      
      rule [exit]:
-          <k> prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _
+          <k> 
+               prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _
                => tv(I:Int, t(.Set, int)) 
           </k>
           [structural]
 
      rule [abort]:
-          <k> prepareBuiltin((Identifier("abort")), .KList) ~> _ 
+          <k> 
+               prepareBuiltin((Identifier("abort")), .KList) ~> _ 
                => printString("Aborted") ~> tv(134, t(.Set, int)) 
           </k>
      
@@ -1226,9 +1247,11 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
      rule newAlloc(Fresh:Int) => loc(Fresh @ allocatedDuration, 0, 0)
      
      rule [malloc]:
-          <k> prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
+          <k> 
+               prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
                => alloc(newAlloc(Fresh:Int), Len:Int)
-               ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
+                    ~> tv(newAlloc(Fresh:Int), 
+                         t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => newAlloc(Fresh:Int) |-> Len:Int ...</malloced>
           <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
@@ -1411,7 +1434,8 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
           [large, computational]
           
      rule [thrd-current]:
-          <k> prepareBuiltin((Identifier("thrd_current")), .KList)
+          <k> 
+               prepareBuiltin((Identifier("thrd_current")), .KList)
                => tv(ThreadId:Int, t(.Set, int))
           ...</k>
           <threadId> ThreadId:Int </threadId>
@@ -1427,12 +1451,13 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
      
      rule [thrd-join]:
           <thread>...
-               <k> join-aux(ThreadId:Int, tv(Loc:SymLoc, _))
+               <k> 
+                    join-aux(ThreadId:Int, tv(Loc:SymLoc, _))
                     => #if (Loc =/=K NullPointer) 
                          #then Computation((* Loc) := V:KResult) 
                          #else .K
-                    #fi
-                    ~> thrd-success
+                         #fi
+                         ~> thrd-success
                ...</k>
                <buffer> .List </buffer>
           ...</thread>
