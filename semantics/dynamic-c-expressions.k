@@ -35,6 +35,7 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)
+          [structural]
      
      // fixme Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
@@ -1727,6 +1728,7 @@ module DYNAMIC-SEMANTICS-SEQUENCING
      syntax K ::= commaEval(K) [strict]
 
      rule commaEval(R:KResult) => rkludge(R)
+          [structural]
 
      rule Comma(klist(K:K,, L:KList)) 
           => commaEval(K) ~> discard ~> sequencePoint ~> Comma(klist(L))

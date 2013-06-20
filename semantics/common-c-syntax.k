@@ -569,10 +569,12 @@ module COMMON-C-SYNTAX
           when l(Lbl) in typeStrictUnaryOps
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
+          [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(THOLE) => Lbl(R)
           ...</type>
           when l(Lbl) in typeStrictUnaryOps
+          [structural]
 
      rule <type>
                Lbl:KLabel(K:K,, X:K) => K ~> Lbl(THOLE,, X)
@@ -580,20 +582,24 @@ module COMMON-C-SYNTAX
           when l(Lbl) in typeStrictBinaryOpsFirst
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
+          [structural]
      rule <type>
                Lbl:KLabel(X:K,, K:K) => K ~>  Lbl(X,, THOLE)
           ...</type>
           when l(Lbl) in typeStrictBinaryOpsSecond
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
+          [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(THOLE,, X:K) => Lbl(R,, X)
           ...</type>
           when l(Lbl) in typeStrictBinaryOpsFirst
+          [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(X:K,, THOLE) => Lbl(X,, R)
           ...</type>
           when l(Lbl) in typeStrictBinaryOpsSecond
+          [structural]
 
      rule <type>
                Lbl:KLabel(X:K,, K:K,, Y:K) => K ~> Lbl(X,, THOLE,, Y)
@@ -601,20 +607,24 @@ module COMMON-C-SYNTAX
           when l(Lbl) in typeStrictTernaryOpsSecond
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
+          [structural]
      rule <type>
                Lbl:KLabel(X:K,, Y:K,, K:K) => K ~> Lbl(X,, Y,, THOLE)
           ...</type>
           when l(Lbl) in typeStrictTernaryOpsThird
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
+          [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(X:K,, THOLE,, Y:K) => Lbl(X,, R,, Y)
           ...</type>
           when l(Lbl) in typeStrictTernaryOpsSecond
+          [structural]
      rule <type> 
                R:Type ~> Lbl:KLabel(X:K,, Y:K,, THOLE) => Lbl(X,, Y,, R)
           ...</type>
           when l(Lbl) in typeStrictTernaryOpsThird
+          [structural]
 
      /*
      | UNARY of unary_operator * expression
