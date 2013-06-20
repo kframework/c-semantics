@@ -502,9 +502,11 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
      \end{itemize}
      }}*/
      
-     // chathhorn
+     // TODO(chathhorn): probably needs to be reworked.
      rule Call(K:K, klist(L:KList)) => toRVList(L) ~> Call(K, .K)
+          [structural]
      rule R:KResult ~> Call(K:K, .K) => Call(K, R) 
+          [structural]
 
      rule [function-application-pre]:
           Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
