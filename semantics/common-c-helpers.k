@@ -40,7 +40,7 @@ module COMPAT
           [structural]
 
      context toKRList'(_,, HOLE,, _)
-     context toRVList'(_,, (HOLE => reval(HOLE)),, _) // TODO(chathhorn) [ndheat]
+     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
 
      rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
           [structural]

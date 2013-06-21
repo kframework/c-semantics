@@ -204,7 +204,7 @@ module COMMON-C-SYNTAX
      // [strict 5] yet
      syntax DeclType ::= "ArrayType" "(" K "," K "," K ")"
           [klabel('ArrayType), strict(1)]
-     context ArrayType(_, (HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
+     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
      syntax DeclType ::= "PointerType" "(" K ")"
           [klabel('PointerType), strict]
      // K, List, Bool
@@ -266,7 +266,7 @@ module COMMON-C-SYNTAX
      and init_name = name * init_expression
      */
      syntax InitName ::= "InitName" "(" K "," K ")" [klabel('InitName)]
-     context InitName(_, (HOLE => reval(HOLE))) // TODO(chathhorn): [ndheat]
+     context InitName(_, (HOLE => reval(HOLE))) [ndheat]
      
      /*
      (* Single names are for declarations that cannot come in groups, like
@@ -690,54 +690,54 @@ module COMMON-C-SYNTAX
      context * (HOLE => reval(HOLE))
      context (HOLE => peval(HOLE)) ++
      context (HOLE => peval(HOLE)) --
-     context (HOLE => reval(HOLE)) * _ // TODO(chathhorn) [ndheat]
-     context _ * (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) / _ // TODO(chathhorn) [ndheat]
-     context _ / (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) % _ // TODO(chathhorn) [ndheat]
-     context _ % (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) * _ [ndheat]
+     context _ * (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) / _ [ndheat]
+     context _ / (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) % _ [ndheat]
+     context _ % (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) + _ // TODO(chathhorn) [ndheat]
-     context _ + (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) - _ // TODO(chathhorn) [ndheat]
-     context _ - (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) + _ [ndheat]
+     context _ + (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) - _ [ndheat]
+     context _ - (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) << _ // TODO(chathhorn) [ndheat]
-     context _ << (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) << _ [ndheat]
+     context _ << (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) >> _ // TODO(chathhorn) [ndheat]
-     context _ >> (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) >> _ [ndheat]
+     context _ >> (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) < _ // TODO(chathhorn) [ndheat]
-     context _ < (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) <= _ // TODO(chathhorn) [ndheat]
-     context _ <= (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) < _ [ndheat]
+     context _ < (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) <= _ [ndheat]
+     context _ <= (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) > _ // TODO(chathhorn) [ndheat]
-     context _ > (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) >= _ // TODO(chathhorn) [ndheat]
-     context _ >= (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) > _ [ndheat]
+     context _ > (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) >= _ [ndheat]
+     context _ >= (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) == _ // TODO(chathhorn) [ndheat]
-     context _ == (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
-     context (HOLE => reval(HOLE)) != _ // TODO(chathhorn) [ndheat]
-     context _ != (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) == _ [ndheat]
+     context _ == (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) != _ [ndheat]
+     context _ != (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) & _ // TODO(chathhorn) [ndheat]
-     context _ & (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) & _ [ndheat]
+     context _ & (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) ^ _ // TODO(chathhorn) [ndheat]
-     context _ ^ (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) ^ _ [ndheat]
+     context _ ^ (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) | _ // TODO(chathhorn) [ndheat]
-     context _ | (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) | _ [ndheat]
+     context _ | (HOLE => reval(HOLE)) [ndheat]
      
-     context (HOLE => reval(HOLE)) && _ // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) && _ [ndheat]
      
-     context (HOLE => reval(HOLE)) || _ // TODO(chathhorn) [ndheat]
+     context (HOLE => reval(HOLE)) || _ [ndheat]
      
-     context (HOLE => peval(HOLE)) := _ // TODO(chathhorn) [ndheat]
-     context _ := (HOLE => reval(HOLE)) // TODO(chathhorn) [ndheat]
+     context (HOLE => peval(HOLE)) := _ [ndheat]
+     context _ := (HOLE => reval(HOLE)) [ndheat]
      
      context (HOLE => reval(HOLE)) ? _ : _
 
@@ -761,7 +761,7 @@ module COMMON-C-SYNTAX
 
      syntax Expression ::= "Call" "(" K "," K ")"
           [klabel('Call)] // K, List
-     context Call((HOLE => reval(HOLE)), _) // TODO(chathhorn) [ndheat]
+     context Call((HOLE => reval(HOLE)), _) [ndheat]
      /*
      | COMMA of expression list
      */ 

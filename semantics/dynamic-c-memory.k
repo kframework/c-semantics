@@ -229,7 +229,7 @@ module DYNAMIC-SEMANTICS-READING
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locsWrittenTo> Locs </locsWrittenTo>
+          <locsWrittenTo> Locs:Bag </locsWrittenTo>
           <buffer> .List </buffer>
           [large, structural]
 
