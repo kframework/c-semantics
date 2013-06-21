@@ -182,7 +182,7 @@ module DYNAMIC-C-SEMANTICS
      syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
      
      rule incomingArguments(L:KList) 
-          => incomingArguments-aux(L:KList, 0) 
+          => incomingArguments-aux(L, 0) 
           [structural]
      rule incomingArguments-aux((S:String,, L:KList), N:Int) 
           => Computation(
@@ -199,7 +199,6 @@ module DYNAMIC-C-SEMANTICS
      rule [syntaxInt]: 
           syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
      
-     syntax K ::= "pgmArgs" "(" KList ")" [function]
      syntax K ::= "argName" "(" KList ")" [function]
      rule argName(L:KList)
           => Name(
@@ -215,87 +214,32 @@ module DYNAMIC-C-SEMANTICS
           ))
           [structural]
 
-      // TODO(chathhorn): I don't think this is used.
-     //rule [eval-noInput]: eval(K:K) => eval(K:K, .KList, "", 0) [structural]
-          
      /*@ These helpers are used to get around a bug in \K related to successive
      ``/''s in strings. */
      syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
      
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
-     // TODO(chathhorn): eval, elided 
-     // rule [eval-input]: eval(Program(klist(P:KList)), L:KList, Input:String, IsInterp:Int) =>
-     //      <T>...
-     //           <threads>
-     //                <thread>...
-     //                     <k> klistToK(P:KList)
-     //                               ~> pgmArgs(L:KList)
-     //                               ~> resolveReferences                         
-     //                               // ~> incomingArguments(L:KList)
-     //                               ~> callMain(lengthKList L:KList, incomingArguments(L:KList))
-     //                     </k>
-     //                     <br/>
-     //                     <threadId> 1 </threadId>
-     //                     <nextLoc> firstLoc(1) </nextLoc>
-     //                     <threadLocal>...
-     //                          <control>...
-     //                               <currentFunction> file-scope </currentFunction>
-     //                               <currentProgramLoc> UnknownCabsLoc </currentProgramLoc>
-     //                          ...</control>
-     //                     ...</threadLocal>
-     //                ...</thread>
-     //           </threads>
-     //           <nextSharedLoc> firstLoc(0) </nextSharedLoc>
-     //      ...</T>
-     //      <br/>
-     //      <files>
-     //           <fileCommands> #if IsInterp ==Int 0 #then debug #else .K #fi </fileCommands>
-     //           <br/>
-     //           <file>...
-     //                <fid> 0 </fid>
-     //                <uri> stdinStr </uri>
-     //                <mode> "r" </mode>
-     //                <buff> Input:String </buff>
-     //           ...</file>
-     //           <file>...
-     //                <fid> 1 </fid>
-     //                <uri> stdoutStr </uri>
-     //                <mode> "w" </mode>
-     //           ...</file>
-     //           <file>...
-     //                <fid> 2 </fid>
-     //                <uri> stdoutStr </uri>
-     //                <mode> "w" </mode>
-     //           ...</file>
-     //      </files>
-     //      [structural, large]
 
-     rule [eval-input]: 
-               <threads>
-                    <thread>...
-          <k> Program(klist(P:KList)) 
-               => klistToK(P)
-               ~> pgmArgs(.KList)
-               ~> resolveReferences                         
-               ~> callMain(0, incomingArguments(.KList))
-          </k>
-                         <br/>
-                         <threadId> _ => 1 </threadId>
-                         <nextLoc> _ => firstLoc(1) </nextLoc>
-                         <threadLocal>...
-                              <control>...
-                                   <currentFunction> 
-                                        _ => file-scope
-                                   </currentFunction>
-                                   <currentProgramLoc>
-                                        _ => UnknownCabsLoc
-                                   </currentProgramLoc>
-                              ...</control>
-                         ...</threadLocal>
-                    ...</thread>
-               </threads>
-               <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
+     rule <threads>
+               <thread>...
+                    <k> Program(klist(P:KList)) => klistToK(P) ...</k>
+                    <br/>
+                    <threadId> _ => 1 </threadId>
+                    <nextLoc> _ => firstLoc(1) </nextLoc>
+                    <threadLocal>...
+                         <control>...
+                              <currentFunction> 
+                                   _ => file-scope
+                              </currentFunction>
+                              <currentProgramLoc>
+                                   _ => UnknownCabsLoc
+                              </currentProgramLoc>
+                         ...</control>
+                    ...</threadLocal>
+               ...</thread>
+          </threads>
+          <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           <br/>
           <files>
                <fileCommands> _ => 0 </fileCommands>
@@ -350,7 +294,8 @@ module DYNAMIC-C-SEMANTICS
      /*@ this bit of indirection is used to check that the main prototype is
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
-          <k> callMain(N:Int, Args:K)
+          <k> 
+               callMain(N:Int, Args:K)
                => callMain-aux(typeof(Identifier("main")), N:Int,
                     Identifier("#incomingArgumentsArray"), Args:K)
           ...</k>

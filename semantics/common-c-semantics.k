@@ -134,7 +134,6 @@ module COMMON-SEMANTIC-SYNTAX
           => loc(Base, Offset +Int N, BitOffset)
 
      syntax Value ::= "enumItem" "(" Id "," Value ")"
-     syntax K ::= "resolveReferences"
      
      syntax String ::= "toString" "(" K ")" [function]
      
@@ -507,12 +506,6 @@ module COMMON-C-SEMANTICS
      imports COMMON-C-STATEMENTS
      imports COMMON-C-DECLARATIONS
      imports COMMON-C-TYPING
-     
-     // TODO(chathhorn): the klabel attribute doesn't seem to work on things
-     // of sort Bag ...?
-     syntax Bag ::= "eval" "(" K "," KList "," String "," Int ")"
-     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
-     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
      
      syntax KLabel ::= "TranslationUnitName" "(" String ")" 
           [klabel('TranslationUnitName)]
