@@ -40,7 +40,7 @@ module COMPAT
           [structural]
 
      context toKRList'(_,, HOLE,, _)
-     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
+     context toRVList'(_,, (HOLE => reval(HOLE)),, _) // TODO(chathhorn) [ndheat]
 
      rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
           [structural]
@@ -478,7 +478,6 @@ module COMMON-SEMANTICS-HELPERS-MISC
      
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
           => piece((N <<Int Len') |Int N', Len +Int Len')
-          when (N >=Int 0) andBool (N' >=Int 0)
           [structural, anywhere]
      rule piece(0, 0) bit:: N:Bits => N
           [structural, anywhere]
