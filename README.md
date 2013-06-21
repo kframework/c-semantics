@@ -4,7 +4,7 @@ Please let us know if this README is insufficient, or if you needed to do any
 installation steps not listed explicitly.
 
 ### 1. Install Perl
-- You almost definitely will have this installed if you use linux or mac;
+- You almost definitely will have this installed if you use Linux or Mac OS X;
   otherwise, use your package manager to install it.
 - Windows perl can be found here: http://www.activestate.com/activeperl
 - Perl is used for many of the scripts in both the C tool and in K.
@@ -37,8 +37,9 @@ $ ocaml
         Objective Caml version 4.00.0
 
 # 
-(press ctrl-d to exit)
 </pre>
+
+(Press ctrl-d to exit.)
 
 ### 3. Install K
 - Go to http://code.google.com/p/k-framework/source/checkout and check out the
@@ -136,7 +137,6 @@ of "dist/kcc".
   it trying to call that missing function at the top of the computation.
 
 ### Understanding the semantics
-
 Links to help understand K:
 - http://code.google.com/p/k-framework/
 - http://k-framework.org/ 
