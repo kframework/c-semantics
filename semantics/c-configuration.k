@@ -4,6 +4,10 @@ module C-CONFIGURATION
      imports C-SYNTAX
 
      syntax K ::= memblock(Int, Bag, Map)
+     syntax K ::= "pgmArgs" "(" KList ")" [function]
+     syntax K ::= "resolveReferences"
+     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
+     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
 
      configuration 
      <T>
@@ -50,7 +54,12 @@ module C-CONFIGURATION
                     // should be initialized with a pair (threadId, 0)
                     <nextLoc color="black"> 0 </nextLoc>
                     <buffer color="lightgray"> .List </buffer>
-                    <k color="green" multiplicity="?"> $PGM:K </k>
+                    <k color="green" multiplicity="?"> 
+                         $PGM:K 
+                         ~> pgmArgs($ARGV:KList) 
+                         ~> resolveReferences
+                         ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
+                    </k>
                     <br/>
                     <threadLocal>
                          // stack of "control" cells

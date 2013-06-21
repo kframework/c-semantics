@@ -9,6 +9,8 @@ use File::Copy;
 # use IO::File;
 use IPC::Open3;
 
+setpgrp;
+
 # here we trap control-c (and others) so we can clean up when that happens
 $SIG{'ABRT'} = 'interruptHandler';
 $SIG{'TERM'} = 'interruptHandler';
@@ -18,8 +20,6 @@ $SIG{'HUP' } = 'interruptHandler';
 $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
-
-setpgrp;
 
 # these are compile time settings and are set by the compile script using this
 # file as a template
@@ -35,9 +35,11 @@ push(@temporaryFiles, $fileOutput);
 # The function "linkedProgram()" is attached to the bottom of this script by kcc.
 print $fileInput linkedProgram();
 
-my $thisFile = "$0";
 my $PERL_SERVER_PID = 0;
 my $childPid = 0;
+
+my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
+my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
 
 my %krun_args = (
 #     '-verbose' => '',
@@ -47,6 +49,8 @@ my %krun_args = (
       '--parser' => 'cat', 
       '--compiled-def' => catfile($SCRIPTS_DIR, "c-kompiled"), 
       '--io' => '', 
+      "-cARGC=$argc" => '',
+      "-cARGV=$argv,,.KList" => '',
       '' => $fileInput
 );
 
@@ -90,9 +94,9 @@ if (defined($ENV{'HELP'})) {
 	print "TRACEMAUDE --- prints an execution trace; only of use to developers\n";
 	print "IOLOG --- records a .log file showing what happens in the IO server\n";
 	print "DUMPALL --- leaves all the intermediate files in the current directory\n";
-	print "E.g., DEBUG=1 $thisFile\n";
+	print "E.g., DEBUG=1 $0\n";
 	print "\n";
-	print "This message was displayed because the variable HELP was set.  Use HELP= $thisFile to turn off\n";
+	print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off\n";
 	exit(1);
 }
 
