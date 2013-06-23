@@ -1,5 +1,0 @@
-mod #COMMON-SEMANTICS-HELPERS-BUILTINS is
-	including #NAT-INTERFACE .
-	op _bitList_ : #Nat #Nat -> #Nat [assoc] .
-	
-endm
