@@ -15,7 +15,6 @@ DIST_DIR = dist
 FILES_TO_DIST = \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
-	$(SCRIPTS_DIR)/link.pl \
 	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/graphSearch.pl \
