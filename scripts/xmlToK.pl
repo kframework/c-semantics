@@ -21,7 +21,7 @@ my $RAT = '#';
 use constant KLIST_IDENTITY => ".KList";
 use constant KLIST_SEPARATOR => ",, ";
 
-my $ltl = "";
+my $ltl = "\n";
 
 # might want to return, say, "'$name"
 sub nameToLabel {
@@ -41,25 +41,7 @@ my %escapeMap = (
 	'\\' => '\\\\'
 );
 
-# my $xso = XML::SimpleObject->new( $parser->parsefile($file) );
-
 my $input = join("", <STDIN>);
-#print "$input\n";
-# my $parser = XML::Parser->new(ErrorContext => 2, Style => "Tree");
-#$parser->parse($input);
-# my $xso = XML::SimpleObject->new($parser->parse($input));
-
-# sub replaceWith {
-	# my ($elt, $label) = (@_);
-	# $elt->wrap_in($label);
-	# my $parent = $elt->parent;
-	# $elt->erase;
-	# return $parent;
-# }
-
-# my %labelMap = (
-	# List => '_::_',
-# );
 
 my %ignoreThese = (	
 	'Filename' => 1,
@@ -91,11 +73,8 @@ my %ignoreThese = (
 	'ForClauseDeclaration' => 1,
 );
 
-# foreach my $key (keys %labelMap) {
-	# $handlers->{$key} = sub { $_->set_tag($labelMap{$key}); };	
-# }
-
-my $reader = new XML::LibXML::Reader(string => $input) or die "cannot create XML::LibXML::Reader object\n";
+my $reader = new XML::LibXML::Reader(string => $input) 
+      or die "cannot create XML::LibXML::Reader object\n";
 $reader->read;
 
 if (! ($reader->name eq "TranslationUnit")) {
@@ -126,11 +105,10 @@ $reader->nextElement('RawData');
 my $sourceCode = getRawData($reader);
 push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
-#print "eq TranslationUnitName($filenameTerm)(.KList) = " . nameToLabel('TranslationUnit') . $tu . ".\n";
 print nameToLabel('TranslationUnit') . $tu ;
-# if ($ltl ne "") {
-# 	print $ltl;
-# }
+if ($ltl ne "") {
+	print $ltl;
+}
 
 
 sub printStatus {
@@ -141,7 +119,8 @@ sub printStatus {
 	print "type: " . $reader->nodeType . "\n";
 }
 
-# this function tries to figure out what kind of a node we're looking at, then delegates the conversion to another function
+# this function tries to figure out what kind of a node we're looking at, then
+# delegates the conversion to another function
 sub xmlToK {
 	my ($reader) = (@_);
 	#printStatus($reader);
@@ -202,7 +181,7 @@ sub elementToK {
 			if ($childResult) {
 				push (@klist, $childResult);
 			}
-		} while ($reader->depth > $depth) # while ($reader->nextSiblingElement == 1);
+		} while ($reader->depth > $depth)
 	}
 	$inNextState = 1;
 	
@@ -213,10 +192,9 @@ sub elementToK {
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
-		$ltl .= "eq 'LTLAnnotation($klist[0]) = ";
-		shift (@klist);
-		$ltl .= paren(join(KLIST_SEPARATOR, @klist)) . " .\n";
-		return ($inNextState, "(.).K");
+		$ltl .= "'LTLAnnotation(";
+		$ltl .= join(KLIST_SEPARATOR, @klist) . ") \n";
+		return ($inNextState, ".K");
 	}
 	return ($inNextState, nameToLabel($label) . $prefix . $kterm . $suffix);
 }

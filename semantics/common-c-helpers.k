@@ -2,6 +2,7 @@ require "common-c-semantics.k"
 
 module COMPAT
      imports COMMON-SEMANTICS-HELPERS-INCLUDE
+     imports MODEL-CHECKER-HOOKS
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
@@ -23,8 +24,9 @@ module COMPAT
           when L =/=KLabel L'
      rule eraseKLabel(L:KLabel, (K:K,,Ks:KList)) 
           => eraseKLabel(L, K),,eraseKLabel(L, Ks)
+          when Ks =/=KList .KList
      rule eraseKLabel(_, .KList) => .KList
-     rule eraseKLabel(_, .) => .
+     rule eraseKLabel(_, .K) => .K
 
      // TODO(chathhorn): ugly
      syntax K ::= "toKRList" "(" KList ")"
@@ -57,6 +59,70 @@ module COMPAT
           [structural]
      rule toRVList'(.KList) => .
           [structural]
+
+     // TODO(chathhorn): move
+     syntax K ::= LtlEval(Bag, K) [function]
+
+     rule _ |=Ltl false => false 
+          [anywhere]
+     rule _ |=Ltl true => true 
+          [anywhere]
+     rule _ |=Ltl tv(0, _) => false 
+          [anywhere]
+     rule _ |=Ltl tv(I:Int, _) => true 
+          when I =/=Int 0 
+          [anywhere]
+     rule B:Bag |=Ltl X:Expression => B |=Ltl LtlEval(B, X) 
+          when getKLabel(X) =/=KLabel 'tv
+     
+     // TODO(chathhorn): really rudimentary, must be a better way.
+     rule LtlEval(B:Bag, L:K == R:K) 
+          => LtlEval(B, LtlEval(B, L) == LtlEval(B, R))
+          when getKLabel(L) =/=KLabel 'tv
+               andBool getKLabel(R) =/=KLabel 'tv
+     rule LtlEval(B:Bag, L:K == R:K) 
+          => LtlEval(B, LtlEval(B, L) == R)
+          when getKLabel(L) =/=KLabel 'tv
+               andBool getKLabel(R) ==KLabel 'tv
+     rule LtlEval(B:Bag, L:K == R:K) 
+          => LtlEval(B, L == LtlEval(B, R))
+          when getKLabel(L) ==KLabel 'tv
+               andBool getKLabel(R) =/=KLabel 'tv
+     rule LtlEval(_, tv(X:K, _) == tv(Y:K, _))
+          => true
+          when X ==K Y
+     rule LtlEval(_, tv(X:K, _) == tv(Y:K, _))
+          => false
+          when X =/=K Y
+
+     rule LtlEval(B:Bag, L:K != R:K) 
+          => LtlEval(B, LtlEval(B, L) != LtlEval(B, R))
+          when getKLabel(L) =/=KLabel 'tv
+               andBool getKLabel(R) =/=KLabel 'tv
+     rule LtlEval(B:Bag, L:K != R:K) 
+          => LtlEval(B, LtlEval(B, L) != R)
+          when getKLabel(L) =/=KLabel 'tv
+               andBool getKLabel(R) ==KLabel 'tv
+     rule LtlEval(B:Bag, L:K != R:K) 
+          => LtlEval(B, L != LtlEval(B, R))
+          when getKLabel(L) ==KLabel 'tv
+               andBool getKLabel(R) =/=KLabel 'tv
+     rule LtlEval(_, tv(X:K, _) != tv(Y:K, _))
+          => false
+          when X ==K Y
+     rule LtlEval(_, tv(X:K, _) != tv(Y:K, _))
+          => true
+          when X =/=K Y
+
+     rule LtlEval(
+          <generatedTop>... 
+               <env>... X |-> Loc:SymLoc ...</env>
+               <types>... X |-> T:Type ...</types>
+          ...</generatedTop>, 
+          X:Id)
+          => rkludge(lval(Loc, T))
+
+     syntax K ::= LtlEval(Bag, Expression)
 
 endmodule
 

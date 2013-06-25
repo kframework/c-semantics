@@ -1,4 +1,8 @@
+require "builtins/model-checker.k"
+
 module COMMON-C-SYNTAX
+     imports LTL-HOOKS
+
      // these are semantic
      syntax K ::= "reval" "(" K ")" [semantic]
      syntax K ::= "peval" "(" K ")" [semantic]
@@ -320,40 +324,53 @@ module COMMON-C-SYNTAX
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
           [klabel('ExpressionTransformer)]
      // name
-     syntax PureDefinition ::= "LTLAnnotation" "(" K ")"
+     syntax PureDefinition ::= "LTLAnnotation" "(" Id "," K ")"
           [klabel('LTLAnnotation)]
      
-     // new
-     syntax Expression ::= "LTL-Atom" "(" K ")"
+     syntax Prop ::= Expression // Ltl atomic propositions.
+     syntax Expression ::= "LTLAtom" "(" K ")"
           [klabel('LTL-Atom)]
-     syntax Expression ::= "LTL-Builtin" "(" K ")"
+     syntax Expression ::= "LTLBuiltin" "(" K ")"
           [klabel('LTL-Builtin)]
      
-     syntax Expression ::= "LTL-True"
-     syntax Expression ::= "LTL-False"
-     syntax Expression ::= "LTL-And" "(" K "," K ")"
+     syntax Expression ::= "LTLTrue"
+     rule LTLTrue => TrueLtl [macro]
+     syntax Expression ::= "LTLFalse"
+     rule LTLTrue => FalseLtl [macro]
+     syntax Expression ::= "LTLAnd" "(" K "," K ")"
           [klabel('LTL-And)]
-     syntax Expression ::= "LTL-Or" "(" K "," K ")"
+     rule LTLAnd(L:K, R:K) => L /\Ltl R [macro]
+     syntax Expression ::= "LTLOr" "(" K "," K ")"
           [klabel('LTL-Or)]
-     syntax Expression ::= "LTL-Not" "(" K ")"
+     rule LTLOr(L:K, R:K) => L \/Ltl R [macro]
+     syntax Expression ::= "LTLNot" "(" K ")"
           [klabel('LTL-Not)]
-     syntax Expression ::= "LTL-Next" "(" K ")"
+     rule LTLNot(K:K) => ~Ltl K [macro]
+     syntax Expression ::= "LTLNext" "(" K ")"
           [klabel('LTL-Next)]
-     syntax Expression ::= "LTL-Always" "(" K ")"
+     rule LTLNext(K:K) => OLtl K [macro]
+     syntax Expression ::= "LTLAlways" "(" K ")"
           [klabel('LTL-Always)]
-     syntax Expression ::= "LTL-Eventually" "(" K ")"
+     rule LTLAlways(K:K) => []Ltl K [macro]
+     syntax Expression ::= "LTLEventually" "(" K ")"
           [klabel('LTL-Eventually)]
-     syntax Expression ::= "LTL-Until" "(" K "," K ")"
+     rule LTLEventually(K:K) => <>Ltl K [macro]
+     syntax Expression ::= "LTLUntil" "(" K "," K ")"
           [klabel('LTL-Until)]
-     syntax Expression ::= "LTL-Release" "(" K "," K ")"
+     rule LTLUntil(L:K, R:K) => L ULtl R [macro]
+     syntax Expression ::= "LTLRelease" "(" K "," K ")"
           [klabel('LTL-Release)]
-     syntax Expression ::= "LTL-Implies" "(" K "," K ")"
+     rule LTLRelease(L:K, R:K) => L RLtl R [macro]
+     syntax Expression ::= "LTLImplies" "(" K "," K ")"
           [klabel('LTL-Implies)]
-     syntax Expression ::= "LTL-Equiv" "(" K "," K ")"
+     rule LTLImplies(L:K, R:K) => L ->Ltl R [macro]
+     syntax Expression ::= "LTLEquiv" "(" K "," K ")"
           [klabel('LTL-Equiv)]
-     syntax Expression ::= "LTL-WeakUntil" "(" K "," K ")"
+     rule LTLEquiv(L:K, R:K) => L <->Ltl R [macro]
+     syntax Expression ::= "LTLWeakUntil" "(" K "," K ")"
           [klabel('LTL-WeakUntil)]
-     
+     rule LTLWeakUntil(L:K, R:K) => L WLtl R [macro]
+
      syntax Definition ::= "DefinitionLoc" "(" K "," K ")"
           [klabel('DefinitionLoc)]
      syntax Definition ::= "DefinitionLocRange" "(" K "," K "," K ")"
