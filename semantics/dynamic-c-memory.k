@@ -1,7 +1,12 @@
 require "dynamic-c-semantics.k"
 
 module DYNAMIC-MEMORY-INCLUDE
-     imports DYNAMIC-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
      
      // returns the bytes in the order in which they are in memory
      // loc, size in bytes

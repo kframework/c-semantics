@@ -1,6 +1,12 @@
 require "dynamic-c-semantics.k"
 
-module DYNAMIC-SEMANTICS-ERRORS-INCLUDE
+module DYNAMIC-C-ERRORS-SYNTAX
+
+endmodule
+
+module DYNAMIC-C-ERRORS
+     imports DYNAMIC-C-ERRORS-SYNTAX
+
      imports COMMON-C-SEMANTICS
      imports DYNAMIC-C-SEMANTICS-MISC
      imports DYNAMIC-C-EXPRESSIONS
@@ -10,10 +16,6 @@ module DYNAMIC-SEMANTICS-ERRORS-INCLUDE
      imports DYNAMIC-C-STATEMENTS 
      imports DYNAMIC-C-CONVERSIONS 
      imports DYNAMIC-C-STANDARD-LIBRARY
-endmodule
-
-module DYNAMIC-C-ERRORS
-     imports DYNAMIC-SEMANTICS-ERRORS-INCLUDE
 
      syntax K ::= Error(String, String) [function]
      rule Error(Title:String, Msg:String)  => 

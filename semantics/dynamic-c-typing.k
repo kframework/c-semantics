@@ -2,7 +2,12 @@ require "dynamic-c-semantics.k"
 
 module DYNAMIC-SEMANTICS-TYPE-INCLUDE
      // FIXME need to automatically pad structs
-     imports DYNAMIC-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
      imports COMMON-SEMANTICS-TYPE-INCLUDE
 endmodule
 

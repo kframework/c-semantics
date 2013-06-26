@@ -1,8 +1,6 @@
 require "dynamic-c-semantics.k"
 
-module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
-     imports DYNAMIC-INCLUDE 
-     
+module DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      syntax C ::= "vararg" "(" K ")" [hybrid, strict]
      syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
@@ -12,7 +10,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      
      // TODO(chathhorn): not pretty
      rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]
@@ -77,7 +82,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-HELPERS
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-MATH
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      rule [sqrt]:
           prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
           => tv(sqrtFloat(F:Float), t(.Set, double))
@@ -138,7 +150,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-MATH
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
 
      /*@ 
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
@@ -272,7 +291,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-SETJMP
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-STDARG
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
           
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
 
@@ -359,7 +385,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDARG
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-STDDEF
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
 
      syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
      rule OffsetOf(T:KResult, K:K, F:Id)
@@ -382,7 +415,14 @@ endmodule
 
 
 module DYNAMIC-C-STANDARD-LIBRARY-STDIO
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
 
      rule [putchar]:
           prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
@@ -1213,7 +1253,14 @@ endmodule
 
 
 module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      
      rule [debug]:
           prepareBuiltin(Identifier("__debug"), _) => skipval
@@ -1344,7 +1391,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDLIB
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-STRING
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      
      // try to use getString
      // fixme should detect overlaps
@@ -1375,7 +1429,14 @@ module DYNAMIC-C-STANDARD-LIBRARY-STRING
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-THREADS
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      
      ////////////////////////////--
      // Threads
@@ -1507,24 +1568,25 @@ module DYNAMIC-C-STANDARD-LIBRARY-THREADS
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY-TIME
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+
+     imports DYNAMIC-C-STANDARD-LIBRARY-SYNTAX
      
      // fixme, just a placeholder
      rule [time]:
           prepareBuiltin((Identifier("time")), _:KResult) 
           => tv(0, t(.Set, long-long-int))
           [structural]
-
-endmodule
-
-module DYNAMIC-C-STANDARD-LIBRARY-MISC
-     imports DYNAMIC-C-STANDARD-LIBRARY-INCLUDE
 endmodule
 
 module DYNAMIC-C-STANDARD-LIBRARY
      ////////////////////////////////
      //- C standard library
-     imports DYNAMIC-INCLUDE
      imports DYNAMIC-C-STANDARD-LIBRARY-HELPERS
      
      imports DYNAMIC-C-STANDARD-LIBRARY-MATH
@@ -1536,6 +1598,4 @@ module DYNAMIC-C-STANDARD-LIBRARY
      imports DYNAMIC-C-STANDARD-LIBRARY-STRING
      imports DYNAMIC-C-STANDARD-LIBRARY-THREADS
      imports DYNAMIC-C-STANDARD-LIBRARY-TIME
-     
-     imports DYNAMIC-C-STANDARD-LIBRARY-MISC
 endmodule

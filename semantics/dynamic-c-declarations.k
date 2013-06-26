@@ -1,12 +1,13 @@
 require "dynamic-c-semantics.k"
 
-module DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE
-     imports DYNAMIC-INCLUDE 
-     imports COMMON-SEMANTICS-DECLARATIONS-INCLUDE
-endmodule
-
 module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
 
      // empty binding
      // fixme not really a sequence point
@@ -150,7 +151,13 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
 endmodule
 
 module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
      
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
@@ -238,24 +245,15 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endmodule
-
-module DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endmodule
-
-module DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE 
-endmodule
-
 module DYNAMIC-C-DECLARATIONS
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
+     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
      
      imports DYNAMIC-SEMANTICS-DECLARATIONS-BINDING 
      imports DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL 
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-ENUMS 
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-RESOLUTION 
 endmodule

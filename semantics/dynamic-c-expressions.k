@@ -1,7 +1,12 @@
 require "dynamic-c-semantics.k"
 
 module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
-     imports DYNAMIC-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
      syntax K ::= "assign" "(" K "," K ")"
      syntax Id ::= "compoundLiteral" "(" Int ")"
      

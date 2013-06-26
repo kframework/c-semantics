@@ -389,7 +389,7 @@ module COMMON-SEMANTIC-SYNTAX
      syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")"
 endmodule
 
-module COMMON-C-SETTINGS
+module C-SETTINGS
      imports COMMON-SEMANTIC-SYNTAX 
      
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
@@ -450,16 +450,12 @@ module COMMON-C-SETTINGS
      
 endmodule
 
-module COMMON-INCLUDE
-     imports COMMON-SEMANTIC-SYNTAX
-     imports COMMON-C-SETTINGS
-     imports COMPAT-SYNTAX
-     imports COMMON-C-HELPERS
-     imports COMPAT-SYNTAX
-endmodule
-
 module COMMON-C-SEMANTICS-MISC
-     imports COMMON-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports COMPAT-SYNTAX
+     imports C-HELPERS
+     imports C-COMPAT-SYNTAX
      
      rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
           => loc(X +Int 1 @ Th, ByOff, BiOff)
@@ -503,7 +499,11 @@ module COMMON-C-SEMANTICS-MISC
 endmodule
 
 module COMMON-C-SEMANTICS
-     imports COMMON-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports COMPAT-SYNTAX
+     imports C-HELPERS
+     imports C-COMPAT-SYNTAX
      
      imports COMMON-C-SEMANTICS-MISC
      imports COMMON-C-STATEMENTS

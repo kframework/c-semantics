@@ -1,7 +1,12 @@
 require "dynamic-c-semantics.k"
 
 module DYNAMIC-SEMANTICS-CONVERSIONS-INCLUDE
-     imports DYNAMIC-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-HELPERS
+     imports C-COMPAT-SYNTAX
+     imports URIS
+     imports C-CONFIGURATION
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 

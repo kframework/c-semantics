@@ -1,7 +1,10 @@
 require "common-c-semantics.k"
 
 module COMMON-SEMANTICS-STATEMENTS-INCLUDE
-     imports COMMON-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-HELPERS
+     imports C-COMPAT-SYNTAX
      
      syntax Statement ::= "loopMarked"
      //  switchid, value (tv or 'Default)

@@ -1,7 +1,15 @@
 require "common-c-semantics.k"
 
-module COMPAT
-     imports COMMON-SEMANTICS-HELPERS-INCLUDE
+module C-HELPERS-SYNTAX
+     syntax Bits ::= Bits "bit::" Bits
+endmodule
+
+module C-COMPAT
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+
+     imports C-HELPERS-SYNTAX
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
@@ -60,16 +68,12 @@ module COMPAT
           [structural]
 endmodule
 
-module COMMON-SEMANTICS-HELPERS-INCLUDE
+module C-HELPERS-MISC
      imports COMMON-SEMANTIC-SYNTAX
-     imports COMMON-C-SETTINGS
+     imports C-SETTINGS
      imports COMPAT-SYNTAX
 
-     syntax Bits ::= Bits "bit::" Bits
-endmodule
-
-module COMMON-SEMANTICS-HELPERS-MISC
-     imports COMMON-SEMANTICS-HELPERS-INCLUDE
+     imports C-HELPERS-SYNTAX
 
      syntax K ::= firstLoc(K) [function]
      rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
@@ -530,8 +534,12 @@ module COMMON-SEMANTICS-HELPERS-MISC
      rule assert(true, _:Int) => . [structural, anywhere]
 endmodule
 
-module COMMON-C-BITSIZE
-     imports COMMON-SEMANTICS-HELPERS-INCLUDE
+module C-BITSIZE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports COMPAT-SYNTAX
+
+     imports C-HELPERS-SYNTAX
 
      syntax K ::= bitSizeofList(KList)
      syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
@@ -618,10 +626,8 @@ module COMMON-C-BITSIZE
      rule klistToK(.KList) => .K
 endmodule
 
-
-module COMMON-C-HELPERS
-     imports COMMON-SEMANTICS-HELPERS-INCLUDE
-     imports COMMON-C-BITSIZE
-     imports COMMON-SEMANTICS-HELPERS-MISC
-     imports COMPAT
+module C-HELPERS
+     imports C-BITSIZE
+     imports C-HELPERS-MISC
+     imports C-COMPAT
 endmodule

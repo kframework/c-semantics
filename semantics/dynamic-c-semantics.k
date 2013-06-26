@@ -13,14 +13,12 @@ require "dynamic-c-declarations.k"
 // this must be below the others
 require "dynamic-c-errors.k"
 
-module DYNAMIC-INCLUDE
-     imports COMMON-INCLUDE
-     imports URIS
-     imports C-CONFIGURATION
-endmodule
-
 module DYNAMIC-C-SEMANTICS-MISC
-     imports DYNAMIC-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
      imports C-CONFIGURATION
                
      rule [sequencePoint]:
@@ -129,7 +127,12 @@ endmodule
 
 module DYNAMIC-C-SEMANTICS
      imports COMMON-C-SEMANTICS
-     imports DYNAMIC-INCLUDE
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS
+     imports URIS
+     imports C-CONFIGURATION
      
      imports DYNAMIC-C-SEMANTICS-MISC
      imports DYNAMIC-C-EXPRESSIONS

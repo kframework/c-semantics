@@ -2,7 +2,11 @@ require "common-c-semantics.k"
 
 module COMMON-SEMANTICS-TYPE-INCLUDE
      // FIXME need to automatically pad structs
-     imports COMMON-INCLUDE 
+     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports COMPAT-SYNTAX
+     imports C-HELPERS
+     imports C-COMPAT-SYNTAX
      
      syntax K ::= "MYHOLE"
      
