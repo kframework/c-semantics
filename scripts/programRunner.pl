@@ -123,6 +123,15 @@ if (defined($ENV{'SEARCH'})) {
       $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
 }
 
+if (defined($ENV{'LTLMC'})) {
+      $krun_args{'--ltlmc'} = $ENV{'LTLMC'};
+      delete $krun_args{'--io'};
+      $krun_args{'--no-io'} = '';
+      $krun_args{'--output-mode'} = 'pretty';
+      delete $krun_args{'--output'};
+      $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
+}
+
 system("krun", grep {$_} %krun_args);
 
 open(OUT, "<$fileOutput");

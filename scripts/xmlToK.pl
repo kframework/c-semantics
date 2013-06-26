@@ -170,7 +170,25 @@ sub elementToK {
             || $label eq 'UL'
             || $label eq 'ULL') {
             $label = 'Lit' . $label;
-      }
+      } 
+     # else {
+     #       my %ltlTrans = (
+     #             'LTLAlways' => '`[`]Ltl_',
+     #             'LTLEventually' => '<>Ltl_',
+     #             'LTLImplies' => '_->Ltl_',
+     #             'LTLNot' => '~Ltl_',
+     #             'LTLAnd' => '_/\Ltl_',
+     #             'LTLOr' => '_\/Ltl_',
+     #             'LTLUntil' => '_ULtl_',
+     #             'LTLRelease' => '_RLtl_',
+     #             'LTLWeakUntil' => '_WLtl_',
+     #             'LTLNext' => 'OLtl_',
+     #       );
+
+     #       if (defined $ltlTrans{$label}) {
+     #             $label = $ltlTrans{$label};
+     #       }
+     # }
 
 	my @klist = ();
 	my $depth = $reader->depth;
