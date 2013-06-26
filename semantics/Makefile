@@ -11,13 +11,16 @@ KOMPILE_C = $(KOMPILE) c.k -w -v -l C -transition "interpRule"
 KOMPILE_C_ND = $(KOMPILE) c.k -o "c-kompiled-nd" -w -v -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
 KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -o "c-kompiled-nd-thread" -w -v -l C -transition "observable computational"
 
+LIBC_FILES = libc.k libc/setjmp.k libc/stddef.k \
+	libc/stdlib.k libc/threads.k libc/math.k \
+	libc/stdarg.k libc/stdio.k libc/string.k libc/time.k
 COMMON_C_FILES = c-syntax.k common-c-helpers.k c-configuration.k \
 	common-c-semantics.k common-c-statements.k \
 	common-c-declarations.k common-c-typing.k
 DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-expressions.k \
 	dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k \
 	dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k \
-	dynamic-c-standard-lib.k c-ltlmc.k
+	c-ltlmc.k $(LIBC_FILES)
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude .k c-kompiled c-kompiled-nd c-kompiled-nd-thread kcompile_* static-c.k.bak duplicateLabels.txt 
