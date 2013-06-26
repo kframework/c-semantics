@@ -14,9 +14,9 @@ KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -o "c-kompiled-nd-thread" -w -v -l C -trans
 LIBC_FILES = libc.k libc/setjmp.k libc/stddef.k \
 	libc/stdlib.k libc/threads.k libc/math.k \
 	libc/stdarg.k libc/stdio.k libc/string.k libc/time.k
-COMMON_C_FILES = c-syntax.k common-c-helpers.k c-configuration.k \
-	common-c-semantics.k common-c-statements.k \
-	common-c-declarations.k common-c-typing.k
+COMMON_C_FILES = c-syntax.k c-helpers.k c-configuration.k \
+	c-semantic-syntax.k c-statements.k \
+	c-declarations.k c-typing.k
 DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-expressions.k \
 	dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k \
 	dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k \
@@ -25,7 +25,7 @@ DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-expressions.k \
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude .k c-kompiled c-kompiled-nd c-kompiled-nd-thread kcompile_* static-c.k.bak duplicateLabels.txt 
 
-.PHONY: all clean force semantics pdf common-pdf-modules common-c-%-fake
+.PHONY: all clean force semantics pdf common-pdf-modules
 
 .SECONDARY:
 
@@ -39,15 +39,15 @@ ifeq ($(C_K_BASE),)
 	@exit 1
 endif
 
-temp-c-syntax.tex: PDF_FILES = common-c-syntax
-temp-c-statements.tex: PDF_FILES = common-c-statements dynamic-c-statements
-temp-c-expressions.tex: PDF_FILES = common-c-expressions dynamic-c-expressions
-temp-c-typing.tex: PDF_FILES = common-c-typing dynamic-c-typing
-temp-c-declarations.tex: PDF_FILES = common-c-declarations dynamic-c-declarations
+temp-c-syntax.tex: PDF_FILES = c-syntax
+temp-c-statements.tex: PDF_FILES = c-statements dynamic-c-statements
+temp-c-expressions.tex: PDF_FILES = c-expressions dynamic-c-expressions
+temp-c-typing.tex: PDF_FILES = c-typing dynamic-c-typing
+temp-c-declarations.tex: PDF_FILES = c-declarations dynamic-c-declarations
 temp-c-memory.tex: PDF_FILES = dynamic-c-memory
 temp-c-library.tex: PDF_FILES = dynamic-c-standard-lib
 temp-c-errors.tex: PDF_FILES = dynamic-c-errors
-temp-c-misc.tex: PDF_FILES = common-c-semantics common-c-helpers dynamic-c-semantics
+temp-c-misc.tex: PDF_FILES = c-semantics c-helpers dynamic-c-semantics
 temp-c-%.tex: PDF_MODULES = `grep -o '^module.* is' $(addsuffix .k,$(PDF_FILES)) | grep -o ' .* '`
 temp-c-%.tex: check-vars $(KOMPILE) c.k $(addsuffix .k,$(PDF_FILES))
 	@echo "Creating latex..."

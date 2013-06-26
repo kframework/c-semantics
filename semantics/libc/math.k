@@ -1,9 +1,8 @@
 module LIBC-MATH
-     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
 
      imports LIBC-SYNTAX
