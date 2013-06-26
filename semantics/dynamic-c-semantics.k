@@ -13,13 +13,9 @@ require "dynamic-c-declarations.k"
 // this must be below the others
 require "dynamic-c-errors.k"
 
-module DYNAMIC-SEMANTIC-SYNTAX
+module DYNAMIC-INCLUDE
      imports COMMON-INCLUDE
      imports URIS
-endmodule
-
-module DYNAMIC-INCLUDE
-     imports DYNAMIC-SEMANTIC-SYNTAX
      imports C-CONFIGURATION
 endmodule
 

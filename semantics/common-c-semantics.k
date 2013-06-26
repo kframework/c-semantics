@@ -3,12 +3,13 @@ require "common-c-helpers.k"
 require "c-configuration.k"
 
 require "common-c-statements.k"
-require "common-c-expressions.k"
 require "common-c-declarations.k"
 require "common-c-typing.k"
 
 module COMPAT-SYNTAX
-     imports COMMON-INCOMING-MODULES 
+     imports K
+     imports C-SYNTAX 
+     imports C-CONFIGURATION 
 
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
@@ -50,28 +51,35 @@ module COMPAT-SYNTAX
      syntax String ::= "Rat2String" "(" Int "," Int ")"
           [function, klabel('Rat2String), hook(#CONVERSION:base2String)]
 
-     syntax Float ::= "sqrtFloat" "(" Float ")" [function, hook(#FLOAT:sqrtFloat)]
-     syntax Float ::= "logFloat" "(" Float ")" [function, hook(#FLOAT:logFloat)]
-     syntax Float ::= "expFloat" "(" Float ")" [function, hook(#FLOAT:expFloat)]
-     syntax Float ::= "atanFloat" "(" Float ")" [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "acosFloat" "(" Float ")" [function, hook(#FLOAT:acosFloat)]
-     syntax Float ::= "asinFloat" "(" Float ")" [function, hook(#FLOAT:asinFloat)]
-     syntax Float ::= "tanFloat" "(" Float ")" [function, hook(#FLOAT:tanFloat)]
-     syntax Float ::= "cosFloat" "(" Float ")" [function, hook(#FLOAT:cosFloat)]
-     syntax Float ::= "sinFloat" "(" Float ")" [function, hook(#FLOAT:sinFloat)]
-     syntax Float ::= "atan2Float" "(" Float "," Float ")" [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "floorFloat" "(" Float ")" [function, hook(#FLOAT:floorFloat)]
+     syntax Float ::= "sqrtFloat" "(" Float ")" 
+          [function, hook(#FLOAT:sqrtFloat)]
+     syntax Float ::= "logFloat" "(" Float ")" 
+          [function, hook(#FLOAT:logFloat)]
+     syntax Float ::= "expFloat" "(" Float ")" 
+          [function, hook(#FLOAT:expFloat)]
+     syntax Float ::= "atanFloat" "(" Float ")" 
+          [function, hook(#FLOAT:atanFloat)]
+     syntax Float ::= "acosFloat" "(" Float ")" 
+          [function, hook(#FLOAT:acosFloat)]
+     syntax Float ::= "asinFloat" "(" Float ")" 
+          [function, hook(#FLOAT:asinFloat)]
+     syntax Float ::= "tanFloat" "(" Float ")" 
+          [function, hook(#FLOAT:tanFloat)]
+     syntax Float ::= "cosFloat" "(" Float ")" 
+          [function, hook(#FLOAT:cosFloat)]
+     syntax Float ::= "sinFloat" "(" Float ")" 
+          [function, hook(#FLOAT:sinFloat)]
+     syntax Float ::= "atan2Float" "(" Float "," Float ")" 
+          [function, hook(#FLOAT:atan2Float)]
+     syntax Float ::= "floorFloat" "(" Float ")" 
+          [function, hook(#FLOAT:floorFloat)]
 
-endmodule
-
-module COMMON-INCOMING-MODULES
-     imports K
-     imports C-SYNTAX 
-     imports C-CONFIGURATION 
 endmodule
 
 module COMMON-SEMANTIC-SYNTAX
-     imports COMMON-INCOMING-MODULES 
+     imports K
+     imports C-SYNTAX 
+     imports C-CONFIGURATION 
      
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
@@ -258,8 +266,7 @@ module COMMON-SEMANTIC-SYNTAX
      syntax "in" -/- [a-zA-Z]
      
      syntax Set ::= "assignmentLabels" [function]
-     rule 
-          assignmentLabels => 
+     rule assignmentLabels => 
                SetItem(l('_:=_))
                SetItem(l('_*=_))
                SetItem(l('_/=_))
@@ -443,15 +450,10 @@ module COMMON-C-SETTINGS
      
 endmodule
 
-module COMMON-NOHELPER-INCLUDE
+module COMMON-INCLUDE
      imports COMMON-SEMANTIC-SYNTAX
      imports COMMON-C-SETTINGS
      imports COMPAT-SYNTAX
-endmodule
-
-
-module COMMON-INCLUDE
-     imports COMMON-NOHELPER-INCLUDE
      imports COMMON-C-HELPERS
      imports COMPAT-SYNTAX
 endmodule
@@ -496,13 +498,14 @@ module COMMON-C-SEMANTICS-MISC
           [structural, anywhere]
      
      rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+
+     rule NothingExpression => emptyValue
 endmodule
 
 module COMMON-C-SEMANTICS
      imports COMMON-INCLUDE 
      
      imports COMMON-C-SEMANTICS-MISC
-     imports COMMON-C-EXPRESSIONS
      imports COMMON-C-STATEMENTS
      imports COMMON-C-DECLARATIONS
      imports COMMON-C-TYPING
