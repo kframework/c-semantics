@@ -1,12 +1,12 @@
 require "c-syntax.k"
-require "common-c-helpers.k"
+require "c-helpers.k"
 require "c-configuration.k"
 
 require "common-c-statements.k"
 require "common-c-declarations.k"
 require "common-c-typing.k"
 
-module COMPAT-SYNTAX
+module C-COMPAT-SYNTAX
      imports K
      imports C-SYNTAX 
      imports C-CONFIGURATION 
@@ -453,9 +453,8 @@ endmodule
 module COMMON-C-SEMANTICS-MISC
      imports COMMON-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports COMPAT-SYNTAX
-     imports C-HELPERS
      imports C-COMPAT-SYNTAX
+     imports C-HELPERS
      
      rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
           => loc(X +Int 1 @ Th, ByOff, BiOff)
@@ -501,9 +500,8 @@ endmodule
 module COMMON-C-SEMANTICS
      imports COMMON-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports COMPAT-SYNTAX
-     imports C-HELPERS
      imports C-COMPAT-SYNTAX
+     imports C-HELPERS
      
      imports COMMON-C-SEMANTICS-MISC
      imports COMMON-C-STATEMENTS

@@ -71,7 +71,7 @@ endmodule
 module C-HELPERS-MISC
      imports COMMON-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports COMPAT-SYNTAX
+     imports C-COMPAT-SYNTAX
 
      imports C-HELPERS-SYNTAX
 
@@ -537,7 +537,7 @@ endmodule
 module C-BITSIZE
      imports COMMON-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports COMPAT-SYNTAX
+     imports C-COMPAT-SYNTAX
 
      imports C-HELPERS-SYNTAX
 
