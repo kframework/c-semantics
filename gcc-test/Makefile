@@ -8,7 +8,7 @@ CLANG ?= "clang -fno-color-diagnostics -w -m32 -O0 -U __GNUC__ -std=c99"
 CILCC ?= "./cilcc.sh"
 COMPCERT ?= "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -U __GNUC__"
 
-
+# This is the DejaGnu "runtest" tool.
 RUNTEST = runtest --tool=gcc
 KCC_FLAGS = --outdir results/out.kcc --tool_exec $(KCC)
 GCC_FLAGS = --outdir results/out.gcc --tool_exec $(GCC)
