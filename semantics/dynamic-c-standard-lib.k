@@ -864,7 +864,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
           <formatResult>...
-               .List => ListItem(Rat2String(D:Int, 8))
+               .List => ListItem(base2String(D:Int, 8))
           </formatResult>
           <formatState> "%o" => "reset" </formatState>
           [structural]
@@ -896,7 +896,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
           <formatResult>... 
-               .List => ListItem(Rat2String(D:Int, 16)) 
+               .List => ListItem(base2String(D:Int, 16)) 
           </formatResult>
           <formatState> "%x" => "reset" </formatState>
           [structural]
@@ -912,7 +912,7 @@ module DYNAMIC-C-STANDARD-LIBRARY-STDIO
           <k> formatter-aux(_) ...</k>
           <formatArg> D:Int => .K </formatArg>
           <formatResult>... 
-               .List => ListItem(toUpperCase(Rat2String(D:Int, 16))) 
+               .List => ListItem(toUpperCase(base2String(D:Int, 16))) 
           </formatResult>
           <formatState> "%X" => "reset" </formatState>
           [structural]

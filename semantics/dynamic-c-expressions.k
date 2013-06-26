@@ -128,10 +128,10 @@ module DYNAMIC-SEMANTICS-LITERALS
           
      syntax K ::= "hexOrOctalConstant" "(" K ")"
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Rat(simplifyForHex(S), 16))
+          => hexOrOctalConstant(string2Base(simplifyForHex(S), 16))
           [structural, anywhere]
      rule OctalConstant(N:Int)
-          => hexOrOctalConstant(String2Rat(Rat2String(N, 10), 8))
+          => hexOrOctalConstant(string2Base(base2String(N, 10), 8))
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{

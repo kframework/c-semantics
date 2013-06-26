@@ -46,10 +46,10 @@ module COMPAT-SYNTAX
 
      syntax Ptr ::= Int | SymLoc
 
-     syntax Int ::= "String2Rat" "(" String "," Int ")"
-          [function, klabel('String2Rat), hook(#CONVERSION:string2Base)]
-     syntax String ::= "Rat2String" "(" Int "," Int ")"
-          [function, klabel('Rat2String), hook(#CONVERSION:base2String)]
+     syntax Int ::= "string2Base" "(" String "," Int ")"
+          [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
+     syntax String ::= "base2String" "(" Int "," Int ")"
+          [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
      syntax Float ::= "sqrtFloat" "(" Float ")" 
           [function, hook(#FLOAT:sqrtFloat)]
