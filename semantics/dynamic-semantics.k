@@ -1,24 +1,22 @@
 require "c-configuration.k"
-require "common-c-semantics.k"
-require "io/uris.k"
+require "c-semantic-syntax.k"
 
 require "dynamic-c-expressions.k"
 require "dynamic-c-conversions.k"
 require "dynamic-c-statements.k"
-require "dynamic-c-standard-lib.k"
 require "dynamic-c-typing.k"
 require "dynamic-c-memory.k"
 require "dynamic-c-declarations.k"
 
-// this must be below the others
+require "libc.k"
+
 require "dynamic-c-errors.k"
 
-module DYNAMIC-C-SEMANTICS-MISC
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-SEMANTICS-MISC
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
                
      rule [sequencePoint]:
@@ -125,24 +123,22 @@ module DYNAMIC-C-SEMANTICS-MISC
           [structural]
 endmodule
 
-module DYNAMIC-C-SEMANTICS
-     imports COMMON-C-SEMANTICS
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-SEMANTICS
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
      
-     imports DYNAMIC-C-SEMANTICS-MISC
-     imports DYNAMIC-C-EXPRESSIONS
-     imports DYNAMIC-C-ERRORS
-     imports DYNAMIC-C-TYPING 
-     imports DYNAMIC-C-DECLARATIONS 
-     imports DYNAMIC-C-MEMORY 
-     imports DYNAMIC-C-STATEMENTS 
-     imports DYNAMIC-C-CONVERSIONS 
-     imports DYNAMIC-C-STANDARD-LIBRARY
+     imports C-DYNAMIC-SEMANTICS-MISC
+     imports C-DYNAMIC-EXPRESSIONS
+     imports C-DYNAMIC-ERRORS
+     imports C-DYNAMIC-TYPING 
+     imports C-DYNAMIC-DECLARATIONS 
+     imports C-DYNAMIC-MEMORY 
+     imports C-DYNAMIC-STATEMENTS 
+     imports C-DYNAMIC-CONVERSIONS 
+     imports LIBC
      
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the

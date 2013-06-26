@@ -1,12 +1,9 @@
-require "dynamic-c-semantics.k"
-
-module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
-     imports COMMON-SEMANTICS-STATEMENTS-INCLUDE
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-STATEMENTS-INCLUDE
+     imports C-STATEMENTS-INCLUDE
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
 
      syntax K ::= "pushBlock"
@@ -14,8 +11,8 @@ module DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
           [latex(\terminal{addToHist}\!({#1}\!))]
 endmodule 
 
-module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module C-DYNAMIC-LABELED-STATEMENTS
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
      Any statement may be preceded by a prefix that declares an identifier as a
@@ -34,8 +31,8 @@ module DYNAMIC-SEMANTICS-LABELED-STATEMENTS
 endmodule
 
 
-module DYNAMIC-SEMANTICS-BLOCKS
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module C-DYNAMIC-BLOCKS
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.
@@ -110,8 +107,8 @@ module DYNAMIC-SEMANTICS-BLOCKS
           [structural]
 endmodule
           
-module DYNAMIC-SEMANTICS-IF-THEN
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-IF-THEN
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
           
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
      \ldots There is a sequence point between the evaluation of a full
@@ -137,8 +134,8 @@ module DYNAMIC-SEMANTICS-IF-THEN
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-SWITCH
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-SWITCH
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
      
      //  fixme shouldn't there be sequence points here?
      //  fixme not doing promoting or conversion
@@ -220,8 +217,8 @@ module DYNAMIC-SEMANTICS-SWITCH
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-WHILE
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-WHILE
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
      The evaluation of the controlling expression takes place before each
@@ -243,8 +240,8 @@ module DYNAMIC-SEMANTICS-WHILE
           [structural]  // rule so that looping programs see repetition
 endmodule
 
-module DYNAMIC-SEMANTICS-DO-WHILE
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-DO-WHILE
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The evaluation of the controlling expression takes place after each
@@ -266,8 +263,8 @@ module DYNAMIC-SEMANTICS-DO-WHILE
           [structural]  // rule so that looping programs see repetition
 endmodule
 
-module DYNAMIC-SEMANTICS-FOR
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-FOR
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement 
@@ -324,8 +321,8 @@ module DYNAMIC-SEMANTICS-FOR
           [structural] // rule so that looping programs see repetition 
 endmodule
 
-module DYNAMIC-SEMANTICS-GOTO
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-GOTO
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement
@@ -569,8 +566,8 @@ module DYNAMIC-SEMANTICS-GOTO
 
 endmodule
 
-module DYNAMIC-SEMANTICS-CONTINUE
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE 
+module C-DYNAMIC-CONTINUE
+     imports C-DYNAMIC-STATEMENTS-INCLUDE 
 
      /*@
      \begin{lrbox}{\LstBox}
@@ -633,8 +630,8 @@ module DYNAMIC-SEMANTICS-CONTINUE
           
 endmodule
 
-module DYNAMIC-SEMANTICS-BREAK
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module C-DYNAMIC-BREAK
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.3}{2}}}{
      A break statement terminates execution of the smallest enclosing switch or
      iteration statement.
@@ -644,8 +641,8 @@ module DYNAMIC-SEMANTICS-BREAK
           [structural] 
 endmodule
 
-module DYNAMIC-SEMANTICS-RETURN
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module C-DYNAMIC-RETURN
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
      A \cinline{return} statement terminates execution of the current function
@@ -716,8 +713,8 @@ module DYNAMIC-SEMANTICS-RETURN
           [structural, large] 
 endmodule
 
-module DYNAMIC-SEMANTICS-STATEMENTS-MISC
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
+module C-DYNAMIC-STATEMENTS-MISC
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
      
      rule [popLoop]:
           <k> popLoop ~> _ => K:K </k>
@@ -733,18 +730,18 @@ module DYNAMIC-SEMANTICS-STATEMENTS-MISC
           [structural] 
 endmodule
 
-module DYNAMIC-C-STATEMENTS
-     imports DYNAMIC-SEMANTICS-STATEMENTS-INCLUDE
-     imports DYNAMIC-SEMANTICS-LABELED-STATEMENTS
-     imports DYNAMIC-SEMANTICS-IF-THEN 
-     imports DYNAMIC-SEMANTICS-FOR 
-     imports DYNAMIC-SEMANTICS-WHILE 
-     imports DYNAMIC-SEMANTICS-SWITCH 
-     imports DYNAMIC-SEMANTICS-GOTO 
-     imports DYNAMIC-SEMANTICS-RETURN 
-     imports DYNAMIC-SEMANTICS-BLOCKS 
-     imports DYNAMIC-SEMANTICS-DO-WHILE 
-     imports DYNAMIC-SEMANTICS-CONTINUE
-     imports DYNAMIC-SEMANTICS-BREAK
-     imports DYNAMIC-SEMANTICS-STATEMENTS-MISC
+module C-DYNAMIC-STATEMENTS
+     imports C-DYNAMIC-STATEMENTS-INCLUDE
+     imports C-DYNAMIC-LABELED-STATEMENTS
+     imports C-DYNAMIC-IF-THEN 
+     imports C-DYNAMIC-FOR 
+     imports C-DYNAMIC-WHILE 
+     imports C-DYNAMIC-SWITCH 
+     imports C-DYNAMIC-GOTO 
+     imports C-DYNAMIC-RETURN 
+     imports C-DYNAMIC-BLOCKS 
+     imports C-DYNAMIC-DO-WHILE 
+     imports C-DYNAMIC-CONTINUE
+     imports C-DYNAMIC-BREAK
+     imports C-DYNAMIC-STATEMENTS-MISC
 endmodule

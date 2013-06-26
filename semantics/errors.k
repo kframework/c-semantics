@@ -1,21 +1,18 @@
-require "dynamic-c-semantics.k"
-
-module DYNAMIC-C-ERRORS-SYNTAX
+module C-DYNAMIC-ERRORS-SYNTAX
 
 endmodule
 
-module DYNAMIC-C-ERRORS
-     imports DYNAMIC-C-ERRORS-SYNTAX
+module C-DYNAMIC-ERRORS
+     imports C-DYNAMIC-ERRORS-SYNTAX
 
-     imports COMMON-C-SEMANTICS
-     imports DYNAMIC-C-SEMANTICS-MISC
-     imports DYNAMIC-C-EXPRESSIONS
-     imports DYNAMIC-C-TYPING 
-     imports DYNAMIC-C-DECLARATIONS 
-     imports DYNAMIC-C-MEMORY 
-     imports DYNAMIC-C-STATEMENTS 
-     imports DYNAMIC-C-CONVERSIONS 
-     imports DYNAMIC-C-STANDARD-LIBRARY
+     imports C-DYNAMIC-SEMANTICS-MISC
+     imports C-DYNAMIC-EXPRESSIONS
+     imports C-DYNAMIC-TYPING 
+     imports C-DYNAMIC-DECLARATIONS 
+     imports C-DYNAMIC-MEMORY 
+     imports C-DYNAMIC-STATEMENTS 
+     imports C-DYNAMIC-CONVERSIONS 
+     imports LIBC
 
      syntax K ::= Error(String, String) [function]
      rule Error(Title:String, Msg:String)  => 

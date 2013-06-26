@@ -1,7 +1,5 @@
-require "common-c-semantics.k"
-
-module COMMON-SEMANTICS-STATEMENTS-INCLUDE
-     imports COMMON-SEMANTIC-SYNTAX
+module C-STATEMENTS-INCLUDE
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-HELPERS
      imports C-COMPAT-SYNTAX
@@ -19,8 +17,8 @@ module COMMON-SEMANTICS-STATEMENTS-INCLUDE
      syntax K ::= "case" "(" Int ")"
 endmodule 
 
-module COMMON-SEMANTICS-PROCESS-LABELS
-     imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
+module C-PROCESS-LABELS
+     imports C-STATEMENTS-INCLUDE 
      // now that we can have different strictnesses in different cells, maybe
      // this can be redone easily
      /*
@@ -40,8 +38,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
      */
      
      syntax K ::= "waitingOnGotoMap"
-     rule 
-          <k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
+     rule <k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
           <gotoMap> M:Map => M:Map[map(.Map) / kpair(Tu:K, F:Id)] </gotoMap>
           <currentFunction> _ => F:Id </currentFunction>
           <currTU> Tu:K </currTU>
@@ -354,7 +351,7 @@ module COMMON-SEMANTICS-PROCESS-LABELS
           [structural, large]
 endmodule
  
-module COMMON-C-STATEMENTS
-     imports COMMON-SEMANTICS-STATEMENTS-INCLUDE 
-     imports COMMON-SEMANTICS-PROCESS-LABELS
+module C-STATEMENTS
+     imports C-STATEMENTS-INCLUDE 
+     imports C-PROCESS-LABELS
 endmodule

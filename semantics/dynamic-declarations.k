@@ -1,13 +1,10 @@
-require "dynamic-c-semantics.k"
-
-module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-DECLARATIONS-BINDING
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
+     imports C-DECLARATIONS-SYNTAX
 
      // empty binding
      // fixme not really a sequence point
@@ -150,14 +147,13 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-BINDING
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-DECLARATIONS-GENERAL
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
+     imports C-DECLARATIONS-SYNTAX
      
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
@@ -245,15 +241,7 @@ module DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL
           [structural]
 endmodule
 
-module DYNAMIC-C-DECLARATIONS
-     imports COMMON-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports URIS
-     imports C-CONFIGURATION
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX
-     
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-BINDING 
-     imports DYNAMIC-SEMANTICS-DECLARATIONS-GENERAL 
+module C-DYNAMIC-DECLARATIONS
+     imports C-DYNAMIC-DECLARATIONS-BINDING 
+     imports C-DYNAMIC-DECLARATIONS-GENERAL 
 endmodule

@@ -1,11 +1,8 @@
-require "dynamic-c-semantics.k"
-
-module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
-     imports COMMON-SEMANTIC-SYNTAX
+module C-DYNAMIC-EXPRESSIONS-INCLUDE
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
      imports C-HELPERS
-     imports URIS
      imports C-CONFIGURATION
      syntax K ::= "assign" "(" K "," K ")"
      syntax Id ::= "compoundLiteral" "(" Int ")"
@@ -115,8 +112,8 @@ module DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
      
 endmodule
 
-module DYNAMIC-SEMANTICS-LITERALS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-LITERALS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
           
      syntax Bool ::= withinRange(Int, SimpleType) [function]
      rule withinRange(I:Int, T:K)
@@ -400,8 +397,8 @@ module DYNAMIC-SEMANTICS-LITERALS
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-IDENTIFIERS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-IDENTIFIERS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
      An identifier is a primary expression, provided it has been declared as
@@ -433,8 +430,8 @@ module DYNAMIC-SEMANTICS-IDENTIFIERS
           [large, structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-ARRAY-SUBSCRIPTING
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets
@@ -464,8 +461,8 @@ module DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
 endmodule
 
 
-module DYNAMIC-SEMANTICS-FUNCTION-CALLS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-FUNCTION-CALLS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
 
      syntax K ::= "application" "(" K "," KList ")" [strict(1)]
      syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
@@ -582,8 +579,8 @@ module DYNAMIC-SEMANTICS-FUNCTION-CALLS
 endmodule
 
 
-module DYNAMIC-SEMANTICS-MEMBERS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-MEMBERS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -626,8 +623,8 @@ module DYNAMIC-SEMANTICS-MEMBERS
      rule K:K -> F:Id => (* K) . F [macro]
 endmodule
 
-module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-POSTFIX-INCREMENT-AND-DECREMENT
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      syntax K ::= "postOpRef" "(" K "," KLabel ")"
      syntax K ::= "postInc" "(" SymLoc "," K "," Type ")" [strict(2)]
@@ -671,8 +668,8 @@ module DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
      
 endmodule
 
-module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-COMPOUND-LITERAL
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]
      
@@ -733,8 +730,8 @@ module DYNAMIC-SEMANTICS-COMPOUND-LITERAL
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-PREFIX-INCREMENT-AND-DECREMENT
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{
      The value of the operand of the prefix \cinline{++} operator is
@@ -754,8 +751,8 @@ module DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
 endmodule
 
 
-module DYNAMIC-SEMANTICS-REFERENCE
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-REFERENCE
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the
@@ -778,8 +775,8 @@ module DYNAMIC-SEMANTICS-REFERENCE
 endmodule
 
 
-module DYNAMIC-SEMANTICS-DEREFERENCE
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-DEREFERENCE
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
      The unary \cinline{*} operator denotes indirection. If the operand points
@@ -797,8 +794,8 @@ module DYNAMIC-SEMANTICS-DEREFERENCE
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-UNARY-ARITHMETIC
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{2}}}{
      The result of the unary \cinline{+} operator is the value of its
@@ -849,8 +846,8 @@ module DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
           [structural]
 endmodule
      
-module DYNAMIC-SEMANTICS-SIZEOF
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-SIZEOF
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,
@@ -885,8 +882,8 @@ module DYNAMIC-SEMANTICS-SIZEOF
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-CAST
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-CAST
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{
      Preceding an expression by a parenthesized type name converts the value of
@@ -904,8 +901,8 @@ module DYNAMIC-SEMANTICS-CAST
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-MULTIPLICATIVE-OPERATORS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
      The usual arithmetic conversions are performed on the operands.
@@ -955,8 +952,8 @@ module DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-ADDITIVE-OPERATORS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
      For addition, either both operands shall have arithmetic type, or one
@@ -1125,8 +1122,8 @@ module DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-BITWISE-SHIFT
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-BITWISE-SHIFT
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      syntax K ::= leftShiftInterpret(Type, BaseValue, K) [function]
      syntax K ::= rightShiftInterpret(Type, BaseValue) [function]
@@ -1180,8 +1177,8 @@ module DYNAMIC-SEMANTICS-BITWISE-SHIFT
 endmodule
 
 
-module DYNAMIC-SEMANTICS-RELATIONAL
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-RELATIONAL
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.8}{3}}}{
      If both of the operands have arithmetic type, the usual arithmetic
@@ -1277,8 +1274,8 @@ module DYNAMIC-SEMANTICS-RELATIONAL
 endmodule
 
 
-module DYNAMIC-SEMANTICS-EQUALITY
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-EQUALITY
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
      The \cinline{==} (equal to) and \cinline{!=} (not equal to) operators are
@@ -1450,8 +1447,8 @@ module DYNAMIC-SEMANTICS-EQUALITY
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-BITWISE
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE                    
+module C-DYNAMIC-BITWISE
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE                    
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
      The usual arithmetic conversions are performed on the operands.
@@ -1490,8 +1487,8 @@ module DYNAMIC-SEMANTICS-BITWISE
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-LOGICAL
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-LOGICAL
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ Here, we wrapped the controlling expressions with
      \kinline{simplifyTruth} when heating them, so that we are guaranteed
@@ -1539,8 +1536,8 @@ module DYNAMIC-SEMANTICS-LOGICAL
 
 endmodule
 
-module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-CONDITIONAL-EXPRESSION
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
 
      syntax K ::= "getTypes" "(" KList ")"
      syntax K ::= "types" "(" KList ")"
@@ -1637,8 +1634,8 @@ module DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-ASSIGNMENT
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-ASSIGNMENT
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
@@ -1722,8 +1719,8 @@ module DYNAMIC-SEMANTICS-ASSIGNMENT
           [structural]
 endmodule
 
-module DYNAMIC-SEMANTICS-SEQUENCING
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-SEQUENCING
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
      The left operand of a comma operator is evaluated as a void expression;
@@ -1745,30 +1742,30 @@ module DYNAMIC-SEMANTICS-SEQUENCING
           [structural]
 endmodule
 
-module DYNAMIC-C-EXPRESSIONS
-     imports DYNAMIC-SEMANTICS-EXPRESSIONS-INCLUDE
+module C-DYNAMIC-EXPRESSIONS
+     imports C-DYNAMIC-EXPRESSIONS-INCLUDE
 
-     imports DYNAMIC-SEMANTICS-COMPOUND-LITERAL
-     imports DYNAMIC-SEMANTICS-LOGICAL
-     imports DYNAMIC-SEMANTICS-CONDITIONAL-EXPRESSION
-     imports DYNAMIC-SEMANTICS-SIZEOF
-     imports DYNAMIC-SEMANTICS-IDENTIFIERS
-     imports DYNAMIC-SEMANTICS-FUNCTION-CALLS
-     imports DYNAMIC-SEMANTICS-ARRAY-SUBSCRIPTING
-     imports DYNAMIC-SEMANTICS-CAST
-     imports DYNAMIC-SEMANTICS-ASSIGNMENT
-     imports DYNAMIC-SEMANTICS-LITERALS
-     imports DYNAMIC-SEMANTICS-BITWISE
-     imports DYNAMIC-SEMANTICS-BITWISE-SHIFT
-     imports DYNAMIC-SEMANTICS-MULTIPLICATIVE-OPERATORS
-     imports DYNAMIC-SEMANTICS-ADDITIVE-OPERATORS
-     imports DYNAMIC-SEMANTICS-RELATIONAL
-     imports DYNAMIC-SEMANTICS-EQUALITY
-     imports DYNAMIC-SEMANTICS-UNARY-ARITHMETIC
-     imports DYNAMIC-SEMANTICS-MEMBERS
-     imports DYNAMIC-SEMANTICS-DEREFERENCE
-     imports DYNAMIC-SEMANTICS-REFERENCE
-     imports DYNAMIC-SEMANTICS-POSTFIX-INCREMENT-AND-DECREMENT
-     imports DYNAMIC-SEMANTICS-PREFIX-INCREMENT-AND-DECREMENT
-     imports DYNAMIC-SEMANTICS-SEQUENCING
+     imports C-DYNAMIC-COMPOUND-LITERAL
+     imports C-DYNAMIC-LOGICAL
+     imports C-DYNAMIC-CONDITIONAL-EXPRESSION
+     imports C-DYNAMIC-SIZEOF
+     imports C-DYNAMIC-IDENTIFIERS
+     imports C-DYNAMIC-FUNCTION-CALLS
+     imports C-DYNAMIC-ARRAY-SUBSCRIPTING
+     imports C-DYNAMIC-CAST
+     imports C-DYNAMIC-ASSIGNMENT
+     imports C-DYNAMIC-LITERALS
+     imports C-DYNAMIC-BITWISE
+     imports C-DYNAMIC-BITWISE-SHIFT
+     imports C-DYNAMIC-MULTIPLICATIVE-OPERATORS
+     imports C-DYNAMIC-ADDITIVE-OPERATORS
+     imports C-DYNAMIC-RELATIONAL
+     imports C-DYNAMIC-EQUALITY
+     imports C-DYNAMIC-UNARY-ARITHMETIC
+     imports C-DYNAMIC-MEMBERS
+     imports C-DYNAMIC-DEREFERENCE
+     imports C-DYNAMIC-REFERENCE
+     imports C-DYNAMIC-POSTFIX-INCREMENT-AND-DECREMENT
+     imports C-DYNAMIC-PREFIX-INCREMENT-AND-DECREMENT
+     imports C-DYNAMIC-SEQUENCING
 endmodule

@@ -1018,5 +1018,8 @@ module C-SYNTAX
      rule Dot(K:K, X:Id) => K:K . X:Id [macro]
      syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel('Arrow)]
      rule Arrow(K:K, X:Id) => K:K -> X:Id [macro]
+     
+     syntax KLabel ::= "TranslationUnitName" "(" String ")" 
+          [klabel('TranslationUnitName)]
 
 endmodule

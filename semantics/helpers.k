@@ -1,11 +1,9 @@
-require "common-c-semantics.k"
-
 module C-HELPERS-SYNTAX
      syntax Bits ::= Bits "bit::" Bits
 endmodule
 
 module C-COMPAT
-     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
 
@@ -69,7 +67,7 @@ module C-COMPAT
 endmodule
 
 module C-HELPERS-MISC
-     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
 
@@ -535,7 +533,7 @@ module C-HELPERS-MISC
 endmodule
 
 module C-BITSIZE
-     imports COMMON-SEMANTIC-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
 

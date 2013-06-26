@@ -1,6 +1,4 @@
-require "common-c-semantics.k"
-
-module COMMON-SEMANTICS-DECLARATIONS-SYNTAX
+module C-DECLARATIONS-SYNTAX
      // id, type, initializer
      syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
      // type, translation unit it was defined in, definition
@@ -19,13 +17,11 @@ module COMMON-SEMANTICS-DECLARATIONS-SYNTAX
      syntax K ::= "processFunctionBody" "(" K ")"
 endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-GENERAL
-     imports COMMON-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+module C-DECLARATIONS-GENERAL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX 
+     imports C-DECLARATIONS-SYNTAX 
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes
      // of this subclause unnamed members of objects of structure and union
@@ -691,13 +687,12 @@ module COMMON-SEMANTICS-DECLARATIONS-GENERAL
           => Blk:K ~> Return(tv(0, t(.Set, int)))
 endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
-     imports COMMON-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+module C-DECLARATIONS-INITIALIZATIONS
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX 
+     imports C-SETTINGS
+     imports C-DECLARATIONS-SYNTAX 
      
      syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
      syntax K ::= "getInit"
@@ -1180,13 +1175,11 @@ module COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS
           [structural]
 endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
-     imports COMMON-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+module C-DECLARATIONS-RESOLUTION
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX 
+     imports C-DECLARATIONS-SYNTAX 
      
      syntax K ::= "canonicalizeTranslationUnitVariables"
      rule [unpack-TranslationUnit]:
@@ -1545,13 +1538,11 @@ module COMMON-SEMANTICS-DECLARATIONS-RESOLUTION
      
 endmodule
 
-module COMMON-SEMANTICS-DECLARATIONS-ENUMS
-     imports COMMON-SEMANTICS-DECLARATIONS-SYNTAX 
-     imports COMMON-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     
+module C-DECLARATIONS-ENUMS
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-DECLARATIONS-SYNTAX 
+
      syntax K ::= "fillEnums" "(" K ")"
      syntax K ::= "fillEnums-aux" "(" K "," K ")"
      rule EnumDef(X:Id, L:K) => fillEnums(EnumDef(X, L))
@@ -1574,10 +1565,9 @@ module COMMON-SEMANTICS-DECLARATIONS-ENUMS
           [structural] 
 endmodule
 
-module COMMON-C-DECLARATIONS
-     imports COMMON-SEMANTICS-DECLARATIONS-GENERAL 
-     imports COMMON-SEMANTICS-DECLARATIONS-INITIALIZATIONS 
-     imports COMMON-SEMANTICS-DECLARATIONS-ENUMS 
-     imports COMMON-SEMANTICS-DECLARATIONS-RESOLUTION 
-
+module C-DECLARATIONS
+     imports C-DECLARATIONS-GENERAL 
+     imports C-DECLARATIONS-INITIALIZATIONS 
+     imports C-DECLARATIONS-ENUMS 
+     imports C-DECLARATIONS-RESOLUTION 
 endmodule

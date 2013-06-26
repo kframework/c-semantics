@@ -1,5 +1,3 @@
-require "c-syntax.k"
-
 module C-CONFIGURATION
      imports C-SYNTAX
 
