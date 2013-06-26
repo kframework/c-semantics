@@ -70,7 +70,7 @@ module COMPAT-SYNTAX
      syntax Float ::= "sinFloat" "(" Float ")" 
           [function, hook(#FLOAT:sinFloat)]
      syntax Float ::= "atan2Float" "(" Float "," Float ")" 
-          [function, hook(#FLOAT:atan2Float)]
+          [function, hook(#FLOAT:atanFloat)]
      syntax Float ::= "floorFloat" "(" Float ")" 
           [function, hook(#FLOAT:floorFloat)]
 

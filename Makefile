@@ -1,6 +1,7 @@
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
+LIBC_DIR = libc
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 #svnversion
@@ -21,8 +22,8 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/programRunner.pl \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(PARSER_DIR)/cparser \
-	$(wildcard $(SEMANTICS_DIR)/includes/*) \
-	$(wildcard $(SEMANTICS_DIR)/lib/*)
+	$(wildcard $(LIBC_DIR)/includes/*) \
+	$(wildcard $(LIBC_DIR)/src/*)
 
 .PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix semantics gcc-output benchmark dist fast-test dist-make check-input
 

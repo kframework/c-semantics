@@ -1,1 +1,0 @@
-char x;signed char x;int main(void){}
