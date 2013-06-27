@@ -1,16 +1,16 @@
-require "c-configuration.k"
-require "c-semantic-syntax.k"
+require "configuration.k"
+require "semantic-syntax.k"
 
-require "dynamic-c-expressions.k"
-require "dynamic-c-conversions.k"
-require "dynamic-c-statements.k"
-require "dynamic-c-typing.k"
-require "dynamic-c-memory.k"
-require "dynamic-c-declarations.k"
+require "expressions.k"
+require "conversions.k"
+require "statements.k"
+require "typing.k"
+require "memory.k"
+require "declarations.k"
 
 require "libc.k"
 
-require "dynamic-c-errors.k"
+require "errors.k"
 
 module C-DYNAMIC-SEMANTICS-MISC
      imports C-SEMANTIC-SYNTAX
