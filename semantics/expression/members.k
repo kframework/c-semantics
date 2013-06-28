@@ -1,4 +1,6 @@
 module C-EXPRESSION-MEMBERS
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an

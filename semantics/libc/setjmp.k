@@ -1,11 +1,6 @@
 module LIBC-SETJMP
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
-
-     imports LIBC-SYNTAX
+     imports LIBC-BOOTSTRAP-SYNTAX
 
      /*@ 
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{

@@ -1,8 +1,23 @@
-module C-DECLARATIONS-GENERAL
+module C-DECLARATION-GENERAL-SYNTAX
+     syntax K ::= "doDeclare" "(" K "," K ")" [strict(1)] 
+
+     // type, translation unit it was defined in, definition
+     syntax K ::= "declarationObject" "(" Type "," K "," K ")"
+          [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})]
+
+     syntax K ::= "external"
+     syntax K ::= "internal"
+     syntax K ::= "noLinkage"
+     
+     syntax KResult ::= "initializer" "(" K ")"
+endmodule
+
+module C-DECLARATION-GENERAL
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-DECLARATIONS-SYNTAX 
+     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-INITIALIZATION-SYNTAX
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes
      // of this subclause unnamed members of objects of structure and union
@@ -23,6 +38,9 @@ module C-DECLARATIONS-GENERAL
 
      // -- if it is a union, the first named member is initialized
      // (recursively) according to these rules
+
+     // id, type, initializer
+     syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
 
      syntax K ::= "defineType" "(" K ")" [strict] 
      context DeclarationDefinition(InitNameGroup(HOLE, _)) 

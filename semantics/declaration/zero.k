@@ -1,11 +1,7 @@
-module C-DECLARATIONS-ZERO
+module C-DECLARATION-ZERO
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
-     imports C-DECLARATIONS-SYNTAX
-     
+
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
      rule <k> 

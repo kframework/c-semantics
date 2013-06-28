@@ -1,9 +1,17 @@
+module C-MEMORY-WRITING-SYNTAX
+     syntax KList ::= explodeToBits(KList) [function]
+     syntax ListItem ::= "bwrite" "(" SymLoc "," K ")"
+endmodule
+
 module C-MEMORY-WRITING
+     imports C-MEMORY-WRITING-SYNTAX
+
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-HELPERS-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports C-SETTINGS
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      
      context alloc(_, value(HOLE)) 
 
@@ -221,9 +229,6 @@ module C-MEMORY-WRITING
           => calculateNewBytes-aux(Len:Int, dataList(explodeToBits(N)),
                dataList(explodeToBits(L:KList)), .KList)
           [structural]
-     
-     rule reverseList(.KList) => .KList
-     rule reverseList((K:K,, L:KList)) => reverseList(L:KList),, K:K
      
      syntax K ::= joinBitsToBytes(KList) [function]
      syntax K ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]

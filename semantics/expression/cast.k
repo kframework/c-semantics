@@ -1,4 +1,7 @@
 module C-EXPRESSION-CAST
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{
      Preceding an expression by a parenthesized type name converts the value of
      the expression to the named type. This construction is called a cast.  A

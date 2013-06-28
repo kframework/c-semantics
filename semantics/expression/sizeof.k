@@ -1,4 +1,7 @@
 module C-EXPRESSION-SIZEOF
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,
      which may be an expression or the parenthesized name of a type. The size

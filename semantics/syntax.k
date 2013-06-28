@@ -1,5 +1,4 @@
 module C-SYNTAX
-
      // these are semantic
      syntax K ::= "reval" "(" K ")" [semantic]
      syntax K ::= "peval" "(" K ")" [semantic]

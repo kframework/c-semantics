@@ -1,6 +1,15 @@
-module C-EXPRESSION-CONDITIONAL
-     syntax K ::= "getTypes" "(" KList ")"
+module C-EXPRESSION-CONDITIONAL-SYNTAX
+     // TODO(chathhorn): error check
      syntax K ::= "types" "(" KList ")"
+endmodule
+
+module C-EXPRESSION-CONDITIONAL
+     imports C-EXPRESSION-CONDITIONAL-SYNTAX
+
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+
+     syntax K ::= "getTypes" "(" KList ")"
      context types((_,, HOLE,, _))
      syntax K ::= "convertedType" "(" K ")" [strict]
      

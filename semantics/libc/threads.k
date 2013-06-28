@@ -1,11 +1,9 @@
 module LIBC-THREADS
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
-
-     imports LIBC-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-SETTINGS
+     imports LIBC-BOOTSTRAP-SYNTAX
      
      ////////////////////////////--
      // Threads

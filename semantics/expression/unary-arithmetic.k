@@ -1,4 +1,8 @@
 module C-EXPRESSION-UNARY-ARITHMETIC
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{2}}}{
      The result of the unary \cinline{+} operator is the value of its
      (promoted) operand. The integer promotions are performed on the operand,

@@ -1,23 +1,73 @@
 require "configuration.k"
 require "semantic-syntax.k"
 
-require "expressions.k"
-require "conversions.k"
-require "statements.k"
+require "expression.k"
+require "statement.k"
+
+require "conversion.k"
+require "promotion.k"
+
 require "typing.k"
 require "memory.k"
-require "declarations.k"
+require "declaration.k"
+require "bitsize.k"
 
 require "libc.k"
 
-require "errors.k"
+require "error.k"
+
+module C-SEMANTICS-MISC
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS-SYNTAX
+     
+     rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
+          => loc(X +Int 1 @ Th, ByOff, BiOff)
+
+     rule [unknown-loc]: 
+          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
+          [structural, anywhere]
+
+     rule [expression-loc]: ExpressionLoc(K:K, _) => K
+          [structural, anywhere]
+
+     rule [CodeLoc-k]:
+          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
+          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
+          [structural]
+          
+     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
+     A preprocessing directive of the form
+     \cdisplay{# pragma pp-tokensoptnew-line}
+     \broken{where the preprocessing token \cinline{STDC} does not immediately
+     follow pragma in the directive (prior to any macro replacement)} causes the
+     implementation to behave in an implementation-defined manner. The behavior
+     might cause translation to fail or cause the translator or the resulting
+     program to behave in a non-conforming manner. Any such pragma that is not
+     recognized by the implementation is ignored.
+     }*/
+     rule [Pragma]: Pragma(_:K) => .
+          [structural]
+          
+     rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
+     
+     rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
+          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte,
+               BitOffset %Int numBitsPerByte)
+          when BitOffset:Int >=Int numBitsPerByte
+          [structural, anywhere]
+     
+     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+
+     rule NothingExpression => emptyValue
+endmodule
 
 module C-DYNAMIC-SEMANTICS-MISC
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports C-HELPERS-SYNTAX
                
      rule [sequencePoint]:
           <k> sequencePoint => .K ...</k>
@@ -124,20 +174,27 @@ module C-DYNAMIC-SEMANTICS-MISC
 endmodule
 
 module C-DYNAMIC-SEMANTICS
+     imports C-SEMANTICS-MISC
+     imports C-DYNAMIC-SEMANTICS-MISC
+
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
      
-     imports C-DYNAMIC-SEMANTICS-MISC
-     imports C-DYNAMIC-EXPRESSIONS
-     imports C-DYNAMIC-ERRORS
-     imports C-DYNAMIC-TYPING 
-     imports C-DYNAMIC-DECLARATIONS 
-     imports C-DYNAMIC-MEMORY 
-     imports C-DYNAMIC-STATEMENTS 
-     imports C-DYNAMIC-CONVERSIONS 
+     imports C-BITSIZE
+     imports C-COMPAT
+     imports C-CONFIGURATION
+     imports C-CONVERSION
+     imports C-CONVERSION-MISC
+     imports C-DECLARATION
+     imports C-ERROR
+     imports C-EXPRESSION
+     imports C-HELPERS
+     imports C-MEMORY 
+     imports C-PROMOTION
+     imports C-STATEMENT
+     imports C-TYPING 
+
      imports LIBC
      
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{

@@ -1,41 +1,12 @@
-module C-CONVERSIONS-INCLUDE
+module C-CONVERSION-SYNTAX
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
 endmodule
 
-module C-CONVERSIONS-HELPERS
+module C-CONVERSION-MISC
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-HELPERS
      imports C-COMPAT-SYNTAX
-     imports C-CONFIGURATION
-     
-     
-     rule [hasSameSignedness]: 
-          hasSameSignedness(T:KResult, T':KResult)
-          => (hasSignedIntegerType(T:KResult)
-                    andBool hasSignedIntegerType(T':KResult))
-               orBool (hasUnsignedIntegerType(T:KResult)
-                    andBool hasUnsignedIntegerType(T':KResult))
-     
-     rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int))
-          => t(S:Set, unsigned-int)
-     rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int))
-          => t(S:Set, unsigned-long-int)
-     rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int))
-          => t(S:Set, unsigned-long-long-int)
-endmodule
-
-module C-CONVERSIONS-MISC
-     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports C-HELPERS
-     imports C-COMPAT-SYNTAX
-     imports C-CONFIGURATION
-     
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
@@ -150,12 +121,28 @@ module C-CONVERSIONS-MISC
 
 endmodule
 
-module C-CONVERSIONS
+module C-CONVERSION
+     imports C-CONVERSION-SYNTAX
+
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports C-HELPERS
-     imports C-COMPAT-SYNTAX
-     imports C-CONFIGURATION
+
+     rule [hasSameSignedness]: 
+          hasSameSignedness(T:KResult, T':KResult)
+          => (hasSignedIntegerType(T:KResult)
+                    andBool hasSignedIntegerType(T':KResult))
+               orBool (hasUnsignedIntegerType(T:KResult)
+                    andBool hasUnsignedIntegerType(T':KResult))
+     
+     rule [correspondingUnsigned-int]: 
+          correspondingUnsignedType(t(S:Set, int))
+          => t(S:Set, unsigned-int)
+     rule [correspondingUnsigned-long-int]: 
+          correspondingUnsignedType(t(S:Set, long-int))
+          => t(S:Set, unsigned-long-int)
+     rule [correspondingUnsigned-long-long-int]: 
+          correspondingUnsignedType(t(S:Set, long-long-int))
+          => t(S:Set, unsigned-long-long-int)
      
      //- switch assumes casts can happen anywhere
      rule cast(T:KResult, tv(L:KList, T:KResult))

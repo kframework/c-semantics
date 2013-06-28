@@ -1,11 +1,8 @@
 module LIBC-MATH
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports LIBC-SYNTAX
      rule [sqrt]:
           prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))
           => tv(sqrtFloat(F:Float), t(.Set, double))

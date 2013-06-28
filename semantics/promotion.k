@@ -1,4 +1,9 @@
-module C-DYNAMIC-PROMOTIONS
+module C-PROMOTION
+     imports C-CONVERSION-SYNTAX
+
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+
      // \csection{6}{3}{0}{0}{Conversions}
      /*@
      \fromStandard{\source[n1570]{\para{6.3}{1--2}}}{

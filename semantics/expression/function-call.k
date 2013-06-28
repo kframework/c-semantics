@@ -1,4 +1,7 @@
 module C-EXPRESSION-FUNCTION-CALL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
 
      syntax K ::= "application" "(" K "," KList ")" [strict(1)]
      syntax K ::= "application'" "(" K "," KList ")" [strict(1)]

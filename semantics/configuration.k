@@ -1,11 +1,5 @@
 module C-CONFIGURATION
-     imports C-SYNTAX
-
-     syntax K ::= memblock(Int, Bag, Map)
-     syntax K ::= "pgmArgs" "(" KList ")" [function]
-     syntax K ::= "resolveReferences"
-     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
-     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
+     imports C-SEMANTIC-SYNTAX
 
      configuration 
      <T>

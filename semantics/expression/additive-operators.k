@@ -1,4 +1,17 @@
+module C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+     syntax K ::= "fromArray" "(" Int "," Int ")" // offset, length
+
+     // TODO(chathhorn): error check
+     syntax K ::= "addToPointer" "(" SymLoc "," Type "," K "," K ")" [strict(4)]
+     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
+endmodule
+
 module C-EXPRESSION-ADDITIVE-OPERATORS
+     imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
      For addition, either both operands shall have arithmetic type, or one
      operand shall be a pointer to a complete object type and the other shall
@@ -64,7 +77,6 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
      operator that is evaluated.
      }*/
      
-     syntax K ::= "addToPointer" "(" SymLoc "," Type "," K "," K ")" [strict(4)]
      rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) 
                + tv(I:Int, T:KResult)
           => addToPointer(Loc, 
@@ -102,7 +114,6 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
      rule newFromArray(t(.Set, pointerType(T:KResult)), _:Int) 
           => t(.Set, pointerType(T:KResult))
           
-     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
      rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
                pointerType(_:KResult)), I:Int)
           => true

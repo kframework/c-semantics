@@ -1,0 +1,91 @@
+module C-BITSIZE
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+     imports C-COMPAT-SYNTAX
+
+     imports C-HELPERS-SYNTAX
+
+     syntax K ::= bitSizeofList(KList)
+     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
+
+     // TODO(chathhorn): BUG? Note doesn't heat when .K.
+     rule bitSizeofList-aux(K:K, X:Int, L:KList)
+          => K ~> bitSizeofList-aux(HOLE, X, L) 
+          when notBool (K ==K .K) [heat]
+     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:KList)
+          => bitSizeofList-aux(K, X, L) [cool]
+     
+      // TODO(chathhorn)
+     rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
+          [structural]
+     rule bitSizeofList-aux((. => bitSizeofType(T:K)),
+               _:Int, ((T:K => .KList),, _:KList))
+          [structural]
+     rule bitSizeofList-aux((tv(Len':Int, _) => .),
+               (Len:Int => Len:Int +Int Len':Int), _)
+          [structural]
+     rule bitSizeofList-aux(., Len:Int, .KList) 
+          => tv(Len:Int, cfg:largestUnsigned)
+          [structural]
+          
+     syntax K ::= "maxBitSizeofList" "(" KList ")"
+     syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
+     rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L:KList, 0)
+          [structural, anywhere]
+     rule maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
+          => bitSizeofType(T:KResult) ~> maxBitSizeofList-aux(L:KList, N:Int) 
+          [structural] 
+     rule (tv(N':Int, _) => .) 
+               ~> maxBitSizeofList-aux(_:KList, 
+               (N:Int => maxInt(N:Int, N':Int))) 
+          [structural] 
+     rule maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned)
+          [structural] 
+     
+     rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
+          => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) 
+          [structural, anywhere]
+     rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
+          => tv(0, cfg:largestUnsigned) 
+          [structural, anywhere]
+     rule bitSizeofType(t(_, functionType(_, _))) 
+          => tv(numBitsPerByte, cfg:largestUnsigned) 
+          [structural, anywhere]
+     rule bitSizeofType(t(_, pointerType(_))) 
+          => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) 
+          [structural, anywhere]
+     rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
+          => tv(N:Int, cfg:largestUnsigned) 
+          [structural, anywhere]
+     rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
+          => bitSizeofType(T:KResult) 
+          [structural, anywhere]
+     rule bitSizeofType(T:KResult) 
+          => tv(numBits(T:KResult), cfg:largestUnsigned) 
+          when isBasicType(T:KResult) 
+          [structural, anywhere]
+     rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) 
+          => bitSizeofType(T:KResult) 
+          [structural, anywhere]
+
+     rule <k> 
+               bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:KList) 
+          ...</k>
+          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
+          [structural] 
+     rule <k> 
+               bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:KList) 
+          ...</k>
+          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
+          [structural]
+          
+     rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N
+     rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T
+
+     rule toString(Identifier(S:String)) => S
+     rule toString(S:String) => S
+     rule toString(Num:Int) => Int2String(Num)
+     
+     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
+     rule klistToK(.KList) => .K
+endmodule

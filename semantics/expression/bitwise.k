@@ -1,7 +1,16 @@
-module C-EXPRESSION-BITWISE
+module C-EXPRESSION-BITWISE-SYNTAX
+     // TODO(chathhorn): error check
      syntax K ::= leftShiftInterpret(Type, BaseValue, K) [function]
      syntax K ::= rightShiftInterpret(Type, BaseValue) [function]
-     
+endmodule
+
+module C-EXPRESSION-BITWISE
+     imports C-EXPRESSION-BITWISE-SYNTAX
+
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-SETTINGS
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
      The integer promotions are performed on each of the operands. The type of
      the result is that of the promoted left operand. If the value of the right

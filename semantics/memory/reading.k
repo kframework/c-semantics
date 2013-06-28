@@ -1,13 +1,31 @@
-module C-MEMORY-READING
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+module C-MEMORY-READING-SYNTAX
+     // returns the bytes in the order in which they are in memory
+     syntax K ::= "extractBytesFromMem" "(" SymLoc "," Int ")"
+
+     // TODO(chathhorn) error check
+     syntax K ::= "extractByteFromMem" "(" SymLoc ")" 
+     syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
+     syntax K ::= "read-aux" "(" SymLoc "," K "," K ")" [klabel('read-aux)]
      
+endmodule
+
+module C-MEMORY-READING
+     imports C-MEMORY-READING-SYNTAX
+
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-SETTINGS
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+
+     syntax Set ::= locations(List) [function]
+     rule [locations-none]: locations(.List) => .Set
+     rule [locations-some]: locations(bwrite(Loc:SymLoc, _) L:List)
+          => SetItem(Loc) locations(L:List)
+
      // loc, size in bits
      syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
-     syntax K ::= "extractByteFromMem" "(" SymLoc ")" 
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
@@ -125,7 +143,6 @@ module C-MEMORY-READING
           [structural]
 
      // FIXME assuming bytes?
-     syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
      rule [joinIntegerBytes-start]:
           joinIntegerBytes(T:Type, L:KList) 
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 

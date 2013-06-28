@@ -1,4 +1,8 @@
 module C-EXPRESSION-LOGICAL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-HELPERS-SYNTAX
+
      /*@ Here, we wrapped the controlling expressions with
      \kinline{simplifyTruth} when heating them, so that we are guaranteed
      the values in those locations are either \kinline{tv(0, int)} or

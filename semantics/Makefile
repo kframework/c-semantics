@@ -11,16 +11,19 @@ KOMPILE_C = $(KOMPILE) c.k -w -v -l C -transition "interpRule"
 KOMPILE_C_ND = $(KOMPILE) c.k -o "c-kompiled-nd" -w -v -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
 KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -o "c-kompiled-nd-thread" -w -v -l C -transition "observable computational"
 
-LIBC_FILES = libc.k libc/setjmp.k libc/stddef.k \
-	libc/stdlib.k libc/threads.k libc/math.k \
-	libc/stdarg.k libc/stdio.k libc/string.k libc/time.k
-COMMON_C_FILES = c-syntax.k c-helpers.k c-configuration.k \
-	c-semantic-syntax.k c-statements.k \
-	c-declarations.k c-typing.k
-DYNAMIC_C_FILES = c.k dynamic-c-semantics.k dynamic-c-expressions.k \
-	dynamic-c-errors.k dynamic-c-statements.k dynamic-c-conversions.k \
-	dynamic-c-typing.k dynamic-c-declarations.k dynamic-c-memory.k \
-	c-ltlmc.k $(LIBC_FILES)
+LIBC_FILES = libc.k $(wildcard libc/*.k)
+STATEMENT_FILES = statement.k $(wildcard statement/*.k)
+EXPRESSION_FILES = expression.k $(wildcard expression/*.k)
+DECLARATION_FILES = declaration.k $(wildcard declaration/*.k)
+TYPING_FILES = typing.k $(wildcard typing/*.k)
+MEMORY_FILES = memory.k $(wildcard memory/*.k)
+
+COMMON_C_FILES = syntax.k helpers.k configuration.k \
+	semantic-syntax.k compat.k bitsize.k
+DYNAMIC_C_FILES = c.k dynamic-semantics.k \
+	error.k conversion.k promotion.k memory.k ltlmc.k \
+	$(LIBC_FILES) $(STATEMENT_FILES) $(EXPRESSION_FILES) \
+	$(TYPING_FILES) $(MEMORY_FILES) $(DECLARATION_FILES)
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
 K_CLEAN_FILES = *.maude .k c-kompiled c-kompiled-nd c-kompiled-nd-thread kcompile_* static-c.k.bak duplicateLabels.txt 

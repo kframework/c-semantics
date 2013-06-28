@@ -1,10 +1,6 @@
-module C-TYPING-DECLARATIONS
+module C-TYPING-DECLARATION
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-
-     imports C-TYPING-INCLUDE 
 
      syntax K ::= "giveGlobalType" "(" K "," Type ")"
      syntax K ::= "giveLocalType" "(" K "," Type ")"

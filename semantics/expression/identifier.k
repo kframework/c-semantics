@@ -1,4 +1,5 @@
 module C-EXPRESSION-IDENTIFIER
+     imports C-SEMANTIC-SYNTAX
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
      An identifier is a primary expression, provided it has been declared as

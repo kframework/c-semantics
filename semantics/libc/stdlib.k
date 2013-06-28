@@ -1,11 +1,17 @@
 module LIBC-STDLIB
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports LIBC-SYNTAX
+     syntax K ::= "printString" "(" K ")"
+
+     rule printString(S:String)
+          => writeToFD(1, asciiString(firstChar(S:String)))
+               ~> printString(butFirstChar(S:String))
+          when lengthString(S:String) >Int 0
+          [structural]
+     rule printString("") => writeToFD(1, 10)
+          [structural]
      
      rule [debug]:
           prepareBuiltin(Identifier("__debug"), _) => skipval

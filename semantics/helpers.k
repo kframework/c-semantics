@@ -1,86 +1,40 @@
 module C-HELPERS-SYNTAX
      syntax Bits ::= Bits "bit::" Bits
-endmodule
-
-module C-COMPAT
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-
-     imports C-HELPERS-SYNTAX
-
-     rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
-     rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
-
-     rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
-     rule toBag(.List) => .Bag
-
-     rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
-     rule toBag(.KList) => .Bag
-
-     rule lengthKList (_:K,, L:KList) => 1 +Int lengthKList L
-     rule lengthKList .KList => 0
-
-     rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
-     rule K:K #inBag BagItem(K) _:Bag => true
-
-     rule eraseKLabel(L:KLabel, L(Ks:KList)) => eraseKLabel(L, Ks)
-     rule eraseKLabel(L:KLabel, L':KLabel(Ks:KList)) => L'(eraseKLabel(L, Ks))
-          when L =/=KLabel L'
-     rule eraseKLabel(L:KLabel, (K:K,,Ks:KList)) 
-          => eraseKLabel(L, K),,eraseKLabel(L, Ks)
-          when Ks =/=KList .KList
-     rule eraseKLabel(_, .KList) => .KList
-     rule eraseKLabel(_, .K) => .K
-
-     // TODO(chathhorn): ugly
-     syntax K ::= "toKRList" "(" KList ")"
-     syntax K ::= "toKRList'" "(" KList ")"
-
-     syntax K ::= "toRVList" "(" KList ")"
-     syntax K ::= "toRVList'" "(" KList ")"
-
-     syntax KResult ::= "krlist" "(" KList ")"
-     syntax KResult ::= "rvlist" "(" KList ")"
-
-     rule klist(L:KList) => toKRList(L) 
-          [structural]
-
-     context toKRList'(_,, HOLE,, _)
-     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
-
-     rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
-          [structural]
-     rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
-          [structural]
-
-     rule toKRList'(_,, (V:KResult => .KList)) ~> krlist((.KList => V),, _) 
-          [structural]
-
-     rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
-          [structural]
-
-     rule toKRList'(.KList) => .
-          [structural]
-     rule toRVList'(.KList) => .
-          [structural]
-endmodule
-
-module C-HELPERS-MISC
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-
-     imports C-HELPERS-SYNTAX
 
      syntax K ::= firstLoc(K) [function]
-     rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
-     
      syntax SymBase ::= base(SymLoc) [function]
-     rule base(loc(Base:SymBase, _, _)) => Base
-     
+
      syntax List ::= "stringToList" "(" String ")" [function]
      syntax String ::= listToString(List) [function]
+
+     syntax Bool ::= isUnknown(K) [function] // Ints, Bits, SymLocs
+     syntax K ::= simplifyTruth(K) [function]
+     syntax Bool ::= isNotTruthValue(Value) [function]
+     
+     syntax K ::= getIdOfDeclaration(K) [function]
+     syntax K ::= getIdOfName(K) [function]
+
+     syntax String ::= toUpperCase(String) [function]
+     syntax K ::= "getString" "(" K ")"
+     syntax Value ::= "str" "(" String ")"
+     syntax K ::= "writeString" "(" SymLoc "," String ")"
+     syntax K ::= "writeWString" "(" SymLoc "," KList ")"
+     // fixme might be messing things up elsewhere
+     syntax String ::= pointerToString(SymLoc) [function]
+     syntax String ::= subPointerToString(SymBase) [function]
+
+endmodule
+
+module C-HELPERS
+     imports C-HELPERS-SYNTAX
+
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-SETTINGS
+
+     rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
+     
+     rule base(loc(Base:SymBase, _, _)) => Base
      
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -92,24 +46,19 @@ module C-HELPERS-MISC
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
      
-     syntax Bool ::= isUnknown(K) [function] // Ints, Bits, SymLocs
      rule [isUnknown-piece]: isUnknown(piece(_, _)) => true
      rule [isUnknown-ptr]: isUnknown(loc(_:SymBase, _:Int, _:Int)) => false
      rule [isUnknown-int]: isUnknown(I:Int) => false
           // TODO(chathhorn): silly sort check
           when (I <=Int 0) orBool (I >Int 0)
 
-     syntax K ::= simplifyTruth(K) [function]
      rule simplifyTruth(K:K) => K:K != tv(0, t(.Set, int))
      
-     syntax Bool ::= isNotTruthValue(Value) [function]
      rule isNotTruthValue(tv(V:K, t(_, T:K))) 
           => T:K =/=K int
           orBool ( V:K =/=K 0 andBool V:K =/=K 1 )
           [structural]
      
-     syntax K ::= getIdOfDeclaration(K) [function]
-     syntax K ::= getIdOfName(K) [function]
      rule getIdOfDeclaration(
                DeclarationDefinition(InitNameGroup(_, klist(K:K))))
           => getIdOfName(K:K)
@@ -319,7 +268,6 @@ module C-HELPERS-MISC
           => substrString(S:String, 1, lengthString(S:String))
           [structural]
           
-     syntax String ::= toUpperCase(String) [function]
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))
                +String toUpperCase(butFirstChar(S:String))
@@ -338,13 +286,11 @@ module C-HELPERS-MISC
                     andBool asciiString(C) <=Int asciiString("z"))
           
      // getString returns the string without the null terminator
-     syntax K ::= "getString" "(" K ")"
      syntax K ::= "getString-aux" "(" SymLoc "," String ")"
      rule getString(Loc:SymLoc) => getString-aux(Loc, "")
           [structural, anywhere]
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
           [structural, anywhere]
-     syntax Value ::= "str" "(" String ")"
      
      rule [getString-pre]:
           (. => read(Loc, t(.Set, char)))
@@ -363,8 +309,6 @@ module C-HELPERS-MISC
           
      // writeString and writeWString expect the user to add the '\0' to the end
      // of the strings passed
-     syntax K ::= "writeString" "(" SymLoc "," String ")"
-     syntax K ::= "writeWString" "(" SymLoc "," KList ")"
 
      rule [write-string]:
           writeString(Loc:SymLoc, S:String)
@@ -387,10 +331,6 @@ module C-HELPERS-MISC
           writeWString(_, .KList) => .
           [structural]
           
-     // fixme might be messing things up elsewhere
-     syntax String ::= pointerToString(SymLoc) [function]
-     syntax String ::= subPointerToString(SymBase) [function]
-
      rule [pointerToString]:
           pointerToString(loc(N:SymBase, M:Int, 0))
           => "[sym(" +String subPointerToString(N) +String ") + " 
@@ -532,100 +472,3 @@ module C-HELPERS-MISC
      rule assert(true, _:Int) => . [structural, anywhere]
 endmodule
 
-module C-BITSIZE
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-
-     imports C-HELPERS-SYNTAX
-
-     syntax K ::= bitSizeofList(KList)
-     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
-
-     // TODO(chathhorn): BUG? Note doesn't heat when .K.
-     rule bitSizeofList-aux(K:K, X:Int, L:KList)
-          => K ~> bitSizeofList-aux(HOLE, X, L) 
-          when notBool (K ==K .K) [heat]
-     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:KList)
-          => bitSizeofList-aux(K, X, L) [cool]
-     
-      // TODO(chathhorn)
-     rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
-          [structural]
-     rule bitSizeofList-aux((. => bitSizeofType(T:K)),
-               _:Int, ((T:K => .KList),, _:KList))
-          [structural]
-     rule bitSizeofList-aux((tv(Len':Int, _) => .),
-               (Len:Int => Len:Int +Int Len':Int), _)
-          [structural]
-     rule bitSizeofList-aux(., Len:Int, .KList) 
-          => tv(Len:Int, cfg:largestUnsigned)
-          [structural]
-          
-     syntax K ::= "maxBitSizeofList" "(" KList ")"
-     syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
-     rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L:KList, 0)
-          [structural, anywhere]
-     rule maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
-          => bitSizeofType(T:KResult) ~> maxBitSizeofList-aux(L:KList, N:Int) 
-          [structural] 
-     rule (tv(N':Int, _) => .) 
-               ~> maxBitSizeofList-aux(_:KList, 
-               (N:Int => maxInt(N:Int, N':Int))) 
-          [structural] 
-     rule maxBitSizeofList-aux(.KList, N:Int) => tv(N:Int, cfg:largestUnsigned)
-          [structural] 
-     
-     rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
-          => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
-          => tv(0, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, functionType(_, _))) 
-          => tv(numBitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, pointerType(_))) 
-          => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
-          => tv(N:Int, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
-          => bitSizeofType(T:KResult) 
-          [structural, anywhere]
-     rule bitSizeofType(T:KResult) 
-          => tv(numBits(T:KResult), cfg:largestUnsigned) 
-          when isBasicType(T:KResult) 
-          [structural, anywhere]
-     rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) 
-          => bitSizeofType(T:KResult) 
-          [structural, anywhere]
-
-     rule <k> 
-               bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:KList) 
-          ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
-          [structural] 
-     rule <k> 
-               bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L:KList) 
-          ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
-          [structural]
-          
-     rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N
-     rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T
-
-     rule toString(Identifier(S:String)) => S
-     rule toString(S:String) => S
-     rule toString(Num:Int) => Int2String(Num)
-     
-     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
-     rule klistToK(.KList) => .K
-endmodule
-
-module C-HELPERS
-     imports C-BITSIZE
-     imports C-HELPERS-MISC
-     imports C-COMPAT
-endmodule

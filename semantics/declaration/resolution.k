@@ -1,8 +1,8 @@
-module C-DECLARATIONS-RESOLUTION
+module C-DECLARATION-RESOLUTION
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-DECLARATIONS-SYNTAX 
+     imports C-DECLARATION-GENERAL-SYNTAX
      
      syntax K ::= "canonicalizeTranslationUnitVariables"
      rule [unpack-TranslationUnit]:

@@ -1,78 +1,6 @@
-module C-COMPAT-SYNTAX
-     imports K
-     imports C-SYNTAX 
-     imports C-CONFIGURATION 
-
-     syntax Bool ::= Bag "==Bag" Bag [function]
-     syntax Bool ::= Bag "=/=Bag" Bag [function]
-
-     syntax Bag ::= toBag(List) [function]
-                | toBag(KList) [function]
-
-     syntax Int ::= "lengthKList" KList [function]
-
-     syntax Bool ::= BagItem "in" Bag [function]
-               | K "#inBag" Bag [function]
-
-     syntax KList ::= eraseKLabel(KLabel, KList) [function]
-
-     // TODO(chathhorn): hackish, rename at least
-     syntax K ::= rkludge(K) [function, klabel('rkludge)]
-     syntax K ::= pkludge(K) [function, klabel('pkludge)]
-
-     syntax Bits ::= right:
-                    "~Bits" Bits
-                    [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
-                    > left:
-                    Bits "/Bits" Bits
-                    [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "&Bits" Bits
-                    [function, left, latex({#1}\mathrel{\&_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "xorBits" Bits
-                    [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "|Bits" Bits
-                    [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
-
-     syntax Ptr ::= Int | SymLoc
-
-     syntax Int ::= "string2Base" "(" String "," Int ")"
-          [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
-     syntax String ::= "base2String" "(" Int "," Int ")"
-          [function, klabel('base2String), hook(#CONVERSION:base2String)]
-
-     syntax Float ::= "sqrtFloat" "(" Float ")" 
-          [function, hook(#FLOAT:sqrtFloat)]
-     syntax Float ::= "logFloat" "(" Float ")" 
-          [function, hook(#FLOAT:logFloat)]
-     syntax Float ::= "expFloat" "(" Float ")" 
-          [function, hook(#FLOAT:expFloat)]
-     syntax Float ::= "atanFloat" "(" Float ")" 
-          [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "acosFloat" "(" Float ")" 
-          [function, hook(#FLOAT:acosFloat)]
-     syntax Float ::= "asinFloat" "(" Float ")" 
-          [function, hook(#FLOAT:asinFloat)]
-     syntax Float ::= "tanFloat" "(" Float ")" 
-          [function, hook(#FLOAT:tanFloat)]
-     syntax Float ::= "cosFloat" "(" Float ")" 
-          [function, hook(#FLOAT:cosFloat)]
-     syntax Float ::= "sinFloat" "(" Float ")" 
-          [function, hook(#FLOAT:sinFloat)]
-     syntax Float ::= "atan2Float" "(" Float "," Float ")" 
-          [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "floorFloat" "(" Float ")" 
-          [function, hook(#FLOAT:floorFloat)]
-
-endmodule
-
 module C-SEMANTIC-SYNTAX
-     imports K
-     imports C-SYNTAX 
-     imports C-CONFIGURATION 
-     
+     imports C-SYNTAX //TODO(chathhorn) remove this
+
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
@@ -379,51 +307,10 @@ module C-SEMANTIC-SYNTAX
      // deletes the base object from memory, given a location and it size (as a
      // check)
      syntax K ::= "deleteSizedBlock" "(" SymLoc "," Int ")"
-endmodule
 
-module C-SEMANTICS-MISC
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     
-     rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
-          => loc(X +Int 1 @ Th, ByOff, BiOff)
-
-     rule [unknown-loc]: 
-          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
-          [structural, anywhere]
-
-     rule [expression-loc]: ExpressionLoc(K:K, _) => K
-          [structural, anywhere]
-
-     rule [CodeLoc-k]:
-          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
-          [structural]
-          
-     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
-     A preprocessing directive of the form
-     \cdisplay{# pragma pp-tokensoptnew-line}
-     \broken{where the preprocessing token \cinline{STDC} does not immediately
-     follow pragma in the directive (prior to any macro replacement)} causes the
-     implementation to behave in an implementation-defined manner. The behavior
-     might cause translation to fail or cause the translator or the resulting
-     program to behave in a non-conforming manner. Any such pragma that is not
-     recognized by the implementation is ignored.
-     }*/
-     rule [Pragma]: Pragma(_:K) => .
-          [structural]
-          
-     rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
-     
-     rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
-          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte,
-               BitOffset %Int numBitsPerByte)
-          when BitOffset:Int >=Int numBitsPerByte
-          [structural, anywhere]
-     
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
-
-     rule NothingExpression => emptyValue
+     syntax K ::= memblock(Int, Bag, Map)
+     syntax K ::= "pgmArgs" "(" KList ")" [function]
+     syntax K ::= "resolveReferences"
+     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
+     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
 endmodule

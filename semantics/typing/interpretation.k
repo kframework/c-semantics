@@ -1,8 +1,14 @@
 module C-TYPING-INTERPRETATION
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
+     imports C-SETTINGS
+     imports C-TYPING-MISC-SYNTAX
+     imports C-TYPING-CANONICALIZATION-SYNTAX
+
+     // rules that use specifier should be careful to use extractActualType if
+     // going to be used in a typed name
+     syntax Type ::= extractActualType(Type) [function] 
 
      syntax K ::= "BitFieldType" "(" K "," K ")" [strict] 
      

@@ -1,7 +1,7 @@
-module C-DECLARATIONS-ENUMS
+module C-DECLARATION-ENUM
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-DECLARATIONS-SYNTAX 
+     imports C-DECLARATION-GENERAL-SYNTAX
 
      syntax K ::= "fillEnums" "(" K ")"
      syntax K ::= "fillEnums-aux" "(" K "," K ")"

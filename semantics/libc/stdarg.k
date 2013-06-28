@@ -1,12 +1,7 @@
 module LIBC-STDARG
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports LIBC-SYNTAX
-          
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
 
      The header \header{<stdarg.h>} declares a type and defines four macros,

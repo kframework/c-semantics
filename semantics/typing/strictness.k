@@ -1,9 +1,13 @@
+module C-TYPING-STRICTNESS-SYNTAX
+     syntax K ::= "evalToType"
+
+endmodule
+
 module C-TYPING-STRICTNESS
+     imports C-TYPING-STRICTNESS-SYNTAX
+
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
 
      syntax K ::= "waitingOnDeclType"
      rule [type-Cast-heat]:

@@ -1,4 +1,6 @@
 module C-EXPRESSION-INC-AND-DEC
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
      syntax K ::= "postOpRef" "(" K "," KLabel ")"
      syntax K ::= "postInc" "(" SymLoc "," K "," Type ")" [strict(2)]
      syntax K ::= "postDec" "(" SymLoc "," K "," Type ")" [strict(2)]

@@ -1,10 +1,13 @@
+module C-TYPING-MISC-SYNTAX
+     syntax K ::= "addStruct" "(" Id "," KList ")"
+     syntax K ::= "addUnion" "(" Id "," KList ")"
+endmodule
+
 module C-TYPING-MISC
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     
-     imports C-TYPING-INCLUDE
+     imports C-TYPING-MISC-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional

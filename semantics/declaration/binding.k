@@ -1,10 +1,7 @@
-module C-DECLARATIONS-BINDING
-     imports C-SEMANTIC-SYNTAX
+module C-DECLARATION-BINDING
+     imports C-SYNTAX
      imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
-     imports C-DECLARATIONS-SYNTAX
+     imports C-SEMANTIC-SYNTAX
 
      // empty binding
      // fixme not really a sequence point

@@ -1,4 +1,8 @@
 module C-EXPRESSION-COMPOUND-LITERAL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+
+     syntax Id ::= "compoundLiteral" "(" Int ")"
      syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{

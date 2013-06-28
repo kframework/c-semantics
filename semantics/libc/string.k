@@ -1,11 +1,6 @@
 module LIBC-STRING
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
-
-     imports LIBC-SYNTAX
+     imports LIBC-BOOTSTRAP-SYNTAX
      
      // try to use getString
      // fixme should detect overlaps

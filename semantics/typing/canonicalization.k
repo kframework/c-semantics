@@ -1,10 +1,13 @@
-module C-TYPING-CANONICALIZATION
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS
+module C-TYPING-CANONICALIZATION-SYNTAX
+     syntax K ::= "canonicalizeType" "(" Bag ")"
+endmodule
 
-     imports C-TYPING-INCLUDE 
+module C-TYPING-CANONICALIZATION
+     imports C-TYPING-CANONICALIZATION-SYNTAX
+
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 

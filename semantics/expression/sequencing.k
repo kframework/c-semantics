@@ -1,4 +1,8 @@
 module C-EXPRESSION-SEQUENCING
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
      The left operand of a comma operator is evaluated as a void expression;
      there is a sequence point between its evaluation and that of the right

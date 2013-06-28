@@ -1,4 +1,9 @@
 module C-EXPRESSION-LITERAL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-SETTINGS
+
      syntax Bool ::= withinRange(Int, SimpleType) [function]
      rule withinRange(I:Int, T:K)
           => (I:Int <=Int max(t(.Set, T:K))) 

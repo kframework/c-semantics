@@ -1,9 +1,32 @@
-module C-TYPING-EXPRESSIONS
+module C-TYPING-EXPRESSION
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports C-SETTINGS
+     imports C-TYPING-STRICTNESS
+
+     // FIXME need to automatically pad structs
+     syntax K ::= "MYHOLE"
+
+     syntax Set ::= "typeStrictLeftBinaryOperators" [function] // [memo] 
+     rule typeStrictLeftBinaryOperators => 
+          SetItem(l('_<<_))
+          SetItem(l('_>>_))
+          SetItem(l('_*=_))
+          SetItem(l('_/=_))
+          SetItem(l('_%=_))
+          SetItem(l('_+=_))
+          SetItem(l('_-=_))
+          SetItem(l('_<<=_))
+          SetItem(l('_>>=_))
+          SetItem(l('_&=_))
+          SetItem(l('_^=_))
+          SetItem(l('_|=_))
+          SetItem(l('_++))
+          SetItem(l('_--))
+          SetItem(l('--_))
+          SetItem(l('++_))
+          [structural]
      
      rule <k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
           (.Bag => <type> K:K </type>)

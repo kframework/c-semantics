@@ -1,9 +1,15 @@
-module C-DECLARATIONS-INITIALIZATIONS
+module C-DECLARATION-INITIALIZATION-SYNTAX
+     syntax K ::= "startInit" "(" Type "," Id "," K ")"
+      
+endmodule
+
+module C-DECLARATION-INITIALIZATION
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
      imports C-SETTINGS
-     imports C-DECLARATIONS-SYNTAX 
+     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-INITIALIZATION-SYNTAX
      
      syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
      syntax K ::= "getInit"

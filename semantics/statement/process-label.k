@@ -1,4 +1,14 @@
-module C-STATEMENT-PROCESS-LABELS
+module C-STATEMENT-PROCESS-LABEL
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-STATEMENT-SWITCH-SYNTAX
+     imports C-STATEMENT-BLOCK-SYNTAX
+     imports C-STATEMENT-LOOP-SYNTAX
+     imports C-STATEMENT-GOTO-SYNTAX
+
+     // TODO(chathhorn): is this really used?
+     syntax K ::= "case" "(" Int ")"
+
      // now that we can have different strictnesses in different cells, maybe
      // this can be redone easily
      /*

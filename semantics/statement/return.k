@@ -1,0 +1,71 @@
+module C-STATEMENT-RETURN
+     imports C-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
+     A \cinline{return} statement terminates execution of the current function
+     and returns control to its caller. A function may have any number of
+     \cinline{return} statements.
+     }
+     
+     \fromStandard{\source[n1570]{\para{6.8.6.4}{3}}}{
+     If a \cinline{return} statement with an expression is executed, the value
+     of the expression is returned to the caller as the value of the function
+     call expression. If the expression has a type different from the return
+     type of the function in which it appears, the value is converted as if by
+     assignment to an object having the return type of the function.
+     }*/
+     
+     rule [return-clean-local]:
+          <k> (.K => deleteBlock(Loc:SymLoc)) ~> Return(_:KResult) ...</k>
+          <localAddresses>... SetItem(Loc) => .Set ...</localAddresses>     
+          [structural] 
+          
+     rule [fetch-all-locals]:
+          <k> Return(_:KResult) ...</k>
+          <localAddresses> .Set => Addresses:Set </localAddresses>
+          <blockStack> 
+               ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
+               => .List
+          ...</blockStack>
+          [structural] 
+
+     //  this is used for returns with no return value as well, since we return
+     //  "emptyValue", which will hopefully be cast to void
+     rule [return]: 
+          <k> Return(V:KResult) ~> _
+               => sequencePoint 
+               ~> cast(T:KResult, V:KResult) 
+               ~> K:K
+          </k>
+          <gtypes>... 
+               Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) 
+          ...</gtypes>
+          <br/>
+          <control>
+               //  these cells get replaced by the ones in C:Bag, so we can
+               //  delete them when we match them
+               (<local>... <localAddresses> .Set </localAddresses> ...</local> 
+               => .Bag)
+               <currentFunction> (F:Id => CurrFun:K) </currentFunction>
+               <currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
+               (<currTU> Tu:K </currTU> => .Bag)
+               (<blockStack> .List </blockStack> => .Bag)
+               (_ => C:Bag)
+          </control>
+          <br/>
+          <callStack>
+               ListItem(
+                    <callStackFrame>...
+                         <continuation> K:K </continuation>
+                         <stackControl>C:Bag</stackControl>
+                         <stackCurrentFunction>
+                              CurrFun:K
+                         </stackCurrentFunction>
+                         <stackCurrentProgramLoc> 
+                              CurrLoc:K
+                         </stackCurrentProgramLoc>
+                    ...</callStackFrame>
+               ) => .List
+          ...</callStack>
+          [structural, large] 
+endmodule

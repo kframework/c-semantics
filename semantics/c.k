@@ -1,15 +1,16 @@
-require "c-syntax.k"
-require "c-configuration.k"
-require "c-ltlmc.k"
-require "c-helpers.k"
-require "c-statements.k"
-require "c-declarations.k"
-require "c-typing.k"
-require "c-settings.k"
+require "syntax.k"
+require "configuration.k"
+require "ltlmc.k"
+require "helpers.k"
+require "compat.k"
+require "bitsize.k"
+require "statement.k"
+require "declaration.k"
+require "typing.k"
+require "settings.k"
 
-require "dynamic-c-semantics.k"
+require "dynamic-semantics.k"
 
 module C
-     imports C-CONFIGURATION
-     imports DYNAMIC-C-SEMANTICS
+     imports C-DYNAMIC-SEMANTICS
 endmodule

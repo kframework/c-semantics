@@ -1,18 +1,19 @@
-module C-DYNAMIC-ERRORS-SYNTAX
+module C-ERROR-SYNTAX
 
 endmodule
 
-module C-DYNAMIC-ERRORS
-     imports C-DYNAMIC-ERRORS-SYNTAX
+module C-ERROR
+     imports C-ERROR-SYNTAX
+     imports C-SEMANTIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-SETTINGS
 
-     imports C-DYNAMIC-SEMANTICS-MISC
-     imports C-DYNAMIC-EXPRESSIONS
-     imports C-DYNAMIC-TYPING 
-     imports C-DYNAMIC-DECLARATIONS 
-     imports C-DYNAMIC-MEMORY 
-     imports C-DYNAMIC-STATEMENTS 
-     imports C-DYNAMIC-CONVERSIONS 
-     imports LIBC
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-TYPING-MISC-SYNTAX
+     imports C-EXPRESSION-CONDITIONAL-SYNTAX
+     imports C-EXPRESSION-BITWISE-SYNTAX
+     imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
 
      syntax K ::= Error(String, String) [function]
      rule Error(Title:String, Msg:String)  => 

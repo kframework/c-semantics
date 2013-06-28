@@ -1,4 +1,5 @@
 module C-SETTINGS
+     imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX 
      
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the

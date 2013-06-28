@@ -1,12 +1,28 @@
 module LIBC-STDIO
      imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
-     imports C-HELPERS
-     imports C-CONFIGURATION
+     imports C-HELPERS-SYNTAX
+     imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports LIBC-SYNTAX
+     syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
+     syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
 
+     // offset, type, length, checklength
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
+     context nextvarg-aux(_, _, value(HOLE), _)
+     context nextvarg-aux(_, _, _, value(HOLE))
+     
+     rule [nextvarg-start]:
+          nextvarg(Loc:SymLoc, T:Type)
+          => nextvarg-aux(Loc, T, 
+               value(byteSizeofType(T)), value(sizeofLocation(Loc)))
+          [structural]
+     rule [nextvarg]:
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
+          => vpair(read(Loc, T), 
+               vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+          [structural]
+     
      rule [putchar]:
           prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
           => writeToFD(1, N:Int) ~> tv(N:Int, t(.Set, int))
