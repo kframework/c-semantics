@@ -16,10 +16,6 @@ module LIBC-STDLIB
      rule [debug]:
           prepareBuiltin(Identifier("__debug"), _) => skipval
           [interpRule]
-     rule [debug-k]: debug => .
-          [interpRule]
-     rule [debug-m]: debug-m(_) => .
-          [interpRule]
      
      rule [exit]:
           <k> 

@@ -9,7 +9,7 @@ require "statement/return.k"
 require "statement/switch.k"
 
 module C-STATEMENT-SYNTAX
-
+     syntax K ::= "calculateGotoMap" "(" Id "," K ")"
 endmodule
 
 module C-STATEMENT

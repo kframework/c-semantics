@@ -76,6 +76,17 @@ module C-COMPAT-SYNTAX
 
      syntax KList ::= reverseList(KList) [function]
 
+     syntax ListItem ::= "ListItem" "(" Bag ")"
+     syntax K ::= ListToK(List)
+     syntax K ::= "map" "(" Map ")"
+
+     syntax K ::= "klistToK" "(" KList ")" [function]
+     
+     syntax K ::= "kpair" "(" K "," K ")"
+
+     syntax Bool ::= K "in" List [function]
+     syntax "in" -/- [a-zA-Z]
+
 endmodule
 
 module C-COMPAT

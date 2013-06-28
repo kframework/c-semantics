@@ -1,6 +1,12 @@
 module C-CONVERSION-SYNTAX
-     syntax Bool ::= hasSameSignedness(Type, Type) [function]
-     syntax Type ::= correspondingUnsignedType(Type) [function] 
+     // interpret the result of arithmetic as in 6.5.4
+     syntax K ::= arithInterpret(Type, BaseValue) [function]
+     // interpret the values of reading from mem
+     syntax K ::= interpret(Type, K) [function]
+     // as described in 6.3 // totype, fromvalue
+     syntax K ::= cast(K, K) [strict(1)]
+     context cast(_, (HOLE => reval(HOLE)))
+     
 endmodule
 
 module C-CONVERSION-MISC
@@ -103,22 +109,6 @@ module C-CONVERSION-MISC
           when hasUnsignedIntegerType(T)
                andBool (I:Int <Int min(T))
 
-     rule unsignedIntegerTypes => 
-          SetItem(bool)
-          SetItem(unsigned-char)
-          SetItem(unsigned-short-int)
-          SetItem(unsigned-int)
-          SetItem(unsigned-long-int)
-          SetItem(unsigned-long-long-int)
-
-     rule signedIntegerTypes => 
-          SetItem(char)
-          SetItem(signed-char)
-          SetItem(short-int)
-          SetItem(int)
-          SetItem(long-int)
-          SetItem(long-long-int)
-
 endmodule
 
 module C-CONVERSION
@@ -127,22 +117,6 @@ module C-CONVERSION
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
 
-     rule [hasSameSignedness]: 
-          hasSameSignedness(T:KResult, T':KResult)
-          => (hasSignedIntegerType(T:KResult)
-                    andBool hasSignedIntegerType(T':KResult))
-               orBool (hasUnsignedIntegerType(T:KResult)
-                    andBool hasUnsignedIntegerType(T':KResult))
-     
-     rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int))
-          => t(S:Set, unsigned-int)
-     rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int))
-          => t(S:Set, unsigned-long-int)
-     rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int))
-          => t(S:Set, unsigned-long-long-int)
      
      //- switch assumes casts can happen anywhere
      rule cast(T:KResult, tv(L:KList, T:KResult))

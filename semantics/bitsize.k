@@ -1,3 +1,8 @@
+module C-BITSIZE-SYNTAX
+     // needs to be heated to top of K for struct and union types
+     syntax K ::= "bitSizeofType" "(" K ")" [strict]
+endmodule
+
 module C-BITSIZE
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
@@ -79,13 +84,6 @@ module C-BITSIZE
           <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural]
           
-     rule getFieldOffset(F:Id, aggregateInfo(_, _, (_ F:Id |-> N:Int))) => N
-     rule getFieldType(F:Id, aggregateInfo(_, _, (_ F:Id |-> T:KResult))) => T
-
-     rule toString(Identifier(S:String)) => S
-     rule toString(S:String) => S
-     rule toString(Num:Int) => Int2String(Num)
-     
      rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
      rule klistToK(.KList) => .K
 endmodule

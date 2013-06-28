@@ -1,6 +1,32 @@
 module C-EXPRESSION-MEMBERS
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
+
+     // bytes of struct, type, field id
+     syntax K ::= "extractField" "(" KList "," K "," Id ")" 
+     syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")"
+          [strict(4)]
+     syntax K ::= "extractField-aux" "(" KList "," Type "," Int "," Int "," KList ")"
+     
+     // fixme could speed things up by caching bitsizeoftype as well
+     rule [extractField-start]:
+          <k> extractField(L:KList, 't(_,, Lb:KLabel(S:Id)), F:Id)
+               => extractField-pre(L:KList, T:KResult, Offset:Int, 
+                    bitSizeofType(T:KResult)) 
+          ...</k>
+          <structs>... 
+               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult),
+                    (_ F:Id |-> Offset:Int)) 
+          ...</structs>
+          when Lb:KLabel ==KLabel 'unionType
+               orBool Lb:KLabel ==KLabel 'structType
+          [structural]
+
+     rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
+          => concretize(T:KResult, 
+               fillToBytes(extractBitsFromList(dataList(L:KList),
+               Offset:Int, Len:Int)))
+          [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an

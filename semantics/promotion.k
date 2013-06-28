@@ -1,8 +1,21 @@
+module C-PROMOTION-SYNTAX
+     // should be K, but is Type for efficiency reasons
+     syntax Type ::= promote(K) [function]
+     syntax K ::= argPromote(K) [function]
+     syntax Bool ::= isArithBinConversionOp(KLabel) [function]
+     syntax Bool ::= isArithUnaryOp(KLabel) [function]
+     syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]
+     syntax Bool ::= isPromoted(Type) [function]
+
+endmodule
+
 module C-PROMOTION
-     imports C-CONVERSION-SYNTAX
+     imports C-PROMOTION-SYNTAX
 
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
+
+     syntax Type ::= "maxType" "(" Type "," Type ")" [function]
 
      // \csection{6}{3}{0}{0}{Conversions}
      /*@

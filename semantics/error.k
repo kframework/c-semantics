@@ -1,5 +1,5 @@
 module C-ERROR-SYNTAX
-
+     syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
 endmodule
 
 module C-ERROR
@@ -14,6 +14,8 @@ module C-ERROR
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
      imports C-EXPRESSION-BITWISE-SYNTAX
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+
+     rule assert(true, _) => . [structural, anywhere]
 
      syntax K ::= Error(String, String) [function]
      rule Error(Title:String, Msg:String)  => 

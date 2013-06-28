@@ -19,6 +19,14 @@ require "expression/sizeof.k"
 require "expression/unary-arithmetic.k"
 
 module C-EXPRESSION-SYNTAX
+     syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
+     syntax Value ::= "functionPrototype" "(" Id "," Type ")"
+     syntax K ::= "handleBuiltin" "(" Id "," Type ")"
+     syntax K ::= "byteSizeofType" "(" K ")" [strict] 
+
+     // generates a tv(size, cfg:sizeut)
+     syntax K ::= "sizeofType" "(" K ")" [strict]
+     syntax K ::= "populateFromGlobal"
 endmodule
 
 module C-EXPRESSION

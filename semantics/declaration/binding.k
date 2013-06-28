@@ -70,7 +70,7 @@ module C-DECLARATION-BINDING
                     ~> addToEnv(X:Id, Loc)
                     ~> giveType(X:Id, T:KResult)
                     ~> initialize(X:Id, T:KResult, Computation(
-                         AllowWrite(X:Id) := tv(V:KList, T':KResult)))
+                         allowWrite(X:Id) := tv(V:KList, T':KResult)))
                     ~> bind-aux(Loc, L:KList, P:KList)
           ...</k> 
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>

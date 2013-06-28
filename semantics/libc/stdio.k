@@ -109,9 +109,9 @@ module LIBC-STDIO
           
      rule [printf-done]:
           new-printf-aux(formattedResult(S:String))
-               => writeToFD(1, S:String) 
-                    ~> flush(1) 
-                    ~> tv(lengthString(S:String), t(.Set, int)) 
+          => writeToFD(1, S:String) 
+               ~> flush(1) 
+               ~> tv(lengthString(S:String), t(.Set, int)) 
           [structural]
      
      syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]

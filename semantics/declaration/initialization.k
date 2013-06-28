@@ -292,7 +292,7 @@ module C-DECLARATION-INITIALIZATION
                N:Int => maxInt(N:Int, getTopArrayUse(K:K))
           </incompleteLength>
           <savedInitialization>... 
-               .K => Computation(AllowWrite(K:K) := K':K) 
+               .K => Computation(allowWrite(K:K) := K':K) 
                     ~> possiblyMakeConst(T:KResult, K:K)
           </savedInitialization>
           when (isBasicType(T:KResult) 
@@ -348,7 +348,7 @@ module C-DECLARATION-INITIALIZATION
                N:Int => maxInt(N:Int, getTopArrayUse(K:K))
           </incompleteLength>
           <savedInitialization>...
-               .K => Computation(AllowWrite(K:K) := K':K)
+               .K => Computation(allowWrite(K:K) := K':K)
           </savedInitialization> 
           [structural, large] 
      

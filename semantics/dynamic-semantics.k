@@ -1,181 +1,46 @@
 require "configuration.k"
 require "semantic-syntax.k"
-
 require "expression.k"
 require "statement.k"
-
 require "conversion.k"
 require "promotion.k"
-
 require "typing.k"
 require "memory.k"
 require "declaration.k"
 require "bitsize.k"
-
+require "io.k"
+require "error.k"
 require "libc.k"
 
-require "error.k"
+module C-DYNAMIC-SEMANTICS-SYNTAX
+     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
+     syntax C ::= BaseValue | Type | Value
+     syntax KResult ::= Value | Type
 
-module C-SEMANTICS-MISC
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
+     syntax K ::= "sequencePoint"
+     syntax KResult ::= "skipval"
+     syntax Value ::= "tv" "(" KList "," Type ")" 
+          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+     syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
+     syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
+     syntax K ::= "discard"
+     syntax Value ::= "emptyValue"
      
-     rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
-          => loc(X +Int 1 @ Th, ByOff, BiOff)
+     syntax KResult ::= "dataList" "(" KList ")"
 
-     rule [unknown-loc]: 
-          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
-          [structural, anywhere]
+     syntax Bits ::= "piece" "(" Bits "," Int ")"
+     syntax Bits ::= "unknown" "(" Int ")"
+     syntax Bits ::= Int
 
-     rule [expression-loc]: ExpressionLoc(K:K, _) => K
-          [structural, anywhere]
-
-     rule [CodeLoc-k]:
-          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
-          [structural]
-          
-     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
-     A preprocessing directive of the form
-     \cdisplay{# pragma pp-tokensoptnew-line}
-     \broken{where the preprocessing token \cinline{STDC} does not immediately
-     follow pragma in the directive (prior to any macro replacement)} causes the
-     implementation to behave in an implementation-defined manner. The behavior
-     might cause translation to fail or cause the translator or the resulting
-     program to behave in a non-conforming manner. Any such pragma that is not
-     recognized by the implementation is ignored.
-     }*/
-     rule [Pragma]: Pragma(_:K) => .
-          [structural]
-          
-     rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
-     
-     rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
-          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte,
-               BitOffset %Int numBitsPerByte)
-          when BitOffset:Int >=Int numBitsPerByte
-          [structural, anywhere]
-     
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
-
-     rule NothingExpression => emptyValue
-endmodule
-
-module C-DYNAMIC-SEMANTICS-MISC
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
-               
-     rule [sequencePoint]:
-          <k> sequencePoint => .K ...</k>
-          <locsWrittenTo> _ => .Bag </locsWrittenTo>
-          [structural, ndlocal]
-
-     // fixme these should be computational, unless I handle that at a higher
-     // level
-     rule [writeToFD-char]:
-          <k> writeToFD(FD:Int, N:Int) => .K ...</k>
-          <fid> FD:Int </fid>
-          <buff> 
-               S:String => S:String +String #charString(N:Int %Int 256)
-          </buff>
-          [observable]
-     rule [writeToFD-string]:
-          <k> writeToFD(FD:Int, S':String) => .K ...</k>
-          <fid> FD:Int </fid>
-          <buff> S:String => S:String +String S':String </buff>
-          [observable]
-     rule [readFromFD-char]:
-          <k> 
-               readFromFD(FD:Int) 
-               => tv(asciiString(firstChar(S:String)), t(.Set, int))  
-          ...</k>
-          <fid> FD:Int </fid>
-          <buff> S:String => butFirstChar(S:String) </buff>
-          // don't compare with "" in order to only treat string sort
-          when lengthString(S:String) >Int 0
-          [observable]
-     rule [readFromFD-empty-buff]:
-          <k> readFromFD(FD:Int) ...</k>
-          <fid> FD:Int </fid>
-          <buff> "" => "" +String #charString(#fReadByte(FD:Int)) </buff>
-          [structural]
-     rule [readFromFD-eof]:
-          <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
-          <fid> FD:Int </fid>
-          <buff> #EOF </buff>
-          [observable]
-
-     rule [make-eof]:
-          "" +String #charString(#EOF) => #EOF
-          [structural, anywhere]
-          
-     syntax K ::= "f-sent" "(" Int "," String ")"
-     syntax K ::= "f-flush" "(" Int ")"
-     syntax K ::= "f-sendString" "(" Int "," String ")"
-     
-     // can't lex string2KList correctly in #fPrint(N:Int,,
-     // string2KList(S:String))
-     rule [flush]:
-          <k> flush(N:Int) => .K ...</k>
-          <fileCommands>... .K
-               => f-sendString(N:Int, S:String)
-               ~> f-sent(N:Int, S:String)
-               ~> f-flush(N:Int)
-          </fileCommands>
-          <file>...
-               <fid> N:Int </fid>
-               <buff> S:String => "" </buff>
-               <sending>... .List => ListItem(S:String) </sending>
-          ...</file>
-          [structural]
-
-     rule [sendString-one]:
-          <fileCommands> f-sendString(N:Int, S:String) 
-               => (#fPutByte(N:Int, asciiString(firstChar(S:String)))
-               ~> f-sendString(N:Int, butFirstChar(S:String)))
-          ...</fileCommands>
-          when S:String =/=String ""
-          [structural]
-     rule [sendString-done]:
-          <fileCommands> f-sendString(_:Int, "") => .K ...</fileCommands>
-          [structural]
-
-     rule [f-sent]:
-          <files>...
-               <fileCommands> f-sent(N:Int, S:String) => .K ...</fileCommands>
-               <fid> N:Int </fid>
-               <sending> ListItem(S:String) => .List ...</sending>
-               <done>... .List => ListItem(S:String) </done>
-          ...</files>
-          [structural]
-     rule [f-flush]:
-          <fileCommands> f-flush(N:Int) => #flush(N:Int) ...</fileCommands>
-          [structural]
-          
-     rule [combine-done]:
-          <done> 
-               ListItem(S:String) ListItem(S':String) 
-               => ListItem(S:String +String S':String) 
-          ...</done>
-          [structural]
-          
-     syntax List ::= string2List(String) [function] 
-                    | "string2List-aux" "(" String "," List ")" [function]
-     rule string2List(S:String) => string2List-aux(S:String, .List)
-     rule string2List-aux("", L:List) => L
-     rule string2List-aux(S:String, L:List)
-          => string2List-aux(butFirstChar(S), (L ListItem(firstChar(S))))
-          when S =/=String ""
-          [structural]
+     syntax K ::= "resolveReferences"
+     syntax K ::= "pgmArgs" "(" KList ")" [function]
+     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
+     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
+     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
 endmodule
 
 module C-DYNAMIC-SEMANTICS
-     imports C-SEMANTICS-MISC
-     imports C-DYNAMIC-SEMANTICS-MISC
+     imports C-DYNAMIC-SEMANTICS-SYNTAX
 
      imports C-SYNTAX
      imports C-SEMANTIC-SYNTAX
@@ -194,8 +59,51 @@ module C-DYNAMIC-SEMANTICS
      imports C-PROMOTION
      imports C-STATEMENT
      imports C-TYPING 
+     imports C-SYMLOC
+     imports C-IO 
 
      imports LIBC
+
+     syntax K ::= "UnknownCabsLoc"
+     rule [unknown-loc]: 
+          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
+          [structural, anywhere]
+
+     rule [expression-loc]: ExpressionLoc(K:K, _) => K
+          [structural, anywhere]
+
+     rule [CodeLoc-k]:
+          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
+          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
+          [structural]
+          
+     rule [sequencePoint]:
+          <k> sequencePoint => .K ...</k>
+          <locsWrittenTo> _ => .Bag </locsWrittenTo>
+          [structural, ndlocal]
+
+     rule [discard]:
+          _:KResult ~> discard => .
+          [structural]
+
+     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
+     A preprocessing directive of the form
+     \cdisplay{# pragma pp-tokensoptnew-line}
+     \broken{where the preprocessing token \cinline{STDC} does not immediately
+     follow pragma in the directive (prior to any macro replacement)} causes the
+     implementation to behave in an implementation-defined manner. The behavior
+     might cause translation to fail or cause the translator or the resulting
+     program to behave in a non-conforming manner. Any such pragma that is not
+     recognized by the implementation is ignored.
+     }*/
+     rule [Pragma]: Pragma(_:K) => .
+          [structural]
+          
+     rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
+     
+     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+
+     rule NothingExpression => emptyValue
      
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the

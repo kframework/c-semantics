@@ -1,9 +1,12 @@
 module C-HELPERS-SYNTAX
      syntax Bits ::= Bits "bit::" Bits
 
-     syntax K ::= firstLoc(K) [function]
-     syntax SymBase ::= base(SymLoc) [function]
+     syntax Int ::= "bitsToBytes" "(" Int ")" [function]
 
+     syntax String ::= firstChar(String) [function]
+     syntax String ::= "nthChar" "(" String "," Int ")" [function]
+     syntax String ::= "butFirstChar" "(" String ")" [function]
+     
      syntax List ::= "stringToList" "(" String ")" [function]
      syntax String ::= listToString(List) [function]
 
@@ -23,6 +26,17 @@ module C-HELPERS-SYNTAX
      syntax String ::= pointerToString(SymLoc) [function]
      syntax String ::= subPointerToString(SymBase) [function]
 
+     //syntax KList ::=  Int "to" Int [function]
+
+     syntax K ::= "fillToBytes" "(" K ")" [strict] 
+     // original number, from, to inclusive
+     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")"
+     
+     syntax Type ::= "type" "(" K ")"
+     syntax K ::= "value" "(" K ")"
+
+     syntax Int ::= "NullPointerConstant" [function]
+
 endmodule
 
 module C-HELPERS
@@ -32,10 +46,6 @@ module C-HELPERS
      imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
 
-     rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
-     
-     rule base(loc(Base:SymBase, _, _)) => Base
-     
      rule stringToList("") => .List
      rule stringToList(S:String)
                => ListItem(firstChar(S:String)) 
@@ -158,39 +168,11 @@ module C-HELPERS
           when N >=Int 0
           [structural, anywhere]
      
-     syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")"
-          [strict(4)]
-     syntax K ::= "extractField-aux" "(" KList "," Type "," Int "," Int "," KList ")"
-     
-     // fixme could speed things up by caching bitsizeoftype as well
-     rule [extractField-start]:
-          <k> extractField(L:KList, 't(_,, Lb:KLabel(S:Id)), F:Id)
-               => extractField-pre(L:KList, T:KResult, Offset:Int, 
-                    bitSizeofType(T:KResult)) 
-          ...</k>
-          <structs>... 
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult),
-                    (_ F:Id |-> Offset:Int)) 
-          ...</structs>
-          when Lb:KLabel ==KLabel 'unionType
-               orBool Lb:KLabel ==KLabel 'structType
-          [structural]
-
-     rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
-          => concretize(T:KResult, 
-               fillToBytes(extractBitsFromList(dataList(L:KList),
-               Offset:Int, Len:Int)))
-          [structural]
-     
      // this should probably go in the k prelude
      rule K:K in (ListItem(K:K) _:List) => true
      rule _:K in .List => false
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
-          [structural]
-     
-     rule [discard]:
-          _:KResult ~> discard => .
           [structural]
      
      //- derived
@@ -214,47 +196,6 @@ module C-HELPERS
           [structural]
      rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
 
-     rule min(t(_, bool)) => 0
-     rule max(t(_, bool)) => 1
-     
-     rule min(t(_, signed-char)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
-     rule max(t(_, signed-char)) 
-          => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
-     rule min(t(_, short-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
-     rule max(t(_, short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
-     rule min(t(_, int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, int)) -Int 1))
-     rule max(t(_, int)) 
-          => (2 ^Int absInt(numBits(t(.Set, int)) -Int 1)) -Int 1
-     rule min(t(_, long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1))
-     rule max(t(_, long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1)) -Int 1
-     rule min(t(_, long-long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1))
-     rule max(t(_, long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1)) -Int 1
-     
-     rule min(t(_, unsigned-char)) => 0
-     rule max(t(_, unsigned-char)) 
-          => 2 ^Int absInt(numBits(t(.Set, unsigned-char))) -Int 1
-     rule min(t(_, unsigned-short-int)) => 0
-     rule max(t(_, unsigned-short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-short-int)))) -Int 1
-     rule min(t(_, unsigned-int)) => 0
-     rule max(t(_, unsigned-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-int)))) -Int 1
-     rule min(t(_, unsigned-long-int)) => 0
-     rule max(t(_, unsigned-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-int)))) -Int 1
-     rule min(t(_, unsigned-long-long-int)) => 0
-     rule max(t(_, unsigned-long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
-     
-     
      rule [firstChar]:
           firstChar(S:String) => substrString(S:String, 0, 1)
           [structural]
@@ -352,72 +293,6 @@ module C-HELPERS
           pointerToString(NullPointer) => "NullPointer" 
           [structural]
           
-     rule N:Int to N:Int => .KList
-     rule N:Int to N':Int => (N:Int,,((N:Int +Int 1) to N':Int))
-          when N:Int <Int N':Int
-          [structural]
-
-     rule hasIntegerType(T:Type) 
-          => ((hasUnsignedIntegerType(T) ==K true) 
-               orBool (hasSignedIntegerType(T) ==K true))
-          [structural]
-     
-     rule hasUnsignedIntegerType(t(_, T:K)) => true
-          when (T in unsignedIntegerTypes)
-          [structural]
-     rule hasUnsignedIntegerType(t(_, T:K)) => false
-          when (T in signedIntegerTypes)
-          [structural]
-
-     rule hasUnsignedIntegerType(t(S:Set, T:K)) => false
-          when (getKLabel(T:K) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T:K)) in setOfTypes) 
-                    orBool isFloatType(t(S:Set, T:K)))
-          [structural]
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
-          when hasUnsignedIntegerType(T) ==Bool true
-          [structural]
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
-          when hasUnsignedIntegerType(T) ==Bool false
-          [structural]
-     
-     rule hasSignedIntegerType(t(_, T:K)) => true
-          when (T in signedIntegerTypes)
-          [structural]
-     rule hasSignedIntegerType(t(_, T:K)) => false
-          when (T in unsignedIntegerTypes)
-          [structural]
-
-     rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
-     rule hasSignedIntegerType(t(S:Set, T:K)) => false
-          when (getKLabel(T:K) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T:K)) in setOfTypes) 
-                    orBool isFloatType(t(S:Set, T:K)))
-          [structural]
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
-          when hasSignedIntegerType(T) ==Bool true
-          [structural]
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
-          when hasSignedIntegerType(T) ==Bool false
-          [structural]
-
-     rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
-          when hasUnsignedIntegerType(T)
-          [structural]
-     rule max(t(_, bitfieldType(T:Type, N:Int))) 
-          => (2 ^Int absInt(N:Int)) -Int 1
-          when hasUnsignedIntegerType(T)
-          [structural]
-     
-     rule min(t(_, bitfieldType(T:Type, N:Int)))
-          => 0 -Int (2 ^Int absInt(N:Int -Int 1))
-          when hasSignedIntegerType(T)
-          [structural]
-     rule max(t(_, bitfieldType(T:Type, N:Int)))
-          => (2 ^Int absInt(N:Int -Int 1)) -Int 1
-          when hasSignedIntegerType(T)
-          [structural]
-          
      rule NullPointerConstant => 0
      
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
@@ -438,37 +313,6 @@ module C-HELPERS
           [structural, anywhere]
      rule type(lval(_, T:KResult)) => T
           [structural, anywhere]
-
-     rule isBasicType('t(_,, K:K)) => #if (
-          (K:K ==K bool)
-          orBool (K:K ==K void)
-          orBool (K:K ==K char)
-          orBool (K:K ==K short-int)
-          orBool (K:K ==K int)
-          orBool (K:K ==K long-int)
-          orBool (K:K ==K long-long-int)
-          orBool (K:K ==K float)
-          orBool (K:K ==K double)
-          orBool (K:K ==K long-double)
-          orBool (K:K ==K signed-char)
-          orBool (K:K ==K unsigned-char)
-          orBool (K:K ==K unsigned-short-int)
-          orBool (K:K ==K unsigned-int)
-          orBool (K:K ==K unsigned-long-int)
-          orBool (K:K ==K unsigned-long-long-int)
-          orBool (K:K ==K no-type)
-          orBool (getKLabel(K:K) ==KLabel 'enumType)
-          ) #then true #else false #fi
-
-     rule setOfTypes => 
-          SetItem(l('arrayType))
-          SetItem(l('bitfieldType))
-          SetItem(l('functionType))
-          SetItem(l('pointerType))
-          SetItem(l('structType))
-          SetItem(l('unionType))
-          SetItem(l('qualifiedType))
      
-     rule assert(true, _:Int) => . [structural, anywhere]
 endmodule
 

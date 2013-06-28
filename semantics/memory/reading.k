@@ -167,16 +167,6 @@ module C-MEMORY-READING
           => interpret(T, piece(N, Len)) 
           [structural]
      
-     rule floorLoc(loc(Base:SymBase, Offset:Int, BitOffset:Int))
-          => loc(Base, Offset:Int, 0)
-          when BitOffset <Int numBitsPerByte
-     
-     rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer
-
-     rule [ceilingLoc]:
-          ceilingLoc(loc(N:SymBase, R:Int, M:Int))
-          => loc(N, (M /Int numBitsPerByte) +Int R, 0)
-
      rule extractBitsFromMem(Loc:SymLoc, Size:Int)
           => extractBitsFromList(
                extractBytesFromMem(

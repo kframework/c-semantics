@@ -22,11 +22,11 @@ module C-DECLARATION-ZERO
      syntax K ::= "zeroType" "(" K "," Type ")"
      
      rule zeroType(N:K, T:Type)
-          => Computation(AllowWrite(N) := tv(0, t(.Set, int)))
+          => Computation(allowWrite(N) := tv(0, t(.Set, int)))
           when hasIntegerType(T)
           [structural] 
      rule zeroType(N:K, T:Type)
-          => Computation(AllowWrite(N) := tv(0.0, t(.Set, float)))
+          => Computation(allowWrite(N) := tv(0.0, t(.Set, float)))
           when isFloatType(T)
           [structural] 
           
@@ -68,7 +68,7 @@ module C-DECLARATION-ZERO
           [structural] 
 
      rule zeroType(Sym:K, T:KResult) 
-               => Computation(AllowWrite(Sym:K) := tv(NullPointer, T:KResult))
+               => Computation(allowWrite(Sym:K) := tv(NullPointer, T:KResult))
           when isPointerType(T:KResult)
           [structural]
      rule zeroType(_, T:KResult) => .

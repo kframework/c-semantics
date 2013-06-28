@@ -122,14 +122,14 @@ module C-DECLARATION-GENERAL
      // base types
      rule figureInit(X:Id, T:KResult, SingleInit(K:K))
           => figureInit-aux(X:Id, T:KResult,
-               initializer(Computation(AllowWrite(X:Id) := K:K)))
+               initializer(Computation(allowWrite(X:Id) := K:K)))
           when notBool isArrayType(T:KResult)
           [structural] 
      // c1x 6.7.8:11
      rule figureInit(X:Id, T:KResult,
                CompoundInit(klist(InitFragment(NextInit, SingleInit(K:K)))))
           => figureInit-aux(X:Id, T:KResult,
-               initializer(Computation(AllowWrite(X:Id) := K:K)))
+               initializer(Computation(allowWrite(X:Id) := K:K)))
           when notBool (isAggregateType(T:KResult) 
                     orBool isUnionType(T:KResult))
           [structural] 

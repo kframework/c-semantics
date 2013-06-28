@@ -3,10 +3,25 @@ module C-TYPING-EXPRESSION
      imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
      imports C-SETTINGS
-     imports C-TYPING-STRICTNESS
+     imports C-TYPING-STRICTNESS-SYNTAX
 
      // FIXME need to automatically pad structs
      syntax K ::= "MYHOLE"
+
+     syntax Set ::= "assignmentLabels" [function]
+     rule assignmentLabels => 
+          SetItem(l('_:=_))
+          SetItem(l('_*=_))
+          SetItem(l('_/=_))
+          SetItem(l('_%=_))
+          SetItem(l('_+=_))
+          SetItem(l('_-=_))
+          SetItem(l('_<<=_))
+          SetItem(l('_>>=_))
+          SetItem(l('_&=_))
+          SetItem(l('_^=_))
+          SetItem(l('_|=_))
+          [macro]
 
      syntax Set ::= "typeStrictLeftBinaryOperators" [function] // [memo] 
      rule typeStrictLeftBinaryOperators => 

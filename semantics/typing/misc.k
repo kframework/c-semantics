@@ -9,6 +9,177 @@ module C-TYPING-MISC
      imports C-SETTINGS
      imports C-TYPING-MISC-SYNTAX
 
+     syntax Type ::= stripConst(Type) [function]
+     rule stripConst(t((SetItem(Const) => .Set) _, _))
+     rule stripConst(t(S:Set, T:K)) => t(S:Set, T:K)
+          when notBool Const in S:Set
+
+     rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
+          [structural, anywhere]
+
+     rule isBasicType('t(_,, K:K)) => #if (
+          (K:K ==K bool)
+          orBool (K:K ==K void)
+          orBool (K:K ==K char)
+          orBool (K:K ==K short-int)
+          orBool (K:K ==K int)
+          orBool (K:K ==K long-int)
+          orBool (K:K ==K long-long-int)
+          orBool (K:K ==K float)
+          orBool (K:K ==K double)
+          orBool (K:K ==K long-double)
+          orBool (K:K ==K signed-char)
+          orBool (K:K ==K unsigned-char)
+          orBool (K:K ==K unsigned-short-int)
+          orBool (K:K ==K unsigned-int)
+          orBool (K:K ==K unsigned-long-int)
+          orBool (K:K ==K unsigned-long-long-int)
+          orBool (K:K ==K no-type)
+          orBool (getKLabel(K:K) ==KLabel 'enumType)
+          ) #then true #else false #fi
+
+     rule setOfTypes => 
+          SetItem(l('arrayType))
+          SetItem(l('bitfieldType))
+          SetItem(l('functionType))
+          SetItem(l('pointerType))
+          SetItem(l('structType))
+          SetItem(l('unionType))
+          SetItem(l('qualifiedType))
+
+     rule unsignedIntegerTypes => 
+          SetItem(bool)
+          SetItem(unsigned-char)
+          SetItem(unsigned-short-int)
+          SetItem(unsigned-int)
+          SetItem(unsigned-long-int)
+          SetItem(unsigned-long-long-int)
+
+     rule signedIntegerTypes => 
+          SetItem(char)
+          SetItem(signed-char)
+          SetItem(short-int)
+          SetItem(int)
+          SetItem(long-int)
+          SetItem(long-long-int)
+
+     rule [hasSameSignedness]: 
+          hasSameSignedness(T:KResult, T':KResult)
+          => (hasSignedIntegerType(T:KResult)
+                    andBool hasSignedIntegerType(T':KResult))
+               orBool (hasUnsignedIntegerType(T:KResult)
+                    andBool hasUnsignedIntegerType(T':KResult))
+     
+     rule [correspondingUnsigned-int]: 
+          correspondingUnsignedType(t(S:Set, int))
+          => t(S:Set, unsigned-int)
+     rule [correspondingUnsigned-long-int]: 
+          correspondingUnsignedType(t(S:Set, long-int))
+          => t(S:Set, unsigned-long-int)
+     rule [correspondingUnsigned-long-long-int]: 
+          correspondingUnsignedType(t(S:Set, long-long-int))
+          => t(S:Set, unsigned-long-long-int)
+     rule hasIntegerType(T:Type) 
+          => ((hasUnsignedIntegerType(T) ==K true) 
+               orBool (hasSignedIntegerType(T) ==K true))
+          [structural]
+     
+     rule hasUnsignedIntegerType(t(_, T:K)) => true
+          when (T in unsignedIntegerTypes)
+          [structural]
+     rule hasUnsignedIntegerType(t(_, T:K)) => false
+          when (T in signedIntegerTypes)
+          [structural]
+
+     rule hasUnsignedIntegerType(t(S:Set, T:K)) => false
+          when (getKLabel(T:K) =/=KLabel 'bitfieldType)
+               andBool ((l(getKLabel(T:K)) in setOfTypes) 
+                    orBool isFloatType(t(S:Set, T:K)))
+          [structural]
+     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
+          when hasUnsignedIntegerType(T) ==Bool true
+          [structural]
+     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
+          when hasUnsignedIntegerType(T) ==Bool false
+          [structural]
+     
+     rule hasSignedIntegerType(t(_, T:K)) => true
+          when (T in signedIntegerTypes)
+          [structural]
+     rule hasSignedIntegerType(t(_, T:K)) => false
+          when (T in unsignedIntegerTypes)
+          [structural]
+
+     rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
+     rule hasSignedIntegerType(t(S:Set, T:K)) => false
+          when (getKLabel(T:K) =/=KLabel 'bitfieldType)
+               andBool ((l(getKLabel(T:K)) in setOfTypes) 
+                    orBool isFloatType(t(S:Set, T:K)))
+          [structural]
+     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
+          when hasSignedIntegerType(T) ==Bool true
+          [structural]
+     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
+          when hasSignedIntegerType(T) ==Bool false
+          [structural]
+
+     rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
+          when hasUnsignedIntegerType(T)
+          [structural]
+     rule max(t(_, bitfieldType(T:Type, N:Int))) 
+          => (2 ^Int absInt(N:Int)) -Int 1
+          when hasUnsignedIntegerType(T)
+          [structural]
+     
+     rule min(t(_, bitfieldType(T:Type, N:Int)))
+          => 0 -Int (2 ^Int absInt(N:Int -Int 1))
+          when hasSignedIntegerType(T)
+          [structural]
+     rule max(t(_, bitfieldType(T:Type, N:Int)))
+          => (2 ^Int absInt(N:Int -Int 1)) -Int 1
+          when hasSignedIntegerType(T)
+          [structural]
+
+     rule min(t(_, bool)) => 0
+     rule max(t(_, bool)) => 1
+     
+     rule min(t(_, signed-char)) 
+          => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
+     rule max(t(_, signed-char)) 
+          => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
+     rule min(t(_, short-int)) 
+          => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
+     rule max(t(_, short-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
+     rule min(t(_, int)) 
+          => 0 -Int (2 ^Int absInt(numBits(t(.Set, int)) -Int 1))
+     rule max(t(_, int)) 
+          => (2 ^Int absInt(numBits(t(.Set, int)) -Int 1)) -Int 1
+     rule min(t(_, long-int)) 
+          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1))
+     rule max(t(_, long-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1)) -Int 1
+     rule min(t(_, long-long-int)) 
+          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1))
+     rule max(t(_, long-long-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1)) -Int 1
+     
+     rule min(t(_, unsigned-char)) => 0
+     rule max(t(_, unsigned-char)) 
+          => 2 ^Int absInt(numBits(t(.Set, unsigned-char))) -Int 1
+     rule min(t(_, unsigned-short-int)) => 0
+     rule max(t(_, unsigned-short-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, unsigned-short-int)))) -Int 1
+     rule min(t(_, unsigned-int)) => 0
+     rule max(t(_, unsigned-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, unsigned-int)))) -Int 1
+     rule min(t(_, unsigned-long-int)) => 0
+     rule max(t(_, unsigned-long-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-int)))) -Int 1
+     rule min(t(_, unsigned-long-long-int)) => 0
+     rule max(t(_, unsigned-long-long-int)) 
+          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
+     
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
      rules for determining whether two types are compatible are described in
