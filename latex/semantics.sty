@@ -1,0 +1,197 @@
+\usepackage{textcomp} % helps listings
+\usepackage{listings}
+\usepackage[T1]{fontenc} % so listings double quotes are straight
+\usepackage{graphicx}
+\usepackage{etex}
+\usepackage{courier}
+\usepackage{booktabs}
+\usepackage[legalpaper, margin=1in]{geometry} % showframe
+\usepackage[pdftex]{hyperref}
+%\usepackage{enumitem}
+\usepackage{xparse}
+\usepackage{multicol}
+\usepackage{framed}
+
+%\usepackage{showframe} % to show margins
+
+\pagestyle{empty}
+%\setlength{\textwidth}{6.5in}%
+
+%\newgeometry{margin=1in}
+% overrides
+\renewcommand{\ellipses}{\mathrel{\cdot\kern-2pt\cdot\kern-2pt\cdot}}
+%\renewcommand{\kallLarge}{\ballLarge}
+\renewcommand{\mall}[3]{\left\langle{#3}\right\rangle_{\sf #2}}
+% \renewcommand{\when}[1]{\par{}\hspace{2em} when \ensuremath{#1}}
+% \renewcommand{\ruleAttributes}[1]{\par{}\hspace{2em} [#1]}
+% \renewcommand{\rulebox}[1]{\par\indent\parbox[b]{8.5in}{#1}}
+% \renewcommand{\wrapRules}[1]{\par{\parbox[b]{8.5in}{#1}}}
+
+% \newcommand{\k@ruleLabel}[2]{%
+  % \ifthenelse{\equal{#1}{}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2}}{Rule Label: #1}}%
+% }
+\newsavebox{\LstBox} % for listings in tikz
+\newsavebox{\LstBoxb} % for listings in tikz
+
+\newenvironment{rulesGroup}{%
+\begin{framed}%
+}{%
+\end{framed}%
+}
+
+%\renewcommand{\builtinKra}[2]{\begin{array}{@{}l@{}}{#1}\ensuremath{\kra}\\{#2}\end{array}}
+%\renewcommand{\builtinAnd}[2]{\begin{array}{@{}c@{}}{#1}\\\mathrel{\wedge_{\scriptstyle\it Bool}}{#2}\end{array}}
+\renewcommand{\builtinOr}[2]{{\begin{array}{@{}c@{}}{#1}\\\mathrel{\vee_{\scriptstyle\it Bool}}{#2}\end{array}}}
+\renewcommand{\builtinIfThenElseFi}[3]{\begin{array}{ll}\terminal{if}&{#1}\\\terminal{then}&{#2}\\\terminal{else}&\\&{#3}\\\terminal{fi}&\end{array}}
+
+\renewcommand{\reduceTop}[2]{\reduce{#1}{#2}}
+
+%\renewcommand{\sentenceBody}[1]{\ensuremath{#1}}
+%\renewcommand{\sentenceBody}[1]{\hspace{1cm}\ensuremath{#1}}
+\renewcommand{\sentenceBody}[1]{\ensuremath{\begin{array}[t]{c}#1\end{array}}}
+
+
+\makeatletter
+\renewcommand{\k@ruleLabel}[2]{%
+  \ifthenelse{\equal{#1}{\textbackslash !}}{\mbox{\scshape #2}}{\k@withTooltip{\mbox{\scshape #2 \kattribute{#1}}}{Rule Label: #1}}\\%
+% \global\def\ignoreThisLabel{#1}%
+}
+\makeatother
+
+\newcommand{\mycomment}[1]{#1}
+\providecommand{\kctor}{}
+\providecommand{\kmemo}{}
+\providecommand{\kstrat}[1]{}
+
+\setcounter{secnumdepth}{5}
+\newcommand{\csection}[5]{%
+	\providecommand{\mysection}{}
+	\ifthenelse{\equal{#1}{0}}{}{\setcounter{section}{#1 - 1}\renewcommand{\mysection}{\section{#5}}}
+	\ifthenelse{\equal{#2}{0}}{}{\setcounter{section}{#1}\setcounter{subsection}{#2 - 1}\renewcommand{\mysection}{\subsection{#5}}}
+	\ifthenelse{\equal{#3}{0}}{}{\setcounter{subsection}{#2}\setcounter{subsubsection}{#3 - 1}\renewcommand{\mysection}{\subsubsection{#5}}}
+	\ifthenelse{\equal{#4}{0}}{}{\setcounter{subsubsection}{#3}\setcounter{paragraph}{#4 - 1}\renewcommand{\mysection}{\paragraph{#5\newline}}}
+	\mysection
+}
+
+% \newcommand{\Synopsis}{\paragraph{Synopsis}}
+% \newcommand{\Description}{\paragraph{Description}}
+% \newcommand{\Returns}{\paragraph{Returns}}
+% \newcommand{\Limits}{\paragraph{Environmental Limits}}
+\newcommand{\Synopsis}{{Synopsis}}
+\newcommand{\Description}{{Description}}
+\newcommand{\Returns}{{Returns}}
+\newcommand{\Limits}{{Environmental Limits}}
+\newcommand{\Constraints}{{Constraints}}
+\newcommand{\Semantics}{{Semantics}}
+
+
+% configuration
+\lstdefinelanguage{k}{
+	morekeywords={xxxx,zzzz},
+	columns=fullflexible,
+	upquote=true,
+	texcl=true,
+	escapechar=\@,
+	tabsize=2,
+	basicstyle=\ttfamily,
+}
+
+\lstset{language=C}
+\lstset{
+	columns=fullflexible,
+	upquote=true,
+	texcl=true,
+	escapechar=\@,
+	mathescape=true,
+	tabsize=2}
+\lstset{basicstyle=\ttfamily}
+
+\newcommand{\cinline}[1]{\lstinline`#1`}
+\newcommand{\clisting}[1]{\lstinline`#1`}
+\newcommand{\cdisplay}[1]{\lstinline`#1`}
+\newcommand{\header}[1]{\texttt{#1}}
+% 
+\newcommand{\kinline}[1]{\lstinline[language=k]`#1`}
+\newcommand{\source}[2][]{%
+	\textbf{%
+		\ifthenelse{\equal{#1}{}}{}{%
+			(#1) %
+		}%
+		#2%
+	}%
+}
+\newcommand{\fromStandard}[2]{%
+%\begin{tikzpicture}
+%    \node[comment]{\begin{minipage}{8.5in}#1 #2\end{minipage}};
+%  \end{tikzpicture}\par
+#1 #2
+}
+
+\tikzset{normalComment/.style={
+    rectangle,
+    rounded corners,
+    draw,
+    fill=black!10,
+    inner sep=.75em
+  }
+}
+
+\makeatletter
+\renewenvironment{kblock}[1][\k@style]{%
+\ifk@tight%
+\small%
+\fi%
+\newcommand{\kblock@arg}{#1}%
+\setlength{\kblock@indent}{\parindent}%
+\ifthenelse{\equal{#1}{bubble}}{%
+\renewcommand{\kall}{\ball}%
+\renewcommand{\kallLarge}{\ballLarge}%
+\renewcommand{\kprefix}{\bprefix}%
+\renewcommand{\ksuffix}{\bsuffix}%
+\renewcommand{\kmiddle}{\bmiddle}%
+\renewcommand{\kdot}{\bdot}%
+\renewcommand{\AnyVar}{\bAnyVar}%
+}{\ifthenelse{\equal{#1}{math}}{%
+\renewcommand{\kall}{\mall}%
+\renewcommand{\kallLarge}{\mallLarge}%
+\renewcommand{\kprefix}{\mprefix}%
+\renewcommand{\ksuffix}{\msuffix}%
+\renewcommand{\kmiddle}{\mmiddle}%
+\renewcommand{\kdot}{\mdot}%
+\renewcommand{\AnyVar}{\mAnyVar}%
+}%
+{\ifthenelse{\equal{#1}{text}}{%
+  \begin{Sbox}%
+    \begin{minipage}{11.5in}%
+      \addtolength{\parskip}{.5\baselineskip}%
+}{%
+}}}%
+}{%
+\ifthenelse{\equal{\kblock@arg}{text}}{%
+    \ \end{minipage}%
+  \end{Sbox}%
+  \begin{tikzpicture}
+    \node[comment]{\TheSbox};
+  \end{tikzpicture}%
+  \k@markPosition%
+}{%
+}%
+\setlength{\parindent}{\kblock@indent}%
+\par\ \par%
+}
+\makeatother
+
+% \newcommand{\normalComment}[2]{%
+% \begin{tikzpicture}
+    % \node[normalComment]{\begin{minipage}{8.5in}#1 #2\end{minipage}};
+  % \end{tikzpicture}\par
+% }
+
+\newcommand{\para}[2]{%
+	\S#1\thinspace \P#2%
+}
+
+%\newcommand{\broken}[1]{{\color{red}#1}}
+%\newcommand{\negative}[1]{{\color{red}#1}}
+\newcommand{\broken}[1]{{#1}}
+\newcommand{\negative}[1]{{#1}}
