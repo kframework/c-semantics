@@ -3,11 +3,15 @@ endmodule
 
 module C-EXPRESSION-EVAL
      imports C-EXPRESSION-EVAL-SYNTAX
+     imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+     imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      syntax Int ::= arrayLength(K) [function]
      rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N

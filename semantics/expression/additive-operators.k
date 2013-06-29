@@ -8,9 +8,15 @@ endmodule
 
 module C-EXPRESSION-ADDITIVE-OPERATORS
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+     imports C-EXPRESSION-SYNTAX
 
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
      For addition, either both operands shall have arithmetic type, or one

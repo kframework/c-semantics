@@ -1,5 +1,5 @@
 require "configuration.k"
-require "semantic-syntax.k"
+require "settings.k"
 require "expression.k"
 require "statement.k"
 require "conversion.k"
@@ -8,17 +8,21 @@ require "typing.k"
 require "memory.k"
 require "declaration.k"
 require "bitsize.k"
+require "helpers.k"
 require "io.k"
+require "symloc.k"
 require "error.k"
+require "compat.k"
 require "libc.k"
 
-module C-DYNAMIC-SEMANTICS-SYNTAX
+module C-DYNAMIC-SYNTAX
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax KResult ::= Value | Type
 
      syntax K ::= "sequencePoint"
      syntax KResult ::= "skipval"
+     syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
      syntax Value ::= "tv" "(" KList "," Type ")" 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
@@ -32,6 +36,8 @@ module C-DYNAMIC-SEMANTICS-SYNTAX
      syntax Bits ::= "unknown" "(" Int ")"
      syntax Bits ::= Int
 
+     syntax Int ::= "NullPointerConstant" [function]
+
      syntax K ::= "resolveReferences"
      syntax K ::= "pgmArgs" "(" KList ")" [function]
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
@@ -39,18 +45,16 @@ module C-DYNAMIC-SEMANTICS-SYNTAX
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
 endmodule
 
-module C-DYNAMIC-SEMANTICS
-     imports C-DYNAMIC-SEMANTICS-SYNTAX
+module C-DYNAMIC
+     imports C-DYNAMIC-SYNTAX
 
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
      imports C-SETTINGS
      
      imports C-BITSIZE
      imports C-COMPAT
      imports C-CONFIGURATION
      imports C-CONVERSION
-     imports C-CONVERSION-MISC
      imports C-DECLARATION
      imports C-ERROR
      imports C-EXPRESSION
@@ -63,6 +67,8 @@ module C-DYNAMIC-SEMANTICS
      imports C-IO 
 
      imports LIBC
+
+     rule NullPointerConstant => 0
 
      syntax K ::= "UnknownCabsLoc"
      rule [unknown-loc]: 

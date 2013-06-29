@@ -1,12 +1,11 @@
 module C-ERROR-SYNTAX
      syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
+     syntax K ::= PAUSE(Bool, K) | ASSERT(Bool, K)
 endmodule
 
 module C-ERROR
      imports C-ERROR-SYNTAX
-     imports C-SEMANTIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -16,6 +15,7 @@ module C-ERROR
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
 
      rule assert(true, _) => . [structural, anywhere]
+     rule ASSERT(true, _) => .K [structural, anywhere]
 
      syntax K ::= Error(String, String) [function]
      rule Error(Title:String, Msg:String)  => 

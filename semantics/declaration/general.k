@@ -13,11 +13,18 @@ module C-DECLARATION-GENERAL-SYNTAX
 endmodule
 
 module C-DECLARATION-GENERAL
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-INITIALIZATION-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-STATEMENT-SYNTAX
+     imports C-EXPRESSION-SYNTAX
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes
      // of this subclause unnamed members of objects of structure and union

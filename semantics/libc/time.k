@@ -1,5 +1,5 @@
 module LIBC-TIME
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
      
      // fixme, just a placeholder

@@ -1,10 +1,15 @@
 module C-STATEMENT-PROCESS-LABEL
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-STATEMENT-SYNTAX
      imports C-STATEMENT-SWITCH-SYNTAX
      imports C-STATEMENT-BLOCK-SYNTAX
      imports C-STATEMENT-LOOP-SYNTAX
      imports C-STATEMENT-GOTO-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // TODO(chathhorn): is this really used?
      syntax K ::= "case" "(" Int ")"

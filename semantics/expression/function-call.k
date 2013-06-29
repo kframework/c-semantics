@@ -1,7 +1,11 @@
 module C-EXPRESSION-FUNCTION-CALL
+     imports C-EXPRESSION-SYNTAX
+
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      syntax K ::= "application" "(" K "," KList ")" [strict(1)]
      syntax K ::= "application'" "(" K "," KList ")" [strict(1)]

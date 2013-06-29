@@ -4,11 +4,14 @@ module C-BITSIZE-SYNTAX
 endmodule
 
 module C-BITSIZE
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-     imports C-COMPAT-SYNTAX
+     imports C-BITSIZE-SYNTAX
 
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-COMPAT-SYNTAX
      imports C-HELPERS-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      syntax K ::= bitSizeofList(KList)
      syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
@@ -54,10 +57,10 @@ module C-BITSIZE
           => tv(0, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, functionType(_, _))) 
-          => tv(numBitsPerByte, cfg:largestUnsigned) 
+          => tv(cfg:bitsPerByte, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, pointerType(_))) 
-          => tv(cfg:ptrsize *Int numBitsPerByte, cfg:largestUnsigned) 
+          => tv(cfg:ptrsize *Int cfg:bitsPerByte, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
           => tv(N:Int, cfg:largestUnsigned) 

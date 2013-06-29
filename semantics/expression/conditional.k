@@ -7,7 +7,11 @@ module C-EXPRESSION-CONDITIONAL
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
 
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      syntax K ::= "getTypes" "(" KList ")"
      context types((_,, HOLE,, _))

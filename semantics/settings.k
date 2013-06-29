@@ -1,6 +1,31 @@
+module C-SETTINGS-SYNTAX
+     syntax Type ::= "cfg:charAlias" [function]
+     syntax Int ::= "cfg:bitsPerByte" [function]
+     syntax Int ::= "cfg:sizeofBool" [function]
+     syntax Int ::= "cfg:sizeofSignedChar" [function]
+     syntax Int ::= "cfg:sizeofShortInt" [function]
+     syntax Int ::= "cfg:sizeofInt" [function]
+     syntax Int ::= "cfg:sizeofLongInt" [function]
+     syntax Int ::= "cfg:sizeofLongLongInt" [function]
+     syntax Int ::= "cfg:sizeofFloat" [function]
+     syntax Int ::= "cfg:sizeofDouble" [function]
+     syntax Int ::= "cfg:sizeofLongDouble" [function]
+     syntax Int ::= "cfg:sizeofEnum" [function]
+     syntax Int ::= "cfg:mtxPlain" [function]
+     syntax Type ::= "cfg:sizeut" [function]
+     syntax Type ::= "cfg:wcharut" [function]
+     syntax Type ::= "cfg:largestUnsigned" [function]
+     syntax Int ::= "cfg:ptrsize" [function]
+     syntax Type ::= "cfg:ptrdiffut" [function]
+
+     syntax Int ::= "cfg:enumMin" [function]
+     syntax Int ::= "cfg:enumMax" [function]
+endmodule
+
 module C-SETTINGS
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX 
+     imports C-SETTINGS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
      
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
      // same range, representation, and behavior as either signed char or
@@ -9,54 +34,29 @@ module C-SETTINGS
      //
      // fixme I'm not sure what consequence being a separate type entails, so
      // for now it will just be rewritten to the chosen type
-     rule char => signed-char [structural, anywhere]
+     rule cfg:charAlias => signed-char
 
-     syntax Int ::= "numBitsPerByte" [function]
-     syntax Int ::= numBytes(Type) [function]
-     syntax Int ::= numBits(Type) [function]
-
-     rule [numBitsPerByte]: numBitsPerByte => 8
+     rule cfg:bitsPerByte => 8
      
-     rule [numBytes-bool]: numBytes(t(_, bool)) => 1
-     rule [numBytes-signed-char]: numBytes(t(_, signed-char)) => 1
-     rule [numBytes-short-int]: numBytes(t(_, short-int)) => 2
-     rule [numBytes-int]: numBytes(t(_, int)) => 4
-     rule [numBytes-long-int]: numBytes(t(_, long-int)) => 4
-     rule [numBytes-long-long-int]: numBytes(t(_, long-long-int)) => 8
+     rule cfg:sizeofBool => 1
+     rule cfg:sizeofSignedChar => 1
+     rule cfg:sizeofShortInt => 2
+     rule cfg:sizeofInt => 4
+     rule cfg:sizeofLongInt => 4
+     rule cfg:sizeofLongLongInt => 8
+     rule cfg:sizeofFloat => 4
+     rule cfg:sizeofDouble => 8
+     rule cfg:sizeofLongDouble => 16
+     rule cfg:sizeofEnum => cfg:sizeofInt
      
-     rule [numBytes-float]: numBytes(t(_, float)) => 4
-     rule [numBytes-double]: numBytes(t(_, double)) => 8
-     rule [numBytes-long-double]: numBytes(t(_, long-double)) => 16
+     rule cfg:mtxPlain => 0
+     rule cfg:sizeut => t(.Set, unsigned-int)
+     rule cfg:wcharut => t(.Set, int)
+     rule cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
+     rule cfg:ptrsize => 4
+     rule cfg:ptrdiffut => t(.Set, int)
      
-     rule [numBytes-enum]: 
-          numBytes(t(S:Set, enumType(_:Id))) => numBytes(t(S:Set, int))
-     
-     syntax Int ::= "cfg:mtxPlain" [function]
-     rule [cfg-mtxPlain]: cfg:mtxPlain => 0
-     
-     syntax Type ::= "cfg:sizeut" [function]
-     rule [cfg-size-t]: cfg:sizeut => t(.Set, unsigned-int)
-     
-     syntax Type ::= "cfg:wcharut" [function]
-     rule [cfg-wchar-t]: cfg:wcharut => t(.Set, int)
-     
-     syntax SimpleType ::= simpleType(Type) [function]
-     rule simpleType(t(_, T:K)) => T:K
-     
-     syntax Type ::= "cfg:largestUnsigned" [function]
-     rule [cfg-largestUnsigned]:
-          cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
-
-     syntax Int ::= "cfg:ptrsize" [function]
-     rule [cfg-ptrsize]: cfg:ptrsize => 4
-     
-     syntax Type ::= "cfg:ptrdiffut" [function]
-     rule [cfg-ptrdiff-t]: cfg:ptrdiffut => t(.Set, int)
-     
-     rule [min]: min(t(S:Set, enumType(_:Id))) => min(t(S:Set, int))
-     rule [max]: max(t(S:Set, enumType(_:Id))) => max(t(S:Set, int))
-     
-     syntax Int ::= rank(Type) [function]
-     
+     rule cfg:enumMin => min(t(S:Set, int))
+     rule cfg:enumMax => max(t(S:Set, int))
 endmodule
 

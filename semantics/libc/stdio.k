@@ -1,5 +1,5 @@
 module LIBC-STDIO
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
      imports C-HELPERS-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX

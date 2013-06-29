@@ -4,9 +4,10 @@ endmodule
 
 module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"

@@ -9,12 +9,13 @@ module C-MEMORY-SYNTAX
      syntax K ::= "write" "(" K "," K ")" [strict(2)]
      syntax K ::= "writeByte" "(" SymLoc "," K ")" 
 
+     syntax Ptr ::= Int | SymLoc
+
      syntax K ::= "mconst"
 
      syntax K ::= "makeUnwritable" "(" SymLoc ")" 
      syntax K ::= "makeUnwritableSubObject" "(" K ")" 
      syntax K ::= "makeUnwritableVar" "(" K ")"
-     context makeUnwritableSubObject((HOLE => peval(HOLE)))
 
      syntax K ::= "allocateType" "(" SymLoc "," Type ")"
      syntax K ::= "allocateTypeIfAbsent" "(" SymLoc "," Type ")"

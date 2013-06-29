@@ -11,13 +11,19 @@ endmodule
 
 module C-MEMORY-READING
      imports C-MEMORY-READING-SYNTAX
-
-     imports C-SEMANTIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-SETTINGS
+     imports C-MEMORY-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-ERROR-SYNTAX
 
      syntax Set ::= locations(List) [function]
      rule [locations-none]: locations(.List) => .Set
@@ -109,7 +115,7 @@ module C-MEMORY-READING
                dataList((piece(encodedFloat(F:Float), Len:Int),, _))) 
           => tv(F:Float, T:KResult)
           when isFloatType(T:KResult)
-               andBool (Len:Int ==Int numBitsPerByte)
+               andBool (Len:Int ==Int cfg:bitsPerByte)
           [structural]
 
      syntax K ::= "joinPointerBytes" "(" Type "," KList ")"
@@ -121,14 +127,14 @@ module C-MEMORY-READING
           [structural]
      rule joinPointerBytes(T:Type, (piece(N:Bits, Len:Int),, L:KList))
           => joinPointerBytes-aux(T, L, N)
-          when Len:Int ==Int numBitsPerByte
+          when Len:Int ==Int cfg:bitsPerByte
           [structural]
      // fixme sNat
      rule joinPointerBytes-aux(T:Type, 
                (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, 
                L:KList), subObject(N, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
-          when (Len ==Int numBitsPerByte)
+          when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
           [structural]
      rule joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, _:Int))
@@ -234,14 +240,14 @@ module C-MEMORY-READING
      rule [read-byte-lazy]:
           <k> extractByteFromMem(loc(Base:SymBase, Offset:Int, 0)) 
                => assert(Offset:Int <Int Len:Int, 2)
-                    ~> tv(piece(unknown(numBitsPerByte), numBitsPerByte), 
+                    ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
                          t(.Set, no-type))
           ...</k>
           <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, 
                     M:Map => M:Map[
-                         piece(unknown(numBitsPerByte), numBitsPerByte) 
+                         piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
                          / Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>

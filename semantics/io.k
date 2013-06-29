@@ -7,6 +7,11 @@ module C-IO-SYNTAX
 endmodule
 
 module C-IO
+     imports C-IO-SYNTAX
+
+     imports C-DYNAMIC-SYNTAX
+     imports C-HELPERS-SYNTAX
+
      // fixme these should be computational, unless I handle that at a higher
      // level
      rule [writeToFD-char]:

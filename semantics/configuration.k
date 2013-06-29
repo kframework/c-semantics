@@ -1,5 +1,5 @@
 module C-CONFIGURATION
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      configuration 
      <T>

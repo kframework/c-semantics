@@ -1,5 +1,10 @@
 module C-EXPRESSION-IDENTIFIER
-     imports C-SEMANTIC-SYNTAX
+     imports C-EXPRESSION-SYNTAX
+
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-TYPING-SYNTAX
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
      An identifier is a primary expression, provided it has been declared as
@@ -27,7 +32,7 @@ module C-EXPRESSION-IDENTIFIER
           <types>... X:Id |-> T:KResult ...</types>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           when isFunctionType(T:KResult)
-          andBool notBool X:Id in keys Env:Map
+               andBool notBool X:Id in keys Env:Map
           [large, structural]
 endmodule
 

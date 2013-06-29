@@ -1,7 +1,7 @@
 module C-EXPRESSION-LOGICAL
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-HELPERS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ Here, we wrapped the controlling expressions with
      \kinline{simplifyTruth} when heating them, so that we are guaranteed
@@ -21,8 +21,7 @@ module C-EXPRESSION-LOGICAL
      rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
-          => sequencePoint
-          ~> simplifyTruth(E:K)
+          => sequencePoint ~> simplifyTruth(E:K)
           [structural]
      rule (V:KResult => simplifyTruth(V:KResult)) && _ 
           when isNotTruthValue(V:KResult)

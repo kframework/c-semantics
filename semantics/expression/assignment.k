@@ -1,6 +1,10 @@
 module C-EXPRESSION-ASSIGNMENT
+     imports C-EXPRESSION-SYNTAX
+
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-COMPAT-SYNTAX
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left

@@ -1,8 +1,13 @@
 module C-EXPRESSION-LITERAL
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
+     imports C-HELPERS-SYNTAX
 
      syntax Bool ::= withinRange(Int, SimpleType) [function]
      rule withinRange(I:Int, T:K)
@@ -10,9 +15,9 @@ module C-EXPRESSION-LITERAL
                andBool (I:Int >=Int min(t(.Set, T:K)))
      
      syntax String ::= simplifyForHex(String) [function]
-     rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S:String))
-          when (firstChar(S:String) ==String "0")
-               andBool (lengthString(S:String) >Int 1)
+     rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
+          when (firstChar(S) ==String "0")
+               andBool (lengthString(S) >Int 1)
      rule simplifyForHex(S:String) => S:String
           when (firstChar(S:String) =/=String "0")
                orBool (lengthString(S:String) ==Int 1)

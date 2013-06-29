@@ -1,5 +1,5 @@
 module LIBC-STRING
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
      
      // try to use getString

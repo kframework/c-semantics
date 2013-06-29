@@ -1,6 +1,11 @@
 module C-STATEMENT-RETURN
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-CONVERSION-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
      A \cinline{return} statement terminates execution of the current function
      and returns control to its caller. A function may have any number of

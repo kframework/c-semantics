@@ -5,13 +5,18 @@ endmodule
 
 module C-MEMORY-WRITING
      imports C-MEMORY-WRITING-SYNTAX
-
-     imports C-SEMANTIC-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
+     imports C-MEMORY-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+
+     imports C-DYNAMIC-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-EXPRESSION-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-TYPING-SYNTAX
      
      context alloc(_, value(HOLE)) 
 
@@ -126,7 +131,7 @@ module C-MEMORY-WRITING
      rule [write-normal]:
           write-specific(Loc:SymLoc, tv(V:K, T:KResult), BitSize:Int)
           => writeBytes(Loc, splitBytes(tv(V, T)))
-          when (BitSize %Int numBitsPerByte ==Int 0)
+          when (BitSize %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
                andBool (notBool isBitfieldType(T))
                andBool (notBool hasUnionMarker(T))
@@ -153,7 +158,7 @@ module C-MEMORY-WRITING
           <mem>... 
                Base |-> memblock(Len:Int, _, 
                M:Map => M:Map[
-                    piece(unknown(numBitsPerByte), numBitsPerByte) 
+                    piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
                     / Offset to (Offset +Int Len')]) 
           ...</mem>
           when Len >=Int Offset +Int Len'
@@ -171,7 +176,7 @@ module C-MEMORY-WRITING
           write-specific(Loc:SymLoc, 
                tv((V:K,, V':K,, L:KList), T:KResult), BitSize:Int)
           => writeBytes(Loc, dataList((V,, V',, L)))
-          when (BitSize:Int %Int numBitsPerByte ==Int 0)
+          when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
                andBool (notBool isBitfieldType(T:KResult))
           [structural]
@@ -194,7 +199,7 @@ module C-MEMORY-WRITING
      rule [massage-bitfield]:
           write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
           => write-specific(Loc, tv(justBits(I, T), T), BitSize)
-          when (BitSize %Int numBitsPerByte =/=Int 0
+          when (BitSize %Int cfg:bitsPerByte =/=Int 0
                orBool notBool(isByteLoc(Loc))
                orBool isBitfieldType(T))
                andBool (I <Int 0)
@@ -213,7 +218,7 @@ module C-MEMORY-WRITING
                     )
                )
           )
-          when (BitSize:Int %Int numBitsPerByte =/=Int 0)
+          when (BitSize:Int %Int cfg:bitsPerByte =/=Int 0)
                orBool (notBool(isByteLoc(Loc)))
                orBool (isBitfieldType(T:KResult) 
                     andBool notBool hasUnionMarker(T:KResult))
@@ -259,13 +264,13 @@ module C-MEMORY-WRITING
           => joinBitsToBytes-aux(
                dataList((piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1),, L)), 
                dataList(R))
-          when Len <Int numBitsPerByte 
+          when Len <Int cfg:bitsPerByte 
           [structural]
      rule joinBitsToBytes-aux(
                dataList((piece(N:Bits, Len:Int),, L:KList)), dataList(R:KList))
           => joinBitsToBytes-aux(
                dataList(L), dataList((R,, piece(N, Len))))
-          when Len ==Int numBitsPerByte 
+          when Len ==Int cfg:bitsPerByte 
           [structural]
      rule joinBitsToBytes-aux(dataList(.KList), dataList(R:KList))
           => dataList(R) 
@@ -325,11 +330,11 @@ module C-MEMORY-WRITING
      // this general rule is useful for unknowns, abstracts, etc
      rule [splitBytes-other]:
           splitBytes(tv((N:Bits,, .KList), T:Type))
-          => dataList(piece(N, numBitsPerByte))
+          => dataList(piece(N, cfg:bitsPerByte))
           when isCharType(T)
      rule [splitBytes-char]:
           splitBytes(tv(N:Bits, T:Type))
-          => dataList(piece(N, numBitsPerByte))
+          => dataList(piece(N, cfg:bitsPerByte))
           when isCharType(T) andBool (isInt(N) ==K false)
      rule [splitBytes-int]:
           splitBytes(tv(I:Int, T:Type)) 
@@ -358,7 +363,7 @@ module C-MEMORY-WRITING
      rule splitIntegerBytes(I:Int, T:Type, Len:Int) 
           => splitIntegerBytes-aux(I, T, Len, .KList)
      rule splitIntegerBytes-aux(I:Int, T:Type, Len:Int, L:KList)
-          => splitIntegerBytes-aux(I >>Int numBitsPerByte, T, Len -Int 1, 
+          => splitIntegerBytes-aux(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
                (L,, lowestByte(I, T)))
           when Len >Int 0
      rule splitIntegerBytes-aux(_, _, 0, L:KList)
@@ -374,7 +379,7 @@ module C-MEMORY-WRITING
                T:KResult, Len:Int, L:KList)
           => splitStructBytes(dataList(Rest:KList), T:KResult, Len:Int -Int 1,
                (L:KList,, piece(N:Int, PieceLen:Int)))
-          when PieceLen:Int ==Int numBitsPerByte
+          when PieceLen:Int ==Int cfg:bitsPerByte
                andBool Len:Int >Int 0
           [structural, anywhere]
      rule splitStructBytes(_, _, 0, L:KList)
@@ -389,7 +394,7 @@ module C-MEMORY-WRITING
           [structural, anywhere]
      rule splitPointerBytes-aux(I:Ptr, T:KResult, Len:Int, N:Int, L:KList)
           => splitPointerBytes-aux(I, T, Len -Int 1, N +Int 1,
-               (L,, piece(subObject(I, N, N), numBitsPerByte)))
+               (L,, piece(subObject(I, N, N), cfg:bitsPerByte)))
           when Len >Int 0
           [structural, anywhere]
      rule splitPointerBytes-aux(_, _, 0, _, L:KList) 
@@ -401,12 +406,12 @@ module C-MEMORY-WRITING
      context splitFloatBytes(_, _, value(HOLE)) 
      rule splitFloatBytes(F:Float, T:KResult, Len:Int) 
           => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
-               piece(encodedFloat(F:Float), numBitsPerByte)) 
+               piece(encodedFloat(F:Float), cfg:bitsPerByte)) 
           when Len:Int >Int 0
           [structural, anywhere]
      rule splitFloatBytes(F:Float, T:KResult, Len:Int, L:KList) 
           => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
-               (L:KList,, piece(unknown(numBitsPerByte), numBitsPerByte))) 
+               (L:KList,, piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
           when Len:Int >Int 0
           [structural, anywhere]
      rule splitFloatBytes(_, _:KResult, 0, L:KList) 
@@ -415,12 +420,12 @@ module C-MEMORY-WRITING
           
      syntax Bits ::= lowestByte(Int, Type) [function]
      rule lowestByte(I:Int, T:Type) 
-          => piece(I &Int byteMaskSet, numBitsPerByte)
+          => piece(I &Int byteMaskSet, cfg:bitsPerByte)
           when hasIntegerType(T) 
           [structural]
      
      syntax Int ::= "byteMaskSet" [function]
-     rule byteMaskSet => (2 ^Int numBitsPerByte) -Int 1
+     rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
           
      rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0
 endmodule

@@ -1,5 +1,4 @@
 module LIBC-STDARG
-     imports C-SEMANTIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{

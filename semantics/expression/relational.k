@@ -1,6 +1,10 @@
 module C-EXPRESSION-RELATIONAL
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-MEMORY-SYNTAX
 
      syntax K ::= makeTruth(Bool) [function]
      rule makeTruth(B:Bool)

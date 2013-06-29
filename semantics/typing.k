@@ -96,6 +96,12 @@ module C-TYPING-SYNTAX
           [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
      syntax K ::= "giveType" "(" Id "," Type ")"
+
+     syntax Int ::= numBytes(Type) [function]
+     syntax Int ::= numBits(Type) [function]
+
+     syntax Bool ::= isNotTruthValue(Value) [function]
+     syntax K ::= simplifyTruth(K) [function]
 endmodule
 
 module C-TYPING

@@ -7,13 +7,16 @@ module C-PROMOTION-SYNTAX
      syntax K ::= "usualArithmeticConversion" "(" Type "," Type ")" [function]
      syntax Bool ::= isPromoted(Type) [function]
 
+     syntax Int ::= rank(Type) [function]
 endmodule
 
 module C-PROMOTION
      imports C-PROMOTION-SYNTAX
 
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-DYNAMIC-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-COMPAT-SYNTAX
 
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
 

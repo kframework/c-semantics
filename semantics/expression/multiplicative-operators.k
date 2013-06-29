@@ -1,7 +1,10 @@
 module C-EXPRESSION-MULTIPLICATIVE-OPERATORS
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
      The usual arithmetic conversions are performed on the operands.

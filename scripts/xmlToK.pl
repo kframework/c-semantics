@@ -219,8 +219,6 @@ sub elementToK {
 
 sub rawdataToK {
 	my ($reader) = (@_);
-	my $sort = $reader->getAttribute('sort');
-	if ($sort eq 'Int') { $sort = 'Rat'; }
 	my $data = getRawData($reader);
 	return "#" . paren($data) . paren(KLIST_IDENTITY);
 }

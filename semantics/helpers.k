@@ -11,12 +11,7 @@ module C-HELPERS-SYNTAX
      syntax String ::= listToString(List) [function]
 
      syntax Bool ::= isUnknown(K) [function] // Ints, Bits, SymLocs
-     syntax K ::= simplifyTruth(K) [function]
-     syntax Bool ::= isNotTruthValue(Value) [function]
      
-     syntax K ::= getIdOfDeclaration(K) [function]
-     syntax K ::= getIdOfName(K) [function]
-
      syntax String ::= toUpperCase(String) [function]
      syntax K ::= "getString" "(" K ")"
      syntax Value ::= "str" "(" String ")"
@@ -35,16 +30,18 @@ module C-HELPERS-SYNTAX
      syntax Type ::= "type" "(" K ")"
      syntax K ::= "value" "(" K ")"
 
-     syntax Int ::= "NullPointerConstant" [function]
-
 endmodule
 
 module C-HELPERS
      imports C-HELPERS-SYNTAX
 
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -62,20 +59,6 @@ module C-HELPERS
           // TODO(chathhorn): silly sort check
           when (I <=Int 0) orBool (I >Int 0)
 
-     rule simplifyTruth(K:K) => K:K != tv(0, t(.Set, int))
-     
-     rule isNotTruthValue(tv(V:K, t(_, T:K))) 
-          => T:K =/=K int
-          orBool ( V:K =/=K 0 andBool V:K =/=K 1 )
-          [structural]
-     
-     rule getIdOfDeclaration(
-               DeclarationDefinition(InitNameGroup(_, klist(K:K))))
-          => getIdOfName(K:K)
-     rule getIdOfName(InitName(K:K, _)) => getIdOfName(K:K)
-     rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K)
-     rule getIdOfName(Name(X:Id, _)) => X:Id
-     
      // this maintains byte order
      syntax K ::= "fillToBytes-aux" "(" K "," KList ")"
      rule [fillToBytes-start]:
@@ -86,13 +69,13 @@ module C-HELPERS
           fillToBytes-aux(dataList((L:KList,, 
                piece(N:Bits, Len:Int))), L':KList)
           => fillToBytes-aux(dataList(L:KList), (piece(N, Len),, L'))
-          when Len ==Int numBitsPerByte
+          when Len ==Int cfg:bitsPerByte
           [structural]
      
      rule [fillToBytes-addBit]:
           fillToBytes-aux(dataList(piece(N:Bits, Len:Int)), L':KList)
           => fillToBytes-aux(dataList((piece(0, 1),, piece(N, Len))), L')
-          when Len:Int <Int numBitsPerByte
+          when Len:Int <Int cfg:bitsPerByte
           [structural]
           
      rule [fillToBytes-combineBits]:
@@ -100,7 +83,7 @@ module C-HELPERS
                piece(N':Bits, Len':Int))), L':KList)
           => fillToBytes-aux(dataList((L,, piece(piece(N, Len) 
                bit:: piece(N', Len'), Len +Int Len'))), L')
-          when Len +Int Len' <=Int numBitsPerByte
+          when Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
                     
      rule [fillToBytes-done]:
@@ -111,7 +94,7 @@ module C-HELPERS
      rule piece(bitRange(N:Bits, SuccTo:Int, To':Int), Len:Int) 
                bit:: piece(bitRange(N, From:Int, To:Int), Len':Int)
           => piece(bitRange(N, From, To'), Len +Int Len')
-          when (Len +Int Len' <=Int numBitsPerByte)
+          when (Len +Int Len' <=Int cfg:bitsPerByte)
                andBool (SuccTo ==Int To +Int 1)
           [structural, anywhere]
      
@@ -146,7 +129,7 @@ module C-HELPERS
           [structural, anywhere]
           
      rule bitRange(N:Bits, 0, To:Int) => N
-          when To +Int 1 ==Int numBitsPerByte
+          when To +Int 1 ==Int cfg:bitsPerByte
           [structural, anywhere]
      
      rule bitRange(_ bit:: piece(N:Bits, Len:Int), Start:Int, End:Int)
@@ -176,11 +159,11 @@ module C-HELPERS
           [structural]
      
      //- derived
-     rule bitsToBytes(N:Int) => absInt(N:Int /Int numBitsPerByte)
-          when numBitsPerByte dividesInt N:Int
+     rule bitsToBytes(N:Int) => absInt(N:Int /Int cfg:bitsPerByte)
+          when cfg:bitsPerByte dividesInt N:Int
           [structural]
-     rule bitsToBytes(N:Int) => absInt((N:Int /Int numBitsPerByte) +Int 1) 
-          when notBool numBitsPerByte dividesInt N:Int
+     rule bitsToBytes(N:Int) => absInt((N:Int /Int cfg:bitsPerByte) +Int 1) 
+          when notBool cfg:bitsPerByte dividesInt N:Int
           [structural]
           
      rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
@@ -190,12 +173,6 @@ module C-HELPERS
      rule numBytes(t(_, unsigned-long-long-int)) 
           => numBytes(t(.Set, long-long-int))
      
-     rule numBits(t(S:Set, T:K)) 
-          => numBytes(t(S:Set, T:K)) *Int numBitsPerByte
-          when getKLabel(T:K) =/=KLabel 'bitfieldType
-          [structural]
-     rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
-
      rule [firstChar]:
           firstChar(S:String) => substrString(S:String, 0, 1)
           [structural]
@@ -293,8 +270,6 @@ module C-HELPERS
           pointerToString(NullPointer) => "NullPointer" 
           [structural]
           
-     rule NullPointerConstant => 0
-     
      rule piece(N:Int, Len:Int) bit:: piece(N':Int, Len':Int)
           => piece((N <<Int Len') |Int N', Len +Int Len')
           [structural, anywhere]

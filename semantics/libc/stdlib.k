@@ -1,6 +1,6 @@
 module LIBC-STDLIB
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
 
      syntax K ::= "printString" "(" K ")"

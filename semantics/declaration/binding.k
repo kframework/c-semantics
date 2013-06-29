@@ -1,7 +1,14 @@
 module C-DECLARATION-BINDING
+     imports C-DECLARATION-SYNTAX
+
      imports C-SYNTAX
-     imports C-SETTINGS
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-HELPERS-SYNTAX
 
      // empty binding
      // fixme not really a sequence point

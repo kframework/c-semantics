@@ -14,20 +14,23 @@ endmodule
 
 module C-MEMORY-ALLOC
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-SYNTAX
 
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-HELPERS-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
 
-     rule getBitOffset(loc(_, _, M:Int)) => M %Int numBitsPerByte
-     rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int numBitsPerByte
+     rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
+     rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
      
      // used by calloc
      rule <k> zeroBlock(loc(Base:SymBase, 0, 0)) => . ...</k>
           <mem>...
                Base |-> memblock(Len:Int, _, 
-                    _ => Map((0 to Len) |-> piece(0, numBitsPerByte)))
+                    _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
           
@@ -83,6 +86,7 @@ module C-MEMORY-ALLOC
           [structural]
      // fixme shouldn't need both of these
      // fixme could do better with bitfields
+     context makeUnwritableSubObject((HOLE => peval(HOLE)))
      rule [makeUnwritable-subobject]:
           <k> 
                makeUnwritableSubObject(

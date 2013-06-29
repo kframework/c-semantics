@@ -6,10 +6,13 @@ module C-STATEMENT-LOOP-SYNTAX
 endmodule
 
 module C-STATEMENT-LOOP
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-STATEMENT-BLOCK-SYNTAX
      imports C-STATEMENT-LOOP-SYNTAX
+     imports C-STATEMENT-BLOCK-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-COMPAT-SYNTAX
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement 
      \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ;

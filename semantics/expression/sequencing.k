@@ -1,6 +1,8 @@
 module C-EXPRESSION-SEQUENCING
+     imports C-EXPRESSION-SYNTAX
+
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{

@@ -32,9 +32,9 @@ module C-SYMLOC
           => loc(X +Int 1 @ Th, ByOff, BiOff)
 
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
-          => loc(Base, Offset +Int BitOffset /Int numBitsPerByte,
-               BitOffset %Int numBitsPerByte)
-          when BitOffset:Int >=Int numBitsPerByte
+          => loc(Base, Offset +Int BitOffset /Int cfg:bitsPerByte,
+               BitOffset %Int cfg:bitsPerByte)
+          when BitOffset:Int >=Int cfg:bitsPerByte
           [structural, anywhere]
 
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bits N:Int
@@ -45,12 +45,12 @@ module C-SYMLOC
 
      rule floorLoc(loc(Base:SymBase, Offset:Int, BitOffset:Int))
           => loc(Base, Offset:Int, 0)
-          when BitOffset <Int numBitsPerByte
+          when BitOffset <Int cfg:bitsPerByte
      
      rule [ceilingLoc-null]: ceilingLoc(NullPointer) => NullPointer
 
      rule [ceilingLoc]:
           ceilingLoc(loc(N:SymBase, R:Int, M:Int))
-          => loc(N, (M /Int numBitsPerByte) +Int R, 0)
+          => loc(N, (M /Int cfg:bitsPerByte) +Int R, 0)
 
 endmodule

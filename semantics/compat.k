@@ -1,6 +1,8 @@
 module C-COMPAT-SYNTAX
      imports C-SYNTAX 
 
+     syntax K ::= "l" "(" KLabel ")" [avoid]
+
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 
@@ -13,10 +15,6 @@ module C-COMPAT-SYNTAX
                | K "#inBag" Bag [function]
 
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
-
-     // TODO(chathhorn): hackish, rename at least
-     syntax K ::= rkludge(K) [function, klabel('rkludge)]
-     syntax K ::= pkludge(K) [function, klabel('pkludge)]
 
      syntax Bits ::= right:
                     "~Bits" Bits
@@ -33,8 +31,6 @@ module C-COMPAT-SYNTAX
                     > left:
                     Bits "|Bits" Bits
                     [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
-
-     syntax Ptr ::= Int | SymLoc
 
      syntax Int ::= "string2Base" "(" String "," Int ")"
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
@@ -87,11 +83,11 @@ module C-COMPAT-SYNTAX
      syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
 
+     syntax KList ::= Int "to" Int [function]
+
 endmodule
 
 module C-COMPAT
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-COMPAT-SYNTAX
 
      imports C-HELPERS-SYNTAX
@@ -144,5 +140,11 @@ module C-COMPAT
      
      rule reverseList(.KList) => .KList
      rule reverseList((K:K,, L:KList)) => reverseList(L:KList),, K:K
+
+	rule N:Int to N => .KList
+	rule N:Int to N' => (N,,((N +Int 1) to N'))
+		when N <Int N'
+		[structural]
+
 endmodule
 

@@ -4,12 +4,15 @@ module C-STATEMENT-SWITCH-SYNTAX
 endmodule
 
 module C-STATEMENT-SWITCH
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
      imports C-STATEMENT-SWITCH-SYNTAX
-     //  fixme shouldn't there be sequence points here?
-     //  fixme not doing promoting or conversion
-     
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-TYPING-SYNTAX
+
      // switch num, promoted value of controlling exp, int value of exp
      syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] 
      syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"

@@ -1,9 +1,10 @@
 require "builtins/model-checker.k"
 
 module C-LTLMC
-     imports MODEL-CHECKER-HOOKS
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX 
      imports C-COMPAT-SYNTAX
+
+     imports MODEL-CHECKER-HOOKS
 
      syntax Prop ::= Expression // Ltl atomic propositions.
      syntax K ::= LtlEval(Bag, K) [function]

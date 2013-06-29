@@ -1,4 +1,5 @@
-SCRIPTS_DIR = ../scripts
+C_ROOT = ..
+SCRIPTS_DIR = $(C_ROOT)/scripts
 INSERT_LINE = $(SCRIPTS_DIR)/insert.sh
 APPEND_LINE = $(SCRIPTS_DIR)/append.sh
 FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
@@ -6,6 +7,7 @@ FIRST_LINE_SCRIPT = $(SCRIPTS_DIR)/getFirstLine.pl
 KOMPILE = $(C_K_BASE)/bin/kompile
 
 K_LATEX_STYLE = $(C_K_BASE)/include/latex/k.sty
+C_LATEX_STYLE = $(C_ROOT)/latex/semantics.sty
 
 KOMPILE_C = $(KOMPILE) c.k -w -v -l C -transition "interpRule"
 KOMPILE_C_ND = $(KOMPILE) c.k -o "c-kompiled-nd" -w -v -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
@@ -19,8 +21,8 @@ TYPING_FILES = typing.k $(wildcard typing/*.k)
 MEMORY_FILES = memory.k $(wildcard memory/*.k)
 
 COMMON_C_FILES = syntax.k helpers.k configuration.k \
-	semantic-syntax.k compat.k bitsize.k
-DYNAMIC_C_FILES = c.k dynamic-semantics.k \
+	compat.k bitsize.k
+DYNAMIC_C_FILES = c.k dynamic-semantics.k io.k symloc.k \
 	error.k conversion.k promotion.k memory.k ltlmc.k \
 	$(LIBC_FILES) $(STATEMENT_FILES) $(EXPRESSION_FILES) \
 	$(TYPING_FILES) $(MEMORY_FILES) $(DECLARATION_FILES)
@@ -66,7 +68,7 @@ temp-c-%.tex: check-vars $(KOMPILE) c.k $(addsuffix .k,$(PDF_FILES))
 	@perl -i -pe 's|}mybracket|}\\mybracket|' $@.temp
 	@perl -i -pe 's|\\mathrel{}||g' $@.temp
 # include my custom style file
-	@perl -i -pe 's|\\begin{document}|\\input{semantics.sty}\n\\begin{document}|' $@.temp
+	@perl -i -pe 's|\\begin{document}|\\input{$(C_LATEX_STYLE)}\n\\begin{document}|' $@.temp
 # get rid of the name attributes so they don't show up twice
 	@perl -i -pe 's/(\\(?:kdefine|krule){([a-zA-Z0-9-]+)}.*)\\kattribute{\2}[ ]?/\1\3/' $@.temp
 # get rid of structural annotations
@@ -80,7 +82,7 @@ temp-c-%.tex: check-vars $(KOMPILE) c.k $(addsuffix .k,$(PDF_FILES))
 	@perl -i -pe 's/(\\kattribute{[a-zA-Z-()]+})[ ]?}/\1}/' $@.temp
 	@mv $@.temp $@
 
-%.pdf: %.tex $(K_LATEX_STYLE) semantics.sty
+%.pdf: %.tex $(K_LATEX_STYLE) $(C_LATEX_STYLE)
 	@echo "Compiling latex..."
 	@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi
 #@if ! pdflatex -halt-on-error -interaction=nonstopmode -jobname=temp-c-$* $* 1> temp.pdflatex.out; then cat temp.pdflatex.out; false; fi

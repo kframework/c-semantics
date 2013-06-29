@@ -27,6 +27,10 @@ module C-EXPRESSION-SYNTAX
      // generates a tv(size, cfg:sizeut)
      syntax K ::= "sizeofType" "(" K ")" [strict]
      syntax K ::= "populateFromGlobal"
+
+     // TODO(chathhorn): hackish, rename at least
+     syntax K ::= rkludge(K) [function, klabel('rkludge)]
+     syntax K ::= pkludge(K) [function, klabel('pkludge)]
 endmodule
 
 module C-EXPRESSION

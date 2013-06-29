@@ -1,6 +1,10 @@
 module C-DECLARATION-ZERO
+     imports C-DECLARATION-SYNTAX
+
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration

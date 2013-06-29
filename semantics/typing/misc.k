@@ -4,10 +4,47 @@ module C-TYPING-MISC-SYNTAX
 endmodule
 
 module C-TYPING-MISC
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
      imports C-TYPING-MISC-SYNTAX
+     imports C-TYPING-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     //TODO(chathhorn): a lot of junk dumped here.
+
+     rule isNotTruthValue(tv(V:K, t(_, T:K))) 
+          => T:K =/=K int orBool ( V:K =/=K 0 andBool V:K =/=K 1 )
+          [structural]
+
+     rule simplifyTruth(K:K) => K:K != tv(0, t(.Set, int))
+     
+     rule char => cfg:charAlias [structural, anywhere]
+
+     rule numBytes(t(_, bool)) => cfg:sizeofBool
+     rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
+     rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
+     rule numBytes(t(_, int)) => cfg:sizeofInt
+     rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
+     rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
+     
+     rule numBytes(t(_, float)) => cfg:sizeofFloat
+     rule numBytes(t(_, double)) => cfg:sizeofDouble
+     rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
+     
+     rule numBytes(t(S:Set, enumType(_:Id))) => cfg:sizeofEnum
+     
+     rule numBits(t(S:Set, T:K)) 
+          => numBytes(t(S:Set, T:K)) *Int cfg:bitsPerByte
+          when getKLabel(T:K) =/=KLabel 'bitfieldType
+          [structural]
+     rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
+
+     syntax SimpleType ::= simpleType(Type) [function]
+     rule simpleType(t(_, T:K)) => T:K
 
      syntax Type ::= stripConst(Type) [function]
      rule stripConst(t((SetItem(Const) => .Set) _, _))
@@ -179,6 +216,9 @@ module C-TYPING-MISC
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int)) 
           => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
+
+     rule min(t(S:Set, enumType(_:Id))) => cfg:enumMin
+     rule max(t(S:Set, enumType(_:Id))) => cfg:enumMax
      
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional

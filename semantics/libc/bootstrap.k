@@ -7,7 +7,7 @@ endmodule
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
 
      // TODO(chathhorn): not pretty

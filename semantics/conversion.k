@@ -5,14 +5,20 @@ module C-CONVERSION-SYNTAX
      syntax K ::= interpret(Type, K) [function]
      // as described in 6.3 // totype, fromvalue
      syntax K ::= cast(K, K) [strict(1)]
-     context cast(_, (HOLE => reval(HOLE)))
      
 endmodule
 
-module C-CONVERSION-MISC
-     imports C-SEMANTIC-SYNTAX
+module C-CONVERSION
+     imports C-CONVERSION-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
+     imports C-TYPING-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-HELPERS-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
@@ -109,15 +115,7 @@ module C-CONVERSION-MISC
           when hasUnsignedIntegerType(T)
                andBool (I:Int <Int min(T))
 
-endmodule
-
-module C-CONVERSION
-     imports C-CONVERSION-SYNTAX
-
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
-
-     
+     context cast(_, (HOLE => reval(HOLE)))
      //- switch assumes casts can happen anywhere
      rule cast(T:KResult, tv(L:KList, T:KResult))
           => tv(L:KList, T:KResult)

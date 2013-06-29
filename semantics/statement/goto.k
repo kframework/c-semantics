@@ -7,12 +7,24 @@ module C-STATEMENT-GOTO-SYNTAX
 endmodule
 
 module C-STATEMENT-GOTO
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-STATEMENT-BLOCK-SYNTAX
      imports C-STATEMENT-GOTO-SYNTAX
+     imports C-STATEMENT-BLOCK-SYNTAX
      imports C-STATEMENT-LOOP-SYNTAX
+
+     imports C-SYNTAX
+     imports C-COMPAT-SYNTAX
+
+     syntax K ::= getIdOfDeclaration(K) [function]
+     syntax K ::= getIdOfName(K) [function]
+
+     rule getIdOfDeclaration(
+               DeclarationDefinition(InitNameGroup(_, klist(K:K))))
+          => getIdOfName(K:K)
+
+     rule getIdOfName(InitName(K:K, _)) => getIdOfName(K:K)
+     rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K:K)
+     rule getIdOfName(Name(X:Id, _)) => X:Id
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement
      prefixed by the named label in the enclosing function.

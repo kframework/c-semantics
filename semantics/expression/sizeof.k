@@ -1,6 +1,13 @@
 module C-EXPRESSION-SIZEOF
-     imports C-SEMANTIC-SYNTAX
-     imports C-SETTINGS
+     imports C-EXPRESSION-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-HELPERS-SYNTAX
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,
@@ -27,6 +34,7 @@ module C-EXPRESSION-SIZEOF
      rule byteSizeofType-aux(tv(N:Int, T:KResult))
           => tv(bitsToBytes(N:Int), T:KResult)
           [structural]
+
      rule SizeofExpression(E:K)
           => sizeofType(typeof(E:K))
           [structural]

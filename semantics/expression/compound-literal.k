@@ -1,6 +1,9 @@
 module C-EXPRESSION-COMPOUND-LITERAL
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      syntax Id ::= "compoundLiteral" "(" Int ")"
      syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]

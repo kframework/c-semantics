@@ -1,6 +1,8 @@
 module C-EXPRESSION-REFERENCE
      imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the
@@ -31,8 +33,7 @@ module C-EXPRESSION-REFERENCE
      }*/
      rule [deref]:
           *(tv(Loc:SymLoc, t(_, pointerType(t(S:Set, T:K)))))
-          => checkDerefLoc(Loc)
-          ~> lv(Loc, t(S, T))
+          => checkDerefLoc(Loc) ~> lv(Loc, t(S, T))
           when notBool T ==K void
           [structural]
 endmodule

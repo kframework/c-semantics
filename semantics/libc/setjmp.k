@@ -1,5 +1,5 @@
 module LIBC-SETJMP
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
 
      /*@ 

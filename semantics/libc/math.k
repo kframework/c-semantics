@@ -1,5 +1,5 @@
 module LIBC-MATH
-     imports C-SEMANTIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
 

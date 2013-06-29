@@ -1,10 +1,11 @@
 module C-TYPING-INTERPRETATION
-     imports C-SYNTAX
-     imports C-SEMANTIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS
+     imports C-TYPING-SYNTAX
      imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
+
+     imports C-DYNAMIC-SYNTAX
+     imports C-COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      // rules that use specifier should be careful to use extractActualType if
      // going to be used in a typed name
@@ -149,8 +150,8 @@ module C-TYPING-INTERPRETATION
           [structural]
      rule fillUnionBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               N:Int +Int (absInt(numBitsPerByte -Int 
-               (N:Int %Int numBitsPerByte)) %Int numBitsPerByte))), #NoName)
+               N:Int +Int (absInt(cfg:bitsPerByte -Int 
+               (N:Int %Int cfg:bitsPerByte)) %Int cfg:bitsPerByte))), #NoName)
           [structural]
      
      syntax KList ::= fillBitHoles(KList) [function]
@@ -175,8 +176,8 @@ module C-TYPING-INTERPRETATION
      rule [fillBitHoles-aux-not-bitfield]:
           fillBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) 
-               %Int numBitsPerByte)), #NoName),,
+               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte)) 
+               %Int cfg:bitsPerByte)), #NoName),,
                fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList))
           when notBool isBitfieldType(T:KResult) 
           [structural]
@@ -193,8 +194,8 @@ module C-TYPING-INTERPRETATION
           fillBitHoles-aux(N:Int, (typedDeclaration(t(_, 
                bitfieldType(_:KResult, N':Int)), _:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte)) 
-               %Int numBitsPerByte)), #NoName),, 
+               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte)) 
+               %Int cfg:bitsPerByte)), #NoName),, 
                fillBitHoles(L:KList)
           when N':Int ==Int 0
           [structural]
@@ -202,8 +203,8 @@ module C-TYPING-INTERPRETATION
      rule [fillBitHoles-done]:
           fillBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(numBitsPerByte -Int (N:Int %Int numBitsPerByte))
-               %Int numBitsPerByte)), #NoName) 
+               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte))
+               %Int cfg:bitsPerByte)), #NoName) 
           [structural]
      
      rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName),,
