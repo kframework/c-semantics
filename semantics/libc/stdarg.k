@@ -1,6 +1,9 @@
 module LIBC-STDARG
      imports LIBC-BOOTSTRAP-SYNTAX
 
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
 
      The header \header{<stdarg.h>} declares a type and defines four macros,

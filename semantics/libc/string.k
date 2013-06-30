@@ -1,6 +1,11 @@
 module LIBC-STRING
-     imports C-DYNAMIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-SYMLOC-SYNTAX
      
      // try to use getString
      // fixme should detect overlaps

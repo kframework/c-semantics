@@ -1,7 +1,9 @@
 module LIBC-MATH
+     imports LIBC-BOOTSTRAP-SYNTAX
+
      imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
-     imports LIBC-BOOTSTRAP-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule [sqrt]:
           prepareBuiltin((Identifier("sqrt")), tv(F:Float, t(_, double)))

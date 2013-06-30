@@ -1,7 +1,12 @@
 module LIBC-STDDEF
+     imports LIBC-BOOTSTRAP-SYNTAX
+
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports LIBC-BOOTSTRAP-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-HELPERS-SYNTAX
 
      syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
      rule OffsetOf(T:KResult, K:K, F:Id)

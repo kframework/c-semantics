@@ -1,6 +1,9 @@
 module LIBC-TIME
-     imports C-DYNAMIC-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
+
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
      
      // fixme, just a placeholder
      rule [time]:

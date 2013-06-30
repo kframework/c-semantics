@@ -35,7 +35,7 @@ module C-TYPING-MISC
      rule numBytes(t(_, double)) => cfg:sizeofDouble
      rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
      
-     rule numBytes(t(S:Set, enumType(_:Id))) => cfg:sizeofEnum
+     rule numBytes(t(_, enumType(_:Id))) => cfg:sizeofEnum
      
      rule numBits(t(S:Set, T:K)) 
           => numBytes(t(S:Set, T:K)) *Int cfg:bitsPerByte
@@ -217,8 +217,8 @@ module C-TYPING-MISC
      rule max(t(_, unsigned-long-long-int)) 
           => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
 
-     rule min(t(S:Set, enumType(_:Id))) => cfg:enumMin
-     rule max(t(S:Set, enumType(_:Id))) => cfg:enumMax
+     rule min(t(_, enumType(_:Id))) => cfg:enumMin
+     rule max(t(_, enumType(_:Id))) => cfg:enumMax
      
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional

@@ -56,7 +56,7 @@ module C-SETTINGS
      rule cfg:ptrsize => 4
      rule cfg:ptrdiffut => t(.Set, int)
      
-     rule cfg:enumMin => min(t(S:Set, int))
-     rule cfg:enumMax => max(t(S:Set, int))
+     rule cfg:enumMin => min(t(.Set, int))
+     rule cfg:enumMax => max(t(.Set, int))
 endmodule
 

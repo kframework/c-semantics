@@ -142,7 +142,7 @@ module C-COMPAT
      rule reverseList((K:K,, L:KList)) => reverseList(L:KList),, K:K
 
 	rule N:Int to N => .KList
-	rule N:Int to N' => (N,,((N +Int 1) to N'))
+	rule N:Int to N':Int => (N,,((N +Int 1) to N'))
 		when N <Int N'
 		[structural]
 

@@ -1,8 +1,14 @@
 module LIBC-STDIO
+     imports LIBC-BOOTSTRAP-SYNTAX
+
      imports C-DYNAMIC-SYNTAX
      imports C-COMPAT-SYNTAX
      imports C-HELPERS-SYNTAX
-     imports LIBC-BOOTSTRAP-SYNTAX
+     imports C-EXPRESSION-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-IO-SYNTAX
 
      syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]

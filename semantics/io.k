@@ -11,6 +11,7 @@ module C-IO
 
      imports C-DYNAMIC-SYNTAX
      imports C-HELPERS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // fixme these should be computational, unless I handle that at a higher
      // level

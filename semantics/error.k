@@ -5,7 +5,15 @@ endmodule
 
 module C-ERROR
      imports C-ERROR-SYNTAX
+
      imports C-COMPAT-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-MEMORY-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
