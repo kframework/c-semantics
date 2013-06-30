@@ -8,6 +8,8 @@ module C-MEMORY-SYNTAX
      // location, value
      syntax K ::= "write" "(" K "," K ")" [strict(2)]
      syntax K ::= "writeByte" "(" SymLoc "," K ")" 
+     syntax K ::= "writeString" "(" SymLoc "," String ")"
+     syntax K ::= "writeWString" "(" SymLoc "," KList ")"
 
      syntax Ptr ::= Int | SymLoc
 

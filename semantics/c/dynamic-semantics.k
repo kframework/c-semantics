@@ -27,14 +27,14 @@ module C-DYNAMIC-SYNTAX
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
      syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
+
+     syntax Type ::= "type" "(" K ")" [function]
+     syntax K ::= "value" "(" K ")" [function]
+
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
      
      syntax KResult ::= "dataList" "(" KList ")"
-
-     syntax Bits ::= "piece" "(" Bits "," Int ")"
-     syntax Bits ::= "unknown" "(" Int ")"
-     syntax Bits ::= Int
 
      syntax Int ::= "NullPointerConstant" [function]
 
@@ -67,6 +67,18 @@ module C-DYNAMIC
      imports C-IO 
 
      imports LIBC
+
+     rule value(tv(V:KList, _)) => V:KList
+          [structural, anywhere]
+
+     rule type(tv(_, T:KResult)) => T
+          [structural, anywhere]
+     rule type(T:Type) => T
+          [structural, anywhere]
+     rule type(lv(_, T:KResult)) => T
+          [structural, anywhere]
+     rule type(lval(_, T:KResult)) => T
+          [structural, anywhere]
 
      rule NullPointerConstant => 0
 

@@ -24,6 +24,7 @@ module C-TYPING-MISC
      
      rule char => cfg:charAlias [structural, anywhere]
 
+     syntax Int ::= numBytes(Type) [function]
      rule numBytes(t(_, bool)) => cfg:sizeofBool
      rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
      rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
@@ -34,6 +35,13 @@ module C-TYPING-MISC
      rule numBytes(t(_, float)) => cfg:sizeofFloat
      rule numBytes(t(_, double)) => cfg:sizeofDouble
      rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
+
+     rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
+     rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
+     rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
+     rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
+     rule numBytes(t(_, unsigned-long-long-int)) 
+          => numBytes(t(.Set, long-long-int))
      
      rule numBytes(t(_, enumType(_:Id))) => cfg:sizeofEnum
      

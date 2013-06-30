@@ -23,6 +23,70 @@ module C-MEMORY-ALLOC
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
+     context alloc(_, value(HOLE)) 
+
+     rule allocateType(Loc:SymLoc, T:KResult) 
+          => alloc(Loc, value(byteSizeofType(T))) 
+          [structural]
+     rule [allocateTypeIfAbsent-absent]:
+          <k> 
+               allocateTypeIfAbsent(Loc:SymLoc, T:KResult) 
+               => alloc(Loc, value(byteSizeofType(T:KResult))) 
+          ...</k>
+          <mem> M:Map </mem>
+          when notBool (SetItem(base(Loc)) in (keys M))
+          [structural] 
+     rule [allocateTypeIfAbsent-present]:
+          <k> 
+               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:KResult) => .K 
+          ...</k>
+          <mem>... Base |-> memblock(_, _, _) ...</mem>
+          [structural]
+
+     rule [alloc-lazy]:
+          <k> alloc(loc(Base:SymBase, 0, 0), Len:Int) => .K ...</k>
+          <mem>... .Map => Base |-> memblock(Len, .Bag, .Map) ...</mem>
+          [structural]
+     
+     syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")"
+     rule [realloc-start]:
+          <k> 
+               realloc(Old:K, New:K, OldLen:Int, NewLen:Int)
+               => alloc(New:K, NewLen:Int)
+                    ~> realloc-aux(minInt(OldLen:Int, NewLen:Int),
+                         Old:K, New:K, OldLen:Int, NewLen:Int)
+          ...</k>
+          [structural]
+          
+     rule [realloc-found]:
+          <k> 
+               realloc-aux((SNatN:Int => SNatN:Int -Int 1), 
+                    loc(OldBase:SymBase, 0, 0), 
+                    loc(NewBase:SymBase, 0, 0), _, _)
+          ...</k>
+          <mem>... 
+               OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
+               NewBase |-> memblock(_, _, (_ (.Map => SNatN:Int -Int 1 |-> K:K)))
+          ...</mem>
+          when (N ==Int SNatN -Int 1)
+               andBool (SNatN >Int 0)
+          [structural]   
+          
+     // fixme sNat
+     rule [realloc-unfound]:
+          <k> 
+               realloc-aux((SNatN:Int => SNatN -Int 1), 
+                    loc(OldBase:SymBase, 0, 0), loc(_:SymBase, 0, 0), _, _)
+          ...</k>
+          <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
+          when (notBool SNatN:Int -Int 1 in keys M:Map)
+               andBool (SNatN >Int 0)
+          [structural]
+     rule [realloc-0]:
+          realloc-aux(0, loc(OldBase:SymBase, 0, 0), _, OldLen:Int, _)
+          => deleteSizedBlock(loc(OldBase, 0, 0), OldLen:Int) 
+          [structural]   
+          
      rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
      rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
      

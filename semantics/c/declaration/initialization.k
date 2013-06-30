@@ -1,12 +1,11 @@
 module C-DECLARATION-INITIALIZATION-SYNTAX
      syntax K ::= "startInit" "(" Type "," Id "," K ")"
-      
 endmodule
 
 module C-DECLARATION-INITIALIZATION
      imports C-DECLARATION-INITIALIZATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DELARATION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

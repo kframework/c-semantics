@@ -1,7 +1,15 @@
-module C-COMPAT-SYNTAX
-     imports C-SYNTAX 
-
+module COMPAT-SYNTAX
      syntax K ::= "l" "(" KLabel ")" [avoid]
+
+     syntax String ::= firstChar(String) [function]
+     syntax String ::= "nthChar" "(" String "," Int ")" [function]
+     syntax String ::= "butFirstChar" "(" String ")" [function]
+     
+     syntax List ::= "stringToList" "(" String ")" [function]
+     syntax String ::= listToString(List) [function]
+
+     syntax String ::= toUpperCase(String) [function]
+
 
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
@@ -15,22 +23,6 @@ module C-COMPAT-SYNTAX
                | K "#inBag" Bag [function]
 
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
-
-     syntax Bits ::= right:
-                    "~Bits" Bits
-                    [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
-                    > left:
-                    Bits "/Bits" Bits
-                    [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "&Bits" Bits
-                    [function, left, latex({#1}\mathrel{\&_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "xorBits" Bits
-                    [function, left, latex({#1}\mathrel{\oplus_{\scriptstyle\it Bits}}{#2})]
-                    > left:
-                    Bits "|Bits" Bits
-                    [function, left, latex({#1}\mathrel{|_{\scriptstyle\it Bits}}{#2})]
 
      syntax Int ::= "string2Base" "(" String "," Int ")"
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
@@ -91,6 +83,53 @@ module C-COMPAT
      imports C-COMPAT-SYNTAX
 
      imports C-HELPERS-SYNTAX
+
+     rule stringToList("") => .List
+     rule stringToList(S:String)
+               => ListItem(firstChar(S:String)) 
+                    stringToList(butFirstChar(S:String))
+          when S:String =/=String ""
+          
+     rule listToString(.List) => ""
+     rule listToString((ListItem(S:String) L:List))
+               => S:String +String listToString(L:List)
+
+     rule [firstChar]:
+          firstChar(S:String) => substrString(S:String, 0, 1)
+          [structural]
+
+     rule [nthChar]:
+          nthChar(S:String, N:Int) => substrString(S:String, N:Int, 1)
+          [structural]
+
+     rule [butFirstChar]:
+          butFirstChar(S:String) 
+          => substrString(S:String, 1, lengthString(S:String))
+          [structural]
+          
+     rule toUpperCase(S:String)
+          => toUpperCase(firstChar(S:String))
+               +String toUpperCase(butFirstChar(S:String))
+          when lengthString(S) >Int 1
+
+     rule toUpperCase(C:String)
+          => C:String
+          when (lengthString(C) ==Int 1)
+               andBool (asciiString(C) <Int asciiString("a")
+                    orBool asciiString(C) >Int asciiString("z"))
+     rule toUpperCase(C:String)
+          => #charString(absInt(asciiString(C) 
+               -Int (asciiString("a") -Int asciiString("A"))))
+          when (lengthString(C) ==Int 1)
+               andBool (asciiString(C) >=Int asciiString("a")
+                    andBool asciiString(C) <=Int asciiString("z"))
+          
+     // this should probably go in the k prelude
+     rule K:K in (ListItem(K:K) _:List) => true
+     rule _:K in .List => false
+     rule K:K in (ListItem(K':K) L:List) => K:K in L:List
+          when K:K =/=K K':K
+          [structural]
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)

@@ -1,6 +1,7 @@
 module C-MEMORY-WRITING-SYNTAX
      syntax KList ::= explodeToBits(KList) [function]
      syntax ListItem ::= "bwrite" "(" SymLoc "," K ")"
+
 endmodule
 
 module C-MEMORY-WRITING
@@ -18,69 +19,28 @@ module C-MEMORY-WRITING
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
      
-     context alloc(_, value(HOLE)) 
-
-     rule allocateType(Loc:SymLoc, T:KResult) 
-          => alloc(Loc, value(byteSizeofType(T))) 
+     // writeString and writeWString expect the user to add the '\0' to the end
+     // of the strings passed
+     rule [write-string]:
+          writeString(Loc:SymLoc, S:String)
+          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               := tv(asciiString(firstChar(S:String)), t(.Set, char)))
+          ~> writeString(Loc +bytes 1, butFirstChar(S:String))
+          when S:String =/=String ""
           [structural]
-     rule [allocateTypeIfAbsent-absent]:
-          <k> 
-               allocateTypeIfAbsent(Loc:SymLoc, T:KResult) 
-               => alloc(Loc, value(byteSizeofType(T:KResult))) 
-          ...</k>
-          <mem> M:Map </mem>
-          when notBool (SetItem(base(Loc)) in (keys M))
+     // fixme this bare 4 needs to be updated to handle different size wchar_ts
+     rule [write-wstring]:
+          writeWString(Loc:SymLoc, (N:Int,, S:KList))
+          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               := tv(N, cfg:wcharut))
+          ~> writeWString(Loc +bytes 4, S)
           [structural] 
-     rule [allocateTypeIfAbsent-present]:
-          <k> 
-               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:KResult) => .K 
-          ...</k>
-          <mem>... Base |-> memblock(_, _, _) ...</mem>
+     rule [write-empty-string]:
+          writeString(_, "") => .
           [structural]
-
-     rule [alloc-lazy]:
-          <k> alloc(loc(Base:SymBase, 0, 0), Len:Int) => .K ...</k>
-          <mem>... .Map => Base |-> memblock(Len, .Bag, .Map) ...</mem>
+     rule [write-empty-wstring]:
+          writeWString(_, .KList) => .
           [structural]
-     
-     syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")"
-     rule [realloc-start]:
-          <k> 
-               realloc(Old:K, New:K, OldLen:Int, NewLen:Int)
-               => alloc(New:K, NewLen:Int)
-                    ~> realloc-aux(minInt(OldLen:Int, NewLen:Int),
-                         Old:K, New:K, OldLen:Int, NewLen:Int)
-          ...</k>
-          [structural]
-          
-     rule [realloc-found]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN:Int -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), 
-                    loc(NewBase:SymBase, 0, 0), _, _)
-          ...</k>
-          <mem>... 
-               OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
-               NewBase |-> memblock(_, _, (_ (.Map => SNatN:Int -Int 1 |-> K:K)))
-          ...</mem>
-          when (N ==Int SNatN -Int 1)
-               andBool (SNatN >Int 0)
-          [structural]   
-          
-     // fixme sNat
-     rule [realloc-unfound]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), loc(_:SymBase, 0, 0), _, _)
-          ...</k>
-          <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
-          when (notBool SNatN:Int -Int 1 in keys M:Map)
-               andBool (SNatN >Int 0)
-          [structural]
-     rule [realloc-0]:
-          realloc-aux(0, loc(OldBase:SymBase, 0, 0), _, OldLen:Int, _)
-          => deleteSizedBlock(loc(OldBase, 0, 0), OldLen:Int) 
-          [structural]   
           
      syntax K ::= "writeBytes" "(" SymLoc "," K ")" [strict(2)] 
      syntax K ::= "writeBitfield" "(" SymLoc "," Type "," K ")" [strict(3)] 

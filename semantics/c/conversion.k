@@ -54,48 +54,6 @@ module C-CONVERSION
           arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
           => tv(piece(unknown(N:Int), N:Int), T)
           
-     // these could be so much better...
-     rule ~Bits X:Int => ~Int X
-     rule [bnot-unknown]: 
-          ~Bits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     
-     rule X:Int /Bits Y:Int => X /Int Y
-
-     rule X:Int xorBits Y:Int => X xorInt Y
-     rule [xor-unknown-right]: 
-          _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [xor-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) xorBits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
-
-     rule X:Int |Bits Y:Int => X |Int Y
-     rule [or-unknown-right]: 
-          _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [or-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
-
-     rule X:Int &Bits Y:Int => X &Int Y
-     rule [and-unknown-zero-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
-          when N ==Int 0 
-     rule [and-unknown-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
-          when N =/=Int 0 
-     rule [and-unknown-zero-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
-          when N ==Int 0 
-     rule [and-unknown-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
-          when N =/=Int 0
-     
      // fixme
      rule [arithInterpret-float]: 
           arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))

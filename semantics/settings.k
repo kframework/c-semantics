@@ -48,11 +48,13 @@ module C-SETTINGS
      rule cfg:sizeofDouble => 8
      rule cfg:sizeofLongDouble => 16
      rule cfg:sizeofEnum => cfg:sizeofInt
+
+     rule cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
      
      rule cfg:mtxPlain => 0
+
      rule cfg:sizeut => t(.Set, unsigned-int)
      rule cfg:wcharut => t(.Set, int)
-     rule cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
      rule cfg:ptrsize => 4
      rule cfg:ptrdiffut => t(.Set, int)
      

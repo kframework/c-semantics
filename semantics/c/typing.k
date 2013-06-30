@@ -97,7 +97,6 @@ module C-TYPING-SYNTAX
 
      syntax K ::= "giveType" "(" Id "," Type ")"
 
-     syntax Int ::= numBytes(Type) [function]
      syntax Int ::= numBits(Type) [function]
 
      syntax Bool ::= isNotTruthValue(Value) [function]

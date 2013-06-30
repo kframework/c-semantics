@@ -10,6 +10,55 @@ module LIBC-STDIO
      imports C-TYPING-SYNTAX
      imports C-IO-SYNTAX
 
+     // fixme might be messing things up elsewhere
+     syntax String ::= pointerToString(SymLoc) [function]
+     syntax String ::= subPointerToString(SymBase) [function]
+
+     // getString returns the string without the null terminator
+     syntax K ::= "getString" "(" K ")"
+     syntax K ::= "getString-aux" "(" SymLoc "," String ")"
+     rule getString(Loc:SymLoc) => getString-aux(Loc, "")
+          [structural, anywhere]
+     rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
+          [structural, anywhere]
+     
+     rule [getString-pre]:
+          (. => read(Loc, t(.Set, char)))
+          ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
+          [structural]
+          
+     syntax Value ::= "str" "(" String ")"
+     rule [getString]:
+          tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
+          => getString-aux(Loc, S +String #charString(N))
+          when N =/=Int 0
+          [structural]
+     rule [getString-done]:
+          tv(0, _) ~> getString-aux(_, S:String)
+          => str(S)
+          [structural]
+          
+     rule [pointerToString]:
+          pointerToString(loc(N:SymBase, M:Int, 0))
+          => "[sym(" +String subPointerToString(N) +String ") + " 
+               +String Int2String(M) +String "]"
+          [structural]
+          
+     rule [subPointerToString-auto]:
+          subPointerToString(B:Int @ Th:Int)
+          => "(" +String Int2String(B) +String 
+               " @ " +String Int2String(Th) +String ")"
+          [structural]
+     rule [sub-pointerToString-allocated]:
+          subPointerToString(B:Int @ allocatedDuration)
+          => "(" +String Int2String(B) +String 
+               " @ " +String "allocatedDuration)" 
+          [structural]
+     
+     rule [pointerToString-done]:
+          pointerToString(NullPointer) => "NullPointer" 
+          [structural]
+
      syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
 

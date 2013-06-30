@@ -1,5 +1,4 @@
 module C-DECLARATION-RESOLUTION
-     imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
 
      imports C-SYNTAX
