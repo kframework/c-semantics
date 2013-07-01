@@ -5,15 +5,14 @@ endmodule
 module C-DECLARATION-INITIALIZATION
      imports C-DECLARATION-INITIALIZATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
-     imports C-DELARATION-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
-     imports C-HELPERS-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
      
      syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
      syntax K ::= "getInit"

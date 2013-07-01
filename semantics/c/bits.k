@@ -12,6 +12,8 @@ module C-BITS-SYNTAX
 
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
 
+     syntax KResult ::= "dataList" "(" KList ")"
+
      syntax Bits ::= right:
                    "~Bits" Bits
                    [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
@@ -32,6 +34,8 @@ endmodule
 
 module C-BITS
      imports C-BITS-SYNTAX
+
+     imports C11-SETTINGS-SYNTAX
 
      // this maintains byte order
      syntax K ::= "fillToBytes-aux" "(" K "," KList ")"

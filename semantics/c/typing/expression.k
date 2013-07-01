@@ -4,10 +4,10 @@ module C-TYPING-EXPRESSION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
 
      // FIXME need to automatically pad structs
      syntax K ::= "MYHOLE"

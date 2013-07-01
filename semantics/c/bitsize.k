@@ -6,12 +6,11 @@ endmodule
 module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C11-SETTINGS-SYNTAX
 
      syntax K ::= bitSizeofList(KList)
      syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
@@ -87,6 +86,4 @@ module C-BITSIZE
           <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
           [structural]
           
-     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
-     rule klistToK(.KList) => .K
 endmodule

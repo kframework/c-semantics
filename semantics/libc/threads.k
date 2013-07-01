@@ -1,12 +1,13 @@
 module LIBC-THREADS
      imports LIBC-BOOTSTRAP-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+
+     imports COMPAT-SYNTAX
      
      ////////////////////////////--
      // Threads

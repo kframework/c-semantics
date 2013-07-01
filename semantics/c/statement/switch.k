@@ -8,10 +8,10 @@ module C-STATEMENT-SWITCH
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] 

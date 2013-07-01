@@ -13,11 +13,10 @@ module C-CONVERSION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DECLARATION-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      // fixme not sure about this

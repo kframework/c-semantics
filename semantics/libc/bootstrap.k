@@ -7,9 +7,9 @@ endmodule
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX

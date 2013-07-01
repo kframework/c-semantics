@@ -7,11 +7,12 @@ endmodule
 module C-EXPRESSION-BITWISE
      imports C-EXPRESSION-BITWISE-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BITS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
      The integer promotions are performed on each of the operands. The type of

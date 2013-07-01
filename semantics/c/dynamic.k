@@ -1,5 +1,3 @@
-require "configuration.k"
-require "settings.k"
 require "expression.k"
 require "statement.k"
 require "conversion.k"
@@ -8,12 +6,10 @@ require "typing.k"
 require "memory.k"
 require "declaration.k"
 require "bitsize.k"
-require "helpers.k"
-require "io.k"
 require "symloc.k"
-require "error.k"
-require "compat.k"
-require "libc.k"
+require "bits.k"
+
+require "syntax.k"
 
 module C-DYNAMIC-SYNTAX
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
@@ -34,8 +30,6 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
      
-     syntax KResult ::= "dataList" "(" KList ")"
-
      syntax Int ::= "NullPointerConstant" [function]
 
      syntax K ::= "resolveReferences"
@@ -43,30 +37,38 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
+
+     syntax K ::= "toRVList" "(" KList ")"
+
+     syntax KResult ::= "rvlist" "(" KList ")"
+
 endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
 
      imports C-SYNTAX
-     imports C-SETTINGS
      
      imports C-BITSIZE
-     imports C-COMPAT
-     imports C-CONFIGURATION
      imports C-CONVERSION
      imports C-DECLARATION
-     imports C-ERROR
      imports C-EXPRESSION
-     imports C-HELPERS
      imports C-MEMORY 
      imports C-PROMOTION
      imports C-STATEMENT
      imports C-TYPING 
      imports C-SYMLOC
-     imports C-IO 
+     imports C-BITS
 
-     imports LIBC
+     syntax K ::= "toRVList'" "(" KList ")"
+     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
+     rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
+          [structural]
+     rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
+          [structural]
+     rule toRVList'(.KList) => .
+          [structural]
+
 
      rule value(tv(V:KList, _)) => V:KList
           [structural, anywhere]

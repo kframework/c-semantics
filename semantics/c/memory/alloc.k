@@ -16,12 +16,14 @@ module C-MEMORY-ALLOC
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-SYNTAX
 
+     imports C-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
 
      context alloc(_, value(HOLE)) 
 

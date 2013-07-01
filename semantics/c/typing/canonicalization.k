@@ -8,7 +8,7 @@ module C-TYPING-CANONICALIZATION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports COMPAT-SYNTAX
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 

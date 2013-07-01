@@ -1,4 +1,5 @@
 require "libc/bootstrap.k"
+require "libc/io.k"
 require "libc/math.k"
 require "libc/setjmp.k"
 require "libc/stdarg.k"
@@ -16,6 +17,7 @@ module LIBC
      ////////////////////////////////
      //- C standard library
      imports LIBC-BOOTSTRAP
+     imports LIBC-IO
      
      imports LIBC-MATH
      imports LIBC-SETJMP

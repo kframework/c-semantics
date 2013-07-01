@@ -1,5 +1,8 @@
 module COMPAT-SYNTAX
      syntax K ::= "l" "(" KLabel ")" [avoid]
+     // hybrid doesn't work with list operator, and strict doesn't do what's
+     // expected
+     syntax K ::= "klist" "(" KList ")" [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= "nthChar" "(" String "," Int ")" [function]
@@ -54,13 +57,8 @@ module COMPAT-SYNTAX
 
      // TODO(chathhorn): ugly
      syntax K ::= "toKRList" "(" KList ")"
-     syntax K ::= "toKRList'" "(" KList ")"
-
-     syntax K ::= "toRVList" "(" KList ")"
-     syntax K ::= "toRVList'" "(" KList ")"
 
      syntax KResult ::= "krlist" "(" KList ")"
-     syntax KResult ::= "rvlist" "(" KList ")"
 
      syntax KList ::= reverseList(KList) [function]
 
@@ -79,10 +77,8 @@ module COMPAT-SYNTAX
 
 endmodule
 
-module C-COMPAT
-     imports C-COMPAT-SYNTAX
-
-     imports C-HELPERS-SYNTAX
+module COMPAT
+     imports COMPAT-SYNTAX
 
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -158,23 +154,13 @@ module C-COMPAT
      rule klist(L:KList) => toKRList(L) 
           [structural]
 
+     syntax K ::= "toKRList'" "(" KList ")"
      context toKRList'(_,, HOLE,, _)
-     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
-
      rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
           [structural]
-     rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
-          [structural]
-
      rule toKRList'(_,, (V:KResult => .KList)) ~> krlist((.KList => V),, _) 
           [structural]
-
-     rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
-          [structural]
-
      rule toKRList'(.KList) => .
-          [structural]
-     rule toRVList'(.KList) => .
           [structural]
      
      rule reverseList(.KList) => .KList
@@ -185,5 +171,7 @@ module C-COMPAT
 		when N <Int N'
 		[structural]
 
+     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
+     rule klistToK(.KList) => .K
 endmodule
 

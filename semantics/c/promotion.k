@@ -16,7 +16,7 @@ module C-PROMOTION
      imports C-DYNAMIC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax Type ::= "maxType" "(" Type "," Type ")" [function]
 

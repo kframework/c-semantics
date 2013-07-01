@@ -12,7 +12,7 @@ module C-STATEMENT-GOTO
      imports C-STATEMENT-LOOP-SYNTAX
 
      imports C-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax K ::= getIdOfDeclaration(K) [function]
      syntax K ::= getIdOfName(K) [function]

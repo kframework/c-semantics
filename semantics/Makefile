@@ -9,26 +9,26 @@ KOMPILE = $(C_K_BASE)/bin/kompile
 K_LATEX_STYLE = $(C_K_BASE)/include/latex/k.sty
 C_LATEX_STYLE = $(C_ROOT)/latex/semantics.sty
 
-KOMPILE_C = $(KOMPILE) c.k -w -v -l C -transition "interpRule"
-KOMPILE_C_ND = $(KOMPILE) c.k -o "c-kompiled-nd" -w -v -l C -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
-KOMPILE_C_ND_THREAD = $(KOMPILE) c.k -o "c-kompiled-nd-thread" -w -v -l C -transition "observable computational"
+KOMPILE_C = $(KOMPILE) c11.k -w -v -l C11 -transition "interpRule"
+KOMPILE_C_ND = $(KOMPILE) c11.k -o "c11-kompiled-nd" -w -v -l C11 -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
+KOMPILE_C_ND_THREAD = $(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -w -v -l C11 -transition "observable computational"
 
 LIBC_FILES = libc.k $(wildcard libc/*.k)
-STATEMENT_FILES = statement.k $(wildcard statement/*.k)
-EXPRESSION_FILES = expression.k $(wildcard expression/*.k)
-DECLARATION_FILES = declaration.k $(wildcard declaration/*.k)
-TYPING_FILES = typing.k $(wildcard typing/*.k)
-MEMORY_FILES = memory.k $(wildcard memory/*.k)
 
-COMMON_C_FILES = syntax.k helpers.k configuration.k \
-	compat.k bitsize.k
-DYNAMIC_C_FILES = c.k dynamic-semantics.k io.k symloc.k \
-	error.k conversion.k promotion.k memory.k ltlmc.k \
-	$(LIBC_FILES) $(STATEMENT_FILES) $(EXPRESSION_FILES) \
-	$(TYPING_FILES) $(MEMORY_FILES) $(DECLARATION_FILES)
+STATEMENT_FILES = $(wildcard c/statement/*.k)
+EXPRESSION_FILES = $(wildcard c/expression/*.k)
+DECLARATION_FILES = $(wildcard c/declaration/*.k)
+TYPING_FILES = $(wildcard c/typing/*.k)
+MEMORY_FILES = $(wildcard c/memory/*.k)
+
+C_FILES = $(wildcard c/*.k) \
+	$(STATEMENT_FILES) $(EXPRESSION_FILES) $(TYPING_FILES) \
+	$(MEMORY_FILES) $(DECLARATION_FILES)
+
+C11_FILES = $(wildcard *.k) $(LIBC_FILES) $(C_FILES)
 
 LATEX_CLEAN_FILES = temp-c-*.tex temp-c-*.log temp.pdflatex.out *.pdf temp.kpdf.out *.tex *.log *.aux
-K_CLEAN_FILES = *.maude .k c-kompiled c-kompiled-nd c-kompiled-nd-thread kcompile_* static-c.k.bak duplicateLabels.txt 
+K_CLEAN_FILES = *.maude .k c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread kcompile_* static-c.k.bak duplicateLabels.txt 
 
 .PHONY: all clean force semantics pdf common-pdf-modules
 
@@ -91,25 +91,25 @@ temp-c-%.tex: check-vars $(KOMPILE) c.k $(addsuffix .k,$(PDF_FILES))
 
 pdf: syntax.pdf configuration.pdf statements.pdf expressions.pdf typing.pdf declarations.pdf memory.pdf library.pdf errors.pdf misc.pdf
 
-c-kompiled/main.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c11-kompiled/main.maude: check-vars $(K_FILES) $(C11_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition..."
 	@$(KOMPILE_C)
 
-c-kompiled-nd/main.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c11-kompiled-nd/main.maude: check-vars $(K_FILES) $(C11_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with nondeterminism..."
 	@$(KOMPILE_C_ND)
 
-c-kompiled-nd-thread/main.maude: check-vars $(K_FILES) $(COMMON_C_FILES) $(DYNAMIC_C_FILES) $(INSERT_LINE)
+c11-kompiled-nd-thread/main.maude: check-vars $(K_FILES) $(C11_FILES) $(INSERT_LINE)
 	@echo "Compiling the C definition with thread-nondeterminism..."
 	@$(KOMPILE_C_ND_THREAD)
 
 semantics: fast nd thread
 
-fast: c-kompiled/main.maude
+fast: c11-kompiled/main.maude
 
-nd: c-kompiled-nd/main.maude
+nd: c11-kompiled-nd/main.maude
 
-thread: c-kompiled-nd-thread/main.maude
+thread: c11-kompiled-nd-thread/main.maude
 
 clean:
 	rm -rf $(LATEX_CLEAN_FILES) $(K_CLEAN_FILES)

@@ -1,4 +1,4 @@
-module C-CONFIGURATION
+module C11-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
      configuration 

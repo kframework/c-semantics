@@ -7,9 +7,9 @@ module C-STATEMENT-PROCESS-LABEL
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      // TODO(chathhorn): is this really used?
      syntax K ::= "case" "(" Int ")"

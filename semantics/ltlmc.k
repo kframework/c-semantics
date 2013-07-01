@@ -1,8 +1,10 @@
 require "builtins/model-checker.k"
 
-module C-LTLMC
+module C11-LTLMC
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX 
-     imports C-COMPAT-SYNTAX
+     imports C-EXPRESSION-SYNTAX 
+     imports COMPAT-SYNTAX
 
      imports MODEL-CHECKER-HOOKS
 

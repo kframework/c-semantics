@@ -8,7 +8,6 @@ module C-DECLARATION-BINDING
      imports C-MEMORY-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-HELPERS-SYNTAX
 
      // empty binding
      // fixme not really a sequence point

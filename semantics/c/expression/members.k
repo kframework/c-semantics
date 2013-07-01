@@ -5,8 +5,8 @@ module C-EXPRESSION-MEMBERS
      imports C-BITSIZE-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-MEMORY-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BITS-SYNTAX
 
      // bytes of struct, type, field id
      syntax K ::= "extractField" "(" KList "," K "," Id ")" 

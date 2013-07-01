@@ -1,10 +1,10 @@
 module C-EXPRESSION-UNARY-ARITHMETIC
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BITS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{2}}}{
      The result of the unary \cinline{+} operator is the value of its

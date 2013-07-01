@@ -9,11 +9,11 @@ module C-TYPING-MISC
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DECLARATION-SYNTAX
-     imports C-SETTINGS-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
+
      //TODO(chathhorn): a lot of junk dumped here.
 
      rule isNotTruthValue(tv(V:K, t(_, T:K))) 

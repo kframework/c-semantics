@@ -8,8 +8,8 @@ module C-STATEMENT-BLOCK
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-MEMORY-SYNTAX
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.

@@ -12,7 +12,7 @@ module C-STATEMENT-LOOP
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports COMPAT-SYNTAX
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement 
      \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ;

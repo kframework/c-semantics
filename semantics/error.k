@@ -1,12 +1,12 @@
-module C-ERROR-SYNTAX
+module C11-ERROR-SYNTAX
      syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
      syntax K ::= PAUSE(Bool, K) | ASSERT(Bool, K)
 endmodule
 
-module C-ERROR
-     imports C-ERROR-SYNTAX
+module C11-ERROR
+     imports C11-ERROR-SYNTAX
 
-     imports C-COMPAT-SYNTAX
+     imports C-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -14,6 +14,7 @@ module C-ERROR
      imports C-MEMORY-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-BITS-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -21,6 +22,8 @@ module C-ERROR
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
      imports C-EXPRESSION-BITWISE-SYNTAX
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      rule assert(true, _) => . [structural, anywhere]
      rule ASSERT(true, _) => .K [structural, anywhere]

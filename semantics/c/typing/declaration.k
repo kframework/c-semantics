@@ -3,8 +3,8 @@ module C-TYPING-DECLARATION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax K ::= "giveGlobalType" "(" K "," Type ")"
      syntax K ::= "giveLocalType" "(" K "," Type ")"

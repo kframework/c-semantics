@@ -8,7 +8,7 @@ module C-TYPING-STRICTNESS
      imports C-TYPING-SYNTAX
 
      imports C-SYNTAX
-     imports C-COMPAT-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax K ::= "waitingOnDeclType"
      rule [type-Cast-heat]:

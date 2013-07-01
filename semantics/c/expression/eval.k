@@ -8,7 +8,6 @@ module C-EXPRESSION-EVAL
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-DECLARATION-SYNTAX

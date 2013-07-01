@@ -7,9 +7,6 @@ module C-SYNTAX
      syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel('AttributeWrapper)]
      
      syntax C ::= Id
-     // hybrid doesn't work with list operator, and strict doesn't do what's
-     // expected
-     syntax C ::= "klist" "(" KList ")" [klabel('klist)]
      
      syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
      

@@ -1,13 +1,13 @@
 module C-EXPRESSION-LITERAL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      syntax Bool ::= withinRange(Int, SimpleType) [function]
      rule withinRange(I:Int, T:K)

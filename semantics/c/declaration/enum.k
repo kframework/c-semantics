@@ -4,6 +4,7 @@ module C-DECLARATION-ENUM
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax K ::= "fillEnums" "(" K ")"
      syntax K ::= "fillEnums-aux" "(" K "," K ")"

@@ -1,12 +1,13 @@
 module C-DECLARATION-RESOLUTION
      imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports COMPAT-SYNTAX
      
      syntax K ::= "canonicalizeTranslationUnitVariables"
      rule [unpack-TranslationUnit]:

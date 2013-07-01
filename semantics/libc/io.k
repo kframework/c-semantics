@@ -1,4 +1,4 @@
-module C-IO-SYNTAX
+module LIBC-IO-SYNTAX
      syntax K ::= "writeToFD" "(" Int "," Int ")"
      syntax K ::= "writeToFD" "(" Int "," String ")"
      syntax K ::= "readFromFD" "(" Int ")"
@@ -6,12 +6,12 @@ module C-IO-SYNTAX
      syntax K ::= "flush" "(" Int ")"
 endmodule
 
-module C-IO
-     imports C-IO-SYNTAX
+module LIBC-IO
+     imports LIBC-IO-SYNTAX
 
      imports C-DYNAMIC-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      // fixme these should be computational, unless I handle that at a higher
      // level

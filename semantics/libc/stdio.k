@@ -1,14 +1,15 @@
 module LIBC-STDIO
      imports LIBC-BOOTSTRAP-SYNTAX
+     imports LIBC-IO-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-IO-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]

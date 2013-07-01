@@ -10,14 +10,15 @@ module C-MEMORY-WRITING
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
      
      // writeString and writeWString expect the user to add the '\0' to the end
      // of the strings passed

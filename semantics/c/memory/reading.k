@@ -16,14 +16,14 @@ module C-MEMORY-READING
      imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-DYNAMIC-SYNTAX
-     imports C-COMPAT-SYNTAX
-     imports C-HELPERS-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-ERROR-SYNTAX
+     imports C11-ERROR-SYNTAX
+     imports C11-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax Set ::= locations(List) [function]
      rule [locations-none]: locations(.List) => .Set
