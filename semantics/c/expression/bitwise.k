@@ -6,10 +6,10 @@ endmodule
 
 module C-EXPRESSION-BITWISE
      imports C-EXPRESSION-BITWISE-SYNTAX
+     imports C-EXPRESSION-CONVERSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
@@ -30,15 +30,15 @@ module C-EXPRESSION-BITWISE
      is representable in the result type, then that is the resulting value;
      otherwise, the behavior is undefined.
      }*/
-     rule tv(I:Int, T:KResult) << tv(N:Int, T':KResult)
+     rule tv(I:Int, T:Type) << tv(N:Int, T':Type)
           => leftShiftInterpret(T, I <<Int N, tv(I, T))
           when isPromoted(T) andBool isPromoted(T')
                andBool N <Int numBits(T)
           [structural]
-     rule leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
-          => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
-          when hasUnsignedIntegerType(T:KResult)
-     rule leftShiftInterpret(T:KResult, I:Int, tv(E:Int, T:KResult))
+     rule leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
+          => tv(I:Int %Int (max(T) +Int 1), T)
+          when hasUnsignedIntegerType(T)
+     rule leftShiftInterpret(T:Type, I:Int, tv(E:Int, T:Type))
           => tv(I, T)
           when hasSignedIntegerType(T)
                andBool E >=Int 0
@@ -53,13 +53,13 @@ module C-EXPRESSION-BITWISE
      2^\text{\cinline{E2}}$. If \cinline{E1} has a signed type and a negative
      value, the resulting value is implementation-defined.
      }*/
-     rule tv(I:Int, T:KResult) >> tv(N:Int, T':KResult) 
-          => rightShiftInterpret(T:KResult, I:Int >>Int N:Int)
-          when isPromoted(T:KResult) andBool isPromoted(T':KResult)
-               andBool N:Int <Int numBits(T:KResult)
+     rule tv(I:Int, T:Type) >> tv(N:Int, T':Type) 
+          => rightShiftInterpret(T, I:Int >>Int N:Int)
+          when isPromoted(T) andBool isPromoted(T')
+               andBool N <Int numBits(T)
           [structural]
-     rule rightShiftInterpret(T:KResult, I:Int) => tv(I:Int, T:KResult)
-          when hasIntegerType(T:KResult)
+     rule rightShiftInterpret(T:Type, I:Int) => tv(I, T)
+          when hasIntegerType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
      The usual arithmetic conversions are performed on the operands.

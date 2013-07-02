@@ -8,7 +8,7 @@ module C-STATEMENT-SWITCH
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-CONVERSION-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
@@ -37,18 +37,18 @@ module C-STATEMENT-SWITCH
      \cinline{default} label, no part of the switch body is executed.
      }*/
      
-     rule Switch(SN:Int, tv(V:K, T:KResult), _)
+     rule Switch(SN:Int, tv(V:K, T:Type), _)
           => sequencePoint 
-          ~> handleSwitch(SN:Int, cast(promote(T:KResult), tv(V:K, T:KResult))) 
-          when hasIntegerType(T:KResult)
+          ~> handleSwitch(SN:Int, cast(promote(T), tv(V, T))) 
+          when hasIntegerType(T)
           [structural] 
           
      rule <k> handleSwitch(SN:Int, V:KResult) 
-               => handleSwitch-aux(SN:Int, V:KResult, map(M:Map)) 
+               => handleSwitch-aux(SN, V, map(M)) 
           ...</k>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu:K, F:Id) |-> map(M:Map) ...</gotoMap>
+          <gotoMap>... kpair(Tu, F) |-> map(M:Map) ...</gotoMap>
           [structural] 
           
      // K to be evaluated, val it should be, casehelper

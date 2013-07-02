@@ -1,6 +1,5 @@
 require "expression.k"
 require "statement.k"
-require "conversion.k"
 require "promotion.k"
 require "typing.k"
 require "memory.k"
@@ -8,7 +7,6 @@ require "declaration.k"
 require "bitsize.k"
 require "symloc.k"
 require "bits.k"
-
 require "syntax.k"
 
 module C-DYNAMIC-SYNTAX
@@ -45,20 +43,13 @@ module C-DYNAMIC-SYNTAX
 endmodule
 
 module C-DYNAMIC
-     imports C-DYNAMIC-SYNTAX
-
      imports C-SYNTAX
-     
-     imports C-BITSIZE
-     imports C-CONVERSION
-     imports C-DECLARATION
-     imports C-EXPRESSION
-     imports C-MEMORY 
-     imports C-PROMOTION
-     imports C-STATEMENT
-     imports C-TYPING 
-     imports C-SYMLOC
-     imports C-BITS
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-TYPING-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      syntax K ::= "toRVList'" "(" KList ")"
      context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
@@ -275,13 +266,12 @@ module C-DYNAMIC
      rule [call-main]:
           <k> 
                callMain(N:Int, Args:K)
-               => callMain-aux(typeof(Identifier("main")), N:Int,
-                    Identifier("#incomingArgumentsArray"), Args:K)
+               => callMain-aux(typeof(Identifier("main")), N,
+                    Identifier("#incomingArgumentsArray"), Args)
           ...</k>
-          <funTUs>... 
-               Tu:K |-> map((_ Identifier("main") |-> Tu:K)) 
-          ...</funTUs>
+          <mainTU> Tu:K </mainTU>
           <currTU> _ => Tu:K </currTU>
+          when Tu =/=K .K
           [computational]
      
      // FIXME i think these are slightly different
@@ -335,4 +325,18 @@ module C-DYNAMIC
           ...</files>
           <output> _ (.List => S2 L ListItem(S2'')) </output>
           [computational]
+endmodule
+
+module C
+     imports C-DYNAMIC
+     imports C-SYNTAX
+     imports C-BITSIZE
+     imports C-DECLARATION
+     imports C-EXPRESSION
+     imports C-MEMORY 
+     imports C-PROMOTION
+     imports C-STATEMENT
+     imports C-TYPING 
+     imports C-SYMLOC
+     imports C-BITS
 endmodule

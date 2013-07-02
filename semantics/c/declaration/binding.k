@@ -6,7 +6,7 @@ module C-DECLARATION-BINDING
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
-     imports C-CONVERSION-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-PROMOTION-SYNTAX
 
      // empty binding

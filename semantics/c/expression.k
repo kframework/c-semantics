@@ -4,6 +4,7 @@ require "expression/bitwise.k"
 require "expression/cast.k"
 require "expression/compound-literal.k"
 require "expression/conditional.k"
+require "expression/conversion.k"
 require "expression/eval.k"
 require "expression/function-call.k"
 require "expression/identifier.k"
@@ -31,12 +32,16 @@ module C-EXPRESSION-SYNTAX
      // TODO(chathhorn): hackish, rename at least
      syntax K ::= rkludge(K) [function, klabel('rkludge)]
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
+
+     // as described in 6.3 // totype, fromvalue
+     syntax K ::= cast(K, K) [strict(1)]
 endmodule
 
 module C-EXPRESSION
      imports C-EXPRESSION-COMPOUND-LITERAL
      imports C-EXPRESSION-LOGICAL
      imports C-EXPRESSION-CONDITIONAL
+     imports C-EXPRESSION-CONVERSION
      imports C-EXPRESSION-SIZEOF
      imports C-EXPRESSION-IDENTIFIER
      imports C-EXPRESSION-FUNCTION-CALL

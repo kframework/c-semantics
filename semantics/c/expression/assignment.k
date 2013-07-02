@@ -4,7 +4,7 @@ module C-EXPRESSION-ASSIGNMENT
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-SYNTAX
-     imports C-CONVERSION-SYNTAX
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
      operand. \broken{An assignment expression has the value of the left

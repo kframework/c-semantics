@@ -1,6 +1,6 @@
 module C-BITSIZE-SYNTAX
      // needs to be heated to top of K for struct and union types
-     syntax K ::= "bitSizeofType" "(" K ")" [strict]
+     syntax K ::= bitSizeofType(K) [strict]
 endmodule
 
 module C-BITSIZE
@@ -67,12 +67,12 @@ module C-BITSIZE
      rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
           => bitSizeofType(T:KResult) 
           [structural, anywhere]
-     rule bitSizeofType(T:KResult) 
-          => tv(numBits(T:KResult), cfg:largestUnsigned) 
-          when isBasicType(T:KResult) 
+     rule bitSizeofType(T:Type) 
+          => tv(numBits(T), cfg:largestUnsigned) 
+          when isBasicType(T)
           [structural, anywhere]
-     rule bitSizeofType(typedDeclaration(T:KResult, _:Id)) 
-          => bitSizeofType(T:KResult) 
+     rule bitSizeofType(typedDeclaration(T:Type, _:Id)) 
+          => bitSizeofType(T) 
           [structural, anywhere]
 
      rule <k> 

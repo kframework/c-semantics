@@ -1,7 +1,8 @@
 module C-EXPRESSION-UNARY-ARITHMETIC
+     imports C-EXPRESSION-CONVERSION-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX

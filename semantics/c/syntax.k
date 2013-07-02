@@ -10,9 +10,6 @@ module C-SYNTAX
      
      syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
      
-     //@ this production ensures that a TypeResult sort is created, together
-     // with an 'isTypeResult predicate
-     syntax TypeResult ::= "dummyTypeProduction"
      syntax KResult ::= SpecifierElem
      
      syntax C ::= CabsLoc

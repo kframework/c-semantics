@@ -1,6 +1,7 @@
 module C-EXPRESSION-CAST
+     imports C-EXPRESSION-SYNTAX
+
      imports C-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{

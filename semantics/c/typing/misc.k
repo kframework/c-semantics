@@ -409,16 +409,6 @@ module C-TYPING-MISC
           <structs> M:Map => M:Map[K:K / X:Id] </structs>
           [structural]
           
-     rule isTypeResult(t(_, T:K)) => true
-          when l(getKLabel(T:K)) in setOfTypes
-     rule isTypeResult(T:KResult) => true 
-          when isBasicType(T:KResult)
-     rule isTypeResult(K:K) => false
-          when getKLabel(K:K) =/=KLabel 't
-     rule isTypeResult(t(S:Set, T:K)) => false
-          when (notBool l(getKLabel(T:K)) in setOfTypes)
-               andBool (notBool isBasicType(t(S:Set, T:K)))
-
      rule isFloatType(t(_, float)) => true 
      rule isFloatType(t(_, double)) => true 
      rule isFloatType(t(_, long-double)) => true 

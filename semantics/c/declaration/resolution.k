@@ -90,15 +90,26 @@ module C-DECLARATION-RESOLUTION
           [strict(6)]
      
      // name, type, context, where defined
-     syntax K ::= "recordFunTUInfo" "(" K "," Type "," K "," K ")"
-     rule <k> recordFunTUInfo(X:Id, T:KResult, Tu:K, DefTu:K) => .K ...</k>
+     syntax K ::= recordFunTUInfo(K, Type, K, K)
+     rule <k> recordFunTUInfo(X:Id, T:Type, Tu:K, DefTu:K) => . ...</k>
           <funTUs>...
                Tu:K |-> map((Funs:Map => Funs:Map[DefTu:K / X:Id]))
           ...</funTUs>
-          when isFunctionType(T:KResult)
+          when isFunctionType(T) 
+               andBool X =/=K Identifier("main")
           [structural] 
-     rule <k> recordFunTUInfo(_, T:KResult, _, _) => .K ...</k>
-          when notBool isFunctionType(T:KResult)
+     rule <k> 
+               recordFunTUInfo(Identifier("main"), T:Type, Tu:K, DefTu:K)
+               => . 
+          ...</k>
+          <funTUs>...
+               Tu:K |-> map((Funs:Map => Funs:Map[DefTu:K / Identifier("main")]))
+          ...</funTUs>
+          <mainTU> _ => DefTu </mainTU>
+          when isFunctionType(T) 
+          [structural] 
+     rule <k> recordFunTUInfo(_, T:Type, _, _) => . ...</k>
+          when notBool isFunctionType(T)
           [structural] 
      
      // fixme

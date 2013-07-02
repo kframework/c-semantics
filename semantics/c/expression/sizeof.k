@@ -3,7 +3,6 @@ module C-EXPRESSION-SIZEOF
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX

@@ -33,23 +33,20 @@ module C-TYPING-CANONICALIZATION
      syntax K ::= "atomic" "(" Type ")"
      syntax K ::= "alignas" "(" Type ")"
      
-     rule (T:KResult => .)
+     rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(atomic(T:KResult)))), _, _) 
-          when isTypeResult(T:KResult)
+               (_ (.Bag => BagItem(atomic(T)))), _, _) 
           [structural]
-     rule (T:KResult => .)
+     rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
-          when isTypeResult(T:KResult)
+               (_ (.Bag => BagItem(alignas(T)))), _, _) 
           [structural]
-     rule (T:KResult => .)
+     rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T:KResult)))), _, _) 
-          when isTypeResult(T:KResult)
+               (_ (.Bag => BagItem(alignas(T)))), _, _) 
           [structural]
           
      // specifier, modifier, storage

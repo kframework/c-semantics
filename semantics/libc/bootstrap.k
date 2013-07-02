@@ -12,7 +12,6 @@ module LIBC-BOOTSTRAP
      imports C-SYMLOC-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONVERSION-SYNTAX
 
      // TODO(chathhorn): not pretty
      rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]

@@ -8,12 +8,11 @@ module C11-ERROR
 
      imports C-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-CONVERSION-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-BITS-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
@@ -21,6 +20,7 @@ module C11-ERROR
      imports C-TYPING-MISC-SYNTAX
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
      imports C-EXPRESSION-BITWISE-SYNTAX
+     imports C-EXPRESSION-CONVERSION-SYNTAX
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -60,13 +60,13 @@ module C11-ERROR
           (.Bag => <errorCell> Error("00003", "Unsequenced side effect on scalar object with value computation of same object.") </errorCell>)
           [structural, large]
 
-      rule [err00005]:
-           <k> (. => ERROR) ~> extractByteFromMem(loc(B:SymBase, _:Int, _:Int)) ...</k>
-           <br/>
-           (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
-           <mem> M:Map </mem>
-           when notBool SetItem(B) in keys (M:Map)
-           [structural, large]
+     rule [err00005]:
+          <k> (. => ERROR) ~> extractByteFromMem(loc(B:SymBase, _:Int, _:Int)) ...</k>
+          <br/>
+          (.Bag => <errorCell> ICE("00005", "Referring to an object outside of its lifetime.") </errorCell>)
+          <mem> M:Map </mem>
+          when notBool SetItem(B) in keys (M:Map)
+          [structural, large]
      
      rule [err00006]:
           <k> (. => ERROR) ~> joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K) ...</k>
@@ -234,6 +234,12 @@ module C11-ERROR
           <br/>
           (.Bag => <errorCell> Error("00025", "Main must return an int.") </errorCell>)
           when T:K =/=K int
+          [structural, large]
+     rule [err00025-1]:
+          <k> (. => ERROR) ~> callMain(_, _) ...</k>
+          <br/>
+          (.Bag => <errorCell> Error("00025-1", "Main must exist.") </errorCell>)
+          <mainTU> .K </mainTU>
           [structural, large]
      rule [err00026]:
           <k> 

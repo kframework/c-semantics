@@ -1,58 +1,28 @@
-module C-CONVERSION-SYNTAX
+module C-EXPRESSION-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
      syntax K ::= arithInterpret(Type, BaseValue) [function]
-     // interpret the values of reading from mem
-     syntax K ::= interpret(Type, K) [function]
-     // as described in 6.3 // totype, fromvalue
-     syntax K ::= cast(K, K) [strict(1)]
-     
 endmodule
 
-module C-CONVERSION
-     imports C-CONVERSION-SYNTAX
+module C-EXPRESSION-CONVERSION
+     imports C-EXPRESSION-CONVERSION-SYNTAX
+     imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECLARATION-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-DECLARATION-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     // fixme not sure about this
-     // interpret is used to "cast" values read from memory
-     // shouldn't need to do the < min one since values start positive
-     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
-     
-     rule [interpret-start]:
-          interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     
-     rule [interpret-done]:
-          interpret-aux(T:Type, I:Int) => tv(I, T)
-          when (min(T) <=Int I) 
-               andBool (max(T) >=Int I)
-               andBool hasIntegerType(T)
-     rule [interpret-too-big]:
-          interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
-          when (I:Int >Int max(T))
-               andBool hasIntegerType(T)
-     rule [interpret-too-little]:
-          interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
-          when (I:Int <Int min(T))
-               andBool hasIntegerType(T)
-          
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
                andBool (max(T) >=Int I)
                andBool hasIntegerType(T)
-          
      rule [arithInterpret-unknown]:
           arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
           => tv(piece(unknown(N:Int), N:Int), T)
-          
      // fixme
      rule [arithInterpret-float]: 
           arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))

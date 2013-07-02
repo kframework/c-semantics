@@ -1,8 +1,9 @@
 module C-EXPRESSION-MULTIPLICATIVE-OPERATORS
+     imports C-EXPRESSION-CONVERSION-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
 

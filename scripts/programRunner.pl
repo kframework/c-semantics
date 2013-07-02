@@ -27,7 +27,7 @@ my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
 my @temporaryFiles = ();
-my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c', UNLINK => 0 );
+my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c11', UNLINK => 0 );
 my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
 push(@temporaryFiles, $fileInput);
 push(@temporaryFiles, $fileOutput);
@@ -47,7 +47,7 @@ my %krun_args = (
       '--output-mode' => 'raw', 
       '--output' => $fileOutput, 
       '--parser' => 'cat', 
-      '--compiled-def' => catfile($SCRIPTS_DIR, "c-kompiled"), 
+      '--compiled-def' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
       '--io' => '', 
       "-cARGC=$argc" => '',
       "-cARGV=$argv,,.KList" => '',

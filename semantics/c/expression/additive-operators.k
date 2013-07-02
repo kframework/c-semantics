@@ -8,13 +8,13 @@ endmodule
 
 module C-EXPRESSION-ADDITIVE-OPERATORS
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
+     imports C-EXPRESSION-CONVERSION-SYNTAX
      imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-PROMOTION-SYNTAX
 
      imports C11-SETTINGS-SYNTAX

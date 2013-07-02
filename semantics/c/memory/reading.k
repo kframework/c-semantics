@@ -20,7 +20,6 @@ module C-MEMORY-READING
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C11-ERROR-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
@@ -109,6 +108,33 @@ module C-MEMORY-READING
           => joinIntegerBytes(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
                reverseList(L:KList)) 
           [structural]
+          
+     // fixme not sure about this
+     // interpret is used to "cast" values read from memory
+     // shouldn't need to do the < min one since values start positive
+
+     // interpret the values of reading from mem
+     syntax K ::= interpret(Type, K) [function]
+     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
+     
+     rule [interpret-start]:
+          interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
+     
+     rule [interpret-done]:
+          interpret-aux(T:Type, I:Int) => tv(I, T)
+          when (min(T) <=Int I) 
+               andBool (max(T) >=Int I)
+               andBool hasIntegerType(T)
+     rule [interpret-too-big]:
+          interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
+          when (I:Int >Int max(T))
+               andBool hasIntegerType(T)
+     rule [interpret-too-little]:
+          interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
+          when (I:Int <Int min(T))
+               andBool hasIntegerType(T)
           
      // FIXME very unsafe, not checking size of list or its contents
      rule concretize(T:KResult, 

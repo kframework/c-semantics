@@ -31,6 +31,7 @@ module C11-CONFIGURATION
           <br/>
           // map from current tu to (map from id to where function was defined)             
           <funTUs color="lightgray"> .Map </funTUs>
+          <mainTU color="lightgray"> .K </mainTU>
           <nextSharedLoc color="black"> 0 </nextSharedLoc>
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>

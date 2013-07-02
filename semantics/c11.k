@@ -15,12 +15,11 @@ endmodule
 module C11
      imports COMPAT
 
-     imports LIBC
-
      imports C11-CONFIGURATION
      imports C11-SETTINGS
      imports C11-LTLMC
      imports C11-ERROR
 
-     imports C-DYNAMIC
+     imports C
+     imports LIBC
 endmodule
