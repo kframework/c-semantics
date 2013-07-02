@@ -85,7 +85,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
 	@mv maudeProfileDBfile.sqlite maudeProfileDBfile.sqlite.calibration.bak > /dev/null 2>&1 || true
 	@touch maudeProfileDBfile.sqlite
-	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(SEMANTICS_DIR)/c-total.maude
+	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(DIST_DIR)/c11-kompiled/base.maude
 	@mv maudeProfileDBfile.sqlite $(DIST_DIR)/maudeProfileDBfile.calibration.sqlite
 	@mv maudeProfileDBfile.sqlite.calibration.bak maudeProfileDBfile.sqlite > /dev/null 2>&1 || true
 	@echo "Done."

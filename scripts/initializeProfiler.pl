@@ -44,21 +44,14 @@ while(<MYINPUTFILE>) {
 	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.* label ([^ ]*) .*\]\.\s*$/){
 		$ruleName = $1;
 	}
-	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location=\(([^:]+):(\d+)-(\d+)\).*\]\.\s*$/){
+	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*filename=\((.*?)\).*location=\((\d+),\d+,(\d+),\d+\).*\]\.\s*$/){
 		$locationFile = $1;
 		$locationFrom = $2;
 		$locationTo = $3;
-		if ($locationFile eq "common-c-standard-lib.k") {
+		if ($locationFile =~ /library/) {
 			$isLibrary = 1;
 		}
-	} elsif ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*location=\(([^:]+):(\d+)\).*\]\.\s*$/){
-		$locationFile = $1;
-		$locationFrom = $2;
-		$locationTo = $2;
-		if ($locationFile eq "common-c-standard-lib.k") {
-			$isLibrary = 1;
-		}
-	}
+      }
 	if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:supercool|superheat|heating|cooling|superheated)=\([^)]*\)).*\]\.\s*$/){
 		$kind = $1;
 		if ($line =~ m/^\s*(?:eq|ceq|rl|crl) .*\[.*metadata.*((?:hole)=\([^)]*\)).*\]\.\s*$/){
