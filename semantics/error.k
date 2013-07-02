@@ -1,5 +1,5 @@
 module C11-ERROR-SYNTAX
-     syntax K ::= "assert" "(" Bool "," Int ")" // check, error#
+     syntax K ::= assert(Bool, Int) // check, error#
      syntax K ::= PAUSE(Bool, K) | ASSERT(Bool, K)
 endmodule
 
@@ -188,7 +188,7 @@ module C11-ERROR
           <k> (. => ERROR) ~> Identifier(S:String) ...</k>
           <env> M:Map </env>
           <br/>
-          (.Bag => <errorCell> Error("00021", "Trying to look up identifier  " +String S:String +String " , but no such identifier is in scope.") </errorCell>)
+          (.Bag => <errorCell> Error("00021", "Trying to look up identifier " +String S:String +String ", but no such identifier is in scope.") </errorCell>)
           when notBool $hasMapping(M:Map, Identifier(S:String))
           [structural, large]
           

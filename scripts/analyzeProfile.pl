@@ -115,15 +115,12 @@ sub handleEq {
 		$line = $_;
 		chomp($line);
 		if ($line =~ m/[\[ ]label ([^ ]+)[\] ]/){ $ruleName = $1; }
-		if ($line =~ m/location=\(([^:]+):(\d+)-(\d+)\)/) {
+		if ($line =~ m/filename=\((.*?)\)/) {
 			$locationFile = $1;
-			$locationFrom = $2;
-			$locationTo = $3;
 		}
-		if ($line =~ m/location=\(([^:]+):(\d+)\)/) {
-			$locationFile = $1;
-			$locationFrom = $2;
-			$locationTo = $2;
+		if ($line =~ m/location=\((\d+),(\d+),(\d+),(\d+)\)/) {
+			$locationFrom = $1;
+			$locationTo = $3;
 		}
 		if ($line =~ m/((?:supercool|superheat|cooling|heating|superheated)=\([^\)]*\))/){
 			$kind = $1;
