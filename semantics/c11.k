@@ -6,7 +6,7 @@ require "compat.k"
 
 require "libc.k"
 
-require "c/dynamic.k"
+require "language/dynamic.k"
 
 module C11-SYNTAX
      imports C-SYNTAX
