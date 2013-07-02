@@ -13,15 +13,15 @@ KOMPILE_C = $(KOMPILE) c11.k -w -v -l C11 -transition "interpRule"
 KOMPILE_C_ND = $(KOMPILE) c11.k -o "c11-kompiled-nd" -w -v -l C11 -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
 KOMPILE_C_ND_THREAD = $(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -w -v -l C11 -transition "observable computational"
 
-LIBC_FILES = libc.k $(wildcard libc/*.k)
+LIBC_FILES = libc.k $(wildcard library/*.k)
 
-STATEMENT_FILES = $(wildcard c/statement/*.k)
-EXPRESSION_FILES = $(wildcard c/expression/*.k)
-DECLARATION_FILES = $(wildcard c/declaration/*.k)
-TYPING_FILES = $(wildcard c/typing/*.k)
-MEMORY_FILES = $(wildcard c/memory/*.k)
+STATEMENT_FILES = $(wildcard language/statement/*.k)
+EXPRESSION_FILES = $(wildcard language/expression/*.k)
+DECLARATION_FILES = $(wildcard language/declaration/*.k)
+TYPING_FILES = $(wildcard language/typing/*.k)
+MEMORY_FILES = $(wildcard language/memory/*.k)
 
-C_FILES = $(wildcard c/*.k) \
+C_FILES = $(wildcard language/*.k) \
 	$(STATEMENT_FILES) $(EXPRESSION_FILES) $(TYPING_FILES) \
 	$(MEMORY_FILES) $(DECLARATION_FILES)
 
