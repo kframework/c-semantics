@@ -72,7 +72,7 @@ module C-EXPRESSION-MEMBERS
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K:K -> F:Id => (* K) . F [macro]
+     rule K:K -> F:Id => (* K) . F [macro, structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets

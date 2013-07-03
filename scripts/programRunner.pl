@@ -1,17 +1,18 @@
 #!/usr/bin/env perl
-use POSIX;
 use strict;
+use warnings;
+
+use POSIX;
 use File::Spec::Functions qw(rel2abs catfile);
 use Getopt::Declare;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
 use File::Copy;
-# use IO::File;
 use IPC::Open3;
 
 setpgrp;
 
-# here we trap control-c (and others) so we can clean up when that happens
+# We trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
 $SIG{'TERM'} = 'interruptHandler';
 $SIG{'QUIT'} = 'interruptHandler';
@@ -21,257 +22,486 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
-# these are compile time settings and are set by the compile script using this
-# file as a template
+# These are compile-time settings and are set by the compile script using this
+# file as a template.
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
 my @temporaryFiles = ();
-my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c11', UNLINK => 0 );
-my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
-push(@temporaryFiles, $fileInput);
-push(@temporaryFiles, $fileOutput);
 
-# The function "linkedProgram()" is attached to the bottom of this script by kcc.
-print $fileInput linkedProgram();
+main();
 
-my $PERL_SERVER_PID = 0;
-my $childPid = 0;
+sub main {
+      my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c11', UNLINK => 0 );
+      my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
+      push(@temporaryFiles, $fileInput);
+      push(@temporaryFiles, $fileOutput);
 
-my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
-my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
+      # The function "linkedProgram()" is attached to the bottom of this script
+      # by kcc.
+      print $fileInput linkedProgram();
 
-my %krun_args = (
-      '--output-mode' => 'raw', 
-      '--output' => $fileOutput, 
-      '--parser' => 'cat', 
-      '--compiled-def' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
-      '--io' => '', 
-      "-cARGC=$argc" => '',
-      "-cARGV=$argv,,.KList" => '',
-      '' => $fileInput
-);
+      my $PERL_SERVER_PID = 0;
+      my $childPid = 0;
 
-if (defined($ENV{'HELP'})) {
-	print "Here are some configuration variables you can set to affect how this program is run:\n";
-	print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
-	print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
-	print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting\n";
-	print "PROFILE --- performs semantic profiling using this program\n";
-	print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
-	print "TRACE --- prints an execution trace; only of use to developers\n";
-	print "DUMPALL --- leaves all the intermediate files in the current directory\n";
-	print "LOGIO --- tell the IO server to create logs\n";
-	print "LTLMC --- LTL model checking\n";
-	print "VERBOSE --- verbose output\n";
-	print "E.g., DEBUG=1 $0\n";
-	print "\n";
-	print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off\n";
-	exit(1);
-}
+      my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
+      my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
 
-if (defined($ENV{'PROFILE'}) && defined($ENV{'TRACE'})) {
-	print STDERR "Error: Cannot use both PROFILE and TRACE at the same time.\n";
-	exit(1);
-}
+      my %krun_args = (
+                  '--output-mode' => 'raw', 
+                  '--output' => $fileOutput, 
+                  '--parser' => 'cat', 
+                  '--compiled-def' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
+                  '--io' => '', 
+                  "-cARGC=$argc" => '',
+                  "-cARGV=$argv,,.KList" => '',
+                  '' => $fileInput
+                  );
 
-### Set the arguments to krun based on the value of environment variables.
-if (defined($ENV{'PROFILE'})) {
-      $krun_args{'--profile'} = '';
-}
-
-if (defined($ENV{'TRACE'})) {
-      $krun_args{'--trace'} = '';
-}
-
-if (defined($ENV{'LOGIO'})) {
-      $krun_args{'--log-io'} = '';
-}
-
-if (defined($ENV{'DEBUG'})) {
-      $krun_args{'--debug'} = '';
-}
-
-if (defined($ENV{'VERBOSE'})) {
-      $krun_args{'--verbose'} = '';
-}
-
-if (defined($ENV{'SEARCH'})) {
-      $krun_args{'--search'} = '';
-      delete $krun_args{'--io'};
-      $krun_args{'--no-io'} = '';
-      $krun_args{'--output-mode'} = 'pretty';
-      delete $krun_args{'--output'};
-      $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
-}
-
-if (defined($ENV{'THREADSEARCH'})) {
-      $krun_args{'--search'} = '';
-      delete $krun_args{'--io'};
-      $krun_args{'--no-io'} = '';
-      $krun_args{'--output-mode'} = 'pretty';
-      delete $krun_args{'--output'};
-      $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
-}
-
-if (defined($ENV{'LTLMC'})) {
-      $krun_args{'--ltlmc'} = $ENV{'LTLMC'};
-      delete $krun_args{'--io'};
-      $krun_args{'--no-io'} = '';
-      $krun_args{'--output-mode'} = 'pretty';
-      delete $krun_args{'--output'};
-      $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
-}
-
-### Execute krun with the arguments in (flattened) %krun_args.
-system("krun", grep {$_} %krun_args);
-
-### Print errors and/or results and exit.
-if (defined($ENV{'PROFILE'})) {
-      if (! -e "maudeProfileDBfile.sqlite") {
-            copy(catfile($SCRIPTS_DIR, "maudeProfileDBfile.calibration.sqlite"), 
-                  "maudeProfileDBfile.sqlite");
+      if (defined $ENV{'HELP'}) {
+            print "Here are some configuration variables you can set to affect how this program is run:\n";
+            print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
+            print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
+            print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting\n";
+            print "PROFILE --- performs semantic profiling using this program\n";
+            print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
+            print "TRACE --- prints an execution trace; only of use to developers\n";
+            print "DUMPALL --- leaves all the intermediate files in the current directory\n";
+            print "LOGIO --- tell the IO server to create logs\n";
+            print "LTLMC --- LTL model checking\n";
+            print "VERBOSE --- verbose output\n";
+            print "E.g., DEBUG=1 $0\n";
+            print "\n";
+            print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off\n";
+            exit(1);
       }
-      my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
-      `perl $profileWrapper $fileOutput $PROGRAM_NAME`;
-      exit(0);
-} 
 
-if (defined($ENV{'SEARCH'}) || defined($ENV{'THREADSEARCH'})) {
-      exit(0);
-} 
+      if (defined $ENV{'PROFILE'} && defined $ENV{'TRACE'}) {
+            print STDERR "Error: Cannot use both PROFILE and TRACE at the same time.\n";
+            exit(1);
+      }
 
-exit(processResult($fileOutput, defined($ENV{'VERBOSE'})));
+      # Set the arguments to krun based on the value of environment variables.
+      if (defined $ENV{'PROFILE'}) {
+            $krun_args{'--profile'} = '';
+      }
 
-### Subs. 
+      if (defined $ENV{'TRACE'}) {
+            $krun_args{'--trace'} = '';
+      }
+
+      if (defined $ENV{'LOGIO'}) {
+            $krun_args{'--log-io'} = '';
+      }
+
+      if (defined $ENV{'DEBUG'}) {
+            $krun_args{'--debug'} = '';
+      }
+
+      if (defined $ENV{'VERBOSE'}) {
+            $krun_args{'--verbose'} = '';
+      }
+
+      if (defined $ENV{'SEARCH'}) {
+            $krun_args{'--search'} = '';
+            delete $krun_args{'--io'};
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            print 'Searching reachable states... ';
+            print "(with nondeterministic side-effects)\n";
+      }
+
+      if (defined $ENV{'THREADSEARCH'}) {
+            $krun_args{'--search'} = '';
+            delete $krun_args{'--io'};
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
+            print 'Searching reachable states... ';
+            print "(with nondeterministic thread interleaving)\n";
+      }
+
+      if (defined $ENV{'LTLMC'}) {
+            $krun_args{'--ltlmc'} = $ENV{'LTLMC'};
+            delete $krun_args{'--io'};
+            $krun_args{'--no-io'} = '';
+            $krun_args{'--output-mode'} = 'pretty';
+            delete $krun_args{'--output'};
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
+            print 'LTL model checking...';
+      }
+
+      # Execute krun with the arguments in (flattened) %krun_args.
+      system("krun", grep {$_} %krun_args);
+
+      # Print errors and/or results and exit.
+      if (defined $ENV{'PROFILE'}) {
+            my $profileDB = 'maudeProfileDB.sqlite';
+            print "Generating profile database $profileDB...";
+            if (! -e $profileDB) {
+                  copy(catfile($SCRIPTS_DIR, "maudeProfileDB.calibration.sqlite"), 
+                              $profileDB);
+            } else {
+                  print "Error: $profileDB already exists!\nHalting.";
+                  exit(0);
+            }
+            my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
+            `perl $profileWrapper $fileOutput $PROGRAM_NAME`;
+            exit(0);
+      } 
+
+      if (defined $ENV{'SEARCH'} || defined $ENV{'THREADSEARCH'}) {
+            my $graphOutputFile = "tmpSearchResults.dot";
+
+            print "Generated $fileOutput\n";
+            print "Examining the output...\n";
+            my $graphOutput = graphSearch($graphOutputFile, $fileOutput);
+            print "$graphOutput\n";
+            print "Generated $graphOutputFile.\n";
+
+            if (defined $ENV{'GRAPH'}) {
+                  print "Generating graph...\n";
+                  system("dot -Tps2 $graphOutputFile > tmpSearchResults.ps") == 0 
+                        or die "Running dot failed: $?";
+                  print "Generated tmpSearchResults.ps.\n";
+                  system("ps2pdf tmpSearchResults.ps tmpSearchResults.pdf") == 0 
+                        or die "Running ps2pdf failed: $?";
+                  print "Generated tmpSearchResults.pdf\n";
+            }
+            exit(0);
+      } 
+
+      exit(processResult($fileOutput, defined $ENV{'VERBOSE'}));
+}
+
+sub parseResultLine {
+      my ($parsed) = (@_);
+
+      /< k > (.*) <\/ k >/ && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+            $parsed->{haveError} = 1;
+            my $output = $1;
+            $output =~ s/\%/\%\%/g;
+            $output =~ s/`/\\`/g;
+            $output =~ s/\\\\/\\\\\\\\/g;
+            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
+      };
+
+      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
+            $parsed->{errorFunc} = $1;
+      };
+
+      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
+            $parsed->{errorFile} = $1;
+            $parsed->{errorLine} = $2;
+      };
+
+      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /< computation > (.*) <\/ computation >/ && do {
+            $parsed->{finalCompGoto} = $1;
+      };
+
+      /< type > (.*) <\/ type >/ && do {
+            $parsed->{finalCompType} = $1;
+      };
+
+      /< output > # "(.*)"\(\.KList\) <\/ output >/ && do {
+            $parsed->{output} = $1;
+      };
+
+      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+            $parsed->{exitCode} = $1;
+      };
+
+}
+
 sub processResult {
       my ($fileOutput, $verbose) = (@_);
-
-      my $exitCode = 1;
-      my $finalComp = "";
-      my $finalCompGoto = "";
-      my $finalCompType = "";
-
-      my $errorMsg = "";
-      my $errorFile = "";
-      my $errorFunc = "";
-      my $errorLine = "";
-
-      my $haveError = 0;
-      my $haveExitCode = 0;
+      my %parsed;
 
       open(OUT, "<$fileOutput");
 
       for (<OUT>) {
             print if $verbose;
-            /< k > (.*) <\/ k >/ && do {
-                  $haveError = 1;
-                  $finalComp = $1;
-            };
-
-            /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
-                  $haveError = 1;
-                  my $output = $1;
-                  $output =~ s/\%/\%\%/g;
-                  $output =~ s/`/\\`/g;
-                  $output =~ s/\\\\/\\\\\\\\/g;
-                  $errorMsg = substr(`printf "x$output"`, 1);
-            };
-
-            /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
-                  $errorFunc = $1;
-            };
-            
-            /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
-                  $errorFile = $1;
-                  $errorLine = $2;
-            };
-            
-            /< finalComputation > (.*) <\/ finalComputation >/ && do {
-                  $haveError = 1;
-                  $finalComp = $1;
-            };
-            
-            /< computation > (.*) <\/ computation >/ && do {
-                  $haveError = 1;
-                  $finalCompGoto = $1;
-            };
-
-            /< type > (.*) <\/ type >/ && do {
-                  $haveError = 1;
-                  $finalCompType = $1;
-            };
-
-            /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
-                  $haveExitCode = 1;
-                  $exitCode = $1;
-            };
+            parseResultLine(\%parsed);
       }
 
-      if ($haveError || !$haveExitCode) {
+      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
+                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
             print "\n=============================================================\n";
             print "ERROR! KCC encountered an error while executing this program.\n";
 
-            if ($errorMsg ne "") {
+            if (defined $parsed{errorMsg}) {
                   print "=============================================================\n";
-                  print "$errorMsg\n";
+                  print "$parsed{errorMsg}\n";
             }
 
             print "=============================================================\n";
-            print "File: $errorFile\n";
-            print "Function: $errorFunc\n";
-            print "Line: $errorLine\n";
+            print "File: $parsed{errorFile}\n";
+            print "Function: $parsed{errorFunc}\n";
+            print "Line: $parsed{errorLine}\n";
 
-            if ($finalComp ne "") {
+            if (defined $parsed{finalComp}) {
                   print "=============================================================\n";
                   print "Final Computation:\n";
-                  print substr($finalComp, 0, 1000);
+                  print substr($parsed{finalComp}, 0, 1000);
                   print "\n";
             }
 
-            if ($finalCompGoto ne "") {
+            if (defined $parsed{finalCompGoto}) {
                   print "=============================================================\n";
                   print "Final Goto Map Computation:\n";
-                  print substr($finalCompGoto, 0, 1000);
+                  print substr($parsed{finalCompGoto}, 0, 1000);
                   print "\n";
             }
 
-            if ($finalCompType ne "") {
+            if (defined $parsed{finalCompType}) {
                   print "=============================================================\n";
                   print "Final Type Computation:\n";
-                  print substr($finalCompType, 0, 1000);
+                  print substr($parsed{finalCompType}, 0, 1000);
                   print "\n";
             }
       }
-      return $exitCode;
+      return $parsed{exitCode} if defined $parsed{exitCode};
+      return 1;
+}
+
+sub graphSearch {
+      require GraphViz;
+
+      my %states = (); # stateId => stateLabel
+            my %arcs = (); # startArcId => endArcId => arcLabel
+            my %errorStates = (); # stateId => errorKind
+            my %goodFinal = (); # stateId => ""
+
+            my ($outFilename, $inFilename) = (@_);
+      my $retval = "";
+
+      my $g = GraphViz->new();
+
+# Literal braces, vertical bars and angle brackets must be escaped.
+
+      my $state = "start";
+      my $currentStateNumber;
+      my $currentStateDestination;
+      my $currentState = "";
+      my $currentRule = "";
+      my $currentRuleName;
+      my @currentArc;
+
+      my $seenMain = 0;
+
+      my @solutions;
+
+      open(IN, "<$inFilename");
+
+      for (<IN>) {
+            chomp;
+
+            # handle start state
+            if ($state eq "start") {
+                  /^Solution (\d+) / && do {
+                        $state = "solution";
+                  };
+
+                  /^No solution\./ && do {
+                        $state = "state";
+                  };
+            }
+
+            if ($state eq "solution") {
+                  /^Solution (\d+) / && do {
+                        my $numSolutions = $1;
+                        push(@solutions, {});
+                        $solutions[-1]->{'num'} = $numSolutions;
+                  };
+
+                  parseResultLine($solutions[-1]);
+
+                  # keep reading (and throwing away) until we hit a state
+                  /^state (\d+)/ && do {
+                        $currentStateNumber = $1;
+                        $states{$currentStateNumber} = "";
+                        $state = "state";
+                  };
+
+                  next;
+            }
+
+            # handle state state
+            if ($state eq "state") {
+                  # keep reading until we hit an arc
+                  if (/^arc (\d+) ===> state (\d+) \((c?rl) /) {
+                        $state = "arc";
+                        # meant to continue to next case
+                  } elsif (/^state (\d+)/) {
+                        $currentStateNumber = $1;
+                        $states{$currentStateNumber} = "";
+                        $state = "state";
+                        next;
+                  } else {
+                        $currentState .= $_;
+                        /"stdout"\(\.KList\) \|-> # "(.*)"\(\.KList\)/ && do {
+                              my $currentOutput = $1;
+                              $states{$currentStateNumber} = $currentOutput;
+                        };
+
+                        /< output > # "(.*)"\(\.KList\) <\/ output >/ && do {
+                              my $currentOutput = $1;
+                              $goodFinal{$currentStateNumber} = "";
+                              $states{$currentStateNumber} = $currentOutput;
+                        };
+
+                        /< errorCell > (.*) <\/ errorCell >/ && do {
+                              my $currentOutput = $1;
+                              $errorStates{$currentStateNumber} = "";
+                        };
+                        next;
+                  }
+            }
+
+            # handle arc state
+            if ($state eq "arc") {
+                  # keep reading until we hit a state or arc
+                  if (/^state (\d+)/) {
+                        $currentStateNumber = $1;
+                        $states{$currentStateNumber} = "";
+                        $state = "state";
+                  } elsif (/^arc (\d+) ===> state (\d+) \((c?rl) /) {
+                        my $arcNumber = $1;
+                        $currentStateDestination = $2;
+                        $currentRule = $3;
+                        if ($seenMain) {
+                              $arcs{$currentStateNumber}{$currentStateDestination} = "";
+                        }
+                        $state = "arc";
+                        $currentRuleName = "";
+                  } else {
+                        $currentRule .= $_;
+
+                        /label ([\w-]+).*\] \.\)$/ && do {
+                              $currentRuleName = $1;
+                              if ($currentRuleName eq "call-main") {
+                                    %states = ();
+                                    $seenMain = 1; 
+                              }
+                              if ($seenMain) {
+                                    $arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+                              }
+                        };
+
+                        /metadata .*heating/ && do {
+                              if (/freezer\("\(([^\)]+)\)\./) {
+                                    $currentRuleName = $1;
+                        }
+                        $currentRuleName .= ' heat';
+                        if ($seenMain) {
+                              $arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
+                        }
+                        };
+                  }
+                  next;
+            }
+      }
+
+      for my $node (keys %states) {
+            my $attribs = getAttribs($node, \%errorStates, \%goodFinal);
+            $attribs->{'label'} = "$node\n${states{$node}}";
+            $g->add_node($node, %$attribs);
+      }
+
+      for my $from (keys %arcs) {
+            for my $to (keys %{$arcs{$from}}) {
+                  $g->add_edge($from => $to, label => $arcs{$from}{$to});
+            }
+      }
+
+      open(DOTOUTPUT, ">$outFilename");
+      print DOTOUTPUT $g->as_text;
+      close(DOTOUTPUT);
+
+      $retval .= "========================================================================\n";
+      $retval .= scalar(@solutions) . " solutions found\n"; 
+      for my $solution (@solutions) {
+
+            $retval .= "------------------------------------------------------------------------\n";
+            $retval .= "Solution $solution->{'num'}\n";
+            if (defined $solution->{'exitCode'}) {
+                  $retval .= "Program completed successfully\n"; 
+                  $retval .= "Exit code: " . getString($solution->{'exitCode'}) . "\n";
+            } else {
+                  $retval .= "Program got stuck\n";
+                  $retval .= "File: " . getString($solution->{'errorFile'}) . "\n";
+                  $retval .= "Line: " . getString($solution->{'errorLine'}) . "\n";
+            }
+            if (defined $solution->{'errorMsg'}) {
+                  $retval .= getString($solution->{'errorMsg'}) . "\n";
+            }
+            $retval .= "Output:\n" . getString($solution->{'output'}) . "\n";
+
+      }
+      $retval .= "========================================================================\n";
+      $retval .= scalar(@solutions) . " solutions found\n"; 
+
+      return $retval;
+}
+
+sub getAttribs {
+      my ($nodeId, $errorStates, $goodFinal) = (@_);
+      my $attribs = {};
+      if (exists($errorStates->{$nodeId})) {
+            $attribs->{"fillcolor"} = "red";
+            $attribs->{"style"} = "filled";
+      }
+      if (exists($goodFinal->{$nodeId})) {
+            $attribs->{"fillcolor"} = "green";
+            $attribs->{"style"} = "filled";
+      }
+      return $attribs;
+}
+
+sub getString {
+      my ($s) = (@_);
+
+      return '' unless defined $s;
+
+      $s =~ s/\%/\%\%/g;
+      $s =~ s/\\\\/\\\\\\\\/g;
+      return substr(`printf "x$s"`, 1);
 }
 
 sub interruptHandler {
-	finalCleanup(); # call single cleanup point
-	kill 1, -$$;
-	exit(1); # since we were interrupted, we should exit with a non-zero code
+      # Call single cleanup point.
+      finalCleanup();
+      kill 1, -$$;
+      # Since we were interrupted, we should exit with a non-zero code.
+      exit(1);
 }
 
 # This subroutine can be used as a way to ensure we clean up all resources
-# whenever we exit.  This is going to be mostly temp files.  If the program
+# whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-	if (!defined($ENV{'DUMPALL'})) {
-		foreach my $file (@temporaryFiles) {
-			close($file);
-			unlink ($file);
-		}
-	}
+      if (!defined $ENV{'DUMPALL'}) {
+            foreach my $file (@temporaryFiles) {
+                  close($file);
+                  unlink ($file);
+            }
+      }
 }
 
 # This block gets run at the end of a normally terminating program, whether it
-# simply exits, or dies.  We use this to clean up.
+# simply exits, or dies. We use this to clean up.
 END {
-	my $retval = $?; # $? contains the value the program would normally have exited with
-	finalCleanup(); # call single cleanup point
-	exit($retval);
+      # $? contains the value the program would normally have exited with.
+      my $retval = $?;
+      # Call single cleanup point.
+      finalCleanup();
+      exit($retval);
 }
 
-### The parsed file contents of the program to execute with krun gets appended
-### here.
+# The parsed file contents of the program to execute with krun gets appended.
 

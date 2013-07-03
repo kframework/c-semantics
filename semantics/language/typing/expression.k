@@ -25,7 +25,6 @@ module C-TYPING-EXPRESSION
           SetItem(l('_&=_))
           SetItem(l('_^=_))
           SetItem(l('_|=_))
-          [macro]
 
      syntax Set ::= "typeStrictLeftBinaryOperators" [function] // [memo] 
      rule typeStrictLeftBinaryOperators => 
@@ -45,7 +44,6 @@ module C-TYPING-EXPRESSION
           SetItem(l('_--))
           SetItem(l('--_))
           SetItem(l('++_))
-          [structural]
      
      rule <k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
           (.Bag => <type> K:K </type>)

@@ -253,7 +253,7 @@ module C-SYNTAX
      syntax Id ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
      syntax Id ::= "Identifier" "(" String ")" [klabel('Identifier)] // new     
      
-     rule AnonymousName => #NoName [macro]
+     rule AnonymousName => #NoName [macro, structural]
      
      /*
      (* A variable declarator ("name") with an initializer *)
@@ -322,47 +322,47 @@ module C-SYNTAX
 
      // syntax Prop ::= "LTLAtom" "(" K ")"
           // [klabel('LTLAtom)]
-     //rule LTLAtom(E:Expression) => E [macro]
+     //rule LTLAtom(E:Expression) => E [macro, structural]
      // syntax Prop ::= "LTLBuiltin" "(" K ")"
           // [klabel('LTLBuiltin)]
      
      // syntax LTLExpr ::= "LTLTrue"
-     // //rule LTLTrue => TrueLtl [macro]
+     // //rule LTLTrue => TrueLtl [macro, structural]
      // syntax LTLExpr ::= "LTLFalse"
-     // //rule LTLTrue => FalseLtl [macro]
+     // //rule LTLTrue => FalseLtl [macro, structural]
      // syntax LTLExpr ::= "LTLAnd" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLAnd)]
-     // //rule LTLAnd(L:LtlFormula, R:LtlFormula) => L /\Ltl R [macro]
+     // //rule LTLAnd(L:LtlFormula, R:LtlFormula) => L /\Ltl R [macro, structural]
      // syntax LTLExpr ::= "LTLOr" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLOr)]
-     // //rule LTLOr(L:LtlFormula, R:LtlFormula) => L \/Ltl R [macro]
+     // //rule LTLOr(L:LtlFormula, R:LtlFormula) => L \/Ltl R [macro, structural]
      // syntax LTLExpr ::= "LTLNot" "(" LTLExpr ")"
      //      [klabel('LTLNot)]
-     // //rule LTLNot(K:LtlFormula) => ~Ltl K [macro]
+     // //rule LTLNot(K:LtlFormula) => ~Ltl K [macro, structural]
      // syntax LTLExpr ::= "LTLNext" "(" LTLExpr ")"
      //      [klabel('LTLNext)]
-     // //rule LTLNext(K:LtlFormula) => OLtl K [macro]
+     // //rule LTLNext(K:LtlFormula) => OLtl K [macro, structural]
      // syntax LTLExpr ::= "LTLAlways" "(" LTLExpr ")"
      //      [klabel('LTLAlways)]
-     // rule LTLAlways(K:LtlFormula) => []Ltl K [macro]
+     // rule LTLAlways(K:LtlFormula) => []Ltl K [macro, structural]
      // syntax LTLExpr ::= "LTLEventually" "(" LTLExpr ")"
      //      [klabel('LTLEventually)]
-     // rule LTLEventually(K:LtlFormula) => <>Ltl K [macro]
+     // rule LTLEventually(K:LtlFormula) => <>Ltl K [macro, structural]
      // syntax LTLExpr ::= "LTLUntil" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLUntil)]
-     // rule LTLUntil(L:LtlFormula, R:LtlFormula) => L ULtl R [macro]
+     // rule LTLUntil(L:LtlFormula, R:LtlFormula) => L ULtl R [macro, structural]
      // syntax LTLExpr ::= "LTLRelease" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLRelease)]
-     // rule LTLRelease(L:LtlFormula, R:LtlFormula) => L RLtl R [macro]
+     // rule LTLRelease(L:LtlFormula, R:LtlFormula) => L RLtl R [macro, structural]
      // syntax LTLExpr ::= "LTLImplies" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLImplies)]
-     // //rule LTLImplies(L:LtlFormula, R:LtlFormula) => L ->Ltl R [macro]
+     // //rule LTLImplies(L:LtlFormula, R:LtlFormula) => L ->Ltl R [macro, structural]
      // syntax LTLExpr ::= "LTLEquiv" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLEquiv)]
-     // //rule LTLEquiv(L:LtlFormula, R:LtlFormula) => L <->Ltl R [macro]
+     // //rule LTLEquiv(L:LtlFormula, R:LtlFormula) => L <->Ltl R [macro, structural]
      // syntax LTLExpr ::= "LTLWeakUntil" "(" LTLExpr "," LTLExpr ")"
      //      [klabel('LTLWeakUntil)]
-     // //rule LTLWeakUntil(L:LtlFormula, R:LtlFormula) => L WLtl R [macro]
+     // //rule LTLWeakUntil(L:LtlFormula, R:LtlFormula) => L WLtl R [macro, structural]
 
      syntax Definition ::= "DefinitionLoc" "(" K "," K ")"
           [klabel('DefinitionLoc)]
@@ -754,124 +754,124 @@ module C-SYNTAX
      syntax C ::= "Attribute" "(" String "," K ")" [klabel('Attribute)]
      
      syntax K ::= "CodeLoc" "(" K "," K ")" [klabel('CodeLoc)]
-     rule DefinitionLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro]
-     rule StatementLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro]
-     rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro]
+     rule DefinitionLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
+     rule StatementLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
+     rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro, structural]
      
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
-     rule &(*(K:K)) => K:K [macro]
+     rule &(*(K:K)) => K:K [macro, structural]
 
      /*@ The below rules simply transform the prefix AST names to the
      infix/mixfix names we use from now on */
      
      syntax Expression ::= "Conditional" "(" K "," K "," K ")"
           [klabel('Conditional)]
-     rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro]
+     rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro, structural]
      
      syntax Expression ::= "ArrayIndex" "(" K "," K ")" [klabel('ArrayIndex)]
-     rule ArrayIndex(K1:K, K2:K) => K1:K[K2:K] [macro]
+     rule ArrayIndex(K1:K, K2:K) => K1:K[K2:K] [macro, structural]
      
      syntax Expression ::= "Negative" "(" K ")" [klabel('Negative)]
-     rule Negative(K:K) => - K:K [macro]
+     rule Negative(K:K) => - K:K [macro, structural]
      syntax Expression ::= "Positive" "(" K ")" [klabel('Positive)]
-     rule Positive(K:K) => + K:K [macro]
+     rule Positive(K:K) => + K:K [macro, structural]
      syntax Expression ::= "LogicalNot" "(" K ")" [klabel('LogicalNot)]
-     rule LogicalNot(K:K) => ! K:K [macro]
+     rule LogicalNot(K:K) => ! K:K [macro, structural]
      syntax Expression ::= "BitwiseNot" "(" K ")" [klabel('BitwiseNot)]
-     rule BitwiseNot(K:K) => ~ K:K [macro]
+     rule BitwiseNot(K:K) => ~ K:K [macro, structural]
      syntax Expression ::= "Dereference" "(" K ")" [klabel('Dereference)]
-     rule Dereference(K:K) => * K:K [macro]
+     rule Dereference(K:K) => * K:K [macro, structural]
      syntax Expression ::= "Reference" "(" K ")" [klabel('Reference)]
-     rule Reference(K:K) => & K:K [macro]
+     rule Reference(K:K) => & K:K [macro, structural]
      syntax Expression ::= "PreIncrement" "(" K ")" [klabel('PreIncrement)]
-     rule PreIncrement(K:K) => ++ K:K [macro]
+     rule PreIncrement(K:K) => ++ K:K [macro, structural]
      syntax Expression ::= "PreDecrement" "(" K ")" [klabel('PreDecrement)]
-     rule PreDecrement(K:K) => -- K:K [macro]
+     rule PreDecrement(K:K) => -- K:K [macro, structural]
      syntax Expression ::= "PostIncrement" "(" K ")" [klabel('PostIncrement)]
-     rule PostIncrement(K:K) => K:K ++ [macro]
+     rule PostIncrement(K:K) => K:K ++ [macro, structural]
      syntax Expression ::= "PostDecrement" "(" K ")" [klabel('PostDecrement)]
-     rule PostDecrement(K:K) => K:K -- [macro]
+     rule PostDecrement(K:K) => K:K -- [macro, structural]
 
      syntax Expression ::= "Multiply" "(" K "," K ")" [klabel('Multiply)]
-     rule Multiply(K1:K, K2:K) => K1:K * K2:K [macro]
+     rule Multiply(K1:K, K2:K) => K1:K * K2:K [macro, structural]
      syntax Expression ::= "Divide" "(" K "," K ")" [klabel('Divide)]
-     rule Divide(K1:K, K2:K) => K1:K / K2:K [macro]
+     rule Divide(K1:K, K2:K) => K1:K / K2:K [macro, structural]
      syntax Expression ::= "Modulo" "(" K "," K ")" [klabel('Modulo)]
-     rule Modulo(K1:K, K2:K) => K1:K % K2:K [macro]
+     rule Modulo(K1:K, K2:K) => K1:K % K2:K [macro, structural]
      syntax Expression ::= "Plus" "(" K "," K ")" [klabel('Plus)]
-     rule Plus(K1:K, K2:K) => K1:K + K2:K [macro]
+     rule Plus(K1:K, K2:K) => K1:K + K2:K [macro, structural]
      syntax Expression ::= "Minus" "(" K "," K ")" [klabel('Minus)]
-     rule Minus(K1:K, K2:K) => K1:K - K2:K [macro]
+     rule Minus(K1:K, K2:K) => K1:K - K2:K [macro, structural]
      syntax Expression ::= "LeftShift" "(" K "," K ")" [klabel('LeftShift)]
-     rule LeftShift(K1:K, K2:K) => K1:K << K2:K [macro]
+     rule LeftShift(K1:K, K2:K) => K1:K << K2:K [macro, structural]
      syntax Expression ::= "RightShift" "(" K "," K ")" [klabel('RightShift)]
-     rule RightShift(K1:K, K2:K) => K1:K >> K2:K [macro]
+     rule RightShift(K1:K, K2:K) => K1:K >> K2:K [macro, structural]
      syntax Expression ::= "LessThan" "(" K "," K ")" [klabel('LessThan)]
-     rule LessThan(K1:K, K2:K) => K1:K < K2:K [macro]
+     rule LessThan(K1:K, K2:K) => K1:K < K2:K [macro, structural]
      syntax Expression ::= "LessThanOrEqual" "(" K "," K ")"
           [klabel('LessThanOrEqual)]
-     rule LessThanOrEqual(K1:K, K2:K) => K1:K <= K2:K [macro]
+     rule LessThanOrEqual(K1:K, K2:K) => K1:K <= K2:K [macro, structural]
      syntax Expression ::= "GreaterThan" "(" K "," K ")"
           [klabel('GreaterThan)]
-     rule GreaterThan(K1:K, K2:K) => K1:K > K2:K [macro]
+     rule GreaterThan(K1:K, K2:K) => K1:K > K2:K [macro, structural]
      syntax Expression ::= "GreaterThanOrEqual" "(" K "," K ")"
           [klabel('GreaterThanOrEqual)]
-     rule GreaterThanOrEqual(K1:K, K2:K) => K1:K >= K2:K [macro]
+     rule GreaterThanOrEqual(K1:K, K2:K) => K1:K >= K2:K [macro, structural]
      syntax Expression ::= "Equality" "(" K "," K ")" [klabel('Equality)]
-     rule Equality(K1:K, K2:K) => K1:K == K2:K [macro]
+     rule Equality(K1:K, K2:K) => K1:K == K2:K [macro, structural]
      syntax Expression ::= "NotEquality" "(" K "," K ")"
           [klabel('NotEquality)]
-     rule NotEquality(K1:K, K2:K) => K1:K != K2:K [macro]
+     rule NotEquality(K1:K, K2:K) => K1:K != K2:K [macro, structural]
      syntax Expression ::= "BitwiseAnd" "(" K "," K ")" [klabel('BitwiseAnd)]
-     rule BitwiseAnd(K1:K, K2:K) => K1:K & K2:K [macro]
+     rule BitwiseAnd(K1:K, K2:K) => K1:K & K2:K [macro, structural]
      syntax Expression ::= "BitwiseXor" "(" K "," K ")" [klabel('BitwiseXor)]
-     rule BitwiseXor(K1:K, K2:K) => K1:K ^ K2:K [macro]
+     rule BitwiseXor(K1:K, K2:K) => K1:K ^ K2:K [macro, structural]
      syntax Expression ::= "BitwiseOr" "(" K "," K ")" [klabel('BitwiseOr)]
-     rule BitwiseOr(K1:K, K2:K) => K1:K | K2:K [macro]
+     rule BitwiseOr(K1:K, K2:K) => K1:K | K2:K [macro, structural]
      syntax Expression ::= "LogicalAnd" "(" K "," K ")" [klabel('LogicalAnd)]
-     rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro]
+     rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro, structural]
      syntax Expression ::= "LogicalOr" "(" K "," K ")" [klabel('LogicalOr)]
-     rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro]
+     rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro, structural]
      
      syntax Expression ::= "Assign" "(" K "," K ")" [klabel('Assign)]
-     rule Assign(K1:K, K2:K) => K1:K := K2:K [macro]
+     rule Assign(K1:K, K2:K) => K1:K := K2:K [macro, structural]
      syntax Expression ::= "AssignMultiply" "(" K "," K ")"
           [klabel('AssignMultiply)]
-     rule AssignMultiply(K1:K, K2:K) => K1:K *= K2:K [macro]
+     rule AssignMultiply(K1:K, K2:K) => K1:K *= K2:K [macro, structural]
      syntax Expression ::= "AssignDivide" "(" K "," K ")"
           [klabel('AssignDivide)]
-     rule AssignDivide(K1:K, K2:K) => K1:K /= K2:K [macro]
+     rule AssignDivide(K1:K, K2:K) => K1:K /= K2:K [macro, structural]
      syntax Expression ::= "AssignModulo" "(" K "," K ")"
           [klabel('AssignModulo)]
-     rule AssignModulo(K1:K, K2:K) => K1:K %= K2:K [macro]
+     rule AssignModulo(K1:K, K2:K) => K1:K %= K2:K [macro, structural]
      syntax Expression ::= "AssignPlus" "(" K "," K ")"
           [klabel('AssignPlus)]
-     rule AssignPlus(K1:K, K2:K) => K1:K += K2:K [macro]
+     rule AssignPlus(K1:K, K2:K) => K1:K += K2:K [macro, structural]
      syntax Expression ::= "AssignMinus" "(" K "," K ")"
           [klabel('AssignMinus)]
-     rule AssignMinus(K1:K, K2:K) => K1:K -= K2:K [macro]
+     rule AssignMinus(K1:K, K2:K) => K1:K -= K2:K [macro, structural]
      syntax Expression ::= "AssignBitwiseAnd" "(" K "," K ")"
           [klabel('AssignBitwiseAnd)]
-     rule AssignBitwiseAnd(K1:K, K2:K) => K1:K &= K2:K [macro]
+     rule AssignBitwiseAnd(K1:K, K2:K) => K1:K &= K2:K [macro, structural]
      syntax Expression ::= "AssignBitwiseXor" "(" K "," K ")"
           [klabel('AssignBitwiseXor)]
-     rule AssignBitwiseXor(K1:K, K2:K) => K1:K ^= K2:K [macro]
+     rule AssignBitwiseXor(K1:K, K2:K) => K1:K ^= K2:K [macro, structural]
      syntax Expression ::= "AssignBitwiseOr" "(" K "," K ")"
           [klabel('AssignBitwiseOr)]
-     rule AssignBitwiseOr(K1:K, K2:K) => K1:K |= K2:K [macro]
+     rule AssignBitwiseOr(K1:K, K2:K) => K1:K |= K2:K [macro, structural]
      syntax Expression ::= "AssignLeftShift" "(" K "," K ")"
           [klabel('AssignLeftShift)]
-     rule AssignLeftShift(K1:K, K2:K) => K1:K <<= K2:K [macro]
+     rule AssignLeftShift(K1:K, K2:K) => K1:K <<= K2:K [macro, structural]
      syntax Expression ::= "AssignRightShift" "(" K "," K ")"
           [klabel('AssignRightShift)]
-     rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro]
+     rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro, structural]
      
      syntax Expression ::= "Dot" "(" K "," Id ")" [klabel('Dot)]
-     rule Dot(K:K, X:Id) => K:K . X:Id [macro]
+     rule Dot(K:K, X:Id) => K:K . X:Id [macro, structural]
      syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel('Arrow)]
-     rule Arrow(K:K, X:Id) => K:K -> X:Id [macro]
+     rule Arrow(K:K, X:Id) => K:K -> X:Id [macro, structural]
      
      syntax KLabel ::= "TranslationUnitName" "(" String ")" 
           [klabel('TranslationUnitName)]

@@ -14,11 +14,11 @@ module LIBC-THREADS
      ////////////////////////////--
      syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" 
                 | "thrd-busy" | "thrd-nomem"
-     rule thrd-success => tv(0, t(.Set, int)) [macro]
-     rule thrd-error => tv(1, t(.Set, int)) [macro]
-     rule thrd-timeout => tv(2, t(.Set, int)) [macro]
-     rule thrd-busy => tv(3, t(.Set, int)) [macro]
-     rule thrd-nomem => tv(4, t(.Set, int)) [macro]
+     rule thrd-success => tv(0, t(.Set, int)) [macro, structural]
+     rule thrd-error => tv(1, t(.Set, int)) [macro, structural]
+     rule thrd-timeout => tv(2, t(.Set, int)) [macro, structural]
+     rule thrd-busy => tv(3, t(.Set, int)) [macro, structural]
+     rule thrd-nomem => tv(4, t(.Set, int)) [macro, structural]
      
      syntax K ::= "threadRunning"
      
@@ -63,7 +63,7 @@ module LIBC-THREADS
                <env> Env:Map </env>
                <currTU> Tu:K </currTU>
           ...</thread>)
-          [large, computational]
+          [large, ndthread]
           
      rule [thrd-current]:
           <k> 
@@ -97,7 +97,7 @@ module LIBC-THREADS
                <k> V:KResult </k>
                <threadId> ThreadId:Int </threadId>
           ...</thread>
-          [computational]
+          [ndthread]
 
      rule [mtx-init]:
           <k> 
@@ -122,7 +122,7 @@ module LIBC-THREADS
           <locks>... .Bag => BagItem(Loc) ...</locks>
           when (notBool (Loc #inBag B))
           andBool (Type:Int ==Int cfg:mtxPlain)
-          [computational]
+          [ndthread]
 
      rule [mtx-unlock]:
           <k> 
@@ -134,6 +134,6 @@ module LIBC-THREADS
           <glocks>... BagItem(Loc:Int) => .Bag ...</glocks>
           <locks>... BagItem(Loc:Int) => .Bag ...</locks>
           when Type:Int ==Int cfg:mtxPlain
-          [computational]
+          [ndthread]
 
 endmodule

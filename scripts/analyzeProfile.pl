@@ -7,7 +7,7 @@ my $filename = $ARGV[0];
 my $runName = $ARGV[1];
 #print "$filename\n";
 # terrible hack :(
-my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","","");
+my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDB.sqlite","","");
 # if ($shouldClean) { $dbh->do("DROP TABLE IF EXISTS data;");}
 $dbh->do("CREATE TABLE if not exists data (
 	runName NOT NULL

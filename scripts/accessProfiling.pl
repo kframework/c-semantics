@@ -2,7 +2,7 @@
 use strict;
 use DBI;
 my $RULE_LENGTH = 300;
-my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","",""); #maudeProfileDBfile.sqlite
+my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDB.sqlite","",""); #maudeProfileDB.sqlite
 my $query = join(" ", <>); # read from stdin or filename passed to script
 printResults($query);
 

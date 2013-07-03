@@ -9,9 +9,9 @@ KOMPILE = $(C_K_BASE)/bin/kompile
 K_LATEX_STYLE = $(C_K_BASE)/include/latex/k.sty
 C_LATEX_STYLE = $(C_ROOT)/latex/semantics.sty
 
-KOMPILE_C = $(KOMPILE) c11.k -w -v -l C11 -transition "interpRule"
-KOMPILE_C_ND = $(KOMPILE) c11.k -o "c11-kompiled-nd" -w -v -l C11 -transition "observable computational" -superheat "ndheat" -supercool "ndlocal"
-KOMPILE_C_ND_THREAD = $(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -w -v -l C11 -transition "observable computational"
+KOMPILE_C = $(KOMPILE) c11.k -o "c11-kompiled" -w -v -l C11 -transition "interpRule"
+KOMPILE_C_ND = $(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
+KOMPILE_C_ND_THREAD = $(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -l C11 -transition "observable ndtrans ndthread"
 
 LIBC_FILES = libc.k $(wildcard library/*.k)
 

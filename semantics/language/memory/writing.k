@@ -78,7 +78,7 @@ module C-MEMORY-WRITING
           => write-specific(
                loc(N @ 0, Offset:Int, BitOffset:Int), 
                tv(L:KList, T:KResult), BitSize:Int)
-          [computational, ndlocal]
+          [ndtrans, ndlocal]
      // write data of "allocated" duration
      rule [write-allocated]:
           write-aux(
@@ -87,7 +87,7 @@ module C-MEMORY-WRITING
           => write-specific(
                loc(N @ allocatedDuration, Offset:Int, BitOffset:Int), 
                tv(L:KList, T:KResult), BitSize:Int)
-          [computational, ndlocal]
+          [ndtrans, ndlocal]
      
      rule [write-normal]:
           write-specific(Loc:SymLoc, tv(V:K, T:KResult), BitSize:Int)

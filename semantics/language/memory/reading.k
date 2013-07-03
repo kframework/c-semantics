@@ -78,11 +78,11 @@ module C-MEMORY-READING
           [structural, ndlocal]
      rule [read-shared]: // read global or shared data
           ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
-          [computational, ndlocal]
+          [ndtrans, ndlocal]
      rule [read-allocated]: // read data of "allocated" duration
           ('read-aux => 'readActual)
                (loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
-          [computational, ndlocal]
+          [ndtrans, ndlocal]
      
      rule [read]:
           readActual(Loc:SymLoc, T:KResult, BitSize:Int)

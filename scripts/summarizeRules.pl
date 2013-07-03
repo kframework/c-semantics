@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use DBI;
-my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDBfile.sqlite","",""); #maudeProfileDBfile.sqlite
+my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDB.sqlite","",""); #maudeProfileDB.sqlite
 printData();
 $dbh->disconnect;
 exit 0;

@@ -272,7 +272,7 @@ module C-DYNAMIC
           <mainTU> Tu:K </mainTU>
           <currTU> _ => Tu:K </currTU>
           when Tu =/=K .K
-          [computational]
+          [ndtrans]
      
      // FIXME i think these are slightly different
      // fixme void isn't supposed to have a name
@@ -324,7 +324,7 @@ module C-DYNAMIC
                ...</file>
           ...</files>
           <output> _ (.List => S2 L ListItem(S2'')) </output>
-          [computational]
+          [ndtrans]
 endmodule
 
 module C
