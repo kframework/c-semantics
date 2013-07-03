@@ -18,7 +18,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/xmlToK.pl \
-	$(SCRIPTS_DIR)/graphSearch.pl \
 	$(SCRIPTS_DIR)/programRunner.pl \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(PARSER_DIR)/cparser \

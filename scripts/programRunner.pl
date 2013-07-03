@@ -124,7 +124,7 @@ sub main {
             $krun_args{'--no-io'} = '';
             $krun_args{'--output-mode'} = 'pretty';
             delete $krun_args{'--output'};
-            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c-kompiled-nd");
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
             print 'LTL model checking...';
       }
 
