@@ -47,22 +47,23 @@ module C-STATEMENT-RETURN
           ...</gtypes>
           <br/>
           <control>
-               //  these cells get replaced by the ones in C:Bag, so we can
-               //  delete them when we match them
-               (<local>... <localAddresses> .Set </localAddresses> ...</local> 
-               => .Bag)
+               <currTU> Tu:K => OldTu </currTU>
                <currentFunction> (F:Id => CurrFun:K) </currentFunction>
                <currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
-               (<currTU> Tu:K </currTU> => .Bag)
-               (<blockStack> .List </blockStack> => .Bag)
-               (_ => C:Bag)
+               (<controlDetails>... 
+                    <local>... <localAddresses> .Set </localAddresses> ...</local> 
+                    <blockStack> .List </blockStack> 
+               ...</controlDetails>  => C:Bag)
           </control>
           <br/>
           <callStack>
                ListItem(
                     <callStackFrame>...
                          <continuation> K:K </continuation>
-                         <stackControl>C:Bag</stackControl>
+                         <stackControl>
+                              <currTU> OldTu:K </currTU>
+                              C:Bag
+                         </stackControl>
                          <stackCurrentFunction>
                               CurrFun:K
                          </stackCurrentFunction>

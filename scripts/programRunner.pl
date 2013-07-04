@@ -58,7 +58,7 @@ sub main {
                   '' => $fileInput
                   );
 
-      if (defined $ENV{'HELP'}) {
+      if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
             print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
             print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
@@ -76,33 +76,33 @@ sub main {
             exit(1);
       }
 
-      if (defined $ENV{'PROFILE'} && defined $ENV{'TRACE'}) {
+      if (defined $ENV{PROFILE} && defined $ENV{TRACE}) {
             print STDERR "Error: Cannot use both PROFILE and TRACE at the same time.\n";
             exit(1);
       }
 
       # Set the arguments to krun based on the value of environment variables.
-      if (defined $ENV{'PROFILE'}) {
+      if (defined $ENV{PROFILE}) {
             $krun_args{'--profile'} = '';
       }
 
-      if (defined $ENV{'TRACE'}) {
+      if (defined $ENV{TRACE}) {
             $krun_args{'--trace'} = '';
       }
 
-      if (defined $ENV{'LOGIO'}) {
+      if (defined $ENV{LOGIO}) {
             $krun_args{'--log-io'} = '';
       }
 
-      if (defined $ENV{'DEBUG'}) {
+      if (defined $ENV{DEBUG}) {
             $krun_args{'--debug'} = '';
       }
 
-      if (defined $ENV{'VERBOSE'}) {
+      if (defined $ENV{VERBOSE}) {
             $krun_args{'--verbose'} = '';
       }
 
-      if (defined $ENV{'SEARCH'}) {
+      if (defined $ENV{SEARCH}) {
             $krun_args{'--search'} = '';
             delete $krun_args{'--io'};
             $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
@@ -110,7 +110,7 @@ sub main {
             print "(with nondeterministic side-effects)\n";
       }
 
-      if (defined $ENV{'THREADSEARCH'}) {
+      if (defined $ENV{THREADSEARCH}) {
             $krun_args{'--search'} = '';
             delete $krun_args{'--io'};
             $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
@@ -118,21 +118,21 @@ sub main {
             print "(with nondeterministic thread interleaving)\n";
       }
 
-      if (defined $ENV{'LTLMC'}) {
-            $krun_args{'--ltlmc'} = $ENV{'LTLMC'};
+      if (defined $ENV{LTLMC}) {
+            $krun_args{'--ltlmc'} = $ENV{LTLMC};
             delete $krun_args{'--io'};
-            $krun_args{'--no-io'} = '';
-            $krun_args{'--output-mode'} = 'pretty';
-            delete $krun_args{'--output'};
             $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
-            print 'LTL model checking...';
+            print 'LTL model checking... ';
+            print "(with nondeterministic side-effects)\n";
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
+      print "Command: krun " . join ' ', (grep {$_} %krun_args) 
+            if defined $ENV{VERBOSE};
       system("krun", grep {$_} %krun_args);
 
       # Print errors and/or results and exit.
-      if (defined $ENV{'PROFILE'}) {
+      if (defined $ENV{PROFILE}) {
             my $profileDB = 'maudeProfileDB.sqlite';
             print "Generating profile database $profileDB...";
             if (! -e $profileDB) {
@@ -147,7 +147,7 @@ sub main {
             exit(0);
       } 
 
-      if (defined $ENV{'SEARCH'} || defined $ENV{'THREADSEARCH'}) {
+      if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
             my $graphOutputFile = "tmpSearchResults.dot";
 
             print "Generated $fileOutput\n";
@@ -156,7 +156,7 @@ sub main {
             print "$graphOutput\n";
             print "Generated $graphOutputFile.\n";
 
-            if (defined $ENV{'GRAPH'}) {
+            if (defined $ENV{GRAPH}) {
                   print "Generating graph...\n";
                   system("dot -Tps2 $graphOutputFile > tmpSearchResults.ps") == 0 
                         or die "Running dot failed: $?";
@@ -168,7 +168,7 @@ sub main {
             exit(0);
       } 
 
-      exit(processResult($fileOutput, defined $ENV{'VERBOSE'}));
+      exit(processResult($fileOutput, defined $ENV{VERBOSE}));
 }
 
 sub parseResultLine {
@@ -485,7 +485,7 @@ sub interruptHandler {
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-      if (!defined $ENV{'DUMPALL'}) {
+      if (!defined $ENV{DUMPALL}) {
             foreach my $file (@temporaryFiles) {
                   close($file);
                   unlink ($file);

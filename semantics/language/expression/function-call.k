@@ -106,18 +106,13 @@ module C-EXPRESSION-FUNCTION-CALL
                ...</callStackFrame>
           ) ...</callStack>
           <br/>
-          (<control>
-               <currTU> OldTu:K </currTU>
-               <currentFunction> CurrFun:K </currentFunction>
-               <currentProgramLoc> CurrLoc:K </currentProgramLoc>
-               C:Bag
-          </control>
-          =>
           <control>
-               <currentFunction> X:Id </currentFunction>
-               <currTU> Tu:K </currTU>
+               <currTU> OldTu:K => Tu </currTU>
+               <currentFunction> CurrFun:K => X </currentFunction>
                <currentProgramLoc> CurrLoc:K </currentProgramLoc>
-          ...</control>)
+               // TODO(chathhorn): better way to initialize?
+               (C:Bag => <controlDetails>... .Bag ...</controlDetails>)
+          </control>
           <funTUs>... OldTu:K |-> map((_ X:Id |-> Tu:K)) ...</funTUs>
           [structural, large]
 endmodule
