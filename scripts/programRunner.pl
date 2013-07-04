@@ -120,8 +120,11 @@ sub main {
 
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
+            $krun_args{'--compiled-def'} = 
+                  catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            $krun_args{'--output-mode'} = 'pretty';
             delete $krun_args{'--io'};
-            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            delete $krun_args{'--output'};
             print 'LTL model checking... ';
             print "(with nondeterministic side-effects)\n";
       }
@@ -167,6 +170,10 @@ sub main {
             }
             exit(0);
       } 
+
+      if (defined $ENV{LTLMC}) {
+            exit(0);
+      }
 
       exit(processResult($fileOutput, defined $ENV{VERBOSE}));
 }

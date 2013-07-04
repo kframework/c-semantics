@@ -8,11 +8,6 @@ DIST_DIR = dist
 
 #export C_K_BASE ?= $(C_K_BASE)
 
-#OUTPUT_FILTER_DIR = $(K_MAUDE_BASE)/tools/OutputFilter
-#OUTPUT_FILTER ?= $(OUTPUT_FILTER_DIR)/filterOutput
-#FILTER = $(SEMANTICS_DIR)/outputFilter.yml
-#VPATH = programs
-
 FILES_TO_DIST = \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
@@ -24,7 +19,7 @@ FILES_TO_DIST = \
 	$(wildcard $(LIBC_DIR)/includes/*) \
 	$(wildcard $(LIBC_DIR)/src/*)
 
-.PHONY: all clean run test force cparser maude-fragments build-all dynamic match fix semantics gcc-output benchmark dist fast-test dist-make check-input
+.PHONY: all fast thread check-vars dist pdf test cparser semantics clean
 
 all: WHICH_SEMANTICS="semantics"
 all: dist
@@ -97,8 +92,6 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 test: dist
 	@$(MAKE) -C tests
 
-force: ;
-
 cparser:
 	@$(MAKE) -C $(PARSER_DIR)
 	@-strip $(PARSER)
@@ -109,7 +102,6 @@ semantics: check-vars
 clean:
 	$(MAKE) -C $(PARSER_DIR) clean
 	$(MAKE) -C $(SEMANTICS_DIR) clean
-	$(MAKE) -C gcc-test clean
 	$(MAKE) -C tests clean
 	rm -rf $(DIST_DIR)
 	rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre

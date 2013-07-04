@@ -70,6 +70,7 @@ results-fail-%.xml:
 	@perl runtest.pl -f $*
 		
 clean: $(CLEAN_TARGETS) clean-./
+	$(MAKE) -C gcc-test clean
 	
 clean-%:
 	rm -f ./$*/*.parsed.c ./$*/*.compcert.c ./$*/*.gcc ./$*/*.kcc ./$*/*.o ./$*/*.pass ./$*/*.tmp ./$*/*.log ./$*/*.cil ./$*/*-gen.maude ./$*/*.gen.maude ./$*/*.pre.gen ./$*/*.prepre.gen ./$*/*.xml ./$*/a.out ./$*/*.kdump

@@ -1,23 +1,25 @@
 require "builtins/model-checker.k"
 
-module C11-LTLMC
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-EXPRESSION-SYNTAX
-     imports COMPAT-SYNTAX
-
+module C11-LTLMC-SYNTAX
      imports LTL-HOOKS
      imports MODEL-CHECKER-HOOKS
 
      // Ltl atomic propositions.
-     syntax CompProp ::= Prop "==Ltl" Prop [left]
-                         | Prop "!=Ltl" Prop [left]
+     syntax CompProp ::= Prop "==" Prop [left]
+                       | Prop "!=" Prop [left]
 
      syntax BaseProp ::= Int | Bool | Id
 
      syntax Prop ::= CompProp | BaseProp
 
-     syntax BaseProp ::= LtlEval(Bag, Prop) [function]
+endmodule
+
+module C11-LTLMC
+     imports C11-LTLMC-SYNTAX
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-EXPRESSION-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule _ |=Ltl false => false 
           [anywhere]
@@ -29,23 +31,25 @@ module C11-LTLMC
           when I =/=Int 0 
           [anywhere]
 
+     syntax BaseProp ::= LtlEval(Bag, Prop) [function]
+
      rule B:Bag |=Ltl X:Id => B |=Ltl LtlEval(B, X) 
           [anywhere]
      rule B:Bag |=Ltl P:CompProp => B |=Ltl LtlEval(B, P) 
           [anywhere]
      
      // TODO(chathhorn): really rudimentary.
-     rule LtlEval(B:Bag, L:Prop ==Ltl R:Prop) 
+     rule LtlEval(B:Bag, L:Prop == R:Prop) 
           => true
           when LtlEval(B, L) ==K LtlEval(B, R)
-     rule LtlEval(B:Bag, L:Prop ==Ltl R:Prop) 
+     rule LtlEval(B:Bag, L:Prop == R:Prop) 
           => false
           when LtlEval(B, L) =/=K LtlEval(B, R)
 
-     rule LtlEval(B:Bag, L:Prop !=Ltl R:Prop) 
+     rule LtlEval(B:Bag, L:Prop != R:Prop) 
           => true
           when LtlEval(B, L) =/=K LtlEval(B, R)
-     rule LtlEval(B:Bag, L:Prop !=Ltl R:Prop) 
+     rule LtlEval(B:Bag, L:Prop != R:Prop) 
           => false
           when LtlEval(B, L) ==K LtlEval(B, R)
 
@@ -53,10 +57,9 @@ module C11-LTLMC
      rule LtlEval(_, B:Bool) => B
      rule LtlEval(
           <generatedTop>... 
-               <env>... Identifier(S) |-> Loc:SymLoc ...</env>
-               <types>... Identifier(S) |-> T:Type ...</types>
-          ...</generatedTop>, 
-          #token("#Id",, S:String))
+               <genv>... _ |-> map(_ Identifier(Id2String(X)) |-> Loc:SymLoc) ...</genv>
+               <gtypes>... _ |-> map(_ Identifier(Id2String(X)) |-> T:Type) ...</gtypes>
+          ...</generatedTop>, X:Id)
           => value(rkludge(lval(Loc, T)))
 
 endmodule

@@ -10,6 +10,7 @@ require "language/dynamic.k"
 
 module C11-SYNTAX
      imports C-SYNTAX
+     imports C11-LTLMC-SYNTAX
 endmodule
 
 module C11
