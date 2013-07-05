@@ -19,7 +19,7 @@ FILES_TO_DIST = \
 	$(wildcard $(LIBC_DIR)/includes/*) \
 	$(wildcard $(LIBC_DIR)/src/*)
 
-.PHONY: all fast thread check-vars dist pdf test cparser semantics clean
+.PHONY: all fast thread check-vars dist test cparser semantics clean
 
 all: WHICH_SEMANTICS="semantics"
 all: dist
@@ -43,9 +43,6 @@ endif
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
 dist: check-vars $(DIST_DIR)/dist.done
-
-pdf: check-vars
-	@$(MAKE) -C $(SEMANTICS_DIR) pdf
 
 $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mkdir -p $(DIST_DIR)
