@@ -130,7 +130,7 @@ sub main {
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
-      print "Command: krun " . join ' ', (grep {$_} %krun_args) 
+      print "KRun args: " . join ' ', (grep {$_} %krun_args) . "\n"
             if defined $ENV{VERBOSE};
       system("krun", grep {$_} %krun_args);
 

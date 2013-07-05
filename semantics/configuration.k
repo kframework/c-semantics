@@ -9,6 +9,7 @@ module C11-CONFIGURATION
           <gstructs color="lightgray"> .Map </gstructs>
 
           <mem> .Map </mem>
+
           <notWritable> .Map </notWritable>
           <functions color="lightgray"> .Map </functions>
           <freshNat color="black"> 0 </freshNat>
