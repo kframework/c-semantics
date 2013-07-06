@@ -2,11 +2,9 @@ SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
 LIBC_DIR = libc
+TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
-#svnversion
-
-#export C_K_BASE ?= $(C_K_BASE)
 
 FILES_TO_DIST = \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
@@ -19,16 +17,9 @@ FILES_TO_DIST = \
 	$(wildcard $(LIBC_DIR)/includes/*) \
 	$(wildcard $(LIBC_DIR)/src/*)
 
-.PHONY: all fast thread check-vars dist test cparser semantics clean
+.PHONY: default check-vars cparser semantics clean
 
-all: WHICH_SEMANTICS="semantics"
-all: dist
-
-fast: WHICH_SEMANTICS="fast"
-fast: dist
-
-thread: WHICH_SEMANTICS="thread"
-thread: dist
+default: dist
 
 check-vars:
 ifeq ($(C_K_BASE),)
@@ -42,9 +33,7 @@ endif
 	@if ! maude --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-dist: check-vars $(DIST_DIR)/dist.done
-
-$(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
+$(DIST_DIR): $(FILES_TO_DIST) | check-vars cparser semantics 
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
@@ -57,7 +46,7 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
 	@echo compiling clib
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
+	$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
 	@echo compiling ctype
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/ctype.o $(DIST_DIR)/lib/ctype.c
 	@echo compiling math
@@ -84,21 +73,16 @@ $(DIST_DIR)/dist.done: check-vars Makefile cparser semantics $(FILES_TO_DIST)
 	@rm -f $(DIST_DIR)/testProgram.c
 	@rm -f $(DIST_DIR)/testProgram.compiled
 	@echo "Done."
-	@touch $(DIST_DIR)/dist.done
-
-test: dist
-	@$(MAKE) -C tests
 
 cparser:
 	@$(MAKE) -C $(PARSER_DIR)
-	@-strip $(PARSER)
 
 semantics: check-vars
-	@$(MAKE) $(WHICH_SEMANTICS) -C $(SEMANTICS_DIR)
+	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 clean:
-	$(MAKE) -C $(PARSER_DIR) clean
-	$(MAKE) -C $(SEMANTICS_DIR) clean
-	$(MAKE) -C tests clean
-	rm -rf $(DIST_DIR)
-	rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre
+	-$(MAKE) -C $(PARSER_DIR) clean
+	-$(MAKE) -C $(SEMANTICS_DIR) clean
+	-$(MAKE) -C $(TESTS_DIR) clean
+	@-rm -rf $(DIST_DIR)
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre

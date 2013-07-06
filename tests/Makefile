@@ -11,9 +11,7 @@ THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-u
 TORTURE_DIRECTORIES = gcc-torture
 CSMITH_DIRECTORIES = csmith
 
-
 ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(SHOULDFAIL_DIRECTORIES) $(MUSTFAIL_DIRECTORIES)  $(MUSTPASS_DIRECTORIES) $(SHOULDPASS_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES) $(TORTURE_DIRECTORIES) $(CSMITH_DIRECTORIES)
-
 
 GOOD_TARGETS = $(foreach var,  $(GOOD_DIRECTORIES), results-pass-$(var).xml)
 SHOULDFAIL_TARGETS = $(foreach var,  $(SHOULDFAIL_DIRECTORIES), results-fail-$(var).xml)
@@ -73,4 +71,4 @@ clean: $(CLEAN_TARGETS) clean-./
 	$(MAKE) -C gcc-test clean
 	
 clean-%:
-	rm -f ./$*/*.parsed.c ./$*/*.compcert.c ./$*/*.gcc ./$*/*.kcc ./$*/*.o ./$*/*.pass ./$*/*.tmp ./$*/*.log ./$*/*.cil ./$*/*-gen.maude ./$*/*.gen.maude ./$*/*.pre.gen ./$*/*.prepre.gen ./$*/*.xml ./$*/a.out ./$*/*.kdump
+	@-rm -f ./$*/*.parsed.c ./$*/*.compcert.c ./$*/*.gcc ./$*/*.kcc ./$*/*.o ./$*/*.pass ./$*/*.tmp ./$*/*.log ./$*/*.cil ./$*/*-gen.maude ./$*/*.gen.maude ./$*/*.pre.gen ./$*/*.prepre.gen ./$*/*.xml ./$*/a.out ./$*/*.kdump

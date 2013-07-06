@@ -3,31 +3,32 @@
 Please let us know if this README is insufficient, or if you needed to do any
 installation steps not listed explicitly.
 
-### 1. Install Perl
+### 1. Install basic dependencies.
+- Our <pre>kcc</pre> tool uses the GNU C preprocessor (cpp), so you'll at least
+  need that. 
+- If using Windows, you'll probably need cygwin.
+
+### 2. Install Perl
 - You almost definitely will have this installed if you use Linux or Mac OS X;
   otherwise, use your package manager to install it.
 - Windows perl can be found here: http://www.activestate.com/activeperl
 - Perl is used for many of the scripts in both the C tool and in K.
 - Install the following perl modules (probably using either ppm in windows, or
   cpan elsewhere).
-    - XML::DOM
     - XML::LibXML::Reader
-    - Regexp::Common
-    - Tree::Nary
     - Text::Diff
     - DBI
     - DBD::SQLite
     - Getopt::Declare
-    - File::Spec::Link
 
 E.g., to install a package using cpan:
 <pre>
-$ cpan -i XML::DOM
+$ cpan -i XML::LibXML::Reader
 </pre>
 
 (It might help to do this as sudo if it doesn't work as a normal user.)
 
-### 2. Install OCaml (http://caml.inria.fr/)
+### 3. Install OCaml (http://caml.inria.fr/)
 - OCaml is used by the C parser.
 - Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
@@ -41,7 +42,7 @@ $ ocaml
 
 (Press ctrl-d to exit.)
 
-### 3. Install K
+### 4. Install K
 - Go to http://code.google.com/p/k-framework/source/checkout and check out the
   K Semantic Framework.
 - See the README included with K for build and installation instructions.
@@ -53,7 +54,7 @@ $ ocaml
       change stay by adding the line "export C_K_BASE=~/k-framework/trunk" to
       your ~/.bashrc file.
 
-### 4. Install optional packages
+### 5. Install optional packages
 - You may want to install Graphviz (dot), for generating images of the state
   space when searching programs.
 - You can probably do this with your package manager.
@@ -64,7 +65,7 @@ $ which dot
 /usr/bin/dot
 </pre>
 
-### 5. Build our C tool
+### 6. Build our C tool
 - Run "make" in our main directory, the directory of this README.
 - This should take between 1 and 5 minutes on non-windows machines, and up to
   10 minutes on windows.
