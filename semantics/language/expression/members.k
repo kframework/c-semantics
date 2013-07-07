@@ -12,7 +12,6 @@ module C-EXPRESSION-MEMBERS
      syntax K ::= "extractField" "(" KList "," K "," Id ")" 
      syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")"
           [strict(4)]
-     syntax K ::= "extractField-aux" "(" KList "," Type "," Int "," Int "," KList ")"
      
      // fixme could speed things up by caching bitsizeoftype as well
      rule [extractField-start]:
@@ -31,7 +30,7 @@ module C-EXPRESSION-MEMBERS
      rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
           => concretize(T:KResult, 
                fillToBytes(extractBitsFromList(dataList(L:KList),
-               Offset:Int, Len:Int)))
+                    Offset:Int, Len:Int)))
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{

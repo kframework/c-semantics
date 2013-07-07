@@ -2,6 +2,7 @@ module C11-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
      configuration 
+     <status> initializing </status>
      <T>
           <gotoMap color="lightgray"> .Map </gotoMap>
           <genv color="lightgray"> .Map </genv>

@@ -11,6 +11,7 @@ module C-BITS-SYNTAX
      syntax Int ::= "bitsToBytes" "(" Int ")" [function]
 
      syntax K ::= "fillToBytes" "(" K ")" [strict] 
+     syntax K ::= "fillToBytes-aux" "(" K "," KList ")" [function]
 
      syntax KResult ::= "dataList" "(" KList ")"
 
@@ -38,7 +39,6 @@ module C-BITS
      imports C11-SETTINGS-SYNTAX
 
      // this maintains byte order
-     syntax K ::= "fillToBytes-aux" "(" K "," KList ")"
      rule [fillToBytes-start]:
           fillToBytes(dataList(L:KList)) 
           => fillToBytes-aux(dataList(L:KList), .KList) 

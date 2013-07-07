@@ -40,6 +40,8 @@ module C-DYNAMIC-SYNTAX
 
      syntax KResult ::= "rvlist" "(" KList ")"
 
+     syntax Status ::= "initializing" | "mainCalled" | "mainExited"
+
 endmodule
 
 module C-DYNAMIC
@@ -59,7 +61,6 @@ module C-DYNAMIC
           [structural]
      rule toRVList'(.KList) => .
           [structural]
-
 
      rule value(tv(V:KList, _)) => V:KList
           [structural, anywhere]
@@ -269,6 +270,7 @@ module C-DYNAMIC
                => callMain-aux(typeof(Identifier("main")), N,
                     Identifier("#incomingArgumentsArray"), Args)
           ...</k>
+          <status> _ => mainCalled </status>
           <mainTU> Tu:K </mainTU>
           <currTU> _ => Tu:K </currTU>
           when Tu =/=K .K
@@ -312,6 +314,7 @@ module C-DYNAMIC
                     <k> V:KResult </k>
                ...</thread>
           ...</T> => .Bag)
+          <status> _ => mainExited </status>
           <resultValue> .K => V </resultValue>
           <files>...
                // to prevent further io commands from firing

@@ -5,89 +5,170 @@ module C11-LTLMC-SYNTAX
      imports MODEL-CHECKER-HOOKS
 
      // Ltl atomic propositions.
-     syntax CompProp ::= Prop "==" Prop [left]
-                       | Prop "!=" Prop [left]
+     syntax ValueProp ::= Int  
+                        | ptr(SymLoc, Type) 
+                        | struct(KList, Id)
+                        | union(KList, Id)
 
-     syntax ValueProp ::= Int | Float | Bool
-     syntax BaseProp ::= ValueProp | Id
+     syntax CProp ::= ValueProp | Id 
+                    | "-" CProp
+                    | "+" CProp
+                    | "*" CProp
+                    > CProp "[" CProp "]"
+                    | CProp "." Id
+                    | CProp "->" Id
+                    > CProp "*" CProp [left]
+                    | CProp "/" CProp [left]
+                    > CProp "+" CProp [left]
+                    | CProp "-" CProp [left]
+                    > CProp "<" CProp [left]
+                    | CProp "<=" CProp [left]
+                    | CProp ">" CProp [left]
+                    | CProp ">=" CProp [left]
+                    > CProp "==" CProp [left]
+                    | CProp "!=" CProp [left]
 
-     syntax Prop ::= CompProp | BaseProp
+     syntax Prop ::= CProp | Bool | "__running" | "__error"
 
 endmodule
 
 module C11-LTLMC
      imports C11-LTLMC-SYNTAX
+     imports C11-ERROR
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-DECLARATION-SYNTAX
+
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+
      imports C-SYMLOC-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule _ |=Ltl false => false 
+     rule B:Bag |=Ltl P:CProp => boolify(ltlRVal(B, P))
           [anywhere]
-     rule _ |=Ltl true => true 
+     rule B:Bag |=Ltl __running => #running(B) ==K true
           [anywhere]
-     rule _ |=Ltl 0 => false 
+     rule B:Bag |=Ltl __error => #error(B) ==K true
           [anywhere]
-     rule _ |=Ltl I:Int => true 
-          when I =/=Int 0 
+     rule _ |=Ltl P:Bool => P
           [anywhere]
 
-     syntax ValueProp ::= ltlEval(Bag, Prop) [function]
+     syntax Bool ::= boolify(ValueProp) [function]
+     rule boolify(I:Int) => notBool (I ==Int 0)
 
-     rule B:Bag |=Ltl X:Id => B |=Ltl ltlEval(B, X) 
-          [anywhere]
-     rule B:Bag |=Ltl P:CompProp => B |=Ltl ltlEval(B, P) 
-          [anywhere]
+     syntax Int ::= intify(Bool) [function]
+     rule intify(false) => 0
+     rule intify(true) => 1
+
+     syntax Bool ::= "#running" "(" Bag ")" [function]
+     rule #running(
+          <generatedTop>... 
+               <status> mainCalled </status> 
+          ...</generatedTop>)
+          => true
+
+     syntax Bool ::= "#error" "(" Bag ")" [function]
+     rule #error(
+          <generatedTop>... <T>... <threads>... <thread>...
+               <k> ERROR ...</k> 
+          ...</thread> ...</threads> ...</T> ...</generatedTop>)
+          => true
      
-     // TODO(chathhorn): really rudimentary.
-     rule ltlEval(B:Bag, L:Prop == R:Prop) 
-          => true
-          when ltlEval(B, L) ==K ltlEval(B, R)
-     rule ltlEval(B:Bag, L:Prop == R:Prop) 
-          => false
-          when ltlEval(B, L) =/=K ltlEval(B, R)
+     syntax ValueProp ::= ltlRVal(Bag, Prop) [function]
 
-     rule ltlEval(B:Bag, L:Prop != R:Prop) 
-          => true
-          when ltlEval(B, L) =/=K ltlEval(B, R)
-     rule ltlEval(B:Bag, L:Prop != R:Prop) 
-          => false
-          when ltlEval(B, L) ==K ltlEval(B, R)
+     // TODO(chathhorn): Very basic rewrite of C expression semantics. It'd be
+     // nice to be able to re-use more of the actual semantics for this...
+     rule ltlRVal(_, V:ValueProp) => V
 
-     rule ltlEval(_, I:Int) => I
-     rule ltlEval(_, B:Bool) => B
+     rule ltlRVal(B:Bag, - P:CProp) 
+          => ltlRVal(B, 0 - ltlRVal(B, P))
+     rule ltlRVal(B:Bag, + P:CProp) 
+          => ltlRVal(B, P)
+     rule ltlRVal(B:Bag, L:CProp[R:CProp])
+          => ltlRVal(B, * (L + R))
+     
+     // I don't really think & is necessary.
+     // rule ltlRVal(B:Bag, & P:CProp) 
+     //      => ltlLVal(B, P)
 
-     // TODO(chathhorn): In a more perfect world we could use the rules we've
-     // already written for this stuff.
-     syntax Int ::= dumbRead(Map, SymLoc, Type) [function]
+     // "strictness"
+     rule ltlRVal(B:Bag, _:KLabel(P:CProp => ltlRVal(B, P)))
+          when notBool (isValueProp(P) ==K true)
+     rule ltlRVal(B:Bag, _:KLabel((L:CProp => ltlRVal(B, L)),, _))
+          when notBool (isValueProp(L) ==K true)
+     rule ltlRVal(B:Bag, Lbl:KLabel(_,, (R:CProp => ltlRVal(B, R))))
+          when notBool (isValueProp(R) ==K true)
+               // Don't try resolving the field specifier.
+               andBool (Lbl =/=KLabel '_._)
+               andBool (Lbl =/=KLabel '_->_)
+
+     rule ltlRVal(B:Bag, * ptr(L:SymLoc, T:Type))
+          => ltlRVal(B, dumbRead(B, L, T))
+
+     rule ltlRVal(B:Bag, P:CProp -> X:Id)
+          => ltlRVal(B, (* P) . X)
+
+     rule ltlRVal(
+          <generatedTop>... <T>... <gstructs>...
+               S |-> aggregateInfo(_,
+                    (_ X |-> T:Type),
+                    (_ X |-> Offset:Int))
+          ...</gstructs> ...</T> ...</generatedTop>,
+          struct(V:KList, S:Id) . X:Id)
+          => joinBytes(T, 
+               fillToBytes-aux(
+                    extractBitsFromList-aux(
+                         dataList(explodeToBits(V)), 
+                         Offset, value(bitSizeofType(T)), .KList),
+                    .KList))
+     rule ltlRVal(
+          <generatedTop>... <T>... <gstructs>...
+               S |-> aggregateInfo(_,
+                    (_ X |-> T:Type),
+                    (_ X |-> Offset:Int))
+          ...</gstructs> ...</T> ...</generatedTop>,
+          union(V:KList, S:Id) . X:Id)
+          => joinBytes(T, 
+               fillToBytes-aux(
+                    extractBitsFromList-aux(
+                         dataList(explodeToBits(V)), 
+                         Offset, value(bitSizeofType(T)), .KList),
+                    .KList))
+
+     rule ltlRVal(_, L:Int * R:Int) => L *Int R
+     rule ltlRVal(_, L:Int / R:Int) => L /Int R
+     rule ltlRVal(_, L:Int + R:Int) => L +Int R
+     rule ltlRVal(_, L:Int - R:Int) => L -Int R
+
+     rule ltlRVal(_, L:Int < R:Int) => intify(L <Int R)
+     rule ltlRVal(_, L:Int <= R:Int) => intify(L <=Int R)
+     rule ltlRVal(_, L:Int < R:Int) => intify(L >Int R)
+     rule ltlRVal(_, L:Int <= R:Int) => intify(L >=Int R)
+
+     rule ltlRVal(_, L:Int == R:Int) => intify(L ==Int R)
+     rule ltlRVal(_, L:Int != R:Int) => intify(L ==Int R)
+
+     syntax Int ::= dumbRead(Bag, SymLoc, Type) [function]
      syntax Int ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," KList ")" 
           [function]
 
-     syntax ValueProp ::= "ltlEvalPrime" "(" Bag "," String ")" [function]
+     rule ltlRVal(B:Bag, X:Id) => ltlRVal(B, * ltlLVal(B, X))
 
-     rule ltlEval(B:Bag, X:Id) => ltlEvalPrime(B, Id2String(X))
-
-     rule ltlEvalPrime(
-          <generatedTop>... <T>...
-               <genv>... 
-                    _ |-> map(_ Identifier(S) |-> Loc:SymLoc) 
-               ...</genv>
-               <gtypes>... 
-                    _ |-> map(_ Identifier(S) |-> T:Type) 
-               ...</gtypes>
-               <mem> Mem:Map </mem>
-          ...</T> ...</generatedTop>, S:String)
-          => dumbRead(Mem, Loc, T)
-
-     rule dumbRead(Mem:Map, Loc:SymLoc, T:Type) 
-          => dumbRead'(Mem, Loc, unqualifyType(T), 
-               bitsToBytes(value(bitSizeofType(T))), .KList)
+     // TODO(chathhorn): need to rework how bitSizeofType() functions in order
+     // to actually support structs/unions here.
+     rule dumbRead(
+               <generatedTop>... <T>... 
+                    <mem> Mem:Map </mem> 
+               ...</T> ...</generatedTop>, 
+               Loc:SymLoc, T:Type) 
+          => dumbRead'(Mem, Loc, T, bitsToBytes(value(bitSizeofType(T))), .KList)
 
      rule dumbRead'(
           (_ Base |-> memblock(_, _, (_ Offset |-> V:K))), 
@@ -97,23 +178,50 @@ module C11-LTLMC
           (_,, (.KList => V)))
           when NBytes >Int 0
 
-     syntax ValueProp ::= joinBytes(KList) [function]
-     syntax Int ::= "joinBytes'" "(" KList "," KList ")" [function]
+     syntax ValueProp ::= joinBytes(Type, KList) [function]
+     syntax ValueProp ::= "joinBytes'" "(" Type "," KList "," KList ")" [function]
      rule dumbRead'(
           _,
           _,
-          _,
+          T:Type,
           0,
           Bytes:KList)
-          => joinBytes(Bytes)
+          => joinBytes(T, Bytes)
 
-     rule joinBytes(L:KList) => joinBytes'(L, piece(0,0))
-     rule joinBytes'((piece(encodedFloat(F:Float), _),, _), _) => F
-     rule joinBytes'((L:KList,, 
+     rule joinBytes(T:Type, L:KList) => joinBytes'(T, L, piece(0,0))
+
+     rule joinBytes(t(_, pointerType(T:Type)), 
+               (piece(subObject(L:SymLoc, _, _), _),, _:KList))
+          => ptr(L, T)
+     rule joinBytes(t(_, structType(S:Id)), V:KList)
+          => struct(V, S)
+     rule joinBytes(t(_, unionType(S:Id)), V:KList)
+          => union(V, S)
+     rule joinBytes(T:Type, V:KList) => joinBytes'(T, V, .KList)
+          when hasIntegerType(T)
+
+     rule joinBytes'(T:Type, (L:KList,, 
                piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
-          => joinBytes'(L, piece(
+          => joinBytes'(T, L, piece(
                piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
 
-     rule joinBytes'(.KList, piece(N:Int, _)) => N
+     rule joinBytes'(_, .KList, piece(N:Int, _)) => N
+
+     // Not so interested in l-values.
+     syntax ValueProp ::= "ltlLVal" "(" Bag "," Id ")" [function]
+     syntax ValueProp ::= "ltlLVal'" "(" Bag "," String ")" [function]
+
+     rule ltlLVal(B:Bag, X:Id) => ltlLVal'(B, Id2String(X))
+     rule ltlLVal'(
+          <generatedTop>... <T>...
+               <genv>... 
+                    _ |-> map(_ Identifier(S) |-> Loc:SymLoc) 
+               ...</genv>
+               <gtypes>... 
+                    _ |-> map(_ Identifier(S) |-> T:Type) 
+               ...</gtypes>
+          ...</T> ...</generatedTop>, 
+          S:String)
+          => ptr(Loc, unqualifyType(T))
 
 endmodule

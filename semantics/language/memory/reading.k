@@ -7,6 +7,10 @@ module C-MEMORY-READING-SYNTAX
      syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
      syntax K ::= "read-aux" "(" SymLoc "," K "," K ")" [klabel('read-aux)]
      
+     // datalist, offset in bits into list, number of bits to extract,
+     // accumulator
+     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
+          [function]
 endmodule
 
 module C-MEMORY-READING
@@ -32,9 +36,6 @@ module C-MEMORY-READING
      // loc, size in bits
      syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
      
-     // datalist, offset in bits into list, number of bits to extract,
-     // accumulator
-     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
      rule extractBitsFromList(dataList(L:KList), N:Int, M:Int) 
           => extractBitsFromList-aux(
                dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
