@@ -2,13 +2,8 @@
 use strict;
 use warnings;
 
-use POSIX;
-use File::Spec::Functions qw(rel2abs catfile);
-use Getopt::Declare;
-use File::Basename;
-use File::Temp qw/ tempfile tempdir /;
-use File::Copy;
-use IPC::Open3;
+use File::Spec::Functions qw(catfile);
+use File::Temp;
 
 setpgrp;
 
@@ -29,20 +24,24 @@ my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
 my @temporaryFiles = ();
 
-main();
+exit main();
 
 sub main {
-      my $fileInput = File::Temp->new( TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', SUFFIX => '.c11', UNLINK => 0 );
-      my $fileOutput = File::Temp->new( TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', SUFFIX => '.txt', UNLINK => 0 );
+      my $fileInput = File::Temp->new(
+            TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', 
+            SUFFIX => '.c11', 
+            UNLINK => 0);
+      my $fileOutput = File::Temp->new(
+            TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0);
+
       push(@temporaryFiles, $fileInput);
       push(@temporaryFiles, $fileOutput);
 
       # The function "linkedProgram()" is attached to the bottom of this script
       # by kcc.
       print $fileInput linkedProgram();
-
-      my $PERL_SERVER_PID = 0;
-      my $childPid = 0;
 
       my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
       my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
@@ -73,12 +72,12 @@ sub main {
             print "E.g., DEBUG=1 $0\n";
             print "\n";
             print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off\n";
-            exit(1);
+            return 1;
       }
 
       if (defined $ENV{PROFILE} && defined $ENV{TRACE}) {
             print STDERR "Error: Cannot use both PROFILE and TRACE at the same time.\n";
-            exit(1);
+            return 1;
       }
 
       # Set the arguments to krun based on the value of environment variables.
@@ -143,11 +142,11 @@ sub main {
                               $profileDB);
             } else {
                   print "Error: $profileDB already exists!\nHalting.";
-                  exit(0);
+                  return 0;
             }
             my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
             `perl $profileWrapper $fileOutput $PROGRAM_NAME`;
-            exit(0);
+            return 0;
       } 
 
       if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
@@ -168,14 +167,14 @@ sub main {
                         or die "Running ps2pdf failed: $?";
                   print "Generated tmpSearchResults.pdf\n";
             }
-            exit(0);
+            return 0;
       } 
 
       if (defined $ENV{LTLMC}) {
-            exit(0);
+            return 0;
       }
 
-      exit(processResult($fileOutput, defined $ENV{VERBOSE}));
+      return processResult($fileOutput, defined $ENV{VERBOSE});
 }
 
 sub parseResultLine {
@@ -485,7 +484,7 @@ sub interruptHandler {
       finalCleanup();
       kill 1, -$$;
       # Since we were interrupted, we should exit with a non-zero code.
-      exit(1);
+      exit 1;
 }
 
 # This subroutine can be used as a way to ensure we clean up all resources
@@ -493,9 +492,9 @@ sub interruptHandler {
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
       if (!defined $ENV{DUMPALL}) {
-            foreach my $file (@temporaryFiles) {
-                  close($file);
-                  unlink ($file);
+            for (@temporaryFiles) {
+                  close $_;
+                  unlink;
             }
       }
 }
@@ -507,7 +506,7 @@ END {
       my $retval = $?;
       # Call single cleanup point.
       finalCleanup();
-      exit($retval);
+      exit $retval;
 }
 
 # The parsed file contents of the program to execute with krun gets appended.

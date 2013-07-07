@@ -1,15 +1,11 @@
 #!/usr/bin/env perl
 use strict;
 my @requiredModules = qw(
-	XML::DOM
 	XML::LibXML::Reader
-	Regexp::Common
-	Tree::Nary
 	Text::Diff
 	DBI
 	DBD::SQLite
 	Getopt::Declare
-	File::Spec::Link
 );
 my @missingPackages = ();
 
@@ -18,7 +14,7 @@ if (!$missingPackage) {
 	exit(0);
 }
 
-# at this point, we're missing at least one package
+# At this point, we're missing at least one package.
 print "ERROR: You are missing some required perl modules.  It's probably best to install them using the package manager for your operating system.\n\nWould you like me to try installing these packages automatically by running `cpan -i @missingPackages`? (Y/N)";
 my $response = <STDIN>;
 chomp($response);

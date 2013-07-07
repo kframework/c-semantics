@@ -1,321 +1,338 @@
 #!/usr/bin/env perl
 use strict;
-use File::Spec::Functions qw(rel2abs catfile);
-use Getopt::Declare;
+use warnings;
+
 use File::Basename;
-use File::Temp qw/ tempfile tempdir /;
+use File::Temp;
+use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
+use Getopt::Declare;
 
-my $myDirectory = dirname(rel2abs($0));
-
-my @temporaryFiles = ();
- 
-# here we trap control-c (and others) so we can clean up when that happens
+# Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
-$SIG{'BREAK'} = 'interruptHandler';
 $SIG{'TERM'} = 'interruptHandler';
 $SIG{'QUIT'} = 'interruptHandler';
 $SIG{'SEGV'} = 'interruptHandler';
 $SIG{'HUP' } = 'interruptHandler';
 $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
-$SIG{'INT'} = 'interruptHandler'; # handle control-c 
+$SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
-sub interruptHandler {
-	finalCleanup(); # call single cleanup point
-	exit(1); # since we were interrupted, we should exit with a non-zero code
-}
-
-# this block gets run at the end of a normally terminating program, whether it
-# simply exits, or dies.  We use this to clean up.
-END {
-	my $retval = $?; # $? contains the value the program would normally have exited with
-	finalCleanup(); # call single cleanup point
-	exit($retval);
-}
-
-# this subroutine can be used as a way to ensure we clean up all resources
-# whenever we exit.  This is going to be mostly temp files.  If the program
-# terminates for almost any reason, this code will be executed.
-sub finalCleanup {
-	foreach my $file (@temporaryFiles) {
-		unlink ($file);
-	}
-}
- 
 $::VERSION="0.1";
-#use vars qw/$not $re/;
 
 my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
-my @stdlib = ();
-push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
-push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
-push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
-push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
-push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
-push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
+my $myDirectory = dirname(rel2abs($0));
 my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
 my $cparser = catfile($myDirectory, 'cparser');
 
-my @gccDefines = ();
-my @gccIncludeDirs = ();
+my @temporaryFiles = ();
+
+my @cppDefines = ();
+my @cppIncludeDirs = ();
 
 my $spec = q(#
-  -c				Compile and assemble, but do not link
-#-i				Include support for runtime file io
-  -d				Keep intermediate files
-  -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-					{ push(@::gccDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
-  -I <dir>			Look for headers in <dir>
-					{ push(@::gccIncludeDirs, " -I$dir "); }
-  -s				Do not link against the standard library
-  -o <file>			Place the output into <file>
-  -p				Profile parsing
-#-verbose			Do not delete intermediate files
-  -w				Do not print warning messages
-  <files>...			.c files to be compiled [required]
-		{ defer { foreach (@files) { compile($_); } } }
-#-funsigned-char		Let the type "char" be unsigned, like "unsigned char"
-#-fsigned-char			Let the type "char" be signed, like "signed char"
-#-fbits-per-byte <num>		Sets the number of bits in a byte
-#[mutex: -funsigned-char -fsigned-char]
-  -lm				Ignored
-  -O[<level:/0|1|2|3|s/>]	Ignored
-  -std <standard>		Ignored
-  -x <language>			Ignored
-  -pedantic			Ignored
-  -Wall				Ignored
-		
-There are additional options available at runtime.  Try running your compiled program with HELP set (e.g., HELP=1 ./a.out) to see these
-);
+      -c				Compile and assemble, but do not link.
+      #-i				Include support for runtime file io.
+      -d				Keep intermediate files.
+      -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
+{ push(@::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+      -I <dir>			Look for headers in <dir>.
+{ push(@::cppIncludeDirs, " -I$dir "); }
+      -s				Do not link against the standard library.
+      -o <file>			Place the output into <file>.
+      -p				Profile parsing.
+      #-verbose			Do not delete intermediate files.
+      -w				Do not print warning messages.
+      <files>...			C files to be compiled. [required]
+      #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
+      #-fsigned-char			Let the type "char" be signed, like "signed char."
+      #-fbits-per-byte <num>		Sets the number of bits in a byte.
+      #[mutex: -funsigned-char -fsigned-char]
+      -lm				Ignored
+      -O[<level:/0|1|2|3|s/>]	Ignored
+      -std <standard>		Ignored
+      -x <language>			Ignored
+      -pedantic			Ignored
+      -Wall				Ignored
+                  
+      There are additional options available at runtime. Try running your compiled
+      program with HELP set (e.g., HELP=1 ./a.out) to see these.
+      );
 
- #[mutex: -case -CASE -Case -CaSe]
-my @arr = ('-BUILD');
-my $args = Getopt::Declare->new($spec,  \@arr);
-if (!$args->parse()) {
-	#$args->usage(1);
-	#exit(0);
-	exit(1);
+my $args = Getopt::Declare->new($spec, ['-BUILD']);
+
+exit main();
+
+sub main {
+      my @stdlib = ();
+      push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
+
+      #[mutex: -case -CASE -Case -CaSe]
+      $args->parse() or die "Failed to parse the command line.";
+
+      for (@{$args->{'<files>'}}) {
+            compile($_);
+      }
+
+      if ($args->{'-c'}) {
+            # Compilation was already handled, so we can exit.
+            return 0;
+      }
+      # Otherwise, we're compiling an executable.
+
+      my $oval = $args->{'-o'} || 'a.out';
+
+      if (! $args->{'-s'}) {
+            push(@compiledPrograms, @stdlib);
+      }
+      my $linked = linker(@compiledPrograms);
+      unlink(@shouldBeDeleted);
+      if ($linked eq ""){
+            die "Nothing returned from linker";
+      }
+
+      open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
+      my $programRunner = join("", <FILE>);
+      close(FILE);
+
+      my $programTemp = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-prog-XXXXXXXXXXX', 
+            SUFFIX => '.maude', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $programTemp);
+
+      $programRunner = performSpecializations($programRunner);
+
+      print $programTemp "$programRunner\n\n";
+
+      print $programTemp "sub linkedProgram {\nreturn <<'THEPROGRAM';\n$linked\nTHEPROGRAM\n }\n";
+
+      close($programTemp);
+
+      move("$programTemp", $oval) 
+            or die "Failed to move the generated program to its destination $oval: $!";
+
+      my $numFilesChanged = chmod(0755, $oval);
+
+      ($numFilesChanged == 1)
+            or die "Call to chmod $oval failed";
+
+      return 0;
 }
-
-if ($args->{'-c'}) {
-	exit(0); # compilation was already handled during parsing, so we can exit
-}
-# otherwise, we're compiling an executable
-
-my $oval = $args->{'-o'} || 'a.out';
-
-if (! $args->{'-s'}) {
-	push(@compiledPrograms, @stdlib);
-}
-my $linked = linker(@compiledPrograms);
-unlink(@shouldBeDeleted);
-if ($linked eq ""){
-	die "Nothing returned from linker";
-}
-
-open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
-my $programRunner = join("", <FILE>);
-close(FILE);
-
-my $programTemp = File::Temp->new( TEMPLATE => 'tmp-kcc-prog-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-push(@temporaryFiles, $programTemp);
-
-$programRunner = performSpecializations($programRunner);
-
-print $programTemp "$programRunner\n\n";
-
-print $programTemp "sub linkedProgram { return <<'ENDOFCOMPILEDPROGRAM';\n$linked\nENDOFCOMPILEDPROGRAM\n }\n";
-
-close($programTemp);
-
-move("$programTemp", $oval) or die "Failed to move the generated program to its destination $oval: $!";
-my $numFilesChanged = chmod(0755, $oval);
-if ($numFilesChanged != 1) {
-	die "Call to chmod $oval failed";
-}
-
-exit();
-# ===================================================================
 
 sub performSpecializations {
-	my ($file) = (@_);
-	
-	my $mainFileName = $args->{'<files>'}[0];
-	
-	$file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
-	$file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
-	return $file;
+      my ($file) = (@_);
+      
+      # TODO(chathhorn): is there some rule that the first source file must
+      # contain a main()? I don't get this.
+      my $mainFileName = $args->{'<files>'}[0];
+      
+      $file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+      $file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
+      return $file;
 }
-
 
 sub compile {
-	my ($file) = (@_);
-	my $inputFile = rel2abs($file);
-	if (! -e $inputFile) {
-		die "kcc: $file: No such file or directory";
-	}
-	my $inputDirectory = dirname($inputFile);
-	my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
+      my ($file) = (@_);
+      my $inputFile = rel2abs($file);
 
-	if (($suffix eq '.o') or ($suffix eq '.a')) {
-		# assuming .o or .a file
-		push(@compiledPrograms, $inputFile);
-		return;
-	}
-	open my $fh, $inputFile or die "Could not open $inputFile for reading: $!\n";
-	my $line = <$fh>;
-	close $fh;
+      (-e $inputFile)
+            or die "kcc: $file: No such file or directory";
 
-	# assume it's a normal input file, so compile it
-	my $localOval = "$baseName.o";
-	compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) or die "Compilation failed";
+      my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
 
-	if (! -e "program-$baseName-compiled.maude") {
-		die "Expected to find program-$baseName-compiled.maude, but did not";
-	}
-	move("program-$baseName-compiled.maude", $localOval) 
+      if (($suffix eq '.o') or ($suffix eq '.a')) {
+            # Assuming .o or .a file.
+            push(@compiledPrograms, $inputFile);
+            return;
+      }
+      open my $fh, $inputFile 
+            or die "Could not open $inputFile for reading: $!\n";
+      my $line = <$fh>;
+      close $fh;
+
+      # Assume it's a normal input file, so compile it.
+      my $localOval = "$baseName.o";
+      compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) 
+            or die "Compilation failed";
+
+      (-e "program-$baseName-compiled.maude")
+            or die "Expected to find program-$baseName-compiled.maude, but did not";
+
+      move("program-$baseName-compiled.maude", $localOval) 
             or die "Failed to rename the compiled program to the local output file $localOval";
-	
-	push(@compiledPrograms, $localOval);
-	if ($args->{'-c'}) {
-		if ($args->{'-o'}) {
-			move($localOval, $args->{'-o'}) 
-                        or die "Failed to move the generated program to its destination $oval: $!";
-		}
-	} else {
-		push(@shouldBeDeleted, $localOval);
-	}
+      
+      push(@compiledPrograms, $localOval);
+      if ($args->{'-c'}) {
+            if ($args->{'-o'}) {
+                  move($localOval, $args->{'-o'}) 
+                        or die "Failed to move the generated program to its destination $args->{'-o'}: $!";
+            }
+      } else {
+            push(@shouldBeDeleted, $localOval);
+      }
 }
-
 
 sub compileProgram {
-	my ($warnFlag, $dumpFlag, $inputFile) = (@_);
-	my $nowarn = $warnFlag;
-	my $dflag = $dumpFlag;
-	
-	my $PEDANTRY_OPTIONS = "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
-	my $GCC_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
-	
-	my $K_PROGRAM_COMPILE;
-	if ($args->{'-p'}) {
-		$K_PROGRAM_COMPILE = "perl -d:DProf $xmlToK";
-	} else {
-		$K_PROGRAM_COMPILE = "perl $xmlToK";
-	}
-	
-	my $compilationLog = File::Temp->new( TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', SUFFIX => '.maude', UNLINK => 0 );
-	push(@temporaryFiles, $compilationLog);
-	
-	my $trueFilename = $inputFile;
-	my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
-	my $fullfilename = catfile($directoryname, "$filename.c");
-	if (! -e $fullfilename) {
-		die "$filename.c not found";
-	}
-	
-	my $gccCommand = "gcc $PEDANTRY_OPTIONS $GCC_OPTIONS @::gccDefines @::gccIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
-	my $retval = system($gccCommand);
-	open FILE, "$filename.warnings.log";
-	my @lines = <FILE>;
-	close FILE;
-	if ($retval) {
-		print STDERR "Error running preprocessor:\n";
-		print STDERR join("\n", @lines);
-		die();
-	}
-	if (! $nowarn) {
-		print join("\n", @lines);
-	}
-	$retval = system("$cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
-	open FILE, "$filename.warnings.log";
-	@lines = <FILE>;
-	close FILE;
-	if ($retval) {
-		unlink("$filename.gen.parse.tmp");
-		unlink("$filename.warnings.log");
-		print STDERR "Error running C parser:\n";
-		print STDERR join("\n", @lines);
-		die();		
-	}
-	if (! $nowarn) {
-		print join("\n", @lines);
-	}
-	if (! $dflag) {
-		unlink("$filename.pre.gen");
-		unlink("$filename.warnings.log");
-	}
-	move("$filename.gen.parse.tmp", "$filename.gen.parse") or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
-	
-	my $PROGRAMRET = system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude");
-	open FILE, "$compilationLog" or die "Could not open $compilationLog";
-	@lines = <FILE>;
-	close FILE;
-	if (! $dflag) {
-		unlink("$filename.gen.parse");
-	}
-	if ($PROGRAMRET) {
-		print STDERR "Error compiling program:\n";
-		print STDERR join("\n", @lines);
-		unlink($compilationLog);
-		die();
-	}
-	if ($args->{'-p'}) {
-		print `dprofpp`;
-	}
-	return 1;
-}
+      my ($warnFlag, $dumpFlag, $inputFile) = (@_);
+      my $nowarn = $warnFlag;
+      my $dflag = $dumpFlag;
+      
+      my $PEDANTRY_OPTIONS = 
+            "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
+      my $CPP_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
+      
+      my $K_PROGRAM_COMPILE;
+      if ($args->{'-p'}) {
+            $K_PROGRAM_COMPILE = "perl -d:DProf $xmlToK";
+      } else {
+            $K_PROGRAM_COMPILE = "perl $xmlToK";
+      }
+      
+      my $compilationLog = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', 
+            SUFFIX => '.maude', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $compilationLog);
+      
+      my $trueFilename = $inputFile;
+      my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
+      my $fullfilename = catfile($directoryname, "$filename.c");
 
-my @programNames;
-my @programs;
+      (-e $fullfilename)
+            or die "$filename.c not found";
+      
+      my $cppCommand = 
+            "cpp $PEDANTRY_OPTIONS $CPP_OPTIONS @cppDefines @cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+
+      my $retval = system($cppCommand);
+      open FILE, "$filename.warnings.log";
+      my @lines = <FILE>;
+      close FILE;
+      if ($retval) {
+            print STDERR "Error running preprocessor:\n";
+            print STDERR join("\n", @lines);
+            die();
+      }
+      if (! $nowarn) {
+            print join("\n", @lines);
+      }
+      $retval = system(
+            "$cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+      open FILE, "$filename.warnings.log";
+      @lines = <FILE>;
+      close FILE;
+      if ($retval) {
+            unlink("$filename.gen.parse.tmp");
+            unlink("$filename.warnings.log");
+            print STDERR "Error running C parser:\n";
+            print STDERR join("\n", @lines);
+            die();            
+      }
+      if (! $nowarn) {
+            print join("\n", @lines);
+      }
+      if (! $dflag) {
+            unlink("$filename.pre.gen");
+            unlink("$filename.warnings.log");
+      }
+      move("$filename.gen.parse.tmp", "$filename.gen.parse") 
+            or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
+      
+      my $PROGRAMRET = 
+            system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude");
+      open FILE, "$compilationLog" 
+            or die "Could not open $compilationLog";
+      @lines = <FILE>;
+      close FILE;
+      if (! $dflag) {
+            unlink("$filename.gen.parse");
+      }
+      if ($PROGRAMRET) {
+            print STDERR "Error compiling program:\n";
+            print STDERR join("\n", @lines);
+            unlink($compilationLog);
+            die();
+      }
+      if ($args->{'-p'}) {
+            print `dprofpp`;
+      }
+      return 1;
+}
 
 sub linker {
-	my @files = (@_);
-	my @operators;
-	my $retval = "";
-	if (scalar(@files) == 0) {
-		die "No files passed to linker\n";
-	}
-	foreach my $filename (@files) {
-		#print "$filename\n";
-		my @contents;
-		if ($filename =~ m/\.a$/) {
-			@contents = `ar -p $filename`;
-			if ($?) {
-				die "Something went wrong when trying to unarchive $filename\n";
-			}
-		} else {
-			open(my $newFile, $filename) or die "Couldn't open file $filename\n";
-			@contents = <$newFile>;
-		}
-		linkFile(@contents);
-	}
+      my @linkfiles = (@_);
+      my @programs;
+      my @operators;
+      my $retval = "";
+      if (scalar(@linkfiles) == 0) {
+            die "No files passed to linker\n";
+      }
+      for (@linkfiles) {
+            my @contents;
+            if (/\.a$/) {
+                  @contents = `ar -p $_`;
+                  ($? == 0) 
+                        or die "Something went wrong while unarchiving $_\n"
+            } else {
+                  open(my $newFile, $_) 
+                        or die "Couldn't open file $_\n";
+                  @contents = <$newFile>;
+            }
 
-	$retval .= "'Program(";
-	$retval .= "'klist(_`(_`)(KList2KLabel_(";
-	$retval .= printNested(@programs);
-	$retval .= '), .KList))';
-	$retval .= ')';
-	return $retval;
-}
+            for (@contents){
+                  push(@programs, $_);
+            }
+      }
 
-sub linkFile {
-	my (@contents) = (@_);
-	foreach my $line (@contents){
-            push(@programs, $line);
-	}
+      $retval .= "'Program(";
+      $retval .= "'klist(_`(_`)(KList2KLabel_(";
+      $retval .= printNested(@programs);
+      $retval .= '), .KList))';
+      $retval .= ')';
+      return $retval;
 }
 
 sub printNested {
-	my ($name, @rest) = (@_);
+      my ($name, @rest) = (@_);
 
-	if (defined($name)) {
-		return "_`,`,_(($name), " . printNested(@rest) .")";
-	} else {
-		return '.KList';
-	}
+      if (defined($name)) {
+            return "_`,`,_(($name), " . printNested(@rest) .")";
+      } else {
+            return '.KList';
+      }
+}
+ 
+sub interruptHandler {
+      # Call single cleanup point.
+      finalCleanup();
+      # Since we were interrupted, we should exit with a non-zero code.
+      exit 1;
 }
 
-__END__
+# This subroutine can be used as a way to ensure we clean up all resources
+# whenever we exit. This is going to be mostly temp files. If the program
+# terminates for almost any reason, this code will be executed.
+sub finalCleanup {
+      for (@temporaryFiles) {
+            unlink;
+      }
+}
+ 
+# This block gets run at the end of a normally terminating program, whether it
+# simply exits, or dies. We use this to clean up.
+END {
+      # $? contains the value the program would normally have exited with.
+      my $retval = $?;
+      # Call single cleanup point.
+      finalCleanup();
+      exit $retval;
+}
+
