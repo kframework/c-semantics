@@ -11,14 +11,17 @@ default: fast
 c11-kompiled: $(C11_FILES) | check-vars
 	@echo "Compiling the C definition..."
 	@$(KOMPILE) c11.k -o "c11-kompiled" -w -v -l C11 -transition "interpRule"
+	@touch c11-kompiled
 
 c11-kompiled-nd: $(C11_FILES) | check-vars
 	@echo "Compiling the C definition with side-effect nondeterminism..."
 	@$(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
+	@touch c11-kompiled-nd
 
 c11-kompiled-nd-thread: $(C11_FILES) | check-vars
 	@echo "Compiling the C definition with thread-interleaving nondeterminism..."
 	@$(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -l C11 -transition "observable ndtrans ndthread"
+	@touch c11-kompiled-nd-thread
 
 all: fast nd thread
 

@@ -33,7 +33,7 @@ endif
 	@if ! maude --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR): $(FILES_TO_DIST) | check-vars cparser semantics 
+$(DIST_DIR): $(FILES_TO_DIST) cparser semantics | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
@@ -72,6 +72,7 @@ $(DIST_DIR): $(FILES_TO_DIST) | check-vars cparser semantics
 	@echo "Cleaning up..."
 	@rm -f $(DIST_DIR)/testProgram.c
 	@rm -f $(DIST_DIR)/testProgram.compiled
+	@touch $(DIST_DIR)
 	@echo "Done."
 
 cparser:
