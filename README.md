@@ -1,4 +1,5 @@
-See INSTALL.md for installation instructions.
+See INSTALL.md for installation instructions and LICENSE for licensing
+information.
 
 ## Usage
       
@@ -158,5 +159,3 @@ Links to help understand K:
       explanation.
 
 See `semantics/README.md` for more details.
-
-For licensing information, see LICENSE.
