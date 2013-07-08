@@ -42,17 +42,17 @@ these problems as well as to explore correct nondeterministic evaluations.
 
 Let's start with a simple example that can be caught just with interpretation:
 
-<pre>
+```
 $ cat undefAdd2.c
 int main(void){
    int x = 0;
    return (x = 1) + x;
 }
-</pre>
+```
 The `(x = 1) + x` expression is undefined because the read of `x` (the lone
 `x`) is unsequenced with respect to the write of `x` (the assignment). Running
 this program:
-<pre>
+```
 $ kcc undefAdd2.c
 $ ./a.out
 =============================================================
@@ -67,32 +67,32 @@ Line: 3
 =============================================================
 Final Computation:
 ...
-</pre>
+```
 detects the error. However, we were lucky because the interpreter doesn't
 always detect these kinds of errors. Consider this program:
 
-<pre>
+```
 $ cat undefComma.c
 int main(void){
         int x = 0;
         return x + (x, x = 3);
 }
-</pre>
+```
 This program is also undefined. Here, the read of x in the right argument of
 the + is unsequenced with the write to x in x=3. Let's try interpreting:
 
-<pre>
+```
 $ kcc undefComma.c
 $ ./a.out
 $ echo $?
 3
-</pre>
+```
 
 Running this program through the interpreter fails to find the error! However,
 by instructing kcc to search the state space, we can identify this program as
 being undefined:
 
-<pre>
+```
 $ SEARCH=1 ./a.out 
 Performing the search...
 Examining the output...
@@ -115,7 +115,7 @@ Output:
 
 ========================================================================
 2 solutions found
-</pre>
+```
 
 If any of the results returned by search indicate undefined behavior, then the
 program is undefined. During interpretation, we don't always notice undefined
@@ -125,6 +125,34 @@ behavior, but if it exists, it will always be identified using search.
 
 We currently support LTL model checking of the version of our semantics
 with non-deterministic expression sequencing.
+
+### Syntax
+
+The syntax of LTL formulas is given by the following grammar:
+```
+LTL ::= "~Ltl" LTL
+      | "OLtl" LTL
+      | "<>Ltl" LTL
+      | "[]Ltl" LTL
+      | LTL "/\Ltl" LTL
+      | LTL "\/Ltl" LTL
+      | LTL "ULtl" LTL
+      | LTL "RLtl" LTL
+      | LTL "WLtl" LTL
+      | LTL "|->Ltl" LTL
+      | LTL "->Ltl" LTL 
+      | LTL "<->Ltl" LTL
+      | LTL "=>Ltl" LTL 
+      | LTL "<=>Ltl" LTL
+```
+Additionally, we support a subset of the C expression syntax and we resolve
+symbols in the global scope of the program being checked. We support two other
+special atomic propositions: `__running` and `__error`. The first holds only
+after main has been called and becomes false when main returns. The second
+holds when the semantics enters some state that would result in undefined
+behavior.
+
+### Examples
 
 For example, consider the C program at `examples/ltlmc/bad.c`:
 ```c
@@ -164,33 +192,10 @@ int main(void) {
 For this program, no counter-example will be found for either proposition and
 the only result should be `true`.
 
-The syntax of LTL formulas is given by the following grammar:
-```
-LTL ::= "~Ltl" LTL
-      | "OLtl" LTL
-      | "<>Ltl" LTL
-      | "[]Ltl" LTL
-      | LTL "/\Ltl" LTL
-      | LTL "\/Ltl" LTL
-      | LTL "ULtl" LTL
-      | LTL "RLtl" LTL
-      | LTL "WLtl" LTL
-      | LTL "|->Ltl" LTL
-      | LTL "->Ltl" LTL 
-      | LTL "<->Ltl" LTL
-      | LTL "=>Ltl" LTL 
-      | LTL "<=>Ltl" LTL
-```
+### Traffic lights
 
-Additionally, we support a subset of the C expression syntax and we resolve
-symbols in the global scope of the program being checked. We support two other
-special atomic propositions: `__running` and `__error`. The first holds only
-after main has been called and becomes false when main returns. The second
-holds when the semantics enters some state that would result in undefined
-behavior.
-
-For a more complicated example, consider the cutting-edge embedded
-traffic-light controller at `examples/ltlmc/lights.c`:
+For a more complicated example, consider the cutting-edge, embedded traffic
+light controller at `examples/ltlmc/lights.c`:
 ```c
 typedef enum {green, yellow, red} state;
 
