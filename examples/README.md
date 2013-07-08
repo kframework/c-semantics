@@ -1,4 +1,4 @@
-## Search.
+## Search
 
 The C standard allows compilers freedom in optimizing code, which includes
 allowing them to choose their own expression evaluation order. This includes
@@ -38,7 +38,7 @@ it is undecidable statically; moreover, one needs to use the entire semantics
 in order to check it dynamically. However, one can use kcc to help identify
 these problems as well as to explore correct nondeterministic evaluations.
 
-### Undefined examples.
+### Undefinedness examples
 
 Let's start with a simple example that can be caught just with interpretation:
 
@@ -121,5 +121,5 @@ If any of the results returned by search indicate undefined behavior, then the
 program is undefined. During interpretation, we don't always notice undefined
 behavior, but if it exists, it will always be identified using search.
 
-## Model checking.
+## Model checking
 ...
