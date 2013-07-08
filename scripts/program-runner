@@ -4,6 +4,7 @@ use warnings;
 
 use File::Spec::Functions qw(catfile);
 use File::Temp;
+use File::Copy;
 
 setpgrp;
 
@@ -136,7 +137,7 @@ sub main {
       # Print errors and/or results and exit.
       if (defined $ENV{PROFILE}) {
             my $profileDB = 'maudeProfileDB.sqlite';
-            print "Generating profile database $profileDB...";
+            print "Generating profile database $profileDB...\n";
             if (! -e $profileDB) {
                   copy(catfile($SCRIPTS_DIR, "maudeProfileDB.calibration.sqlite"), 
                               $profileDB);

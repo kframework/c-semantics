@@ -7,12 +7,11 @@ PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 
 FILES_TO_DIST = \
-	$(wildcard $(SCRIPTS_DIR)/*.sql) \
-	$(SCRIPTS_DIR)/accessProfiling.pl \
+	$(SCRIPTS_DIR)/query-kcc-prof \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(SCRIPTS_DIR)/kcc \
-	$(SCRIPTS_DIR)/xmlToK.pl \
-	$(SCRIPTS_DIR)/programRunner.pl \
+	$(SCRIPTS_DIR)/xml-to-k \
+	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(LIBC_DIR)/includes/*) \
 	$(wildcard $(LIBC_DIR)/src/*)
@@ -45,7 +44,7 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@echo "Compiling the standard library..."
 	@echo compiling clib
-	$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
+	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
 	@echo compiling ctype
 	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/ctype.o $(DIST_DIR)/lib/ctype.c
 	@echo compiling math

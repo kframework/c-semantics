@@ -1,0 +1,218 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use DBI;
+
+my $RULE_LENGTH = 300;
+my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDB.sqlite","","");
+
+my %queries = (
+'exec' => <<SQL,
+      SELECT 
+            runName
+            , count(distinct rule) as numRules
+      FROM data
+      WHERE 
+            (kind LIKE 'structural' OR kind LIKE 'computational')
+            AND rewrites > 0
+      GROUP BY 
+            runName
+      ORDER BY
+            numRules DESC
+SQL
+
+'builtin' => <<SQL,
+      SELECT 
+            ruleName
+            , rule
+            , kind
+            , SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+      FROM data
+      WHERE 
+            kind LIKE 'macro'
+            OR kind LIKE 'builtin'
+            OR kind LIKE 'cooling'
+            OR kind LIKE 'heating'
+      GROUP BY 
+            rule
+      ORDER BY
+            matches DESC
+SQL
+
+'program_and_rule' => <<SQL,
+      SELECT 
+            runName
+            , ruleName
+            , rule
+            , kind
+            , SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+            , locationFile
+            , locationFrom
+            , locationTo
+      FROM data
+      WHERE 
+            kind LIKE 'structural' 
+            OR kind LIKE 'computational'
+      GROUP BY 
+            runName
+            , rule
+      ORDER BY
+            matches DESC
+SQL
+
+'rule_mismatch' => <<SQL,
+      SELECT 
+            ruleName
+            , rule
+            , kind
+            , SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+            , SUM(matches) - SUM(rewrites) as diff
+            , locationFile
+            , locationFrom
+            , locationTo
+      FROM data
+      WHERE 
+            kind LIKE 'structural' 
+            OR kind LIKE 'computational'
+      GROUP BY 
+            rule
+      ORDER BY
+            diff DESC
+            , locationFile DESC
+SQL
+
+'rule' => <<SQL,
+      SELECT 
+            ruleName
+            , rule
+            , kind
+            , SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+            , locationFile
+            , locationFrom
+            , locationTo
+      FROM data
+      WHERE 
+            kind LIKE 'structural' 
+            OR kind LIKE 'computational'
+      GROUP BY 
+            rule
+      ORDER BY
+            matches DESC
+SQL
+
+'semantic_file' => <<SQL,
+      SELECT 
+            locationFile
+            , SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+      FROM data
+      GROUP BY
+            locationFile
+      ORDER BY
+            matches DESC
+SQL
+
+'rewrites' => <<SQL
+      SELECT 
+            SUM(matches) as matches
+            , SUM(rewrites) as rewrites
+            , SUM(matches) - SUM(rewrites) as misses
+      FROM data
+      WHERE 
+            kind LIKE 'structural' 
+            OR kind LIKE 'computational'
+      ORDER BY
+            matches DESC
+SQL
+);
+
+while (my $arg = shift) {
+      if (defined $queries{$arg}) {
+            printResults(join " ", $queries{$arg});
+      } elsif($arg eq '-f' || $arg eq '--file') {
+            my $file = shift;
+            open QUERY, "<$file";
+            printResults(join(" ", <QUERY>));
+      } elsif($arg eq '-h' || $arg eq '--help') {
+            printHelp();
+      } 
+}
+
+$dbh->disconnect;
+exit 0;
+
+sub printHelp {
+      print "Usage: $0 [<query> <query> ...] [-f <file>] [-h]\n";
+      print "Runs either the named <query>s, or the SQL contained in <file>, against the\n";
+      print "profile DB located in the current directory. Each <query> may be one of:\n";
+      for (sort keys %queries) {
+            print "\t$_\n";
+      }
+}
+
+sub printField {
+	my ($s) = (@_);
+	return "\t\"$s\"";
+}
+
+sub printPerFile {
+	my ($filename) = (@_);
+
+}
+
+sub printResults {
+	my ($query) = (@_);
+
+	my $sth = $dbh->prepare($query) or die $dbh->errstr;
+	$sth->execute();
+	
+	my $hash_ref = $sth->fetchrow_hashref;
+	{
+		my @fields = ();
+		foreach my $key ( sort fieldOrder keys %$hash_ref ) {
+			push(@fields, "\"$key\"");
+		}
+		print join("\t", @fields);
+		print "\n";
+	}
+	
+	do {
+		my @fields = ();
+		foreach my $key ( sort fieldOrder keys %$hash_ref ) {
+			if ($key eq 'rule') {
+				my $rule = substr($hash_ref->{rule}, 0, $RULE_LENGTH);
+				$rule =~ s/[\n\t\r]/ /g; # turn newlines into spaces
+				$rule =~ s/["]//g; # remove quotes
+				$hash_ref->{$key} = $rule;
+			}
+			push(@fields, "$hash_ref->{$key}");
+		}
+		print join("\t", @fields);
+		print "\n";
+	} while ($hash_ref = $sth->fetchrow_hashref);
+}
+
+sub fieldOrder {
+	my %sorting = (x => 0
+		, runName => 0
+		, runNum => 5
+		, ruleName => 10
+		, locationFile => 15
+		, locationFrom => 20
+		, locationTo => 25
+		, type => 35
+		, kind => 40
+		, matches => 45
+		, rewrites => 50
+		, rule => 100
+	);
+	if (exists $sorting{$a} and exists $sorting{$b}){
+		$sorting{$a} <=> $sorting{$b};
+	} else {
+		$a cmp $b;
+	}
+}

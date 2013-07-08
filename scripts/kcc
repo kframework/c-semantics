@@ -24,7 +24,7 @@ my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
 my $myDirectory = dirname(rel2abs($0));
-my $xmlToK = catfile($myDirectory, 'xmlToK.pl');
+my $xmlToK = catfile($myDirectory, 'xml-to-k');
 my $cparser = catfile($myDirectory, 'cparser');
 
 my @temporaryFiles = ();
@@ -98,7 +98,7 @@ sub main {
             die "Nothing returned from linker";
       }
 
-      open(FILE, catfile($myDirectory, 'programRunner.pl')) or die "Couldn't open file: $!";
+      open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
       my $programRunner = join("", <FILE>);
       close(FILE);
 
