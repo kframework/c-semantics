@@ -10,7 +10,7 @@ FILES_TO_DIST = \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
 	$(SCRIPTS_DIR)/analyzeProfile.pl \
-	$(SCRIPTS_DIR)/compile.pl \
+	$(SCRIPTS_DIR)/kcc \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/programRunner.pl \
 	$(PARSER_DIR)/cparser \
@@ -43,7 +43,6 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd-thread $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
-	@mv $(DIST_DIR)/compile.pl $(DIST_DIR)/kcc
 	@echo "Compiling the standard library..."
 	@echo compiling clib
 	$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
