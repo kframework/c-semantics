@@ -1,8 +1,6 @@
 See INSTALL.md for installation instructions and LICENSE for licensing
 information.
 
-## Usage
-
 ### Quick overview
 - `kcc` is meant to to act a lot like `gcc`. You use it and run programs the
   same way.
@@ -50,18 +48,18 @@ See examples/README.md for more details.
 #### Profiling the semantics
 
 Running `PROFILE=1 ./a.out` will record which rules of the semantics are
-exercised during the evaluation of the program. The program executes as normal,
+exercised during the evaluation of a program. The program executes as normal,
 but this additional information is recorded in an SQLite database
 `maudeProfileDB.sqlite` in your current directory. You can access the
 information by running queries against the database. Some sample queries are
-provided in the dist directory, and can be tried by running, e.g., 
+provided by the `query-kcc-prof` script, and can be executed with, e.g., 
 ```
 $ query-kcc-prof exec
 ```
-You can look at the provided queries (see the `query-kcc-prof` script) and
-construct your own, or access the database using your own programs. Different
-runs of the tool are kept distinct in the database, so you can run a bunch of
-programs and then analyze the collective data. You can simply delete
+You can look at the provided queries (see the source of the `query-kcc-prof`
+script) and construct your own, or access the database using your own programs.
+Different runs of the tool are kept distinct in the database, so you can run a
+bunch of programs and then analyze the collective data. You can simply delete
 `maudeProfileDB.sqlite` file to start another series of tests with a fresh
 database.
 
@@ -81,7 +79,7 @@ $ make torture
   reduce the size of the configuration for small test programs and make the
   output of state-space search and model checking more manageable.
 
-## Understanding the semantics
+### Understanding the semantics
 
 Links to help understand K:
 - http://code.google.com/p/k-framework/
