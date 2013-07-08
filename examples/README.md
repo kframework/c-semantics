@@ -19,7 +19,7 @@ by the C11 standard:
 > different side effect on the same scalar object or a value computation using
 > the value of the same scalar object, the behavior is undefined. If there are
 > multiple allowable orderings [...], the behavior is undefined if such an
-> unsequenced side effect occurs in any of the orderings [C1X, §6.5:2].
+> unsequenced side effect occurs in any of the orderings [C11, §6.5:2].
 
 This means that if there are two writes, or a write and a read to the same
 object that are unsequenced (i.e., either is allowed to happen before the
@@ -35,7 +35,7 @@ points.
 A hasty read of the standard may wrongly indicate that detecting this kind of
 undefined behavior is an easy problem that can be checked statically. In fact,
 it is undecidable statically; moreover, one needs to use the entire semantics
-in order to check it dynamically. However, one can use kcc to help identify
+in order to check it dynamically. However, one can use `kcc` to help identify
 these problems as well as to explore correct nondeterministic evaluations.
 
 ### Undefinedness examples
@@ -52,7 +52,7 @@ The `(x = 1) + x` expression is undefined because the read of `x` (the lone
 `x`) is unsequenced with respect to the write of `x` (the assignment). Running
 this program:
 ```
-$ kcc undefAdd2.c
+$ kcc undefAdd.c
 $ ./a.out
 =============================================================
 ERROR! KCC encountered an error while executing this program.
@@ -60,7 +60,7 @@ ERROR! KCC encountered an error while executing this program.
 Error: 00003
 Description: Unsequenced side effect on scalar object with value computation of same object.
 =============================================================
-File: /home/grosu/celliso2/c-semantics/examples/search/undefAdd2.c
+File: /examples/search/undefAdd.c
 Function: main
 Line: 3
 =============================================================
@@ -90,23 +90,23 @@ by instructing kcc to search the state space, we can identify this program as
 being undefined:
 ```
 $ SEARCH=1 ./a.out 
-Performing the search...
+Searching reachable states... (with non-deterministic expression sequencing)
 Examining the output...
 ========================================================================
 2 solutions found
 ------------------------------------------------------------------------
 Solution 1
-Program completed successfully
-Return value: 3
+Program got stuck
+File: /examples/search/undefComma.c
+Line: 3
+Error: 00003
+Description: Unsequenced side effect on scalar object with value computation of same object.
 Output:
 
 ------------------------------------------------------------------------
 Solution 2
-Program got stuck
-File: 
-Line: 
-Error: 00003
-Description: Unsequenced side effect on scalar object with value computation of same object.
+Program completed successfully
+Exit code: 3
 Output:
 
 ========================================================================
