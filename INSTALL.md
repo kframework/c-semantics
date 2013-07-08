@@ -21,9 +21,9 @@ do any installation steps not listed explicitly.
     - Getopt::Declare
 
 E.g., to install a Perl module using cpan:
-<pre>
+```
 $ cpan -i XML::LibXML::Reader
-</pre>
+```
 
 (It might help to do this as sudo if it doesn't work as a normal user.)
 
@@ -34,12 +34,12 @@ $ cpan -i XML::LibXML::Reader
 - Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
 To check if OCaml is installed:
-<pre>
+```
 $ ocaml
         Objective Caml version 4.00.0
 
 # 
-</pre>
+```
 
 (Press ctrl-d to exit.)
 
@@ -54,10 +54,10 @@ $ ocaml
 - You can probably do this with your package manager.
       
 To check if dot is installed:
-<pre>
+```
 $ which dot
 /usr/bin/dot
-</pre>
+```
 
 ### 6. Build our C tool.
 - Set C_K_BASE to the full (non-relative) path in which you installed the K
@@ -68,16 +68,16 @@ $ which dot
 - The `make` process creates a `dist/` directory which you can copy elsewhere
   to install the C tool, or simply leave it where it is. Either way, you will
   probably want to add it to your `$PATH`:
-<pre>
+```
 export PATH=/path/to/c-semantics/dist:$PATH
-</pre>
+```
       
 To check if kcc is behaving correctly:
-<pre>
+```
 $ dist/kcc tests/unitTests/helloworld.c
 $ ./a.out 
 Hello world
-</pre>
+```
 
 See README.md for a summary of the features supported by the `kcc` tool.
 

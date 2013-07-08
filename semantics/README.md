@@ -51,27 +51,23 @@ refactorings:
    other module, but if they do, then it should better be another `-SYNTAX`
    module.
 
-6. For any module `A`, if the module `A-SYNTAX` exists, then the first line of
-   module `A` should be `imports A-SYNTAX` (i.e., this imports statement should
-   be ordered first and followed by the remaning imports).
-
-7. I try to avoid giant modules, especially giant `SYNTAX` modules. These seem
+6. I try to avoid giant modules, especially giant `SYNTAX` modules. These seem
    analagous to putting everything in a global namespace and can make figuring
    out other modules' true dependencies difficult.
 
-8. `context` rules should probably go in semantic modules and not syntactic
+7. `context` rules should probably go in semantic modules and not syntactic
    modules because they often have awkward dependencies (e.g., `reval` and
    `peval` in the C semantics).
 
-9. My module names generally correspond somehow to file names, but with dashes
+8. My module names generally correspond somehow to file names, but with dashes
    for slashes. E.g., the module called `C-EXPRESSION-FUNCTION-CALL` is at
    `language/expression/function-call.k`. 
 
-10. The word "semantics" in module names and elsewhere is usually terribly
-    redundant.
+9. The word "semantics" in module names and elsewhere is usually terribly
+   redundant.
 
-11. I like to "declare" variables in rules at the point where they're bound
+10. I like to "declare" variables in rules at the point where they're bound
     (i.e., on the left side of the `=>`). This can help make rules easier to
     read, in my experience. But I don't do this too religiously.
 
-12. I prefer `func'`, `func''`, etc. for "auxillary" syntax productions.
+11. I prefer `func'`, `func''`, etc. for "auxillary" syntax productions.
