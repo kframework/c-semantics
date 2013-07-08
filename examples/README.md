@@ -40,10 +40,9 @@ these problems as well as to explore correct nondeterministic evaluations.
 
 ### Undefinedness examples
 
-Let's start with a simple example that can be caught just with interpretation:
-
-```
-$ cat undefAdd2.c
+Let's start with a simple example that can be caught just with interpretation.
+Consider the program at `examples/search/undefAdd2.c`:
+```c
 int main(void){
    int x = 0;
    return (x = 1) + x;
@@ -69,10 +68,9 @@ Final Computation:
 ...
 ```
 detects the error. However, we were lucky because the interpreter doesn't
-always detect these kinds of errors. Consider this program:
-
-```
-$ cat undefComma.c
+always detect these kinds of errors. Consider the program at
+`examples/search/undefComma.c`:
+```c
 int main(void){
         int x = 0;
         return x + (x, x = 3);
@@ -80,7 +78,6 @@ int main(void){
 ```
 This program is also undefined. Here, the read of x in the right argument of
 the + is unsequenced with the write to x in x=3. Let's try interpreting:
-
 ```
 $ kcc undefComma.c
 $ ./a.out
@@ -91,7 +88,6 @@ $ echo $?
 Running this program through the interpreter fails to find the error! However,
 by instructing kcc to search the state space, we can identify this program as
 being undefined:
-
 ```
 $ SEARCH=1 ./a.out 
 Performing the search...
@@ -123,8 +119,7 @@ behavior, but if it exists, it will always be identified using search.
 
 ## LTL model checking
 
-We currently support LTL model checking of the version of our semantics
-with non-deterministic expression sequencing.
+We currently support LTL model checking over possible expression sequencings.
 
 ### Syntax
 
@@ -194,8 +189,8 @@ the only result should be `true`.
 
 ### Traffic lights
 
-For a more complicated example, consider the cutting-edge, embedded traffic
-light controller at `examples/ltlmc/lights.c`:
+For a more complicated example, consider the traffic light simulator at
+`examples/ltlmc/lights.c`:
 ```c
 typedef enum {green, yellow, red} state;
 
@@ -240,7 +235,7 @@ int main(void){
 }
 ```
 
-Using LTL model checking, we can verify that this algorithm is "safe" in the
+Using LTL model checking, we can verify that our algorithm is "safe" in the
 sense that at least one light is red at all times:
 ```
 $ kcc -s lights.c
@@ -255,6 +250,6 @@ turn green. The following should produce a counter-example:
 $ LTLMC="[]Ltl <>Ltl lightNS == green" ./a.out
 ```
 We can fix this by replacing the line `changeNS() + changeEW();` with
-`changeNS(); changeEW();`, which should cause this proposition to hold.  
+`changeNS(); changeEW();`. Our proposition should then hold.
 
 
