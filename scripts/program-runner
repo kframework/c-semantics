@@ -141,9 +141,6 @@ sub main {
             if (! -e $profileDB) {
                   copy(catfile($SCRIPTS_DIR, "maudeProfileDB.calibration.sqlite"), 
                               $profileDB);
-            } else {
-                  print "Error: $profileDB already exists!\nHalting.";
-                  return 0;
             }
             my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
             `perl $profileWrapper $fileOutput $PROGRAM_NAME`;
