@@ -30,7 +30,7 @@ $ cpan -i XML::LibXML::Reader
 ### 3. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
-- Install OCaml from here http://caml.inria.fr/ or via your package manager.
+- Install OCaml from http://caml.inria.fr/ or via your package manager.
 - Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
 To check if OCaml is installed:

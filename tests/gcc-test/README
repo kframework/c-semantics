@@ -62,7 +62,7 @@ mv 20000822-1.c 20010209-1.c 20010605-1.c 20030501-1.c 20040520-1.c 20041124-1.c
 mv 20000223-1.c 20000314-3.c 20000801-3.c 20000917-1.c 20001121-1.c 20001203-2.c 20010924-1.c 20020206-1.c 20020320-1.c 20030109-1.c 20040302-1.c 20040308-1.c 20040423-1.c 20041212-1.c 20041218-2.c 20050106-1.c 20050107-1.c 20050119-1.c 20050119-2.c 20050613-1.c 20051113-1.c 20070919-1.c 20071210-1.c 20091229-1.c 920302-1.c 920501-3.c 920501-4.c 920501-5.c 920603-1.c 920721-3.c 920728-1.c 920731-1.c 920909-1.c 921124-1.c 930406-1.c 930408-1.c 930429-2.c 930513-2.c 930526-1.c 930529-1.c 930622-1.c 930719-1.c 931228-1.c 950512-1.c 950906-1.c 951003-1.c 960218-1.c 960416-1.c 961112-1.c 961223-1.c 980526-1.c 980605-1.c 980608-1.c 990208-1.c comp-goto-1.c complex-1.c complex-2.c complex-5.c complex-7.c compndlit-1.c fprintf-1.c inst-check.c int-compare.c loop-2.c loop-2c.c loop-2d.c loop-3.c loop-3b.c loop-3c.c mod-1.c p18298.c pr17133.c pr19687.c pr21173.c pr23324.c pr28982b.c pr33382.c pr34154.c pr42570.c printf-1.c printf-chk-1.c restrict-1.c unroll-1.c va-arg-7.c va-arg-8.c zero-struct-1.c zero-struct-2.c zerolen-1.c zerolen-2.c nocompile/
 
 for f in *.c; do
-	../../scripts/insert.sh 1 $f '#include "fsl-header.h"'
+	./insert.sh 1 $f '#include "fsl-header.h"'
 done
 
 # fix declaration, abort had wrong signature
@@ -78,8 +78,8 @@ when programs used functions like strcmp or malloc, I included the appropriate h
 921110-1.c:extern int abort();
 
 for f in `grep -L 'void exit\|stdlib' *.c`; do
-	../../scripts/insert.sh 1 $f 'void exit(int status);'
-	#../../scripts/insert.sh 1 $f 'void abort(void);'
+	./insert.sh 1 $f 'void exit(int status);'
+	#./insert.sh 1 $f 'void abort(void);'
 done
 
 
