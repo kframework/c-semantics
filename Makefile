@@ -9,15 +9,15 @@ DIST_DIR = dist
 FILES_TO_DIST = \
 	$(wildcard $(SCRIPTS_DIR)/*.sql) \
 	$(SCRIPTS_DIR)/accessProfiling.pl \
+	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(SCRIPTS_DIR)/compile.pl \
 	$(SCRIPTS_DIR)/xmlToK.pl \
 	$(SCRIPTS_DIR)/programRunner.pl \
-	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(LIBC_DIR)/includes/*) \
 	$(wildcard $(LIBC_DIR)/src/*)
 
-.PHONY: default check-vars cparser semantics clean
+.PHONY: default check-vars semantics clean
 
 default: dist
 
@@ -33,7 +33,7 @@ endif
 	@if ! maude --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR): $(FILES_TO_DIST) cparser semantics | check-vars
+$(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
@@ -75,7 +75,7 @@ $(DIST_DIR): $(FILES_TO_DIST) cparser semantics | check-vars
 	@touch $(DIST_DIR)
 	@echo "Done."
 
-cparser:
+parser/cparser:
 	@$(MAKE) -C $(PARSER_DIR)
 
 semantics: check-vars
