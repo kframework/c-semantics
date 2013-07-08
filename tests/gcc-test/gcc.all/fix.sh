@@ -28,7 +28,7 @@ echo "Fixing size_t..."
 # replace __SIZE_TYPE__ with size_t
 sed -i 's/__SIZE_TYPE__/size_t/g' *.c
 for f in `grep -L 'wchar\.h\|uchar\.h\|time\.h\|string\.h\|stdio\.h\|stddef\.h\|stdlib\.h' \`grep -l 'size_t' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stddef.h>'
+	./insert.sh 1 $f '#include <stddef.h>'
 done
 # remove typedefs of size_t that referred to __SIZE_TYPE__
 sed -i 's/typedef[ ]\+size_t[ ]\+size_t/\/\//g' *.c
@@ -36,7 +36,7 @@ sed -i 's/typedef[ ]\+size_t[ ]\+size_t/\/\//g' *.c
 echo "Fixing wchar_t..."
 sed -i 's/__WCHAR_TYPE__/wchar_t/g' *.c
 for f in `grep -L 'wchar\.h\|stddef\.h\|stdlib\.h' \`grep -l 'wchar_t' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stddef.h>'
+	./insert.sh 1 $f '#include <stddef.h>'
 done
 # remove typedefs of wchar_t that referred to __WCHAR_TYPE__
 sed -i 's/typedef[ ]\+wchar_t[ ]\+wchar_t/\/\//g' *.c
@@ -107,83 +107,83 @@ sed -i 's/int[ ]\+abort[ ]*()/void abort(void)/g' *.c
 sed -i 's/int[ ]\+abort[ ]*(/void abort(/g' *.c
 
 for f in `grep -L 'void[ ]\+abort\|stdlib\.h' *.c`; do
-	../../scripts/insert.sh 1 $f '#include <stdlib.h>'
+	./insert.sh 1 $f '#include <stdlib.h>'
 done
 # exit
 sed -i 's/__builtin_exit/exit/g' *.c
 sed -i 's/void[ ]\+exit[ ]*()/void exit(int)/g' *.c
 for f in `grep -L 'void[ ]\+exit\|stdlib\.h' *.c`; do
-	../../scripts/insert.sh 1 $f '#include <stdlib.h>'
+	./insert.sh 1 $f '#include <stdlib.h>'
 done
 # malloc
 sed -i 's/__builtin_malloc/malloc/g' *.c
 for f in `grep -L 'void[ ]*\*[ ]*malloc\|stdlib\.h' \`grep -l 'malloc' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stdlib.h>'
+	./insert.sh 1 $f '#include <stdlib.h>'
 done
 
 ## stdio.h
 # printf
 for f in `grep -L 'int[ ]*printf\|stdio\.h' \`grep -l 'printf' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stdio.h>'
+	./insert.sh 1 $f '#include <stdio.h>'
 done
 
 ## ctype.h
 # isprint
 for f in `grep -L 'int[ ]*isprint\|ctype\.h' \`grep -l 'isprint' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <ctype.h>'
+	./insert.sh 1 $f '#include <ctype.h>'
 done
 
 ## string.h
 # memcpy
 sed -i 's/__builtin_memcpy/memcpy/g' *.c
 for f in `grep -L 'void[ ]*\*[ ]*memcpy\|string\.h' \`grep -l 'memcpy' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 for f in `grep -L 'void[ ]*\*[ ]*memset\|string\.h' \`grep -l 'memset' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 # memcmp
 sed -i 's/__builtin_memcmp/memcmp/g' *.c
 for f in `grep -L 'int[ ]*memcmp\|string\.h' \`grep -l 'memcmp' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 sed -i 's/__builtin_strlen/strlen/g' *.c
 for f in `grep -L 'size_t[ ]*strlen\|string\.h' \`grep -l 'strlen' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 sed -i 's/__builtin_strcpy/strcpy/g' *.c
 for f in `grep -L 'char[ ]*\*[ ]*strcpy\|string\.h' \`grep -l 'strcpy' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 sed -i 's/__builtin_strcmp/strcmp/g' *.c
 for f in `grep -L 'int[ ]*strcmp\|string\.h' \`grep -l 'strcmp' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <string.h>'
+	./insert.sh 1 $f '#include <string.h>'
 done
 
 ## stdarg.h
 sed -i 's/__builtin_va_arg/va_arg/g' *.c
 for f in `grep -L 'stdarg\.h' \`grep -l 'va_arg' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stdarg.h>'
+	./insert.sh 1 $f '#include <stdarg.h>'
 done
 sed -i 's/__builtin_va_start/va_start/g' *.c
 for f in `grep -L 'stdarg\.h' \`grep -l 'va_start' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stdarg.h>'
+	./insert.sh 1 $f '#include <stdarg.h>'
 done
 sed -i 's/__builtin_va_list/va_list/g' *.c
 for f in `grep -L 'stdarg\.h' \`grep -l 'va_list' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stdarg.h>'
+	./insert.sh 1 $f '#include <stdarg.h>'
 done
 
 ## math.h
 sed -i 's/__builtin_abs/abs/g' *.c
 for f in `grep -L 'int[ ]*abs\|math\.h' \`grep -l 'abs[ ]*(' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <math.h>'
+	./insert.sh 1 $f '#include <math.h>'
 done
 
 ## stddef.h
 sed -i 's/__builtin_offsetof/offsetof/g' *.c
 for f in `grep -L 'stddef\.h' \`grep -l 'offsetof' *.c\``; do
-	../../scripts/insert.sh 1 $f '#include <stddef.h>'
+	./insert.sh 1 $f '#include <stddef.h>'
 done
 
 
