@@ -17,52 +17,17 @@ This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 
 - `language/syntax.k`: the main C language syntax module. 
 
-# Style notes
+# Some style notes
 
 Here's some stylistic conventions I've adopted during the course of various
 refactorings:
 
 1. 80 character lines.
 
-3. `vim: expandtab, tabstop=5, shiftwidth=5`
+2. `vim: expandtab, tabstop=5, shiftwidth=5`
 
    Because "rule " and "when " are both 5 characters, indents of 5 spaces make
    things line up very prettily.
-
-2. I prefer:
-   ```
-   rule A => B
-        when Xxxx 
-             andBool Y
-   
-   rule Aaaa
-        => Bbbb
-   
-   rule Aaaaaaa
-             Aaaaa
-        => Bbbbbb
-             Bbbbb
-   
-   rule <x> A => B </x>
-   
-   rule <x> 
-             A => B
-        </x>
-   
-   rule <x> 
-             Aaaaaaa
-                  Aaaaa
-             => Bbbbbb
-                  Bbbbb
-         </x>
-   ```
-   
-   I avoid:
-   ```
-   rule <x> A
-             => B
-        </x>
-   ```
 
 3. I don't usually name rules. Naming each individual rule seems a bit too
    tedious and the names seem to end up being rather ugly and uninformative
