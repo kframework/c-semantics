@@ -1,10 +1,8 @@
-## Installation
+See INSTALL.md for installation instructions.
 
-See INSTALL.md.
-
-## Usage.
+## Usage
       
-### Quick overview.
+### Quick overview
 - `kcc` is meant to to act a lot like `gcc`.  You use it and run programs the
   same way.
 - The programs kcc generates act like normal programs.  Both the output to
@@ -15,20 +13,20 @@ See INSTALL.md.
   you only need to run `kcc program.c` and everything will work.  Caveats
   below.
 - After compiling a program and generating an output file `a.out`, running
-  `HELP=1 ./a.out` will display some runtime options, including `SEARCH` and
-  `PROFILE`.
+  `HELP=1 ./a.out` will display some runtime options, including `SEARCH`, 
+  `PROFILE`, and `LTLMC`.
 - If you try to run a program that is undefined (or one for which we are
   missing semantics), the program will get stuck. The message should tell you
   where it got stuck and may give a hint as to why. If you want help
   deciphering the output, or help understanding why the program is defined,
   please send your `.kdump` file to us.
       
-### Runtime features.
+### Runtime features
 
 Once `kcc` has been run on C source files, it should produce an executable
 script, called `a.out` by default.
 
-#### Searching the state space of non-deterministic expression sequencing.
+#### Searching the state space of non-deterministic expression sequencing
 
 Running "SEARCH=1 ./a.out" will exhaustively search the state space resulting
 from a non-deterministic expression evaluation order (as allowed by the
@@ -36,13 +34,13 @@ standard) and generate a .pdf and .ps of the space (if you installed
 Graphviz). This is the only way to check all possible evaluation orders of a
 program to find undefined behavior.
 
-#### Searching the state space of non-deterministic thread interleavings.
+#### Searching the state space of non-deterministic thread interleavings
 
 Likewise, running "THREADSEARCH=1 ./a.out" will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-#### LTL model checking.
+#### LTL model checking
 
 We currently support LTL model checking of the version of our semantics
 with non-deterministic expression sequencing.
@@ -85,31 +83,32 @@ int main(void) {
 For this program, no counter-example will be found for either proposition and
 the only result should be `true`.
 
-The syntax of LTL formulas is given by the following:
+The syntax of LTL formulas is given by the following grammar:
 <pre>
-syntax LTL ::= "~Ltl" LTL
-             | "OLtl" LTL
-             | "<>Ltl" LTL
-             | "[]Ltl" LTL
-             | LTL "/\Ltl" LTL
-             | LTL "\/Ltl" LTL
-             | LTL "ULtl" LTL
-             | LTL "RLtl" LTL
-             | LTL "WLtl" LTL
-             | LTL "|->Ltl" LTL
-             | LTL "->Ltl" LTL 
-             | LTL "<->Ltl" LTL
-             | LTL "=>Ltl" LTL 
-             | LTL "<=>Ltl" LTL
+LTL ::= "~Ltl" LTL
+      | "OLtl" LTL
+      | "<>Ltl" LTL
+      | "[]Ltl" LTL
+      | LTL "/\Ltl" LTL
+      | LTL "\/Ltl" LTL
+      | LTL "ULtl" LTL
+      | LTL "RLtl" LTL
+      | LTL "WLtl" LTL
+      | LTL "|->Ltl" LTL
+      | LTL "->Ltl" LTL 
+      | LTL "<->Ltl" LTL
+      | LTL "=>Ltl" LTL 
+      | LTL "<=>Ltl" LTL
 </pre>
 
 Additionally, we support a subset of the C expression syntax and we resolve
-symbols in the global scope of the program being checked. Also, two special
-symbols: `__running` and `__error`. The first holds after main has been called,
-becoming false when main returns. The second holds when the semantics detects
-some runtime error that would result in undefined behavior.
+symbols in the global scope of the program being checked. We support two other
+special atomic propositions: `__running` and `__error`. The first holds after
+main has been called, becoming false when main returns. The second holds when
+the semantics detects some runtime error that would result in undefined
+behavior.
 
-#### Profiling the semantics.
+#### Profiling the semantics
 
 Running `PROFILE=1 ./a.out` will record which rules of the semantics are
 exercised during the evaluation of the program. The program executes as
@@ -126,7 +125,16 @@ distinct in the database, so you can run a bunch of programs and then analyze
 the collective data. You can simply delete "maudeProfileDBfile.sqlite" file
 to start another series of tests with a fresh database.
 
-### Caveats and miscellanea.
+#### Testing the semantics
+
+The `tests` directory includes many of the tests we've used to build confidence
+in the correctness of our semantics. For example, to run tests from the GCC
+torture test suite, use the following command from the `tests/` directory:
+<pre>
+$ make torture
+</pre>
+
+### Caveats and miscellanea
 
 - If you are only using one of the standard library functions that we directly
   give semantics to (printf being the most important), you can prevent the tool
@@ -135,7 +143,7 @@ to start another series of tests with a fresh database.
   library and you use the -s option, it will simply get stuck and you will see
   it trying to call that missing function at the top of the computation.
 
-## Understanding the semantics.
+## Understanding the semantics
 
 Links to help understand K:
 - http://code.google.com/p/k-framework/
