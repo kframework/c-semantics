@@ -59,19 +59,19 @@ sub main {
 
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
-            print "DEBUG --- directly runs maude so you can ctrl-c and debug\n";
-            print "SEARCH --- searches for all possible behaviors instead of interpreting\n";
-            print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting\n";
-            print "PROFILE --- performs semantic profiling using this program\n";
-            print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space\n";
-            print "TRACE --- prints an execution trace; only of use to developers\n";
-            print "DUMPALL --- leaves all the intermediate files in the current directory\n";
-            print "LOGIO --- tell the IO server to create logs\n";
-            print "LTLMC --- LTL model checking\n";
-            print "VERBOSE --- verbose output\n";
+            print "DEBUG --- runs krun with the --debug flag.\n";
+            print "SEARCH --- searches for all possible behaviors instead of interpreting.\n";
+            print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting.\n";
+            print "PROFILE --- performs semantic profiling using this program.\n";
+            print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space.\n";
+            print "TRACE --- runs krun with the --trace flag.\n";
+            print "DUMPALL --- leaves all the intermediate files in the current directory.\n";
+            print "LOGIO --- tell the IO server to create logs.\n";
+            print "LTLMC --- LTL model checking.\n";
+            print "VERBOSE --- verbose output.\n";
             print "E.g., DEBUG=1 $0\n";
             print "\n";
-            print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off\n";
+            print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off.\n";
             return 1;
       }
 
