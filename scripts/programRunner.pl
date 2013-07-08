@@ -106,7 +106,7 @@ sub main {
             delete $krun_args{'--io'};
             $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
             print 'Searching reachable states... ';
-            print "(with nondeterministic side-effects)\n";
+            print "(with non-deterministic expression sequencing)\n";
       }
 
       if (defined $ENV{THREADSEARCH}) {
@@ -114,7 +114,7 @@ sub main {
             delete $krun_args{'--io'};
             $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
             print 'Searching reachable states... ';
-            print "(with nondeterministic thread interleaving)\n";
+            print "(with non-deterministic thread interleaving)\n";
       }
 
       if (defined $ENV{LTLMC}) {
@@ -125,7 +125,7 @@ sub main {
             delete $krun_args{'--io'};
             delete $krun_args{'--output'};
             print 'LTL model checking... ';
-            print "(with nondeterministic side-effects)\n";
+            print "(with non-deterministic expression sequencing)\n";
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
