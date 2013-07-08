@@ -44,8 +44,8 @@ $ ocaml
 (Press ctrl-d to exit.)
 
 ### 4. Install K.
-- Go to http://code.google.com/p/k-framework/source/checkout and check out the
-  K Semantic Framework.
+- Download the K Framework from:
+  https://code.google.com/p/k-framework/wiki/Downloads
 - See the README included with K for build and installation instructions.
 
 ### 5. Install optional packages.
@@ -78,9 +78,6 @@ $ dist/kcc tests/unitTests/helloworld.c
 $ ./a.out 
 Hello world
 </pre>
-
-If you chose to add `dist/` to your path, then you can simply type `kcc`
-instead of `dist/kcc`.
 
 See README.md for a summary of the features supported by the `kcc` tool.
 

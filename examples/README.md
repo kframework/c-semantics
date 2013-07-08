@@ -121,5 +121,70 @@ If any of the results returned by search indicate undefined behavior, then the
 program is undefined. During interpretation, we don't always notice undefined
 behavior, but if it exists, it will always be identified using search.
 
-## Model checking
-...
+## LTL model checking
+
+We currently support LTL model checking of the version of our semantics
+with non-deterministic expression sequencing.
+
+For example, consider the C program at `examples/ltlmc/bad.c`:
+<pre>
+int x, y;
+int main(void) {
+      y = x + (x=1);
+      return 0;
+}
+</pre>
+
+This program contains undefined behavior because `x` is both read and written
+to between sequence points. But our `kcc` tool does not catch this without
+searching the state space of possible expression evaluation orders. 
+
+We can catch this using model checking:
+<pre>
+$ kcc bad.c -o bad
+$ LTLMC="[]Ltl ~Ltl __error" ./bad
+</pre>
+
+We might also wish to check the value of `y`:
+<pre>
+$ LTLMC="<>Ltl y == 2" ./bad
+</pre>
+Both of these checks should fail, producing a counter-example (which will be
+huge -- consider using the `-s` flag with `kcc`, at least).
+
+Compare these results with model checking the same LTL propositions on the C
+program at `examples/ltlmc/good.c`:
+<pre>
+int x, y;
+int main(void) {
+      y = 1 + (x=1);
+      return 0;
+}
+</pre>
+For this program, no counter-example will be found for either proposition and
+the only result should be `true`.
+
+The syntax of LTL formulas is given by the following grammar:
+<pre>
+LTL ::= "~Ltl" LTL
+      | "OLtl" LTL
+      | "<>Ltl" LTL
+      | "[]Ltl" LTL
+      | LTL "/\Ltl" LTL
+      | LTL "\/Ltl" LTL
+      | LTL "ULtl" LTL
+      | LTL "RLtl" LTL
+      | LTL "WLtl" LTL
+      | LTL "|->Ltl" LTL
+      | LTL "->Ltl" LTL 
+      | LTL "<->Ltl" LTL
+      | LTL "=>Ltl" LTL 
+      | LTL "<=>Ltl" LTL
+</pre>
+
+Additionally, we support a subset of the C expression syntax and we resolve
+symbols in the global scope of the program being checked. We support two other
+special atomic propositions: `__running` and `__error`. The first holds only
+after main has been called and becomes false when main returns. The second
+holds when the semantics enters some state that would result in undefined
+behavior.
