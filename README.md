@@ -54,7 +54,7 @@ See [examples/README.md](examples/README.md#search) for more details.
 We also support LTL model checking of the possible executions resulting from
 considering different expression sequencings.
 
-See [examples/README.md](examples/README.md#LTL-model-checking) for more details.
+See [examples/README.md](examples/README.md#ltl-model-checking) for more details.
 
 ### Profiling the semantics
 
@@ -85,30 +85,31 @@ $ make torture
 
 ## Project structure
 
-[examples][] -- some simple example programs for trying the SEARCH and LTLMC
-features.
+- [examples][] -- some simple example programs for trying the SEARCH and LTLMC
+  features.
 
-[libc][] -- library headers and some library sources for functions that aren't
-defined directly in the semantics itself.
+- [libc][] -- library headers and some library sources for functions that aren't
+  defined directly in the semantics itself.
 
-[parser][] -- the lightly modified OCaml CIL C parser.
+- [parser][] -- the lightly modified OCaml CIL C parser.
 
-[scripts][] -- e.g., the `kcc` script and the script that becomes `a.out`.
+- [scripts][] -- e.g., the `kcc` script and the script that becomes `a.out`.
 
-[semantics][] -- the K C semantics.
+- [semantics][] -- the K C semantics.
 
-[tests][] -- gcc-torture, juliet, llvm, etc.
+- [tests][] -- gcc-torture, juliet, llvm, etc.
 
 During the build process, three versions of the semantics are built using
 `kompile` with different flags: a "deterministic" version, one with
 non-deterministic expression sequencing, and one with non-deterministic
-thread-interleaving. These all get copied to [dist][] along with contents of
+thread-interleaving. These all get copied to `dist/` along with contents of
 [libc][] and [scripts/kcc][]. Finally, make runs `kcc -c` on all the libc
 source files in [libc/src][].
 
 The `kcc` script is the primary interface to our semantics. Invoking `kcc
 myprogram.c` results in the contents of the parameter C source file being piped
 through, consecutively:
+
 1. the GNU C preprocessor, resulting in the C program with all preprocessor
    macros expanded;
 2. the CIL C parser (cparser), resulting in an XML AST;
@@ -137,5 +138,6 @@ See [semantics/README.md][] for more details.
 [parser]: parser
 [scripts]: scripts
 [semantics]: semantics
+[tests]: tests
 [INSTALL.md]: INSTALL.md
 [LICENSE]: LICENSE

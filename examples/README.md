@@ -44,8 +44,8 @@ Let's start with a simple example that can be caught just with interpretation.
 Consider the program at [examples/search/undefAdd.c][]:
 ```c
 int main(void){
-   int x = 0;
-   return (x = 1) + x;
+      int x = 0;
+      return (x = 1) + x;
 }
 ```
 The `(x = 1) + x` expression is undefined because the read of `x` (the lone
@@ -72,12 +72,12 @@ always detect these kinds of errors. Consider the program at
 [examples/search/undefComma.c][]:
 ```c
 int main(void){
-        int x = 0;
-        return x + (x, x = 3);
+      int x = 0;
+      return x + (x, x = 3);
 }
 ```
-This program is also undefined. Here, the read of x in the right argument of
-the + is unsequenced with the write to x in x=3. Let's try interpreting:
+This program is also undefined. Here, the read of `x` in the right argument of
+the `+` is unsequenced with the write to `x` in `x=3`. Let's try interpreting:
 ```
 $ kcc undefComma.c
 $ ./a.out
@@ -86,7 +86,7 @@ $ echo $?
 ```
 
 Running this program through the interpreter fails to find the error! However,
-by instructing kcc to search the state space, we can identify this program as
+by instructing `kcc` to search the state space, we can identify this program as
 being undefined:
 ```
 $ SEARCH=1 ./a.out 
@@ -159,10 +159,10 @@ int main(void) {
 ```
 
 This program contains undefined behavior because `x` is both read and written
-to between sequence points. But our `kcc` tool does not catch this without
-searching the state space of possible expression evaluation orders. 
-
-We can, however, also catch this undefined behavior using model checking:
+to between sequence points. But, unlike the `undefAdd.c` program (see above),
+our `kcc` tool will not catch this undefinedness during interpretation.
+To catch it, we could use `SEARCH`, just like in the above example, but we
+could also use model checking:
 ```
 $ kcc bad.c -o bad
 $ LTLMC="[]Ltl ~Ltl __error" ./bad
@@ -173,8 +173,8 @@ We might also wish to check the value of `y`:
 $ LTLMC="<>Ltl y == 2" ./bad
 ```
 Both of these checks should fail, producing a counter-example (which will be
-huge -- consider using the `-s` flag with `kcc` in order to prevent linking
-with the standard library and cut down the size a bit).
+huge -- consider using the `-s` flag with `kcc` to prevent linking with the
+standard library and cut down the size a bit).
 
 Compare these results with model checking the same LTL propositions on the C
 program at [examples/ltlmc/good.c][]:
@@ -199,40 +199,40 @@ state lightNS = green;
 state lightEW = red;
 
 int changeNS(){
-	switch (lightNS) {
-		case(green):
-			lightNS = yellow;
-			return 0;
-		case(yellow):
-			lightNS = red;
-			return 0;
-		case(red):
-			if (lightEW == red) {
-				lightNS = green;
-			}
-			return 0;
-	}
+      switch (lightNS) {
+            case(green):
+                  lightNS = yellow;
+                  return 0;
+            case(yellow):
+                  lightNS = red;
+                  return 0;
+            case(red):
+                  if (lightEW == red) {
+                        lightNS = green;
+                  }
+                  return 0;
+      }
 }
 int changeEW(){
-	switch (lightEW) {
-		case(green):
-			lightEW = yellow;
-			return 0;
-		case(yellow):
-			lightEW = red;
-			return 0;
-		case(red):
-			if (lightNS == red) {
-				lightEW = green;
-			}
-			return 0;
-	}
+      switch (lightEW) {
+            case(green):
+                  lightEW = yellow;
+                  return 0;
+            case(yellow):
+                  lightEW = red;
+                  return 0;
+            case(red):
+                  if (lightNS == red) {
+                        lightEW = green;
+                  }
+                  return 0;
+      }
 }
 
 int main(void){
-	while(1) {
-		changeNS() + changeEW();
-	}
+      while(1) {
+            changeNS() + changeEW();
+      }
 }
 ```
 
@@ -257,3 +257,4 @@ We can fix this by replacing the line `changeNS() + changeEW();` with
 [examples/search/undefComma.c]: examples/search/undefComma.c
 [examples/ltlmc/bad.c]: examples/ltlmc/bad.c
 [examples/ltlmc/good.c]: examples/ltlmc/good.c
+[examples/ltlmc/lights.c]: examples/ltlmc/lights.c

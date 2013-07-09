@@ -6,14 +6,14 @@ See:
 
 ## Understanding the C semantics
 
-See particularly:
+See:
 - Chucky Ellison, *A Formal Semantics of C with Applications*, PhD Thesis,
   <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
 - Chucky Ellison and Grigore Rosu, *An Executable Formal Semantics of C with
   Applications*, POPL'12,
   <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
 
-## Structure
+## Structure of the C semantics
 
 This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 ("C11"). Some highlights:
@@ -24,7 +24,7 @@ This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
   described in the standard.
 
 - [c11.k][]: the main syntax/semantics language modules for the "C11" language.
-  This is the module that we point `kompile` at.
+  This is the module to which we point `kompile`.
 
 - [configuration.k][]: the initial configuration.
 
@@ -32,7 +32,7 @@ This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 
 - [language/syntax.k][]: the main C language syntax module. 
 
-## Style notes
+### Style notes
 
 Here's some stylistic conventions I've adopted during the course of various
 refactorings:
@@ -41,7 +41,7 @@ refactorings:
 
 2. `vim: expandtab, tabstop=5, shiftwidth=5`
 
-   Because "rule " and "when " are both 5 characters, indents of 5 spaces make
+   Because "rule` `" and "when` `" are both 5 characters, indents of 5 spaces make
    things line up very prettily.
 
 3. I don't usually name rules. Naming each individual rule seems a bit too
@@ -55,7 +55,7 @@ refactorings:
 
 5. I think of syntax modules somewhat like C header files. `MYMODULE-SYNTAX`
    should contain the interface of a module (i.e., only "public" syntax
-   productions -- c.f. symbols with external linkage in C). Generally, when
+   productions -- cf. symbols with external linkage in C). Generally, when
    module `A` uses syntax productions that are defined by module `B`, module
    `A` should import `B-SYNTAX`. If some part of `B`'s syntax isn't meant to be
    used in other modules, then it shouldn't be included in `B-SYNTAX`.
@@ -78,8 +78,7 @@ refactorings:
    for slashes. E.g., the module called `C-EXPRESSION-FUNCTION-CALL` is at
    [language/expression/function-call.k][]. 
 
-9. The word "semantics" in module names and elsewhere is usually terribly
-   redundant.
+9. The word "semantics" in module names and elsewhere seems redundant.
 
 10. I like to "declare" variables in rules at the point where they're bound
     (i.e., on the left side of the `=>`).
