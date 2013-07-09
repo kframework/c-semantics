@@ -85,19 +85,24 @@ $ make torture
 
 ## Project structure
 
-- [examples][] -- some simple example programs for trying the SEARCH and LTLMC
-  features.
+Directories:
 
-- [libc][] -- library headers and some library sources for functions that aren't
+- [examples][]: some simple example programs for trying out the SEARCH and
+  LTLMC features.
+
+- [libc][]: library headers and some library sources for functions that aren't
   defined directly in the semantics itself.
 
-- [parser][] -- the lightly modified OCaml CIL C parser.
+- [parser][]: the lightly modified OCaml CIL C parser.
 
-- [scripts][] -- e.g., the `kcc` script and the script that becomes `a.out`.
+- [scripts][]: e.g., the `kcc` script and the script that becomes `a.out`.
 
-- [semantics][] -- the K C semantics.
+- [semantics][]: the K C semantics.
 
-- [tests][] -- gcc-torture, juliet, llvm, etc.
+- [tests][]: gcc-torture, juliet, llvm, etc.
+
+- `dist`: created during the build process, this is where the final products
+  go. For convenience, consider adding this directory to your `$PATH`.
 
 During the build process, three versions of the semantics are built using
 `kompile` with different flags: a "deterministic" version, one with
