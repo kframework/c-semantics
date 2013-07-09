@@ -23,6 +23,8 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
+my $KRUN = "krun";
+
 my @temporaryFiles = ();
 
 exit main();
@@ -132,7 +134,7 @@ sub main {
       # Execute krun with the arguments in (flattened) %krun_args.
       print "KRun args: " . join ' ', (grep {$_} %krun_args) . "\n"
             if defined $ENV{VERBOSE};
-      system("krun", grep {$_} %krun_args);
+      system($KRUN, grep {$_} %krun_args);
 
       # Print errors and/or results and exit.
       if (defined $ENV{PROFILE}) {

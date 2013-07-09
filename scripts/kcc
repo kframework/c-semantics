@@ -210,7 +210,7 @@ sub compileProgram {
             or die "$filename.c not found";
       
       my $cppCommand = 
-            "cpp $PEDANTRY_OPTIONS $CPP_OPTIONS @cppDefines @cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+            "gcc $PEDANTRY_OPTIONS $CPP_OPTIONS @cppDefines @cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
 
       my $retval = system($cppCommand);
       open FILE, "$filename.warnings.log";
