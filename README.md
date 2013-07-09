@@ -1,4 +1,4 @@
-See [INSTALL.md](INSTALL.md) for installation instructions and `LICENSE` for licensing
+See [INSTALL.md][] for installation instructions and [LICENSE][] for licensing
 information.
 
 If this readme isn't enough, see the following papers to better understand this
@@ -44,14 +44,14 @@ Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-See <./examples/README.md> for more details.
+See [examples/README.md][] for more details.
 
 ### LTL model checking
 
 We also support LTL model checking of the possible executions resulting from
 considering different expression sequencings.
 
-See (examples/README.md) for more details.
+See [examples/README.md][] for more details.
 
 ### Profiling the semantics
 
@@ -64,44 +64,44 @@ provided by the `query-kcc-prof` script, and can be executed with, e.g.,
 ```
 $ query-kcc-prof exec
 ```
-You can look at the provided queries (see the source of the `query-kcc-prof`
-script) and construct your own, or access the database using your own programs.
-Different runs of the tool are kept distinct in the database, so you can run a
-bunch of programs and then analyze the collective data. You can simply delete
+You can look at the provided queries (see [scripts/query-kcc-prof][]) and
+construct your own, or access the database using your own programs. Different
+runs of the tool are kept distinct in the database, so you can run a bunch of
+programs and then analyze the collective data. You can simply delete the
 `maudeProfileDB.sqlite` file to start another series of tests with a fresh
 database.
 
 ### Testing the semantics
 
-The `tests` directory includes many of the tests we've used to build confidence
+The [tests][] directory includes many of the tests we've used to build confidence
 in the correctness of our semantics. For example, to run tests from the GCC
-torture test suite, use the following command from the (tests/) directory:
+torture test suite, use the following command from the [tests][] directory:
 ```
 $ make torture
 ```
 
 ## Project structure
 
-(examples/) -- some simple example programs for trying the SEARCH and LTLMC
-features. See examples/README.md for more information.
+[examples][] -- some simple example programs for trying the SEARCH and LTLMC
+features. See [examples/README.md][] for more information.
 
-(libc/) -- library headers and some library sources for functions that aren't
+[libc][] -- library headers and some library sources for functions that aren't
 defined directly in the semantics itself.
 
-(parser/) -- the lightly modified OCaml CIL C parser.
+[parser][] -- the lightly modified OCaml CIL C parser.
 
-(scripts/) -- e.g., the `kcc` script and the script that becomes `a.out`.
+[scripts][] -- e.g., the `kcc` script and the script that becomes `a.out`.
 
-(semantics/) -- the K C semantics.
+[semantics][] -- the K C semantics.
 
-(tests/) -- gcc-torture, juliet, llvm, etc.
+[tests][] -- gcc-torture, juliet, llvm, etc.
 
 During the build process, three versions of the semantics are built using
 `kompile` with different flags: a "deterministic" version, one with
 non-deterministic expression sequencing, and one with non-deterministic
-thread-interleaving. These all get copied to (dist/) along with contents of
-(libc/) and (scripts/kcc). Finally, make runs `kcc -c` on all the libc source
-files in (libc/src/).
+thread-interleaving. These all get copied to [dist][] along with contents of
+[libc][] and [scripts/kcc][]. Finally, make runs `kcc -c` on all the libc
+source files in [libc/src][].
 
 The `kcc` script is the primary interface to our semantics. Invoking `kcc
 myprogram.c` results in the contents of the parameter C source file being piped
@@ -114,15 +114,26 @@ through, consecutively:
 The root of this AST is a single `TranslationUnit` term. `kcc` then joins
 together all these `TranslationUnit`s -- one for `myprogram.c` and one for each
 of the standard library files -- into a `Program` term. This giant `Program`
-term, then, is appended to the end of a copy of the (scripts/program-runner)
+term, then, is appended to the end of a copy of the [scripts/program-runner][])
 script renamed to `a.out`.
 
 Now, when we invoke `a.out`, it sends this `Program` term to `krun` with the
 parser set to `cat`. Our semantics, then, begins by giving meaning to this
-`Program` term (see (semantics/language/dynamic.k)).
+`Program` term (see [semantics/language/dynamic.k][]).
 
-See (semantics/README.md) for more details.
+See [semantics/README.md][] for more details.
 
 [examples/README.md]: examples/README.md
 [semantics/README.md]: semantics/README.md
-
+[semantics/language/dynamic.k]: semantics/language/dynamic.k
+[scripts/kcc]: scripts/kcc
+[scripts/program-runner]: scripts/program-runner
+[scripts/query-kcc-prof]: scripts/query-kcc-prof
+[examples]: examples
+[libc]: libc
+[libc/src]: libc/src
+[parser]: parser
+[scripts]: scripts
+[semantics]: semantics
+[INSTALL.md]: INSTALL.md
+[LICENSE]: LICENSE
