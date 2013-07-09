@@ -173,7 +173,8 @@ We might also wish to check the value of `y`:
 $ LTLMC="<>Ltl y == 2" ./bad
 ```
 Both of these checks should fail, producing a counter-example (which will be
-huge -- consider using the `-s` flag with `kcc`, at least).
+huge -- consider using the `-s` flag with `kcc` in order to prevent linking
+with the standard library and cut down the size a bit).
 
 Compare these results with model checking the same LTL propositions on the C
 program at `examples/ltlmc/good.c`:

@@ -1,4 +1,18 @@
-# Structure
+## Understanding K
+
+See:
+- http://code.google.com/p/k-framework/
+- http://k-framework.org/ 
+
+## Understanding the C semantics
+
+See particularly:
+- Chucky Ellison, *A Formal Semantics of C with Applications*, PhD Thesis,
+  http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf
+- Chucky Ellison and Grigore Rosu, *An Executable Formal Semantics of C with
+  Applications*, POPL'12, http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf
+
+## Structure
 
 This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 ("C11"). Some highlights:
@@ -17,7 +31,7 @@ This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 
 - `language/syntax.k`: the main C language syntax module. 
 
-# Style notes
+## Style notes
 
 Here's some stylistic conventions I've adopted during the course of various
 refactorings:
@@ -67,7 +81,6 @@ refactorings:
    redundant.
 
 10. I like to "declare" variables in rules at the point where they're bound
-    (i.e., on the left side of the `=>`). This can help make rules easier to
-    read, in my experience. But I don't do this too religiously.
+    (i.e., on the left side of the `=>`).
 
 11. I prefer `func'`, `func''`, etc. for "auxillary" syntax productions.

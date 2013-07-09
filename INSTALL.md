@@ -4,8 +4,7 @@ Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
 ### 1. Install basic dependencies.
-- Our `kcc` tool uses the GNU C preprocessor (cpp), so you'll at least
-  need that installed. 
+- The GNU C compiler (GCC).
 - If using Windows, you'll probably need cygwin.
 
 ### 2. Install Perl 5.
@@ -46,6 +45,11 @@ $ ocaml
 ### 4. Install K.
 - Download the K Framework from:
   https://code.google.com/p/k-framework/wiki/Downloads
+- This version of the C semantics works with the v3.2 branch of the
+  k-framework. It can be downloaded using the following command:
+```
+$ svn co https://k-framework.googlecode.com/svn/branches/v3.2
+```
 - See the README included with K for build and installation instructions.
 
 ### 5. Install optional packages.
@@ -60,8 +64,7 @@ $ which dot
 ```
 
 ### 6. Build our C tool.
-- Set C_K_BASE to the full (non-relative) path in which you installed the K
-  framework. E.g., run `export C_K_BASE=~/k-framework/dist`.
+- Ensures `kompile` and `krun` are included in your `$PATH`.
 - Run `make` in the project root directory.
 - This should take between 1 and 5 minutes on non-windows machines, and up to
   10 minutes on windows.
