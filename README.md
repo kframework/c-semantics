@@ -47,14 +47,14 @@ Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-See [examples/README.md][] for more details.
+See [examples/README.md#search][] for more details.
 
 ### LTL model checking
 
 We also support LTL model checking of the possible executions resulting from
 considering different expression sequencings.
 
-See [examples/README.md][] for more details.
+See [examples/README.md#model-checking][] for more details.
 
 ### Profiling the semantics
 
