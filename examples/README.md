@@ -251,7 +251,7 @@ turn green. The following should produce a counter-example:
 $ LTLMC="[]Ltl <>Ltl lightNS == green" ./a.out
 ```
 We can fix this by replacing the line `changeNS() + changeEW();` with
-`changeNS(); changeEW();`. Our proposition should then hold.
+`changeNS(); changeEW();`. Both propositions should then hold.
 
 [examples/search/undefAdd.c]: examples/search/undefAdd.c
 [examples/search/undefComma.c]: examples/search/undefComma.c
