@@ -41,7 +41,7 @@ these problems as well as to explore correct non-deterministic evaluations.
 ### Undefinedness examples
 
 Let's start with a simple example that can be caught just with interpretation.
-Consider the program at [examples/search/undefAdd.c][]:
+Consider the program at [search/undefAdd.c][]:
 ```c
 int main(void){
       int x = 0;
@@ -60,7 +60,7 @@ ERROR! KCC encountered an error while executing this program.
 Error: 00003
 Description: Unsequenced side effect on scalar object with value computation of same object.
 =============================================================
-File: /examples/search/undefAdd.c
+File: search/undefAdd.c
 Function: main
 Line: 3
 =============================================================
@@ -69,7 +69,7 @@ Final Computation:
 ```
 detects the error. However, we were lucky because the interpreter doesn't
 always detect these kinds of errors. Consider the program at
-[examples/search/undefComma.c][]:
+[search/undefComma.c][]:
 ```c
 int main(void){
       int x = 0;
@@ -97,7 +97,7 @@ Examining the output...
 ------------------------------------------------------------------------
 Solution 1
 Program got stuck
-File: /examples/search/undefComma.c
+File: search/undefComma.c
 Line: 3
 Error: 00003
 Description: Unsequenced side effect on scalar object with value computation of same object.
@@ -149,7 +149,7 @@ behavior.
 
 ### Examples
 
-For example, consider the C program at [examples/ltlmc/bad.c][]:
+For example, consider the C program at [ltlmc/bad.c][]:
 ```c
 int x, y;
 int main(void) {
@@ -177,7 +177,7 @@ huge -- consider using the `-s` flag with `kcc` to prevent linking with the
 standard library and cut down the size a bit).
 
 Compare these results with model checking the same LTL propositions on the C
-program at [examples/ltlmc/good.c][]:
+program at [ltlmc/good.c][]:
 ```c
 int x, y;
 int main(void) {
@@ -191,7 +191,7 @@ the only result should be `true`.
 ### Traffic lights
 
 For a more complicated example, consider the traffic light simulator at
-[examples/ltlmc/lights.c][]:
+[ltlmc/lights.c][]:
 ```c
 typedef enum {green, yellow, red} state;
 
@@ -253,8 +253,8 @@ $ LTLMC="[]Ltl <>Ltl lightNS == green" ./a.out
 We can fix this by replacing the line `changeNS() + changeEW();` with
 `changeNS(); changeEW();`. Both propositions should then hold.
 
-[examples/search/undefAdd.c]: examples/search/undefAdd.c
-[examples/search/undefComma.c]: examples/search/undefComma.c
-[examples/ltlmc/bad.c]: examples/ltlmc/bad.c
-[examples/ltlmc/good.c]: examples/ltlmc/good.c
-[examples/ltlmc/lights.c]: examples/ltlmc/lights.c
+[search/undefAdd.c]: search/undefAdd.c
+[search/undefComma.c]: search/undefComma.c
+[ltlmc/bad.c]: ltlmc/bad.c
+[ltlmc/good.c]: ltlmc/good.c
+[ltlmc/lights.c]: ltlmc/lights.c
