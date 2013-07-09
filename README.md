@@ -44,7 +44,7 @@ Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-See <examples/README.md> for more details.
+See <./examples/README.md> for more details.
 
 ### LTL model checking
 
