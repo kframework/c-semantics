@@ -1,35 +1,36 @@
 ## Understanding K
 
 See:
-- http://code.google.com/p/k-framework/
-- http://k-framework.org/ 
+- <http://code.google.com/p/k-framework/>
+- <http://k-framework.org/>
 
 ## Understanding the C semantics
 
 See particularly:
 - Chucky Ellison, *A Formal Semantics of C with Applications*, PhD Thesis,
-  http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf
+  <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
 - Chucky Ellison and Grigore Rosu, *An Executable Formal Semantics of C with
-  Applications*, POPL'12, http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf
+  Applications*, POPL'12,
+  <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
 
 ## Structure
 
 This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 ("C11"). Some highlights:
 
-- `language/`: the core language features.
+- [language][]: the core language features.
 
-- `library/`: the definition of various functions from the C standard library
+- [library][]: the definition of various functions from the C standard library
   described in the standard.
 
-- `c11.k`: the main syntax/semantics language modules for the "C11" language.
+- [c11.k][]: the main syntax/semantics language modules for the "C11" language.
   This is the module that we point `kompile` at.
 
-- `configuration.k`: the initial configuration.
+- [configuration.k][]: the initial configuration.
 
-- `ltlmc.k`: LTL model checking support.
+- [ltlmc.k][]: LTL model checking support.
 
-- `language/syntax.k`: the main C language syntax module. 
+- [language/syntax.k][]: the main C language syntax module. 
 
 ## Style notes
 
@@ -66,7 +67,7 @@ refactorings:
    module.
 
 6. I try to avoid giant modules, especially giant `SYNTAX` modules. These seem
-   analagous to putting everything in a global namespace and can make figuring
+   analogous to putting everything in a global namespace and can make figuring
    out other modules' true dependencies difficult.
 
 7. `context` rules should probably go in semantic modules and not syntactic
@@ -75,7 +76,7 @@ refactorings:
 
 8. My module names generally correspond somehow to file names, but with dashes
    for slashes. E.g., the module called `C-EXPRESSION-FUNCTION-CALL` is at
-   `language/expression/function-call.k`. 
+   [language/expression/function-call.k][]. 
 
 9. The word "semantics" in module names and elsewhere is usually terribly
    redundant.
@@ -83,4 +84,12 @@ refactorings:
 10. I like to "declare" variables in rules at the point where they're bound
     (i.e., on the left side of the `=>`).
 
-11. I prefer `func'`, `func''`, etc. for "auxillary" syntax productions.
+11. I prefer `func'`, `func''`, etc. for "auxiliary" syntax productions.
+
+[language]: language
+[library]: library
+[c11.k]: c11.k
+[configuration.k]: configuration.k
+[ltlmc.k]: ltlmc.k
+[language/syntax.k]: language/syntax.k
+[language/expression/function-call.k]: language/expression/function-call.k

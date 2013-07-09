@@ -47,14 +47,14 @@ Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-See [examples/README.md#search][] for more details.
+See [examples/README.md](examples/README.md#search) for more details.
 
 ### LTL model checking
 
 We also support LTL model checking of the possible executions resulting from
 considering different expression sequencings.
 
-See [examples/README.md#model-checking][] for more details.
+See [examples/README.md](examples/README.md#LTL-model-checking) for more details.
 
 ### Profiling the semantics
 
@@ -86,7 +86,7 @@ $ make torture
 ## Project structure
 
 [examples][] -- some simple example programs for trying the SEARCH and LTLMC
-features. See [examples/README.md][] for more information.
+features.
 
 [libc][] -- library headers and some library sources for functions that aren't
 defined directly in the semantics itself.
@@ -126,8 +126,6 @@ parser set to `cat`. Our semantics, then, begins by giving meaning to this
 
 See [semantics/README.md][] for more details.
 
-[examples/README.md#search]: examples/README.md#search
-[examples/README.md#model-checking]: examples/README.md#model-checking
 [semantics/README.md]: semantics/README.md
 [semantics/language/dynamic.k]: semantics/language/dynamic.k
 [scripts/kcc]: scripts/kcc

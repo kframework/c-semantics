@@ -36,12 +36,12 @@ A hasty read of the standard may wrongly indicate that detecting this kind of
 undefined behavior is an easy problem that can be checked statically. In fact,
 it is undecidable statically; moreover, one needs to use the entire semantics
 in order to check it dynamically. However, one can use `kcc` to help identify
-these problems as well as to explore correct nondeterministic evaluations.
+these problems as well as to explore correct non-deterministic evaluations.
 
 ### Undefinedness examples
 
 Let's start with a simple example that can be caught just with interpretation.
-Consider the program at `examples/search/undefAdd2.c`:
+Consider the program at [examples/search/undefAdd.c][]:
 ```c
 int main(void){
    int x = 0;
@@ -69,7 +69,7 @@ Final Computation:
 ```
 detects the error. However, we were lucky because the interpreter doesn't
 always detect these kinds of errors. Consider the program at
-`examples/search/undefComma.c`:
+[examples/search/undefComma.c][]:
 ```c
 int main(void){
         int x = 0;
@@ -149,7 +149,7 @@ behavior.
 
 ### Examples
 
-For example, consider the C program at `examples/ltlmc/bad.c`:
+For example, consider the C program at [examples/ltlmc/bad.c][]:
 ```c
 int x, y;
 int main(void) {
@@ -177,7 +177,7 @@ huge -- consider using the `-s` flag with `kcc` in order to prevent linking
 with the standard library and cut down the size a bit).
 
 Compare these results with model checking the same LTL propositions on the C
-program at `examples/ltlmc/good.c`:
+program at [examples/ltlmc/good.c][]:
 ```c
 int x, y;
 int main(void) {
@@ -191,7 +191,7 @@ the only result should be `true`.
 ### Traffic lights
 
 For a more complicated example, consider the traffic light simulator at
-`examples/ltlmc/lights.c`:
+[examples/ltlmc/lights.c][]:
 ```c
 typedef enum {green, yellow, red} state;
 
@@ -245,7 +245,7 @@ LTL model checking... (with non-deterministic expression sequencing)
 true
 ```
 
-But we can also discover that we are not guranteed that a light will eventually
+But we can also discover that we are not guaranteed that a light will eventually
 turn green. The following should produce a counter-example:
 ```
 $ LTLMC="[]Ltl <>Ltl lightNS == green" ./a.out
@@ -253,4 +253,7 @@ $ LTLMC="[]Ltl <>Ltl lightNS == green" ./a.out
 We can fix this by replacing the line `changeNS() + changeEW();` with
 `changeNS(); changeEW();`. Our proposition should then hold.
 
-
+[examples/search/undefAdd.c]: examples/search/undefAdd.c
+[examples/search/undefComma.c]: examples/search/undefComma.c
+[examples/ltlmc/bad.c]: examples/ltlmc/bad.c
+[examples/ltlmc/good.c]: examples/ltlmc/good.c

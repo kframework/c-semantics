@@ -10,7 +10,7 @@ do any installation steps not listed explicitly.
 ### 2. Install Perl 5.
 - Perl 5 will likely already be installed on most Linux and Mac OS X machines.
   But if not, use your package manager to install it.
-- For Windows, see here: http://www.perl.org/get.html
+- For Windows, see here: <http://www.perl.org/get.html>
 - Install the following Perl modules using `cpan` (or `ppm` with ActiveState
   Perl in Windows):
     - XML::LibXML::Reader
@@ -29,7 +29,7 @@ $ cpan -i XML::LibXML::Reader
 ### 3. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
-- Install OCaml from http://caml.inria.fr/ or via your package manager.
+- Install OCaml from <http://caml.inria.fr/> or via your package manager.
 - Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
 To check if OCaml is installed:
@@ -44,7 +44,7 @@ $ ocaml
 
 ### 4. Install K.
 - Download the K Framework from:
-  https://code.google.com/p/k-framework/wiki/Downloads
+  <https://code.google.com/p/k-framework/wiki/Downloads>
 - This version of the C semantics works with the v3.2 branch of the
   k-framework. It can be downloaded using the following command:
 ```
@@ -82,5 +82,6 @@ $ ./a.out
 Hello world
 ```
 
-See README.md for a summary of the features supported by the `kcc` tool.
+See [README.md](README.md) for a summary of the features supported by the `kcc`
+tool.
 
