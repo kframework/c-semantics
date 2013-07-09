@@ -1,13 +1,13 @@
-See `INSTALL.md` for installation instructions and `LICENSE` for licensing
+See [INSTALL.md](INSTALL.md) for installation instructions and `LICENSE` for licensing
 information.
 
 If this readme isn't enough, see the following papers to better understand this
 project:
 - Chucky Ellison and Grigore Rosu. An Executable Formal Semantics of C with 
   Applications. *POPL'12*. 
-  http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf
+  <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
 - Chucky Ellison. *A Formal Semantics of C with Applications*. PhD Thesis.
-  http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf
+  <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
 
 ## Quick overview
 - `kcc` is meant to to act a lot like `gcc`. You use it and run programs the
@@ -44,7 +44,7 @@ Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
 space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
-See [examples/README.md][] for more details.
+See <examples/README.md> for more details.
 
 ### LTL model checking
 
@@ -124,3 +124,5 @@ parser set to `cat`. Our semantics, then, begins by giving meaning to this
 See (semantics/README.md) for more details.
 
 [examples/README.md]: examples/README.md
+[semantics/README.md]: semantics/README.md
+
