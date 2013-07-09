@@ -107,7 +107,7 @@ Directories:
 During the build process, three versions of the semantics are built using
 `kompile` with different flags: a "deterministic" version, one with
 non-deterministic expression sequencing, and one with non-deterministic
-thread-interleaving. These all get copied to `dist/` along with contents of
+thread-interleaving. These all get copied to `dist/` along with the contents of
 [libc][] and [scripts/kcc][]. Finally, make runs `kcc -c` on all the libc
 source files in [libc/src][].
 
