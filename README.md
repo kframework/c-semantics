@@ -1,8 +1,8 @@
 See [INSTALL.md][] for installation instructions and [LICENSE][] for licensing
 information.
 
-If this readme isn't enough, see the following papers to better understand this
-project:
+If this readme isn't enough, consider checking out these papers to better
+understand this project:
 - Chucky Ellison and Grigore Rosu. An Executable Formal Semantics of C with 
   Applications. *POPL'12*. 
   <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
@@ -19,8 +19,11 @@ project:
 - Take a look at `kcc -h` for some compile-time options. For most programs,
   you only need to run `kcc program.c` and everything will work.
 - After compiling a program and generating an output file `a.out`, running
-  `HELP=1 ./a.out` will display some runtime options, including `SEARCH`, 
-  `PROFILE`, and `LTLMC`.
+  `HELP=1 ./a.out` will display some runtime options, including `SEARCH`,
+  `PROFILE`, and `LTLMC`. Notice that these extra interpreter options are
+  passed via environment variables and not on the command line. This allows us
+  to pass the actual command line parameters straight to the `kcc`-compiled
+  program unchanged.
 - If you try to run a program that is undefined (or one for which we are
   missing semantics), the program will get stuck. The message should tell you
   where it got stuck and may give a hint as to why. If you want help
@@ -123,7 +126,8 @@ parser set to `cat`. Our semantics, then, begins by giving meaning to this
 
 See [semantics/README.md][] for more details.
 
-[examples/README.md]: examples/README.md
+[examples/README.md#search]: examples/README.md#search
+[examples/README.md#model-checking]: examples/README.md#model-checking
 [semantics/README.md]: semantics/README.md
 [semantics/language/dynamic.k]: semantics/language/dynamic.k
 [scripts/kcc]: scripts/kcc
