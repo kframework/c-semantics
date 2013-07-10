@@ -107,11 +107,11 @@ Directories:
   go. For convenience, consider adding this directory to your `$PATH`.
 
 During the build process, three versions of the semantics are built using
-`kompile` with different flags: a "deterministic" version, one with
-non-deterministic expression sequencing, and one with non-deterministic
-thread-interleaving. These all get copied to `dist/` along with the contents of
-[libc][] and [scripts/kcc][]. Finally, make runs `kcc -c` on all the libc
-source files in [libc/src][].
+`kompile` with different flags: a "deterministic" version, a version for
+supporting non-deterministic expression sequencing, and another with
+non-deterministic thread-interleaving. These all get copied to `dist/` along
+with the contents of [libc][] and the [scripts/kcc][] script. Finally, make
+runs `kcc -c` on all the libc source files in [libc/src][].
 
 The `kcc` script is the primary interface to our semantics. Invoking `kcc
 myprogram.c` results in the contents of the parameter C source file being piped

@@ -5,7 +5,6 @@ require "error.k"
 require "compat.k"
 
 require "libc.k"
-
 require "language/dynamic.k"
 
 module C11-SYNTAX
