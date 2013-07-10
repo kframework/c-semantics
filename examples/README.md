@@ -52,7 +52,7 @@ The `(x = 1) + x` expression is undefined because the read of `x` (the lone
 `x`) is unsequenced with respect to the write of `x` (the assignment). Running
 this program:
 ```
-$ kcc undefAdd.c
+$ kcc -s undefAdd.c
 $ ./a.out
 =============================================================
 ERROR! KCC encountered an error while executing this program.
@@ -79,7 +79,7 @@ int main(void){
 This program is also undefined. Here, the read of `x` in the right argument of
 the `+` is unsequenced with the write to `x` in `x=3`. Let's try interpreting:
 ```
-$ kcc undefComma.c
+$ kcc -s undefComma.c
 $ ./a.out
 $ echo $?
 3
@@ -143,7 +143,7 @@ LTL ::= "~Ltl" LTL
 Additionally, we support a subset of the C expression syntax and we resolve
 symbols in the global scope of the program being checked. We support two other
 special atomic propositions: `__running` and `__error`. The first holds only
-after main has been called and becomes false when main returns. The second
+after `main` has been called and becomes false when `main` returns. The second
 holds when the semantics enters some state that would result in undefined
 behavior.
 
@@ -164,7 +164,7 @@ our `kcc` tool will not catch this undefinedness during interpretation.
 To catch it, we could use `SEARCH`, just like in the above example, but we
 could also use model checking:
 ```
-$ kcc bad.c -o bad
+$ kcc -s bad.c -o bad
 $ LTLMC="[]Ltl ~Ltl __error" ./bad
 ```
 
