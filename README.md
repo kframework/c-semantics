@@ -126,7 +126,7 @@ The root of this AST is a single `TranslationUnit` term. `kcc` then joins
 together all these `TranslationUnit` terms -- one for `myprogram.c` and one for
 each of the standard library files -- into a `Program` term. This giant
 `Program` term, then, is appended to the end of a copy of the
-[scripts/program-runner][]) script renamed to `a.out`.
+[scripts/program-runner][] script renamed to `a.out`.
 
 Now, when we invoke `a.out`, it sends this `Program` term to `krun` with the
 parser set to `cat`. Our semantics, then, begins by giving meaning to this
