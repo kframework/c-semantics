@@ -3,6 +3,7 @@ information.
 
 If this readme isn't enough, consider checking out these papers to better
 understand this project:
+
 - Chucky Ellison and Grigore Rosu. An Executable Formal Semantics of C with 
   Applications. *POPL'12*. 
   <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
@@ -10,6 +11,7 @@ understand this project:
   <http://fsl.cs.uiuc.edu/pubs/ellison-2012-thesis.pdf>
 
 ## Quick overview
+
 - `kcc` is meant to to act a lot like `gcc`. You use it and run programs the
   same way.
 - The programs `kcc` generates act like normal programs. Both the output to

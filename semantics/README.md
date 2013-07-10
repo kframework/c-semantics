@@ -44,16 +44,11 @@ refactorings:
    Because "rule` `" and "when` `" are both 5 characters, indents of 5 spaces make
    things line up very prettily.
 
-3. I don't usually name rules. Naming each individual rule seems a bit too
-   tedious and the names seem to end up being rather ugly and uninformative
-   ("-pre", "-post", "-done", "-aux", etc.). [Some mechanism for naming
-   "groups" of rules might be a nice feature, though.]
-
-4. I avoid plurals in module names, unless there might be confusion otherwise.
+3. I avoid plurals in module names, unless there might be confusion otherwise.
    E.g., `C-EXPRESSION-FUNCTION-CALL` instead of
    `C-EXPRESSIONS-FUNCTION-CALLS`, but `C-EXPRESSION-MEMBERS` might be ok.
 
-5. I think of syntax modules somewhat like C header files. `MYMODULE-SYNTAX`
+4. I think of syntax modules somewhat like C header files. `MYMODULE-SYNTAX`
    should contain the interface of a module (i.e., only "public" syntax
    productions -- cf. symbols with external linkage in C). Generally, when
    module `A` uses syntax productions that are defined by module `B`, module
@@ -66,24 +61,24 @@ refactorings:
    other module, but if they do, then it should better be another `-SYNTAX`
    module.
 
-6. I try to avoid giant modules, especially giant `SYNTAX` modules. These seem
+5. I try to avoid giant modules, especially giant `SYNTAX` modules. These seem
    analogous to putting everything in a global namespace and can make figuring
    out other modules' true dependencies difficult.
 
-7. `context` rules should probably go in semantic modules and not syntactic
+6. `context` rules should probably go in semantic modules and not syntactic
    modules because they often have awkward dependencies (e.g., `reval` and
    `peval` in the C semantics).
 
-8. My module names generally correspond somehow to file names, but with dashes
+7. My module names generally correspond somehow to file names, but with dashes
    for slashes. E.g., the module called `C-EXPRESSION-FUNCTION-CALL` is at
    [language/expression/function-call.k][]. 
 
-9. The word "semantics" in module names and elsewhere seems redundant.
+8. The word "semantics" in module names and elsewhere seems redundant.
 
-10. I like to "declare" variables in rules at the point where they're bound
-    (i.e., on the left side of the `=>`).
+9. I like to "declare" variables in rules at the point where they're bound
+   (i.e., on the left side of the `=>`).
 
-11. I prefer `func'`, `func''`, etc. for "auxiliary" syntax productions.
+10. I prefer `func'`, `func''`, etc. for "auxiliary" syntax productions.
 
 [language]: language
 [library]: library
