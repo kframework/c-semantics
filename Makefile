@@ -68,6 +68,7 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@echo "Done."
 
 parser/cparser:
+	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
 semantics: check-vars
