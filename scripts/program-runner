@@ -354,7 +354,7 @@ sub graphSearch {
                               $states{$currentStateNumber} = $currentOutput;
                         };
 
-                        /< output > # "(.*)"\(\.KList\) <\/ output >/ && do {
+                        /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
                               my $currentOutput = $1;
                               $goodFinal{$currentStateNumber} = "";
                               $states{$currentStateNumber} = $currentOutput;
