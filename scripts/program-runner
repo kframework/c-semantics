@@ -214,14 +214,13 @@ sub parseResultLine {
             $parsed->{finalCompType} = $1;
       };
 
-      /< output > # "(.*)"\(\.KList\) <\/ output >/ && do {
+      /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
             $parsed->{output} = $1;
       };
 
       /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
             $parsed->{exitCode} = $1;
       };
-
 }
 
 sub processResult {
