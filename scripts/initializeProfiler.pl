@@ -4,7 +4,7 @@ my $errorFlag = 0;
 
 my $filename = $ARGV[0];
 my $RULE_LENGTH = 20;
-my $dbh = DBI->connect("dbi:SQLite:dbname=maudeProfileDB.sqlite","","");
+my $dbh = DBI->connect("dbi:SQLite:dbname=kccProfileDB.sqlite","","");
 $dbh->do("CREATE TABLE if not exists rules (	
 	ruleName NOT NULL
 	, locationFile NOT NULL

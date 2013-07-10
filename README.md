@@ -1,4 +1,4 @@
-See [INSTALL.md][] for installation instructions and [LICENSE][] for licensing
+See [INSTALL.md](INSTALL.md) for installation instructions and [LICENSE](LICENSE) for licensing
 information.
 
 If this readme isn't enough, consider checking out these papers to better
@@ -23,11 +23,11 @@ understand this project:
   `PROFILE`, and `LTLMC`. Notice that these extra interpreter options are
   passed via environment variables and not on the command line. This allows us
   to pass the actual command line parameters straight to the `kcc`-compiled
-  program unchanged.
+  program, unchanged.
 - If you try to run a program that is undefined (or one for which we are
   missing semantics), the program will get stuck. The message should tell you
   where it got stuck and may give a hint as to why. If you want help
-  deciphering the output, or help understanding why the program is defined,
+  deciphering the output, or help understanding why the program is undefined,
   please send your `.kdump` file to us.
 
 ## Runtime features
@@ -61,7 +61,7 @@ See [examples/README.md](examples/README.md#ltl-model-checking) for more details
 Running `PROFILE=1 ./a.out` will record which rules of the semantics are
 exercised during the evaluation of a program. The program executes as normal,
 but this additional information is recorded in an SQLite database
-`maudeProfileDB.sqlite` in your current directory. You can access the
+`kccProfileDB.sqlite` in your current directory. You can access the
 information by running queries against the database. Some sample queries are
 provided by the `query-kcc-prof` script, and can be executed with, e.g., 
 ```
@@ -71,7 +71,7 @@ You can look at the provided queries (see [scripts/query-kcc-prof][]) and
 construct your own, or access the database using your own programs. Different
 runs of the tool are kept distinct in the database, so you can run a bunch of
 programs and then analyze the collective data. You can simply delete the
-`maudeProfileDB.sqlite` file to start another series of tests with a fresh
+`kccProfileDB.sqlite` file to start another series of tests with a fresh
 database.
 
 ### Testing the semantics

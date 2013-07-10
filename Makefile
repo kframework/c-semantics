@@ -55,11 +55,11 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@echo "Done."
 	@echo "Calibrating the semantic profiler..."
 # done so that an empty file gets copied by the analyzeProfile.pl wrapper
-	@mv maudeProfileDB.sqlite maudeProfileDB.sqlite.calibration.bak > /dev/null 2>&1 || true
-	@touch maudeProfileDB.sqlite
+	@mv kccProfileDB.sqlite kccProfileDB.sqlite.calibration.bak > /dev/null 2>&1 || true
+	@touch kccProfileDB.sqlite
 	@perl $(SCRIPTS_DIR)/initializeProfiler.pl $(DIST_DIR)/c11-kompiled/base.maude
-	@mv maudeProfileDB.sqlite $(DIST_DIR)/maudeProfileDB.calibration.sqlite
-	@mv maudeProfileDB.sqlite.calibration.bak maudeProfileDB.sqlite > /dev/null 2>&1 || true
+	@mv kccProfileDB.sqlite $(DIST_DIR)/kccProfileDB.calibration.sqlite
+	@mv kccProfileDB.sqlite.calibration.bak kccProfileDB.sqlite > /dev/null 2>&1 || true
 	@echo "Done."
 	@echo "Cleaning up..."
 	@rm -f $(DIST_DIR)/testProgram.c
