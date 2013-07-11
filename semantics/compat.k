@@ -13,6 +13,7 @@ module COMPAT-SYNTAX
 
      syntax String ::= toUpperCase(String) [function]
 
+     syntax Bool ::= "all" "(" KList "," KLabel ")" [function]
 
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
@@ -102,6 +103,10 @@ module COMPAT
           butFirstChar(S:String) 
           => substrString(S:String, 1, lengthString(S:String))
           [structural]
+
+     rule all((K:K,, L:KList), Lbl:KLabel) 
+          => Lbl(K) andBool all(L, Lbl)
+     rule all(.KList, _) => true 
           
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))

@@ -36,12 +36,7 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
 
-     syntax K ::= "toRVList" "(" KList ")"
-
-     syntax KResult ::= "rvlist" "(" KList ")"
-
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
-
 endmodule
 
 module C-DYNAMIC
@@ -53,14 +48,6 @@ module C-DYNAMIC
 
      imports COMPAT-SYNTAX
 
-     syntax K ::= "toRVList'" "(" KList ")"
-     context toRVList'(_,, (HOLE => reval(HOLE)),, _) [ndheat]
-     rule toRVList(L:KList) => toRVList'(L) ~> rvlist(.KList)
-          [structural]
-     rule toRVList'(_,, (V:KResult => .KList)) ~> rvlist((.KList => V),, _) 
-          [structural]
-     rule toRVList'(.KList) => .
-          [structural]
 
      rule value(tv(V:KList, _)) => V:KList
           [structural, anywhere]

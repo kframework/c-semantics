@@ -47,16 +47,26 @@ module C-EXPRESSION-FUNCTION-CALL
 
      \end{itemize}
      }}*/
+
+     syntax K ::= "toRVList" "(" KList ")"
+     syntax KResult ::= "rvlist" "(" KList ")"
+     context toRVList(_,, (HOLE => reval(HOLE)),, _) [ndheat]
      
-     // TODO(chathhorn): probably needs to be reworked.
-     rule Call(K:K, klist(L:KList)) => toRVList(L) ~> Call(K, .K)
-          [structural]
-     rule R:KResult ~> Call(K:K, .K) => Call(K, R) 
-          [structural]
+     // TODO(chathhorn): won't heat on .KList.
+     // TODO(chathhorn): need another sequencePoint here, between the
+     // evaluation of the function designator and the arguments.
+     rule Call(_:KResult, (klist(.KList) => rvlist(.KList)))
+     rule Call(K:KResult, klist(L:KList)) 
+          => toRVList(L) ~> Call(K, HOLE)
+          [heat]
+     rule toRVList(L:KList) ~> Call(K:KResult, HOLE) 
+          => Call(K, rvlist(L)) 
+          when all(L, isKResult)
+          [cool]
 
      rule [function-application-pre]:
           Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
-          => application(readFunction(Loc), L)
+          => sequencePoint ~> application(readFunction(Loc), L)
           when isFunctionType(T)
           [structural]
      /*@ this extra step is useful for putting the function name in the

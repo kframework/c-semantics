@@ -22,14 +22,10 @@ module C-EXPRESSION-EVAL
           => 36893488147419103232
      
      // chathhorn: to work around the new semantics for contexts.
-     rule reval(K:K) => K ~> reval(HOLE) 
-          when getKLabel(K) =/=KLabel 'rkludge
-          [heat]
+     rule reval(K:K) => K ~> reval(HOLE) [heat]
      rule R:KResult ~> reval(HOLE) => reval(rkludge(R)) [cool]
 
-     rule peval(K:K) => K ~> peval(HOLE)
-          when getKLabel(K) =/=KLabel 'pkludge
-          [heat]
+     rule peval(K:K) => K ~> peval(HOLE) [heat]
      rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)

@@ -37,10 +37,11 @@ module C-STATEMENT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule [return]: 
-          <k> Return(V:KResult) ~> _
+          <k> 
+               Return(V:KResult) ~> _
                => sequencePoint 
-               ~> cast(T:KResult, V:KResult) 
-               ~> K:K
+                    ~> cast(T:KResult, V:KResult) 
+                    ~> K:K
           </k>
           <gtypes>... 
                Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) 
