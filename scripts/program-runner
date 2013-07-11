@@ -150,7 +150,7 @@ sub main {
       } 
 
       if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
-            my $graphOutputFile = "tmpSearchResults.dot";
+            my $graphOutputFile = "kcc-search-results.dot";
 
             print "Generated $fileOutput\n";
             print "Examining the output...\n";
@@ -160,12 +160,12 @@ sub main {
 
             if (defined $ENV{GRAPH}) {
                   print "Generating graph...\n";
-                  system("dot -Tps2 $graphOutputFile > tmpSearchResults.ps") == 0 
+                  system("dot -Tps2 $graphOutputFile > kcc-search-results.ps") == 0 
                         or die "Running dot failed: $?";
-                  print "Generated tmpSearchResults.ps.\n";
-                  system("ps2pdf tmpSearchResults.ps tmpSearchResults.pdf") == 0 
+                  print "Generated kcc-search-results.ps.\n";
+                  system("ps2pdf kcc-search-results.ps kcc-search-results.pdf") == 0 
                         or die "Running ps2pdf failed: $?";
-                  print "Generated tmpSearchResults.pdf\n";
+                  print "Generated kcc-search-results.pdf\n";
             }
             return 0;
       } 
