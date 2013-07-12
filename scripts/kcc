@@ -29,17 +29,17 @@ my $cparser = catfile($myDirectory, 'cparser');
 
 my @temporaryFiles = ();
 
-my @cppDefines = ();
-my @cppIncludeDirs = ();
+our @cppDefines = ();
+our @cppIncludeDirs = ();
 
 my $spec = q(#
       -c				Compile and assemble, but do not link.
       #-i				Include support for runtime file io.
       -d				Keep intermediate files.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+{ push(@main::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
       -I <dir>			Look for headers in <dir>.
-{ push(@::cppIncludeDirs, " -I$dir "); }
+{ push(@main::cppIncludeDirs, " -I$dir "); }
       -s				Do not link against the standard library.
       -o <file>			Place the output into <file>.
       -p				Profile parsing.
@@ -210,7 +210,7 @@ sub compileProgram {
             or die "$filename.c not found";
       
       my $cppCommand = 
-            "gcc $PEDANTRY_OPTIONS $CPP_OPTIONS @cppDefines @cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+            "gcc $PEDANTRY_OPTIONS $CPP_OPTIONS @main::cppDefines @main::cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
 
       my $retval = system($cppCommand);
       open FILE, "$filename.warnings.log";
