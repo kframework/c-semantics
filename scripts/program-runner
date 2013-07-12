@@ -170,7 +170,7 @@ sub main {
             return 0;
       } 
 
-      if (defined $ENV{LTLMC}) {
+      if (defined $ENV{LTLMC} | defined $ENV{DEBUG}) {
             return 0;
       }
 
