@@ -104,7 +104,7 @@ sub reportFailure {
 	$message = encode($message);
 	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"$1\">$1<\/a>/m;
 	my $inner = "<failure>$message</failure>";
-	print "$name failed\n";
+	print "$name FAILED\n";
 	return reportAny($name, $timer, $inner);
 }
 sub reportError {
