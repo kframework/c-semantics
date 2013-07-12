@@ -48,27 +48,25 @@ module C-EXPRESSION-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     syntax K ::= "toRVList" "(" KList ")"
+     syntax K ::= "Call'" "(" K "," K ")"
      syntax KResult ::= "rvlist" "(" KList ")"
-     context toRVList(_,, (HOLE => reval(HOLE)),, _) [ndheat]
-     
-     // TODO(chathhorn): won't heat on .KList.
-     // TODO(chathhorn): need another sequencePoint here, between the
-     // evaluation of the function designator and the arguments.
-     rule Call(_:KResult, (klist(.KList) => rvlist(.KList)))
-     rule Call(K:KResult, klist(L:KList)) 
-          => toRVList(L) ~> Call(K, HOLE)
-          [heat]
-     rule toRVList(L:KList) ~> Call(K:KResult, HOLE) 
-          => Call(K, rvlist(L)) 
+
+     syntax K ::= "revalParams" "(" K ")"
+     context revalParams(klist(_,, (HOLE => reval(HOLE)),, _)) [ndheat]
+     rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
           when all(L, isKResult)
-          [cool]
+     
+     rule Call(F:KResult, K:K) 
+          => sequencePoint ~> Call'(F, K) 
+
+     context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule [function-application-pre]:
-          Call(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
+          Call'(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
           => sequencePoint ~> application(readFunction(Loc), L)
           when isFunctionType(T)
           [structural]
+
      /*@ this extra step is useful for putting the function name in the
         transition graph */
      rule [call]:
