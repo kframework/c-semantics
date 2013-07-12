@@ -47,13 +47,11 @@ module LIBC-STDIO
           
      rule [subPointerToString-auto]:
           subPointerToString(B:Int @ Th:Int)
-          => "(" +String Int2String(B) +String 
-               " @ " +String Int2String(Th) +String ")"
+          => Int2String(B) +String " @ " +String Int2String(Th)
           [structural]
      rule [sub-pointerToString-allocated]:
           subPointerToString(B:Int @ allocatedDuration)
-          => "(" +String Int2String(B) +String 
-               " @ " +String "allocatedDuration)" 
+          => Int2String(B) +String " @ " +String "allocatedDuration" 
           [structural]
      
      rule [pointerToString-done]:
