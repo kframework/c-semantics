@@ -69,7 +69,7 @@ module C-MEMORY-WRITING
                     tv(L:KList, T:KResult), BitSize:Int)
           ...</k>
           <threadId> Th </threadId>
-          [structural, ndlocal]
+          [structural]
      // write global or shared data
      rule [write]:
           write-aux(
@@ -78,7 +78,7 @@ module C-MEMORY-WRITING
           => write-specific(
                loc(N @ 0, Offset:Int, BitOffset:Int), 
                tv(L:KList, T:KResult), BitSize:Int)
-          [ndtrans, ndlocal]
+          [ndtrans]
      // write data of "allocated" duration
      rule [write-allocated]:
           write-aux(
@@ -87,7 +87,7 @@ module C-MEMORY-WRITING
           => write-specific(
                loc(N @ allocatedDuration, Offset:Int, BitOffset:Int), 
                tv(L:KList, T:KResult), BitSize:Int)
-          [ndtrans, ndlocal]
+          [ndtrans]
      
      rule [write-normal]:
           write-specific(Loc:SymLoc, tv(V:K, T:KResult), BitSize:Int)

@@ -23,10 +23,14 @@ module C-EXPRESSION-EVAL
      
      // chathhorn: to work around the new semantics for contexts.
      rule reval(K:K) => K ~> reval(HOLE) [heat]
-     rule R:KResult ~> reval(HOLE) => reval(rkludge(R)) [cool]
+     rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
+     rule rkludge(K:K) => K
+          when isKResult(K) =/=K true
 
      rule peval(K:K) => K ~> peval(HOLE) [heat]
-     rule R:KResult ~> peval(HOLE) => peval(pkludge(R)) [cool]
+     rule K:K ~> peval(HOLE) => peval(pkludge(K)) [cool, ndlocal]
+     rule pkludge(K:K) => K
+          when isKResult(K) =/=K true
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]

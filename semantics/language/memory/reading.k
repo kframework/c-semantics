@@ -76,14 +76,14 @@ module C-MEMORY-READING
                ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
           ...</k>
           <threadId> Th </threadId>
-          [structural, ndlocal]
+          [structural]
      rule [read-shared]: // read global or shared data
           ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
-          [ndtrans, ndlocal]
+          [ndtrans]
      rule [read-allocated]: // read data of "allocated" duration
           ('read-aux => 'readActual)
                (loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
-          [ndtrans, ndlocal]
+          [ndtrans]
      
      rule [read]:
           readActual(Loc:SymLoc, T:KResult, BitSize:Int)

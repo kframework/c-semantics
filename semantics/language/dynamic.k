@@ -79,7 +79,7 @@ module C-DYNAMIC
      rule [sequencePoint]:
           <k> sequencePoint => .K ...</k>
           <locsWrittenTo> _ => .Bag </locsWrittenTo>
-          [structural, ndlocal]
+          [structural]
 
      rule [discard]:
           _:KResult ~> discard => .

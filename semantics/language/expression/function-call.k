@@ -11,7 +11,7 @@ module C-EXPRESSION-FUNCTION-CALL
      syntax K ::= "application" "(" K "," KList ")" [strict(1)]
      syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
 
-     // TODO(chathhorn): got to be a BUG
+     // TODO(chathhorn): KList heating bug
      rule application(K:K, L:KList) => K ~> application(HOLE, L) [heat]
      rule K:KResult ~> application(HOLE, L:KList) => application(K, L) [cool]
 

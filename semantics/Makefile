@@ -15,7 +15,7 @@ c11-kompiled: $(C11_FILES)
 
 c11-kompiled-nd: $(C11_FILES)
 	@echo "Compiling the C definition with expression sequencing non-determinism..."
-	@$(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans ndlocal" -superheat "ndheat" -supercool "observable ndlocal"
+	@$(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
 	@touch c11-kompiled-nd
 
 c11-kompiled-nd-thread: $(C11_FILES)
