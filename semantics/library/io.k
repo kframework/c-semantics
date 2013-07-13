@@ -17,14 +17,14 @@ module LIBC-IO
      // level
      rule [writeToFD-char]:
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
-          <fid> FD:Int </fid>
+          <fid> FD </fid>
           <buff> 
                S:String => S:String +String #charString(N:Int %Int 256)
           </buff>
           [observable]
      rule [writeToFD-string]:
           <k> writeToFD(FD:Int, S':String) => .K ...</k>
-          <fid> FD:Int </fid>
+          <fid> FD </fid>
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
@@ -32,26 +32,26 @@ module LIBC-IO
                readFromFD(FD:Int) 
                => tv(asciiString(firstChar(S:String)), t(.Set, int))  
           ...</k>
-          <fid> FD:Int </fid>
+          <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
           // don't compare with "" in order to only treat string sort
           when lengthString(S:String) >Int 0
           [observable]
+
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
-          <fid> FD:Int </fid>
-          <buff> "" => "" +String #charString(#fReadByte(FD:Int)) </buff>
+          <fid> FD </fid>
+          <nextByte> .K => #charString(#fReadByte(FD)) </nextByte>
+          <buff> "" </buff>
           [structural]
-     rule [readFromFD-eof]:
-          <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
-          <fid> FD:Int </fid>
-          <buff> #EOF </buff>
+     rule <nextByte> Byte:String => .K </nextByte>
+          <buff> Buff:String => Buff +String Byte </buff>
+          [structural]
+     rule <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
+          <fid> FD </fid>
+          <nextByte> #EOF </nextByte>
           [observable]
 
-     rule [make-eof]:
-          "" +String #charString(#EOF) => #EOF
-          [structural, anywhere]
-          
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-flush" "(" Int ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"

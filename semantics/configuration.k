@@ -190,6 +190,7 @@ module C11-CONFIGURATION
                <uri> .K </uri>
                <pos> 0 </pos>
                <mode> "r" </mode>
+               <nextByte> .K </nextByte>
                <buff> "" </buff>
                <sending> .List </sending>
                <done> ListItem("") </done>
