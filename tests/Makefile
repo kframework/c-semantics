@@ -68,6 +68,7 @@ results-fail-%.xml:
 	@perl runtest.pl -f $*
 		
 clean: $(CLEAN_TARGETS) clean-./
+	@-rm "1"
 	$(MAKE) -C gcc-test clean
 	
 clean-%:
