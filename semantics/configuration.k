@@ -196,8 +196,8 @@ module C11-CONFIGURATION
                <done> ListItem("") </done>
           </file>
      </files> 
-     <input color="lightgray" stream="stdin"> .List </input>
-     <output color="lightgray" stream="stdout"> .List </output>
+     <input color="lightgray"> .List </input>
+     <output color="lightgray"> .List </output>
      <resultValue color="red"> .K </resultValue>
      <errorCell multiplicity="?" color="black"> .K </errorCell>
           

@@ -199,10 +199,8 @@ module C-DYNAMIC
           </threads>
           <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           <br/>
-          <files>
-               <fileCommands> _ => 0 </fileCommands>
-               <br/>
-               ( _ =>
+          <files>...
+               ( .Bag =>
                <file>...
                     <fid> 0 </fid>
                     <uri> stdinStr </uri>
@@ -219,7 +217,7 @@ module C-DYNAMIC
                     <uri> stdoutStr </uri>
                     <mode> "w" </mode>
                ...</file>)
-          </files>
+          ...</files>
           [structural, large]
 
      /*@ 

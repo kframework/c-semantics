@@ -59,46 +59,48 @@ module LIBC-IO
      // can't lex string2KList correctly in #fPrint(N:Int,,
      // string2KList(S:String))
      rule [flush]:
-          <k> flush(N:Int) => .K ...</k>
-          <fileCommands>... .K
-               => f-sendString(N:Int, S:String)
-               ~> f-sent(N:Int, S:String)
-               ~> f-flush(N:Int)
+          <k> flush(FD:Int) => .K ...</k>
+          <fileCommands>... 
+               .K
+               => f-sendString(FD, S)
+                    ~> f-sent(FD, S)
+                    ~> f-flush(FD)
           </fileCommands>
           <file>...
-               <fid> N:Int </fid>
+               <fid> FD </fid>
                <buff> S:String => "" </buff>
-               <sending>... .List => ListItem(S:String) </sending>
+               <sending>... .List => ListItem(S) </sending>
           ...</file>
           [structural]
 
      rule [sendString-one]:
-          <fileCommands> f-sendString(N:Int, S:String) 
-               => (#fPutByte(N:Int, asciiString(firstChar(S:String)))
-               ~> f-sendString(N:Int, butFirstChar(S:String)))
+          <fileCommands> 
+               f-sendString(FD:Int, S:String) 
+               => (#fPutByte(FD, asciiString(firstChar(S)))
+                    ~> f-sendString(FD, butFirstChar(S)))
           ...</fileCommands>
-          when S:String =/=String ""
+          when S =/=String ""
           [structural]
      rule [sendString-done]:
-          <fileCommands> f-sendString(_:Int, "") => .K ...</fileCommands>
+          <fileCommands> f-sendString(_, "") => .K ...</fileCommands>
           [structural]
 
      rule [f-sent]:
           <files>...
-               <fileCommands> f-sent(N:Int, S:String) => .K ...</fileCommands>
-               <fid> N:Int </fid>
-               <sending> ListItem(S:String) => .List ...</sending>
-               <done>... .List => ListItem(S:String) </done>
+               <fileCommands> f-sent(FD:Int, S:String) => .K ...</fileCommands>
+               <fid> FD </fid>
+               <sending> ListItem(S) => .List ...</sending>
+               <done>... .List => ListItem(S) </done>
           ...</files>
           [structural]
      rule [f-flush]:
-          <fileCommands> f-flush(N:Int) => #flush(N:Int) ...</fileCommands>
+          <fileCommands> f-flush(FD:Int) => #flush(FD) ...</fileCommands>
           [structural]
           
      rule [combine-done]:
           <done> 
                ListItem(S:String) ListItem(S':String) 
-               => ListItem(S:String +String S':String) 
+               => ListItem(S +String S') 
           ...</done>
           [structural]
 endmodule
