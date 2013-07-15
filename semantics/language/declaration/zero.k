@@ -57,11 +57,10 @@ module C-DECLARATION-ZERO
           [structural] 
           
      rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
-               => zeroType(N . F:Id, T:KResult)
+               => zeroType(N . F, T)
           ...</k>
           <structs>... 
-               S:Id |->
-                    aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
+               S |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
           ...</structs> 
           [structural] 
           

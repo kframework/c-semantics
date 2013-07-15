@@ -1,6 +1,6 @@
 module C11-ERROR-SYNTAX
      syntax K ::= assert(Bool, Int) // check, error#
-     syntax K ::= PAUSE(Bool, K) | ASSERT(Bool, K)
+     syntax K ::= "PAUSE" | PAUSE(K) | ASSERT(Bool, K)
 endmodule
 
 module C11-ERROR

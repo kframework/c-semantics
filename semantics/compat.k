@@ -76,6 +76,8 @@ module COMPAT-SYNTAX
 
      syntax KList ::= Int "to" Int [function]
 
+     syntax KList ::= times(Int, K) [function]
+
 endmodule
 
 module COMPAT
@@ -178,5 +180,9 @@ module COMPAT
 
      rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
      rule klistToK(.KList) => .K
+
+     rule times(0, _) => .KList
+     rule times(N:Int, K:K) => (K,, times(N -Int 1, K))
+          when N >Int 0
 endmodule
 

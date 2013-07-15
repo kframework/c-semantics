@@ -16,21 +16,19 @@ module C-EXPRESSION-MEMBERS
      // fixme could speed things up by caching bitsizeoftype as well
      rule [extractField-start]:
           <k> extractField(L:KList, 't(_,, Lb:KLabel(S:Id)), F:Id)
-               => extractField-pre(L:KList, T:KResult, Offset:Int, 
-                    bitSizeofType(T:KResult)) 
+               => extractField-pre(L, T, Offset, bitSizeofType(T)) 
           ...</k>
           <structs>... 
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult),
-                    (_ F:Id |-> Offset:Int)) 
+               S |-> aggregateInfo(_, 
+                    (_ F |-> T:KResult), (_ F |-> Offset:Int)) 
           ...</structs>
-          when Lb:KLabel ==KLabel 'unionType
-               orBool Lb:KLabel ==KLabel 'structType
+          when Lb ==KLabel 'unionType
+               orBool Lb ==KLabel 'structType
           [structural]
 
      rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
-          => concretize(T:KResult, 
-               fillToBytes(extractBitsFromList(dataList(L:KList),
-                    Offset:Int, Len:Int)))
+          => concretize(T, 
+               fillToBytes(extractBitsFromList(dataList(L), Offset, Len)))
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
@@ -42,25 +40,23 @@ module C-EXPRESSION-MEMBERS
      }*/
      // fixme tool bug, can't use L:KLabel
      rule <k> lval(Loc:SymLoc, t(_, structType(S:Id))) . F:Id
-               => lv(Loc:SymLoc +bits Offset:Int, T:KResult)
+               => lv(Loc +bits Offset, T)
           ...</k>
           <structs>...
-               S:Id |-> aggregateInfo(_, 
-                    (_ F:Id |-> T:KResult), (_ F:Id |-> Offset:Int))
+               S |-> aggregateInfo(_, 
+                    (_ F |-> T:KResult), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
      rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
-               => lv(Loc +bits Offset:Int, 
-                    t(SetItem(fromUnion(S:Id)) Se:Set, T:K))
+               => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
           ...</k>
           <structs>...
-               S:Id |-> aggregateInfo(_, 
-                    (_ F:Id |-> t(Se:Set, T:K)), (_ F:Id |-> Offset:Int))
+               S |-> aggregateInfo(_, 
+                    (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
           
-     rule tv(L:KList, T:KResult) . F:Id 
-          => extractField(L:KList, T:KResult, F:Id)
+     rule tv(L:KList, T:KResult) . F:Id => extractField(L, T, F)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{

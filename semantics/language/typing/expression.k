@@ -165,15 +165,15 @@ module C-TYPING-EXPRESSION
      so-qualified version of the type of the designated member.
      }*/
      rule [type-struct-dot]:
-          <type> t(_, structType(S:Id)) . F:Id => T:KResult ...</type>
+          <type> t(_, structType(S:Id)) . F:Id => T ...</type>
           <structs>...
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
+               S |-> aggregateInfo(_, (_ F |-> T:KResult), _)
           ...</structs>
           [structural]
      rule [type-union-dot]:
-          <type> t(_, unionType(S:Id)) . F:Id => T:KResult ...</type>
+          <type> t(_, unionType(S:Id)) . F:Id => T ...</type>
           <structs>...
-               S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
+               S |-> aggregateInfo(_, (_ F |-> T:KResult), _)
           ...</structs>
           [structural]
 

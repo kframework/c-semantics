@@ -19,7 +19,7 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
-     
+
      // writeString and writeWString expect the user to add the '\0' to the end
      // of the strings passed
      rule [write-string]:
@@ -119,7 +119,7 @@ module C-MEMORY-WRITING
           <mem>... 
                Base |-> memblock(Len:Int, _, 
                M:Map => M:Map[
-                    piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
+                    times(Len', piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
                     / Offset to (Offset +Int Len')]) 
           ...</mem>
           when Len >=Int Offset +Int Len'
@@ -129,8 +129,8 @@ module C-MEMORY-WRITING
      rule hasUnionMarker(t(SetItem(fromUnion(_:Id)) _, _)) => true
      rule hasUnionMarker(t(.Set, _)) => false
      rule hasUnionMarker(t(S:Set (SetItem(L:KLabel(_:KList))), K:K))
-          => hasUnionMarker(t(S:Set, K:K))
-          when L:KLabel =/=KLabel 'fromUnion
+          => hasUnionMarker(t(S, K))
+          when L =/=KLabel 'fromUnion
           [structural]
      
      rule [write-struct]:

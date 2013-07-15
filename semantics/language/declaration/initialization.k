@@ -29,18 +29,18 @@ module C-DECLARATION-INITIALIZATION
           [structural] 
 
      rule <k> startInit(T:KResult, X:Id, CompoundInit(klist(L:KList)))
-               => fillInit(L:KList) 
+               => fillInit(L) 
                ~> getInit
           ...</k>
           <incompleteLength> _ => 0 </incompleteLength>
           <currentSubObject>
-               .List => ListItem(te(X:Id, T:KResult))
+               .List => ListItem(te(X, T))
           </currentSubObject>
           <currentObject>
-               .List => ListItem(te(X:Id, T:KResult))
+               .List => ListItem(te(X, T))
           </currentObject>
-          <savedInitialization>... .K => zero(X:Id) </savedInitialization> 
-          when isUnionType(T:KResult) orBool isAggregateType(T:KResult)
+          <savedInitialization>... .K => zero(X) </savedInitialization> 
+          when isUnionType(T) orBool isAggregateType(T)
           [structural] 
      
      rule fillInit((InitFragment(K:K, Exp:K),, L:KList))
@@ -82,7 +82,7 @@ module C-DECLARATION-INITIALIZATION
                     ListItem(te(K:K, t(Se:Set, unionType(S:Id))))
           ...</currentSubObject>
           <structs>... 
-               S:Id |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
+               S |-> aggregateInfo((typedDeclaration(T, F),, _), _, _) 
           ...</structs> 
           [structural] 
           
@@ -238,7 +238,7 @@ module C-DECLARATION-INITIALIZATION
                S:Id |-> aggregateInfo(_, (_ F:Id |-> T:KResult), _)
           ...</structs>
           when KL:KLabel ==KLabel 'structType 
-          orBool KL:KLabel ==KLabel 'unionType
+               orBool KL:KLabel ==KLabel 'unionType
           [structural] 
           
      rule <k> buildDesignator(NextInit) => NextInit ...</k>

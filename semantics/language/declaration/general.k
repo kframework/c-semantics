@@ -28,7 +28,7 @@ module C-DECLARATION-GENERAL
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes
      // of this subclause unnamed members of objects of structure and union
-     // type do not participate in initialization.  Unnamed members of
+     // type do not participate in initialization. Unnamed members of
      // structure objects have indeterminate value even after initialization
 
      // c99 6.7.8:10 If an object that has automatic storage duration is not

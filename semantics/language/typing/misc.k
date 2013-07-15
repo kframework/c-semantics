@@ -365,10 +365,10 @@ module C-TYPING-MISC
      rule <k> 
                addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
                => #if (F:Id ==K file-scope) 
-                    #then (addGlobalAggregate(S:Id, 
-                         aggregateInfo(L:KList, Types:Map, Offsets:Map))) 
-                    #else (addLocalAggregate(S:Id, 
-                         aggregateInfo(L:KList, Types:Map, Offsets:Map)))
+                    #then (addGlobalAggregate(S, 
+                         aggregateInfo(L, Types, Offsets))) 
+                    #else (addLocalAggregate(S, 
+                         aggregateInfo(L, Types, Offsets)))
                     #fi
           ...</k>
           <currentFunction> F:Id </currentFunction>

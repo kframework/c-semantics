@@ -23,7 +23,7 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
 
      syntax Type ::= "type" "(" K ")" [function]
-     syntax K ::= "value" "(" K ")" [function]
+     syntax K ::= "value" "(" K ")"
 
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
