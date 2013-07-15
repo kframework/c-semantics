@@ -31,7 +31,7 @@ module LIBC-STDIO
      syntax Value ::= "str" "(" String ")"
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
-          => getString-aux(Loc, S +String #charString(N))
+          => getString-aux(Loc, S +String chrChar(N))
           when N =/=Int 0
           [structural]
      rule [getString-done]:
@@ -121,7 +121,7 @@ module LIBC-STDIO
           fsl-open-file(str(Filename:String), str(Mode:String))
           => fsl-open-file-aux("file:" +String Filename:String, Mode:String,
                #open("file:" +String Filename:String
-                    +String "\001" +String Mode:String))
+                    +String "\x01" +String Mode:String))
           [structural]
 
      rule [fslOpenFile]:
@@ -177,7 +177,7 @@ module LIBC-STDIO
           [structural]
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
-          => writeString(Dest, S:String +String "\0") 
+          => writeString(Dest, S:String) 
                ~> tv(lengthString(S:String), t(.Set, int))
           [structural]
      
@@ -190,7 +190,7 @@ module LIBC-STDIO
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
-          => writeString(Dest, substrString(S:String, 0, Len:Int -Int 1) +String "\0")
+          => writeString(Dest, substrString(S, 0, Len -Int 1))
                ~> tv(lengthString(S:String), t(.Set, int))
           when Len:Int >Int 0
           [structural]
@@ -364,8 +364,8 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <formatState> "%" </formatState>
-          when asciiString(C:String) >Int asciiString("0")
-          andBool asciiString(C:String) <=Int asciiString("9")
+          when ordChar(C:String) >Int ordChar("0")
+               andBool ordChar(C:String) <=Int ordChar("9")
           [structural]   
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
@@ -782,7 +782,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <formatArg> C:Int => .K </formatArg>
           <formatResult>... 
-               .List => ListItem(#charString(((C:Int %Int 256) +Int 256) 
+               .List => ListItem(chrChar(((C:Int %Int 256) +Int 256) 
                     %Int 256)) 
           </formatResult>
           <formatState> "%c" => "reset" </formatState>

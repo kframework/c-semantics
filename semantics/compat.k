@@ -94,11 +94,11 @@ module COMPAT
                => S:String +String listToString(L:List)
 
      rule [firstChar]:
-          firstChar(S:String) => substrString(S:String, 0, 1)
+          firstChar(S:String) => substrString(S, 0, 1)
           [structural]
 
      rule [nthChar]:
-          nthChar(S:String, N:Int) => substrString(S:String, N:Int, 1)
+          nthChar(S:String, N:Int) => substrString(S, N, N +Int 1)
           [structural]
 
      rule [butFirstChar]:
@@ -118,14 +118,14 @@ module COMPAT
      rule toUpperCase(C:String)
           => C:String
           when (lengthString(C) ==Int 1)
-               andBool (asciiString(C) <Int asciiString("a")
-                    orBool asciiString(C) >Int asciiString("z"))
+               andBool (ordChar(C) <Int ordChar("a")
+                    orBool ordChar(C) >Int ordChar("z"))
      rule toUpperCase(C:String)
-          => #charString(absInt(asciiString(C) 
-               -Int (asciiString("a") -Int asciiString("A"))))
+          => chrChar(absInt(ordChar(C) 
+               -Int (ordChar("a") -Int ordChar("A"))))
           when (lengthString(C) ==Int 1)
-               andBool (asciiString(C) >=Int asciiString("a")
-                    andBool asciiString(C) <=Int asciiString("z"))
+               andBool (ordChar(C) >=Int ordChar("a")
+                    andBool ordChar(C) <=Int ordChar("z"))
           
      // this should probably go in the k prelude
      rule K:K in (ListItem(K:K) _:List) => true

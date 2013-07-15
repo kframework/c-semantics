@@ -252,7 +252,7 @@ module C-EXPRESSION-LITERAL
      }*/  
           
      rule [const-string-notfound]:
-          <k> (. => allocString(Loc, S +String "\0"))
+          <k> (. => allocString(Loc, S))
                ~> Constant(StringLiteral(S:String))
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
@@ -267,7 +267,7 @@ module C-EXPRESSION-LITERAL
           
      syntax K ::= "wstring" "(" KList ")"
      rule [const-wstring-notfound]:
-          <k> (.K => allocWString(Loc, (S:KList,, 0)))
+          <k> (.K => allocWString(Loc, S:KList))
                ~> Constant(WStringLiteral(S:KList))
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>

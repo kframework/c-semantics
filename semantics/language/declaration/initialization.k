@@ -379,12 +379,12 @@ module C-DECLARATION-INITIALIZATION
                     ListItem(te(_, t(_, arrayType(T:KResult, Len:Int))))
           ...</currentSubObject>
           when isWCharType(T:KResult)
-               andBool lengthKList S:KList  ==Int Len:Int
+               andBool lengthKList S ==Int Len
           [structural] 
      rule [fillInit-string-array-lt]:
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit(SingleInit(Constant(
-                    StringLiteral(S:String +String "\0"))))
+                    StringLiteral(S:String +String "\x00"))))
           ...</k>
           <currentSubObject>
                ListItem(te(_:K, T:KResult))
@@ -407,7 +407,7 @@ module C-DECLARATION-INITIALIZATION
      rule [fillInit-string-char]:
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit-aux(SingleInit(Constant(
-                    StringLiteral(S:String +String "\0"))))
+                    StringLiteral(S:String +String "\x00"))))
           ...</k>
           <currentSubObject>
                ListItem(te(_:K, T:KResult))
@@ -438,7 +438,7 @@ module C-DECLARATION-INITIALIZATION
      syntax K ::= "initHead" "(" K "," K ")"
      syntax K ::= "initTail" "(" K ")"
      rule initHead(S:String, T:KResult)
-          => SingleInit(tv(asciiString(firstChar(S:String)),
+          => SingleInit(tv(ordChar(firstChar(S:String)),
                t(getModifiers(T:KResult), char)))
           [structural, anywhere]
      

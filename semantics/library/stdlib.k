@@ -13,7 +13,7 @@ module LIBC-STDLIB
      syntax K ::= "printString" "(" K ")"
 
      rule printString(S:String)
-          => writeToFD(1, asciiString(firstChar(S:String)))
+          => writeToFD(1, ordChar(firstChar(S:String)))
                ~> printString(butFirstChar(S:String))
           when lengthString(S:String) >Int 0
           [structural]

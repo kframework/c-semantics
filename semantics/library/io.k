@@ -19,7 +19,7 @@ module LIBC-IO
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
           <fid> FD </fid>
           <buff> 
-               S:String => S:String +String #charString(N:Int %Int 256)
+               S:String => S:String +String chrChar(N:Int %Int 256)
           </buff>
           [observable]
      rule [writeToFD-string]:
@@ -30,7 +30,7 @@ module LIBC-IO
      rule [readFromFD-char]:
           <k> 
                readFromFD(FD:Int) 
-               => tv(asciiString(firstChar(S:String)), t(.Set, int))  
+               => tv(ordChar(firstChar(S:String)), t(.Set, int))  
           ...</k>
           <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
@@ -41,7 +41,7 @@ module LIBC-IO
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD </fid>
-          <nextByte> .K => #charString(#fReadByte(FD)) </nextByte>
+          <nextByte> .K => chrChar(#fReadByte(FD)) </nextByte>
           <buff> "" </buff>
           [structural]
      rule <nextByte> Byte:String => .K </nextByte>
@@ -76,7 +76,7 @@ module LIBC-IO
      rule [sendString-one]:
           <fileCommands> 
                f-sendString(FD:Int, S:String) 
-               => (#fPutByte(FD, asciiString(firstChar(S)))
+               => (#fPutByte(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</fileCommands>
           when S =/=String ""

@@ -20,13 +20,11 @@ module C-MEMORY-WRITING
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     // writeString and writeWString expect the user to add the '\0' to the end
-     // of the strings passed
      rule [write-string]:
           writeString(Loc:SymLoc, S:String)
           => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
-               := tv(asciiString(firstChar(S:String)), t(.Set, char)))
-          ~> writeString(Loc +bytes 1, butFirstChar(S:String))
+               := tv(ordChar(firstChar(S:String)), t(.Set, char)))
+               ~> writeString(Loc +bytes 1, butFirstChar(S:String))
           when S:String =/=String ""
           [structural]
      // fixme this bare 4 needs to be updated to handle different size wchar_ts
@@ -34,14 +32,18 @@ module C-MEMORY-WRITING
           writeWString(Loc:SymLoc, (N:Int,, S:KList))
           => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
                := tv(N, cfg:wcharut))
-          ~> writeWString(Loc +bytes 4, S)
+               ~> writeWString(Loc +bytes 4, S)
           [structural] 
      rule [write-empty-string]:
-          writeString(_, "") => .
+          writeString(Loc:SymLoc, "")
+          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               := tv(0, t(.Set, char)))
           [structural]
-     rule [write-empty-wstring]:
-          writeWString(_, .KList) => .
-          [structural]
+     rule [write-wstring]:
+          writeWString(Loc:SymLoc, .KList)
+          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               := tv(0, cfg:wcharut))
+          [structural] 
           
      syntax K ::= "writeBytes" "(" SymLoc "," K ")" [strict(2)] 
      syntax K ::= "writeBitfield" "(" SymLoc "," Type "," K ")" [strict(3)] 
@@ -290,10 +292,6 @@ module C-MEMORY-WRITING
           
      // this general rule is useful for unknowns, abstracts, etc
      rule [splitBytes-other]:
-          splitBytes(tv((N:Bits,, .KList), T:Type))
-          => dataList(piece(N, cfg:bitsPerByte))
-          when isCharType(T)
-     rule [splitBytes-char]:
           splitBytes(tv(N:Bits, T:Type))
           => dataList(piece(N, cfg:bitsPerByte))
           when isCharType(T) andBool (isInt(N) ==K false)

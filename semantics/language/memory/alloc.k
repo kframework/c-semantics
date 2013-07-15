@@ -136,13 +136,13 @@ module C-MEMORY-ALLOC
      rule [alloc-string]:
           allocString(Loc:SymLoc, S:String)
           => allocateType(Loc, 
-               t(.Set, arrayType(t(.Set, char), lengthString(S))))
+               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
                ~> writeString(Loc, S) ~> makeUnwritable(Loc)
           [structural]
      rule [alloc-wstring]:
           allocWString(Loc:SymLoc, S:KList)
           => allocateType(Loc, 
-               t(.Set, arrayType(cfg:wcharut, 4 *Int lengthKList S:KList)))
+               t(.Set, arrayType(cfg:wcharut, 4 *Int (lengthKList S:KList +Int 1))))
                ~> writeWString(Loc, S:KList) ~> makeUnwritable(Loc)
           [structural] 
      
