@@ -296,7 +296,7 @@ module C-MEMORY-WRITING
      rule [splitBytes-other]:
           splitBytes(tv(N:Bits, T:Type))
           => dataList(piece(N, cfg:bitsPerByte))
-          when isCharType(T) andBool (isInt(N) ==K false)
+          when isCharType(T) andBool (isInt(N) =/=K true)
      rule [splitBytes-int]:
           splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, byteSizeofType(T))

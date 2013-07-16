@@ -1,9 +1,4 @@
 module C-MEMORY-ALLOC-SYNTAX
-     // loc, size in bytes
-     syntax Bits ::= "encodedFloat" "(" Float ")"
-     // object, start piece, end piece
-     syntax Bits ::= "subObject" "(" Ptr "," K "," K ")"
-
      // fixme would be better to keep canonical
      syntax Int ::= getBitOffset(SymLoc) [function]
      syntax Int ::= getByteOffset(SymLoc) [function]

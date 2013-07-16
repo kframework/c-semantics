@@ -99,15 +99,14 @@ module C-MEMORY-READING
           [structural]
      
      syntax K ::= "joinIntegerBytes" "(" Type "," KList ")"
-     rule concretize(T:KResult, dataList(L:KList)) 
-          => joinIntegerBytes(T:KResult, L:KList) 
-          when hasIntegerType(T:KResult) 
-               andBool notBool isBitfieldType(T:KResult) 
+     rule concretize(T:Type, dataList(L:KList)) 
+          => joinIntegerBytes(T, L) 
+          when hasIntegerType(T) 
+               andBool notBool isBitfieldType(T) 
           [structural]
      rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
                dataList(L:KList)) 
-          => joinIntegerBytes(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
-               reverseList(L:KList)) 
+          => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
           [structural]
           
      // fixme not sure about this
@@ -154,7 +153,7 @@ module C-MEMORY-READING
           [structural]
      rule joinPointerBytes(T:Type, (piece(N:Bits, Len:Int),, L:KList))
           => joinPointerBytes-aux(T, L, N)
-          when Len:Int ==Int cfg:bitsPerByte
+          when Len ==Int cfg:bitsPerByte
           [structural]
      // fixme sNat
      rule joinPointerBytes-aux(T:Type, 
@@ -169,10 +168,10 @@ module C-MEMORY-READING
           [structural]
 
      rule concretize(t(S:Set, structType(I:Id)), dataList(L:KList)) 
-          => tv(L:KList, t(S:Set, structType(I:Id))) 
+          => tv(L, t(S, structType(I))) 
           [structural]
      rule concretize(t(S:Set, unionType(I:Id)), dataList(L:KList)) 
-          => tv(L:KList, t(S:Set, unionType(I:Id)))
+          => tv(L, t(S, unionType(I)))
           [structural]
 
      // FIXME assuming bytes?
@@ -220,9 +219,9 @@ module C-MEMORY-READING
           ~> extractBytesFromMem-aux(Loc +bytes 1, Size -Int 1, Aux)
           when Size:Int >Int 0
           [structural]
-     rule (tv(V:KList, T:KResult) => .K)
+     rule (tv(V:KList, T:Type) => .K)
                ~> extractBytesFromMem-aux(_, _, 
-                    (Aux:KList => (Aux:KList,, tv(V:KList, T:KResult))))
+                    (Aux:KList => (Aux,, tv(V, T))))
           [structural]        
      
      syntax KList ::= values(KList) [function]

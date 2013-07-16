@@ -11,8 +11,6 @@ module C-MEMORY-SYNTAX
      syntax K ::= "writeString" "(" SymLoc "," String ")"
      syntax K ::= "writeWString" "(" SymLoc "," KList ")"
 
-     syntax Ptr ::= Int | SymLoc
-
      syntax K ::= "mconst"
 
      syntax K ::= "makeUnwritable" "(" SymLoc ")" 

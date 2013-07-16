@@ -1,12 +1,19 @@
 module C-BITS-SYNTAX
+     syntax Ptr ::= Int | SymLoc
+
      syntax Bits ::= Int
 
-     syntax Bits ::= "piece" "(" Bits "," Int ")"
-     syntax Bits ::= "unknown" "(" Int ")"
+     syntax Bits ::= piece(Bits, Int)
+     syntax Bits ::= unknown(Int)
      syntax Bits ::= Bits "bit::" Bits
 
      // original number, from, to inclusive
-     syntax Bits ::= "bitRange" "(" Bits "," Int "," Int ")"
+     syntax Bits ::= bitRange(Bits, Int, Int)
+
+     // loc, size in bytes
+     syntax Bits ::= "encodedFloat" "(" Float ")"
+     // object, start piece, end piece
+     syntax Bits ::= "subObject" "(" Ptr "," K "," K ")"
 
      syntax Int ::= "bitsToBytes" "(" Int ")" [function]
 
@@ -41,19 +48,19 @@ module C-BITS
      // this maintains byte order
      rule [fillToBytes-start]:
           fillToBytes(dataList(L:KList)) 
-          => fillToBytes-aux(dataList(L:KList), .KList) 
+          => fillToBytes-aux(dataList(L), .KList) 
           [structural]
      rule [fillToBytes-foundByte]:
           fillToBytes-aux(dataList((L:KList,, 
                piece(N:Bits, Len:Int))), L':KList)
-          => fillToBytes-aux(dataList(L:KList), (piece(N, Len),, L'))
+          => fillToBytes-aux(dataList(L), (piece(N, Len),, L'))
           when Len ==Int cfg:bitsPerByte
           [structural]
      
      rule [fillToBytes-addBit]:
           fillToBytes-aux(dataList(piece(N:Bits, Len:Int)), L':KList)
           => fillToBytes-aux(dataList((piece(0, 1),, piece(N, Len))), L')
-          when Len:Int <Int cfg:bitsPerByte
+          when Len <Int cfg:bitsPerByte
           [structural]
           
      rule [fillToBytes-combineBits]:
