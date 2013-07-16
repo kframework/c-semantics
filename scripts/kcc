@@ -268,26 +268,27 @@ sub compileProgram {
 }
 
 sub linker {
-      my @linkfiles = (@_);
+      my @files = (@_);
       my @programs;
       my @operators;
       my $retval = "";
-      if (scalar(@linkfiles) == 0) {
+      if (scalar(@files) == 0) {
             die "No files passed to linker\n";
       }
-      for (@linkfiles) {
+      for (@files) {
             my @contents;
             if (/\.a$/) {
                   @contents = `ar -p $_`;
-                  ($? == 0) 
-                        or die "Something went wrong while unarchiving $_\n"
+			if ($?) {
+				die "Something went wrong when trying to unarchive $_\n";
+			}
             } else {
                   open(my $newFile, $_) 
                         or die "Couldn't open file $_\n";
                   @contents = <$newFile>;
             }
 
-            for (@contents){
+            for (@contents) {
                   push(@programs, $_);
             }
       }
