@@ -150,7 +150,7 @@ sub performTest {
 	}
 	
 	my $kccRunOutput = `timeout 45m $kccFilename 2>&1`;
-	$kccRunOutput =~ s/^VOLATILE.*//mg;
+	$kccRunOutput =~ s/^VOLATILE.*\n//mg;
 	my $kccRunRetval = $?;
 	if ($shouldFail) {
 		# if ($kccRunRetval == 0) {
@@ -185,7 +185,7 @@ sub performTest {
 	}
 	
 	my $gccRunOutput = `$gccFilename 2>&1`;
-	$gccRunOutput =~ s/^VOLATILE.*//mg;
+	$gccRunOutput =~ s/^VOLATILE.*\n//mg;
 	# print $gccRunOutput;
 	my $gccRunRetval = $?;
 	if (($kccRunRetval != $gccRunRetval) || ($kccRunOutput ne $gccRunOutput)) {
