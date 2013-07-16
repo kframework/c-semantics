@@ -245,9 +245,9 @@ sub processResult {
             }
 
             print "=============================================================\n";
-            print "File: $parsed{errorFile}\n"; if defined $parsed{errorFile};
+            print "File: $parsed{errorFile}\n" if defined $parsed{errorFile};
             print "Function: $parsed{errorFunc}\n" if defined $parsed{errorFunc};
-            print "Line: $parsed{errorLine}\n"; if defined $parsed{errorLine};
+            print "Line: $parsed{errorLine}\n" if defined $parsed{errorLine};
 
             if (defined $parsed{finalComp}) {
                   print "=============================================================\n";
