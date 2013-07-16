@@ -23,7 +23,7 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
 
      syntax Type ::= "type" "(" K ")" [function]
-     syntax K ::= "value" "(" K ")"
+     syntax K ::= "value" "(" K ")" [function]
 
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
@@ -50,16 +50,11 @@ module C-DYNAMIC
 
 
      rule value(tv(V:KList, _)) => V:KList
-          [structural, anywhere]
 
      rule type(tv(_, T:KResult)) => T
-          [structural, anywhere]
      rule type(T:Type) => T
-          [structural, anywhere]
      rule type(lv(_, T:KResult)) => T
-          [structural, anywhere]
      rule type(lval(_, T:KResult)) => T
-          [structural, anywhere]
 
      rule NullPointerConstant => 0
 
@@ -292,13 +287,13 @@ module C-DYNAMIC
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
-          (<T>...
+          (<exec>...
                <thread>... 
                     // main's thread, not the global "thread"
                     <threadId> 1 </threadId>
                     <k> V:KResult </k>
                ...</thread>
-          ...</T> => .Bag)
+          ...</exec> => .Bag)
           <status> _ => mainExited </status>
           <resultValue> .K => V </resultValue>
           <files>...

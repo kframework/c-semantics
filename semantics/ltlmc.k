@@ -168,7 +168,7 @@ module C11-LTLMC
                     <mem> Mem:Map </mem> 
                ...</T> ...</generatedTop>, 
                Loc:SymLoc, T:Type) 
-          => dumbRead'(Mem, Loc, T, bitsToBytes(value(bitSizeofType(T))), .KList)
+          => dumbRead'(Mem, Loc, T, value(byteSizeofType(T)), .KList)
 
      rule dumbRead'(
           (_ Base |-> memblock(_, _, (_ Offset |-> V:K))), 

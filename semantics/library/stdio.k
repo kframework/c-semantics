@@ -62,19 +62,18 @@ module LIBC-STDIO
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
 
      // offset, type, length, checklength
-     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
-     context nextvarg-aux(_, _, value(HOLE), _)
-     context nextvarg-aux(_, _, _, value(HOLE))
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" 
+          [strict(3, 4)]
      
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
-          => nextvarg-aux(Loc, T, 
-               value(byteSizeofType(T)), value(sizeofLocation(Loc)))
+          => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofLocation(Loc))
           [structural]
      rule [nextvarg]:
-          nextvarg-aux(Loc:SymLoc, T:Type, Len:Int, Len:Int)
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:Value, Len':Value)
           => vpair(read(Loc, T), 
                vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+          when value(Len) ==Int value(Len')
           [structural]
      
      rule [putchar]:

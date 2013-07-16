@@ -2,8 +2,8 @@ module C11-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
      configuration 
-     <status> initializing </status>
      <T>
+     <exec>
           <gotoMap color="lightgray"> .Map </gotoMap>
           <genv color="lightgray"> .Map </genv>
           <gtypes color="lightgray"> .Map </gtypes>
@@ -165,9 +165,6 @@ module C11-CONFIGURATION
                     </threadLocal>
                </thread>
           </threads>
-     </T>
-
-     <br/>
 
      // TODO(chathhorn): I'm not sure what to do with these. Also,
      // multiplicity...?
@@ -182,6 +179,9 @@ module C11-CONFIGURATION
           <threadContinuation> .K </threadContinuation>
           <savedThreadLocal> .Bag </savedThreadLocal>
      </threadState>
+
+     </exec>
+     <br/>
 
      <files color="lightgray">
           <fileCommands> .K </fileCommands>
@@ -200,5 +200,8 @@ module C11-CONFIGURATION
      <output color="lightgray"> .List </output>
      <resultValue color="red"> .K </resultValue>
      <errorCell multiplicity="?" color="black"> .K </errorCell>
+     <status> initializing </status>
+
+     </T>
           
 endmodule

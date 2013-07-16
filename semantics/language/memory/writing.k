@@ -19,7 +19,7 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
-
+     
      rule [write-string]:
           writeString(Loc:SymLoc, S:String)
           => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
@@ -52,12 +52,11 @@ module C-MEMORY-WRITING
      syntax K ::= calculateNewBytes(Int, K, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
      
-     syntax K ::= "write-aux" "(" K "," Value "," K ")" [strict(2)]
+     syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
      rule write(lv(Dest:SymLoc, T':Type), tv(V:KList, T:KResult)) 
-          => write-aux(Dest, tv(V, T), value(bitSizeofType(T))) 
+          => write-aux(Dest, tv(V, T), bitSizeofType(T)) 
           when notBool isConstType(T')
           [structural]
-     context write-aux(_, _, value(HOLE))
      
      syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
      
@@ -65,10 +64,10 @@ module C-MEMORY-WRITING
           <k> 
                write-aux(
                     loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), 
-                    tv(L:KList, T:KResult), BitSize:Int)
+                    tv(L:KList, T:Type), BitSize:Value)
                => write-specific(
-                    loc(N @ Th, Offset:Int, BitOffset:Int), 
-                    tv(L:KList, T:KResult), BitSize:Int)
+                    loc(N @ Th, Offset, BitOffset), 
+                    tv(L, T), value(BitSize))
           ...</k>
           <threadId> Th </threadId>
           [structural]
@@ -76,23 +75,26 @@ module C-MEMORY-WRITING
      rule [write]:
           write-aux(
                loc(N:Int @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Int)
+               tv(L:KList, T:KResult), BitSize:Value)
           => write-specific(
-               loc(N @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Int)
+               loc(N @ 0, Offset, BitOffset), 
+               tv(L, T), value(BitSize))
           [ndtrans]
      // write data of "allocated" duration
      rule [write-allocated]:
           write-aux(
                loc(N:Int @ allocatedDuration, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Int)
+               tv(L:KList, T:KResult), BitSize:Value)
           => write-specific(
-               loc(N @ allocatedDuration, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Int)
+               loc(N @ allocatedDuration, Offset, BitOffset), 
+               tv(L, T), value(BitSize))
           [ndtrans]
-     
+
+     syntax Set ::= attrs(Type) [function]
+     rule attrs(t(S:Set, _)) => S
+
      rule [write-normal]:
-          write-specific(Loc:SymLoc, tv(V:K, T:KResult), BitSize:Int)
+          write-specific(Loc:SymLoc, tv(V:K, T:Type), BitSize:Int)
           => writeBytes(Loc, splitBytes(tv(V, T)))
           when (BitSize %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
@@ -102,46 +104,46 @@ module C-MEMORY-WRITING
      rule [write-normal-union-field]:
           (. => makeUnknown(Loc, t(.Set, unionType(S))))
           ~> write-specific(Loc:SymLoc, 
-               tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _:Int)
+               tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
           when isByteLoc(Loc)
           [structural]
           
      syntax K ::= "makeUnknown" "(" SymLoc "," Type ")"
-     syntax K ::= "makeUnknown-aux" "(" SymLoc "," Type "," K ")"
-     context makeUnknown-aux(_, _, value(HOLE))
+     syntax K ::= "makeUnknown-aux" "(" SymLoc "," Type "," K ")" [strict(3)]
      
-     rule makeUnknown(Loc:SymLoc, T:KResult)
-          => makeUnknown-aux(Loc, T, value(byteSizeofType(T))) 
+     rule makeUnknown(Loc:SymLoc, T:Type)
+          => makeUnknown-aux(Loc, T, byteSizeofType(T)) 
           [structural]
-     rule <k>
-               makeUnknown-aux(loc(Base:SymBase, Offset:Int, 0), _, Len':Int)
+     // TODO(chathhorn): BUG for some terrible and mysterious reason, the <T>
+     // is required.
+     rule <T> 
+          <k>
+               makeUnknown-aux(loc(Base:SymBase, Offset:Int, 0), _, Len':Value)
                => .
           ...</k>
-          <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, 
-               M:Map => M:Map[
-                    times(Len', piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
-                    / Offset to (Offset +Int Len')]) 
+               (M:Map => M:Map[
+                    times(value(Len'), piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
+                    / Offset to (Offset +Int value(Len'))])) 
           ...</mem>
-          when Len >=Int Offset +Int Len'
+          ...</T>
+          when Len >=Int Offset +Int value(Len')
           [large, structural]
           
      syntax Bool ::= hasUnionMarker(Type) [function]
-     rule hasUnionMarker(t(SetItem(fromUnion(_:Id)) _, _)) => true
-     rule hasUnionMarker(t(.Set, _)) => false
-     rule hasUnionMarker(t(S:Set (SetItem(L:KLabel(_:KList))), K:K))
-          => hasUnionMarker(t(S, K))
-          when L =/=KLabel 'fromUnion
-          [structural]
+     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
+
+     syntax Bool ::= #hasUnionMarker(Type) [function]
+     rule #hasUnionMarker(t((SetItem(fromUnion(_)) _), _)) => true
      
      rule [write-struct]:
           write-specific(Loc:SymLoc, 
-               tv((V:K,, V':K,, L:KList), T:KResult), BitSize:Int)
+               tv((V:K,, V':K,, L:KList), T:Type), BitSize:Int)
           => writeBytes(Loc, dataList((V,, V',, L)))
           when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
-               andBool (notBool isBitfieldType(T:KResult))
+               andBool (notBool isBitfieldType(T))
           [structural]
           
      syntax Value ::= justBits(Int, Type) [function]
@@ -169,23 +171,23 @@ module C-MEMORY-WRITING
           [structural]
      
      rule [write-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:KResult), BitSize:Int)
+          write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
           => writeBitfield(
                Loc
-               , T:KResult
+               , T
                , calculateNewBytes(
                     getBitOffset(Loc)
-                    , piece(I, BitSize:Int)
+                    , piece(I, BitSize)
                     , extractBytesFromMem(floorLoc(Loc), 
-                         bitsToBytes(BitSize:Int +Int getBitOffset(Loc))
+                         bitsToBytes(BitSize +Int getBitOffset(Loc))
                     )
                )
           )
           when (BitSize:Int %Int cfg:bitsPerByte =/=Int 0)
                orBool (notBool(isByteLoc(Loc)))
-               orBool (isBitfieldType(T:KResult) 
-                    andBool notBool hasUnionMarker(T:KResult))
-               andBool (I:Int >=Int 0)
+               orBool (isBitfieldType(T) 
+                    andBool notBool hasUnionMarker(T))
+               andBool (I >=Int 0)
           [structural]
           
      rule writeBitfield(Loc:SymLoc, _, dataList(L:KList))
@@ -194,8 +196,8 @@ module C-MEMORY-WRITING
           
      syntax K ::= "calculateNewBytes-aux" "(" Int "," K "," K "," KList ")"
      rule calculateNewBytes(Len:Int, N:Bits, dataList(L:KList)) 
-          => calculateNewBytes-aux(Len:Int, dataList(explodeToBits(N)),
-               dataList(explodeToBits(L:KList)), .KList)
+          => calculateNewBytes-aux(Len, dataList(explodeToBits(N)),
+               dataList(explodeToBits(L)), .KList)
           [structural]
      
      syntax K ::= joinBitsToBytes(KList) [function]
@@ -297,30 +299,30 @@ module C-MEMORY-WRITING
           when isCharType(T) andBool (isInt(N) ==K false)
      rule [splitBytes-int]:
           splitBytes(tv(I:Int, T:Type)) 
-          => splitIntegerBytes(I, T, bitsToBytes(value(bitSizeofType(T))))
+          => splitIntegerBytes(I, T, byteSizeofType(T))
           when hasIntegerType(T)
      rule [splitBytes-float]:
           splitBytes(tv(F:Float, T:Type)) 
-          => splitFloatBytes(F, T, value(byteSizeofType(T)))
+          => splitFloatBytes(F, T, byteSizeofType(T))
           when isFloatType(T)
      rule [splitBytes-pointer]:
           splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:KResult)))) 
           => splitPointerBytes(I, t(S, pointerType(T)), 
-               value(byteSizeofType(t(.Set, pointerType(T)))))
+               byteSizeofType(t(.Set, pointerType(T))))
      rule [splitBytes-struct]:
           splitBytes(tv(L:KList, t(S:Set, structType(I:Id)))) 
           => splitStructBytes(dataList(L), t(S, structType(I)), 
-               value(byteSizeofType(t(S, structType(I)))))
+               byteSizeofType(t(S, structType(I))))
      rule [splitBytes-union]:
           splitBytes(tv(L:KList, t(S:Set, unionType(I:Id)))) 
           => splitStructBytes(dataList(L), t(S, unionType(I)), 
-               value(byteSizeofType(t(S, unionType(I)))))
+               byteSizeofType(t(S, unionType(I))))
      
-     syntax K ::= splitIntegerBytes(Int, Type, Int) [function]
+     syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
      syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," KList ")"
           [function]
-     rule splitIntegerBytes(I:Int, T:Type, Len:Int) 
-          => splitIntegerBytes-aux(I, T, Len, .KList)
+     rule splitIntegerBytes(I:Int, T:Type, Len:Value) 
+          => splitIntegerBytes-aux(I, T, value(Len), .KList)
      rule splitIntegerBytes-aux(I:Int, T:Type, Len:Int, L:KList)
           => splitIntegerBytes-aux(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
                (L,, lowestByte(I, T)))
@@ -328,30 +330,30 @@ module C-MEMORY-WRITING
      rule splitIntegerBytes-aux(_, _, 0, L:KList)
           => dataList(L) 
           
-     syntax K ::= splitStructBytes(K, K, K)
-     syntax K ::= splitStructBytes(K, K, K, KList)
-     context splitStructBytes(_, _, value(HOLE)) 
-     rule splitStructBytes(dataList(L:KList), T:KResult, Len:Int) 
-          => splitStructBytes(dataList(L:KList), T:KResult, Len:Int, .KList) 
+     syntax K ::= splitStructBytes(K, Type, K) [strict(3)]
+     syntax K ::= splitStructBytes(K, Type, Int, KList) 
+
+     rule splitStructBytes(dataList(L:KList), T:Type, Len:Value) 
+          => splitStructBytes(dataList(L), T, value(Len), .KList) 
           [structural, anywhere]
      rule splitStructBytes(dataList((piece(N:Int, PieceLen:Int),, Rest:KList)),
-               T:KResult, Len:Int, L:KList)
-          => splitStructBytes(dataList(Rest:KList), T:KResult, Len:Int -Int 1,
-               (L:KList,, piece(N:Int, PieceLen:Int)))
-          when PieceLen:Int ==Int cfg:bitsPerByte
-               andBool Len:Int >Int 0
+               T:Type, Len:Int, L:KList)
+          => splitStructBytes(dataList(Rest), T, Len -Int 1,
+               (L,, piece(N, PieceLen)))
+          when PieceLen ==Int cfg:bitsPerByte
+               andBool Len >Int 0
           [structural, anywhere]
      rule splitStructBytes(_, _, 0, L:KList)
-          => dataList(L:KList) 
+          => dataList(L) 
           [structural, anywhere]
           
-     syntax K ::= splitPointerBytes(Ptr, K, K)
-     syntax K ::= "splitPointerBytes-aux" "(" Ptr "," K "," K "," K "," KList ")"
-     context splitPointerBytes(_, _, value(HOLE))
-     rule splitPointerBytes(I:Ptr, T:KResult, Len:Int)
-          => splitPointerBytes-aux(I, T, Len, 0, .KList) 
+     syntax K ::= splitPointerBytes(Ptr, Type, K) [strict(3)]
+     syntax K ::= "splitPointerBytes-aux" "(" Ptr "," Type "," Int "," K "," KList ")"
+
+     rule splitPointerBytes(I:Ptr, T:Type, Len:Value)
+          => splitPointerBytes-aux(I, T, value(Len), 0, .KList) 
           [structural, anywhere]
-     rule splitPointerBytes-aux(I:Ptr, T:KResult, Len:Int, N:Int, L:KList)
+     rule splitPointerBytes-aux(I:Ptr, T:Type, Len:Int, N:Int, L:KList)
           => splitPointerBytes-aux(I, T, Len -Int 1, N +Int 1,
                (L,, piece(subObject(I, N, N), cfg:bitsPerByte)))
           when Len >Int 0
@@ -360,30 +362,32 @@ module C-MEMORY-WRITING
           => dataList(L:KList)
           [structural, anywhere]
           
-     syntax K ::= splitFloatBytes(K, K, K)
-     syntax K ::= splitFloatBytes(K, K, K, KList)
-     context splitFloatBytes(_, _, value(HOLE)) 
-     rule splitFloatBytes(F:Float, T:KResult, Len:Int) 
-          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
-               piece(encodedFloat(F:Float), cfg:bitsPerByte)) 
-          when Len:Int >Int 0
+     syntax K ::= splitFloatBytes(Float, Type, K) [strict(3)]
+     syntax K ::= splitFloatBytes(Float, Type, Int, KList)
+
+     rule splitFloatBytes(F:Float, T:Type, Len:Value) 
+          => splitFloatBytes(F, T, value(Len) -Int 1, 
+               piece(encodedFloat(F), cfg:bitsPerByte)) 
+          when value(Len) >Int 0
           [structural, anywhere]
-     rule splitFloatBytes(F:Float, T:KResult, Len:Int, L:KList) 
-          => splitFloatBytes(F:Float, T:KResult, Len:Int -Int 1,
-               (L:KList,, piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
-          when Len:Int >Int 0
+     rule splitFloatBytes(F:Float, T:Type, Len:Int, L:KList) 
+          => splitFloatBytes(F, T, Len -Int 1,
+               (L,, piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
+          when Len >Int 0
           [structural, anywhere]
-     rule splitFloatBytes(_, _:KResult, 0, L:KList) 
-          => dataList(L:KList) 
+     rule splitFloatBytes(_, _:Type, 0, L:KList) 
+          => dataList(L) 
           [structural, anywhere]
           
      syntax Bits ::= lowestByte(Int, Type) [function]
+
      rule lowestByte(I:Int, T:Type) 
           => piece(I &Int byteMaskSet, cfg:bitsPerByte)
           when hasIntegerType(T) 
           [structural]
      
      syntax Int ::= "byteMaskSet" [function]
+
      rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
           
      rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0

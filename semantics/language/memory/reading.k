@@ -5,7 +5,7 @@ module C-MEMORY-READING-SYNTAX
      // TODO(chathhorn) error check
      syntax K ::= "extractByteFromMem" "(" SymLoc ")" 
      syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
-     syntax K ::= "read-aux" "(" SymLoc "," K "," K ")" [klabel('read-aux)]
+     syntax K ::= "read-aux" "(" SymLoc "," Type "," K ")" [klabel('read-aux)]
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
@@ -61,13 +61,13 @@ module C-MEMORY-READING
      rule extractBitsFromList-aux(_, 0, 0, Done:KList) => dataList(Done:KList)
           [structural] 
      
-     context readActual(_, _, value(HOLE))
-     rule read(Loc:SymLoc, T:KResult) 
-          => read-aux(Loc, T:KResult, value(bitSizeofType(T:KResult))) 
-          when notBool(isFunctionType(T:KResult))
+     rule read(Loc:SymLoc, T:Type) 
+          => read-aux(Loc, T, bitSizeofType(T))
+          when notBool(isFunctionType(T))
           [structural]
      
-     syntax K ::= "readActual" "(" SymLoc "," K "," K ")" [klabel('readActual)]
+     syntax K ::= "readActual" "(" SymLoc "," Type "," K ")" 
+          [strict(3), klabel('readActual)]
      
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
@@ -86,15 +86,15 @@ module C-MEMORY-READING
           [ndtrans]
      
      rule [read]:
-          readActual(Loc:SymLoc, T:KResult, BitSize:Int)
-          => concretize(T:KResult, 
-               extractBytesFromMem(Loc, bitsToBytes(BitSize:Int)))
+          readActual(Loc:SymLoc, T:Type, BitSize:Value)
+          => concretize(T, 
+               extractBytesFromMem(Loc, bitsToBytes(value(BitSize))))
           when notBool isBitfieldType(T)
           [structural]
      rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:KResult, BitSize:Int)
-          => concretize(T:KResult, 
-               fillToBytes(extractBitsFromMem(Loc, BitSize:Int))) 
+          readActual(Loc:SymLoc, T:Type, BitSize:Value)
+          => concretize(T, 
+               fillToBytes(extractBitsFromMem(Loc, value(BitSize)))) 
           when isBitfieldType(T)
           [structural]
      

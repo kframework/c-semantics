@@ -25,15 +25,13 @@ module C-MEMORY-ALLOC
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     context alloc(_, value(HOLE)) 
-
      rule allocateType(Loc:SymLoc, T:KResult) 
-          => alloc(Loc, value(byteSizeofType(T))) 
+          => alloc(Loc, byteSizeofType(T))
           [structural]
      rule [allocateTypeIfAbsent-absent]:
           <k> 
                allocateTypeIfAbsent(Loc:SymLoc, T:KResult) 
-               => alloc(Loc, value(byteSizeofType(T:KResult))) 
+               => alloc(Loc, byteSizeofType(T:KResult))
           ...</k>
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
@@ -46,17 +44,17 @@ module C-MEMORY-ALLOC
           [structural]
 
      rule [alloc-lazy]:
-          <k> alloc(loc(Base:SymBase, 0, 0), Len:Int) => .K ...</k>
-          <mem>... .Map => Base |-> memblock(Len, .Bag, .Map) ...</mem>
+          <k> alloc(loc(Base:SymBase, 0, 0), Len:Value) => .K ...</k>
+          <mem>... .Map => Base |-> memblock(value(Len), .Bag, .Map) ...</mem>
           [structural]
      
-     syntax K ::= "realloc-aux" "(" K "," K "," K "," K "," K ")"
+     syntax K ::= "realloc-aux" "(" Int "," SymLoc "," SymLoc "," Int "," Int ")"
      rule [realloc-start]:
           <k> 
-               realloc(Old:K, New:K, OldLen:Int, NewLen:Int)
-               => alloc(New:K, NewLen:Int)
-                    ~> realloc-aux(minInt(OldLen:Int, NewLen:Int),
-                         Old:K, New:K, OldLen:Int, NewLen:Int)
+               realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)
+               => alloc(New, NewLen)
+                    ~> realloc-aux(minInt(OldLen, NewLen), 
+                         Old, New, OldLen, NewLen)
           ...</k>
           [structural]
           

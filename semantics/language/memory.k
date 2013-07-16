@@ -26,8 +26,8 @@ module C-MEMORY-SYNTAX
 
      syntax K ::= "zeroBlock" "(" SymLoc ")"
 
-     syntax K ::= "alloc" "(" K "," K ")" // should be K K 
-     syntax K ::= "realloc" "(" K "," K "," K "," K ")" // should be K K 
+     syntax K ::= "alloc" "(" SymLoc "," K ")" [strict(2)]
+     syntax K ::= "realloc" "(" SymLoc "," SymLoc "," Int "," Int ")"
 
      // deletes the base object from memory, given a location
      syntax K ::= "deleteBlock" "(" SymLoc ")"
