@@ -41,7 +41,7 @@ module LIBC-IO
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD </fid>
-          <nextByte> .K => chrChar(#fReadByte(FD)) </nextByte>
+          <nextByte> .K => #charString(#fReadByte(FD)) </nextByte>
           <buff> "" </buff>
           [structural]
      rule <nextByte> Byte:String => .K </nextByte>
