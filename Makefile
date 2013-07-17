@@ -21,9 +21,10 @@ FILES_TO_DIST = \
 default: dist
 
 check-vars:
-	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
-	@if ! gcc -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
-	@if ! maude --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have maude installed.  You need to install this before continuing.  Please see the README for more information."; false; fi
+	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see the README.md for more information."; false; fi
+	@if ! gcc -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc installed.  You need to install this before continuing.  Please see the README.md for more information."; false; fi
+	@if ! kompile --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have kompile installed.  You need to install this before continuing.  Please see the README.md for more information."; false; fi
+	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see the README.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
 $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
