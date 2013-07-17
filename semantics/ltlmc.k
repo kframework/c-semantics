@@ -75,9 +75,9 @@ module C11-LTLMC
 
      syntax Bool ::= "#error" "(" Bag ")" [function]
      rule #error(
-          <generatedTop>... <T>... <threads>... <thread>...
+          <generatedTop>... <T>...
                <errorCell> _ </errorCell> 
-          ...</thread> ...</threads> ...</T> ...</generatedTop>)
+          ...</T> ...</generatedTop>)
           => true
      
      syntax ValueProp ::= ltlRVal(Bag, Prop) [function]
