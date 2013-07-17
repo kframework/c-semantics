@@ -23,7 +23,7 @@ module C-EXPRESSION-SYNTAX
      syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
      syntax Value ::= "functionPrototype" "(" Id "," Type ")"
      syntax K ::= "handleBuiltin" "(" Id "," Type ")"
-     syntax K ::= "byteSizeofType" "(" K ")" [strict] 
+     syntax K ::= "byteSizeofType" "(" Type ")"
 
      // generates a tv(size, cfg:sizeut)
      syntax K ::= "sizeofType" "(" K ")" [strict]

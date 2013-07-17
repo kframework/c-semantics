@@ -187,7 +187,7 @@ module C-DECLARATION-GENERAL
           // I'd like to get rid of this cleanly
           when notBool isIncompleteType(T:KResult)
                andBool isFunctionType(T:KResult)
-               andBool F:K =/=K file-scope
+               andBool F =/=K file-scope
           [structural] 
      // fixme i believe this is for local declarations of external library
      // functions
@@ -197,10 +197,10 @@ module C-DECLARATION-GENERAL
           <externalLocations> Locs:Map </externalLocations> 
           <currentFunction> F:K </currentFunction>
           // I'd like to get rid of this cleanly
-          when (notBool isIncompleteType(T:KResult))
-               andBool (isFunctionType(T:KResult))
-               andBool (F:K =/=K file-scope)
-               andBool (notBool $hasMapping(Locs:Map, X:Id))
+          when (notBool isIncompleteType(T))
+               andBool (isFunctionType(T))
+               andBool (F =/=K file-scope)
+               andBool (notBool $hasMapping(Locs, X))
           [structural]
      rule <k> doDeclare(typedDeclaration(T:KResult, X:Id), K:K)
                => declareExternalVariable(X, T,
@@ -657,10 +657,10 @@ module C-DECLARATION-GENERAL
      rule <k> addToGlobalEnv(X:Id, Loc:SymLoc) => . ...</k>
           <genv>... Tu:K |-> map((M':Map => M':Map[Loc / X:Id])) ...</genv>
           <currTU> Tu:K </currTU>
-          <env> E:Map => E:Map[Loc / X:Id] </env>
+          <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
      rule <k> addToLocalEnv(X:Id, Loc:SymLoc) => . ...</k>
-          <env> E:Map => E:Map[Loc / X:Id] </env>
+          <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
      
      syntax K ::= "defineUsingOldDeclaration" "(" Type "," Id "," K ")"

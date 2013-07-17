@@ -34,7 +34,6 @@ endmodule
 
 module C11-LTLMC
      imports C11-LTLMC-SYNTAX
-     imports C11-ERROR
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-EXPRESSION-SYNTAX
@@ -77,7 +76,7 @@ module C11-LTLMC
      syntax Bool ::= "#error" "(" Bag ")" [function]
      rule #error(
           <generatedTop>... <T>... <threads>... <thread>...
-               <k> ERROR ...</k> 
+               <errorCell> _ </errorCell> 
           ...</thread> ...</threads> ...</T> ...</generatedTop>)
           => true
      

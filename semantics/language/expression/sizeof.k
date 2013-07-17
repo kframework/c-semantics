@@ -23,22 +23,22 @@ module C-EXPRESSION-SIZEOF
      \header{<stddef.h>} (and other headers).
      }*/
      
-     rule sizeofType(T:KResult)
-          => cast(cfg:sizeut, byteSizeofType(T:KResult)) 
+     rule sizeofType(T:Type)
+          => cast(cfg:sizeut, byteSizeofType(T)) 
           [structural]
      syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
-     rule byteSizeofType(T:KResult)
-          => byteSizeofType-aux(bitSizeofType(T:KResult)) 
-          [structural]
-     rule byteSizeofType-aux(tv(N:Int, T:KResult))
-          => tv(bitsToBytes(N:Int), T:KResult)
+     rule byteSizeofType(T:Type)
+          => byteSizeofType-aux(bitSizeofType(T)) 
+          [structural, anywhere]
+     rule byteSizeofType-aux(V:Value)
+          => bitsToBytes(value(V))
           [structural]
 
      rule SizeofExpression(E:K)
-          => sizeofType(typeof(E:K))
+          => sizeofType(typeof(E))
           [structural]
-     rule SizeofType(T:KResult, K:K)
-          => sizeofType(DeclType(T:KResult, K:K))
+     rule SizeofType(T:Type, K:K)
+          => sizeofType(DeclType(T, K))
           [structural]
 endmodule
 

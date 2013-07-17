@@ -1,4 +1,11 @@
+module LIBC-STDIO-SYNTAX
+     // offset, type, length, checklength
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" 
+          [strict(3, 4)]
+endmodule
+
 module LIBC-STDIO
+     imports LIBC-STDIO-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
@@ -61,10 +68,6 @@ module LIBC-STDIO
      syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
      syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
 
-     // offset, type, length, checklength
-     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" 
-          [strict(3, 4)]
-     
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
           => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofLocation(Loc))

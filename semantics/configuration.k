@@ -55,6 +55,9 @@ module C11-CONFIGURATION
                          ~> resolveReferences
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
                     </k>
+                    <finalComputation multiplicity="?" color="lightgray">
+                         .K
+                    </finalComputation>
                     <br/>
                     <threadLocal>
                          // stack of "control" cells
@@ -92,9 +95,6 @@ module C11-CONFIGURATION
                               </currentProgramLoc>
 
                               <controlDetails> // TODO(chathhorn): dumb name
-                                   <finalComputation multiplicity="?" color="lightgray">
-                                        .K
-                                   </finalComputation>
                                    // stack of "local" cells
                                    <blockStack color="violet"> .List </blockStack>
                                    <local>
