@@ -45,15 +45,15 @@ module C-MEMORY-WRITING
                := tv(0, cfg:wcharut))
           [structural] 
           
-     syntax K ::= "writeBytes" "(" SymLoc "," K ")" [strict(2)] 
-     syntax K ::= "writeBitfield" "(" SymLoc "," Type "," K ")" [strict(3)] 
+     syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
+     syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
      syntax Bool ::= isByteLoc(SymLoc) [function]
      syntax K ::= splitBytes(Value) [function]
      syntax K ::= calculateNewBytes(Int, K, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
      
      syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
-     rule write(lv(Dest:SymLoc, T':Type), tv(V:KList, T:KResult)) 
+     rule write(lv(Dest:SymLoc, T':Type), tv(V:KList, T:Type)) 
           => write-aux(Dest, tv(V, T), bitSizeofType(T)) 
           when notBool isConstType(T')
           [structural]
@@ -75,7 +75,7 @@ module C-MEMORY-WRITING
      rule [write]:
           write-aux(
                loc(N:Int @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Value)
+               tv(L:KList, T:Type), BitSize:Value)
           => write-specific(
                loc(N @ 0, Offset, BitOffset), 
                tv(L, T), value(BitSize))
@@ -94,11 +94,11 @@ module C-MEMORY-WRITING
      rule attrs(t(S:Set, _)) => S
 
      rule [write-normal]:
-          write-specific(Loc:SymLoc, tv(V:K, T:Type), BitSize:Int)
-          => writeBytes(Loc, splitBytes(tv(V, T)))
+          write-specific(Loc:SymLoc, tv(V:KList, T:Type), BitSize:Int)
+          => writeBytes(Loc, splitBytes(tv(V, T)), false)
           when (BitSize %Int cfg:bitsPerByte ==Int 0)
-               andBool isByteLoc(Loc)
-               andBool (notBool isBitfieldType(T))
+               andBool (isByteLoc(Loc) ==K true)
+               andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(T))
           [structural]
      rule [write-normal-union-field]:
@@ -108,41 +108,30 @@ module C-MEMORY-WRITING
           when isByteLoc(Loc)
           [structural]
           
-     syntax K ::= "makeUnknown" "(" SymLoc "," Type ")"
-     syntax K ::= "makeUnknown-aux" "(" SymLoc "," Type "," K ")" [strict(3)]
+     syntax K ::= "makeUnknown" "(" SymLoc "," Type ")" [function]
+     syntax K ::= "makeUnknown-aux" "(" SymLoc "," K ")" [strict(2)]
      
      rule makeUnknown(Loc:SymLoc, T:Type)
-          => makeUnknown-aux(Loc, T, byteSizeofType(T)) 
+          => makeUnknown-aux(Loc, byteSizeofType(T)) 
+     rule makeUnknown-aux(Loc:SymLoc, Len:Value)
+          => writeBytes(Loc, dataList(times(value(Len), 
+               piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
           [structural]
-     // TODO(chathhorn): BUG for some terrible and mysterious reason, the <T>
-     // is required.
-     rule <T> 
-          <k>
-               makeUnknown-aux(loc(Base:SymBase, Offset:Int, 0), _, Len':Value)
-               => .
-          ...</k>
-          <mem>... 
-               Base |-> memblock(Len:Int, _, 
-               (M:Map => M:Map[
-                    times(value(Len'), piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
-                    / Offset to (Offset +Int value(Len'))])) 
-          ...</mem>
-          ...</T>
-          when Len >=Int Offset +Int value(Len')
-          [large, structural]
           
      syntax Bool ::= hasUnionMarker(Type) [function]
      rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
 
      syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((SetItem(fromUnion(_)) _), _)) => true
+     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_)) _:Set), _)) => true
      
      rule [write-struct]:
           write-specific(Loc:SymLoc, 
                tv((V:K,, V':K,, L:KList), T:Type), BitSize:Int)
-          => writeBytes(Loc, dataList((V,, V',, L)))
+          => writeBytes(Loc, dataList((V,, V',, L)), false)
           when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
+               andBool (V =/=K .K)
+               andBool (V' =/=K .K)
                andBool (notBool isBitfieldType(T))
           [structural]
           
@@ -184,14 +173,14 @@ module C-MEMORY-WRITING
                )
           )
           when (BitSize:Int %Int cfg:bitsPerByte =/=Int 0)
-               orBool (notBool(isByteLoc(Loc)))
+               orBool (notBool isByteLoc(Loc))
                orBool (isBitfieldType(T) 
                     andBool notBool hasUnionMarker(T))
                andBool (I >=Int 0)
           [structural]
           
      rule writeBitfield(Loc:SymLoc, _, dataList(L:KList))
-          => writeBytes(floorLoc(Loc), dataList(L))
+          => writeBytes(floorLoc(Loc), dataList(L), false)
           [structural] 
           
      syntax K ::= "calculateNewBytes-aux" "(" Int "," K "," K "," KList ")"
@@ -258,39 +247,50 @@ module C-MEMORY-WRITING
           => splinter-aux(N, Len, Pos +Int 1),, piece(bitRange(N, Pos, Pos), 1)
           when Pos <Int Len
      
-     rule <k> writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)))
-               => writeByte(Loc, V)
-               ~> writeBytes(Loc +bytes 1, dataList(L))
-          ...</k>
+     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), false)
+          => writeByte(Loc, V) ~> 
+               writeBytes(Loc +bytes 1, dataList(L), false)
           [structural]
+     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), true)
+          => stealthWriteByte(Loc, V) ~> 
+               writeBytes(Loc +bytes 1, dataList(L), true)
+          [structural]
+     rule writeBytes(_, dataList(.KList), _) => .K
+          [structural] 
+
+     syntax K ::= stealthWriteByte(SymLoc, K)
+     rule [write-byte-stealth]:
+          <k> 
+               stealthWriteByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . 
+          ...</k>
+          <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
+          [large, structural]
+
      rule [write-byte-buffer]:
           <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
           <buffer>...
-               (.List => bwrite(loc(Base, Offset:Int, 0), V:K))
+               (.List => bwrite(loc(Base, Offset, 0), V))
           </buffer>
-          <br/>
           <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
           <locsWrittenTo>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
           </locsWrittenTo>
           <notWritable> NotWritable:Map </notWritable>
-          when (notBool BagItem(loc(Base, Offset, 0)) in Locs:Bag)
-               andBool (Offset:Int <Int Len:Int)
+          when (notBool BagItem(loc(Base, Offset, 0)) in Locs)
                andBool (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable:Map))
+               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable))
+               andBool (Offset <Int Len)
           [large, structural]
           
      rule [commit-byte]:
           <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
+               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:Bits) => .List)
           ...</buffer>
           <mem>...
                Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset])
           ...</mem>
           when Offset <Int Len
           [structural]
-     rule writeBytes(_, dataList(.KList)) => .K
-          [structural] 
           
      // this general rule is useful for unknowns, abstracts, etc
      rule [splitBytes-other]:
