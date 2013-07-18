@@ -336,7 +336,7 @@ module C-MEMORY-WRITING
      rule splitStructBytes(dataList(L:KList), T:Type, Len:Value) 
           => splitStructBytes(dataList(L), T, value(Len), .KList) 
           [structural, anywhere]
-     rule splitStructBytes(dataList((piece(N:Int, PieceLen:Int),, Rest:KList)),
+     rule splitStructBytes(dataList((piece(N:Bits, PieceLen:Int),, Rest:KList)),
                T:Type, Len:Int, L:KList)
           => splitStructBytes(dataList(Rest), T, Len -Int 1,
                (L,, piece(N, PieceLen)))

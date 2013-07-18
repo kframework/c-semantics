@@ -15,8 +15,9 @@ module C-DYNAMIC-SYNTAX
      syntax KResult ::= Value | Type
 
      syntax K ::= "sequencePoint"
-     syntax KResult ::= "skipval"
      syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
+
+     syntax Value ::= "skipval"
      syntax Value ::= "tv" "(" KList "," Type ")" 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]

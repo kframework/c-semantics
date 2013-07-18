@@ -252,28 +252,31 @@ module C11-ERROR
           when T:K =/=K int andBool T:K =/=K void
           [structural, large]
           
-     syntax Bool ::= isArgvType(Type) [function]
+     syntax Bool ::= #isArgvType(Type) [function]
      
-     rule isArgvType(t(_, T:K)) => false
+     rule #isArgvType(t(_, T:SimpleType)) => false
           when notBool (
-               getKLabel(T:K) ==KLabel 'incompleteArrayType 
-               orBool getKLabel(T:K) ==KLabel 'incompleteArrayType
+               getKLabel(T) ==KLabel 'incompleteArrayType 
+               orBool getKLabel(T) ==KLabel 'pointerType
           )
-          
-     rule isArgvType(t(_, incompleteArrayType(t(_, T:K)))) => false
-          when notBool getKLabel(T:K) ==KLabel 'pointerType
-     rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:K)))))) => false
-          when T:K =/=K char
-          
-     rule isArgvType(t(_, pointerType(t(_, T:K)))) => false
-          when notBool getKLabel(T:K) ==KLabel 'pointerType
-     rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:K)))))) => false
-          when T:K =/=K char
+     rule #isArgvType(t(_, incompleteArrayType(t(_, T:SimpleType)))) 
+          => false
+          when notBool getKLabel(T) ==KLabel 'pointerType
+     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType)))))) 
+          => false
+          when T =/=K char
+     rule #isArgvType(t(_, pointerType(t(_, T:SimpleType)))) 
+          => false
+          when notBool getKLabel(T) ==KLabel 'pointerType
+     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
+          => false
+          when T =/=K char
      
      rule [err00027]:
           (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, int), _:Id),, typedDeclaration(T:KResult, _:Id)))), _:Int, _:Id, _) 
-          when notBool isArgvType(T:KResult)
+          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
+          int), _:Id),, typedDeclaration(T:Type, _:Id)))), _:Int, _:Id, _) 
+          when #isArgvType(T) ==K false
           [structural, large]
      rule [err00028]:
           (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
