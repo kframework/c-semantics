@@ -269,21 +269,21 @@ module C-DYNAMIC
           => Call(Identifier("main"), klist(.KList))
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               (typedDeclaration(t(.Set, int), _:Id),, 
-               typedDeclaration(t(.Set,
-               incompleteArrayType(t(.Set,
-               pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+               (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, 
+                    incompleteArrayType(t(.Set, 
+                    pointerType(T:Type)))), _:Id)))), 
+               N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
-          when T:KResult ==K t(.Set, char)
+          when T ==K t(.Set, char)
           [structural]
      rule callMain-aux(t(.Set,
                functionType(t(.Set, int),
-               (typedDeclaration(t(.Set, int), _:Id),, 
-               typedDeclaration(t(.Set,
-               pointerType(t(.Set,
-               pointerType(T:KResult)))), _:Id)))), N:Int, X:Id, Args:K)
+               (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, 
+                    pointerType(t(.Set,
+                    pointerType(T:Type)))), _:Id)))), 
+               N:Int, X:Id, Args:K)
           => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
-          when T:KResult ==K t(.Set, char)
+          when T ==K t(.Set, char)
           [structural]
 
      // fixme I'm not sure threads clean up their memory

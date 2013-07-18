@@ -277,8 +277,8 @@ module C-MEMORY-READING
                          / Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when notBool loc(Base, Offset:Int, 0) in locations(Mem:List)
-               andBool notBool Offset in (keys M)
+          when (notBool loc(Base, Offset, 0) in locations(Mem))
+               andBool (notBool Offset in (keys M))
           [large, structural]
           
           // TODO(chathhorn): perf, elided

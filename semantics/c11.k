@@ -2,6 +2,7 @@ require "configuration.k"
 require "settings.k"
 require "ltlmc.k"
 require "error.k"
+require "error-map.k"
 require "compat.k"
 
 require "libc.k"
@@ -18,7 +19,9 @@ module C11
      imports C11-CONFIGURATION
      imports C11-SETTINGS
      imports C11-LTLMC
+
      imports C11-ERROR
+     imports C11-ERROR-MAP
 
      imports C
      imports LIBC
