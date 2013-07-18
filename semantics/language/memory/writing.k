@@ -284,7 +284,7 @@ module C-MEMORY-WRITING
           
      rule [commit-byte]:
           <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:Bits) => .List)
+               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
           ...</buffer>
           <mem>...
                Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset])
