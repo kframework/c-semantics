@@ -368,7 +368,7 @@ module C11-ERROR
      rule [err00045]:
           <k> 
                (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.") ) ~>
-               writeByte(loc(Base:SymBase, _, _), _)  
+               writeByte(loc(Base:SymBase, _, _), _)
           ...</k>
           <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
           [structural, large]

@@ -29,6 +29,7 @@ module C-EXPRESSION-ASSIGNMENT
           lval(_, T:Type) := (tv(V:KList, T':KResult) => cast(T, tv(V, T')))
           when T =/=K T'
           [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{3}}}{
      \broken{If the value being stored in an object is read from another object
      that overlaps in any way the storage of the first object, then the overlap

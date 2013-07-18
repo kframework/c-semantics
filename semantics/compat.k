@@ -95,16 +95,13 @@ module COMPAT
 
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)
-          [structural]
 
      rule [nthChar]:
           nthChar(S:String, N:Int) => substrString(S, N, N +Int 1)
-          [structural]
 
      rule [butFirstChar]:
           butFirstChar(S:String) 
           => substrString(S:String, 1, lengthString(S:String))
-          [structural]
 
      rule all((K:K,, L:KList), Lbl:KLabel) 
           => Lbl(K) andBool all(L, Lbl)
@@ -132,7 +129,6 @@ module COMPAT
      rule _:K in .List => false
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
-          [structural]
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
@@ -176,7 +172,6 @@ module COMPAT
 	rule N:Int to N => .KList
 	rule N:Int to N':Int => (N,,((N +Int 1) to N'))
 		when N <Int N'
-		[structural]
 
      rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
      rule klistToK(.KList) => .K

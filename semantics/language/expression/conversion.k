@@ -22,34 +22,34 @@ module C-EXPRESSION-CONVERSION
                andBool hasIntegerType(T)
      rule [arithInterpret-unknown]:
           arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
-          => tv(piece(unknown(N:Int), N:Int), T)
+          => tv(piece(unknown(N), N), T)
      // fixme
      rule [arithInterpret-float]: 
-          arithInterpret(t(S:Set, T:K), F:Float) => tv(F:Float, t(S:Set, T:K))
-          when (T:K ==K double)
-               orBool (T:K ==K float)
-               orBool (T:K ==K long-double)
+          arithInterpret(t(S:Set, T:SimpleType), F:Float) 
+          => tv(F, t(S, T))
+          when (T ==K double)
+               orBool (T ==K float)
+               orBool (T ==K long-double)
      // signed arithmetic isn't supposed to overflow
      rule [arithInterpret-unsigned-big]:
-          arithInterpret(T:Type, I:Int) => tv(I:Int %Int (max(T) +Int 1), T)
+          arithInterpret(T:Type, I:Int) => tv(I %Int (max(T) +Int 1), T)
           when hasUnsignedIntegerType(T)
-               andBool (I:Int >Int max(T))
+               andBool (I >Int max(T))
      rule [arithInterpret-unsigned-small]:
           arithInterpret(T:Type, I:Int) 
           => arithInterpret(T, (I %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
           // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0)
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
-               andBool (I:Int <Int min(T))
+               andBool (I <Int min(T))
 
      context cast(_, (HOLE => reval(HOLE)))
      //- switch assumes casts can happen anywhere
-     rule cast(T:KResult, tv(L:KList, T:KResult))
-          => tv(L:KList, T:KResult)
+     rule cast(T:Type, tv(L:KList, T:Type)) => tv(L, T)
           [structural, anywhere]
           
-     rule cast(t(S:Set, T:K), tv(L:KList, t(_, T:K)))
-          => tv(L:KList, t(S:Set, T:K))
+     rule cast(t(S:Set, T:SimpleType), tv(L:KList, t(_, T:SimpleType))) 
+          => tv(L, t(S, T))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -59,16 +59,16 @@ module C-EXPRESSION-CONVERSION
      // cleanme only need one rule
      // fixme worried about qualifiers
      rule [cast-integer-to-bool]:
-          cast(t(S:Set, bool), tv(I:Int, T:KResult))
-          => #if I:Int ==Int 0 
-               #then tv(0, t(S:Set, bool)) 
-               #else tv(1, t(S:Set, bool)) #fi
-          when hasIntegerType(T:KResult)
+          cast(t(S:Set, bool), tv(I:Int, T:Type))
+          => #if I ==Int 0 
+               #then tv(0, t(S, bool)) 
+               #else tv(1, t(S, bool)) #fi
+          when hasIntegerType(T)
           [structural, anywhere]
      rule [cast-non-integer-to-bool]:
-          cast(t(S:Set, bool), tv(L:KList, T:KResult)) 
-          => cast(t(S:Set, bool), tv(0, t(.Set, int)) != tv(L:KList, T:KResult))
-          when notBool hasIntegerType(T:KResult)
+          cast(t(S:Set, bool), tv(L:KList, T:Type)) 
+          => cast(t(S, bool), tv(0, t(.Set, int)) != tv(L, T))
+          when notBool hasIntegerType(T)
           [structural, anywhere]
      
      
@@ -78,12 +78,12 @@ module C-EXPRESSION-CONVERSION
      is unchanged.
      }*/
      rule [cast-integer-no-value-change]:
-          cast(T:KResult, tv(I:Int, T':KResult)) => tv(I:Int, T:KResult)
-          when (min(T:KResult) <=Int I:Int) 
-               andBool (max(T:KResult) >=Int I:Int)
-               andBool hasIntegerType(T':KResult)
-               andBool hasIntegerType(T:KResult)
-               andBool notBool isBoolType (T:KResult)
+          cast(T:Type, tv(I:Int, T':Type)) => tv(I, T)
+          when (min(T) <=Int I)
+               andBool (max(T) >=Int I)
+               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
+               andBool notBool isBoolType (T)
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
@@ -93,56 +93,56 @@ module C-EXPRESSION-CONVERSION
      type.
      }*/
      rule [cast-ubitfield-of-small]:
-          cast(T:KResult, tv(I:Int, T':KResult)) 
-          => cast(T:KResult, tv(I:Int +Int max(T:KResult) +Int 1, T':KResult))
-          when isBitfieldType(T:KResult)
-               andBool (I:Int <Int min(T:KResult))
-               andBool hasIntegerType(T':KResult)
-               andBool hasUnsignedIntegerType(innerType(T:KResult))
+          cast(T:Type, tv(I:Int, T':Type)) 
+          => cast(T, tv(I +Int max(T) +Int 1, T'))
+          when isBitfieldType(T)
+               andBool (I <Int min(T))
+               andBool hasIntegerType(T')
+               andBool hasUnsignedIntegerType(innerType(T))
           [structural, anywhere]
      rule [cast-uchar-of-small]:
-          cast(t(S:Set, unsigned-char), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, unsigned-char),
-               tv(I:Int +Int max(t(S:Set, unsigned-char)) +Int 1, T':KResult))
-          when (I:Int <Int min(t(S:Set, unsigned-char)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+          => cast(t(S, unsigned-char), 
+               tv(I +Int max(t(S, unsigned-char)) +Int 1, T'))
+          when (I <Int min(t(S, unsigned-char)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-usint-of-small]:
-          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, unsigned-short-int),
+          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+          => cast(t(S, unsigned-short-int),
                tv(I +Int max(t(S, unsigned-short-int)) +Int 1, T'))
-          when (I:Int <Int min(t(S:Set, unsigned-short-int)))
-               andBool hasIntegerType(T':KResult)
+          when (I <Int min(t(S, unsigned-short-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-uint-of-small]:
-          cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, unsigned-int),
-               tv(I:Int +Int max(t(S:Set, unsigned-int)) +Int 1, T'))
-          when (I:Int <Int min(t(S:Set, unsigned-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+          => cast(t(S, unsigned-int),
+               tv(I +Int max(t(S, unsigned-int)) +Int 1, T'))
+          when (I <Int min(t(S, unsigned-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ulong-of-small]:
-          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, unsigned-long-int),
-               tv(I:Int +Int max(t(S:Set, unsigned-long-int)) +Int 1, T'))
-          when (I:Int <Int min(t(S:Set, unsigned-long-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+          => cast(t(S, unsigned-long-int),
+               tv(I +Int max(t(S, unsigned-long-int)) +Int 1, T'))
+          when (I <Int min(t(S, unsigned-long-int))) 
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ullong-of-small]:
-          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, unsigned-long-long-int),
-               tv(I:Int +Int max(t(S:Set, unsigned-long-long-int)) +Int 1, T'))
-          when (I:Int <Int min(t(S:Set, unsigned-long-long-int)))
-               andBool hasIntegerType(T':KResult)          
+          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+          => cast(t(S, unsigned-long-long-int),
+               tv(I +Int max(t(S, unsigned-long-long-int)) +Int 1, T'))
+          when (I <Int min(t(S, unsigned-long-long-int)))
+               andBool hasIntegerType(T')          
           [structural, anywhere]
      
      rule [cast-ubitfield-of-big]:
-          cast(T:KResult, tv(I:Int, T':KResult)) 
-          => tv(I:Int %Int (max(T:KResult) +Int 1), T:KResult)
-          when isBitfieldType(T:KResult)
-               andBool (I:Int >Int max(T:KResult))
-               andBool hasIntegerType(T':KResult)
-               andBool hasUnsignedIntegerType(innerType(T:KResult))
+          cast(T:Type, tv(I:Int, T':Type)) 
+          => tv(I %Int (max(T) +Int 1), T)
+          when isBitfieldType(T)
+               andBool (I >Int max(T))
+               andBool hasIntegerType(T')
+               andBool hasUnsignedIntegerType(innerType(T))
           [structural, anywhere]
      rule [cast-uchar-of-big]:
           cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
@@ -151,32 +151,32 @@ module C-EXPRESSION-CONVERSION
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-usint-of-big]:
-          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':KResult)) 
-          => tv(I:Int %Int (max(t(S:Set, unsigned-short-int)) +Int 1),
-               t(S:Set, unsigned-short-int))
-          when (I:Int >Int max(t(S:Set, unsigned-short-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+          => tv(I %Int (max(t(S, unsigned-short-int)) +Int 1),
+               t(S, unsigned-short-int))
+          when (I >Int max(t(S, unsigned-short-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-uint-of-big]:
-          cast(t(S:Set, unsigned-int), tv(I:Int, T':KResult)) 
-          => tv(I:Int %Int (max(t(S:Set, unsigned-int)) +Int 1),
-               t(S:Set, unsigned-int))
-          when (I:Int >Int max(t(S:Set, unsigned-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+          => tv(I %Int (max(t(S:Set, unsigned-int)) +Int 1),
+               t(S, unsigned-int))
+          when (I >Int max(t(S:Set, unsigned-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ulong-of-big]:
-          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':KResult)) 
-          => tv(I:Int %Int (max(t(S:Set, unsigned-long-int)) +Int 1),
-               t(S:Set, unsigned-long-int))
-          when (I:Int >Int max(t(S:Set, unsigned-long-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+          => tv(I %Int (max(t(S:Set, unsigned-long-int)) +Int 1),
+               t(S, unsigned-long-int))
+          when (I >Int max(t(S:Set, unsigned-long-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ullong-of-big]:
-          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':KResult)) 
-          => tv(I:Int %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1),
-               t(S:Set, unsigned-long-long-int))
-          when (I:Int >Int max(t(S:Set, unsigned-long-long-int)))
-               andBool hasIntegerType(T':KResult)
+          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+          => tv(I %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1),
+               t(S, unsigned-long-long-int))
+          when (I >Int max(t(S:Set, unsigned-long-long-int)))
+               andBool hasIntegerType(T')
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{3}}}{
@@ -186,7 +186,7 @@ module C-EXPRESSION-CONVERSION
      }*/
      // choice
      rule [cast-sbitfield-of-huge]:
-          cast(T:KResult, tv(I:Int, T':KResult)) 
+          cast(T:Type, tv(I:Int, T':Type)) 
           => cast(T, tv(I %Int (2 ^Int absInt(numBits(T))), T')) 
           when isBitfieldType(T)
                andBool (absInt(I) >Int (2 ^Int absInt(numBits(T))))
@@ -194,36 +194,36 @@ module C-EXPRESSION-CONVERSION
                andBool hasSignedIntegerType(innerType(T))
           [structural, anywhere]
      rule [cast-schar-of-huge]:
-          cast(t(S:Set, signed-char), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, signed-char),
+          cast(t(S:Set, signed-char), tv(I:Int, T':Type)) 
+          => cast(t(S, signed-char),
                tv(I %Int (2 ^Int absInt(numBits(t(S, signed-char)))), T')) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, signed-char)))))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-sint-of-huge]:
-          cast(t(S:Set, short-int), tv(I:Int, T':KResult)) 
+          cast(t(S:Set, short-int), tv(I:Int, T':Type)) 
           => cast(t(S, short-int), 
                tv(I %Int (2 ^Int absInt(numBits(t(S, short-int)))), T')) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, short-int)))))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-int-of-huge]:
-          cast(t(S:Set, int), tv(I:Int, T':KResult)) 
+          cast(t(S:Set, int), tv(I:Int, T':Type)) 
           => cast(t(S, int), 
                tv(I %Int (2 ^Int absInt(numBits(t(S, int)))), T')) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, int)))))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-long-of-huge]:
-          cast(t(S:Set, long-int), tv(I:Int, T':KResult)) 
-          => cast(t(S:Set, long-int), 
+          cast(t(S:Set, long-int), tv(I:Int, T':Type)) 
+          => cast(t(S, long-int), 
                tv(I %Int (2 ^Int absInt(numBits(t(S, long-int)))), T')) 
-          when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S:Set, long-int)))))
-               andBool hasIntegerType(T':KResult)
+          when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S, long-int)))))
+               andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-llong-of-huge]:
-          cast(t(S:Set, long-long-int), tv(I:Int, T':KResult))
-          => cast(t(S:Set, long-long-int), 
+          cast(t(S:Set, long-long-int), tv(I:Int, T':Type))
+          => cast(t(S, long-long-int), 
                tv(I %Int (2 ^Int absInt(numBits(t(S, long-long-int)))), T')) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, long-long-int)))))
                andBool hasIntegerType(T')
@@ -264,20 +264,20 @@ module C-EXPRESSION-CONVERSION
      be represented by the integer type, the behavior is undefined.
      }*/
      // fixme
-     rule cast(T:KResult, tv(V:Float, t(S:Set, double))) 
-          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
-          when hasIntegerType(T:KResult)
-               andBool notBool isBoolType (T:KResult)
+     rule cast(T:Type, tv(V:Float, t(S:Set, double))) 
+          => cast(T, tv(Float2Int(V), t(S, long-long-int)))
+          when hasIntegerType(T)
+               andBool notBool isBoolType (T)
           [structural, anywhere]
-     rule cast(T:KResult, tv(V:Float, t(S:Set, float))) 
-          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
-          when hasIntegerType(T:KResult)
-               andBool notBool isBoolType (T:KResult)
+     rule cast(T:Type, tv(V:Float, t(S:Set, float))) 
+          => cast(T, tv(Float2Int(V), t(S, long-long-int)))
+          when hasIntegerType(T)
+               andBool notBool isBoolType (T)
           [structural, anywhere]
-     rule cast(T:KResult, tv(V:Float, t(S:Set, long-double))) 
-          => cast(T:KResult, tv(Float2Int(V:Float), t(S:Set, long-long-int)))
-          when hasIntegerType(T:KResult)
-               andBool notBool isBoolType (T:KResult)
+     rule cast(T:Type, tv(V:Float, t(S:Set, long-double))) 
+          => cast(T, tv(Float2Int(V), t(S, long-long-int)))
+          when hasIntegerType(T)
+               andBool notBool isBoolType (T)
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
@@ -293,19 +293,19 @@ module C-EXPRESSION-CONVERSION
      6.8.6.4).
      }*/
      rule [cast-int-to-float]:
-          cast(t(S:Set, float), tv(I:Int, T:KResult)) 
-          => tv(Int2Float(I:Int), t(S:Set, float))
-          when hasIntegerType(T:KResult)
+          cast(t(S:Set, float), tv(I:Int, T:Type)) 
+          => tv(Int2Float(I), t(S, float))
+          when hasIntegerType(T)
           [structural, anywhere]
      rule [cast-int-to-double]:
-          cast(t(S:Set, double), tv(I:Int, T:KResult)) 
-          => tv(Int2Float(I:Int), t(S:Set, double))
-          when hasIntegerType(T:KResult)
+          cast(t(S:Set, double), tv(I:Int, T:Type)) 
+          => tv(Int2Float(I), t(S, double))
+          when hasIntegerType(T)
           [structural, anywhere]
      rule [cast-int-to-long-double]:
-          cast(t(S:Set, long-double), tv(I:Int, T:KResult)) 
-          => tv(Int2Float(I:Int), t(S:Set, long-double))
-          when hasIntegerType(T:KResult)
+          cast(t(S:Set, long-double), tv(I:Int, T:Type)) 
+          => tv(Int2Float(I), t(S, long-double))
+          when hasIntegerType(T)
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
@@ -321,11 +321,15 @@ module C-EXPRESSION-CONVERSION
      6.8.6.4).
      }*/
      // fixme all floats same precision
-     rule cast(t(S:Set, T':K), tv(F:Float, t(_, T:K))) 
-          => tv(F:Float, t(S:Set, T':K))
-          when (T:K ==K float orBool T:K ==K double orBool T:K ==K long-double)
-               andBool ((T':K ==K float) orBool (T':K ==K double)
-                    orBool (T':K ==K long-double))
+     rule cast(t(S:Set, T':SimpleType), tv(F:Float, t(_, T:SimpleType))) 
+          => tv(F, t(S, T'))
+          when ((T ==K float) 
+                    orBool (T ==K double) 
+                    orBool (T ==K long-double))
+               andBool 
+               ((T' ==K float) 
+                    orBool (T' ==K double) 
+                    orBool (T' ==K long-double))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
@@ -336,7 +340,7 @@ module C-EXPRESSION-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/     
-     rule cast(t(_, void), _:KResult) => skipval
+     rule cast(t(_, void), _:Value) => skipval
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
@@ -356,10 +360,10 @@ module C-EXPRESSION-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
-          => tv(NullPointer, t(S:Set, pointerType(T:KResult)))
-          when hasIntegerType(T':KResult)
-               andBool N:Int ==K NullPointerConstant
+     rule cast(t(S:Set, pointerType(T:Type)), tv(N:Int, T':Type)) 
+          => tv(NullPointer, t(S, pointerType(T)))
+          when hasIntegerType(T')
+               andBool N ==K NullPointerConstant
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
@@ -374,12 +378,12 @@ module C-EXPRESSION-CONVERSION
      a trap representation.
      }*/
      // choice implementation defined behavior
-     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:Int, T':KResult)) 
+     rule cast(t(S:Set, pointerType(T:Type)), tv(N:Int, T':Type)) 
           => tv(N, t(S, pointerType(T)))
           when hasIntegerType(T')
                andBool N =/=K NullPointerConstant
           [structural, anywhere]
-     rule cast(t(S:Set, pointerType(T:KResult)), tv(N:SymLoc, T':KResult)) 
+     rule cast(t(S:Set, pointerType(T:Type)), tv(N:SymLoc, T':Type)) 
           => tv(N, t(S, pointerType(T)))
           when hasIntegerType(T')
           [structural, anywhere]
@@ -391,12 +395,12 @@ module C-EXPRESSION-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      // fixme needs to check size
-     rule cast(T:KResult, tv(N:Int, t(_, pointerType(_))))
+     rule cast(T:Type, tv(N:Int, t(_, pointerType(_))))
           => tv(N, T)
           when hasIntegerType(T)
                andBool notBool isBoolType (T)
           [structural, anywhere]
-     rule cast(T:KResult, tv(N:SymLoc, t(_, pointerType(_))))
+     rule cast(T:Type, tv(N:SymLoc, t(_, pointerType(_))))
           => tv(N, T)
           when hasIntegerType(T)
                andBool notBool isBoolType (T)
@@ -423,9 +427,9 @@ module C-EXPRESSION-CONVERSION
      // possibly not true with other endiannesses
      // choice
      // needs to handle alignment
-     rule cast(t(S:Set, pointerType(T:KResult)), 
+     rule cast(t(S:Set, pointerType(T:Type)), 
                tv(Loc:SymLoc, t(_, pointerType(_)))) 
-          => tv(Loc:SymLoc, t(S:Set, pointerType(T:KResult)))
+          => tv(Loc, t(S, pointerType(T)))
           [structural, anywhere]
 endmodule
 

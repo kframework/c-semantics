@@ -531,8 +531,7 @@ module C-TYPING-MISC
           isConstType(t(SetItem(Const) _, _:K)) => true
           
      rule [isBitfieldType-true]:
-          isBitfieldType(t(_, bitfieldType(_, _:Int)))
-          => true 
+          isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
      rule [isBitfieldType-false]: isBitfieldType(t(_, T:K)) => false
           when getKLabel(T:K) =/=KLabel 'bitfieldType
           

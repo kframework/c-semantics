@@ -64,10 +64,12 @@ module C-EXPRESSION-EVAL
      value has the type of the lvalue. \ldots
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type)) => read(Loc, unqualifyType(T))
-          when notBool isArrayType(T) andBool notBool isFunctionType(T) 
+          when notBool isArrayType(T) 
+               andBool notBool isFunctionType(T) 
           [structural]
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
-          when notBool isArrayType(T) andBool notBool isFunctionType(T) 
+          when notBool isArrayType(T) 
+               andBool notBool isFunctionType(T) 
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
@@ -100,10 +102,12 @@ module C-EXPRESSION-EVAL
      expression that has type ``pointer to a function returning T''.
      }*/
      rule [reval-function]: 
-          rkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
+          rkludge(lval(Loc:SymLoc, T:Type)) 
+          => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
      rule [peval-function]: 
-          pkludge(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
+          pkludge(lval(Loc:SymLoc, T:Type)) 
+          => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
      
 endmodule
