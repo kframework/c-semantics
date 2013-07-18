@@ -1,4 +1,4 @@
-// kcc-assert-error(00024)
+// kcc-assert-error(00024a)
 int main(void){
 	int x = 0;
 	(int)(&x) & 7;

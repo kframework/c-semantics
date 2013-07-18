@@ -1,4 +1,4 @@
-// kcc-assert-error(00021)
+// kcc-assert-error(00021a)
 int main(void){
 	x;
 }
