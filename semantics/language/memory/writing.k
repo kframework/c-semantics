@@ -130,8 +130,6 @@ module C-MEMORY-WRITING
           => writeBytes(Loc, dataList((V,, V',, L)), false)
           when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
-               andBool (V =/=K .K)
-               andBool (V' =/=K .K)
                andBool (notBool isBitfieldType(T))
           [structural]
           

@@ -17,8 +17,8 @@ module C-TYPING-INTERPRETATION
      rule Specifier(klist(L:KList)) => canonicalizeType(toBag(L))
           [structural]
           
-     rule BitFieldType(T:KResult, tv(N:Int, _))
-          => t(.Set, bitfieldType(T:KResult, N:Int)) [structural, anywhere]
+     rule BitFieldType(T:Type, tv(N:Int, _))
+          => t(.Set, bitfieldType(T, N)) [structural, anywhere]
      
      syntax KLabel ::= "makeArrayType" "(" Int ")"
      syntax KLabel ::= "makeFunctionType" "(" KList ")"
@@ -27,89 +27,87 @@ module C-TYPING-INTERPRETATION
      syntax KLabel ::= "makeIncompleteArrayType"
      
      // fixme, throwing away specifier
-     rule ArrayType(T:KResult, tv(N:Int, _), _) 
-          => pushTypeDown(T:KResult, makeArrayType(N:Int)) 
-          when N:Int >Int 0
+     rule ArrayType(T:Type, tv(N:Int, _), _) 
+          => pushTypeDown(T, makeArrayType(N)) 
+          when N >Int 0
           [structural, anywhere]
-     rule ArrayType(T:KResult, emptyValue, _)
-          => pushTypeDown(T:KResult, makeIncompleteArrayType)
+     rule ArrayType(T:Type, emptyValue, _)
+          => pushTypeDown(T, makeIncompleteArrayType)
           [structural, anywhere]
-     rule PointerType(T:KResult)
-          => pushTypeDown(T:KResult, makePointerType)
+     rule PointerType(T:Type)
+          => pushTypeDown(T, makePointerType)
           [structural, anywhere]
      // fixme I'm assuming functiontype is always below a prototype in the ast
-     rule FunctionType(T:KResult) => T:KResult
+     rule FunctionType(T:Type) => T
           [structural, anywhere]
-     rule Prototype(T:KResult, krlist(L:KList), false) 
-          => pushTypeDown(T:KResult, makeFunctionType(L:KList)) 
+     rule Prototype(T:Type, krlist(L:KList), false) 
+          => pushTypeDown(T, makeFunctionType(L)) 
           [structural, anywhere]
-     rule Prototype(T:KResult, krlist(L:KList), true) 
-          => pushTypeDown(T:KResult,
-               makeFunctionType((L:KList,, t(.Set, variadic)))) 
+     rule Prototype(T:Type, krlist(L:KList), true) 
+          => pushTypeDown(T, makeFunctionType((L,, t(.Set, variadic)))) 
           [structural, anywhere]
      
      rule [pushdown-array]: 
-          pushTypeDown(t(S:Set, arrayType(T:KResult, N:Int)), K:KLabel) 
-          => t(S:Set, arrayType(pushTypeDown(T:KResult, K:KLabel), N:Int))
+          pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:KLabel) 
+          => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule [pushdown-incomplete]: 
-          pushTypeDown(t(S:Set, incompleteArrayType(T:KResult)), K:KLabel) 
-          => t(S:Set, incompleteArrayType(pushTypeDown(T:KResult, K:KLabel)))
+          pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
+          => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
      rule [pushdown-pointer]: 
-          pushTypeDown(t(S:Set, pointerType(T:KResult)), K:KLabel) 
-          => t(S:Set, pointerType(pushTypeDown(T:KResult, K:KLabel)))
+          pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel) 
+          => t(S, pointerType(pushTypeDown(T, Lbl)))
      rule [pushdown-qualified]: 
-          pushTypeDown(t(S:Set, qualifiedType(T:KResult, K:K)), Kl:KLabel) 
-          => t(S:Set, qualifiedType(pushTypeDown(T:KResult, Kl:KLabel), K:K))
+          pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), Lbl:KLabel) 
+          => t(S, qualifiedType(pushTypeDown(T, Lbl), K))
      rule [pushdown-function]: 
-          pushTypeDown(t(S:Set, functionType(T:KResult, L:KList)), K:KLabel) 
-          => t(S:Set, functionType(pushTypeDown(T:KResult, K:KLabel), L:KList))
+          pushTypeDown(t(S:Set, functionType(T:Type, L:KList)), Lbl:KLabel) 
+          => t(S, functionType(pushTypeDown(T, Lbl), L))
      rule [pushdown-struct]: 
-          pushTypeDown(t(S:Set, structType(X:Id)), K:KLabel) 
-          => K:KLabel(t(S:Set, structType(X:Id)))
+          pushTypeDown(t(S:Set, structType(X:Id)), Lbl:KLabel) 
+          => Lbl(t(S, structType(X)))
      rule [pushdown-union]: 
-          pushTypeDown(t(S:Set, unionType(X:Id)), K:KLabel) 
-          => K:KLabel(t(S:Set, unionType(X:Id)))
+          pushTypeDown(t(S:Set, unionType(X:Id)), Lbl:KLabel) 
+          => Lbl(t(S, unionType(X)))
      rule [pushdown-enum]: 
-          pushTypeDown(t(S:Set, enumType(X:Id)), K:KLabel) 
-          => K:KLabel(t(S:Set, enumType(X:Id)))
+          pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
+          => Lbl(t(S, enumType(X)))
      
      rule [pushdown-typedef]: 
-          pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), K:KLabel) 
-          => K:KLabel(t(S:Set S':Set, T:K))
+          pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), Lbl:KLabel) 
+          => Lbl(t(S S', T))
      
      rule [pushdown-basic]: 
-          pushTypeDown(T:KResult, K:KLabel) => K:KLabel(T:KResult) 
-          when isBasicType(T:KResult)
+          pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
+          when isBasicType(T)
           [structural]
      
-     rule makeArrayType(N:Int)(T:KResult)
-          => t(.Set, arrayType(T:KResult, N:Int)) 
+     rule makeArrayType(N:Int)(T:Type)
+          => t(.Set, arrayType(T, N)) 
           [structural, anywhere]
-     rule makeFunctionType(L:KList)(T:KResult)
-          => t(.Set, functionType(T:KResult, giveNamesToArgs(L:KList))) 
+     rule makeFunctionType(L:KList)(T:Type)
+          => t(.Set, functionType(T, giveNamesToArgs(L))) 
           [structural, anywhere]
-     rule makePointerType(T:KResult)
-          => t(.Set, pointerType(T:KResult))
+     rule makePointerType(T:Type)
+          => t(.Set, pointerType(T))
           [structural, anywhere]
-     rule makeIncompleteArrayType(T:KResult)
-          => t(.Set, incompleteArrayType(T:KResult))
+     rule makeIncompleteArrayType(T:Type)
+          => t(.Set, incompleteArrayType(T))
           [structural, anywhere]
      
      syntax KList ::= giveNamesToArgs(KList) [function]
      syntax KList ::= "giveNamesToArgs-aux" "(" Int "," KList ")" [function]
      
-     rule giveNamesToArgs(L:KList) => giveNamesToArgs-aux(0, L:KList)
+     rule giveNamesToArgs(L:KList) => giveNamesToArgs-aux(0, L)
      rule giveNamesToArgs-aux(N:Int, 
-               (typedDeclaration(T:KResult, X:Id),, L:KList))
-          => typedDeclaration(T:KResult, X:Id),,
-               giveNamesToArgs-aux(N:Int, L:KList)
-          when X:Id =/=K #NoName
+               (typedDeclaration(T:Type, X:Id),, L:KList))
+          => typedDeclaration(T, X),, giveNamesToArgs-aux(N, L)
+          when X =/=K #NoName
           [structural]
      rule giveNamesToArgs-aux(N:Int, 
-               (typedDeclaration(T:KResult, X:Id),, L:KList))
-          => typedDeclaration(T:KResult, #NoName(N:Int)),,
-               giveNamesToArgs-aux(N:Int +Int 1, L:KList)
-          when X:Id ==K #NoName
+               (typedDeclaration(T:Type, X:Id),, L:KList))
+          => typedDeclaration(T, #NoName(N)),, 
+               giveNamesToArgs-aux(N +Int 1, L)
+          when X ==K #NoName
           [structural]
      rule giveNamesToArgs-aux(_:Int, t(.Set, variadic))
           => t(.Set, variadic)
@@ -118,18 +116,18 @@ module C-TYPING-INTERPRETATION
           => .KList
           [structural]
      
-     rule <k> JustBase => T:KResult ...</k>
-          <declarationTypeHolder> T:KResult => .K ...</declarationTypeHolder>
+     rule <k> JustBase => T ...</k>
+          <declarationTypeHolder> T:Type => .K ...</declarationTypeHolder>
           [structural]
 
      syntax K ::= "extractActualTypeFreezer"
      rule <k>
-               DeclType(T:KResult, K:K) => K:K ~> extractActualTypeFreezer
+               DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer
           ...</k>
-          <declarationTypeHolder> (. => T:KResult) ...</declarationTypeHolder>
+          <declarationTypeHolder> (. => T) ...</declarationTypeHolder>
           [structural]
      
-     rule T:KResult ~> extractActualTypeFreezer 
+     rule T:Type ~> extractActualTypeFreezer 
           => extractActualType(T)
           [structural]
           
@@ -137,22 +135,22 @@ module C-TYPING-INTERPRETATION
      syntax KList ::= "fillUnionBitHoles-aux" "(" Int "," KList ")" [function]
      rule fillUnionBitHoles(.KList) => .KList
      rule fillUnionBitHoles((K:K,, L:KList)) 
-          => fillUnionBitHoles-aux(0, (K:K,, L:KList))
+          => fillUnionBitHoles-aux(0, (K,, L))
      rule fillUnionBitHoles-aux(N:Int, 
-               (typedDeclaration(T:KResult, X:Id),, L:KList)) 
-          => typedDeclaration(T:KResult, X:Id),, 
-               fillUnionBitHoles-aux(N:Int, L:KList)
-          when notBool isBitfieldType(T:KResult)
+               (typedDeclaration(T:Type, X:Id),, L:KList)) 
+          => typedDeclaration(T, X),, 
+               fillUnionBitHoles-aux(N, L)
+          when notBool isBitfieldType(T)
           [structural]
      rule fillUnionBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, 
-               bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
-          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, 
-               fillUnionBitHoles-aux(maxInt(N:Int, N':Int), L:KList)
+               bitfieldType(T:Type, N':Int)), X:Id),, L:KList)) 
+          => typedDeclaration(t(S, bitfieldType(T, N')), X),, 
+               fillUnionBitHoles-aux(maxInt(N, N'), L)
           [structural]
      rule fillUnionBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               N:Int +Int (absInt(cfg:bitsPerByte -Int 
-               (N:Int %Int cfg:bitsPerByte)) %Int cfg:bitsPerByte))), #NoName)
+               N +Int (absInt(cfg:bitsPerByte -Int 
+               (N %Int cfg:bitsPerByte)) %Int cfg:bitsPerByte))), #NoName)
           [structural]
      
      syntax KList ::= fillBitHoles(KList) [function]
@@ -162,91 +160,90 @@ module C-TYPING-INTERPRETATION
           [structural]
      // if we haven't seen bitfields
      rule [fillBitHoles-not-bitfield]:
-          fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList)) 
-          => typedDeclaration(T:KResult, X:Id) ,, fillBitHoles(L:KList)
-          when notBool isBitfieldType(T:KResult) 
+          fillBitHoles((typedDeclaration(T:Type, X:Id),, L:KList)) 
+          => typedDeclaration(T, X) ,, fillBitHoles(L)
+          when notBool isBitfieldType(T) 
           [structural]
      
      rule [fillBitHoles-bitfield]:
-          fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList)) 
-          => fillBitHoles-aux(0, (typedDeclaration(T:KResult, X:Id),, L:KList))
-          when isBitfieldType(T:KResult) 
+          fillBitHoles((typedDeclaration(T:Type, X:Id),, L:KList)) 
+          => fillBitHoles-aux(0, (typedDeclaration(T, X),, L))
+          when isBitfieldType(T) 
           [structural]
      
      // if we have seen bitfields
      rule [fillBitHoles-aux-not-bitfield]:
-          fillBitHoles-aux(N:Int, (typedDeclaration(T:KResult, X:Id),, L:KList)) 
+          fillBitHoles-aux(N:Int, (typedDeclaration(T:Type, X:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte)) 
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
                %Int cfg:bitsPerByte)), #NoName),,
-               fillBitHoles((typedDeclaration(T:KResult, X:Id),, L:KList))
-          when notBool isBitfieldType(T:KResult) 
+               fillBitHoles((typedDeclaration(T, X),, L))
+          when notBool isBitfieldType(T) 
           [structural]
      
      rule [fillBitHoles-aux-bitfield-normal]:
           fillBitHoles-aux(N:Int, (typedDeclaration(t(S:Set, 
-               bitfieldType(T:KResult, N':Int)), X:Id),, L:KList)) 
-          => typedDeclaration(t(S:Set, bitfieldType(T:KResult, N':Int)), X:Id),, 
-               fillBitHoles-aux(N:Int +Int N':Int, L:KList)
-          when N':Int =/=Int 0 
+               bitfieldType(T:Type, N':Int)), X:Id),, L:KList)) 
+          => typedDeclaration(t(S, bitfieldType(T, N')), X),, 
+               fillBitHoles-aux(N +Int N', L)
+          when N' =/=Int 0 
           [structural]
           
      rule [fillBitHoles-bitfield-zero]:
           fillBitHoles-aux(N:Int, (typedDeclaration(t(_, 
-               bitfieldType(_:KResult, N':Int)), _:Id),, L:KList)) 
+               bitfieldType(_:Type, N':Int)), _:Id),, L:KList)) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte)) 
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
                %Int cfg:bitsPerByte)), #NoName),, 
-               fillBitHoles(L:KList)
-          when N':Int ==Int 0
+               fillBitHoles(L)
+          when N' ==Int 0
           [structural]
      
      rule [fillBitHoles-done]:
           fillBitHoles-aux(N:Int, .KList) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(cfg:bitsPerByte -Int (N:Int %Int cfg:bitsPerByte))
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte))
                %Int cfg:bitsPerByte)), #NoName) 
           [structural]
      
      rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName),,
                typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
           => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
-               N:Int +Int N':Int)), #NoName) 
+               N +Int N')), #NoName) 
           [structural, anywhere]
      
      // fixme chould check for some struct contraints here
      syntax KList ::= incompleteToFlexibleArrayMember(KList) [function]
 
-     rule incompleteToFlexibleArrayMember((typedDeclaration(T:KResult, X:Id),, 
+     rule incompleteToFlexibleArrayMember((typedDeclaration(T:Type, X:Id),, 
                L:KList))
-          => typedDeclaration(T:KResult, X:Id),, 
-               incompleteToFlexibleArrayMember(L:KList)
-          when notBool isIncompleteType(T:KResult) 
+          => typedDeclaration(T, X),, incompleteToFlexibleArrayMember(L)
+          when notBool isIncompleteType(T) 
           [structural]
      rule incompleteToFlexibleArrayMember(typedDeclaration(t(S:Set,
-               incompleteArrayType(T:KResult)), X:Id)) 
-          => typedDeclaration(t(S:Set, flexibleArrayType(T:KResult)), X:Id) 
+               incompleteArrayType(T:Type)), X:Id)) 
+          => typedDeclaration(t(S, flexibleArrayType(T)), X) 
           [structural]
      rule incompleteToFlexibleArrayMember(.KList) => .KList
      
      rule StructDef(X:Id, krlist(L:KList))
-          => addStruct(X:Id, fillBitHoles(incompleteToFlexibleArrayMember(L)))
-               ~> giveType(X:Id, t(.Set, structType(X:Id)))
+          => addStruct(X, fillBitHoles(incompleteToFlexibleArrayMember(L)))
+               ~> giveType(X, t(.Set, structType(X)))
           [structural]
      rule UnionDef(X:Id, krlist(L:KList))
-          => addUnion(X:Id, fillUnionBitHoles(L))
-               ~> giveType(X:Id, t(.Set, unionType(X:Id)))
+          => addUnion(X, fillUnionBitHoles(L))
+               ~> giveType(X, t(.Set, unionType(X)))
           [structural]
 
      // the K will resolve to a type, so throw it away
      rule OnlyTypedef(K:K) => K ~> discard
           [structural]
           
-     rule NameAndType(X:Id, T:KResult) => typedDeclaration(T, X)
+     rule NameAndType(X:Id, T:Type) => typedDeclaration(T, X)
           [structural, anywhere] 
      
      rule [extract-basic]: 
-          extractActualType(T:KResult) => T
+          extractActualType(T:Type) => T
           when isBasicType(T)
      rule [extract-enum]: 
           extractActualType(t(S:Set, enumType(X:Id))) 
@@ -258,22 +255,22 @@ module C-TYPING-INTERPRETATION
           extractActualType(t(S:Set, unionType(X:Id))) 
           => t(S, unionType(X))
      rule [extract-array]:
-          extractActualType(t(S:Set, arrayType(T:KResult, N:Int))) 
+          extractActualType(t(S:Set, arrayType(T:Type, N:Int))) 
           => t(S, arrayType(extractActualType(T), N))
      rule [extract-incompleteArray]:
-          extractActualType(t(S:Set, incompleteArrayType(T:KResult))) 
+          extractActualType(t(S:Set, incompleteArrayType(T:Type))) 
           => t(S, incompleteArrayType(extractActualType(T)))
      rule [extract-bitfield]:
-          extractActualType(t(S:Set, bitfieldType(T:KResult, N:Int))) 
+          extractActualType(t(S:Set, bitfieldType(T:Type, N:Int))) 
           => t(S, bitfieldType(extractActualType(T), N))
      rule [extract-function]:
-          extractActualType(t(S:Set, functionType(T:KResult, List:KList))) 
+          extractActualType(t(S:Set, functionType(T:Type, List:KList))) 
           => t(S, functionType(extractActualType(T), List))
      rule [extract-pointer]:
-          extractActualType(t(S:Set, pointerType(T:KResult))) 
+          extractActualType(t(S:Set, pointerType(T:Type))) 
           => t(S, pointerType(extractActualType(T)))
      rule [extract-qualified]:
-          extractActualType(t(S:Set, qualifiedType(T:KResult, K:K))) 
+          extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) 
           => t(S, qualifiedType(extractActualType(T), K))
      rule [extract-typedef]:
           extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
@@ -281,21 +278,20 @@ module C-TYPING-INTERPRETATION
           
      syntax K ::= "NameAndType" "(" K "," K ")" [strict(2)] 
           
-     rule SingleName(T:KResult, Name(X:Id, K:K)) 
-          => NameAndType(X:Id, DeclType(T:KResult, K:K))
+     rule SingleName(T:Type, Name(X:Id, K:K)) 
+          => NameAndType(X, DeclType(T, K))
           [structural, anywhere] 
      rule [Separate-FieldGroups]:
           FieldGroup(K:K, klist((C:K,, C':K,, L:KList))) 
-          => FieldGroup(K:K, klist(C:K)),, 
-               FieldGroup(K:K, klist((C':K,, L:KList)))
+          => FieldGroup(K, klist(C)),, FieldGroup(K, klist((C',, L)))
           [structural, anywhere]
 
-     rule FieldGroup(T:KResult, klist(Name(X:Id, K:K))) 
-          => NameAndType(X:Id, DeclType(T:KResult, K:K))
+     rule FieldGroup(T:Type, klist(Name(X:Id, K:K))) 
+          => NameAndType(X, DeclType(T, K))
           [structural, anywhere]
           
-     rule FieldGroup(T:KResult, klist(BitFieldName(Name(X:Id, K:K), Size:K)))
-          => NameAndType(X:Id, DeclType(T:KResult, BitFieldType(K:K, Size:K)))
+     rule FieldGroup(T:Type, klist(BitFieldName(Name(X:Id, K:K), Size:K)))
+          => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural, anywhere] 
      rule FieldName(K:K) => K [structural, anywhere]
 endmodule

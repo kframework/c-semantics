@@ -17,7 +17,7 @@ module C-TYPING-SYNTAX
      syntax K ::= "DeclType" "(" K "," K ")" [avoid, strict(1)] 
      syntax Set ::= "setOfTypes" [function]
      
-     syntax Bool ::= isTypeCompatible(K, K) [function]
+     syntax Bool ::= isTypeCompatible(Type, Type) [function]
      
      syntax Bool ::= isCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]

@@ -10,6 +10,8 @@ module C-DECLARATION-GENERAL-SYNTAX
      syntax K ::= "noLinkage"
      
      syntax KResult ::= "initializer" "(" K ")"
+
+     syntax K ::= verifyLinkage(K) [strict]
 endmodule
 
 module C-DECLARATION-GENERAL
@@ -56,7 +58,6 @@ module C-DECLARATION-GENERAL
      rule figureInit(X:Id, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
           [structural]
-          
      
      // aggregates
      rule figureInit(X:Id, T:Type, CompoundInit(L:K))
@@ -149,7 +150,7 @@ module C-DECLARATION-GENERAL
                
      rule Typedef(NameGroup(T:Type, klist((K:K,, L:KList)))) 
           => defineType(SingleName(T, K))
-          ~> Typedef(NameGroup(T, klist(L:KList)))
+               ~> Typedef(NameGroup(T, klist(L)))
           [structural]
      rule Typedef(NameGroup(_:Type, klist(.KList))) => .K
           [structural]
@@ -158,13 +159,21 @@ module C-DECLARATION-GENERAL
           => giveType(typedef(X), T) 
           [structural] 
                
-     syntax K ::= "declareFunction" "(" Id "," Type "," K ")"
-     syntax K ::= "declareExternalVariable" "(" Id "," Type "," K ")"
-     syntax K ::= "declareInternalVariable" "(" Id "," Type "," K ")"
-     
+     syntax K ::= "doDeclare'" "(" Type "," K ")" 
+     syntax K ::= declareFunction(Id, Type, K)
+     syntax K ::= declareExternalVariable(Id, Type, K)
+     syntax K ::= declareInternalVariable(Id, Type, K)
+
+     rule doDeclare(T:Type, K:K) 
+          => verifySpecifiers(T) ~> doDeclare'(T, K)
+
+     rule verifySpecifiers(typedDeclaration(T:Type, X:Id))
+          => .
+          when notBool (isStaticType(T) andBool isExternType(T))
+
      // function definition
      rule <k> 
-               doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+               doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareFunction(X, T, K)
           ...</k>
           <currentFunction> file-scope </currentFunction>
@@ -175,7 +184,7 @@ module C-DECLARATION-GENERAL
           
      // fixme there are still no nested functions though, right_
      rule <k> 
-               doDeclare(typedDeclaration(T:Type, X:Id), NoInit) 
+               doDeclare'(typedDeclaration(T:Type, X:Id), NoInit) 
                => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))
           ...</k>
           <externalLocations>... X |-> Loc:SymLoc ...</externalLocations> 
@@ -188,28 +197,29 @@ module C-DECLARATION-GENERAL
      // fixme i believe this is for local declarations of external library
      // functions
      rule <k> 
-               doDeclare(typedDeclaration(T:Type, X:Id), NoInit) 
+               doDeclare'(typedDeclaration(T:Type, X:Id), NoInit) 
                => giveType(X, unqualifyType(T))
           ...</k>
           <externalLocations> Locs:Map </externalLocations> 
           <currentFunction> F:K </currentFunction>
           // I'd like to get rid of this cleanly
-          when (notBool isIncompleteType(T))
-               andBool (isFunctionType(T))
+          when notBool isIncompleteType(T)
+               andBool isFunctionType(T)
                andBool (F =/=K file-scope)
                andBool (notBool $hasMapping(Locs, X))
           [structural]
      rule <k> 
-               doDeclare(typedDeclaration(T:Type, X:Id), K:K)
+               doDeclare'(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit 
-                    #then NoInit #else CodeLoc(K, L) #fi)
+                    #then NoInit 
+                    #else CodeLoc(K, L) #fi)
           ...</k>
           <currentFunction> file-scope </currentFunction>
           <currentProgramLoc> L:CabsLoc </currentProgramLoc>
           when notBool isFunctionType(T)
           [structural] 
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+     rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
           <currentFunction> F:K </currentFunction>
@@ -301,7 +311,6 @@ module C-DECLARATION-GENERAL
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> Tu:K </currTU>
           when isStaticType(T)
-               andBool (notBool isExternType(T))
                andBool (K =/=K NoInit)
                andBool (notBool $hasMapping(Locs, kpair(X, BlockNum)))
           [structural, large] 
@@ -323,7 +332,6 @@ module C-DECLARATION-GENERAL
           <blockHistory> ListItem(BlockNum) ...</blockHistory>
           <currTU> Tu:K </currTU>
           when isStaticType(T)
-               andBool notBool isExternType(T)
                andBool K =/=K NoInit
           [structural, large] 
           
@@ -339,24 +347,23 @@ module C-DECLARATION-GENERAL
           ...</k>
           <externalLocations>... X |-> Loc:SymLoc ...</externalLocations>
           when notBool isIncompleteType(T)
-               andBool notBool isStaticType(T)
                andBool isExternType(T)
           [structural] 
           
      //- external variables
-     rule declareExternalVariable(X:Id, T:Type, K:K)
-          => declareWithLinkage(X, T, K, external)
-          when notBool isStaticType(T)
-               andBool notBool isExternType(T)
-          [structural] 
+    // rule declareExternalVariable(X:Id, T:Type, K:K)
+    //      => declareWithLinkage(X, T, K, external)
+    //      when notBool isStaticType(T)
+    //           andBool notBool isExternType(T)
+    //      [structural] 
      rule <k> 
                declareExternalVariable(X:Id, T:Type, K:K)
                => declareWithLinkage(X, T, K, external)
           ...</k>
-          <preLinkage>... Tu:K |-> map(Lnk:Map) ...</preLinkage>
+          <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
           <currTU> Tu:K </currTU>
           when notBool isStaticType(T)
-               andBool isExternType(T)
+               //andBool isExternType(T)
                andBool notBool $hasMapping(Lnk, X)
           [structural] 
      // not triggering
@@ -368,7 +375,7 @@ module C-DECLARATION-GENERAL
           <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
           <currTU> Tu:K </currTU>
           when notBool isStaticType(T)
-               andBool isExternType(T)
+               //andBool isExternType(T)
                andBool $hasMapping(Lnk, X)
           [structural] 
      rule declareExternalVariable(X:Id, T:Type, K:K)
@@ -522,7 +529,6 @@ module C-DECLARATION-GENERAL
                Def:Map => Def:Map (X |->
                     declarationObject(unqualifyType(T), Tu, K)) 
           </externalDefinitions>
-          <br/>
           <preLinkage>...
                Tu |-> map((Lnk:Map => Lnk:Map[external / X]))
           ...</preLinkage>
@@ -532,7 +538,7 @@ module C-DECLARATION-GENERAL
           <currTU> Tu:K </currTU>
           when (notBool $hasMapping(Def, X)
                     orBool isFunctionType(T))
-               andBool (notBool $hasMapping(Lnk, X)
+               andBool (notBool $hasMapping(Lnk, X) 
                     orBool Lnk:Map(X) ==K external)
           [structural, large]
           
@@ -548,7 +554,6 @@ module C-DECLARATION-GENERAL
                     declarationObject(unqualifyType(T), Tu, K)
                     / X])) 
           ...</internalDefinitions>
-          <br/>
           <preLinkage>... Tu:K |-> map(Lnk:Map) ...</preLinkage>
           <preTypes>...
                Tu |-> map((Types:Map => Types:Map[T / X]))
@@ -568,7 +573,6 @@ module C-DECLARATION-GENERAL
                => Def:Map[
                     declarationObject(unqualifyType(T), Tu, K) / X])) 
           ...</internalDefinitions>
-          <br/>
           <preLinkage>...
                Tu |-> map((Lnk:Map => Lnk:Map[internal / X]))
           ...</preLinkage>

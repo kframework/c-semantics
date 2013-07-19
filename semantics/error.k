@@ -24,6 +24,8 @@ module C11-ERROR
      imports C-EXPRESSION-CONVERSION-SYNTAX
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
 
+     imports C-DECLARATION-GENERAL-SYNTAX
+
      imports COMPAT-SYNTAX
 
      imports LIBC-STDIO-SYNTAX
@@ -405,9 +407,11 @@ module C11-ERROR
           <notWritable>... Loc |-> _ ...</notWritable>
           [structural, large]
 
-     //rule (. => ERROR("00208",
-                //"The same identifier has both internal and external linkage in the same translation unit (6.2.2)."
-
+     rule (. => ERROR("00208",
+               "The variable " +String S +String " appears with both"
+               +String " static and extern specifiers.", 8)) ~>
+          verifySpecifiers(typedDeclaration(T:Type, Identifier(S:String)))
+          when isStaticType(T) andBool isExternType(T)
 
      rule
           (. => ERROR("00500", 
