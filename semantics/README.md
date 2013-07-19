@@ -78,7 +78,10 @@ refactorings:
 9. I like to "declare" variables in rules at the point where they're bound
    (i.e., on the left side of the `=>`).
 
-10. I prefer `func'`, `func''`, etc. for "auxiliary" syntax productions.
+10. I prefer single quotes (e.g., `func'`, `func''`, etc.) for "auxiliary"
+    syntax productions.
+
+11. I prefix "#" to predicates that aren't total functions. 
 
 [language]: language
 [library]: library
