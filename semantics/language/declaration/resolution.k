@@ -11,36 +11,35 @@ module C-DECLARATION-RESOLUTION
      
      syntax K ::= "canonicalizeTranslationUnitVariables"
      rule [unpack-TranslationUnit]:
-          <k> TranslationUnit(TUName:String, Strings:K, K:K, P:String) 
-               => preDeclareStrings(Strings:K)
-               ~> klistToK(eraseKLabel('StmtCons, K:K))
+          <k> 
+               TranslationUnit(TUName:String, Strings:K, K:K, P:String) 
+               => preDeclareStrings(Strings)
+                    ~> klistToK(eraseKLabel('StmtCons, K))
           ...</k>
-          <currTU> _ => TUName:String </currTU>
+          <currTU> _ => TUName </currTU>
           <declarationOrder> 
-               DeclOrder:Map => DeclOrder:Map[ListToK(.List) / TUName:String] 
+               DeclOrder:Map => DeclOrder:Map[ListToK(.List) / TUName] 
           </declarationOrder>
           <internalLocations>
-               ExtLoc:Map => ExtLoc:Map[map(.) / TUName:String]
+               ExtLoc:Map => ExtLoc:Map[map(.) / TUName]
           </internalLocations>
-          <br/>
-          <funTUs> Funs:Map => Funs:Map[map(.) / TUName:String] </funTUs>
+          <funTUs> Funs:Map => Funs:Map[map(.) / TUName] </funTUs>
           <translationUnits>...
-               . => BagItem(TUName:String)
+               . => BagItem(TUName)
           ...</translationUnits>
           <preLinkage>
-               Lnk:Map => Lnk:Map[map(.) / TUName:String]
+               Lnk:Map => Lnk:Map[map(.) / TUName]
           </preLinkage>
           <preTypes>
-               Types:Map => Types:Map[map(.) / TUName:String]
+               Types:Map => Types:Map[map(.) / TUName]
           </preTypes>
-          <br/>
           <internalDefinitions>
-               Def:Map => Def:Map[map(.) / TUName:String]
+               Def:Map => Def:Map[map(.) / TUName]
           </internalDefinitions>
-          <genv> Env:Map => Env:Map[map(.) / TUName:String] </genv>
-          <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName:String]</gtypes>
-          <programText> M:Map => M:Map[P:String / TUName:String] </programText>
-          when notBool $hasMapping(Env:Map, TUName:String)
+          <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
+          <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
+          <programText> M:Map => M:Map[P / TUName] </programText>
+          when notBool $hasMapping(Env, TUName)
           [structural, large]
           
      syntax K ::= "preDeclareStrings" "(" K ")"
@@ -69,7 +68,7 @@ module C-DECLARATION-RESOLUTION
           <currTU> _ => Tu </currTU>
           <externalLocations>... X |-> Loc:SymLoc ...</externalLocations>
           <leftoverExterns>...
-               BagItem(leftover(Tu:K, X:Id, T:KResult)) => .Bag
+               BagItem(leftover(Tu:K, X:Id, T:Type)) => .Bag
           ...</leftoverExterns>
           [structural]
      rule <k> resolveLeftovers ...</k>
@@ -77,7 +76,7 @@ module C-DECLARATION-RESOLUTION
           <leftoverExterns>...
                BagItem(leftover(_, X:Id, _)) => .Bag
           ...</leftoverExterns>
-          when notBool $hasMapping(Locs:Map, X:Id)
+          when notBool $hasMapping(Locs, X)
           [structural]
      
      rule <k> resolveLeftovers => .K ...</k>
@@ -118,174 +117,171 @@ module C-DECLARATION-RESOLUTION
      syntax K ::= "resolveInternal'" "(" Id "," K "," K "," K ")" [strict(4)] 
      rule <k> 
                resolveInternal(X:Id, Tu:K, 
-                    declarationObject(T:KResult, Tu:K, K:K))
-               => resolveInternal'(X:Id, Tu:K, 
-                    declarationObject(T:KResult, Tu:K, K:K), 
-                    figureInit(X:Id, T:KResult, K:K))
+                    declarationObject(T:Type, Tu:K, K:K))
+               => resolveInternal'(X, Tu, 
+                    declarationObject(T, Tu, K), 
+                    figureInit(X, T, K))
           ...</k>
-          <currTU> _ => Tu:K </currTU>
+          <currTU> _ => Tu </currTU>
           [structural] 
      rule <k> 
                resolveInternal'(X:Id, Tu:K, 
                     declarationObject(_, Tu:K, _), 
-                    initValue(X:Id, T:KResult, K:K))
-               => allocateType(Loc, T:KResult)
-                    ~> addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, T:KResult)
-                    ~> initialize(X:Id, T:KResult, K:K)
-                    ~> recordFunTUInfo(X:Id, T:KResult, Tu:K, Tu:K)
+                    initValue(X:Id, T:Type, K:K))
+               => allocateType(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, K)
+                    ~> recordFunTUInfo(X, T, Tu, Tu)
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <currTU> _ => Tu:K </currTU>
+          <currTU> _ => Tu </currTU>
           [structural] 
                
      rule <k> 
                resolveExternal(X:Id, Tu:K, Units:Bag, 
-                    declarationObject(T:KResult, DefTu:K, K:K))
-               => resolveExternal'(X:Id, Tu:K, Units:Bag,
-                    declarationObject(T:KResult, DefTu:K, K:K), Loc, 
-                    figureInit(X:Id, T:KResult, K:K))
+                    declarationObject(T:Type, DefTu:K, K:K))
+               => resolveExternal'(X, Tu, Units,
+                    declarationObject(T, DefTu, K), Loc, 
+                    figureInit(X, T, K))
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           [structural] 
      rule <k> 
                ( .K
-               => addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, T:KResult)
-                    ~> recordFunTUInfo(X:Id, T:KResult, Tu':K, DefTu:K)
+               => addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> recordFunTUInfo(X, T, Tu', DefTu)
                ) ~> resolveExternal'(X:Id, _:K, 
                     ((BagItem(Tu':K) => .) _:Bag),
                     declarationObject(_, DefTu:K, _), Loc:SymLoc, 
-                    initValue(X:Id, T:KResult, _:K))
+                    initValue(X:Id, T:Type, _:K))
           ...</k>
-          <br/>
-          <currTU> _ => Tu':K </currTU>
+          <currTU> _ => Tu' </currTU>
           <preLinkage>...
-               Tu':K |-> map((_ (X:Id |-> external => .)))
+               Tu' |-> map((_ (X |-> external => .)))
           ...</preLinkage>
           [structural, large] 
      rule <k> 
                resolveExternal'(X:Id, Tu:K, .Bag,
                     declarationObject(_, DefTu:K, _), Loc:SymLoc,
-                    initValue(X:Id, T:KResult, K:K))
-               => allocateType(Loc, T:KResult)
-                    ~> addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, T:KResult)
-                    ~> initialize(X:Id, T:KResult, K:K)
-                    ~> recordFunTUInfo(X:Id, T:KResult, Tu:K, DefTu:K)
+                    initValue(X:Id, T:Type, K:K))
+               => allocateType(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, K)
+                    ~> recordFunTUInfo(X, T, Tu, DefTu)
           ...</k>
-          <currTU> _ => Tu:K </currTU>
+          <currTU> _ => Tu </currTU>
           <externalLocations>
-               Locs:Map => Locs:Map[Loc / X:Id]
+               Locs:Map => Locs:Map[Loc / X]
           </externalLocations>
-          when notBool $hasMapping(Locs:Map, X:Id)
+          when notBool $hasMapping(Locs, X)
           [structural] 
      rule <k>
                resolveExternal'(X:Id, _,
                     ((BagItem(Tu:K) => .) _:Bag), _, _, _)
           ...</k>
-          <preLinkage>... Tu:K |-> map(M:Map) ...</preLinkage>
-          when notBool $hasMapping(M:Map, X:Id)
+          <preLinkage>... Tu |-> map(M:Map) ...</preLinkage>
+          when notBool $hasMapping(M, X)
           [structural] 
      rule [resolveExternal-internal]:
           <k>
                resolveExternal'(X:Id, _,
                     ((BagItem(Tu:K) => .) _:Bag), _, _, _)
           ...</k>
-          <preLinkage>... Tu:K |-> map((_ X:Id |-> internal)) ...</preLinkage>
+          <preLinkage>... Tu |-> map((_ X:Id |-> internal)) ...</preLinkage>
           [structural] 
      
-     rule <k> (. => resolveInternal(X:Id, Tu:K, K:K)) ~> resolve(Tu:K) ...</k>
+     rule <k> (. => resolveInternal(X, Tu, K)) ~> resolve(Tu:K) ...</k>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> internal => .Map)))
+               Tu |-> map((_ (X:Id |-> internal => .Map)))
           ...</preLinkage>
           <internalDefinitions>...
-               Tu:K |-> map((_ (X:Id |-> K:K => .Map)))
+               Tu |-> map((_ (X:Id |-> K:K => .Map)))
           ...</internalDefinitions>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .List) _)
+               Tu |-> ListToK((ListItem(X:Id) => .List) _)
           ...</declarationOrder>
           [structural] 
           
      // static variable without an initializer
      rule <k> 
-               (. => resolveInternal(X:Id, Tu:K, 
-                    declarationObject(unqualifyType(T:KResult), Tu:K, 
-                    initializer(zero(X:Id))))) ~> resolve(Tu:K)
+               (. => resolveInternal(X, Tu, 
+                    declarationObject(unqualifyType(T), Tu, 
+                    initializer(zero(X))))) ~> resolve(Tu:K)
           ...</k>
-          <br/>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> internal => .Map)))
+               Tu |-> map((_ (X:Id |-> internal => .Map)))
           ...</preLinkage>
           <internalDefinitions>...
-               Tu:K |-> map(Defs:Map)
+               Tu |-> map(Defs:Map)
           ...</internalDefinitions>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .List) _)
+               Tu |-> ListToK((ListItem(X:Id) => .List) _)
           ...</declarationOrder>
           <preTypes>...
-               Tu:K |-> map((_ (X:Id |-> T:KResult => .Map)))
+               Tu |-> map((_ (X:Id |-> T:Type => .Map)))
           ...</preTypes>
-          when notBool $hasMapping(Defs:Map, X:Id)
+          when notBool $hasMapping(Defs, X)
           [structural, large] 
           
      rule <k>
-               (. => resolveExternal(X:Id, Tu:K, Units:Bag, K:K)) 
+               (. => resolveExternal(X, Tu, Units, K)) 
                ~> resolve(Tu:K)
           ...</k>
           <br/>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> external => .Map)))
+               Tu |-> map((_ (X:Id |-> external => .Map)))
           ...</preLinkage>
           <externalDefinitions>
                ExtDefs:Map (X:Id |-> K:K => .Map)
           </externalDefinitions>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .List) _)
+               Tu |-> ListToK((ListItem(X:Id) => .List) _)
           ...</declarationOrder>
           <translationUnits> Units:Bag </translationUnits>
-          when notBool $hasMapping(ExtDefs:Map, X:Id)
+          when notBool $hasMapping(ExtDefs, X)
           [structural, large] 
 
      
      // fixme this means we've declared it twice (like a prototype maybe_), but
      // already handled it.  happening with getc in clib.c
      rule <k> resolve(Tu:K) ...</k>
-          <preLinkage>... Tu:K |-> map(Lnk:Map) ...</preLinkage>
+          <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .) _)
+               Tu |-> ListToK((ListItem(X:Id) => .) _)
           ...</declarationOrder>
           <externalDefinitions> ExtDefs:Map </externalDefinitions>
           <internalDefinitions> IntDefs:Map </internalDefinitions>
-          when notBool ($hasMapping(Lnk:Map, X:Id))
-               andBool (notBool $hasMapping(ExtDefs:Map, X:Id))
-               andBool (notBool $hasMapping(IntDefs:Map, X:Id))
+          when notBool ($hasMapping(Lnk, X))
+               andBool (notBool $hasMapping(ExtDefs, X))
+               andBool (notBool $hasMapping(IntDefs, X))
           [structural] 
      
      // function prototypes
      rule <k> 
                (. => 
-                    giveType(X:Id, T:KResult)
+                    giveType(X, T)
                     // fixme fake Tu
-                    ~> recordFunTUInfo(X:Id, T:KResult, Tu:K, Tu:K)
+                    ~> recordFunTUInfo(X, T, Tu, Tu)
                )
                ~> resolve(Tu:K) 
           ...</k>
-          <br/>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> external => .)))
+               Tu |-> map((_ (X:Id |-> external => .)))
           ...</preLinkage>
           <preTypes>...
-               Tu:K |-> map((_ X:Id |-> t(_, prototype(T:KResult))))
+               Tu |-> map((_ X:Id |-> t(_, prototype(T:Type))))
           ...</preTypes>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .) _)
+               Tu |-> ListToK((ListItem(X:Id) => .) _)
           ...</declarationOrder>
           <br/>
           <externalDefinitions> Defs:Map </externalDefinitions>
-          <currTU> _ => Tu:K </currTU>
-          when isFunctionType(T:KResult)
-               andBool (notBool $hasMapping(Defs:Map, X:Id))
+          <currTU> _ => Tu </currTU>
+          when isFunctionType(T)
+               andBool (notBool $hasMapping(Defs, X))
           [structural, large] 
           
      // c1x 6.9.2:2 A declaration of an identifier for an object that has file
@@ -299,60 +295,59 @@ module C-DECLARATION-RESOLUTION
      // unit, with an initializer equal to 0
      rule <k> 
                (. 
-               => allocateType(Loc, unqualifyType(T:KResult))
-                    ~> addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, unqualifyType(T:KResult))
-                    ~> zero(X:Id)
+               => allocateType(Loc, unqualifyType(T))
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, unqualifyType(T))
+                    ~> zero(X)
                ) ~> resolve(Tu:K)
           ...</k>
           <br/>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> external => .)))
+               Tu |-> map((_ (X:Id |-> external => .)))
           ...</preLinkage>
           <preTypes>...
-               Tu:K |-> map((_ X:Id |-> T:KResult))
+               Tu |-> map((_ X:Id |-> T:Type))
           ...</preTypes>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .) _)
+               Tu |-> ListToK((ListItem(X:Id) => .) _)
           ...</declarationOrder>
-          <br/>
           <externalDefinitions> Defs:Map </externalDefinitions>
-          <currTU> _ => Tu:K </currTU>
+          <currTU> _ => Tu </currTU>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <externalLocations>
-               Locs:Map => Locs:Map[Loc / X:Id]
+               Locs:Map => Locs:Map[Loc / X]
           </externalLocations>
-          when notBool $hasMapping(Locs:Map, X:Id)
-               andBool (notBool isFunctionType(T:KResult))
-               andBool (notBool isIncompleteType(T:KResult))
-               andBool (notBool isExternType(T:KResult))
-               andBool (notBool $hasMapping(Defs:Map, X:Id))
+          when notBool $hasMapping(Locs, X)
+               andBool (notBool isFunctionType(T))
+               andBool (notBool isIncompleteType(T))
+               andBool (notBool isExternType(T))
+               andBool (notBool $hasMapping(Defs, X))
           [structural, large] 
-     syntax K ::= "leftover" "(" K "," K "," K ")"
+     syntax K ::= "leftover" "(" K "," Id "," Type ")"
      rule [resolve-extern-object-nomapping]:
           <k> resolve(Tu:K) ...</k>
           <preLinkage>...
-               Tu:K |-> map((_ (X:Id |-> external => .)))
+               Tu |-> map((_ (X:Id |-> external => .)))
           ...</preLinkage>
           <preTypes>...
-               Tu:K |-> map((_ X:Id |-> T:KResult))
+               Tu |-> map((_ X:Id |-> T:Type))
           ...</preTypes>
           <declarationOrder>...
-               Tu:K |-> ListToK((ListItem(X:Id) => .) _)
+               Tu |-> ListToK((ListItem(X:Id) => .) _)
           ...</declarationOrder>
           <externalDefinitions> Defs:Map </externalDefinitions>
           <leftoverExterns>...
-               .Bag => BagItem(leftover(Tu:K, X:Id, T:KResult))
+               .Bag => BagItem(leftover(Tu, X, T))
           ...</leftoverExterns>
-          when notBool isFunctionType(T:KResult)
-               andBool isExternType(T:KResult)
-               andBool notBool $hasMapping(Defs:Map, X:Id)
+          when notBool isFunctionType(T)
+               andBool isExternType(T)
+               andBool notBool $hasMapping(Defs, X)
           [structural] 
           
      rule <k> resolve(Tu:K) => . ...</k>
-          <preLinkage>... Tu:K |-> map(.) ...</preLinkage>
-          <internalDefinitions>... Tu:K |-> map(.) ...</internalDefinitions>
-          <declarationOrder>... Tu:K |-> ListToK(.List) ...</declarationOrder>
+          <preLinkage>... Tu |-> map(.) ...</preLinkage>
+          <internalDefinitions>... Tu |-> map(.) ...</internalDefinitions>
+          <declarationOrder>... Tu |-> ListToK(.List) ...</declarationOrder>
           [structural] 
                     
      // need to worry about things that don't have definitions that may
@@ -363,7 +358,7 @@ module C-DECLARATION-RESOLUTION
      rule [initialize-function]:
           <k> 
                initFunction(tv(Loc:SymLoc, 
-                    t(_, pointerType(T:KResult))), Fun:KResult) 
+                    t(_, pointerType(T:Type))), Fun:KResult) 
                => .K
           ...</k>
           <functions> M:Map => M:Map[Fun / Loc] </functions>

@@ -9,10 +9,10 @@ module C-DECLARATION-ZERO
      // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
      // implicitly the same as objects that have static storage duration
      rule <k> 
-               initialize(X:Id, _:KResult, K:K)
-               => #if (F:Id ==K file-scope) #then zero(X:Id) #else (.) #fi 
-               ~> K:K
-               ~> sequencePoint
+               initialize(X:Id, _:Type, K:K)
+               => #if (F ==K file-scope) #then zero(X) #else (.) #fi 
+                    ~> K
+                    ~> sequencePoint
           ...</k>
           <currentFunction> F:Id </currentFunction>
           [structural] 
@@ -20,7 +20,7 @@ module C-DECLARATION-ZERO
      rule <k>
                zero(Sym:K) => zeroType(Sym, unqualifyType(T))
           ...</k>
-          <types>... Sym |-> T:KResult ...</types>
+          <types>... Sym |-> T:Type ...</types>
           [structural] 
           
      syntax K ::= "zeroType" "(" K "," Type ")"
@@ -51,43 +51,43 @@ module C-DECLARATION-ZERO
      
      rule <k> 
                zeroType(N:K, t(_, structType(S:Id))) 
-               => zeroStruct(N:K, Fields:KList)
+               => zeroStruct(N, Fields)
           ...</k>
-          <structs>... S:Id |-> aggregateInfo(Fields:KList, _, _) ...</structs> 
+          <structs>... S |-> aggregateInfo(Fields:KList, _, _) ...</structs> 
           [structural] 
           
      rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
                => zeroType(N . F, T)
           ...</k>
           <structs>... 
-               S |-> aggregateInfo((typedDeclaration(T:KResult, F:Id),, _), _, _) 
+               S |-> aggregateInfo((typedDeclaration(T:Type, F:Id),, _), _, _) 
           ...</structs> 
           [structural] 
           
-     rule zeroStruct(Sym:K, (typedDeclaration(T:KResult, F:Id),, L:KList)) 
-          => zeroType(Sym:K . F:Id, T:KResult) ~> zeroStruct(Sym:K, L:KList) 
+     rule zeroStruct(Sym:K, (typedDeclaration(T:Type, F:Id),, L:KList)) 
+          => zeroType(Sym . F, T) ~> zeroStruct(Sym, L) 
           [structural] 
      rule zeroStruct(_, .KList) => .
           [structural] 
 
-     rule zeroType(Sym:K, T:KResult) 
-               => Computation(allowWrite(Sym:K) := tv(NullPointer, T:KResult))
-          when isPointerType(T:KResult)
+     rule zeroType(Sym:K, T:Type) 
+               => Computation(allowWrite(Sym) := tv(NullPointer, T))
+          when isPointerType(T)
           [structural]
-     rule zeroType(_, T:KResult) => .
+     rule zeroType(_, T:Type) => .
           when isFunctionType(T)
           [structural]
           
      // fixme snat
-     rule zeroType(Sym:K, t(S:Set, arrayType(T:KResult, Len:Int))) 
-          => zeroType(Sym[Len:Int -Int 1], T:KResult)
-          ~> zeroType(Sym, t(S:Set, arrayType(T:KResult, Len:Int -Int 1))) 
-          when Len:Int >Int 0
+     rule zeroType(Sym:K, t(S:Set, arrayType(T:Type, Len:Int))) 
+          => zeroType(Sym[Len -Int 1], T)
+               ~> zeroType(Sym, t(S:Set, arrayType(T, Len -Int 1))) 
+          when Len >Int 0
           [structural] 
-     rule zeroType(_, t(_, arrayType(_:KResult, 0))) => .
+     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
           [structural] 
 
-     rule zeroType(_, t(_, flexibleArrayType(_:KResult))) => .
+     rule zeroType(_, t(_, flexibleArrayType(_:Type))) => .
           [structural]
 endmodule
 

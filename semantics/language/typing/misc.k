@@ -474,8 +474,8 @@ module C-TYPING-MISC
                andBool (getKLabel(T:K) =/=KLabel 'flexibleArrayType)
                andBool (getKLabel(T:K) =/=KLabel 'qualifiedType)
           
-     rule isAggregateType(T:KResult)
-          => isArrayType(T:KResult) orBool isStructType(T:KResult) 
+     rule isAggregateType(T:Type)
+          => isArrayType(T) orBool isStructType(T) 
           
      rule [isStructType-struct]:
           isStructType(t(_, structType(_:Id))) => true 

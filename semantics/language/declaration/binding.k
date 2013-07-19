@@ -13,8 +13,8 @@ module C-DECLARATION-BINDING
      // fixme not really a sequence point
      
      syntax K ::= "bind-aux" "(" SymLoc "," KList "," KList ")"
-     rule bind(L:KList, L':KList)
-          => bind-aux(NullPointer, L:KList, L':KList)
+     rule bind(L:KList, L':KList) 
+          => bind-aux(NullPointer, L, L')
           [structural] 
      
      rule [bind-empty-void]:
@@ -52,8 +52,8 @@ module C-DECLARATION-BINDING
                _
                , _:KList
                , (typedDeclaration(
-                        (t(_, (arrayType(T:KResult, _:Int)
-                        => pointerType(T:KResult)))), _:Id
+                        (t(_, (arrayType(T:Type, _:Int)
+                        => pointerType(T)))), _:Id
                ),, _:KList)
           )
           [structural, anywhere] 
@@ -62,32 +62,32 @@ module C-DECLARATION-BINDING
                _
                , _:KList
                , (typedDeclaration(
-                        (t(_, (incompleteArrayType(T:KResult)
-                        => pointerType(T:KResult)))), _:Id
+                        (t(_, (incompleteArrayType(T:Type)
+                        => pointerType(T)))), _:Id
                ),, _:KList)
           )
           [structural, anywhere] 
           
      rule [bind-one]:
           <k> 
-               true ~> bind-aux(_, (tv(V:KList, T':KResult),, L:KList), 
-                    (typedDeclaration(T:KResult, X:Id),, P:KList))
-               => allocateType(Loc, T:KResult)
-                    ~> addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, T:KResult)
-                    ~> initialize(X:Id, T:KResult, Computation(
-                         allowWrite(X:Id) := tv(V:KList, T':KResult)))
-                    ~> bind-aux(Loc, L:KList, P:KList)
+               true ~> bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
+                    (typedDeclaration(T:Type, X:Id),, P:KList))
+               => allocateType(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, 
+                         Computation(allowWrite(X) := tv(V, T')))
+                    ~> bind-aux(Loc, L, P)
           ...</k> 
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
-          when notBool isArrayType(T:KResult)
+          when notBool isArrayType(T)
           [structural] 
           
      rule [bind-one-check-type]:
-          (. => isTypeCompatible(T:KResult, T':KResult)) 
-               ~> bind-aux(_, (tv(_:KList, T':KResult),, _:KList), 
-               (typedDeclaration(T:KResult, _:Id),, _:KList))
+          (. => isTypeCompatible(T, T')) 
+          ~> bind-aux(_, (tv(_:KList, T':Type),, _:KList), 
+               (typedDeclaration(T:Type, _:Id),, _:KList))
           [structural] 
      
      syntax KList ::= promoteList(KList) [function]
@@ -96,8 +96,8 @@ module C-DECLARATION-BINDING
           => cast(argPromote(t(S, T)), tv(V, t(S, T))),, promoteList(L)
           when (T ==K float) 
                orElseBool (hasIntegerType(t(S:Set, T:K)) 
-                    andBool ((rank(t(S:Set, T:K)) <Int rank(t(.Set, int))) 
-                         orElseBool isBitfieldType(t(S:Set, T:K))))
+                    andBool ((rank(t(S, T)) <Int rank(t(.Set, int))) 
+                         orElseBool isBitfieldType(t(S, T))))
 
      rule [promoteList-promoted]: 
           promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
@@ -135,9 +135,9 @@ module C-DECLARATION-BINDING
      rule [bind-variadic]:
           <k> 
                (.K 
-               => allocateType(Loc, type(V:K))
+               => allocateType(Loc, type(V))
                     ~> Computation(
-                         *(tv(Loc, t(.Set, pointerType(type(V:K))))) := V:K)
+                         *(tv(Loc, t(.Set, pointerType(type(V))))) := V)
                ) 
                ~> bindVariadic(_, ((V:K => .KList),, _:KList)) 
           ...</k>
