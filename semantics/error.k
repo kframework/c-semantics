@@ -71,7 +71,8 @@ module C11-ERROR
           [structural, large]
          
      rule [err00002]:
-          (. => ERROR("00002", "Reading outside the bounds of an object.", (19,, 43,, 47,, 62)) ) ~>
+          (. => ERROR("00002", "Reading outside the bounds of an object.", 
+               (19,, 43,, 47,, 62)) ) ~>
           assert(false, 2)
           [structural, large]
      rule [err00003]:
@@ -89,14 +90,16 @@ module C11-ERROR
     //       [structural, large]
      
      rule [err00006]:
-          (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 21) ) ~>
-          joinIntegerBytes-aux(T:KResult, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K)
-          when notBool isCharType(T:KResult)
+          (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
+               21) ) ~>
+          joinIntegerBytes-aux(T:Type, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K)
+          when notBool isCharType(T)
           [structural, large]
           
      rule [err00007]:
           <k> 
-               (. => ERROR("00007", "Referring to an object outside of its lifetime.", (9,, 10)) ) ~>
+               (. => ERROR("00007", "Referring to an object outside of its lifetime.",
+                    (9,, 10)) ) ~>
                checkValidLoc-aux(loc(B:SymBase, _:Int, _:Int)) 
           ...</k>
           <mem> M:Map </mem>
@@ -109,9 +112,10 @@ module C11-ERROR
           [structural, large]
      
      rule [err00009]:
-          (. => ERROR("00009", "Reading uninitialized memory.", 21) ) ~>
-          concretize(T:KResult, dataList((piece(unknown(Len:Int), Len:Int),, _)))
-          when isFloatType(T:KResult)
+          (. => ERROR("00009", "Reading uninitialized memory.",
+               21) ) ~>
+          concretize(T:Type, dataList((piece(unknown(Len:Int), Len:Int),, _)))
+          when isFloatType(T)
           [structural, large]
           
      rule [err00010]:
@@ -125,34 +129,34 @@ module C11-ERROR
           
      rule [err00011]:
           (. => ERROR("00011", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:KResult) < tv(_, T':KResult)
-          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-               orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          tv(_, T:Type) < tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large]
      rule [err00012]:
           (. => ERROR("00012", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:KResult) <= tv(_, T':KResult)
-          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-               orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          tv(_, T:Type) <= tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large] 
      rule [err00013]:
           (. => ERROR("00013", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:KResult) > tv(_, T':KResult)
-          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          tv(_, T:Type) > tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large] 
      rule [err00014]:
           (. => ERROR("00014", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:KResult) >= tv(_, T':KResult)
-          when (hasIntegerType(T:KResult) andBool isPointerType(T':KResult))
-          orBool (isPointerType(T:KResult) andBool hasIntegerType(T':KResult))
+          tv(_, T:Type) >= tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large] 
           
      rule [err00015]:
           (. => ERROR("00015", "Signed overflow.", 36) ) ~>
           arithInterpret(T:Type, I:Int)
           when hasSignedIntegerType(T)
-          andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
+               andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
           [structural, large]      
           
           
@@ -167,26 +171,24 @@ module C11-ERROR
           
      rule [err00017]:
           (. => ERROR("00017", "Division by 0.", 319) ) ~>
-          tv(_:Int, T:KResult) / tv(0, T:KResult)
-          when hasIntegerType(T:KResult)
-          andBool isPromoted(T:KResult)
+          tv(_:Int, T:Type) / tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
           [structural, large]
      
      rule [err00018]:
           (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
-          tv(_:Int, T:KResult) % tv(0, T:KResult)
-          when hasIntegerType(T:KResult)
-          andBool isPromoted(T:KResult)
+          tv(_:Int, T:Type) % tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
           [structural, large]
           
      rule [err00019]:
           (. => ERROR("00019", "Signed overflow.", 36) ) ~>
-          tv(I1:Int, T:KResult) % tv(I2:Int, T:KResult)
-          when hasIntegerType(T:KResult)
-               andBool notBool (min(T:KResult) <=Int I1:Int /Int I2:Int 
-                    andBool max(T:KResult) >=Int I1:Int /Int I2:Int)
-               andBool isPromoted(T:KResult)
-               andBool I2:Int =/=Int 0
+          tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
+          when hasIntegerType(T)
+               andBool notBool (min(T) <=Int I1 /Int I2
+                    andBool max(T) >=Int I1 /Int I2)
+               andBool isPromoted(T)
+               andBool I2 =/=Int 0
           [structural, large]
           
      rule [err00020]:
@@ -195,13 +197,16 @@ module C11-ERROR
                writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) 
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          when notBool Offset:Int <Int Len:Int
+          when notBool Offset <Int Len
           [structural, large] 
           
      // See C-EXPRESSION-IDENTIFIER.
      rule [err00021a]:
           <k> 
-               (. => ERROR("00021a", "Trying to look up identifier " +String S:String +String ", but no such identifier is in scope.", (305,, 332)) ) ~>
+               (. => ERROR("00021a", "Trying to look up identifier " 
+               +String S +String 
+               ", but no such identifier is in scope.", 
+               (305,, 332)) ) ~>
                Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
@@ -211,7 +216,8 @@ module C11-ERROR
           [structural, large]
      rule [err00021b]:
           <k> 
-               (. => ERROR("00021b", "No definition found for identifier " +String S:String +String ", but no such identifier is in scope.") ) ~>
+               (. => ERROR("00021b", "No definition found for identifier " 
+               +String S +String ".") ) ~>
                Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
@@ -222,16 +228,16 @@ module C11-ERROR
           
      rule [err00022]:
           (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
-          leftShiftInterpret(T:KResult, _:Int, tv(E1:Int, T:KResult))
+          leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
           when hasSignedIntegerType(T)
                andBool E1 <Int 0
           [structural, large]
           
      rule [err00023]:
           (. => ERROR("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.", 52) ) ~>
-          leftShiftInterpret(T:KResult, I:Int, tv(_:Int, T:KResult))
-          when hasSignedIntegerType(T:KResult)
-               andBool notBool (I:Int <=Int (2 ^Int absInt(numBits(T:KResult))))
+          leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
+          when hasSignedIntegerType(T)
+               andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
           [structural, large]
      
      rule [err00024a]:
@@ -253,8 +259,8 @@ module C11-ERROR
           
      rule [err00025a]:
           (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, T:K), _:KList)), _:Int, _:Id, _)
-          when T:K =/=K int
+          callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
+          when T =/=K int
           [structural, large]
      rule [err00025b]:
           <k> 
@@ -265,7 +271,7 @@ module C11-ERROR
           [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:K), _:Id),, _:KList))), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id),, _:KList))), _:Int, _:Id, _) 
           when T =/=K int andBool T =/=K void
           [structural, large]
           
@@ -297,7 +303,7 @@ module C11-ERROR
           [structural, large]
      rule [err00028]:
           (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (_:KResult,, _:KResult,, _:KResult,, _:KList))), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), (_:Type,, _:Type,, _:Type,, _:KList))), _:Int, _:Id, _) 
           [structural, large]
      rule [err00029]:
           (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
@@ -307,22 +313,22 @@ module C11-ERROR
           
      rule [err00030]:
           (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) < tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
+          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) < tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00031]:
           (. => ERROR("00031", "Cannot compare pointers with different base objects using '>'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) > tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
+          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) > tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00032]:
           (. => ERROR("00032", "Cannot compare pointers with different base objects using '<='.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) <= tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
+          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) <= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00033]:
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:KResult) >= tv(loc(Base':SymBase, _:Int, _:Int), T:KResult)
+          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) >= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
           when Base =/=K Base'
           [structural, large]
           
@@ -349,7 +355,7 @@ module C11-ERROR
           
      rule [err00038]:
           (. => ERROR("00038", "Arrays cannot be of 0 length.", 503) ) ~>
-          ArrayType(_:KResult, tv(0, _), _)
+          ArrayType(_:Type, tv(0, _), _)
           [structural, large]
      
      rule [err00039]:
@@ -373,16 +379,16 @@ module C11-ERROR
           [structural, large]
      rule [err00043]:
           (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", 502) ) ~>
-          types((T1:KResult,, T2:KResult))
-          when (T1:KResult =/=K T2:KResult)
-               andBool (isStructType(T1:KResult) orBool isUnionType(T1:KResult))
-               andBool (isStructType(T2:KResult) orBool isUnionType(T2:KResult))
+          types((T:Type,, T':Type))
+          when (T =/=K T')
+               andBool (isStructType(T) orBool isUnionType(T))
+               andBool (isStructType(T') orBool isUnionType(T'))
           [structural, large]
           
      rule [err00044]:
           (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
-          addToPointer(_:SymLoc, T:KResult, I:Int, tv(_:Int, _))
-          when notBool ifFromArrayInBounds(T:KResult, I:Int)
+          addToPointer(_:SymLoc, T:Type, I:Int, tv(_:Int, _))
+          when notBool ifFromArrayInBounds(T, I)
           [structural, large]
           
      rule [err00045]:
@@ -395,8 +401,8 @@ module C11-ERROR
           
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
-          concretize(T:KResult, dataList((piece(N:Int, _:Int),, _)))
-          when isFloatType(T:KResult) andBool (N >=Int 0)
+          concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
+          when isFloatType(T) andBool (N >=Int 0)
           [structural, large]
           
      rule [err00047]:
