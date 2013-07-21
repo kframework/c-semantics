@@ -11,7 +11,7 @@ module C-DECLARATION-GENERAL-SYNTAX
      
      syntax KResult ::= "initializer" "(" K ")"
 
-     syntax K ::= verifyLinkage(K) [strict]
+     syntax K ::= verifySpecifiers(K) [strict]
 endmodule
 
 module C-DECLARATION-GENERAL
