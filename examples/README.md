@@ -144,8 +144,8 @@ Additionally, we support a subset of the C expression syntax and we resolve
 symbols in the global scope of the program being checked. We support two other
 special atomic propositions: `__running` and `__error`. The first holds only
 after `main` has been called and becomes false when `main` returns. The second
-holds when the semantics enters some state that would result in undefined
-behavior.
+holds when the semantics enters some error state, such as it does upon
+encountering undefined behavior.
 
 ### Examples
 
