@@ -122,8 +122,7 @@ module LIBC-STDIO
      rule [fslOpenFile-aux]:
           fsl-open-file(str(Filename:String), str(Mode:String))
           => fsl-open-file-aux("file:" +String Filename:String, Mode:String,
-               #open("file:" +String Filename:String
-                    +String "\x01" +String Mode:String))
+               #open(Filename:String, Mode:String))
           [structural]
 
      rule [fslOpenFile]:

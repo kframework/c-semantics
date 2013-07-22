@@ -41,7 +41,7 @@ module LIBC-IO
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD </fid>
-          <nextByte> .K => #charString(#fReadByte(FD)) </nextByte>
+          <nextByte> .K => chrChar(#getc(FD)) </nextByte>
           <buff> "" </buff>
           [structural]
      rule <nextByte> Byte:String => .K </nextByte>
@@ -51,6 +51,9 @@ module LIBC-IO
           <fid> FD </fid>
           <nextByte> #EOF </nextByte>
           [observable]
+
+     rule <nextByte> chrChar((#EOF)::K) => #EOF </nextByte>
+          [simplification]
 
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-flush" "(" Int ")"
@@ -76,7 +79,7 @@ module LIBC-IO
      rule [sendString-one]:
           <fileCommands> 
                f-sendString(FD:Int, S:String) 
-               => (#fPutByte(FD, ordChar(firstChar(S)))
+               => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</fileCommands>
           when S =/=String ""
