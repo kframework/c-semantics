@@ -950,7 +950,7 @@ declaration:                                /* ISO 6.7.*/
                                        { doDeclaration ((*handleLoc*)(snd $1)) (fst $1) $2 }
 |   decl_spec_list SEMICOLON	       
                                        { doDeclaration ((*handleLoc*)(snd $1)) (fst $1) [] }
-| STATIC_ASSERT LPAREN expression COMMA string_constant RPAREN {STATIC_ASSERT ((fst $3), CONST_STRING (fst $5))};
+| STATIC_ASSERT LPAREN expression COMMA string_constant RPAREN {STATIC_ASSERT ((fst $3), CONST_STRING (fst $5), (snd $3))};
 ;
 init_declarator_list:                       /* ISO 6.7 */
     init_declarator                              { [$1] }

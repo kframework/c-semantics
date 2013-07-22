@@ -155,6 +155,9 @@ and printDef def =
 			printDefinitionLoc (wrap ((printExpression a) :: (printExpression b) :: []) "ExprTransformer") c
 		| LTL_ANNOTATION (a, b, c) ->
 			printDefinitionLoc (wrap ((printIdentifier a) :: (printLTLExpression b) :: []) "LTLAnnotation") c
+            | STATIC_ASSERT (a, b, c) ->
+			printDefinitionLoc (wrap ((printExpression a) :: (printConstant b) :: []) "StaticAssert") c
+
 			
 and printLTLExpression a =
 	let retval = printExpression a in

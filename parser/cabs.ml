@@ -184,7 +184,7 @@ and definition =
  | TRANSFORMER of definition * definition list * cabsloc
  (* expression transformer: source and destination *)
  | EXPRTRANSFORMER of expression * expression * cabsloc
- | STATIC_ASSERT of expression * constant (* the intention is for the constant to be a string literal *)
+ | STATIC_ASSERT of expression * constant * cabsloc (* the intention is for the constant to be a string literal *)
  | LTL_ANNOTATION of string * expression * cabsloc (* name, claim, loc; new by CME for special comments *)
 
 

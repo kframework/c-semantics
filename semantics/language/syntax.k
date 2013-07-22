@@ -313,6 +313,10 @@ module C-SYNTAX
           [klabel('Transformer)]
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
           [klabel('ExpressionTransformer)]
+
+     syntax PureDefinition ::= "StaticAssert" "(" Expression "," Constant ")"
+          [klabel('StaticAssert)]
+
      // name
      syntax PureDefinition ::= "LTLAnnotation" "(" Id "," K ")"
           [klabel('LTLAnnotation)]
