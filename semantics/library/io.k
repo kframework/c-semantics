@@ -4,6 +4,7 @@ module LIBC-IO-SYNTAX
      syntax K ::= "readFromFD" "(" Int ")"
      syntax K ::= "readFromFD" "(" Int "," Int ")"
      syntax K ::= "flush" "(" Int ")"
+     syntax K ::= "f-flush" "(" Int ")"
 endmodule
 
 module LIBC-IO
@@ -56,7 +57,6 @@ module LIBC-IO
           [simplification]
 
      syntax K ::= "f-sent" "(" Int "," String ")"
-     syntax K ::= "f-flush" "(" Int ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"
      
      // can't lex string2KList correctly in #fPrint(N:Int,,
@@ -64,13 +64,15 @@ module LIBC-IO
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
           <fileCommands>... 
-               .K
-               => f-sendString(FD, S)
-                    ~> f-sent(FD, S)
-                    ~> f-flush(FD)
+               . => f-flush(FD)
           </fileCommands>
+          [structural]
+     rule [f-flush]:
+          <fileCommands>
+               f-flush(FD:Int) => f-sendString(FD, S) ~> f-sent(FD, S)
+          ...</fileCommands>
           <file>...
-               <fid> FD </fid>
+               <fid> FD:Int </fid>
                <buff> S:String => "" </buff>
                <sending>... .List => ListItem(S) </sending>
           ...</file>
@@ -95,9 +97,6 @@ module LIBC-IO
                <sending> ListItem(S) => .List ...</sending>
                <done>... .List => ListItem(S) </done>
           ...</files>
-          [structural]
-     rule [f-flush]:
-          <fileCommands> f-flush(FD:Int) => #flush(FD) ...</fileCommands>
           [structural]
           
      rule [combine-done]:

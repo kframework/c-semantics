@@ -49,6 +49,7 @@ module C-DYNAMIC
 
      imports COMPAT-SYNTAX
 
+     imports LIBC-IO-SYNTAX
 
      rule value(tv(V:KList, _)) => V:KList
 
@@ -298,16 +299,9 @@ module C-DYNAMIC
           <status> _ => mainExited </status>
           <resultValue> .K => V </resultValue>
           <files>...
-               // to prevent further io commands from firing
-               <fileCommands> _ => .K </fileCommands>
-               <file>... // stdout
-                    <fid> 1 </fid>
-                    <buff> S2'':String </buff>
-                    <sending> L:List </sending>
-                    <done> S2:ListItem </done>
-               ...</file>
+               // To prevent further io commands from firing and flush stdout.
+               <fileCommands> _ => f-flush(1) </fileCommands>
           ...</files>
-          <output> _ (.List => S2 L ListItem(S2'')) </output>
           [ndtrans]
 endmodule
 
