@@ -116,120 +116,51 @@ let init_lexicon _ =
   List.iter 
     (fun (key, builder) -> H.add lexicon key builder)
     [ ("auto", fun loc -> AUTO loc);
-      ("const", fun loc -> CONST loc);
-      ("__const", fun loc -> CONST loc);
-      ("__const__", fun loc -> CONST loc);
-      ("static", fun loc -> STATIC loc);
-      ("extern", fun loc -> EXTERN loc);
-      ("long", fun loc -> LONG loc);
-      ("short", fun loc -> SHORT loc);
-      ("register", fun loc -> REGISTER loc);
-      ("signed", fun loc -> SIGNED loc);
-      ("__signed", fun loc -> SIGNED loc);
-      ("unsigned", fun loc -> UNSIGNED loc);
-      ("volatile", fun loc -> VOLATILE loc);
-      ("__volatile", fun loc -> VOLATILE loc);
-      (* WW: see /usr/include/sys/cdefs.h for why __signed and __volatile
-       * are accepted GCC-isms *)
-      ("_Bool", fun loc -> BOOL loc);
+      ("break", fun loc -> BREAK loc);
+      ("case", fun loc -> CASE loc); 
       ("char", fun loc -> CHAR loc);
-      ("int", fun loc -> INT loc);
-      ("float", fun loc -> FLOAT loc);
+      ("const", fun loc -> CONST loc);
+      ("continue", fun loc -> CONTINUE loc);
+      ("default", fun loc -> DEFAULT loc);
+      ("do", fun loc -> DO loc);  
       ("double", fun loc -> DOUBLE loc);
-      ("void", fun loc -> VOID loc);
+      ("else", fun _ -> ELSE);
       ("enum", fun loc -> ENUM loc);
+      ("extern", fun loc -> EXTERN loc);
+      ("float", fun loc -> FLOAT loc);
+      ("for", fun loc -> FOR loc);
+      ("goto", fun loc -> GOTO loc); 
+      ("if", fun loc -> dbgToken (IF loc));
+      ("inline", fun loc -> INLINE loc); 
+      ("int", fun loc -> INT loc);
+      ("long", fun loc -> LONG loc);
+      ("register", fun loc -> REGISTER loc);
+      ("restrict", fun loc -> RESTRICT loc);
+      ("return", fun loc -> dbgToken (RETURN loc));
+      ("short", fun loc -> SHORT loc);
+      ("signed", fun loc -> SIGNED loc);
+
+      ("static", fun loc -> STATIC loc);
       ("struct", fun loc -> STRUCT loc);
+      ("switch", fun loc -> dbgToken (SWITCH loc));
       ("typedef", fun loc -> TYPEDEF loc);
       ("union", fun loc -> UNION loc);
-      ("break", fun loc -> BREAK loc);
-      ("continue", fun loc -> CONTINUE loc);
-      ("goto", fun loc -> GOTO loc); 
-      ("return", fun loc -> dbgToken (RETURN loc));
-      ("switch", fun loc -> dbgToken (SWITCH loc));
-      ("case", fun loc -> CASE loc); 
-      ("default", fun loc -> DEFAULT loc);
+      ("unsigned", fun loc -> UNSIGNED loc);
+      ("void", fun loc -> VOID loc);
+      ("volatile", fun loc -> VOLATILE loc);
       ("while", fun loc -> WHILE loc);  
-      ("do", fun loc -> DO loc);  
-      ("for", fun loc -> FOR loc);
-      ("if", fun loc -> dbgToken (IF loc));
-      ("else", fun _ -> ELSE);
-      (*** Implementation specific keywords ***)
-      ("__signed__", fun loc -> SIGNED loc);
-      ("__inline__", fun loc -> INLINE loc);
-      ("inline", fun loc -> INLINE loc); 
-      ("__inline", fun loc -> INLINE loc);
-      ("_inline", fun loc ->
-                      if !Cprint.msvcMode then 
-                        INLINE loc
-                      else 
-                        IDENT ("_inline", loc));
-      ("__attribute__", fun loc -> ATTRIBUTE loc);
-      ("__attribute", fun loc -> ATTRIBUTE loc);
-(*
-      ("__attribute_used__", fun loc -> ATTRIBUTE_USED loc);
-*)
-      ("__blockattribute__", fun _ -> BLOCKATTRIBUTE);
-      ("__blockattribute", fun _ -> BLOCKATTRIBUTE);
-      ("__asm__", fun loc -> ASM loc);
-      ("asm", fun loc -> ASM loc);
-      ("__typeof__", fun loc -> TYPEOF loc);
-      ("__typeof", fun loc -> TYPEOF loc);
-      ("typeof", fun loc -> TYPEOF loc); 
-      ("__alignof", fun loc -> ALIGNOF loc);
-      ("__alignof__", fun loc -> ALIGNOF loc);
-      ("__volatile__", fun loc -> VOLATILE loc);
-      ("__volatile", fun loc -> VOLATILE loc);
+      ("_Alignas", fun loc -> ALIGNAS loc);
+      ("_Alignof", fun loc -> ALIGNOF loc);
+      ("_Atomic", fun loc -> ATOMIC loc);
+      ("_Bool", fun loc -> BOOL loc);
+      ("_Complex", fun loc -> COMPLEX loc);
+      ("_Generic", fun loc -> GENERIC loc);
+      ("_Imaginary", fun loc -> IMAGINARY loc);
+      ("_Noreturn", fun loc -> NORETURN loc);
+      ("_Static_assert", fun loc -> STATIC_ASSERT loc);
+      ("_Thread_local", fun loc -> THREAD_LOCAL loc);
 
-      ("__FUNCTION__", fun loc -> FUNCTION__ loc);
-      ("__func__", fun loc -> FUNCTION__ loc); (* ISO 6.4.2.2 *)
-      ("__PRETTY_FUNCTION__", fun loc -> PRETTY_FUNCTION__ loc);
-      ("__label__", fun _ -> LABEL__);
-      (*** weimer: GCC arcana ***)
-      ("__restrict", fun loc -> RESTRICT loc);
-      ("__restrict__", fun loc -> RESTRICT loc);
-      ("restrict", fun loc -> RESTRICT loc);
-(*      ("__extension__", EXTENSION); *)
-      (**** MS VC ***)
-      ("__int64", fun _ -> INT64 (currentLoc ()));
-      ("__int32", fun loc -> INT loc);
-      ("_cdecl",  fun _ -> MSATTR ("_cdecl", currentLoc ())); 
-      ("__cdecl", fun _ -> MSATTR ("__cdecl", currentLoc ()));
-      ("_stdcall", fun _ -> MSATTR ("_stdcall", currentLoc ())); 
-      ("__stdcall", fun _ -> MSATTR ("__stdcall", currentLoc ()));
-      ("_fastcall", fun _ -> MSATTR ("_fastcall", currentLoc ())); 
-      ("__fastcall", fun _ -> MSATTR ("__fastcall", currentLoc ()));
-      ("__w64", fun _ -> MSATTR("__w64", currentLoc ()));
-      ("__declspec", fun loc -> DECLSPEC loc);
-      ("__forceinline", fun loc -> INLINE loc); (* !! we turn forceinline 
-                                                 * into inline *)
-      ("__try", fun loc -> TRY loc);
-      ("__except", fun loc -> EXCEPT loc);
-      ("__finally", fun loc -> FINALLY loc);
-      (* weimer: some files produced by 'GCC -E' expect this type to be
-       * defined *)
-      ("__builtin_va_list", 
-       fun _ -> NAMED_TYPE ("__builtin_va_list", currentLoc ()));
-      ("__builtin_va_arg", fun loc -> BUILTIN_VA_ARG loc);
-      ("__builtin_types_compatible_p", fun loc -> BUILTIN_TYPES_COMPAT loc);
-      ("__builtin_offsetof", fun loc -> BUILTIN_OFFSETOF loc);
-      (* On some versions of GCC __thread is a regular identifier *)
-      ("__thread", fun loc -> 
-                      (*if !Machdep.theMachine.Machdep.__thread_is_keyword then 
-                         THREAD loc
-                       else *)
-                         IDENT ("__thread", loc));
-		
-		("alignof", fun loc -> ALIGNOF loc);
-		("_Alignas", fun loc -> ALIGNAS loc);
-		("_Atomic", fun loc -> ATOMIC loc);
-		("_Complex", fun loc -> COMPLEX loc);
-		("_Generic", fun loc -> GENERIC loc);
-		("_Imaginary", fun loc -> IMAGINARY loc);
-		("_Noreturn", fun loc -> NORETURN loc);
-		("_Static_assert", fun loc -> STATIC_ASSERT loc);
-		("_Thread_local", fun loc -> THREAD_LOCAL loc);
-		("__kcc_offsetof", fun loc -> OFFSETOF loc);
-		("__property", fun loc -> PROPERTY loc);
+      ("__kcc_offsetof", fun loc -> OFFSETOF loc);
     ]
 
 (* Mark an identifier as a type name. The old mapping is preserved and will 
