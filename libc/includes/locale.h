@@ -1,6 +1,6 @@
 #ifndef _KCC_LOCALE_H
 #define _KCC_LOCALE_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 #ifndef _KCC_EXPERIMENTAL_LOCALE
 #error locale.h not supported

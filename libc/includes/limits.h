@@ -1,6 +1,6 @@
 #ifndef _KCC_LIMITS_H
 #define _KCC_LIMITS_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 // #define CHAR_BIT 8
 #define CHAR_BIT _KCC_BITS_PER_BYTE

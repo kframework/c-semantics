@@ -1,6 +1,6 @@
 #ifndef _KCC_STDATOMIC_H
 #define _KCC_STDATOMIC_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 // some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
 

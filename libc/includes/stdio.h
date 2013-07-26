@@ -1,6 +1,6 @@
 #ifndef _KCC_STDIO_H
 #define _KCC_STDIO_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 #define NULL _KCC_NULL
 typedef _KCC_SIZE_T size_t;

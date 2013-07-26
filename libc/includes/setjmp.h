@@ -1,6 +1,6 @@
 #ifndef _KCC_SETJMP_H
 #define _KCC_SETJMP_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 struct __jmp_buf_tag {
 	unsigned char used;

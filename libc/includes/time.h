@@ -1,6 +1,6 @@
 #ifndef _KCC_TIME_H
 #define _KCC_TIME_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 // #ifndef _KCC_EXPERIMENTAL_TIME
 // #error time.h not supported

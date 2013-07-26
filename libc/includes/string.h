@@ -1,6 +1,6 @@
 #ifndef _KCC_STRING_H
 #define _KCC_STRING_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 // string.h
 #define NULL _KCC_NULL

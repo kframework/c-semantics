@@ -1,6 +1,6 @@
 #ifndef _KCC_ERRNO_H
 #define _KCC_ERRNO_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 #error errno.h not supported
 

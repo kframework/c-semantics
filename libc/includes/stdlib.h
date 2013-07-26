@@ -1,6 +1,6 @@
 #ifndef _KCC_STDLIB_H
 #define _KCC_STDLIB_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 // stdlib.h
 #define EXIT_FAILURE 1

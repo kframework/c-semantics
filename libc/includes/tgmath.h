@@ -1,6 +1,6 @@
 #ifndef _KCC_TGMATH_H
 #define _KCC_TGMATH_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 #error tgmath.h not supported
 

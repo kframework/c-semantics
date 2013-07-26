@@ -1,6 +1,6 @@
 #ifndef _KCC_STDALIGN_H
 #define _KCC_STDALIGN_H
-#include <kccSettings.h>
+#include <kcc_settings.h>
 
 #define alignas _Alignas
 #define alignof _Alignof
