@@ -50,8 +50,8 @@ module C-DECLARATION-RESOLUTION
      rule preDeclareStrings(klist(.KList)) => .
           [structural]
      
-     syntax K ::= "resolve" "(" K ")"
-     rule <k> (. => resolve(Tu:K)) ~> resolveReferences ...</k>
+     syntax K ::= resolve(K)
+     rule <k> (. => resolve(Tu)) ~> resolveReferences ...</k>
           <translationUnits>... BagItem(Tu:K) => .Bag ...</translationUnits>
           [structural] 
           
@@ -277,7 +277,6 @@ module C-DECLARATION-RESOLUTION
           <declarationOrder>...
                Tu |-> ListToK((ListItem(X:Id) => .) _)
           ...</declarationOrder>
-          <br/>
           <externalDefinitions> Defs:Map </externalDefinitions>
           <currTU> _ => Tu </currTU>
           when isFunctionType(T)
@@ -301,7 +300,6 @@ module C-DECLARATION-RESOLUTION
                     ~> zero(X)
                ) ~> resolve(Tu:K)
           ...</k>
-          <br/>
           <preLinkage>...
                Tu |-> map((_ (X:Id |-> external => .)))
           ...</preLinkage>
@@ -323,14 +321,14 @@ module C-DECLARATION-RESOLUTION
                andBool (notBool isExternType(T))
                andBool (notBool $hasMapping(Defs, X))
           [structural, large] 
-     syntax K ::= "leftover" "(" K "," Id "," Type ")"
+     syntax K ::= leftover(K, Id, Type)
      rule [resolve-extern-object-nomapping]:
           <k> resolve(Tu:K) ...</k>
           <preLinkage>...
-               Tu |-> map((_ (X:Id |-> external => .)))
+               Tu |-> map((_ (X |-> external => .)))
           ...</preLinkage>
           <preTypes>...
-               Tu |-> map((_ X:Id |-> T:Type))
+               Tu |-> map((_ X |-> T:Type))
           ...</preTypes>
           <declarationOrder>...
                Tu |-> ListToK((ListItem(X:Id) => .) _)
