@@ -17,6 +17,7 @@ module C11-ERROR
      imports C-BITS-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-MISC-SYNTAX
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
@@ -414,7 +415,7 @@ module C11-ERROR
           [structural, large]
 
      rule (. => ERROR("00208",
-               "The variable " +String S +String " appears with both"
+               "The declaration of " +String S +String " appears with both"
                +String " static and extern specifiers.", 8)) ~>
           verifySpecifiers(typedDeclaration(T:Type, Identifier(S:String)))
           when isStaticType(T) andBool isExternType(T)
@@ -428,42 +429,38 @@ module C11-ERROR
           when value(A) =/=Int value(B)
           [structural, large]
      
-     syntax K ::= "datarace" "(" SymLoc "," Int "," SymLoc "," Int ")"
-
-     // TODO(chathhorn): comparing SymLocs, elided. Also, should computation be
-     // halted in this case? Should all k cells be frozen? Clearly ERROR
-     // doesn't work so well with this.
+     // TODO(chathhorn): Silly way to do things. Probably need to allow
+     // multiple error cells at least. Also, add more details (loc?).
      // fixme possible to miss dataraces with bitfields
-    //  rule [read-write-race]:
-    //       <T> 
-    //            _ 
-    //            <threads> 
-    //            (    _
-    //                 <thread> _ <k> read-aux(Loc:SymLoc, _, BitSize:Int) ...</k> </thread>
-    //                 <thread> _ <k> write-aux(Loc':SymLoc, _, BitSize':Int) ...</k> </thread> => .Bag)
-    //            </threads> 
-    //       </T>
-    //       (. => ERROR("00048", "Have a read-write datarace.")
-    //       // ~> datarace(Loc:SymLoc, BitSize:Int, Loc':SymLoc, BitSize':Int) 
-    //       )
-    //       when (Loc <=Loc Loc' andBool Loc' <Loc (Loc +bytes bitsToBytes(BitSize)))
-    //            orBool (Loc >Loc Loc' andBool (Loc' +bytes bitsToBytes(BitSize')) >Loc Loc)
-    //       [computational, large]
-    //       
-    //  rule [write-write-race]:
-    //       <T> 
-    //            _ 
-    //            <threads> 
-    //            (    _
-    //                 <thread> _ <k> write-aux(Loc:SymLoc, _, BitSize:Int) ...</k> </thread>
-    //                 <thread> _ <k> write-aux(Loc':SymLoc, _, BitSize':Int) ...</k> </thread> => .Bag)
-    //            </threads> 
-    //       </T>
-    //       (. => ERROR("00049", "Have a write-write datarace.")
-    //       // ~> datarace(Loc:Int, BitSize:Int, Loc':Int, BitSize':Int) 
-    //       )
-    //       when (Loc <=Loc Loc' andBool Loc' <Loc (Loc +bytes bitsToBytes(BitSize)))
-    //            orBool (Loc >Loc Loc' andBool (Loc' +bytes bitsToBytes(BitSize')) >Loc Loc)
-    //       [computational, large]        
-
+     rule [read-write-race]:
+          <k> 
+               (. => ERROR("00048", "Have a read-write datarace.")) ~> 
+               read-aux(Loc:SymLoc, _, BitSize:Int) 
+          ...</k>
+          <k> 
+               (. => ERROR("00048", "Have a read-write datarace.")) ~> 
+               write-aux(Loc':SymLoc, _, BitSize':Int) 
+          ...</k>
+          when sameBase(Loc, Loc') andBool
+               ((Loc <=bytes Loc' 
+                    andBool Loc' <bytes (Loc +bytes bitsToBytes(BitSize)))
+               orBool (Loc >bytes Loc' 
+                    andBool (Loc' +bytes bitsToBytes(BitSize')) >bytes Loc))
+          [computational, large]
+           
+      rule [write-write-race]:
+          <k> 
+               (. => ERROR("00049", "Have a write-write datarace.")) ~>
+               write-aux(Loc:SymLoc, _, BitSize:Int) 
+          ...</k>
+          <k> 
+               (. => ERROR("00049", "Have a write-write datarace.")) ~>
+               write-aux(Loc':SymLoc, _, BitSize':Int) 
+          ...</k>
+          when sameBase(Loc, Loc') andBool
+               ((Loc <=bytes Loc' 
+                    andBool Loc' <bytes (Loc +bytes bitsToBytes(BitSize)))
+               orBool (Loc >bytes Loc' 
+                    andBool (Loc' +bytes bitsToBytes(BitSize')) >bytes Loc))
+          [computational, large]        
 endmodule

@@ -1,7 +1,8 @@
 module C-MEMORY-WRITING-SYNTAX
      syntax KList ::= explodeToBits(KList) [function]
      syntax ListItem ::= "bwrite" "(" SymLoc "," K ")"
-
+     // For error.k.
+     syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
 endmodule
 
 module C-MEMORY-WRITING
@@ -52,7 +53,6 @@ module C-MEMORY-WRITING
      syntax K ::= calculateNewBytes(Int, K, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
      
-     syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
      rule write(lv(Dest:SymLoc, T':Type), tv(V:KList, T:Type)) 
           => write-aux(Dest, tv(V, T), bitSizeofType(T)) 
           when notBool isConstType(T')
