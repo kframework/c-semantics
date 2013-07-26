@@ -16,11 +16,11 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
-     rule isNotTruthValue(tv(V:K, t(_, T:SimpleType))) 
-          => T =/=K int orBool (V =/=K 0 andBool V =/=K 1)
+     rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
+          => T ==K int andBool (V ==K 0 orBool V ==K 1)
           [structural]
 
-     rule simplifyTruth(K:K) => K != tv(0, t(.Set, int))
+     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
      
      rule char => cfg:charAlias [structural, anywhere]
 
@@ -353,7 +353,7 @@ module C-TYPING-MISC
      rule addStruct-aux(
                S:Id
                , (typedDeclaration(T:Type, Field:Id),, L:KList)
-               , V:Value
+               , V:TypedValue
                , Types:Map
                , Offsets:Map
                , L':KList

@@ -13,26 +13,25 @@ module C-EXPRESSION-IDENTIFIER
      }*/
      rule [lookup]:
           <k> X:Id => lv(Loc, T) ...</k>
-          <env>... X:Id |-> Loc:SymLoc ...</env>
-          <types>... X:Id |-> T:Type ...</types>
+          <env>... X |-> Loc:SymLoc ...</env>
+          <types>... X |-> T:Type ...</types>
           [structural]
           
      rule [lookup-builtin-function-notfound]:
           <k> (.K 
-                    => addToEnv(X:Id, Loc)
-                    ~> initFunction(
-                         tv(Loc, t(.Set, pointerType(T:KResult))),
-                         functionPrototype(X:Id, T:KResult)
-                    )
+                    => addToEnv(X, Loc)
+                         ~> initFunction(
+                              tv(Loc, t(.Set, pointerType(T))),
+                              functionPrototype(X, T)
+                         )
                )
                ~> X:Id
           ...</k>
-          <br/>
           <env> Env:Map </env>
-          <types>... X:Id |-> T:KResult ...</types>
+          <types>... X |-> T:Type ...</types>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          when isFunctionType(T:KResult)
-               andBool notBool X:Id in keys Env:Map
+          when isFunctionType(T)
+               andBool notBool X in keys Env
           [large, structural]
 endmodule
 

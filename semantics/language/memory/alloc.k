@@ -20,26 +20,27 @@ module C-MEMORY-ALLOC
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule allocateType(Loc:SymLoc, T:KResult) 
+     rule allocateType(Loc:SymLoc, T:Type) 
           => alloc(Loc, byteSizeofType(T))
           [structural]
      rule [allocateTypeIfAbsent-absent]:
           <k> 
-               allocateTypeIfAbsent(Loc:SymLoc, T:KResult) 
-               => alloc(Loc, byteSizeofType(T:KResult))
+               allocateTypeIfAbsent(Loc:SymLoc, T:Type) 
+               => alloc(Loc, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
           [structural] 
      rule [allocateTypeIfAbsent-present]:
           <k> 
-               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:KResult) => .K 
+               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:Type) 
+               => .K 
           ...</k>
           <mem>... Base |-> memblock(_, _, _) ...</mem>
           [structural]
 
      rule [alloc-lazy]:
-          <k> alloc(loc(Base:SymBase, 0, 0), Len:Value) => .K ...</k>
+          <k> alloc(loc(Base:SymBase, 0, 0), Len:TypedValue) => .K ...</k>
           <mem>... .Map => Base |-> memblock(value(Len), .Bag, .Map) ...</mem>
           [structural]
      

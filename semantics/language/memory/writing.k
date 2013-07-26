@@ -64,7 +64,7 @@ module C-MEMORY-WRITING
           <k> 
                write-aux(
                     loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), 
-                    tv(L:KList, T:Type), BitSize:Value)
+                    tv(L:KList, T:Type), BitSize:TypedValue)
                => write-specific(
                     loc(N @ Th, Offset, BitOffset), 
                     tv(L, T), value(BitSize))
@@ -75,7 +75,7 @@ module C-MEMORY-WRITING
      rule [write]:
           write-aux(
                loc(N:Int @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:Type), BitSize:Value)
+               tv(L:KList, T:Type), BitSize:TypedValue)
           => write-specific(
                loc(N @ 0, Offset, BitOffset), 
                tv(L, T), value(BitSize))
@@ -84,7 +84,7 @@ module C-MEMORY-WRITING
      rule [write-allocated]:
           write-aux(
                loc(N:Int @ allocatedDuration, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:KResult), BitSize:Value)
+               tv(L:KList, T:Type), BitSize:TypedValue)
           => write-specific(
                loc(N @ allocatedDuration, Offset, BitOffset), 
                tv(L, T), value(BitSize))
@@ -113,7 +113,7 @@ module C-MEMORY-WRITING
      
      rule makeUnknown(Loc:SymLoc, T:Type)
           => makeUnknown-aux(Loc, byteSizeofType(T)) 
-     rule makeUnknown-aux(Loc:SymLoc, Len:Value)
+     rule makeUnknown-aux(Loc:SymLoc, Len:TypedValue)
           => writeBytes(Loc, dataList(times(value(Len), 
                piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
           [structural]
@@ -304,7 +304,7 @@ module C-MEMORY-WRITING
           => splitFloatBytes(F, T, byteSizeofType(T))
           when isFloatType(T)
      rule [splitBytes-pointer]:
-          splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:KResult)))) 
+          splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:Type)))) 
           => splitPointerBytes(I, t(S, pointerType(T)), 
                byteSizeofType(t(.Set, pointerType(T))))
      rule [splitBytes-struct]:
@@ -319,7 +319,7 @@ module C-MEMORY-WRITING
      syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
      syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," KList ")"
           [function]
-     rule splitIntegerBytes(I:Int, T:Type, Len:Value) 
+     rule splitIntegerBytes(I:Int, T:Type, Len:TypedValue) 
           => splitIntegerBytes-aux(I, T, value(Len), .KList)
      rule splitIntegerBytes-aux(I:Int, T:Type, Len:Int, L:KList)
           => splitIntegerBytes-aux(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
@@ -331,7 +331,7 @@ module C-MEMORY-WRITING
      syntax K ::= splitStructBytes(K, Type, K) [strict(3)]
      syntax K ::= splitStructBytes(K, Type, Int, KList) 
 
-     rule splitStructBytes(dataList(L:KList), T:Type, Len:Value) 
+     rule splitStructBytes(dataList(L:KList), T:Type, Len:TypedValue) 
           => splitStructBytes(dataList(L), T, value(Len), .KList) 
           [structural, anywhere]
      rule splitStructBytes(dataList((piece(N:Bits, PieceLen:Int),, Rest:KList)),
@@ -348,7 +348,7 @@ module C-MEMORY-WRITING
      syntax K ::= splitPointerBytes(Ptr, Type, K) [strict(3)]
      syntax K ::= "splitPointerBytes-aux" "(" Ptr "," Type "," Int "," K "," KList ")"
 
-     rule splitPointerBytes(I:Ptr, T:Type, Len:Value)
+     rule splitPointerBytes(I:Ptr, T:Type, Len:TypedValue)
           => splitPointerBytes-aux(I, T, value(Len), 0, .KList) 
           [structural, anywhere]
      rule splitPointerBytes-aux(I:Ptr, T:Type, Len:Int, N:Int, L:KList)
@@ -363,7 +363,7 @@ module C-MEMORY-WRITING
      syntax K ::= splitFloatBytes(Float, Type, K) [strict(3)]
      syntax K ::= splitFloatBytes(Float, Type, Int, KList)
 
-     rule splitFloatBytes(F:Float, T:Type, Len:Value) 
+     rule splitFloatBytes(F:Float, T:Type, Len:TypedValue) 
           => splitFloatBytes(F, T, value(Len) -Int 1, 
                piece(encodedFloat(F), cfg:bitsPerByte)) 
           when value(Len) >Int 0

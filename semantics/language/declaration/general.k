@@ -167,7 +167,7 @@ module C-DECLARATION-GENERAL
      rule doDeclare(T:Type, K:K) 
           => verifySpecifiers(T) ~> doDeclare'(T, K)
 
-     rule verifySpecifiers(typedDeclaration(T:Type, X:Id))
+     rule verifySpecifiers(typedDeclaration(T:Type, _:Id))
           => .
           when notBool (isStaticType(T) andBool isExternType(T))
 

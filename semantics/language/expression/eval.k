@@ -13,12 +13,12 @@ module C-EXPRESSION-EVAL
      imports C-DECLARATION-SYNTAX
 
      syntax Int ::= arrayLength(K) [function]
-     rule arrayLength(t(_:Set, arrayType(_:KResult, N:Int))) => N
+     rule arrayLength(t(_:Set, arrayType(_:Type, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of
      these rules shouldn't be used later anyway */
-     rule arrayLength(t(_:Set, flexibleArrayType(_:KResult)))
+     rule arrayLength(t(_:Set, flexibleArrayType(_:Type)))
           => 36893488147419103232
-     rule arrayLength(t(_:Set, incompleteArrayType(_:KResult)))
+     rule arrayLength(t(_:Set, incompleteArrayType(_:Type)))
           => 36893488147419103232
      
      // chathhorn: to work around the new semantics for contexts.
@@ -47,9 +47,9 @@ module C-EXPRESSION-EVAL
      rule [reval-emptyval]:
           rkludge(emptyValue) => emptyValue
      rule [reval-tv-normal]:
-          rkludge(tv(L:KList, T:KResult)) => tv(L:KList, T:KResult)
+          rkludge(tv(L:KList, T:Type)) => tv(L, T)
      rule [peval-tv-normal]:
-          pkludge(tv(V:KList, T:KResult)) => tv(V:KList, T:KResult)
+          pkludge(tv(V:KList, T:Type)) => tv(V, T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the

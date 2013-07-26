@@ -86,13 +86,13 @@ module C-MEMORY-READING
           [ndtrans]
      
      rule [read]:
-          readActual(Loc:SymLoc, T:Type, BitSize:Value)
+          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
           => concretize(T, 
                extractBytesFromMem(Loc, bitsToBytes(value(BitSize))))
           when notBool isBitfieldType(T)
           [structural]
      rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:Type, BitSize:Value)
+          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
           => concretize(T, 
                fillToBytes(extractBitsFromMem(Loc, value(BitSize)))) 
           when isBitfieldType(T)

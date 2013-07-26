@@ -30,7 +30,7 @@ module C-EXPRESSION-SIZEOF
      rule byteSizeofType(T:Type)
           => byteSizeofType-aux(bitSizeofType(T)) 
           [structural, anywhere]
-     rule byteSizeofType-aux(V:Value)
+     rule byteSizeofType-aux(V:TypedValue)
           => bitsToBytes(value(V))
           [structural]
 

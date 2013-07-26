@@ -20,13 +20,13 @@ module C-EXPRESSION-MEMBERS
           ...</k>
           <structs>... 
                S |-> aggregateInfo(_, 
-                    (_ F |-> T:KResult), (_ F |-> Offset:Int)) 
+                    (_ F |-> T:Type), (_ F |-> Offset:Int)) 
           ...</structs>
           when Lb ==KLabel 'unionType
                orBool Lb ==KLabel 'structType
           [structural]
 
-     rule extractField-pre(L:KList, T:KResult, Offset:Int, tv(Len:Int, _))
+     rule extractField-pre(L:KList, T:Type, Offset:Int, tv(Len:Int, _))
           => concretize(T, 
                fillToBytes(extractBitsFromList(dataList(L), Offset, Len)))
           [structural]
@@ -44,7 +44,7 @@ module C-EXPRESSION-MEMBERS
           ...</k>
           <structs>...
                S |-> aggregateInfo(_, 
-                    (_ F |-> T:KResult), (_ F |-> Offset:Int))
+                    (_ F |-> T:Type), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
      rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
@@ -56,7 +56,7 @@ module C-EXPRESSION-MEMBERS
           ...</structs>
           [structural]
           
-     rule tv(L:KList, T:KResult) . F:Id => extractField(L, T, F)
+     rule tv(L:KList, T:Type) . F:Id => extractField(L, T, F)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{

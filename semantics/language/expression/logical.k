@@ -21,10 +21,10 @@ module C-EXPRESSION-LOGICAL
      rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
-          => sequencePoint ~> simplifyTruth(E:K)
+          => sequencePoint ~> simplifyTruth(E)
           [structural]
-     rule (V:KResult => simplifyTruth(V:KResult)) && _ 
-          when isNotTruthValue(V:KResult)
+     rule (V:TypedValue => simplifyTruth(V)) && _ 
+          when notBool isTruthValue(V)
           [structural]   
                     
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
@@ -38,12 +38,12 @@ module C-EXPRESSION-LOGICAL
      is not evaluated.
      }*/
      rule tv(0, t(_, int)) || E:K
-          => sequencePoint ~> simplifyTruth(E:K)
+          => sequencePoint ~> simplifyTruth(E)
           [structural]
      rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
           [structural]
-     rule (V:KResult => V:KResult != tv(0, t(.Set, int))) || _
-          when isNotTruthValue(V:KResult)
+     rule (V:TypedValue => simplifyTruth(V)) || _
+          when notBool isTruthValue(V)
           [structural]
 
 endmodule

@@ -35,23 +35,22 @@ module C-EXPRESSION-COMPOUND-LITERAL
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
-     rule CompoundLiteral(N:Int, T:KResult, K:K, Init:K)
+     rule CompoundLiteral(N:Int, T:Type, K:K, Init:K)
           => handleCompoundLiteral(
-               figureInit(compoundLiteral(N:Int), 
-               DeclType(T:KResult, K:K), Init:K))
+               figureInit(compoundLiteral(N), DeclType(T, K), Init))
           [structural]
           
      rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
-               => allocateType(Loc, T:KResult)
-                    ~> addToEnv(X:Id, Loc)
-                    ~> giveType(X:Id, T:KResult)
-                    ~> initialize(X:Id, T:KResult, Init:K)
-                    ~> X:Id
+               handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+               => allocateType(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, Init)
+                    ~> X
           ...</k>
-          <compoundLiteralMap> M:Map => M:Map[Loc / X:Id] </compoundLiteralMap>
+          <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          when notBool X:Id in keys M:Map
+          when notBool X in keys M
           [structural]
           
      rule <k> 

@@ -13,11 +13,11 @@ module C-EXPRESSION-UNARY-ARITHMETIC
      and the result has the promoted type.
      }*/       
      rule [unaryPlus-int]: 
-          + tv(I:Int, T:Type) => arithInterpret(T, I:Int)
+          + tv(I:Int, T:Type) => arithInterpret(T, I)
           when isPromoted(T)
           [structural]
      rule [unaryPlus-float]: 
-          + tv(F:Float, T:Type) => tv(F:Float, T:Type)
+          + tv(F:Float, T:Type) => tv(F, T)
           [structural]   
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{3}}}{
@@ -26,11 +26,11 @@ module C-EXPRESSION-UNARY-ARITHMETIC
      and the result has the promoted type.
      }*/
      rule [unaryMinus-int]: 
-          - tv(I:Int, T:Type) => arithInterpret(T, 0 -Int I:Int)
+          - tv(I:Int, T:Type) => arithInterpret(T, 0 -Int I)
           when isPromoted(T)
           [structural]
      rule [unaryMinus-float]: 
-          - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F:Float)
+          - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{4}}}{
@@ -52,7 +52,7 @@ module C-EXPRESSION-UNARY-ARITHMETIC
      compares equal to 0. The result has type \cinline{int}.  The expression
      \cinline{!E} is equivalent to \cinline{(0==E)}.
      }*/
-     rule !(E:K) => tv(0, t(.Set, int)) == E:K
+     rule !(E:K) => tv(0, t(.Set, int)) == E
           [structural]
 endmodule
      

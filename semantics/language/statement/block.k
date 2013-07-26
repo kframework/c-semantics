@@ -26,24 +26,23 @@ module C-STATEMENT-BLOCK
                <localAddresses> Addresses:Set => .Set </localAddresses>
                <nestingDepth> N:Int => N:Int +Int 1 </nestingDepth>
           </local>
-          <br/>
           <blockStack> .List 
-               => ListItem(C:Bag 
-               <nestingDepth> N:Int </nestingDepth> 
-               <localVariables> Vars:List </localVariables>
-               <localAddresses> Addresses:Set </localAddresses>)
+               => ListItem(C
+               <nestingDepth> N </nestingDepth> 
+               <localVariables> Vars </localVariables>
+               <localAddresses> Addresses </localAddresses>)
           ...</blockStack>
           [structural, large] 
           
      rule [pop-block-free-memory]:
-          <k> (.K => deleteBlock(Loc:SymLoc)) ~> popBlock ...</k>
-          <localAddresses>... (SetItem(Loc) => .Set) ...</localAddresses>
+          <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
+          <localAddresses>... (SetItem(Loc:SymLoc) => .Set) ...</localAddresses>
           [structural] 
           
      rule [pop-block]:
           <k> popBlock => . ...</k>
           <local>
-               (_ => C:Bag)
+               (_ => C)
                (<localAddresses> .Set </localAddresses> => .Bag)
           </local>
           <blockStack> 
@@ -78,8 +77,8 @@ module C-STATEMENT-BLOCK
      rule [dissolve-block]:
           <k> 
                Block(BlockNum:Int, _, klist(Statements:KList))
-               => klistToK(Statements:KList)
+               => klistToK(Statements)
           ...</k>
-          <blockHistory> .List => ListItem(BlockNum:Int) ...</blockHistory>
+          <blockHistory> .List => ListItem(BlockNum) ...</blockHistory>
           [structural]
 endmodule

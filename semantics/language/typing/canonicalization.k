@@ -168,7 +168,7 @@ module C-TYPING-CANONICALIZATION
           when B =/=Bag .Bag
           [structural]
           
-     rule canonicalizeType-aux(.Bag, T:KResult, .Bag, .Bag, .Bag) => T:KResult
+     rule canonicalizeType-aux(.Bag, T:Type, .Bag, .Bag, .Bag) => T
           [structural]
           
      syntax K ::= canonicalizeSpecifier(Bag) [function]

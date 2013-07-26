@@ -27,7 +27,7 @@ module C-EXPRESSION-INC-AND-DEC
      rule [post-increment]:
           postInc(Loc:SymLoc, tv(V:K, T:Type), T:Type)
           => lv(Loc, T) := tv(V, T) + tv(1, t(.Set, int))
-          ~> discard ~> tv(V, T)
+               ~> discard ~> tv(V, T)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{3}}}{
@@ -41,7 +41,7 @@ module C-EXPRESSION-INC-AND-DEC
      rule [post-decrement]:
           postDec(Loc:SymLoc, tv(V:K, T:Type), T:Type)
           => lv(Loc, T) := tv(V, T) - tv(1, t(.Set, int))
-          ~> discard ~> tv(V, T)
+               ~> discard ~> tv(V, T)
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{

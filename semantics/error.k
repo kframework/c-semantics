@@ -424,7 +424,7 @@ module C11-ERROR
                "printf: Format string expects type of size " +String
                Int2String(value(A)) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", 409) ) ~>
-          nextvarg-aux(_, _, A:Value, B:Value)
+          nextvarg-aux(_, _, A:TypedValue, B:TypedValue)
           when value(A) =/=Int value(B)
           [structural, large]
      

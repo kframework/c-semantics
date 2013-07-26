@@ -1,6 +1,6 @@
 module C-STATEMENT-SWITCH-SYNTAX
      //  switchid, value (tv or 'Default)
-     syntax K ::= "genLabel" "(" Int "," K ")" [klabel('genLabel)]
+     syntax K ::= genLabel(Int, K) [klabel('genLabel)]
 endmodule
 
 module C-STATEMENT-SWITCH
@@ -39,11 +39,12 @@ module C-STATEMENT-SWITCH
      
      rule Switch(SN:Int, tv(V:K, T:Type), _)
           => sequencePoint 
-          ~> handleSwitch(SN:Int, cast(promote(T), tv(V, T))) 
+               ~> handleSwitch(SN, cast(promote(T), tv(V, T))) 
           when hasIntegerType(T)
           [structural] 
           
-     rule <k> handleSwitch(SN:Int, V:KResult) 
+     rule <k> 
+               handleSwitch(SN:Int, V:KResult) 
                => handleSwitch-aux(SN, V, map(M)) 
           ...</k>
           <currentFunction> F:Id </currentFunction>
@@ -52,17 +53,17 @@ module C-STATEMENT-SWITCH
           [structural] 
           
      // K to be evaluated, val it should be, casehelper
-     syntax K ::= "tryCase" "(" K "," Value "," K ")"
+     syntax K ::= tryCase(K, Value, K)
      context tryCase((HOLE => reval(HOLE)), _, _)
-     rule (. => tryCase(Exp:K, V:KResult, CaseHelper:K)) 
-          ~> handleSwitch-aux(SN:Int, V:KResult,
+     rule (. => tryCase(Exp, V, CaseHelper)) 
+          ~> handleSwitch-aux(SN:Int, V:Value,
                map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
-          when Exp:K =/=K l('Default)
+          when Exp =/=K l('Default)
           [structural] 
           
      //  if all that's left is a default, do it
      rule handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _))) 
-          => Goto(genLabel(SN:Int, l('Default)))
+          => Goto(genLabel(SN, l('Default)))
           [structural] 
      
      //  if there's nothing left, no case matches
@@ -71,21 +72,22 @@ module C-STATEMENT-SWITCH
           
      rule handleSwitch-aux(SN:Int, _,
                map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
-          when SN:Int =/=Int SN':Int
+          when SN =/=Int SN'
           [structural] 
      rule handleSwitch-aux(_:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
-          when L:KLabel =/=KLabel 'genLabel
+          when L =/=KLabel 'genLabel
           [structural] 
 
-     rule tryCase((tv(V:K, T':KResult)
-          => cast(T:KResult, tv(V:K, T':KResult))), tv(_, T:KResult), _)
-          when T:KResult =/=K T':KResult
+     rule tryCase(
+               (tv(V:K, T':Type) => cast(T, tv(V, T'))), 
+               tv(_, T:Type), _)
+          when T =/=K T'
           [structural]
-     rule tryCase(tv(V':K, T:KResult), tv(V:K, T:KResult), _) => .
-          when V:K =/=K V':K
+     rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .
+          when V =/=K V'
           [structural] 
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(V:KResult, V:KResult, CaseHelper:K) => Goto(CaseHelper:K)
+     rule tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper)
           [structural]
 endmodule

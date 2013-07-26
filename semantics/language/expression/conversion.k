@@ -159,23 +159,23 @@ module C-EXPRESSION-CONVERSION
           [structural, anywhere]
      rule [cast-uint-of-big]:
           cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
-          => tv(I %Int (max(t(S:Set, unsigned-int)) +Int 1),
+          => tv(I %Int (max(t(S, unsigned-int)) +Int 1),
                t(S, unsigned-int))
-          when (I >Int max(t(S:Set, unsigned-int)))
+          when (I >Int max(t(S, unsigned-int)))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ulong-of-big]:
           cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
-          => tv(I %Int (max(t(S:Set, unsigned-long-int)) +Int 1),
+          => tv(I %Int (max(t(S, unsigned-long-int)) +Int 1),
                t(S, unsigned-long-int))
-          when (I >Int max(t(S:Set, unsigned-long-int)))
+          when (I >Int max(t(S, unsigned-long-int)))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-ullong-of-big]:
           cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
-          => tv(I %Int (max(t(S:Set, unsigned-long-long-int)) +Int 1),
+          => tv(I %Int (max(t(S, unsigned-long-long-int)) +Int 1),
                t(S, unsigned-long-long-int))
-          when (I >Int max(t(S:Set, unsigned-long-long-int)))
+          when (I >Int max(t(S, unsigned-long-long-int)))
                andBool hasIntegerType(T')
           [structural, anywhere]
 
@@ -218,7 +218,7 @@ module C-EXPRESSION-CONVERSION
           cast(t(S:Set, long-int), tv(I:Int, T':Type)) 
           => cast(t(S, long-int), 
                tv(I %Int (2 ^Int absInt(numBits(t(S, long-int)))), T')) 
-          when (absInt(I:Int) >Int (2 ^Int absInt(numBits(t(S, long-int)))))
+          when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, long-int)))))
                andBool hasIntegerType(T')
           [structural, anywhere]
      rule [cast-llong-of-huge]:

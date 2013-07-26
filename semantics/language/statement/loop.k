@@ -33,29 +33,29 @@ module C-STATEMENT-LOOP
      omitted $\textit{expression-2}$ is replaced by a nonzero constant.
      }*/
      
-     rule ForClauseExpression(K:K) => Computation(K:K) [structural]
+     rule ForClauseExpression(K:K) => Computation(K) [structural]
      
      rule <k> addToHistory(Num:Int) => .K ...</k>
-          <blockHistory> .List => ListItem(Num:Int) ...</blockHistory>
+          <blockHistory> .List => ListItem(Num) ...</blockHistory>
           [structural] 
      
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
-          <k> (For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
+          <k> 
+               For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
                => pushBlock 
-               ~> addToHistory(ForNum:Int) 
-               ~> Pre:K 
-               ~> loopMarked 
-               ~> For(ForNum:Int, Pre:K, 
-                    (#if Control:K =/=K emptyValue 
-                    #then Control:K 
-                    #else tv(1, t(.Set, int)) #fi),
-                    Post:K, S:K)
-               ~> popLoop)
+                    ~> addToHistory(ForNum) 
+                    ~> Pre
+                    ~> loopMarked 
+                    ~> For(ForNum, Pre, 
+                         (#if Control =/=K emptyValue 
+                         #then Control
+                         #else tv(1, t(.Set, int)) #fi),
+                         Post, S)
+                    ~> popLoop
           </k>
-          <br/>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
+          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
           [structural, large] 
           
      rule [for]:
@@ -73,17 +73,18 @@ module C-STATEMENT-LOOP
      }*/
      
      rule [while-mark]:
-          <k> While(B:K, S:K) ~> K:K
+          <k> 
+               While(B:K, S:K) ~> K:K
                => loopMarked 
-               ~> While(B:K, S:K) 
-               ~> popLoop
+                    ~> While(B, S) 
+                    ~> popLoop
           </k>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
+          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
           [structural] 
      rule [while]:
           loopMarked ~> While(B:K, S:K)
-          => IfThenElse(B:K, (S:K ~> loopMarked ~> While(B:K, S:K)), Nop)
+          => IfThenElse(B, (S ~> loopMarked ~> While(B, S)), Nop)
           [structural]  // rule so that looping programs see repetition
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
@@ -92,17 +93,18 @@ module C-STATEMENT-LOOP
      }*/
      
      rule [do-while-mark]:
-          <k> DoWhile(B:K, S:K) ~> K:K
+          <k>
+               DoWhile(B:K, S:K) ~> K:K
                => loopMarked 
-               ~> DoWhile(B:K, S:K) 
-               ~> popLoop
+                    ~> DoWhile(B, S) 
+                    ~> popLoop
           </k>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num:Int, K:K)) ...</loopStack>
+          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
           [structural] 
      rule [do-while]:
           loopMarked ~> DoWhile(B:K, S:K)
-          => S:K ~> IfThenElse(B:K, (loopMarked ~> DoWhile(B:K, S:K)), Nop)
+          => S ~> IfThenElse(B, (loopMarked ~> DoWhile(B, S)), Nop)
           [structural]  // rule so that looping programs see repetition
 
      /*@
@@ -155,17 +157,17 @@ module C-STATEMENT-LOOP
           [structural]
 
      rule [continue-done-for]:
-          (Continue => Computation(Post:K)) 
+          (Continue => Computation(Post)) 
           ~> loopMarked 
           ~> For(_:Int, _, _, Post:K, _)
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)
-          when L:KLabel =/=KLabel 'For
+          when L =/=KLabel 'For
           [structural]
           
      rule [popLoop]:
-          <k> popLoop ~> _ => K:K </k>
+          <k> popLoop ~> _ => K </k>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
           <loopStack> ListItem(kpair(Num:Int, K:K)) => .List ...</loopStack>
           [structural] 
@@ -174,6 +176,6 @@ module C-STATEMENT-LOOP
           <k> (. => popBlock) ~> popLoop ...</k>
           <blockHistory> ListItem(Num:Int) ...</blockHistory>
           <loopStack> ListItem(kpair(Num':Int, _)) ...</loopStack>
-          when Num':Int =/=Int Num:Int
+          when Num' =/=Int Num
           [structural] 
 endmodule

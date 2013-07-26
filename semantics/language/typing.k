@@ -99,7 +99,7 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= numBits(Type) [function]
 
-     syntax Bool ::= isNotTruthValue(Value) [function]
+     syntax Bool ::= isTruthValue(TypedValue) [function]
      syntax K ::= simplifyTruth(K) [function]
 endmodule
 

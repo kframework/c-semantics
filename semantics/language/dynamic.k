@@ -10,21 +10,17 @@ require "bits.k"
 require "syntax.k"
 
 module C-DYNAMIC-SYNTAX
-     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
-     syntax C ::= BaseValue | Type | Value
-     syntax KResult ::= Value | Type
-
      syntax K ::= "sequencePoint"
-     syntax Type ::= "t" "(" Set "," SimpleType ")" [klabel('t)]
+     syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
      syntax Value ::= "skipval"
-     syntax Value ::= "tv" "(" KList "," Type ")" 
+     syntax TypedValue ::= tv(KList, Type) 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
      syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
      syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
 
-     syntax Type ::= "type" "(" K ")" [function]
-     syntax K ::= "value" "(" K ")" [function]
+     syntax Type ::= type(K) [function]
+     syntax K ::= value(TypedValue) [function]
 
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
@@ -38,6 +34,11 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
+
+     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
+     syntax C ::= BaseValue | Type | Value
+     syntax Value ::= TypedValue
+     syntax KResult ::= Value | Type
 endmodule
 
 module C-DYNAMIC
@@ -51,12 +52,12 @@ module C-DYNAMIC
 
      imports LIBC-IO-SYNTAX
 
-     rule value(tv(V:KList, _)) => V:KList
+     rule value(tv(V:KList, _)) => V
 
-     rule type(tv(_, T:KResult)) => T
+     rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
-     rule type(lv(_, T:KResult)) => T
-     rule type(lval(_, T:KResult)) => T
+     rule type(lv(_, T:Type)) => T
+     rule type(lval(_, T:Type)) => T
 
      rule NullPointerConstant => 0
 
@@ -70,7 +71,7 @@ module C-DYNAMIC
 
      rule [CodeLoc-k]:
           <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
+          <currentProgramLoc> _ => L </currentProgramLoc>
           [structural]
           
      rule [sequencePoint]:
@@ -95,7 +96,7 @@ module C-DYNAMIC
      rule [Pragma]: Pragma(_:K) => .
           [structural]
           
-     rule AttributeWrapper(K:K, _) => K:K [structural, anywhere]
+     rule AttributeWrapper(K:K, _) => K [structural, anywhere]
      
      rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
 
@@ -143,7 +144,7 @@ module C-DYNAMIC
           => Computation(
                Identifier("#incomingArgumentsArray")[N] 
                     := Constant(StringLiteral(S)))
-               ~> incomingArguments-aux(L:KList, N:Int +Int 1)
+          ~> incomingArguments-aux(L:KList, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.KList, N:Int) 
           => Computation(
@@ -159,13 +160,13 @@ module C-DYNAMIC
           => Name(
                Identifier("#incomingArgumentsArray"), 
                PointerType(ArrayType(JustBase, 
-                    syntaxInt((lengthKList L:KList) +Int 1), 
+                    syntaxInt((lengthKList L) +Int 1), 
                     Specifier(klist(.KList))))
           )
      rule pgmArgs(L:KList)
           => DeclarationDefinition(InitNameGroup(
                Specifier(klist(Char)), 
-               klist(InitName(argName(L:KList), NoInit))
+               klist(InitName(argName(L), NoInit))
           ))
           [structural]
 
@@ -195,7 +196,6 @@ module C-DYNAMIC
                ...</thread>
           </threads>
           <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
-          <br/>
           <files>...
                ( .Bag =>
                <file>...
@@ -254,7 +254,7 @@ module C-DYNAMIC
           ...</k>
           <status> _ => mainCalled </status>
           <mainTU> Tu:K </mainTU>
-          <currTU> _ => Tu:K </currTU>
+          <currTU> _ => Tu </currTU>
           when Tu =/=K .K
           [ndtrans]
      
@@ -274,7 +274,7 @@ module C-DYNAMIC
                     incompleteArrayType(t(.Set, 
                     pointerType(T:Type)))), _:Id)))), 
                N:Int, X:Id, Args:K)
-          => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
+          => Args ~> Call(Identifier("main"), klist((N,, X)))
           when T ==K t(.Set, char)
           [structural]
      rule callMain-aux(t(.Set,
@@ -283,7 +283,7 @@ module C-DYNAMIC
                     pointerType(t(.Set,
                     pointerType(T:Type)))), _:Id)))), 
                N:Int, X:Id, Args:K)
-          => Args:K ~> Call(Identifier("main"), klist((N:Int,, X:Id)))
+          => Args ~> Call(Identifier("main"), klist((N,, X)))
           when T ==K t(.Set, char)
           [structural]
 

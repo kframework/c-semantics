@@ -73,7 +73,7 @@ module LIBC-STDIO
           => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofLocation(Loc))
           [structural]
      rule [nextvarg]:
-          nextvarg-aux(Loc:SymLoc, T:Type, Len:Value, Len':Value)
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T), 
                vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           when value(Len) ==Int value(Len')
@@ -81,13 +81,13 @@ module LIBC-STDIO
      
      rule [putchar]:
           prepareBuiltin((Identifier("putchar")), tv(N:Int, _))
-          => writeToFD(1, N:Int) ~> tv(N:Int, t(.Set, int))
+          => writeToFD(1, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [fslPutc]:
           prepareBuiltin((Identifier("__fslPutc")),
                (tv(N:Int, _),, tv(H:Int, _)))
-          => writeToFD(H:Int, N:Int) ~> tv(N:Int, t(.Set, int))
+          => writeToFD(H, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [getchar]:
@@ -98,7 +98,7 @@ module LIBC-STDIO
      rule [fslFGetC]:
           prepareBuiltin((Identifier("__fslFGetC")),
                (tv(FD:Int, _),, tv(_:Int, _)))
-          => readFromFD(FD:Int)
+          => readFromFD(FD)
           [structural]
 
      rule [fslCloseFile]:
@@ -113,7 +113,7 @@ module LIBC-STDIO
      rule [fslOpenFile-pre]:
           prepareBuiltin((Identifier("__fslOpenFile")),
                (Filename:KResult,, Mode:KResult))
-          => fsl-open-file(getString(Filename:KResult), getString(Mode:KResult))
+          => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
      
      syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")"
@@ -121,8 +121,8 @@ module LIBC-STDIO
      
      rule [fslOpenFile-aux]:
           fsl-open-file(str(Filename:String), str(Mode:String))
-          => fsl-open-file-aux("file:" +String Filename:String, Mode:String,
-               #open(Filename:String, Mode:String))
+          => fsl-open-file-aux("file:" +String Filename, Mode,
+               #open(Filename, Mode))
           [structural]
 
      rule [fslOpenFile]:
@@ -158,46 +158,43 @@ module LIBC-STDIO
      rule [printf]:
           prepareBuiltin((Identifier("printf")),
                (Format:KResult,, VarArgs:KResult))
-          => new-printf-aux(formatter(
-               getString(Format:KResult), VarArgs:KResult))
+          => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
           
      rule [printf-done]:
           new-printf-aux(formattedResult(S:String))
-          => writeToFD(1, S:String) 
+          => writeToFD(1, S) 
                ~> flush(1) 
-               ~> tv(lengthString(S:String), t(.Set, int)) 
+               ~> tv(lengthString(S), t(.Set, int)) 
           [structural]
      
      syntax K ::= "sprintf" "(" K "," SymLoc ")" [strict(1)]
      rule [sprintf]:
           prepareBuiltin((Identifier("sprintf")),
                (tv(Dest:SymLoc, _),, Format:KResult,, VarArgs:KResult))
-          => sprintf(formatter(
-               getString(Format:KResult), VarArgs:KResult), Dest)
+          => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
-          => writeString(Dest, S:String) 
-               ~> tv(lengthString(S:String), t(.Set, int))
+          => writeString(Dest, S) 
+               ~> tv(lengthString(S), t(.Set, int))
           [structural]
      
      syntax K ::= "snprintf" "(" K "," SymLoc "," Int ")" [strict(1)]
      rule [snprintf]:
           prepareBuiltin((Identifier("snprintf")), 
                (tv(Dest:SymLoc, _),, tv(Len:Int, _),, Format:KResult,, VarArgs:KResult))
-          => snprintf(formatter(
-               getString(Format:KResult), VarArgs:KResult), Dest, Len:Int)
+          => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, Len -Int 1))
-               ~> tv(lengthString(S:String), t(.Set, int))
-          when Len:Int >Int 0
+               ~> tv(lengthString(S), t(.Set, int))
+          when Len >Int 0
           [structural]
      rule [snprintf-done-0]:
           snprintf(formattedResult(S:String), _, 0)
-          => tv(lengthString(S:String), t(.Set, int))
+          => tv(lengthString(S), t(.Set, int))
           [structural]
      
      syntax K ::= "new-printf-aux" "(" K ")" [strict]

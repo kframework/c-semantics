@@ -21,8 +21,8 @@ module C-STATEMENT-IF-THEN
      rule [if-then-else-false]:
           IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
-     rule IfThenElse((V:KResult => simplifyTruth(V:KResult)), _, _)
-          when isNotTruthValue(V:KResult)
+     rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
+          when notBool isTruthValue(V)
           [structural]
 endmodule
 

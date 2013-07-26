@@ -21,13 +21,13 @@ module C-STATEMENT-RETURN
      }*/
      
      rule [return-clean-local]:
-          <k> (.K => deleteBlock(Loc:SymLoc)) ~> Return(_:KResult) ...</k>
-          <localAddresses>... SetItem(Loc) => .Set ...</localAddresses>     
+          <k> (.K => deleteBlock(Loc)) ~> Return(_:KResult) ...</k>
+          <localAddresses>... SetItem(Loc:SymLoc) => .Set ...</localAddresses>     
           [structural] 
           
      rule [fetch-all-locals]:
           <k> Return(_:KResult) ...</k>
-          <localAddresses> .Set => Addresses:Set </localAddresses>
+          <localAddresses> .Set => Addresses </localAddresses>
           <blockStack> 
                ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
                => .List
@@ -40,23 +40,21 @@ module C-STATEMENT-RETURN
           <k> 
                Return(V:KResult) ~> _
                => sequencePoint 
-                    ~> cast(T:KResult, V:KResult) 
-                    ~> K:K
+                    ~> cast(T, V) 
+                    ~> K
           </k>
           <gtypes>... 
                Tu:K |-> map((_ (F:Id |-> t(_, functionType(T:KResult, _))))) 
           ...</gtypes>
-          <br/>
           <control>
                <currTU> Tu:K => OldTu </currTU>
-               <currentFunction> (F:Id => CurrFun:K) </currentFunction>
-               <currentProgramLoc> _ => CurrLoc:K </currentProgramLoc>
+               <currentFunction> (F:Id => CurrFun) </currentFunction>
+               <currentProgramLoc> _ => CurrLoc </currentProgramLoc>
                (<controlDetails>... 
                     <local>... <localAddresses> .Set </localAddresses> ...</local> 
                     <blockStack> .List </blockStack> 
-               ...</controlDetails>  => C:Bag)
+               ...</controlDetails>  => C)
           </control>
-          <br/>
           <callStack>
                ListItem(
                     <callStackFrame>...

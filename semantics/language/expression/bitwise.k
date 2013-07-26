@@ -54,7 +54,7 @@ module C-EXPRESSION-BITWISE
      value, the resulting value is implementation-defined.
      }*/
      rule tv(I:Int, T:Type) >> tv(N:Int, T':Type) 
-          => rightShiftInterpret(T, I:Int >>Int N:Int)
+          => rightShiftInterpret(T, I >>Int N)
           when isPromoted(T) andBool isPromoted(T')
                andBool N <Int numBits(T)
           [structural]

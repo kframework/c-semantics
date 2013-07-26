@@ -26,7 +26,7 @@ module C-EXPRESSION-ASSIGNMENT
           => write(lv(Loc, T), tv(V, T)) ~> tv(V, T)
           [structural]
      rule [convert-for-assignment]:
-          lval(_, T:Type) := (tv(V:KList, T':KResult) => cast(T, tv(V, T')))
+          lval(_, T:Type) := (tv(V:KList, T':Type) => cast(T, tv(V, T')))
           when T =/=K T'
           [structural]
 
@@ -47,7 +47,7 @@ module C-EXPRESSION-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax K ::= "compoundAssignment" "(" KLabel "," K "," K ")" [strict(2,3)]
+     syntax K ::= compoundAssignment(KLabel, K, K) [strict(2,3)]
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
@@ -83,7 +83,7 @@ module C-EXPRESSION-ASSIGNMENT
           E1:K |= E2:K => compoundAssignment('_|_, E1, E2)
           [structural]
 
-     rule compoundAssignment(L:KLabel, V:KResult, V':KResult)
+     rule compoundAssignment(L:KLabel, V:Value, V':Value)
           => pkludge(V) := L(rkludge(V),, rkludge(V'))
           [structural]
 endmodule

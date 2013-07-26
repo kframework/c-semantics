@@ -169,7 +169,6 @@ module C-SYNTAX
      and specifier = spec_elem list
      */
      syntax Specifier ::= "Specifier" "(" K ")" [avoid, klabel('Specifier)]
-     //syntax "Specifier" -/- [\:]
      
      /*
      and decl_type =
@@ -247,7 +246,6 @@ module C-SYNTAX
      // TODO(chathhorn): better solution?
      // first argument is id, second is basetype
      syntax Name ::= "Name" "(" K "," K ")" [avoid, klabel('Name)]
-     //syntax "Name" -/- [\:]
      syntax K ::= "AnonymousName" // new, argument is type
      syntax Id ::= "#NoName" // new
      syntax Id ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
@@ -308,7 +306,6 @@ module C-SYNTAX
      syntax PureDefinition ::= "Pragma" "(" K ")" [klabel('Pragma)]
      syntax PureDefinition ::= "Linkage" "(" String "," K ")"
           [klabel('Linkage)]
-     //syntax "Linkage" -/- [\:]
      syntax PureDefinition ::= "Transformer" "(" K "," K ")"
           [klabel('Transformer)]
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
@@ -394,7 +391,6 @@ module C-SYNTAX
      */
      // Int, list, list
      syntax Block ::= "Block" "(" Int "," K "," K ")" [avoid, klabel('Block)]
-     //syntax "Block" -/- [\:]
 
      /*
      and statement =
@@ -437,7 +433,6 @@ module C-SYNTAX
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
      syntax PureStatement ::= "Return" "(" K ")" [klabel('Return)]
-     //syntax "Return" -/- [\:]
      context Return((HOLE => reval(HOLE)))
 
      /*
@@ -465,7 +460,6 @@ module C-SYNTAX
      | DEFINITION of definition (*definition or declaration of a variable or type*)
      */
      syntax PureStatement ::= "Label" "(" Id "," K ")" [avoid, klabel('Label)]
-     //syntax "Label" -/- [\:]
      syntax PureStatement ::= "Goto" "(" K ")" [klabel('Goto)] // Id
      syntax PureStatement ::= "CompGoto" "(" K ")" [klabel('CompGoto)]
      
@@ -553,11 +547,6 @@ module C-SYNTAX
                               [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)]
                          | K ":=" K [prec(53)]
 
-     // So it'll correctly parse &, &&, +, ++, +bytes, etc.
-     //syntax "&" -/- [\&]
-     //syntax "+" -/- [\+a-z]
-     //syntax "-" -/- [\-]
-      
      context - (HOLE => reval(HOLE))
      context + (HOLE => reval(HOLE))
      context ! (HOLE => reval(HOLE))

@@ -84,52 +84,46 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
      operator that is evaluated.
      }*/
      
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) 
-               + tv(I:Int, T:KResult)
-          => addToPointer(Loc, 
-               t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-          when hasIntegerType(T:KResult)
-               andBool T':KResult =/=K void
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':Type))) 
+               + tv(I:Int, T:Type)
+          => addToPointer(Loc, t(S, pointerType(T')), I, sizeofType(T'))
+          when hasIntegerType(T)
+               andBool T' =/=K void
           [structural]
-     rule tv(I:Int, T:KResult) 
-               + tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult)))
-          => addToPointer(Loc, 
-               t(S:Set, pointerType(T':KResult)), I:Int, sizeofType(T':KResult))
-          when hasIntegerType(T:KResult)
-               andBool T':KResult =/=K void
+     rule tv(I:Int, T:Type) 
+               + tv(Loc:SymLoc, t(S:Set, pointerType(T':Type)))
+          => addToPointer(Loc, t(S, pointerType(T')), I, sizeofType(T'))
+          when hasIntegerType(T)
+               andBool T' =/=K void
           [structural]
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':KResult))) 
-               - tv(I:Int, T:KResult)
-          => addToPointer(Loc, 
-               t(S:Set, pointerType(T':KResult)), 
-               0 -Int I:Int, sizeofType(T':KResult)) 
-          when hasIntegerType(T:KResult)
-               andBool T':KResult =/=K void
+     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':Type))) 
+               - tv(I:Int, T:Type)
+          => addToPointer(Loc, t(S, pointerType(T')), 0 -Int I, sizeofType(T')) 
+          when hasIntegerType(T)
+               andBool T' =/=K void
           [structural]
                
-     rule addToPointer(Loc:SymLoc, T:KResult, I:Int, tv(Size:Int, _))
-          => tv(Loc +bytes (I:Int *Int Size:Int), 
-               newFromArray(T:KResult, I:Int))
-          when ifFromArrayInBounds(T:KResult, I:Int)
+     rule addToPointer(Loc:SymLoc, T:Type, I:Int, tv(Size:Int, _))
+          => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
+          when ifFromArrayInBounds(T, I)
           [structural]
           
      syntax KResult ::= newFromArray(K, Int) [function]
      rule newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(T:KResult)), I:Int) 
-          => t(SetItem(fromArray(Offset:Int +Int I:Int, Len:Int)), 
-               pointerType(T:KResult))
-     rule newFromArray(t(.Set, pointerType(T:KResult)), _:Int) 
-          => t(.Set, pointerType(T:KResult))
+               pointerType(T:Type)), I:Int) 
+          => t(SetItem(fromArray(Offset +Int I, Len)), pointerType(T))
+     rule newFromArray(t(.Set, pointerType(T:Type)), _:Int) 
+          => t(.Set, pointerType(T))
           
      rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(_:KResult)), I:Int)
+               pointerType(_:Type)), I:Int)
           => true
-          when Offset:Int +Int I:Int <=Int Len:Int
+          when Offset +Int I <=Int Len
      rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(_:KResult)), I:Int)
+               pointerType(_:Type)), I:Int)
           => false
-          when Offset:Int +Int I:Int >Int Len:Int
-     rule ifFromArrayInBounds(t(.Set, pointerType(_:KResult)), _:Int)
+          when Offset +Int I >Int Len
+     rule ifFromArrayInBounds(t(.Set, pointerType(_:Type)), _:Int)
           => true
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
@@ -157,8 +151,8 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
      syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
           [strict(3)]
      rule [start-pointer-difference]: 
-          tv(L1:SymLoc, t(_, pointerType(T:KResult)))
-               - tv(L2:SymLoc, t(_, pointerType(T:KResult)))
+          tv(L1:SymLoc, t(_, pointerType(T:Type)))
+               - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
      rule [pointer-difference]: 
@@ -169,18 +163,18 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
           [structural]
      
      rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
-          => arithInterpret(T, (I1:Int +Int I2:Int))
+          => arithInterpret(T, (I1 +Int I2))
           when isPromoted(T)
           [structural]
      rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
-          => arithInterpret(T, (I1:Int -Int I2:Int))
+          => arithInterpret(T, (I1 -Int I2))
           when isPromoted(T)
           [structural]
      rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
-          => arithInterpret(T, F1:Float +Float F2:Float)
+          => arithInterpret(T, F1 +Float F2)
           [structural]
      rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
-          => arithInterpret(T, (F1:Float -Float F2:Float))
+          => arithInterpret(T, (F1 -Float F2))
           [structural]
 endmodule
 

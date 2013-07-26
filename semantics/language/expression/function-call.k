@@ -8,12 +8,12 @@ module C-EXPRESSION-FUNCTION-CALL
 
      imports COMPAT-SYNTAX
 
-     syntax K ::= "application" "(" K "," KList ")" [strict(1)]
+     syntax K ::= application(K, KList) [strict(1)]
      syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
 
      // TODO(chathhorn): KList heating bug
      rule application(K:K, L:KList) => K ~> application(HOLE, L) [heat]
-     rule K:KResult ~> application(HOLE, L:KList) => application(K, L) [cool]
+     rule K:K ~> application(HOLE, L:KList) => application(K, L) [cool]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
@@ -49,9 +49,9 @@ module C-EXPRESSION-FUNCTION-CALL
      }}*/
 
      syntax K ::= "Call'" "(" K "," K ")"
-     syntax KResult ::= "rvlist" "(" KList ")"
+     syntax KResult ::= rvlist(KList)
 
-     syntax K ::= "revalParams" "(" K ")"
+     syntax K ::= revalParams(K)
      context revalParams(klist(_,, (HOLE => reval(HOLE)),, _)) [ndheat]
      rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
           when all(L, isKResult)
@@ -62,7 +62,7 @@ module C-EXPRESSION-FUNCTION-CALL
      context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule [function-application-pre]:
-          Call'(tv(Loc:SymLoc, t(_, pointerType(T:KResult))), rvlist(L:KList))
+          Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:KList))
           => sequencePoint ~> application(readFunction(Loc), L)
           when isFunctionType(T)
           [structural]
@@ -71,24 +71,23 @@ module C-EXPRESSION-FUNCTION-CALL
         transition graph */
      rule [call]:
           application(Fun:KResult, L:KList) 
-          => application'(Fun:KResult, L:KList)
+          => application'(Fun, L:KList)
           [structural]
 
      rule [populateFromGlobal]:
           <k> populateFromGlobal => . ...</k>
           <currTU> Tu:K </currTU>
-          <genv>... Tu:K |-> map(G:Map) ...</genv> 
-          <env> _ => G:Map </env>
-          <gtypes>... Tu:K |-> map(GT:Map) ...</gtypes> 
-          <types> _ => GT:Map </types>
+          <genv>... Tu |-> map(G:Map) ...</genv> 
+          <env> _ => G </env>
+          <gtypes>... Tu |-> map(GT:Map) ...</gtypes> 
+          <types> _ => GT </types>
           <gstructs> GS:Map </gstructs> 
-          <structs> _ => GS:Map </structs>
+          <structs> _ => GS </structs>
           [structural]
 
      rule [builtin-application]:
-          application'(functionPrototype(X:Id, T:KResult), L:KList)
-          => application'(functionObject(X:Id, T:KResult, 
-               handleBuiltin(X:Id, T:KResult)), L:KList)
+          application'(functionPrototype(X:Id, T:Type), L:KList)
+          => application'(functionObject(X, T, handleBuiltin(X, T)), L)
           [structural]
           
      rule [function-application]:
@@ -98,10 +97,9 @@ module C-EXPRESSION-FUNCTION-CALL
                     ~> K:K 
                => sequencePoint
                     ~> populateFromGlobal
-                    ~> bind(L:KList, P:KList)
-                    ~> B:K
+                    ~> bind(L, P)
+                    ~> B
           </k>
-          <br/>
           <callStack> .List => ListItem(
                <callStackFrame>...
                     <stackControl> 
@@ -113,7 +111,6 @@ module C-EXPRESSION-FUNCTION-CALL
                     <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
                ...</callStackFrame>
           ) ...</callStack>
-          <br/>
           <control>
                <currTU> OldTu:K => Tu </currTU>
                <currentFunction> CurrFun:K => X </currentFunction>
@@ -121,7 +118,7 @@ module C-EXPRESSION-FUNCTION-CALL
                // TODO(chathhorn): better way to initialize?
                (C:Bag => <controlDetails>... .Bag ...</controlDetails>)
           </control>
-          <funTUs>... OldTu:K |-> map((_ X:Id |-> Tu:K)) ...</funTUs>
+          <funTUs>... OldTu |-> map((_ X |-> Tu:K)) ...</funTUs>
           [structural, large]
 endmodule
 

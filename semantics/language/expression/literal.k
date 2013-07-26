@@ -12,16 +12,15 @@ module C-EXPRESSION-LITERAL
 
      syntax Bool ::= withinRange(Int, SimpleType) [function]
      rule withinRange(I:Int, T:K)
-          => (I:Int <=Int max(t(.Set, T:K))) 
-               andBool (I:Int >=Int min(t(.Set, T:K)))
+          => (I <=Int max(t(.Set, T))) andBool (I >=Int min(t(.Set, T)))
      
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
           when (firstChar(S) ==String "0")
                andBool (lengthString(S) >Int 1)
-     rule simplifyForHex(S:String) => S:String
-          when (firstChar(S:String) =/=String "0")
-               orBool (lengthString(S:String) ==Int 1)
+     rule simplifyForHex(S:String) => S
+          when (firstChar(S) =/=String "0")
+               orBool (lengthString(S) ==Int 1)
           
      syntax K ::= "hexOrOctalConstant" "(" K ")"
      rule HexConstant(S:String)
@@ -80,118 +79,118 @@ module C-EXPRESSION-LITERAL
      type, then the integer constant has no type.
      }*/  
      rule NoSuffix(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, int) 
-               #then tv(I:Int, t(.Set, int)) 
-          #else #if withinRange(I:Int, long-int)
-               #then tv(I:Int, t(.Set, long-int)) 
-          #else #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int)) 
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, int) 
+               #then tv(I, t(.Set, int)) 
+          #else #if withinRange(I, long-int)
+               #then tv(I, t(.Set, long-int)) 
+          #else #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int)) 
+          #else tv(I, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
      
      rule NoSuffix(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, int)
-               #then tv(I:Int, t(.Set, int)) 
-          #else #if withinRange(I:Int, unsigned-int)
-               #then tv(I:Int, t(.Set, unsigned-int))
-          #else #if withinRange(I:Int, long-int)
-               #then tv(I:Int, t(.Set, long-int))
-          #else #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, int)
+               #then tv(I, t(.Set, int)) 
+          #else #if withinRange(I, unsigned-int)
+               #then tv(I, t(.Set, unsigned-int))
+          #else #if withinRange(I, long-int)
+               #then tv(I, t(.Set, long-int))
+          #else #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi #fi #fi #fi #fi
           [structural, anywhere]
 
      rule LitU(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-int)
-               #then tv(I:Int, t(.Set, unsigned-int))
-          #else #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-int)
+               #then tv(I, t(.Set, unsigned-int))
+          #else #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
           
      rule LitL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-int)
-               #then tv(I:Int, t(.Set, long-int))
-          #else #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, long-int)
+               #then tv(I, t(.Set, long-int))
+          #else #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi #fi #fi
           [structural, anywhere]
           
      rule LitUL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
           
      rule LitLL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
      
      rule LitULL(hexOrOctalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi
           [structural, anywhere]
           
      rule LitU(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-int)
-               #then tv(I:Int, t(.Set, unsigned-int))
-          #else #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-int)
+               #then tv(I, t(.Set, unsigned-int))
+          #else #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
      rule LitL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-int)
-               #then tv(I:Int, t(.Set, long-int))
-          #else #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, long-int)
+               #then tv(I, t(.Set, long-int))
+          #else #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
      rule LitUL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-int))
-          #else #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi #fi        
           [structural, anywhere]
      rule LitLL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, long-long-int)
-               #then tv(I:Int, t(.Set, long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi
           [structural, anywhere]
      rule LitULL(DecimalConstant(I:Int)) =>
-          #if withinRange(I:Int, unsigned-long-long-int)
-               #then tv(I:Int, t(.Set, unsigned-long-long-int))
-          #else tv(I:Int, t(.Set, no-type))
+          #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
           #fi
           [structural, anywhere]
      
@@ -203,17 +202,17 @@ module C-EXPRESSION-LITERAL
      }*/
      syntax K ::= "reducedFloat" "(" Float ")"
      rule DecimalFloatConstant(_:String, _:Int, F:Float)
-          => reducedFloat(F:Float)
+          => reducedFloat(F)
           [structural, anywhere]
      rule HexFloatConstant(_:String, _:Int, F:Float)
-          => reducedFloat(F:Float)
+          => reducedFloat(F)
           [structural, anywhere]
      
-     rule NoSuffix(reducedFloat(F:Float)) => tv(F:Float, t(.Set, double))
+     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
           [structural, anywhere]
-     rule LitL(reducedFloat(F:Float)) => tv(F:Float, t(.Set, long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double))
           [structural, anywhere]
-     rule LitF(reducedFloat(F:Float)) => tv(F:Float, t(.Set, float))
+     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
@@ -230,12 +229,15 @@ module C-EXPRESSION-LITERAL
      character or escape sequence is converted to type \cinline{int}.
      }*/
      rule CharLiteral(N:Int) 
-          => cast(t(.Set, int), cast(t(.Set, char), tv(N:Int, t(.Set, int))))
+          => cast(t(.Set, int), cast(t(.Set, char), tv(N, t(.Set, int))))
           [structural, anywhere]
-     rule WCharLiteral(N:Int) => tv(N:Int, cfg:wcharut) [structural, anywhere]
-     rule Constant(V:KResult) => V:KResult [structural, anywhere]
-     // chathhorn: note this rule.
-     rule [create-internal-value]: N:Int => tv(N, cfg:largestUnsigned)
+     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut) 
+          [structural, anywhere]
+     rule Constant(V:KResult) => V 
+          [structural, anywhere]
+
+     rule [create-internal-value]: N:Int 
+          => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
      
      // here we start with a local address, put the string in memory, then
@@ -256,7 +258,6 @@ module C-EXPRESSION-LITERAL
                ~> Constant(StringLiteral(S:String))
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <br/>
           <stringLiterals>
                M:Map
                (. => S |-> lv(Loc, t(.Set, 
@@ -267,27 +268,26 @@ module C-EXPRESSION-LITERAL
           
      syntax K ::= "wstring" "(" KList ")"
      rule [const-wstring-notfound]:
-          <k> (.K => allocWString(Loc, S:KList))
+          <k> (.K => allocWString(Loc, S))
                ~> Constant(WStringLiteral(S:KList))
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <br/>
           <stringLiterals>
                M:Map
-               (.Map => wstring(S:KList) |-> lv(Loc, t(.Set, 
-                    arrayType(cfg:wcharut, (lengthKList S:KList) +Int 1))))
+               (.Map => wstring(S) |-> lv(Loc, t(.Set, 
+                    arrayType(cfg:wcharut, (lengthKList S) +Int 1))))
           </stringLiterals>
-          when notBool wstring(S:KList) in keys M:Map
+          when notBool wstring(S) in keys M
           [large, structural]
           
      rule [const-string-found]:
           <k> Constant(StringLiteral(S:String)) => V ...</k>
-          <stringLiterals>... S:String |-> V:LValue ...</stringLiterals>
+          <stringLiterals>... S |-> V:LValue ...</stringLiterals>
           [structural]
      rule [const-wstring-found]:
           <k> Constant(WStringLiteral(S:KList)) => V ...</k>
           <stringLiterals>...
-               wstring(S:KList) |-> V:LValue
+               wstring(S) |-> V:LValue
           ...</stringLiterals>
           [structural]
 endmodule

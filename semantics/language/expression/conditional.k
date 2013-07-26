@@ -17,24 +17,24 @@ module C-EXPRESSION-CONDITIONAL
      context types((_,, HOLE,, _))
      syntax K ::= "convertedType" "(" K ")" [strict]
      
-     rule getTypes(L:KList) => types(wrapWithTypeOf(L:KList)) [structural]
+     rule getTypes(L:KList) => types(wrapWithTypeOf(L)) [structural]
      
      syntax KList ::=  wrapWithTypeOf(KList) [function]
      rule wrapWithTypeOf((K:K,, L:KList))
-          => (retype(typeof(K:K)),, wrapWithTypeOf(L:KList))
+          => (retype(typeof(K)),, wrapWithTypeOf(L))
      rule wrapWithTypeOf(.KList) => .KList
      
      syntax K ::= retype(K) [strict]
      
      // fixme, not handling qualifiers correctly
-     rule retype(T:KResult) => t(.Set, pointerType(innerType(T:KResult)))
-          when isArrayType(T:KResult)
+     rule retype(T:Type) => t(.Set, pointerType(innerType(T)))
+          when isArrayType(T)
           [structural]
-     rule retype(T:KResult) => t(.Set, pointerType(T:KResult))
-          when isFunctionType(T:KResult)
+     rule retype(T:Type) => t(.Set, pointerType(T))
+          when isFunctionType(T)
           [structural]
-     rule retype(T:KResult) => T:KResult
-          when notBool (isArrayType(T:KResult) orBool isFunctionType(T:KResult))
+     rule retype(T:Type) => T
+          when notBool (isArrayType(T) orBool isFunctionType(T))
           [structural]   
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
@@ -54,7 +54,7 @@ module C-EXPRESSION-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types((T1:KResult,, T2:KResult))
+     rule (types((T1:Type,, T2:Type))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           when T1 =/=K T2
@@ -78,31 +78,31 @@ module C-EXPRESSION-CONDITIONAL
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
      rule [conditional-left-is-null]:
-          (types((T1:KResult,, T2:KResult)) => convertedType(T2))
+          (types((T1:Type,, T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
           when hasIntegerType(T1)
                andBool isPointerType(T2)
           [structural]
      rule [conditional-right-is-null]:
-          (types((T1:KResult,, T2:KResult)) => convertedType(T1))
+          (types((T1:Type,, T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
           when hasIntegerType(T2)
                andBool isPointerType(T1)
           [structural]
           
      // fixme, this is wrong
-     rule (types((T1:KResult,, T2:KResult)) => convertedType(T1))
+     rule (types((T1:Type,, T2:Type)) => convertedType(T1))
           ~> _? _ : _
           when isPointerType(T1)
                andBool isPointerType(T2)
           [structural]
           
      // this should take care of the void/struct cases
-     rule (types((T:KResult,, T:KResult)) => convertedType(T))
+     rule (types((T:Type,, T:Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
           [structural]
-     rule convertedType(T:KResult) ~> E:K ? E1:K : E2:K
+     rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
           => IfThenElse(E, cast(T, E1), cast(T, E2))
           [structural]
 endmodule

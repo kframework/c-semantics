@@ -26,11 +26,11 @@ module C-EXPRESSION-MULTIPLICATIVE-OPERATORS
      }*/
      
      rule tv(I1:Int, T:Type) * tv(I2:Int, T:Type)
-          => arithInterpret(T, I1:Int *Int I2:Int)
+          => arithInterpret(T, I1 *Int I2)
           when isPromoted(T)
           [structural]
      rule tv(F1:Float, T:Type) * tv(F2:Float, T:Type)
-          => arithInterpret(T, F1:Float *Float F2:Float)
+          => arithInterpret(T, F1 *Float F2)
           [structural]
           
      rule tv(I1:Bits, T:Type) / tv(I2:Int, T:Type)
@@ -38,7 +38,7 @@ module C-EXPRESSION-MULTIPLICATIVE-OPERATORS
           when isPromoted(T:Type) andBool I2 =/=Int 0
           [structural]
      rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type)
-          => arithInterpret(T, F1:Float /Float F2:Float)
+          => arithInterpret(T, F1 /Float F2)
           [structural]
      // fixme this seems out of place and strange
      rule piece(unknown(N:Int), N) /Bits M:Int
@@ -49,9 +49,9 @@ module C-EXPRESSION-MULTIPLICATIVE-OPERATORS
      rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
           => arithInterpret(T, I1 %Int I2)
           when isPromoted(T)
-               andBool (min(T) <=Int I1:Int /Int I2:Int) 
-               andBool (max(T) >=Int I1:Int /Int I2:Int)
-               andBool (I2:Int =/=Int 0)
+               andBool (min(T) <=Int I1 /Int I2) 
+               andBool (max(T) >=Int I1 /Int I2)
+               andBool (I2 =/=Int 0)
           [structural]
 endmodule
 
