@@ -411,6 +411,8 @@ module C-TYPING-MISC
      rule isFloatType(t(_, float)) => true 
      rule isFloatType(t(_, double)) => true 
      rule isFloatType(t(_, long-double)) => true 
+     rule isFloatType(t(_, qualifiedType(T:Type, _)))
+          => isFloatType(T) 
      rule isFloatType(t(_, T:SimpleType)) => false
           when (T =/=K float)
                andBool (T =/=K double)
