@@ -18,7 +18,6 @@ module C-TYPING-MISC
 
      rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
-          [structural]
 
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
      
@@ -48,7 +47,6 @@ module C-TYPING-MISC
      rule numBits(t(S:Set, T:SimpleType)) 
           => numBytes(t(S, T)) *Int cfg:bitsPerByte
           when getKLabel(T) =/=KLabel 'bitfieldType
-          [structural]
      rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
 
      syntax SimpleType ::= simpleType(Type) [function]
@@ -126,63 +124,48 @@ module C-TYPING-MISC
      rule hasIntegerType(T:Type) 
           => ((hasUnsignedIntegerType(T) ==K true) 
                orBool (hasSignedIntegerType(T) ==K true))
-          [structural]
      
      rule hasUnsignedIntegerType(t(_, T:SimpleType)) => true
           when (T in unsignedIntegerTypes)
-          [structural]
      rule hasUnsignedIntegerType(t(_, T:SimpleType)) => false
           when (T in signedIntegerTypes)
-          [structural]
 
      rule hasUnsignedIntegerType(t(S:Set, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool ((l(getKLabel(T)) in setOfTypes) 
                     orBool isFloatType(t(S, T)))
-          [structural]
      rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
           when hasUnsignedIntegerType(T) ==Bool true
-          [structural]
      rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
           when hasUnsignedIntegerType(T) ==Bool false
-          [structural]
      
      rule hasSignedIntegerType(t(_, T:SimpleType)) => true
           when (T in signedIntegerTypes)
-          [structural]
      rule hasSignedIntegerType(t(_, T:SimpleType)) => false
           when (T in unsignedIntegerTypes)
-          [structural]
 
      rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
      rule hasSignedIntegerType(t(S:Set, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool ((l(getKLabel(T)) in setOfTypes) 
                     orBool isFloatType(t(S, T)))
-          [structural]
      rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
           when hasSignedIntegerType(T) ==Bool true
-          [structural]
      rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
           when hasSignedIntegerType(T) ==Bool false
-          [structural]
 
      rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
           when hasUnsignedIntegerType(T)
-          [structural]
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
           => (2 ^Int absInt(N:Int)) -Int 1
           when hasUnsignedIntegerType(T)
-          [structural]
      
      rule min(t(_, bitfieldType(T:Type, N:Int)))
           => 0 -Int (2 ^Int absInt(N:Int -Int 1))
           when hasSignedIntegerType(T)
-          [structural]
      rule max(t(_, bitfieldType(T:Type, N:Int)))
           => (2 ^Int absInt(N:Int -Int 1)) -Int 1
           when hasSignedIntegerType(T)
-          [structural]
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
@@ -255,64 +238,51 @@ module C-TYPING-MISC
      
      rule [typeCompatible-identical]:
           isTypeCompatible(T:Type, T:Type) => true 
-          [structural]
      rule [typeCompatible-two-ints]:
           isTypeCompatible(T:Type, T':Type) => true 
           when hasIntegerType(T)
                andBool hasIntegerType(T') 
-          [structural]
      rule [typeCompatible-two-ptr]:
           isTypeCompatible(t(_, pointerType(_)), t(_, pointerType(_))) => true 
-          [structural]
      rule [typeCompatible-ptr-int]:
           isTypeCompatible(t(_, pointerType(_)), T:Type) => true
           when hasIntegerType(T) 
-          [structural]
      rule [typeCompatible-int-ptr]:
           isTypeCompatible(T:Type, t(_, pointerType(_))) => true
           when hasIntegerType(T)
-          [structural]
           
      rule [typeCompatible-declarations]:
           isTypeCompatible(typedDeclaration(T:Type, _:Id), 
                typedDeclaration(T':Type, _:Id))
           => isTypeCompatible(T, T') 
-          [structural]
      rule [typeCompatible-prototypes]:
           isTypeCompatible(t(_, prototype(T:Type)), t(_, prototype(T':Type))) 
           => isTypeCompatible(T, T') 
-          [structural]
 
      rule [typeCompatible-array-right]:
           isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
           => isTypeCompatible(T, t(S:Set, pointerType(T'))) 
-          [structural]
      rule [typeCompatible-array-left]:
           isTypeCompatible(t(S:Set, arrayType(T:Type, _:Int)), T':Type)
           => isTypeCompatible(t(S, pointerType(T)), T') 
-          [structural]
      
      rule [typeCompatible-incompleteArray-right]:
           isTypeCompatible(T:Type, t(S:Set, incompleteArrayType(T':Type)))
           => isTypeCompatible(T, t(S, pointerType(T'))) 
-          [structural]
      rule [typeCompatible-incompleteArray-left]:
           isTypeCompatible(t(S:Set, incompleteArrayType(T:Type)), T':Type)
           => isTypeCompatible(t(S, pointerType(T)), T') 
-          [structural]
 
      rule [typeCompatible-function-void-left]:
           isTypeCompatible(t(_, functionType(T:Type, 
                typedDeclaration(t(_, void), _:Id))),
                t(_, functionType(T':Type, .KList)))
           => isTypeCompatible(T, T') 
-          [structural]
      rule [typeCompatible-function-void-right]:
           isTypeCompatible(t(_, functionType(T:Type, .KList)),
                t(_, functionType(T':Type, 
                typedDeclaration(t(_, void), _:Id))))
           => isTypeCompatible(T, T') 
-          [structural]
      rule [typeCompatible-function]:
           isTypeCompatible(t(S:Set, functionType(T:Type, 
                (TA:Type,, L:KList))),
@@ -320,16 +290,13 @@ module C-TYPING-MISC
           => isTypeCompatible(t(S, functionType(T, L)), 
                t(S', functionType(T', L')))
                andBool isTypeCompatible(TA, TA') 
-          [structural]
      rule [typeCompatible-incompleteArray-nil]:
           isTypeCompatible(t(_, functionType(T:Type, .KList)),
                t(_, functionType(T':Type, .KList)))
           => isTypeCompatible(T, T') 
-          [structural]
      rule isTypeCompatible(T:Type, T':Type) => true
           when (hasIntegerType(T) orBool isFloatType(T))
                andBool (hasIntegerType(T') orBool isFloatType(T')) 
-          [structural]
                
      syntax K ::= "addGlobalAggregate" "(" Id "," K ")"
      syntax K ::= "addLocalAggregate" "(" Id "," K ")"

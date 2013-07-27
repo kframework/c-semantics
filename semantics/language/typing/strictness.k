@@ -12,9 +12,9 @@ module C-TYPING-STRICTNESS
 
      syntax K ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
-          <k> (. => DeclType(Spec:K, Decl:K)) ~> evalToType ...</k>
+          <k> (. => DeclType(Spec, Decl)) ~> evalToType ...</k>
           <type> 
-               Cast(Spec, Decl, _) => waitingOnDeclType
+               Cast(Spec:K, Decl:K, _) => waitingOnDeclType
           ...</type>
           [structural]
           
