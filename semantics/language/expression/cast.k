@@ -15,7 +15,7 @@ module C-EXPRESSION-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule Cast(T:Type, K:K, V:TypedValue)
+     rule Cast(T:Type, K:K, V:Value)
           => cast(DeclType(T, K), V)
           [structural]
 endmodule

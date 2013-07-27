@@ -340,7 +340,7 @@ module C-EXPRESSION-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/     
-     rule cast(t(_, void), _:Value) => skipval
+     rule cast(t(_, void), _:TypedValue) => skipval
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
