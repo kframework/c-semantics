@@ -160,6 +160,8 @@ let init_lexicon _ =
       ("_Static_assert", fun loc -> STATIC_ASSERT loc);
       ("_Thread_local", fun loc -> THREAD_LOCAL loc);
 
+      ("__func__", fun loc -> FUNCTION__ loc); (* ISO 6.4.2.2 *)
+
       ("__kcc_offsetof", fun loc -> OFFSETOF loc);
     ]
 
