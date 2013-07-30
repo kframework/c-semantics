@@ -33,7 +33,8 @@ module CIL-EXP
 
   rule E1:Exp[E2:Exp] => *(E1 + E2)   [macro]
   /* BUG: (*E).M generates weird error */
-  rule E:Exp->M:CId => (*E) . M    [macro]
+  // chathhorn: this doesn't seem to be part of CIL?
+  // rule E:Exp->M:CId => (*E) . M    [macro]
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)

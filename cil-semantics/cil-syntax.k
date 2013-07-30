@@ -6,9 +6,11 @@ module CIL-SYNTAX
                   | FunDef
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= TypeDef
+  syntax Decl ::= VarDecl | AggDecl | TypeDef
   syntax TypeDef ::= "typedef" Type CId ";" 
 
+  syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
+                   | "union" CId "{" VarDecls "}" ";"
 
   syntax Type ::= Void
                 | NvType
@@ -17,6 +19,7 @@ module CIL-SYNTAX
   syntax NvType ::= BasicType
                   | PtrType 
                   | ArrayType
+                  | AggType
   syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
@@ -38,6 +41,7 @@ module CIL-SYNTAX
                         | "long" "double"
   syntax PtrType ::= Type "*"
   syntax ArrayType ::= Type "[" Nat "]" 
+  syntax AggType ::= "struct" CId | "union" CId
   syntax Types ::= List{Type,","}
 
 
@@ -60,7 +64,6 @@ module CIL-SYNTAX
 
   syntax VarDecl ::= Type Var ";"
   syntax VarDecls ::= List{VarDecl, ""}    [right]
-
 
   /*
    * expressions
@@ -130,7 +133,7 @@ module CIL-SYNTAX
                 | "*" Exp           [strict]
                 | Exp "." CId       [strict(1)]
                 | Exp "[" Exp "]"   [strict(1)]
-                | Exp "->" CId      [strict(1)]
+
   syntax Var ::= CId
   syntax Field ::= CId
   syntax CIds ::= List{CId, ","}
@@ -201,6 +204,8 @@ module CIL-SYNTAX
                     | "short"       [reject]
                     | "long"        [reject]
                     | "unsigned"    [reject]
+                    | "struct"      [reject]
+                    | "union"       [reject]
      
   /*
    * syntactical macros 
