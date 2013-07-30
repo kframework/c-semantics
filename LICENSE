@@ -1,5 +1,5 @@
 ==============================================================================
-The K C Semantics Release License
+The C Semantics in K Release License
 ==============================================================================
 University of Illinois/NCSA
 Open Source License
@@ -9,7 +9,7 @@ All rights reserved.
 
 Developed by:
 
-    K Team (currently Chris Hathhorn, previously Chucky Ellison)
+    K Team (current main developer Chris Hathhorn, previously Chucky Ellison)
 
     University of Illinois at Urbana-Champaign
     University Alexandru-Ioan Cuza, Romania
@@ -44,16 +44,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
 SOFTWARE.
 
 ==============================================================================
-Copyrights and Licenses for Third Party Software Distributed with the K C
-Semantics:
+Copyrights and Licenses for Third Party Software Distributed with the C
+Semantics in K:
 ==============================================================================
-The K C Semantics software contains code written by third parties. Such
+The C Semantics in K software contains code written by third parties. Such
 software will have its own individual LICENSE file in the directory in which it
 appears. This file will describe the copyrights, license, and restrictions
 which apply to that code.
 
 The disclaimer of warranty in the University of Illinois Open Source License
-applies to all code in the K C Semantics Distribution, and nothing in any of
+applies to all code in the C Semantics in K Distribution, and nothing in any of
 the other licenses gives permission to use the names of the K Team, the
 University of Illinois, or the University Alexandru-Ioan Cuza to endorse or
 promote products derived from this Software.
