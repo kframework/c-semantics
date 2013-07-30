@@ -26,7 +26,7 @@ module DYNAMIC-C-ERRORS is
 	declare ICE : String String -> K
 	define ICE(Name:String, Msg:String) =>
 		Error(Name:String, Msg:String)
-		+String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
+		+String "\nNOTE: Please send a test case exhibiting this bug to info@kframework.org; it could indicate an internal error in KCC."
 		[structural]
 	
 		

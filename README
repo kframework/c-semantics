@@ -1,3 +1,8 @@
+IMPORTANT: This version of the C semantics and the information contained in
+this document is outdated. In particular, Chucky Ellison's email is no longer
+valid. See http://kframework.org or email info@kframework.org for more
+information.
+
 Please let us know if this README is insufficient, or if you needed to do any installation steps not listed explicitly.
 
 Send an e-mail to Chucky Ellison (celliso2@illinois.edu) with questions/comments/suggestions.  You can also go to http://code.google.com/p/c-semantics/ to submit bug reports or feature requests.

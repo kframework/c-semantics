@@ -1,3 +1,8 @@
+IMPORTANT: This version of the C semantics and the information contained in
+this document is outdated. In particular, Chucky Ellison's email is no longer
+valid. See http://kframework.org or email info@kframework.org for more
+information.
+
 Copyright (C) 2009-2011 by Charles M. Ellison III <celliso2@illinois.edu>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
