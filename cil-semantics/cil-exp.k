@@ -42,17 +42,6 @@ module CIL-EXP
 
   context (HOLE => HOLE ~> noLeftValueConversion) . _:CId
 
-  // syntax K ::= extractField(Type, Int, K, List) [strict(3)]
-  // rule 
-  //   <k> 
-  //     tv(Agg:AggType, agg(L:List)) . F:CId 
-  //     => extractField(T, Offset, sizeof(T), L) 
-  //   ...</k>
-  //   <agg-id> Agg </agg-id>
-  //   <field-id> F </field-id>
-  //   <field-type> T:Type </field-type>
-  //   <offset> Offset:Int </offset>
-
   rule 
     <k> 
       nclv(Agg:AggType, Ptr(Base:BasePtr, Offset:Int)) . F:CId 
@@ -62,22 +51,6 @@ module CIL-EXP
     <field-id> F </field-id>
     <field-type> T:Type </field-type>
     <offset> FOffset:Int </offset>
-
-  // rule extractField(T:Type, Offset:Int, Sz:TypedValue, L:List)
-  //   => tv(T, bytes2Value(T, subList(L, Offset, val(Sz))))
-  // 
-  // syntax List ::= subList(List, Int, Int) [function]
-
-  // rule 
-  //   subList((ListItem(K:K) => .List) _:List, (Offset:Int => Offset -Int 1), _)
-  //   when Offset >Int 0
-
-  // rule 
-  //   (.List => ListItem(K)) 
-  //   subList((ListItem(K:K) => .List) _:List, 0, (Len:Int => Len -Int 1))
-  //   when Len >Int 0
-  // 
-  // rule subList(_, 0, 0) => .List
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
