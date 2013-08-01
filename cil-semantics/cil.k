@@ -28,11 +28,25 @@ module CIL
         <labels> .Map </labels> // Map{Label, Stmt}
       </fun>
     </funs>
+    <typedefs> .Map </typedefs> // Map{CId, Type}
+    <aggregates> // structs and unions
+     <aggregate multiplicity="*">
+       <agg-id> .K </agg-id> // TypeId
+       <size> 0 </size>
+       <fields>
+          <field multiplicity="*">
+               <field-id> .K </field-id> // CId
+               <field-type> .K </field-type> // Type
+               <offset> 0 </offset> 
+          </field>
+       </fields>
+     </aggregate>
+    </aggregates>
     <heap>
       <object multiplicity="*">
         <base-ptr> Null </base-ptr>
         <object-type> void </object-type>
-        <bytes> .Map </bytes> // Map{Nat, Nat}
+        <bytes> .Map </bytes> // Map{Nat, ByteValue}
       </object>
     </heap>
     <make-goto-table>
@@ -53,7 +67,7 @@ module CIL
 
   syntax KResult ::= TypedValue
                    | NoConverionLeftValue
-                   | BasicType
-                   | PtrType
+                   //| BasicType // not compatible w/arbitrary type names.
+                   //| PtrType
 endmodule
 

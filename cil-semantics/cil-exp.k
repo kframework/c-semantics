@@ -31,10 +31,16 @@ module CIL-EXP
     <type-env>... X |-> T:Type ...</type-env>
   [structural]
 
+  // TODO(chathhorn): I doubt this is part of CIL
   rule E1:Exp[E2:Exp] => *(E1 + E2)   [macro]
-  /* BUG: (*E).M generates weird error */
-  // chathhorn: this doesn't seem to be part of CIL?
-  // rule E:Exp->M:CId => (*E) . M    [macro]
+
+  syntax K ::= extractField(Type, Int, List)
+  rule 
+    <k> tv(Agg:AggType, agg(L:List)) . F:CId => extractField(T, Offset, L) ...</k>
+    <agg-id> Agg </agg-id>
+    <field-id> F </field-id>
+    <field-type> T </field-type>
+    <offset> Offset </offset>
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
@@ -44,10 +50,16 @@ module CIL-EXP
   rule *tv(T:Type*, P:Ptr) => lv(T, P) [structural]
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
-  rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
+  rule nclv(T:NvType, P:Ptr) = tv(T, V:Value); => store(T, P, V)
+  rule 
+    <k> nclv((X:CId => T), P:Ptr) = tv(X, V:Value); ...</k>
+    <typedefs>... X |-> T:Type ...</typedefs>
     
-  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
-  when KLabel(KList) =/=K noLeftValueConversion
+  rule (lv(T:NvType, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
+    when KLabel(KList) =/=K noLeftValueConversion
+  rule 
+    <k> lv((X:CId => T), P:Ptr) ...</k>
+    <typedefs>... X |-> T:Type ...</typedefs>
 
   rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
   [structural]
@@ -171,9 +183,18 @@ module CIL-EXP
   /*
    * Sizeof
    */
-  /* TODO: sizeof for exp */
-  rule sizeof(T:Type) => byteWidth(T)    [structual]
-
+  /* TODO: sizeof for exp 
+  */
+  rule sizeof(T:BasicType) => byteWidth(T)    [structual]
+  rule sizeof(T:PtrType) => byteWidth(T)    [structual]
+  rule <k> sizeof(X:AggType) => Size ...</k>
+     <agg-id> X </agg-id>
+     <size> Size:Int </size>
+     [structural]
+  rule <k> sizeof(X:CId) => sizeof(T) ...</k>
+     <typedefs>... X |-> T:Type ...</typedefs>
+     [structural]
+  
   /*
    * Casting
    */

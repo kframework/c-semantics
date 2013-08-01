@@ -86,7 +86,9 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   syntax Int ::= width(Type)        [function]
                | byteWidth(Type)    [function]
 
-  syntax Value ::= Bool | Int | Float | Ptr | MInt | "undef"
+  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List)
+
+  syntax ByteValue ::= Int | "undef"
 
   /*
    * @invariant:
@@ -107,6 +109,7 @@ endmodule
 
 
 module CIL-COMMON-TYPED-VALUE
+  imports MINT
   imports CIL-SYNTAX
   imports CIL-COMMON-PTR
 
@@ -126,6 +129,9 @@ module CIL-COMMON-TYPED-VALUE
 
   syntax LVal ::= NoConverionLeftValue
   syntax NoConverionLeftValue ::= nclv(Type, Ptr)
+
+  syntax Int ::= val(TypedValue) [function]
+  rule val(tv(_, mi(_, V:Int))) => V
 endmodule
 
 
@@ -170,24 +176,24 @@ module CIL-COMMON-MMU
    */
   syntax K ::= Object(Type, Map)
   syntax K ::= newObject(Type)
-             | "$newObject" "(" Type "," Type ")"   [strict(2)]
+             | "$newObject" "(" Type "," K ")"   [strict(2)]
              | castObject(Type, Ptr)
              | deleteObject(Ptr)
-  rule newObject(T:Type) => $newObject(T, T)
+  rule newObject(T:Type) => $newObject(T, sizeof(T))
   [structural]
   rule
     <k>
-      $newObject(T1:Type, T2:Type)
+      $newObject(T:Type, Sz:TypedValue)
     =>
-      tv(T1*, Ptr(BasePtr(Base, (byteWidth(T2))), (0)))
+      tv(T*, Ptr(BasePtr(Base, val(Sz)), (0)))
     ...</k>
     <heap>...
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(Base, (byteWidth(T2))) </base-ptr>
-        <object-type> T1 </object-type>
-        <bytes> #initMap(#rangeList(byteWidth(T2)), undef) </bytes>
+        <base-ptr> BasePtr(Base, (val(Sz))) </base-ptr>
+        <object-type> T </object-type>
+        <bytes> #initMap(#rangeList(val(Sz)), undef) </bytes>
       </object>
     ...</heap>
   when fresh(Base:Int)
@@ -208,7 +214,7 @@ module CIL-COMMON-MMU
    * Memory access.
    */
   syntax K ::= "load" "(" Type "," Ptr ")"
-             | "$load" "(" Type "," Ptr "," Type")"             [strict(3)]
+             | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
              | "$load" "(" Type "," Ptr "," Int "," List ")"
              | "store" "(" Type "," Ptr "," Value ")"           [strict(1)]
              | "$store" "(" Ptr "," List ")"
@@ -221,33 +227,33 @@ module CIL-COMMON-MMU
     <k>
       $store(
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (ListItem(I:Int) => .List) L:List)
+          (ListItem(V:ByteValue) => .List) L:List)
     ...</k>
     <heap>...
       <object>...
         <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> (_ => I) ...</bytes>
+        <bytes>... Offset |-> (_ => V) ...</bytes>
       ...</object>
     ...</heap>
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
 
-  rule load(T:Type, P:Ptr) => $load(T, P, T) [structural]
+  rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T)) [structural]
   rule
-    $load(T1:Type, P:Ptr, T2:Type) => $load(T1, P, (byteWidth(T2)), .List)
+    $load(T:Type, P:Ptr, Sz:TypedValue) => $load(T, P, (val(Sz)), .List)
   [structural]
   rule
     <k>
       $load(
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (M:Int => M:Int -Int 1),
-          L:List (.List => ListItem(I:Int)))
+          (M:Int => M -Int 1),
+          L:List (.List => ListItem(V:ByteValue)))
     ...</k>
     <heap>...
       <object>...
         <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> I ...</bytes>
+        <bytes>... Offset |-> V ...</bytes>
       ...</object>
     ...</heap>
   when M >Int 0
@@ -265,7 +271,6 @@ module CIL-COMMON
   imports CIL-COMMON-TYPED-VALUE
   imports CIL-COMMON-MMU
 
-  
   syntax Error ::= "dummy_Error_item"
 
   syntax MInt ::= bool2mint(Bool) [function]
@@ -286,5 +291,6 @@ module CIL-COMMON
   rule .Stmts @Stmts Ss:Stmts => Ss
 
   syntax ListItem ::= ListItem(Bag)
+
 endmodule
 

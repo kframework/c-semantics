@@ -3,7 +3,7 @@
 
 union baz {
    int x1 ;
-   double x2 ;
+   unsigned long long x2 ;
 };
 
 struct bar {
@@ -22,7 +22,7 @@ int main(void)
 { struct foo f ;
 {
 
-  f.s1.u1.x2 = 12.9;
+  f.s1.u1.x2 = 12;
   f.s1.u1.x1 = 7;
   f.s1.y = 6;
   f.z = 5;

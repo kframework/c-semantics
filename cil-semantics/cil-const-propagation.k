@@ -73,9 +73,9 @@ module CIL-CONST-PROPAGATION
   [structural]
   rule
     <propagate-constants-stmts>
-      return E:Exp; Ss1:Stmts => Ss1
+      return (E:Exp); Ss1:Stmts => Ss1
     </propagate-constants-stmts>
-    <after-stmts> Ss2:Stmts => Ss2 @Stmts return helper(E, M); </after-stmts>
+    <after-stmts> Ss2:Stmts => Ss2 @Stmts return (helper(E, M)); </after-stmts>
     <constant-table> M:Map </constant-table>
   [structural]
 

@@ -76,13 +76,13 @@ module CIL-SYNTAX
                | "-" Exp                  [strict]
                | "~" Exp                  [strict]
                | "!" Exp
-               | "sizeof" "(" Type ")"    [strict, prefer]
+               | "sizeof" "(" Type ")"    [prefer]
                /* 
                 * NOTE: this grammar allows "sizeof (int) 1", which is not
                 * allowed by the official C grammar (not sure why, it only
                 * allows "sizeof ((int) 1)")
                 */
-               | "sizeof" Exp
+               // | "sizeof" Exp // not in CIL
                > "(" Type ")" Exp         [strict, prefer]
                > left:
                  Exp "*" Exp              [strict, left]
@@ -143,11 +143,11 @@ module CIL-SYNTAX
    * statements
    */
   syntax Stmt ::= Instr 
-                | "return" Exp ";"                    [strict]
-                | "return" ";"
+                | "return" "(" Exp ")" ";"                    [strict]
+                // | "return" ";" // chathhorn: not CIL, return always has parens
                 | "goto" Label ";"
                 | "break" ";"
-                | "continue" ";"
+                // | "continue" ";" // chathhorn: doesn't seem to be part of CIL.
                 | "if" "(" Exp ")" Stmt "else" Stmt   [avoid]
                 | "if" "(" Exp ")" Stmt
                 | "switch" "(" Exp ")" Block          [strict]
@@ -218,6 +218,6 @@ module CIL-SYNTAX
   /*
    * priorities
    */
-  syntax priority 'return_; > '_;
+  //syntax priority 'return_; > '_;
 endmodule
 

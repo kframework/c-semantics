@@ -86,7 +86,7 @@ module CIL-STMT
   rule
     (
       <frame>...
-        <k> return tv(T:Type, V:Value); ...</k>
+        <k> return (tv(T:Type, V:Value)); ...</k>
         <frame-fun-id> F:CId </frame-fun-id>
         <env> Env:Map </env>
       ...</frame>

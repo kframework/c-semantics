@@ -38,6 +38,7 @@ module CIL-DECL
   [structural]
 
 
+     // TODO(chathhorn): purge continue stuff?
   /*
    * Lower break and continue statements to goto statements 
    */
@@ -57,10 +58,10 @@ module CIL-DECL
   syntax Bool ::= isWhileFlow(K) [function]
   syntax K ::= visitWhileFlow(K, Label, Label) [function]
   rule isWhileFlow(break;) => true
-  rule isWhileFlow(continue;) => true
+  //rule isWhileFlow(continue;) => true
   rule isWhileFlow(while(_:Exp) _:Stmt) => true
   rule visitWhileFlow(break;, L:Label, _) => goto L;
-  rule visitWhileFlow(continue;, _, L:Label) => goto L;
+  //rule visitWhileFlow(continue;, _, L:Label) => goto L;
   rule
     visitWhileFlow((while(E:Exp) S:Stmt), _, _)
   =>
@@ -197,5 +198,67 @@ module CIL-DECL
     <env>... .Map => X |-> P ...</env>
     <type-env>... .Map => X |-> T ...</type-env>
   [structural]
-endmodule
 
+  syntax K ::= declStruct(CId, VarDecls, K) [strict(3)]
+             | declUnion(CId, VarDecls, K) [strict(3)]
+  rule 
+    <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0) ...</k>
+    (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)
+       
+  rule declStruct(_, VD:VarDecl VDs:VarDecls => VD ~> VDs, _) 
+    [structural]
+  rule declStruct(_, .VarDecls => . , _) 
+    [structural]
+
+  rule 
+     <k> declStruct(X:CId, T:Type F:CId; ~> K:K, Offset:TypedValue) 
+     => declStruct(X, K, Offset + sizeof(T)) ...</k>
+     <agg-id> struct X </agg-id>
+     <fields>...
+        (. => <field>...
+          <field-id> F </field-id>
+          <field-type> T </field-type>
+          <offset> val(Offset) </offset>
+        ...</field>)
+     ...</fields>
+    [structural]
+     
+  rule 
+     <k> declStruct(X:CId, .K, Offset:TypedValue) => . ...</k>
+     <agg-id> struct X </agg-id>
+     <size> _ => val(Offset) </size>
+    [structural]
+
+  syntax K ::= maxK(K, K) [strict]
+  rule maxK(X:TypedValue, Y:TypedValue) => X when val(X) >=Int val(Y)
+  rule maxK(X:TypedValue, Y:TypedValue) => Y when val(X) <Int val(Y)
+
+  rule 
+    <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0) ...</k>
+    (. => <aggregate>... <agg-id> union X </agg-id> ...</aggregate>)
+       
+  rule declUnion(_, VD:VarDecl VDs:VarDecls => VD ~> VDs, _) 
+    [structural]
+  rule declUnion(_, .VarDecls => . , _) 
+    [structural]
+
+  rule 
+     <k> declUnion(X:CId, T:Type F:CId; ~> K:K, Size:TypedValue)
+     => declUnion(X, K, maxK(Size, sizeof(T))) ...</k>
+     <agg-id> union X </agg-id>
+     <fields>...
+        (. => <field>...
+          <field-id> F </field-id>
+          <field-type> T </field-type>
+          <offset> 0 </offset>
+        ...</field>)
+     ...</fields>
+    [structural]
+     
+  rule 
+     <k> declUnion(X:CId, .K, Size:TypedValue) => . ...</k>
+     <agg-id> union X </agg-id>
+     <size> _ => val(Size) </size>
+    [structural]
+
+endmodule

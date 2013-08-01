@@ -62,6 +62,8 @@ module CIL-IMPLEMENTATION
   rule bytes2Value(T:SignedIntType, L:List) => bytes2SignedMInt(L)
   rule value2Bytes(T:IntType, MI:MInt) => MInt2Bytes(MI)
 
+  rule bytes2Value(T:AggType, L:List) => agg(L)
+
   /*
    * Pointer type.
    */
