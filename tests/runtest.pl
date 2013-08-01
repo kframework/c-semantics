@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use File::Basename;
 use Text::Diff;
@@ -213,7 +214,7 @@ sub reportFailure {
 	my ($name, $timer, $message) = (@_);
 	$globalNumFailed++;
 	$message = encode($message);
-	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"$1\">$1<\/a>/m;
 	my $inner = "<failure>$message</failure>";
 	print "FAILED\n";
 	return reportAny($name, $timer, $inner);	
@@ -222,7 +223,7 @@ sub reportError {
 	my ($name, $timer, $message) = (@_);
 	$globalNumError++;
 	$message = encode($message);
-	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"\1\">\1<\/a>/m;
+	$message =~ s/^Full report can be found in (.*)$/Full report can be found in <a href=\"$1\">$1<\/a>/m;
 	my $inner = "<error>$message</error>";
 	print "errored\n";
 	return reportAny($name, $timer, $inner);	
