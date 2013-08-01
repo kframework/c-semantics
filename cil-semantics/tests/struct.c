@@ -5,29 +5,22 @@ union baz {
    int x1 ;
    unsigned long long x2 ;
 };
-
 struct bar {
    union baz u1 ;
    int y ;
 };
-
 struct foo {
    struct bar s1 ;
    int z ;
 };
-
-// extern int printf(char const   * __restrict  __format  , ...) ;
-
 int main(void) 
 { struct foo f ;
-{
 
-  f.s1.u1.x2 = 12;
+  {
+  f.s1.u1.x2 = 12ULL;
   f.s1.u1.x1 = 7;
   f.s1.y = 6;
   f.z = 5;
-//   printf((char const   * __restrict  )"Seven: %d, Six: %d, Five: %d\n", f.s1.u1.x1,
-//          f.s1.y, f.z);
-  return (0);
-} 
+  return (f.s1.u1.x1);
+}
 }

@@ -112,7 +112,7 @@ module CIL-DECL
     .Bag
   [structural]
   rule
-    <k> (make-goto-table-control(F:CId) => .K) ...</k>
+    <k> (make-goto-table-control(_:CId) => .K) ...</k>
     <make-goto-table>
       <make-goto-table-enabled> true => false </make-goto-table-enabled>
     </make-goto-table>
@@ -160,7 +160,7 @@ module CIL-DECL
       .Bag
     =>
       <make-goto-table-task>
-        <make-goto-table-stmts> S .Stmts </make-goto-table-stmts>
+        <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
         <make-goto-table-while-continuation>
           while (E) S Ss
         </make-goto-table-while-continuation>
@@ -205,14 +205,14 @@ module CIL-DECL
     <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0) ...</k>
     (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)
        
-  rule declStruct(_, VD:VarDecl VDs:VarDecls => VD ~> VDs, _) 
+  rule declStruct(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _) 
     [structural]
-  rule declStruct(_, .VarDecls => . , _) 
+  rule declStruct(_, (.VarDecls => .) , _) 
     [structural]
 
   rule 
-     <k> declStruct(X:CId, T:Type F:CId; ~> K:K, Offset:TypedValue) 
-     => declStruct(X, K, Offset + sizeof(T)) ...</k>
+     <k> declStruct(X:CId, T:Type F:CId; ~> VDs:VarDecls, Offset:TypedValue) 
+     => declStruct(X, VDs, Offset + sizeof(T)) ...</k>
      <agg-id> struct X </agg-id>
      <fields>...
         (. => <field>...
@@ -237,14 +237,14 @@ module CIL-DECL
     <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0) ...</k>
     (. => <aggregate>... <agg-id> union X </agg-id> ...</aggregate>)
        
-  rule declUnion(_, VD:VarDecl VDs:VarDecls => VD ~> VDs, _) 
+  rule declUnion(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _) 
     [structural]
-  rule declUnion(_, .VarDecls => . , _) 
+  rule declUnion(_, (.VarDecls => .), _) 
     [structural]
 
   rule 
-     <k> declUnion(X:CId, T:Type F:CId; ~> K:K, Size:TypedValue)
-     => declUnion(X, K, maxK(Size, sizeof(T))) ...</k>
+     <k> declUnion(X:CId, T:Type F:CId; ~> VDs:VarDecls, Size:TypedValue)
+     => declUnion(X, VDs, maxK(Size, sizeof(T))) ...</k>
      <agg-id> union X </agg-id>
      <fields>...
         (. => <field>...

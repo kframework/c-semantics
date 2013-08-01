@@ -58,26 +58,27 @@ module CIL-IMPLEMENTATION
   rule MInt2Bytes(mi((0), _)) => .List
 
   /* implement conversions */
-  rule bytes2Value(T:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
-  rule bytes2Value(T:SignedIntType, L:List) => bytes2SignedMInt(L)
-  rule value2Bytes(T:IntType, MI:MInt) => MInt2Bytes(MI)
+  rule bytes2Value(_:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
+  rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
+  rule value2Bytes(_:IntType, MI:MInt) => MInt2Bytes(MI)
 
-  rule bytes2Value(T:AggType, L:List) => agg(L)
+  rule bytes2Value(_:AggType, L:List) => agg(L)
+  rule value2Bytes(_:AggType, agg(L:List)) => L
 
   /*
    * Pointer type.
    */
   /* Size of pointers is 4 bytes (also the size of int) */
-  rule byteWidth(T*) => 4
+  rule byteWidth(_:Type*) => 4
 
   /* implement conversions */
   rule
-    value2Bytes(T:PtrType, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
+    value2Bytes(_:PtrType, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
   =>
     ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
   rule
     bytes2Value(
-        T:PtrType,
+        _:PtrType,
         ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
   =>
     Ptr(BasePtr(Base, (Size)), (Offset))

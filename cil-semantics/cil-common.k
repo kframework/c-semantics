@@ -220,14 +220,17 @@ module CIL-COMMON-MMU
              | "$store" "(" Ptr "," List ")"
 
   /* TODO: check beforehand that load/store would be successful */
-  rule
-    store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
+  rule store(T:NvType, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
+  [structural]
+  rule 
+    <k> store((X:CId => T), _, _) ...</k>
+    <typedefs>... X |-> T:Type ...</typedefs>
   [structural]
   rule
     <k>
       $store(
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (ListItem(V:ByteValue) => .List) L:List)
+          (ListItem(V:ByteValue) => .List) _:List)
     ...</k>
     <heap>...
       <object>...
@@ -238,7 +241,11 @@ module CIL-COMMON-MMU
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
 
-  rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T)) [structural]
+  rule load(T:NvType, P:Ptr) => $load(T, P, sizeof(T)) [structural]
+  rule 
+    <k> load((X:CId => T), _) ...</k>
+    <typedefs>... X |-> T:Type ...</typedefs>
+  [structural]
   rule
     $load(T:Type, P:Ptr, Sz:TypedValue) => $load(T, P, (val(Sz)), .List)
   [structural]
@@ -248,7 +255,7 @@ module CIL-COMMON-MMU
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (M:Int => M -Int 1),
-          L:List (.List => ListItem(V:ByteValue)))
+          _:List (.List => ListItem(V:ByteValue)))
     ...</k>
     <heap>...
       <object>...

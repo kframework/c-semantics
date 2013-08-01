@@ -50,12 +50,12 @@ module CIL-STMT
 
   rule while(E:Exp) S:Stmt => if (E) { S while(E) S }   [structural]
 
-  rule { Stmts } => Stmts   [structural]
+  rule { Stmts:Stmts } => Stmts   [structural]
   rule S:Stmt Ss:Stmts => S ~> Ss   [structural]
   rule .Stmts => .K    [structural]
   rule ; => .K    [structural]
 
-  rule L:Label : S:Stmt => S    [structural]
+  rule _:Label : S:Stmt => S    [structural]
 
 
   /*

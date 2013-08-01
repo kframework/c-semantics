@@ -126,12 +126,14 @@ module CIL-SYNTAX
                   * grammar productions.
                   */
                  | Int"U"
+                 | Int"UL"
+                 | Int"ULL"
                  | String
                  | Float
   /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
   syntax LVal ::= CId
                 | "*" Exp           [strict]
-                | Exp "." CId       [strict(1)]
+                | Exp "." CId
                 | Exp "[" Exp "]"   [strict(1)]
 
   syntax Var ::= CId
