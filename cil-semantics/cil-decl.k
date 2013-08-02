@@ -37,7 +37,6 @@ module CIL-DECL
     ...</funs>
   [structural]
 
-
      // TODO(chathhorn): purge continue stuff?
   /*
    * Lower break and continue statements to goto statements 

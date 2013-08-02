@@ -12,7 +12,8 @@ module CIL
 
   syntax K ::= "wrapper" "(" KList ")"
   configuration
-    <frame>
+    <resultValue multiplicity="?"> .K </resultValue>
+    <frame multiplicity="?">
       <k> $PGM:File ~> main(.Exps) </k>
       <frame-fun-id> .K </frame-fun-id> // CId
       <env> .Map </env> // Map{CId, Ptr}
@@ -29,6 +30,14 @@ module CIL
       </fun>
     </funs>
     <typedefs> .Map </typedefs> // Map{CId, Type}
+    <global-env> .Map </global-env> // Map{CId, Ptr}
+    <current-tu> .K </current-tu> // Tu
+    <tus>
+      <tu multiplicity="*">
+        <tu-id> .K </tu-id> // Tu
+        <tu-env> .Map </tu-env> // Map{CId, Ptr}
+      </tu>
+    </tus>
     <aggregates> // structs and unions
      <aggregate multiplicity="*">
        <agg-id> .K </agg-id> // TypeId
@@ -67,7 +76,5 @@ module CIL
 
   syntax KResult ::= TypedValue
                    | NoConverionLeftValue
-                   //| BasicType // not compatible w/arbitrary type names.
-                   //| PtrType
 endmodule
 

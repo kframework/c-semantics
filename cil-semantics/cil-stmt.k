@@ -104,6 +104,15 @@ module CIL-STMT
       <fun-type> T </fun-type>
     ...</fun>
   [computational]
+
+  rule 
+    <frame>...
+    <k> tv(int, mi(_, I:Int)) </k>
+    <frame-fun-id> main </frame-fun-id>
+    ...</frame> 
+    => <resultValue> I </resultValue>
+  [structural]
+
   syntax K ::= initializeParams(Params, TypedValues)
              | deleteLocals(Set)
   rule

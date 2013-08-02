@@ -6,7 +6,7 @@ module CIL-SYNTAX
                   | FunDef
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | AggDecl | TypeDef
+  syntax Decl ::= VarDecl | AggDecl | TypeDef | FunDecl
   syntax TypeDef ::= "typedef" Type CId ";" 
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
@@ -20,6 +20,7 @@ module CIL-SYNTAX
                   | PtrType 
                   | ArrayType
                   | AggType
+                  | ConstType
   syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
@@ -40,27 +41,59 @@ module CIL-SYNTAX
                         | "double"
                         | "long" "double"
   syntax PtrType ::= Type "*"
+  syntax ConstType ::= Type "const"
   syntax ArrayType ::= Type "[" Nat "]" 
   syntax AggType ::= "struct" CId | "union" CId
   syntax Types ::= List{Type,","}
 
 
   /* TODO: simplify */
-  syntax FunDef ::= Type CId "(" Params ")" FunBody 
-                  | Type CId "(" Void ")" FunBody
+  syntax FunDef ::= Type CId "(" FunParams ")" FunBody 
+                  | FunSpecs Type CId "(" FunParams ")" FunBody 
+
+  syntax FunDecl ::= Type CId "(" FunParams ")" ";" 
+                  | FunSpecs Type CId "(" FunParams ")" ";" 
+                  | Type CId "(" FunParams ")" FunAttrs ";" 
+                  | FunSpecs Type CId "(" FunParams ")" FunAttrs ";" 
+
+  // Elide function attributes.
+  rule S:FunSpecs T:Type F:CId ( P:FunParams ) _:FunAttrs ; 
+    => S T F ( P ) ;  [macro]
+  rule T:Type F:CId ( P:FunParams ) _:FunAttrs ; 
+    => T F ( P ) ;  [macro]
+  rule _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
+    => T F ( P ) ;  [macro]
+  rule L:Linkage _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
+    => L T F ( P ) ;  [macro]
+
+  syntax FunSpecs ::= Linkage | FunAttrs | Linkage FunAttrs
+
+  syntax Param ::= Type CId
+  syntax Params ::= List{Param,","}
+  syntax FunParams ::= Params | Void
+
+  syntax Attr ::= "__nothrow__"
+                | "__noreturn__" 
+                | "__nonnull__" "(" Int ")" 
+                | "__leaf__"
+                | "__pure__"
+  syntax Attrs ::= List{Attr, ","}
+  syntax FunAttrs ::= "__attribute__" "(" "(" Attrs ")" ")"
+
+  // Elide const.
+  rule T:Type const => T [macro]
+
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
   rule T:Type F:CId(void) FB:FunBody => T F(.Params) FB [macro]
   rule T:Type F:CId(Ps:Params) B:Block => T F(Ps) { .VarDecls B } [macro]
 
-  syntax Param ::= Type CId
-  syntax Params ::= List{Param,","}
-
-  syntax Storage ::= "NoStorage"
-                   | "static"
+  syntax Storage ::= "static"
                    | "extern"
                    | "register"
-                   | "ThreadLocal"
+                   | "_Thread_local"
+
+  syntax Linkage ::= "static" | "extern"
 
   syntax VarDecl ::= Type Var ";"
   syntax VarDecls ::= List{VarDecl, ""}    [right]
@@ -68,7 +101,7 @@ module CIL-SYNTAX
   /*
    * expressions
    */
-  syntax Exp ::= Const
+  syntax Exp ::= Constant
                | "(" Exp ")"              [bracket]
                | LVal 
                | "&" LVal
@@ -120,7 +153,7 @@ module CIL-SYNTAX
                 | AlignOfE of exp
                 */
   syntax Exps ::= List{Exp,","}   [strict]
-  syntax Const ::= Int
+  syntax Constant ::= Int
                  /*
                   * FIXME: parse 0U, 0L, ... as lexical tokens instead of
                   * grammar productions.
@@ -130,6 +163,15 @@ module CIL-SYNTAX
                  | Int"ULL"
                  | String
                  | Float
+                 | "'"CharConstant"'"
+
+  syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
+    [onlyLabel]
+  syntax CharConstant ::= Char | EscapeString
+  syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
+                        | "\\n" | "\\r" | "\\t" | "\\v" 
+                        // Also \" but I can't get it to work.
+
   /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
   syntax LVal ::= CId
                 | "*" Exp           [strict]
@@ -139,7 +181,6 @@ module CIL-SYNTAX
   syntax Var ::= CId
   syntax Field ::= CId
   syntax CIds ::= List{CId, ","}
-
 
   /*
    * statements
