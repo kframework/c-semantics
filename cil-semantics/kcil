@@ -1,0 +1,300 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use File::Basename;
+use File::Temp;
+use File::Spec::Functions qw(rel2abs catfile);
+use File::Copy;
+use Getopt::Declare;
+
+# Here we trap control-c (and others) so we can clean up when that happens.
+$SIG{'ABRT'} = 'interruptHandler';
+$SIG{'TERM'} = 'interruptHandler';
+$SIG{'QUIT'} = 'interruptHandler';
+$SIG{'SEGV'} = 'interruptHandler';
+$SIG{'HUP' } = 'interruptHandler';
+$SIG{'TRAP'} = 'interruptHandler';
+$SIG{'STOP'} = 'interruptHandler';
+$SIG{'INT'} = 'interruptHandler'; # Handle control-c.
+
+$::VERSION="0.1";
+
+my @compiledPrograms = ();
+my @shouldBeDeleted = ();
+
+my $myDirectory = dirname(rel2abs($0));
+my $cilparser = 'cat';
+
+my $programRunner = 'kcil-runner';
+
+my @temporaryFiles = ();
+
+our @cppDefines = ();
+our @cppIncludeDirs = ();
+
+my $spec = q(#
+      -c				Compile and assemble, but do not link.
+      #-i				Include support for runtime file io.
+      -d				Keep intermediate files.
+      -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
+{ push(@main::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+      -I <dir>			Look for headers in <dir>.
+{ push(@main::cppIncludeDirs, " -I$dir "); }
+      -s				Do not link against the standard library.
+      -o <file>			Place the output into <file>.
+      #-verbose			Do not delete intermediate files.
+      -w				Do not print warning messages.
+      <files>...			C files to be compiled. [required]
+      #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
+      #-fsigned-char			Let the type "char" be signed, like "signed char."
+      #-fbits-per-byte <num>		Sets the number of bits in a byte.
+      #[mutex: -funsigned-char -fsigned-char]
+      -lm				Ignored
+      -O[<level:/0|1|2|3|s/>]	Ignored
+      -std <standard>		Ignored
+      -x <language>			Ignored
+      -pedantic			Ignored
+      -Wall				Ignored
+                  
+      There are additional options available at runtime. Try running your compiled
+      program with HELP set (e.g., HELP=1 ./a.out) to see these.
+      );
+
+my $args = Getopt::Declare->new($spec, ['-BUILD']);
+
+exit main();
+
+sub main {
+      # my @stdlib = ();
+      # push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
+      # push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
+      # push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
+      # push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
+      # push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
+      # push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
+
+      #[mutex: -case -CASE -Case -CaSe]
+      $args->parse() or die "Failed to parse the command line.";
+
+      for (@{$args->{'<files>'}}) {
+            compile($_);
+      }
+
+      if ($args->{'-c'}) {
+            # Compilation was already handled, so we can exit.
+            return 0;
+      }
+      # Otherwise, we're compiling an executable.
+
+      my $oval = $args->{'-o'} || 'a.out';
+
+      # if (! $args->{'-s'}) {
+      #       push(@compiledPrograms, @stdlib);
+      # }
+      my $linked = linker(@compiledPrograms);
+      unlink(@shouldBeDeleted);
+      if ($linked eq ""){
+            die "Nothing returned from linker";
+      }
+
+      open(FILE, catfile($myDirectory, $programRunner)) 
+            or die "Couldn't open file: $!";
+      my $runner = join("", <FILE>);
+      close(FILE);
+
+      my $programTemp = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-prog-XXXXXXXXXXX', 
+            SUFFIX => '.kcil', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $programTemp);
+
+      $runner = performSpecializations($runner);
+
+      print $programTemp "$runner\n\n";
+
+      print $programTemp "sub linkedProgram {\nreturn <<'THEPROGRAM';\n$linked\nTHEPROGRAM\n }\n";
+
+      close($programTemp);
+
+      move("$programTemp", $oval) 
+            or die "Failed to move the generated program to its destination $oval: $!";
+
+      my $numFilesChanged = chmod(0755, $oval);
+
+      ($numFilesChanged == 1)
+            or die "Call to chmod $oval failed";
+
+      return 0;
+}
+
+sub performSpecializations {
+      my ($file) = (@_);
+      
+      # TODO(chathhorn): is there some rule that the first source file must
+      # contain a main()? I don't get this.
+      my $mainFileName = $args->{'<files>'}[0];
+      
+      $file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+      $file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
+      return $file;
+}
+
+sub compile {
+      my ($file) = (@_);
+      my $inputFile = rel2abs($file);
+
+      (-e $inputFile)
+            or die "kcc: $file: No such file or directory";
+
+      my ($baseName, $inputDirectory, $suffix) = fileparse($inputFile, ('\.c', '\.o', '\.a'));
+
+      if (($suffix eq '.o') or ($suffix eq '.a')) {
+            # Assuming .o or .a file.
+            push(@compiledPrograms, $inputFile);
+            return;
+      }
+      open my $fh, $inputFile 
+            or die "Could not open $inputFile for reading: $!\n";
+      my $line = <$fh>;
+      close $fh;
+
+      # Assume it's a normal input file, so compile it.
+      my $localOval = "$baseName.o";
+      compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) 
+            or die "Compilation failed";
+
+      (-e "program-$baseName-compiled.kcil")
+            or die "Expected to find program-$baseName-compiled.kcil, but did not";
+
+      move("program-$baseName-compiled.kcil", $localOval) 
+            or die "Failed to rename the compiled program to the local output file $localOval";
+      
+      push(@compiledPrograms, $localOval);
+      if ($args->{'-c'}) {
+            if ($args->{'-o'}) {
+                  move($localOval, $args->{'-o'}) 
+                        or die "Failed to move the generated program to its destination $args->{'-o'}: $!";
+            }
+      } else {
+            push(@shouldBeDeleted, $localOval);
+      }
+}
+
+sub compileProgram {
+      my ($warnFlag, $dumpFlag, $inputFile) = (@_);
+      my $nowarn = $warnFlag;
+      my $dflag = $dumpFlag;
+      
+      my $compilationLog = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', 
+            SUFFIX => '.kcil', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $compilationLog);
+      
+      my $trueFilename = $inputFile;
+      my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
+      my $fullfilename = catfile($directoryname, "$filename.c");
+
+      (-e $fullfilename)
+            or die "$filename.c not found";
+      
+      my $retval = system(
+            "$cilparser $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+      open FILE, "$filename.warnings.log";
+      my @lines = <FILE>;
+      close FILE;
+      if ($retval) {
+            unlink("$filename.gen.parse.tmp");
+            unlink("$filename.warnings.log");
+            print STDERR "Error running C parser:\n";
+            print STDERR join("\n", @lines);
+            die();            
+      }
+      if (! $nowarn) {
+            print join("\n", @lines);
+      }
+      if (! $dflag) {
+            unlink("$filename.warnings.log");
+      }
+      move("$filename.gen.parse.tmp", "$filename.gen.parse") 
+            or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
+      
+      my $PROGRAMRET = 
+            system("$cilparser $filename.gen.parse 2> $compilationLog 1> program-$filename-compiled.kcil");
+      open FILE, "$compilationLog" 
+            or die "Could not open $compilationLog";
+      @lines = <FILE>;
+      close FILE;
+      if (! $dflag) {
+            unlink("$filename.gen.parse");
+      }
+      if ($PROGRAMRET) {
+            print STDERR "Error compiling program:\n";
+            print STDERR join("\n", @lines);
+            unlink($compilationLog);
+            die();
+      }
+      return 1;
+}
+
+sub linker {
+      my @files = (@_);
+      my @programs;
+      my @operators;
+      my $retval = "";
+      if (scalar(@files) == 0) {
+            die "No files passed to linker\n";
+      }
+      for (@files) {
+            my @contents;
+            if (/\.a$/) {
+                  @contents = `ar -p $_`;
+			if ($?) {
+				die "Something went wrong when trying to unarchive $_\n";
+			}
+            } else {
+                  open(my $newFile, $_) 
+                        or die "Couldn't open file $_\n";
+                  @contents = <$newFile>;
+            }
+
+            for (@contents) {
+                  push(@programs, $_);
+            }
+      }
+
+      $retval .= printNested(@programs);
+      return $retval;
+}
+
+sub printNested {
+      return join('', @_);
+}
+ 
+sub interruptHandler {
+      # Call single cleanup point.
+      finalCleanup();
+      # Since we were interrupted, we should exit with a non-zero code.
+      exit 1;
+}
+
+# This subroutine can be used as a way to ensure we clean up all resources
+# whenever we exit. This is going to be mostly temp files. If the program
+# terminates for almost any reason, this code will be executed.
+sub finalCleanup {
+      for (@temporaryFiles) {
+            unlink;
+      }
+}
+ 
+# This block gets run at the end of a normally terminating program, whether it
+# simply exits, or dies. We use this to clean up.
+END {
+      # $? contains the value the program would normally have exited with.
+      my $retval = $?;
+      # Call single cleanup point.
+      finalCleanup();
+      exit $retval;
+}
+

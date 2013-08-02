@@ -20,8 +20,8 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 
 # These are compile-time settings and are set by the compile script using this
 # file as a template.
-my $DEF_DIR = "/home/chathhorn/c-semantics/cil-semantics";
-my $PROGRAM_NAME = "a.out";
+my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
+my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
 my $KRUN = "krun";
 
@@ -30,22 +30,21 @@ my @temporaryFiles = ();
 exit main();
 
 sub main {
-      if (!defined $ENV{CIL_FILENAME}) {
-            print "ERROR runcil: CIL_FILENAME environment variable not set.\n";
-            return 1;
-      }
-      if (defined $ENV{CIL_PGMNAME}) {
-            $PROGRAM_NAME = $ENV{CIL_PGMNAME};
-      }
-
-      my $fileInput = $ENV{CIL_FILENAME};
-
+      my $fileInput = File::Temp->new(
+            TEMPLATE => 'tmp-kcil-in-XXXXXXXXXXX', 
+            SUFFIX => '.cil', 
+            UNLINK => 0);
       my $fileOutput = File::Temp->new(
             TEMPLATE => 'tmp-kcil-out-XXXXXXXXXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0);
 
+      push(@temporaryFiles, $fileInput);
       push(@temporaryFiles, $fileOutput);
+
+      # The function "linkedProgram()" is attached to the bottom of this script
+      # by kcil.
+      print $fileInput linkedProgram();
 
       my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
       my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
@@ -53,7 +52,8 @@ sub main {
       my %krun_args = (
                   '--output-mode' => 'raw', 
                   '--output' => $fileOutput, 
-                  '--compiled-def' => catfile($DEF_DIR, "cil-kompiled"), 
+                  '--parser' => 'kast', 
+                  '--compiled-def' => catfile($SCRIPTS_DIR, "cil-kompiled"), 
                   '--io' => '', 
                   "-cARGC=$argc" => '',
                   "-cARGV=$argv,,.KList" => '',
@@ -107,7 +107,7 @@ sub main {
       if (defined $ENV{SEARCH}) {
             $krun_args{'--search'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'--compiled-def'} = catfile($DEF_DIR, "cil-kompiled-nd");
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "cil-kompiled-nd");
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
       }
@@ -115,7 +115,7 @@ sub main {
       if (defined $ENV{THREADSEARCH}) {
             $krun_args{'--search'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'--compiled-def'} = catfile($DEF_DIR, "cil-kompiled-nd-thread");
+            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "cil-kompiled-nd-thread");
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
       }
@@ -123,7 +123,7 @@ sub main {
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
             $krun_args{'--compiled-def'} = 
-                  catfile($DEF_DIR, "cil-kompiled-nd");
+                  catfile($SCRIPTS_DIR, "cil-kompiled-nd");
             $krun_args{'--output-mode'} = 'pretty';
             delete $krun_args{'--io'};
             delete $krun_args{'--output'};
@@ -141,10 +141,10 @@ sub main {
             my $profileDB = 'kcilProfileDB.sqlite';
             print "Generating profile database $profileDB...\n";
             if (! -e $profileDB) {
-                  copy(catfile($DEF_DIR, "kcilProfileDB.calibration.sqlite"), 
+                  copy(catfile($SCRIPTS_DIR, "kcilProfileDB.calibration.sqlite"), 
                               $profileDB);
             }
-            my $profileWrapper = catfile($DEF_DIR, 'analyzeProfile.pl');
+            my $profileWrapper = catfile($SCRIPTS_DIR, 'analyzeProfile.pl');
             `perl $profileWrapper $fileOutput $PROGRAM_NAME`;
             return 0;
       } 
@@ -507,3 +507,5 @@ END {
       finalCleanup();
       exit $retval;
 }
+
+# The parsed file contents of the program to execute with krun gets appended.
