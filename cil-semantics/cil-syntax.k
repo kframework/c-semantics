@@ -1,12 +1,14 @@
+// vim: set ts=2 sw=2:
 module CIL-SYNTAX
   /* a file is a list of global declarations and definitions */
   syntax File ::= Globals
 
   syntax Global ::= Decl
                   | FunDef
+                  | TuPragma
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | AggDecl | TypeDef | FunDecl
+  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypeDef | FunDecl
   syntax TypeDef ::= "typedef" Type CId ";" 
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
@@ -63,10 +65,10 @@ module CIL-SYNTAX
     => T F ( P ) ;  [macro]
   rule _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
     => T F ( P ) ;  [macro]
-  rule L:Linkage _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
+  rule L:FunStorage _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
     => L T F ( P ) ;  [macro]
 
-  syntax FunSpecs ::= Linkage | FunAttrs | Linkage FunAttrs
+  syntax FunSpecs ::= FunStorage | FunAttrs | FunStorage FunAttrs
 
   syntax Param ::= Type CId
   syntax Params ::= List{Param,","}
@@ -93,9 +95,12 @@ module CIL-SYNTAX
                    | "register"
                    | "_Thread_local"
 
-  syntax Linkage ::= "static" | "extern"
+  syntax FunStorage ::= "static" | "extern"
 
-  syntax VarDecl ::= Type Var ";"
+  syntax VarDecl ::= Type Var ";" | Storage Type Var ";"
+  syntax InitVarDecl ::= Type Var "=" Initializer ";" | Storage Type Var "=" Initializer ";"
+
+  syntax Initializer ::= Constant | "{" Constants "}"
   syntax VarDecls ::= List{VarDecl, ""}    [right]
 
   /*
@@ -165,6 +170,8 @@ module CIL-SYNTAX
                  | Float
                  | "'"CharConstant"'"
 
+  syntax Constants ::= List{Constant, ","}
+
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
     [onlyLabel]
   syntax CharConstant ::= Char | EscapeString
@@ -187,7 +194,7 @@ module CIL-SYNTAX
    */
   syntax Stmt ::= Instr 
                 | "return" "(" Exp ")" ";"                    [strict]
-                // | "return" ";" // chathhorn: not CIL, return always has parens
+                | "return" ";"
                 | "goto" Label ";"
                 | "break" ";"
                 // | "continue" ";" // chathhorn: doesn't seem to be part of CIL.
@@ -250,6 +257,8 @@ module CIL-SYNTAX
                     | "struct"      [reject]
                     | "union"       [reject]
      
+  syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
+
   /*
    * syntactical macros 
    */

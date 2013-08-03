@@ -1,16 +1,17 @@
+// vim: set ts=2 sw=2:
 require "cil-common.k"
 require "cil-decl.k"
-
 
 module CIL-STMT
   imports CIL-COMMON
   imports CIL-DECL
+  imports CIL-EXP
 
   rule { VDs:VarDecls B:Block } => VDs ~> B   [structural]
 
   rule
     <k> goto L:Label; ~> _ => Ss </k>
-    <frame-fun-id> F:CId </frame-fun-id>
+    <frame-fun-id> F:Ptr </frame-fun-id>
     <fun>...
       <fun-id> F </fun-id>
       <labels>... L |-> Ss:Stmts ...</labels>
@@ -57,42 +58,74 @@ module CIL-STMT
 
   rule _:Label : S:Stmt => S    [structural]
 
-
   /*
-   * Function call/return (function pointers not supported yet).
+   * Function call/return
    */
-  /*TODO: support return for void functions and void functions without return. */
+  syntax K ::= "callMain"
+  rule 
+     <k> callMain => main(.Exps) </k>
+     <env> _ => GEnv </env>
+     <global-env> GEnv:Map </global-env>
+     <phase> _ => executing </phase>
+     [structural]
+
+  context (HOLE => HOLE ~> noLeftValueConversion)(_:Exps)
   rule
     (
       <frame>
-        <k> F:CId(TVs:TypedValues) ~> K:K </k>
+        <k> (nclv(FunType, FunPtr(F:CId, Tu:TransUnit)))(TVs:TypedValues) ~> K:K </k>
         Cells:Bag
       </frame>
     =>
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
-        <frame-fun-id> F </frame-fun-id>
+        <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
+        <env> GEnv TuEnv </env> //TODO(chathhorn): does this work right?
       ...</frame>
     )
     <frame-stack>...
       .List => ListItem(<frame> <k> K </k> Cells </frame>)
     </frame-stack>
     <fun>...
-      <fun-id> F </fun-id>
+      <fun-id> FunPtr(F, Tu) </fun-id>
       <formals> Ps:Params </formals>
       <body> FB:FunBody </body>
     ...</fun>
+    <global-env> GEnv:Map </global-env>
+    <tu>...
+      <tu-id> Tu </tu-id>
+      <tu-env> TuEnv:Map </tu-env>
+    ...</tu>
   [computational]
   rule
     (
       <frame>...
         <k> return (tv(T:Type, V:Value)); ...</k>
-        <frame-fun-id> F:CId </frame-fun-id>
-        <env> Env:Map </env>
+        <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
       <frame>
-        <k> deleteLocals(values(Env)) ~> tv(T, V) ~> K:K </k>
+        <k> tv(T, V) ~> K:K </k> // TODO: deleteLocals
+        Cells:Bag
+      </frame>
+    )
+    <frame-stack>...
+       ListItem(<frame> <k> K </k> Cells </frame>) => .List
+    </frame-stack>   
+    <fun>...
+      <fun-id> F </fun-id>
+      <fun-type> T </fun-type>
+    ...</fun>
+  [computational]
+  rule
+    (
+      <frame>...
+        <k> return ; ...</k>
+        <frame-fun-id> F:Ptr </frame-fun-id>
+      ...</frame>
+    =>
+      <frame>
+        <k> K:K </k>
         Cells:Bag
       </frame>
     )
@@ -106,11 +139,12 @@ module CIL-STMT
   [computational]
 
   rule 
-    <frame>...
+    (<frame>...
     <k> tv(int, mi(_, I:Int)) </k>
-    <frame-fun-id> main </frame-fun-id>
+    <frame-fun-id> Null </frame-fun-id>
     ...</frame> 
-    => <resultValue> I </resultValue>
+    => <resultValue> I </resultValue>)
+    <phase> _ => terminated </phase>
   [structural]
 
   syntax K ::= initializeParams(Params, TypedValues)
@@ -123,9 +157,19 @@ module CIL-STMT
     T X; ~> X = TV; ~> initializeParams(Ps, TVs)
   [structural]
   rule initializeParams(.Params, .TypedValues) => .K   [structural]
-  rule
-    deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)
-  [structural]
-  rule deleteLocals(.Set) => .K   [structural] 
+
+  // rule
+  //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)
+  // [structural]
+  // rule deleteLocals(.Set) => .K   [structural] 
+
+  rule 
+    <k> # pragma KCIL_TU Filename:String => . ...</k>
+    <tus>...
+      (. => <tu>... <tu-id> tu(Filename) </tu-id> ...</tu>)
+    ...</tus>
+    <phase> _ => tu(Filename) </phase>
+    [structural]
+
 endmodule
 

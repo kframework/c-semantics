@@ -1,3 +1,4 @@
+// vim: set ts=2 sw=2:
 require "cil-common.k"
 
 /* CId variable conventions:
@@ -37,20 +38,24 @@ module CIL-EXP
     <type-env>... X |-> T:Type ...</type-env>
     [structural]
 
-  // TODO(chathhorn): I doubt this is part of CIL
+  // TODO(chathhorn): types?
+  rule
+    <k> X:CId => lv(FunType, FunPtr(X, Tu)) ...</k> 
+    <env>... X |-> FunPtr(X, Tu:TransUnit) ...</env>
+    [structural]
+
   rule E1:Exp[E2:Exp] => *(E1 + E2)   [macro]
 
   context (HOLE => HOLE ~> noLeftValueConversion) . _:CId
-
   rule 
     <k> 
-      nclv(Agg:AggType, Ptr(Base:BasePtr, Offset:Int)) . F:CId 
-      => lv(T, Ptr(Base, Offset +Int FOffset))
+      nclv(Agg:AggType, Ptr(Base:BasePtr, Offset:Int)) . M:CId 
+      => lv(T, Ptr(Base, Offset +Int MOffset))
     ...</k>
     <agg-id> Agg </agg-id>
-    <field-id> F </field-id>
+    <field-id> M </field-id>
     <field-type> T:Type </field-type>
-    <offset> FOffset:Int </offset>
+    <offset> MOffset:Int </offset>
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)

@@ -9,8 +9,9 @@ module CIL-COMMON-PTR
    * @invariant: 0 <= Offset <= BasePtr.Size
    * @immutable: BasePtr
    */
-  syntax Ptr ::= "Ptr" "(" BasePtr "," Int ")"
-                | "Null"
+  syntax Ptr ::= Ptr(BasePtr, Int)
+               | FunPtr(CId, TransUnit)
+               | "Null"
   /*
    * BasePtr of Base * Size
    * @immutable: Base, Size 
@@ -127,8 +128,8 @@ module CIL-COMMON-TYPED-VALUE
   syntax LVal ::= LeftValue
   syntax LeftValue ::= lv(Type, Ptr)
 
-  syntax LVal ::= NoConverionLeftValue
-  syntax NoConverionLeftValue ::= nclv(Type, Ptr)
+  syntax LVal ::= NoConversionLeftValue
+  syntax NoConversionLeftValue ::= nclv(Type, Ptr)
 
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, mi(_, V:Int))) => V
@@ -298,6 +299,10 @@ module CIL-COMMON
   rule .Stmts @Stmts Ss:Stmts => Ss
 
   syntax ListItem ::= ListItem(Bag)
+
+  syntax TransUnit ::= tu(String)
+  syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
+  syntax Type ::= "FunType" // TODO(chathhorn)
 
 endmodule
 

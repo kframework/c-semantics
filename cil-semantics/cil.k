@@ -1,3 +1,4 @@
+// vim: ts=2 sw=2:
 require "cil-decl.k"
 require "cil-exp.k"
 require "cil-stmt.k"
@@ -14,15 +15,15 @@ module CIL
   configuration
     <resultValue multiplicity="?"> .K </resultValue>
     <frame multiplicity="?">
-      <k> $PGM:File ~> main(.Exps) </k>
-      <frame-fun-id> .K </frame-fun-id> // CId
+      <k> $PGM:File ~> callMain </k>
+      <frame-fun-id> Null </frame-fun-id> // Ptr
       <env> .Map </env> // Map{CId, Ptr}
       <type-env> .Map </type-env> // Map{CId, Type}
     </frame>
     <frame-stack> .List </frame-stack>  // List{<frame> ... </frame>}
     <funs>
       <fun multiplicity="*">
-        <fun-id> .K </fun-id> // CId
+        <fun-id> .K </fun-id> // Ptr
         <fun-type> void </fun-type>
         <formals> .Params </formals>
         <body> .K </body> // FunBody
@@ -31,10 +32,10 @@ module CIL
     </funs>
     <typedefs> .Map </typedefs> // Map{CId, Type}
     <global-env> .Map </global-env> // Map{CId, Ptr}
-    <current-tu> .K </current-tu> // Tu
+    <phase> initializing </phase> // Phase
     <tus>
       <tu multiplicity="*">
-        <tu-id> .K </tu-id> // Tu
+        <tu-id> .K </tu-id> // TransUnit
         <tu-env> .Map </tu-env> // Map{CId, Ptr}
       </tu>
     </tus>
@@ -75,6 +76,6 @@ module CIL
     </propagate-constants>
 
   syntax KResult ::= TypedValue
-                   | NoConverionLeftValue
+                   | NoConversionLeftValue
 endmodule
 

@@ -1,8 +1,7 @@
+// vim: set ts=2 sw=2:
 require "modules/k-functional-visitor.k"
-
 require "cil-common.k"
 //require "cil-const-propagation.k"
-
 
 module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
@@ -12,18 +11,53 @@ module CIL-DECL
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
 
+  syntax K ::= declInternal(CId, Ptr)
+             | declExternal(CId, Ptr)
+             | defineFun(Ptr, Type, Params, FunBody)
 
   /*
    * Function definition.
    */
+
+  rule 
+    <k> T:Type F:CId(Ps:Params) FB:FunBody
+    => declExternal(F, FunPtr(F, Tu)) 
+    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    ...</k>
+    <phase> Tu:TransUnit </phase>
+
+  rule 
+    <k> extern T:Type F:CId(Ps:Params) FB:FunBody
+    => declExternal(F, FunPtr(F, Tu)) 
+    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    ...</k>
+    <phase> Tu:TransUnit </phase>
+
+  rule 
+    <k> static T:Type F:CId(Ps:Params) FB:FunBody
+    => declInternal(F, FunPtr(F, Tu)) 
+    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    ...</k>
+    <phase> Tu:TransUnit </phase>
+  
+  rule 
+    <k> declInternal(X:CId, P:Ptr) => . ...</k>
+    <tu-id> Tu </tu-id>
+    <tu-env> TuEnv:Map => TuEnv:Map[P / X] </tu-env>
+    <phase> Tu:TransUnit </phase>
+
+  rule 
+    <k> declExternal(X:CId, P:Ptr) => . ...</k>
+    <global-env> GEnv:Map => GEnv:Map[P / X] </global-env>
+
   rule
     <k>
-      T:Type F:CId(Ps:Params) FB:FunBody
+      defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
     =>
       lower-break-continue-to-goto-control(F) ~> make-goto-table-control(F)
       //~> propagate-constants(F)
     ...</k>
-    <frame-fun-id> _ => F </frame-fun-id>
+    // <frame-fun-id> _ => F </frame-fun-id>
     <funs>...
       .Bag
     =>
@@ -41,9 +75,9 @@ module CIL-DECL
   /*
    * Lower break and continue statements to goto statements 
    */
-  syntax K ::= "lower-break-continue-to-goto-control" "(" CId ")"
+  syntax K ::= "lower-break-continue-to-goto-control" "(" Ptr ")"
   rule
-    <k> lower-break-continue-to-goto-control(F:CId) => .K ...</k>
+    <k> lower-break-continue-to-goto-control(F:Ptr) => .K ...</k>
     <fun>...
       <fun-id> F </fun-id>
       <body>
@@ -85,9 +119,9 @@ module CIL-DECL
   /*
    * Compute the goto table (Map{Label, Stmt})
    */
-  syntax K ::= "make-goto-table-control" "(" CId ")"
+  syntax K ::= "make-goto-table-control" "(" Ptr ")"
   rule
-    <k> make-goto-table-control(F:CId) ...</k>
+    <k> make-goto-table-control(F:Ptr) ...</k>
     <fun>...
       <fun-id> F </fun-id>
       <body> { _:VarDecls { Ss:Stmts } } </body>
@@ -111,14 +145,14 @@ module CIL-DECL
     .Bag
   [structural]
   rule
-    <k> (make-goto-table-control(_:CId) => .K) ...</k>
+    <k> (make-goto-table-control(_:Ptr) => .K) ...</k>
     <make-goto-table>
       <make-goto-table-enabled> true => false </make-goto-table-enabled>
     </make-goto-table>
   [structural]
 
   rule
-    <k> make-goto-table-control(F:CId) ...</k>
+    <k> make-goto-table-control(F:Ptr) ...</k>
     <fun>...
       <fun-id> F </fun-id>
       <labels>... .Map => L |-> (S Ss1) @Stmts Ss2 ...</labels>
