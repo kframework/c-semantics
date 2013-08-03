@@ -47,7 +47,7 @@ module C11-ERROR
      syntax String ::= citeErrors(KList) [function]
 
      rule citeError(err(Passage:String, Ref:String)) => 
-          "From (" +String Ref +String "): \"" +String Passage +String "\""
+          "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
      rule citeErrors((Ref:Int,, Refs:KList)) =>
           "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
      rule citeErrors(.KList) => ""
