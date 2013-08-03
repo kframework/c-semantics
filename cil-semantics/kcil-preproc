@@ -1,0 +1,9 @@
+#!/usr/bin/env perl 
+use strict;
+use warnings;
+
+print "#pragma KCIL_TU \"$ARGV[0]\"\n";
+
+for (<>) {
+      print unless /#line/;
+}

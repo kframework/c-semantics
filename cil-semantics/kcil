@@ -24,9 +24,9 @@ my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
 my $myDirectory = dirname(rel2abs($0));
-my $cilparser = 'cat';
 
-my $programRunner = 'kcil-runner';
+my $programRunner = catfile($myDirectory, 'kcil-runner');
+my $kcilPreproc = catfile($myDirectory, 'kcil-preproc');
 
 my @temporaryFiles = ();
 
@@ -98,7 +98,7 @@ sub main {
             die "Nothing returned from linker";
       }
 
-      open(FILE, catfile($myDirectory, $programRunner)) 
+      open(FILE, $programRunner) 
             or die "Couldn't open file: $!";
       my $runner = join("", <FILE>);
       close(FILE);
@@ -200,16 +200,16 @@ sub compileProgram {
             or die "$filename.c not found";
       
       my $retval = system(
-            "$cilparser $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+            "$kcilPreproc $trueFilename 2> $filename.warnings.log 1> program-$filename-compiled.kcil");
       open FILE, "$filename.warnings.log";
       my @lines = <FILE>;
       close FILE;
       if ($retval) {
-            unlink("$filename.gen.parse.tmp");
+            unlink("program-$filename-compiled.kcil");
             unlink("$filename.warnings.log");
-            print STDERR "Error running C parser:\n";
+            print STDERR "Error running KCIL preprocessor:\n";
             print STDERR join("\n", @lines);
-            die();            
+            die();
       }
       if (! $nowarn) {
             print join("\n", @lines);
@@ -217,24 +217,7 @@ sub compileProgram {
       if (! $dflag) {
             unlink("$filename.warnings.log");
       }
-      move("$filename.gen.parse.tmp", "$filename.gen.parse") 
-            or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
       
-      my $PROGRAMRET = 
-            system("$cilparser $filename.gen.parse 2> $compilationLog 1> program-$filename-compiled.kcil");
-      open FILE, "$compilationLog" 
-            or die "Could not open $compilationLog";
-      @lines = <FILE>;
-      close FILE;
-      if (! $dflag) {
-            unlink("$filename.gen.parse");
-      }
-      if ($PROGRAMRET) {
-            print STDERR "Error compiling program:\n";
-            print STDERR join("\n", @lines);
-            unlink($compilationLog);
-            die();
-      }
       return 1;
 }
 

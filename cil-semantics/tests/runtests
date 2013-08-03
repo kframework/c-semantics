@@ -253,33 +253,3 @@ sub encode {
 	my $node = $doc->createTextNode($str);
 	return $node->toString();
 }
-
-#@diff -y --suppress-common-lines -I '^VOLATILE' $+
-
-
-# output-%: test-%
-	# @echo "Running $< ..."
-	# @trap "" SIGABRT; $(COMMAND_PREFIX) ./$< 2>&1 > $@.tmp; RETURN_VALUE=$$?; echo $$RETURN_VALUE >> $@.tmp
-	# @mv $@.tmp $@
-	
-	
-  # <testcase classname="net.cars.engine.PistonTest" name="moveUp" time="0.022">
-    # <error message="test timed out after 1 milliseconds" type="java.lang.Exception">java.lang.Exception: test timed out after 1 milliseconds
-# </error>
-  # </testcase>
-  # <testcase classname="net.cars.engine.PistonTest" name="moveDown" time="0.0010" />
-  # <testcase classname="net.cars.engine.PistonTest" name="checkStatus" time="0.0030">
-    # <failure message="Plunger status invalid to proceed driving." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Plunger status invalid to proceed driving.
-	# at net.cars.engine.PistonTest.checkStatus(PistonTest.java:42)
-# </failure>
-  # </testcase>
-  # <testcase classname="net.cars.engine.PistonTest" name="checkSpeed" time="0.0080">
-    # <failure message="Plunger upward speed below specifications." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Plunger upward speed below specifications.
-	# at net.cars.engine.PistonTest.checkSpeed(PistonTest.java:47)
-# </failure>
-  # </testcase>
-  # <testcase classname="net.cars.engine.PistonTest" name="lubricate" time="0.0030">
-    # <failure message="Failed to lubricate the plunger." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Failed to lubricate the plunger.
-	# at net.cars.engine.PistonTest.lubricate(PistonTest.java:52)
-# </failure>
-  # </testcase>
