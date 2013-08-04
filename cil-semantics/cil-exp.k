@@ -49,7 +49,7 @@ module CIL-EXP
   context (HOLE => HOLE ~> noLeftValueConversion) . _:CId
   rule 
     <k> 
-      nclv(Agg:AggType, Ptr(Base:BasePtr, Offset:Int)) . M:CId 
+      nclv(Agg:AggTypeSpec, Ptr(Base:BasePtr, Offset:Int)) . M:CId 
       => lv(T, Ptr(Base, Offset +Int MOffset))
     ...</k>
     <agg-id> Agg </agg-id>
@@ -59,15 +59,15 @@ module CIL-EXP
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
-  rule &nclv(T:Type, P:Ptr) => tv(T*, P) [structural]
+  rule &nclv(T:Type, P:Ptr) => tv(toPtr(T), P) [structural]
   
   /* dereference */
-  rule *tv(T:Type*, P:Ptr) => lv(T, P) [structural]
+  rule *tv(T:Type, P:Ptr) => lv(fromPtr(T), P) [structural]
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
-  rule nclv(T:NvType, P:Ptr) = tv(T, V:Value); => store(T, P, V)
+  rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
     
-  rule (lv(T:NvType, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
+  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
     when KLabel(KList) =/=K noLeftValueConversion
 
   rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
@@ -195,9 +195,8 @@ module CIL-EXP
   /* TODO: sizeof for exp 
   */
   rule sizeof(T:BasicType) => byteWidth(T)    [structual]
-  rule sizeof(T:PtrType) => byteWidth(T)    [structual]
-  rule <k> sizeof(X:AggType) => Size ...</k>
-     <agg-id> X </agg-id>
+  rule <k> sizeof(T:AggTypeSpec) => Size ...</k>
+     <agg-id> T </agg-id>
      <size> Size:Int </size>
      [structural]
   rule <k> sizeof(X:CId) => sizeof(T) ...</k>
@@ -228,17 +227,18 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
   context tv(_, PtrAdd(_, _, HOLE))
-  rule tv(T:Type*, P:Ptr) + tv(_, I:Int) => tv(T*, PtrAdd(P, I, sizeof(T)))
-  rule tv(_, I:Int) + tv(T:Type*, P:Ptr) => tv(T*, PtrAdd(P, I, sizeof(T)))
-  rule
-    tv(T:Type*, P:Ptr) - tv(_, I:Int)
-  =>
-    tv(T*, PtrAdd(P, 0 -Int I, sizeof(T)))
-
-  /* TODO: replace int with size_ptr */
-  context tv(_, PtrSub(_, _, HOLE))
-  rule
-    tv(T:Type*, P1:Ptr) - tv(T*, P2:Ptr) => tv(int, PtrSub(P1, P2, sizeof(T)))
+  // TODO(chathhorn): POINTERS
+  //rule tv(T:Type*, P:Ptr) + tv(_, I:Int) => tv(T*, PtrAdd(P, I, sizeof(T)))
+  // rule tv(_, I:Int) + tv(T:Type*, P:Ptr) => tv(T*, PtrAdd(P, I, sizeof(T)))
+  // rule
+  //   tv(T:Type*, P:Ptr) - tv(_, I:Int)
+  // =>
+  //   tv(T*, PtrAdd(P, 0 -Int I, sizeof(T)))
+// 
+//   /* TODO: replace int with size_ptr */
+//   context tv(_, PtrSub(_, _, HOLE))
+//   rule
+//     tv(T:Type*, P1:Ptr) - tv(T*, P2:Ptr) => tv(int, PtrSub(P1, P2, sizeof(T)))
   
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)
   rule tv(T:Type, F1:Float) <= tv(T, F2:Float) => norm(int, F1 <=Float F2)

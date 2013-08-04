@@ -1,6 +1,6 @@
+// vim: set ts=2 sw=2:
 require "cil-syntax.k"
 require "builtins/mint.k"
-
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
@@ -138,6 +138,7 @@ endmodule
 
 module CIL-COMMON-MMU
   imports CIL-SYNTAX
+  imports CIL-COMMON
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
@@ -186,7 +187,7 @@ module CIL-COMMON-MMU
     <k>
       $newObject(T:Type, Sz:TypedValue)
     =>
-      tv(T*, Ptr(BasePtr(Base, val(Sz)), (0)))
+      tv(toPtr(T), Ptr(BasePtr(Base, val(Sz)), (0)))
     ...</k>
     <heap>...
       .Bag
@@ -221,7 +222,7 @@ module CIL-COMMON-MMU
              | "$store" "(" Ptr "," List ")"
 
   /* TODO: check beforehand that load/store would be successful */
-  rule store(T:NvType, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
+  rule store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
   rule 
     <k> store((X:CId => T), _, _) ...</k>
@@ -242,7 +243,7 @@ module CIL-COMMON-MMU
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
 
-  rule load(T:NvType, P:Ptr) => $load(T, P, sizeof(T)) [structural]
+  rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T)) [structural]
   rule 
     <k> load((X:CId => T), _) ...</k>
     <typedefs>... X |-> T:Type ...</typedefs>
@@ -282,14 +283,22 @@ module CIL-COMMON
   syntax Error ::= "dummy_Error_item"
 
   syntax MInt ::= bool2mint(Bool) [function]
+
+  syntax Type ::= toPtr(Type) [function]
+  rule toPtr(TS:TypeSpec D:AbsDecl) => (TS *(D))::Type
+  rule toPtr(TS:TypeSpec) => (TS *(__blank))::Type
+
+  syntax Type ::= fromPtr(Type) [function]
+  rule fromPtr(TS:TypeSpec *(D:AbsDecl)) => (TS D)::Type
+
   rule
     bool2mint(B:Bool)
   =>
     tv(int, #if B #then mi((width(int)), 1) #else mi((width(int)), 0) #fi)
+
   /* 0 has identical signed and unsigned representations */
   syntax Bool ::= isZero(MInt) [function]
   rule isZero(MI:MInt) => iMInt(uMInt(MI)) ==Int 0
-
 
   /*
    * List{Stmt} concatenation
@@ -303,6 +312,5 @@ module CIL-COMMON
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
   syntax Type ::= "FunType" // TODO(chathhorn)
-
 endmodule
 

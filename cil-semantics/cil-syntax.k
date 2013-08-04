@@ -8,21 +8,26 @@ module CIL-SYNTAX
                   | TuPragma
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypeDef | FunDecl
+  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypeDef | EnumDecl
   syntax TypeDef ::= "typedef" Type CId ";" 
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
 
-  syntax Type ::= Void
-                | NvType
-                | CId
+  syntax EnumDecl ::= "enum" CId "{" EnumInits "}" ";"
+  syntax EnumInit ::= CId "=" Constant
+  syntax EnumInits ::= List{EnumInit, ","} [right]
+
+  // It appears that CIL substitutes constants for the enum tags, but leaves
+  // the declaration, so I think it can be safely elided.
+  rule enum _:CId { _:EnumInits } ; => . [macro]
+
+  syntax Type ::= TypeSpec | TypeSpec AbsDecl // TODO
+  // syntax Type ::= Void
+  //               | NvType
+  //               | CId
   syntax Void ::= "void"
-  syntax NvType ::= BasicType
-                  | PtrType 
-                  | ArrayType
-                  | AggType
-                  | ConstType
+  syntax NvType ::= BasicType // TODO
   syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
@@ -42,66 +47,20 @@ module CIL-SYNTAX
   syntax FloatingType ::= "float"
                         | "double"
                         | "long" "double"
-  syntax PtrType ::= Type "*"
-  syntax ConstType ::= Type "const"
-  syntax ArrayType ::= Type "[" Nat "]" 
-  syntax AggType ::= "struct" CId | "union" CId
+
   syntax Types ::= List{Type,","}
 
 
   /* TODO: simplify */
-  syntax FunDef ::= Type CId "(" FunParams ")" FunBody 
-                  | FunSpecs Type CId "(" FunParams ")" FunBody 
-
-  syntax FunDecl ::= Type CId "(" FunParams ")" ";" 
-                  | FunSpecs Type CId "(" FunParams ")" ";" 
-                  | Type CId "(" FunParams ")" FunAttrs ";" 
-                  | FunSpecs Type CId "(" FunParams ")" FunAttrs ";" 
-
-  // Elide function attributes.
-  rule S:FunSpecs T:Type F:CId ( P:FunParams ) _:FunAttrs ; 
-    => S T F ( P ) ;  [macro]
-  rule T:Type F:CId ( P:FunParams ) _:FunAttrs ; 
-    => T F ( P ) ;  [macro]
-  rule _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
-    => T F ( P ) ;  [macro]
-  rule L:FunStorage _:FunAttrs T:Type F:CId ( P:FunParams ) ; 
-    => L T F ( P ) ;  [macro]
-
-  syntax FunSpecs ::= FunStorage | FunAttrs | FunStorage FunAttrs
-
-  syntax Param ::= Type CId
-  syntax Params ::= List{Param,","}
-  syntax FunParams ::= Params | Void
-
-  syntax Attr ::= "__nothrow__"
-                | "__noreturn__" 
-                | "__nonnull__" "(" Int ")" 
-                | "__leaf__"
-                | "__pure__"
-  syntax Attrs ::= List{Attr, ","}
-  syntax FunAttrs ::= "__attribute__" "(" "(" Attrs ")" ")"
-
-  // Elide const.
-  rule T:Type const => T [macro]
+  syntax FunDef ::= DeclSpecs Declarator "(" Params ")" FunBody 
 
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
-  rule T:Type F:CId(void) FB:FunBody => T F(.Params) FB [macro]
-  rule T:Type F:CId(Ps:Params) B:Block => T F(Ps) { .VarDecls B } [macro]
 
-  syntax Storage ::= "static"
-                   | "extern"
-                   | "register"
-                   | "_Thread_local"
-
-  syntax FunStorage ::= "static" | "extern"
-
-  syntax VarDecl ::= Type Var ";" | Storage Type Var ";"
-  syntax InitVarDecl ::= Type Var "=" Initializer ";" | Storage Type Var "=" Initializer ";"
-
-  syntax Initializer ::= Constant | "{" Constants "}"
-  syntax VarDecls ::= List{VarDecl, ""}    [right]
+  rule S:DeclSpecs F:Declarator (void) FB:FunBody 
+    => S F(.Params) FB [macro]
+  rule S:DeclSpecs F:Declarator (Ps:Params) B:Block 
+    => S F(Ps) { .VarDecls B } [macro]
 
   /*
    * expressions
@@ -115,12 +74,6 @@ module CIL-SYNTAX
                | "~" Exp                  [strict]
                | "!" Exp
                | "sizeof" "(" Type ")"    [prefer]
-               /* 
-                * NOTE: this grammar allows "sizeof (int) 1", which is not
-                * allowed by the official C grammar (not sure why, it only
-                * allows "sizeof ((int) 1)")
-                */
-               // | "sizeof" Exp // not in CIL
                > "(" Type ")" Exp         [strict, prefer]
                > left:
                  Exp "*" Exp              [strict, left]
@@ -214,10 +167,7 @@ module CIL-SYNTAX
   syntax Instr ::= LVal "=" Exp ";"       [strict(2)]
                  | LVal "=" FunCall ";"   [strict(2)]
                  | FunCall ";"            [strict]
-  /*
-   * TODO: FunCall is strict only in the second argument because we do not
-   * support function pointers yet.
-   */
+
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
   syntax Label ::= CId
@@ -263,13 +213,190 @@ module CIL-SYNTAX
    * syntactical macros 
    */
   rule if (E:Exp) S:Stmt => if (E) S else ;   [macro]
-  // rule T:Type X:CId = E; => T X; X = E;   [macro]
-  //rule !E:Exp => E == 0                       [macro]
-  // rule E1:Exp != E2:Exp => !(E1 == E2)        [macro]
 
-  /*
-   * priorities
-   */
-  //syntax priority 'return_; > '_;
+  // *** Variable, function, and typedef declarations.
+
+  // declaration
+  //     declaration-specifiers init-declarator-list_opt ;
+  //     static_assert-declaration
+  syntax VarDecl ::=
+      DeclSpecs Declarator ";"
+  syntax VarDecls ::= List{VarDecl, ""}    [right]
+  
+  syntax InitVarDecl ::= 
+      DeclSpecs Declarator "=" Initializer ";"
+
+  // declaration-specifiers
+  //     storage-class-specifier declaration-specifiers_opt
+  //     type-specifier          declaration-specifiers_opt
+  //     type-qualifier          declaration-specifiers_opt
+  //     function-specifier      declaration-specifiers_opt
+  //     alignment-specifier     declaration-specifiers_opt
+  syntax DeclSpecs ::=
+      TypeSpec
+    | TypeQual TypeSpec
+    | StorageClassSpecifier TypeSpec
+    | StorageClassSpecifier TypeQual TypeSpec
+  rule _:TypeQual T:TypeSpec => T [macro]
+  rule Sto:StorageClassSpecifier _:TypeQual T:TypeSpec
+    => Sto T [macro]
+  rule register T:TypeSpec => T [macro]
+
+  // storage-class-specifier
+  //     [ ... ]
+  syntax StorageClassSpecifier ::=
+      "typedef"
+    | "extern"
+    | "static"
+    | "_Thread_local"
+    | "auto"
+    | "register"
+
+  // type-specifier
+  //     [ ... ]
+  //     atomic-type-sepcifier
+  //     struct-or-union-specifier
+  //     enum-specifier
+  //     typedef-name
+  syntax TypeSpec ::=
+      Void
+    | BasicType
+    | "_Complex"
+    | AggTypeSpec
+    | CId
+
+  // struct-or-union-specifier
+  //     struct-or-union identifier_opt { struct-declaration-list }
+  //     struct-or-union identifier
+  syntax AggTypeSpec ::=
+      "struct" CId 
+    | "union" CId 
+  
+  // atomic-type-specifier
+  //     _Atomic ( type-name )
+  // syntax AtomicTypeSpec ::=
+  //     "_Atomic" "(" TypeName ")"
+
+  // type-qualifier
+  //     const
+  //     restrict
+  //     volatile
+  //     _Atomic
+  syntax TypeQual ::=
+      "const"
+    | "restrict"
+    | "volatile"
+    | "_Atomic"
+
+  // function-specifier
+  //     inline
+  //     _Noreturn
+  // syntax FunctionSpecifier ::=
+  //     "inline"
+  //   | "_Noreturn"
+
+  // alignment-specifier
+  //     _Alignas ( type-name )
+  //     _Alignas ( constant-expression )
+  // syntax AlignmentSpecifier ::=
+  //     "_Alignas" "(" TypeName ")"
+  //   | "_Alignas" "(" Constant ")"
+
+  // declarator
+  //     pointer_opt direct-declarator
+  syntax Declarator ::=
+      DirectDeclarator 
+    | Pointer DirectDeclarator
+
+  // direct-declarator
+  //     identifier
+  //     ( declarator )
+  //     direct-declarator [ type-qualifier-list_opt assignment-expression_opt]
+  //     direct-declarator [ static type-qualifier-list_opt assignment-expression ]
+  //     direct-declarator [ type-qualifier-list static assignment-expression ]
+  //     direct-declarator [ type-qualifier-list_opt * ]
+  //     direct-declarator ( parameter-type-list )
+  //     direct-declarator ( identifier-list_opt )
+  syntax DirectDeclarator ::=
+      CId
+    | "(" Declarator ")"
+    | DirectDeclarator "[" Constant "]"
+    | DirectDeclarator "(" ")"
+    | DirectDeclarator "(" Params ")"
+  
+  // TODO(chathhorn): type qualifiers.
+  // pointer
+  //      * type-qualifier-list_opt
+  //      * type-qualifier-list_opt pointer
+  syntax Pointer ::=
+      "*"
+    | "*" TypeQual
+    | "*" Pointer
+    | "*" TypeQual Pointer
+  rule * _:TypeQual => * [macro]
+  rule * _:TypeQual P:Pointer => * P [macro]
+
+  // parameter-type-list
+  //     parameter-list
+  //     parameter-list , ...
+  // syntax ParameterTypeList ::=
+  //     Params
+  //   | Params "," "..."
+
+  // parameter-list
+  //     parameter-declaration
+  //     parameter-list , parameter-declaration
+  syntax Params ::=
+      List{ParamDecl, ","} [right]
+  
+  // parameter-declaration
+  //     declaration-specifiers declarator
+  //     declaration-specifiers abstract-declarator_opt
+  syntax ParamDecl ::=
+      DeclSpecs
+    | DeclSpecs Declarator
+    | DeclSpecs AbsDecl
+
+  // type-name
+  //     specifier-qualifier-list abstract-declarator_opt
+  // syntax TypeName ::=
+  //     SpecifierQualifierList
+  //   | SpecifierQualifierList AbsDecl
+  
+  // Abstract declarators are declarators without identifiers.
+
+  // abstract-declarator
+  //     pointer
+  //     pointer_opt direct-abstract-declarator
+  syntax AbsDecl ::=
+      Pointer
+    | DirectAbsDecl
+    | Pointer DirectAbsDecl
+    | "__blank" // TODO(chathhorn): well...
+  
+  // direct-abstract-declarator
+  //     ( abstract-declarator )
+  //     direct-abstract-declarator_opt [ type-qualifier-list_opt assignment-expression_opt ]
+  //     direct-abstract-declarator_opt [ static type-qualifier-list_opt assignment-expression ]
+  //     direct-abstract-declarator_opt [ type-qualifier-list static assignment-expression ]
+  //     direct-abstract-declarator_opt [ * ]
+  //     direct-abstract-declarator_opt ( parameter-type-list_opt )
+  syntax DirectAbsDecl ::=
+      "(" AbsDecl ")"
+    | "[" Constant "]"
+    | DirectAbsDecl "[" Constant "]"
+    | "(" ")"
+    | DirectAbsDecl "(" ")"
+    | "(" Params ")"
+    | DirectAbsDecl "(" Params ")"
+  
+  // initializer
+  //     assignment-expression
+  //     { initializer-list }
+  //     { initializer-list , }
+  syntax Initializer ::= 
+      Constant
+    | "{" Constants "}" 
+
 endmodule
 

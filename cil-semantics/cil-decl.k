@@ -13,28 +13,28 @@ module CIL-DECL
 
   syntax K ::= declInternal(CId, Ptr)
              | declExternal(CId, Ptr)
-             | defineFun(Ptr, Type, Params, FunBody)
+             | defineFun(Ptr, TypeSpec, Params, FunBody)
 
   /*
    * Function definition.
    */
 
   rule 
-    <k> T:Type F:CId(Ps:Params) FB:FunBody
+    <k> T:TypeSpec F:CId(Ps:Params) FB:FunBody
     => declExternal(F, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> extern T:Type F:CId(Ps:Params) FB:FunBody
+    <k> extern T:TypeSpec F:CId(Ps:Params) FB:FunBody
     => declExternal(F, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> static T:Type F:CId(Ps:Params) FB:FunBody
+    <k> static T:TypeSpec F:CId(Ps:Params) FB:FunBody
     => declInternal(F, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
@@ -52,7 +52,7 @@ module CIL-DECL
 
   rule
     <k>
-      defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
+      defineFun(F:Ptr, T:TypeSpec, Ps:Params, FB:FunBody)
     =>
       lower-break-continue-to-goto-control(F) ~> make-goto-table-control(F)
       //~> propagate-constants(F)
@@ -224,10 +224,11 @@ module CIL-DECL
   rule VD:VarDecl VDs:VarDecls => VD ~> VDs [structural]
   rule .VarDecls => .K [structural]
 
-  rule T:Type X:CId; => bindLocal(T, X, newObject(T))
+  rule T:TypeSpec X:CId; => bindLocal(T, X, newObject(T))
   syntax K ::= bindLocal(Type, CId, K) [strict(3)]
+  // TODO(chathhorn): POINTERS
   rule
-    <k> bindLocal(T:Type, X:CId, tv(T*, P:Ptr)) => .K ...</k>
+    <k> bindLocal(T:Type, X:CId, tv(_, P:Ptr)) => .K ...</k>
     <env>... .Map => X |-> P ...</env>
     <type-env>... .Map => X |-> T ...</type-env>
   [structural]
@@ -244,7 +245,7 @@ module CIL-DECL
     [structural]
 
   rule 
-     <k> declStruct(X:CId, T:Type F:CId; ~> VDs:VarDecls, Offset:TypedValue) 
+     <k> declStruct(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Offset:TypedValue) 
      => declStruct(X, VDs, Offset + sizeof(T)) ...</k>
      <agg-id> struct X </agg-id>
      <fields>...
@@ -276,7 +277,7 @@ module CIL-DECL
     [structural]
 
   rule 
-     <k> declUnion(X:CId, T:Type F:CId; ~> VDs:VarDecls, Size:TypedValue)
+     <k> declUnion(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Size:TypedValue)
      => declUnion(X, VDs, maxK(Size, sizeof(T))) ...</k>
      <agg-id> union X </agg-id>
      <fields>...

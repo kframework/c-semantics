@@ -149,12 +149,13 @@ module CIL-STMT
 
   syntax K ::= initializeParams(Params, TypedValues)
              | deleteLocals(Set)
+  // TODO(chathhorn): POINTERS
   rule
     initializeParams(
-        ((T:Type X:CId), Ps:Params),
+        ((TS:TypeSpec X:CId), Ps:Params),
         (TV:TypedValue, TVs:TypedValues))
   =>
-    T X; ~> X = TV; ~> initializeParams(Ps, TVs)
+    TS X; ~> X = TV; ~> initializeParams(Ps, TVs)
   [structural]
   rule initializeParams(.Params, .TypedValues) => .K   [structural]
 
