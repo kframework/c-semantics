@@ -4,6 +4,8 @@ use warnings;
 
 print "#pragma KCIL_TU \"$ARGV[0]\"\n";
 
-for (<>) {
-      print unless /#line/;
+for (join('', <>)) {
+      s/^#line//gms;
+      s/__attribute__\(\(.*?\)\)//gms;
+      print;
 }
