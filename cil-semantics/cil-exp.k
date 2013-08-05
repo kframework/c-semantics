@@ -59,10 +59,10 @@ module CIL-EXP
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
-  rule &nclv(T:Type, P:Ptr) => tv(toPtr(T), P) [structural]
+  rule &nclv(T:Type, P:Ptr) => tv(upPtr(T), P) [structural]
   
   /* dereference */
-  rule *tv(T:Type, P:Ptr) => lv(fromPtr(T), P) [structural]
+  rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) [structural]
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)

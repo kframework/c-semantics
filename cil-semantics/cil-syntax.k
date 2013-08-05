@@ -22,12 +22,12 @@ module CIL-SYNTAX
   // the declaration, so I think it can be safely elided.
   rule enum _:CId { _:EnumInits } ; => . [macro]
 
-  syntax Type ::= ParamDecl // TODO
+  syntax Type ::= ParamDecl // TODO(chathhorn)
   // syntax Type ::= Void
   //               | NvType
   //               | CId
   syntax Void ::= "void"
-  syntax NvType ::= BasicType // TODO
+  syntax NvType ::= BasicType // TODO(chathhorn)
   syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
@@ -303,8 +303,8 @@ module CIL-SYNTAX
   // declarator
   //     pointer? direct-declarator
   syntax Declarator ::=
-      DirectDeclarator 
-    | Pointer DirectDeclarator
+      DirectDecl 
+    | Pointer DirectDecl
 
   // direct-declarator
   //     identifier
@@ -315,13 +315,13 @@ module CIL-SYNTAX
   //     direct-declarator [ type-qualifier-list? * ]
   //     direct-declarator ( parameter-type-list )
   //     direct-declarator ( identifier-list? )
-  syntax DirectDeclarator ::=
+  syntax DirectDecl ::=
       CId
     | "(" Declarator ")"
-    | DirectDeclarator "(" ")" [prefer]
-    | DirectDeclarator "[" "]" [prefer]
-    | DirectDeclarator "(" Params ")"
-    | DirectDeclarator "[" Constant "]"
+    | DirectDecl "(" ")" [prefer]
+    | DirectDecl "[" "]" [prefer]
+    | DirectDecl "(" Params ")"
+    | DirectDecl "[" Constant "]"
   
   // TODO(chathhorn): type qualifiers.
   // pointer
@@ -362,7 +362,8 @@ module CIL-SYNTAX
   //     SpecQualifierList
   //   | SpecQualifierList AbsDecl
   
-  // Abstract declarators are declarators without identifiers.
+  // Abstract declarators are declarators without identifiers optionally used
+  // in function parameter lists declarations.
 
   // abstract-declarator
   //     pointer
