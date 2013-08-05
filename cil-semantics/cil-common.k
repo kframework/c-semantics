@@ -138,7 +138,7 @@ endmodule
 
 module CIL-COMMON-MMU
   imports CIL-SYNTAX
-  imports CIL-COMMON
+  imports CIL-COMMON-TYPE
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
@@ -284,13 +284,6 @@ module CIL-COMMON
 
   syntax MInt ::= bool2mint(Bool) [function]
 
-  syntax Type ::= toPtr(Type) [function]
-  rule toPtr(TS:TypeSpec D:AbsDecl) => (TS *(D))::Type
-  rule toPtr(TS:TypeSpec) => (TS *(__blank))::Type
-
-  syntax Type ::= fromPtr(Type) [function]
-  rule fromPtr(TS:TypeSpec *(D:AbsDecl)) => (TS D)::Type
-
   rule
     bool2mint(B:Bool)
   =>
@@ -311,6 +304,61 @@ module CIL-COMMON
 
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
+endmodule
+
+module CIL-COMMON-TYPE
+  imports CIL-SYNTAX
+
   syntax Type ::= "FunType" // TODO(chathhorn)
+
+  syntax Type ::= toPtr(Type) [function]
+  rule toPtr(TS:TypeSpec D:AbsDecl) => (TS *(D))::Type
+  rule toPtr(TS:TypeSpec) => (TS *())::Type
+
+  syntax Type ::= fromPtr(Type) [function]
+  rule fromPtr(TS:TypeSpec *(D:AbsDecl)) => (TS D)::Type
+
+  // Basically handles VarDecls without the semicolon or initializer.
+  syntax Type ::= extractType(K) [function]
+  rule extractType(_:StorageClassSpec TS:TypeSpec D:Declarator) 
+    => extractType(TS D)
+  rule extractType(TS:TypeSpec D:Declarator)
+    => (TS toAbsDecl(D))::Type
+
+  syntax AbsDecl ::= toAbsDecl(Declarator) [function]
+  syntax DirectAbsDecl ::= toDirectAbsDecl(DirectDeclarator) [function]
+  syntax Params ::= toAbsParams(Params) [function]
+  syntax ParamDecl ::= toAbsParamDecl(ParamDecl) [function]
+
+  rule toAbsDecl(D:DirectDeclarator) => toDirectAbsDecl(D)
+  rule toAbsDecl(P:Pointer D:DirectDeclarator) => P toDirectAbsDecl(D)
+
+  rule toDirectAbsDecl(X:CId) => ()
+  rule toDirectAbsDecl( ( D:Declarator ) ) 
+    => ( toAbsDecl(D) )
+  rule toDirectAbsDecl( D:DirectDeclarator() ) 
+    => toDirectAbsDecl(D)()
+  rule toDirectAbsDecl( D:DirectDeclarator[] ) 
+    => toDirectAbsDecl(D)[]
+  rule toDirectAbsDecl( D:DirectDeclarator(P:Params) ) 
+    => toDirectAbsDecl(D)(toAbsParams(P))
+  rule toDirectAbsDecl( D:DirectDeclarator[C:Constant] ) 
+    => toDirectAbsDecl(D)[C]
+
+  rule toAbsParams(P:ParamDecl, Ps:Params) 
+    => toAbsParamDecl(P), toAbsParams(Ps)
+  rule toAbsParams(.Params) 
+    => .Params
+
+  rule toAbsParamDecl(S:DeclSpecs D:Declarator) 
+    => extractType(S D)
+  rule toAbsParamDecl(_:StorageClassSpec TS:TypeSpec D:AbsDecl) 
+    => (TS D)::ParamDecl
+  rule toAbsParamDecl(TS:TypeSpec D:AbsDecl) 
+    => (TS D)::ParamDecl
+  rule toAbsParamDecl(_:StorageClassSpec TS:TypeSpec) 
+    => (TS ())::ParamDecl
+  rule toAbsParamDecl(TS:TypeSpec) 
+    => (TS ())::ParamDecl
 endmodule
 
