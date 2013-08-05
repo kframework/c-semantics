@@ -380,7 +380,6 @@ module CIL-SYNTAX
   //     direct-abstract-declarator? [ * ]
   //     direct-abstract-declarator? ( parameter-type-list? )
   syntax DirectAbsDecl ::=
-  // Technically an empty parameter list, but also used as an empty abs decl.    
       "(" ")" [prefer]
     | "[" "]" [prefer]
     | "(" AbsDecl ")"

@@ -311,9 +311,11 @@ module CIL-COMMON-TYPE
 
   syntax Type ::= "FunType" // TODO(chathhorn)
 
+  syntax DirectAbsDecl ::= "__id__"
+
   syntax Type ::= toPtr(Type) [function]
   rule toPtr(TS:TypeSpec D:AbsDecl) => (TS *(D))::Type
-  rule toPtr(TS:TypeSpec) => (TS *())::Type
+  rule toPtr(TS:TypeSpec) => (TS *__id__)::Type
 
   syntax Type ::= fromPtr(Type) [function]
   rule fromPtr(TS:TypeSpec *(D:AbsDecl)) => (TS D)::Type
@@ -333,7 +335,7 @@ module CIL-COMMON-TYPE
   rule toAbsDecl(D:DirectDeclarator) => toDirectAbsDecl(D)
   rule toAbsDecl(P:Pointer D:DirectDeclarator) => P toDirectAbsDecl(D)
 
-  rule toDirectAbsDecl(X:CId) => ()
+  rule toDirectAbsDecl(X:CId) => __id__
   rule toDirectAbsDecl( ( D:Declarator ) ) 
     => ( toAbsDecl(D) )
   rule toDirectAbsDecl( D:DirectDeclarator() ) 
@@ -357,8 +359,8 @@ module CIL-COMMON-TYPE
   rule toAbsParamDecl(TS:TypeSpec D:AbsDecl) 
     => (TS D)::ParamDecl
   rule toAbsParamDecl(_:StorageClassSpec TS:TypeSpec) 
-    => (TS ())::ParamDecl
+    => (TS __id__)::ParamDecl
   rule toAbsParamDecl(TS:TypeSpec) 
-    => (TS ())::ParamDecl
+    => (TS __id__)::ParamDecl
 endmodule
 
