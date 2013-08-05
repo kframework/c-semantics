@@ -22,7 +22,7 @@ module CIL-SYNTAX
   // the declaration, so I think it can be safely elided.
   rule enum _:CId { _:EnumInits } ; => . [macro]
 
-  syntax Type ::= TypeSpec | TypeSpec AbsDecl // TODO
+  syntax Type ::= ParamDecl // TODO
   // syntax Type ::= Void
   //               | NvType
   //               | CId
@@ -123,8 +123,6 @@ module CIL-SYNTAX
                  | Float
                  | "'"CharConstant"'"
 
-  syntax Constants ::= List{Constant, ","}
-
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
     [onlyLabel]
   syntax CharConstant ::= Char | EscapeString
@@ -217,7 +215,7 @@ module CIL-SYNTAX
   // *** Variable, function, and typedef declarations.
 
   // declaration
-  //     declaration-specifiers init-declarator-list_opt ;
+  //     declaration-specifiers init-declarator-list? ;
   //     static_assert-declaration
   syntax VarDecl ::=
       DeclSpecs Declarator ";"
@@ -227,24 +225,24 @@ module CIL-SYNTAX
       DeclSpecs Declarator "=" Initializer ";"
 
   // declaration-specifiers
-  //     storage-class-specifier declaration-specifiers_opt
-  //     type-specifier          declaration-specifiers_opt
-  //     type-qualifier          declaration-specifiers_opt
-  //     function-specifier      declaration-specifiers_opt
-  //     alignment-specifier     declaration-specifiers_opt
+  //     storage-class-specifier declaration-specifiers?
+  //     type-specifier          declaration-specifiers?
+  //     type-qualifier          declaration-specifiers?
+  //     function-specifier      declaration-specifiers?
+  //     alignment-specifier     declaration-specifiers?
   syntax DeclSpecs ::=
       TypeSpec
     | TypeQual TypeSpec
-    | StorageClassSpecifier TypeSpec
-    | StorageClassSpecifier TypeQual TypeSpec
+    | StorageClassSpec TypeSpec
+    | StorageClassSpec TypeQual TypeSpec
   rule _:TypeQual T:TypeSpec => T [macro]
-  rule Sto:StorageClassSpecifier _:TypeQual T:TypeSpec
+  rule Sto:StorageClassSpec _:TypeQual T:TypeSpec
     => Sto T [macro]
   rule register T:TypeSpec => T [macro]
 
   // storage-class-specifier
   //     [ ... ]
-  syntax StorageClassSpecifier ::=
+  syntax StorageClassSpec ::=
       "typedef"
     | "extern"
     | "static"
@@ -266,7 +264,7 @@ module CIL-SYNTAX
     | CId
 
   // struct-or-union-specifier
-  //     struct-or-union identifier_opt { struct-declaration-list }
+  //     struct-or-union identifier? { struct-declaration-list }
   //     struct-or-union identifier
   syntax AggTypeSpec ::=
       "struct" CId 
@@ -291,19 +289,19 @@ module CIL-SYNTAX
   // function-specifier
   //     inline
   //     _Noreturn
-  // syntax FunctionSpecifier ::=
+  // syntax FunctionSpec ::=
   //     "inline"
   //   | "_Noreturn"
 
   // alignment-specifier
   //     _Alignas ( type-name )
   //     _Alignas ( constant-expression )
-  // syntax AlignmentSpecifier ::=
+  // syntax AlignmentSpec ::=
   //     "_Alignas" "(" TypeName ")"
   //   | "_Alignas" "(" Constant ")"
 
   // declarator
-  //     pointer_opt direct-declarator
+  //     pointer? direct-declarator
   syntax Declarator ::=
       DirectDeclarator 
     | Pointer DirectDeclarator
@@ -311,23 +309,24 @@ module CIL-SYNTAX
   // direct-declarator
   //     identifier
   //     ( declarator )
-  //     direct-declarator [ type-qualifier-list_opt assignment-expression_opt]
-  //     direct-declarator [ static type-qualifier-list_opt assignment-expression ]
+  //     direct-declarator [ type-qualifier-list? assignment-expression?]
+  //     direct-declarator [ static type-qualifier-list? assignment-expression ]
   //     direct-declarator [ type-qualifier-list static assignment-expression ]
-  //     direct-declarator [ type-qualifier-list_opt * ]
+  //     direct-declarator [ type-qualifier-list? * ]
   //     direct-declarator ( parameter-type-list )
-  //     direct-declarator ( identifier-list_opt )
+  //     direct-declarator ( identifier-list? )
   syntax DirectDeclarator ::=
       CId
     | "(" Declarator ")"
-    | DirectDeclarator "[" Constant "]"
-    | DirectDeclarator "(" ")"
+    | DirectDeclarator "(" ")" [prefer]
+    | DirectDeclarator "[" "]" [prefer]
     | DirectDeclarator "(" Params ")"
+    | DirectDeclarator "[" Constant "]"
   
   // TODO(chathhorn): type qualifiers.
   // pointer
-  //      * type-qualifier-list_opt
-  //      * type-qualifier-list_opt pointer
+  //      * type-qualifier-list?
+  //      * type-qualifier-list? pointer
   syntax Pointer ::=
       "*"
     | "*" TypeQual
@@ -351,52 +350,54 @@ module CIL-SYNTAX
   
   // parameter-declaration
   //     declaration-specifiers declarator
-  //     declaration-specifiers abstract-declarator_opt
+  //     declaration-specifiers abstract-declarator?
   syntax ParamDecl ::=
       DeclSpecs
     | DeclSpecs Declarator
     | DeclSpecs AbsDecl
 
   // type-name
-  //     specifier-qualifier-list abstract-declarator_opt
+  //     specifier-qualifier-list abstract-declarator?
   // syntax TypeName ::=
-  //     SpecifierQualifierList
-  //   | SpecifierQualifierList AbsDecl
+  //     SpecQualifierList
+  //   | SpecQualifierList AbsDecl
   
   // Abstract declarators are declarators without identifiers.
 
   // abstract-declarator
   //     pointer
-  //     pointer_opt direct-abstract-declarator
+  //     pointer? direct-abstract-declarator
   syntax AbsDecl ::=
       Pointer
     | DirectAbsDecl
     | Pointer DirectAbsDecl
-    | "__blank" // TODO(chathhorn): well...
   
   // direct-abstract-declarator
   //     ( abstract-declarator )
-  //     direct-abstract-declarator_opt [ type-qualifier-list_opt assignment-expression_opt ]
-  //     direct-abstract-declarator_opt [ static type-qualifier-list_opt assignment-expression ]
-  //     direct-abstract-declarator_opt [ type-qualifier-list static assignment-expression ]
-  //     direct-abstract-declarator_opt [ * ]
-  //     direct-abstract-declarator_opt ( parameter-type-list_opt )
+  //     direct-abstract-declarator? [ type-qualifier-list? assignment-expression? ]
+  //     direct-abstract-declarator? [ static type-qualifier-list? assignment-expression ]
+  //     direct-abstract-declarator? [ type-qualifier-list static assignment-expression ]
+  //     direct-abstract-declarator? [ * ]
+  //     direct-abstract-declarator? ( parameter-type-list? )
   syntax DirectAbsDecl ::=
-      "(" AbsDecl ")"
-    | "[" Constant "]"
-    | DirectAbsDecl "[" Constant "]"
-    | "(" ")"
-    | DirectAbsDecl "(" ")"
+  // Technically an empty parameter list, but also used as an empty abs decl.    
+      "(" ")" [prefer]
+    | "[" "]" [prefer]
+    | "(" AbsDecl ")"
     | "(" Params ")"
+    | "[" Constant "]"
+    | DirectAbsDecl "(" ")" [prefer]
+    | DirectAbsDecl "[" "]" [prefer]
     | DirectAbsDecl "(" Params ")"
+    | DirectAbsDecl "[" Constant "]"
   
   // initializer
   //     assignment-expression
   //     { initializer-list }
   //     { initializer-list , }
-  syntax Initializer ::= 
-      Constant
-    | "{" Constants "}" 
+  // In CIL these should just be constants or constants with a cast.
+  syntax Initializer ::= Exp | "{" Initializers "}" 
+  syntax Initializers ::= List{Initializer, ","}
 
 endmodule
 
