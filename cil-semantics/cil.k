@@ -32,11 +32,13 @@ module CIL
     </funs>
     <typedefs> .Map </typedefs> // Map{CId, Type}
     <global-env> .Map </global-env> // Map{CId, Ptr}
+    <global-type-env> .Map </global-type-env> // Map{CId, Type}
     <phase> initializing </phase> // Phase
     <tus>
       <tu multiplicity="*">
         <tu-id> .K </tu-id> // TransUnit
         <tu-env> .Map </tu-env> // Map{CId, Ptr}
+        <tu-type-env> .Map </tu-type-env> // Map{CId, Type}
       </tu>
     </tus>
     <aggregates> // structs and unions

@@ -5,14 +5,15 @@ require "cil-common.k"
 
 module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
+  imports CIL-COMMON-TYPE
   imports CIL-COMMON
   //imports CIL-CONST-PROPAGATION
 
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
 
-  syntax K ::= declInternal(CId, Ptr)
-             | declExternal(CId, Ptr)
+  syntax K ::= declInternal(CId, Type, Ptr)
+             | declExternal(CId, Type, Ptr)
              | defineFun(Ptr, TypeSpec, Params, FunBody)
 
   /*
@@ -21,34 +22,40 @@ module CIL-DECL
 
   rule 
     <k> T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declExternal(F, FunPtr(F, Tu)) 
+    => declExternal(F, FunType, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> extern T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declExternal(F, FunPtr(F, Tu)) 
+    => declExternal(F, FunType, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> static T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declInternal(F, FunPtr(F, Tu)) 
+    => declInternal(F, FunType, FunPtr(F, Tu)) 
     ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
   
   rule 
-    <k> declInternal(X:CId, P:Ptr) => . ...</k>
+    <k> declInternal(X:CId, D:Type, P:Ptr) => . ...</k>
     <tu-id> Tu </tu-id>
     <tu-env> TuEnv:Map => TuEnv:Map[P / X] </tu-env>
+    <tu-type-env> 
+      TuTypeEnv:Map => TuTypeEnv:Map[normType(D) / X]
+    </tu-type-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> declExternal(X:CId, P:Ptr) => . ...</k>
+    <k> declExternal(X:CId, D:Type, P:Ptr) => . ...</k>
     <global-env> GEnv:Map => GEnv:Map[P / X] </global-env>
+    <global-type-env> 
+      GTypeEnv:Map => GTypeEnv:Map[normType(D) / X]
+    </global-type-env>
 
   rule
     <k>
@@ -71,7 +78,33 @@ module CIL-DECL
     ...</funs>
   [structural]
 
-     // TODO(chathhorn): purge continue stuff?
+  // TODO(chathhorn): actually make new object and such.
+  rule 
+    <k> extern TS:TypeSpec D:Declarator ;  
+    => declExternal(extractId(D), TS D, Null)
+    ...</k>
+    <phase> _:TransUnit </phase>
+
+  // TODO(chathhorn): Tentative definition: need to look up the rules again.
+  rule 
+    <k> TS:TypeSpec D:Declarator ;  
+    => declExternal(extractId(D), TS D, Null)
+    ...</k>
+    <phase> _:TransUnit </phase>
+
+  rule 
+    <k> static TS:TypeSpec D:Declarator ;  
+    => declInternal(extractId(D), TS D, Null)
+    ...</k>
+    <phase> _:TransUnit </phase>
+
+  // TODO(chathhorn): actually handle initializers.
+  rule 
+    <k> S:DeclSpecs D:Declarator = _:Initializer ;
+    => S D ;
+    ...</k>
+    <phase> _:TransUnit </phase>
+
   /*
    * Lower break and continue statements to goto statements 
    */

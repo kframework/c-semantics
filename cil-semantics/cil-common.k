@@ -312,7 +312,8 @@ module CIL-COMMON-TYPE
 
   syntax Type ::= "FunType" // TODO(chathhorn)
 
-  syntax SymId ::=  "__id__"
+  syntax SymId ::= "#__id__"
+
   syntax DirectDecl ::= SymId
 
   // Visits only the leftmost branch of the AST.
@@ -330,7 +331,7 @@ module CIL-COMMON-TYPE
   // Add a layer of indirection.
   syntax Type ::= upPtr(Type) [function]
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
-  rule upPtr(TS:TypeSpec) => TS ('`(_`)(*__id__))::Declarator
+  rule upPtr(TS:TypeSpec) => TS ('`(_`)(* #__id__))::Declarator
   rule upPtr(TS:TypeSpec D:Declarator) 
     => TS normParens(#leftVisit(D, 'upPtrConv, isSymId))::Declarator
   rule upPtrConv(X:SymId) => '`(_`)(*X)
@@ -345,6 +346,15 @@ module CIL-COMMON-TYPE
   rule $needsDownPtrConv(*X:SymId) => true
   rule downPtrConv(*X:SymId) => X
 
+  syntax CId ::= extractId(Declarator) [function]
+  rule extractId(X:CId) => X
+  rule extractId(P:Pointer D:DirectDecl) => extractId(D)
+  rule extractId('`(_`)(D:Declarator)) => extractId(D)
+  rule extractId(D:DirectDecl()) => extractId(D)
+  rule extractId(D:DirectDecl[]) => extractId(D)
+  rule extractId(D:DirectDecl(_)) => extractId(D)
+  rule extractId(D:DirectDecl[_]) => extractId(D)
+
   //
   // The basic idea here is that a "type" will be nothing more than a
   // normalized declaration. We normalize declarations by:
@@ -357,8 +367,10 @@ module CIL-COMMON-TYPE
   // The resulting "types" are basically inside-out and a pain to work with.
   // 
   syntax Type ::= normType(Type) [function]
+  rule normType(FunType) => FunType // TODO(chathhorn): temporary kludge.
   rule normType(T:Type) 
     => normParens(convCIds(convAbsDecls(stripStoClassSpec(T))))
+    when T =/=K FunType
 
   syntax Bool ::= "$needsStoClassStripping" "(" K ")" 
     [function, klabel('$needsStoClassStripping)]
@@ -371,25 +383,25 @@ module CIL-COMMON-TYPE
     => Lbl(#visitAll(L, 'stripStoClassSpec, '$needsStoClassStripping))
     when isStorageClassSpec(K) =/=K true
 
-  syntax Bool ::= "$needsAbsDeclConv" "(" K ")" 
-    [function, klabel('$needsAbsDeclConv)]
+  // This is kinda subtle. Both abstract and non-abstract declarators might
+  // also have children of both sorts. And it's very easy to distinguish the
+  // two sorts. TODO(chathhorn)
   syntax K ::= convAbsDecls(K) [function]
   syntax Declarator ::= convAbsDecl(AbsDecl) [function]
   syntax DirectDecl ::= convDirectAbsDecl(DirectAbsDecl) [function]
-  rule $needsAbsDeclConv(D:AbsDecl) => true
-  rule convAbsDecls(K:K) => #visit(K, 'convAbsDecl, '$needsAbsDeclConv)
+  rule convAbsDecls(TS D:Declarator) => TS #visit(D, 'convAbsDecl, isAbsDecl)
 
-  rule convAbsDecl(P:Pointer) => P __id__
+  rule convAbsDecl(P:Pointer) => P #__id__
   rule convAbsDecl(D:DirectAbsDecl) 
     => convDirectAbsDecl(D)
   rule convAbsDecl(P:Pointer D:DirectAbsDecl) 
     => P convDirectAbsDecl(D)
 
-  rule convDirectAbsDecl( () ) => __id__()
-  rule convDirectAbsDecl( [] ) => __id__[]
+  rule convDirectAbsDecl( () ) => #__id__()
+  rule convDirectAbsDecl( [] ) => #__id__[]
   rule convDirectAbsDecl( '`(_`)(D:AbsDecl) ) => '`(_`)(convAbsDecl(D))
-  rule convDirectAbsDecl( ( Ps:Params ) ) => __id__(convAbsDecls(Ps))
-  rule convDirectAbsDecl( [ C:Constant ] ) => __id__[C]
+  rule convDirectAbsDecl( ( Ps:Params ) ) => #__id__(convAbsDecls(Ps))
+  rule convDirectAbsDecl( [ C:Constant ] ) => #__id__[C]
   rule convDirectAbsDecl( D:DirectAbsDecl () ) => convDirectAbsDecl(D)()
   rule convDirectAbsDecl( D:DirectAbsDecl [] ) => convDirectAbsDecl(D)[]
   rule convDirectAbsDecl( D:DirectAbsDecl (Ps:Params) ) 
@@ -397,22 +409,23 @@ module CIL-COMMON-TYPE
   rule convDirectAbsDecl( D:DirectAbsDecl [C:Constant] ) 
     => convDirectAbsDecl(D)[C]
 
-  syntax Bool ::= "$needsCIdConv" "(" K ")" [function, klabel('$needsCIdConv)]
   syntax K ::= convCIds(K) [function]
-  rule $needsCIdConv(X:CId) => true
-  rule convCIds(X:CId) => __id__
-  rule convCIds(K:K) => #visit(K, 'convCIds, '$needsCIdConv)
+  rule convCIds(X:CId) => #__id__
+  rule convCIds(K:K) => #visit(K, 'convCIds, isCId)
     when isCId(K) =/=K true
 
   syntax K ::= normParens(K) [function]
-  syntax Bool ::= "$needsParensConv" "(" K ")" 
-    [function, klabel('$needsParensConv)]
-  syntax DirectDecl ::= parensConv(DirectDecl) [function]
-  rule normParens(T:Type) => #visit(T, 'parensConv, '$needsParensConv)
-  rule $needsParensConv('`(_`)('`(_`)(_:KList))) => true
-  rule parensConv('`(_`)('`(_`)(L:KList))) 
-    => #visitAll('`(_`)(L), 'parensConv, '$needsParensConv)
-  rule parensConv('`(_`)(X:SymId)) => X
+  syntax KList ::= "normParens'" "(" KList ")" [function]
+  rule normParens('`(_`)('`(_`)(L:KList))) 
+    => normParens('`(_`)(L))
+  rule normParens('`(_`)(X:SymId)) => X
+  rule normParens(Lbl:KLabel(L:KList))
+    => Lbl(normParens'(L))
+    when Lbl =/=KLabel '`(_`)
+  rule normParens('`(_`)(K:K,, L:KList))
+    => '`(_`)(normParens(K),, normParens'(L))
+    when getKLabel(K) =/=KLabel '`(_`)
+  rule normParens('`(_`)(.KList)) => '`(_`)(.KList)
   
 endmodule
 

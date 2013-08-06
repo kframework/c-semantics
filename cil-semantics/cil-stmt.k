@@ -80,7 +80,9 @@ module CIL-STMT
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
-        <env> GEnv TuEnv </env> //TODO(chathhorn): does this work right?
+        //TODO(chathhorn): does this work right?
+        <env> GEnv TuEnv </env>
+        <type-env> GTypeEnv TuTypeEnv </type-env>
       ...</frame>
     )
     <frame-stack>...
@@ -92,9 +94,11 @@ module CIL-STMT
       <body> FB:FunBody </body>
     ...</fun>
     <global-env> GEnv:Map </global-env>
+    <global-type-env> GTypeEnv:Map </global-type-env>
     <tu>...
       <tu-id> Tu </tu-id>
       <tu-env> TuEnv:Map </tu-env>
+      <tu-type-env> TuTypeEnv:Map </tu-type-env>
     ...</tu>
   [computational]
   rule
