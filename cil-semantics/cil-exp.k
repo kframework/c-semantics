@@ -44,7 +44,8 @@ module CIL-EXP
     <env>... X |-> FunPtr(X, Tu:TransUnit) ...</env>
     [structural]
 
-  rule E1:Exp[E2:Exp] => *(E1 + E2)   [macro]
+  // Doesn't work as a macro because it will mangle array declarations.
+  rule E1:Exp[E2:Exp] => *(E1 + E2) 
 
   context (HOLE => HOLE ~> noLeftValueConversion) . _:CId
   rule 
