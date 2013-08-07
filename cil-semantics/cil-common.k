@@ -312,29 +312,47 @@ module CIL-COMMON-TYPE
   syntax SymId ::= "#__id__"
   syntax DirectDecl ::= SymId
 
-  // Visits only the leftmost branch of the AST.
-  syntax K ::= #leftVisit(K, KLabel, KLabel) [function]
-  rule #leftVisit(K:K, Trans:KLabel, Pred:KLabel)
+  // Visits only the leftmost branch of the AST (except when an exception node
+  // is encountered, then it visits the next-to-leftmost branch).
+  // AST to search, the transformation to apply, the predicate.
+  syntax K ::= #leftVisit(K, KLabel, KLabel, KLabel) [function]
+  rule #leftVisit(K:K, Trans:KLabel, Pred:KLabel, _)
     => Trans(K)
     when Pred(K) ==K true
-  rule #leftVisit(Lbl:KLabel(K:K,, L:KList), Trans:KLabel, Pred:KLabel)
-    => Lbl(#leftVisit(K, Trans, Pred),, L)
-    when Pred(Lbl(K,, L)) =/=K true
-  rule #leftVisit(Lbl:KLabel(.KList), Trans:KLabel, Pred:KLabel)
+  rule 
+    #leftVisit(
+      Lbl:KLabel(P:K,, K:K,, L:KList), 
+      Trans:KLabel, Pred:KLabel, Except:KLabel)
+    => Lbl(P:K,, #leftVisit(K, Trans, Pred, Except),, L)
+    when (Pred(Lbl(P,, K,, L)) =/=K true) 
+      andBool (getKLabel(P) ==KLabel Except)
+  rule 
+    #leftVisit(
+      Lbl:KLabel(K:K,, L:KList), 
+      Trans:KLabel, Pred:KLabel, Except:KLabel)
+    => Lbl(#leftVisit(K, Trans, Pred, Except),, L)
+    when (Pred(Lbl(K,, L)) =/=K true)
+      andBool (getKLabel(K) =/=KLabel Except)
+  rule #leftVisit(Lbl:KLabel(.KList), _, Pred:KLabel, _)
     => Lbl(.KList)
     when Pred(Lbl(.KList)) =/=K true
 
-  // Searches the leftmost branch of the AST and returns the first node for
-  // which the predicate holds, .K if nothing found.
-  // AST to search, the predicate.
-  syntax K ::= leftSearch(K, KLabel) [function]
-  rule leftSearch(K:K, Pred:KLabel)
+  // Searches the leftmost branch of the AST and returns the
+  // first node for which the predicate holds, .K if nothing found.
+  // AST to search, the predicate, the exception.
+  syntax K ::= leftSearch(K, KLabel, KLabel) [function]
+  rule leftSearch(K:K, Pred:KLabel, _:KLabel)
     => K
     when Pred(K) ==K true
-  rule leftSearch(Lbl:KLabel(K:K,, L:KList), Pred:KLabel)
-    => leftSearch(K, Pred)
+  rule leftSearch(Lbl:KLabel(P:K,, K:K,, L:KList), Pred:KLabel, Except:KLabel)
+    => leftSearch(K, Pred, Except)
+    when Pred(Lbl(P,, K,, L)) =/=K true
+      andBool (getKLabel(P) ==KLabel Except)
+  rule leftSearch(Lbl:KLabel(K:K,, L:KList), Pred:KLabel, Except:KLabel)
+    => leftSearch(K, Pred, Except)
     when Pred(Lbl(K,, L)) =/=K true
-  rule leftSearch(Lbl:KLabel(.KList), Pred:KLabel)
+      andBool (getKLabel(K) =/=KLabel Except)
+  rule leftSearch(Lbl:KLabel(.KList), Pred:KLabel, _)
     => .K
     when Pred(Lbl(.KList)) =/=K true
 
@@ -342,7 +360,8 @@ module CIL-COMMON-TYPE
   syntax Bool ::= isPtrType(Type) [function]
   syntax Bool ::= "$isPtrType" "(" K ")" [function, klabel('$isPtrType)]
   rule isPtrType(TS:TypeSpec) => false
-  rule isPtrType(TS:TypeSpec D:Declarator) => leftSearch(D, '$isPtrType) =/=K .K
+  rule isPtrType(TS:TypeSpec D:Declarator) 
+    => leftSearch(D, '$isPtrType, '*) =/=K .K
   rule $isPtrType(* #__id__) => true
   // TODO(chathhorn): not entirely sure how to treat this case.
   rule $isPtrType(#__id__[]) => true
@@ -351,14 +370,15 @@ module CIL-COMMON-TYPE
   syntax Bool ::= isArrayType(Type) [function]
   syntax Bool ::= "$isArrayType" "(" K ")" [function, klabel('$isArrayType)]
   rule isArrayType(TS:TypeSpec) => false
-  rule isArrayType(TS:TypeSpec D:Declarator) => leftSearch(D, '$isArrayType) =/=K .K
+  rule isArrayType(TS:TypeSpec D:Declarator) 
+    => leftSearch(D, '$isArrayType, '*) =/=K .K
   rule $isArrayType(#__id__[_:Constant]) => true
 
   // Returns the size of a normalized array type.
   syntax Int ::= getArraySize(Type) [function]
   syntax Int ::= "getArraySize'" "(" K ")" [function]
   rule getArraySize(TS:TypeSpec D:Declarator) 
-    => getArraySize'(leftSearch(D, '$isArrayType))
+    => getArraySize'(leftSearch(D, '$isArrayType, '*))
   rule getArraySize'(#__id__[C:Constant]) => C
 
   // Add a layer of indirection to a normalized pointer type.
@@ -366,7 +386,7 @@ module CIL-COMMON-TYPE
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
   rule upPtr(TS:TypeSpec) => normType(TS ('`(_`)(* #__id__))::Declarator)
   rule upPtr(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'upPtrConv, isSymId)::Declarator)
+    => normType(TS #leftVisit(D, 'upPtrConv, isSymId, '*)::Declarator)
   rule upPtrConv(X:SymId) => '`(_`)(*X)
 
   // Remove a layer of indirection (from a normalized pointer type).
@@ -375,7 +395,7 @@ module CIL-COMMON-TYPE
     [function, klabel('$needsDownPtrConv)]
   syntax Declarator ::= downPtrConv(Declarator) [function]
   rule downPtr(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downPtrConv, '$needsDownPtrConv)::Declarator)
+    => normType(TS #leftVisit(D, 'downPtrConv, '$needsDownPtrConv, '*)::Declarator)
   rule $needsDownPtrConv(*X:SymId) => true
   rule downPtrConv(*X:SymId) => X
 
@@ -385,7 +405,7 @@ module CIL-COMMON-TYPE
     [function, klabel('$needsDownArrayConv)]
   syntax Declarator ::= downArrayConv(Declarator) [function]
   rule downArray(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downArrayConv, '$needsDownArrayConv)::Declarator)
+    => normType(TS #leftVisit(D, 'downArrayConv, '$needsDownArrayConv, '*)::Declarator)
   rule $needsDownArrayConv(X:SymId[]) => true
   rule $needsDownArrayConv(X:SymId[_]) => true
   rule downArrayConv(X:SymId[]) => X
@@ -398,7 +418,7 @@ module CIL-COMMON-TYPE
     [function, klabel('$needsDownFunConv)]
   syntax Declarator ::= downFunConv(Declarator) [function]
   rule downFun(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downFunConv, '$needsDownFunConv)::Declarator)
+    => normType(TS #leftVisit(D, 'downFunConv, '$needsDownFunConv, '*)::Declarator)
   rule $needsDownFunConv(X:SymId()) => true
   rule $needsDownFunConv(X:SymId(_)) => true
   rule downFunConv(X:SymId()) => X
@@ -445,7 +465,8 @@ module CIL-COMMON-TYPE
   // The resulting types are basically inside-out and a pain to work with, but
   // they at least maintain the conciseness of basic types (i.e., "unsigned
   // int" is in normal form -- but "int*" is not).
-  // TODO(chathhorn): expand typedefs?
+  // TODO(chathhorn): expand typedefs? Also consider parens in cases like
+  // (*(*#__id))
   syntax Type ::= normType(Type) [function]
   rule normType(T:Type) 
     => normParens(convDecls(stripStoClassSpec(normParens(T))))
