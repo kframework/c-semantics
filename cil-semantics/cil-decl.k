@@ -86,8 +86,8 @@ module CIL-DECL
 
   // Typedefs share the same name space as other declarations.
   rule 
-    typedef TS:TypeSpec D:Declarator ;  
-    => declInternal(getId(D), nclv(normType(TS D), TypePtr))
+    <k> typedef TS:TypeSpec D:Declarator ; => . ...</k>
+    <env> E:Map => E[normType(TS D) / getId(D)] </env>
 
   // TODO(chathhorn): what happens if these are functions?!?
 

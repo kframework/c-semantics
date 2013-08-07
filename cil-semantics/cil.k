@@ -77,5 +77,6 @@ module CIL
 
   syntax KResult ::= TypedValue
                    | NoConversionLeftValue
+                   | NormType
 endmodule
 

@@ -1,5 +1,8 @@
 // vim: set ts=2 sw=2:
 module CIL-TYPING-SYNTAX
+  syntax NormType ::= nt(Type)
+  syntax Type ::= NormType
+
   // Checks if a normalized type is a pointer type.
   syntax Bool ::= isPtrType(Type) [function]
 
@@ -204,10 +207,10 @@ module CIL-TYPING
 
   // TODO(chathhorn): probably should go back to a special typedef cell to
   // reduce the amount of stuff that must be passed around.
-  rule expandParamDecl(X:CId, E:Map X |-> lv(T:Type, TypePtr))
-    => expandTypedefs(T, E[lv(T, TypePtr) / X])
-  rule expandParamDecl(X:CId D:Declarator, E:Map X |-> lv(T:Type, TypePtr))
-    => expandTypedefs(normParens(replaceTopId(T, '`(_`)(D))), E[lv(T, TypePtr) / X])
+  rule expandParamDecl(X:CId, E:Map X |-> T:Type)
+    => expandTypedefs(T, E X |-> T)
+  rule expandParamDecl(X:CId D:Declarator, E:Map X |-> T:Type)
+    => expandTypedefs(normParens(replaceTopId(T, '`(_`)(D))), E X |-> T)
   rule expandParamDecl(TS:TypeSpec, _) => TS
     when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
   rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) 

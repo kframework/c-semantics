@@ -11,8 +11,6 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr(CId, TransUnit)
-               // TODO(chathhorn): used for typedefs, a bit of a kludge.
-               | "TypePtr"
                | "Null"
   /*
    * BasePtr of Base * Size

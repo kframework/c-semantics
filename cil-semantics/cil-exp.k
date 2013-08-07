@@ -15,6 +15,7 @@ module CIL-PROMOTION
 endmodule
 
 module CIL-EXP
+  imports CIL-TYPING-SYNTAX
   imports CIL-PROMOTION
 
   syntax K ::= "noLeftValueConversion"
@@ -34,11 +35,11 @@ module CIL-EXP
   rule
     <k> X:CId => lv(T, P) ...</k>
     <env>... X |-> lv(T:Type, P:Ptr) ...</env>
-    when P =/=K TypePtr
     [structural]
+  // Typedefs.
   rule
     <k> X:CId => T ...</k>
-    <env>... X |-> lv(T:Type, TypePtr) ...</env>
+    <env>... X |-> T:Type ...</env>
     [structural]
 
   // Doesn't work as a macro because it will mangle array declarations.
@@ -196,7 +197,7 @@ module CIL-EXP
    * Sizeof
    */
   syntax K ::= "sizeof'" "(" Type ")"
-  rule sizeof(nclv(T:Type, TypePtr)) => sizeof'(T)
+  rule sizeof(nt(T:Type)) => sizeof'(T)
   rule sizeof(tv(T:Type, _)) => sizeof'(T)
 
   rule sizeof'(T:Type) => byteWidth(T)    
@@ -215,20 +216,25 @@ module CIL-EXP
   /*
    * Casting
    */
-  rule <k> T:Type => nclv(expandTypedefs(normType(T), E), TypePtr) ...</k>
+  rule <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
     <env> E:Map </env>
+    // If it's a CId then we look it up in the env until we get an unambiguous
+    // type.
     when (isCId(T) =/=K true) orBool (isKeyword(T) ==K true)
 
   /* the rule for signed integer types is implementation defined */
   rule
-    (T:SignedIntType) tv(_:Type, mi(_:Int, I:Int))
+    (nt(T:SignedIntType)) tv(_:Type, mi(_:Int, I:Int))
   =>
     tv(T, sMInt(mi((width(T)), I)))
+
   rule
-    (T:UnsignedIntType) tv(_:Type, mi(_:Int, I:Int))
+    (nt(T:UnsignedIntType)) tv(_:Type, mi(_:Int, I:Int))
   =>
     tv(T, uMInt(mi((width(T)), I)))
-  rule (T:FloatingType) tv(_:Type, F:Int) => tv(T, F)
+
+  rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
+
   /* TODO: complete all the cases  */
   //rule (void *) tv(T:PtrType, A:Ptr) => 
 
