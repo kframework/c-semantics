@@ -17,14 +17,13 @@ module CIL
     <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
-      <env> .Map </env> // Map{CId, Ptr}
-      <type-env> .Map </type-env> // Map{CId, Type}
+      <env> .Map </env> // Map{CId, lv(Type, Ptr)}
     </frame>
     <frame-stack> .List </frame-stack>  // List{<frame> ... </frame>}
     <funs>
       <fun multiplicity="*">
         <fun-id> .K </fun-id> // Ptr
-        <fun-type> void </fun-type>
+        <fun-type> void </fun-type> // Type
         <formals> .Params </formals>
         <body> .K </body> // FunBody
         <labels> .Map </labels> // Map{Label, Stmt}
@@ -32,13 +31,11 @@ module CIL
     </funs>
     <typedefs> .Map </typedefs> // Map{CId, Type}
     <global-env> .Map </global-env> // Map{CId, Ptr}
-    <global-type-env> .Map </global-type-env> // Map{CId, Type}
     <phase> initializing </phase> // Phase
     <tus>
       <tu multiplicity="*">
         <tu-id> .K </tu-id> // TransUnit
         <tu-env> .Map </tu-env> // Map{CId, Ptr}
-        <tu-type-env> .Map </tu-type-env> // Map{CId, Type}
       </tu>
     </tus>
     <aggregates> // structs and unions

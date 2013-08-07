@@ -27,10 +27,11 @@ module CIL-SYNTAX
   //               | NvType
   //               | CId
   syntax Void ::= "void"
-  syntax NvType ::= BasicType // TODO(chathhorn)
+  syntax NvType ::= BasicType
   syntax BasicType ::= "char"
                      | IntType 
                      | FloatingType
+                     | "_Complex" // TODO
   syntax IntType ::= SignedIntType
                    | UnsignedIntType
   syntax SignedIntType ::= "signed" "char"
@@ -52,15 +53,16 @@ module CIL-SYNTAX
 
 
   /* TODO: simplify */
-  syntax FunDef ::= DeclSpecs Declarator "(" Params ")" FunBody 
+  syntax FunDef ::= DeclSpecs Declarator FunBody 
 
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
 
-  rule S:DeclSpecs F:Declarator (void) FB:FunBody 
-    => S F(.Params) FB [macro]
-  rule S:DeclSpecs F:Declarator (Ps:Params) B:Block 
-    => S F(Ps) { .VarDecls B } [macro]
+  // TODO(chathhorn): make sure this gets handled ok.
+  // rule S:DeclSpecs F:Declarator (void) FB:FunBody 
+  //   => S F(.Params) FB [macro]
+  // rule S:DeclSpecs F:Declarator (Ps:Params) B:Block 
+  //   => S F(Ps) { .VarDecls B } [macro]
 
   /*
    * expressions
@@ -122,6 +124,7 @@ module CIL-SYNTAX
                  | String
                  | Float
                  | "'"CharConstant"'"
+  syntax Constants ::= List{Constant, ","}
 
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
     [onlyLabel]
@@ -222,7 +225,7 @@ module CIL-SYNTAX
   syntax VarDecls ::= List{VarDecl, ""}    [right]
   
   syntax InitVarDecl ::= 
-      DeclSpecs Declarator "=" Initializer ";"
+      DeclSpecs Declarator "=" Initializer ";" [strict(3)]
 
   // declaration-specifiers
   //     storage-class-specifier declaration-specifiers?
@@ -259,7 +262,6 @@ module CIL-SYNTAX
   syntax TypeSpec ::=
       Void
     | BasicType
-    | "_Complex"
     | AggTypeSpec
     | CId
 
@@ -396,7 +398,7 @@ module CIL-SYNTAX
   //     { initializer-list }
   //     { initializer-list , }
   // In CIL these should just be constants or constants with a cast.
-  syntax Initializer ::= Exp | "{" Initializers "}" 
+  syntax Initializer ::= Exp | "{" Initializers "}"
   syntax Initializers ::= List{Initializer, ","}
 
 endmodule

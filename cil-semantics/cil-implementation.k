@@ -69,20 +69,20 @@ module CIL-IMPLEMENTATION
    * Pointer type.
    */
   /* Size of pointers is 4 bytes (also the size of int) */
-  // TODO(chathhorn): POINTERS
-  //rule byteWidth(_:Type*) => 4
+  rule byteWidth(T:Type) => 4
+     when isPtrType(T)
 
   /* implement conversions */
-  // TODO(chathhorn): POINTERS
-  // rule
-  //   value2Bytes(_:PtrType, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
-  // =>
-  //   ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
-  // rule
-  //   bytes2Value(
-  //       _:PtrType,
-  //       ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
-  // =>
-  //   Ptr(BasePtr(Base, (Size)), (Offset))
+  rule
+    value2Bytes(_:Type, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
+  =>
+    ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
+
+  rule
+    bytes2Value(
+        _:Type,
+        ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
+  =>
+    Ptr(BasePtr(Base, (Size)), (Offset))
 endmodule
 

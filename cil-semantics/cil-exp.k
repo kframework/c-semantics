@@ -19,7 +19,6 @@ module CIL-EXP
 
   syntax K ::= "noLeftValueConversion"
 
-
   /* constant */
   /* TODO: typed constant */
   rule I:Int => tv(int, mi((width(int)), I))
@@ -33,15 +32,8 @@ module CIL-EXP
 
   /* lookup */
   rule
-    <k> X:CId => lv(T, P) ...</k>
-    <env>... X |-> P:Ptr ...</env>
-    <type-env>... X |-> T:Type ...</type-env>
-    [structural]
-
-  // TODO(chathhorn): types?
-  rule
-    <k> X:CId => lv(FunType, FunPtr(X, Tu)) ...</k> 
-    <env>... X |-> FunPtr(X, Tu:TransUnit) ...</env>
+    <k> X:CId => LV ...</k>
+    <env>... X |-> LV:LeftValue ...</env>
     [structural]
 
   // Doesn't work as a macro because it will mangle array declarations.
@@ -195,14 +187,21 @@ module CIL-EXP
    */
   /* TODO: sizeof for exp 
   */
-  rule sizeof(T:BasicType) => byteWidth(T)    [structual]
+  rule sizeof(T:Type) => byteWidth(normType(T))    
+    when (isBasicType(T) ==K true) 
+      orBool (isPtrType(normType(T)) ==K true)
+    [structual]
+  rule sizeof(TS:TypeSpec D:Declarator) 
+    => sizeof(downArray(normType(TS D))) * getArraySize(normType(TS D))
+    when isArrayType(normType(TS D)) ==K true
+    [structual]
   rule <k> sizeof(T:AggTypeSpec) => Size ...</k>
-     <agg-id> T </agg-id>
-     <size> Size:Int </size>
-     [structural]
+    <agg-id> T </agg-id>
+    <size> Size:Int </size>
+    [structural]
   rule <k> sizeof(X:CId) => sizeof(T) ...</k>
-     <typedefs>... X |-> T:Type ...</typedefs>
-     [structural]
+    <typedefs>... X |-> T:Type ...</typedefs>
+    [structural]
   
   /*
    * Casting
@@ -228,13 +227,16 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
   context tv(_, PtrAdd(_, _, HOLE))
-  // TODO(chathhorn): POINTERS
-  //rule tv(T:Type*, P:Ptr) + tv(_, I:Int) => tv(T*, PtrAdd(P, I, sizeof(T)))
-  // rule tv(_, I:Int) + tv(T:Type*, P:Ptr) => tv(T*, PtrAdd(P, I, sizeof(T)))
-  // rule
-  //   tv(T:Type*, P:Ptr) - tv(_, I:Int)
-  // =>
-  //   tv(T*, PtrAdd(P, 0 -Int I, sizeof(T)))
+  rule tv(T:Type, P:Ptr) + tv(_, I:Int) 
+    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+    when isPtrType(T)
+  rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
+    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+    when isPtrType(T)
+  rule
+    tv(T:Type, P:Ptr) - tv(_, I:Int)
+    => tv(T, PtrAdd(P, 0 -Int I, sizeof(downPtr(T))))
+    when isPtrType(T)
 // 
 //   /* TODO: replace int with size_ptr */
 //   context tv(_, PtrSub(_, _, HOLE))

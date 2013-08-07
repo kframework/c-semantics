@@ -176,7 +176,6 @@ module CIL-COMMON-MMU
   /*
    * Memory management.
    */
-  syntax K ::= Object(Type, Map)
   syntax K ::= newObject(Type)
              | "$newObject" "(" Type "," K ")"   [strict(2)]
              | castObject(Type, Ptr)
@@ -310,10 +309,7 @@ module CIL-COMMON-TYPE
   imports CIL-SYNTAX
   imports K-FUNCTIONAL-VISITOR
 
-  syntax Type ::= "FunType" // TODO(chathhorn)
-
   syntax SymId ::= "#__id__"
-
   syntax DirectDecl ::= SymId
 
   // Visits only the leftmost branch of the AST.
@@ -328,59 +324,148 @@ module CIL-COMMON-TYPE
     => Lbl(.KList)
     when Pred(Lbl(.KList)) =/=K true
 
-  // Add a layer of indirection.
+  // Searches the leftmost branch of the AST and returns the first node for
+  // which the predicate holds, .K if nothing found.
+  // AST to search, the predicate.
+  syntax K ::= leftSearch(K, KLabel) [function]
+  rule leftSearch(K:K, Pred:KLabel)
+    => K
+    when Pred(K) ==K true
+  rule leftSearch(Lbl:KLabel(K:K,, L:KList), Pred:KLabel)
+    => leftSearch(K, Pred)
+    when Pred(Lbl(K,, L)) =/=K true
+  rule leftSearch(Lbl:KLabel(.KList), Pred:KLabel)
+    => .K
+    when Pred(Lbl(.KList)) =/=K true
+
+  // Checks if a normalized type is a pointer type.
+  syntax Bool ::= isPtrType(Type) [function]
+  syntax Bool ::= "$isPtrType" "(" K ")" [function, klabel('$isPtrType)]
+  rule isPtrType(TS:TypeSpec) => false
+  rule isPtrType(TS:TypeSpec D:Declarator) => leftSearch(D, '$isPtrType) =/=K .K
+  rule $isPtrType(* #__id__) => true
+  // TODO(chathhorn): not entirely sure how to treat this case.
+  rule $isPtrType(#__id__[]) => true
+
+  // Checks if a normalized type is an array type.
+  syntax Bool ::= isArrayType(Type) [function]
+  syntax Bool ::= "$isArrayType" "(" K ")" [function, klabel('$isArrayType)]
+  rule isArrayType(TS:TypeSpec) => false
+  rule isArrayType(TS:TypeSpec D:Declarator) => leftSearch(D, '$isArrayType) =/=K .K
+  rule $isArrayType(#__id__[_:Constant]) => true
+
+  // Returns the size of a normalized array type.
+  syntax Int ::= getArraySize(Type) [function]
+  syntax Int ::= "getArraySize'" "(" K ")" [function]
+  rule getArraySize(TS:TypeSpec D:Declarator) 
+    => getArraySize'(leftSearch(D, '$isArrayType))
+  rule getArraySize'(#__id__[C:Constant]) => C
+
+  // Add a layer of indirection to a normalized pointer type.
   syntax Type ::= upPtr(Type) [function]
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
-  rule upPtr(TS:TypeSpec) => TS ('`(_`)(* #__id__))::Declarator
+  rule upPtr(TS:TypeSpec) => normType(TS ('`(_`)(* #__id__))::Declarator)
   rule upPtr(TS:TypeSpec D:Declarator) 
-    => TS normParens(#leftVisit(D, 'upPtrConv, isSymId))::Declarator
+    => normType(TS #leftVisit(D, 'upPtrConv, isSymId)::Declarator)
   rule upPtrConv(X:SymId) => '`(_`)(*X)
 
-  // Remove a layer of indirection (from a pointer type).
+  // Remove a layer of indirection (from a normalized pointer type).
   syntax Type ::= downPtr(Type) [function]
   syntax Bool ::= "$needsDownPtrConv" "(" K ")" 
     [function, klabel('$needsDownPtrConv)]
   syntax Declarator ::= downPtrConv(Declarator) [function]
   rule downPtr(TS:TypeSpec D:Declarator) 
-    => TS #leftVisit(normParens(D), 'downPtrConv, '$needsDownPtrConv)::Declarator
+    => normType(TS #leftVisit(D, 'downPtrConv, '$needsDownPtrConv)::Declarator)
   rule $needsDownPtrConv(*X:SymId) => true
   rule downPtrConv(*X:SymId) => X
 
-  syntax CId ::= extractId(Declarator) [function]
-  rule extractId(X:CId) => X
-  rule extractId(P:Pointer D:DirectDecl) => extractId(D)
-  rule extractId('`(_`)(D:Declarator)) => extractId(D)
-  rule extractId(D:DirectDecl()) => extractId(D)
-  rule extractId(D:DirectDecl[]) => extractId(D)
-  rule extractId(D:DirectDecl(_)) => extractId(D)
-  rule extractId(D:DirectDecl[_]) => extractId(D)
+  // Remove a layer of indirection (from a normalized array type).
+  syntax Type ::= downArray(Type) [function]
+  syntax Bool ::= "$needsDownArrayConv" "(" K ")" 
+    [function, klabel('$needsDownArrayConv)]
+  syntax Declarator ::= downArrayConv(Declarator) [function]
+  rule downArray(TS:TypeSpec D:Declarator) 
+    => normType(TS #leftVisit(D, 'downArrayConv, '$needsDownArrayConv)::Declarator)
+  rule $needsDownArrayConv(X:SymId[]) => true
+  rule $needsDownArrayConv(X:SymId[_]) => true
+  rule downArrayConv(X:SymId[]) => X
+  rule downArrayConv(X:SymId[_]) => X
 
-  //
+  // Remove a layer of indirection (from a normalized function type), i.e.,
+  // extract the function result type.
+  syntax Type ::= downFun(Type) [function]
+  syntax Bool ::= "$needsDownFunConv" "(" K ")" 
+    [function, klabel('$needsDownFunConv)]
+  syntax Declarator ::= downFunConv(Declarator) [function]
+  rule downFun(TS:TypeSpec D:Declarator) 
+    => normType(TS #leftVisit(D, 'downFunConv, '$needsDownFunConv)::Declarator)
+  rule $needsDownFunConv(X:SymId()) => true
+  rule $needsDownFunConv(X:SymId(_)) => true
+  rule downFunConv(X:SymId()) => X
+  rule downFunConv(X:SymId(_)) => X
+
+  // Extract the top-level identifier from the very heart of a (non-normalized)
+  // declarator.
+  syntax CId ::= getId(Declarator) [function]
+  rule getId(X:CId) => X
+  rule getId(P:Pointer D:DirectDecl) => getId(D)
+  rule getId('`(_`)(D:Declarator)) => getId(D)
+  rule getId(D:DirectDecl()) => getId(D)
+  rule getId(D:DirectDecl[]) => getId(D)
+  rule getId(D:DirectDecl(_)) => getId(D)
+  rule getId(D:DirectDecl[_]) => getId(D)
+
+  // Get the function parameters of the top-level identifier (not very useful
+  // if the declarator has been normalized).
+  syntax Params ::= getParams(Declarator) [function]
+  syntax Params ::= "getParams'" "(" Declarator ")" [function]
+  // Must normalize parens before this works.
+  rule getParams(D:Declarator) => getParams'(normParens(D))
+
+  rule getParams'(P:Pointer D:DirectDecl) => getParams'(D)
+  rule getParams'('`(_`)(D:Declarator)) => getParams'(D)
+  rule getParams'(X:CId()) => .Params
+  rule getParams'(D:DirectDecl()) => getParams'(D)
+    when isCId(D) =/=K true
+  rule getParams'(D:DirectDecl[]) => getParams'(D)
+  rule getParams'(X:CId(Ps:Params)) => Ps
+  rule getParams'(D:DirectDecl(_)) => getParams'(D)
+    when isCId(D) =/=K true
+  rule getParams'(D:DirectDecl[_]) => getParams'(D)
+
   // The basic idea here is that a "type" will be nothing more than a
   // normalized declaration. We normalize declarations by:
   // 1. stripping storage class specifiers,
-  // 2. turning abstract declarators into normal declarators (noting 3)
-  //    (an abstract declarator is one without an identifier),
+  // 2. turning abstract declarators into non-abstract declarators (noting 3)
+  //    (an abstract declarator is one without an identifier)
+  //    (except that we leave out the identifier if it would be undecorated),
   // 3. replacing all identifiers with a special symbolic identifier,
   // 4. and normalizing parens.
   // 
-  // The resulting "types" are basically inside-out and a pain to work with.
-  // 
+  // The resulting types are basically inside-out and a pain to work with, but
+  // they at least maintain the conciseness of basic types (i.e., "unsigned
+  // int" is in normal form -- but "int*" is not).
+  // TODO(chathhorn): expand typedefs?
   syntax Type ::= normType(Type) [function]
-  rule normType(FunType) => FunType // TODO(chathhorn): temporary kludge.
-  rule normType(T:Type) => normParens(convDecls(stripStoClassSpec(T)))
-    when T =/=K FunType
+  rule normType(T:Type) 
+    => normParens(convDecls(stripStoClassSpec(normParens(T))))
 
   syntax Bool ::= "$needsStripping" "(" K ")" 
     [function, klabel('$needsStripping)]
-  syntax K ::= stripStoClassSpec(K) [function]
+  syntax Type ::= stripStoClassSpec(Type) [function]
+  syntax K ::= "stripStoClassSpec'" "(" K ")" 
+    [function, klabel('stripStoClassSpec')]
+  // Ensures the parameter is a well-formed Type (necessary?).
+  rule stripStoClassSpec(T:Type) => stripStoClassSpec'(T)
   rule $needsStripping(Lbl:KLabel(_:StorageClassSpec,, L:KList))
     => true
-  rule stripStoClassSpec(Lbl:KLabel(_:StorageClassSpec,, L:KList))
-    => #visitAll(L, 'stripStoClassSpec, '$needsStripping)
-  rule stripStoClassSpec(Lbl:KLabel(K:K,, L:KList))
-    => Lbl(K,, #visitAll(L, 'stripStoClassSpec, '$needsStripping))
+  rule stripStoClassSpec'(Lbl:KLabel(_:StorageClassSpec,, L:KList))
+    => #visitAll(L, 'stripStoClassSpec', '$needsStripping)
+  rule stripStoClassSpec'(Lbl:KLabel(K:K,, L:KList))
+    => Lbl(K,, #visitAll(L, 'stripStoClassSpec', '$needsStripping))
     when isStorageClassSpec(K) =/=K true
+  rule stripStoClassSpec'(Lbl:KLabel(.KList))
+    => Lbl(.KList)
 
   // This is kinda subtle. Both abstract and non-abstract declarators might
   // also have children of both sorts and it's not very easy to distinguish the
@@ -395,13 +480,17 @@ module CIL-COMMON-TYPE
 
   rule convDecls(T:ParamDecl) => convParamDecl(T)
 
-  rule convParamDecl(TS:TypeSpec) => TS #__id__
+  rule convParamDecl(TS:TypeSpec) => TS
+  rule convParamDecl(TS:TypeSpec X:SymId) => TS
+  rule convParamDecl(TS:TypeSpec X:CId) => TS
   rule convParamDecl(TS:TypeSpec D:Declarator) => TS convDecl(D)
+    when (isCId(D) =/=K true) andBool (isSymId(D) =/=K true)
   rule convParamDecl(TS:TypeSpec D:AbsDecl) => TS convAbsDecl(D)
 
   rule convDecl(D:DirectDecl) => convDirectDecl(D)
   rule convDecl(P:Pointer D:DirectDecl) => P convDirectDecl(D)
 
+  rule convDirectDecl(X:SymId) => X
   rule convDirectDecl(X:CId) => #__id__
   rule convDirectDecl('`(_`)(D:Declarator)) => '`(_`)(convDecl(D))
   rule convDirectDecl(D:DirectDecl()) => convDirectDecl(D)()

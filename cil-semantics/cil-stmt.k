@@ -73,7 +73,7 @@ module CIL-STMT
   rule
     (
       <frame>
-        <k> (nclv(FunType, FunPtr(F:CId, Tu:TransUnit)))(TVs:TypedValues) ~> K:K </k>
+        <k> (nclv(_, FunPtr(F:CId, Tu:TransUnit)))(TVs:TypedValues) ~> K:K </k>
         Cells:Bag
       </frame>
     =>
@@ -82,7 +82,6 @@ module CIL-STMT
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
         //TODO(chathhorn): does this work right?
         <env> GEnv TuEnv </env>
-        <type-env> GTypeEnv TuTypeEnv </type-env>
       ...</frame>
     )
     <frame-stack>...
@@ -94,11 +93,9 @@ module CIL-STMT
       <body> FB:FunBody </body>
     ...</fun>
     <global-env> GEnv:Map </global-env>
-    <global-type-env> GTypeEnv:Map </global-type-env>
     <tu>...
       <tu-id> Tu </tu-id>
       <tu-env> TuEnv:Map </tu-env>
-      <tu-type-env> TuTypeEnv:Map </tu-type-env>
     ...</tu>
   [computational]
   rule
@@ -153,15 +150,16 @@ module CIL-STMT
 
   syntax K ::= initializeParams(Params, TypedValues)
              | deleteLocals(Set)
-  // TODO(chathhorn): POINTERS
   rule
     initializeParams(
-        ((TS:TypeSpec X:CId), Ps:Params),
+        ((DS:DeclSpecs D:Declarator), Ps:Params),
         (TV:TypedValue, TVs:TypedValues))
   =>
-    TS X; ~> X = TV; ~> initializeParams(Ps, TVs)
+    DS D; ~> getId(D) = TV; ~> initializeParams(Ps, TVs)
   [structural]
   rule initializeParams(.Params, .TypedValues) => .K   [structural]
+  // TODO(chathhorn): could probably be handled better.
+  rule initializeParams((void, .Params), .TypedValues) => .K   [structural]
 
   // rule
   //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)

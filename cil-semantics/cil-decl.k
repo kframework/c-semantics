@@ -12,54 +12,48 @@ module CIL-DECL
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
 
-  syntax K ::= declInternal(CId, Type, Ptr)
-             | declExternal(CId, Type, Ptr)
-             | defineFun(Ptr, TypeSpec, Params, FunBody)
+  syntax K ::= declInternal(CId, K) [strict(2)]
+             | declExternal(CId, K) [strict(2)]
+             | defineFun(Ptr, Type, Params, FunBody)
 
   /*
    * Function definition.
    */
 
   rule 
-    <k> T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declExternal(F, FunType, FunPtr(F, Tu)) 
-    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    <k> TS:TypeSpec D:Declarator FB:FunBody
+    => declExternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu)))
+    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> extern T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declExternal(F, FunType, FunPtr(F, Tu)) 
-    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    <k> extern TS:TypeSpec D:Declarator FB:FunBody
+    => declExternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu))) 
+    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> static T:TypeSpec F:CId(Ps:Params) FB:FunBody
-    => declInternal(F, FunType, FunPtr(F, Tu)) 
-    ~> defineFun(FunPtr(F, Tu), T, Ps, FB)
+    <k> static TS:TypeSpec D:Declarator FB:FunBody
+    => declInternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu)))
+    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
   
   rule 
-    <k> declInternal(X:CId, D:Type, P:Ptr) => . ...</k>
+    <k> declInternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <tu-env> TuEnv:Map => TuEnv:Map[P / X] </tu-env>
-    <tu-type-env> 
-      TuTypeEnv:Map => TuTypeEnv:Map[normType(D) / X]
-    </tu-type-env>
+    <tu-env> TuEnv:Map => TuEnv:Map[lv(downPtr(T), P) / X] </tu-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> declExternal(X:CId, D:Type, P:Ptr) => . ...</k>
-    <global-env> GEnv:Map => GEnv:Map[P / X] </global-env>
-    <global-type-env> 
-      GTypeEnv:Map => GTypeEnv:Map[normType(D) / X]
-    </global-type-env>
+    <k> declExternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
+    <global-env> GEnv:Map => GEnv:Map[lv(downPtr(T), P) / X] </global-env>
 
   rule
     <k>
-      defineFun(F:Ptr, T:TypeSpec, Ps:Params, FB:FunBody)
+      defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
     =>
       lower-break-continue-to-goto-control(F) ~> make-goto-table-control(F)
       //~> propagate-constants(F)
@@ -78,32 +72,33 @@ module CIL-DECL
     ...</funs>
   [structural]
 
-  // TODO(chathhorn): actually make new object and such.
   rule 
     <k> extern TS:TypeSpec D:Declarator ;  
-    => declExternal(extractId(D), TS D, Null)
+    => declExternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
 
-  // TODO(chathhorn): Tentative definition: need to look up the rules again.
+  // TODO(chathhorn): Tentative definition; need to look up the rules again.
   rule 
     <k> TS:TypeSpec D:Declarator ;  
-    => declExternal(extractId(D), TS D, Null)
+    => declExternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
 
   rule 
     <k> static TS:TypeSpec D:Declarator ;  
-    => declInternal(extractId(D), TS D, Null)
+    => declInternal(getId(D), newObject(normType(TS D)))
+    ...</k>
+    <phase> _:TransUnit </phase>
+
+  rule 
+    <k> S:DeclSpecs D:Declarator = I:Initializer ;
+    => S D ; ~> initVar(getId(D), I)
     ...</k>
     <phase> _:TransUnit </phase>
 
   // TODO(chathhorn): actually handle initializers.
-  rule 
-    <k> S:DeclSpecs D:Declarator = _:Initializer ;
-    => S D ;
-    ...</k>
-    <phase> _:TransUnit </phase>
+  syntax K ::= initVar(CId, Initializer)
 
   /*
    * Lower break and continue statements to goto statements 
@@ -252,18 +247,21 @@ module CIL-DECL
 
 
   /*
-   * Variable declarations (without initializers).
+   * Local variable declarations (without initializers).
    */
   rule VD:VarDecl VDs:VarDecls => VD ~> VDs [structural]
   rule .VarDecls => .K [structural]
 
-  rule T:TypeSpec X:CId; => bindLocal(T, X, newObject(T))
-  syntax K ::= bindLocal(Type, CId, K) [strict(3)]
-  // TODO(chathhorn): POINTERS
+  rule 
+    <k> TS:TypeSpec D:Declarator ; 
+    => bindLocal(getId(D), newObject(normType(TS D)))
+    ...</k>
+    <phase> executing </phase>
+
+  syntax K ::= bindLocal(CId, K) [strict(2)]
   rule
-    <k> bindLocal(T:Type, X:CId, tv(_, P:Ptr)) => .K ...</k>
-    <env>... .Map => X |-> P ...</env>
-    <type-env>... .Map => X |-> T ...</type-env>
+    <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
+    <env> M:Map => M:Map[lv(downPtr(T), P) / X] </env>
   [structural]
 
   syntax K ::= declStruct(CId, VarDecls, K) [strict(3)]
