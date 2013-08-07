@@ -5,7 +5,7 @@ require "cil-common.k"
 
 module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
-  imports CIL-COMMON-TYPE
+  imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
   //imports CIL-CONST-PROPAGATION
 

@@ -3,6 +3,7 @@ require "cil-decl.k"
 require "cil-exp.k"
 require "cil-stmt.k"
 require "cil-implementation.k"
+require "cil-typing.k"
 
 
 module CIL
@@ -10,6 +11,7 @@ module CIL
   imports CIL-EXP
   imports CIL-STMT
   imports CIL-IMPLEMENTATION
+  imports CIL-TYPING
 
   syntax K ::= "wrapper" "(" KList ")"
   configuration
