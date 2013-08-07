@@ -73,14 +73,20 @@ module CIL-DECL
   [structural]
 
   rule 
-    <k> extern TS:TypeSpec D:Declarator ;  
-    => declExternal(getId(D), newObject(normType(TS D)))
-    ...</k>
-    <phase> _:TransUnit </phase>
+    <k> typedef TS:TypeSpec D:Declarator ;  => . ...</k>
+    <typedefs> M:Map => M:Map[getId(D) / normType(TS D)] </typedefs>
+
+  // TODO(chathhorn): what happens if these are functions?!?
 
   // TODO(chathhorn): Tentative definition; need to look up the rules again.
   rule 
     <k> TS:TypeSpec D:Declarator ;  
+    => declExternal(getId(D), newObject(normType(TS D)))
+    ...</k>
+    <phase> _:TransUnit </phase>
+
+  rule 
+    <k> extern TS:TypeSpec D:Declarator ;  
     => declExternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>

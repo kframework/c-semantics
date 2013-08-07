@@ -8,8 +8,7 @@ module CIL-SYNTAX
                   | TuPragma
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypeDef | EnumDecl
-  syntax TypeDef ::= "typedef" Type CId ";" 
+  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | EnumDecl
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
