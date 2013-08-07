@@ -22,34 +22,46 @@ module CIL-DECL
 
   rule 
     <k> TS:TypeSpec D:Declarator FB:FunBody
-    => declExternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu)))
+    => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> extern TS:TypeSpec D:Declarator FB:FunBody
-    => declExternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu))) 
+    => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu))) 
     ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> static TS:TypeSpec D:Declarator FB:FunBody
-    => declInternal(getId(D), tv(upPtr(normType(TS D)), FunPtr(getId(D), Tu)))
+    => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
     <phase> Tu:TransUnit </phase>
   
   rule 
+    <k> declInternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
+    <tu-id> Tu </tu-id>
+    <env> Env:Map => Env[lv(T, P) / X] </env>
+    <tu-env> TuEnv:Map => TuEnv[lv(T, P) / X] </tu-env>
+    <phase> Tu:TransUnit </phase>
+  rule 
     <k> declInternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <tu-env> TuEnv:Map => TuEnv:Map[lv(downPtr(T), P) / X] </tu-env>
+    <env> Env:Map => Env[lv(downPtr(T), P) / X] </env>
+    <tu-env> TuEnv:Map => TuEnv[lv(downPtr(T), P) / X] </tu-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
+    <k> declExternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
+    <env> Env:Map => Env[lv(T, P) / X] </env>
+    <global-env> GEnv:Map => GEnv[lv(T, P) / X] </global-env>
+  rule 
     <k> declExternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
-    <global-env> GEnv:Map => GEnv:Map[lv(downPtr(T), P) / X] </global-env>
+    <env> Env:Map => Env[lv(downPtr(T), P) / X] </env>
+    <global-env> GEnv:Map => GEnv[lv(downPtr(T), P) / X] </global-env>
 
   rule
     <k>
@@ -72,9 +84,10 @@ module CIL-DECL
     ...</funs>
   [structural]
 
+  // Typedefs share the same name space as other declarations.
   rule 
-    <k> typedef TS:TypeSpec D:Declarator ;  => . ...</k>
-    <typedefs> M:Map => M:Map[getId(D) / normType(TS D)] </typedefs>
+    typedef TS:TypeSpec D:Declarator ;  
+    => declInternal(getId(D), nclv(normType(TS D), TypePtr))
 
   // TODO(chathhorn): what happens if these are functions?!?
 

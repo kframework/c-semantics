@@ -32,8 +32,13 @@ module CIL-EXP
 
   /* lookup */
   rule
-    <k> X:CId => LV ...</k>
-    <env>... X |-> LV:LeftValue ...</env>
+    <k> X:CId => lv(T, P) ...</k>
+    <env>... X |-> lv(T:Type, P:Ptr) ...</env>
+    when P =/=K TypePtr
+    [structural]
+  rule
+    <k> X:CId => T ...</k>
+    <env>... X |-> lv(T:Type, TypePtr) ...</env>
     [structural]
 
   // Doesn't work as a macro because it will mangle array declarations.
@@ -60,10 +65,15 @@ module CIL-EXP
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
     
-  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
+  rule <k> (lv(T:Type, P:Ptr) => load(expandTypedefs(normType(T), E), P)) 
+    ~> KLabel:KLabel(KList:KList) ...</k>
+    <env> E:Map </env>
     when KLabel(KList) =/=K noLeftValueConversion
 
-  rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
+  //rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
+  rule <k> (lv(T:Type, P:Ptr) => nclv(expandTypedefs(normType(T), E), P)) 
+    ~> noLeftValueConversion ...</k>
+    <env> E:Map </env>
   [structural]
 
   /*
@@ -185,27 +195,30 @@ module CIL-EXP
   /*
    * Sizeof
    */
-  /* TODO: sizeof for exp 
-  */
-  rule sizeof(T:Type) => byteWidth(normType(T))    
+  syntax K ::= "sizeof'" "(" Type ")"
+  rule sizeof(nclv(T:Type, TypePtr)) => sizeof'(T)
+  rule sizeof(tv(T:Type, _)) => sizeof'(T)
+
+  rule sizeof'(T:Type) => byteWidth(T)    
     when (isBasicType(T) ==K true) 
-      orBool (isPtrType(normType(T)) ==K true)
+      orBool (isPtrType(T) ==K true)
     [structual]
-  rule sizeof(TS:TypeSpec D:Declarator) 
-    => sizeof(downArray(normType(TS D))) * getArraySize(normType(TS D))
-    when isArrayType(normType(TS D)) ==K true
+  rule sizeof'(T:Type) 
+    => sizeof'(downArray(T)) * getArraySize(T)
+    when isArrayType(T) ==K true
     [structual]
-  rule <k> sizeof(T:AggTypeSpec) => Size ...</k>
+  rule <k> sizeof'(T:AggTypeSpec) => Size ...</k>
     <agg-id> T </agg-id>
     <size> Size:Int </size>
-    [structural]
-  rule <k> sizeof(X:CId) => sizeof(T) ...</k>
-    <typedefs>... X |-> T:Type ...</typedefs>
     [structural]
   
   /*
    * Casting
    */
+  rule <k> T:Type => nclv(expandTypedefs(normType(T), E), TypePtr) ...</k>
+    <env> E:Map </env>
+    when (isCId(T) =/=K true) orBool (isKeyword(T) ==K true)
+
   /* the rule for signed integer types is implementation defined */
   rule
     (T:SignedIntType) tv(_:Type, mi(_:Int, I:Int))

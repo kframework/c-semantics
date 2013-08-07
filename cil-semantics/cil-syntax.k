@@ -67,6 +67,8 @@ module CIL-SYNTAX
    * expressions
    */
   syntax Exp ::= Constant
+               //TODO(chathhorn): probably going to regret this.
+               | Type [avoid]
                | "(" Exp ")"              [bracket]
                | LVal 
                | "&" LVal
@@ -74,7 +76,7 @@ module CIL-SYNTAX
                | "-" Exp                  [strict]
                | "~" Exp                  [strict]
                | "!" Exp
-               | "sizeof" "(" Type ")"    [prefer]
+               | "sizeof" "(" Exp ")"     [strict, prefer]
                > "(" Type ")" Exp         [strict, prefer]
                > left:
                  Exp "*" Exp              [strict, left]
@@ -165,7 +167,7 @@ module CIL-SYNTAX
                  */
   syntax Stmts ::= List{Stmt, ""}   [right]
   syntax Instr ::= LVal "=" Exp ";"       [strict(2)]
-                 | LVal "=" FunCall ";"   [strict(2)]
+                 | LVal "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
 
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
@@ -189,6 +191,7 @@ module CIL-SYNTAX
                     | "malloc"    [reject]
                     | "free"      [reject]
   /* exclude keywords */
+  // TODO(chathhorn): isCId(int) ==K true??
   syntax CIdToken ::= "sizeof"      [reject]
                     | "return"      [reject]
                     | "goto"        [reject]
@@ -206,7 +209,7 @@ module CIL-SYNTAX
                     | "unsigned"    [reject]
                     | "struct"      [reject]
                     | "union"       [reject]
-     
+
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 
   /*

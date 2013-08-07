@@ -29,7 +29,6 @@ module CIL
         <labels> .Map </labels> // Map{Label, Stmt}
       </fun>
     </funs>
-    <typedefs> .Map </typedefs> // Map{CId, Type}
     <global-env> .Map </global-env> // Map{CId, Ptr}
     <phase> initializing </phase> // Phase
     <tus>

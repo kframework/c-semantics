@@ -11,6 +11,8 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr(CId, TransUnit)
+               // TODO(chathhorn): used for typedefs, a bit of a kludge.
+               | "TypePtr"
                | "Null"
   /*
    * BasePtr of Base * Size
@@ -217,15 +219,12 @@ module CIL-COMMON-MMU
   syntax K ::= "load" "(" Type "," Ptr ")"
              | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
              | "$load" "(" Type "," Ptr "," Int "," List ")"
-             | "store" "(" Type "," Ptr "," Value ")"           [strict(1)]
+             | "store" "(" Type "," Ptr "," Value ")"
              | "$store" "(" Ptr "," List ")"
 
   /* TODO: check beforehand that load/store would be successful */
-  rule store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
-  [structural]
   rule 
-    <k> store((X:CId => T), _, _) ...</k>
-    <typedefs>... X |-> T:Type ...</typedefs>
+    store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
   rule
     <k>
@@ -242,11 +241,12 @@ module CIL-COMMON-MMU
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
 
-  rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T)) [structural]
   rule 
-    <k> load((X:CId => T), _) ...</k>
-    <typedefs>... X |-> T:Type ...</typedefs>
-  [structural]
+    <k> load(T:Type, P:Ptr) 
+    => $load(expandTypedefs(T, E), P, sizeof(T)) ...</k> 
+    <env> E:Map </env>
+    [structural]
+
   rule
     $load(T:Type, P:Ptr, Sz:TypedValue) => $load(T, P, (val(Sz)), .List)
   [structural]
@@ -303,10 +303,61 @@ module CIL-COMMON
 
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
+
+  // Complete list of C11 keywords.
+  // TODO(chathhorn): move to cil-syntax?
+  syntax Keyword ::=
+      "auto"             [reject]
+    | "break"            [reject]
+    | "case"             [reject]
+    | "char"             [reject]
+    | "const"            [reject]
+    | "continue"         [reject]
+    | "default"          [reject]
+    | "do"               [reject]
+    | "double"           [reject]
+    | "else"             [reject]
+    | "enum"             [reject]
+    | "extern"           [reject]
+    | "float"            [reject]
+    | "for"              [reject]
+    | "goto"             [reject]
+    | "if"               [reject]
+    | "inline"           [reject]
+    | "int"              [reject]
+    | "long"             [reject]
+    | "register"         [reject]
+    | "restrict"         [reject]
+    | "return"           [reject]
+    | "short"            [reject]
+    | "signed"           [reject]
+    | "sizeof"           [reject]
+    | "static"           [reject]
+    | "struct"           [reject]
+    | "switch"           [reject]
+    | "typedef"          [reject]
+    | "union"            [reject]
+    | "unsigned"         [reject]
+    | "void"             [reject]
+    | "volatile"         [reject]
+    | "while"            [reject]
+    | "_Alignas"         [reject]
+    | "_Alignof"         [reject]
+    | "_Atomic"          [reject]
+    | "_Bool"            [reject]
+    | "_Complex"         [reject]
+    | "_Generic"         [reject]
+    | "_Imaginary"       [reject]
+    | "_Noreturn"        [reject]
+    | "_Static_assert"   [reject]
+    | "_Thread_local"    [reject]
+    
 endmodule
 
 module CIL-COMMON-TYPE
   imports CIL-SYNTAX
+  imports CIL-COMMON
+  imports CIL-COMMON-TYPED-VALUE
   imports K-FUNCTIONAL-VISITOR
 
   syntax SymId ::= "#__id__"
@@ -314,28 +365,39 @@ module CIL-COMMON-TYPE
 
   // Visits only the leftmost branch of the AST (except when an exception node
   // is encountered, then it visits the next-to-leftmost branch).
-  // AST to search, the transformation to apply, the predicate.
+  // AST to search, the transformation to apply, extra trans arg, the
+  // predicate, the exception.
+  syntax K ::= #leftVisit(K, KLabel, KList, KLabel, KLabel) [function]
   syntax K ::= #leftVisit(K, KLabel, KLabel, KLabel) [function]
-  rule #leftVisit(K:K, Trans:KLabel, Pred:KLabel, _)
-    => Trans(K)
+  rule #leftVisit(K:K, Trans:KLabel, Pred:KLabel, Except:KLabel)
+    => #leftVisit(K, Trans, .KList, Pred, Except)
+  rule #leftVisit(K:K, Trans:KLabel, Arg:KList, Pred:KLabel, _)
+    => Trans(K,, Arg)
     when Pred(K) ==K true
   rule 
     #leftVisit(
       Lbl:KLabel(P:K,, K:K,, L:KList), 
-      Trans:KLabel, Pred:KLabel, Except:KLabel)
-    => Lbl(P:K,, #leftVisit(K, Trans, Pred, Except),, L)
+      Trans:KLabel, Arg:KList, Pred:KLabel, Except:KLabel)
+    => Lbl(P:K,, #leftVisit(K, Trans, Arg, Pred, Except),, L)
     when (Pred(Lbl(P,, K,, L)) =/=K true) 
       andBool (getKLabel(P) ==KLabel Except)
   rule 
     #leftVisit(
       Lbl:KLabel(K:K,, L:KList), 
-      Trans:KLabel, Pred:KLabel, Except:KLabel)
-    => Lbl(#leftVisit(K, Trans, Pred, Except),, L)
+      Trans:KLabel, Arg:KList, Pred:KLabel, Except:KLabel)
+    => Lbl(#leftVisit(K, Trans, Arg, Pred, Except),, L)
     when (Pred(Lbl(K,, L)) =/=K true)
       andBool (getKLabel(K) =/=KLabel Except)
-  rule #leftVisit(Lbl:KLabel(.KList), _, Pred:KLabel, _)
+  rule #leftVisit(Lbl:KLabel(.KList), _, _, Pred:KLabel, _)
     => Lbl(.KList)
     when Pred(Lbl(.KList)) =/=K true
+
+  syntax Type ::= replaceTopId(Type, DirectDecl) [function]
+  syntax DirectDecl ::= replaceTopIdTrans(DirectDecl, DirectDecl) [function]
+  rule replaceTopId(T:Type, D:DirectDecl) =>
+    #leftVisit(T, 'replaceTopIdTrans, D, isSymId, '*)
+  rule replaceTopIdTrans(_:DirectDecl, New:DirectDecl)
+    => New
 
   // Searches the leftmost branch of the AST and returns the
   // first node for which the predicate holds, .K if nothing found.
@@ -453,6 +515,64 @@ module CIL-COMMON-TYPE
     when isCId(D) =/=K true
   rule getParams'(D:DirectDecl[_]) => getParams'(D)
 
+  // One might expect that one could just do a simple search-and-replace to
+  // remove typedef'd identifiers, but one would unfortunately be wrong.
+  // Consider:
+  //
+  // typedef int arr[5];
+  // arr x;
+  // 
+  // If we just replace arr with its normalized type we get something like:
+  // 
+  // int #__id__[5] x;
+  // 
+  // which isn't valid declaration or type syntax. What we actually have to do
+  // is substitute the designator to the right with the top-level identifier in
+  // the typedef to get:
+  // 
+  // int x[5];
+  // 
+  // We currently expand typedefs in three places: during loads and stores and
+  // sizeof().
+  syntax Type ::= expandTypedefs(Type, Map) [function]
+  syntax ParamDecl ::= expandParamDecl(ParamDecl, Map) [function]
+  syntax Declarator ::= expandDecl(Declarator, Map) [function]
+  syntax DirectDecl ::= expandDirectDecl(DirectDecl, Map) [function]
+  syntax Params ::= expandParams(Params, Map) [function]
+
+  // TODO(chathhorn): It'd be nice to generalize this process of walking the
+  // declaration syntax tree.
+  rule expandTypedefs(T:ParamDecl, E:Map) => expandParamDecl(T, E)
+
+  // TODO(chathhorn): probably should go back to a special typedef cell to
+  // reduce the amount of stuff that must be passed around.
+  rule expandParamDecl(X:CId, E:Map X |-> lv(T:Type, TypePtr))
+    => expandTypedefs(T, E[lv(T, TypePtr) / X])
+  rule expandParamDecl(X:CId D:Declarator, E:Map X |-> lv(T:Type, TypePtr))
+    => expandTypedefs(normParens(replaceTopId(T, '`(_`)(D))), E[lv(T, TypePtr) / X])
+  rule expandParamDecl(TS:TypeSpec, _) => TS
+    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
+  rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) 
+    => TS expandDecl(D, E)
+    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
+
+  rule expandDecl(D:DirectDecl, E:Map) => expandDirectDecl(D, E)
+  rule expandDecl(P:Pointer D:DirectDecl, E:Map) => P expandDirectDecl(D, E)
+
+  rule expandDirectDecl(X:SymId, E:Map) => X
+  rule expandDirectDecl('`(_`)(D:Declarator), E:Map) 
+    => '`(_`)(expandDecl(D, E))
+  rule expandDirectDecl(D:DirectDecl(), E:Map) => expandDirectDecl(D, E)()
+  rule expandDirectDecl(D:DirectDecl[], E:Map) => expandDirectDecl(D, E)[]
+  rule expandDirectDecl(D:DirectDecl(Ps:Params), E:Map) 
+    => expandDirectDecl(D, E)(expandParams(Ps, E))
+  rule expandDirectDecl(D:DirectDecl[C:Constant], E:Map) 
+    => expandDirectDecl(D, E)[C]
+
+  rule expandParams(P:ParamDecl, Ps:Params, E:Map) 
+    => expandParamDecl(P, E), expandParams(Ps, E)
+  rule expandParams(.Params, _) => .Params
+
   // The basic idea here is that a "type" will be nothing more than a
   // normalized declaration. We normalize declarations by:
   // 1. stripping storage class specifiers,
@@ -465,8 +585,6 @@ module CIL-COMMON-TYPE
   // The resulting types are basically inside-out and a pain to work with, but
   // they at least maintain the conciseness of basic types (i.e., "unsigned
   // int" is in normal form -- but "int*" is not).
-  // TODO(chathhorn): expand typedefs? Also consider parens in cases like
-  // (*(*#__id))
   syntax Type ::= normType(Type) [function]
   rule normType(T:Type) 
     => normParens(convDecls(stripStoClassSpec(normParens(T))))
@@ -520,7 +638,8 @@ module CIL-COMMON-TYPE
     => convDirectDecl(D)(convParams(Ps))
   rule convDirectDecl(D:DirectDecl[C:Constant]) => convDirectDecl(D)[C]
 
-  rule convParams(P:ParamDecl, Ps:Params) => convParamDecl(P), Ps
+  rule convParams(P:ParamDecl, Ps:Params) 
+    => convParamDecl(P), convParams(Ps)
   rule convParams(.Params) => .Params
 
   rule convAbsDecl(P:Pointer) => P #__id__
@@ -541,7 +660,8 @@ module CIL-COMMON-TYPE
   rule convDirectAbsDecl( D:DirectAbsDecl[C:Constant] ) 
     => convDirectAbsDecl(D)[C]
 
-  // TODO(chathhorn): probably more to do here.
+  // TODO(chathhorn): probably more to do here. Also consider parens in cases
+  // like (*(*#__id__))
   syntax Bool ::= "$needsParensNorm" "(" K ")" [function]
   syntax K ::= normParens(K) [function]
   syntax KList ::= "normParens'" "(" KList ")" [function]
