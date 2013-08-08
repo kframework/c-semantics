@@ -58,7 +58,13 @@ module CIL-EXP
 
   /* TODO: '&_ */
   context &(HOLE => HOLE ~> noLeftValueConversion)
-  rule &nclv(T:Type, P:Ptr) => tv(upPtr(T), P) [structural]
+  rule &nclv(T:Type, P:Ptr) => tv(upPtr(T), P)
+    when isArrayType(T) =/=K true
+    [structural]
+  // TODO(chathhorn): proper array decay.
+  rule &nclv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)
+    when isArrayType(T) ==K true
+    [structural]
   
   /* dereference */
   rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) [structural]
@@ -178,7 +184,6 @@ module CIL-EXP
   =>
     bool2mint(geqMInt(MI1, MI2))
 
-
   /* Relation operators */
   rule
     tv(T:Type, MI1:MInt) == tv(T, MI2:MInt)
@@ -189,9 +194,7 @@ module CIL-EXP
   =>
     bool2mint(MI1 =/=MInt MI2)
 
-
   rule !tv(_:Type, I:Int) => norm(int, #if I ==Int 0 #then 1 #else 0 #fi)
-
 
   /*
    * Sizeof
@@ -224,36 +227,44 @@ module CIL-EXP
 
   /* the rule for signed integer types is implementation defined */
   rule
-    (nt(T:SignedIntType)) tv(_:Type, mi(_:Int, I:Int))
+    (nt(T:SignedIntType)) tv(_:Type, mi(_, I:Int))
   =>
     tv(T, sMInt(mi((width(T)), I)))
 
   rule
-    (nt(T:UnsignedIntType)) tv(_:Type, mi(_:Int, I:Int))
+    (nt(T:UnsignedIntType)) tv(_:Type, mi(_, I:Int))
   =>
     tv(T, uMInt(mi((width(T)), I)))
 
   rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
 
+  // TODO(chathhorn): probably too lenient here.
+  rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
+    when (isPtrType(To) ==K true) andBool (isPtrType(From) ==K true)
+  rule (nt(To:Type)) tv(_:Type, mi(_, 0)) => tv(To, Null)
+    when (isPtrType(To) ==K true)
+
   /* TODO: complete all the cases  */
-  //rule (void *) tv(T:PtrType, A:Ptr) => 
 
   rule tv(T:Type, F1:Float) * tv(T, F2:Float) => tv(T, F1 *Float F2)
   rule tv(T:Type, F1:Float) / tv(T, F2:Float) => tv(T, F1 /Float F2)
-  when F2 =/=Float 0.0
+    when F2 =/=Float 0.0
 
   rule tv(T:Type, F1:Float) + tv(T, F2:Float) => tv(T, F1 +Float F2)
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
   context tv(_, PtrAdd(_, _, HOLE))
-  rule tv(T:Type, P:Ptr) + tv(_, I:Int) 
+  rule tv(T:Type, P:Ptr) + tv(_, mi(_, I:Int)) 
+    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+    when isPtrType(T)
+  rule tv(_, mi(_, I:Int)) + tv(T:Type, P:Ptr) 
     => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
     when isPtrType(T)
   rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
     => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
     when isPtrType(T)
   rule
-    tv(T:Type, P:Ptr) - tv(_, I:Int)
+    tv(T:Type, P:Ptr) - tv(_, mi(_, I:Int))
     => tv(T, PtrAdd(P, 0 -Int I, sizeof(downPtr(T))))
     when isPtrType(T)
 // 

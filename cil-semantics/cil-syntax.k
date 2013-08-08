@@ -57,11 +57,7 @@ module CIL-SYNTAX
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
 
-  // TODO(chathhorn): make sure this gets handled ok.
-  // rule S:DeclSpecs F:Declarator (void) FB:FunBody 
-  //   => S F(.Params) FB [macro]
-  // rule S:DeclSpecs F:Declarator (Ps:Params) B:Block 
-  //   => S F(Ps) { .VarDecls B } [macro]
+  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
 
   /*
    * expressions
@@ -227,7 +223,7 @@ module CIL-SYNTAX
   syntax VarDecls ::= List{VarDecl, ""}    [right]
   
   syntax InitVarDecl ::= 
-      DeclSpecs Declarator "=" Initializer ";" [strict(3)]
+      DeclSpecs Declarator "=" Initializer ";"
 
   // declaration-specifiers
   //     storage-class-specifier declaration-specifiers?

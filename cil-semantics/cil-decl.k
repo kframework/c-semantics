@@ -7,6 +7,7 @@ module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
+  imports CIL-EXP
   //imports CIL-CONST-PROPAGATION
 
   rule G:Global Gs:Globals => G ~> Gs [structural]
@@ -41,6 +42,12 @@ module CIL-DECL
     ...</k>
     <phase> Tu:TransUnit </phase>
   
+  rule 
+    <k> declInternal(X:CId, nt(T:Type)) => . ...</k>
+    <tu-id> Tu </tu-id>
+    <env> Env:Map => Env[T / X] </env>
+    <tu-env> TuEnv:Map => TuEnv[T / X] </tu-env>
+    <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
@@ -86,8 +93,8 @@ module CIL-DECL
 
   // Typedefs share the same name space as other declarations.
   rule 
-    <k> typedef TS:TypeSpec D:Declarator ; => . ...</k>
-    <env> E:Map => E[normType(TS D) / getId(D)] </env>
+    typedef TS:TypeSpec D:Declarator ; 
+    => declInternal(getId(D), nt(normType(TS D)))
 
   // TODO(chathhorn): what happens if these are functions?!?
 
@@ -111,13 +118,40 @@ module CIL-DECL
     <phase> _:TransUnit </phase>
 
   rule 
-    <k> S:DeclSpecs D:Declarator = I:Initializer ;
-    => S D ; ~> initVar(getId(D), I)
+    <k> S:DeclSpecs D:Declarator = E:Exp ;
+    => S D ; ~> getId(D) = E ;
+    ...</k>
+    <phase> _:TransUnit </phase>
+  rule 
+    <k> S:DeclSpecs D:Declarator = { Is:Initializers } ;
+    => S D ; ~> initVar(getId(D), Is, 0)
     ...</k>
     <phase> _:TransUnit </phase>
 
-  // TODO(chathhorn): actually handle initializers.
-  syntax K ::= initVar(CId, Initializer)
+  syntax K ::= initVar(Exp, Initializers, Int)
+
+  rule initVar(X:Exp, (E:Exp, Is:Initializers), Pos:Int) 
+    => (X @ Pos) = E ; ~> initVar(X, Is, Pos +Int 1)
+
+  rule initVar(X:Exp, ({ Is:Initializers }, Is:Initializers), Pos:Int)
+    => initVar(X @ Pos, Is, 0) ~> initVar(X, Is, Pos +Int 1)
+
+  rule initVar(_, .Initializers, _) => .
+
+  syntax LVal ::= Exp "@" Int [right]
+  context (HOLE => HOLE ~> noLeftValueConversion) @ _:Int
+  rule 
+    <k> 
+      nclv(Agg:AggTypeSpec, Ptr(Base:BasePtr, Offset:Int)) @ Pos:Int
+      => lv(T, Ptr(Base, Offset +Int MOffset))
+    ...</k>
+    <agg-id> Agg </agg-id>
+    <field-pos> M </field-pos>
+    <field-type> T:Type </field-type>
+    <offset> MOffset:Int </offset>
+
+  rule nclv(T:Type, P:Ptr) @ Pos:Int => (&lv(T, P))[Pos]
+    when isArrayType(T) ==K true
 
   /*
    * Lower break and continue statements to goto statements 
@@ -283,24 +317,25 @@ module CIL-DECL
     <env> M:Map => M:Map[lv(downPtr(T), P) / X] </env>
   [structural]
 
-  syntax K ::= declStruct(CId, VarDecls, K) [strict(3)]
-             | declUnion(CId, VarDecls, K) [strict(3)]
+  syntax K ::= declStruct(CId, VarDecls, K, Int) [strict(3)]
+             | declUnion(CId, VarDecls, K, Int) [strict(3)]
   rule 
-    <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0) ...</k>
+    <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)
        
-  rule declStruct(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _) 
+  rule declStruct(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _, _) 
     [structural]
-  rule declStruct(_, (.VarDecls => .) , _) 
+  rule declStruct(_, (.VarDecls => .) , _, _) 
     [structural]
 
   rule 
-     <k> declStruct(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Offset:TypedValue) 
-     => declStruct(X, VDs, Offset + sizeof(T)) ...</k>
+     <k> declStruct(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Offset:TypedValue, Pos:Int) 
+     => declStruct(X, VDs, Offset + sizeof(T), Pos +Int 1) ...</k>
      <agg-id> struct X </agg-id>
      <fields>...
         (. => <field>...
           <field-id> F </field-id>
+          <field-pos> Pos </field-pos>
           <field-type> T </field-type>
           <offset> val(Offset) </offset>
         ...</field>)
@@ -308,7 +343,7 @@ module CIL-DECL
     [structural]
      
   rule 
-     <k> declStruct(X:CId, .K, Offset:TypedValue) => . ...</k>
+     <k> declStruct(X:CId, .K, Offset:TypedValue, _) => . ...</k>
      <agg-id> struct X </agg-id>
      <size> _ => val(Offset) </size>
     [structural]
@@ -318,21 +353,22 @@ module CIL-DECL
   rule maxK(X:TypedValue, Y:TypedValue) => Y when val(X) <Int val(Y)
 
   rule 
-    <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0) ...</k>
+    <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> union X </agg-id> ...</aggregate>)
        
-  rule declUnion(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _) 
+  rule declUnion(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _, _) 
     [structural]
-  rule declUnion(_, (.VarDecls => .), _) 
+  rule declUnion(_, (.VarDecls => .), _, _) 
     [structural]
 
   rule 
-     <k> declUnion(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Size:TypedValue)
-     => declUnion(X, VDs, maxK(Size, sizeof(T))) ...</k>
+     <k> declUnion(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Size:TypedValue, Pos:Int)
+     => declUnion(X, VDs, maxK(Size, sizeof(T)), Pos +Int 1) ...</k>
      <agg-id> union X </agg-id>
      <fields>...
         (. => <field>...
           <field-id> F </field-id>
+          <field-pos> Pos </field-pos>
           <field-type> T </field-type>
           <offset> 0 </offset>
         ...</field>)
@@ -340,7 +376,7 @@ module CIL-DECL
     [structural]
      
   rule 
-     <k> declUnion(X:CId, .K, Size:TypedValue) => . ...</k>
+     <k> declUnion(X:CId, .K, Size:TypedValue, _) => . ...</k>
      <agg-id> union X </agg-id>
      <size> _ => val(Size) </size>
     [structural]

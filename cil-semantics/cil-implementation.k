@@ -77,6 +77,8 @@ module CIL-IMPLEMENTATION
     value2Bytes(_:Type, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
   =>
     ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
+  rule value2Bytes(_:Type, Null) 
+    => ListItem(0) ListItem(0) ListItem(0) ListItem(0)
 
   rule
     bytes2Value(

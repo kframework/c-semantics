@@ -19,7 +19,7 @@ module CIL
     <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
-      <env> .Map </env> // Map{CId, lv(Type, Ptr)}
+      <env> .Map </env> // Map{CId, lv(Type, Ptr)|Type}
     </frame>
     <frame-stack> .List </frame-stack>  // List{<frame> ... </frame>}
     <funs>
@@ -46,6 +46,7 @@ module CIL
        <fields>
           <field multiplicity="*">
                <field-id> .K </field-id> // CId
+               <field-pos> 0 </field-pos> // The pos it appeared in the decl.
                <field-type> .K </field-type> // Type
                <offset> 0 </offset> 
           </field>

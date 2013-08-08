@@ -4,6 +4,7 @@ require "builtins/mint.k"
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
+  imports CIL-COMMON-TYPED-VALUE
   /*
    * Ptr of BasePtr * Offset
    * @invariant: 0 <= Offset <= BasePtr.Size
@@ -30,17 +31,18 @@ module CIL-COMMON-PTR
   /* Addition of pointer and index is defined only if there result Offset is in
    * the range [0, Size] */
   rule
-    PtrAdd(Ptr(BasePtr(Base:Int, Size:Int), Offset:Int), I:Int, M:Int)
+    PtrAdd(Ptr(BasePtr(Base:Int, Size:Int), Offset:Int), I:Int, V:TypedValue)
   =>
-    Ptr(BasePtr(Base, Size), (Offset +Int I *Int M))
-  when 0 <=Int Offset +Int I *Int M andBool Offset +Int I *Int M <=Int Size
+    Ptr(BasePtr(Base, Size), (Offset +Int I *Int val(V)))
+  when 0 <=Int Offset +Int I *Int val(V) 
+    andBool Offset +Int I *Int val(V) <=Int Size
 
   /* Subtraction of pointers is defined only for the same BasePtr. */
   rule
-    PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), M:Int)
+    PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
   =>
-    (Offset1 -Int Offset2) /Int M
-  when (Offset1 -Int Offset2) %Int M ==Int 0
+    (Offset1 -Int Offset2) /Int val(V)
+  when (Offset1 -Int Offset2) %Int val(V) ==Int 0
 
   /* Structural equality of addresses */
   rule
@@ -239,10 +241,7 @@ module CIL-COMMON-MMU
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
 
-  rule 
-    <k> load(T:Type, P:Ptr) 
-    => $load(expandTypedefs(T, E), P, sizeof(T)) ...</k> 
-    <env> E:Map </env>
+  rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
   rule
