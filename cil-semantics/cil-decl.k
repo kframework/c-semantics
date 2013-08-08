@@ -150,7 +150,7 @@ module CIL-DECL
     <field-type> T:Type </field-type>
     <offset> MOffset:Int </offset>
 
-  rule nclv(T:Type, P:Ptr) @ Pos:Int => (&lv(T, P))[Pos]
+  rule nclv(T:Type, P:Ptr) @ Pos:Int => (lv(T, P))[Pos]
     when isArrayType(T) ==K true
 
   /*

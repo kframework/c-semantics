@@ -33,13 +33,13 @@ module CIL-EXP
 
   /* lookup */
   rule
-    <k> X:CId => lv(T, P) ...</k>
-    <env>... X |-> lv(T:Type, P:Ptr) ...</env>
+    <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
+    <env> E:Map X |-> lv(T:Type, P:Ptr) </env>
     [structural]
   // Typedefs.
   rule
-    <k> X:CId => T ...</k>
-    <env>... X |-> T:Type ...</env>
+    <k> X:CId => nt(expandTypedefs(T, E)) ...</k>
+    <env> E:Map X |-> T:Type </env>
     [structural]
 
   // Doesn't work as a macro because it will mangle array declarations.
@@ -61,10 +61,6 @@ module CIL-EXP
   rule &nclv(T:Type, P:Ptr) => tv(upPtr(T), P)
     when isArrayType(T) =/=K true
     [structural]
-  // TODO(chathhorn): proper array decay.
-  rule &nclv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)
-    when isArrayType(T) ==K true
-    [structural]
   
   /* dereference */
   rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) [structural]
@@ -72,15 +68,16 @@ module CIL-EXP
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
     
-  rule <k> (lv(T:Type, P:Ptr) => load(expandTypedefs(normType(T), E), P)) 
-    ~> KLabel:KLabel(KList:KList) ...</k>
-    <env> E:Map </env>
-    when KLabel(KList) =/=K noLeftValueConversion
+  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
+    when (KLabel(KList) =/=K noLeftValueConversion)
+      andBool (isArrayType(T) =/=K true)
+  // Arrays decay to a pointer except as an operand to sizeof() or &.
+  rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) 
+    ~> KLabel:KLabel(KList:KList)
+    when (KLabel(KList) =/=K noLeftValueConversion)
+      andBool (isArrayType(T) ==K true)
 
-  //rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
-  rule <k> (lv(T:Type, P:Ptr) => nclv(expandTypedefs(normType(T), E), P)) 
-    ~> noLeftValueConversion ...</k>
-    <env> E:Map </env>
+  rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
   [structural]
 
   /*
@@ -238,7 +235,7 @@ module CIL-EXP
 
   rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
 
-  // TODO(chathhorn): probably too lenient here.
+  // TODO(chathhorn): probably too lax here.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
     when (isPtrType(To) ==K true) andBool (isPtrType(From) ==K true)
   rule (nt(To:Type)) tv(_:Type, mi(_, 0)) => tv(To, Null)
