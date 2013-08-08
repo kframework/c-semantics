@@ -20,6 +20,9 @@ module CIL-EXP
 
   syntax K ::= "noLeftValueConversion"
 
+  //TODO(chathhorn): probably going to regret this.
+  syntax Exp ::= Type [avoid]
+
   /* constant */
   /* TODO: typed constant */
   rule I:Int => tv(int, mi((width(int)), I))

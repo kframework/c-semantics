@@ -63,8 +63,6 @@ module CIL-SYNTAX
    * expressions
    */
   syntax Exp ::= Constant
-               //TODO(chathhorn): probably going to regret this.
-               | Type [avoid]
                | "(" Exp ")"              [bracket]
                | LVal 
                | "&" LVal
@@ -232,13 +230,21 @@ module CIL-SYNTAX
   //     function-specifier      declaration-specifiers?
   //     alignment-specifier     declaration-specifiers?
   syntax DeclSpecs ::=
-      TypeSpec
-    | TypeQual TypeSpec
-    | StorageClassSpec TypeSpec
+      StorageClassSpec TypeSpec
+    | StorageClassSpec TypeSpec TypeQual [prefer]
     | StorageClassSpec TypeQual TypeSpec
-  rule _:TypeQual T:TypeSpec => T [macro]
-  rule Sto:StorageClassSpec _:TypeQual T:TypeSpec
-    => Sto T [macro]
+    | StorageClassSpec TypeQual TypeSpec TypeQual [prefer]
+    | TypeSpec
+    | TypeSpec TypeQual [prefer]
+    | TypeQual TypeSpec
+    | TypeQual TypeSpec TypeQual [prefer]
+  rule SC:StorageClassSpec _:TypeQual TS:TypeSpec => SC TS [macro]
+  rule SC:StorageClassSpec TS:TypeSpec _:TypeQual => SC TS [macro]
+  rule SC:StorageClassSpec _:TypeQual TS:TypeSpec _:TypeQual => SC TS [macro]
+  rule _:TypeQual TS:TypeSpec => TS [macro]
+  rule TS:TypeSpec _:TypeQual => TS [macro]
+  rule _:TypeQual TS:TypeSpec _:TypeQual => TS [macro]
+
   rule register T:TypeSpec => T [macro]
 
   // storage-class-specifier
