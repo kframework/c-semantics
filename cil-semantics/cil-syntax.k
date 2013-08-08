@@ -159,10 +159,27 @@ module CIL-SYNTAX
                  | TryFinally of block * block * location
                  | TryExcept of block * (instr list * exp) * block * location
                  */
+
   syntax Stmts ::= List{Stmt, ""}   [right]
   syntax Instr ::= LVal "=" Exp ";"       [strict(2)]
                  | LVal "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
+                 // I think these are the only forms of those operators below
+                 // that appear in CIL, but I'm not entirely sure.
+                 | LVal "++" ";"
+                 | LVal "--" ";"
+                 // Probably more of these.
+                 | LVal "+=" Exp ";"
+                 | LVal "-=" Exp ";"
+                 | LVal "*=" Exp ";"
+                 | LVal "/=" Exp ";"
+
+  rule X:LVal ++ ; => X = X + 1 ; [macro]
+  rule X:LVal -- ; => X = X + 1 ; [macro]
+  rule X:LVal += E:Exp ; => X = X + E ; [macro]
+  rule X:LVal -= E:Exp ; => X = X - E ; [macro]
+  rule X:LVal *= E:Exp ; => X = X * E ; [macro]
+  rule X:LVal /= E:Exp ; => X = X / E ; [macro]
 
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
@@ -289,6 +306,7 @@ module CIL-SYNTAX
   syntax TypeQual ::=
       "const"
     | "restrict"
+    | "__restrict" // CIL's version.
     | "volatile"
     | "_Atomic"
 

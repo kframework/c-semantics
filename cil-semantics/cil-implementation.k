@@ -4,9 +4,7 @@
  ************************************
  */
 
-
 require "cil-common.k"
-
 
 module CIL-IMPLEMENTATION
   imports CIL-COMMON
@@ -18,7 +16,6 @@ module CIL-IMPLEMENTATION
   syntax Int ::= "byteWidthMacro" [function]
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
-
 
   /*
    * Integer types.
@@ -79,6 +76,13 @@ module CIL-IMPLEMENTATION
     ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
   rule value2Bytes(_:Type, Null) 
     => ListItem(0) ListItem(0) ListItem(0) ListItem(0)
+
+  rule value2Bytes(T:Type, StrPtr(S:String))
+     => ListItem(ordChar(substrString(S, 0, 1)))
+     value2Bytes(T, StrPtr(substrString(S, 1, lengthString(S))))
+     when lengthString(S) >Int 0
+  rule value2Bytes(_:Type, StrPtr(""))
+     => ListItem(0)
 
   rule
     bytes2Value(

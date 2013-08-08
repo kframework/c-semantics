@@ -20,7 +20,6 @@ module CIL-DECL
   /*
    * Function definition.
    */
-
   rule 
     <k> TS:TypeSpec D:Declarator FB:FunBody
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
@@ -91,32 +90,57 @@ module CIL-DECL
     ...</funs>
   [structural]
 
+  /*
+   * Function declarations (without initializers).
+   */
+  // TODO(chathhorn): this totally elides function declarations.
+  rule
+    <k> DS:DeclSpecs D:Declarator ; => . ...</k>
+    <phase> _:TransUnit </phase>
+    when isFunType(normType(DS D)) ==K true
+
+  /*
+   * Typedef declarations.
+   */
   // Typedefs share the same name space as other declarations.
   rule 
     typedef TS:TypeSpec D:Declarator ; 
     => declInternal(getId(D), nt(normType(TS D)))
 
-  // TODO(chathhorn): what happens if these are functions?!?
+  // TODO(chathhorn): actually handle linkage properly (e.g., if a declaration
+  // has static linkage and a def has no linkage spec, then it's static).
+
+  // TODO(chathhorn): initialize (static storage class stuff) to zero.
 
   // TODO(chathhorn): Tentative definition; need to look up the rules again.
+
+  /*
+   * File-scope variable declarations (without initializers).
+   */
   rule 
     <k> TS:TypeSpec D:Declarator ;  
     => declExternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
+    when isFunType(normType(TS D)) =/=K true
 
   rule 
     <k> extern TS:TypeSpec D:Declarator ;  
     => declExternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
+    when isFunType(normType(TS D)) =/=K true
 
   rule 
     <k> static TS:TypeSpec D:Declarator ;  
     => declInternal(getId(D), newObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
+    when isFunType(normType(TS D)) =/=K true
 
+  /*
+   * File-scope variable declarations (with initializers).
+   */
   rule 
     <k> S:DeclSpecs D:Declarator = E:Exp ;
     => S D ; ~> getId(D) = E ;

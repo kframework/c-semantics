@@ -11,8 +11,13 @@ module CIL-COMMON-PTR
    * @immutable: BasePtr
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
-               | FunPtr(CId, TransUnit)
+               | FunPtr
+               | StrPtr
                | "Null"
+
+  syntax FunPtr ::= FunPtr(CId, TransUnit)
+  syntax StrPtr ::= StrPtr(String) // TODO(chathhorn): a hack? I can't decide.
+
   /*
    * BasePtr of Base * Size
    * @immutable: Base, Size 
@@ -21,12 +26,12 @@ module CIL-COMMON-PTR
 
   syntax Ptr ::= "PtrAdd" "(" Ptr "," Int "," Exp ")"   [function]
   syntax Int ::= "PtrSub" "(" Ptr "," Ptr "," Exp ")"   [function]
-  syntax Bool ::= Ptr "==Ptr" Ptr    [function]
-                | Ptr "=/=Ptr" Ptr   [function]
-                | "PtrLt" "(" Ptr "," Ptr ")"     [function]
-                | "PtrLeq" "(" Ptr "," Ptr ")"    [function]
-                | "PtrGt" "(" Ptr "," Ptr ")"     [function]
-                | "PtrGeq" "(" Ptr "," Ptr ")"    [function]
+  syntax Bool ::= Ptr "==Ptr" Ptr              [function]
+                | Ptr "=/=Ptr" Ptr             [function]
+                | "PtrLt" "(" Ptr "," Ptr ")"  [function]
+                | "PtrLeq" "(" Ptr "," Ptr ")" [function]
+                | "PtrGt" "(" Ptr "," Ptr ")"  [function]
+                | "PtrGeq" "(" Ptr "," Ptr ")" [function]
 
   /* Addition of pointer and index is defined only if there result Offset is in
    * the range [0, Size] */

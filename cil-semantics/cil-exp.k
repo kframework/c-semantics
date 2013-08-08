@@ -45,6 +45,8 @@ module CIL-EXP
     <env> E:Map X |-> T:Type </env>
     [structural]
 
+  rule S:String => tv(normType(char *), StrPtr(S))
+
   // Doesn't work as a macro because it will mangle array declarations.
   rule E1:Exp[E2:Exp] => *(E1 + E2) 
 
@@ -74,11 +76,22 @@ module CIL-EXP
   rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
     when (KLabel(KList) =/=K noLeftValueConversion)
       andBool (isArrayType(T) =/=K true)
+      andBool (isFunType(T) =/=K true)
+      andBool (isStrPtr(P) =/=K true)
   // Arrays decay to a pointer except as an operand to sizeof() or &.
   rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) 
     ~> KLabel:KLabel(KList:KList)
     when (KLabel(KList) =/=K noLeftValueConversion)
       andBool (isArrayType(T) ==K true)
+  // Functions decay to a function pointer.
+  rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) 
+    ~> KLabel:KLabel(KList:KList)
+    when (KLabel(KList) =/=K noLeftValueConversion)
+      andBool (isFunType(T) ==K true)
+  // Constant strings don't change.
+  rule (lv(T:Type, P:StrPtr) => tv(T, P)) 
+    ~> KLabel:KLabel(KList:KList)
+    when (KLabel(KList) =/=K noLeftValueConversion)
 
   rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
   [structural]
@@ -223,7 +236,8 @@ module CIL-EXP
     <env> E:Map </env>
     // If it's a CId then we look it up in the env until we get an unambiguous
     // type.
-    when (isCId(T) =/=K true) orBool (isKeyword(T) ==K true)
+    when ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
+      andBool (isNormType(T) =/=K true)
 
   /* the rule for signed integer types is implementation defined */
   rule

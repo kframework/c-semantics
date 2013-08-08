@@ -9,6 +9,9 @@ module CIL-TYPING-SYNTAX
   // Checks if a normalized type is an array type.
   syntax Bool ::= isArrayType(Type) [function]
 
+  // Checks if a normalized type is a function type.
+  syntax Bool ::= isFunType(Type) [function]
+
   // Add a layer of indirection to a normalized pointer type.
   syntax Type ::= upPtr(Type) [function]
 
@@ -115,7 +118,14 @@ module CIL-TYPING
   rule isArrayType(TS:TypeSpec) => false
   rule isArrayType(TS:TypeSpec D:Declarator) 
     => leftSearch(D, '$isArrayType, '*) =/=K .K
-  rule $isArrayType(#__id__[_:Constant]) => true
+  rule $isArrayType(#__id__[_]) => true
+
+  syntax Bool ::= "$isFunType" "(" K ")" [function, klabel('$isFunType)]
+  rule isFunType(TS:TypeSpec) => false
+  rule isFunType(TS:TypeSpec D:Declarator) 
+    => leftSearch(D, '$isFunType, '*) =/=K .K
+  rule $isFunType(#__id__(_)) => true
+  rule $isFunType(#__id__()) => true
 
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
   rule upPtr(TS:TypeSpec) => normType(TS ('`(_`)(* #__id__))::Declarator)
@@ -247,24 +257,7 @@ module CIL-TYPING
   // they at least maintain the conciseness of basic types (i.e., "unsigned
   // int" is in normal form -- but "int*" is not).
   rule normType(T:Type) 
-    => normParens(convDecls(stripStoClassSpec(normParens(T))))
-
-  syntax Bool ::= "$needsStripping" "(" K ")" 
-    [function, klabel('$needsStripping)]
-  syntax Type ::= stripStoClassSpec(Type) [function]
-  syntax K ::= "stripStoClassSpec'" "(" K ")" 
-    [function, klabel('stripStoClassSpec')]
-  // Ensures the parameter is a well-formed Type (necessary?).
-  rule stripStoClassSpec(T:Type) => stripStoClassSpec'(T)
-  rule $needsStripping(Lbl:KLabel(_:StorageClassSpec,, L:KList))
-    => true
-  rule stripStoClassSpec'(Lbl:KLabel(_:StorageClassSpec,, L:KList))
-    => #visitAll(L, 'stripStoClassSpec', '$needsStripping)
-  rule stripStoClassSpec'(Lbl:KLabel(K:K,, L:KList))
-    => Lbl(K,, #visitAll(L, 'stripStoClassSpec', '$needsStripping))
-    when isStorageClassSpec(K) =/=K true
-  rule stripStoClassSpec'(Lbl:KLabel(.KList))
-    => Lbl(.KList)
+    => normParens(convDecls(T))
 
   // This is kinda subtle. Both abstract and non-abstract declarators might
   // also have children of both sorts and it's not very easy to distinguish the
@@ -285,6 +278,13 @@ module CIL-TYPING
   rule convParamDecl(TS:TypeSpec D:Declarator) => TS convDecl(D)
     when (isCId(D) =/=K true) andBool (isSymId(D) =/=K true)
   rule convParamDecl(TS:TypeSpec D:AbsDecl) => TS convAbsDecl(D)
+
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec) => TS
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec X:SymId) => TS
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec X:CId) => TS
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec D:Declarator) => TS convDecl(D)
+    when (isCId(D) =/=K true) andBool (isSymId(D) =/=K true)
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec D:AbsDecl) => TS convAbsDecl(D)
 
   rule convDecl(D:DirectDecl) => convDirectDecl(D)
   rule convDecl(P:Pointer D:DirectDecl) => P convDirectDecl(D)
@@ -328,7 +328,7 @@ module CIL-TYPING
 
   rule $needsParensNorm('`(_`)('`(_`)(K:K))) => true
   rule $needsParensNorm('`(_`)(X:SymId)) => true
-  rule $needsParensNorm('`(_`)(X:SymId[C:Constant])) => true
+  rule $needsParensNorm('`(_`)(X:SymId[_])) => true
 
   rule normParens(Lbl:KLabel(K:K)) => normParens(K)
     when $needsParensNorm(Lbl(K)) ==K true
