@@ -176,7 +176,7 @@ module CIL-TYPING
 
   syntax Params ::= "getParams'" "(" Declarator ")" [function]
   // Must normalize parens before this works.
-  rule getParams(D:Declarator) => getParams'(normParens(D))
+  rule getParams(D:Declarator) => getParams'(normParens'(D))
 
   rule getParams'(P:Pointer D:DirectDecl) => getParams'(D)
   rule getParams'('`(_`)(D:Declarator)) => getParams'(D)
@@ -323,19 +323,22 @@ module CIL-TYPING
   // TODO(chathhorn): probably more to do here. Also consider parens in cases
   // like (*(*#__id__))
   syntax Bool ::= "$needsParensNorm" "(" K ")" [function]
-  syntax K ::= normParens(K) [function]
-  syntax KList ::= "normParens'" "(" KList ")" [function]
+  syntax Type ::= normParens(Type) [function]
+  syntax K ::= "normParens'" "(" K ")" [function]
+  syntax KList ::= "normParens''" "(" KList ")" [function]
 
   rule $needsParensNorm('`(_`)('`(_`)(K:K))) => true
   rule $needsParensNorm('`(_`)(X:SymId)) => true
   rule $needsParensNorm('`(_`)(X:SymId[_])) => true
 
-  rule normParens(Lbl:KLabel(K:K)) => normParens(K)
+  rule normParens(T:Type) => normParens(T)
+
+  rule normParens'(Lbl:KLabel(K:K)) => normParens'(K)
     when $needsParensNorm(Lbl(K)) ==K true
-  rule normParens(Lbl:KLabel(L:KList)) => Lbl(normParens'(L))
+  rule normParens'(Lbl:KLabel(L:KList)) => Lbl(normParens''(L))
     when $needsParensNorm(Lbl(L)) =/=K true
 
-  rule normParens'(K:K,, L:KList) => normParens(K),, normParens'(L)
-  rule normParens'(.KList) => .KList
+  rule normParens''(K:K,, L:KList) => normParens'(K),, normParens''(L)
+  rule normParens''(.KList) => .KList
 endmodule
 

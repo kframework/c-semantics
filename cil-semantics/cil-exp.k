@@ -34,6 +34,8 @@ module CIL-EXP
   rule I:Int ULL => tv(unsigned long long, mi((width(unsigned long long)), I))
     [structural]
 
+  rule ' C:CharConstant ' => ordChar(#tokenToString(C))
+
   /* lookup */
   rule
     <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
@@ -78,7 +80,7 @@ module CIL-EXP
       andBool (isArrayType(T) =/=K true)
       andBool (isFunType(T) =/=K true)
       andBool (isStrPtr(P) =/=K true)
-  // Arrays decay to a pointer except as an operand to sizeof() or &.
+  // Arrays decay to a pointer (except as an operand to sizeof() or &).
   rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) 
     ~> KLabel:KLabel(KList:KList)
     when (KLabel(KList) =/=K noLeftValueConversion)
@@ -252,11 +254,13 @@ module CIL-EXP
 
   rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
 
-  // TODO(chathhorn): probably too lax here.
+  // TODO(chathhorn): too lax here. I'm allowing all casts between pointer
+  // types and Null to and from 0.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
     when (isPtrType(To) ==K true) andBool (isPtrType(From) ==K true)
-  rule (nt(To:Type)) tv(_:Type, mi(_, 0)) => tv(To, Null)
+  rule (nt(To:Type)) tv(_, mi(_, 0)) => tv(To, Null)
     when (isPtrType(To) ==K true)
+  rule (nt(To:IntType)) tv(_, Null) => tv(To, mi(width(To), 0))
 
   /* TODO: complete all the cases  */
 

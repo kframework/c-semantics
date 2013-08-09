@@ -126,6 +126,9 @@ module CIL-SYNTAX
   syntax CharConstant ::= Char | EscapeString
   syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
                         | "\\n" | "\\r" | "\\t" | "\\v" 
+                        | "\\0" | "\\000" 
+                        // TODO: hex and octal escape codes, inside and out of
+                        // strings and char lits.
                         // Also \" but I can't get it to work.
 
   /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
@@ -202,24 +205,102 @@ module CIL-SYNTAX
                     | "malloc"    [reject]
                     | "free"      [reject]
   /* exclude keywords */
-  // TODO(chathhorn): isCId(int) ==K true??
-  syntax CIdToken ::= "sizeof"      [reject]
-                    | "return"      [reject]
-                    | "goto"        [reject]
-                    | "break"       [reject]
-                    | "continue"    [reject]
-                    | "if"          [reject]
-                    | "else"        [reject]
-                    | "switch"      [reject]
-                    | "while"       [reject]
-                    | "void"        [reject]
-                    | "char"        [reject]
-                    | "int"         [reject]
-                    | "short"       [reject]
-                    | "long"        [reject]
-                    | "unsigned"    [reject]
-                    | "struct"      [reject]
-                    | "union"       [reject]
+  // TODO(chathhorn): and yet isCId(int) ==K true?? Frustrating. The duplicate
+  // list below lets us distinguish CIds from keywords.
+  syntax CIdToken ::=
+      "auto"             [reject]
+    | "break"            [reject]
+    | "case"             [reject]
+    | "char"             [reject]
+    | "const"            [reject]
+    | "continue"         [reject]
+    | "default"          [reject]
+    | "do"               [reject]
+    | "double"           [reject]
+    | "else"             [reject]
+    | "enum"             [reject]
+    | "extern"           [reject]
+    | "float"            [reject]
+    | "for"              [reject]
+    | "goto"             [reject]
+    | "if"               [reject]
+    | "inline"           [reject]
+    | "int"              [reject]
+    | "long"             [reject]
+    | "register"         [reject]
+    | "restrict"         [reject]
+    | "return"           [reject]
+    | "short"            [reject]
+    | "signed"           [reject]
+    | "sizeof"           [reject]
+    | "static"           [reject]
+    | "struct"           [reject]
+    | "switch"           [reject]
+    | "typedef"          [reject]
+    | "union"            [reject]
+    | "unsigned"         [reject]
+    | "void"             [reject]
+    | "volatile"         [reject]
+    | "while"            [reject]
+    | "_Alignas"         [reject]
+    | "_Alignof"         [reject]
+    | "_Atomic"          [reject]
+    | "_Bool"            [reject]
+    | "_Complex"         [reject]
+    | "_Generic"         [reject]
+    | "_Imaginary"       [reject]
+    | "_Noreturn"        [reject]
+    | "_Static_assert"   [reject]
+    | "_Thread_local"    [reject]
+    | "__restrict"       [reject]
+
+  // Complete list of C11 reserved words plus some extras from CIL.
+  syntax Keyword ::=
+      "auto"             [reject]
+    | "break"            [reject]
+    | "case"             [reject]
+    | "char"             [reject]
+    | "const"            [reject]
+    | "continue"         [reject]
+    | "default"          [reject]
+    | "do"               [reject]
+    | "double"           [reject]
+    | "else"             [reject]
+    | "enum"             [reject]
+    | "extern"           [reject]
+    | "float"            [reject]
+    | "for"              [reject]
+    | "goto"             [reject]
+    | "if"               [reject]
+    | "inline"           [reject]
+    | "int"              [reject]
+    | "long"             [reject]
+    | "register"         [reject]
+    | "restrict"         [reject]
+    | "return"           [reject]
+    | "short"            [reject]
+    | "signed"           [reject]
+    | "sizeof"           [reject]
+    | "static"           [reject]
+    | "struct"           [reject]
+    | "switch"           [reject]
+    | "typedef"          [reject]
+    | "union"            [reject]
+    | "unsigned"         [reject]
+    | "void"             [reject]
+    | "volatile"         [reject]
+    | "while"            [reject]
+    | "_Alignas"         [reject]
+    | "_Alignof"         [reject]
+    | "_Atomic"          [reject]
+    | "_Bool"            [reject]
+    | "_Complex"         [reject]
+    | "_Generic"         [reject]
+    | "_Imaginary"       [reject]
+    | "_Noreturn"        [reject]
+    | "_Static_assert"   [reject]
+    | "_Thread_local"    [reject]
+    | "__restrict"       [reject]
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 
@@ -378,7 +459,7 @@ module CIL-SYNTAX
   syntax ParamDecl ::=
       DeclSpecs
     | DeclSpecs Declarator
-    | DeclSpecs AbsDecl
+    | DeclSpecs AbsDecl [prefer]
 
   // type-name
   //     specifier-qualifier-list abstract-declarator?

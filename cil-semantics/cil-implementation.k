@@ -1,3 +1,4 @@
+// vim: set ts=2 sw=2:
 /*
  ************************************
  * Implementation defined semantics *
@@ -85,10 +86,16 @@ module CIL-IMPLEMENTATION
      => ListItem(0)
 
   rule
+    bytes2Value(T:Type,
+      ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
+    => Ptr(BasePtr(Base, (Size)), (Offset))
+    when (isPtrType(T) ==K true) andBool (Base =/=Int 0)
+
+  rule
     bytes2Value(
-        _:Type,
-        ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
-  =>
-    Ptr(BasePtr(Base, (Size)), (Offset))
+      T:Type,
+      ListItem(0) ListItem(_:Int) ListItem(_:Int) ListItem(_:Int))
+    => Null
+    when (isPtrType(T) ==K true)
 endmodule
 
