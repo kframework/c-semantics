@@ -25,19 +25,25 @@ int (*(*e[5])(int (*wtf)[5] ))(int wtf )  =
       {(int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0), (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0), (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0), (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0), (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0)};
 
 // f: this must be a function.
-char (*(*f(void))[])() 
+char (*(*f(void))[])[5] 
 { 
-  { return ((char (*(*)[])())((void *)0)); }
+  { return ((char (*(*)[])[5])((void *)0)); }
 }
 
 int main(void) 
 { g x ;
+  char (*(*tmp)[])[5];
+  int a;
+  int b;
 {
   x[0] = (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0);
   x[1] = (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0);
   x[2] = (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0);
   x[3] = (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0);
   x[4] = (int (*(*)(int (*wtf)[5] ))(int wtf ))((void *)0);
-  return (0);
+  tmp = f();
+  a = (int)tmp;
+  b = (int)x[4];
+  return (a + b);
 }
 }

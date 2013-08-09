@@ -13,14 +13,17 @@ struct foo {
    struct bar s1 ;
    int z ;
 };
+
+typedef struct foo str;
+
 int main(void) 
-{ struct foo f ;
+{ str f ;
 
   {
   f.s1.u1.x2 = 12ULL;
   f.s1.u1.x1 = 7;
   f.s1.y = 6;
   f.z = 5;
-  return (f.s1.u1.x1);
+  return (sizeof(str));
 }
 }
