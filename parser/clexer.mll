@@ -163,6 +163,11 @@ let init_lexicon _ =
       ("__func__", fun loc -> FUNCTION__ loc); (* ISO 6.4.2.2 *)
 
       ("__kcc_offsetof", fun loc -> OFFSETOF loc);
+
+      (* Not in C11. *)
+      ("__attribute__", fun loc -> ATTRIBUTE loc);
+      ("__attribute", fun loc -> ATTRIBUTE loc);
+      ("__blockattribute__", fun _ -> BLOCKATTRIBUTE);
     ]
 
 (* Mark an identifier as a type name. The old mapping is preserved and will 
