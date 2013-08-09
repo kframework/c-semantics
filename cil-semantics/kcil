@@ -66,13 +66,13 @@ my $args = Getopt::Declare->new($spec, ['-BUILD']);
 exit main();
 
 sub main {
-      # my @stdlib = ();
-      # push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
-      # push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
-      # push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
-      # push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
-      # push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
-      # push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
+      my @stdlib = ();
+      #push(@stdlib, catfile($myDirectory, 'lib', 'clib.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'ctype.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'math.o'));
+      #push(@stdlib, catfile($myDirectory, 'lib', 'stdio.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'stdlib.o'));
+      push(@stdlib, catfile($myDirectory, 'lib', 'string.o'));
 
       #[mutex: -case -CASE -Case -CaSe]
       $args->parse() or die "Failed to parse the command line.";
@@ -89,9 +89,9 @@ sub main {
 
       my $oval = $args->{'-o'} || 'a.out';
 
-      # if (! $args->{'-s'}) {
-      #       push(@compiledPrograms, @stdlib);
-      # }
+      if (! $args->{'-s'}) {
+            push(@compiledPrograms, @stdlib);
+      }
       my $linked = linker(@compiledPrograms);
       unlink(@shouldBeDeleted);
       if ($linked eq ""){
