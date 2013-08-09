@@ -10,7 +10,7 @@ default: fast
 
 c11-kompiled: $(C11_FILES)
 	@echo "Compiling the C definition..."
-	@$(KOMPILE) c11.k -o "c11-kompiled" -w -v -l C11 -transition "interpRule"
+	@$(KOMPILE) c11.k -o "c11-kompiled" -w all -v -l C11 -transition "interpRule"
 	@touch c11-kompiled
 
 c11-kompiled-nd: $(C11_FILES)
