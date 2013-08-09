@@ -55,47 +55,46 @@ module CIL-IMPLEMENTATION
   when N >Int 0
   rule MInt2Bytes(mi((0), _)) => .List
 
-  /* implement conversions */
-  rule bytes2Value(_:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
-  rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
-  rule value2Bytes(_:IntType, MI:MInt) => MInt2Bytes(MI)
-
-  rule bytes2Value(_:AggTypeSpec, L:List) => agg(L)
-  rule value2Bytes(_:AggTypeSpec, agg(L:List)) => L
-
-  /*
-   * Pointer type.
-   */
   /* Size of pointers is 4 bytes (also the size of int) */
   rule byteWidth(T:Type) => 4
      when isPtrType(T)
 
   /* implement conversions */
-  rule
-    value2Bytes(_:Type, Ptr(BasePtr(Base:Int, (Size:Int)), (Offset:Int)))
-  =>
-    ListItem(Base) ListItem(Size) ListItem(Offset) ListItem(0)
-  rule value2Bytes(_:Type, Null) 
-    => ListItem(0) ListItem(0) ListItem(0) ListItem(0)
 
-  rule value2Bytes(T:Type, StrPtr(S:String))
+  /*
+   * Integers.
+   */
+  rule value2Bytes(_:IntType, MI:MInt) => MInt2Bytes(MI)
+
+  rule bytes2Value(_:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
+  rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
+
+  /*
+   * Strings.
+   */
+  rule value2Bytes(T:Type, S:String)
      => ListItem(ordChar(substrString(S, 0, 1)))
-     value2Bytes(T, StrPtr(substrString(S, 1, lengthString(S))))
+      value2Bytes(T, substrString(S, 1, lengthString(S)))
      when lengthString(S) >Int 0
-  rule value2Bytes(_:Type, StrPtr(""))
-     => ListItem(0)
+  rule value2Bytes(_, "") => ListItem(0)
 
-  rule
-    bytes2Value(T:Type,
-      ListItem(Base:Int) ListItem(Size:Int) ListItem(Offset:Int) ListItem(0))
-    => Ptr(BasePtr(Base, (Size)), (Offset))
-    when (isPtrType(T) ==K true) andBool (Base =/=Int 0)
+  /*
+   * Pointers.
+   */
+  rule value2Bytes(_, P:Ptr) 
+    => ListItem(P) ListItem(used) ListItem(used) ListItem(used)
 
-  rule
-    bytes2Value(
-      T:Type,
-      ListItem(0) ListItem(_:Int) ListItem(_:Int) ListItem(_:Int))
-    => Null
-    when (isPtrType(T) ==K true)
+  rule bytes2Value(_,
+      ListItem(P:Ptr) ListItem(used) ListItem(used) ListItem(used))
+    => P
+
+  /*
+   * Aggregates and arrays.
+   */
+  rule value2Bytes(_, agg(L:List)) => L
+  rule bytes2Value(T:Type, L:List) => agg(L)
+    when (isArrayType(T) ==K true)
+      orBool (isAggType(T) ==K true)
+
 endmodule
 

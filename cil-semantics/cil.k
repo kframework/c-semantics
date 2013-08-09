@@ -16,6 +16,7 @@ module CIL
   syntax K ::= "wrapper" "(" KList ")"
   configuration
     <resultValue multiplicity="?"> .K </resultValue>
+    <strings> .Map </strings> // Map{String, Ptr}
     <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr

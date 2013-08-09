@@ -12,6 +12,9 @@ module CIL-TYPING-SYNTAX
   // Checks if a normalized type is a function type.
   syntax Bool ::= isFunType(Type) [function]
 
+  // Checks if a normalized type is a struct or union.
+  syntax Bool ::= isAggType(Type) [function]
+
   // Add a layer of indirection to a normalized pointer type.
   syntax Type ::= upPtr(Type) [function]
 
@@ -136,6 +139,11 @@ module CIL-TYPING
   rule $isFunType(#__id__(_)) => true
   rule $isFunType(#__id__()) => true
 
+  rule isAggType(TS:AggTypeSpec) => true
+  rule isAggType(_:TypeSpec _:Declarator) => false
+  rule isAggType(TS:TypeSpec) => false
+    when isAggTypeSpec(TS) =/=K true
+
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
   rule upPtr(TS:TypeSpec) => normType(TS upPtrConv(#__id__))
   rule upPtr(TS:TypeSpec D:Declarator) 
@@ -185,7 +193,7 @@ module CIL-TYPING
 
   syntax Params ::= "getParams'" "(" Declarator ")" [function]
   // Must normalize parens before this works.
-  rule getParams(D:Declarator) => getParams'(normParens'(D))
+  rule getParams(D:Declarator) => getParams'(D)
 
   rule getParams'(P:Pointer D:DirectDecl) => getParams'(D)
   rule getParams'('`(_`)(D:Declarator)) => getParams'(D)
@@ -331,17 +339,26 @@ module CIL-TYPING
 
   // TODO(chathhorn): probably more to do here. Also consider parens in cases
   // like (*(*#__id__))
-  syntax Bool ::= "$needsParensNorm" "(" K ")" [function]
+  syntax Bool ::= "$needsParensNorm" "(" Declarator ")" [function]
+  syntax Bool ::= "$hasParens" "(" Declarator ")" [function]
   syntax Type ::= normParens(Type) [function]
-  syntax K ::= "normParens'" "(" K ")" [function]
+  syntax Declarator ::= "normParens'" "(" Declarator ")" [function]
   syntax KList ::= "normParens''" "(" KList ")" [function]
 
   rule $needsParensNorm('`(_`)('`(_`)(K:K))) => true
   rule $needsParensNorm('`(_`)(X:SymId)) => true
   rule $needsParensNorm('`(_`)(X:SymId[_])) => true
 
-  rule normParens(T:Type) => normParens'(T)
+  rule $hasParens('`(_`)(_)) => true
 
+  // Remove all top-level parens.
+  rule normParens(TS:TypeSpec) => TS
+  rule normParens(TS:TypeSpec D:Declarator) => TS normParens'(D)
+    when $hasParens(D) =/=K true
+  rule normParens(TS:TypeSpec '`(_`)(D:Declarator)::Declarator)
+    => normParens(TS D)
+
+  // Remove other parens.
   rule normParens'(Lbl:KLabel(K:K)) => normParens'(K)
     when $needsParensNorm(Lbl(K)) ==K true
   rule normParens'(Lbl:KLabel(L:KList)) => Lbl(normParens''(L))

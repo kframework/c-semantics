@@ -12,11 +12,9 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
-               | StrPtr
                | "Null"
 
   syntax FunPtr ::= FunPtr(CId, TransUnit)
-  syntax StrPtr ::= StrPtr(String) // TODO(chathhorn): a hack? I can't decide.
 
   /*
    * BasePtr of Base * Size
@@ -94,9 +92,9 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   syntax Int ::= width(Type)        [function]
                | byteWidth(Type)    [function]
 
-  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List)
+  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
 
-  syntax ByteValue ::= Int | "undef"
+  syntax ByteValue ::= Int | "undef" | Ptr | "used" // TODO(chathhorn)
 
   /*
    * @invariant:
@@ -114,7 +112,6 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
    */
   syntax List ::= value2Bytes(Type, Value) [function] 
 endmodule
-
 
 module CIL-COMMON-TYPED-VALUE
   imports MINT
@@ -141,7 +138,6 @@ module CIL-COMMON-TYPED-VALUE
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, mi(_, V:Int))) => V
 endmodule
-
 
 module CIL-COMMON-MMU
   imports CIL-SYNTAX
@@ -273,7 +269,6 @@ module CIL-COMMON-MMU
   [structural]
 endmodule
 
-
 module CIL-COMMON
   imports MINT 
   imports CIL-COMMON-PTR
@@ -305,6 +300,5 @@ module CIL-COMMON
 
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
-
     
 endmodule

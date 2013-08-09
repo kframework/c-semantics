@@ -62,53 +62,53 @@ module CIL-SYNTAX
   rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
 
   /*
-   * expressions
+   * Expressions.
    */
-  syntax Exp ::= Constant
-               | "(" Exp ")"              [bracket]
-               | LVal 
-               | "&" LVal
-               | "+" Exp                  [strict]
-               | "-" Exp                  [strict]
-               | "~" Exp                  [strict]
-               | "!" Exp
-               | "sizeof" "(" Exp ")"     [strict, prefer]
-               > "(" Type ")" Exp         [strict, prefer]
-               > left:
-                 Exp "*" Exp              [strict, left]
-               | Exp "/" Exp              [strict, left]
-               | Exp "%" Exp              [strict, left]
-               > left:
-                 Exp "+" Exp              [strict, left]
-               | Exp "-" Exp              [strict, left]
-               > left:
-                 Exp "<<" Exp             [strict, left]
-               | Exp ">>" Exp             [strict, left]
-               > left:
-                 Exp "<" Exp              [strict, left]
-               | Exp ">" Exp              [strict, left]
-               | Exp "<=" Exp             [strict, left]
-               | Exp ">=" Exp             [strict, left]
-               > left:
-                 Exp "==" Exp             [strict, left]
-               | Exp "!=" Exp             [strict, left]
-               > left:
-                 Exp "&" Exp              [strict, left]
-               > left:
-                 Exp "^" Exp              [strict, left]
-               > left:
-                 Exp "|" Exp              [strict, left]
-               > left:
-                 Exp "&&" Exp             [strict(1), left]
-               > left:
-                 Exp "||" Exp             [strict(1), left]
-               > left:
-                 Exp "?" Exp ":" Exp      [strict(1), left]
-               /*
-                * TODO: this is a GCC feature which is not yet supported 
-                | AlignOf of typ  (* This corresponds to the GCC __alignof_. *)
-                | AlignOfE of exp
-                */
+  syntax Exp ::= 
+      Constant
+    | "(" Exp ")" [bracket]
+    | Var
+    | Exp "." Field
+    | Exp "[" Exp "]"
+    | "-" Exp [strict]
+    | "+" Exp [strict]
+    | "!" Exp [strict]
+    | "~" Exp [strict]
+    | "*" Exp [strict]
+    | "&" LVal [strict]
+    | sizeof(Exp) [strict, prefer]
+    > "(" Type ")" Exp [strict, prefer]
+    > left:
+      Exp "*" Exp [strict]
+    | Exp "/" Exp [strict]
+    | Exp "%" Exp [strict]
+    > left:
+      Exp "+" Exp [strict]
+    | Exp "-" Exp [strict]
+    > left:
+      Exp "<<" Exp [strict]
+    | Exp ">>" Exp [strict]
+    > left:
+      Exp "<" Exp [strict]
+    | Exp "<=" Exp [strict]
+    | Exp ">" Exp [strict]
+    | Exp ">=" Exp [strict]
+    > left:
+      Exp "==" Exp [strict]
+    | Exp "!=" Exp [strict]
+    > left: Exp "&" Exp [strict]
+    > left: Exp "^" Exp [strict]
+    > left: Exp "|" Exp [strict]
+
+  syntax LVal ::= 
+      Var
+    | "*" Exp [strict]
+    | "(" Type ")" LVal [strict]
+    | LVal "." Field
+    | LVal "[" Exp "]"
+
+  syntax Exp ::= LVal
+
   syntax Exps ::= List{Exp,","}   [strict]
   syntax Constant ::= Int
                  /*
@@ -133,11 +133,6 @@ module CIL-SYNTAX
                         // strings and char lits.
                         // Also \" but I can't get it to work.
 
-  /* TODO: check the form of CIL lvalues; might lead to simpler semantics */
-  syntax LVal ::= CId
-                | "*" Exp           [strict]
-                | Exp "." CId
-                | Exp "[" Exp "]"   [strict(1)]
 
   syntax Var ::= CId
   syntax Field ::= CId
