@@ -2,6 +2,7 @@
 // the below assumes size_t, and in GCC __SIZE_TYPE__, are unsigned ints, as in 20020406-1.c
 // it would be idea for the tests to include precisely what they need, but this allows us to add dependencies as we discover them
 // #define size_t unsigned int
+#include <kcc_settings.h>
 typedef unsigned int size_t;
 void exit(int);
 void abort(void);
