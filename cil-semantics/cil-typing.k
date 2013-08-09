@@ -80,11 +80,20 @@ module CIL-TYPING
     => Lbl(.KList)
     when Pred(Lbl(.KList)) =/=K true
 
-  syntax Type ::= replaceTopId(Type, DirectDecl) [function]
-  syntax DirectDecl ::= replaceTopIdTrans(DirectDecl, DirectDecl) [function]
-  rule replaceTopId(T:Type, D:DirectDecl) =>
-    #leftVisit(T, 'replaceTopIdTrans, D, isSymId, '*)
-  rule replaceTopIdTrans(_:DirectDecl, New:DirectDecl)
+  syntax Declarator ::= visitDecl(Declarator, KLabel, KList, KLabel) [function]
+                      | visitDecl(Declarator, KLabel, KLabel) [function]
+
+  rule visitDecl(D:Declarator, Trans:KLabel, Pred:KLabel)
+    => #leftVisit(D, Trans, Pred, '*)
+  rule visitDecl(D:Declarator, Trans:KLabel, TransArgs:KList, Pred:KLabel)
+    => #leftVisit(D, Trans, TransArgs, Pred, '*)
+
+  syntax Type ::= replaceTopId(Type, Declarator) [function]
+  syntax Declarator ::= replaceTopIdTrans(Declarator, Declarator) [function]
+  rule replaceTopId(TS:TypeSpec D:Declarator, New:Declarator) =>
+    TS visitDecl(D, 'replaceTopIdTrans, New, isSymId)
+  rule replaceTopId(TS:TypeSpec, New:Declarator) => TS New
+  rule replaceTopIdTrans(_:Declarator, New:Declarator)
     => New
 
   // Searches the leftmost branch of the AST and returns the
@@ -128,16 +137,16 @@ module CIL-TYPING
   rule $isFunType(#__id__()) => true
 
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
-  rule upPtr(TS:TypeSpec) => normType(TS ('`(_`)(* #__id__))::Declarator)
+  rule upPtr(TS:TypeSpec) => normType(TS upPtrConv(#__id__))
   rule upPtr(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'upPtrConv, isSymId, '*)::Declarator)
+    => normType(TS visitDecl(D, 'upPtrConv, isSymId))
   rule upPtrConv(X:SymId) => '`(_`)(*X)
 
   syntax Bool ::= "$needsDownPtrConv" "(" K ")" 
     [function, klabel('$needsDownPtrConv)]
   syntax Declarator ::= downPtrConv(Declarator) [function]
   rule downPtr(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downPtrConv, '$needsDownPtrConv, '*)::Declarator)
+    => normType(TS visitDecl(D, 'downPtrConv, '$needsDownPtrConv))
   rule $needsDownPtrConv(*X:SymId) => true
   rule downPtrConv(*X:SymId) => X
 
@@ -145,7 +154,7 @@ module CIL-TYPING
     [function, klabel('$needsDownArrayConv)]
   syntax Declarator ::= downArrayConv(Declarator) [function]
   rule downArray(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downArrayConv, '$needsDownArrayConv, '*)::Declarator)
+    => normType(TS visitDecl(D, 'downArrayConv, '$needsDownArrayConv))
   rule $needsDownArrayConv(X:SymId[]) => true
   rule $needsDownArrayConv(X:SymId[_]) => true
   rule downArrayConv(X:SymId[]) => X
@@ -155,7 +164,7 @@ module CIL-TYPING
     [function, klabel('$needsDownFunConv)]
   syntax Declarator ::= downFunConv(Declarator) [function]
   rule downFun(TS:TypeSpec D:Declarator) 
-    => normType(TS #leftVisit(D, 'downFunConv, '$needsDownFunConv, '*)::Declarator)
+    => normType(TS visitDecl(D, 'downFunConv, '$needsDownFunConv))
   rule $needsDownFunConv(X:SymId()) => true
   rule $needsDownFunConv(X:SymId(_)) => true
   rule downFunConv(X:SymId()) => X
@@ -213,7 +222,7 @@ module CIL-TYPING
 
   // TODO(chathhorn): It'd be nice to generalize this process of walking the
   // declaration syntax tree.
-  rule expandTypedefs(T:ParamDecl, E:Map) => expandParamDecl(T, E)
+  rule expandTypedefs(T:ParamDecl, E:Map) => normType(expandParamDecl(T, E))
 
   // TODO(chathhorn): probably should go back to a special typedef cell to
   // reduce the amount of stuff that must be passed around.
@@ -331,7 +340,7 @@ module CIL-TYPING
   rule $needsParensNorm('`(_`)(X:SymId)) => true
   rule $needsParensNorm('`(_`)(X:SymId[_])) => true
 
-  rule normParens(T:Type) => normParens(T)
+  rule normParens(T:Type) => normParens'(T)
 
   rule normParens'(Lbl:KLabel(K:K)) => normParens'(K)
     when $needsParensNorm(Lbl(K)) ==K true
