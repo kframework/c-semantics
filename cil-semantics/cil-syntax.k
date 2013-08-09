@@ -8,10 +8,12 @@ module CIL-SYNTAX
                   | TuPragma
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | EnumDecl
+  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | EnumDecl | TypedefDecl
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
+
+  syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
   syntax EnumDecl ::= "enum" CId "{" EnumInits "}" ";"
   syntax EnumInit ::= CId "=" Constant
@@ -348,8 +350,7 @@ module CIL-SYNTAX
   // storage-class-specifier
   //     [ ... ]
   syntax StorageClassSpec ::=
-      "typedef"
-    | "extern"
+      "extern"
     | "static"
     | "_Thread_local"
     | "auto"
