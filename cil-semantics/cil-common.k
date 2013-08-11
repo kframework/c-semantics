@@ -14,7 +14,7 @@ module CIL-COMMON-PTR
                | FunPtr
                | "Null"
 
-  syntax FunPtr ::= FunPtr(CId, TransUnit)
+  syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 
   /*
    * BasePtr of Base * Size
@@ -129,14 +129,20 @@ module CIL-COMMON-TYPED-VALUE
                       | "norm" "(" Type "," Value ")"    [function]
   syntax TypedValues ::= List{TypedValue, ","}
 
-  syntax LVal ::= LeftValue
+  syntax Exp ::= LeftValue
   syntax LeftValue ::= lv(Type, Ptr)
 
-  syntax LVal ::= NoConversionLeftValue
+  syntax Exp ::= NoConversionLeftValue
   syntax NoConversionLeftValue ::= nclv(Type, Ptr)
 
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, mi(_, V:Int))) => V
+
+  // TODO(chathhorn)
+  rule norm(T:IntType, true) => tv(T, mi(32, 1)) 
+  rule norm(T:IntType, false) => tv(T, mi(32, 0)) 
+  rule norm(T:IntType, I:Int) => tv(T, mi(32, I))
+
 endmodule
 
 module CIL-COMMON-MMU
@@ -292,7 +298,7 @@ module CIL-COMMON
   /*
    * List{Stmt} concatenation
    */
-  syntax K ::= Stmts "@Stmts" Stmts   [function]
+  syntax Stmts ::= Stmts "@Stmts" Stmts   [function]
   rule (S:Stmt Ss1:Stmts) @Stmts Ss2:Stmts => S (Ss1 @Stmts Ss2)
   rule .Stmts @Stmts Ss:Stmts => Ss
 
