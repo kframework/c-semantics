@@ -126,7 +126,7 @@ module CIL-STMT
       ...</frame>
     =>
       <frame>
-        <k> K:K </k>
+        <k> tv(void, undef) ~> K:K </k>
         Cells:Bag
       </frame>
     )
@@ -138,6 +138,9 @@ module CIL-STMT
       <fun-type> void </fun-type>
     ...</fun>
   [computational]
+
+  syntax Stmt ::= TypedValue ";"
+  rule tv(void, undef) ; => .
 
   rule 
     (<frame>...
