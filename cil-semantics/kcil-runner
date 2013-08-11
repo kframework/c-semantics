@@ -234,8 +234,7 @@ sub processResult {
             parseResultLine(\%parsed);
       }
 
-      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
+      if (!defined $parsed{exitCode} || defined $parsed{errorMsg}) {
             print "\n=============================================================\n";
             print "ERROR! KCIL encountered an error while executing this program.\n";
 
