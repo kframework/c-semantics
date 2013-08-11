@@ -135,7 +135,7 @@ module CIL-STMT
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
-      <fun-type> T </fun-type>
+      <fun-type> void </fun-type>
     ...</fun>
   [computational]
 

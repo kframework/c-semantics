@@ -61,13 +61,24 @@ module CIL-SYNTAX
 
   rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
 
+  // syntax LVal ::= 
+  //     Var
+  //   | "*" Exp [strict]
+  //   | "(" Type ")" LVal [strict]
+  //   | LVal "." Field
+  //   | LVal "[" Exp "]"
+
+  // syntax Exp ::= LVal
+
+  syntax TypeOrExp ::= Type | Exp
+
   /*
    * Expressions.
    */
   syntax Exp ::= 
       Constant
-    | "(" Exp ")" [bracket]
     | Var
+    > "(" Exp ")" [bracket]
     | Exp "." Field
     | Exp "[" Exp "]"
     | "-" Exp [strict]
@@ -75,8 +86,8 @@ module CIL-SYNTAX
     | "!" Exp [strict]
     | "~" Exp [strict]
     | "*" Exp [strict]
-    | "&" LVal [strict]
-    | sizeof(Exp) [strict, prefer]
+    | "&" Exp [strict]
+    | sizeof(TypeOrExp) [strict, prefer]
     > "(" Type ")" Exp [strict, prefer]
     > left:
       Exp "*" Exp [strict]
@@ -99,15 +110,6 @@ module CIL-SYNTAX
     > left: Exp "&" Exp [strict]
     > left: Exp "^" Exp [strict]
     > left: Exp "|" Exp [strict]
-
-  syntax LVal ::= 
-      Var
-    | "*" Exp [strict]
-    | "(" Type ")" LVal [strict]
-    | LVal "." Field
-    | LVal "[" Exp "]"
-
-  syntax Exp ::= LVal
 
   syntax Exps ::= List{Exp,","}   [strict]
   syntax Constant ::= Int
@@ -161,25 +163,25 @@ module CIL-SYNTAX
                  */
 
   syntax Stmts ::= List{Stmt, ""}   [right]
-  syntax Instr ::= LVal "=" Exp ";"       [strict(2)]
-                 | LVal "=" FunCall ";"   [strict(2), prefer]
+  syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
+                 | Exp "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
                  // I think these are the only forms of those operators below
                  // that appear in CIL, but I'm not entirely sure.
-                 | LVal "++" ";"
-                 | LVal "--" ";"
+                 | Exp "++" ";"
+                 | Exp "--" ";"
                  // Probably more of these.
-                 | LVal "+=" Exp ";"
-                 | LVal "-=" Exp ";"
-                 | LVal "*=" Exp ";"
-                 | LVal "/=" Exp ";"
+                 | Exp "+=" Exp ";"
+                 | Exp "-=" Exp ";"
+                 | Exp "*=" Exp ";"
+                 | Exp "/=" Exp ";"
 
-  rule X:LVal ++ ; => X = X + 1 ; [macro]
-  rule X:LVal -- ; => X = X + 1 ; [macro]
-  rule X:LVal += E:Exp ; => X = X + E ; [macro]
-  rule X:LVal -= E:Exp ; => X = X - E ; [macro]
-  rule X:LVal *= E:Exp ; => X = X * E ; [macro]
-  rule X:LVal /= E:Exp ; => X = X / E ; [macro]
+  rule X:Exp ++ ; => X = X + 1 ; [macro]
+  rule X:Exp -- ; => X = X + 1 ; [macro]
+  rule X:Exp += E:Exp ; => X = X + E ; [macro]
+  rule X:Exp -= E:Exp ; => X = X - E ; [macro]
+  rule X:Exp *= E:Exp ; => X = X * E ; [macro]
+  rule X:Exp /= E:Exp ; => X = X / E ; [macro]
 
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
@@ -193,14 +195,10 @@ module CIL-SYNTAX
   /* C identifiers */
   syntax CId ::= CIdToken
                | "main"
-               | "malloc"
-               | "free"
   /* regular expression for tokens representing C identifiers */
   syntax CIdToken ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
   /* exclude predefined functions */
   syntax CIdToken ::= "main"      [reject]
-                    | "malloc"    [reject]
-                    | "free"      [reject]
   /* exclude keywords */
   // TODO(chathhorn): and yet isCId(int) ==K true?? Frustrating. The duplicate
   // list below lets us distinguish CIds from keywords.

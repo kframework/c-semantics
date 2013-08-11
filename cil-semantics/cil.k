@@ -4,6 +4,7 @@ require "cil-exp.k"
 require "cil-stmt.k"
 require "cil-implementation.k"
 require "cil-typing.k"
+require "cil-lib.k"
 
 
 module CIL
@@ -12,12 +13,14 @@ module CIL
   imports CIL-STMT
   imports CIL-IMPLEMENTATION
   imports CIL-TYPING
+  imports CIL-LIB
 
   syntax K ::= "wrapper" "(" KList ")"
   configuration
     <resultValue multiplicity="?"> .K </resultValue>
     <strings> .Map </strings> // Map{String, Ptr}
-    <frame multiplicity="?">
+    <external> .Set </external> // Set{CId}. Symbols with external linkage.
+    <frame multiplicity="*">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
       <env> .Map </env> // Map{CId, lv(Type, Ptr)|Type}
@@ -38,6 +41,7 @@ module CIL
       <tu multiplicity="*">
         <tu-id> .K </tu-id> // TransUnit
         <tu-env> .Map </tu-env> // Map{CId, Ptr}
+        <internal> .Set </internal> // Set{CId}. Symbols with internal linkage.
       </tu>
     </tus>
     <aggregates> // structs and unions

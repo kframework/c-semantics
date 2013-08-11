@@ -119,27 +119,27 @@ module CIL-TYPING
     when Pred(Lbl(.KList)) =/=K true
 
   syntax Bool ::= "$isPtrType" "(" K ")" [function, klabel('$isPtrType)]
-  rule isPtrType(TS:TypeSpec) => false
-  rule isPtrType(TS:TypeSpec D:Declarator) 
+  rule isPtrType(_:TypeSpec) => false
+  rule isPtrType(_:TypeSpec D:Declarator) 
     => leftSearch(D, '$isPtrType, '*) =/=K .K
   rule $isPtrType(* #__id__) => true
   // TODO(chathhorn): not entirely sure how to treat this case.
   rule $isPtrType(#__id__[]) => true
 
   syntax Bool ::= "$isArrayType" "(" K ")" [function, klabel('$isArrayType)]
-  rule isArrayType(TS:TypeSpec) => false
-  rule isArrayType(TS:TypeSpec D:Declarator) 
+  rule isArrayType(_:TypeSpec) => false
+  rule isArrayType(_:TypeSpec D:Declarator) 
     => leftSearch(D, '$isArrayType, '*) =/=K .K
   rule $isArrayType(#__id__[_]) => true
 
   syntax Bool ::= "$isFunType" "(" K ")" [function, klabel('$isFunType)]
-  rule isFunType(TS:TypeSpec) => false
-  rule isFunType(TS:TypeSpec D:Declarator) 
+  rule isFunType(_:TypeSpec) => false
+  rule isFunType(_:TypeSpec D:Declarator) 
     => leftSearch(D, '$isFunType, '*) =/=K .K
-  rule $isFunType(#__id__(_)) => true
+  rule $isFunType(#__id__(_:Params)) => true
   rule $isFunType(#__id__()) => true
 
-  rule isAggType(TS:AggTypeSpec) => true
+  rule isAggType(_:AggTypeSpec) => true
   rule isAggType(_:TypeSpec _:Declarator) => false
   rule isAggType(TS:TypeSpec) => false
     when isAggTypeSpec(TS) =/=K true
@@ -155,7 +155,7 @@ module CIL-TYPING
   syntax Declarator ::= downPtrConv(Declarator) [function]
   rule downPtr(TS:TypeSpec D:Declarator) 
     => normType(TS visitDecl(D, 'downPtrConv, '$needsDownPtrConv))
-  rule $needsDownPtrConv(*X:SymId) => true
+  rule $needsDownPtrConv(*_:SymId) => true
   rule downPtrConv(*X:SymId) => X
 
   syntax Bool ::= "$needsDownArrayConv" "(" K ")" 
@@ -163,8 +163,8 @@ module CIL-TYPING
   syntax Declarator ::= downArrayConv(Declarator) [function]
   rule downArray(TS:TypeSpec D:Declarator) 
     => normType(TS visitDecl(D, 'downArrayConv, '$needsDownArrayConv))
-  rule $needsDownArrayConv(X:SymId[]) => true
-  rule $needsDownArrayConv(X:SymId[_]) => true
+  rule $needsDownArrayConv(_:SymId[]) => true
+  rule $needsDownArrayConv(_:SymId[_]) => true
   rule downArrayConv(X:SymId[]) => X
   rule downArrayConv(X:SymId[_]) => X
 
@@ -173,21 +173,21 @@ module CIL-TYPING
   syntax Declarator ::= downFunConv(Declarator) [function]
   rule downFun(TS:TypeSpec D:Declarator) 
     => normType(TS visitDecl(D, 'downFunConv, '$needsDownFunConv))
-  rule $needsDownFunConv(X:SymId()) => true
-  rule $needsDownFunConv(X:SymId(_)) => true
+  rule $needsDownFunConv(_:SymId()) => true
+  rule $needsDownFunConv(_:SymId(_:Params)) => true
   rule downFunConv(X:SymId()) => X
-  rule downFunConv(X:SymId(_)) => X
+  rule downFunConv(X:SymId(_:Params)) => X
 
   rule getId(X:CId) => X
-  rule getId(P:Pointer D:DirectDecl) => getId(D)
+  rule getId(_:Pointer D:DirectDecl) => getId(D)
   rule getId('`(_`)(D:Declarator)) => getId(D)
   rule getId(D:DirectDecl()) => getId(D)
   rule getId(D:DirectDecl[]) => getId(D)
-  rule getId(D:DirectDecl(_)) => getId(D)
+  rule getId(D:DirectDecl(_:Params)) => getId(D)
   rule getId(D:DirectDecl[_]) => getId(D)
 
   syntax Int ::= "getArraySize'" "(" K ")" [function]
-  rule getArraySize(TS:TypeSpec D:Declarator) 
+  rule getArraySize(_:TypeSpec D:Declarator) 
     => getArraySize'(leftSearch(D, '$isArrayType, '*))
   rule getArraySize'(#__id__[C:Constant]) => C
 
@@ -195,14 +195,14 @@ module CIL-TYPING
   // Must normalize parens before this works.
   rule getParams(D:Declarator) => getParams'(D)
 
-  rule getParams'(P:Pointer D:DirectDecl) => getParams'(D)
+  rule getParams'(_:Pointer D:DirectDecl) => getParams'(D)
   rule getParams'('`(_`)(D:Declarator)) => getParams'(D)
-  rule getParams'(X:CId()) => .Params
+  rule getParams'(_:CId()) => .Params
   rule getParams'(D:DirectDecl()) => getParams'(D)
     when isCId(D) =/=K true
   rule getParams'(D:DirectDecl[]) => getParams'(D)
-  rule getParams'(X:CId(Ps:Params)) => Ps
-  rule getParams'(D:DirectDecl(_)) => getParams'(D)
+  rule getParams'(_:CId(Ps:Params)) => Ps
+  rule getParams'(D:DirectDecl(_:Params)) => getParams'(D)
     when isCId(D) =/=K true
   rule getParams'(D:DirectDecl[_]) => getParams'(D)
 
@@ -247,7 +247,7 @@ module CIL-TYPING
   rule expandDecl(D:DirectDecl, E:Map) => expandDirectDecl(D, E)
   rule expandDecl(P:Pointer D:DirectDecl, E:Map) => P expandDirectDecl(D, E)
 
-  rule expandDirectDecl(X:SymId, E:Map) => X
+  rule expandDirectDecl(X:SymId, _) => X
   rule expandDirectDecl('`(_`)(D:Declarator), E:Map) 
     => '`(_`)(expandDecl(D, E))
   rule expandDirectDecl(D:DirectDecl(), E:Map) => expandDirectDecl(D, E)()
@@ -290,15 +290,15 @@ module CIL-TYPING
   rule convDecls(T:ParamDecl) => convParamDecl(T)
 
   rule convParamDecl(TS:TypeSpec) => TS
-  rule convParamDecl(TS:TypeSpec X:SymId) => TS
-  rule convParamDecl(TS:TypeSpec X:CId) => TS
+  rule convParamDecl(TS:TypeSpec _:SymId) => TS
+  rule convParamDecl(TS:TypeSpec _:CId) => TS
   rule convParamDecl(TS:TypeSpec D:Declarator) => TS convDecl(D)
     when (isCId(D) =/=K true) andBool (isSymId(D) =/=K true)
   rule convParamDecl(TS:TypeSpec D:AbsDecl) => TS convAbsDecl(D)
 
   rule convParamDecl(_:StorageClassSpec TS:TypeSpec) => TS
-  rule convParamDecl(_:StorageClassSpec TS:TypeSpec X:SymId) => TS
-  rule convParamDecl(_:StorageClassSpec TS:TypeSpec X:CId) => TS
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec _:SymId) => TS
+  rule convParamDecl(_:StorageClassSpec TS:TypeSpec _:CId) => TS
   rule convParamDecl(_:StorageClassSpec TS:TypeSpec D:Declarator) => TS convDecl(D)
     when (isCId(D) =/=K true) andBool (isSymId(D) =/=K true)
   rule convParamDecl(_:StorageClassSpec TS:TypeSpec D:AbsDecl) => TS convAbsDecl(D)
@@ -307,7 +307,7 @@ module CIL-TYPING
   rule convDecl(P:Pointer D:DirectDecl) => P convDirectDecl(D)
 
   rule convDirectDecl(X:SymId) => X
-  rule convDirectDecl(X:CId) => #__id__
+  rule convDirectDecl(_:CId) => #__id__
   rule convDirectDecl('`(_`)(D:Declarator)) => '`(_`)(convDecl(D))
   rule convDirectDecl(D:DirectDecl()) => convDirectDecl(D)()
   rule convDirectDecl(D:DirectDecl[]) => convDirectDecl(D)[]
@@ -345,9 +345,9 @@ module CIL-TYPING
   syntax Declarator ::= "normParens'" "(" Declarator ")" [function]
   syntax KList ::= "normParens''" "(" KList ")" [function]
 
-  rule $needsParensNorm('`(_`)('`(_`)(K:K))) => true
-  rule $needsParensNorm('`(_`)(X:SymId)) => true
-  rule $needsParensNorm('`(_`)(X:SymId[_])) => true
+  rule $needsParensNorm('`(_`)('`(_`)(_))) => true
+  rule $needsParensNorm('`(_`)(_:SymId)) => true
+  rule $needsParensNorm('`(_`)(_:SymId[_])) => true
 
   rule $hasParens('`(_`)(_)) => true
 

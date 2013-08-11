@@ -25,7 +25,30 @@ module CIL-DECL
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
     ...</k>
+    <external> ExtLnk:Set </external>
     <phase> Tu:TransUnit </phase>
+    when getId(D) in ExtLnk
+  rule 
+    <k> TS:TypeSpec D:Declarator FB:FunBody
+    => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
+    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ...</k>
+    <external> ExtLnk:Set </external>
+    <tu-id> Tu </tu-id>
+    <internal> IntLnk:Set </internal>
+    <phase> Tu:TransUnit </phase>
+    when notBool (getId(D) in IntLnk)
+      andBool notBool (getId(D) in ExtLnk)
+        
+  rule 
+    <k> TS:TypeSpec D:Declarator FB:FunBody
+    => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
+    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ...</k>
+    <tu-id> Tu </tu-id>
+    <internal> IntLnk </internal>
+    <phase> Tu:TransUnit </phase>
+    when getId(D) in IntLnk
 
   rule 
     <k> extern TS:TypeSpec D:Declarator FB:FunBody
@@ -93,11 +116,24 @@ module CIL-DECL
   /*
    * Function declarations (without initializers).
    */
-  // TODO(chathhorn): this totally elides function declarations.
+  // TODO(chathhorn): this mostly ignores declarations.
   rule
-    <k> DS:DeclSpecs D:Declarator ; => . ...</k>
+    <k> extern TS:TypeSpec D:Declarator ; 
+    => declExternal(getId(D), 
+      nclv(normType(TS D), ExtFun(#tokenToString(getId(D))))) ...</k>
+    <external>... (. => SetItem(getId(D))) ...</external>
     <phase> _:TransUnit </phase>
-    when isFunType(normType(DS D)) ==K true
+    when isFunType(normType(TS D)) ==K true
+  rule
+    <k> static TS:TypeSpec D:Declarator ; => . ...</k>
+    <internal>... (. => SetItem(getId(D))) ...</internal>
+    <tu-id> Tu </tu-id>
+    <phase> Tu:TransUnit </phase>
+    when isFunType(normType(TS D)) ==K true
+  rule
+    <k> TS:TypeSpec D:Declarator ; => . ...</k>
+    <phase> _:TransUnit </phase>
+    when isFunType(normType(TS D)) ==K true
 
   /*
    * Typedef declarations.
@@ -112,11 +148,10 @@ module CIL-DECL
 
   // TODO(chathhorn): initialize (static storage class stuff) to zero.
 
-  // TODO(chathhorn): Tentative definition; need to look up the rules again.
-
   /*
    * File-scope variable declarations (without initializers).
    */
+  // TODO(chathhorn): Tentative definition; need to look up the rules again.
   rule 
     <k> TS:TypeSpec D:Declarator ;  
     => declExternal(getId(D), newObject(normType(TS D)))
@@ -162,15 +197,15 @@ module CIL-DECL
 
   rule initVar(_, .Initializers, _) => .
 
-  syntax LVal ::= Exp "@" Int [right]
-  context (HOLE => HOLE ~> noLeftValueConversion) @ _:Int
+  syntax Exp ::= Exp "@" Int [right]
+  context (HOLE => HOLE ~> noLeftValueConversion) @ _
   rule 
-    <k> 
+    <k>
       nclv(Agg:AggTypeSpec, Ptr(Base:BasePtr, Offset:Int)) @ Pos:Int
       => lv(T, Ptr(Base, Offset +Int MOffset))
     ...</k>
     <agg-id> Agg </agg-id>
-    <field-pos> M </field-pos>
+    <field-pos> Pos </field-pos>
     <field-type> T:Type </field-type>
     <offset> MOffset:Int </offset>
 
@@ -341,8 +376,8 @@ module CIL-DECL
     <env> M:Map => M:Map[lv(downPtr(T), P) / X] </env>
   [structural]
 
-  syntax K ::= declStruct(CId, VarDecls, K, Int) [strict(3)]
-             | declUnion(CId, VarDecls, K, Int) [strict(3)]
+  syntax K ::= declStruct(CId, K, K, Int) [strict(3)]
+             | declUnion(CId, K, K, Int) [strict(3)]
   rule 
     <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)

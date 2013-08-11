@@ -21,7 +21,7 @@ module CIL-EXP
   syntax K ::= "noLeftValueConversion"
 
   //TODO(chathhorn): probably going to regret this.
-  syntax Exp ::= Type [avoid]
+  syntax K ::= Type [avoid]
 
   /* constant */
   /* TODO: typed constant */
@@ -59,7 +59,7 @@ module CIL-EXP
     <strings>... S |-> P:Ptr ...</strings>
 
   syntax K ::= newString(String, K) [strict(2)]
-  rule <k> newString(S, tv(T:Type, P:Ptr))
+  rule <k> newString(S:String, tv(T:Type, P:Ptr))
     => store(downPtr(T), P, S) ~> lv(downPtr(T), P)
     ...</k>
     <strings>... . => S |-> P </strings>
@@ -220,7 +220,8 @@ module CIL-EXP
   =>
     bool2mint(MI1 =/=MInt MI2)
 
-  rule !tv(_:Type, I:Int) => norm(int, #if I ==Int 0 #then 1 #else 0 #fi)
+  rule !tv(_:Type, I:MInt) 
+    => norm(int, #if iMInt(I) ==Int 0 #then 1 #else 0 #fi)
 
   /*
    * Sizeof
@@ -265,13 +266,27 @@ module CIL-EXP
 
   rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
 
-  // TODO(chathhorn): too lax here. I'm allowing all casts between pointer
-  // types and Null to and from 0.
+  // Pointers to void may be cast to or from any pointer type.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
+    when ((isPtrType(To) ==K true) andBool (isPtrType(From) ==K true))
+      andBool
+        ((downPtr(To) ==K void) orBool (downPtr(From) ==K void))
+
+  // Null pointers (or 0) may be cast to any pointer type.
+  rule (nt(To:Type)) tv(_, I:MInt) => tv(To, Null)
+    when (isPtrType(To) ==K true) andBool (iMInt(I) ==Int 0)
+  rule (nt(To:IntType)) tv(_, Null) => norm(To, 0)
+
+  // TODO(chathhorn): Pointers may be converted to integers and the result is
+  // implementation-defined (apparently except in the case of Null). Here we
+  // just set all pointers to 1 for now.
+  rule (nt(To:IntType)) tv(_:Type, P:Ptr) => norm(To, 1)
+    when P =/=K Null
+
+  // Pointers of one type may be converted to pointers of another type and back
+  // again. The result should compare equal to the original pointer.
+  rule (nt(To:Type)) tv(From:Type, P:Ptr) => tv(To, P)
     when (isPtrType(To) ==K true) andBool (isPtrType(From) ==K true)
-  rule (nt(To:Type)) tv(_, mi(_, 0)) => tv(To, Null)
-    when (isPtrType(To) ==K true)
-  rule (nt(To:IntType)) tv(_, Null) => tv(To, mi(width(To), 0))
 
   /* TODO: complete all the cases  */
 
