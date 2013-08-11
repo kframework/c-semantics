@@ -41,7 +41,7 @@ module C11-ERROR
           +String "\n"
           +String "Description: " 
           +String Msg
-          +String citeErrors(Refs)
+     //     +String citeErrors(Refs)
 
      syntax String ::= citeError(ErrorRef) [function]
      syntax String ::= citeErrors(KList) [function]
