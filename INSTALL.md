@@ -3,9 +3,16 @@
 Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
+We recommend using Linux or OSX on a computer with at least a GB of memory.
+
 ### 1. Install basic dependencies.
-- The GNU C compiler (GCC).
-- If using Windows, you'll probably need cygwin.
+- The GNU C compiler (GCC) and Make. On OSX, these programs are generally part
+  of XCode. On Ubuntu, these programs are part of the "build-essential" package
+  and can be installed with the following:
+```
+$ sudo apt-get install build-essential
+```
+- If using Windows, you'll probably want to install cygwin.
 
 ### 2. Install Perl 5.
 - Perl 5 will likely already be installed on most Linux and Mac OS X machines.
@@ -13,23 +20,31 @@ do any installation steps not listed explicitly.
 - For Windows, see here: <http://www.perl.org/get.html>
 - Install the following Perl modules using `cpan` (or `ppm` with ActiveState
   Perl in Windows):
-    - XML::LibXML::Reader
     - Text::Diff
     - DBI
     - DBD::SQLite
     - Getopt::Declare
 
-E.g., to install a Perl module using cpan:
+To install these modules using cpan:
 ```
-$ cpan -i XML::LibXML::Reader
+$ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
 ```
 
-(It might help to do this as sudo if it doesn't work as a normal user.)
+We also need the XML::LibXML::Reader Perl module. The easiest way to install
+this module seems to be through the package manager. On Ubuntu, this module can
+be installed with:
+```
+$ sudo apt-get install libxml-libxml-perl
+```
 
 ### 3. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
-- Install OCaml from <http://caml.inria.fr/> or via your package manager.
+- Install OCaml from <http://caml.inria.fr/> or via your package manager. On
+  Ubuntu, it can be installed with:
+```
+$ sudo apt-get install ocaml
+```
 - Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
 
 To check if OCaml is installed:
@@ -43,19 +58,18 @@ $ ocaml
 (Press ctrl-d to exit.)
 
 ### 4. Install K.
-- Download the K Framework from:
-  <https://code.google.com/p/k-framework/wiki/Downloads>
-- This version of the C semantics works with the v3.2 branch of the
-  k-framework. It can be downloaded using the following command:
-```
-$ svn co https://k-framework.googlecode.com/svn/branches/v3.2
-```
+- This version of the C semantics should work with the latest stable version of
+  the k-framework. It can be downloaded from here:
+  <https://github.com/kframework/k/releases/tag/latest>
 - See the README included with K for build and installation instructions.
 
 ### 5. Install optional packages.
 - You may want to install Graphviz (dot), for generating images of the state
   space when searching programs.
-- You can probably do this with your package manager.
+- You can probably do this with your package manager. On Ubuntu:
+```
+$ sudo apt-get install graphviz
+```
       
 To check if dot is installed:
 ```
@@ -64,7 +78,12 @@ $ which dot
 ```
 
 ### 6. Build our C tool.
-- Ensures `kompile` and `krun` are included in your `$PATH`.
+- Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
+  downloaded the K Framework to `~/k`, then try this:
+```
+$ export PATH=$PATH:~/k/dist/bin
+```
+  Adding this line your `~/.bashrc` file should make this change permanent.
 - Run `make` in the project root directory.
 - This should take between 1 and 5 minutes on non-windows machines, and up to
   10 minutes on windows.
@@ -72,7 +91,7 @@ $ which dot
   to install the C tool, or simply leave it where it is. Either way, you will
   probably want to add it to your `$PATH`:
 ```
-export PATH=/path/to/c-semantics/dist:$PATH
+$ export PATH=$PATH:/path/to/c-semantics/dist
 ```
       
 To check if kcc is behaving correctly:
