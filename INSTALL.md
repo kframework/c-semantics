@@ -9,6 +9,7 @@ On Ubuntu, if the K Framework has already been installed (from here:
 <https://github.com/kframework/k/releases/tag/latest>), the
 installation process for our C semantics can be summarized as:
 ```
+$ cd ~
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
 $ sudo apt-get install build-essential libxml-libxml-perl ocaml graphviz
 $ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
