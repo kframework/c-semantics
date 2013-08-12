@@ -117,12 +117,20 @@ module CIL-SYNTAX
                   * FIXME: parse 0U, 0L, ... as lexical tokens instead of
                   * grammar productions.
                   */
+                 //| Int"L" [avoid]
+                 | Int"LL" [avoid]
                  | Int"U"
                  | Int"UL"
                  | Int"ULL"
                  | String
                  | Float
                  | "'"CharConstant"'"
+  // TODO
+  //syntax "L" -/- [\:\(\)\,a-zA-Z]
+  //syntax "LL" -/- [\:\(\)\,a-zA-Z]
+  //syntax "U" -/- [\:\(\)\,a-zA-Z]
+  //syntax "UL" -/- [\:\(\)\,a-zA-Z]
+
   syntax Constants ::= List{Constant, ","}
 
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 

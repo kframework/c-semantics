@@ -9,7 +9,7 @@ module CIL-LIB
     (<frame>... <k> 
       nclv(T:Type, ExtFun("exit"))(V:TypedValue)
     ...</k> ...</frame>
-    => <resultValue> val(V) </resultValue>)
+    => <resultValue> mival(V) </resultValue>)
     <phase> _ => terminated </phase>
 
 

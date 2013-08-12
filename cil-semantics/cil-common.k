@@ -4,6 +4,7 @@ require "builtins/mint.k"
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
+  imports CIL-COMMON
   imports CIL-COMMON-TYPED-VALUE
   /*
    * Ptr of BasePtr * Offset
@@ -33,26 +34,20 @@ module CIL-COMMON-PTR
 
   /* Addition of pointer and index is defined only if there result Offset is in
    * the range [0, Size] */
-  rule
-    PtrAdd(Ptr(BasePtr(Base:Int, Size:Int), Offset:Int), I:Int, V:TypedValue)
-  =>
-    Ptr(BasePtr(Base, Size), (Offset +Int I *Int val(V)))
-  when 0 <=Int Offset +Int I *Int val(V) 
-    andBool Offset +Int I *Int val(V) <=Int Size
+  rule PtrAdd(Ptr(BasePtr(Base:Int, Size:Int), Offset:Int), I:Int, V:TypedValue)
+    => Ptr(BasePtr(Base, Size), (Offset +Int I *Int mival(V)))
+    when 0 <=Int Offset +Int I *Int mival(V)
+      andBool Offset +Int I *Int mival(V) <=Int Size
 
   /* Subtraction of pointers is defined only for the same BasePtr. */
-  rule
-    PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
-  =>
-    (Offset1 -Int Offset2) /Int val(V)
-  when (Offset1 -Int Offset2) %Int val(V) ==Int 0
+  rule PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
+    => (Offset1 -Int Offset2) /Int mival(V)
+    when (Offset1 -Int Offset2) %Int mival(V) ==Int 0
 
   /* Structural equality of addresses */
-  rule
-    Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
+  rule Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
     ==Ptr Ptr(BasePtr(Base2:Int, Size2:Int), Offset2:Int)
-  =>
-    Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
+    => Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
   rule Null ==Ptr Null => true
   rule Ptr(_, _) ==Ptr Null => false
   rule Null ==Ptr Ptr(_, _) => false
@@ -114,7 +109,6 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
-  imports MINT
   imports CIL-SYNTAX
   imports CIL-COMMON-PTR
 
@@ -136,13 +130,12 @@ module CIL-COMMON-TYPED-VALUE
   syntax NoConversionLeftValue ::= nclv(Type, Ptr)
 
   syntax Int ::= val(TypedValue) [function]
-  rule val(tv(_, mi(_, V:Int))) => V
+  rule val(tv(_, V:Value)) => V
 
   // TODO(chathhorn)
-  rule norm(T:IntType, true) => tv(T, mi(32, 1)) 
-  rule norm(T:IntType, false) => tv(T, mi(32, 0)) 
-  rule norm(T:IntType, I:Int) => tv(T, mi(32, I))
-
+  rule norm(T:IntType, true) => tv(T, mi(width(T), 1)) 
+  rule norm(T:IntType, false) => tv(T, mi(width(T), 0)) 
+  rule norm(T:IntType, I:Int) => tv(T, mi(width(T), I))
 endmodule
 
 module CIL-COMMON-MMU
@@ -192,18 +185,16 @@ module CIL-COMMON-MMU
   rule newObject(T:Type) => $newObject(T, sizeof(T))
   [structural]
   rule
-    <k>
-      $newObject(T:Type, Sz:TypedValue)
-    =>
-      tv(upPtr(T), Ptr(BasePtr(Base, val(Sz)), (0)))
+    <k> $newObject(T:Type, Sz:TypedValue)
+      => tv(upPtr(T), Ptr(BasePtr(Base, mival(Sz)), (0)))
     ...</k>
     <heap>...
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(Base, (val(Sz))) </base-ptr>
+        <base-ptr> BasePtr(Base, (mival(Sz))) </base-ptr>
         <object-type> T </object-type>
-        <bytes> #initMap(#rangeList(val(Sz)), undef) </bytes>
+        <bytes> #initMap(#rangeList(mival(Sz)), undef) </bytes>
       </object>
     ...</heap>
   when fresh(Base:Int)
@@ -251,8 +242,8 @@ module CIL-COMMON-MMU
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
-  rule
-    $load(T:Type, P:Ptr, Sz:TypedValue) => $load(T, P, (val(Sz)), .List)
+  rule $load(T:Type, P:Ptr, Sz:TypedValue) 
+    => $load(T, P, (mival(Sz)), .List)
   [structural]
   rule
     <k>
@@ -284,12 +275,8 @@ module CIL-COMMON
 
   syntax Error ::= "dummy_Error_item"
 
-  syntax MInt ::= bool2mint(Bool) [function]
-
-  rule
-    bool2mint(B:Bool)
-  =>
-    tv(int, #if B #then mi((width(int)), 1) #else mi((width(int)), 0) #fi)
+  syntax Int ::= mival(TypedValue) [function]
+  rule mival(tv(_, I:MInt)) => iMInt(I)
 
   /* 0 has identical signed and unsigned representations */
   syntax Bool ::= isZero(MInt) [function]

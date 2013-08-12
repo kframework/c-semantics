@@ -396,7 +396,7 @@ module CIL-DECL
           <field-id> F </field-id>
           <field-pos> Pos </field-pos>
           <field-type> T </field-type>
-          <offset> val(Offset) </offset>
+          <offset> mival(Offset) </offset>
         ...</field>)
      ...</fields>
     [structural]
@@ -404,12 +404,14 @@ module CIL-DECL
   rule 
      <k> declStruct(X:CId, .K, Offset:TypedValue, _) => . ...</k>
      <agg-id> struct X </agg-id>
-     <size> _ => val(Offset) </size>
+     <size> _ => mival(Offset) </size>
     [structural]
 
   syntax K ::= maxK(K, K) [strict]
-  rule maxK(X:TypedValue, Y:TypedValue) => X when val(X) >=Int val(Y)
-  rule maxK(X:TypedValue, Y:TypedValue) => Y when val(X) <Int val(Y)
+  rule maxK(X:TypedValue, Y:TypedValue) => X 
+    when mival(X) >=Int mival(Y)
+  rule maxK(X:TypedValue, Y:TypedValue) => Y 
+    when mival(X) <Int mival(Y)
 
   rule 
     <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0, 0) ...</k>
@@ -437,7 +439,7 @@ module CIL-DECL
   rule 
      <k> declUnion(X:CId, .K, Size:TypedValue, _) => . ...</k>
      <agg-id> union X </agg-id>
-     <size> _ => val(Size) </size>
+     <size> _ => mival(Size) </size>
     [structural]
 
 endmodule

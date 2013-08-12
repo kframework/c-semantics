@@ -18,6 +18,7 @@ module CIL
   syntax K ::= "wrapper" "(" KList ")"
   configuration
     <resultValue multiplicity="?"> .K </resultValue>
+    <errorCell multiplicity="?"> .K </errorCell>
     <strings> .Map </strings> // Map{String, Ptr}
     <external> .Set </external> // Set{CId}. Symbols with external linkage.
     <frame multiplicity="*">

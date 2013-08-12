@@ -19,15 +19,11 @@ module CIL-STMT
   [computational]
 
   syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
-  rule
-    if (E:Exp) S1:Stmt else S2:Stmt
-  =>
-    $exp2bool(E) ~> if (HOLE) S1 else S2
+  rule if (E:Exp) S1:Stmt else S2:Stmt
+    => $exp2bool(E) ~> if (HOLE) S1 else S2
   [heat]
-  rule
-    $exp2bool(tv(_:IntType, MI:MInt))
-  =>
-    bool2mint(notBool isZero(MI))
+  rule $exp2bool(tv(_:IntType, MI:MInt))
+    => norm(int, notBool isZero(MI))
   [structural]
   rule
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
@@ -40,7 +36,7 @@ module CIL-STMT
   rule
     tv(_:IntType, MI:MInt) ~> $bool-ctx(HOLE)
   =>
-    $bool-ctx(bool2mint(notBool isZero(MI)))
+    $bool-ctx(norm(int, notBool isZero(MI)))
   [cool]
 */
 
@@ -144,10 +140,10 @@ module CIL-STMT
 
   rule 
     (<frame>...
-    <k> tv(int, mi(_, I:Int)) </k>
+    <k> tv(int, I:MInt) </k>
     <frame-fun-id> Null </frame-fun-id>
     ...</frame> 
-    => <resultValue> I </resultValue>)
+    => <resultValue> iMInt(I) </resultValue>)
     <phase> _ => terminated </phase>
   [structural]
 
