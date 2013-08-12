@@ -5,6 +5,18 @@ do any installation steps not listed explicitly.
 
 We recommend using Linux or OSX on a computer with at least a GB of memory.
 
+On Ubuntu, if the K Framework has already been installed (from here:
+<https://github.com/kframework/k/releases/tag/latest>), the
+installation process for our C semantics can be summarized as:
+```
+$ git clone --depth=1 https://github.com/kframework/c-semantics.git
+$ sudo apt-get install build-essential libxml-libxml-perl ocaml graphviz
+$ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
+$ cd c-semantics
+$ make
+$ export PATH=$PATH:~/c-semantics/dist
+```
+
 ### 1. Install basic dependencies.
 - The GNU C compiler (GCC) and Make. On OSX, these programs are generally part
   of XCode. On Ubuntu, these programs are part of the "build-essential" package
@@ -14,7 +26,7 @@ $ sudo apt-get install build-essential
 ```
 - If using Windows, you'll probably want to install cygwin.
 
-### 2. Install Perl 5.
+### 2. Install Perl 5 and required modules.
 - Perl 5 will likely already be installed on most Linux and Mac OS X machines.
   But if not, use your package manager to install it.
 - For Windows, see here: <http://www.perl.org/get.html>
@@ -31,8 +43,7 @@ $ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
 ```
 
 We also need the XML::LibXML::Reader Perl module. The easiest way to install
-this module seems to be through the package manager. On Ubuntu, this module can
-be installed with:
+this module seems to be through the package manager. On Ubuntu:
 ```
 $ sudo apt-get install libxml-libxml-perl
 ```
@@ -41,7 +52,7 @@ $ sudo apt-get install libxml-libxml-perl
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
 - Install OCaml from <http://caml.inria.fr/> or via your package manager. On
-  Ubuntu, it can be installed with:
+  Ubuntu:
 ```
 $ sudo apt-get install ocaml
 ```
@@ -59,7 +70,7 @@ $ ocaml
 
 ### 4. Install K.
 - This version of the C semantics should work with the latest stable version of
-  the k-framework. It can be downloaded from here:
+  the K Framework. It can be downloaded here:
   <https://github.com/kframework/k/releases/tag/latest>
 - See the README included with K for build and installation instructions.
 
@@ -79,11 +90,11 @@ $ which dot
 
 ### 6. Build our C tool.
 - Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
-  downloaded the K Framework to `~/k`, then try this:
+  downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
+  this permanent):
 ```
 $ export PATH=$PATH:~/k/dist/bin
 ```
-  Adding this line your `~/.bashrc` file should make this change permanent.
 - Run `make` in the project root directory.
 - This should take between 1 and 5 minutes on non-windows machines, and up to
   10 minutes on windows.
