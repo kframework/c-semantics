@@ -388,14 +388,14 @@ module CIL-DECL
     [structural]
 
   rule 
-     <k> declStruct(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Offset:TypedValue, Pos:Int) 
-     => declStruct(X, VDs, Offset + sizeof(T), Pos +Int 1) ...</k>
+     <k> declStruct(X:CId, TS:TypeSpec D:Declarator; ~> VDs:VarDecls, Offset:TypedValue, Pos:Int) 
+     => declStruct(X, VDs, (size_t) Offset + sizeof'(normType(TS D)), Pos +Int 1) ...</k>
      <agg-id> struct X </agg-id>
      <fields>...
         (. => <field>...
-          <field-id> F </field-id>
+          <field-id> getId(D) </field-id>
           <field-pos> Pos </field-pos>
-          <field-type> T </field-type>
+          <field-type> normType(TS D) </field-type>
           <offset> mival(Offset) </offset>
         ...</field>)
      ...</fields>
@@ -423,14 +423,14 @@ module CIL-DECL
     [structural]
 
   rule 
-     <k> declUnion(X:CId, T:TypeSpec F:CId; ~> VDs:VarDecls, Size:TypedValue, Pos:Int)
-     => declUnion(X, VDs, maxK(Size, sizeof(T)), Pos +Int 1) ...</k>
+     <k> declUnion(X:CId, TS:TypeSpec D:Declarator; ~> VDs:VarDecls, Size:TypedValue, Pos:Int)
+     => declUnion(X, VDs, maxK(Size, sizeof'(normType(TS D))), Pos +Int 1) ...</k>
      <agg-id> union X </agg-id>
      <fields>...
         (. => <field>...
-          <field-id> F </field-id>
+          <field-id> getId(D) </field-id>
           <field-pos> Pos </field-pos>
-          <field-type> T </field-type>
+          <field-type> normType(TS D) </field-type>
           <offset> 0 </offset>
         ...</field>)
      ...</fields>

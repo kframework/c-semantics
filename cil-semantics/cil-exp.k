@@ -17,6 +17,7 @@ endmodule
 module CIL-EXP
   imports CIL-TYPING-SYNTAX
   imports CIL-PROMOTION
+  imports CIL-IMPLEMENTATION
 
   syntax K ::= "noLeftValueConversion"
 
@@ -38,7 +39,14 @@ module CIL-EXP
   rule I:Int ULL => tv(unsigned long long, mi(width(unsigned long long), I))
     [structural]
 
-  rule ' C:CharConstant ' => ordChar(#tokenToString(C))
+  rule ' C:Char ' => ordChar(#tokenToString(C))
+  rule ' \000 ' => 0
+  rule ' \' ' => 39
+  rule ' \\ ' => 92
+  rule ' \a ' => 7
+  rule ' \b ' => 8
+  rule ' \t ' => 9
+  rule ' \v ' => 11
 
   /* lookup */
   rule
@@ -210,15 +218,15 @@ module CIL-EXP
   rule sizeof(nt(T:Type)) => sizeof'(T)
   rule sizeof(tv(T:Type, _)) => sizeof'(T)
 
-  rule sizeof'(T:Type) => byteWidth(T)    
+  rule sizeof'(T:Type) => (size_t) byteWidth(T)
     when (isBasicType(T) ==K true) 
       orBool (isPtrType(T) ==K true)
     [structual]
   rule sizeof'(T:Type) 
-    => sizeof'(downArray(T)) * getArraySize(T)
+    => (size_t) sizeof'(downArray(T)) * (size_t) getArraySize(T)
     when isArrayType(T) ==K true
     [structual]
-  rule <k> sizeof'(T:AggTypeSpec) => Size ...</k>
+  rule <k> sizeof'(T:AggTypeSpec) => (size_t) Size ...</k>
     <agg-id> T </agg-id>
     <size> Size:Int </size>
     [structural]
@@ -234,23 +242,18 @@ module CIL-EXP
       andBool (isNormType(T) =/=K true)
 
   /* the rule for signed integer types is implementation defined */
-  rule
-    (nt(T:SignedIntType)) tv(_:Type, mi(_, I:Int))
-  =>
-    tv(T, sMInt(mi((width(T)), I)))
+  rule (nt(T:SignedIntType)) tv(_:Type, mi(_, I:Int))
+    => tv(T, sMInt(mi(width(T), I)))
 
-  rule
-    (nt(T:UnsignedIntType)) tv(_:Type, mi(_, I:Int))
-  =>
-    tv(T, uMInt(mi((width(T)), I)))
+  rule (nt(T:UnsignedIntType)) tv(_:Type, mi(_, I:Int))
+    => tv(T, uMInt(mi(width(T), I)))
 
   rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
 
   // Pointers to void may be cast to or from any pointer type.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
     when ((isPtrType(To) ==K true) andBool (isPtrType(From) ==K true))
-      andBool
-        ((downPtr(To) ==K void) orBool (downPtr(From) ==K void))
+      andBool ((downPtr(To) ==K void) orBool (downPtr(From) ==K void))
 
   // Null pointers (or 0) may be cast to any pointer type.
   rule (nt(To:Type)) tv(_, I:MInt) => tv(To, Null)

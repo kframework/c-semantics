@@ -80,6 +80,7 @@ module CIL-SYNTAX
     | Var
     > "(" Exp ")" [bracket]
     | Exp "." Field
+    | Exp "->" Field
     | Exp "[" Exp "]"
     | "-" Exp [strict]
     | "+" Exp [strict]
@@ -111,6 +112,8 @@ module CIL-SYNTAX
     > left: Exp "^" Exp [strict]
     > left: Exp "|" Exp [strict]
 
+  rule E:Exp -> F:Field => (*E).F [macro]
+
   syntax Exps ::= List{Exp,","}   [strict]
   syntax Constant ::= Int
                  /*
@@ -125,11 +128,6 @@ module CIL-SYNTAX
                  | String
                  | Float
                  | "'"CharConstant"'"
-  // TODO
-  //syntax "L" -/- [\:\(\)\,a-zA-Z]
-  //syntax "LL" -/- [\:\(\)\,a-zA-Z]
-  //syntax "U" -/- [\:\(\)\,a-zA-Z]
-  //syntax "UL" -/- [\:\(\)\,a-zA-Z]
 
   syntax Constants ::= List{Constant, ","}
 

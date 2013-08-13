@@ -25,6 +25,12 @@ module CIL-STMT
   rule $exp2bool(tv(_:IntType, MI:MInt))
     => norm(int, notBool isZero(MI))
   [structural]
+  rule $exp2bool(tv(_, Null))
+    => norm(int, false)
+  [structural]
+  rule $exp2bool(tv(_, P:Ptr))
+    => norm(int, true)
+  [structural]
   rule
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
   [cool]
