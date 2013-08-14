@@ -50,7 +50,7 @@ module CIL-IMPLEMENTATION
   =>
     mi((wMInt(bytes2UnsignedMInt(L)) +Int byteWidthMacro),
        (iMInt(bytes2UnsignedMInt(L)) <<Int byteWidthMacro) +Int M)
-  rule bytes2UnsignedMInt(.List) => mi((0), 0)
+  rule bytes2UnsignedMInt(.List) => mi(0, 0)
   rule bytes2SignedMInt(L:List) => sMInt(bytes2UnsignedMInt(L))
 
   syntax List ::= "MInt2Bytes" "(" MInt ")" [function]

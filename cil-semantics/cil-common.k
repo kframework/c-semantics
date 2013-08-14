@@ -179,14 +179,17 @@ module CIL-COMMON-MMU
    * Memory management.
    */
   syntax K ::= newObject(Type)
-             | "$newObject" "(" Type "," K ")"   [strict(2)]
+             | newZeroObject(Type)
+             | "$newObject" "(" Type "," K "," ByteValue ")"   [strict(2)]
              | castObject(Type, Ptr)
              | deleteObject(Ptr)
-  rule newObject(T:Type) => $newObject(T, sizeof(T))
+  rule newObject(T:Type) => $newObject(T, sizeof(T), undef)
+  [structural]
+  rule newZeroObject(T:Type) => $newObject(T, sizeof(T), 0)
   [structural]
   rule
-    <k> $newObject(T:Type, Sz:TypedValue)
-      => tv(upPtr(T), Ptr(BasePtr(Base, mival(Sz)), (0)))
+    <k> $newObject(T:Type, Sz:TypedValue, V:ByteValue)
+      => tv(upPtr(T), Ptr(BasePtr(Base, mival(Sz)), 0))
     ...</k>
     <heap>...
       .Bag
@@ -194,7 +197,7 @@ module CIL-COMMON-MMU
       <object>
         <base-ptr> BasePtr(Base, (mival(Sz))) </base-ptr>
         <object-type> T </object-type>
-        <bytes> #initMap(#rangeList(mival(Sz)), undef) </bytes>
+        <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>
     ...</heap>
   when fresh(Base:Int)

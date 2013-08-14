@@ -23,16 +23,23 @@ module CIL-DECL
   rule 
     <k> TS:TypeSpec D:Declarator FB:FunBody
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
-    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ~> defineFun(
+      FunPtr(getId(D), Tu), 
+      expandTypedefs(downFun(normType(TS D)), E), 
+      getParams(D), FB)
     ...</k>
+    <env> E:Map </env>
     <external> ExtLnk:Set </external>
     <phase> Tu:TransUnit </phase>
     when getId(D) in ExtLnk
   rule 
     <k> TS:TypeSpec D:Declarator FB:FunBody
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
-    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ~> defineFun(FunPtr(getId(D), Tu), 
+      expandTypedefs(downFun(normType(TS D)), E), 
+      getParams(D), FB)
     ...</k>
+    <env> E:Map </env>
     <external> ExtLnk:Set </external>
     <tu-id> Tu </tu-id>
     <internal> IntLnk:Set </internal>
@@ -43,9 +50,12 @@ module CIL-DECL
   rule 
     <k> TS:TypeSpec D:Declarator FB:FunBody
     => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
-    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ~> defineFun(FunPtr(getId(D), Tu), 
+      expandTypedefs(downFun(normType(TS D)), E), 
+      getParams(D), FB)
     ...</k>
     <tu-id> Tu </tu-id>
+    <env> E:Map </env>
     <internal> IntLnk </internal>
     <phase> Tu:TransUnit </phase>
     when getId(D) in IntLnk
@@ -53,15 +63,21 @@ module CIL-DECL
   rule 
     <k> extern TS:TypeSpec D:Declarator FB:FunBody
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu))) 
-    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ~> defineFun(FunPtr(getId(D), Tu), 
+      expandTypedefs(downFun(normType(TS D)), E), 
+      getParams(D), FB)
     ...</k>
+    <env> E:Map </env>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> static TS:TypeSpec D:Declarator FB:FunBody
     => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
-    ~> defineFun(FunPtr(getId(D), Tu), downFun(normType(TS D)), getParams(D), FB)
+    ~> defineFun(FunPtr(getId(D), Tu), 
+      expandTypedefs(downFun(normType(TS D)), E), 
+      getParams(D), FB)
     ...</k>
+    <env> E:Map </env>
     <phase> Tu:TransUnit </phase>
   
   rule 
@@ -154,21 +170,21 @@ module CIL-DECL
   // TODO(chathhorn): Tentative definition; need to look up the rules again.
   rule 
     <k> TS:TypeSpec D:Declarator ;  
-    => declExternal(getId(D), newObject(normType(TS D)))
+    => declExternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) =/=K true
 
   rule 
     <k> extern TS:TypeSpec D:Declarator ;  
-    => declExternal(getId(D), newObject(normType(TS D)))
+    => declExternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) =/=K true
 
   rule 
     <k> static TS:TypeSpec D:Declarator ;  
-    => declInternal(getId(D), newObject(normType(TS D)))
+    => declInternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) =/=K true
