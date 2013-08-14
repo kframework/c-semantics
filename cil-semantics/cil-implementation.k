@@ -18,6 +18,7 @@ module CIL-IMPLEMENTATION
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
+  // This is also defined
   syntax Type ::= "size_t" [function]
   rule size_t => unsigned long
 
@@ -32,7 +33,9 @@ module CIL-IMPLEMENTATION
   rule byteWidth(int)                => 4
   rule byteWidth(long)               => 8
   rule byteWidth(long long)          => 8
-  // rule byteWidth(_Bool)              => 1
+  rule byteWidth(float)              => 4
+  rule byteWidth(double)             => 8
+  rule byteWidth(_Bool)              => 1
   rule byteWidth(unsigned char)      => 1
   rule byteWidth(unsigned short)     => 2
   rule byteWidth(unsigned int)       => 4
