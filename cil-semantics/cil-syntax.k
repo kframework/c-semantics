@@ -78,7 +78,7 @@ module CIL-SYNTAX
   syntax Exp ::= 
       Constant
     | Var
-    > "(" Exp ")" [bracket]
+    | "(" Exp ")" [bracket]
     | Exp "." Field
     | Exp "->" Field
     | Exp "[" Exp "]"
