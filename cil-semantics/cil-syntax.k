@@ -82,7 +82,7 @@ module CIL-SYNTAX
     | Exp "." Field
     | Exp "->" Field
     | Exp "[" Exp "]"
-    | "-" Exp [strict]
+    > "-" Exp [strict]
     | "+" Exp [strict]
     | "!" Exp [strict]
     | "~" Exp [strict]
