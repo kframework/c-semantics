@@ -18,7 +18,7 @@ module CIL-IMPLEMENTATION
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
-  // This is also defined
+  // This is also defined in a standard library header.
   syntax Type ::= "size_t" [function]
   rule size_t => unsigned long
 
@@ -35,6 +35,7 @@ module CIL-IMPLEMENTATION
   rule byteWidth(long long)          => 8
   rule byteWidth(float)              => 4
   rule byteWidth(double)             => 8
+  rule byteWidth(long double)        => 16
   rule byteWidth(_Bool)              => 1
   rule byteWidth(unsigned char)      => 1
   rule byteWidth(unsigned short)     => 2
@@ -76,6 +77,21 @@ module CIL-IMPLEMENTATION
   rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
 
   /*
+   * Floats.
+   */
+  syntax List ::= padBytes(Int) [function]
+  rule padBytes(N:Int) 
+    => ListItem(used) padBytes(N -Int 1)
+    when N >Int 0
+  rule padBytes(0) => .List
+
+  rule value2Bytes(T:FloatingType, F:Float) 
+    => ListItem(F) padBytes(byteWidth(T) -Int 1)
+
+  rule bytes2Value(_:FloatingType, 
+    ListItem(F:Float) _:List) => F
+
+  /*
    * Strings.
    */
   rule value2Bytes(T:Type, S:String)
@@ -87,11 +103,11 @@ module CIL-IMPLEMENTATION
   /*
    * Pointers.
    */
-  rule value2Bytes(_, P:Ptr) 
-    => ListItem(P) ListItem(used) ListItem(used) ListItem(used)
+  rule value2Bytes(T:Type, P:Ptr) 
+    => ListItem(P) padBytes(byteWidth(T) -Int 1)
 
   rule bytes2Value(_,
-      ListItem(P:Ptr) ListItem(used) ListItem(used) ListItem(used))
+      ListItem(P:Ptr) _:List)
     => P
 
   /*

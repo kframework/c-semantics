@@ -89,7 +89,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
 
   syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
 
-  syntax ByteValue ::= Int | "undef" | Ptr | "used" // TODO(chathhorn)
+  syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"// TODO(chathhorn)
 
   /*
    * @invariant:

@@ -39,6 +39,9 @@ module CIL-EXP
   rule I:Int ULL => tv(unsigned long long, mi(width(unsigned long long), I))
     [structural]
 
+  rule F:Float => tv(double, F)
+    [structural]
+
   rule ' C:Char ' => ordChar(#tokenToString(C))
   rule ' \000 ' => 0
   rule ' \' ' => 39
