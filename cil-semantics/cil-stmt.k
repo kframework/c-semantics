@@ -65,7 +65,7 @@ module CIL-STMT
    */
   syntax K ::= "callMain"
   rule 
-     <k> callMain => main(.Exps) </k>
+     <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
      <global-env> GEnv:Map </global-env>
      <phase> _ => executing </phase>
@@ -162,9 +162,11 @@ module CIL-STMT
   =>
     DS D; ~> getId(D) = TV; ~> initializeParams(Ps, TVs)
   [structural]
-  rule initializeParams(.Params, .TypedValues) => .K   [structural]
+  // TODO(chathhorn): we allow more arguments to be passed to a function than
+  // that function has formal parameters just to make calling main easier.
+  rule initializeParams(.Params, _) => .K   [structural]
   // TODO(chathhorn): could probably be handled better.
-  rule initializeParams((void, .Params), .TypedValues) => .K   [structural]
+  rule initializeParams((void, .Params), _) => .K   [structural]
 
   // rule
   //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)

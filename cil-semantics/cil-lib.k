@@ -7,10 +7,18 @@ module CIL-LIB
   // Exit.
   rule 
     (<frame>... <k> 
-      nclv(T:Type, ExtFun("exit"))(V:TypedValue)
+      nclv(_, ExtFun("exit"))(V:TypedValue)
     ...</k> ...</frame>
     => <resultValue> mival(V) </resultValue>)
     <phase> _ => terminated </phase>
 
+  // Abort.
+  rule 
+    (<frame>... <k> 
+      nclv(_, ExtFun("abort"))( .Exps )
+    ...</k> ...</frame>
+    => <resultValue> 134 </resultValue>)
+    (. => <errorCell> "Aborted." </errorCell>)
+    <phase> _ => terminated </phase>
 
 endmodule
