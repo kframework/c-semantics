@@ -3,7 +3,7 @@
 Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
-We recommend using Linux or OSX on a computer with at least a GB of memory.
+We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
 On Ubuntu, if the K Framework has already been installed (from here:
 <https://github.com/kframework/k/releases/tag/latest>), the
@@ -89,7 +89,15 @@ $ which dot
 /usr/bin/dot
 ```
 
-### 6. Build our C tool.
+### 6. Download our C semantics.
+Use the following command if `git` is installed:
+```
+$ git clone --depth=1 https://github.com/kframework/c-semantics.git
+```
+Otherwise, download the latest stable version from github here:
+<https://github.com/kframework/c-semantics/releases/tag/latest>
+
+### 7. Build our C tool.
 - Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
   downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
   this permanent):
