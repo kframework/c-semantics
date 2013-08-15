@@ -488,7 +488,7 @@ module CIL-SYNTAX
   syntax DirectAbsDecl ::=
       "(" ")" [prefer]
     | "[" "]" [prefer]
-    | "(" AbsDecl ")"
+    | "(" AbsDecl ")" [avoid]
     | "(" Params ")"
     | "[" Constant "]"
     | DirectAbsDecl "(" ")" [prefer]

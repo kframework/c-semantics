@@ -37,7 +37,8 @@ module CIL
       </fun>
     </funs>
     <global-env> .Map </global-env> // Map{CId, Ptr}
-    <phase> initializing </phase> // Phase
+    //<phase> initializing </phase> // Phase
+    <phase> tu("unknown") </phase> // Phase
     <tus>
       <tu multiplicity="*">
         <tu-id> .K </tu-id> // TransUnit
