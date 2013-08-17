@@ -176,11 +176,14 @@ module CIL-SYNTAX
                  // that appear in CIL, but I'm not entirely sure.
                  | Exp "++" ";"
                  | Exp "--" ";"
-                 // Probably more of these.
                  | Exp "+=" Exp ";"
                  | Exp "-=" Exp ";"
                  | Exp "*=" Exp ";"
                  | Exp "/=" Exp ";"
+                 | Exp "%=" Exp ";"
+                 | Exp "&=" Exp ";"
+                 | Exp "|=" Exp ";"
+                 | Exp "^=" Exp ";"
 
   rule X:Exp ++ ; => X = X + 1 ; [macro]
   rule X:Exp -- ; => X = X + 1 ; [macro]
@@ -188,6 +191,10 @@ module CIL-SYNTAX
   rule X:Exp -= E:Exp ; => X = X - E ; [macro]
   rule X:Exp *= E:Exp ; => X = X * E ; [macro]
   rule X:Exp /= E:Exp ; => X = X / E ; [macro]
+  rule X:Exp %= E:Exp ; => X = X % E ; [macro]
+  rule X:Exp &= E:Exp ; => X = X & E ; [macro]
+  rule X:Exp |= E:Exp ; => X = X | E ; [macro]
+  rule X:Exp ^= E:Exp ; => X = X ^ E ; [macro]
 
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
