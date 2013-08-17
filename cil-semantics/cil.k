@@ -69,12 +69,14 @@ module CIL
     </heap>
     <make-goto-table>
       <make-goto-table-enabled> false </make-goto-table-enabled>
-      <make-goto-table-task multiplicity="*">
-        <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
-        <make-goto-table-while-continuation>
-          .Stmts
-        </make-goto-table-while-continuation>
-      </make-goto-table-task>
+      <make-goto-table-tasks>
+        <make-goto-table-task multiplicity="*">
+          <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
+          <make-goto-table-while-continuation>
+            .Stmts
+          </make-goto-table-while-continuation>
+        </make-goto-table-task>
+      </make-goto-table-tasks>
     </make-goto-table>
     <propagate-constants>
       <propagate-constants-enabled> false </propagate-constants-enabled>

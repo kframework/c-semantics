@@ -284,26 +284,25 @@ module CIL-DECL
     ...</fun>
     <make-goto-table>
       <make-goto-table-enabled> false => true </make-goto-table-enabled>
-      (
-        _:Bag
-      =>
-        <make-goto-table-task>...
+      <make-goto-table-tasks>...
+        .Bag => <make-goto-table-task>...
           <make-goto-table-stmts> Ss </make-goto-table-stmts>
         ...</make-goto-table-task>
-      )
+      ...</make-goto-table-tasks>
     </make-goto-table>
   [structural]
   rule
     <make-goto-table-task>...
       <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
     ...</make-goto-table-task>
-  =>
-    .Bag
+    =>
+      .Bag
   [structural]
   rule
-    <k> (make-goto-table-control(_:Ptr) => .K) ...</k>
+    <k> make-goto-table-control(_:Ptr) => . ...</k>
     <make-goto-table>
       <make-goto-table-enabled> true => false </make-goto-table-enabled>
+      <make-goto-table-tasks> .Bag </make-goto-table-tasks>
     </make-goto-table>
   [structural]
 
@@ -322,39 +321,44 @@ module CIL-DECL
       </make-goto-table-while-continuation>
     </make-goto-table-task>
   [structural]
+
   rule
-    <make-goto-table-task>
-      <make-goto-table-stmts>
-        if (_) S1:Stmt else S2:Stmt Ss:Stmts
-      </make-goto-table-stmts>
-      Cells:Bag
-    </make-goto-table-task>
-  =>
-    <make-goto-table-task>
-      <make-goto-table-stmts> S1 @Stmts Ss </make-goto-table-stmts>
-      Cells
-    </make-goto-table-task>
-    <make-goto-table-task>
-      <make-goto-table-stmts> S2 @Stmts Ss </make-goto-table-stmts>
-      Cells
-    </make-goto-table-task>
+    <make-goto-table-tasks>...
+      <make-goto-table-task>
+        <make-goto-table-stmts>
+          (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts
+        </make-goto-table-stmts>
+        Cells:Bag
+      </make-goto-table-task>
+      =>
+      <make-goto-table-task>
+        <make-goto-table-stmts> S1 @Stmts Ss </make-goto-table-stmts>
+        Cells
+      </make-goto-table-task>
+      <make-goto-table-task>
+        <make-goto-table-stmts> S2 @Stmts Ss </make-goto-table-stmts>
+        Cells
+      </make-goto-table-task>
+    ...</make-goto-table-tasks>
   [structural]
   rule
-    <make-goto-table-task>...
-      <make-goto-table-stmts>
-        while (E:Exp) S:Stmt Ss:Stmts => Ss
-      </make-goto-table-stmts>
-    ...</make-goto-table-task>
-    (
-      .Bag
-    =>
-      <make-goto-table-task>
-        <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
-        <make-goto-table-while-continuation>
-          while (E) S Ss
-        </make-goto-table-while-continuation>
-      </make-goto-table-task>
-    )
+    <make-goto-table-tasks>...
+      <make-goto-table-task>...
+        <make-goto-table-stmts>
+          while (E:Exp) S:Stmt Ss:Stmts => Ss
+        </make-goto-table-stmts>
+      ...</make-goto-table-task>
+      (
+        .Bag
+      =>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-while-continuation>
+            while (E) S Ss
+          </make-goto-table-while-continuation>
+        </make-goto-table-task>
+      )
+    ...</make-goto-table-tasks>
   [structural]
   rule
     <make-goto-table-stmts>

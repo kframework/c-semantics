@@ -274,10 +274,10 @@ module CIL-EXP
   rule (nt(To:IntType)) tv(_, Null) => norm(To, 0)
 
   // TODO(chathhorn): Pointers may be converted to integers and the result is
-  // implementation-defined (apparently except in the case of Null). Here we
-  // just set all pointers to 1 for now.
-  rule (nt(To:IntType)) tv(_:Type, P:Ptr) => norm(To, 1)
-    when P =/=K Null
+  // implementation-defined (apparently except in the case of Null). Except
+  // that maybe comparisons and such must still work for pointers with the same
+  // base, even after being cast to an IntType?
+  rule (nt(To:IntType)) tv(_:Type, Ptr(_, Offset:Int)) => norm(To, Offset)
 
   // Pointers of one type may be converted to pointers of another type and back
   // again. The result should compare equal to the original pointer.
