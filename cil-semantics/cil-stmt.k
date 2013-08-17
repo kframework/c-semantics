@@ -149,7 +149,7 @@ module CIL-STMT
     <k> tv(int, I:MInt) </k>
     <frame-fun-id> Null </frame-fun-id>
     ...</frame> 
-    => <resultValue> iMInt(I) </resultValue>)
+    => <result-value> iMInt(I) </result-value>)
     <phase> _ => terminated </phase>
   [structural]
 

@@ -9,16 +9,20 @@ module CIL-LIB
     (<frame>... <k> 
       nclv(_, ExtFun("exit"))(V:TypedValue)
     ...</k> ...</frame>
-    => <resultValue> mival(V) </resultValue>)
+    => <result-value> mival(V) </result-value>)
     <phase> _ => terminated </phase>
 
   // Abort.
   rule 
-    (<frame>... <k> 
-      nclv(_, ExtFun("abort"))( .Exps )
-    ...</k> ...</frame>
-    => <resultValue> 134 </resultValue>)
-    (. => <errorCell> "Aborted." </errorCell>)
+    (<frame> <k> 
+      nclv(T:Type, ExtFun("abort"))( .Exps ) ~> K:K 
+    </k> Cells:Bag </frame> 
+    => <frame> Cells </frame>)
+    (. => <result-value> 134 </result-value>)
+    (. => <final-computation> 
+      nclv(T, ExtFun("abort"))( .Exps ) ~> K 
+    </final-computation>)
+    (. => <error-cell> "Aborted." </error-cell>)
     <phase> _ => terminated </phase>
 
 endmodule

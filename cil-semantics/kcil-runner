@@ -184,7 +184,7 @@ sub parseResultLine {
             $parsed->{finalComp} = $1;
       };
 
-      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+      /< error-cell > # "(.*)"\(\.KList\) <\/ error-cell >/ && do {
             $parsed->{haveError} = 1;
             my $output = $1;
             $output =~ s/\%/\%\%/g;
@@ -202,7 +202,7 @@ sub parseResultLine {
             $parsed->{errorLine} = $2;
       };
 
-      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+      /< final-computation > (.*) <\/ final-computation >/ && do {
             $parsed->{finalComp} = $1;
       };
 
@@ -218,7 +218,7 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< resultValue > # (-?\d+)\(\.KList\) <\/ resultValue >/ && do {
+      /< result-value > # (-?\d+)\(\.KList\) <\/ result-value >/ && do {
             $parsed->{exitCode} = $1;
       };
 }
