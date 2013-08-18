@@ -9,6 +9,7 @@ module CIL-STMT
 
   rule { VDs:VarDecls B:Block } => VDs ~> B   [structural]
 
+  context goto $caseLabel(_, HOLE) ;
   rule
     <k> goto L:Label; ~> _ => Ss </k>
     <frame-fun-id> F:Ptr </frame-fun-id>

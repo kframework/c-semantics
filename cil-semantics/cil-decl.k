@@ -111,8 +111,9 @@ module CIL-DECL
   rule
     <k>
       defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
-    =>
-      lower-break-continue-to-goto-control(F) ~> make-goto-table-control(F)
+    => lower-break-continue-to-goto-control(F) 
+      ~> make-goto-table-control(F)
+      ~> eval-case-labels(F)
       //~> propagate-constants(F)
     ...</k>
     // <frame-fun-id> _ => F </frame-fun-id>
@@ -128,6 +129,31 @@ module CIL-DECL
       </fun>
     ...</funs>
   [structural]
+
+  // This is a somewhat hackish method for evaluating the constant expressions
+  // in the case labels of switch statements.
+  syntax K ::= "eval-case-labels" "(" Ptr ")"
+             | "eval-case-labels'" "(" Ptr "," Map "," Map ")"
+             | "case-label-freezer" "(" Int "," Stmts ")"
+  rule <k> eval-case-labels(F:Ptr) 
+    => eval-case-labels'(F, Lbls, .Map) ...</k>
+    <fun-id> F </fun-id>
+    <labels> Lbls:Map </labels>
+
+  rule eval-case-labels'(F:Ptr, 
+    _:Map (L:Label |-> Ss:Stmts => .Map), 
+    _:Map (.Map => L |-> Ss)) 
+    when getKLabel(L) =/=KLabel '$caseLabel
+  rule (. => E ~> case-label-freezer(I, Ss)) 
+    ~> eval-case-labels'(F:Ptr, 
+    _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
+  rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
+    ~> eval-case-labels'(F:Ptr, 
+    _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
+
+  rule <k> eval-case-labels'(F:Ptr, .Map, Lbls:Map) => . ...</k>
+    <fun-id> F </fun-id>
+    <labels> _ => Lbls </labels>
 
   /*
    * Function declarations (without initializers).
@@ -243,7 +269,7 @@ module CIL-DECL
   syntax Label ::= "$breakLabel" "(" Int ")"
                  | "$continueLabel" "(" Int ")"
                  // TODO: need to evaluate const exps in case labels.
-                 | "$caseLabel" "(" Int "," Exp ")"
+                 | "$caseLabel" "(" Int "," Exp ")" [klabel('$caseLabel)]
                  | "$defaultLabel" "(" Int ")"
   syntax Bool ::= needsLabelNorm(K) [function]
   syntax K ::= normLabels(K, Int) [function]
@@ -277,12 +303,6 @@ module CIL-DECL
           $breakLabel(I): ;
       }
     when fresh(I:Int)
-
-
-  /*
-   * TODO: Compute the switch table.
-   */
-
 
   /*
    * Compute the goto table (Map{Label, Stmt})
@@ -393,7 +413,6 @@ module CIL-DECL
     andBool KLabel =/=KLabel 'while`(_`)_ 
     andBool KLabel =/=KLabel '`{_`}
   [structural]
-
 
   /*
    * Local variable declarations (without initializers).
