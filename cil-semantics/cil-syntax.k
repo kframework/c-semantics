@@ -332,7 +332,13 @@ module CIL-SYNTAX
   //     declaration-specifiers init-declarator-list? ;
   //     static_assert-declaration
   syntax VarDecl ::=
-      DeclSpecs Declarator ";"
+      DeclSpecs Declarator ";" 
+    // Bitfields; really only allowed in structs/unions.
+    | DeclSpecs Declarator ":" Constant ";"
+
+  // Elide bitfields for now.
+  rule DS:DeclSpecs D:Declarator : C:Constant ; => DS D ; [macro]
+
   syntax VarDecls ::= List{VarDecl, ""}    [right]
   
   syntax InitVarDecl ::= 
