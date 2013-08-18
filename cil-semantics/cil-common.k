@@ -296,7 +296,7 @@ module CIL-COMMON
   /*
    * List{Stmt} concatenation
    */
-  syntax Stmts ::= Stmts "@Stmts" Stmts   [function]
+  syntax Stmts ::= Stmts "@Stmts" Stmts   [left, function]
   rule (S:Stmt Ss1:Stmts) @Stmts Ss2:Stmts => S (Ss1 @Stmts Ss2)
   rule .Stmts @Stmts Ss:Stmts => Ss
 

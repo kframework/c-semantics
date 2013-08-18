@@ -162,8 +162,6 @@ module CIL-DECL
   // TODO(chathhorn): actually handle linkage properly (e.g., if a declaration
   // has static linkage and a def has no linkage spec, then it's static).
 
-  // TODO(chathhorn): initialize (static storage class stuff) to zero.
-
   /*
    * File-scope variable declarations (without initializers).
    */
@@ -237,31 +235,46 @@ module CIL-DECL
     <fun>...
       <fun-id> F </fun-id>
       <body>
-        FB:FunBody => #visit(FB, 'visitWhileFlow, (.K,, .K), 'isWhileFlow)
+        FB:FunBody => #visit(FB, 'normLabels, 0, 'needsLabelNorm)
       </body>
     ...</fun>
   [structural]
 
   syntax Label ::= "$breakLabel" "(" Int ")"
                  | "$continueLabel" "(" Int ")"
-  syntax Bool ::= isWhileFlow(K) [function]
-  syntax K ::= visitWhileFlow(K, Label, Label) [function]
-  rule isWhileFlow(break;) => true
-  rule isWhileFlow(continue;) => true
-  rule isWhileFlow(while(_:Exp) _:Stmt) => true
-  rule visitWhileFlow(break;, L:Label, _) => goto L;
-  rule visitWhileFlow(continue;, _, L:Label) => goto L;
-  rule visitWhileFlow((while(E:Exp) S:Stmt), _, _)
+                 // TODO: need to evaluate const exps in case labels.
+                 | "$caseLabel" "(" Int "," Exp ")"
+                 | "$defaultLabel" "(" Int ")"
+  syntax Bool ::= needsLabelNorm(K) [function]
+  syntax K ::= normLabels(K, Int) [function]
+
+  rule needsLabelNorm(break;) => true
+  rule needsLabelNorm(continue;) => true
+  rule needsLabelNorm(case _ : _) => true
+  rule needsLabelNorm(default : _) => true
+  rule needsLabelNorm(while(_) _) => true
+  rule needsLabelNorm(switch(_) _) => true
+
+  rule normLabels(break;, I:Int) => goto $breakLabel(I);
+  rule normLabels(continue;, I:Int) => goto $continueLabel(I);
+  rule normLabels(case E:Exp : S:Stmt , I:Int) => $caseLabel(I, E): S
+  rule normLabels(default : S:Stmt , I:Int) => $defaultLabel(I): S
+  rule normLabels((while(E:Exp) S:Stmt), _)
     =>
       {
         $continueLabel(I):
-          while(E)
-            #visit(S,
-                  'visitWhileFlow,
-                  ($breakLabel(I),, $continueLabel(I)),
-                  'isWhileFlow)
-        $breakLabel(I):
-          ;
+          while(E) #visit(S, 'normLabels, I, 'needsLabelNorm)
+        $breakLabel(I): ;
+      }
+    when fresh(I:Int)
+  rule normLabels((switch(E:Exp) { Ss:Stmts } ), _)
+    =>
+      {
+          goto $caseLabel(I, E);
+          @Stmts
+          #visit(Ss, 'normLabels, I, 'needsLabelNorm)
+          @Stmts
+          $breakLabel(I): ;
       }
     when fresh(I:Int)
 
@@ -284,10 +297,12 @@ module CIL-DECL
     <make-goto-table>
       <make-goto-table-enabled> false => true </make-goto-table-enabled>
       <make-goto-table-tasks>
-        .Bag => 
-          <make-goto-table-task>...
+        (.Bag => 
+          <make-goto-table-task>
             <make-goto-table-stmts> Ss </make-goto-table-stmts>
+            <make-goto-table-cont> .Stmts </make-goto-table-cont>
           </make-goto-table-task>
+        )
       </make-goto-table-tasks>
     </make-goto-table>
   [structural]
@@ -315,9 +330,9 @@ module CIL-DECL
       <make-goto-table-stmts>
         L:Label : S:Stmt Ss1:Stmts => S Ss1
       </make-goto-table-stmts>
-      <make-goto-table-continuation>
+      <make-goto-table-cont>
         Cont:Stmts
-      </make-goto-table-continuation>
+      </make-goto-table-cont>
     </make-goto-table-task>
   [structural]
 
@@ -327,22 +342,18 @@ module CIL-DECL
         <make-goto-table-stmts>
           (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
         </make-goto-table-stmts>
-        <make-goto-table-continuation> 
+        <make-goto-table-cont> 
           Cont:Stmts
-        </make-goto-table-continuation>
+        </make-goto-table-cont>
       </make-goto-table-task>
       (.Bag =>
         <make-goto-table-task>
           <make-goto-table-stmts> S1 (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-continuation> 
-            Ss @Stmts Cont
-          </make-goto-table-continuation>
+          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
         </make-goto-table-task>
         <make-goto-table-task>
           <make-goto-table-stmts> S2 (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-continuation> 
-            Ss @Stmts Cont
-          </make-goto-table-continuation>
+          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
         </make-goto-table-task>
       )
     ...</make-goto-table-tasks>
@@ -353,16 +364,16 @@ module CIL-DECL
         <make-goto-table-stmts>
           while (E:Exp) S:Stmt Ss:Stmts => Ss
         </make-goto-table-stmts>
-        <make-goto-table-continuation>
+        <make-goto-table-cont>
           Cont:Stmts
-        </make-goto-table-continuation>
+        </make-goto-table-cont>
       </make-goto-table-task>
       (.Bag =>
         <make-goto-table-task>
           <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-continuation>
+          <make-goto-table-cont>
             (while (E) S Ss) @Stmts Cont
-          </make-goto-table-continuation>
+          </make-goto-table-cont>
         </make-goto-table-task>
       )
     ...</make-goto-table-tasks>

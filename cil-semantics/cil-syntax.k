@@ -126,7 +126,6 @@ module CIL-SYNTAX
                  | Float
                  | "'"CharConstant"'"
 
-  // TODO(chathhorn): more suffix combinations.
   syntax DecimalConstant ::= 
     Token{[1-9][0-9]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
   syntax OctalConstant ::= 
@@ -149,21 +148,20 @@ module CIL-SYNTAX
     Token{[\\][0-7][0-7]?[0-7]?} [onlyLabel]
 
   // TODO: hex and octal escape codes in strings?
-  // strings and char lits.
 
   syntax Var ::= CId
   syntax Field ::= CId
   syntax CIds ::= List{CId, ","}
 
   /*
-   * statements
+   * Statements.
    */
   syntax Stmt ::= Instr 
                 | "return" "(" Exp ")" ";"                    [strict]
                 | "return" ";"
                 | "goto" Label ";"
                 | "break" ";"
-                // | "continue" ";" // chathhorn: doesn't seem to be part of CIL.
+                | "continue" ";"
                 | "if" "(" Exp ")" Stmt "else" Stmt   [avoid]
                 | "if" "(" Exp ")" Stmt
                 | "switch" "(" Exp ")" Block          [strict]
@@ -171,18 +169,11 @@ module CIL-SYNTAX
                 | Block
                 | Label ":" Stmt
                 | ";"
-                /*
-                 * TODO: support try blocks
-                 | TryFinally of block * block * location
-                 | TryExcept of block * (instr list * exp) * block * location
-                 */
 
   syntax Stmts ::= List{Stmt, ""}   [right]
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
                  | Exp "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
-                 // I think these are the only forms of those operators below
-                 // that appear in CIL, but I'm not entirely sure.
                  | Exp "++" ";"
                  | Exp "--" ";"
                  | Exp "+=" Exp ";"

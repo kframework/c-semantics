@@ -372,8 +372,7 @@ module CIL-TYPING
   syntax Pointer ::= concatPtrs(Pointer, Pointer) [function]
   syntax Bool ::= "$isFinalPointer" "(" Pointer ")" 
     [klabel('$isFinalPointer), function]
-  syntax Pointer ::= finalPointerTrans(Pointer, Pointer) 
-    [klabel('finalPointerTrans), function]
+  syntax Pointer ::= finalPointerTrans(Pointer, Pointer) [function]
   rule $isFinalPointer(*) => true
   rule finalPointerTrans(*, P:Pointer) => '*_(P)
   rule concatPtrs(P1:Pointer, P2:Pointer) 
