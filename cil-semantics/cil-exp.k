@@ -255,13 +255,16 @@ module CIL-EXP
     <env>... X |-> lv(_,_) ...</env>
 
   /* the rule for signed integer types is implementation defined */
-  rule (nt(T:SignedIntType)) tv(_:Type, mi(_, I:Int))
-    => tv(T, sMInt(mi(width(T), I)))
+  rule (nt(T:SignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
 
-  rule (nt(T:UnsignedIntType)) tv(_:Type, mi(_, I:Int))
-    => tv(T, uMInt(mi(width(T), I)))
+  rule (nt(T:UnsignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
 
-  rule (nt(T:FloatingType)) tv(_:Type, F:Int) => tv(T, F)
+  // Allowing all casts between floating point types.
+  rule (nt(To:FloatingType)) tv(_, F:Float) => norm(To, F)
+
+  // Allowing all casts between ints and floats.
+  rule (nt(To:FloatingType)) tv(_, I:MInt) => norm(To, I)
+  rule (nt(To:IntType)) tv(_, F:Float) => norm(To, F)
 
   // Pointers to void may be cast to or from any pointer type.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
@@ -287,8 +290,6 @@ module CIL-EXP
   // again. The result should compare equal to the original pointer.
   rule (nt(To:Type)) tv(From:Type, P:Ptr) => tv(To, P)
     when (isPtrType(To) ==K true) andBool (isPtrType(From) ==K true)
-
-  /* TODO: complete all the cases  */
 
   rule tv(T:Type, F1:Float) * tv(T, F2:Float) => tv(T, F1 *Float F2)
   rule tv(T:Type, F1:Float) / tv(T, F2:Float) => tv(T, F1 /Float F2)

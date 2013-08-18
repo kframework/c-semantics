@@ -133,9 +133,17 @@ module CIL-COMMON-TYPED-VALUE
   rule val(tv(_, V:Value)) => V
 
   // TODO(chathhorn)
+  rule norm(T:Type, I:MInt) => norm(T, iMInt(I))
+
   rule norm(T:IntType, true) => tv(T, mi(width(T), 1)) 
   rule norm(T:IntType, false) => tv(T, mi(width(T), 0)) 
-  rule norm(T:IntType, I:Int) => tv(T, mi(width(T), I))
+
+  rule norm(T:IntType, F:Float) => norm(T, Float2Int(F))
+  rule norm(T:UnsignedIntType, I:Int) => tv(T, uMInt(mi(width(T), I)))
+  rule norm(T:SignedIntType, I:Int) => tv(T, sMInt(mi(width(T), I)))
+
+  rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
+  rule norm(T:FloatingType, F:Float) => tv(T, F)
 endmodule
 
 module CIL-COMMON-MMU
