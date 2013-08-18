@@ -72,9 +72,9 @@ module CIL
       <make-goto-table-tasks>
         <make-goto-table-task multiplicity="*">
           <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
-          <make-goto-table-while-continuation>
+          <make-goto-table-continuation>
             .Stmts
-          </make-goto-table-while-continuation>
+          </make-goto-table-continuation>
         </make-goto-table-task>
       </make-goto-table-tasks>
     </make-goto-table>

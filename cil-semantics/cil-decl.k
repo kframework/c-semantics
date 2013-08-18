@@ -247,24 +247,23 @@ module CIL-DECL
   syntax Bool ::= isWhileFlow(K) [function]
   syntax K ::= visitWhileFlow(K, Label, Label) [function]
   rule isWhileFlow(break;) => true
-  //rule isWhileFlow(continue;) => true
+  rule isWhileFlow(continue;) => true
   rule isWhileFlow(while(_:Exp) _:Stmt) => true
   rule visitWhileFlow(break;, L:Label, _) => goto L;
-  //rule visitWhileFlow(continue;, _, L:Label) => goto L;
-  rule
-    visitWhileFlow((while(E:Exp) S:Stmt), _, _)
-  =>
-    {
-      $continueLabel(I):
-        while(E)
-          #visit(S,
-                 'visitWhileFlow,
-                 ($breakLabel(I),, $continueLabel(I)),
-                 'isWhileFlow)
-      $breakLabel(I):
-        ;
-    }
-  when fresh(I:Int)
+  rule visitWhileFlow(continue;, _, L:Label) => goto L;
+  rule visitWhileFlow((while(E:Exp) S:Stmt), _, _)
+    =>
+      {
+        $continueLabel(I):
+          while(E)
+            #visit(S,
+                  'visitWhileFlow,
+                  ($breakLabel(I),, $continueLabel(I)),
+                  'isWhileFlow)
+        $breakLabel(I):
+          ;
+      }
+    when fresh(I:Int)
 
 
   /*
@@ -285,9 +284,10 @@ module CIL-DECL
     <make-goto-table>
       <make-goto-table-enabled> false => true </make-goto-table-enabled>
       <make-goto-table-tasks>
-        .Bag => <make-goto-table-task>...
-          <make-goto-table-stmts> Ss </make-goto-table-stmts>
-        </make-goto-table-task>
+        .Bag => 
+          <make-goto-table-task>...
+            <make-goto-table-stmts> Ss </make-goto-table-stmts>
+          </make-goto-table-task>
       </make-goto-table-tasks>
     </make-goto-table>
   [structural]
@@ -309,54 +309,60 @@ module CIL-DECL
     <k> make-goto-table-control(F:Ptr) ...</k>
     <fun>...
       <fun-id> F </fun-id>
-      <labels>... .Map => L |-> (S Ss1) @Stmts Ss2 ...</labels>
+      <labels>... .Map => L |-> (S Ss1) @Stmts Cont ...</labels>
     ...</fun>
     <make-goto-table-task>
       <make-goto-table-stmts>
         L:Label : S:Stmt Ss1:Stmts => S Ss1
       </make-goto-table-stmts>
-      <make-goto-table-while-continuation>
-        Ss2:Stmts
-      </make-goto-table-while-continuation>
+      <make-goto-table-continuation>
+        Cont:Stmts
+      </make-goto-table-continuation>
     </make-goto-table-task>
   [structural]
 
-  // TODO(chathhorn): This doesn't scale at all, it's exponential on the number
-  // of ifs in a program...
   rule
     <make-goto-table-tasks>...
       <make-goto-table-task>
         <make-goto-table-stmts>
-          (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts
+          (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
         </make-goto-table-stmts>
-        Cells:Bag
+        <make-goto-table-continuation> 
+          Cont:Stmts
+        </make-goto-table-continuation>
       </make-goto-table-task>
-      =>
-      <make-goto-table-task>
-        <make-goto-table-stmts> S1 @Stmts Ss </make-goto-table-stmts>
-        Cells
-      </make-goto-table-task>
-      <make-goto-table-task>
-        <make-goto-table-stmts> S2 @Stmts Ss </make-goto-table-stmts>
-        Cells
-      </make-goto-table-task>
+      (.Bag =>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S1 (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-continuation> 
+            Ss @Stmts Cont
+          </make-goto-table-continuation>
+        </make-goto-table-task>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S2 (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-continuation> 
+            Ss @Stmts Cont
+          </make-goto-table-continuation>
+        </make-goto-table-task>
+      )
     ...</make-goto-table-tasks>
   [structural]
   rule
     <make-goto-table-tasks>...
-      <make-goto-table-task>...
+      <make-goto-table-task>
         <make-goto-table-stmts>
           while (E:Exp) S:Stmt Ss:Stmts => Ss
         </make-goto-table-stmts>
-      ...</make-goto-table-task>
-      (
-        .Bag
-      =>
+        <make-goto-table-continuation>
+          Cont:Stmts
+        </make-goto-table-continuation>
+      </make-goto-table-task>
+      (.Bag =>
         <make-goto-table-task>
           <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-while-continuation>
-            while (E) S Ss
-          </make-goto-table-while-continuation>
+          <make-goto-table-continuation>
+            (while (E) S Ss) @Stmts Cont
+          </make-goto-table-continuation>
         </make-goto-table-task>
       )
     ...</make-goto-table-tasks>
@@ -370,12 +376,11 @@ module CIL-DECL
     <make-goto-table-stmts>
       KLabel:KLabel(KList:KList) Ss:Stmts => Ss
     </make-goto-table-stmts>
-  when
-    isStmt(KLabel:KLabel(KList:KList)) andBool
-    KLabel =/=KLabel '_:_ andBool
-    KLabel =/=KLabel 'if`(_`)_else_ andBool
-    KLabel =/=KLabel 'while`(_`)_ andBool
-    KLabel =/=KLabel '`{_`}
+  when isStmt(KLabel:KLabel(KList:KList)) 
+    andBool KLabel =/=KLabel '_:_ 
+    andBool KLabel =/=KLabel 'if`(_`)_else_ 
+    andBool KLabel =/=KLabel 'while`(_`)_ 
+    andBool KLabel =/=KLabel '`{_`}
   [structural]
 
 
