@@ -6,6 +6,111 @@ require "cil-common.k"
      M structure member
      F function */
 
+module CIL-LITERAL
+
+  syntax String ::= carStr(String) [function]
+                  | cdrStr(String) [function]
+
+  rule carStr(S:String) => substrString(S, 0, 1)
+  rule cdrStr(S:String) => substrString(S, 1, lengthString(S))
+
+  syntax String ::= getNumericPart(String) [function]
+                  | "getNumericPart'" "(" String "," String ")" [function]
+
+  // lnp x::xs => lnp xs when x == 0 or x
+
+  syntax Bool ::= isPrefixChar(String) [function]
+                | isSuffixChar(String) [function]
+
+  rule isPrefixChar(S:String) => true
+    when (S ==String "0") 
+      orBool (S ==String "x")
+      orBool (S ==String "X")
+      orBool (S ==String "\\")
+  rule isPrefixChar(S:String) => false
+    when (S =/=String "0") 
+      andBool (S =/=String "x")
+      andBool (S =/=String "X")
+      andBool (S =/=String "\\")
+
+  rule isSuffixChar(S:String) => true
+    when (S ==String "u") 
+      orBool (S ==String "l")
+      orBool (S ==String "U")
+      orBool (S ==String "L")
+  rule isSuffixChar(S:String) => false
+    when (S =/=String "u") 
+      andBool (S =/=String "l")
+      andBool (S =/=String "U")
+      andBool (S =/=String "L")
+
+  rule getNumericPart(S:String) 
+    => getNumericPart(cdrStr(S))
+    when isPrefixChar(carStr(S))
+      andBool (S =/=String "")
+  rule getNumericPart(S:String) 
+    => getNumericPart'(S, "")
+    when notBool isPrefixChar(carStr(S))
+      andBool (S =/=String "")
+  rule getNumericPart("") => "0"
+  
+  rule getNumericPart'(S:String, Num:String)
+    => getNumericPart'(cdrStr(S), Num +String carStr(S))
+    when notBool isSuffixChar(carStr(S))
+      andBool (S =/=String "")
+  rule getNumericPart'(S:String, Num:String) => Num
+    when isSuffixChar(carStr(S))
+  rule getNumericPart'("", Num:String) => Num
+
+  syntax String ::= getSuffix(String) [function]
+
+  rule getSuffix(S:String) => getSuffix(cdrStr(S))
+    when notBool isSuffixChar(carStr(S))
+      andBool (S =/=String "")
+  rule getSuffix(S:String) => normSuffix(S)
+    when isSuffixChar(carStr(S))
+  rule getSuffix("") => ""
+
+  syntax String ::= normSuffix(String) [function]
+
+  rule normSuffix("") => ""
+  rule normSuffix(S:String) => "U"
+    when (S ==String "u")
+      orBool (S ==String "U")
+
+  rule normSuffix(S:String) => "L"
+    when (S ==String "l")
+      orBool (S ==String "L")
+
+  rule normSuffix(S:String) => "LL"
+    when (S ==String "ll")
+      orBool (S ==String "LL")
+
+  rule normSuffix(S:String) => "UL"
+    when (S ==String "ul")
+      orBool (S ==String "uL")
+      orBool (S ==String "Ul")
+      orBool (S ==String "UL")
+      orBool (S ==String "lu")
+      orBool (S ==String "Lu")
+      orBool (S ==String "lU")
+      orBool (S ==String "LU")
+
+  rule normSuffix(S:String) => "ULL"
+    when (S ==String "ull")
+      orBool (S ==String "uLL")
+      orBool (S ==String "Ull")
+      orBool (S ==String "ULL")
+      orBool (S ==String "llu")
+      orBool (S ==String "LLu")
+      orBool (S ==String "llU")
+      orBool (S ==String "LLU")
+
+  syntax Int ::= String2Base(String, Int)
+    [function, hook(#CONVERSION:string2Base)]
+
+endmodule
+
 module CIL-PROMOTION
   imports CIL-COMMON
 
@@ -18,38 +123,109 @@ module CIL-EXP
   imports CIL-TYPING-SYNTAX
   imports CIL-PROMOTION
   imports CIL-IMPLEMENTATION
+  imports CIL-LITERAL
 
   syntax K ::= "noLeftValueConversion"
 
-  //TODO(chathhorn): probably going to regret this.
   syntax K ::= Type [avoid]
 
-  /* constant */
-  /* TODO: typed constant */
-  rule I:Int => tv(int, mi(width(int), I))
+  rule I:Int => norm(int, I)
+
+  /* Constants. */
+  rule C:DecimalConstant 
+    => norm(int, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String ""
     [structural]
-  // rule I:Int L => tv(long, mi(width(long), I))
-  //   [structural]
-  rule I:Int LL => tv(long long, mi(width(long long), I))
+  rule C:DecimalConstant 
+    => norm(long, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule I:Int U => tv(unsigned int, mi(width(unsigned int), I))
+  rule C:DecimalConstant 
+    => norm(long long, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
-  rule I:Int UL => tv(unsigned long, mi(width(unsigned long), I))
+  rule C:DecimalConstant 
+    => norm(unsigned int, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
-  rule I:Int ULL => tv(unsigned long long, mi(width(unsigned long long), I))
+  rule C:DecimalConstant 
+    => norm(unsigned long, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String "UL"
+    [structural]
+  rule C:DecimalConstant 
+    => norm(unsigned long long, String2Int(getNumericPart(#tokenToString(C))))
+    when getSuffix(#tokenToString(C)) ==String "ULL"
+    [structural]
+
+  rule C:OctalConstant 
+    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String ""
+    [structural]
+  rule C:OctalConstant 
+    => norm(long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:OctalConstant 
+    => norm(long long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String "LL"
+    [structural]
+  rule C:OctalConstant 
+    => norm(unsigned int, String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String "U"
+    [structural]
+  rule C:OctalConstant 
+    => norm(unsigned long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String "UL"
+    [structural]
+  rule C:OctalConstant 
+    => norm(unsigned long long, 
+      String2Base(getNumericPart(#tokenToString(C)), 8))
+    when getSuffix(#tokenToString(C)) ==String "ULL"
+    [structural]
+
+  rule C:HexConstant 
+    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String ""
+    [structural]
+  rule C:HexConstant 
+    => norm(long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:HexConstant 
+    => norm(long long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String "LL"
+    [structural]
+  rule C:HexConstant 
+    => norm(unsigned int, String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String "U"
+    [structural]
+  rule C:HexConstant 
+    => norm(unsigned long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String "UL"
+    [structural]
+  rule C:HexConstant 
+    => norm(unsigned long long, 
+      String2Base(getNumericPart(#tokenToString(C)), 16))
+    when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
   rule F:Float => tv(double, F)
     [structural]
 
-  rule ' C:Char ' => ordChar(#tokenToString(C))
-  rule ' \000 ' => 0
-  rule ' \' ' => 39
-  rule ' \\ ' => 92
-  rule ' \a ' => 7
-  rule ' \b ' => 8
-  rule ' \t ' => 9
-  rule ' \v ' => 11
+  // TODO(chathhorn): prefixes (wide chars I guess).
+  rule ' C:Char ' => norm(int, ordChar(#tokenToString(C)))
+  rule ' \' ' => norm(int, 39)
+  rule ' \\ ' => norm(int, 92)
+  rule ' \a ' => norm(int, 7)
+  rule ' \b ' => norm(int, 8)
+  rule ' \t ' => norm(int, 9)
+  rule ' \v ' => norm(int, 11)
+  // TODO(chathhorn): Geh, the token becomes a string containing an octal
+  // escape code.
+  rule ' C:OctalStringEscape ' 
+    => norm(int, ordChar(#tokenToString(C)))
+  rule ' C:HexStringEscape ' 
+    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 16))
 
   /* lookup */
   rule
@@ -107,12 +283,14 @@ module CIL-EXP
     
   rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
     when (KLabel(KList) =/=K noLeftValueConversion)
-      andBool (isArrayType(T) =/=K true)
+      andBool ((isArrayType(T) =/=K true)
+        orBool (KLabel(KList) ==K sizeofContext))
       andBool (isFunType(T) =/=K true)
   // Arrays decay to a pointer (except as an operand to sizeof() or &).
   rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) 
     ~> KLabel:KLabel(KList:KList)
     when (KLabel(KList) =/=K noLeftValueConversion)
+      andBool (KLabel(KList) =/=K sizeofContext)
       andBool (isArrayType(T) ==K true)
   // Functions decay to a function pointer.
   rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) 
@@ -216,6 +394,11 @@ module CIL-EXP
   /*
    * Sizeof
    */
+
+  // Things are special inside a sizeof (in particular, arrays don't decay).
+  syntax K ::= "sizeofContext"
+  context sizeof(HOLE => HOLE ~> sizeofContext)
+
   syntax K ::= "sizeof'" "(" Type ")"
   rule sizeof(nt(T:Type)) => sizeof'(T)
   rule sizeof(tv(T:Type, _)) => sizeof'(T)

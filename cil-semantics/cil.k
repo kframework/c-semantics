@@ -6,7 +6,6 @@ require "cil-implementation.k"
 require "cil-typing.k"
 require "cil-lib.k"
 
-
 module CIL
   imports CIL-DECL
   imports CIL-EXP
@@ -41,8 +40,8 @@ module CIL
     //<phase> initializing </phase> // Phase
     <phase> tu("unknown") </phase> // Phase
     <tus>
-      <tu multiplicity="*">
-        <tu-id> .K </tu-id> // TransUnit
+      <tu multiplicity="+">
+        <tu-id> tu("unknown") </tu-id> // TransUnit
         <tu-env> .Map </tu-env> // Map{CId, Ptr}
         <internal> .Set </internal> // Set{CId}. Symbols with internal linkage.
       </tu>

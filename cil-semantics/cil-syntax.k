@@ -90,7 +90,7 @@ module CIL-SYNTAX
     | "~" Exp [strict]
     | "*" Exp [strict]
     | "&" Exp [strict]
-    | sizeof(TypeOrExp) [strict, prefer]
+    | sizeof(TypeOrExp) [prefer]
     > "(" Type ")" Exp [strict, prefer]
     > left:
       Exp "*" Exp [strict]
@@ -118,19 +118,21 @@ module CIL-SYNTAX
 
   syntax Exps ::= List{Exp,","}   [strict]
   syntax Constant ::= Int
-                 /*
-                  * FIXME: parse 0U, 0L, ... as lexical tokens instead of
-                  * grammar productions.
-                  */
-                 //| Int"L" [avoid]
-                 | Int"LL" [avoid]
-                 | Int"U"
-                 | Int"UL"
-                 | Int"ULL"
+                 | DecimalConstant
+                 | OctalConstant
+                 | HexConstant
                  | String
+  // TODO(chathhorn): full float literals are pretty complicated.
                  | Float
                  | "'"CharConstant"'"
 
+  // TODO(chathhorn): more suffix combinations.
+  syntax DecimalConstant ::= 
+    Token{[1-9][0-9]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
+  syntax OctalConstant ::= 
+    Token{[0][0-7]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
+  syntax HexConstant ::= 
+    Token{[0][xX][0-9a-fA-F]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
   syntax Constants ::= List{Constant, ","}
 
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
@@ -138,11 +140,16 @@ module CIL-SYNTAX
   syntax CharConstant ::= Char | EscapeString
   syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
                         | "\\n" | "\\r" | "\\t" | "\\v" 
-                        | "\\0" | "\\000" 
-                        // TODO: hex and octal escape codes, inside and out of
-                        // strings and char lits.
-                        // Also \" but I can't get it to work.
+                        | OctalStringEscape | HexStringEscape
+  // TODO(chathhorn): Also \" but I can't get it to work.
 
+  syntax HexStringEscape ::=
+    Token{[\\][x][0-9a-fA-F]*} [onlyLabel]
+  syntax OctalStringEscape ::=
+    Token{[\\][0-7][0-7]?[0-7]?} [onlyLabel]
+
+  // TODO: hex and octal escape codes in strings?
+  // strings and char lits.
 
   syntax Var ::= CId
   syntax Field ::= CId
