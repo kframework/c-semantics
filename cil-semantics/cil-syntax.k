@@ -12,6 +12,8 @@ module CIL-SYNTAX
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
+                   | "struct" CId ";" // forward decls
+                   | "union" CId ";"
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 

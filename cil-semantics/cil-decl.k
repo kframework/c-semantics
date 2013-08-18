@@ -284,26 +284,25 @@ module CIL-DECL
     ...</fun>
     <make-goto-table>
       <make-goto-table-enabled> false => true </make-goto-table-enabled>
-      <make-goto-table-tasks>...
+      <make-goto-table-tasks>
         .Bag => <make-goto-table-task>...
           <make-goto-table-stmts> Ss </make-goto-table-stmts>
-        ...</make-goto-table-task>
-      ...</make-goto-table-tasks>
+        </make-goto-table-task>
+      </make-goto-table-tasks>
     </make-goto-table>
   [structural]
   rule
-    <make-goto-table-task>...
-      <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
-    ...</make-goto-table-task>
-    =>
-      .Bag
+    <make-goto-table-tasks>...
+      <make-goto-table-task>...
+        <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
+      ...</make-goto-table-task>
+      => .Bag
+    ...</make-goto-table-tasks>
   [structural]
   rule
     <k> make-goto-table-control(_:Ptr) => . ...</k>
-    <make-goto-table>
-      <make-goto-table-enabled> true => false </make-goto-table-enabled>
-      <make-goto-table-tasks> .Bag </make-goto-table-tasks>
-    </make-goto-table>
+    <make-goto-table-enabled> true => false </make-goto-table-enabled>
+    <make-goto-table-tasks> .Bag </make-goto-table-tasks>
   [structural]
 
   rule
@@ -322,6 +321,8 @@ module CIL-DECL
     </make-goto-table-task>
   [structural]
 
+  // TODO(chathhorn): This doesn't scale at all, it's exponential on the number
+  // of ifs in a program...
   rule
     <make-goto-table-tasks>...
       <make-goto-table-task>
@@ -398,6 +399,11 @@ module CIL-DECL
 
   syntax K ::= declStruct(CId, K, K, Int) [strict(3)]
              | declUnion(CId, K, K, Int) [strict(3)]
+
+  // Elide declarations without definitions.
+  rule struct _:CId ; => . [structural]
+  rule union _:CId ; => . [structural]
+
   rule 
     <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)
