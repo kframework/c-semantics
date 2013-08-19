@@ -113,7 +113,6 @@ module CIL-DECL
       defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
     => lower-break-continue-to-goto-control(F) 
       ~> make-goto-table-control(F)
-      ~> eval-case-labels(F)
       //~> propagate-constants(F)
     ...</k>
     // <frame-fun-id> _ => F </frame-fun-id>
@@ -125,36 +124,9 @@ module CIL-DECL
         <fun-type> T </fun-type>
         <formals> Ps </formals>
         <body> FB </body>
-        <labels> .Map </labels>
-      </fun>
+      ...</fun>
     ...</funs>
   [structural]
-
-  // This is a somewhat hackish method for evaluating the constant expressions
-  // in the case labels of switch statements. It seems to slow things down
-  // quite a bit too.
-  syntax K ::= "eval-case-labels" "(" Ptr ")"
-             | "eval-case-labels'" "(" Ptr "," Map "," Map ")"
-             | "case-label-freezer" "(" Int "," Stmts ")"
-  rule <k> eval-case-labels(F:Ptr) 
-    => eval-case-labels'(F, Lbls, .Map) ...</k>
-    <fun-id> F </fun-id>
-    <labels> Lbls:Map </labels>
-
-  rule eval-case-labels'(_, 
-    _:Map (L:Label |-> Ss:Stmts => .Map), 
-    _:Map (.Map => L |-> Ss)) 
-    when getKLabel(L) =/=KLabel '$caseLabel
-  rule (. => E ~> case-label-freezer(I, Ss)) 
-    ~> eval-case-labels'(_, 
-    _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
-  rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
-    ~> eval-case-labels'(_, 
-    _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
-
-  rule <k> eval-case-labels'(F:Ptr, .Map, Lbls:Map) => . ...</k>
-    <fun-id> F </fun-id>
-    <labels> _ => Lbls </labels>
 
   /*
    * Function declarations (without initializers).

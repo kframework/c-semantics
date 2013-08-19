@@ -60,7 +60,10 @@ module CIL-LITERAL
       andBool (S =/=String "")
   rule getNumericPart'(S:String, Num:String) => Num
     when isSuffixChar(carStr(S))
+      andBool (Num =/=String "")
   rule getNumericPart'("", Num:String) => Num
+    when Num =/=String ""
+  rule getNumericPart'("", "") => "0"
 
   syntax String ::= getSuffix(String) [function]
 

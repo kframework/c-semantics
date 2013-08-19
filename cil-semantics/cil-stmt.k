@@ -19,13 +19,59 @@ module CIL-STMT
     ...</fun>
   [computational]
 
+  rule <k> (. => eval-case-labels)
+    ~> goto $caseLabel(_, _) ; 
+    ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels-evaluated> false </labels-evaluated>
+  [structural]
+
   rule <k> goto $caseLabel(I:Int, V:TypedValue) ;
     => goto $defaultLabel(I) ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels> Lbls:Map </labels>
+    <labels-evaluated> true </labels-evaluated>
     when notBool ($caseLabel(I, V) in keys Lbls)
   [structural]
+
+  // This is a somewhat hackish method for evaluating the constant expressions
+  // in the case labels of switch statements. It seems to slow things down
+  // quite a bit too.
+  syntax K ::= "eval-case-labels"
+             | "eval-case-labels" "(" Map "," Map ")"
+             | "case-label-freezer" "(" Int "," Stmts ")"
+  rule <k> eval-case-labels => . ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels-evaluated> true </labels-evaluated>
+  rule <k> eval-case-labels => eval-case-labels(Lbls, .Map) ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels> Lbls:Map </labels>
+    <labels-evaluated> false </labels-evaluated>
+
+  rule eval-case-labels(
+    _:Map (L:Label |-> Ss:Stmts => .Map), 
+    _:Map (.Map => L |-> Ss)) 
+    when getKLabel(L) =/=KLabel '$caseLabel
+    [structural]
+  rule (. => E ~> case-label-freezer(I, Ss)) 
+    ~> eval-case-labels(
+      _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
+    [structural]
+  rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
+    ~> eval-case-labels(
+      _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
+    [structural]
+
+  rule <k> eval-case-labels(.Map, Lbls:Map) => . ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels> _ => Lbls </labels>
+    <labels-evaluated> false => true </labels-evaluated>
+    [structural]
 
   syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
   rule if (E:Exp) S1:Stmt else S2:Stmt
