@@ -56,7 +56,7 @@ module CIL-DECL
     ...</k>
     <tu-id> Tu </tu-id>
     <env> E:Map </env>
-    <internal> IntLnk </internal>
+    <internal> IntLnk:Set </internal>
     <phase> Tu:TransUnit </phase>
     when getId(D) in IntLnk
 
@@ -131,7 +131,8 @@ module CIL-DECL
   [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
-  // in the case labels of switch statements.
+  // in the case labels of switch statements. It seems to slow things down
+  // quite a bit too.
   syntax K ::= "eval-case-labels" "(" Ptr ")"
              | "eval-case-labels'" "(" Ptr "," Map "," Map ")"
              | "case-label-freezer" "(" Int "," Stmts ")"
@@ -140,15 +141,15 @@ module CIL-DECL
     <fun-id> F </fun-id>
     <labels> Lbls:Map </labels>
 
-  rule eval-case-labels'(F:Ptr, 
+  rule eval-case-labels'(_, 
     _:Map (L:Label |-> Ss:Stmts => .Map), 
     _:Map (.Map => L |-> Ss)) 
     when getKLabel(L) =/=KLabel '$caseLabel
   rule (. => E ~> case-label-freezer(I, Ss)) 
-    ~> eval-case-labels'(F:Ptr, 
+    ~> eval-case-labels'(_, 
     _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
   rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
-    ~> eval-case-labels'(F:Ptr, 
+    ~> eval-case-labels'(_, 
     _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
 
   rule <k> eval-case-labels'(F:Ptr, .Map, Lbls:Map) => . ...</k>
@@ -261,18 +262,20 @@ module CIL-DECL
     <fun>...
       <fun-id> F </fun-id>
       <body>
-        FB:FunBody => #visit(FB, 'normLabels, 0, 'needsLabelNorm)
+        FB:FunBody => normLabels(FB)
       </body>
     ...</fun>
   [structural]
 
   syntax Label ::= "$breakLabel" "(" Int ")"
                  | "$continueLabel" "(" Int ")"
-                 // TODO: need to evaluate const exps in case labels.
                  | "$caseLabel" "(" Int "," Exp ")" [klabel('$caseLabel)]
                  | "$defaultLabel" "(" Int ")"
   syntax Bool ::= needsLabelNorm(K) [function]
-  syntax K ::= normLabels(K, Int) [function]
+  syntax K ::= normLabelsVisitor(K, Int) [function]
+  syntax Stmt ::= normLabelsStmt(Stmt, Int) [function]
+  syntax Stmts ::= normLabelsStmts(Stmts, Int) [function]
+  syntax FunBody ::= normLabels(FunBody) [function]
 
   rule needsLabelNorm(break;) => true
   rule needsLabelNorm(continue;) => true
@@ -281,28 +284,34 @@ module CIL-DECL
   rule needsLabelNorm(while(_) _) => true
   rule needsLabelNorm(switch(_) _) => true
 
-  rule normLabels(break;, I:Int) => goto $breakLabel(I);
-  rule normLabels(continue;, I:Int) => goto $continueLabel(I);
-  rule normLabels(case E:Exp : S:Stmt , I:Int) => $caseLabel(I, E): S
-  rule normLabels(default : S:Stmt , I:Int) => $defaultLabel(I): S
-  rule normLabels((while(E:Exp) S:Stmt), _)
-    =>
-      {
-        $continueLabel(I):
-          while(E) #visit(S, 'normLabels, I, 'needsLabelNorm)
-        $breakLabel(I): ;
-      }
+  rule normLabelsVisitor(break;, I:Int) => goto $breakLabel(I);
+  rule normLabelsVisitor(continue;, I:Int) => goto $continueLabel(I);
+  rule normLabelsVisitor(case E:Exp : S:Stmt , I:Int) => $caseLabel(I, E): S
+  rule normLabelsVisitor(default : S:Stmt , I:Int) => $defaultLabel(I): S
+  rule normLabelsVisitor(while(E:Exp) S:Stmt, _)
+    => {
+          $continueLabel(I): 
+            while(E) normLabelsStmt(S, I)
+          $breakLabel(I): ;
+        }
     when fresh(I:Int)
-  rule normLabels((switch(E:Exp) { Ss:Stmts } ), _)
+  rule normLabelsVisitor(switch(E:Exp) { Ss:Stmts }, _)
     =>
       {
           goto $caseLabel(I, E);
           @Stmts
-          #visit(Ss, 'normLabels, I, 'needsLabelNorm)
+          normLabelsStmts(Ss, I)
           @Stmts
           $breakLabel(I): ;
       }
     when fresh(I:Int)
+
+  rule normLabelsStmt(S:Stmt, I:Int)
+    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
+  rule normLabelsStmts(Ss:Stmts, I:Int)
+    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
+  rule normLabels(FB:FunBody)
+    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
 
   /*
    * Compute the goto table (Map{Label, Stmt})

@@ -19,6 +19,14 @@ module CIL-STMT
     ...</fun>
   [computational]
 
+  rule <k> goto $caseLabel(I:Int, V:TypedValue) ;
+    => goto $defaultLabel(I) ; ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels> Lbls:Map </labels>
+    when notBool ($caseLabel(I, V) in keys Lbls)
+  [structural]
+
   syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
@@ -31,6 +39,7 @@ module CIL-STMT
   [structural]
   rule $exp2bool(tv(_, P:Ptr))
     => norm(int, true)
+    when P =/=K Null
   [structural]
   rule
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
@@ -165,9 +174,9 @@ module CIL-STMT
   [structural]
   // TODO(chathhorn): we allow more arguments to be passed to a function than
   // that function has formal parameters just to make calling main easier.
-  rule initializeParams(.Params, _) => .K   [structural]
+  rule initializeParams(.Params, _:TypedValues) => .K   [structural]
   // TODO(chathhorn): could probably be handled better.
-  rule initializeParams((void, .Params), _) => .K   [structural]
+  rule initializeParams((void, .Params), _:TypedValues) => .K   [structural]
 
   // rule
   //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)

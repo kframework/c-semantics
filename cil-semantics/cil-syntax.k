@@ -328,7 +328,7 @@ module CIL-SYNTAX
     | DeclSpecs Declarator ":" Constant ";"
 
   // Elide bitfields for now.
-  rule DS:DeclSpecs D:Declarator : C:Constant ; => DS D ; [macro]
+  rule DS:DeclSpecs D:Declarator : _:Constant ; => DS D ; [macro]
 
   syntax VarDecls ::= List{VarDecl, ""}    [right]
   
