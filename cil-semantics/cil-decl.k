@@ -13,6 +13,11 @@ module CIL-DECL
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
 
+  // It appears that CIL substitutes constants for the enum tags, but leaves
+  // the declaration, so I think it can be safely elided.
+  rule enum _:CId { _:EnumInits } ; => .
+  rule enum _:CId ; => .
+
   syntax K ::= declInternal(CId, K) [strict(2)]
              | declExternal(CId, K) [strict(2)]
              | defineFun(Ptr, Type, Params, FunBody)

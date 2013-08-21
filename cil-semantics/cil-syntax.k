@@ -22,11 +22,6 @@ module CIL-SYNTAX
   syntax EnumInit ::= CId "=" Constant
   syntax EnumInits ::= List{EnumInit, ","} [right]
 
-  // It appears that CIL substitutes constants for the enum tags, but leaves
-  // the declaration, so I think it can be safely elided.
-  rule enum _:CId { _:EnumInits } ; => . [macro]
-  rule enum _:CId ; => . [macro]
-
   syntax Type ::= ParamDecl // TODO(chathhorn)
   // syntax Type ::= Void
   //               | NvType
