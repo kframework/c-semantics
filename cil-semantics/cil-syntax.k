@@ -14,6 +14,7 @@ module CIL-SYNTAX
                    | "union" CId "{" VarDecls "}" ";"
                    | "struct" CId ";" // forward decls
                    | "union" CId ";"
+                   | "enum" CId ";"
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
@@ -24,6 +25,7 @@ module CIL-SYNTAX
   // It appears that CIL substitutes constants for the enum tags, but leaves
   // the declaration, so I think it can be safely elided.
   rule enum _:CId { _:EnumInits } ; => . [macro]
+  rule enum _:CId ; => . [macro]
 
   syntax Type ::= ParamDecl // TODO(chathhorn)
   // syntax Type ::= Void
@@ -386,6 +388,7 @@ module CIL-SYNTAX
   syntax AggTypeSpec ::=
       "struct" CId 
     | "union" CId 
+    | "enum" CId 
   
   // atomic-type-specifier
   //     _Atomic ( type-name )

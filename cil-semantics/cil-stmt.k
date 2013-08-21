@@ -13,18 +13,15 @@ module CIL-STMT
   rule
     <k> goto L:Label; ~> _ => Ss </k>
     <frame-fun-id> F:Ptr </frame-fun-id>
-    <fun>...
-      <fun-id> F </fun-id>
-      <labels>... L |-> Ss:Stmts ...</labels>
-    ...</fun>
+    <fun-id> F </fun-id>
+    <labels>... L |-> Ss:Stmts ...</labels>
   [computational]
 
-  rule <k> (. => eval-case-labels)
-    ~> goto $caseLabel(_, _) ; 
-    ...</k>
+  rule 
+    <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels-evaluated> false </labels-evaluated>
+    <labels-generated> false => true </labels-generated>
   [structural]
 
   rule <k> goto $caseLabel(I:Int, V:TypedValue) ;
@@ -32,8 +29,114 @@ module CIL-STMT
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels> Lbls:Map </labels>
-    <labels-evaluated> true </labels-evaluated>
+    <labels-generated> true </labels-generated>
     when notBool ($caseLabel(I, V) in keys Lbls)
+  [structural]
+
+  /*
+   * Compute the goto table (Map{Label, Stmt}). We do this at "runtime" to
+   * improve the performance of the interpreter.
+   */
+  syntax K ::= "make-goto-table"
+  rule
+    <k> make-goto-table ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <body> { _:VarDecls { Ss:Stmts } } </body>
+    <make-goto-table-enabled> false => true </make-goto-table-enabled>
+    <make-goto-table-tasks>
+      (.Bag => 
+        <make-goto-table-task>
+          <make-goto-table-stmts> Ss </make-goto-table-stmts>
+          <make-goto-table-cont> .Stmts </make-goto-table-cont>
+        </make-goto-table-task>
+      )
+    </make-goto-table-tasks>
+  [structural]
+  rule
+    <make-goto-table-tasks>...
+      <make-goto-table-task>...
+        <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
+      ...</make-goto-table-task>
+      => .Bag
+    ...</make-goto-table-tasks>
+  [structural]
+  rule
+    <k> make-goto-table => . ...</k>
+    <make-goto-table-enabled> true => false </make-goto-table-enabled>
+    <make-goto-table-tasks> .Bag </make-goto-table-tasks>
+  [structural]
+
+  rule
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels>... .Map => L |-> (S Ss1) @Stmts Cont ...</labels>
+    <make-goto-table-task>
+      <make-goto-table-stmts>
+        L:Label : S:Stmt Ss1:Stmts => S Ss1
+      </make-goto-table-stmts>
+      <make-goto-table-cont>
+        Cont:Stmts
+      </make-goto-table-cont>
+    </make-goto-table-task>
+  [structural]
+
+  rule
+    <make-goto-table-tasks>...
+      <make-goto-table-task>
+        <make-goto-table-stmts>
+          (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
+        </make-goto-table-stmts>
+        <make-goto-table-cont> 
+          Cont:Stmts
+        </make-goto-table-cont>
+      </make-goto-table-task>
+      (.Bag =>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S1 (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
+        </make-goto-table-task>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S2 (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
+        </make-goto-table-task>
+      )
+    ...</make-goto-table-tasks>
+  [structural]
+  rule
+    <make-goto-table-tasks>...
+      <make-goto-table-task>
+        <make-goto-table-stmts>
+          while (E:Exp) S:Stmt Ss:Stmts => Ss
+        </make-goto-table-stmts>
+        <make-goto-table-cont>
+          Cont:Stmts
+        </make-goto-table-cont>
+      </make-goto-table-task>
+      (.Bag =>
+        <make-goto-table-task>
+          <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
+          <make-goto-table-cont>
+            (while (E) S Ss) @Stmts Cont
+          </make-goto-table-cont>
+        </make-goto-table-task>
+      )
+    ...</make-goto-table-tasks>
+  [structural]
+  rule
+    <make-goto-table-stmts>
+      { Ss1:Stmts } Ss2:Stmts => Ss1 @Stmts Ss2
+    </make-goto-table-stmts>
+  [structural]
+  rule
+    <make-goto-table-stmts>
+      KLabel:KLabel(KList:KList) Ss:Stmts => Ss
+    </make-goto-table-stmts>
+  when isStmt(KLabel:KLabel(KList:KList)) 
+    andBool KLabel =/=KLabel '_:_ 
+    andBool KLabel =/=KLabel 'if`(_`)_else_ 
+    andBool KLabel =/=KLabel 'while`(_`)_ 
+    andBool KLabel =/=KLabel '`{_`}
   [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
@@ -42,15 +145,11 @@ module CIL-STMT
   syntax K ::= "eval-case-labels"
              | "eval-case-labels" "(" Map "," Map ")"
              | "case-label-freezer" "(" Int "," Stmts ")"
-  rule <k> eval-case-labels => . ...</k>
-    <frame-fun-id> F:Ptr </frame-fun-id>
-    <fun-id> F </fun-id>
-    <labels-evaluated> true </labels-evaluated>
+
   rule <k> eval-case-labels => eval-case-labels(Lbls, .Map) ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels> Lbls:Map </labels>
-    <labels-evaluated> false </labels-evaluated>
 
   rule eval-case-labels(
     _:Map (L:Label |-> Ss:Stmts => .Map), 
@@ -70,7 +169,6 @@ module CIL-STMT
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels> _ => Lbls </labels>
-    <labels-evaluated> false => true </labels-evaluated>
     [structural]
 
   syntax K ::= "$exp2bool" "(" Exp ")"    [strict]

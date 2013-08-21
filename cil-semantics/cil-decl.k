@@ -112,10 +112,8 @@ module CIL-DECL
     <k>
       defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
     => lower-break-continue-to-goto-control(F) 
-      ~> make-goto-table-control(F)
       //~> propagate-constants(F)
     ...</k>
-    // <frame-fun-id> _ => F </frame-fun-id>
     <funs>...
       .Bag
     =>
@@ -284,116 +282,6 @@ module CIL-DECL
     => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
   rule normLabels(FB:FunBody)
     => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
-
-  /*
-   * Compute the goto table (Map{Label, Stmt})
-   */
-  syntax K ::= "make-goto-table-control" "(" Ptr ")"
-  rule
-    <k> make-goto-table-control(F:Ptr) ...</k>
-    <fun>...
-      <fun-id> F </fun-id>
-      <body> { _:VarDecls { Ss:Stmts } } </body>
-    ...</fun>
-    <make-goto-table>
-      <make-goto-table-enabled> false => true </make-goto-table-enabled>
-      <make-goto-table-tasks>
-        (.Bag => 
-          <make-goto-table-task>
-            <make-goto-table-stmts> Ss </make-goto-table-stmts>
-            <make-goto-table-cont> .Stmts </make-goto-table-cont>
-          </make-goto-table-task>
-        )
-      </make-goto-table-tasks>
-    </make-goto-table>
-  [structural]
-  rule
-    <make-goto-table-tasks>...
-      <make-goto-table-task>...
-        <make-goto-table-stmts> .Stmts </make-goto-table-stmts>
-      ...</make-goto-table-task>
-      => .Bag
-    ...</make-goto-table-tasks>
-  [structural]
-  rule
-    <k> make-goto-table-control(_:Ptr) => . ...</k>
-    <make-goto-table-enabled> true => false </make-goto-table-enabled>
-    <make-goto-table-tasks> .Bag </make-goto-table-tasks>
-  [structural]
-
-  rule
-    <k> make-goto-table-control(F:Ptr) ...</k>
-    <fun>...
-      <fun-id> F </fun-id>
-      <labels>... .Map => L |-> (S Ss1) @Stmts Cont ...</labels>
-    ...</fun>
-    <make-goto-table-task>
-      <make-goto-table-stmts>
-        L:Label : S:Stmt Ss1:Stmts => S Ss1
-      </make-goto-table-stmts>
-      <make-goto-table-cont>
-        Cont:Stmts
-      </make-goto-table-cont>
-    </make-goto-table-task>
-  [structural]
-
-  rule
-    <make-goto-table-tasks>...
-      <make-goto-table-task>
-        <make-goto-table-stmts>
-          (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
-        </make-goto-table-stmts>
-        <make-goto-table-cont> 
-          Cont:Stmts
-        </make-goto-table-cont>
-      </make-goto-table-task>
-      (.Bag =>
-        <make-goto-table-task>
-          <make-goto-table-stmts> S1 (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
-        </make-goto-table-task>
-        <make-goto-table-task>
-          <make-goto-table-stmts> S2 (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-cont> Ss @Stmts Cont </make-goto-table-cont>
-        </make-goto-table-task>
-      )
-    ...</make-goto-table-tasks>
-  [structural]
-  rule
-    <make-goto-table-tasks>...
-      <make-goto-table-task>
-        <make-goto-table-stmts>
-          while (E:Exp) S:Stmt Ss:Stmts => Ss
-        </make-goto-table-stmts>
-        <make-goto-table-cont>
-          Cont:Stmts
-        </make-goto-table-cont>
-      </make-goto-table-task>
-      (.Bag =>
-        <make-goto-table-task>
-          <make-goto-table-stmts> S (.Stmts) </make-goto-table-stmts>
-          <make-goto-table-cont>
-            (while (E) S Ss) @Stmts Cont
-          </make-goto-table-cont>
-        </make-goto-table-task>
-      )
-    ...</make-goto-table-tasks>
-  [structural]
-  rule
-    <make-goto-table-stmts>
-      { Ss1:Stmts } Ss2:Stmts => Ss1 @Stmts Ss2
-    </make-goto-table-stmts>
-  [structural]
-  rule
-    <make-goto-table-stmts>
-      KLabel:KLabel(KList:KList) Ss:Stmts => Ss
-    </make-goto-table-stmts>
-  when isStmt(KLabel:KLabel(KList:KList)) 
-    andBool KLabel =/=KLabel '_:_ 
-    andBool KLabel =/=KLabel 'if`(_`)_else_ 
-    andBool KLabel =/=KLabel 'while`(_`)_ 
-    andBool KLabel =/=KLabel '`{_`}
-  [structural]
 
   /*
    * Local variable declarations (without initializers).

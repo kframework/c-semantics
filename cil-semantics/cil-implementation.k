@@ -10,6 +10,10 @@ require "cil-common.k"
 module CIL-IMPLEMENTATION
   imports CIL-COMMON
 
+  // "each enumerated type shall be compatible with char, a signed integer
+  // type, or an unsigned integer type"
+  rule enum X:CId => int [macro]
+
   /*
    * FIXME: it would be faster to treat each basic type individually, rather
    * that us byteWidthMacro

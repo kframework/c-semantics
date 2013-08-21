@@ -34,8 +34,8 @@ module CIL
         <formals> .Params </formals>
         <body> .K </body> // FunBody
         <labels> .Map </labels> // Map{Label, Stmt}
-        // For lazy evaluation of constant expressions in case labels.
-        <labels-evaluated> false </labels-evaluated>
+        // For lazy label generation.
+        <labels-generated> false </labels-generated>
       </fun>
     </funs>
     <global-env> .Map </global-env> // Map{CId, Ptr}
