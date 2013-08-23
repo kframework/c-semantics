@@ -3,7 +3,9 @@
 
 /* compiler builtin: 
    void *__builtin_alloca(unsigned long  ) ;  */
-extern  __attribute__((__nothrow__, __noreturn__)) void exit(int __status )  __attribute__((__leaf__)) ;
+#line 17 "../../lib/includes/stdlib.h"
+extern void exit(int status ) ;
+#line 3 "920929-1.c"
 void f(int n ) 
 { int i ;
   double *v ;
@@ -11,22 +13,33 @@ void f(int n )
   void *tmp ;
 
   {
+#line 6
   __lengthofv = (unsigned long )n;
+#line 6
   tmp = __builtin_alloca(sizeof(*v) * __lengthofv);
+#line 6
   v = (double *)tmp;
+#line 7
   i = 0;
+#line 7
   while (i < n) {
+#line 8
     *(v + i) = (double )0;
+#line 7
     i ++;
   }
+#line 9
   return;
 }
 }
+#line 10 "920929-1.c"
 int main(void) 
 { 
 
   {
+#line 12
   f(100);
+#line 13
   exit(0);
 }
 }

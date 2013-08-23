@@ -3,14 +3,18 @@
 
 /* compiler builtin: 
    void *__builtin_alloca(unsigned long  ) ;  */
-extern  __attribute__((__nothrow__, __noreturn__)) void exit(int __status )  __attribute__((__leaf__)) ;
+#line 17 "../../lib/includes/stdlib.h"
+extern void exit(int status ) ;
+#line 2 "920721-2.c"
 void f(void) 
 { 
 
   {
+#line 2
   return;
 }
 }
+#line 3 "920721-2.c"
 int main(void) 
 { int n ;
   double *x ;
@@ -18,11 +22,17 @@ int main(void)
   void *tmp ;
 
   {
+#line 3
   n = 2;
+#line 3
   __lengthofx = (unsigned long )n;
+#line 3
   tmp = __builtin_alloca(sizeof(*x) * __lengthofx);
+#line 3
   x = (double *)tmp;
+#line 3
   f();
+#line 3
   exit(0);
 }
 }
