@@ -75,7 +75,7 @@ module CIL-IMPLEMENTATION
   /*
    * Integers.
    */
-  rule value2Bytes(_:IntType, MI:MInt) => MInt2Bytes(MI)
+  rule value2Bytes(_, MI:MInt) => MInt2Bytes(MI)
 
   rule bytes2Value(_:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
   rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
@@ -94,6 +94,8 @@ module CIL-IMPLEMENTATION
 
   rule bytes2Value(_:FloatingType, 
     ListItem(F:Float) _:List) => F
+  rule bytes2Value(_:FloatingType, 
+    ListItem(0) _:List) => 0.0
 
   /*
    * Strings.
@@ -113,6 +115,10 @@ module CIL-IMPLEMENTATION
   rule bytes2Value(_,
       ListItem(P:Ptr) _:List)
     => P
+  // TODO(chathhorn): width might be greater than the pointer type allows.
+  rule bytes2Value(T:Type, L:List) 
+    => bytes2UnsignedMInt(L)
+    when isPtrType(T)
 
   /*
    * Aggregates and arrays.

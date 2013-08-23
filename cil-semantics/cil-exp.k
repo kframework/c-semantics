@@ -61,8 +61,11 @@ module CIL-LITERAL
   rule getNumericPart'(S:String, Num:String) => Num
     when isSuffixChar(carStr(S))
       andBool (Num =/=String "")
+
   rule getNumericPart'("", Num:String) => Num
     when Num =/=String ""
+  rule getNumericPart'(S:String, "") => "0"
+    when isSuffixChar(carStr(S))
   rule getNumericPart'("", "") => "0"
 
   syntax String ::= getSuffix(String) [function]
@@ -468,6 +471,10 @@ module CIL-EXP
   // after being cast to an IntType. 
   rule (nt(To:IntType)) tv(_:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
     => norm(To, symToInt(Base) +Int Offset)
+
+  // Ints to pointers.
+  rule (nt(To:Type)) tv(_:IntType, I:MInt) => norm(To, I)
+    when isPtrType(To) ==K true
 
   syntax Int ::= symToInt(K) [function]
   rule symToInt(#symInt(I:Int)) => I

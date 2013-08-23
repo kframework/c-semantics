@@ -182,8 +182,6 @@ module CIL-SYNTAX
                  | Exp "|=" Exp ";"
                  | Exp "^=" Exp ";"
 
-  rule X:Exp ++ ; => X = X + 1 ; [macro]
-  rule X:Exp -- ; => X = X + 1 ; [macro]
   rule X:Exp += E:Exp ; => X = X + E ; [macro]
   rule X:Exp -= E:Exp ; => X = X - E ; [macro]
   rule X:Exp *= E:Exp ; => X = X * E ; [macro]
@@ -257,7 +255,9 @@ module CIL-SYNTAX
     | "_Noreturn"        [reject]
     | "_Static_assert"   [reject]
     | "_Thread_local"    [reject]
+    // CIL versions.
     | "__restrict"       [reject]
+    | "__inline"         [reject]
 
   // Complete list of C11 reserved words plus some extras from CIL.
   syntax Keyword ::=
@@ -305,7 +305,9 @@ module CIL-SYNTAX
     | "_Noreturn"        [reject]
     | "_Static_assert"   [reject]
     | "_Thread_local"    [reject]
+    // CIL versions.
     | "__restrict"       [reject]
+    | "__inline"         [reject]
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 
@@ -365,6 +367,9 @@ module CIL-SYNTAX
     | "auto"
     | "register"
 
+  // atomic-type-specifier
+  //     _Atomic ( type-name )
+
   // type-specifier
   //     [ ... ]
   //     atomic-type-sepcifier
@@ -373,6 +378,8 @@ module CIL-SYNTAX
   //     typedef-name
   syntax TypeSpec ::=
       Void
+    | "_Atomic" "(" Type ")"
+    | "..."
     | BasicType
     | AggTypeSpec
     | CId
@@ -385,10 +392,13 @@ module CIL-SYNTAX
     | "union" CId 
     | "enum" CId 
   
-  // atomic-type-specifier
-  //     _Atomic ( type-name )
-  // syntax AtomicTypeSpec ::=
-  //     "_Atomic" "(" TypeName ")"
+  // function-specifier
+  //     inline
+  //     _Noreturn
+
+  // alignment-specifier
+  //     _Alignas ( type-name )
+  //     _Alignas ( constant-expression )
 
   // type-qualifier
   //     const
@@ -398,23 +408,16 @@ module CIL-SYNTAX
   syntax TypeQual ::=
       "const"
     | "restrict"
-    | "__restrict" // CIL's version.
     | "volatile"
     | "_Atomic"
-
-  // function-specifier
-  //     inline
-  //     _Noreturn
-  // syntax FunctionSpec ::=
-  //     "inline"
-  //   | "_Noreturn"
-
-  // alignment-specifier
-  //     _Alignas ( type-name )
-  //     _Alignas ( constant-expression )
-  // syntax AlignmentSpec ::=
-  //     "_Alignas" "(" TypeName ")"
-  //   | "_Alignas" "(" Constant ")"
+    // Function specifiers.
+    |  "inline"
+    | "_Noreturn"
+    // Alignment specifier.
+    | "_Alignas" "(" TypeOrExp ")"
+    // CIL versions.
+    | "__restrict"
+    | "__inline"
 
   // declarator
   //     pointer? direct-declarator
@@ -472,12 +475,6 @@ module CIL-SYNTAX
     | DeclSpecs Declarator
     | DeclSpecs AbsDecl [prefer]
 
-  // type-name
-  //     specifier-qualifier-list abstract-declarator?
-  // syntax TypeName ::=
-  //     SpecQualifierList
-  //   | SpecQualifierList AbsDecl
-  
   // Abstract declarators are declarators without identifiers optionally used
   // in function parameter lists declarations.
 

@@ -9,6 +9,12 @@ module CIL-STMT
 
   rule { VDs:VarDecls B:Block } => VDs ~> B   [structural]
 
+  syntax Type ::= typeof(Exp) [strict]
+  rule typeof(tv(T:Type, _)) => T
+
+  rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
+  rule X:Exp -- ; => X = X + (typeof(X)) 1 ; [macro]
+
   context goto $caseLabel(_, HOLE) ;
   rule
     <k> goto L:Label; ~> _ => Ss </k>
@@ -296,7 +302,7 @@ module CIL-STMT
   [computational]
 
   syntax Stmt ::= TypedValue ";"
-  rule tv(void, undef) ; => .
+  rule tv(_, _) ; => .
 
   rule 
     (<frame>...

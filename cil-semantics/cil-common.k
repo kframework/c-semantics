@@ -132,7 +132,6 @@ module CIL-COMMON-TYPED-VALUE
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, V:Value)) => V
 
-  // TODO(chathhorn)
   rule norm(T:Type, I:MInt) => norm(T, iMInt(I))
 
   rule norm(T:IntType, true) => tv(T, mi(width(T), 1)) 
@@ -141,6 +140,10 @@ module CIL-COMMON-TYPED-VALUE
   rule norm(T:IntType, F:Float) => norm(T, Float2Int(F))
   rule norm(T:UnsignedIntType, I:Int) => tv(T, uMInt(mi(width(T), I)))
   rule norm(T:SignedIntType, I:Int) => tv(T, sMInt(mi(width(T), I)))
+
+  // TODO(chathhorn): not sure about the best way to handle this.
+  rule norm(T:Type, I:Int) => tv(T, uMInt(mi(width(T), I)))
+    when isPtrType(T) ==K true
 
   rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
