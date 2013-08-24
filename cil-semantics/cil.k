@@ -24,6 +24,7 @@ module CIL
     <frame multiplicity="*">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
+      <frame-fun-va-args> .K </frame-fun-va-args>
       <env> .Map </env> // Map{CId, lv(Type, Ptr)|Type}
     </frame>
     <frame-stack> .List </frame-stack>  // List{<frame> ... </frame>}

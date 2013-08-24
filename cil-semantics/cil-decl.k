@@ -208,8 +208,8 @@ module CIL-DECL
   rule initVar(X:Exp, (E:Exp, Is:Initializers), Pos:Int) 
     => (X @ Pos) = E ; ~> initVar(X, Is, Pos +Int 1)
 
-  rule initVar(X:Exp, ({ Is:Initializers }, Is:Initializers), Pos:Int)
-    => initVar(X @ Pos, Is, 0) ~> initVar(X, Is, Pos +Int 1)
+  rule initVar(X:Exp, ({ Is1:Initializers }, Is2:Initializers), Pos:Int)
+    => initVar(X @ Pos, Is1, 0) ~> initVar(X, Is2, Pos +Int 1)
 
   rule initVar(_, .Initializers, _) => .
 

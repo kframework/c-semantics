@@ -47,6 +47,8 @@ module CIL-IMPLEMENTATION
   rule byteWidth(unsigned long)      => 8
   rule byteWidth(unsigned long long) => 8
 
+  rule byteWidth(__builtin_va_list) => byteWidth(normType(void*))
+
   syntax MInt ::= bytes2SignedMInt(List)      [function]
                 | bytes2UnsignedMInt(List)    [function]
   rule
@@ -115,6 +117,7 @@ module CIL-IMPLEMENTATION
   rule bytes2Value(_,
       ListItem(P:Ptr) _:List)
     => P
+
   // TODO(chathhorn): width might be greater than the pointer type allows.
   rule bytes2Value(T:Type, L:List) 
     => bytes2UnsignedMInt(L)

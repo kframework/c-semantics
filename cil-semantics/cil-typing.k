@@ -233,8 +233,6 @@ module CIL-TYPING
   // declaration syntax tree.
   rule expandTypedefs(T:ParamDecl, E:Map) => normType(expandParamDecl(T, E))
 
-  // TODO(chathhorn): probably should go back to a special typedef cell to
-  // reduce the amount of stuff that must be passed around.
   rule expandParamDecl(X:CId, E:Map X |-> T:Type)
     => expandTypedefs(T, E X |-> T)
   rule expandParamDecl(X:CId D:Declarator, E:Map X |-> T:Type)

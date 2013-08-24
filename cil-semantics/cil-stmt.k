@@ -322,9 +322,13 @@ module CIL-STMT
   =>
     DS D; ~> getId(D) = TV; ~> initializeParams(Ps, TVs)
   [structural]
-  // TODO(chathhorn): we allow more arguments to be passed to a function than
-  // that function has formal parameters just to make calling main easier.
-  rule initializeParams(.Params, _:TypedValues) => .K   [structural]
+
+  rule initializeParams(.Params, TVs:TypedValues) => .
+
+  rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>   
+    <frame-fun-va-args> _ => TVs </frame-fun-va-args>
+    [structural]
+
   // TODO(chathhorn): could probably be handled better.
   rule initializeParams((void, .Params), _:TypedValues) => .K   [structural]
 

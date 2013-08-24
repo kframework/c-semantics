@@ -14,6 +14,10 @@ module CIL-COMMON-PTR
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
                | "Null"
+               | VaList
+
+  // TODO(chathhorn): rather hackish.
+  syntax VaList ::= "va_list" "(" TypedValues ")"
 
   syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 

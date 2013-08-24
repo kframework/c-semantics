@@ -238,6 +238,7 @@ module CIL-EXP
     <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
     <env> E:Map X |-> lv(T:Type, P:Ptr) </env>
     [structural]
+
   // Typedefs.
   rule
     <k> X:CId => nt(expandTypedefs(T, E)) ...</k>
@@ -281,8 +282,14 @@ module CIL-EXP
     when isArrayType(T) =/=K true
     [structural]
   
-  /* dereference */
-  rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) [structural]
+  /* Pointer dereference. */
+  rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) 
+    when isVaList(P) =/=K true 
+    [structural]
+
+  /* Dereference of hacky VaLists, which should never be r-values. */
+  rule *tv(T:Type, va_list(tv(_, V:Value))) => tv(downPtr(T), V) 
+    [structural]
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)

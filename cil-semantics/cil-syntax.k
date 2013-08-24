@@ -32,6 +32,7 @@ module CIL-SYNTAX
                      | IntType 
                      | FloatingType
                      | "_Complex" // TODO
+                     | "__builtin_va_list"
   syntax IntType ::= SignedIntType
                    | UnsignedIntType
   syntax SignedIntType ::= "signed" "char"
@@ -258,6 +259,8 @@ module CIL-SYNTAX
     // CIL versions.
     | "__restrict"       [reject]
     | "__inline"         [reject]
+    // Bonus.
+    | "__builtin_va_list" [reject]
 
   // Complete list of C11 reserved words plus some extras from CIL.
   syntax Keyword ::=
@@ -308,6 +311,8 @@ module CIL-SYNTAX
     // CIL versions.
     | "__restrict"       [reject]
     | "__inline"         [reject]
+    // Bonus.
+    | "__builtin_va_list" [reject]
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 
