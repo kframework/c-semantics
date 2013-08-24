@@ -1,10 +1,9 @@
 #ifndef _KCC_STRING_H
 #define _KCC_STRING_H
 #include <kcc_settings.h>
+#include <stddef.h>
 
 // string.h
-#define NULL _KCC_NULL
-typedef _KCC_SIZE_T size_t; // this needs to correspond to cfg:sizeut
 size_t strlen(char *str);
 int strcmp(const char *str1, const char *str2);
 char *strcpy(char* s1, const char* s2);

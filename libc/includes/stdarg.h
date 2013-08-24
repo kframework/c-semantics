@@ -1,6 +1,7 @@
 #ifndef _KCC_STDARG_H
 #define _KCC_STDARG_H
 #include <kcc_settings.h>
+#include <stddef.h>
 
 #include <stdlib.h>
 typedef void* va_list;

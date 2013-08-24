@@ -1,6 +1,7 @@
 #ifndef _KCC_LOCALE_H
 #define _KCC_LOCALE_H
 #include <kcc_settings.h>
+#include <stddef.h>
 
 #ifndef _KCC_EXPERIMENTAL_LOCALE
 #error locale.h not supported
@@ -84,7 +85,6 @@ char int_n_sign_posn;
 // CHAR_MAX
 */
 
-#define NULL _KCC_NULL
 #define LC_ALL 1
 #define LC_COLLATE 2
 #define LC_CTYPE 3
