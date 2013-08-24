@@ -2,11 +2,11 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 6 "pr27260.c"
-extern void *memset(void * , int  , size_t___0  ) ;
+extern void *memset(void * , int  , size_t  ) ;
 #line 8 "pr27260.c"
 char buf[65]  ;
 #line 10 "pr27260.c"

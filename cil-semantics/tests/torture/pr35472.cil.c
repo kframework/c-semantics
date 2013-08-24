@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 5 "pr35472.c"
 struct S {
    int i[16] ;
@@ -10,7 +10,7 @@ struct S {
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 4 "pr35472.c"
-extern void *memset(void *s , int c , size_t___0 n ) ;
+extern void *memset(void *s , int c , size_t n ) ;
 #line 6 "pr35472.c"
 struct S *p  ;
 #line 7 "pr35472.c"

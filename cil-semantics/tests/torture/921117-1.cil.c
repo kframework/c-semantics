@@ -6,9 +6,9 @@ struct s {
    char text[11] ;
    int flag ;
 };
-#line 9 "../../lib/includes/string.h"
+#line 10 "../../lib/includes/string.h"
 extern int strcmp(char const   *str1 , char const   *str2 ) ;
-#line 10
+#line 11
 extern char *strcpy(char *s1 , char const   *s2 ) ;
 #line 17 "../../lib/includes/stdlib.h"
 extern void exit(int status ) ;

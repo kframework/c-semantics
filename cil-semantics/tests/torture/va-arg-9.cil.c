@@ -2,21 +2,21 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 6 "../../lib/includes/stdarg.h"
-typedef void *va_list;
+typedef __builtin_va_list va_list;
 #line 17 "../../lib/includes/stdlib.h"
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 27 "../../lib/includes/stdarg.h"
-extern va_list __va_inc(va_list *ap , size_t___0 size ) ;
-#line 32
+#line 25 "../../lib/includes/stdarg.h"
+extern void *__va_arg(va_list *ap ) ;
+#line 30
 extern void __va_start(va_list *ap , void *pN ) ;
-#line 37
+#line 35
 extern void __va_end(va_list *ap ) ;
 #line 8 "va-arg-9.c"
-extern size_t___0 strlen(char const   * ) ;
+extern size_t strlen(char const   * ) ;
 #line 13
 int to_hex(unsigned int a ) ;
 #line 13 "va-arg-9.c"
@@ -43,16 +43,16 @@ int to_hex(unsigned int a )
 }
 #line 20 "va-arg-9.c"
 void fap(int i , char *format , va_list ap ) 
-{ size_t___0 tmp ;
+{ size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
 #line 23
   tmp = strlen((char const   *)format);
 #line 23
-  if (tmp != (size_t___0 )(16 - i)) {
+  if (tmp != (size_t )(16 - i)) {
 #line 24
     abort();
   }
@@ -63,7 +63,7 @@ void fap(int i , char *format , va_list ap )
 #line 26
     format ++;
 #line 26
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 26
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 26

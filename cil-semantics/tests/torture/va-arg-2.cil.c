@@ -2,21 +2,21 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 6 "../../lib/includes/stdarg.h"
-typedef void *va_list;
+typedef __builtin_va_list va_list;
 #line 17 "../../lib/includes/stdlib.h"
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 27 "../../lib/includes/stdarg.h"
-extern va_list __va_inc(va_list *ap , size_t___0 size ) ;
-#line 32
+#line 25 "../../lib/includes/stdarg.h"
+extern void *__va_arg(va_list *ap ) ;
+#line 30
 extern void __va_start(va_list *ap , void *pN ) ;
-#line 37
+#line 35
 extern void __va_end(va_list *ap ) ;
 #line 10 "va-arg-2.c"
-extern size_t___0 strlen() ;
+extern size_t strlen() ;
 #line 15
 int to_hex(unsigned int a ) ;
 #line 15 "va-arg-2.c"
@@ -44,9 +44,9 @@ int to_hex(unsigned int a )
 #line 22 "va-arg-2.c"
 void f0(char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -66,7 +66,7 @@ void f0(char *format  , ...)
 #line 31
     format ++;
 #line 31
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 31
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 31
@@ -84,9 +84,9 @@ void f0(char *format  , ...)
 #line 36 "va-arg-2.c"
 void f1(int a1 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -106,7 +106,7 @@ void f1(int a1 , char *format  , ...)
 #line 45
     format ++;
 #line 45
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 45
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 45
@@ -124,9 +124,9 @@ void f1(int a1 , char *format  , ...)
 #line 50 "va-arg-2.c"
 void f2(int a1 , int a2 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -146,7 +146,7 @@ void f2(int a1 , int a2 , char *format  , ...)
 #line 59
     format ++;
 #line 59
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 59
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 59
@@ -164,9 +164,9 @@ void f2(int a1 , int a2 , char *format  , ...)
 #line 64 "va-arg-2.c"
 void f3(int a1 , int a2 , int a3 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -186,7 +186,7 @@ void f3(int a1 , int a2 , int a3 , char *format  , ...)
 #line 73
     format ++;
 #line 73
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 73
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 73
@@ -204,9 +204,9 @@ void f3(int a1 , int a2 , int a3 , char *format  , ...)
 #line 78 "va-arg-2.c"
 void f4(int a1 , int a2 , int a3 , int a4 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -226,7 +226,7 @@ void f4(int a1 , int a2 , int a3 , int a4 , char *format  , ...)
 #line 87
     format ++;
 #line 87
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 87
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 87
@@ -244,9 +244,9 @@ void f4(int a1 , int a2 , int a3 , int a4 , char *format  , ...)
 #line 92 "va-arg-2.c"
 void f5(int a1 , int a2 , int a3 , int a4 , int a5 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -266,7 +266,7 @@ void f5(int a1 , int a2 , int a3 , int a4 , int a5 , char *format  , ...)
 #line 102
     format ++;
 #line 102
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 102
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 102
@@ -284,9 +284,9 @@ void f5(int a1 , int a2 , int a3 , int a4 , int a5 , char *format  , ...)
 #line 107 "va-arg-2.c"
 void f6(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -306,7 +306,7 @@ void f6(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , char *format  , ..
 #line 118
     format ++;
 #line 118
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 118
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 118
@@ -325,9 +325,9 @@ void f6(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , char *format  , ..
 void f7(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , char *format 
         , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -347,7 +347,7 @@ void f7(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , char *for
 #line 134
     format ++;
 #line 134
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 134
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 134
@@ -366,9 +366,9 @@ void f7(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , char *for
 void f8(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , char *format 
         , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -388,7 +388,7 @@ void f8(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 #line 150
     format ++;
 #line 150
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 150
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 150
@@ -407,9 +407,9 @@ void f8(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 void f9(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
         char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -429,7 +429,7 @@ void f9(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 #line 166
     format ++;
 #line 166
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 166
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 166
@@ -448,9 +448,9 @@ void f9(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 void f10(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
          int a10 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -470,7 +470,7 @@ void f10(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 182
     format ++;
 #line 182
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 182
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 182
@@ -489,9 +489,9 @@ void f10(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 void f11(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
          int a10 , int a11 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -511,7 +511,7 @@ void f11(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 199
     format ++;
 #line 199
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 199
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 199
@@ -530,9 +530,9 @@ void f11(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 void f12(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
          int a10 , int a11 , int a12 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -552,7 +552,7 @@ void f12(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 216
     format ++;
 #line 216
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 216
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 216
@@ -571,9 +571,9 @@ void f12(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 void f13(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
          int a10 , int a11 , int a12 , int a13 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -593,7 +593,7 @@ void f13(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 233
     format ++;
 #line 233
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 233
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 233
@@ -612,9 +612,9 @@ void f13(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 void f14(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , int a9 ,
          int a10 , int a11 , int a12 , int a13 , int a14 , char *format  , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -634,7 +634,7 @@ void f14(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 250
     format ++;
 #line 250
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 250
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 250
@@ -654,9 +654,9 @@ void f15(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
          int a10 , int a11 , int a12 , int a13 , int a14 , int a15 , char *format 
          , ...) 
 { va_list ap ;
-  size_t___0 tmp ;
+  size_t tmp ;
   char *tmp___0 ;
-  va_list tmp___1 ;
+  void *tmp___1 ;
   int tmp___2 ;
 
   {
@@ -676,7 +676,7 @@ void f15(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 267
     format ++;
 #line 267
-    tmp___1 = __va_inc(& ap, (unsigned int )sizeof(int ));
+    tmp___1 = __va_arg(& ap);
 #line 267
     tmp___2 = to_hex((unsigned int )*((int *)tmp___1));
 #line 267

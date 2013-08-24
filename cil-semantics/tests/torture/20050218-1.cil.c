@@ -2,13 +2,13 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 5 "20050218-1.c"
-extern size_t___0 strlen(char const   *s ) ;
+extern size_t strlen(char const   *s ) ;
 #line 6
-extern int strncmp(char const   *s1 , char const   *s2 , size_t___0 n ) ;
+extern int strncmp(char const   *s1 , char const   *s2 , size_t n ) ;
 #line 9 "20050218-1.c"
 char const   *a[16]  = 
 #line 9
@@ -17,17 +17,17 @@ char const   *a[16]  =
         (char const   *)0,      (char const   *)0,      (char const   *)0,      (char const   *)0, 
         (char const   *)0,      (char const   *)0,      (char const   *)0,      (char const   *)0};
 #line 11 "20050218-1.c"
-int foo(char *x , char const   *y , size_t___0 n ) 
-{ size_t___0 i ;
-  size_t___0 j ;
-  size_t___0 tmp ;
+int foo(char *x , char const   *y , size_t n ) 
+{ size_t i ;
+  size_t j ;
+  size_t tmp ;
   int tmp___0 ;
-  size_t___0 tmp___1 ;
-  size_t___0 tmp___2 ;
+  size_t tmp___1 ;
+  size_t tmp___2 ;
 
   {
 #line 14
-  j = (size_t___0 )0;
+  j = (size_t )0;
 #line 15
   i = 0U;
 #line 15

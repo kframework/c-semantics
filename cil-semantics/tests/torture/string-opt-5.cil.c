@@ -2,11 +2,11 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 11 "string-opt-5.c"
-extern size_t___0 strlen(char const   * ) ;
+extern size_t strlen(char const   * ) ;
 #line 12
 extern int strcmp(char const   * , char const   * ) ;
 #line 13
@@ -14,11 +14,11 @@ extern char *strchr(char const   * , int  ) ;
 #line 14
 extern char *strrchr(char const   * , int  ) ;
 #line 15
-extern char *strncpy(char * , char const   * , size_t___0  ) ;
+extern char *strncpy(char * , char const   * , size_t  ) ;
 #line 16
-extern void *memset(void * , int  , size_t___0  ) ;
+extern void *memset(void * , int  , size_t  ) ;
 #line 17
-extern int memcmp(void const   * , void const   * , size_t___0  ) ;
+extern int memcmp(void const   * , void const   * , size_t  ) ;
 #line 19 "string-opt-5.c"
 int x  =    6;
 #line 20 "string-opt-5.c"
@@ -31,10 +31,10 @@ char buf[64]  ;
 int main(void) 
 { char const   *foo ;
   char dst[64] ;
-  size_t___0 tmp ;
-  size_t___0 tmp___0 ;
-  size_t___0 tmp___1 ;
-  size_t___0 tmp___2 ;
+  size_t tmp ;
+  size_t tmp___0 ;
+  size_t tmp___1 ;
+  size_t tmp___2 ;
   int tmp___3 ;
   int tmp___4 ;
   int tmp___5 ;

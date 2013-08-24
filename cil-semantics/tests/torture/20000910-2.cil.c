@@ -5,7 +5,7 @@
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 14 "../../lib/includes/string.h"
+#line 15 "../../lib/includes/string.h"
 extern char *strchr(char const   *s , int c ) ;
 #line 7 "20000910-2.c"
 char *list[2]  = {      (char *)"*",      (char *)"e"};

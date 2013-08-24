@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 6 "20010409-1.c"
 struct A {
    int a ;
@@ -22,7 +22,7 @@ extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
 #line 4 "20010409-1.c"
-extern size_t___0 strlen(char const   *s ) ;
+extern size_t strlen(char const   *s ) ;
 #line 15 "20010409-1.c"
 A *a  ;
 #line 16 "20010409-1.c"
@@ -58,7 +58,7 @@ A *bar(char const   *v , int w , int x , char const   *y , int z )
 }
 #line 31 "20010409-1.c"
 void test(char const   *x , int *y ) 
-{ size_t___0 tmp ;
+{ size_t tmp ;
   int tmp___0 ;
 
   {

@@ -2,13 +2,13 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t___0;
+typedef unsigned int size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 7 "20011024-1.c"
-extern void *memcpy(void *dest , void const   *src , size_t___0 n ) ;
+extern void *memcpy(void *dest , void const   *src , size_t n ) ;
 #line 8
-extern size_t___0 strlen(char const   *s ) ;
+extern size_t strlen(char const   *s ) ;
 #line 9
 extern int strcmp(char const   *s1 , char const   *s2 )  __attribute__((__pure__)) ;
 #line 11 "20011024-1.c"
@@ -17,7 +17,7 @@ char buf[50]  ;
 static void foo(void) 
 { void *tmp ;
   int tmp___0 ;
-  size_t___0 tmp___1 ;
+  size_t tmp___1 ;
 
   {
 #line 15
