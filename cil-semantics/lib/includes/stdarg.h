@@ -3,7 +3,7 @@
 #include <kcc_settings.h>
 
 #include <stdlib.h>
-typedef void* va_list;
+typedef __builtin_va_list va_list;
 
 /* The va_arg macro expands to an expression that has the specified type and
  * the value of the next argument in the call. The parameter ap shall have been
@@ -22,11 +22,9 @@ typedef void* va_list;
  * 
  * one type is pointer to void and the other is a pointer to a character type.
  */ 
-// type va_arg(va_list ap, type);
-#define __va_argsiz(t)	((sizeof(t)))
-va_list __va_inc(va_list* ap, size_t size); // increments the ap, and returns the current vararg
+void* __va_arg(va_list* ap);
 #define va_arg(ap, t) \
-	(*((t*)(__va_inc((&(ap)), (__va_argsiz(t))))))
+      (*((t*) __va_arg(&(ap))))
 
 // void va_start(va_list ap, parmN);
 void __va_start(va_list* ap, void* pN);

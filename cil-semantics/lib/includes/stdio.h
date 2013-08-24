@@ -1,9 +1,9 @@
 #ifndef _KCC_STDIO_H
 #define _KCC_STDIO_H
 #include <kcc_settings.h>
+#include <stddef.h>
 
 #define NULL _KCC_NULL
-typedef _KCC_SIZE_T size_t;
 
 typedef struct {
 	unsigned long long int offset;
