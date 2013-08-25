@@ -120,17 +120,30 @@ module CIL-SYNTAX
                  | OctalConstant
                  | HexConstant
                  | String
-  // TODO(chathhorn): full float literals are pretty complicated.
-                 | Float
+                 | DecimalFloatConstant
+                 | HexFloatConstant
                  | "'"CharConstant"'"
+                 | CharConstantPrefix "'"CharConstant"'"
 
+  // TODO(chathhorn): char constant prefix.
+  rule _:CharConstantPrefix ' C:CharConstant ' => ' C ' [macro]
+  
   syntax DecimalConstant ::= 
     Token{[1-9][0-9]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
   syntax OctalConstant ::= 
     Token{[0][0-7]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
   syntax HexConstant ::= 
     Token{[0][xX][0-9a-fA-F]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
+  syntax DecimalFloatConstant ::=
+    Token{[0-9]*[\.][0-9]*[eE]?[\+\-]?[0-9]*[FfLl]?} [onlyLabel]
+  syntax HexFloatConstant ::=
+    Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?} 
+    [onlyLabel]
+
   syntax Constants ::= List{Constant, ","}
+
+  syntax CharConstantPrefix ::= Token{[LuU]}
+    [onlyLabel]
 
   syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\*\(\)\-\_\+\=\:\;\?]} 
     [onlyLabel]

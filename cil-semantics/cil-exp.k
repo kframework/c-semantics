@@ -9,77 +9,112 @@ require "cil-common.k"
 module CIL-LITERAL
 
   syntax String ::= carStr(String) [function]
+                  | racStr(String) [function]
                   | cdrStr(String) [function]
+                  | rdcStr(String) [function]
 
   rule carStr(S:String) => substrString(S, 0, 1)
+  rule racStr(S:String) 
+    => substrString(S, lengthString(S) -Int 1, lengthString(S))
   rule cdrStr(S:String) => substrString(S, 1, lengthString(S))
+  rule rdcStr(S:String) 
+    => substrString(S, 0, lengthString(S) -Int 1)
 
   syntax String ::= getNumericPart(String) [function]
-                  | "getNumericPart'" "(" String "," String ")" [function]
+                  | getDecFloatNumericPart(String) [function]
+                  | getHexFloatNumericPart(String) [function]
+                  | getNumericPart(String, Set, Set) [function]
+                  | "getNumericPart'" "(" String "," String "," Set ")" 
+                    [function]
 
   // lnp x::xs => lnp xs when x == 0 or x
 
-  syntax Bool ::= isPrefixChar(String) [function]
-                | isSuffixChar(String) [function]
+  syntax Set ::= "prefixChars" [function]
+               | "intSuffixChars" [function]
+               | "floatHexPrefixChars" [function]
+               | "floatSuffixChars" [function]
 
-  rule isPrefixChar(S:String) => true
-    when (S ==String "0") 
-      orBool (S ==String "x")
-      orBool (S ==String "X")
-      orBool (S ==String "\\")
-  rule isPrefixChar(S:String) => false
-    when (S =/=String "0") 
-      andBool (S =/=String "x")
-      andBool (S =/=String "X")
-      andBool (S =/=String "\\")
+  rule prefixChars =>
+    SetItem("0")
+    SetItem("x")
+    SetItem("X")
+    SetItem("\\")
 
-  rule isSuffixChar(S:String) => true
-    when (S ==String "u") 
-      orBool (S ==String "l")
-      orBool (S ==String "U")
-      orBool (S ==String "L")
-  rule isSuffixChar(S:String) => false
-    when (S =/=String "u") 
-      andBool (S =/=String "l")
-      andBool (S =/=String "U")
-      andBool (S =/=String "L")
+  rule intSuffixChars =>
+    SetItem("u")
+    SetItem("U")
+    SetItem("l")
+    SetItem("L")
+
+  rule floatHexPrefixChars =>
+    SetItem("x")
+    SetItem("X")
+
+  rule floatSuffixChars =>
+    SetItem("f")
+    SetItem("F")
+    SetItem("l")
+    SetItem("L")
 
   rule getNumericPart(S:String) 
-    => getNumericPart(cdrStr(S))
-    when isPrefixChar(carStr(S))
+    => getNumericPart(S, prefixChars, intSuffixChars)
+
+  rule getDecFloatNumericPart(S:String)
+    => getNumericPart(S, .Set, floatSuffixChars)
+
+  rule getHexFloatNumericPart(S:String)
+    => getNumericPart(cdrStr(S), floatHexPrefixChars, floatSuffixChars)
+
+  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+    => getNumericPart(cdrStr(S), Pre, Suf)
+    when (carStr(S) in Pre)
       andBool (S =/=String "")
-  rule getNumericPart(S:String) 
-    => getNumericPart'(S, "")
-    when notBool isPrefixChar(carStr(S))
+  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+    => getNumericPart'(S, "", Suf)
+    when notBool (carStr(S) in Pre)
       andBool (S =/=String "")
-  rule getNumericPart("") => "0"
+  rule getNumericPart("", _, _) => "0"
   
-  rule getNumericPart'(S:String, Num:String)
-    => getNumericPart'(cdrStr(S), Num +String carStr(S))
-    when notBool isSuffixChar(carStr(S))
+  rule getNumericPart'(S:String, Num:String, Suf:Set)
+    => getNumericPart'(cdrStr(S), Num +String carStr(S), Suf)
+    when notBool (carStr(S) in Suf)
       andBool (S =/=String "")
-  rule getNumericPart'(S:String, Num:String) => Num
-    when isSuffixChar(carStr(S))
+  rule getNumericPart'(S:String, Num:String, Suf:Set) => Num
+    when (carStr(S) in Suf)
       andBool (Num =/=String "")
 
-  rule getNumericPart'("", Num:String) => Num
+  rule getNumericPart'("", Num:String, _) => Num
     when Num =/=String ""
-  rule getNumericPart'(S:String, "") => "0"
-    when isSuffixChar(carStr(S))
-  rule getNumericPart'("", "") => "0"
+  rule getNumericPart'(S:String, "", Suf:Set) => "0"
+    when (carStr(S) in Suf)
+  rule getNumericPart'("", "", _) => "0"
 
   syntax String ::= getSuffix(String) [function]
+                  | getFloatSuffix(String) [function]
+                  | getSuffix(String, Set) [function]
+                  | "getSuffix'" "(" String "," String "," Set ")" [function]
 
-  rule getSuffix(S:String) => getSuffix(cdrStr(S))
-    when notBool isSuffixChar(carStr(S))
-      andBool (S =/=String "")
-  rule getSuffix(S:String) => normSuffix(S)
-    when isSuffixChar(carStr(S))
-  rule getSuffix("") => ""
+  rule getSuffix(S:String) => getSuffix(S, intSuffixChars)
+
+  rule getFloatSuffix(S:String) => getSuffix(S, floatSuffixChars)
+
+  rule getSuffix(S:String, Sufs:Set) => getSuffix'(S, "", Sufs)
+
+  rule getSuffix'(S:String, Suf:String, Sufs:Set) 
+    => getSuffix'(rdcStr(S), racStr(S) +String Suf, Sufs)
+    when (racStr(S) in Sufs) andBool (S =/=String "")
+  rule getSuffix'(S:String, Suf:String, Sufs)
+    => normSuffix(Suf)
+    when notBool (racStr(S) in Sufs)
+  rule getSuffix'("", Suf:String, _) => normSuffix(Suf)
 
   syntax String ::= normSuffix(String) [function]
 
   rule normSuffix("") => ""
+  rule normSuffix(S:String) => "F"
+    when (S ==String "f")
+      orBool (S ==String "F")
+
   rule normSuffix(S:String) => "U"
     when (S ==String "u")
       orBool (S ==String "U")
@@ -215,8 +250,21 @@ module CIL-EXP
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
-  rule F:Float => tv(double, F)
+  rule C:DecimalFloatConstant 
+    => norm(double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String ""
     [structural]
+  rule C:DecimalFloatConstant 
+    => norm(long double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:DecimalFloatConstant 
+    => norm(float, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String "F"
+    [structural]
+
+  // TODO(chathhorn): Hex float constants. Also, not sure String2Float supports
+  // the full float syntax.
 
   // TODO(chathhorn): prefixes (wide chars I guess).
   rule ' C:Char ' => norm(int, ordChar(#tokenToString(C)))
@@ -451,9 +499,11 @@ module CIL-EXP
     <env>... X |-> lv(_,_) ...</env>
 
   /* the rule for signed integer types is implementation defined */
-  rule (nt(T:SignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
+  rule (nt(T:SignedIntType)) tv(_, I:MInt) => norm(T, I)
+  rule (nt(T:SignedIntType)) tv(_, I:Int) => norm(T, I)
 
-  rule (nt(T:UnsignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
+  rule (nt(T:UnsignedIntType)) tv(_, I:MInt) => norm(T, I)
+  rule (nt(T:UnsignedIntType)) tv(_, I:Int) => norm(T, I)
 
   // Allowing all casts between floating point types.
   rule (nt(To:FloatingType)) tv(_, F:Float) => norm(To, F)
@@ -499,25 +549,27 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
   context tv(_, PtrAdd(_, _, HOLE))
-  rule tv(T:Type, P:Ptr) + tv(_, mi(_, I:Int)) 
-    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+  rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
+    => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
     when isPtrType(T)
-  rule tv(_, mi(_, I:Int)) + tv(T:Type, P:Ptr) 
-    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+  rule tv(_, I:MInt) + tv(T:Type, P:Ptr) 
+    => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
     when isPtrType(T)
   rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
     => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
     when isPtrType(T)
+
   rule
-    tv(T:Type, P:Ptr) - tv(_, mi(_, I:Int))
-    => tv(T, PtrAdd(P, 0 -Int I, sizeof(downPtr(T))))
+    tv(T:Type, P:Ptr) - tv(_, I:MInt)
+    => tv(T, PtrAdd(P, 0 -Int iMInt(I), sizeof(downPtr(T))))
     when isPtrType(T)
-// 
-//   /* TODO: replace int with size_ptr */
-//   context tv(_, PtrSub(_, _, HOLE))
-//   rule
-//     tv(T:Type*, P1:Ptr) - tv(T*, P2:Ptr) => tv(int, PtrSub(P1, P2, sizeof(T)))
-  
+
+  context tv(_, PtrSub(_, _, HOLE))
+  rule
+    tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
+    => tv(T, PtrSub(P1, P2, sizeof(downPtr(T))))
+    when isPtrType(T)
+
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)
   rule tv(T:Type, F1:Float) <= tv(T, F2:Float) => norm(int, F1 <=Float F2)
   rule tv(T:Type, F1:Float) > tv(T, F2:Float) => norm(int, F1 >Float F2)
