@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 7 "20011113-1.c"
 struct t {
    unsigned int a : 16 ;
@@ -34,7 +34,7 @@ T foo(T x )
 
   {
 #line 25
-  memcpy((void * __restrict  )(& u), (void const   * __restrict  )(& x->d[1]), (unsigned int )sizeof(u));
+  memcpy((void * __restrict  )(& u), (void const   * __restrict  )(& x->d[1]), sizeof(u));
 #line 26
   d = u;
 #line 27
@@ -57,7 +57,7 @@ T baz(T x )
 #line 36
   d.r[2] = 46118400291L;
 #line 37
-  memcpy((void * __restrict  )(& u), (void const   * __restrict  )(& x->d[1]), (unsigned int )sizeof(u));
+  memcpy((void * __restrict  )(& u), (void const   * __restrict  )(& x->d[1]), sizeof(u));
 #line 38
   d = u;
 #line 39

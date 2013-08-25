@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 6 "pr27260.c"
@@ -23,7 +23,7 @@ void foo(int x )
     tmp = 0;
   }
 #line 13
-  memset((void *)(buf), tmp, 64U);
+  memset((void *)(buf), tmp, 64UL);
 #line 14
   return;
 }

@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 3 "pr41463.c"
 union tree_node;
 #line 3
@@ -60,7 +60,7 @@ int main(void)
 
   {
 #line 51
-  tmp = malloc((unsigned int )sizeof(union tree_node ));
+  tmp = malloc(sizeof(union tree_node ));
 #line 51
   p = (union tree_node *)tmp;
 #line 52

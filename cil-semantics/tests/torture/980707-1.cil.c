@@ -5,9 +5,9 @@
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 10 "../../lib/includes/string.h"
+#line 8 "../../lib/includes/string.h"
 extern int strcmp(char const   *str1 , char const   *str2 ) ;
-#line 11
+#line 9
 extern char *strcpy(char *s1 , char const   *s2 ) ;
 #line 7 "980707-1.c"
 static char *arglist[256]  ;

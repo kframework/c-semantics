@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 6 "../../lib/includes/stdarg.h"
 typedef __builtin_va_list va_list;
 #line 17 "../../lib/includes/stdlib.h"
@@ -55,7 +55,7 @@ void f0(char *format  , ...)
 #line 28
   tmp = strlen(format);
 #line 28
-  if (tmp != 16U) {
+  if (tmp != 16UL) {
 #line 29
     abort();
   }
@@ -95,7 +95,7 @@ void f1(int a1 , char *format  , ...)
 #line 42
   tmp = strlen(format);
 #line 42
-  if (tmp != 15U) {
+  if (tmp != 15UL) {
 #line 43
     abort();
   }
@@ -135,7 +135,7 @@ void f2(int a1 , int a2 , char *format  , ...)
 #line 56
   tmp = strlen(format);
 #line 56
-  if (tmp != 14U) {
+  if (tmp != 14UL) {
 #line 57
     abort();
   }
@@ -175,7 +175,7 @@ void f3(int a1 , int a2 , int a3 , char *format  , ...)
 #line 70
   tmp = strlen(format);
 #line 70
-  if (tmp != 13U) {
+  if (tmp != 13UL) {
 #line 71
     abort();
   }
@@ -215,7 +215,7 @@ void f4(int a1 , int a2 , int a3 , int a4 , char *format  , ...)
 #line 84
   tmp = strlen(format);
 #line 84
-  if (tmp != 12U) {
+  if (tmp != 12UL) {
 #line 85
     abort();
   }
@@ -255,7 +255,7 @@ void f5(int a1 , int a2 , int a3 , int a4 , int a5 , char *format  , ...)
 #line 99
   tmp = strlen(format);
 #line 99
-  if (tmp != 11U) {
+  if (tmp != 11UL) {
 #line 100
     abort();
   }
@@ -295,7 +295,7 @@ void f6(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , char *format  , ..
 #line 115
   tmp = strlen(format);
 #line 115
-  if (tmp != 10U) {
+  if (tmp != 10UL) {
 #line 116
     abort();
   }
@@ -336,7 +336,7 @@ void f7(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , char *for
 #line 131
   tmp = strlen(format);
 #line 131
-  if (tmp != 9U) {
+  if (tmp != 9UL) {
 #line 132
     abort();
   }
@@ -377,7 +377,7 @@ void f8(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 #line 147
   tmp = strlen(format);
 #line 147
-  if (tmp != 8U) {
+  if (tmp != 8UL) {
 #line 148
     abort();
   }
@@ -418,7 +418,7 @@ void f9(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 , 
 #line 163
   tmp = strlen(format);
 #line 163
-  if (tmp != 7U) {
+  if (tmp != 7UL) {
 #line 164
     abort();
   }
@@ -459,7 +459,7 @@ void f10(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 179
   tmp = strlen(format);
 #line 179
-  if (tmp != 6U) {
+  if (tmp != 6UL) {
 #line 180
     abort();
   }
@@ -500,7 +500,7 @@ void f11(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 196
   tmp = strlen(format);
 #line 196
-  if (tmp != 5U) {
+  if (tmp != 5UL) {
 #line 197
     abort();
   }
@@ -541,7 +541,7 @@ void f12(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 213
   tmp = strlen(format);
 #line 213
-  if (tmp != 4U) {
+  if (tmp != 4UL) {
 #line 214
     abort();
   }
@@ -582,7 +582,7 @@ void f13(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 230
   tmp = strlen(format);
 #line 230
-  if (tmp != 3U) {
+  if (tmp != 3UL) {
 #line 231
     abort();
   }
@@ -623,7 +623,7 @@ void f14(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 247
   tmp = strlen(format);
 #line 247
-  if (tmp != 2U) {
+  if (tmp != 2UL) {
 #line 248
     abort();
   }
@@ -665,7 +665,7 @@ void f15(int a1 , int a2 , int a3 , int a4 , int a5 , int a6 , int a7 , int a8 ,
 #line 264
   tmp = strlen(format);
 #line 264
-  if (tmp != 1U) {
+  if (tmp != 1UL) {
 #line 265
     abort();
   }

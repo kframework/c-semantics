@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 10 "20020406-1.c"
 typedef unsigned int FFelem;
 #line 18 "20020406-1.c"
@@ -47,7 +47,7 @@ DUPFF DUPFFnew(int maxdeg )
 
   {
 #line 36
-  tmp = malloc((unsigned int )sizeof(struct DUPFFstruct ));
+  tmp = malloc(sizeof(struct DUPFFstruct ));
 #line 36
   ans = (struct DUPFFstruct *)tmp;
 #line 37
@@ -55,7 +55,7 @@ DUPFF DUPFFnew(int maxdeg )
 #line 38
   if (maxdeg >= 0) {
 #line 38
-    tmp___0 = calloc((unsigned int )(maxdeg + 1), (unsigned int )sizeof(FFelem ));
+    tmp___0 = calloc((unsigned long )(maxdeg + 1), sizeof(FFelem ));
 #line 38
     ans->coeffs = (FFelem *)tmp___0;
   }

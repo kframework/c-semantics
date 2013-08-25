@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 7 "20011024-1.c"
@@ -21,7 +21,7 @@ static void foo(void)
 
   {
 #line 15
-  tmp = memcpy((void *)(buf), (void const   *)"abc", 4U);
+  tmp = memcpy((void *)(buf), (void const   *)"abc", 4UL);
 #line 15
   if ((unsigned long )tmp != (unsigned long )(buf)) {
 #line 15
@@ -37,7 +37,7 @@ static void foo(void)
 #line 17
   tmp___1 = strlen("abcdefgh");
 #line 17
-  memcpy((void *)(buf), (void const   *)"abcdefgh", tmp___1 + 1U);
+  memcpy((void *)(buf), (void const   *)"abcdefgh", tmp___1 + 1UL);
 #line 18
   return;
 }

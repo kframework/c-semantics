@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 5 "20050218-1.c"
@@ -29,7 +29,7 @@ int foo(char *x , char const   *y , size_t n )
 #line 14
   j = (size_t )0;
 #line 15
-  i = 0U;
+  i = 0UL;
 #line 15
   while (i < n) {
 #line 17
@@ -65,7 +65,7 @@ int main(void)
 
   {
 #line 28
-  tmp = foo((char *)"abcde", (char const   *)0, 3U);
+  tmp = foo((char *)"abcde", (char const   *)0, 3UL);
 #line 28
   if (tmp != 0) {
 #line 29

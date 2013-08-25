@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 11 "string-opt-5.c"
@@ -73,7 +73,7 @@ int main(void)
 #line 29
   tmp = strlen((char const   *)bar);
 #line 29
-  if (tmp != 8U) {
+  if (tmp != 8UL) {
 #line 30
     abort();
   }
@@ -82,7 +82,7 @@ int main(void)
 #line 31
   tmp___0 = strlen((char const   *)(bar + (x & 2)));
 #line 31
-  if (tmp___0 != 6U) {
+  if (tmp___0 != 6UL) {
 #line 32
     abort();
   }
@@ -96,7 +96,7 @@ int main(void)
 #line 35
   tmp___1 = strlen(foo + 6);
 #line 35
-  if (tmp___1 != 5U) {
+  if (tmp___1 != 5UL) {
 #line 36
     abort();
   }
@@ -110,7 +110,7 @@ int main(void)
 #line 39
   tmp___2 = strlen(foo + (x & 1));
 #line 39
-  if (tmp___2 != 10U) {
+  if (tmp___2 != 10UL) {
 #line 40
     abort();
   }
@@ -237,7 +237,7 @@ int main(void)
 #line 73
   x ++;
 #line 73
-  tmp___16 = strncpy(dst + 1, foo + (tmp___15 & 3), 4U);
+  tmp___16 = strncpy(dst + 1, foo + (tmp___15 & 3), 4UL);
 #line 73
   if ((unsigned long )tmp___16 != (unsigned long )(dst + 1)) {
 #line 76
@@ -258,7 +258,7 @@ int main(void)
     }
   }
 #line 77
-  memset((void *)(dst), ' ', (unsigned int )sizeof(dst));
+  memset((void *)(dst), ' ', sizeof(dst));
 #line 78
   tmp___18 = y;
 #line 78
@@ -266,7 +266,7 @@ int main(void)
 #line 78
   x ++;
 #line 78
-  tmp___19 = strncpy(dst + (x & 1), "foo" + (tmp___18 & 3), 10U);
+  tmp___19 = strncpy(dst + (x & 1), "foo" + (tmp___18 & 3), 10UL);
 #line 78
   if ((unsigned long )tmp___19 != (unsigned long )(dst + 1)) {
 #line 82
@@ -284,7 +284,7 @@ int main(void)
       } else {
 #line 78
         tmp___20 = memcmp((void const   *)(dst), (void const   *)" oo\000\000\000\000\000\000\000\000 ",
-                          12U);
+                          12UL);
 #line 78
         if (tmp___20) {
 #line 82
@@ -294,9 +294,9 @@ int main(void)
     }
   }
 #line 83
-  memset((void *)(dst), ' ', (unsigned int )sizeof(dst));
+  memset((void *)(dst), ' ', sizeof(dst));
 #line 84
-  tmp___21 = strncpy(dst, "hello", 8U);
+  tmp___21 = strncpy(dst, "hello", 8UL);
 #line 84
   if ((unsigned long )tmp___21 != (unsigned long )(dst)) {
 #line 85
@@ -304,7 +304,7 @@ int main(void)
   } else {
 #line 84
     tmp___22 = memcmp((void const   *)(dst), (void const   *)"hello\000\000\000 ",
-                      9U);
+                      9UL);
 #line 84
     if (tmp___22) {
 #line 85
@@ -314,7 +314,7 @@ int main(void)
 #line 86
   x = '!';
 #line 87
-  memset((void *)(buf), ' ', (unsigned int )sizeof(buf));
+  memset((void *)(buf), ' ', sizeof(buf));
 #line 88
   y ++;
 #line 88
@@ -322,7 +322,7 @@ int main(void)
 #line 88
   x ++;
 #line 88
-  tmp___24 = memset((void *)(buf), tmp___23, (unsigned int )y);
+  tmp___24 = memset((void *)(buf), tmp___23, (unsigned long )y);
 #line 88
   if ((unsigned long )tmp___24 != (unsigned long )(buf)) {
 #line 92
@@ -339,7 +339,7 @@ int main(void)
         abort();
       } else {
 #line 88
-        tmp___25 = memcmp((void const   *)(buf), (void const   *)"!!!", 3U);
+        tmp___25 = memcmp((void const   *)(buf), (void const   *)"!!!", 3UL);
 #line 88
         if (tmp___25) {
 #line 92
@@ -353,7 +353,7 @@ int main(void)
 #line 93
   y ++;
 #line 93
-  tmp___27 = memset((void *)(buf + tmp___26), '-', 8U);
+  tmp___27 = memset((void *)(buf + tmp___26), '-', 8UL);
 #line 93
   if ((unsigned long )tmp___27 != (unsigned long )(buf + 3)) {
 #line 96
@@ -365,7 +365,7 @@ int main(void)
       abort();
     } else {
 #line 93
-      tmp___28 = memcmp((void const   *)(buf), (void const   *)"!!!--------", 11U);
+      tmp___28 = memcmp((void const   *)(buf), (void const   *)"!!!--------", 11UL);
 #line 93
       if (tmp___28) {
 #line 96
@@ -382,7 +382,7 @@ int main(void)
 #line 98
   x ++;
 #line 98
-  tmp___30 = memset((void *)(buf + x), 0, (unsigned int )tmp___29);
+  tmp___30 = memset((void *)(buf + x), 0, (unsigned long )tmp___29);
 #line 98
   if ((unsigned long )tmp___30 != (unsigned long )(buf + 11)) {
 #line 102
@@ -400,7 +400,7 @@ int main(void)
       } else {
 #line 98
         tmp___31 = memcmp((void const   *)(buf + 8), (void const   *)"---\000\000\000",
-                          7U);
+                          7UL);
 #line 98
         if (tmp___31) {
 #line 102
@@ -412,7 +412,7 @@ int main(void)
 #line 103
   x += 4;
 #line 103
-  tmp___32 = memset((void *)(buf + x), 0, 6U);
+  tmp___32 = memset((void *)(buf + x), 0, 6UL);
 #line 103
   if ((unsigned long )tmp___32 != (unsigned long )(buf + 15)) {
 #line 106
@@ -425,7 +425,7 @@ int main(void)
     } else {
 #line 103
       tmp___33 = memcmp((void const   *)(buf + 10), (void const   *)"-\000\000\000\000\000\000\000\000\000",
-                        11U);
+                        11UL);
 #line 103
       if (tmp___33) {
 #line 106

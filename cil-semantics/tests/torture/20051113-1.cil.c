@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 3 "20051113-1.c"
 struct __anonstruct_Struct1_3 {
    short a ;
@@ -99,11 +99,11 @@ int main(void)
 
   {
 #line 57
-  tmp = malloc((unsigned int )(sizeof(int ) + 3UL * sizeof(Union )));
+  tmp = malloc(sizeof(int ) + 3UL * sizeof(Union ));
 #line 57
   p = (Struct3 *)tmp;
 #line 58
-  memset((void *)p, 0, (unsigned int )(sizeof(int ) + 3UL * sizeof(Union )));
+  memset((void *)p, 0, sizeof(int ) + 3UL * sizeof(Union ));
 #line 59
   p->Count = 3;
 #line 60

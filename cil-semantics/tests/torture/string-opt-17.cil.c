@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 9 "string-opt-17.c"
 extern char *strcpy(char * , char const   * ) ;
 #line 10
@@ -36,7 +36,7 @@ size_t check2(void)
 
   {
 #line 25
-  if (r != 5U) {
+  if (r != 5UL) {
 #line 26
     abort();
   }
@@ -68,14 +68,14 @@ int main(void)
 
   {
 #line 39
-  tmp = test1(buf, 7U);
+  tmp = test1(buf, 7UL);
 #line 39
-  if (tmp != 8U) {
+  if (tmp != 8UL) {
 #line 40
     abort();
   } else {
 #line 39
-    tmp___0 = memcmp((void const   *)(buf), (void const   *)"az", 3U);
+    tmp___0 = memcmp((void const   *)(buf), (void const   *)"az", 3UL);
 #line 39
     if (tmp___0) {
 #line 40
@@ -85,7 +85,7 @@ int main(void)
 #line 41
   test2(buf);
 #line 42
-  tmp___1 = memcmp((void const   *)(buf), (void const   *)"baz", 4U);
+  tmp___1 = memcmp((void const   *)(buf), (void const   *)"baz", 4UL);
 #line 42
   if (tmp___1) {
 #line 43

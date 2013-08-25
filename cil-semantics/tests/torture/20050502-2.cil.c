@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
 #line 5 "20050502-2.c"
@@ -75,7 +75,7 @@ int main(void)
 #line 27
   foo(x);
 #line 28
-  tmp = memcmp((char const   *)(x), "IJKL\000NOPQR", (unsigned int )sizeof(x));
+  tmp = memcmp((char const   *)(x), "IJKL\000NOPQR", sizeof(x));
 #line 28
   if (tmp != 0) {
 #line 29
@@ -86,7 +86,7 @@ int main(void)
 #line 31
   bar(x);
 #line 32
-  tmp___0 = memcmp((char const   *)(x), "IJKLMNOP\000R", (unsigned int )sizeof(x));
+  tmp___0 = memcmp((char const   *)(x), "IJKLMNOP\000R", sizeof(x));
 #line 32
   if (tmp___0 != 0) {
 #line 33

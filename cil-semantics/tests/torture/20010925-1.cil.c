@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 2 "20010925-1.c"
 extern void exit(int  ) ;
 #line 3
@@ -42,7 +42,7 @@ int foo(void *a , void *b , unsigned int c )
     return (1);
   }
 #line 23
-  memcpy(a, (void const   *)b, c);
+  memcpy(a, (void const   *)b, (unsigned long )c);
 #line 24
   return (0);
 }

@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 5 "pr35472.c"
 struct S {
    int i[16] ;
@@ -33,9 +33,9 @@ void test(void)
 
   {
 #line 12
-  memset((void *)(& a.i[0]), '\000', (unsigned int )sizeof(a.i));
+  memset((void *)(& a.i[0]), '\000', sizeof(a.i));
 #line 13
-  memset((void *)(& b.i[0]), '\000', (unsigned int )sizeof(b.i));
+  memset((void *)(& b.i[0]), '\000', sizeof(b.i));
 #line 14
   foo(& a, & b);
 #line 15

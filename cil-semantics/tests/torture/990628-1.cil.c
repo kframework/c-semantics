@@ -2,9 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
-#line 8 "../../lib/includes/string.h"
-typedef unsigned int size_t___0;
+typedef unsigned long size_t;
 #line 4 "990628-1.c"
 struct __anonstruct_sqlca_3 {
    long sqlcode ;
@@ -20,8 +18,8 @@ extern void *malloc(size_t size ) ;
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 16 "../../lib/includes/string.h"
-extern void *memset(void *ptr , int value , size_t___0 num ) ;
+#line 14 "../../lib/includes/string.h"
+extern void *memset(void *ptr , int value , size_t num ) ;
 #line 4 "990628-1.c"
 struct __anonstruct_sqlca_3 sqlca  ;
 #line 9 "990628-1.c"
@@ -45,7 +43,7 @@ void fetch(void)
 
   {
 #line 27
-  memset((void *)(& data_tmp), 85, (unsigned int )sizeof(data_tmp));
+  memset((void *)(& data_tmp), 85, sizeof(data_tmp));
 #line 28
   fetch_count ++;
 #line 28
@@ -74,11 +72,11 @@ void load_data(void)
 #line 35
   num = tmp;
 #line 37
-  tmp___0 = malloc((unsigned int )((unsigned long )num * sizeof(struct data_record )));
+  tmp___0 = malloc((unsigned long )num * sizeof(struct data_record ));
 #line 37
   data_ptr = (struct data_record *)tmp___0;
 #line 38
-  memset((void *)data_ptr, 170, (unsigned int )((unsigned long )num * sizeof(struct data_record )));
+  memset((void *)data_ptr, 170, (unsigned long )num * sizeof(struct data_record ));
 #line 40
   fetch();
 #line 41

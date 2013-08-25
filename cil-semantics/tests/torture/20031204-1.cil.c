@@ -5,7 +5,7 @@
 typedef unsigned long u32;
 #line 21 "../../lib/includes/stdlib.h"
 extern void abort(void) ;
-#line 11 "../../lib/includes/string.h"
+#line 9 "../../lib/includes/string.h"
 extern char *strcpy(char *s1 , char const   *s2 ) ;
 #line 8 "20031204-1.c"
 u32 in_aton(char const   *x ) 

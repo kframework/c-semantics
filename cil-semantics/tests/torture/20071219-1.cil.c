@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 8 "20071219-1.c"
 struct S {
    char s[25] ;
@@ -49,7 +49,7 @@ void ( __attribute__((__noinline__)) test1)(void)
 
   {
 #line 31
-  memset((void *)(& a.s), '\000', (unsigned int )sizeof(a.s));
+  memset((void *)(& a.s), '\000', sizeof(a.s));
 #line 32
   foo(& a, 0);
 #line 33
@@ -73,7 +73,7 @@ void ( __attribute__((__noinline__)) test2)(void)
 
   {
 #line 44
-  memset((void *)(& a.s), '\000', (unsigned int )sizeof(a.s));
+  memset((void *)(& a.s), '\000', sizeof(a.s));
 #line 45
   foo(& a, 0);
 #line 46
@@ -97,7 +97,7 @@ void ( __attribute__((__noinline__)) test3)(void)
 
   {
 #line 57
-  memset((void *)(& a.s), '\000', (unsigned int )sizeof(a.s));
+  memset((void *)(& a.s), '\000', sizeof(a.s));
 #line 58
   foo(& a, 0);
 #line 59

@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 6 "../../lib/includes/stdarg.h"
 typedef __builtin_va_list va_list;
 #line 17 "../../lib/includes/stdlib.h"

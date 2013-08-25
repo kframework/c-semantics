@@ -5,7 +5,7 @@
 extern void exit(int status ) ;
 #line 21
 extern void abort(void) ;
-#line 15 "../../lib/includes/string.h"
+#line 13 "../../lib/includes/string.h"
 extern char *strchr(char const   *s , int c ) ;
 #line 4 "20000112-1.c"
 static int special_format(char const   *fmt ) 

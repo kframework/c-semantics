@@ -2,7 +2,7 @@
 /* print_CIL_Input is true */
 
 #line 6 "../../lib/includes/stddef.h"
-typedef unsigned int size_t;
+typedef unsigned long size_t;
 #line 10 "pr15262-1.c"
 struct A {
    int t ;
@@ -53,7 +53,7 @@ int main(void)
     g = (float )1;
   }
 #line 33
-  tmp___1 = malloc((unsigned int )sizeof(*locp));
+  tmp___1 = malloc(sizeof(*locp));
 #line 33
   locp = (struct A *)tmp___1;
 #line 34
