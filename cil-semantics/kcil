@@ -26,7 +26,9 @@ my @shouldBeDeleted = ();
 my $myDirectory = dirname(rel2abs($0));
 
 my $programRunner = catfile($myDirectory, 'kcil-runner');
-my $kcilPreproc = catfile($myDirectory, 'kcil-preproc');
+my $kcilIncludes = catfile($myDirectory, 'lib/includes');
+#my $kcilPreproc = catfile($myDirectory, 'kcil-preproc');
+my $kcilPreproc = "cilly -c --includedir=$kcilIncludes --printCilAsIs --commPrintLn";
 
 my @temporaryFiles = ();
 
@@ -200,7 +202,8 @@ sub compileProgram {
             or die "$filename.c not found";
       
       my $retval = system(
-            "$kcilPreproc $trueFilename 2> $filename.warnings.log 1> program-$filename-compiled.kcil");
+            "$kcilPreproc --out=program-$filename-compiled.kcil $trueFilename 2> $filename.warnings.log");
+
       open FILE, "$filename.warnings.log";
       my @lines = <FILE>;
       close FILE;
@@ -211,9 +214,9 @@ sub compileProgram {
             print STDERR join("\n", @lines);
             die();
       }
-      if (! $nowarn) {
-            print join("\n", @lines);
-      }
+      # if (! $nowarn) {
+      #       print join("\n", @lines);
+      # }
       if (! $dflag) {
             unlink("$filename.warnings.log");
       }
