@@ -10,7 +10,7 @@ instead of parsing, we run C source files through the `kcil-pp` script.
 `kcil-pp` does these things:
 
 1. It runs the file through `cilly` with the `--includedir` parameter set to
-`./lib/includes' to generate CIL source. This means that our `kcil` script will
+`./lib/includes` to generate CIL source. This means that our `kcil` script will
 accept arbitrary C source and transform it into CIL source. We do things this
 way (at least in part) to make testing against `gcc` easier. Because `cilly`
 wants to expand all the preprocessor directives (i.e., `#include`), CIL source
