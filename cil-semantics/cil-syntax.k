@@ -8,19 +8,19 @@ module CIL-SYNTAX
                   | TuPragma
   syntax Globals ::= List{Global, ""}
 
-  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | EnumDecl | TypedefDecl
+  syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypedefDecl
 
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
+                   | "enum" CId "{" EnumInits "}" ";"
                    | "struct" CId ";" // forward decls
                    | "union" CId ";"
                    | "enum" CId ";"
 
-  syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
-
-  syntax EnumDecl ::= "enum" CId "{" EnumInits "}" ";"
   syntax EnumInit ::= CId "=" Constant
   syntax EnumInits ::= List{EnumInit, ","} [right]
+
+  syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
   syntax Type ::= ParamDecl // TODO(chathhorn)
   syntax Void ::= "void"
