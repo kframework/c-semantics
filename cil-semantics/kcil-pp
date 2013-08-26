@@ -1,0 +1,29 @@
+#!/usr/bin/env perl 
+use strict;
+use warnings;
+use File::Basename;
+use File::Spec::Functions qw(rel2abs catfile);
+
+my $inputFile = $ARGV[0];
+my $tmpFile = "$ARGV[0].cil";
+my $myDirectory = dirname(rel2abs($0));
+my $kcilIncludes = catfile($myDirectory, 'lib/includes');
+
+my $cilly = "cilly -c --includedir=$kcilIncludes --out=$tmpFile --printCilAsIs --noPrintLn";
+
+my $retval = system("$cilly $inputFile 2> /dev/null");
+
+open(my $tmp, $tmpFile)
+      or die "Could not open $tmpFile for reading: $!\n";
+
+print "#pragma KCIL_TU \"$inputFile\"\n";
+
+for (join('', <$tmp>)) {
+      #s/^#line.*?$//gms;
+      s/__attribute__\(\(.*?\)\)//gms;
+      print;
+}
+
+close($tmp);
+unlink($tmpFile);
+

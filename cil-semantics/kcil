@@ -26,9 +26,7 @@ my @shouldBeDeleted = ();
 my $myDirectory = dirname(rel2abs($0));
 
 my $programRunner = catfile($myDirectory, 'kcil-runner');
-my $kcilIncludes = catfile($myDirectory, 'lib/includes');
-#my $kcilPreproc = catfile($myDirectory, 'kcil-preproc');
-my $kcilPreproc = "cilly -c --includedir=$kcilIncludes --printCilAsIs --commPrintLn";
+my $kcilPreproc = catfile($myDirectory, 'kcil-pp');
 
 my @temporaryFiles = ();
 
@@ -95,7 +93,6 @@ sub main {
             push(@compiledPrograms, @stdlib);
       }
       my $linked = linker(@compiledPrograms);
-      unlink(@shouldBeDeleted);
       if ($linked eq ""){
             die "Nothing returned from linker";
       }
@@ -169,19 +166,8 @@ sub compile {
       (-e "program-$baseName-compiled.kcil")
             or die "Expected to find program-$baseName-compiled.kcil, but did not";
 
-      open(my $out, ">", $localOval)
-            or die "Could not open $localOval for writing: $!\n";
-
-      print $out "#pragma KCIL_TU \"$inputFile\"\n";
-
-      open(my $in, "program-$baseName-compiled.kcil")
-            or die "Could not open program-$baseName-compiled.kcil for reading: $!\n";
-
-      my @lines = <$in>;
-      close $in;
-
-      print $out join("\n", @lines);
-      close $out;
+      move("program-$baseName-compiled.kcil", $localOval) 
+            or die "Failed to rename the compiled program to the local output file $localOval";
 
       push(@compiledPrograms, $localOval);
       if ($args->{'-c'}) {
@@ -211,12 +197,9 @@ sub compileProgram {
 
       (-e $fullfilename)
             or die "$filename.c not found";
-      
+
       my $retval = system(
-            "$kcilPreproc --out=program-$filename-compiled.kcil $trueFilename 2> $filename.warnings.log");
-
-      push(@temporaryFiles, "program-$filename-compiled.kcil");
-
+            "$kcilPreproc $trueFilename 2> $filename.warnings.log 1> program-$filename-compiled.kcil");
       open FILE, "$filename.warnings.log";
       my @lines = <FILE>;
       close FILE;
@@ -227,9 +210,9 @@ sub compileProgram {
             print STDERR join("\n", @lines);
             die();
       }
-      # if (! $nowarn) {
-      #       print join("\n", @lines);
-      # }
+      if (! $nowarn) {
+            print join("\n", @lines);
+      }
       if (! $dflag) {
             unlink("$filename.warnings.log");
       }
@@ -282,8 +265,9 @@ sub interruptHandler {
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-      for (@temporaryFiles) {
-            unlink;
+      if (! $args->{'-d'}) {
+            unlink(@temporaryFiles);
+            unlink(@shouldBeDeleted);
       }
 }
  
