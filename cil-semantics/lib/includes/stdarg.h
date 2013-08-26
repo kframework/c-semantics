@@ -22,22 +22,19 @@ typedef __builtin_va_list va_list;
  * 
  * one type is pointer to void and the other is a pointer to a character type.
  */ 
-void* __va_arg(va_list* ap);
+extern void* __va_arg(va_list* ap);
 #define va_arg(ap, t) \
       (*((t*) __va_arg(&(ap))))
 
-// void va_start(va_list ap, parmN);
-void __va_start(va_list* ap, void* pN);
+extern void __va_start(va_list* ap, void* pN);
 #define va_start(ap, pN) \
 	(__va_start((&(ap)), ((void*)(&(pN)))))
 
-// void va_end(va_list ap);
-void __va_end(va_list* ap);
+extern void __va_end(va_list* ap);
 #define va_end(ap) \
 	(__va_end(&(ap)))
 
-// void va_copy(va_list dest, va_list src);
-void __va_copy(va_list* dst, va_list src);
+extern void __va_copy(va_list* dst, va_list src);
 #define va_copy(dst, src) \
 	(__va_copy((&(dst)), (src)))
 
