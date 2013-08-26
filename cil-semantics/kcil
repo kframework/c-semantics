@@ -130,8 +130,6 @@ sub main {
 sub performSpecializations {
       my ($file) = (@_);
       
-      # TODO(chathhorn): is there some rule that the first source file must
-      # contain a main()? I don't get this.
       my $mainFileName = $args->{'<files>'}[0];
       
       $file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;

@@ -16,18 +16,18 @@ way (at least in part) to make testing against `gcc` easier. Because `cilly`
 wants to expand all the preprocessor directives (i.e., `#include`), CIL source
 seems to necessarily include implementation details of the particular standard
 library whose headers are being included. We can't, for example, run all the
-GCC torture tests through CIL and then test the results against both `gcc` and
-`kcil` because when we generate the CIL we need to choose which headers we use
-for the standard library -- either the GNU C library or our own library headers
--- and they're incompatible. I suppose in the future it might make sense to
-just support the GNU C library.
+GCC torture tests through `cilly` and then test the results against both `gcc`
+and `kcil` because when we generate the CIL we need to choose which headers we
+use for the standard library -- either the GNU C library or our own library
+headers -- and they're incompatible. I suppose in the future it might make
+sense to just support the GNU C library.
 
 2. It prepends `#pragma KCIL_TU "filename"` to the source file. During the
 "link" phase, we flatten all source files into a single file, so this allows us
 to tell one translation unit from another.
 
 3. Removes a few `gcc`isms that might be present (currently just the
-`__attribute__` syntax.
+`__attribute__` syntax).
 
 ### How to use and test the CIL semantics:
 
