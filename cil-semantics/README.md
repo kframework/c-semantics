@@ -65,6 +65,11 @@ Where `torture` is a directory full of source files.
 
 - Various other parts of the standard library.
 
+- Arguments to `main`. Currently, if `main` wants an argument, it gets zeros,
+  regardless of what the command line looks like. All of the support for this
+  exists in `kcil-runner`, though -- `$ARGV` and `$ARGC` just need to be added
+  to the configuration in the apropriate place.
+
 - Variable length arrays (these do appear in the torture tests).
 
 - Full support of floating point literals (hex and with exponents and stuff).
