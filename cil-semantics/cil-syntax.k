@@ -163,7 +163,7 @@ module CIL-SYNTAX
                 | "continue" ";"
                 | "if" "(" Exp ")" Stmt "else" Stmt   [avoid]
                 | "if" "(" Exp ")" Stmt
-                | "switch" "(" Exp ")" Block          [strict]
+                | "switch" "(" Exp ")" Block
                 | "while" "(" Exp ")" Stmt
                 | Block
                 | Label ":" Stmt
