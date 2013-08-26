@@ -210,8 +210,6 @@ module CIL-STMT
   rule if (tv(_, mi(_, 1))) S:Stmt else _:Stmt => S   [computational]
   rule if (tv(_, mi(_, 0))) _:Stmt else S:Stmt => S   [computational]
   
-  // TODO: switch
-
   rule while(E:Exp) S:Stmt => if (E) { S while(E) S }   [structural]
 
   rule { Stmts:Stmts } => Stmts   [structural]
@@ -243,7 +241,6 @@ module CIL-STMT
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
-        //TODO(chathhorn): does this work right?
         <env> GEnv TuEnv </env>
       ...</frame>
     )
@@ -333,6 +330,7 @@ module CIL-STMT
   // TODO(chathhorn): could probably be handled better.
   rule initializeParams((void, .Params), _:TypedValues) => .K   [structural]
 
+  // TODO(chathhorn): delete stuff.
   // rule
   //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)
   // [structural]

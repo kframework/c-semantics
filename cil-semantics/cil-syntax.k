@@ -50,7 +50,6 @@ module CIL-SYNTAX
   syntax Types ::= List{Type,","}
 
 
-  /* TODO: simplify */
   syntax FunDef ::= DeclSpecs Declarator FunBody 
 
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
@@ -113,7 +112,8 @@ module CIL-SYNTAX
                  | "'"CharConstant"'"
                  | CharConstantPrefix "'"CharConstant"'"
 
-  // TODO(chathhorn): char constant prefix.
+  // TODO(chathhorn): char constant prefix. Especially L, which appears in the
+  // torture tests.
   rule _:CharConstantPrefix ' C:CharConstant ' => ' C ' [macro]
   
   syntax DecimalConstant ::= 
@@ -146,7 +146,7 @@ module CIL-SYNTAX
   syntax OctalStringEscape ::=
     Token{[\\][0-7][0-7]?[0-7]?} [onlyLabel]
 
-  // TODO: hex and octal escape codes in strings?
+  // TODO(chathhorn): hex and octal escape codes in strings?
 
   syntax Var ::= CId
   syntax Field ::= CId
@@ -200,7 +200,7 @@ module CIL-SYNTAX
                  | "default"
 
   /*
-   * lexical tokens
+   * Lexical tokens.
    */
   /* C identifiers */
   syntax CId ::= CIdToken

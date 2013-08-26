@@ -63,9 +63,12 @@ Where `torture` is a directory full of source files.
   implementation (and the rest of the I/O stuff) from the C semantics. It
   should be possible, but I don't think it'll be completely trivial.
 
+- Various other parts of the standard library.
+
 - Variable length arrays (these do appear in the torture tests).
 
 - Full support of floating point literals (hex and with exponents and stuff).
 
 - Some details regarding char (and probably string) literals.
 
+- See the TODOs scattered about in comments for more details.

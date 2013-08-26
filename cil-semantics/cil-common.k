@@ -238,7 +238,6 @@ module CIL-COMMON-MMU
              | "store" "(" Type "," Ptr "," Value ")"
              | "$store" "(" Ptr "," List ")"
 
-  /* TODO: check beforehand that load/store would be successful */
   rule 
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
@@ -277,7 +276,7 @@ module CIL-COMMON-MMU
     [structural]
 
   // TODO(chathhorn): when any part of the object is undefined, we return undef
-  // -- this is probably too crude e.g. in the case of structs and arrays.
+  // This is probably too crude.
   rule
     <k>
       $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _)

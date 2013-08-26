@@ -132,7 +132,6 @@ module CIL-DECL
   /*
    * Function declarations (without initializers).
    */
-  // TODO(chathhorn): this mostly ignores declarations.
   rule
     <k> extern TS:TypeSpec D:Declarator ; 
     => declExternal(getId(D), 
@@ -165,7 +164,7 @@ module CIL-DECL
   /*
    * File-scope variable declarations (without initializers).
    */
-  // TODO(chathhorn): Tentative definition; need to look up the rules again.
+  // TODO(chathhorn): Correct semantics for tentative definitions.
   rule 
     <k> TS:TypeSpec D:Declarator ;  
     => declExternal(getId(D), newZeroObject(normType(TS D)))
