@@ -1,6 +1,8 @@
 // vim: set ts=2 sw=2:
 module CIL-SYNTAX
-  /* a file is a list of global declarations and definitions */
+  /* 
+   * A file is a list of global declarations and definitions. 
+   */
   syntax File ::= Globals
 
   syntax Global ::= Decl
@@ -10,6 +12,9 @@ module CIL-SYNTAX
 
   syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypedefDecl
 
+  /* 
+   * Global declarations.
+   */
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
                    | "union" CId "{" VarDecls "}" ";"
                    | "enum" CId "{" EnumInits "}" ";"
@@ -22,6 +27,18 @@ module CIL-SYNTAX
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
+  syntax FunDef ::= DeclSpecs Declarator FunBody 
+
+  syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
+                   | Block
+
+  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
+
+  syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
+
+  /*
+   * Basic types.
+   */
   syntax Type ::= ParamDecl // TODO(chathhorn)
   syntax Void ::= "void"
   syntax NvType ::= BasicType
@@ -46,18 +63,6 @@ module CIL-SYNTAX
   syntax FloatingType ::= "float"
                         | "double"
                         | "long" "double"
-
-  syntax Types ::= List{Type,","}
-
-
-  syntax FunDef ::= DeclSpecs Declarator FunBody 
-
-  syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
-                   | Block
-
-  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
-
-  syntax TypeOrExp ::= Type | Exp
 
   /*
    * Expressions.
@@ -102,6 +107,14 @@ module CIL-SYNTAX
   rule E:Exp -> F:Field => (*E).F [macro]
 
   syntax Exps ::= List{Exp,","}   [strict]
+
+  syntax TypeOrExp ::= Type | Exp
+  syntax Var ::= CId
+  syntax Field ::= CId
+
+  /*
+   * Literals.
+   */
   syntax Constant ::= Int
                  | DecimalConstant
                  | OctalConstant
@@ -148,10 +161,6 @@ module CIL-SYNTAX
 
   // TODO(chathhorn): hex and octal escape codes in strings?
 
-  syntax Var ::= CId
-  syntax Field ::= CId
-  syntax CIds ::= List{CId, ","}
-
   /*
    * Statements.
    */
@@ -168,6 +177,8 @@ module CIL-SYNTAX
                 | Block
                 | Label ":" Stmt
                 | ";"
+
+  rule if (E:Exp) S:Stmt => if (E) S else ;   [macro]
 
   syntax Stmts ::= List{Stmt, ""}   [right]
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
@@ -196,7 +207,7 @@ module CIL-SYNTAX
   syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
   syntax Block ::= "{" Stmts "}"
   syntax Label ::= CId
-                 | "case" Exp   [strict]
+                 | "case" Exp
                  | "default"
 
   /*
@@ -205,6 +216,7 @@ module CIL-SYNTAX
   /* C identifiers */
   syntax CId ::= CIdToken
                | "main"
+  syntax CIds ::= List{CId, ","}
   /* regular expression for tokens representing C identifiers */
   syntax CIdToken ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
   /* exclude predefined functions */
@@ -315,14 +327,9 @@ module CIL-SYNTAX
     // Bonus.
     | "__builtin_va_list" [reject]
 
-  syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
-
   /*
-   * syntactical macros 
+   * Declarations (variables, functions, and typedefs).
    */
-  rule if (E:Exp) S:Stmt => if (E) S else ;   [macro]
-
-  // *** Variable, function, and typedef declarations.
 
   // declaration
   //     declaration-specifiers init-declarator-list? ;
