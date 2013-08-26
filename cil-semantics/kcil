@@ -169,9 +169,20 @@ sub compile {
       (-e "program-$baseName-compiled.kcil")
             or die "Expected to find program-$baseName-compiled.kcil, but did not";
 
-      move("program-$baseName-compiled.kcil", $localOval) 
-            or die "Failed to rename the compiled program to the local output file $localOval";
-      
+      open(my $out, ">", $localOval)
+            or die "Could not open $localOval for writing: $!\n";
+
+      print $out "#pragma KCIL_TU \"$inputFile\"\n";
+
+      open(my $in, "program-$baseName-compiled.kcil")
+            or die "Could not open program-$baseName-compiled.kcil for reading: $!\n";
+
+      my @lines = <$in>;
+      close $in;
+
+      print $out join("\n", @lines);
+      close $out;
+
       push(@compiledPrograms, $localOval);
       if ($args->{'-c'}) {
             if ($args->{'-o'}) {
@@ -203,6 +214,8 @@ sub compileProgram {
       
       my $retval = system(
             "$kcilPreproc --out=program-$filename-compiled.kcil $trueFilename 2> $filename.warnings.log");
+
+      push(@temporaryFiles, "program-$filename-compiled.kcil");
 
       open FILE, "$filename.warnings.log";
       my @lines = <FILE>;
