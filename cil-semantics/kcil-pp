@@ -19,7 +19,7 @@ open(my $tmp, $tmpFile)
 print "#pragma KCIL_TU \"$inputFile\"\n";
 
 for (join('', <$tmp>)) {
-      #s/^#line.*?$//gms;
+      s/^#line.*?$//gms;
       s/__attribute__\(\(.*?\)\)//gms;
       print;
 }
