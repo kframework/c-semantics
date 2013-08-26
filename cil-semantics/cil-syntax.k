@@ -23,9 +23,6 @@ module CIL-SYNTAX
   syntax EnumInits ::= List{EnumInit, ","} [right]
 
   syntax Type ::= ParamDecl // TODO(chathhorn)
-  // syntax Type ::= Void
-  //               | NvType
-  //               | CId
   syntax Void ::= "void"
   syntax NvType ::= BasicType
   syntax BasicType ::= "char"
@@ -60,15 +57,6 @@ module CIL-SYNTAX
                    | Block
 
   rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
-
-  // syntax LVal ::= 
-  //     Var
-  //   | "*" Exp [strict]
-  //   | "(" Type ")" LVal [strict]
-  //   | LVal "." Field
-  //   | LVal "[" Exp "]"
-
-  // syntax Exp ::= LVal
 
   syntax TypeOrExp ::= Type | Exp
 

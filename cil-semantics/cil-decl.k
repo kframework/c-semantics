@@ -1,14 +1,12 @@
 // vim: set ts=2 sw=2:
 require "modules/k-functional-visitor.k"
 require "cil-common.k"
-//require "cil-const-propagation.k"
 
 module CIL-DECL
   imports K-FUNCTIONAL-VISITOR 
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
   imports CIL-EXP
-  //imports CIL-CONST-PROPAGATION
 
   rule G:Global Gs:Globals => G ~> Gs [structural]
   rule .Globals => .K [structural]
