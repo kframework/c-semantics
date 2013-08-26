@@ -12,8 +12,9 @@ module CIL-STMT
   syntax Type ::= typeof(Exp) [strict]
   rule typeof(tv(T:Type, _)) => T
 
+  // TODO(chathhorn): Doesn't quite make sense if X has a pointer type...
   rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
-  rule X:Exp -- ; => X = X + (typeof(X)) 1 ; [macro]
+  rule X:Exp -- ; => X = X - (typeof(X)) 1 ; [macro]
 
   context goto $caseLabel(_, HOLE) ;
   rule

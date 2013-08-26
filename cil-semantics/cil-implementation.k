@@ -86,10 +86,14 @@ module CIL-IMPLEMENTATION
    * Floats.
    */
   syntax List ::= padBytes(Int) [function]
-  rule padBytes(N:Int) 
-    => ListItem(used) padBytes(N -Int 1)
+                | padBytes(Int, ByteValue) [function]
+  
+  rule padBytes(N:Int) => padBytes(N, used)
+
+  rule padBytes(N:Int, V:ByteValue) 
+    => ListItem(V) padBytes(N -Int 1, V)
     when N >Int 0
-  rule padBytes(0) => .List
+  rule padBytes(0, _) => .List
 
   rule value2Bytes(T:FloatingType, F:Float) 
     => ListItem(F) padBytes(byteWidth(T) -Int 1)
@@ -130,6 +134,12 @@ module CIL-IMPLEMENTATION
   rule bytes2Value(T:Type, L:List) => agg(L)
     when (isArrayType(T) ==K true)
       orBool (isAggType(T) ==K true)
+
+  /*
+   * Undef.
+   */
+  rule value2Bytes(T:Type, undef)
+    => padBytes(byteWidth(T), undef)
 
 endmodule
 

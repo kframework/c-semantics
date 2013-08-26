@@ -93,7 +93,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
 
   syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
 
-  syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"// TODO(chathhorn)
+  syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"
 
   /*
    * @invariant:
@@ -261,7 +261,7 @@ module CIL-COMMON-MMU
     [structural]
 
   rule $load(T:Type, P:Ptr, Sz:TypedValue) 
-    => $load(T, P, (mival(Sz)), .List)
+    => $load(T, P, mival(Sz), .List)
   [structural]
   rule
     <k>
@@ -271,17 +271,25 @@ module CIL-COMMON-MMU
           (M:Int => M -Int 1),
           _:List (.List => ListItem(V:ByteValue)))
     ...</k>
-    <heap>...
-      <object>...
-        <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> V ...</bytes>
-      ...</object>
-    ...</heap>
-  when M >Int 0
-  [structural]
+    <base-ptr> BP </base-ptr>
+    <bytes>... Offset |-> V ...</bytes>
+    when M >Int 0
+    [structural]
+
+  // TODO(chathhorn): when any part of the object is undefined, we return undef
+  // -- this is probably too crude e.g. in the case of structs and arrays.
   rule
-    $load(T:Type, _:Ptr, (0), L:List) => tv(T, bytes2Value(T, L))
-  [structural]
+    <k>
+      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _)
+      => tv(T, undef)
+    ...</k>
+    <base-ptr> BP </base-ptr>
+    <bytes> Bytes:Map </bytes>
+    when (M >Int 0) andBool notBool (Offset in keys Bytes)
+    [structural]
+  rule
+    $load(T:Type, _:Ptr, 0, L:List) => tv(T, bytes2Value(T, L))
+    [structural]
 endmodule
 
 module CIL-COMMON
