@@ -460,6 +460,9 @@ module CIL-SYNTAX
   rule * _:TypeQual => * [macro]
   rule * _:TypeQual P:Pointer => * P [macro]
 
+  // NOTE that we've made "..." a TypeSpec instead of using this production, so
+  // our parser will allow that "..." to appear anywhere a regular type could
+  // appear.
   // parameter-type-list
   //     parameter-list
   //     parameter-list , ...
@@ -481,8 +484,8 @@ module CIL-SYNTAX
     | DeclSpecs Declarator
     | DeclSpecs AbsDecl [prefer]
 
-  // Abstract declarators are declarators without identifiers optionally used
-  // in function parameter lists declarations.
+  // Abstract declarators are declarators without identifiers, optionally used
+  // in function parameter list declarations.
 
   // abstract-declarator
   //     pointer
