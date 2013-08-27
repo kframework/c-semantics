@@ -70,11 +70,9 @@ $ ocaml
 (Press ctrl-d to exit.)
 
 ### 4. Install K.
-- This version of the C semantics has been tested with version 3.2.1 of
-  the K Framework. It can be downloaded here:
-  <https://github.com/kframework/k/releases/tag/v3.2.1>
-- See the README included with K for build and installation instructions.
-
+- This version of the C semantics has been tested with version 3.2.1 of the K
+  Framework. See <http://kframework.org> for download and installation details.
+  
 ### 5. Install optional packages.
 - You may want to install Graphviz (dot), for generating images of the state
   space when searching programs.
