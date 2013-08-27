@@ -55,7 +55,7 @@ module LIBC-STDARG
      rule [va-start]:
           prepareBuiltin((Identifier("__va_start")), 
                (ApLoc:KResult,, ArgLoc:KResult))
-          => Computation(*(ApLoc:KResult) := incSymbolic(ArgLoc:KResult))
+          => Computation(*(ApLoc) := incSymbolic(ArgLoc))
                ~> skipval
           [structural]
      
@@ -66,12 +66,12 @@ module LIBC-STDARG
      rule [va-inc-start]:
           prepareBuiltin((Identifier("__va_inc")), 
                (ApLoc:KResult,, Size:KResult))
-          => va-inc-aux(ApLoc:KResult, Size:KResult, *ApLoc:KResult)
+          => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
      rule [va-inc]:
           va-inc-aux(ApLoc:KResult, _:KResult, Ap:KResult)
-          => Computation(*(ApLoc:KResult) := incSymbolic(Ap:KResult))
+          => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
           [structural]                  
           
@@ -79,7 +79,7 @@ module LIBC-STDARG
      rule [va-copy]:
           prepareBuiltin((Identifier("__va_copy")), 
                (ApLoc:KResult,, Other:KResult))
-          => Computation(*(ApLoc:KResult) := Other:KResult) ~> skipval
+          => Computation(*(ApLoc) := Other) ~> skipval
           [structural]
           
      // fixme can do lots of checks here too
