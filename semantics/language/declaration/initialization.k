@@ -17,9 +17,9 @@ module C-DECLARATION-INITIALIZATION
      syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
      syntax K ::= "getInit"
      syntax K ::= "fillInit" "(" K ")"
-     syntax K ::= "fillInit" "(" KList ")"
-     syntax K ::= "fillInit-aux" "(" K ")"
-     
+                | "fillInits" "(" KList ")"
+                | "fillInit-aux" "(" K ")"
+
      rule <k> getInit => initializer(K:K) ...</k>
           <savedInitialization> K:K => . </savedInitialization> 
           <currentObject> _:List => . </currentObject> 
@@ -28,7 +28,7 @@ module C-DECLARATION-INITIALIZATION
 
      rule <k> 
                startInit(T:Type, X:Id, CompoundInit(klist(L:KList)))
-               => fillInit(L) ~> getInit
+               => fillInits(L) ~> getInit
           ...</k>
           <incompleteLength> _ => 0 </incompleteLength>
           <currentSubObject>
@@ -41,10 +41,12 @@ module C-DECLARATION-INITIALIZATION
           when isUnionType(T) orBool isAggregateType(T)
           [structural] 
      
-     rule fillInit((InitFragment(K:K, Exp:K),, L:KList))
-          => fillInit(InitFragment(K, Exp)) ~> fillInit(L)
+     rule fillInits((InitFragment(K:K, Exp:K),, L:KList))
+          => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
+          when L =/=KList .KList
           [structural] 
-     rule fillInit(.KList) => .
+     rule fillInits((InitFragment(K:K, Exp:K),, .KList))
+          => fillInit(InitFragment(K, Exp))
           [structural] 
      
      syntax ListItem ::= "next"
@@ -173,7 +175,7 @@ module C-DECLARATION-INITIALIZATION
      syntax K ::= "finishCompoundInit" "(" List ")"
      rule <k> 
                fillInit(CompoundInit(klist(L:KList)))
-               => fillInit(L)
+               => fillInits(L)
                     ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
           ...</k>
           <currentSubObject> 
@@ -192,6 +194,12 @@ module C-DECLARATION-INITIALIZATION
           ...</currentObject>
           <currentSubObject> (_ => L) </currentSubObject>
           [structural] 
+
+
+
+
+
+
                
      context fillInit(InitFragment(HOLE, _)) 
      syntax K ::= "buildDesignator" "(" K ")"
