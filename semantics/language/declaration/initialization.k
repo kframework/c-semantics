@@ -43,10 +43,8 @@ module C-DECLARATION-INITIALIZATION
      
      rule fillInits((InitFragment(K:K, Exp:K),, L:KList))
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
-          when L =/=KList .KList
           [structural] 
-     rule fillInits((InitFragment(K:K, Exp:K),, .KList))
-          => fillInit(InitFragment(K, Exp))
+     rule fillInits(.KList) => .
           [structural] 
      
      syntax ListItem ::= "next"
