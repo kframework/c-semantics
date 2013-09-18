@@ -40,7 +40,6 @@ module C11-CONFIGURATION
                <mutexes color="yellow"> .Map </mutexes>
                <glocks color="yellow"> .Bag </glocks>
           </threadInformation>
-          <programText color="black"> .Map </programText>
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           <br/>
           <threads color="yellow">
@@ -103,6 +102,7 @@ module C11-CONFIGURATION
                                         <types color="lightgray"> .Map </types>
                                         <structs color="lightgray"> .Map </structs>
 
+                                        // printf
                                         <formatting multiplicity="?">
                                              <format> .List </format>
                                              <formatArg> .K </formatArg>

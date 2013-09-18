@@ -102,8 +102,6 @@ push (@args, xmlToK($reader));
 
 $reader->nextElement('RawData');
 # print STDERR "At " . $reader->name . "\n";
-my $sourceCode = getRawData($reader);
-push (@args, "$STRING $sourceCode" . paren(KLIST_IDENTITY));
 my $tu = paren(join(KLIST_SEPARATOR, @args));
 print nameToLabel('TranslationUnit') . $tu ;
 if ($ltl ne "") {

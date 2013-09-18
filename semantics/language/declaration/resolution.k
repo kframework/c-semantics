@@ -12,7 +12,7 @@ module C-DECLARATION-RESOLUTION
      syntax K ::= "canonicalizeTranslationUnitVariables"
      rule [unpack-TranslationUnit]:
           <k> 
-               TranslationUnit(TUName:String, Strings:K, K:K, P:String) 
+               TranslationUnit(TUName:String, Strings:K, K:K) 
                => preDeclareStrings(Strings)
                     ~> klistToK(eraseKLabel('StmtCons, K))
           ...</k>
@@ -38,7 +38,6 @@ module C-DECLARATION-RESOLUTION
           </internalDefinitions>
           <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
           <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
-          <programText> M:Map => M:Map[P / TUName] </programText>
           when notBool $hasMapping(Env, TUName)
           [structural, large]
           

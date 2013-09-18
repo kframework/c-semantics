@@ -118,9 +118,8 @@ and printTranslationUnit (filename : string) (sourceCode : string) defs =
 		(printRawString !realFilename)
 		) in
 	let ast = printDefs defs in
-	let source = printSource sourceCode in
 	let strings = printStrings "foo" in (* the evaluation order is all messed up if this has no argument *)
-	wrap (filenameCell :: strings :: ast :: source :: []) "TranslationUnit" 
+	wrap (filenameCell :: strings :: ast :: []) "TranslationUnit" 
 and printStrings x =
 	(* List.map (fun element -> print_string (element ^ "\n")) !stringLiterals;
 	print_string "printed strings\n"; *)

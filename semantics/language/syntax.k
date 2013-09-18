@@ -376,7 +376,7 @@ module C-SYNTAX
      */
      // name, code, source
      // new: Filename, strings, ast, code
-     syntax TranslationUnit ::= "TranslationUnit" "(" String "," K "," K "," String ")"
+     syntax TranslationUnit ::= "TranslationUnit" "(" String "," K "," K ")"
           [klabel('TranslationUnit)]
      syntax Program ::= "Program" "(" K ")" [klabel('Program)] // new // List
 
