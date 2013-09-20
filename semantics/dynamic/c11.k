@@ -3,10 +3,11 @@ require "settings.k"
 require "ltlmc.k"
 require "error.k"
 require "error-map.k"
-require "compat.k"
 
 require "libc.k"
 require "language/dynamic.k"
+
+require "../shared/compat.k"
 
 module C11-SYNTAX
      imports C-SYNTAX

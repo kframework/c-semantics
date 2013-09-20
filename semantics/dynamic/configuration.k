@@ -1,5 +1,6 @@
 module C11-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports COMPAT-SYNTAX
 
      configuration 
      <T>
@@ -13,11 +14,17 @@ module C11-CONFIGURATION
 
           <notWritable> .Map </notWritable>
           <functions color="lightgray"> .Map </functions>
+
+          // Static only -- freshUnnamed
           <freshNat color="black"> 0 </freshNat>
+
+          // stdlib
           <randNat color="black"> 0 </randNat>
+          // stdlib
+          <malloced color="lightgray"> .Map </malloced>
+
           // 0 is global, 1 is main
           <nextThreadId color="black"> 2 </nextThreadId>
-          <malloced color="lightgray"> .Map </malloced>
           <stringLiterals color="lightgray"> .Map </stringLiterals>
           <br/>
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
@@ -49,9 +56,8 @@ module C11-CONFIGURATION
                     <nextLoc color="black"> 0 </nextLoc>
                     <buffer color="lightgray"> .List </buffer>
                     <k color="green" multiplicity="?"> 
-                         $PGM:K 
+                         readConfig($IN:String)
                          ~> pgmArgs($ARGV:KList) 
-                         ~> resolveReferences
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
                     </k>
                     <finalComputation multiplicity="?" color="lightgray">

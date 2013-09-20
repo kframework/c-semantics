@@ -35,7 +35,7 @@ module C11-ERROR
      rule ASSERT(true, _) => . [structural, anywhere]
 
      syntax String ::= Error(String, String, KList) [function]
-     rule Error(Title:String, Msg:String, Refs:KList)  => 
+     rule Error(Title:String, Msg:String, _:KList)  => 
           "Error: " 
           +String Title
           +String "\n"

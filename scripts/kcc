@@ -20,6 +20,8 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 $::VERSION="0.1";
 
+my $KRUN = "krun";
+
 my @compiledPrograms = ();
 my @shouldBeDeleted = ();
 
@@ -93,30 +95,71 @@ sub main {
             push(@compiledPrograms, @stdlib);
       }
       my $linked = linker(@compiledPrograms);
+
       unlink(@shouldBeDeleted);
+
       if ($linked eq ""){
             die "Nothing returned from linker";
       }
+
+      my $programInTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-pgm-in-XXXXXXXXXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      #push(@temporaryFiles, $programInTmp);
+
+      my $programRunnerTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-pgm-runner-XXXXXXXXXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      #push(@temporaryFiles, $programRunnerTmp);
+
+      my $krunOutTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-krun-out-XXXXXXXXXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      #push(@temporaryFiles, $krunOutTmp);
+
+      my $confOutTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-conf-XXXXXXXXXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      #push(@temporaryFiles, $confOutTmp);
+
+      print $programInTmp "$linked\n\n";
+      close($programInTmp);
+
+      my %krun_args = (
+            '--output-mode' => 'raw', 
+            '--output' => $krunOutTmp, 
+            '--parser' => 'cat', 
+            '--compiled-def' => catfile($myDirectory, "c11-static-kompiled"), 
+            '--io' => '', 
+            "-cOUT=\\\"$confOutTmp\\\"" => '',
+            '' => $programInTmp
+            );
+
+      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      print $cmd . "\n";
+      system($cmd);
 
       open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
       my $programRunner = join("", <FILE>);
       close(FILE);
 
-      my $programTemp = File::Temp->new( 
-            TEMPLATE => 'tmp-kcc-prog-XXXXXXXXXXX', 
-            SUFFIX => '.maude', 
-            UNLINK => 0 );
-      push(@temporaryFiles, $programTemp);
+      open(FILE, $confOutTmp) or die "Couldn't open file: $!";
+      my $programConf = join("", <FILE>);
+      close(FILE);
 
       $programRunner = performSpecializations($programRunner);
 
-      print $programTemp "$programRunner\n\n";
+      print $programRunnerTmp "$programRunner\n\n";
 
-      print $programTemp "sub linkedProgram {\nreturn <<'THEPROGRAM';\n$linked\nTHEPROGRAM\n }\n";
+      print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n }\n";
 
-      close($programTemp);
+      close($programRunnerTmp);
 
-      move("$programTemp", $oval) 
+      copy("$programRunnerTmp", $oval)
             or die "Failed to move the generated program to its destination $oval: $!";
 
       my $numFilesChanged = chmod(0755, $oval);

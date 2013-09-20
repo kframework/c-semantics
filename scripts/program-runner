@@ -57,7 +57,8 @@ sub main {
                   '--io' => '', 
                   "-cARGC=$argc" => '',
                   "-cARGV=$argv,,.KList" => '',
-                  '' => $fileInput
+                  "-cIN=\\\"$fileInput\\\"" => '',
+                  #'' => $fileInput
                   );
 
       if (defined $ENV{HELP}) {
@@ -132,9 +133,10 @@ sub main {
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
-      print "KRun args: " . join ' ', (grep {$_} %krun_args) . "\n"
-            if defined $ENV{VERBOSE};
-      system($KRUN, grep {$_} %krun_args);
+      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      print $cmd . "\n";
+      print $cmd . "\n" if defined $ENV{VERBOSE};
+      system($cmd);
 
       # Print errors and/or results and exit.
       if (defined $ENV{PROFILE}) {
