@@ -2,7 +2,6 @@ require "expression.k"
 require "statement.k"
 require "promotion.k"
 require "typing.k"
-require "declaration.k"
 require "bitsize.k"
 require "symloc.k"
 require "bits.k"
@@ -59,7 +58,7 @@ module C-DYNAMIC
 
      rule NullPointerConstant => 0
 
-     syntax K ::= "UnknownCabsLoc"
+     syntax CabsLoc ::= "UnknownCabsLoc"
      rule [unknown-loc]: 
           CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
           [structural, anywhere]
@@ -100,81 +99,6 @@ module C-DYNAMIC
 
      rule NothingExpression => emptyValue
      
-     /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
-     If they are declared, the parameters to the main function shall obey the
-     following constraints:
-     \begin{itemize}
-     \item The value of \cinline{argc} shall be nonnegative.
-
-     \item \cinline{argv[argc]} \cinline{shall} be a null pointer.
-
-     \item If the value of \cinline{argc} is greater than zero, the array
-     members \cinline{argv[0]} through \cinline{argv[argc-1]} inclusive shall
-     contain pointers to strings, which are given implementation-defined values
-     by the host environment prior to program startup. The intent is to supply
-     to the program information determined prior to program startup from
-     elsewhere in the hosted environment. If the host environment is not
-     capable of supplying strings with letters in both uppercase and lowercase,
-     the implementation shall ensure that the strings are received in
-     lowercase. 
-
-     \item If the value of argc is greater than zero, the string pointed to by
-     \cinline{argv[0]} represents the program name; \cinline{argv[0][0]} shall
-     be the null character if the program name is not available from the host
-     environment. If the value of \cinline{argc} is greater than one, the
-     strings pointed to by \cinline{argv[1]} through \cinline{argv[argc-1]}
-     represent the program parameters.
-
-     \item The parameters \cinline{argc} and \cinline{argv} and the strings
-     pointed to by the \cinline{argv} array shall be modifiable by the program,
-     and retain their last-stored values between program startup and program
-     termination.
-
-     \end{itemize}
-     }*/
-     
-     syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
-     
-     rule incomingArguments(L:KList) 
-          => incomingArguments-aux(L, 0) 
-          [structural]
-     rule incomingArguments-aux((S:String,, L:KList), N:Int) 
-          => Computation(
-               Identifier("#incomingArgumentsArray")[N] 
-                    := Constant(StringLiteral(S)))
-          ~> incomingArguments-aux(L:KList, N:Int +Int 1)
-          [structural]
-     rule incomingArguments-aux(.KList, N:Int) 
-          => Computation(
-               Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
-          [structural]
-          
-     syntax K ::= "syntaxInt" "(" Int ")"
-     rule [syntaxInt]: 
-          syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
-     
-     syntax K ::= "argName" "(" KList ")" [function]
-     rule argName(L:KList)
-          => Name(
-               Identifier("#incomingArgumentsArray"), 
-               PointerType(ArrayType(JustBase, 
-                    syntaxInt((lengthKList L) +Int 1), 
-                    Specifier(klist(.KList))))
-          )
-     rule pgmArgs(L:KList)
-          => DeclarationDefinition(InitNameGroup(
-               Specifier(klist(Char)), 
-               klist(InitName(argName(L), NoInit))
-          ))
-          [structural]
-
-     /*@ These helpers are used to get around a bug in \K related to successive
-     ``/''s in strings. */
-     syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
-     
-     rule stdinStr => "stdin:/" +String "/" +String "/"
-     rule stdoutStr => "stdout:/" +String "/" +String "/"
-
      rule <k> Program(klist(P:KList)) => klistToK(P) ...</k>
           <nextLoc> _ => firstLoc(1) </nextLoc>
           <threadLocal>...
@@ -190,47 +114,6 @@ module C-DYNAMIC
           <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           [structural, large]
 
-     /*@ 
-     \begin{lrbox}{\LstBox}
-     \begin{lstlisting}
-     int main(void) { ... }
-     \end{lstlisting}
-     \end{lrbox}
-     \begin{lrbox}{\LstBoxb}
-     \begin{lstlisting}
-     int main(int argc, char *argv[]) { ... }
-     \end{lstlisting}
-     \end{lrbox}
-     \fromStandard{\source[n1570]{\para{5.1.2.2.1}{1}}}{
-     The function called at program startup is named \cinline{main}. The
-     implementation declares no prototype for this function. It shall be
-     defined with a return type of \cinline{int} and with no parameters:
-
-     \usebox{\LstBox}
-
-     or with two parameters (referred to here as \cinline{argc} and
-     \cinline{argv}, though any names may be used, as they are local to the
-     function in which they are declared):
-
-     \usebox{\LstBoxb}
-
-     or equivalent; or in some other implementation-defined manner.
-     }*/
-
-     /*@ this bit of indirection is used to check that the main prototype is
-      correct, and to call it with the appropriate arguments */
-     rule [call-main]:
-          <k> 
-               callMain(N:Int, Args:K)
-               => callMain-aux(typeof(Identifier("main")), N,
-                    Identifier("#incomingArgumentsArray"), Args)
-          ...</k>
-          <status> _ => mainCalled </status>
-          <mainTU> Tu:K </mainTU>
-          <currTU> _ => Tu </currTU>
-          when Tu =/=K .K
-          [ndtrans]
-     
 endmodule
 
 module C

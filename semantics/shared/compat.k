@@ -189,32 +189,33 @@ module COMPAT
                 | loadConfigurationByte(K)
                 | doLoadConfiguration(TCellFragment)
 
-     rule writeConfig(F:String)
-          => saveConfiguration(#open("file:" +String F), .K)
-
-     rule <T>
-               <k> saveConfiguration(_, (.K => Bag2String(B))) ...</k>
-               B:Bag
-          </T>
+     rule <exec>
+               <global> B:Bag </global>
+               <k> 
+                    writeConfig(F:String) 
+                    => saveConfiguration(#open(F), Bag2String(B)) 
+               ...</k>
+          ...</exec>
 
      rule (. => #write(Fd, substrString(S, 0, 1000))) 
-          ~> saveConfiguration(Fd:Int, (S:String => substrString(S, 1000, lengthString(S)))) 
+          ~> saveConfiguration(Fd:Int, 
+               (S:String => substrString(S, 1000, lengthString(S)))) 
           when S =/=String ""
 
      rule saveConfiguration(Fd:Int, "") => #close(Fd)
 
      rule readConfig(F:String) 
-          => loadConfiguration(#open(F, "r"), .K)
+          => loadConfiguration(#open(F, "r"), "")
      rule (. => loadConfigurationByte(#read(Fd, 1000))) 
           ~> loadConfiguration(Fd:Int, _)
      rule (loadConfigurationByte(S2:String) => .) 
           ~> loadConfiguration(_, (S:String => S +String S2))
      rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) 
           => #close(Fd) ~> doLoadConfiguration(String2Bag(S))
-     rule <T>
+     rule <exec>
                <k> doLoadConfiguration(C:Bag) => . ...</k>
-               (_:Bag => C)
-          </T>
+               <global> (_:Bag => C) </global>
+          ...</exec>
 
 endmodule
 

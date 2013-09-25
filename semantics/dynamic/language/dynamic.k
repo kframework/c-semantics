@@ -32,6 +32,7 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
+     syntax K ::= "initMainThread"
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -61,7 +62,7 @@ module C-DYNAMIC
 
      rule NullPointerConstant => 0
 
-     syntax K ::= "UnknownCabsLoc"
+     syntax CabsLoc ::= "UnknownCabsLoc"
      rule [unknown-loc]: 
           CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
           [structural, anywhere]
@@ -179,7 +180,7 @@ module C-DYNAMIC
 
      rule <threads>
                <thread>...
-                    <k> Program(klist(P:KList)) => klistToK(P) ...</k>
+                    <k> initMainThread => . ...</k>
                     <br/>
                     <threadId> _ => 1 </threadId>
                     <nextLoc> _ => firstLoc(1) </nextLoc>

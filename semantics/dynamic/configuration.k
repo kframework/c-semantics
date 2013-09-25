@@ -5,12 +5,20 @@ module C11-CONFIGURATION
      configuration 
      <T>
      <exec>
-          <gotoMap color="lightgray"> .Map </gotoMap>
-          <genv color="lightgray"> .Map </genv>
-          <gtypes color="lightgray"> .Map </gtypes>
-          <gstructs color="lightgray"> .Map </gstructs>
+          <global>
+               <gotoMap color="lightgray"> .Map </gotoMap>
+               <genv color="lightgray"> .Map </genv>
+               <gtypes color="lightgray"> .Map </gtypes>
+               <gstructs color="lightgray"> .Map </gstructs>
+               <stringLiterals color="lightgray"> .Map </stringLiterals>
+               // should be initialized with a pair (threadId, 0)
+               <nextSharedLoc color="black"> 0 </nextSharedLoc>
+               <mem> .Map </mem>
 
-          <mem> .Map </mem>
+               // map from current tu to (map from id to where function was defined)             
+               <funTUs color="lightgray"> .Map </funTUs>
+               <mainTU color="lightgray"> .K </mainTU>
+          </global>
 
           <notWritable> .Map </notWritable>
           <functions color="lightgray"> .Map </functions>
@@ -25,23 +33,17 @@ module C11-CONFIGURATION
 
           // 0 is global, 1 is main
           <nextThreadId color="black"> 2 </nextThreadId>
-          <stringLiterals color="lightgray"> .Map </stringLiterals>
           <br/>
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
-          <externalDefinitions color="cyan"> .Map </externalDefinitions>
-          <internalDefinitions color="cyan"> .Map </internalDefinitions>
           <internalLocations color="cyan"> .Map </internalLocations>
           <externalLocations color="cyan"> .Map </externalLocations>
+
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
           <br/>
-          // map from current tu to (map from id to where function was defined)             
-          <funTUs color="lightgray"> .Map </funTUs>
-          <mainTU color="lightgray"> .K </mainTU>
-          <nextSharedLoc color="black"> 0 </nextSharedLoc>
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>
                <mutexes color="yellow"> .Map </mutexes>
@@ -52,14 +54,14 @@ module C11-CONFIGURATION
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
                     <threadId color="yellow"> 1 </threadId>
-                    // should be initialized with a pair (threadId, 0)
-                    <nextLoc color="black"> 0 </nextLoc>
                     <buffer color="lightgray"> .List </buffer>
                     <k color="green" multiplicity="?"> 
                          readConfig($IN:String)
+                         ~> initMainThread
                          ~> pgmArgs($ARGV:KList) 
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
                     </k>
+                    <nextLoc color="black"> 0 </nextLoc>
                     <finalComputation multiplicity="?" color="lightgray">
                          .K
                     </finalComputation>

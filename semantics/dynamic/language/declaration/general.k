@@ -430,8 +430,7 @@ module C-DECLARATION-GENERAL
      // fixme clean these up, they are so redundant
      // fixme unqualifying these is probably unsafe
      rule <k> 
-               declareOnly(X:Id, T:Type, external)
-               => .K
+               declareOnly(X:Id, T:Type, external) => .
           ...</k>
           <declarations>... .Set => SetItem(X) ...</declarations>
           <preLinkage>...

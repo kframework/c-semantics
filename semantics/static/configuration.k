@@ -5,20 +5,26 @@ module C11-CONFIGURATION
      configuration 
      <T>
      <exec>
-          <gotoMap color="lightgray"> .Map </gotoMap>
-          <genv color="lightgray"> .Map </genv>
-          <gtypes color="lightgray"> .Map </gtypes>
-          <gstructs color="lightgray"> .Map </gstructs>
 
-          <mem> .Map </mem>
+          <global>
+               <gotoMap color="lightgray"> .Map </gotoMap>
+               <genv color="lightgray"> .Map </genv>
+               <gtypes color="lightgray"> .Map </gtypes>
+               <gstructs color="lightgray"> .Map </gstructs>
+               <stringLiterals color="lightgray"> .Map </stringLiterals>
+               <nextSharedLoc color="black"> 0 </nextSharedLoc>
+               <mem> .Map </mem>
+
+               // map from current tu to (map from id to where function was defined)             
+               <funTUs color="lightgray"> .Map </funTUs>
+               <mainTU color="lightgray"> .K </mainTU>
+          </global>
 
           <notWritable> .Map </notWritable>
           <functions color="lightgray"> .Map </functions>
 
           // Static only.
           <freshUnnamed color="black"> 0 </freshUnnamed>
-
-          <stringLiterals color="lightgray"> .Map </stringLiterals>
 
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
@@ -27,25 +33,23 @@ module C11-CONFIGURATION
           <internalDefinitions color="cyan"> .Map </internalDefinitions>
           <internalLocations color="cyan"> .Map </internalLocations>
           <externalLocations color="cyan"> .Map </externalLocations>
+
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
-
-          // map from current tu to (map from id to where function was defined)             
-          <funTUs color="lightgray"> .Map </funTUs>
-          <mainTU color="lightgray"> .K </mainTU>
-          <nextSharedLoc color="black"> 0 </nextSharedLoc>
 
           <threadId> 0 </threadId>
 
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           
-          // should be initialized with a pair (threadId, 0)
-          <nextLoc color="black"> 0 </nextLoc>
           <buffer color="lightgray"> .List </buffer>
           <k color="green" multiplicity="?"> 
-               $PGM:K ~> resolveReferences ~> writeConfig($OUT:String)
+               $PGM:K 
+               ~> resolveReferences 
+               ~> writeConfig($OUT:String)
           </k>
+          // should be initialized with a pair (threadId, 0)
+          <nextLoc color="black"> 0 </nextLoc>
 
           <finalComputation multiplicity="?" color="lightgray">
                .K

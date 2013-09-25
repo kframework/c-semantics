@@ -1,6 +1,6 @@
 KOMPILE = kompile
 
-C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k)
+C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k) $(wildcard ../shared/*.k)
 
 K_CLEAN_FILES = .k c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread 
 
