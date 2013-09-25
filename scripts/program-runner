@@ -56,8 +56,7 @@ sub main {
                   '--compiled-def' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
                   '--io' => '', 
                   "-cARGC=$argc" => '',
-                  "-cARGV=$argv,,.KList" => '',
-                  "-cIN=\\\"$fileInput\\\"" => '',
+                  "-cARGV=\\\"$argv\\\",,.KList" => '',
                   #'' => $fileInput
                   );
 
@@ -133,7 +132,8 @@ sub main {
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
-      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      my $cmd = "$KRUN -cIN=\\\"$fileInput\\\" " 
+            . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n";
       print $cmd . "\n" if defined $ENV{VERBOSE};
       system($cmd);

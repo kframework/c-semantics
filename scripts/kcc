@@ -129,17 +129,29 @@ sub main {
       print $programInTmp "$linked\n\n";
       close($programInTmp);
 
-      my %krun_args = (
-            '--output-mode' => 'raw', 
-            '--output' => $krunOutTmp, 
-            '--parser' => 'cat', 
-            '--compiled-def' => catfile($myDirectory, "c11-static-kompiled"), 
-            '--io' => '', 
-            "-cOUT=\\\"$confOutTmp\\\"" => '',
-            '' => $programInTmp
+      # my %krun_args = (
+      #       '--output-mode' => 'raw', 
+      #       '--output' => $krunOutTmp, 
+      #       '--parser' => 'cat', 
+      #       '--compiled-def' => catfile($myDirectory, "c11-static-kompiled"), 
+      #       '--io' => '', 
+      #       "-cOUT=\\\"$confOutTmp\\\"" => '',
+      #       '' => $programInTmp
+      #       );
+
+      my $comp_def = catfile($myDirectory, "c11-static-kompiled");
+      my @krun_args = (
+            "-cOUT=\\\"$confOutTmp\\\"",
+            '--output-mode raw', 
+            "--output $krunOutTmp",
+            '--parser cat', 
+            "--compiled-def $comp_def",
+            '--io', 
+            $programInTmp
             );
 
-      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      my $cmd = "$KRUN " . (join ' ', (@krun_args));
+      #my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n";
       system($cmd);
 
