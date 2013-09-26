@@ -3,8 +3,9 @@ module C-BINDING-SYNTAX
 endmodule
 
 module C-BINDING
+     imports C-BINDING-SYNTAX
      imports C-DECLARATION-SYNTAX
-     imports C-COMMON-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -12,6 +13,7 @@ module C-BINDING
      imports C-TYPING-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
 
      // empty binding
      // fixme not really a sequence point

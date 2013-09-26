@@ -1,6 +1,7 @@
 KOMPILE = kompile
 
-C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k) $(wildcard ../shared/*.k)
+C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k) \
+	$(wildcard ../common/*.k) $(wildcard ../common/*/*.k)
 
 K_CLEAN_FILES = .k c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread 
 
@@ -9,17 +10,17 @@ K_CLEAN_FILES = .k c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread
 default: fast
 
 c11-kompiled: $(C11_FILES)
-	@echo "Compiling the C definition..."
+	@echo "Compiling the dynamic C semantics..."
 	@$(KOMPILE) c11.k -o "c11-kompiled" -w all -v -l C11 -transition "interpRule"
 	@touch c11-kompiled
 
 c11-kompiled-nd: $(C11_FILES)
-	@echo "Compiling the C definition with expression sequencing non-determinism..."
+	@echo "Compiling the dynamic C semantics with expression sequencing non-determinism..."
 	@$(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
 	@touch c11-kompiled-nd
 
 c11-kompiled-nd-thread: $(C11_FILES)
-	@echo "Compiling the C definition with thread-interleaving non-determinism..."
+	@echo "Compiling the dynamic C semantics with thread-interleaving non-determinism..."
 	@$(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -l C11 -transition "observable ndtrans ndthread"
 	@touch c11-kompiled-nd-thread
 

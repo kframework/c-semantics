@@ -5,7 +5,6 @@ module C11-CONFIGURATION
      configuration 
      <T>
      <exec>
-
           <global>
                <gotoMap color="lightgray"> .Map </gotoMap>
                <genv color="lightgray"> .Map </genv>
@@ -18,13 +17,12 @@ module C11-CONFIGURATION
                // map from current tu to (map from id to where function was defined)             
                <funTUs color="lightgray"> .Map </funTUs>
                <mainTU color="lightgray"> .K </mainTU>
+               <freshUnnamed color="black"> 0 </freshUnnamed>
           </global>
 
           <notWritable> .Map </notWritable>
           <functions color="lightgray"> .Map </functions>
 
-          // Static only.
-          <freshUnnamed color="black"> 0 </freshUnnamed>
 
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>

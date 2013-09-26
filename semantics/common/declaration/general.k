@@ -19,14 +19,12 @@ module C-DECLARATION-GENERAL
      imports C-DECLARATION-INITIALIZATION-SYNTAX
      imports C-DECLARATION-SYNTAX
 
-     imports C-COMMON-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-STATEMENT-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports COMPAT-SYNTAX
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes

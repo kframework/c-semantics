@@ -2,7 +2,7 @@ module C-DECLARATION-RESOLUTION
      imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-SYNTAX
 
-     imports C-COMMON-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

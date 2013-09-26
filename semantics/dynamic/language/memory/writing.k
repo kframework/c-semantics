@@ -20,31 +20,6 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
-     
-     rule [write-string]:
-          writeString(Loc:SymLoc, S:String)
-          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
-               := tv(ordChar(firstChar(S:String)), t(.Set, char)))
-               ~> writeString(Loc +bytes 1, butFirstChar(S:String))
-          when S:String =/=String ""
-          [structural]
-     // fixme this bare 4 needs to be updated to handle different size wchar_ts
-     rule [write-wstring]:
-          writeWString(Loc:SymLoc, (N:Int,, S:KList))
-          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
-               := tv(N, cfg:wcharut))
-               ~> writeWString(Loc +bytes 4, S)
-          [structural] 
-     rule [write-empty-string]:
-          writeString(Loc:SymLoc, "")
-          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
-               := tv(0, t(.Set, char)))
-          [structural]
-     rule [write-wstring]:
-          writeWString(Loc:SymLoc, .KList)
-          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
-               := tv(0, cfg:wcharut))
-          [structural] 
           
      syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
      syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 

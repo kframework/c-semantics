@@ -4,7 +4,7 @@ module C-EXPRESSION-RELATIONAL
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      syntax K ::= makeTruth(Bool) [function]
      rule makeTruth(B:Bool)

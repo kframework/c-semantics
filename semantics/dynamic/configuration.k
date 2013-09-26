@@ -18,6 +18,7 @@ module C11-CONFIGURATION
                // map from current tu to (map from id to where function was defined)             
                <funTUs color="lightgray"> .Map </funTUs>
                <mainTU color="lightgray"> .K </mainTU>
+               <freshUnnamed color="black"> 0 </freshUnnamed>
           </global>
 
           <notWritable> .Map </notWritable>
@@ -37,6 +38,8 @@ module C11-CONFIGURATION
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
+          <externalDefinitions color="cyan"> .Map </externalDefinitions>
+          <internalDefinitions color="cyan"> .Map </internalDefinitions>
           <internalLocations color="cyan"> .Map </internalLocations>
           <externalLocations color="cyan"> .Map </externalLocations>
 

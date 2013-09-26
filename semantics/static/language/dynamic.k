@@ -1,5 +1,3 @@
-require "symloc.k"
-require "bits.k"
 require "process-label.k"
 
 module C-DYNAMIC-SYNTAX
@@ -111,13 +109,10 @@ module C-DYNAMIC
 endmodule
 
 module C
-     imports C-TYPING 
-     imports C-BITSIZE
      imports C-SYNTAX
 
+     imports C-COMMON
+
      imports C-DYNAMIC
-     imports C-DECLARATION
      imports C-PROCESS-LABEL
-     imports C-SYMLOC
-     imports C-BITS
 endmodule

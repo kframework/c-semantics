@@ -1,9 +1,10 @@
 module C-STATEMENT-RETURN
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-EXPRESSION-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{

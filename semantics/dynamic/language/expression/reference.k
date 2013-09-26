@@ -2,7 +2,7 @@ module C-EXPRESSION-REFERENCE
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the

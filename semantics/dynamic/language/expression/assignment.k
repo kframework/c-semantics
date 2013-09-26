@@ -3,6 +3,7 @@ module C-EXPRESSION-ASSIGNMENT
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-MEMORY-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{

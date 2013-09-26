@@ -11,6 +11,7 @@ module C-EXPRESSION-CONDITIONAL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-PROMOTION-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DECLARATION-SYNTAX
 
      syntax K ::= "getTypes" "(" KList ")"

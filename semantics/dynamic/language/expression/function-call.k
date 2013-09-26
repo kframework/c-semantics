@@ -5,6 +5,7 @@ module C-EXPRESSION-FUNCTION-CALL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C-BINDING-SYNTAX
 
      imports COMPAT-SYNTAX
 

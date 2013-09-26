@@ -1,24 +1,80 @@
 module C-MEMORY-ALLOC-SYNTAX
+     syntax K ::= memblock(Int, Bag, Map)
+
+     syntax K ::= writeString(SymLoc, String)
+     syntax K ::= writeWString(SymLoc, KList)
+
      // fixme would be better to keep canonical
      syntax Int ::= getBitOffset(SymLoc) [function]
      syntax Int ::= getByteOffset(SymLoc) [function]
 
+     syntax K ::= checkValidLoc(SymLoc)
+     syntax K ::= checkDerefLoc(SymLoc)
      // TODO(chathhorn): error check
      syntax K ::= "checkValidLoc-aux" "(" SymLoc ")"
+
+     syntax K ::= allocString(SymLoc, String)
+     syntax K ::= allocWString(SymLoc, KList)
+
+     syntax K ::= alloc(SymLoc, K) [strict(2)]
+     syntax K ::= realloc(SymLoc, SymLoc, Int, Int)
+
+     syntax K ::= zeroBlock(SymLoc)
+
+     // deletes the base object from memory, given a location
+     syntax K ::= deleteBlock(SymLoc)
+     // deletes the base object from memory, given a location and it size (as a
+     // check)
+     syntax K ::= deleteSizedBlock(SymLoc, Int)
+
+     syntax K ::= sizeofLocation(SymLoc)
+
+     syntax K ::= "mconst"
+
+     syntax K ::= makeUnwritable(SymLoc)
+     syntax K ::= makeUnwritableSubObject(K)
+     syntax K ::= makeUnwritableVar(K)
+
+     syntax K ::= allocateType(SymLoc, Type)
+     syntax K ::= allocateTypeIfAbsent(SymLoc, Type)
 endmodule
 
 module C-MEMORY-ALLOC
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-MEMORY-SYNTAX
 
      imports C-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
+     
+     rule [write-string]:
+          writeString(Loc:SymLoc, S:String)
+          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               := tv(ordChar(firstChar(S:String)), t(.Set, char)))
+               ~> writeString(Loc +bytes 1, butFirstChar(S:String))
+          when S:String =/=String ""
+          [structural]
+     // fixme this bare 4 needs to be updated to handle different size wchar_ts
+     rule [write-wstring]:
+          writeWString(Loc:SymLoc, (N:Int,, S:KList))
+          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               := tv(N, cfg:wcharut))
+               ~> writeWString(Loc +bytes 4, S)
+          [structural] 
+     rule [write-empty-string]:
+          writeString(Loc:SymLoc, "")
+          => Computation((* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               := tv(0, t(.Set, char)))
+          [structural]
+     rule [write-wstring]:
+          writeWString(Loc:SymLoc, .KList)
+          => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               := tv(0, cfg:wcharut))
+          [structural] 
 
      rule allocateType(Loc:SymLoc, T:Type) 
           => alloc(Loc, byteSizeofType(T))

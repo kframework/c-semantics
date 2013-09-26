@@ -12,7 +12,9 @@ module LIBC-STDIO
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-EXPRESSION-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 

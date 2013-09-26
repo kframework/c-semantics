@@ -10,6 +10,7 @@ module LIBC-BOOTSTRAP
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-TYPING-SYNTAX
 

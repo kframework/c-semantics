@@ -1,12 +1,13 @@
-module C-EXPRESSION-LITERAL
-     imports C-EXPRESSION-SYNTAX
+module C-LITERAL
+     imports C-CONVERSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C11-SETTINGS-SYNTAX
+
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports COMPAT-SYNTAX
 

@@ -1,12 +1,18 @@
 module C-BITSIZE-SYNTAX
      // needs to be heated to top of K for struct and union types
      syntax K ::= bitSizeofType(K) [strict]
+     syntax K ::= "byteSizeofType" "(" Type ")"
+
+     // generates a tv(size, cfg:sizeut)
+     syntax K ::= "sizeofType" "(" K ")" [strict]
 endmodule
 
 module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
+     imports C-BITS-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C-CONVERSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -15,6 +21,18 @@ module C-BITSIZE
 
      syntax K ::= bitSizeofList(KList)
      syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
+     
+     rule sizeofType(T:Type)
+          => cast(cfg:sizeut, byteSizeofType(T)) 
+          [structural]
+
+     syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
+     rule byteSizeofType(T:Type)
+          => byteSizeofType-aux(bitSizeofType(T)) 
+          [structural, anywhere]
+     rule byteSizeofType-aux(V:TypedValue)
+          => bitsToBytes(value(V))
+          [structural]
 
      // TODO(chathhorn): BUG? Note doesn't heat when .K.
      rule bitSizeofList-aux(K:K, X:Int, L:KList)

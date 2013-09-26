@@ -1,10 +1,8 @@
 require "expression.k"
 require "statement.k"
-require "promotion.k"
 require "memory.k"
-require "declaration.k"
-require "symloc.k"
-require "bits.k"
+require "binding.k"
+require "typing-expression.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -304,15 +302,14 @@ module C-DYNAMIC
 endmodule
 
 module C
-     imports C-DYNAMIC
      imports C-SYNTAX
-     imports C-BITSIZE
-     imports C-DECLARATION
+
+     imports C-COMMON
+
+     imports C-DYNAMIC
      imports C-EXPRESSION
      imports C-MEMORY 
-     imports C-PROMOTION
      imports C-STATEMENT
-     imports C-TYPING 
-     imports C-SYMLOC
-     imports C-BITS
+     imports C-TYPING-EXPRESSION
+     imports C-BINDING
 endmodule

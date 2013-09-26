@@ -7,6 +7,7 @@ module LIBC-STDLIB
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 

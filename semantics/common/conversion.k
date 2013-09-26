@@ -1,11 +1,12 @@
-module C-EXPRESSION-CONVERSION-SYNTAX
+module C-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
      syntax K ::= arithInterpret(Type, BaseValue) [function]
+     // as described in 6.3 // totype, fromvalue
+     syntax K ::= cast(K, K) [strict(1)]
 endmodule
 
-module C-EXPRESSION-CONVERSION
-     imports C-EXPRESSION-CONVERSION-SYNTAX
-     imports C-EXPRESSION-SYNTAX
+module C-CONVERSION
+     imports C-CONVERSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

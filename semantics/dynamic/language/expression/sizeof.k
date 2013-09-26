@@ -22,17 +22,6 @@ module C-EXPRESSION-SIZEOF
      its type (an unsigned integer type) is \cinline{size_t}, defined in
      \header{<stddef.h>} (and other headers).
      }*/
-     
-     rule sizeofType(T:Type)
-          => cast(cfg:sizeut, byteSizeofType(T)) 
-          [structural]
-     syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
-     rule byteSizeofType(T:Type)
-          => byteSizeofType-aux(bitSizeofType(T)) 
-          [structural, anywhere]
-     rule byteSizeofType-aux(V:TypedValue)
-          => bitsToBytes(value(V))
-          [structural]
 
      rule SizeofExpression(E:K)
           => sizeofType(typeof(E))
