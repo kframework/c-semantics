@@ -3,6 +3,8 @@ require "memory/writing.k"
 require "memory/alloc.k"
 
 module C-MEMORY-SYNTAX
+     imports C-COMMON-MEMORY-SYNTAX
+
      // location, type
      syntax K ::= read(SymLoc, K) [strict(2)]
      // location, value
@@ -11,18 +13,10 @@ module C-MEMORY-SYNTAX
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, KList)
 
-     syntax K ::= "mconst"
+     syntax K ::= zeroBlock(SymLoc)
 
-     syntax K ::= makeUnwritable(SymLoc)
-     syntax K ::= makeUnwritableSubObject(K)
-     syntax K ::= makeUnwritableVar(K)
-
-     syntax K ::= allocateType(SymLoc, Type)
-     syntax K ::= allocateTypeIfAbsent(SymLoc, Type)
      syntax K ::= allocString(SymLoc, String)
      syntax K ::= allocWString(SymLoc, KList)
-
-     syntax K ::= zeroBlock(SymLoc)
 
      syntax K ::= alloc(SymLoc, K) [strict(2)]
      syntax K ::= realloc(SymLoc, SymLoc, Int, Int)

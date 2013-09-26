@@ -1,0 +1,7 @@
+require "compat.k"
+require "declaration.k"
+require "bitsize.k"
+require "typing.k"
+require "syntax.k"
+require "statement.k"
+require "memory.k"

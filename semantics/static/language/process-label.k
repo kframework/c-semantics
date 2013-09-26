@@ -1,13 +1,9 @@
-module C-STATEMENT-PROCESS-LABEL
-     imports C-STATEMENT-SYNTAX
-     imports C-STATEMENT-SWITCH-SYNTAX
-     imports C-STATEMENT-BLOCK-SYNTAX
-     imports C-STATEMENT-LOOP-SYNTAX
-     imports C-STATEMENT-GOTO-SYNTAX
+module C-PROCESS-LABEL
+     imports C-COMMON-STATEMENT-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-DECLARATION-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 

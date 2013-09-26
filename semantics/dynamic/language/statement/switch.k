@@ -1,10 +1,5 @@
-module C-STATEMENT-SWITCH-SYNTAX
-     //  switchid, value (tv or 'Default)
-     syntax K ::= genLabel(Int, K) [klabel('genLabel)]
-endmodule
-
 module C-STATEMENT-SWITCH
-     imports C-STATEMENT-SWITCH-SYNTAX
+     imports C-COMMON-STATEMENT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

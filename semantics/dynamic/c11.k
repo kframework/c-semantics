@@ -7,7 +7,7 @@ require "error-map.k"
 require "libc.k"
 require "language/dynamic.k"
 
-require "../shared/compat.k"
+require "../common/common.k"
 
 module C11-SYNTAX
      imports C-SYNTAX

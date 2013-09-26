@@ -1,11 +1,15 @@
-module C-DECLARATION-BINDING
+module C-BINDING-SYNTAX
+     syntax K ::= "bind" "(" KList "," KList ")"
+endmodule
+
+module C-BINDING
      imports C-DECLARATION-SYNTAX
+     imports C-COMMON-MEMORY-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports C-PROMOTION-SYNTAX
 

@@ -6,10 +6,11 @@ endmodule
 module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
+     imports C-DECLARATION-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECLARATION-SYNTAX
      imports C11-SETTINGS-SYNTAX
 
      syntax K ::= bitSizeofList(KList)

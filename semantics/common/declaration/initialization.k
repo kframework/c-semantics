@@ -7,10 +7,11 @@ module C-DECLARATION-INITIALIZATION
      imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-SYNTAX
 
+     imports C-COMMON-MEMORY-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
      
@@ -43,8 +44,10 @@ module C-DECLARATION-INITIALIZATION
      
      rule fillInits((InitFragment(K:K, Exp:K),, L:KList))
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
+          when L =/=KList .KList
           [structural] 
-     rule fillInits(.KList) => .
+     rule fillInits((InitFragment(K:K, Exp:K),, .KList))
+          => fillInit(InitFragment(K, Exp))
           [structural] 
      
      syntax ListItem ::= "next"

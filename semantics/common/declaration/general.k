@@ -19,11 +19,12 @@ module C-DECLARATION-GENERAL
      imports C-DECLARATION-INITIALIZATION-SYNTAX
      imports C-DECLARATION-SYNTAX
 
+     imports C-COMMON-MEMORY-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-STATEMENT-SYNTAX
      imports C-EXPRESSION-SYNTAX
      imports COMPAT-SYNTAX
@@ -430,7 +431,8 @@ module C-DECLARATION-GENERAL
      // fixme clean these up, they are so redundant
      // fixme unqualifying these is probably unsafe
      rule <k> 
-               declareOnly(X:Id, T:Type, external) => .
+               declareOnly(X:Id, T:Type, external)
+               => .K
           ...</k>
           <declarations>... .Set => SetItem(X) ...</declarations>
           <preLinkage>...

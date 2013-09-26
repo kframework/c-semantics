@@ -1,13 +1,11 @@
 module C-STATEMENT-LOOP-SYNTAX
-     syntax Statement ::= "loopMarked"
-     syntax K ::= "popLoop"
      syntax K ::= "addToHistory" "(" Int ")"
           [latex(\terminal{addToHist}\!({#1}\!))]
 endmodule
 
 module C-STATEMENT-LOOP
      imports C-STATEMENT-LOOP-SYNTAX
-     imports C-STATEMENT-BLOCK-SYNTAX
+     imports C-STATEMENT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

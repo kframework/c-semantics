@@ -1,13 +1,10 @@
 require "expression.k"
 require "statement.k"
 require "promotion.k"
-require "typing.k"
 require "memory.k"
 require "declaration.k"
-require "bitsize.k"
 require "symloc.k"
 require "bits.k"
-require "syntax.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"

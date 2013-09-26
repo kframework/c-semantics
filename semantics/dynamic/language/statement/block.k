@@ -1,10 +1,5 @@
-module C-STATEMENT-BLOCK-SYNTAX
-     syntax K ::= "pushBlock"
-     syntax K ::= "popBlock"
-endmodule
-
 module C-STATEMENT-BLOCK
-     imports C-STATEMENT-BLOCK-SYNTAX
+     imports C-STATEMENT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

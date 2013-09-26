@@ -1,14 +1,5 @@
-module C-STATEMENT-GOTO-SYNTAX
-     //  nestingDepth, currentBlock, decl
-     syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")"
-     //  nestingDepth, block history, continuation, loop stack, decl stack
-     syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")"
-          [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
-endmodule
-
 module C-STATEMENT-GOTO
-     imports C-STATEMENT-GOTO-SYNTAX
-     imports C-STATEMENT-BLOCK-SYNTAX
+     imports C-STATEMENT-SYNTAX
      imports C-STATEMENT-LOOP-SYNTAX
 
      imports C-SYNTAX
