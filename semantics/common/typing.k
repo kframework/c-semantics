@@ -3,6 +3,7 @@ require "typing/declaration.k"
 require "typing/interpretation.k"
 require "typing/misc.k"
 require "typing/strictness.k"
+require "typing/expression.k"
 
 module C-TYPING-SYNTAX
      syntax K ::= "typeof" "(" K ")"
@@ -92,7 +93,7 @@ module C-TYPING-SYNTAX
      syntax Set ::= "getModifiers" "(" K ")" [function]
 
      syntax Type ::= "typedDeclaration" "(" Type "," Id ")" 
-          [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
+          [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
      syntax K ::= "giveType" "(" Id "," Type ")"
 
@@ -108,4 +109,5 @@ module C-TYPING
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
      imports C-TYPING-STRICTNESS
+     imports C-TYPING-EXPRESSION
 endmodule

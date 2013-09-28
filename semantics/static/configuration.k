@@ -11,18 +11,18 @@ module C11-CONFIGURATION
                <gtypes color="lightgray"> .Map </gtypes>
                <gstructs color="lightgray"> .Map </gstructs>
                <stringLiterals color="lightgray"> .Map </stringLiterals>
-               <nextSharedLoc color="black"> 0 </nextSharedLoc>
+               // should be initialized with a pair (threadId, 0)
+               <nextSharedLoc color="black"> .K </nextSharedLoc>
                <mem> .Map </mem>
 
-               // map from current tu to (map from id to where function was defined)             
+               // map from current tu to (map from id to where function was
+               // defined)             
                <funTUs color="lightgray"> .Map </funTUs>
                <mainTU color="lightgray"> .K </mainTU>
                <freshUnnamed color="black"> 0 </freshUnnamed>
+               <functions color="lightgray"> .Map </functions>
+               <notWritable> .Map </notWritable>
           </global>
-
-          <notWritable> .Map </notWritable>
-          <functions color="lightgray"> .Map </functions>
-
 
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>

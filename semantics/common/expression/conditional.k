@@ -5,7 +5,6 @@ endmodule
 
 module C-EXPRESSION-CONDITIONAL
      imports C-EXPRESSION-CONDITIONAL-SYNTAX
-     imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

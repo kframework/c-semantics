@@ -1,8 +1,7 @@
 require "expression.k"
 require "statement.k"
-require "memory.k"
 require "binding.k"
-require "typing-expression.k"
+require "builtin.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -41,8 +40,10 @@ module C-DYNAMIC
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-DECLARATION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-EXPRESSION-SYNTAX
+     imports C-DECLARATION-SYNTAX
+     imports C-DECLARATION-GENERAL-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -147,23 +148,30 @@ module C-DYNAMIC
                Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
           [structural]
           
-     syntax K ::= "syntaxInt" "(" Int ")"
-     rule [syntaxInt]: 
-          syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
-     
-     syntax K ::= "argName" "(" KList ")" [function]
-     rule argName(L:KList)
-          => Name(
-               Identifier("#incomingArgumentsArray"), 
-               PointerType(ArrayType(JustBase, 
-                    syntaxInt((lengthKList L) +Int 1), 
-                    Specifier(klist(.KList))))
-          )
+     // syntax K ::= "syntaxInt" "(" Int ")"
+     // rule [syntaxInt]: 
+     // syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
+     // 
+     // syntax K ::= "argName" "(" KList ")" [function]
+     // rule argName(L:KList)
+     //      => Name(
+     //           Identifier("#incomingArgumentsArray"), 
+     //           PointerType(ArrayType(JustBase, 
+     //                syntaxInt((lengthKList L) +Int 1), 
+     //                Specifier(klist(.KList))))
+     //      )
+     // rule pgmArgs(L:KList)
+     //      => DeclarationDefinition(InitNameGroup(
+     //           Specifier(klist(Char)), 
+     //           klist(InitName(argName(L), NoInit))
+     //      ))
+     //      [structural]
+
      rule pgmArgs(L:KList)
-          => DeclarationDefinition(InitNameGroup(
-               Specifier(klist(Char)), 
-               klist(InitName(argName(L), NoInit))
-          ))
+          => declareOnly(
+               Identifier("#incomingArgumentsArray"), 
+               t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))), lengthKList L)),
+               noLinkage)
           [structural]
 
      /*@ These helpers are used to get around a bug in \K related to successive
@@ -175,7 +183,7 @@ module C-DYNAMIC
 
      rule <threads>
                <thread>...
-                    <k> initMainThread => . ...</k>
+                    <k> initMainThread => populateFromGlobal ...</k>
                     <br/>
                     <threadId> _ => 1 </threadId>
                     <nextLoc> _ => firstLoc(1) </nextLoc>
@@ -187,11 +195,12 @@ module C-DYNAMIC
                               <currentProgramLoc>
                                    _ => UnknownCabsLoc
                               </currentProgramLoc>
+                              <currTU> _ => MainTU </currTU>
                          ...</control>
                     ...</threadLocal>
                ...</thread>
           </threads>
-          <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
+          <mainTU> MainTU:K </mainTU>
           <files>...
                ( .Bag =>
                <file>...
@@ -211,6 +220,7 @@ module C-DYNAMIC
                     <mode> "w" </mode>
                ...</file>)
           ...</files>
+          when MainTU =/=K .K
           [structural, large]
 
      /*@ 
@@ -249,9 +259,6 @@ module C-DYNAMIC
                     Identifier("#incomingArgumentsArray"), Args)
           ...</k>
           <status> _ => mainCalled </status>
-          <mainTU> Tu:K </mainTU>
-          <currTU> _ => Tu </currTU>
-          when Tu =/=K .K
           [ndtrans]
      
      // FIXME i think these are slightly different
@@ -308,8 +315,7 @@ module C
 
      imports C-DYNAMIC
      imports C-EXPRESSION
-     imports C-MEMORY 
      imports C-STATEMENT
-     imports C-TYPING-EXPRESSION
      imports C-BINDING
+     imports C-BUILTIN
 endmodule

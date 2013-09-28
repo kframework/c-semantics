@@ -11,7 +11,8 @@ module LIBC-BOOTSTRAP
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-EXPRESSION-SYNTAX
+     imports C-BUILTIN-SYNTAX
+     imports C-EXPRESSION-EVAL-SYNTAX
      imports C-TYPING-SYNTAX
 
      // TODO(chathhorn): not pretty

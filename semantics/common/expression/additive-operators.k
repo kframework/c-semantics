@@ -8,7 +8,6 @@ endmodule
 
 module C-EXPRESSION-ADDITIVE-OPERATORS
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
-     imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

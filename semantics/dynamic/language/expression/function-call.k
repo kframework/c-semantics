@@ -1,4 +1,9 @@
+module C-EXPRESSION-FUNCTION-CALL-SYNTAX
+     syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
+endmodule
+
 module C-EXPRESSION-FUNCTION-CALL
+     imports C-EXPRESSION-FUNCTION-CALL-SYNTAX
      imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
@@ -10,7 +15,6 @@ module C-EXPRESSION-FUNCTION-CALL
      imports COMPAT-SYNTAX
 
      syntax K ::= application(K, KList) [strict(1)]
-     syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
 
      // TODO(chathhorn): KList heating bug
      rule application(K:K, L:KList) => K ~> application(HOLE, L) [heat]
@@ -86,11 +90,6 @@ module C-EXPRESSION-FUNCTION-CALL
           <structs> _ => GS </structs>
           [structural]
 
-     rule [builtin-application]:
-          application'(functionPrototype(X:Id, T:Type), L:KList)
-          => application'(functionObject(X, T, handleBuiltin(X, T)), L)
-          [structural]
-          
      rule [function-application]:
           <k> 
                application'(functionObject(X:Id, 

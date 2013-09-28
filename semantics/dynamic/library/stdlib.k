@@ -46,17 +46,17 @@ module LIBC-STDLIB
      allocated space.
      }*/
      syntax K ::= "newAlloc" "(" Int ")" [function]
-     rule newAlloc(Fresh:Int) => loc(Fresh @ allocatedDuration, 0, 0)
+     rule newAlloc(Base:Int) => loc(Base @ allocatedDuration, 0, 0)
      
      rule [malloc]:
           <k> 
                prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
-               => alloc(newAlloc(Fresh:Int), Len:Int)
-                    ~> tv(newAlloc(Fresh:Int), 
+               => alloc(newAlloc(N), Len:Int)
+                    ~> tv(newAlloc(N), 
                          t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... .Map => newAlloc(Fresh:Int) |-> Len:Int ...</malloced>
-          <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
+          <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>
+          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
@@ -83,13 +83,13 @@ module LIBC-STDLIB
           <k> 
                prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
                     tv(NewLen:Int, _:KResult)))
-               => realloc(OldLoc, newAlloc(Fresh:Int), OldLen:Int, NewLen:Int)
-                    ~> tv(newAlloc(Fresh:Int), t(.Set, pointerType(t(.Set, void))))
+               => realloc(OldLoc, newAlloc(N), OldLen:Int, NewLen:Int)
+                    ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
-               (OldLoc => newAlloc(Fresh:Int)) |-> (OldLen:Int => NewLen:Int) 
+               (OldLoc => newAlloc(N)) |-> (OldLen:Int => NewLen:Int) 
           ...</malloced>
-          <freshNat> Fresh:Int => Fresh:Int +Int 1 </freshNat>
+          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
           when OldLoc =/=K NullPointer
           [structural]
      
@@ -128,10 +128,10 @@ module LIBC-STDLIB
      rule [rand]:
           <k> 
                prepareBuiltin((Identifier("rand")), .KList)
-               => tv(absInt(randomRandom(Fresh:Int)) 
+               => tv(absInt(randomRandom(Seed:Int)) 
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
-          <randNat> Fresh:Int => Fresh:Int +Int 1 </randNat>
+          <randNat> Seed:Int => Seed:Int +Int 1 </randNat>
           [structural]
           
      rule [srand]:

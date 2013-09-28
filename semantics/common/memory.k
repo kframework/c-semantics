@@ -19,5 +19,4 @@ endmodule
 module C-MEMORY
      imports C-MEMORY-WRITING 
      imports C-MEMORY-READING 
-     imports C-MEMORY-ALLOC 
 endmodule

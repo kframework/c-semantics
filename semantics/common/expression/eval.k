@@ -1,10 +1,12 @@
 module C-EXPRESSION-EVAL-SYNTAX
+     // TODO(chathhorn): hackish, rename at least
+     syntax K ::= rkludge(K) [function, klabel('rkludge)]
+     syntax K ::= pkludge(K) [function, klabel('pkludge)]
 endmodule
 
 module C-EXPRESSION-EVAL
      imports C-EXPRESSION-EVAL-SYNTAX
      imports C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
-     imports C-EXPRESSION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

@@ -1,6 +1,4 @@
 module C-EXPRESSION-SIZEOF
-     imports C-EXPRESSION-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

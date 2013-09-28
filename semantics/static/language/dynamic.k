@@ -1,4 +1,5 @@
 require "process-label.k"
+require "static.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -114,5 +115,6 @@ module C
      imports C-COMMON
 
      imports C-DYNAMIC
+     imports C-STATIC
      imports C-PROCESS-LABEL
 endmodule

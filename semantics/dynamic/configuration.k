@@ -12,25 +12,23 @@ module C11-CONFIGURATION
                <gstructs color="lightgray"> .Map </gstructs>
                <stringLiterals color="lightgray"> .Map </stringLiterals>
                // should be initialized with a pair (threadId, 0)
-               <nextSharedLoc color="black"> 0 </nextSharedLoc>
+               <nextSharedLoc color="black"> .K </nextSharedLoc>
                <mem> .Map </mem>
 
-               // map from current tu to (map from id to where function was defined)             
+               // map from current tu to (map from id to where function was
+               // defined)             
                <funTUs color="lightgray"> .Map </funTUs>
                <mainTU color="lightgray"> .K </mainTU>
                <freshUnnamed color="black"> 0 </freshUnnamed>
+               <functions color="lightgray"> .Map </functions>
+               <notWritable> .Map </notWritable>
           </global>
-
-          <notWritable> .Map </notWritable>
-          <functions color="lightgray"> .Map </functions>
-
-          // Static only -- freshUnnamed
-          <freshNat color="black"> 0 </freshNat>
 
           // stdlib
           <randNat color="black"> 0 </randNat>
           // stdlib
           <malloced color="lightgray"> .Map </malloced>
+          <nextMalloced> 0 </nextMalloced>
 
           // 0 is global, 1 is main
           <nextThreadId color="black"> 2 </nextThreadId>

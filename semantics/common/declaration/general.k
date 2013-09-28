@@ -1,6 +1,8 @@
 module C-DECLARATION-GENERAL-SYNTAX
      syntax K ::= "doDeclare" "(" K "," K ")" [strict(1)] 
 
+     syntax K ::= "declareOnly" "(" Id "," Type "," K ")"
+
      // type, translation unit it was defined in, definition
      syntax K ::= "declarationObject" "(" Type "," K "," K ")"
           [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})]
@@ -12,6 +14,7 @@ module C-DECLARATION-GENERAL-SYNTAX
      syntax KResult ::= "initializer" "(" K ")"
 
      syntax K ::= verifySpecifiers(K) [strict]
+
 endmodule
 
 module C-DECLARATION-GENERAL
@@ -228,6 +231,9 @@ module C-DECLARATION-GENERAL
           
      //- external variables
      // feature request : nice to have MapList
+
+     // id, type, possible init, linkage (external, internal, noLinkage)
+     syntax K ::= "declareWithLinkage" "(" Id "," Type "," K "," K ")"
      
      // function definition
      rule declareFunction(X:Id, T:Type, K:K)
@@ -251,9 +257,6 @@ module C-DECLARATION-GENERAL
           when isStaticType(T)
           [structural] 
           
-     // id, type, possible init, linkage (external, internal, noLinkage)
-     syntax K ::= "declareWithLinkage" "(" Id "," Type "," K "," K ")"
-     
      //- internal variables
      
      // fixme need to look for bad use

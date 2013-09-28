@@ -14,7 +14,6 @@ module C-MEMORY-WRITING
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX

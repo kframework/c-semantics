@@ -1,5 +1,5 @@
 module C-EXPRESSION-ASSIGNMENT
-     imports C-EXPRESSION-SYNTAX
+     imports C-EXPRESSION-EVAL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
