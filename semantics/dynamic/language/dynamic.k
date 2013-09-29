@@ -2,6 +2,7 @@ require "expression.k"
 require "statement.k"
 require "binding.k"
 require "builtin.k"
+require "io-buffered.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -148,25 +149,6 @@ module C-DYNAMIC
                Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
           [structural]
           
-     // syntax K ::= "syntaxInt" "(" Int ")"
-     // rule [syntaxInt]: 
-     // syntaxInt(N:Int) => NoSuffix(DecimalConstant(N:Int)) [structural]
-     // 
-     // syntax K ::= "argName" "(" KList ")" [function]
-     // rule argName(L:KList)
-     //      => Name(
-     //           Identifier("#incomingArgumentsArray"), 
-     //           PointerType(ArrayType(JustBase, 
-     //                syntaxInt((lengthKList L) +Int 1), 
-     //                Specifier(klist(.KList))))
-     //      )
-     // rule pgmArgs(L:KList)
-     //      => DeclarationDefinition(InitNameGroup(
-     //           Specifier(klist(Char)), 
-     //           klist(InitName(argName(L), NoInit))
-     //      ))
-     //      [structural]
-
      rule pgmArgs(L:KList)
           => declareOnly(
                Identifier("#incomingArgumentsArray"), 
@@ -222,6 +204,16 @@ module C-DYNAMIC
           ...</files>
           when MainTU =/=K .K
           [structural, large]
+     
+     syntax K ::= doLoadConfiguration(TCellFragment)
+
+     rule CompiledProgram(P:String) 
+          => doLoadConfiguration(String2Bag(P))
+
+     rule <exec>
+               <k> doLoadConfiguration(C:Bag) => . ...</k>
+               <global> (_:Bag => C) </global>
+          ...</exec>
 
      /*@ 
      \begin{lrbox}{\LstBox}
@@ -314,6 +306,7 @@ module C
      imports C-COMMON
 
      imports C-DYNAMIC
+     imports C-IO-BUFFERED
      imports C-EXPRESSION
      imports C-STATEMENT
      imports C-BINDING

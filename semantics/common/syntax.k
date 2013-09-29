@@ -9,6 +9,8 @@ module C-SYNTAX
      syntax C ::= Id
      
      syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
+
+     syntax K ::= CompiledProgram(String) [klabel('CompiledProgram)]
      
      syntax KResult ::= SpecifierElem
      

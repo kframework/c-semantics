@@ -84,7 +84,7 @@ module C11-ERROR
     //  rule [err00005]:
     //       <k> 
     //            (. => ICE("00005", "Referring to an object outside of its lifetime.") ) ~>
-    //            extractByteFromMem(loc(B:SymBase, _:Int, _:Int)) 
+    //            readByte(loc(B:SymBase, _:Int, _:Int)) 
     //       ...</k>
     //       <mem> M:Map </mem>
     //       when notBool SetItem(B) in keys (M:Map)

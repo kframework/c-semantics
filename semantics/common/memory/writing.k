@@ -1,6 +1,5 @@
 module C-MEMORY-WRITING-SYNTAX
      syntax KList ::= explodeToBits(KList) [function]
-     syntax ListItem ::= "bwrite" "(" SymLoc "," K ")"
      // For error.k.
      syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
 endmodule
@@ -20,7 +19,6 @@ module C-MEMORY-WRITING
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
           
-     syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
      syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
      syntax Bool ::= isByteLoc(SymLoc) [function]
      syntax K ::= splitBytes(Value) [function]
@@ -139,7 +137,7 @@ module C-MEMORY-WRITING
                , calculateNewBytes(
                     getBitOffset(Loc)
                     , piece(I, BitSize)
-                    , extractBytesFromMem(floorLoc(Loc), 
+                    , readBytes(floorLoc(Loc), 
                          bitsToBytes(BitSize +Int getBitOffset(Loc))
                     )
                )
@@ -218,51 +216,6 @@ module C-MEMORY-WRITING
      rule splinter-aux(N:Bits, Len:Int, Pos:Int)
           => splinter-aux(N, Len, Pos +Int 1),, piece(bitRange(N, Pos, Pos), 1)
           when Pos <Int Len
-     
-     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), false)
-          => writeByte(Loc, V) ~> 
-               writeBytes(Loc +bytes 1, dataList(L), false)
-          [structural]
-     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), true)
-          => stealthWriteByte(Loc, V) ~> 
-               writeBytes(Loc +bytes 1, dataList(L), true)
-          [structural]
-     rule writeBytes(_, dataList(.KList), _) => .K
-          [structural] 
-
-     syntax K ::= stealthWriteByte(SymLoc, K)
-     rule [write-byte-stealth]:
-          <k> 
-               stealthWriteByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . 
-          ...</k>
-          <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
-          [large, structural]
-
-     rule [write-byte-buffer]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
-          <buffer>...
-               (.List => bwrite(loc(Base, Offset, 0), V))
-          </buffer>
-          <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
-          <locsWrittenTo>
-               Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
-          </locsWrittenTo>
-          <notWritable> NotWritable:Map </notWritable>
-          when (notBool BagItem(loc(Base, Offset, 0)) in Locs)
-               andBool (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable))
-               andBool (Offset <Int Len)
-          [large, structural]
-          
-     rule [commit-byte]:
-          <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
-          ...</buffer>
-          <mem>...
-               Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset])
-          ...</mem>
-          when Offset <Int Len
-          [structural]
           
      // this general rule is useful for unknowns, abstracts, etc
      rule [splitBytes-other]:

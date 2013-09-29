@@ -57,7 +57,7 @@ sub main {
                   '--io' => '', 
                   "-cARGC=$argc" => '',
                   "-cARGV=\\\"$argv\\\",,.KList" => '',
-                  #'' => $fileInput
+                  '' => $fileInput
                   );
 
       if (defined $ENV{HELP}) {
@@ -131,10 +131,15 @@ sub main {
             print "(with non-deterministic expression sequencing)\n";
       }
 
+      # Escape slashes and quotes and append ",,.KList".
+      `perl -p -i -e "s/(\\\\\\)/\\1\\\\\\/g" $fileInput`;
+      `perl -p -i -e "s/(\\\")/\\\\\\\\\\1/g" $fileInput`;
+      `perl -p -i -e "s/(^.*\$)/'CompiledProgram(# \\\"\\1\\\"(.KList))/g" $fileInput`;
+
       # Execute krun with the arguments in (flattened) %krun_args.
-      my $cmd = "$KRUN -cIN=\\\"$fileInput\\\" " 
-            . (join ' ', (grep {$_} %krun_args));
-      print $cmd . "\n";
+      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      # my $cmd = "$KRUN -cIN=\\\"$fileInput\\\"" 
+      #       . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n" if defined $ENV{VERBOSE};
       system($cmd);
 

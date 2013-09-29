@@ -40,7 +40,6 @@ module C11-CONFIGURATION
 
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           
-          <buffer color="lightgray"> .List </buffer>
           <k color="green" multiplicity="?"> 
                $PGM:K 
                ~> resolveReferences 
@@ -131,9 +130,6 @@ module C11-CONFIGURATION
                          </savedInitialization>
                          <loopStack color="violet"> .List </loopStack>
 
-                         <locsWrittenTo color="lightgray">
-                              .Bag
-                         </locsWrittenTo>
                          <holds color="yellow"> .Map </holds>
                          // used for typing expressions
                          <type multiplicity="?" color="cyan"> .K </type>

@@ -157,22 +157,6 @@ module C-MEMORY-ALLOC
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           [structural]
           
-     rule [delete-sized-block]:
-          <k>
-               deleteSizedBlock(loc(Base:SymBase, _:Int, _:Int), Len:Int) => . 
-          ...</k>
-          <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
-          // fixme could make this more relaxed by checking of block is in
-          // buffer, not just empty
-          <buffer> .List </buffer>
-          [structural] 
-     
-     rule [delete-block]:
-          <k> deleteBlock(loc(Base:SymBase, _:Int, _:Int)) => .K ...</k>
-          <mem>... Base |-> memblock(_, _, _) => .Map ...</mem>
-          <buffer> .List </buffer>
-          [structural] 
-     
      // c99 6.5:2 If a side effect on a scalar object is unsequenced relative
      // to either a different side effect on the same scalar object or a value
      // computation using the value of the same scalar object, the behavior is

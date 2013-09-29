@@ -79,7 +79,7 @@ module COMPAT-SYNTAX
      syntax KList ::= times(Int, K) [function]
 
      syntax K ::= writeConfig(String)
-                | readConfig(String)
+                // | readConfig(String)
 
 endmodule
 
@@ -185,9 +185,8 @@ module COMPAT
 
      // Read/write the current configuration.
      syntax K ::= saveConfiguration(Int, String) 
-                | loadConfiguration(Int, String) 
-                | loadConfigurationByte(K)
-                | doLoadConfiguration(TCellFragment)
+               //  | loadConfiguration(Int, String) 
+               //  | loadConfigurationByte(K)
 
      rule <exec>
                <global> B:Bag </global>
@@ -204,18 +203,13 @@ module COMPAT
 
      rule saveConfiguration(Fd:Int, "") => #close(Fd)
 
-     rule readConfig(F:String) 
-          => loadConfiguration(#open(F, "r"), "")
-     rule (. => loadConfigurationByte(#read(Fd, 1000))) 
-          ~> loadConfiguration(Fd:Int, _)
-     rule (loadConfigurationByte(S2:String) => .) 
-          ~> loadConfiguration(_, (S:String => S +String S2))
-     rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) 
-          => #close(Fd) ~> doLoadConfiguration(String2Bag(S))
-     rule <exec>
-               <k> doLoadConfiguration(C:Bag) => . ...</k>
-               <global> (_:Bag => C) </global>
-          ...</exec>
-
+     // rule readConfig(F:String) 
+     //      => loadConfiguration(#open(F, "r"), "")
+     // rule (. => loadConfigurationByte(#read(Fd, 1000))) 
+     //      ~> loadConfiguration(Fd:Int, _)
+     // rule (loadConfigurationByte(S2:String) => .) 
+     //      ~> loadConfiguration(_, (S:String => S +String S2))
+     // rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) 
+     //      => #close(Fd) ~> doLoadConfiguration(String2Bag(S))
 endmodule
 

@@ -48,7 +48,16 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => . ...</k>
           <calculateGotoMap> .Bag </calculateGotoMap>
-          <currentFunction> _ => file-scope </currentFunction>
+          <currentFunction> F:Id => file-scope </currentFunction>
+          <currTU> Tu:K </currTU>
+          <gotoMap>... kpair(Tu, F) |-> map(.Map) => .Map ...</gotoMap>
+          [structural] 
+     rule <k> waitingOnGotoMap => . ...</k>
+          <calculateGotoMap> .Bag </calculateGotoMap>
+          <currentFunction> F:Id => file-scope </currentFunction>
+          <currTU> Tu:K </currTU>
+          <gotoMap>... kpair(Tu, F) |-> map(M:Map) ...</gotoMap>
+          when M =/=Map .Map
           [structural] 
 
      syntax K ::= "endBlockForGoto" "(" Int ")"

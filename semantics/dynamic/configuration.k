@@ -32,7 +32,6 @@ module C11-CONFIGURATION
 
           // 0 is global, 1 is main
           <nextThreadId color="black"> 2 </nextThreadId>
-          <br/>
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
@@ -44,29 +43,28 @@ module C11-CONFIGURATION
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
-          <br/>
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>
                <mutexes color="yellow"> .Map </mutexes>
                <glocks color="yellow"> .Bag </glocks>
           </threadInformation>
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
-          <br/>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
                     <threadId color="yellow"> 1 </threadId>
                     <buffer color="lightgray"> .List </buffer>
+
                     <k color="green" multiplicity="?"> 
-                         readConfig($IN:String)
+                         $PGM:K
                          ~> initMainThread
                          ~> pgmArgs($ARGV:KList) 
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
                     </k>
+
                     <nextLoc color="black"> 0 </nextLoc>
                     <finalComputation multiplicity="?" color="lightgray">
                          .K
                     </finalComputation>
-                    <br/>
                     <threadLocal>
                          // stack of "control" cells
                          <callStack color="violet"> .List </callStack>
@@ -140,7 +138,6 @@ module C11-CONFIGURATION
                                              .Set
                                         </localAddresses> 
                                    </local>
-                                   <br/>
                                    // used to control initialization when gotoing
                                    <shouldInit color="lightgray"> true </shouldInit>
                                    // used to figure initializers
@@ -157,7 +154,6 @@ module C11-CONFIGURATION
                                         .K
                                    </savedInitialization>
                                    <loopStack color="violet"> .List </loopStack>
-                                   <br/>
                                    <locsWrittenTo color="lightgray">
                                         .Bag
                                    </locsWrittenTo>
@@ -190,7 +186,6 @@ module C11-CONFIGURATION
      </threadState>
 
      </exec>
-     <br/>
 
      <files color="lightgray">
           <fileCommands> .K </fileCommands>

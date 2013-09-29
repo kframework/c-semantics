@@ -1,5 +1,6 @@
 require "process-label.k"
 require "static.k"
+require "io-direct.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -65,8 +66,7 @@ module C-DYNAMIC
           [structural]
           
      rule [sequencePoint]:
-          <k> sequencePoint => .K ...</k>
-          <locsWrittenTo> _ => .Bag </locsWrittenTo>
+          sequencePoint => .
           [structural]
 
      rule [discard]:
@@ -117,4 +117,5 @@ module C
      imports C-DYNAMIC
      imports C-STATIC
      imports C-PROCESS-LABEL
+     imports C-IO-DIRECT
 endmodule
