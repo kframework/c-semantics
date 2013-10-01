@@ -1,19 +1,19 @@
-require "library/bootstrap.k"
-require "library/io.k"
-require "library/math.k"
-require "library/setjmp.k"
-require "library/stdarg.k"
-require "library/stddef.k"
-require "library/stdio.k"
-require "library/stdlib.k"
-require "library/string.k"
-require "library/threads.k"
-require "library/time.k"
+require "bootstrap.k"
+require "io.k"
+require "math.k"
+require "setjmp.k"
+require "stdarg.k"
+require "stddef.k"
+require "stdio.k"
+require "stdlib.k"
+require "string.k"
+require "threads.k"
+require "time.k"
 
-module LIBC-SYNTAX
+module C11-LIBRARY-SYNTAX
 endmodule
 
-module LIBC
+module C11-LIBRARY
      ////////////////////////////////
      //- C standard library
      imports LIBC-BOOTSTRAP

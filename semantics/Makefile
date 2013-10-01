@@ -1,13 +1,27 @@
 KOMPILE = kompile
 
+C11_TRANS_FILES = $(wildcard *.k) \
+	$(wildcard language/translation/*.k) \
+	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k)
+	
+C11_FILES = $(wildcard *.k) \
+	$(wildcard language/execution/*.k) $(wildcard language/execution/*/*.k) \
+	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k) \
+	$(wildcard library/*.k)
+
 C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k) \
 	$(wildcard ../common/*.k) $(wildcard ../common/*/*.k)
 
-K_CLEAN_FILES = .k c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread 
+K_CLEAN_FILES = .k c11-trans-kompiled c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread 
 
 .PHONY: default all fast nd thread clean
 
 default: fast
+
+c11-trans-kompiled: $(C11_TRANS_FILES)
+	@echo "Compiling the static C semantics..."
+	@$(KOMPILE) c11-trans.k -o "c11-kompiled" -w all -v -l C11 -transition "interpRule"
+	@touch c11-kompiled
 
 c11-kompiled: $(C11_FILES)
 	@echo "Compiling the dynamic C semantics..."
@@ -26,7 +40,7 @@ c11-kompiled-nd-thread: $(C11_FILES)
 
 all: fast nd thread
 
-fast: c11-kompiled
+fast: c11-kompiled c11-trans-kompiled
 
 nd: c11-kompiled-nd
 

@@ -1,8 +1,13 @@
-require "expression.k"
-require "statement.k"
 require "binding.k"
 require "builtin.k"
+require "configuration.k"
+require "error.k"
+require "error-map.k"
+require "expression.k"
 require "io-buffered.k"
+require "ltlmc.k"
+require "settings.k"
+require "statement.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -300,15 +305,16 @@ module C-DYNAMIC
           [ndtrans]
 endmodule
 
-module C
-     imports C-SYNTAX
-
-     imports C-COMMON
-
-     imports C-DYNAMIC
-     imports C-IO-BUFFERED
-     imports C-EXPRESSION
-     imports C-STATEMENT
+module C11-EXECUTION
      imports C-BINDING
      imports C-BUILTIN
+     imports C11-CONFIGURATION
+     imports C-DYNAMIC
+     imports C11-ERROR
+     imports C11-ERROR-MAP
+     imports C-EXPRESSION
+     imports C-IO-BUFFERED
+     imports C11-LTLMC
+     imports C11-SETTINGS
+     imports C-STATEMENT
 endmodule

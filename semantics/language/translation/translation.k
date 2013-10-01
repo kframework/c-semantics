@@ -1,6 +1,10 @@
-require "process-label.k"
-require "static.k"
+require "configuration.k"
+require "error.k"
+require "error-map.k"
 require "io-direct.k"
+require "process-label.k"
+require "settings.k"
+require "static.k"
 
 module C-DYNAMIC-SYNTAX
      syntax K ::= "sequencePoint"
@@ -109,13 +113,13 @@ module C-DYNAMIC
 
 endmodule
 
-module C
-     imports C-SYNTAX
-
-     imports C-COMMON
-
-     imports C-DYNAMIC
-     imports C-STATIC
-     imports C-PROCESS-LABEL
+module C11-TRANSLATION
+     imports C11-CONFIGURATION
+     imports C11-ERROR
+     imports C11-ERROR-MAP
      imports C-IO-DIRECT
+     imports C-PROCESS-LABEL
+     imports C-SETTINGS
+     imports C-STATIC
+     imports C-DYNAMIC
 endmodule

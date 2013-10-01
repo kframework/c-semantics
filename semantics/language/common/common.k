@@ -30,7 +30,7 @@ require "expression/relational.k"
 require "expression/sizeof.k"
 require "expression/unary-arithmetic.k"
 
-module C-COMMON
+module C11-COMMON
      imports C-DECLARATION
      imports C-BITSIZE
      imports C-BITS
