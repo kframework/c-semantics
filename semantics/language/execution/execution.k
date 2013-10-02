@@ -306,15 +306,15 @@ module C-DYNAMIC
 endmodule
 
 module C11-EXECUTION
-     imports C-BINDING
-     imports C-BUILTIN
      imports C11-CONFIGURATION
-     imports C-DYNAMIC
-     imports C11-ERROR
-     imports C11-ERROR-MAP
-     imports C-EXPRESSION
-     imports C-IO-BUFFERED
      imports C11-LTLMC
      imports C11-SETTINGS
+     imports C11-ERROR
+     imports C11-ERROR-MAP
+     imports C-BINDING
+     imports C-BUILTIN
+     imports C-DYNAMIC
+     imports C-EXPRESSION
+     imports C-IO-BUFFERED
      imports C-STATEMENT
 endmodule

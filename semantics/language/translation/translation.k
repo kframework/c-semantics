@@ -117,9 +117,9 @@ module C11-TRANSLATION
      imports C11-CONFIGURATION
      imports C11-ERROR
      imports C11-ERROR-MAP
+     imports C11-SETTINGS
      imports C-IO-DIRECT
      imports C-PROCESS-LABEL
-     imports C-SETTINGS
      imports C-STATIC
      imports C-DYNAMIC
 endmodule

@@ -20,7 +20,7 @@ default: fast
 
 c11-trans-kompiled: $(C11_TRANS_FILES)
 	@echo "Compiling the static C semantics..."
-	@$(KOMPILE) c11-trans.k -o "c11-kompiled" -w all -v -l C11 -transition "interpRule"
+	@$(KOMPILE) c11-trans.k -o "c11-trans-kompiled" -w all -v -l C11 -transition "interpRule"
 	@touch c11-kompiled
 
 c11-kompiled: $(C11_FILES)
