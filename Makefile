@@ -1,5 +1,4 @@
-STATIC_SEMANTICS_DIR = semantics/static
-DYNAMIC_SEMANTICS_DIR = semantics/dynamic
+SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
 LIBC_DIR = libc
@@ -33,10 +32,10 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp -r $(STATIC_SEMANTICS_DIR)/c11-static-kompiled $(DIST_DIR)
-	@cp -r $(DYNAMIC_SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
-	@cp -r $(DYNAMIC_SEMANTICS_DIR)/c11-kompiled-nd $(DIST_DIR)
-	@cp -r $(DYNAMIC_SEMANTICS_DIR)/c11-kompiled-nd-thread $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-trans-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd-thread $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@echo "Compiling the standard library..."
@@ -75,13 +74,11 @@ parser/cparser:
 	@$(MAKE) -C $(PARSER_DIR)
 
 semantics: check-vars
-	@$(MAKE) -C $(STATIC_SEMANTICS_DIR) all
-	@$(MAKE) -C $(DYNAMIC_SEMANTICS_DIR) all
+	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 clean:
 	-$(MAKE) -C $(PARSER_DIR) clean
-	-$(MAKE) -C $(STATIC_SEMANTICS_DIR) clean
-	-$(MAKE) -C $(DYNAMIC_SEMANTICS_DIR) clean
+	-$(MAKE) -C $(SEMANTICS_DIR) clean
 	-$(MAKE) -C $(TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
 	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre

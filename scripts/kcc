@@ -129,7 +129,7 @@ sub main {
       print $programInTmp "$linked\n\n";
       close($programInTmp);
 
-      my $comp_def = catfile($myDirectory, "c11-static-kompiled");
+      my $comp_def = catfile($myDirectory, "c11-trans-kompiled");
       my @krun_args = (
             "-cOUT=\\\"$confOutTmp\\\"",
             '--output-mode raw', 

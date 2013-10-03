@@ -31,6 +31,8 @@ require "expression/sizeof.k"
 require "expression/unary-arithmetic.k"
 
 module C11-COMMON
+     imports COMPAT
+
      imports C-DECLARATION
      imports C-BITSIZE
      imports C-BITS
