@@ -157,7 +157,8 @@ module C-DYNAMIC
      rule pgmArgs(L:KList)
           => declareOnly(
                Identifier("#incomingArgumentsArray"), 
-               t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))), lengthKList L)),
+               t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
+               (lengthKList L) +Int 1)),
                noLinkage)
           [structural]
 
