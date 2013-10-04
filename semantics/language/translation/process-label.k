@@ -7,8 +7,6 @@ module C-PROCESS-LABEL
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= case(Int)
-
      // now that we can have different strictnesses in different cells, maybe
      // this can be redone easily
      /*

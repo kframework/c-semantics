@@ -10,7 +10,7 @@ module C-SYNTAX
      
      syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
 
-     syntax K ::= CompiledProgram(String) [klabel('CompiledProgram)]
+     syntax K ::= CompiledProgram(Bag) [klabel('CompiledProgram)]
      
      syntax KResult ::= SpecifierElem
      
@@ -320,53 +320,6 @@ module C-SYNTAX
      syntax PureDefinition ::= "LTLAnnotation" "(" Id "," K ")"
           [klabel('LTLAnnotation)]
      
-     //syntax Prop ::= Expression // Ltl atomic propositions.
-     //syntax LTLExpr ::= LtlFormula
-
-     // syntax Prop ::= "LTLAtom" "(" K ")"
-          // [klabel('LTLAtom)]
-     //rule LTLAtom(E:Expression) => E [macro, structural]
-     // syntax Prop ::= "LTLBuiltin" "(" K ")"
-          // [klabel('LTLBuiltin)]
-     
-     // syntax LTLExpr ::= "LTLTrue"
-     // //rule LTLTrue => TrueLtl [macro, structural]
-     // syntax LTLExpr ::= "LTLFalse"
-     // //rule LTLTrue => FalseLtl [macro, structural]
-     // syntax LTLExpr ::= "LTLAnd" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLAnd)]
-     // //rule LTLAnd(L:LtlFormula, R:LtlFormula) => L /\Ltl R [macro, structural]
-     // syntax LTLExpr ::= "LTLOr" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLOr)]
-     // //rule LTLOr(L:LtlFormula, R:LtlFormula) => L \/Ltl R [macro, structural]
-     // syntax LTLExpr ::= "LTLNot" "(" LTLExpr ")"
-     //      [klabel('LTLNot)]
-     // //rule LTLNot(K:LtlFormula) => ~Ltl K [macro, structural]
-     // syntax LTLExpr ::= "LTLNext" "(" LTLExpr ")"
-     //      [klabel('LTLNext)]
-     // //rule LTLNext(K:LtlFormula) => OLtl K [macro, structural]
-     // syntax LTLExpr ::= "LTLAlways" "(" LTLExpr ")"
-     //      [klabel('LTLAlways)]
-     // rule LTLAlways(K:LtlFormula) => []Ltl K [macro, structural]
-     // syntax LTLExpr ::= "LTLEventually" "(" LTLExpr ")"
-     //      [klabel('LTLEventually)]
-     // rule LTLEventually(K:LtlFormula) => <>Ltl K [macro, structural]
-     // syntax LTLExpr ::= "LTLUntil" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLUntil)]
-     // rule LTLUntil(L:LtlFormula, R:LtlFormula) => L ULtl R [macro, structural]
-     // syntax LTLExpr ::= "LTLRelease" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLRelease)]
-     // rule LTLRelease(L:LtlFormula, R:LtlFormula) => L RLtl R [macro, structural]
-     // syntax LTLExpr ::= "LTLImplies" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLImplies)]
-     // //rule LTLImplies(L:LtlFormula, R:LtlFormula) => L ->Ltl R [macro, structural]
-     // syntax LTLExpr ::= "LTLEquiv" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLEquiv)]
-     // //rule LTLEquiv(L:LtlFormula, R:LtlFormula) => L <->Ltl R [macro, structural]
-     // syntax LTLExpr ::= "LTLWeakUntil" "(" LTLExpr "," LTLExpr ")"
-     //      [klabel('LTLWeakUntil)]
-     // //rule LTLWeakUntil(L:LtlFormula, R:LtlFormula) => L WLtl R [macro, structural]
-
      syntax Definition ::= "DefinitionLoc" "(" K "," K ")"
           [klabel('DefinitionLoc)]
      syntax Definition ::= "DefinitionLocRange" "(" K "," K "," K ")"

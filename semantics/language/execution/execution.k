@@ -213,8 +213,8 @@ module C-DYNAMIC
      
      syntax K ::= doLoadConfiguration(TCellFragment)
 
-     rule CompiledProgram(P:String) 
-          => doLoadConfiguration(String2Bag(P))
+     rule CompiledProgram(P:Bag) 
+          => doLoadConfiguration(P)
 
      rule <exec>
                <k> doLoadConfiguration(C:Bag) => . ...</k>

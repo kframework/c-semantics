@@ -81,10 +81,14 @@ module COMPAT-SYNTAX
      syntax K ::= writeConfig(String)
                 // | readConfig(String)
 
+     // TODO(chathhorn): better place for this?
+     syntax K ::= case(Int)
+
 endmodule
 
 module COMPAT
      imports COMPAT-SYNTAX
+     imports C-SYNTAX // Would like to get rid of this.
 
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -192,7 +196,7 @@ module COMPAT
                <global> B:Bag </global>
                <k> 
                     writeConfig(F:String) 
-                    => saveConfiguration(#open(F), Bag2String(B)) 
+                    => saveConfiguration(#open(F), K2String(CompiledProgram(B))) 
                ...</k>
           ...</exec>
 
@@ -200,6 +204,12 @@ module COMPAT
           ~> saveConfiguration(Fd:Int, 
                (S:String => substrString(S, 1000, lengthString(S)))) 
           when S =/=String ""
+
+     // syntax K ::= fuzz(String)
+
+     // rule (. => #write(Fd, S)  ~> fuzz(S))
+     //      ~> saveConfiguration(Fd:Int, (S:String => "")) 
+     //      when S =/=String ""
 
      rule saveConfiguration(Fd:Int, "") => #close(Fd)
 
