@@ -22,6 +22,8 @@ module C11-CONFIGURATION
                <freshUnnamed color="black"> 0 </freshUnnamed>
                <functions color="lightgray"> .Map </functions>
                <notWritable> .Map </notWritable>
+               <internalLocations color="cyan"> .Map </internalLocations>
+               <externalLocations color="cyan"> .Map </externalLocations>
           </global>
 
           // stdlib
@@ -37,8 +39,6 @@ module C11-CONFIGURATION
           <declarationOrder color="cyan"> .Map </declarationOrder>
           <externalDefinitions color="cyan"> .Map </externalDefinitions>
           <internalDefinitions color="cyan"> .Map </internalDefinitions>
-          <internalLocations color="cyan"> .Map </internalLocations>
-          <externalLocations color="cyan"> .Map </externalLocations>
 
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>

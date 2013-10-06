@@ -273,7 +273,6 @@ module C-DECLARATION-GENERAL
           <internalLocations>... 
                Tu |-> map((_ kpair(X, BlockNum) |-> Loc:SymLoc)) 
           ...</internalLocations>
-          <br/>
           <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
           <currTU> Tu:K </currTU>
           when isStaticType(T)
@@ -290,7 +289,6 @@ module C-DECLARATION-GENERAL
                Tu |-> map((Locs:Map => Locs:Map[
                     Loc / kpair(X, BlockNum)])) 
           ...</internalLocations>
-          <br/>
           <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> Tu:K </currTU>
