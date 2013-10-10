@@ -9,9 +9,6 @@ C11_FILES = $(wildcard *.k) \
 	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k) \
 	$(wildcard library/*.k)
 
-C11_FILES = $(wildcard *.k) $(wildcard */*.k) $(wildcard */*/*.k) \
-	$(wildcard ../common/*.k) $(wildcard ../common/*/*.k)
-
 K_CLEAN_FILES = .k c11-trans-kompiled c11-kompiled c11-kompiled-nd c11-kompiled-nd-thread 
 
 .PHONY: default all fast nd thread clean
