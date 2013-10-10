@@ -17,22 +17,22 @@ default: fast
 
 c11-trans-kompiled: $(C11_TRANS_FILES)
 	@echo "Compiling the static C semantics..."
-	@$(KOMPILE) c11-trans.k -o "c11-trans-kompiled" -w all -v -l C11 -transition "interpRule"
+	@$(KOMPILE) c11-trans.k -d "c11-trans-kompiled" -w all -v --transition "interpRule"
 	@touch c11-kompiled
 
 c11-kompiled: $(C11_FILES)
 	@echo "Compiling the dynamic C semantics..."
-	@$(KOMPILE) c11.k -o "c11-kompiled" -w all -v -l C11 -transition "interpRule"
+	@$(KOMPILE) c11.k -d "c11-kompiled" -w all -v --transition "interpRule"
 	@touch c11-kompiled
 
 c11-kompiled-nd: $(C11_FILES)
 	@echo "Compiling the dynamic C semantics with expression sequencing non-determinism..."
-	@$(KOMPILE) c11.k -o "c11-kompiled-nd" -l C11 -transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
+	@$(KOMPILE) c11.k -d "c11-kompiled-nd" --transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
 	@touch c11-kompiled-nd
 
 c11-kompiled-nd-thread: $(C11_FILES)
 	@echo "Compiling the dynamic C semantics with thread-interleaving non-determinism..."
-	@$(KOMPILE) c11.k -o "c11-kompiled-nd-thread" -l C11 -transition "observable ndtrans ndthread"
+	@$(KOMPILE) c11.k -d "c11-kompiled-nd-thread" --transition "observable ndtrans ndthread"
 	@touch c11-kompiled-nd-thread
 
 all: fast nd thread

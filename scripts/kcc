@@ -135,8 +135,8 @@ sub main {
             '--output-mode raw', 
             "--output $krunOutTmp",
             '--parser cat', 
-            "--compiled-def $comp_def",
-            '--io', 
+            "-d $comp_def",
+            '--io on', 
             $programInTmp
             );
 

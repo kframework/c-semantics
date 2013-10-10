@@ -53,8 +53,8 @@ sub main {
                   '--output-mode' => 'raw', 
                   '--output' => $fileOutput, 
                   '--parser' => 'cat', 
-                  '--compiled-def' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
-                  '--io' => '', 
+                  '-d' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
+                  '--io' => 'on', 
                   "-cARGC=$argc" => '',
                   "-cARGV=\\\"$argv\\\",,.KList" => '',
                   '' => $fileInput
@@ -93,7 +93,7 @@ sub main {
       }
 
       if (defined $ENV{LOGIO}) {
-            $krun_args{'--log-io'} = '';
+            $krun_args{'--log-io'} = 'on';
       }
 
       if (defined $ENV{DEBUG}) {
@@ -105,24 +105,24 @@ sub main {
       }
 
       if (defined $ENV{SEARCH}) {
-            $krun_args{'--search'} = '';
+            $krun_args{'--search-final'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
       }
 
       if (defined $ENV{THREADSEARCH}) {
-            $krun_args{'--search'} = '';
+            $krun_args{'--search-final'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'--compiled-def'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
+            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
       }
 
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
-            $krun_args{'--compiled-def'} = 
+            $krun_args{'-d'} = 
                   catfile($SCRIPTS_DIR, "c11-kompiled-nd");
             $krun_args{'--output-mode'} = 'pretty';
             delete $krun_args{'--io'};
