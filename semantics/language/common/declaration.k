@@ -7,6 +7,9 @@ require "declaration/zero.k"
 module C-DECLARATION-SYNTAX
      syntax Value ::= "functionObject" "(" Id "," Type "," K ")"
 
+     // Used for builtins.
+     syntax Value ::= "functionPrototype" "(" Id "," Type ")"
+
      syntax K ::= "initialize" "(" Id "," Type "," K ")"
           
      // id, type, initializer

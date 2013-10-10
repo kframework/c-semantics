@@ -1,5 +1,6 @@
 module C11-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-STATIC-SYNTAX
      imports COMPAT-SYNTAX
 
      configuration 
@@ -43,6 +44,7 @@ module C11-CONFIGURATION
           <k color="green" multiplicity="?"> 
                $PGM:K 
                ~> resolveReferences 
+               ~> initBuiltins
                ~> writeConfig($OUT:String)
           </k>
           // should be initialized with a pair (threadId, 0)

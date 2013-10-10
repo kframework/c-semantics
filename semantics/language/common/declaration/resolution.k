@@ -347,22 +347,6 @@ module C-DECLARATION-RESOLUTION
           <internalDefinitions>... Tu |-> map(.) ...</internalDefinitions>
           <declarationOrder>... Tu |-> ListToK(.List) ...</declarationOrder>
           [structural] 
-                    
-     // need to worry about things that don't have definitions that may
-     // override externs
-     // want to make it so env is always correct local env, so need to have a
-     // set of global envs, one for each tu
-     
-     rule [initialize-function]:
-          <k> 
-               initFunction(tv(Loc:SymLoc, 
-                    t(_, pointerType(T:Type))), Fun:KResult) 
-               => .K
-          ...</k>
-          <functions> M:Map => M:Map[Fun / Loc] </functions>
-          when isFunctionType(T)
-               andBool notBool $hasMapping(M, Loc)
-          [structural]
           
      rule <k> readFunction(Loc:SymLoc) => Fun  ...</k>
           <functions>... Loc |-> Fun:KResult ...</functions>

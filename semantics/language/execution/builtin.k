@@ -1,5 +1,4 @@
 module C-BUILTIN-SYNTAX
-     syntax Value ::= "functionPrototype" "(" Id "," Type ")"
      syntax K ::= "handleBuiltin" "(" Id "," Type ")"
 endmodule
 
@@ -17,20 +16,21 @@ module C-BUILTIN
           => application'(functionObject(X, T, handleBuiltin(X, T)), L)
           [structural]
 
-     rule [lookup-builtin-function-notfound]:
-          <k> (.K 
-                    => addToEnv(X, Loc)
-                         ~> initFunction(
-                              tv(Loc, t(.Set, pointerType(T))),
-                              functionPrototype(X, T)
-                         )
-               )
-               ~> X:Id
-          ...</k>
-          <env> Env:Map </env>
-          <types>... X |-> T:Type ...</types>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          when isFunctionType(T)
-               andBool notBool X in keys Env
-          [large, structural]
+     // rule [lookup-builtin-function-notfound]:
+     //      <k> (.K 
+     //                => addToEnv(X, Loc)
+     //                     ~> initFunction(
+     //                          tv(Loc, t(.Set, pointerType(T))),
+     //                          functionPrototype(X, T)
+     //                     )
+     //           )
+     //           ~> X:Id
+     //      ...</k>
+     //      <env> Env:Map </env>
+     //      <types>... X |-> T:Type ...</types>
+     //      <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+     //      when isFunctionType(T)
+     //           andBool notBool X in keys Env
+     //      [large, structural]
+
 endmodule
