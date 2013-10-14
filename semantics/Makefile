@@ -37,7 +37,7 @@ c11-kompiled-nd-thread: $(C11_FILES)
 
 all: fast nd thread
 
-fast: c11-kompiled c11-trans-kompiled
+fast: c11-trans-kompiled c11-kompiled
 
 nd: c11-kompiled-nd
 
