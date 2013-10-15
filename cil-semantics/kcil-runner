@@ -53,10 +53,11 @@ sub main {
                   '--output-mode' => 'raw', 
                   '--output' => $fileOutput, 
                   '--parser' => 'kast', 
-                  '--compiled-def' => catfile($SCRIPTS_DIR, "cil-kompiled"), 
-                  '--io' => '', 
+                  #'-d' => catfile($SCRIPTS_DIR, "cil-kompiled"), 
+                  '-d' => $SCRIPTS_DIR,
+                  '--io' => 'on', 
                   "-cARGC=$argc" => '',
-                  "-cARGV=$argv,,.KList" => '',
+                  "-cARGV=\\\"$argv\\\",,.KList" => '',
                   '' => $fileInput
                   );
 
@@ -132,9 +133,9 @@ sub main {
       }
 
       # Execute krun with the arguments in (flattened) %krun_args.
-      print "KRun args: " . join ' ', (grep {$_} %krun_args) . "\n"
-            if defined $ENV{VERBOSE};
-      system($KRUN, grep {$_} %krun_args);
+      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
+      print $cmd . "\n" if defined $ENV{VERBOSE};
+      system($cmd);
 
       # Print errors and/or results and exit.
       if (defined $ENV{PROFILE}) {
