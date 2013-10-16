@@ -121,7 +121,9 @@ module CIL-SYNTAX
                  | HexConstant
                  | String
                  | DecimalFloatConstant
+                 | NoDotDecimalFloatConstant
                  | HexFloatConstant
+                 | NoDotHexFloatConstant
                  | "'"CharConstant"'"
                  | CharConstantPrefix "'"CharConstant"'"
 
@@ -135,10 +137,18 @@ module CIL-SYNTAX
     Token{[0][0-7]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
   syntax HexConstant ::= 
     Token{[0][xX][0-9a-fA-F]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
+
+  // Either the dot or the exponent part (preceded by e or p) is required for
+  // float constants.
   syntax DecimalFloatConstant ::=
     Token{[0-9]*[\.][0-9]*[eE]?[\+\-]?[0-9]*[FfLl]?} [onlyLabel]
+  syntax NoDotDecimalFloatConstant ::=
+    Token{[0-9]+[eE][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
   syntax HexFloatConstant ::=
     Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?} 
+    [onlyLabel]
+  syntax NoDotHexFloatConstant ::=
+    Token{[0][xX][0-9a-fA-F]+[pP][\+\-]?[0-9]+[FfLl]?} 
     [onlyLabel]
 
   syntax Constants ::= List{Constant, ","}

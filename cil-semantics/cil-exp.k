@@ -23,16 +23,23 @@ module CIL-LITERAL
   syntax String ::= getNumericPart(String) [function]
                   | getDecFloatNumericPart(String) [function]
                   | getHexFloatNumericPart(String) [function]
+                  | getHexFloatMantissa(String) [function]
+                  | getHexFloatExponent(String) [function]
+                  | beforeDot(String) [function]
+                  | afterDot(String) [function]
                   | getNumericPart(String, Set, Set) [function]
                   | "getNumericPart'" "(" String "," String "," Set ")" 
                     [function]
 
-  // lnp x::xs => lnp xs when x == 0 or x
+  syntax Float ::= hexToFloat(String) [function]
+                 | "hexToFloat'" "("String")" [function]
+
 
   syntax Set ::= "prefixChars" [function]
                | "intSuffixChars" [function]
                | "floatHexPrefixChars" [function]
                | "floatSuffixChars" [function]
+               | "floatHexSepChars" [function]
 
   rule prefixChars =>
     SetItem("0")
@@ -56,6 +63,32 @@ module CIL-LITERAL
     SetItem("l")
     SetItem("L")
 
+  rule floatHexSepChars =>
+    SetItem("p")
+    SetItem("P")
+
+  rule hexToFloat(S:String)
+    => hexToFloat'(getHexFloatMantissa(S))
+      *Float
+      (2.0 ^Float hexToFloat'(getHexFloatExponent(S)))
+
+  rule hexToFloat'(S:String)
+    => Int2Float(conv(beforeDot(S), 16)) 
+      +Float 
+      (Int2Float(conv(afterDot(S), 16)) 
+        /Float Int2Float(16 ^Int lengthString(afterDot(S))))
+        
+  rule beforeDot(S:String)
+    => #if findChar(S, ".", 0) ==Int -1 
+      #then S
+      #else substrString(S, 0, findChar(S, ".", 0))
+      #fi
+  rule afterDot(S:String)
+    => #if findChar(S, ".", 0) ==Int -1 
+      #then ""
+      #else substrString(S, findChar(S, ".", 0) +Int 1, lengthString(S))
+      #fi
+
   rule getNumericPart(S:String) 
     => getNumericPart(S, prefixChars, intSuffixChars)
 
@@ -64,6 +97,15 @@ module CIL-LITERAL
 
   rule getHexFloatNumericPart(S:String)
     => getNumericPart(cdrStr(S), floatHexPrefixChars, floatSuffixChars)
+
+  rule getHexFloatMantissa(S:String)
+    => getNumericPart(getHexFloatNumericPart(S), .Set, floatHexSepChars)
+
+  rule getHexFloatExponent(S:String)
+    => getNumericPart(
+        substrString(S, 
+          findString(S, getHexFloatMantissa(S), 0) +Int lengthString(getHexFloatMantissa(S)),
+          lengthString(S)), floatHexSepChars, floatSuffixChars)
 
   rule getNumericPart(S:String, Pre:Set, Suf:Set) 
     => getNumericPart(cdrStr(S), Pre, Suf)
@@ -149,6 +191,11 @@ module CIL-LITERAL
 
   syntax Int ::= String2Base(String, Int)
     [function, hook(#CONVERSION:string2Base)]
+               | conv(String, Int) [function]
+
+  rule conv(S:String, Base:Int) => String2Base(S, Base)
+    when S =/=String ""
+  rule conv("", _) => 0
 
 endmodule
 
@@ -199,54 +246,54 @@ module CIL-EXP
     [structural]
 
   rule C:OctalConstant 
-    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 8))
+    => norm(int, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String ""
     [structural]
   rule C:OctalConstant 
-    => norm(long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    => norm(long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
   rule C:OctalConstant 
-    => norm(long long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    => norm(long long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
   rule C:OctalConstant 
-    => norm(unsigned int, String2Base(getNumericPart(#tokenToString(C)), 8))
+    => norm(unsigned int, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
   rule C:OctalConstant 
-    => norm(unsigned long, String2Base(getNumericPart(#tokenToString(C)), 8))
+    => norm(unsigned long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "UL"
     [structural]
   rule C:OctalConstant 
     => norm(unsigned long long, 
-      String2Base(getNumericPart(#tokenToString(C)), 8))
+      conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
   rule C:HexConstant 
-    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(int, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String ""
     [structural]
   rule C:HexConstant 
-    => norm(long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
   rule C:HexConstant 
-    => norm(long long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(long long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
   rule C:HexConstant 
-    => norm(unsigned int, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(unsigned int, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
   rule C:HexConstant 
-    => norm(unsigned long, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(unsigned long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "UL"
     [structural]
   rule C:HexConstant 
     => norm(unsigned long long, 
-      String2Base(getNumericPart(#tokenToString(C)), 16))
+      conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
@@ -263,8 +310,44 @@ module CIL-EXP
     when getFloatSuffix(#tokenToString(C)) ==String "F"
     [structural]
 
-  // TODO(chathhorn): Hex float constants. Also, I doubt String2Float supports
-  // the full float syntax.
+  rule C:NoDotDecimalFloatConstant 
+    => norm(double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String ""
+    [structural]
+  rule C:NoDotDecimalFloatConstant 
+    => norm(long double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:NoDotDecimalFloatConstant 
+    => norm(float, String2Float(getDecFloatNumericPart(#tokenToString(C))))
+    when getFloatSuffix(#tokenToString(C)) ==String "F"
+    [structural]
+
+  rule C:HexFloatConstant 
+    => norm(double, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String ""
+    [structural]
+  rule C:HexFloatConstant 
+    => norm(long double, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:HexFloatConstant 
+    => norm(float, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String "F"
+    [structural]
+
+  rule C:NoDotHexFloatConstant 
+    => norm(double, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String ""
+    [structural]
+  rule C:NoDotHexFloatConstant 
+    => norm(long double, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String "L"
+    [structural]
+  rule C:NoDotHexFloatConstant 
+    => norm(float, hexToFloat(#tokenToString(C)))
+    when getFloatSuffix(#tokenToString(C)) ==String "F"
+    [structural]
 
   // TODO(chathhorn): prefixes (wide chars I guess).
   rule ' C:Char ' => norm(int, ordChar(#tokenToString(C)))
@@ -279,7 +362,7 @@ module CIL-EXP
   rule ' C:OctalStringEscape ' 
     => norm(int, ordChar(#tokenToString(C)))
   rule ' C:HexStringEscape ' 
-    => norm(int, String2Base(getNumericPart(#tokenToString(C)), 16))
+    => norm(int, conv(getNumericPart(#tokenToString(C)), 16))
 
   /* Lookup. */
   rule
