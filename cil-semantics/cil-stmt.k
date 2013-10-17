@@ -182,7 +182,7 @@ module CIL-STMT
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
   [heat]
-  rule $exp2bool(tv(_:IntType, MI:MInt))
+  rule $exp2bool(tv(_, MI:MInt))
     => norm(int, notBool isZero(MI))
   [structural]
   rule $exp2bool(tv(_, Null))
