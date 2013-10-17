@@ -358,10 +358,8 @@ module CIL-EXP
   rule ' \b ' => norm(int, 8)
   rule ' \t ' => norm(int, 9)
   rule ' \v ' => norm(int, 11)
-  // TODO(chathhorn): Geh, the token becomes a string containing an octal
-  // escape code.
   rule ' C:OctalStringEscape ' 
-    => norm(int, ordChar(#tokenToString(C)))
+    => norm(int, conv(getNumericPart(#tokenToString(C)), 8))
   rule ' C:HexStringEscape ' 
     => norm(int, conv(getNumericPart(#tokenToString(C)), 16))
 
