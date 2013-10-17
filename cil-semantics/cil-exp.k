@@ -351,6 +351,7 @@ module CIL-EXP
 
   // TODO(chathhorn): prefixes (wide chars I guess).
   rule ' C:Char ' => norm(int, ordChar(#tokenToString(C)))
+  rule '*' => norm(int, ordChar("*"))
   rule ' \' ' => norm(int, 39)
   rule ' \\ ' => norm(int, 92)
   rule ' \a ' => norm(int, 7)
