@@ -158,7 +158,8 @@ module CIL-SYNTAX
   syntax CharConstantPrefix ::= Token{[LuU]}
     [onlyLabel]
 
-  syntax Char ::= Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?]} 
+  syntax Char ::= 
+    Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]} 
     [onlyLabel]
   syntax CharConstant ::= Char | EscapeString
   syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
