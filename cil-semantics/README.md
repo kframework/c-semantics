@@ -53,9 +53,9 @@ configuration.
 6. To test the semantics against `gcc`:
 ```
 $ cd tests
-$ ./runtests -p torture
+$ ./runtests -p gcc-torture
 ```
-Where `torture` is a directory full of source files.
+Where `gcc-torture` is a directory full of source files.
 
 ### Things that I know of that aren't currently supported:
 
@@ -71,8 +71,6 @@ Where `torture` is a directory full of source files.
   to the configuration in the apropriate place.
 
 - Variable length arrays (these do appear in the torture tests).
-
-- Full support of floating point literals (hex and with exponents and stuff).
 
 - Some details regarding char (and probably string) literals.
 
