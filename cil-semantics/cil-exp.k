@@ -219,6 +219,18 @@ module CIL-EXP
 
   rule I:Int => norm(int, I)
 
+  syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
+  rule $exp2bool(tv(_, MI:MInt))
+    => norm(int, notBool isZero(MI))
+  [structural]
+  rule $exp2bool(tv(_, Null))
+    => norm(int, false)
+  [structural]
+  rule $exp2bool(tv(_, P:Ptr))
+    => norm(int, true)
+    when P =/=K Null
+  [structural]
+
   /* Constants. */
   rule C:DecimalConstant 
     => norm(int, String2Int(getNumericPart(#tokenToString(C))))
@@ -528,9 +540,12 @@ module CIL-EXP
   rule tv(T:Type, MI1:MInt) != tv(T, MI2:MInt)
     => norm(int, MI1 =/=MInt MI2)
 
-  rule !tv(_:Type, I:MInt) => norm(int, 1)
+  rule ! E:Exp => $exp2bool(E) ~> ! HOLE
+  rule TV:TypedValue ~> ! HOLE => ! TV
+
+  rule !tv(_, I:MInt) => norm(int, 1)
     when isZero(I)
-  rule !tv(_:Type, I:MInt) => norm(int, 0)
+  rule !tv(_, I:MInt) => norm(int, 0)
     when notBool isZero(I)
 
   /*

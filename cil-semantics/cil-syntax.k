@@ -76,7 +76,7 @@ module CIL-SYNTAX
     | Exp "[" Exp "]"
     > "-" Exp [strict]
     | "+" Exp [strict]
-    | "!" Exp [strict]
+    | "!" Exp
     | "~" Exp [strict]
     | "*" Exp [strict]
     | "&" Exp [strict]
@@ -150,13 +150,11 @@ module CIL-SYNTAX
     Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?} 
     [onlyLabel]
   syntax NoDotHexFloatConstant ::=
-    Token{[0][xX][0-9a-fA-F]+[pP][\+\-]?[0-9]+[FfLl]?} 
-    [onlyLabel]
+    Token{[0][xX][0-9a-fA-F]+[pP][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
 
   syntax Constants ::= List{Constant, ","}
 
-  syntax CharConstantPrefix ::= Token{[LuU]}
-    [onlyLabel]
+  syntax CharConstantPrefix ::= Token{[LuU]} [onlyLabel]
 
   syntax Char ::= 
     Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]} 
@@ -235,8 +233,6 @@ module CIL-SYNTAX
   /* exclude predefined functions */
   syntax CIdToken ::= "main"      [reject]
   /* exclude keywords */
-  // TODO(chathhorn): and yet isCId(int) ==K true?? Frustrating. The duplicate
-  // list below lets us distinguish CIds from keywords.
   syntax CIdToken ::=
       "auto"             [reject]
     | "break"            [reject]
@@ -289,6 +285,8 @@ module CIL-SYNTAX
     | "__builtin_va_list" [reject]
 
   // Complete list of C11 reserved words plus some extras from CIL.
+  // TODO(chathhorn): This duplicate list allows us distinguish CIds from
+  // keywords. (Because, e.g., isCId(int) == true, despite the "reject.")
   syntax Keyword ::=
       "auto"             [reject]
     | "break"            [reject]

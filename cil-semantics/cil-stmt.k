@@ -178,34 +178,12 @@ module CIL-STMT
     <labels> _ => Lbls </labels>
     [structural]
 
-  syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
   [heat]
-  rule $exp2bool(tv(_, MI:MInt))
-    => norm(int, notBool isZero(MI))
-  [structural]
-  rule $exp2bool(tv(_, Null))
-    => norm(int, false)
-  [structural]
-  rule $exp2bool(tv(_, P:Ptr))
-    => norm(int, true)
-    when P =/=K Null
-  [structural]
   rule
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
   [cool]
-
-  //syntax K ::= "$bool-ctx" "(" K ")"
-  //rule $bool-ctx(K:K) => K ~> $bool-ctx(HOLE) [heat]
-  //rule MI:MInt ~> $bool-ctx(HOLE) => $bool-ctx(MI) [cool]
-/*
-  rule
-    tv(_:IntType, MI:MInt) ~> $bool-ctx(HOLE)
-  =>
-    $bool-ctx(norm(int, notBool isZero(MI)))
-  [cool]
-*/
 
   rule if (tv(_, mi(_, 1))) S:Stmt else _:Stmt => S   [computational]
   rule if (tv(_, mi(_, 0))) _:Stmt else S:Stmt => S   [computational]
