@@ -576,14 +576,15 @@ module CIL-EXP
   /*
    * Casting
    */
-  rule <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
-    <env> E:Map </env>
-    // If it's a CId then we look it up in the env until we get an unambiguous
-    // type.
-    when ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
-      andBool (isNormType(T) =/=K true)
-      // This case is ambiguous with the Exp syntax.
-      andBool ($isConstArrayDeref(T, E) =/=K true)
+// TODO(AndreiS): fix isKeyword issue
+//  rule <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
+//    <env> E:Map </env>
+//    // If it's a CId then we look it up in the env until we get an unambiguous
+//    // type.
+//    when ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
+//      andBool (isNormType(T) =/=K true)
+//      // This case is ambiguous with the Exp syntax.
+//      andBool ($isConstArrayDeref(T, E) =/=K true)
 
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
   syntax Bool ::= "$isConstArrayDeref" "(" K "," Map ")" [function]

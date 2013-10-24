@@ -45,10 +45,9 @@ module CIL-TYPING-SYNTAX
 endmodule
 
 module CIL-TYPING
-  imports CIL-TYPING-SYNTAX
   imports CIL-SYNTAX
+  imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
-  imports CIL-COMMON-TYPED-VALUE
   imports K-FUNCTIONAL-VISITOR
 
   syntax SymId ::= "#__id__"
@@ -238,11 +237,12 @@ module CIL-TYPING
   rule expandParamDecl(X:CId D:Declarator, E:Map X |-> T:Type)
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
         E X |-> T)
-  rule expandParamDecl(TS:TypeSpec, _) => TS
-    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
-  rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) 
-    => TS expandDecl(D, E)
-    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
+// TODO(AndreiS): fix isKeyword issue
+//  rule expandParamDecl(TS:TypeSpec, _) => TS
+//    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
+//  rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) 
+//    => TS expandDecl(D, E)
+//    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
 
   rule expandDecl(D:DirectDecl, E:Map) => expandDirectDecl(D, E)
   rule expandDecl(P:Pointer D:DirectDecl, E:Map) => P expandDirectDecl(D, E)

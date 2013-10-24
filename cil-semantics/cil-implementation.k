@@ -118,8 +118,7 @@ module CIL-IMPLEMENTATION
   rule value2Bytes(T:Type, P:Ptr) 
     => ListItem(P) padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_,
-      ListItem(P:Ptr) _:List)
+  rule bytes2Value(_, ListItem(P:Ptr) _:List)
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.

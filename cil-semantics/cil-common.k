@@ -1,11 +1,13 @@
 // vim: set ts=2 sw=2:
-require "cil-syntax.k"
+require "builtins/list.k"
+require "builtins/map.k"
 require "builtins/mint.k"
+
+require "cil-syntax.k"
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
   imports CIL-COMMON
-  imports CIL-COMMON-TYPED-VALUE
   /*
    * Ptr of BasePtr * Offset
    * @invariant: 0 <= Offset <= BasePtr.Size
@@ -14,10 +16,6 @@ module CIL-COMMON-PTR
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
                | "Null"
-               | VaList
-
-  // TODO(chathhorn): rather hackish.
-  syntax VaList ::= "va_list" "(" TypedValues ")"
 
   syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 
@@ -82,6 +80,7 @@ endmodule
  * to/from a list of bytes. The implementation is in file cil-implementation.k.
  */
 module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
+  imports LIST
   imports CIL-SYNTAX
   imports CIL-COMMON-PTR
 
@@ -91,7 +90,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   syntax Int ::= width(Type)        [function]
                | byteWidth(Type)    [function]
 
-  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
+  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(MyList) | String
 
   syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"
 
@@ -151,16 +150,22 @@ module CIL-COMMON-TYPED-VALUE
 
   rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
+
+  // TODO(chathhorn): rather hackish.
+  syntax Ptr ::= VaList
+  syntax VaList ::= "va_list" "(" TypedValues ")"
 endmodule
 
 module CIL-COMMON-MMU
+  imports LIST
+  imports MAP
   imports CIL-SYNTAX
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
 
-  syntax List ::= #rangeList(Int, Int, Int)                       [function]
+  syntax MyList ::= #rangeList(Int, Int, Int)                     [function]
                 | #rangeList(Int, Int)                            [function]
                 | #rangeList(Int)                                 [function]
                 | "$rangeList" "(" Int "," Int "," Int ")"        [function]
@@ -174,21 +179,21 @@ module CIL-COMMON-MMU
   rule
     $rangeList(I:Int, J:Int, K:Int)
   =>
-    ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
+    MyListItem(I) $rangeList(I +Int K, J:Int, K:Int)
   when I <Int J 
-  rule $rangeList(I:Int, J:Int, _) => .List
+  rule $rangeList(I:Int, J:Int, _) => .MyList
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
-    ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
+    MyListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
   when I >Int J 
-  rule $downrangeList(I:Int, J:Int, _) => .List
+  rule $downrangeList(I:Int, J:Int, _) => .MyList
   when I <=Int J
 
-  syntax Map ::= #initMap(List, K) [function]
-  rule #initMap(ListItem(K1:K) L:List, K2:K) => K1 |-> K2 #initMap(L, K2)
-  rule #initMap(.List, _) => .Map
+  syntax MyMap ::= #initMap(MyList, K) [function]
+  rule #initMap(MyListItem(K1:K) L:MyList, K2:K) => K1 |-> K2 #initMap(L, K2)
+  rule #initMap(.MyList, _) => .MyMap
 
   /*
    * Memory management.
@@ -234,9 +239,9 @@ module CIL-COMMON-MMU
    */
   syntax K ::= "load" "(" Type "," Ptr ")"
              | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
-             | "$load" "(" Type "," Ptr "," Int "," List ")"
+             | "$load" "(" Type "," Ptr "," Int "," MyList ")"
              | "store" "(" Type "," Ptr "," Value ")"
-             | "$store" "(" Ptr "," List ")"
+             | "$store" "(" Ptr "," MyList ")"
 
   rule 
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
@@ -245,22 +250,22 @@ module CIL-COMMON-MMU
     <k>
       $store(
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (ListItem(V:ByteValue) => .List) _:List)
+          (MyListItem(V:ByteValue) => .MyList) _:MyList)
     ...</k>
     <heap>...
       <object>...
         <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> (_ => V) ...</bytes>
+        <bytes>... Offset |-> (_:KItem => V) ...</bytes>
       ...</object>
     ...</heap>
   [structural]
-  rule $store(_:Ptr, .List) => .K   [structural]
+  rule $store(_:Ptr, .MyList) => .K   [structural]
 
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
   rule $load(T:Type, P:Ptr, Sz:TypedValue) 
-    => $load(T, P, mival(Sz), .List)
+    => $load(T, P, mival(Sz), .MyList)
   [structural]
   rule
     <k>
@@ -268,7 +273,7 @@ module CIL-COMMON-MMU
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (M:Int => M -Int 1),
-          _:List (.List => ListItem(V:ByteValue)))
+          _:MyList (.MyList => MyListItem(V:ByteValue)))
     ...</k>
     <base-ptr> BP </base-ptr>
     <bytes>... Offset |-> V ...</bytes>
@@ -287,7 +292,7 @@ module CIL-COMMON-MMU
     when (M >Int 0) andBool notBool (Offset in keys Bytes)
     [structural]
   rule
-    $load(T:Type, _:Ptr, 0, L:List) => tv(T, bytes2Value(T, L))
+    $load(T:Type, _:Ptr, 0, L:MyList) => tv(T, bytes2Value(T, L))
     [structural]
 endmodule
 
@@ -314,9 +319,7 @@ module CIL-COMMON
   rule (S:Stmt Ss1:Stmts) @Stmts Ss2:Stmts => S (Ss1 @Stmts Ss2)
   rule .Stmts @Stmts Ss:Stmts => Ss
 
-  syntax ListItem ::= ListItem(Bag)
-
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
-    
 endmodule
+

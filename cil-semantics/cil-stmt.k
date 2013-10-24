@@ -200,7 +200,6 @@ module CIL-STMT
   /*
    * Function call/return
    */
-  syntax K ::= "callMain"
   rule 
      <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
