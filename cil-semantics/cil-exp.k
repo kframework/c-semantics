@@ -541,7 +541,9 @@ module CIL-EXP
     => norm(int, MI1 =/=MInt MI2)
 
   rule ! E:Exp => $exp2bool(E) ~> ! HOLE
+    [heat]
   rule TV:TypedValue ~> ! HOLE => ! TV
+    [cool]
 
   rule !tv(_, I:MInt) => norm(int, 1)
     when isZero(I)

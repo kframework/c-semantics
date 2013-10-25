@@ -180,10 +180,10 @@ module CIL-STMT
 
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
-  [heat]
+    [heat]
   rule
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
-  [cool]
+    [cool]
 
   rule if (tv(_, mi(_, 1))) S:Stmt else _:Stmt => S   [computational]
   rule if (tv(_, mi(_, 0))) _:Stmt else S:Stmt => S   [computational]
