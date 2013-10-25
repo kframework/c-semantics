@@ -94,7 +94,6 @@ module C-IO-BUFFERED
                     ~> assert(Offset <Int Len, 2)
                     ~> tv(V, t(.Set, no-type))
           ...</k>
-          <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
@@ -109,7 +108,6 @@ module C-IO-BUFFERED
                     ~> assert(Offset <Int Len, 2)
                     ~> tv(V, t(.Set, no-type))
           ...</k>
-          <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
@@ -124,7 +122,6 @@ module C-IO-BUFFERED
                     ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
                          t(.Set, no-type))
           ...</k>
-          <br/>
           <mem>... 
                Base |-> memblock(Len:Int, _, 
                     M:Map => M:Map[

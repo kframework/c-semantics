@@ -5,9 +5,9 @@ module C-DECLARATION-RESOLUTION
      imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
      
      syntax K ::= "canonicalizeTranslationUnitVariables"
@@ -50,6 +50,7 @@ module C-DECLARATION-RESOLUTION
      rule preDeclareStrings(klist(.KList)) => .
           [structural]
      
+     // TODO(chathhorn): move to translation
      syntax K ::= resolve(K)
      rule <k> (. => resolve(Tu)) ~> resolveReferences ...</k>
           <translationUnits>... BagItem(Tu:K) => .Bag ...</translationUnits>

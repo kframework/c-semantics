@@ -1,4 +1,5 @@
 module C11-CONFIGURATION
+     imports C11-EXECUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -55,7 +56,7 @@ module C11-CONFIGURATION
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 
-                         $PGM:K
+                         loadConfig($CFG:Bag)
                          ~> initMainThread
                          ~> pgmArgs($ARGV:KList) 
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))

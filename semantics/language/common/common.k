@@ -30,6 +30,8 @@ require "expression/relational.k"
 require "expression/sizeof.k"
 require "expression/unary-arithmetic.k"
 
+require "dynamic.k"
+
 module C11-COMMON
      imports COMPAT
 
@@ -60,4 +62,7 @@ module C11-COMMON
      imports C-EXPRESSION-RELATIONAL
      imports C-EXPRESSION-SIZEOF
      imports C-EXPRESSION-UNARY-ARITHMETIC
+
+     imports C-DYNAMIC
+
 endmodule

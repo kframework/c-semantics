@@ -231,59 +231,59 @@ module C11-ERROR
           _ & tv(_:Float, _)
           [structural, large]
           
-     rule [err00025a]:
-          (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
-          when T =/=K int
-          [structural, large]
-     rule [err00025b]:
-          <k> 
-               (. => ERROR("00025b", "Main must exist.", 4) ) ~>
-               callMain(_, _)
-          ...</k>
-          <mainTU> .K </mainTU>
-          [structural, large]
-     rule [err00026]:
-          (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id),, _:KList))), _:Int, _:Id, _) 
-          when T =/=K int andBool T =/=K void
-          [structural, large]
-          
-     syntax Bool ::= #isArgvType(Type) [function]
-     
-     rule #isArgvType(t(_, T:SimpleType)) => false
-          when notBool (
-               getKLabel(T) ==KLabel 'incompleteArrayType 
-               orBool getKLabel(T) ==KLabel 'pointerType
-          )
-     rule #isArgvType(t(_, incompleteArrayType(t(_, T:SimpleType)))) 
-          => false
-          when notBool getKLabel(T) ==KLabel 'pointerType
-     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType)))))) 
-          => false
-          when T =/=K char
-     rule #isArgvType(t(_, pointerType(t(_, T:SimpleType)))) 
-          => false
-          when notBool getKLabel(T) ==KLabel 'pointerType
-     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
-          => false
-          when T =/=K char
-     
-     rule [err00027]:
-          (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
-          int), _:Id),, typedDeclaration(T:Type, _:Id)))), _:Int, _:Id, _) 
-          when #isArgvType(T) ==K false
-          [structural, large]
-     rule [err00028]:
-          (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (_:Type,, _:Type,, _:Type,, _:KList))), _:Int, _:Id, _) 
-          [structural, large]
-     rule [err00029]:
-          (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id)))), _:Int, _:Id, _)
-          when T =/=K void
-          [structural, large]
+   //   rule [err00025a]:
+   //        (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
+   //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
+   //        when T =/=K int
+   //        [structural, large]
+   //   rule [err00025b]:
+   //        <k> 
+   //             (. => ERROR("00025b", "Main must exist.", 4) ) ~>
+   //             callMain(_, _)
+   //        ...</k>
+   //        <mainTU> .K </mainTU>
+   //        [structural, large]
+   //   rule [err00026]:
+   //        (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
+   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id),, _:KList))), _:Int, _:Id, _) 
+   //        when T =/=K int andBool T =/=K void
+   //        [structural, large]
+   //        
+   //   syntax Bool ::= #isArgvType(Type) [function]
+   //   
+   //   rule #isArgvType(t(_, T:SimpleType)) => false
+   //        when notBool (
+   //             getKLabel(T) ==KLabel 'incompleteArrayType 
+   //             orBool getKLabel(T) ==KLabel 'pointerType
+   //        )
+   //   rule #isArgvType(t(_, incompleteArrayType(t(_, T:SimpleType)))) 
+   //        => false
+   //        when notBool getKLabel(T) ==KLabel 'pointerType
+   //   rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType)))))) 
+   //        => false
+   //        when T =/=K char
+   //   rule #isArgvType(t(_, pointerType(t(_, T:SimpleType)))) 
+   //        => false
+   //        when notBool getKLabel(T) ==KLabel 'pointerType
+   //   rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
+   //        => false
+   //        when T =/=K char
+   //   
+   //   rule [err00027]:
+   //        (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
+   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
+   //        int), _:Id),, typedDeclaration(T:Type, _:Id)))), _:Int, _:Id, _) 
+   //        when #isArgvType(T) ==K false
+   //        [structural, large]
+   //   rule [err00028]:
+   //        (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
+   //        callMain-aux(t(_, functionType(t(_, int), (_:Type,, _:Type,, _:Type,, _:KList))), _:Int, _:Id, _) 
+   //        [structural, large]
+   //   rule [err00029]:
+   //        (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
+   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id)))), _:Int, _:Id, _)
+   //        when T =/=K void
+   //        [structural, large]
           
      rule [err00030]:
           (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
