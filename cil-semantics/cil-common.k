@@ -101,14 +101,14 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
    * Ptr ::= bytes2Value(PtrType, List)
    * byteWidth(T:Type) =Int #lenList(L:List)
    */
-  syntax Value ::= bytes2Value(Type, List) [function]
+  syntax Value ::= bytes2Value(Type, MyList) [function]
   /*
    * @invariant:
    * value2Bytes(T:IntType, I:Int)
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
-  syntax List ::= value2Bytes(Type, Value) [function] 
+  syntax MyList ::= value2Bytes(Type, Value) [function] 
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
@@ -284,12 +284,12 @@ module CIL-COMMON-MMU
   // This is probably too crude.
   rule
     <k>
-      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _)
+      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _:MyList)
       => tv(T, undef)
     ...</k>
     <base-ptr> BP </base-ptr>
-    <bytes> Bytes:Map </bytes>
-    when (M >Int 0) andBool notBool (Offset in keys Bytes)
+    <bytes> Bytes:MyMap </bytes>
+    when (M >Int 0) andBool notBool (Offset in keys(Bytes))
     [structural]
   rule
     $load(T:Type, _:Ptr, 0, L:MyList) => tv(T, bytes2Value(T, L))
