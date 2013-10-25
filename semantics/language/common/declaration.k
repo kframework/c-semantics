@@ -30,6 +30,8 @@ module C-DECLARATION-SYNTAX
 
      // Static: in process-labels.k.
      syntax K ::= "calculateGotoMap" "(" Id "," K ")"
+
+     syntax K ::= "resolveReferences"
 endmodule
 
 module C-DECLARATION

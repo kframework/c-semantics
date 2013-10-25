@@ -9,102 +9,51 @@ require "ltlmc.k"
 require "settings.k"
 require "statement.k"
 
-module C-DYNAMIC-SYNTAX
-     syntax K ::= "sequencePoint"
-     syntax Type ::= t(Set, SimpleType) [klabel('t)]
-
-     syntax Value ::= "skipval"
-     syntax TypedValue ::= tv(KList, Type) 
-          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-     syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
-     syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
-
-     syntax Type ::= type(K) [function]
-     syntax K ::= value(TypedValue) [function]
-
-     syntax K ::= "discard"
-     syntax Value ::= "emptyValue"
-     
-     syntax Int ::= "NullPointerConstant" [function]
-
-     syntax K ::= "resolveReferences"
+module C11-EXECUTION-SYNTAX
      syntax K ::= "pgmArgs" "(" KList ")" [function]
      syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
      syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initMainThread"
 
-     syntax Status ::= "initializing" | "mainCalled" | "mainExited"
-
-     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
-     syntax C ::= BaseValue | Type | Value
-     syntax Value ::= TypedValue
-     syntax KResult ::= Value | Type
+     syntax K ::= loadConfig(Bag)
 endmodule
 
-module C-DYNAMIC
+module C11-EXECUTION
+     imports C11-CONFIGURATION
+     imports C11-LTLMC
+     imports C11-SETTINGS
+     imports C11-ERROR
+     imports C11-ERROR-MAP
+     imports C-BINDING
+     imports C-BUILTIN
+     imports C-EXPRESSION
+     imports C-IO-BUFFERED
+     imports C-STATEMENT
+
+     // TODO(chathhorn)
+     imports C11-EXECUTION-INIT
+
+endmodule
+
+module C11-EXECUTION-INIT
+     imports C11-EXECUTION-SYNTAX
+
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-EXPRESSION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
-
-     imports COMPAT-SYNTAX
-
      imports LIBC-IO-SYNTAX
-
-     rule value(tv(V:KList, _)) => V
-
-     rule type(tv(_, T:Type)) => T
-     rule type(T:Type) => T
-     rule type(lv(_, T:Type)) => T
-     rule type(lval(_, T:Type)) => T
-
-     rule NullPointerConstant => 0
-
-     syntax CabsLoc ::= "UnknownCabsLoc"
-     rule [unknown-loc]: 
-          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
-          [structural, anywhere]
-
-     rule [expression-loc]: ExpressionLoc(K:K, _) => K
-          [structural, anywhere]
-
-     rule [CodeLoc-k]:
-          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <currentProgramLoc> _ => L </currentProgramLoc>
-          [structural]
+     imports COMPAT-SYNTAX
           
      rule [sequencePoint]:
-          <k> sequencePoint => .K ...</k>
+          <k> sequencePoint => . ...</k>
           <locsWrittenTo> _ => .Bag </locsWrittenTo>
           [structural]
 
-     rule [discard]:
-          _:KResult ~> discard => .
-          [structural]
-
-     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
-     A preprocessing directive of the form
-     \cdisplay{# pragma pp-tokensoptnew-line}
-     \broken{where the preprocessing token \cinline{STDC} does not immediately
-     follow pragma in the directive (prior to any macro replacement)} causes the
-     implementation to behave in an implementation-defined manner. The behavior
-     might cause translation to fail or cause the translator or the resulting
-     program to behave in a non-conforming manner. Any such pragma that is not
-     recognized by the implementation is ignored.
-     }*/
-     rule [Pragma]: Pragma(_:K) => .
-          [structural]
-          
-     rule AttributeWrapper(K:K, _) => K [structural, anywhere]
-     
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
-
-     rule NothingExpression => emptyValue
-     
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
      following constraints:
@@ -211,13 +160,13 @@ module C-DYNAMIC
           when MainTU =/=K .K
           [structural, large]
      
-     syntax K ::= doLoadConfiguration(TCellFragment)
+     syntax K ::= "loadConfig'" "(" TCellFragment ")"
 
-     rule CompiledProgram(P:Bag) 
-          => doLoadConfiguration(P)
+     rule loadConfig(<generatedTop> <global> P:Bag </global> </generatedTop>) 
+          => loadConfig'(P)
 
      rule <exec>
-               <k> doLoadConfiguration(C:Bag) => . ...</k>
+               <k> loadConfig'(C:Bag) => . ...</k>
                <global> (_:Bag => C) </global>
           ...</exec>
 
@@ -306,16 +255,3 @@ module C-DYNAMIC
           [ndtrans]
 endmodule
 
-module C11-EXECUTION
-     imports C11-CONFIGURATION
-     imports C11-LTLMC
-     imports C11-SETTINGS
-     imports C11-ERROR
-     imports C11-ERROR-MAP
-     imports C-BINDING
-     imports C-BUILTIN
-     imports C-DYNAMIC
-     imports C-EXPRESSION
-     imports C-IO-BUFFERED
-     imports C-STATEMENT
-endmodule

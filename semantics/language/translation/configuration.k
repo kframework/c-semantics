@@ -1,31 +1,32 @@
 module C11-CONFIGURATION
-     imports C-DYNAMIC-SYNTAX
+     imports C-DECLARATION-SYNTAX
      imports C-STATIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
      configuration 
-     <T>
-     <exec>
-          <global>
-               <gotoMap color="lightgray"> .Map </gotoMap>
-               <genv color="lightgray"> .Map </genv>
-               <gtypes color="lightgray"> .Map </gtypes>
-               <gstructs color="lightgray"> .Map </gstructs>
-               <stringLiterals color="lightgray"> .Map </stringLiterals>
-               // should be initialized with a pair (threadId, 0)
-               <nextSharedLoc color="black"> .K </nextSharedLoc>
-               <mem> .Map </mem>
+     <global>
+          <gotoMap color="lightgray"> .Map </gotoMap>
+          <genv color="lightgray"> .Map </genv>
+          <gtypes color="lightgray"> .Map </gtypes>
+          <gstructs color="lightgray"> .Map </gstructs>
+          <stringLiterals color="lightgray"> .Map </stringLiterals>
+          // should be initialized with a pair (threadId, 0)
+          <nextSharedLoc color="black"> .K </nextSharedLoc>
+          <mem> .Map </mem>
 
-               // map from current tu to (map from id to where function was
-               // defined)             
-               <funTUs color="lightgray"> .Map </funTUs>
-               <mainTU color="lightgray"> .K </mainTU>
-               <freshUnnamed color="black"> 0 </freshUnnamed>
-               <functions color="lightgray"> .Map </functions>
-               <notWritable> .Map </notWritable>
-               <internalLocations color="cyan"> .Map </internalLocations>
-               <externalLocations color="cyan"> .Map </externalLocations>
-          </global>
+          // map from current tu to (map from id to where function was
+          // defined)             
+          <funTUs color="lightgray"> .Map </funTUs>
+          <mainTU color="lightgray"> .K </mainTU>
+          <freshUnnamed color="black"> 0 </freshUnnamed>
+          <functions color="lightgray"> .Map </functions>
+          <notWritable> .Map </notWritable>
+          <internalLocations color="cyan"> .Map </internalLocations>
+          <externalLocations color="cyan"> .Map </externalLocations>
+     </global>
+     <T multiplicity="?">
+     <exec>
 
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
@@ -45,7 +46,6 @@ module C11-CONFIGURATION
                $PGM:K 
                ~> resolveReferences 
                ~> initBuiltins
-               ~> writeConfig($OUT:String)
           </k>
           // should be initialized with a pair (threadId, 0)
           <nextLoc color="black"> 0 </nextLoc>

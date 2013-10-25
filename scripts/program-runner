@@ -23,6 +23,10 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
+my $EXEC_DEF = catfile($SCRIPTS_DIR, "c11-kompiled");
+my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
+
 my $KRUN = "krun";
 
 my @temporaryFiles = ();
@@ -53,11 +57,11 @@ sub main {
                   '--output-mode' => 'raw', 
                   '--output' => $fileOutput, 
                   '--parser' => 'cat', 
-                  '-d' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
+                  '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
                   "-cARGV=\\\"$argv\\\",,.KList" => '',
-                  '' => $fileInput
+                  '--load-cfg' => $fileInput
                   );
 
       if (defined $ENV{HELP}) {
@@ -107,7 +111,7 @@ sub main {
       if (defined $ENV{SEARCH}) {
             $krun_args{'--search-final'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            $krun_args{'-d'} = $EXEC_ND_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
       }
@@ -115,15 +119,14 @@ sub main {
       if (defined $ENV{THREADSEARCH}) {
             $krun_args{'--search-final'} = '';
             delete $krun_args{'--io'};
-            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
+            $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
       }
 
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
-            $krun_args{'-d'} = 
-                  catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            $krun_args{'-d'} = $EXEC_ND_DEF;
             $krun_args{'--output-mode'} = 'pretty';
             delete $krun_args{'--io'};
             delete $krun_args{'--output'};

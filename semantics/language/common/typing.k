@@ -92,7 +92,7 @@ module C-TYPING-SYNTAX
 
      syntax Set ::= "getModifiers" "(" K ")" [function]
 
-     syntax Type ::= "typedDeclaration" "(" Type "," Id ")" 
+     syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
      syntax K ::= "giveType" "(" Id "," Type ")"
@@ -101,6 +101,7 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isTruthValue(TypedValue) [function]
      syntax K ::= simplifyTruth(K) [function]
+
 endmodule
 
 module C-TYPING

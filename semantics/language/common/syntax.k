@@ -10,8 +10,6 @@ module C-SYNTAX
      
      syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
 
-     syntax K ::= CompiledProgram(Bag) [klabel('CompiledProgram)]
-     
      syntax KResult ::= SpecifierElem
      
      syntax C ::= CabsLoc

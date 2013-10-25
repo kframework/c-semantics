@@ -7,6 +7,8 @@ module C11-ERROR
      imports C11-ERROR-SYNTAX
      imports C11-ERROR-MAP-SYNTAX
 
+     imports C11-EXECUTION-SYNTAX
+
      imports C-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX

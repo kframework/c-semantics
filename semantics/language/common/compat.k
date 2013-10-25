@@ -78,7 +78,7 @@ module COMPAT-SYNTAX
 
      syntax KList ::= times(Int, K) [function]
 
-     syntax K ::= writeConfig(String)
+     // syntax K ::= writeConfig(String)
                 // | readConfig(String)
 
      // TODO(chathhorn): better place for this?
@@ -188,22 +188,22 @@ module COMPAT
           when N >Int 0
 
      // Read/write the current configuration.
-     syntax K ::= saveConfiguration(Int, String) 
+     // syntax K ::= saveConfiguration(Int, String) 
                //  | loadConfiguration(Int, String) 
                //  | loadConfigurationByte(K)
 
-     rule <exec>
-               <global> B:Bag </global>
-               <k> 
-                    writeConfig(F:String) 
-                    => saveConfiguration(#open(F), K2String(CompiledProgram(B))) 
-               ...</k>
-          ...</exec>
+     // rule <exec>
+     //           <global> B:Bag </global>
+     //           <k> 
+     //                writeConfig(F:String) 
+     //                => saveConfiguration(#open(F), K2String(CompiledProgram(B))) 
+     //           ...</k>
+     //      ...</exec>
 
-     rule (. => #write(Fd, substrString(S, 0, 1000))) 
-          ~> saveConfiguration(Fd:Int, 
-               (S:String => substrString(S, 1000, lengthString(S)))) 
-          when S =/=String ""
+     // rule (. => #write(Fd, substrString(S, 0, 1000))) 
+     //      ~> saveConfiguration(Fd:Int, 
+     //           (S:String => substrString(S, 1000, lengthString(S)))) 
+     //      when S =/=String ""
 
      // syntax K ::= fuzz(String)
 
@@ -211,7 +211,7 @@ module COMPAT
      //      ~> saveConfiguration(Fd:Int, (S:String => "")) 
      //      when S =/=String ""
 
-     rule saveConfiguration(Fd:Int, "") => #close(Fd)
+     // rule saveConfiguration(Fd:Int, "") => #close(Fd)
 
      // rule readConfig(F:String) 
      //      => loadConfiguration(#open(F, "r"), "")
