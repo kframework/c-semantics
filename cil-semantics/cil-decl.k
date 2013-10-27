@@ -1,8 +1,16 @@
 // vim: set ts=2 sw=2:
+require "builtins/list.k"
+require "builtins/map.k"
+require "builtins/set.k"
 require "modules/k-functional-visitor.k"
+
+require "cil-typing.k"
 require "cil-common.k"
+require "cil-exp.k"
 
 module CIL-DECL
+  imports MAP
+  imports SET
   imports K-FUNCTIONAL-VISITOR 
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
@@ -31,8 +39,8 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:Map </env>
-    <external> ExtLnk:Set </external>
+    <env> E:MyMap </env>
+    <external> ExtLnk:MySet </external>
     <phase> Tu:TransUnit </phase>
     when getId(D) in ExtLnk
   rule 
@@ -42,10 +50,10 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:Map </env>
-    <external> ExtLnk:Set </external>
+    <env> E:MyMap </env>
+    <external> ExtLnk:MySet </external>
     <tu-id> Tu </tu-id>
-    <internal> IntLnk:Set </internal>
+    <internal> IntLnk:MySet </internal>
     <phase> Tu:TransUnit </phase>
     when notBool (getId(D) in IntLnk)
       andBool notBool (getId(D) in ExtLnk)
@@ -58,8 +66,8 @@ module CIL-DECL
       getParams(D), FB)
     ...</k>
     <tu-id> Tu </tu-id>
-    <env> E:Map </env>
-    <internal> IntLnk:Set </internal>
+    <env> E:MyMap </env>
+    <internal> IntLnk:MySet </internal>
     <phase> Tu:TransUnit </phase>
     when getId(D) in IntLnk
 
@@ -70,7 +78,7 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:Map </env>
+    <env> E:MyMap </env>
     <phase> Tu:TransUnit </phase>
 
   rule 
@@ -80,36 +88,36 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:Map </env>
+    <env> E:MyMap </env>
     <phase> Tu:TransUnit </phase>
   
   rule 
     <k> declInternal(X:CId, nt(T:Type)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:Map => Env[T / X] </env>
-    <tu-env> TuEnv:Map => TuEnv[T / X] </tu-env>
+    <env> Env:MyMap => Env[X <- T] </env>
+    <tu-env> TuEnv:MyMap => TuEnv[X < T] </tu-env>
     <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:Map => Env[lv(T, P) / X] </env>
-    <tu-env> TuEnv:Map => TuEnv[lv(T, P) / X] </tu-env>
+    <env> Env:MyMap => Env[X <- lv(T, P)] </env>
+    <tu-env> TuEnv:MyMap => TuEnv[X <- lv(T, P)] </tu-env>
     <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:Map => Env[lv(downPtr(T), P) / X] </env>
-    <tu-env> TuEnv:Map => TuEnv[lv(downPtr(T), P) / X] </tu-env>
+    <env> Env:.MyMap => Env[X <- lv(downPtr(T), P)] </env>
+    <tu-env> TuEnv:.MyMap => TuEnv[X <- lv(downPtr(T), P)] </tu-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> declExternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
-    <env> Env:Map => Env[lv(T, P) / X] </env>
-    <global-env> GEnv:Map => GEnv[lv(T, P) / X] </global-env>
+    <env> Env:MyMap => Env[X <- lv(T, P)] </env>
+    <global-env> GEnv:MyMap => GEnv[X <- lv(T, P)] </global-env>
   rule 
     <k> declExternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
-    <env> Env:Map => Env[lv(downPtr(T), P) / X] </env>
-    <global-env> GEnv:Map => GEnv[lv(downPtr(T), P) / X] </global-env>
+    <env> Env:MyMap => Env[X <- lv(downPtr(T), P)] </env>
+    <global-env> GEnv:MyMap => GEnv[X <- lv(downPtr(T), P)] </global-env>
 
   rule
     <k>
@@ -136,12 +144,12 @@ module CIL-DECL
     <k> extern TS:TypeSpec D:Declarator ; 
     => declExternal(getId(D), 
       nclv(normType(TS D), ExtFun(#tokenToString(getId(D))))) ...</k>
-    <external>... (. => SetItem(getId(D))) ...</external>
+    <external>... (.MySet => MySetItem(getId(D))) ...</external>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) ==K true
   rule
     <k> static TS:TypeSpec D:Declarator ; => . ...</k>
-    <internal>... (. => SetItem(getId(D))) ...</internal>
+    <internal>... (.MySet => MySetItem(getId(D))) ...</internal>
     <tu-id> Tu </tu-id>
     <phase> Tu:TransUnit </phase>
     when isFunType(normType(TS D)) ==K true
@@ -300,7 +308,7 @@ module CIL-DECL
   syntax K ::= bindLocal(CId, K) [strict(2)]
   rule
     <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
-    <env> M:Map => M:Map[lv(downPtr(T), P) / X] </env>
+    <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
   [structural]
 
   syntax K ::= declStruct(CId, K, K, Int) [strict(3)]

@@ -216,7 +216,7 @@ module CIL-COMMON-MMU
     =>
       <object>
         <base-ptr> BasePtr(Base, (mival(Sz))) </base-ptr>
-        <object-type> T </object-type>
+        //<object-type> T </object-type>
         <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>
     ...</heap>
@@ -225,9 +225,12 @@ module CIL-COMMON-MMU
   rule
     <k> deleteObject(Ptr(BP:BasePtr, (0))) => .K ...</k>
     <heap>...
-      <object>...
+      //<object>...
+      <object>
         <base-ptr> BP </base-ptr>
-      ...</object>
+        <bytes> _:MyMap </bytes>
+      //...</object>
+      </object>
     =>
       .Bag
     ...</heap>
@@ -253,10 +256,12 @@ module CIL-COMMON-MMU
           (MyListItem(V:ByteValue) => .MyList) _:MyList)
     ...</k>
     <heap>...
-      <object>...
+      //<object>...
+      <object>
         <base-ptr> BP </base-ptr>
         <bytes>... Offset |-> (_:KItem => V) ...</bytes>
-      ...</object>
+      //...</object>
+      </object>
     ...</heap>
   [structural]
   rule $store(_:Ptr, .MyList) => .K   [structural]

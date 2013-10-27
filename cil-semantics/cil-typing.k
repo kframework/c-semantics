@@ -1,5 +1,11 @@
 // vim: set ts=2 sw=2:
+require "builtins/map.k"
+require "modules/k-functional-visitor.k"
+
+require "cil-common.k"
+
 module CIL-TYPING-SYNTAX
+  imports MAP
   syntax NormType ::= nt(Type)
   syntax Type ::= NormType
 
@@ -39,16 +45,17 @@ module CIL-TYPING-SYNTAX
   // declarator.
   syntax CId ::= getId(Declarator) [function]
 
-  syntax Type ::= expandTypedefs(Type, Map) [function]
+  syntax Type ::= expandTypedefs(Type, MyMap) [function]
 
   syntax Type ::= normType(Type) [function]
 endmodule
 
 module CIL-TYPING
+  imports MAP
+  imports K-FUNCTIONAL-VISITOR
   imports CIL-SYNTAX
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
-  imports K-FUNCTIONAL-VISITOR
 
   syntax SymId ::= "#__id__"
   syntax DirectDecl ::= SymId
@@ -223,41 +230,41 @@ module CIL-TYPING
   // 
   // int x[5];
   // 
-  syntax ParamDecl ::= expandParamDecl(ParamDecl, Map) [function]
-  syntax Declarator ::= expandDecl(Declarator, Map) [function]
-  syntax DirectDecl ::= expandDirectDecl(DirectDecl, Map) [function]
-  syntax Params ::= expandParams(Params, Map) [function]
+  syntax ParamDecl ::= expandParamDecl(ParamDecl, MyMap) [function]
+  syntax Declarator ::= expandDecl(Declarator, MyMap) [function]
+  syntax DirectDecl ::= expandDirectDecl(DirectDecl, MyMap) [function]
+  syntax Params ::= expandParams(Params, MyMap) [function]
 
   // TODO(chathhorn): It'd be nice to generalize this process of walking the
   // declaration syntax tree.
-  rule expandTypedefs(T:ParamDecl, E:Map) => normType(expandParamDecl(T, E))
+  rule expandTypedefs(T:ParamDecl, E:MyMap) => normType(expandParamDecl(T, E))
 
-  rule expandParamDecl(X:CId, E:Map X |-> T:Type)
+  rule expandParamDecl(X:CId, E:MyMap X |-> T:Type)
     => expandTypedefs(T, E X |-> T)
-  rule expandParamDecl(X:CId D:Declarator, E:Map X |-> T:Type)
+  rule expandParamDecl(X:CId D:Declarator, E:MyMap X |-> T:Type)
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
         E X |-> T)
 // TODO(AndreiS): fix isKeyword issue
 //  rule expandParamDecl(TS:TypeSpec, _) => TS
 //    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
-//  rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) 
+//  rule expandParamDecl(TS:TypeSpec D:Declarator, E:MyMap) 
 //    => TS expandDecl(D, E)
 //    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
 
-  rule expandDecl(D:DirectDecl, E:Map) => expandDirectDecl(D, E)
-  rule expandDecl(P:Pointer D:DirectDecl, E:Map) => P expandDirectDecl(D, E)
+  rule expandDecl(D:DirectDecl, E:MyMap) => expandDirectDecl(D, E)
+  rule expandDecl(P:Pointer D:DirectDecl, E:MyMap) => P expandDirectDecl(D, E)
 
   rule expandDirectDecl(X:SymId, _) => X
-  rule expandDirectDecl('`(_`)(D:Declarator), E:Map) 
+  rule expandDirectDecl('`(_`)(D:Declarator), E:MyMap) 
     => '`(_`)(expandDecl(D, E))
-  rule expandDirectDecl(D:DirectDecl(), E:Map) => expandDirectDecl(D, E)()
-  rule expandDirectDecl(D:DirectDecl[], E:Map) => expandDirectDecl(D, E)[]
-  rule expandDirectDecl(D:DirectDecl(Ps:Params), E:Map) 
+  rule expandDirectDecl(D:DirectDecl(), E:MyMap) => expandDirectDecl(D, E)()
+  rule expandDirectDecl(D:DirectDecl[], E:MyMap) => expandDirectDecl(D, E)[]
+  rule expandDirectDecl(D:DirectDecl(Ps:Params), E:MyMap) 
     => expandDirectDecl(D, E)(expandParams(Ps, E))
-  rule expandDirectDecl(D:DirectDecl[C:Constant], E:Map) 
+  rule expandDirectDecl(D:DirectDecl[C:Constant], E:MyMap) 
     => expandDirectDecl(D, E)[C]
 
-  rule expandParams(P:ParamDecl, Ps:Params, E:Map) 
+  rule expandParams(P:ParamDecl, Ps:Params, E:MyMap) 
     => expandParamDecl(P, E), expandParams(Ps, E)
   rule expandParams(.Params, _) => .Params
 

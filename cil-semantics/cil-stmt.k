@@ -1,8 +1,16 @@
 // vim: set ts=2 sw=2:
+require "builtins/list.k"
+require "builtins/map.k"
+require "builtins/set.k"
+
 require "cil-common.k"
 require "cil-decl.k"
+require "cil-exp.k"
 
 module CIL-STMT
+  imports LIST
+  imports MAP
+  imports SET
   imports CIL-COMMON
   imports CIL-DECL
   imports CIL-EXP
@@ -35,9 +43,9 @@ module CIL-STMT
     => goto $defaultLabel(I) ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:Map </labels>
+    <labels> Lbls:MyMap </labels>
     <labels-generated> true </labels-generated>
-    when notBool ($caseLabel(I, V) in keys Lbls)
+    when notBool ($caseLabel(I, V) in keys(Lbls))
   [structural]
 
   /*
@@ -77,7 +85,7 @@ module CIL-STMT
   rule
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels>... .Map => L |-> (S Ss1) @Stmts Cont ...</labels>
+    <labels>... .MyMap => L |-> (S Ss1) @Stmts Cont ...</labels>
     <make-goto-table-task>
       <make-goto-table-stmts>
         L:Label : S:Stmt Ss1:Stmts => S Ss1
@@ -150,29 +158,29 @@ module CIL-STMT
   // in the case labels of switch statements. It seems to slow things down
   // quite a bit too.
   syntax K ::= "eval-case-labels"
-             | "eval-case-labels" "(" Map "," Map ")"
+             | "eval-case-labels" "(" MyMap "," MyMap ")"
              | "case-label-freezer" "(" Int "," Stmts ")"
 
-  rule <k> eval-case-labels => eval-case-labels(Lbls, .Map) ...</k>
+  rule <k> eval-case-labels => eval-case-labels(Lbls, .MyMap) ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:Map </labels>
+    <labels> Lbls:MyMap </labels>
 
   rule eval-case-labels(
-    _:Map (L:Label |-> Ss:Stmts => .Map), 
-    _:Map (.Map => L |-> Ss)) 
+    _:MyMap (L:Label |-> Ss:Stmts => .MyMap), 
+    _:MyMap (.MyMap => L |-> Ss)) 
     when getKLabel(L) =/=KLabel '$caseLabel
     [structural]
   rule (. => E ~> case-label-freezer(I, Ss)) 
     ~> eval-case-labels(
-      _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
+      _:MyMap ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .MyMap), _:MyMap) 
     [structural]
   rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
     ~> eval-case-labels(
-      _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
+      _:MyMap, _:MyMap (.MyMap => $caseLabel(I, E) |-> Ss))
     [structural]
 
-  rule <k> eval-case-labels(.Map, Lbls:Map) => . ...</k>
+  rule <k> eval-case-labels(.MyMap, Lbls:MyMap) => . ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels> _ => Lbls </labels>
@@ -203,7 +211,7 @@ module CIL-STMT
   rule 
      <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
-     <global-env> GEnv:Map </global-env>
+     <global-env> GEnv:MyMap </global-env>
      <phase> _ => executing </phase>
      [structural]
 
@@ -222,17 +230,17 @@ module CIL-STMT
       ...</frame>
     )
     <frame-stack>...
-      .List => ListItem(<frame> <k> K </k> Cells </frame>)
+      .MyList => MyListItem(<frame> <k> K </k> Cells </frame>)
     </frame-stack>
     <fun>...
       <fun-id> FunPtr(F, Tu) </fun-id>
       <formals> Ps:Params </formals>
       <body> FB:FunBody </body>
     ...</fun>
-    <global-env> GEnv:Map </global-env>
+    <global-env> GEnv:MyMap </global-env>
     <tu>...
       <tu-id> Tu </tu-id>
-      <tu-env> TuEnv:Map </tu-env>
+      <tu-env> TuEnv:MyMap </tu-env>
     ...</tu>
   [computational]
   rule
@@ -248,7 +256,7 @@ module CIL-STMT
       </frame>
     )
     <frame-stack>...
-       ListItem(<frame> <k> K </k> Cells </frame>) => .List
+       MyListItem(<frame> <k> K </k> Cells </frame>) => .MyList
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
@@ -268,7 +276,7 @@ module CIL-STMT
       </frame>
     )
     <frame-stack>...
-       ListItem(<frame> <k> K </k> Cells </frame>) => .List
+       MyListItem(<frame> <k> K </k> Cells </frame>) => .MyList
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
@@ -289,7 +297,7 @@ module CIL-STMT
   [structural]
 
   syntax K ::= initializeParams(Params, TypedValues)
-             | deleteLocals(Set)
+             | deleteLocals(MySet)
   rule
     initializeParams(
         ((DS:DeclSpecs D:Declarator), Ps:Params),
@@ -309,9 +317,9 @@ module CIL-STMT
 
   // TODO(chathhorn): delete stuff.
   // rule
-  //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)
+  //   deleteLocals(MySetItem(P:Ptr) S:MySet) => deleteObject(P) ~> deleteLocals(S)
   // [structural]
-  // rule deleteLocals(.Set) => .K   [structural] 
+  // rule deleteLocals(.MySet) => .K   [structural] 
 
   rule 
     <k> # pragma KCIL_TU Filename:String => . ...</k>

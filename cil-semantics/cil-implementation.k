@@ -4,10 +4,12 @@
  * Implementation defined semantics *
  ************************************
  */
+require "builtins/list.k"
 
 require "cil-common.k"
 
 module CIL-IMPLEMENTATION
+  imports LIST
   imports CIL-COMMON
 
   // "each enumerated type shall be compatible with char, a signed integer
@@ -49,24 +51,24 @@ module CIL-IMPLEMENTATION
 
   rule byteWidth(__builtin_va_list) => byteWidth(normType(void*))
 
-  syntax MInt ::= bytes2SignedMInt(List)      [function]
-                | bytes2UnsignedMInt(List)    [function]
+  syntax MInt ::= bytes2SignedMInt(MyList)      [function]
+                | bytes2UnsignedMInt(MyList)    [function]
   rule
-    bytes2UnsignedMInt(ListItem(M:Int) L:List)
+    bytes2UnsignedMInt(MyListItem(M:Int) L:MyList)
   =>
     mi((wMInt(bytes2UnsignedMInt(L)) +Int byteWidthMacro),
        (iMInt(bytes2UnsignedMInt(L)) <<Int byteWidthMacro) +Int M)
-  rule bytes2UnsignedMInt(.List) => mi(0, 0)
-  rule bytes2SignedMInt(L:List) => sMInt(bytes2UnsignedMInt(L))
+  rule bytes2UnsignedMInt(.MyList) => mi(0, 0)
+  rule bytes2SignedMInt(L:MyList) => sMInt(bytes2UnsignedMInt(L))
 
-  syntax List ::= "MInt2Bytes" "(" MInt ")" [function]
+  syntax MyList ::= "MInt2Bytes" "(" MInt ")" [function]
   rule
     MInt2Bytes(mi(N:Int, I:Int))
   =>
-    ListItem(I modInt (1 <<Int byteWidthMacro))
+    MyListItem(I modInt (1 <<Int byteWidthMacro))
     MInt2Bytes(mi((N -Int byteWidthMacro), I >>Int byteWidthMacro))
   when N >Int 0
-  rule MInt2Bytes(mi((0), _)) => .List
+  rule MInt2Bytes(mi((0), _)) => .MyList
 
   /* Size of pointers is 4 bytes (also the size of int) */
   rule byteWidth(T:Type) => 4
@@ -79,58 +81,58 @@ module CIL-IMPLEMENTATION
    */
   rule value2Bytes(_, MI:MInt) => MInt2Bytes(MI)
 
-  rule bytes2Value(_:UnsignedIntType, L:List) => bytes2UnsignedMInt(L)
-  rule bytes2Value(_:SignedIntType, L:List) => bytes2SignedMInt(L)
+  rule bytes2Value(_:UnsignedIntType, L:MyList) => bytes2UnsignedMInt(L)
+  rule bytes2Value(_:SignedIntType, L:MyList) => bytes2SignedMInt(L)
 
   /*
    * Floats.
    */
-  syntax List ::= padBytes(Int) [function]
+  syntax MyList ::= padBytes(Int) [function]
                 | padBytes(Int, ByteValue) [function]
   
   rule padBytes(N:Int) => padBytes(N, used)
 
   rule padBytes(N:Int, V:ByteValue) 
-    => ListItem(V) padBytes(N -Int 1, V)
+    => MyListItem(V) padBytes(N -Int 1, V)
     when N >Int 0
-  rule padBytes(0, _) => .List
+  rule padBytes(0, _) => .MyList
 
   rule value2Bytes(T:FloatingType, F:Float) 
-    => ListItem(F) padBytes(byteWidth(T) -Int 1)
+    => MyListItem(F) padBytes(byteWidth(T) -Int 1)
 
   rule bytes2Value(_:FloatingType, 
-    ListItem(F:Float) _:List) => F
+    MyListItem(F:Float) _:MyList) => F
   rule bytes2Value(_:FloatingType, 
-    ListItem(0) _:List) => 0.0
+    MyListItem(0) _:MyList) => 0.0
 
   /*
    * Strings.
    */
   rule value2Bytes(T:Type, S:String)
-     => ListItem(ordChar(substrString(S, 0, 1)))
+     => MyListItem(ordChar(substrString(S, 0, 1)))
       value2Bytes(T, substrString(S, 1, lengthString(S)))
      when lengthString(S) >Int 0
-  rule value2Bytes(_, "") => ListItem(0)
+  rule value2Bytes(_, "") => MyListItem(0)
 
   /*
    * Pointers.
    */
   rule value2Bytes(T:Type, P:Ptr) 
-    => ListItem(P) padBytes(byteWidth(T) -Int 1)
+    => MyListItem(P) padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_, ListItem(P:Ptr) _:List)
+  rule bytes2Value(_, MyListItem(P:Ptr) _:MyList)
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.
-  rule bytes2Value(T:Type, L:List) 
+  rule bytes2Value(T:Type, L:MyList) 
     => bytes2UnsignedMInt(L)
     when isPtrType(T)
 
   /*
    * Aggregates and arrays.
    */
-  rule value2Bytes(_, agg(L:List)) => L
-  rule bytes2Value(T:Type, L:List) => agg(L)
+  rule value2Bytes(_, agg(L:MyList)) => L
+  rule bytes2Value(T:Type, L:MyList) => agg(L)
     when (isArrayType(T) ==K true)
       orBool (isAggType(T) ==K true)
 

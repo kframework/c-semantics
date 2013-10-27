@@ -1,4 +1,8 @@
 // vim: set ts=2 sw=2:
+require "builtins/list.k"
+require "builtins/map.k"
+require "builtins/set.k"
+
 require "cil-common.k"
 
 /* CId variable conventions:
@@ -7,6 +11,7 @@ require "cil-common.k"
      F function */
 
 module CIL-LITERAL
+  imports SET
 
   syntax String ::= carStr(String) [function]
                   | racStr(String) [function]
@@ -27,45 +32,45 @@ module CIL-LITERAL
                   | getHexFloatExponent(String) [function]
                   | beforeDot(String) [function]
                   | afterDot(String) [function]
-                  | getNumericPart(String, Set, Set) [function]
-                  | "getNumericPart'" "(" String "," String "," Set ")" 
+                  | getNumericPart(String, MySet, MySet) [function]
+                  | "getNumericPart'" "(" String "," String "," MySet ")" 
                     [function]
 
   syntax Float ::= hexToFloat(String) [function]
                  | "hexToFloat'" "("String")" [function]
 
 
-  syntax Set ::= "prefixChars" [function]
+  syntax MySet ::= "prefixChars" [function]
                | "intSuffixChars" [function]
                | "floatHexPrefixChars" [function]
                | "floatSuffixChars" [function]
                | "floatHexSepChars" [function]
 
   rule prefixChars =>
-    SetItem("0")
-    SetItem("x")
-    SetItem("X")
-    SetItem("\\")
+    MySetItem("0")
+    MySetItem("x")
+    MySetItem("X")
+    MySetItem("\\")
 
   rule intSuffixChars =>
-    SetItem("u")
-    SetItem("U")
-    SetItem("l")
-    SetItem("L")
+    MySetItem("u")
+    MySetItem("U")
+    MySetItem("l")
+    MySetItem("L")
 
   rule floatHexPrefixChars =>
-    SetItem("x")
-    SetItem("X")
+    MySetItem("x")
+    MySetItem("X")
 
   rule floatSuffixChars =>
-    SetItem("f")
-    SetItem("F")
-    SetItem("l")
-    SetItem("L")
+    MySetItem("f")
+    MySetItem("F")
+    MySetItem("l")
+    MySetItem("L")
 
   rule floatHexSepChars =>
-    SetItem("p")
-    SetItem("P")
+    MySetItem("p")
+    MySetItem("P")
 
   rule hexToFloat(S:String)
     => hexToFloat'(getHexFloatMantissa(S))
@@ -93,13 +98,13 @@ module CIL-LITERAL
     => getNumericPart(S, prefixChars, intSuffixChars)
 
   rule getDecFloatNumericPart(S:String)
-    => getNumericPart(S, .Set, floatSuffixChars)
+    => getNumericPart(S, .MySet, floatSuffixChars)
 
   rule getHexFloatNumericPart(S:String)
     => getNumericPart(cdrStr(S), floatHexPrefixChars, floatSuffixChars)
 
   rule getHexFloatMantissa(S:String)
-    => getNumericPart(getHexFloatNumericPart(S), .Set, floatHexSepChars)
+    => getNumericPart(getHexFloatNumericPart(S), .MySet, floatHexSepChars)
 
   rule getHexFloatExponent(S:String)
     => getNumericPart(
@@ -107,48 +112,48 @@ module CIL-LITERAL
           findString(S, getHexFloatMantissa(S), 0) +Int lengthString(getHexFloatMantissa(S)),
           lengthString(S)), floatHexSepChars, floatSuffixChars)
 
-  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+  rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
     => getNumericPart(cdrStr(S), Pre, Suf)
     when (carStr(S) in Pre)
       andBool (S =/=String "")
-  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+  rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
     => getNumericPart'(S, "", Suf)
     when notBool (carStr(S) in Pre)
       andBool (S =/=String "")
-  rule getNumericPart("", _, _) => "0"
+  rule getNumericPart("", _:MySet, _:MySet) => "0"
   
-  rule getNumericPart'(S:String, Num:String, Suf:Set)
+  rule getNumericPart'(S:String, Num:String, Suf:MySet)
     => getNumericPart'(cdrStr(S), Num +String carStr(S), Suf)
     when notBool (carStr(S) in Suf)
       andBool (S =/=String "")
-  rule getNumericPart'(S:String, Num:String, Suf:Set) => Num
+  rule getNumericPart'(S:String, Num:String, Suf:MySet) => Num
     when (carStr(S) in Suf)
       andBool (Num =/=String "")
 
-  rule getNumericPart'("", Num:String, _) => Num
+  rule getNumericPart'("", Num:String, _:MySet) => Num
     when Num =/=String ""
-  rule getNumericPart'(S:String, "", Suf:Set) => "0"
+  rule getNumericPart'(S:String, "", Suf:MySet) => "0"
     when (carStr(S) in Suf)
-  rule getNumericPart'("", "", _) => "0"
+  rule getNumericPart'("", "", _:MySet) => "0"
 
   syntax String ::= getSuffix(String) [function]
                   | getFloatSuffix(String) [function]
-                  | getSuffix(String, Set) [function]
-                  | "getSuffix'" "(" String "," String "," Set ")" [function]
+                  | getSuffix(String, MySet) [function]
+                  | "getSuffix'" "(" String "," String "," MySet ")" [function]
 
   rule getSuffix(S:String) => getSuffix(S, intSuffixChars)
 
   rule getFloatSuffix(S:String) => getSuffix(S, floatSuffixChars)
 
-  rule getSuffix(S:String, Sufs:Set) => getSuffix'(S, "", Sufs)
+  rule getSuffix(S:String, Sufs:MySet) => getSuffix'(S, "", Sufs)
 
-  rule getSuffix'(S:String, Suf:String, Sufs:Set) 
+  rule getSuffix'(S:String, Suf:String, Sufs:MySet) 
     => getSuffix'(rdcStr(S), racStr(S) +String Suf, Sufs)
     when (racStr(S) in Sufs) andBool (S =/=String "")
-  rule getSuffix'(S:String, Suf:String, Sufs)
+  rule getSuffix'(S:String, Suf:String, Sufs:MySet)
     => normSuffix(Suf)
     when notBool (racStr(S) in Sufs)
-  rule getSuffix'("", Suf:String, _) => normSuffix(Suf)
+  rule getSuffix'("", Suf:String, _:MySet) => normSuffix(Suf)
 
   syntax String ::= normSuffix(String) [function]
 
@@ -195,7 +200,7 @@ module CIL-LITERAL
 
   rule conv(S:String, Base:Int) => String2Base(S, Base)
     when S =/=String ""
-  rule conv("", _) => 0
+  rule conv("", _:Int) => 0
 
 endmodule
 
@@ -208,6 +213,9 @@ module CIL-PROMOTION
 endmodule
 
 module CIL-EXP
+  imports LIST
+  imports MAP
+  imports SET
   imports CIL-TYPING-SYNTAX
   imports CIL-PROMOTION
   imports CIL-IMPLEMENTATION
@@ -220,13 +228,13 @@ module CIL-EXP
   rule I:Int => norm(int, I)
 
   syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
-  rule $exp2bool(tv(_, MI:MInt))
+  rule $exp2bool(tv(_:Type, MI:MInt))
     => norm(int, notBool isZero(MI))
   [structural]
-  rule $exp2bool(tv(_, Null))
+  rule $exp2bool(tv(_:Type, Null))
     => norm(int, false)
   [structural]
-  rule $exp2bool(tv(_, P:Ptr))
+  rule $exp2bool(tv(_:Type, P:Ptr))
     => norm(int, true)
     when P =/=K Null
   [structural]
@@ -378,21 +386,21 @@ module CIL-EXP
   /* Lookup. */
   rule
     <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
-    <env> E:Map X |-> lv(T:Type, P:Ptr) </env>
+    <env> E:MyMap X |-> lv(T:Type, P:Ptr) </env>
     [structural]
 
   // Typedefs.
   rule
     <k> X:CId => nt(expandTypedefs(T, E)) ...</k>
-    <env> E:Map X |-> T:Type </env>
+    <env> E:MyMap X |-> T:Type </env>
     [structural]
 
   rule 
     <k> S:String 
       => newString(S, newObject(normType(char [lengthString(S) +Int 1])))
     ...</k>
-    <strings> Ss:Map </strings>
-    when notBool (S in keys Ss)
+    <strings> Ss:MyMap </strings>
+    when notBool (S in keys(Ss))
 
   rule 
     <k> S:String => lv(normType(char [lengthString(S) +Int 1]), P) ...</k>
@@ -429,7 +437,7 @@ module CIL-EXP
     [structural]
 
   /* Dereference of hacky VaLists, which should never be r-values. */
-  rule *tv(T:Type, va_list(tv(_, V:Value))) => tv(downPtr(T), V) 
+  rule *tv(T:Type, va_list(tv(_:Type, V:Value))) => tv(downPtr(T), V)
     [structural]
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
@@ -509,10 +517,10 @@ module CIL-EXP
     when udivMInt(MI1, MI2) =/=K errMInt
 
   rule ~tv(T:Type, I:MInt) => norm(T, ~Int iMInt(I))
-  rule tv(T:Type, I:MInt) << tv(_, N:MInt) 
+  rule tv(T:Type, I:MInt) << tv(_:Type, N:MInt) 
     => norm(T, iMInt(I) <<Int iMInt(N))
     when iMInt(N) <Int width(T)
-  rule tv(T:Type, I:MInt) >> tv(_, N:MInt) 
+  rule tv(T:Type, I:MInt) >> tv(_:Type, N:MInt) 
     => norm(T, iMInt(I) <<Int iMInt(N))
     when iMInt(N) <Int width(T)
 
@@ -543,9 +551,9 @@ module CIL-EXP
   rule ! E:Exp => $exp2bool(E) ~> ! HOLE
   rule TV:TypedValue ~> ! HOLE => ! TV
 
-  rule !tv(_, I:MInt) => norm(int, 1)
+  rule !tv(_:Type, I:MInt) => norm(int, 1)
     when isZero(I)
-  rule !tv(_, I:MInt) => norm(int, 0)
+  rule !tv(_:Type, I:MInt) => norm(int, 0)
     when notBool isZero(I)
 
   /*
@@ -558,7 +566,7 @@ module CIL-EXP
 
   syntax K ::= "sizeof'" "(" Type ")"
   rule sizeof(nt(T:Type)) => sizeof'(T)
-  rule sizeof(tv(T:Type, _)) => sizeof'(T)
+  rule sizeof(tv(T:Type, _:Type)) => sizeof'(T)
 
   rule sizeof'(T:Type) => (size_t) byteWidth(T)
     when (isBasicType(T) ==K true) 
@@ -578,7 +586,7 @@ module CIL-EXP
    */
 // TODO(AndreiS): fix isKeyword issue
 //  rule <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
-//    <env> E:Map </env>
+//    <env> E:MyMap </env>
 //    // If it's a CId then we look it up in the env until we get an unambiguous
 //    // type.
 //    when ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
@@ -587,8 +595,8 @@ module CIL-EXP
 //      andBool ($isConstArrayDeref(T, E) =/=K true)
 
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
-  syntax Bool ::= "$isConstArrayDeref" "(" K "," Map ")" [function]
-  rule $isConstArrayDeref(X:CId[_:Constant], (_ X |-> lv(_,_) _)) => true
+  syntax Bool ::= "$isConstArrayDeref" "(" K "," MyMap ")" [function]
+  rule $isConstArrayDeref(X:CId[_:Constant], (_:MyMap X |-> lv(_,_))) => true
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
   // that has been misparsed as a Type into an Exp.
@@ -596,18 +604,18 @@ module CIL-EXP
     <env>... X |-> lv(_,_) ...</env>
 
   /* the rule for signed integer types is implementation defined */
-  rule (nt(T:SignedIntType)) tv(_, I:MInt) => norm(T, I)
-  rule (nt(T:SignedIntType)) tv(_, I:Int) => norm(T, I)
+  rule (nt(T:SignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
+  rule (nt(T:SignedIntType)) tv(_:Type, I:Int) => norm(T, I)
 
-  rule (nt(T:UnsignedIntType)) tv(_, I:MInt) => norm(T, I)
-  rule (nt(T:UnsignedIntType)) tv(_, I:Int) => norm(T, I)
+  rule (nt(T:UnsignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
+  rule (nt(T:UnsignedIntType)) tv(_:Type, I:Int) => norm(T, I)
 
   // Allowing all casts between floating point types.
-  rule (nt(To:FloatingType)) tv(_, F:Float) => norm(To, F)
+  rule (nt(To:FloatingType)) tv(_:Type, F:Float) => norm(To, F)
 
   // Allowing all casts between ints and floats.
-  rule (nt(To:FloatingType)) tv(_, I:MInt) => norm(To, I)
-  rule (nt(To:IntType)) tv(_, F:Float) => norm(To, F)
+  rule (nt(To:FloatingType)) tv(_:Type, I:MInt) => norm(To, I)
+  rule (nt(To:IntType)) tv(_:Type, F:Float) => norm(To, F)
 
   // Pointers to void may be cast to or from any pointer type.
   rule (nt(To:Type)) tv(From:Type, V:Value) => tv(To, V)
@@ -615,15 +623,15 @@ module CIL-EXP
       andBool ((downPtr(To) ==K void) orBool (downPtr(From) ==K void))
 
   // Null pointers (or 0) may be cast to any pointer type.
-  rule (nt(To:Type)) tv(_, I:MInt) => tv(To, Null)
+  rule (nt(To:Type)) tv(_:Type, I:MInt) => tv(To, Null)
     when (isPtrType(To) ==K true) andBool (iMInt(I) ==Int 0)
-  rule (nt(To:IntType)) tv(_, Null) => norm(To, 0)
+  rule (nt(To:IntType)) tv(_:Type, Null) => norm(To, 0)
 
   // TODO(chathhorn): Pointers may be converted to integers and the result is
   // implementation-defined (apparently except in the case of Null). But also
   // comparisons and such must still work for pointers with the same base, even
   // after being cast to an IntType. 
-  rule (nt(To:IntType)) tv(_:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
+  rule (nt(To:IntType)) tv(_:Type:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
     => norm(To, symToInt(Base) +Int Offset)
 
   // Ints to pointers.

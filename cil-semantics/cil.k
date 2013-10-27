@@ -6,7 +6,7 @@ require "builtins/set.k"
 require "cil-syntax.k"
 require "cil-common.k"
 //require "cil-decl.k"
-//require "cil-exp.k"
+require "cil-exp.k"
 //require "cil-stmt.k"
 require "cil-typing.k"
 //require "cil-implementation.k"
@@ -20,9 +20,9 @@ module CIL
   imports CIL-SYNTAX
   imports CIL-COMMON
   //imports CIL-DECL
-  //imports CIL-EXP
+  imports CIL-EXP
   //imports CIL-STMT
-  //imports CIL-TYPING
+  imports CIL-TYPING
   //imports CIL-IMPLEMENTATION
   //imports CIL-LIB
 
@@ -78,7 +78,7 @@ module CIL
     <heap>
       <object multiplicity="*">
         <base-ptr key=""> Null </base-ptr>
-        <object-type> void </object-type>
+        //<object-type> void </object-type>
         <bytes> .MyMap </bytes> // Map{Nat, ByteValue}
       </object>
     </heap>
