@@ -2,7 +2,7 @@
 require "builtins/list.k"
 require "builtins/map.k"
 require "builtins/set.k"
-require "modules/k-functional-visitor.k"
+//require "modules/k-functional-visitor.k"
 
 require "cil-typing.k"
 require "cil-common.k"
@@ -11,7 +11,7 @@ require "cil-exp.k"
 module CIL-DECL
   imports MAP
   imports SET
-  imports K-FUNCTIONAL-VISITOR 
+  //imports K-FUNCTIONAL-VISITOR 
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
   imports CIL-EXP
@@ -95,7 +95,7 @@ module CIL-DECL
     <k> declInternal(X:CId, nt(T:Type)) => . ...</k>
     <tu-id> Tu </tu-id>
     <env> Env:MyMap => Env[X <- T] </env>
-    <tu-env> TuEnv:MyMap => TuEnv[X < T] </tu-env>
+    <tu-env> TuEnv:MyMap => TuEnv[X <- T] </tu-env>
     <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
@@ -106,8 +106,8 @@ module CIL-DECL
   rule 
     <k> declInternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:.MyMap => Env[X <- lv(downPtr(T), P)] </env>
-    <tu-env> TuEnv:.MyMap => TuEnv[X <- lv(downPtr(T), P)] </tu-env>
+    <env> Env:MyMap => Env[X <- lv(downPtr(T), P)] </env>
+    <tu-env> TuEnv:MyMap => TuEnv[X <- lv(downPtr(T), P)] </tu-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
@@ -286,12 +286,13 @@ module CIL-DECL
       }
     when fresh(I:Int)
 
-  rule normLabelsStmt(S:Stmt, I:Int)
-    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
-  rule normLabelsStmts(Ss:Stmts, I:Int)
-    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
-  rule normLabels(FB:FunBody)
-    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
+  // TODO(AndreiS): fix use of KLabels
+//  rule normLabelsStmt(S:Stmt, I:Int)
+//    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
+//  rule normLabelsStmts(Ss:Stmts, I:Int)
+//    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
+//  rule normLabels(FB:FunBody)
+//    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
 
   /*
    * Local variable declarations (without initializers).

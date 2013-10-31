@@ -239,11 +239,11 @@ module CIL-TYPING
   // declaration syntax tree.
   rule expandTypedefs(T:ParamDecl, E:MyMap) => normType(expandParamDecl(T, E))
 
-  rule expandParamDecl(X:CId, E:MyMap X |-> T:Type)
-    => expandTypedefs(T, E X |-> T)
-  rule expandParamDecl(X:CId D:Declarator, E:MyMap X |-> T:Type)
+  rule expandParamDecl(X:CId, (E:MyMap, X |-> T:Type))
+    => expandTypedefs(T, (E, X |-> T))
+  rule expandParamDecl(X:CId D:Declarator, (E:MyMap, X |-> T:Type))
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
-        E X |-> T)
+        (E, X |-> T))
 // TODO(AndreiS): fix isKeyword issue
 //  rule expandParamDecl(TS:TypeSpec, _) => TS
 //    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true

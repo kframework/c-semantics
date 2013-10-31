@@ -179,20 +179,20 @@ module CIL-COMMON-MMU
   rule
     $rangeList(I:Int, J:Int, K:Int)
   =>
-    MyListItem(I) $rangeList(I +Int K, J:Int, K:Int)
+    MyListItem(I), $rangeList(I +Int K, J:Int, K:Int)
   when I <Int J 
   rule $rangeList(I:Int, J:Int, _) => .MyList
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
-    MyListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
+    MyListItem(I), $downrangeList(I -Int K, J:Int, K:Int)
   when I >Int J 
   rule $downrangeList(I:Int, J:Int, _) => .MyList
   when I <=Int J
 
   syntax MyMap ::= #initMap(MyList, K) [function]
-  rule #initMap(MyListItem(K1:K) L:MyList, K2:K) => K1 |-> K2 #initMap(L, K2)
+  rule #initMap((MyListItem(K1:K), L:MyList), K2:K) => K1 |-> K2, #initMap(L, K2)
   rule #initMap(.MyList, _) => .MyMap
 
   /*
@@ -253,7 +253,7 @@ module CIL-COMMON-MMU
     <k>
       $store(
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (MyListItem(V:ByteValue) => .MyList) _:MyList)
+          (MyListItem(V:ByteValue) => .MyList), _:MyList)
     ...</k>
     <heap>...
       //<object>...
@@ -278,7 +278,7 @@ module CIL-COMMON-MMU
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (M:Int => M -Int 1),
-          _:MyList (.MyList => MyListItem(V:ByteValue)))
+          (_:MyList, (.MyList => MyListItem(V:ByteValue))))
     ...</k>
     <base-ptr> BP </base-ptr>
     <bytes>... Offset |-> V ...</bytes>
@@ -309,6 +309,12 @@ module CIL-COMMON
   imports CIL-COMMON-MMU
 
   syntax Error ::= "dummy_Error_item"
+
+  /* Marker for starting execution (after static pre-processing). */
+  syntax KItem ::= "callMain"
+
+  /* This is also defined in a standard library header. */
+  syntax Type ::= "size_t" [function]
 
   syntax Int ::= mival(TypedValue) [function]
   rule mival(tv(_, I:MInt)) => iMInt(I)

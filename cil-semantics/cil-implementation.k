@@ -24,8 +24,7 @@ module CIL-IMPLEMENTATION
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
-  // This is also defined in a standard library header.
-  syntax Type ::= "size_t" [function]
+  /* This is also defined in a standard library header. */
   rule size_t => unsigned long
 
   /*
@@ -54,7 +53,7 @@ module CIL-IMPLEMENTATION
   syntax MInt ::= bytes2SignedMInt(MyList)      [function]
                 | bytes2UnsignedMInt(MyList)    [function]
   rule
-    bytes2UnsignedMInt(MyListItem(M:Int) L:MyList)
+    bytes2UnsignedMInt(MyListItem(M:Int), L:MyList)
   =>
     mi((wMInt(bytes2UnsignedMInt(L)) +Int byteWidthMacro),
        (iMInt(bytes2UnsignedMInt(L)) <<Int byteWidthMacro) +Int M)
@@ -65,7 +64,7 @@ module CIL-IMPLEMENTATION
   rule
     MInt2Bytes(mi(N:Int, I:Int))
   =>
-    MyListItem(I modInt (1 <<Int byteWidthMacro))
+    MyListItem(I modInt (1 <<Int byteWidthMacro)),
     MInt2Bytes(mi((N -Int byteWidthMacro), I >>Int byteWidthMacro))
   when N >Int 0
   rule MInt2Bytes(mi((0), _)) => .MyList
@@ -88,39 +87,37 @@ module CIL-IMPLEMENTATION
    * Floats.
    */
   syntax MyList ::= padBytes(Int) [function]
-                | padBytes(Int, ByteValue) [function]
+                  | padBytes(Int, ByteValue) [function]
   
   rule padBytes(N:Int) => padBytes(N, used)
 
   rule padBytes(N:Int, V:ByteValue) 
-    => MyListItem(V) padBytes(N -Int 1, V)
+    => MyListItem(V), padBytes(N -Int 1, V)
     when N >Int 0
   rule padBytes(0, _) => .MyList
 
   rule value2Bytes(T:FloatingType, F:Float) 
-    => MyListItem(F) padBytes(byteWidth(T) -Int 1)
+    => MyListItem(F), padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_:FloatingType, 
-    MyListItem(F:Float) _:MyList) => F
-  rule bytes2Value(_:FloatingType, 
-    MyListItem(0) _:MyList) => 0.0
+  rule bytes2Value(_:FloatingType, (MyListItem(F:Float), _:MyList)) => F
+  rule bytes2Value(_:FloatingType, (MyListItem(0), _:MyList)) => 0.0
 
   /*
    * Strings.
    */
   rule value2Bytes(T:Type, S:String)
-     => MyListItem(ordChar(substrString(S, 0, 1)))
-      value2Bytes(T, substrString(S, 1, lengthString(S)))
-     when lengthString(S) >Int 0
+    => MyListItem(ordChar(substrString(S, 0, 1))),
+       value2Bytes(T, substrString(S, 1, lengthString(S)))
+    when lengthString(S) >Int 0
   rule value2Bytes(_, "") => MyListItem(0)
 
   /*
    * Pointers.
    */
   rule value2Bytes(T:Type, P:Ptr) 
-    => MyListItem(P) padBytes(byteWidth(T) -Int 1)
+    => MyListItem(P), padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_, MyListItem(P:Ptr) _:MyList)
+  rule bytes2Value(_, (MyListItem(P:Ptr), _:MyList))
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.
@@ -133,8 +130,7 @@ module CIL-IMPLEMENTATION
    */
   rule value2Bytes(_, agg(L:MyList)) => L
   rule bytes2Value(T:Type, L:MyList) => agg(L)
-    when (isArrayType(T) ==K true)
-      orBool (isAggType(T) ==K true)
+    when (isArrayType(T) ==K true) orBool (isAggType(T) ==K true)
 
   /*
    * Undef.

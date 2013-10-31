@@ -47,29 +47,29 @@ module CIL-LITERAL
                | "floatHexSepChars" [function]
 
   rule prefixChars =>
-    MySetItem("0")
-    MySetItem("x")
-    MySetItem("X")
+    MySetItem("0"),
+    MySetItem("x"),
+    MySetItem("X"),
     MySetItem("\\")
 
   rule intSuffixChars =>
-    MySetItem("u")
-    MySetItem("U")
-    MySetItem("l")
+    MySetItem("u"),
+    MySetItem("U"),
+    MySetItem("l"),
     MySetItem("L")
 
   rule floatHexPrefixChars =>
-    MySetItem("x")
+    MySetItem("x"),
     MySetItem("X")
 
   rule floatSuffixChars =>
-    MySetItem("f")
-    MySetItem("F")
-    MySetItem("l")
+    MySetItem("f"),
+    MySetItem("F"),
+    MySetItem("l"),
     MySetItem("L")
 
   rule floatHexSepChars =>
-    MySetItem("p")
+    MySetItem("p"),
     MySetItem("P")
 
   rule hexToFloat(S:String)
@@ -386,13 +386,13 @@ module CIL-EXP
   /* Lookup. */
   rule
     <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
-    <env> E:MyMap X |-> lv(T:Type, P:Ptr) </env>
+    <env> E:MyMap, X |-> lv(T:Type, P:Ptr) </env>
     [structural]
 
   // Typedefs.
   rule
     <k> X:CId => nt(expandTypedefs(T, E)) ...</k>
-    <env> E:MyMap X |-> T:Type </env>
+    <env> E:MyMap, X |-> T:Type </env>
     [structural]
 
   rule 
@@ -410,7 +410,7 @@ module CIL-EXP
   rule <k> newString(S:String, tv(T:Type, P:Ptr))
     => store(downPtr(T), P, S) ~> lv(downPtr(T), P)
     ...</k>
-    <strings>... . => S |-> P </strings>
+    <strings>... .MyMap => S |-> P </strings>
 
   // Doesn't work as a macro because it will mangle array declarations.
   rule E1:Exp[E2:Exp] => *(E1 + E2) 
@@ -443,24 +443,19 @@ module CIL-EXP
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
     
-  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KLabel:KLabel(KList:KList)
-    when (KLabel(KList) =/=K noLeftValueConversion)
-      andBool ((isArrayType(T) =/=K true)
-        orBool (KLabel(KList) ==K sizeofContext))
-      andBool (isFunType(T) =/=K true)
+  rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KI:KItem
+    when (KI =/=K noLeftValueConversion) andBool ((isArrayType(T) =/=K true)
+      orBool (KI ==K sizeofContext)) andBool (isFunType(T) =/=K true)
   // Arrays decay to a pointer (except as an operand to sizeof() or &).
-  rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) 
-    ~> KLabel:KLabel(KList:KList)
-    when (KLabel(KList) =/=K noLeftValueConversion)
-      andBool (KLabel(KList) =/=K sizeofContext)
+  rule (lv(T:Type, P:Ptr) => tv(upPtr(downArray(T)), P)) ~> KI:KItem
+    when (KI =/=K noLeftValueConversion) andBool (KI =/=K sizeofContext)
       andBool (isArrayType(T) ==K true)
   // Functions decay to a function pointer.
-  rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) 
-    ~> KLabel:KLabel(KList:KList)
-    when (KLabel(KList) =/=K noLeftValueConversion)
-      andBool (isFunType(T) ==K true)
+  rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) ~> KI:KItem 
+    when (KI =/=K noLeftValueConversion) andBool (isFunType(T) ==K true)
 
-  rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
+  //rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
+  rule ('lv => 'nclv)(_:K,,_:K) ~> noLeftValueConversion
   [structural]
 
   /*
@@ -566,7 +561,7 @@ module CIL-EXP
 
   syntax K ::= "sizeof'" "(" Type ")"
   rule sizeof(nt(T:Type)) => sizeof'(T)
-  rule sizeof(tv(T:Type, _:Type)) => sizeof'(T)
+  rule sizeof(tv(T:Type, _:Value)) => sizeof'(T)
 
   rule sizeof'(T:Type) => (size_t) byteWidth(T)
     when (isBasicType(T) ==K true) 
@@ -596,7 +591,7 @@ module CIL-EXP
 
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
   syntax Bool ::= "$isConstArrayDeref" "(" K "," MyMap ")" [function]
-  rule $isConstArrayDeref(X:CId[_:Constant], (_:MyMap X |-> lv(_,_))) => true
+  rule $isConstArrayDeref(X:CId[_:Constant], (_:MyMap, X |-> lv(_,_))) => true
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
   // that has been misparsed as a Type into an Exp.

@@ -5,11 +5,11 @@ require "builtins/set.k"
 
 require "cil-syntax.k"
 require "cil-common.k"
-//require "cil-decl.k"
+require "cil-decl.k"
 require "cil-exp.k"
-//require "cil-stmt.k"
+require "cil-stmt.k"
 require "cil-typing.k"
-//require "cil-implementation.k"
+require "cil-implementation.k"
 //require "cil-lib.k"
 
 module CIL
@@ -19,14 +19,13 @@ module CIL
 
   imports CIL-SYNTAX
   imports CIL-COMMON
-  //imports CIL-DECL
+  imports CIL-DECL
   imports CIL-EXP
-  //imports CIL-STMT
-  imports CIL-TYPING
-  //imports CIL-IMPLEMENTATION
+  imports CIL-STMT
+  //imports CIL-TYPING
+  imports CIL-IMPLEMENTATION
   //imports CIL-LIB
 
-  syntax K ::= "wrapper" "(" KList ")"
   configuration
     <final-computation multiplicity="?"> .K </final-computation>
     <result-value multiplicity="?"> .K </result-value>
@@ -39,7 +38,11 @@ module CIL
       <frame-fun-va-args> .K </frame-fun-va-args>
       <env> .MyMap </env> // Map{CId, lv(Type, Ptr)|Type}
     </frame>
-    <frame-stack> .MyList </frame-stack>  // List{<frame> ... </frame>}
+    <frame-stack list="">  // List{<frame> ... </frame>}
+       <stacked-frame>
+         .Bag
+       </stacked-frame>
+    </frame-stack>
     <funs>
       <fun multiplicity="*">
         <fun-id> .K </fun-id> // Ptr
@@ -95,6 +98,5 @@ module CIL
   syntax KResult ::= TypedValue
                    | NoConversionLeftValue
                    | NormType
-  syntax KItem ::= "callMain"
 endmodule
 

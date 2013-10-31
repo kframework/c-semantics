@@ -143,16 +143,17 @@ module CIL-STMT
       { Ss1:Stmts } Ss2:Stmts => Ss1 @Stmts Ss2
     </make-goto-table-stmts>
   [structural]
-  rule
-    <make-goto-table-stmts>
-      KLabel:KLabel(KList:KList) Ss:Stmts => Ss
-    </make-goto-table-stmts>
-  when isStmt(KLabel:KLabel(KList:KList)) 
-    andBool KLabel =/=KLabel '_:_ 
-    andBool KLabel =/=KLabel 'if`(_`)_else_ 
-    andBool KLabel =/=KLabel 'while`(_`)_ 
-    andBool KLabel =/=KLabel '`{_`}
-  [structural]
+  // TODO(AndreiS): fix getKLabel
+//  rule
+//    <make-goto-table-stmts>
+//      KI:KItem Ss:Stmts => Ss
+//    </make-goto-table-stmts>
+//  when isStmt(KI)
+//    andBool getKLabel(KI) =/=KLabel '_:_ 
+//    andBool getKLabel(KI) =/=KLabel 'if`(_`)_else_ 
+//    andBool getKLabel(KI) =/=KLabel 'while`(_`)_ 
+//    andBool getKLabel(KI) =/=KLabel '`{_`}
+//  [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
   // in the case labels of switch statements. It seems to slow things down
@@ -166,18 +167,19 @@ module CIL-STMT
     <fun-id> F </fun-id>
     <labels> Lbls:MyMap </labels>
 
-  rule eval-case-labels(
-    _:MyMap (L:Label |-> Ss:Stmts => .MyMap), 
-    _:MyMap (.MyMap => L |-> Ss)) 
-    when getKLabel(L) =/=KLabel '$caseLabel
-    [structural]
+  // TODO(AndreiS): fix getKLabel
+//  rule eval-case-labels(
+//    (_:MyMap, (L:Label |-> Ss:Stmts => .MyMap)), 
+//    (_:MyMap, (.MyMap => L |-> Ss)))
+//    when getKLabel(L) =/=KLabel '$caseLabel
+//    [structural]
   rule (. => E ~> case-label-freezer(I, Ss)) 
     ~> eval-case-labels(
-      _:MyMap ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .MyMap), _:MyMap) 
+      (_:MyMap, ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .MyMap)), _:MyMap) 
     [structural]
   rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
     ~> eval-case-labels(
-      _:MyMap, _:MyMap (.MyMap => $caseLabel(I, E) |-> Ss))
+      _:MyMap, (_:MyMap, (.MyMap => $caseLabel(I, E) |-> Ss)))
     [structural]
 
   rule <k> eval-case-labels(.MyMap, Lbls:MyMap) => . ...</k>
@@ -226,11 +228,13 @@ module CIL-STMT
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
-        <env> GEnv TuEnv </env>
+        <env> GEnv, TuEnv </env>
       ...</frame>
     )
+    // TODO(AndreiS): rename k cell to prevent failed attempts at rewriting
+    // inside stacked k
     <frame-stack>...
-      .MyList => MyListItem(<frame> <k> K </k> Cells </frame>)
+      . => <stacked-frame> <k> K </k> Cells </stacked-frame>
     </frame-stack>
     <fun>...
       <fun-id> FunPtr(F, Tu) </fun-id>
@@ -256,7 +260,7 @@ module CIL-STMT
       </frame>
     )
     <frame-stack>...
-       MyListItem(<frame> <k> K </k> Cells </frame>) => .MyList
+      <stacked-frame> <k> K </k> Cells </stacked-frame> => .
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
@@ -276,7 +280,7 @@ module CIL-STMT
       </frame>
     )
     <frame-stack>...
-       MyListItem(<frame> <k> K </k> Cells </frame>) => .MyList
+      <stacked-frame> <k> K </k> Cells </stacked-frame> => .
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
