@@ -32,7 +32,8 @@ module CIL
     <error-cell multiplicity="?"> .K </error-cell>
     <strings> .MyMap </strings> // Map{String, Ptr}
     <external> .MySet </external> // Set{CId}. Symbols with external linkage.
-    <frame multiplicity="*">
+    //<frame multiplicity="*">
+    <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
       <frame-fun-va-args> .K </frame-fun-va-args>

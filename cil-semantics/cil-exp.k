@@ -440,7 +440,7 @@ module CIL-EXP
   rule *tv(T:Type, va_list(tv(_:Type, V:Value))) => tv(downPtr(T), V)
     [structural]
 
-  context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _)
+  context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _:K)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
     
   rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KI:KItem
@@ -626,7 +626,7 @@ module CIL-EXP
   // implementation-defined (apparently except in the case of Null). But also
   // comparisons and such must still work for pointers with the same base, even
   // after being cast to an IntType. 
-  rule (nt(To:IntType)) tv(_:Type:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
+  rule (nt(To:IntType)) tv(_:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
     => norm(To, symToInt(Base) +Int Offset)
 
   // Ints to pointers.
