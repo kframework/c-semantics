@@ -6,7 +6,7 @@ module C11-TRANS-SYNTAX
 endmodule
 
 module C11-TRANS
-     imports C-SYNTAX
+     imports C11-TRANS-SYNTAX
      imports C11-TRANSLATION
      imports C11-COMMON
 endmodule

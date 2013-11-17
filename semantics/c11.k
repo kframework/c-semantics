@@ -8,7 +8,7 @@ module C11-SYNTAX
 endmodule
 
 module C11
-     imports C-SYNTAX
+     imports C11-SYNTAX
      imports C11-EXECUTION
      imports C11-COMMON
      imports C11-LIBRARY

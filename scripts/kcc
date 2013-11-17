@@ -127,8 +127,8 @@ sub main {
       close($programInTmp);
 
       my @krun_args = (
-            '--output-mode binary', 
-            "--output $confOutTmp",
+            '--output binary', 
+            "--output-file $confOutTmp",
             '--parser cat', 
             "-d $TRANS_DEF",
             '--io off', 

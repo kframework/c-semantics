@@ -56,7 +56,7 @@ module C11-CONFIGURATION
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 
-                         loadConfig($CFG:Bag)
+                         loadConfig($PGM:Bag)
                          ~> initMainThread
                          ~> pgmArgs($ARGV:KList) 
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
