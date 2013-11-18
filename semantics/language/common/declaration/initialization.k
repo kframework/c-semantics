@@ -44,10 +44,8 @@ module C-DECLARATION-INITIALIZATION
      
      rule fillInits((InitFragment(K:K, Exp:K),, L:KList))
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
-          when L =/=KList .KList
           [structural] 
-     rule fillInits((InitFragment(K:K, Exp:K),, .KList))
-          => fillInit(InitFragment(K, Exp))
+     rule fillInits(.KList) => .
           [structural] 
      
      syntax ListItem ::= "next"
@@ -498,5 +496,22 @@ module C-DECLARATION-INITIALIZATION
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]
+
+     // need to worry about things that don't have definitions that may
+     // override externs
+     // want to make it so env is always correct local env, so need to have a
+     // set of global envs, one for each tu
+     
+     rule [initialize-function]:
+          <k> 
+               initFunction(tv(Loc:SymLoc, 
+                    t(_, pointerType(T:Type))), Fun:KResult) 
+               => .K
+          ...</k>
+          <functions> M:Map => M:Map[Fun / Loc] </functions>
+          when isFunctionType(T)
+               andBool notBool $hasMapping(M, Loc)
+          [structural]
+
 endmodule
 
