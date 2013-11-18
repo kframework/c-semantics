@@ -136,7 +136,7 @@ sub main {
             );
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args));
-      print $cmd . "\n";
+      print $cmd . "\n" if $args->{'-d'};
       system($cmd);
 
       open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
