@@ -20,22 +20,23 @@ module C-STATIC
      rule <k> initBuiltins => initBuiltins(T) ...</k>
           <types> T:Map </types>
 
-     rule [lookup-builtin-id-notfound]:
-          <k> (.K 
-                    => addToEnv(X, Loc)
-                         ~> initFunction(
-                              tv(Loc, t(.Set, pointerType(T))),
-                              functionPrototype(X, T)
-                         )
-               )
-               ~> X:Id
-          ...</k>
-          <env> Env:Map </env>
-          <types>... X |-> T:Type ...</types>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          when isFunctionType(T)
-               andBool notBool X in keys Env
-          [large, structural]
+     // TODO(chathhorn): already in dynamic. Can this be removed?
+     // rule [lookup-builtin-id-notfound]:
+     //      <k> (.K 
+     //                => addToEnv(X, Loc)
+     //                     ~> initFunction(
+     //                          tv(Loc, t(.Set, pointerType(T))),
+     //                          functionPrototype(X, T)
+     //                     )
+     //           )
+     //           ~> X:Id
+     //      ...</k>
+     //      <env> Env:Map </env>
+     //      <types>... X |-> T:Type ...</types>
+     //      <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+     //      when isFunctionType(T)
+     //           andBool notBool X in keys Env
+     //      [large, structural]
 
      rule [lookup-builtin-function-notfound]:
           <k> (.K 
@@ -60,21 +61,5 @@ module C-STATIC
                orBool (X in keys Env)
 
      rule initBuiltins(.Map) => .
-
-     // need to worry about things that don't have definitions that may
-     // override externs
-     // want to make it so env is always correct local env, so need to have a
-     // set of global envs, one for each tu
-     
-     rule [initialize-function]:
-          <k> 
-               initFunction(tv(Loc:SymLoc, 
-                    t(_, pointerType(T:Type))), Fun:KResult) 
-               => .K
-          ...</k>
-          <functions> M:Map => M:Map[Fun / Loc] </functions>
-          when isFunctionType(T)
-               andBool notBool $hasMapping(M, Loc)
-          [structural]
 
 endmodule

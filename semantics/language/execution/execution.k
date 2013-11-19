@@ -122,8 +122,9 @@ module C11-EXECUTION-INIT
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
                     <br/>
-                    <threadId> _ => 1 </threadId>
-                    <nextLoc> _ => firstLoc(1) </nextLoc>
+                    // TODO(chathhorn): need to iron out static/dyn symlocs.
+                    <threadId> _ => 2 </threadId>
+                    <nextLoc> _ => firstLoc(2) </nextLoc>
                     <threadLocal>...
                          <control>...
                               <currentFunction> 
@@ -242,7 +243,8 @@ module C11-EXECUTION-INIT
           (<exec>...
                <thread>... 
                     // main's thread, not the global "thread"
-                    <threadId> 1 </threadId>
+                    // TODO(chathhorn): threadid/symloc issues
+                    <threadId> 2 </threadId>
                     <k> V:KResult </k>
                ...</thread>
           ...</exec> => .Bag)

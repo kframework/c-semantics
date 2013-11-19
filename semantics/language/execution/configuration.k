@@ -34,7 +34,8 @@ module C11-CONFIGURATION
           <nextMalloced> 0 </nextMalloced>
 
           // 0 is global, 1 is main
-          <nextThreadId color="black"> 2 </nextThreadId>
+          // TODO(chathhorn) 0 global (static), 1 static, 2 dynamic??
+          <nextThreadId color="black"> 3 </nextThreadId>
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
@@ -52,7 +53,7 @@ module C11-CONFIGURATION
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
-                    <threadId color="yellow"> 1 </threadId>
+                    <threadId color="yellow"> 2 </threadId>
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 
