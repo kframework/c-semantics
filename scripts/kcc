@@ -256,7 +256,7 @@ sub compileProgram {
       }
       
       my $compilationLog = File::Temp->new( 
-            TEMPLATE => 'tmp-kcc-comp-log-XXXXXXXXXXX', 
+            TEMPLATE => 'tmp-kcc-comp-log-XXXX', 
             SUFFIX => '.maude', 
             UNLINK => 0 );
       push(@temporaryFiles, $compilationLog);
