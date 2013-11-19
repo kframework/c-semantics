@@ -5,6 +5,7 @@ use warnings;
 use File::Spec::Functions qw(catfile);
 use File::Temp;
 use File::Copy;
+use MIME::Base64;
 
 setpgrp;
 
@@ -48,7 +49,8 @@ sub main {
 
       # The function "linkedProgram()" is attached to the bottom of this script
       # by kcc.
-      print $fileInput linkedProgram();
+      binmode($fileInput, ':raw');
+      print $fileInput decode_base64(linkedProgram());
 
       my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
       my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
@@ -514,4 +516,3 @@ END {
 }
 
 # The parsed file contents of the program to execute with krun gets appended.
-

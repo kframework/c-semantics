@@ -7,6 +7,7 @@ use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
 use Getopt::Declare;
+use MIME::Base64;
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -166,14 +167,15 @@ sub main {
       close(FILE);
 
       open(FILE, $confOutTmp) or die "Couldn't open file: $!";
-      my $programConf = join("", <FILE>);
+      binmode(FILE, ':raw');
+      my $programConf = encode_base64(join("", <FILE>));
       close(FILE);
 
       $programRunner = performSpecializations($programRunner);
 
-      print $programRunnerTmp "$programRunner\n\n";
+      print $programRunnerTmp "$programRunner\n";
 
-      print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n }\n";
+      print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
 
       close($programRunnerTmp);
 
