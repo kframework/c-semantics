@@ -106,25 +106,40 @@ sub main {
       }
 
       my $programInTmp = File::Temp->new( 
-            TEMPLATE => 'tmp-pgm-in-XXXXXXXXXXX', 
-            SUFFIX => '.txt', 
+            TEMPLATE => 'tmp-kcc-pgm-XXXX', 
+            SUFFIX => '.kil', 
             UNLINK => 0 );
       push(@temporaryFiles, $programInTmp);
 
       my $programRunnerTmp = File::Temp->new( 
-            TEMPLATE => 'tmp-pgm-runner-XXXXXXXXXXX', 
-            SUFFIX => '.txt', 
+            TEMPLATE => 'tmp-kcc-runner-XXXX', 
+            SUFFIX => '.pl', 
             UNLINK => 0 );
       push(@temporaryFiles, $programRunnerTmp);
 
       my $confOutTmp = File::Temp->new( 
-            TEMPLATE => 'tmp-conf-XXXXXXXXXXX', 
-            SUFFIX => '.txt', 
+            TEMPLATE => 'tmp-kcc-conf-XXXX', 
+            SUFFIX => '.bin', 
             UNLINK => 0 );
       push(@temporaryFiles, $confOutTmp);
 
+      my $confOutPrettyTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-conf-XXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $confOutPrettyTmp);
+
       print $programInTmp "$linked\n\n";
       close($programInTmp);
+
+      my @krun_args_verb = (
+            '--output pretty', 
+            "--output-file $confOutPrettyTmp",
+            '--parser cat', 
+            "-d $TRANS_DEF",
+            '--io off', 
+            $programInTmp
+            );
 
       my @krun_args = (
             '--output binary', 
@@ -136,7 +151,14 @@ sub main {
             );
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args));
-      print $cmd . "\n" if $args->{'-d'};
+      my $cmd_verb = "$KRUN " . (join ' ', (@krun_args_verb));
+
+      if ($args->{'-d'}) {
+            print $cmd_verb . "\n";
+            system($cmd_verb);
+            print $cmd . "\n";
+      }
+
       system($cmd);
 
       open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
@@ -220,9 +242,7 @@ sub compile {
 }
 
 sub compileProgram {
-      my ($warnFlag, $dumpFlag, $inputFile) = (@_);
-      my $nowarn = $warnFlag;
-      my $dflag = $dumpFlag;
+      my ($nowarn, $dflag, $inputFile) = (@_);
       
       my $PEDANTRY_OPTIONS = 
             "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
