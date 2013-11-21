@@ -124,8 +124,14 @@ sub main {
             UNLINK => 0 );
       push(@temporaryFiles, $confOutTmp);
 
-      my $confOutPrettyTmp = File::Temp->new( 
+      my $confOutRawTmp = File::Temp->new( 
             TEMPLATE => 'tmp-kcc-conf-XXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $confOutRawTmp);
+
+      my $confOutPrettyTmp = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-conf-pretty-XXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0 );
       push(@temporaryFiles, $confOutPrettyTmp);
@@ -133,15 +139,10 @@ sub main {
       print $programInTmp "$linked\n\n";
       close($programInTmp);
 
-      my @krun_args_verb = (
-            '--output pretty', 
-            "--output-file $confOutPrettyTmp",
-            '--parser cat', 
-            "-d $TRANS_DEF",
-            '--io off', 
-            $programInTmp
-            );
-
+      # TODO(chathhorn): it'd be nice if we could get krun to just output all
+      # three versions. As it is, we get the pretty version for debugging, the
+      # raw version so as to parse for any errors, and the binary version to
+      # send on to the next semantic phase.
       my @krun_args = (
             '--output binary', 
             "--output-file $confOutTmp",
@@ -151,15 +152,37 @@ sub main {
             $programInTmp
             );
 
+      my @krun_args_raw = (
+            '--output raw', 
+            "--output-file $confOutRawTmp",
+            '--parser cat', 
+            "-d $TRANS_DEF",
+            '--io off', 
+            $programInTmp
+            );
+
+      my @krun_args_pretty = (
+            '--output pretty', 
+            "--output-file $confOutPrettyTmp",
+            '--parser cat', 
+            "-d $TRANS_DEF",
+            '--io off', 
+            $programInTmp
+            );
+
       my $cmd = "$KRUN " . (join ' ', (@krun_args));
-      my $cmd_verb = "$KRUN " . (join ' ', (@krun_args_verb));
+      my $cmd_raw = "$KRUN " . (join ' ', (@krun_args_raw));
+      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
 
-      if ($args->{'-d'}) {
-            print $cmd_verb . "\n";
-            system($cmd_verb);
-            print $cmd . "\n";
-      }
+      print $cmd_pretty . "\n" if ($args->{'-d'});
+      system($cmd_pretty). "\n" if ($args->{'-d'});
 
+      print $cmd_raw . "\n" if ($args->{'-d'});
+      system($cmd_raw);
+
+      processResult($confOutRawTmp);
+
+      print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
 
       open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
@@ -370,6 +393,105 @@ sub printNested {
       } else {
             return '.KList';
       }
+}
+
+# TODO(chathhorn): this and processResult are copied verbatim from
+# program-runner.
+sub parseResultLine {
+      my ($parsed) = (@_);
+
+      /< k > (.*) <\/ k >/ && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+            $parsed->{haveError} = 1;
+            my $output = $1;
+            $output =~ s/\%/\%\%/g;
+            $output =~ s/`/\\`/g;
+            $output =~ s/\\\\/\\\\\\\\/g;
+            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
+      };
+
+      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
+            $parsed->{errorFunc} = $1;
+      };
+
+      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
+            $parsed->{errorFile} = $1;
+            $parsed->{errorLine} = $2;
+      };
+
+      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /< computation > (.*) <\/ computation >/ && do {
+            $parsed->{finalCompGoto} = $1;
+      };
+
+      /< type > (.*) <\/ type >/ && do {
+            $parsed->{finalCompType} = $1;
+      };
+
+      /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
+            $parsed->{output} = $1;
+      };
+
+      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+            $parsed->{exitCode} = $1;
+      };
+}
+
+sub processResult {
+      my ($fileOutput) = (@_);
+      my %parsed;
+
+      open(OUT, "<$fileOutput");
+
+      for (<OUT>) {
+            parseResultLine(\%parsed);
+      }
+
+      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
+                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
+            print "\n=============================================================\n";
+            print "ERROR! KCC encountered an error while executing this program.\n";
+
+            if (defined $parsed{errorMsg}) {
+                  print "=============================================================\n";
+                  print "$parsed{errorMsg}\n";
+            }
+
+            print "=============================================================\n";
+            print "File: $parsed{errorFile}\n" if defined $parsed{errorFile};
+            print "Function: $parsed{errorFunc}\n" if defined $parsed{errorFunc};
+            print "Line: $parsed{errorLine}\n" if defined $parsed{errorLine};
+
+            if (defined $parsed{finalComp}) {
+                  print "=============================================================\n";
+                  print "Final Computation:\n";
+                  print substr($parsed{finalComp}, 0, 1000);
+                  print "\n";
+            }
+
+            if (defined $parsed{finalCompGoto}) {
+                  print "=============================================================\n";
+                  print "Final Goto Map Computation:\n";
+                  print substr($parsed{finalCompGoto}, 0, 1000);
+                  print "\n";
+            }
+
+            if (defined $parsed{finalCompType}) {
+                  print "=============================================================\n";
+                  print "Final Type Computation:\n";
+                  print substr($parsed{finalCompType}, 0, 1000);
+                  print "\n";
+            }
+
+            exit(1);
+      }
+      return;
 }
  
 sub interruptHandler {
