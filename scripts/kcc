@@ -175,7 +175,7 @@ sub main {
       my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
 
       print $cmd_pretty . "\n" if ($args->{'-d'});
-      system($cmd_pretty). "\n" if ($args->{'-d'});
+      system($cmd_pretty) if ($args->{'-d'});
 
       print $cmd_raw . "\n" if ($args->{'-d'});
       system($cmd_raw);
@@ -395,8 +395,7 @@ sub printNested {
       }
 }
 
-# TODO(chathhorn): this and processResult are copied verbatim from
-# program-runner.
+# TODO(chathhorn): a lot of duplication here with program-runner.
 sub parseResultLine {
       my ($parsed) = (@_);
 
@@ -434,13 +433,6 @@ sub parseResultLine {
             $parsed->{finalCompType} = $1;
       };
 
-      /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
-            $parsed->{output} = $1;
-      };
-
-      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
-            $parsed->{exitCode} = $1;
-      };
 }
 
 sub processResult {
@@ -454,7 +446,7 @@ sub processResult {
       }
 
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
+                  || defined $parsed{errorMsg}) {
             print "\n=============================================================\n";
             print "ERROR! KCC encountered an error while executing this program.\n";
 
