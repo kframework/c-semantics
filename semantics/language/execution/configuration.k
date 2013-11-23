@@ -53,7 +53,7 @@ module C11-CONFIGURATION
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
-                    <threadId color="yellow"> 2 </threadId>
+                    <threadId color="yellow"> 0 </threadId>
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 

@@ -248,8 +248,7 @@ module C11-EXECUTION-INIT
           (<exec>...
                <thread>... 
                     // main's thread, not the global "thread"
-                    // TODO(chathhorn): threadid/symloc issues
-                    <threadId> 2 </threadId>
+                    <threadId> 1 </threadId>
                     <k> V:KResult </k>
                ...</thread>
           ...</exec> => .Bag)
