@@ -33,15 +33,13 @@ module C-MEMORY-WRITING
      syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
      
      rule [write-thread-local]:
-          <k> 
                write-aux(
                     loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), 
                     tv(L:KList, T:Type), BitSize:TypedValue)
                => write-specific(
                     loc(N @ Th, Offset, BitOffset), 
                     tv(L, T), value(BitSize))
-          ...</k>
-          <threadId> Th </threadId>
+          when Th =/=Int 0
           [structural]
      // write global or shared data
      rule [write]:

@@ -7,7 +7,6 @@ require "bitsize.k"
 require "bits.k"
 require "typing.k"
 require "literal.k"
-require "compound-literal.k"
 require "conversion.k"
 require "promotion.k"
 require "alloc.k"
@@ -40,7 +39,6 @@ module C11-COMMON
      imports C-BITS
      imports C-TYPING
      imports C-LITERAL
-     imports C-COMPOUND-LITERAL
      imports C-CONVERSION
      imports C-MEMORY-ALLOC
      imports C-SYMLOC

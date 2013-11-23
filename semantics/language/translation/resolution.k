@@ -1,5 +1,9 @@
+module C-DECLARATION-RESOLUTION-SYNTAX
+     syntax K ::= "resolveReferences"
+endmodule
+
 module C-DECLARATION-RESOLUTION
-     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-RESOLUTION-SYNTAX
      imports C-DECLARATION-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
@@ -349,9 +353,5 @@ module C-DECLARATION-RESOLUTION
           <declarationOrder>... Tu |-> ListToK(.List) ...</declarationOrder>
           [structural] 
           
-     rule <k> readFunction(Loc:SymLoc) => Fun  ...</k>
-          <functions>... Loc |-> Fun:KResult ...</functions>
-          [structural]
-     
 endmodule
 

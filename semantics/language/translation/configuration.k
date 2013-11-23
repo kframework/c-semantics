@@ -1,5 +1,5 @@
 module C11-CONFIGURATION
-     imports C-DECLARATION-SYNTAX
+     imports C-DECLARATION-RESOLUTION-SYNTAX
      imports C-STATIC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
@@ -38,7 +38,7 @@ module C11-CONFIGURATION
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
 
-          <threadId> 0 </threadId>
+          //<threadId> 0 </threadId>
 
           <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           
@@ -48,7 +48,7 @@ module C11-CONFIGURATION
                ~> initBuiltins
           </k>
           // should be initialized with a pair (threadId, 0)
-          <nextLoc color="black"> 0 </nextLoc>
+          //<nextLoc color="black"> 0 </nextLoc>
 
           <finalComputation multiplicity="?" color="lightgray">
                .K

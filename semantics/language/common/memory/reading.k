@@ -63,10 +63,8 @@ module C-MEMORY-READING
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule [read-thread-local]:
-          <k> 
-               ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
-          ...</k>
-          <threadId> Th </threadId>
+          ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
+          when Th =/=Int 0
           [structural]
      rule [read-shared]: // read global or shared data
           ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
@@ -146,7 +144,7 @@ module C-MEMORY-READING
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
           [structural]
-     // fixme sNat
+
      rule joinPointerBytes-aux(T:Type, 
                (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, 
                L:KList), subObject(N, 0, End:Int))

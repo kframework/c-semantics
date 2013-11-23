@@ -1,6 +1,9 @@
 require "binding.k"
 require "builtin.k"
+require "check-loc.k"
+require "compound-literal.k"
 require "configuration.k"
+require "declaration-local.k"
 require "error.k"
 require "error-map.k"
 require "expression.k"
@@ -27,6 +30,9 @@ module C11-EXECUTION
      imports C11-ERROR-MAP
      imports C-BINDING
      imports C-BUILTIN
+     imports C-CHECK-LOC
+     imports C-COMPOUND-LITERAL
+     imports C-DECLARATION-LOCAL
      imports C-EXPRESSION
      imports C-IO-BUFFERED
      imports C-STATEMENT
@@ -122,9 +128,8 @@ module C11-EXECUTION-INIT
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
                     <br/>
-                    // TODO(chathhorn): need to iron out static/dyn symlocs.
-                    <threadId> _ => 2 </threadId>
-                    <nextLoc> _ => firstLoc(2) </nextLoc>
+                    <threadId> _ => 1 </threadId>
+                    <nextLoc> _ => firstLoc(1) </nextLoc>
                     <threadLocal>...
                          <control>...
                               <currentFunction> 

@@ -10,8 +10,6 @@ module C-MEMORY-ALLOC-SYNTAX
 
      syntax K ::= checkValidLoc(SymLoc)
      syntax K ::= checkDerefLoc(SymLoc)
-     // TODO(chathhorn): error check
-     syntax K ::= "checkValidLoc-aux" "(" SymLoc ")"
 
      syntax K ::= allocString(SymLoc, String)
      syntax K ::= allocWString(SymLoc, KList)
@@ -204,30 +202,8 @@ module C-MEMORY-ALLOC
           ...</mem>
           [structural]
 
-     
-     rule checkValidLoc(Loc:SymLoc) => checkValidLoc-aux(ceilingLoc(Loc)) 
-          [structural]
      rule checkDerefLoc(Loc:SymLoc) => checkValidLoc(Loc) 
           when Loc =/=K NullPointer
           [structural]
-     
-     rule [check-valid-loc-null]:
-          checkValidLoc-aux(NullPointer) => . 
-          [structural]
-     // fixme could additionally use the type to check whether that type is
-     // valid for that pointer
-     rule [check-valid-loc]:
-          <k> 
-               checkValidLoc-aux(
-                    loc(N:Int @ PtrThreadId:ThreadId, Offset:Int, 0)) 
-               => . 
-          ...</k>
-          <mem>... N @ PtrThreadId |-> memblock(Len:Int, _, _) ...</mem>
-          <threadId> MyThreadId:ThreadId </threadId>
-          when (PtrThreadId ==K MyThreadId
-               orBool (PtrThreadId ==K 0)
-               orBool (PtrThreadId ==K allocatedDuration)
-               ) // my thread, global memory, or allocated (malloced) memory
-               andBool (Offset <=Int Len) // we're allowed to address one past
-          [structural]
+
 endmodule

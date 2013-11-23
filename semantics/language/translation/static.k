@@ -20,7 +20,7 @@ module C-STATIC
      rule <k> initBuiltins => initBuiltins(T) ...</k>
           <types> T:Map </types>
 
-     // TODO(chathhorn): this is duped from execution.k
+     // TODO(chathhorn): this is mostly duped from execution.k
      rule [lookup-builtin-id-notfound]:
           <k> (.K 
                     => addToEnv(X, Loc)
@@ -33,7 +33,7 @@ module C-STATIC
           ...</k>
           <env> Env:Map </env>
           <types>... X |-> T:Type ...</types>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           when isFunctionType(T)
                andBool notBool X in keys Env
           [large, structural]
@@ -49,7 +49,7 @@ module C-STATIC
                ~> initBuiltins(X:Id |-> T:Type M:Map => M)
           ...</k>
           <env> Env:Map </env>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           when isFunctionType(T)
                andBool notBool X in keys Env
           [large, structural]

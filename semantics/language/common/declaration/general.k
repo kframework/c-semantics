@@ -1,20 +1,13 @@
 module C-DECLARATION-GENERAL-SYNTAX
-     syntax K ::= "doDeclare" "(" K "," K ")" [strict(1)] 
+     syntax K ::= doDeclare(K, K) [strict(1)] 
 
-     syntax K ::= "declareOnly" "(" Id "," Type "," K ")"
-
-     // type, translation unit it was defined in, definition
-     syntax K ::= "declarationObject" "(" Type "," K "," K ")"
-          [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})]
-
-     syntax K ::= "external"
-     syntax K ::= "internal"
-     syntax K ::= "noLinkage"
-     
-     syntax KResult ::= "initializer" "(" K ")"
+     syntax K ::= declareOnly(Id, Type, K)
 
      syntax K ::= verifySpecifiers(K) [strict]
 
+     syntax K ::= declareAndDefine(Id, Type, K, K)
+
+     syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
 endmodule
 
 module C-DECLARATION-GENERAL
@@ -384,9 +377,6 @@ module C-DECLARATION-GENERAL
                andBool notBool isExternType(T)
           [structural] 
           
-     syntax K ::= "declareOnly" "(" Id "," Type "," K ")"
-     syntax K ::= "declareAndDefine" "(" Id "," Type "," K "," K ")"
-
      rule <k>
                declareWithLinkage(X:Id, T:Type, NoInit, L:K)
                => declareOnly(X, T, L)
@@ -482,19 +472,6 @@ module C-DECLARATION-GENERAL
           when notBool $hasMapping(Lnk, X:Id) 
                orBool Lnk:Map(X) ==K internal
           [structural] 
-     rule <k> 
-               declareOnly(X:Id, T:Type, noLinkage)
-               => allocateType(Loc, T) ~> addToEnv(X, Loc) ~> giveType(X, T)
-          ...</k>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localVariables> Vars:List (. => ListItem(X)) </localVariables>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
-          when (notBool isIncompleteType(T))
-               andBool (notBool isStaticType(T))
-               andBool (notBool isExternType(T))
-               // this should be here statically, but not dynamically
-               andBool (notBool X in Vars)
-          [structural]
 
      // same as above, but for the case where the variable has already been
      // declared.  this is seen if we goto earlier in the same block
@@ -586,19 +563,6 @@ module C-DECLARATION-GENERAL
                     orBool Lnk:Map(X) ==K internal)
           [structural, large]
           
-     syntax K ::= "defineAndInit" "(" Id "," Type "," K "," SymLoc ")"
-          [strict(3)] 
-     rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K, noLinkage)
-               => defineAndInit(X, T, figureInit(X, T, K), Loc)
-          ...</k>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localVariables> Vars:List (. => ListItem(X)) </localVariables>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
-          // again, this should be needed statically, but not dynamically
-          when notBool X in Vars
-          [structural] 
-
      // this happens when we jump before a variable declaration with an
      // initialization in the same block
      rule <k> 

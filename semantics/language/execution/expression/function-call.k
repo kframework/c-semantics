@@ -67,8 +67,10 @@ module C-EXPRESSION-FUNCTION-CALL
      context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule [function-application-pre]:
-          Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:KList))
-          => sequencePoint ~> application(readFunction(Loc), L)
+          <k> Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:KList))
+          => sequencePoint ~> application(Fun, L)
+          ...</k>
+          <functions>... Loc |-> Fun:KResult ...</functions>
           when isFunctionType(T)
           [structural]
 
