@@ -48,18 +48,6 @@ module C-COMPOUND-LITERAL
                     ~> initialize(X, T, Init)
                     ~> X
           ...</k>
-          <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          when notBool X in keys M
-          [structural]
-          
-     rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
-               => addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, Init)
-                    ~> X
-          ...</k>
-          <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
           [structural]
 endmodule

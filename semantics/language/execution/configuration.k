@@ -36,8 +36,6 @@ module C11-CONFIGURATION
           // 0 is global, 1 is main
           // TODO(chathhorn) 0 global (static), 1 static, 2 dynamic??
           <nextThreadId color="black"> 3 </nextThreadId>
-          <leftoverExterns color="cyan"> .Bag </leftoverExterns>
-          <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
           <externalDefinitions color="cyan"> .Map </externalDefinitions>
           <internalDefinitions color="cyan"> .Map </internalDefinitions>
@@ -50,7 +48,6 @@ module C11-CONFIGURATION
                <mutexes color="yellow"> .Map </mutexes>
                <glocks color="yellow"> .Bag </glocks>
           </threadInformation>
-          <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
                     <threadId color="yellow"> 0 </threadId>
@@ -71,27 +68,6 @@ module C11-CONFIGURATION
                          // stack of "control" cells
                          <callStack color="violet"> .List </callStack>
                          <locks> .Bag </locks>
-                         <calculateGotoMap color="cyan">
-                              <gotoCalculation multiplicity="*" color="cyan">
-                                   <computation color="cyan"> .K </computation>
-                                   <computationTail color="cyan">
-                                        .K
-                                   </computationTail>
-                                   <declarationStack color="cyan">
-                                        .List
-                                   </declarationStack>
-                                   <nestingDepthGoto color="cyan">
-                                        0
-                                   </nestingDepthGoto>
-                                   <blockHistoryGoto color="cyan">
-                                        .List
-                                   </blockHistoryGoto>
-                                   <loopStackGoto color="cyan">
-                                        .List
-                                   </loopStackGoto>
-                              </gotoCalculation>
-                         </calculateGotoMap>
-                         <br/>
                          <control>
                               // general information
                               <currTU color="lightgray"> "" </currTU>
@@ -110,6 +86,8 @@ module C11-CONFIGURATION
                                         <env color="red"> .Map </env>
                                         <types color="lightgray"> .Map </types>
                                         <structs color="lightgray"> .Map </structs>
+
+
 
                                         // printf
                                         <formatting multiplicity="?">
@@ -159,7 +137,6 @@ module C11-CONFIGURATION
                                    <locsWrittenTo color="lightgray">
                                         .Bag
                                    </locsWrittenTo>
-                                   <holds color="yellow"> .Map </holds>
                                    // used for typing expressions
                                    <type multiplicity="?" color="cyan"> .K </type>
                                    // holds the innermost type while we unroll the

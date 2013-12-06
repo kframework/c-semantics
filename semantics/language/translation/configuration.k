@@ -39,17 +39,11 @@ module C11-CONFIGURATION
           <declarations color="cyan"> .Set </declarations>
           <typeQualifiers> .Map </typeQualifiers>
 
-          //<threadId> 0 </threadId>
-
-          <compoundLiteralMap color="lightgray"> .Map </compoundLiteralMap>
-          
           <k color="green" multiplicity="?"> 
                $PGM:K 
                ~> resolveReferences 
                ~> initBuiltins
           </k>
-          // should be initialized with a pair (threadId, 0)
-          //<nextLoc color="black"> 0 </nextLoc>
 
           <finalComputation multiplicity="?" color="lightgray">
                .K
@@ -89,31 +83,11 @@ module C11-CONFIGURATION
                     </currentProgramLoc>
 
                     <controlDetails> // TODO(chathhorn): dumb name
-                         // stack of "local" cells
-                         <blockStack color="violet"> .List </blockStack>
                          <local>
                               // maps from Ids
                               <env color="red"> .Map </env>
                               <types color="lightgray"> .Map </types>
                               <structs color="lightgray"> .Map </structs>
-
-                              // information about the block we're in
-                              <nestingDepth color="lightgray">
-                                   0
-                              </nestingDepth>
-                              <blockHistory color="lightgray">
-                                   .List
-                              </blockHistory>
-                              // used to make sure we don't declare a
-                              // variable twice in the same scope
-                              <localVariables color="lightgray">
-                                   .List
-                              </localVariables> 
-                              // used to deallocate memory on leaving a
-                              // block
-                              <localAddresses color="lightgray">
-                                   .Set
-                              </localAddresses> 
                          </local>
 
                          // used to control initialization when gotoing
@@ -131,9 +105,7 @@ module C11-CONFIGURATION
                          <savedInitialization color="cyan">
                               .K
                          </savedInitialization>
-                         <loopStack color="violet"> .List </loopStack>
 
-                         <holds color="yellow"> .Map </holds>
                          // used for typing expressions
                          <type multiplicity="?" color="cyan"> .K </type>
                          // holds the innermost type while we unroll the
@@ -144,20 +116,6 @@ module C11-CONFIGURATION
                     </controlDetails>        
                </control>
           </threadLocal>
-
-          // TODO(chathhorn): I'm not sure what to do with these. Also,
-          // multiplicity...?
-          <callStackFrame multiplicity="*">
-               <continuation> .K </continuation>
-               <stackCurrentFunction> .K </stackCurrentFunction>
-               <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
-               <stackControl> .Bag </stackControl>
-          </callStackFrame>
-
-          <threadState multiplicity="*">
-               <threadContinuation> .K </threadContinuation>
-               <savedThreadLocal> .Bag </savedThreadLocal>
-          </threadState>
 
      </exec>
 

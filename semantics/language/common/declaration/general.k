@@ -8,6 +8,13 @@ module C-DECLARATION-GENERAL-SYNTAX
      syntax K ::= declareAndDefine(Id, Type, K, K)
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
+
+     syntax K ::= declareInternalVariable(Id, Type, K)
+
+     // id, type, possible init, linkage (external, internal, noLinkage)
+     syntax K ::= declareWithLinkage(Id, Type, K, K)
+     syntax K ::= justInit(K) [strict(1)]
+     
 endmodule
 
 module C-DECLARATION-GENERAL
@@ -157,14 +164,11 @@ module C-DECLARATION-GENERAL
      syntax K ::= "doDeclare'" "(" Type "," K ")" 
      syntax K ::= declareFunction(Id, Type, K)
      syntax K ::= declareExternalVariable(Id, Type, K)
-     syntax K ::= declareInternalVariable(Id, Type, K)
 
      rule doDeclare(T:Type, K:K) 
           => verifySpecifiers(T) ~> doDeclare'(T, K)
 
      // function definition
-     // TODO(chathhorn): I suspect this isn't used? Note the FunctionDefinition
-     // below.
      rule <k> 
                doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareFunction(X, T, K)
@@ -224,9 +228,6 @@ module C-DECLARATION-GENERAL
      //- external variables
      // feature request : nice to have MapList
 
-     // id, type, possible init, linkage (external, internal, noLinkage)
-     syntax K ::= "declareWithLinkage" "(" Id "," Type "," K "," K ")"
-     
      // function definition
      rule declareFunction(X:Id, T:Type, K:K)
           => declareWithLinkage(X, T, K, external)
@@ -248,89 +249,6 @@ module C-DECLARATION-GENERAL
           <currentFunction> file-scope </currentFunction>
           when isStaticType(T)
           [structural] 
-          
-     //- internal variables
-     
-     // fixme need to look for bad use
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => declareWithLinkage(X, T, K, noLinkage)
-          when notBool isStaticType(T) 
-               andBool (notBool isExternType(T))
-          [structural] 
-          
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, NoInit)
-               => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))
-          ...</k>
-          <internalLocations>... 
-               Tu |-> map((_ kpair(X, BlockNum) |-> Loc:SymLoc)) 
-          ...</internalLocations>
-          <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <currTU> Tu:K </currTU>
-          when isStaticType(T)
-               andBool notBool isExternType(T)
-          [structural, large] 
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, NoInit)
-               => allocateType(Loc, T)
-                    ~> addToEnv(X, Loc)
-                    ~> giveType(X, unqualifyType(T))
-                    ~> zero(X)
-          ...</k>
-          <internalLocations>... 
-               Tu |-> map((Locs:Map => Locs:Map[
-                    Loc / kpair(X, BlockNum)])) 
-          ...</internalLocations>
-          <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <currTU> Tu:K </currTU>
-          when isStaticType(T)
-               andBool notBool isExternType(T)
-               andBool notBool $hasMapping(Locs, kpair(X, BlockNum))
-          [structural, large] 
-          
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, K:K)
-               => defineAndInit(X, unqualifyType(T),
-                    figureInit(X,
-                    removeStorageSpecifiers(T), K), Loc)
-          ...</k>
-          <internalLocations>... 
-               Tu |-> map((Locs:Map => Locs:Map[Loc / kpair(X, BlockNum)])) 
-          ...</internalLocations>
-          <br/>
-          <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <currTU> Tu:K </currTU>
-          when isStaticType(T)
-               andBool (K =/=K NoInit)
-               andBool (notBool $hasMapping(Locs, kpair(X, BlockNum)))
-          [structural, large] 
-                    
-     // this is essentially defineandinit, but that checks if type has been
-     // seen for allocation
-     syntax K ::= "reseenStatic" "(" Id "," Type "," K "," SymLoc ")"
-          [strict(3)] 
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, K:K)
-               => reseenStatic(X, unqualifyType(T),
-                    figureInit(X,
-                    removeStorageSpecifiers(T), K), Loc)
-          ...</k>
-          <internalLocations>...
-               Tu |-> map((_ kpair(X, BlockNum:Int) |-> Loc:SymLoc))
-          ...</internalLocations>
-          <br/>
-          <blockHistory> ListItem(BlockNum) ...</blockHistory>
-          <currTU> Tu:K </currTU>
-          when isStaticType(T)
-               andBool K =/=K NoInit
-          [structural, large] 
-          
-     rule reseenStatic(X:Id, _, initValue(X:Id, T:Type, _), Loc:SymLoc)
-          => addToEnv(X, Loc) ~> giveType(X, T)
-          [structural] 
-          
           
      rule [declareExternInternal]:
           <k> 
@@ -397,18 +315,6 @@ module C-DECLARATION-GENERAL
           when K =/=K NoInit
                andBool L =/=K noLinkage
           [structural] 
-          
-     // fixme this terribly needs to be refactored.  I'm duplicating the above
-     // two rules so I don't add locals to the declaration order
-     rule declareWithLinkage(X:Id, T:Type, NoInit, L:K) 
-          => declareOnly(X, T, L)
-          when L ==K noLinkage
-          [structural] 
-     rule declareWithLinkage(X:Id, T:Type, K:K, L:K)
-          => declareAndDefine(X, T, K, L)
-          when (K =/=K NoInit)
-               andBool (L ==K noLinkage)
-          [structural] 
      
      // extern functions are no different than functions
      // fixme dangerous if someone marks it as static and extern.  can't tell
@@ -470,18 +376,6 @@ module C-DECLARATION-GENERAL
           <currTU> Tu:K </currTU>
           when notBool $hasMapping(Lnk, X:Id) 
                orBool Lnk:Map(X) ==K internal
-          [structural] 
-
-     // same as above, but for the case where the variable has already been
-     // declared.  this is seen if we goto earlier in the same block
-     rule <k> 
-               declareOnly(X:Id, T:Type, noLinkage)
-               => .K
-          ...</k>
-          <localVariables>... ListItem(X) ...</localVariables>
-          when (notBool isIncompleteType(T))
-               andBool (notBool isStaticType(T))
-               andBool (notBool isExternType(T))
           [structural] 
      
      /*@ \fromStandard{\source[n1570]{\para{6.2.2}{4}}}{
@@ -562,17 +456,6 @@ module C-DECLARATION-GENERAL
                     orBool Lnk:Map(X) ==K internal)
           [structural, large]
           
-     // this happens when we jump before a variable declaration with an
-     // initialization in the same block
-     rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K, noLinkage)
-               => justInit(figureInit(X, T, K))
-          ...</k>
-          <localVariables>... ListItem(X) ...</localVariables>
-          [structural] 
-          
-     syntax K ::= "justInit" "(" K ")" [strict(1)]
-     
      rule justInit(initValue(X:Id, T:Type, K:K)) => initialize(X, T, K)
           [structural]
           
