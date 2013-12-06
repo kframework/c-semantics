@@ -31,6 +31,8 @@ require "expression/unary-arithmetic.k"
 
 require "dynamic.k"
 
+require "debug.k"
+
 module C11-COMMON
      imports COMPAT
 
@@ -62,5 +64,7 @@ module C11-COMMON
      imports C-EXPRESSION-UNARY-ARITHMETIC
 
      imports C-DYNAMIC
+
+     imports DEBUG
 
 endmodule

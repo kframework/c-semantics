@@ -5,9 +5,10 @@ module C-IO-DIRECT
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-BITS-SYNTAX
-     imports C11-ERROR-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
+
+     imports DEBUG-SYNTAX
 
      syntax K ::= writeBytes(SymLoc, K)
 
