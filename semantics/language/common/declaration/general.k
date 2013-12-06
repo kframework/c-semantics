@@ -162,11 +162,9 @@ module C-DECLARATION-GENERAL
      rule doDeclare(T:Type, K:K) 
           => verifySpecifiers(T) ~> doDeclare'(T, K)
 
-     rule verifySpecifiers(typedDeclaration(T:Type, _:Id))
-          => .
-          when notBool (isStaticType(T) andBool isExternType(T))
-
      // function definition
+     // TODO(chathhorn): I suspect this isn't used? Note the FunctionDefinition
+     // below.
      rule <k> 
                doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareFunction(X, T, K)
@@ -214,6 +212,7 @@ module C-DECLARATION-GENERAL
           <currentProgramLoc> L:CabsLoc </currentProgramLoc>
           when notBool isFunctionType(T)
           [structural] 
+
      rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
@@ -413,9 +412,9 @@ module C-DECLARATION-GENERAL
      
      // extern functions are no different than functions
      // fixme dangerous if someone marks it as static and extern.  can't tell
-     rule t(_, qualifiedType(T:Type, Extern)) => T
-          when isFunctionType(T) 
-          [structural]
+     // rule t(_, qualifiedType(T:Type, Extern)) => T
+          // when isFunctionType(T) 
+          // [structural]
      
      // fixme clean these up, they are so redundant
      // fixme unqualifying these is probably unsafe
@@ -633,7 +632,8 @@ module C-DECLARATION-GENERAL
      // FIXME check prototypes
      rule [function-definition]:
           FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
-          => createNewFun(X, T, safeBody(X, Blk))
+          => verifySpecifiers(typedDeclaration(T, X))
+               ~> createNewFun(X, T, safeBody(X, Blk))
                ~> calculateGotoMap(X, safeBody(X, Blk))
           when isFunctionType(T)
           [structural]

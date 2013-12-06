@@ -37,6 +37,7 @@ module C11-CONFIGURATION
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
+          <typeQualifiers> .Map </typeQualifiers>
 
           //<threadId> 0 </threadId>
 

@@ -75,6 +75,7 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= "isBasicType" "(" K ")" [function]
 
+     syntax Set ::= getQualifiers(Type) [function]
      // takes a type, but sometimes things like maps give K
      syntax KResult ::= unqualifyType(K) [function]
      syntax Type ::= removeStorageSpecifiers(K) [function]

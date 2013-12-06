@@ -20,7 +20,6 @@ module C-MEMORY-READING
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-ERROR-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 

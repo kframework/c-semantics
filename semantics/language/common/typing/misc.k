@@ -549,6 +549,11 @@ module C-TYPING-MISC
      rule isArithmeticType(T:Type)
           => hasIntegerType(T) orBool isFloatType(T)
 
+     rule getQualifiers(t(_:Set, qualifiedType(T:Type, K:K))) 
+          => SetItem(K) getQualifiers(T)
+     rule getQualifiers(t(_:Set, T:SimpleType)) => .Set
+          when getKLabel(T) =/=KLabel 'qualifiedType 
+
      rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
      rule unqualifyType(t(_:Set, T:SimpleType)) => t(.Set, T)
           when getKLabel(T) =/=KLabel 'qualifiedType 

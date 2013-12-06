@@ -1,10 +1,4 @@
-module C11-ERROR-SYNTAX
-     syntax K ::= assert(Bool, Int) // check, error#
-     syntax K ::= "PAUSE" | PAUSE(K) | ASSERT(Bool, K)
-endmodule
-
 module C11-ERROR
-     imports C11-ERROR-SYNTAX
      imports C11-ERROR-MAP-SYNTAX
 
      imports C-SYNTAX
@@ -15,12 +9,12 @@ module C11-ERROR
 
      imports C-TYPING-MISC-SYNTAX
 
+     imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
 
      imports COMPAT-SYNTAX
 
-     rule assert(true, _) => . [structural, anywhere]
-     rule ASSERT(true, _) => . [structural, anywhere]
+     imports DEBUG-SYNTAX
 
      syntax String ::= Error(String, String, KList) [function]
      rule Error(Title:String, Msg:String, _:KList)  => 
@@ -388,10 +382,44 @@ module C11-ERROR
      //      <notWritable>... Loc |-> _ ...</notWritable>
      //      [structural, large]
 
-     rule (. => ERROR("00208",
+     syntax K ::= "verifySpecifiers'" "(" Id ")"
+     syntax K ::= qs(Set)
+
+     rule <k> verifySpecifiers(typedDeclaration(T:Type, X:Id))
+          => saveQualifiers(T, X)  ~> verifySpecifiers'(X) ...</k>
+          <currentFunction> file-scope </currentFunction>
+          when notBool (isStaticType(T) andBool isExternType(T))
+     rule <k> verifySpecifiers(typedDeclaration(T:Type, _:Id)) => . ...</k>
+          <currentFunction> F:K </currentFunction>
+          when notBool (isStaticType(T) andBool isExternType(T))
+               andBool F =/=K file-scope
+     rule <k> verifySpecifiers'(X:Id) => . ...</k>
+          <typeQualifiers>... X |-> qs(Qs:Set) </typeQualifiers>
+          when notBool (SetItem(Static) in Qs andBool SetItem(Extern) in Qs)
+
+     syntax K ::= saveQualifiers(Type, Id)
+     rule <k> saveQualifiers(T:Type, X:Id) => . ...</k>
+          <typeQualifiers> Decls:Map (. => X |-> qs(getQualifiers(T))) </typeQualifiers>
+          when notBool (X in keys Decls)
+          [structural] 
+     rule <k> saveQualifiers(T:Type, X:Id) => . ...</k>
+          <typeQualifiers>...  X |-> qs(_ (. => getQualifiers(T))) </typeQualifiers>
+          [structural] 
+
+     rule (. => ERROR("00208a",
                "The declaration of " +String S +String " appears with both"
                +String " static and extern specifiers.", 8)) ~>
           verifySpecifiers(typedDeclaration(T:Type, Identifier(S:String)))
           when isStaticType(T) andBool isExternType(T)
+
+     rule <k> (. => ERROR("00208b",
+               "The declaration of " +String S +String " appears with both"
+               +String " static and extern specifiers (at different locations).", 8)) ~>
+          verifySpecifiers'(Identifier(S:String))
+          ...</k>
+          <currentFunction> file-scope </currentFunction>
+          <typeQualifiers>... 
+               Identifier(S) |-> qs(_ SetItem(Static) SetItem(Extern))
+          ...</typeQualifiers>
 
 endmodule

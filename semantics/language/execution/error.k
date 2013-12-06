@@ -1,10 +1,4 @@
-module C11-ERROR-SYNTAX
-     syntax K ::= assert(Bool, Int) // check, error#
-     syntax K ::= "PAUSE" | PAUSE(K) | ASSERT(Bool, K)
-endmodule
-
 module C11-ERROR
-     imports C11-ERROR-SYNTAX
      imports C11-ERROR-MAP-SYNTAX
 
      imports C11-EXECUTION-SYNTAX
@@ -34,8 +28,7 @@ module C11-ERROR
 
      imports LIBC-STDIO-SYNTAX
 
-     rule assert(true, _) => . [structural, anywhere]
-     rule ASSERT(true, _) => . [structural, anywhere]
+     imports DEBUG-SYNTAX
 
      syntax String ::= Error(String, String, KList) [function]
      rule Error(Title:String, Msg:String, _:KList)  => 
