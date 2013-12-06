@@ -555,8 +555,11 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'qualifiedType 
 
      rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
+     rule unqualifyType(t(_:Set, prototype(T:Type))) 
+          => t(.Set, prototype(unqualifyType(T)))
      rule unqualifyType(t(_:Set, T:SimpleType)) => t(.Set, T)
-          when getKLabel(T) =/=KLabel 'qualifiedType 
+          when (getKLabel(T) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T) =/=KLabel 'prototype)
           
      rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
           => T
