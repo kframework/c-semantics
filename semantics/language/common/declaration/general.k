@@ -3,7 +3,7 @@ module C-DECLARATION-GENERAL-SYNTAX
 
      syntax K ::= declareOnly(Id, Type, K)
 
-     syntax K ::= verifySpecifiers(K) [strict]
+     syntax K ::= verifyDecl(K) [strict]
 
      syntax K ::= declareAndDefine(Id, Type, K, K)
 
@@ -166,7 +166,7 @@ module C-DECLARATION-GENERAL
      syntax K ::= declareExternalVariable(Id, Type, K)
 
      rule doDeclare(T:Type, K:K) 
-          => verifySpecifiers(T) ~> doDeclare'(T, K)
+          => verifyDecl(T) ~> doDeclare'(T, K)
 
      // function definition
      rule <k> 
@@ -515,7 +515,7 @@ module C-DECLARATION-GENERAL
      // FIXME check prototypes
      rule [function-definition]:
           FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
-          => verifySpecifiers(typedDeclaration(T, X))
+          => verifyDecl(typedDeclaration(T, X))
                ~> createNewFun(X, T, safeBody(X, Blk))
                ~> calculateGotoMap(X, safeBody(X, Blk))
           when isFunctionType(T)

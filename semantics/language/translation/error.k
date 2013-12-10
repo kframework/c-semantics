@@ -382,44 +382,70 @@ module C11-ERROR
      //      <notWritable>... Loc |-> _ ...</notWritable>
      //      [structural, large]
 
-     syntax K ::= "verifySpecifiers'" "(" Id ")"
-     syntax K ::= qs(Set)
+     syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
+     syntax K ::= qs(Set) | tup(String, Id)
 
-     rule <k> verifySpecifiers(typedDeclaration(T:Type, X:Id))
-          => saveQualifiers(T, X)  ~> verifySpecifiers'(X) ...</k>
-          <currentFunction> file-scope </currentFunction>
+     // TODO(chathhorn): a lot of this is likely redundant (e.g., "preTypes").
+     rule <k> verifyDecl(typedDeclaration(T:Type, X:Id))
+          => verifyCompat(T, X) ~> saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>
           when notBool (isStaticType(T) andBool isExternType(T))
-     rule <k> verifySpecifiers(typedDeclaration(T:Type, _:Id)) => . ...</k>
-          <currentFunction> F:K </currentFunction>
-          when notBool (isStaticType(T) andBool isExternType(T))
-               andBool F =/=K file-scope
-     rule <k> verifySpecifiers'(X:Id) => . ...</k>
-          <typeQualifiers>... X |-> qs(Qs:Set) </typeQualifiers>
+
+     // rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
+     //      <currTU> Tu:String </currTU>
+     //      <rawTypes> Types:Map (. => tup(Tu, X) |-> qs(SetItem(T))) </rawTypes>
+     //      when notBool (tup(Tu, X) in keys Types)
+     // rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
+     //      <currTU> Tu:String </currTU>
+     //      <rawTypes>... tup(Tu, X) |-> qs(_ (. => SetItem(T))) </rawTypes>
+
+     rule <k> verifySpecifiers(X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers>... tup(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
           when notBool (SetItem(Static) in Qs andBool SetItem(Extern) in Qs)
 
-     syntax K ::= saveQualifiers(Type, Id)
-     rule <k> saveQualifiers(T:Type, X:Id) => . ...</k>
-          <typeQualifiers> Decls:Map (. => X |-> qs(getQualifiers(T))) </typeQualifiers>
+     syntax K ::= saveSpecifiers(Type, Id)
+     rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers> Decls:Map (. => tup(Tu, X) |-> qs(getQualifiers(T))) </typeSpecifiers>
           when notBool (X in keys Decls)
           [structural] 
-     rule <k> saveQualifiers(T:Type, X:Id) => . ...</k>
-          <typeQualifiers>...  X |-> qs(_ (. => getQualifiers(T))) </typeQualifiers>
+     rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers>...  tup(Tu, X) |-> qs(_ (. => getQualifiers(T))) </typeSpecifiers>
           [structural] 
 
      rule (. => ERROR("00208a",
                "The declaration of " +String S +String " appears with both"
                +String " static and extern specifiers.", 8)) ~>
-          verifySpecifiers(typedDeclaration(T:Type, Identifier(S:String)))
+          verifyDecl(typedDeclaration(T:Type, Identifier(S:String)))
           when isStaticType(T) andBool isExternType(T)
 
      rule <k> (. => ERROR("00208b",
                "The declaration of " +String S +String " appears with both"
-               +String " static and extern specifiers (at different locations).", 8)) ~>
-          verifySpecifiers'(Identifier(S:String))
+               +String " static and extern specifiers (at different locations in the same translation unit).", 8)) ~>
+               verifySpecifiers(Identifier(S:String))
           ...</k>
-          <currentFunction> file-scope </currentFunction>
-          <typeQualifiers>... 
-               Identifier(S) |-> qs(_ SetItem(Static) SetItem(Extern))
-          ...</typeQualifiers>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers>... 
+               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
+          ...</typeSpecifiers>
+
+     rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <rawTypes> Types:Map (. => tup(Tu, X) |-> T) </rawTypes>
+          when notBool (tup(Tu, X) in keys Types)
+     rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <rawTypes>... tup(Tu, X) |-> (PrevT:Type => T) </rawTypes>
+          when isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
+
+     rule <k> (. => ERROR("002015",
+               "Found multiple declarations of " +String S 
+               +String " with incompatible types.", 15)) ~>
+               verifyCompat(T:Type, Identifier(S:String)) 
+          ...</k>
+          <currTU> Tu:String </currTU>
+          <rawTypes>... tup(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
+          when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
 endmodule

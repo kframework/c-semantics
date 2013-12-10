@@ -410,13 +410,13 @@ module C11-ERROR
           <notWritable>... Loc |-> _ ...</notWritable>
           [structural, large]
 
-     rule verifySpecifiers(typedDeclaration(T:Type, _:Id)) => .
+     rule verifyDecl(typedDeclaration(T:Type, _:Id)) => .
           when notBool (isStaticType(T) andBool isExternType(T))
 
      rule (. => ERROR("00208",
                "The declaration of " +String S +String " appears with both"
                +String " static and extern specifiers.", 8)) ~>
-          verifySpecifiers(typedDeclaration(T:Type, Identifier(S:String)))
+          verifyDecl(typedDeclaration(T:Type, Identifier(S:String)))
           when isStaticType(T) andBool isExternType(T)
 
      rule

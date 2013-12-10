@@ -27,7 +27,6 @@ module C11-CONFIGURATION
      </global>
      <T multiplicity="?">
      <exec>
-
           <leftoverExterns color="cyan"> .Bag </leftoverExterns>
           <translationUnits color="cyan"> .Bag </translationUnits>
           <declarationOrder color="cyan"> .Map </declarationOrder>
@@ -37,7 +36,9 @@ module C11-CONFIGURATION
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
-          <typeQualifiers> .Map </typeQualifiers>
+
+          <rawTypes> .Map </rawTypes>
+          <typeSpecifiers> .Map </typeSpecifiers>
 
           <k color="green" multiplicity="?"> 
                $PGM:K 
@@ -50,8 +51,6 @@ module C11-CONFIGURATION
           </finalComputation>
 
           <threadLocal>
-               // stack of "control" cells
-               <callStack color="violet"> .List </callStack>
                <calculateGotoMap color="cyan">
                     <gotoCalculation multiplicity="*" color="cyan">
                          <computation color="cyan"> .K </computation>

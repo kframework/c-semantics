@@ -235,78 +235,83 @@ module C-TYPING-MISC
      within a list of specifiers or qualifiers does not affect the specified
      type.
      }*/
+
+     syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
+
+     rule isTypeCompatible(T1:Type, T2:Type) 
+          => #isCompat(T1, T2) ==K true
      
      rule [typeCompatible-identical]:
-          isTypeCompatible(T:Type, T:Type) => true 
+          #isCompat(T:Type, T:Type) => true 
      rule [typeCompatible-two-ints]:
-          isTypeCompatible(T:Type, T':Type) => true 
+          #isCompat(T:Type, T':Type) => true 
           when hasIntegerType(T)
                andBool hasIntegerType(T') 
      rule [typeCompatible-two-ptr]:
-          isTypeCompatible(t(_, pointerType(_)), t(_, pointerType(_))) => true 
+          #isCompat(t(_, pointerType(_)), t(_, pointerType(_))) => true 
      rule [typeCompatible-ptr-int]:
-          isTypeCompatible(t(_, pointerType(_)), T:Type) => true
+          #isCompat(t(_, pointerType(_)), T:Type) => true
           when hasIntegerType(T) 
      rule [typeCompatible-int-ptr]:
-          isTypeCompatible(T:Type, t(_, pointerType(_))) => true
+          #isCompat(T:Type, t(_, pointerType(_))) => true
           when hasIntegerType(T)
           
      rule [typeCompatible-declarations]:
-          isTypeCompatible(typedDeclaration(T:Type, _:Id), 
+          #isCompat(typedDeclaration(T:Type, _:Id), 
                typedDeclaration(T':Type, _:Id))
-          => isTypeCompatible(T, T') 
+          => #isCompat(T, T') 
      rule [typeCompatible-prototypes]:
-          isTypeCompatible(t(_, prototype(T:Type)), t(_, prototype(T':Type))) 
-          => isTypeCompatible(T, T') 
+          #isCompat(t(_, prototype(T:Type)), t(_, prototype(T':Type))) 
+          => #isCompat(T, T') 
 
      rule [typeCompatible-array-right]:
-          isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
-          => isTypeCompatible(T, t(S:Set, pointerType(T'))) 
+          #isCompat(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
+          => #isCompat(T, t(S:Set, pointerType(T'))) 
      rule [typeCompatible-array-left]:
-          isTypeCompatible(t(S:Set, arrayType(T:Type, _:Int)), T':Type)
-          => isTypeCompatible(t(S, pointerType(T)), T') 
+          #isCompat(t(S:Set, arrayType(T:Type, _:Int)), T':Type)
+          => #isCompat(t(S, pointerType(T)), T') 
      
      rule [typeCompatible-incompleteArray-right]:
-          isTypeCompatible(T:Type, t(S:Set, incompleteArrayType(T':Type)))
-          => isTypeCompatible(T, t(S, pointerType(T'))) 
+          #isCompat(T:Type, t(S:Set, incompleteArrayType(T':Type)))
+          => #isCompat(T, t(S, pointerType(T'))) 
      rule [typeCompatible-incompleteArray-left]:
-          isTypeCompatible(t(S:Set, incompleteArrayType(T:Type)), T':Type)
-          => isTypeCompatible(t(S, pointerType(T)), T') 
+          #isCompat(t(S:Set, incompleteArrayType(T:Type)), T':Type)
+          => #isCompat(t(S, pointerType(T)), T') 
 
      rule [typeCompatible-function-void-left]:
-          isTypeCompatible(t(_, functionType(T:Type, 
+          #isCompat(t(_, functionType(T:Type, 
                typedDeclaration(t(_, void), _:Id))),
                t(_, functionType(T':Type, .KList)))
-          => isTypeCompatible(T, T') 
+          => #isCompat(T, T') 
      rule [typeCompatible-function-void-right]:
-          isTypeCompatible(t(_, functionType(T:Type, .KList)),
+          #isCompat(t(_, functionType(T:Type, .KList)),
                t(_, functionType(T':Type, 
                typedDeclaration(t(_, void), _:Id))))
-          => isTypeCompatible(T, T') 
+          => #isCompat(T, T') 
      rule [typeCompatible-function]:
-          isTypeCompatible(t(S:Set, functionType(T:Type, 
+          #isCompat(t(S:Set, functionType(T:Type, 
                (TA:Type,, L:KList))),
                t(S':Set, functionType(T':Type, (TA':Type,, L':KList))))
-          => isTypeCompatible(t(S, functionType(T, L)), 
+          => #isCompat(t(S, functionType(T, L)), 
                t(S', functionType(T', L')))
-               andBool isTypeCompatible(TA, TA') 
-     rule [typeCompatible-incompleteArray-nil]:
-          isTypeCompatible(t(_, functionType(T:Type, .KList)),
+               andBool #isCompat(TA, TA') 
+     rule [typeCompatible-function-nil]:
+          #isCompat(t(_, functionType(T:Type, .KList)),
                t(_, functionType(T':Type, .KList)))
-          => isTypeCompatible(T, T') 
-     rule isTypeCompatible(T:Type, T':Type) => true
-          when (hasIntegerType(T) orBool isFloatType(T))
-               andBool (hasIntegerType(T') orBool isFloatType(T')) 
+          => #isCompat(T, T') 
+     // TODO(chathhorn): why was this here??
+     // rule #isCompat(T:Type, T':Type) => true
+     //      when (hasIntegerType(T) orBool isFloatType(T))
+     //           andBool (hasIntegerType(T') orBool isFloatType(T')) 
                
-     syntax K ::= "addGlobalAggregate" "(" Id "," K ")"
-     syntax K ::= "addLocalAggregate" "(" Id "," K ")"
+     syntax K ::= addGlobalAggregate(Id, K)
+                | addLocalAggregate(Id, K)
      
      syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")"
           [strict(3)]
      syntax K ::= "addUnion-aux" "(" Id "," KList "," Map "," Map "," KList ")"
 
-     // TODO(chathhorn): why the hell was this necessary? this has got to be a
-     // BUG.
+     // TODO(chathhorn): should be able to use context here (bug?).
      rule addStruct-aux(A:Id, B:KList, K:K, C:Map, D:Map, E:KList) 
           => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
      rule K:K ~> addStruct-aux(A:Id, B:KList, HOLE, C:Map, D:Map, E:KList)
