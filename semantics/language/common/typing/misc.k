@@ -278,19 +278,17 @@ module C-TYPING-MISC
           #isCompat(t(S:Set, incompleteArrayType(T:Type)), T':Type)
           => #isCompat(t(S, pointerType(T)), T') 
 
-     rule [typeCompatible-function-void-left]:
-          #isCompat(t(_, functionType(T:Type, 
-               typedDeclaration(t(_, void), _:Id))),
-               t(_, functionType(T':Type, .KList)))
+     // A function declaration with no arguments is compatible with a
+     // declaration with any number of arguments.
+     rule [typeCompatible-function-void]:
+          #isCompat(
+               t(_, functionType(T:Type, Args:KList)),
+               t(_, functionType(T':Type, Args':KList)))
           => #isCompat(T, T') 
-     rule [typeCompatible-function-void-right]:
-          #isCompat(t(_, functionType(T:Type, .KList)),
-               t(_, functionType(T':Type, 
-               typedDeclaration(t(_, void), _:Id))))
-          => #isCompat(T, T') 
+          when (Args ==KList .KList) orBool (Args' ==KList .KList)
      rule [typeCompatible-function]:
-          #isCompat(t(S:Set, functionType(T:Type, 
-               (TA:Type,, L:KList))),
+          #isCompat(
+               t(S:Set,  functionType(T:Type,  (TA:Type,,  L:KList))),
                t(S':Set, functionType(T':Type, (TA':Type,, L':KList))))
           => #isCompat(t(S, functionType(T, L)), 
                t(S', functionType(T', L')))
