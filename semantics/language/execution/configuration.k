@@ -48,6 +48,7 @@ module C11-CONFIGURATION
                <mutexes color="yellow"> .Map </mutexes>
                <glocks color="yellow"> .Bag </glocks>
           </threadInformation>
+          <compoundLiteralMap> .Map </compoundLiteralMap>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
                     <threadId color="yellow"> 0 </threadId>

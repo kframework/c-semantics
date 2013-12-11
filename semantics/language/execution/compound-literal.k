@@ -48,6 +48,22 @@ module C-COMPOUND-LITERAL
                     ~> initialize(X, T, Init)
                     ~> X
           ...</k>
+          <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+          when notBool X in keys M
+          [structural]
+
+     // This and the compoundLiteralMap is apparently needed to properly handle
+     // gotos. An instance (i.e., syntactic occurance) of a compound literal
+     // apparently must always refer to the same object, even if it is
+     // encountered multiple times (e.g., when in the body of a loop).
+     rule <k> 
+               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
+               => addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, Init)
+                    ~> X
+          ...</k>
+          <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
           [structural]
 endmodule
