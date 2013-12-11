@@ -42,7 +42,7 @@ assertContains("Iincludes", run("$kcc -Iadhoc/inc adhoc/needsInclude.c -o includ
 
 assertEquals("blank", run("$kcc adhoc/basic.c -o basic.o 2&>1 && ./basic.o 2&>1"), "");
 
-assertContains("printfP", run("$kcc adhoc/percentP.c -o adhoc.o && ./adhoc.o"), "[sym(0 @ 1) + 0]");
+assertContains("printfP", run("$kcc adhoc/percentP.c -o adhoc.o && ./adhoc.o"), "[sym(1 @ 1) + 0]");
 
 assertContains("assert", run("$kcc adhoc/assert.c -o adhoc.o && ./adhoc.o"), "Assertion failed: `6 == 7'");
 
