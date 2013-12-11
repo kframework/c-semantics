@@ -52,8 +52,8 @@ sub main {
       binmode($fileInput, ':raw');
       print $fileInput decode_base64(linkedProgram());
 
-      my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
-      my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
+      my $argc = $#ARGV + 2;
+      my $argv = join(',,', map {qq|\\"$_\\"|} ($0, @ARGV));
 
       my %krun_args = (
                   '--output' => 'raw', 
@@ -62,7 +62,7 @@ sub main {
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
-                  "-cARGV=\\\"$argv\\\",,.KList" => '',
+                  "-cARGV=\"$argv,,.KList\"" => '',
                   '--load-cfg' => $fileInput
                   );
 
