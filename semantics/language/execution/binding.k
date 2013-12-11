@@ -76,7 +76,7 @@ module C-BINDING
           
      rule [bind-one]:
           <k> 
-               true ~> bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
+               bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
                     (typedDeclaration(T:Type, X:Id),, P:KList))
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
@@ -90,11 +90,13 @@ module C-BINDING
           when notBool isArrayType(T)
           [structural] 
           
-     rule [bind-one-check-type]:
-          (. => isTypeCompatible(T, T')) 
-          ~> bind-aux(_, (tv(_:KList, T':Type),, _:KList), 
-               (typedDeclaration(T:Type, _:Id),, _:KList))
-          [structural] 
+     // TODO(chathhorn): consider adding back a check here, isTypeCompat no
+     // longer makes sense in this context.
+     // rule [bind-one-check-type]:
+     //      (. => isTypeCompatible(T, T')) 
+     //      ~> bind-aux(_, (tv(_:KList, T':Type),, _:KList), 
+     //           (typedDeclaration(T:Type, _:Id),, _:KList))
+     //      [structural] 
      
      syntax KList ::= promoteList(KList) [function]
      rule [promoteList-needs-promoting]: 
