@@ -27,7 +27,7 @@ c11-kompiled: $(C11_FILES)
 
 c11-kompiled-nd: $(C11_FILES)
 	@echo "Compiling the dynamic C semantics with expression sequencing non-determinism..."
-	@$(KOMPILE) c11.k -d "c11-kompiled-nd" --transition "observable ndtrans" -superheat "ndheat" -supercool "ndlocal"
+	@$(KOMPILE) c11.k -d "c11-kompiled-nd" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal"
 	@touch c11-kompiled-nd
 
 c11-kompiled-nd-thread: $(C11_FILES)

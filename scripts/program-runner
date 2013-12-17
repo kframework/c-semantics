@@ -37,7 +37,7 @@ exit main();
 sub main {
       my $fileInput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', 
-            SUFFIX => '.c11', 
+            SUFFIX => '.bin', 
             UNLINK => 0);
       my $fileOutput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', 
@@ -58,7 +58,6 @@ sub main {
       my %krun_args = (
                   '--output' => 'raw', 
                   '--output-file' => $fileOutput, 
-                  '--parser' => 'cat', 
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
@@ -112,7 +111,7 @@ sub main {
 
       if (defined $ENV{SEARCH}) {
             $krun_args{'--search-final'} = '';
-            delete $krun_args{'--io'};
+            $krun_args{'--io'} = 'off';
             $krun_args{'-d'} = $EXEC_ND_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
@@ -120,7 +119,7 @@ sub main {
 
       if (defined $ENV{THREADSEARCH}) {
             $krun_args{'--search-final'} = '';
-            delete $krun_args{'--io'};
+            $krun_args{'--io'} = 'off';
             $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
@@ -130,7 +129,7 @@ sub main {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
             $krun_args{'-d'} = $EXEC_ND_DEF;
             $krun_args{'--output-mode'} = 'pretty';
-            delete $krun_args{'--io'};
+            $krun_args{'--io'} = 'off';
             delete $krun_args{'--output'};
             print 'LTL model checking... ';
             print "(with non-deterministic expression sequencing)\n";
@@ -138,8 +137,6 @@ sub main {
 
       # Execute krun with the arguments in (flattened) %krun_args.
       my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
-      # my $cmd = "$KRUN -cIN=\\\"$fileInput\\\"" 
-      #       . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n" if defined $ENV{VERBOSE};
       system($cmd);
 
@@ -159,8 +156,8 @@ sub main {
       if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
             my $graphOutputFile = "kcc-search-results.dot";
 
-            print "Generated $fileOutput\n";
-            print "Examining the output...\n";
+            print "Generated $fileOutput\n" if defined $ENV{VERBOSE};
+            print "Examining the output...\n" if defined $ENV{VERBOSE};
             my $graphOutput = graphSearch($graphOutputFile, $fileOutput);
             print "$graphOutput\n";
             print "Generated $graphOutputFile.\n";

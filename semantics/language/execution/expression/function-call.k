@@ -60,6 +60,7 @@ module C-EXPRESSION-FUNCTION-CALL
      context revalParams(klist(_,, (HOLE => reval(HOLE)),, _)) [ndheat]
      rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
           when all(L, isKResult)
+          [structural]
      
      rule Call(F:KResult, K:K) 
           => sequencePoint ~> Call'(F, K) 

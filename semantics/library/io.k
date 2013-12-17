@@ -54,7 +54,7 @@ module LIBC-IO
           [observable]
 
      rule <nextByte> chrChar((#EOF)::K) => #EOF </nextByte>
-          [simplification]
+          [structural, simplification]
 
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"
@@ -87,16 +87,16 @@ module LIBC-IO
           when S =/=String ""
           [structural]
      rule [sendString-done]:
-          <fileCommands> f-sendString(_, "") => .K ...</fileCommands>
+          <fileCommands> f-sendString(_, "") => . ...</fileCommands>
           [structural]
 
      rule [f-sent]:
-          <files>...
-               <fileCommands> f-sent(FD:Int, S:String) => .K ...</fileCommands>
+          <fileCommands> f-sent(FD:Int, S:String) => . ...</fileCommands>
+          <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>
                <done>... .List => ListItem(S) </done>
-          ...</files>
+          ...</file>
           [structural]
           
      rule [combine-done]:

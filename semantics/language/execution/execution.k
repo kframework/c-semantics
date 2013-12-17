@@ -255,8 +255,8 @@ module C11-EXECUTION-INIT
           <status> _ => mainExited </status>
           <resultValue> .K => V </resultValue>
           <files>...
-               // To prevent further io commands from firing and flush stdout.
-               <fileCommands> _ => f-flush(1) </fileCommands>
+               // Flush stdout.
+               <fileCommands>... (. => f-flush(1)) </fileCommands>
           ...</files>
           [ndtrans]
 endmodule
