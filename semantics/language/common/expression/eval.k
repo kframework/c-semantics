@@ -65,10 +65,6 @@ module C-EXPRESSION-EVAL
      value has the non-atomic version of the type of the lvalue; otherwise, the
      value has the type of the lvalue. \ldots
      }*/
-     rule rkludge(lval(Loc:SymLoc, T:Type)) => read(Loc, unqualifyType(T))
-          when notBool isArrayType(T) 
-               andBool notBool isFunctionType(T) 
-          [structural]
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
           when notBool isArrayType(T) 
                andBool notBool isFunctionType(T) 
