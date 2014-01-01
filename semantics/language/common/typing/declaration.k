@@ -10,21 +10,21 @@ module C-TYPING-DECLARATION
      syntax K ::= "giveLocalType" "(" K "," Type ")"
      
      // FIXME these are here until I decide how to handle qualified types
-     rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:K), Volatile)) 
-          => t(S:Set S':Set, T:K) 
-          [structural, anywhere]
-     rule [ignore-atomic]: t(S:Set, qualifiedType(t(S':Set, T:K), Atomic)) 
-          => t(S:Set S':Set, T:K) 
-          [structural, anywhere]
-     rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:K), Restrict)) 
-          => t(S:Set S':Set, T:K) 
-          [structural, anywhere]
-     rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:K), Auto)) 
-          => t(S:Set S':Set, T:K) 
-          [structural, anywhere]
-     rule [ignore-register]: t(S:Set, qualifiedType(t(S':Set, T:K), Register)) 
-          => t(S:Set S':Set, T:K)
-          [structural, anywhere]
+     // rule [ignore-volatile]: t(S:Set, qualifiedType(t(S':Set, T:K), Volatile)) 
+     //      => t(S:Set S':Set, T:K) 
+     //      [structural, anywhere]
+     // rule [ignore-atomic]: t(S:Set, qualifiedType(t(S':Set, T:K), Atomic)) 
+     //      => t(S:Set S':Set, T:K) 
+     //      [structural, anywhere]
+     // rule [ignore-restrict]: t(S:Set, qualifiedType(t(S':Set, T:K), Restrict)) 
+     //      => t(S:Set S':Set, T:K) 
+     //      [structural, anywhere]
+     // rule [ignore-auto]: t(S:Set, qualifiedType(t(S':Set, T:K), Auto)) 
+     //      => t(S:Set S':Set, T:K) 
+     //      [structural, anywhere]
+     // rule [ignore-register]: t(S:Set, qualifiedType(t(S':Set, T:K), Register)) 
+     //      => t(S:Set S':Set, T:K)
+     //      [structural, anywhere]
      
      rule <k> giveType(X:Id, T:KResult) => 
                #if (Fun:Id ==K file-scope) 

@@ -233,12 +233,14 @@ module C-DECLARATION-GENERAL
           => declareWithLinkage(X, T, K, external)
           when notBool isStaticType(T)
                andBool K =/=K NoInit
+               andBool (getQualifiers(T) ==Set .Set)
           [structural] 
 
      rule declareFunction(X:Id, T:Type, NoInit)
           => declareWithLinkage(X,
                t(.Set, prototype(T)), NoInit, external)
           when notBool isStaticType(T)
+               andBool (getQualifiers(T) ==Set .Set)
           [structural] 
           
      // fixme not handling internal prototypes
@@ -248,6 +250,7 @@ module C-DECLARATION-GENERAL
           ...</k>
           <currentFunction> file-scope </currentFunction>
           when isStaticType(T)
+               andBool (getQualifiers(T) ==Set .Set)
           [structural] 
           
      rule [declareExternInternal]:
