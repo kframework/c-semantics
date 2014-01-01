@@ -130,7 +130,6 @@ module C-DECLARATION-INITIALIZATION
                => ListItem(te(K . F', T'))
                     ListItem(te(K, t(Se, structType(S))))
           ...</currentSubObject>
-          <br/>
           <structs>...
                S |-> aggregateInfo((_,, typedDeclaration(T, F),,
                     typedDeclaration(_, #NoName),,
@@ -143,7 +142,6 @@ module C-DECLARATION-INITIALIZATION
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</currentSubObject>
-          <br/>
           <structs>...
                S |-> aggregateInfo((_,, typedDeclaration(T, F)), _, _)
           ...</structs> 
@@ -153,7 +151,6 @@ module C-DECLARATION-INITIALIZATION
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</currentSubObject>
-          <br/>
           <structs>...
                S |-> aggregateInfo((_,, 
                     typedDeclaration(T, F),,
@@ -194,12 +191,6 @@ module C-DECLARATION-INITIALIZATION
           <currentSubObject> (_ => L) </currentSubObject>
           [structural] 
 
-
-
-
-
-
-               
      context fillInit(InitFragment(HOLE, _)) 
      syntax K ::= "buildDesignator" "(" K ")"
      
