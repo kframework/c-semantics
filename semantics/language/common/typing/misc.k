@@ -53,9 +53,11 @@ module C-TYPING-MISC
      rule simpleType(t(_, T:SimpleType)) => T
 
      syntax Type ::= stripConst(Type) [function]
-     rule stripConst(t((SetItem(Const) => .Set) _, _))
-     rule stripConst(t(S:Set, T:SimpleType)) => t(S, T)
-          when notBool Const in S
+
+     rule stripConst(t(S:Set, functionType(T:Type, Args:KList))) 
+          => t((S -Set SetItem(Const)), functionType(stripConst(T), Args))
+     rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
+          when getKLabel(T) =/=KLabel 'functionType
 
      rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
           [structural, anywhere]
@@ -490,14 +492,18 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'qualifiedType 
           
      rule [isConstType-qualified]: 
-          isConstType(t(_, qualifiedType(T:Type, _:K)))
+          isConstType(t(S:Set, qualifiedType(T:Type, _)))
           => isConstType(T)
-          
+          when notBool (Const in S)
+     rule [isConstType-qualified]: 
+          isConstType(t(S:Set, functionType(T:Type, _)))
+          => isConstType(T)
+          when notBool (Const in S)
      rule [isConstType-false]: 
           isConstType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'qualifiedType )
+          when (getKLabel(T) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T) =/=KLabel 'functionType)
                andBool (notBool Const in S)
-          
      rule [isConstType-true]: 
           isConstType(t(SetItem(Const) _, _)) => true
           
@@ -552,10 +558,45 @@ module C-TYPING-MISC
      rule isArithmeticType(T:Type)
           => hasIntegerType(T) orBool isFloatType(T)
 
-     rule getQualifiers(t(_:Set, qualifiedType(T:Type, K:K))) 
-          => SetItem(K) getQualifiers(T)
-     rule getQualifiers(t(_:Set, T:SimpleType)) => .Set
-          when getKLabel(T) =/=KLabel 'qualifiedType 
+     // Returns both type qualifiers and storage class specifiers.
+     rule getQualities(t(S:Set, qualifiedType(T:Type, K:K))) 
+          => S SetItem(K) getQualities(T)
+     // It's ambiguous whether specifiers/qualifiers should be applied to the
+     // "function" or to the type of its return value.
+     // TODO(chathhorn): canonicalize this better -- it could just be const
+     // that gets confused.
+     rule getQualities(t(S:Set, functionType(T:Type, _))) 
+          => S getQualities(T)
+     rule getQualities(t(S:Set, T:SimpleType)) => S
+          when (getKLabel(T) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T) =/=KLabel 'functionType)
+
+     // TODO(chathhorn): not clear to me whether to descend into prototypes.
+     syntax Set ::= "getQualifiers'" "(" Type ")" [function]
+     rule getQualifiers(T:Type) => SetItem(Const) getQualifiers'(T)
+          when isConstType(T)
+     rule getQualifiers(T:Type) => getQualifiers'(T)
+          when notBool isConstType(T)
+
+     rule getQualifiers'(t(_, qualifiedType(T:Type, K:K))) 
+          => SetItem(K) getQualifiers'(T)
+          when K in typeQualifiers
+     rule getQualifiers'(t(_, qualifiedType(T:Type, K:K))) 
+          => getQualifiers'(T)
+          when notBool (K in typeQualifiers)
+     rule getQualifiers'(t(_, functionType(T:Type, _))) 
+          => getQualifiers'(T)
+     rule getQualifiers'(t(_, T:SimpleType)) => .Set
+          when (getKLabel(T) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T) =/=KLabel 'functionType)
+
+     // These are the only "real" type qualifiers.
+     syntax Set ::= "typeQualifiers" [function]
+     rule typeQualifiers =>
+          SetItem(Const)
+          SetItem(Restrict)
+          SetItem(Volatile)
+          SetItem(Atomic)
 
      rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
      rule unqualifyType(t(_:Set, prototype(T:Type))) 
@@ -564,6 +605,7 @@ module C-TYPING-MISC
           when (getKLabel(T) =/=KLabel 'qualifiedType)
                andBool (getKLabel(T) =/=KLabel 'prototype)
           
+     // TODO(chathhorn): clearly this doesn't do exactly what it claims to do.
      rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
           => T
      rule removeStorageSpecifiers(t(S:Set, T:SimpleType)) => t(S, T)

@@ -406,12 +406,12 @@ module C11-ERROR
      syntax K ::= saveSpecifiers(Type, Id)
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <typeSpecifiers> Decls:Map (. => tup(Tu, X) |-> qs(getQualifiers(T))) </typeSpecifiers>
+          <typeSpecifiers> Decls:Map (. => tup(Tu, X) |-> qs(getQualities(T))) </typeSpecifiers>
           when notBool (X in keys Decls)
           [structural] 
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <typeSpecifiers>...  tup(Tu, X) |-> qs(_ (. => getQualifiers(T))) </typeSpecifiers>
+          <typeSpecifiers>...  tup(Tu, X) |-> qs(_ (. => getQualities(T))) </typeSpecifiers>
           [structural] 
 
      rule (. => ERROR("00208a",
