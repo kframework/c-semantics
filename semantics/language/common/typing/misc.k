@@ -54,10 +54,10 @@ module C-TYPING-MISC
 
      syntax Type ::= stripConst(Type) [function]
 
-     rule stripConst(t(S:Set, functionType(T:Type, Args:KList))) 
-          => t((S -Set SetItem(Const)), functionType(stripConst(T), Args))
+     rule stripConst(t(S:Set, qualifiedType(T:Type, K:K))) 
+          => t((S -Set SetItem(Const)), qualifiedType(stripConst(T), K))
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
-          when getKLabel(T) =/=KLabel 'functionType
+          when getKLabel(T) =/=KLabel 'qualifiedType
 
      rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
           [structural, anywhere]
@@ -495,14 +495,9 @@ module C-TYPING-MISC
           isConstType(t(S:Set, qualifiedType(T:Type, _)))
           => isConstType(T)
           when notBool (Const in S)
-     rule [isConstType-qualified]: 
-          isConstType(t(S:Set, functionType(T:Type, _)))
-          => isConstType(T)
-          when notBool (Const in S)
      rule [isConstType-false]: 
           isConstType(t(S:Set, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'functionType)
                andBool (notBool Const in S)
      rule [isConstType-true]: 
           isConstType(t(SetItem(Const) _, _)) => true
@@ -561,15 +556,8 @@ module C-TYPING-MISC
      // Returns both type qualifiers and storage class specifiers.
      rule getQualities(t(S:Set, qualifiedType(T:Type, K:K))) 
           => S SetItem(K) getQualities(T)
-     // It's ambiguous whether specifiers/qualifiers should be applied to the
-     // "function" or to the type of its return value.
-     // TODO(chathhorn): canonicalize this better -- it could just be const
-     // that gets confused.
-     rule getQualities(t(S:Set, functionType(T:Type, _))) 
-          => S getQualities(T)
      rule getQualities(t(S:Set, T:SimpleType)) => S
           when (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'functionType)
 
      // TODO(chathhorn): not clear to me whether to descend into prototypes.
      syntax Set ::= "getQualifiers'" "(" Type ")" [function]
@@ -584,11 +572,8 @@ module C-TYPING-MISC
      rule getQualifiers'(t(_, qualifiedType(T:Type, K:K))) 
           => getQualifiers'(T)
           when notBool (K in typeQualifiers)
-     rule getQualifiers'(t(_, functionType(T:Type, _))) 
-          => getQualifiers'(T)
      rule getQualifiers'(t(_, T:SimpleType)) => .Set
           when (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'functionType)
 
      // These are the only "real" type qualifiers.
      syntax Set ::= "typeQualifiers" [function]
