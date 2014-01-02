@@ -1,4 +1,5 @@
-restrict int f();
+typedef int fun();
+restrict fun f;
 
 int main(void){
 
