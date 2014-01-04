@@ -146,6 +146,7 @@ sub main {
       my @krun_args = (
             '--output binary', 
             "--output-file $confOutTmp",
+            '-cMODE=InterpMode', 
             '--parser cat', 
             "-d $TRANS_DEF",
             '--io off', 
@@ -155,6 +156,7 @@ sub main {
       my @krun_args_raw = (
             '--output raw', 
             "--output-file $confOutRawTmp",
+            '-cMODE=InterpMode', 
             '--parser cat', 
             "-d $TRANS_DEF",
             '--io off', 
@@ -164,6 +166,7 @@ sub main {
       my @krun_args_pretty = (
             '--output pretty', 
             "--output-file $confOutPrettyTmp",
+            '-cMODE=DebugMode', 
             '--parser cat', 
             "-d $TRANS_DEF",
             '--io off', 
