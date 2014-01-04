@@ -40,6 +40,8 @@ module C11-CONFIGURATION
           <rawTypes> .Map </rawTypes>
           <typeSpecifiers> .Map </typeSpecifiers>
 
+          <mode> $MODE:SemMode </mode>
+
           <k color="green" multiplicity="?"> 
                $PGM:K 
                ~> resolveReferences 
