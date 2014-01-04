@@ -5,6 +5,8 @@ module C-DECLARATION-GENERAL-SYNTAX
 
      syntax K ::= verifyDecl(K) [strict]
 
+     syntax K ::= declareFunction(Id, Type, K)
+
      syntax K ::= declareAndDefine(Id, Type, K, K)
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
@@ -162,7 +164,6 @@ module C-DECLARATION-GENERAL
           [structural] 
                
      syntax K ::= "doDeclare'" "(" Type "," K ")" 
-     syntax K ::= declareFunction(Id, Type, K)
      syntax K ::= declareExternalVariable(Id, Type, K)
 
      rule doDeclare(T:Type, K:K) 
@@ -264,11 +265,6 @@ module C-DECLARATION-GENERAL
           [structural] 
           
      //- external variables
-    // rule declareExternalVariable(X:Id, T:Type, K:K)
-    //      => declareWithLinkage(X, T, K, external)
-    //      when notBool isStaticType(T)
-    //           andBool notBool isExternType(T)
-    //      [structural] 
      rule <k> 
                declareExternalVariable(X:Id, T:Type, K:K)
                => declareWithLinkage(X, T, K, external)
@@ -276,7 +272,6 @@ module C-DECLARATION-GENERAL
           <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
           <currTU> Tu:K </currTU>
           when notBool isStaticType(T)
-               //andBool isExternType(T)
                andBool notBool $hasMapping(Lnk, X)
           [structural] 
      // not triggering
@@ -288,7 +283,6 @@ module C-DECLARATION-GENERAL
           <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
           <currTU> Tu:K </currTU>
           when notBool isStaticType(T)
-               //andBool isExternType(T)
                andBool $hasMapping(Lnk, X)
           [structural] 
      rule declareExternalVariable(X:Id, T:Type, K:K)
@@ -318,12 +312,6 @@ module C-DECLARATION-GENERAL
           when K =/=K NoInit
                andBool L =/=K noLinkage
           [structural] 
-     
-     // extern functions are no different than functions
-     // fixme dangerous if someone marks it as static and extern.  can't tell
-     // rule t(_, qualifiedType(T:Type, Extern)) => T
-          // when isFunctionType(T) 
-          // [structural]
      
      // fixme clean these up, they are so redundant
      // fixme unqualifying these is probably unsafe
