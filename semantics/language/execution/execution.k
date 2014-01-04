@@ -5,7 +5,6 @@ require "compound-literal.k"
 require "configuration.k"
 require "declaration-local.k"
 require "error.k"
-require "error-map.k"
 require "expression.k"
 require "io-buffered.k"
 require "ltlmc.k"
@@ -26,8 +25,7 @@ module C11-EXECUTION
      imports C11-CONFIGURATION
      imports C11-LTLMC
      imports C11-SETTINGS
-     imports C11-ERROR
-     imports C11-ERROR-MAP
+     imports C11-EXEC-ERROR
      imports C-BINDING
      imports C-BUILTIN
      imports C-CHECK-LOC

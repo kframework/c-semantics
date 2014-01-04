@@ -1,12 +1,14 @@
 module C11-ERROR-MAP-SYNTAX
      syntax Map ::= "Errors" [function]
      // passage, ref.
-     syntax ErrorRef ::= err(String, String)
+     syntax ErrorTxt ::= err(String, String)
+     syntax ErrorRef ::= ub(Int) // "undefined behavior"
 endmodule
 
 module C11-ERROR-MAP
      imports C11-ERROR-MAP-SYNTAX
 
+// TODO(chathhorn): correlate this with that pretty CMU website?
      rule Errors => 
 1 |-> err("A \"shall\" or \"shall not\" requirement that appears outside of a constraint is violated.", "clause 4")
 2 |-> err("A nonempty source file does not end in a new-line character which is not immediately preceded by a backslash character or ends in a partial preprocessing token or comment.", "5.1.1.2")
@@ -233,12 +235,5 @@ module C11-ERROR-MAP
 407 |-> err("The comparison function called by a searching or sorting utility function returns ordering values inconsistently.", "7.22.5")
 408 |-> err("An argument to a library function has an invalid value.", "7.1.4")
 409 |-> err("An argument to a library function has a type not expected by a function with variable number of arguments.", "7.1.4")
-500 |-> err("If an identifier has no linkage, there shall be no more than one declaration of the identifier (in a declarator or type specifier) with the same scope and in the same name space, except in certain cases.", "6.7:3")
-501 |-> err("Constraints on assignment.", "6.5.16.1")
-502 |-> err("Constraints on conditional expressions.", "6.5.15")
-503 |-> err("If the (size of an array) is a constant expression, it shall have a value greater than zero.", "6.7.6.2:1")
-504 |-> err("There shall be no more than one external definition for each identifier declared with internal linkage in a translation unit", "6.9:3")
-505 |-> err("If an identifier declared with internal linkage is used in an expression (other than as a part of the operand of a sizeof or _Alignof operator whose result is an integer constant), there shall be exactly one external definition for the identifier in the translation unit.", "6.9:3")
-506 |-> err("The first operand of the . operator shall have an atomic, qualified, or unqualified structure or union type, and the second operand shall name a member of that type.", "6.5.2.3")
 
 endmodule

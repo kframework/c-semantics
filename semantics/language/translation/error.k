@@ -1,5 +1,7 @@
-module C11-ERROR
+module C11-TRANS-ERROR
+     imports C11-ERROR-SYNTAX
      imports C11-ERROR-MAP-SYNTAX
+     imports C11-CONSTRAINT-MAP-SYNTAX
 
      imports C-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -16,37 +18,6 @@ module C11-ERROR
 
      imports DEBUG-SYNTAX
 
-     syntax String ::= Error(String, String, KList) [function]
-     rule Error(Title:String, Msg:String, _:KList)  => 
-          "Error: " 
-          +String Title
-          +String "\n"
-          +String "Description: " 
-          +String Msg
-     //     +String citeErrors(Refs)
-
-     syntax String ::= citeError(ErrorRef) [function]
-     syntax String ::= citeErrors(KList) [function]
-
-     rule citeError(err(Passage:String, Ref:String)) => 
-          "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
-     rule citeErrors((Ref:Int,, Refs:KList)) =>
-          "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
-     rule citeErrors(.KList) => ""
-
-     // syntax K ::= ICE(String, String) [function]
-     // rule ICE(Title:String, Msg:String) =>
-     //      Error(Title, Msg)
-     //      +String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
-
-     syntax K ::= ERROR(String, String)
-     syntax K ::= ERROR(String, String, KList)
-
-     rule ERROR(Title:String, Msg:String) => ERROR(Title, Msg, .KList)
-     rule (<k> ERROR(Title:String, Msg:String, Refs:KList) ~> K:K </k> 
-          => <finalComputation> K </finalComputation>)
-          (.Bag => <errorCell> Error(Title, Msg, Refs) </errorCell>)
-
      // dynamic exp
      // rule [err00001]: 
      //      (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
@@ -54,38 +25,11 @@ module C11-ERROR
      //      when T:K =/=K void
      //      [structural, large]
          
-     // rule [err00002]:
-     //      (. => ERROR("00002", "Reading outside the bounds of an object.", 
-     //           (19,, 43,, 47,, 62)) ) ~>
-     //      assert(false, 2)
-     //      [structural, large]
      // rule [err00003]:
      //      (. => ERROR("00003", "Unsequenced side effect on scalar object with value computation of same object.", 315) ) ~>
      //      assert(false, 3)
      //      [structural, large]
-     // dynamic memory
-     // rule [err00007]:
-     //      <k> 
-     //           (. => ERROR("00007", "Referring to an object outside of its lifetime.",
-     //                (9,, 10)) ) ~>
-     //           checkValidLoc-aux(loc(B:SymBase, _:Int, _:Int)) 
-     //      ...</k>
-     //      <mem> M:Map </mem>
-     //      when notBool SetItem(B) in (keys M:Map)
-     //      [structural, large]
      
-     // rule [err00008]:
-     //      (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
-     //      concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _)))
-     //      [structural, large]
-     // 
-     // rule [err00009]:
-     //      (. => ERROR("00009", "Reading uninitialized memory.",
-     //           21) ) ~>
-     //      concretize(T:Type, dataList((piece(unknown(Len:Int), Len:Int),, _)))
-     //      when isFloatType(T)
-     //      [structural, large]
-          
      // rule [err00010]:
      //      <k> 
      //           (. => ERROR("00010", "Found pointer that refers outside the bounds of an object + 1.", 62) ) ~>
@@ -159,15 +103,6 @@ module C11-ERROR
      //           andBool I2 =/=Int 0
      //      [structural, large]
           
-     // rule [err00020]:
-     //      <k> 
-     //           (. => ERROR("00020", "Tried to write outside the bounds of an object.") ) ~>
-     //           writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) 
-     //      ...</k>
-     //      <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-     //      when notBool Offset <Int Len
-     //      [structural, large] 
-          
      // See C-EXPRESSION-IDENTIFIER.
      rule [err00021a]:
           <k> 
@@ -225,6 +160,8 @@ module C11-ERROR
           _ & tv(_:Float, _)
           [structural, large]
           
+   //   TODO(chathhorn): catch these in translation, but maybe hold off on e.g.
+   //   "main must exist" in case we add a link phase.
    //   rule [err00025a]:
    //        (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
    //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
@@ -262,7 +199,7 @@ module C11-ERROR
    //   rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
    //        => false
    //        when T =/=K char
-   //   
+   //
    //   rule [err00027]:
    //        (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
    //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
@@ -307,23 +244,8 @@ module C11-ERROR
      //      when (T:K =/=K void)
      //      [structural, large]
           
-     // rule [err00035]:
-     //      (. => ERROR("00035", "Trying to write through a const lvalue.", 501) ) ~>
-     //      write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
-     //      [structural, large]
-     // 
-     // rule [err00036]:
-     //      (. => ERROR("00036", "Trying to dereference a null pointer.") ) ~>
-     //      checkDerefLoc(NullPointer)
-     //      [structural, large]
-     //      
-     // rule [err00037]:
-     //      (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
-     //      read-aux(NullPointer, _, _)
-     //      [structural, large]
-          
      rule [err00038]:
-          (. => ERROR("00038", "Arrays cannot be of 0 length.", 503) ) ~>
+          (. => ERROR("00038", "Arrays cannot be of 0 length.", cv("6.7.6.2:1"))) ~>
           ArrayType(_:Type, tv(0, _), _)
           [structural, large]
      
@@ -337,7 +259,7 @@ module C11-ERROR
           [structural, large]
      // dynamic exp
      // rule [err00041]:
-     //      (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", 502) ) ~>
+     //      (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
      //      types((t(_, void),, t(_, T:K)))
      //      when T:K =/=K void
      //      [structural, large]
@@ -347,7 +269,7 @@ module C11-ERROR
      //      when T:K =/=K void
      //      [structural, large]
      // rule [err00043]:
-     //      (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", 502) ) ~>
+     //      (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
      //      types((T:Type,, T':Type))
      //      when (T =/=K T')
      //           andBool (isStructType(T) orBool isUnionType(T))
@@ -362,7 +284,7 @@ module C11-ERROR
           
      // rule [err00045]:
      //      <k> 
-     //           (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, 501)) ) ~>
+     //           (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
      //           writeByte(loc(Base:SymBase, _, _), _)
      //      ...</k>
      //      <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
@@ -390,24 +312,18 @@ module C11-ERROR
           => verifyCompat(T, X) ~> saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>
           when notBool (isStaticType(T) andBool isExternType(T))
 
-     // rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
-     //      <currTU> Tu:String </currTU>
-     //      <rawTypes> Types:Map (. => tup(Tu, X) |-> qs(SetItem(T))) </rawTypes>
-     //      when notBool (tup(Tu, X) in keys Types)
-     // rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
-     //      <currTU> Tu:String </currTU>
-     //      <rawTypes>... tup(Tu, X) |-> qs(_ (. => SetItem(T))) </rawTypes>
-
      rule <k> verifySpecifiers(X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers>... tup(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
-          when notBool (SetItem(Static) in Qs andBool SetItem(Extern) in Qs)
+          when notBool (Static in Qs andBool Extern in Qs)
+               andBool notBool (Auto in Qs)
+               andBool notBool (Register in Qs)
 
      syntax K ::= saveSpecifiers(Type, Id)
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers> Decls:Map (. => tup(Tu, X) |-> qs(getQualities(T))) </typeSpecifiers>
-          when notBool (X in keys Decls)
+          when notBool (tup(Tu, X) in keys Decls)
           [structural] 
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
@@ -430,6 +346,24 @@ module C11-ERROR
                tup(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
           ...</typeSpecifiers>
 
+     // TODO(chathhorn): giving up on these damn error numberings for now.
+     rule <k> (. => ERROR("90692a",
+               "Declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
+               verifySpecifiers(Identifier(S:String))
+          ...</k>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers>... 
+               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
+          ...</typeSpecifiers>
+     rule <k> (. => ERROR("90692b",
+               "Declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
+               verifySpecifiers(Identifier(S:String))
+          ...</k>
+          <currTU> Tu:String </currTU>
+          <typeSpecifiers>... 
+               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
+          ...</typeSpecifiers>
+
      rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
           <rawTypes> Types:Map (. => tup(Tu, X) |-> T) </rawTypes>
@@ -439,7 +373,7 @@ module C11-ERROR
           <rawTypes>... tup(Tu, X) |-> (PrevT:Type => T) </rawTypes>
           when isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
-     rule <k> (. => ERROR("002015",
+     rule <k> (. => ERROR("00215",
                "Found multiple declarations of " +String S 
                +String " with incompatible types.", 15)) ~>
                verifyCompat(T:Type, Identifier(S:String)) 
@@ -447,5 +381,10 @@ module C11-ERROR
           <currTU> Tu:String </currTU>
           <rawTypes>... tup(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
+
+     rule (. => ERROR("00267",
+               "Function " +String S +String " declared with type qualifiers.", 67)) 
+          ~> declareFunction(Identifier(S:String), T:Type, _)
+          when getQualifiers(T) =/=Set .Set
 
 endmodule

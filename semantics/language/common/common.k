@@ -12,6 +12,10 @@ require "promotion.k"
 require "alloc.k"
 require "symloc.k"
 
+require "error.k"
+require "error-map.k"
+require "constraint-map.k"
+
 require "memory.k"
 
 require "expression/additive-operators.k"
@@ -45,6 +49,10 @@ module C11-COMMON
      imports C-MEMORY-ALLOC
      imports C-SYMLOC
      imports C-PROMOTION
+
+     imports C11-ERROR
+     imports C11-ERROR-MAP
+     imports C11-CONSTRAINT-MAP
 
      imports C-MEMORY
 

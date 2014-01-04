@@ -2,7 +2,6 @@ require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
 require "error.k"
-require "error-map.k"
 require "io-direct.k"
 require "process-label.k"
 require "resolution.k"
@@ -11,8 +10,7 @@ require "static.k"
 
 module C11-TRANSLATION
      imports C11-CONFIGURATION
-     imports C11-ERROR
-     imports C11-ERROR-MAP
+     imports C11-TRANS-ERROR
      imports C11-SETTINGS
      imports C-CHECK-LOC
      imports C-IO-DIRECT
@@ -23,7 +21,6 @@ module C11-TRANSLATION
      imports C-DYNAMIC-SYNTAX
 
      rule <k> Program(klist(P:KList)) => klistToK(P) ...</k>
-          //<nextLoc> _ => firstLoc(1) </nextLoc>
           <threadLocal>...
                <control>...
                     <currentFunction> 
@@ -37,8 +34,8 @@ module C11-TRANSLATION
           <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           [structural, large]
 
-
-     rule <T>... <k> .K </k> ...</T> => .Bag
+     syntax SemMode ::= "InterpMode" | "DebugMode"
+     rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
           
      // TODO(chathhorn): It'd be nice to remove sequence points altogether from
      // this part of the semantics.

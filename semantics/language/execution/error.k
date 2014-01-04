@@ -1,5 +1,7 @@
-module C11-ERROR
+module C11-EXEC-ERROR
+     imports C11-ERROR-SYNTAX
      imports C11-ERROR-MAP-SYNTAX
+     imports C11-CONSTRAINT-MAP-SYNTAX
 
      imports C11-EXECUTION-SYNTAX
 
@@ -29,37 +31,6 @@ module C11-ERROR
      imports LIBC-STDIO-SYNTAX
 
      imports DEBUG-SYNTAX
-
-     syntax String ::= Error(String, String, KList) [function]
-     rule Error(Title:String, Msg:String, _:KList)  => 
-          "Error: " 
-          +String Title
-          +String "\n"
-          +String "Description: " 
-          +String Msg
-     //     +String citeErrors(Refs)
-
-     syntax String ::= citeError(ErrorRef) [function]
-     syntax String ::= citeErrors(KList) [function]
-
-     rule citeError(err(Passage:String, Ref:String)) => 
-          "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
-     rule citeErrors((Ref:Int,, Refs:KList)) =>
-          "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
-     rule citeErrors(.KList) => ""
-
-     // syntax K ::= ICE(String, String) [function]
-     // rule ICE(Title:String, Msg:String) =>
-     //      Error(Title, Msg)
-     //      +String "\nNOTE: Please send a test case exhibiting this bug to celliso2@illnois.edu; it could indicate an internal error in KCC."
-
-     syntax K ::= ERROR(String, String)
-     syntax K ::= ERROR(String, String, KList)
-
-     rule ERROR(Title:String, Msg:String) => ERROR(Title, Msg, .KList)
-     rule (<k> ERROR(Title:String, Msg:String, Refs:KList) ~> K:K </k> 
-          => <finalComputation> K </finalComputation>)
-          (.Bag => <errorCell> Error(Title, Msg, Refs) </errorCell>)
 
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
@@ -336,7 +307,7 @@ module C11-ERROR
           [structural, large]
           
      rule [err00035]:
-          (. => ERROR("00035", "Trying to write through a const lvalue.", 501) ) ~>
+          (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
           write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
           [structural, large]
      
@@ -351,7 +322,7 @@ module C11-ERROR
           [structural, large]
           
      rule [err00038]:
-          (. => ERROR("00038", "Arrays cannot be of 0 length.", 503) ) ~>
+          (. => ERROR("00038", "Arrays cannot be of 0 length.", cv("6.7.6.2:1")) ) ~>
           ArrayType(_:Type, tv(0, _), _)
           [structural, large]
      
@@ -365,7 +336,7 @@ module C11-ERROR
           [structural, large]
           
      rule [err00041]:
-          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", 502) ) ~>
+          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
           types((t(_, void),, t(_, T:K)))
           when T:K =/=K void
           [structural, large]
@@ -375,7 +346,7 @@ module C11-ERROR
           when T:K =/=K void
           [structural, large]
      rule [err00043]:
-          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", 502) ) ~>
+          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
           types((T:Type,, T':Type))
           when (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
@@ -390,7 +361,7 @@ module C11-ERROR
           
      rule [err00045]:
           <k> 
-               (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, 501)) ) ~>
+               (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
                writeByte(loc(Base:SymBase, _, _), _)
           ...</k>
           <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
