@@ -451,7 +451,7 @@ sub processResult {
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
                   || defined $parsed{errorMsg}) {
             print "\n=============================================================\n";
-            print "ERROR! KCC encountered an error while executing this program.\n";
+            print "ERROR! KCC encountered an error while translating this program.\n";
 
             if (defined $parsed{errorMsg}) {
                   print "=============================================================\n";
