@@ -3,10 +3,6 @@ module C-DECLARATION-GENERAL-SYNTAX
 
      syntax K ::= declareOnly(Id, Type, K)
 
-     syntax K ::= verifyDecl(K) [strict]
-
-     syntax K ::= declareFunction(Id, Type, K)
-
      syntax K ::= declareAndDefine(Id, Type, K, K)
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
@@ -169,7 +165,7 @@ module C-DECLARATION-GENERAL
      rule doDeclare(T:Type, K:K) 
           => verifyDecl(T) ~> doDeclare'(T, K)
 
-     // function definition
+     // function declaration
      rule <k> 
                doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareFunction(X, T, K)
@@ -501,38 +497,5 @@ module C-DECLARATION-GENERAL
           <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
      
-     syntax K ::= "defineUsingOldDeclaration" "(" Type "," Id "," K ")"
-     
-     // FIXME check prototypes
-     rule [function-definition]:
-          FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
-          => verifyDecl(typedDeclaration(T, X))
-               ~> createNewFun(X, T, safeBody(X, Blk))
-               ~> calculateGotoMap(X, safeBody(X, Blk))
-          when isFunctionType(T)
-          [structural]
-
-     syntax K ::= "createNewFun" "(" Id "," Type "," K ")" [function]
-     
-     rule createNewFun(X:Id, T:Type, Blk:K)
-          => declareFunction(
-               X, 
-               T, 
-               initializer(initFunction(
-                    &(X), 
-                    functionObject(
-                         X, 
-                         unqualifyType(T), 
-                         Blk
-                    )
-               ))
-          )
-          
-     syntax K ::= safeBody(Id, K) [function]
-     rule safeBody(X:Id, Blk:K) 
-          => Blk ~> Return(NothingExpression)
-          when X =/=K Identifier("main")
-     rule safeBody(Identifier("main"), Blk:K) 
-          => Blk ~> Return(tv(0, t(.Set, int)))
 endmodule
 

@@ -24,7 +24,7 @@ module C11-EXEC-ERROR
      imports C-CONVERSION-SYNTAX
      imports C-CHECK-LOC-SYNTAX
 
-     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      imports COMPAT-SYNTAX
 

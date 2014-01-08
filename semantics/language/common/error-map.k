@@ -8,7 +8,6 @@ endmodule
 module C11-ERROR-MAP
      imports C11-ERROR-MAP-SYNTAX
 
-// TODO(chathhorn): correlate this with that pretty CMU website?
      rule Errors => 
 1 |-> err("A \"shall\" or \"shall not\" requirement that appears outside of a constraint is violated.", "clause 4")
 2 |-> err("A nonempty source file does not end in a new-line character which is not immediately preceded by a backslash character or ends in a partial preprocessing token or comment.", "5.1.1.2")

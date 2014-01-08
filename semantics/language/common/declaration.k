@@ -26,12 +26,12 @@ module C-DECLARATION-SYNTAX
      // first map is for type, second map is for offset
      syntax K ::= "aggregateInfo" "(" KList "," Map "," Map ")"
 
-     // Static: in process-labels.k.
-     syntax K ::= "calculateGotoMap" "(" Id "," K ")"
-
      // type, translation unit it was defined in, definition
      syntax K ::= "declarationObject" "(" Type "," K "," K ")"
           [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})]
+
+     syntax K ::= verifyDecl(K) [strict]
+     syntax K ::= declareFunction(Id, Type, K)
 
      syntax K ::= "external"
      syntax K ::= "internal"

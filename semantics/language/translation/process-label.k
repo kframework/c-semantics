@@ -1,4 +1,9 @@
+module C-PROCESS-LABEL-SYNTAX
+     syntax K ::= "calculateGotoMap" "(" Id "," K ")"
+endmodule
+
 module C-PROCESS-LABEL
+     imports C-PROCESS-LABEL-SYNTAX
      imports C-COMMON-STATEMENT-SYNTAX
      imports C-DECLARATION-SYNTAX
 

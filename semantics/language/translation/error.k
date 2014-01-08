@@ -9,10 +9,11 @@ module C11-TRANS-ERROR
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
 
+     imports C-EXPRESSION-EVAL-SYNTAX
+
      imports C-TYPING-MISC-SYNTAX
 
      imports C-DECLARATION-SYNTAX
-     imports C-DECLARATION-GENERAL-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -363,6 +364,10 @@ module C11-TRANS-ERROR
           <typeSpecifiers>... 
                tup(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
           ...</typeSpecifiers>
+
+     rule (. => ERROR("90058",
+          "Initializer element is not a compile-time constant.", 58))
+          ~> rkludge(lval(_, _))
 
      rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>

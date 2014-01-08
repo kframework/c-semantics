@@ -273,8 +273,8 @@ sub compileProgram {
       my ($nowarn, $dflag, $inputFile) = (@_);
       
       my $PEDANTRY_OPTIONS = 
-            "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
-      my $CPP_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
+            "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c11";
+      my $CPP_OPTIONS = "-CC -std=c11 -nostdlib -nodefaultlibs -U __GNUC__";
       
       my $K_PROGRAM_COMPILE;
       if ($args->{'-p'}) {

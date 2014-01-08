@@ -4,6 +4,7 @@ require "configuration.k"
 require "error.k"
 require "io-direct.k"
 require "process-label.k"
+require "function-def.k"
 require "resolution.k"
 require "settings.k"
 require "static.k"
@@ -15,6 +16,7 @@ module C11-TRANSLATION
      imports C-CHECK-LOC
      imports C-IO-DIRECT
      imports C-PROCESS-LABEL
+     imports C-FUNCTION-DEF
      imports C-COMPOUND-LITERAL
      imports C-DECLARATION-RESOLUTION
      imports C-STATIC
