@@ -95,31 +95,6 @@ module C11-EXEC-ERROR
           when Offset:Int >Int Len:Int
           [structural, large]
           
-     rule [err00011]:
-          (. => ERROR("00011", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:Type) < tv(_, T':Type)
-          when (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large]
-     rule [err00012]:
-          (. => ERROR("00012", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:Type) <= tv(_, T':Type)
-          when (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
-     rule [err00013]:
-          (. => ERROR("00013", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:Type) > tv(_, T':Type)
-          when (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
-     rule [err00014]:
-          (. => ERROR("00014", "Directly comparing an integer type with a pointer type.") ) ~>
-          tv(_, T:Type) >= tv(_, T':Type)
-          when (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
-          
      rule [err00015]:
           (. => ERROR("00015", "Signed overflow.", 36) ) ~>
           arithInterpret(T:Type, I:Int)
@@ -168,32 +143,6 @@ module C11-EXEC-ERROR
           when notBool Offset <Int Len
           [structural, large] 
           
-     // See C-EXPRESSION-IDENTIFIER.
-     rule [err00021a]:
-          <k> 
-               (. => ERROR("00021a", "Trying to look up identifier " 
-               +String S +String 
-               ", but no such identifier is in scope.", 
-               (305,, 332)) ) ~>
-               Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types> Types:Map </types>
-          when (notBool $hasMapping(Env, Identifier(S)))
-               andBool (notBool $hasMapping(Types, Identifier(S)))
-          [structural, large]
-     rule [err00021b]:
-          <k> 
-               (. => ERROR("00021b", "No definition found for identifier " 
-               +String S +String ".") ) ~>
-               Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types>... Identifier(S) |-> T:Type ...</types>
-          when (notBool $hasMapping(Env, Identifier(S)))
-               andBool (notBool isFunctionType(T))
-          [structural, large]
-          
      rule [err00022]:
           (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
           leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
@@ -208,23 +157,6 @@ module C11-EXEC-ERROR
                andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
           [structural, large]
      
-     rule [err00024a]:
-          (. => ERROR("00024a", "Bitwise & used on a symbolic address.") ) ~>
-          tv(_:SymLoc, _) & _
-          [structural, large]
-     rule [err00024b]:
-          (. => ERROR("00024b", "Bitwise & used on a symbolic address.") ) ~>
-          _ & tv(_:SymLoc, _)
-          [structural, large]
-     rule [err00024c]:
-          (. => ERROR("00024c", "Bitwise & used on a float.") ) ~>
-          tv(_:Float, _) & _
-          [structural, large]
-     rule [err00024d]:
-          (. => ERROR("00024d", "Bitwise & used on a float.") ) ~>
-          _ & tv(_:Float, _)
-          [structural, large]
-          
      rule [err00025a]:
           (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
           callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
@@ -279,27 +211,6 @@ module C11-EXEC-ERROR
           when T =/=K void
           [structural, large]
           
-     rule [err00030]:
-          (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) < tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
-          when Base =/=K Base'
-          [structural, large]
-     rule [err00031]:
-          (. => ERROR("00031", "Cannot compare pointers with different base objects using '>'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) > tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
-          when Base =/=K Base'
-          [structural, large]
-     rule [err00032]:
-          (. => ERROR("00032", "Cannot compare pointers with different base objects using '<='.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) <= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
-          when Base =/=K Base'
-          [structural, large]
-     rule [err00033]:
-          (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) >= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
-          when Base =/=K Base'
-          [structural, large]
-          
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
           cast(t(_, T:K), skipval)
@@ -319,20 +230,6 @@ module C11-EXEC-ERROR
      rule [err00037]:
           (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
           read-aux(NullPointer, _, _)
-          [structural, large]
-          
-     rule [err00038]:
-          (. => ERROR("00038", "Arrays cannot be of 0 length.", cv("6.7.6.2:1")) ) ~>
-          ArrayType(_:Type, tv(0, _), _)
-          [structural, large]
-     
-     rule [err00039]:
-          (. => ERROR("00039", "Unions cannot be empty.", 61) ) ~>
-          addUnion(_:Id, .KList)
-          [structural, large]
-     rule [err00040]:
-          (. => ERROR("00040", "Structs cannot be empty.", 61) ) ~>
-          addStruct(_:Id, .KList)
           [structural, large]
           
      rule [err00041]:
