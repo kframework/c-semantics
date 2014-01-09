@@ -206,7 +206,7 @@ module C11-TRANS-ERROR
      //      [structural, large]
 
      syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
-     syntax K ::= qs(Set) | tup(String, Id)
+     syntax K ::= qs(Set)
 
      // TODO(chathhorn): a lot of this is likely redundant (e.g., "preTypes").
      rule <k> verifyDecl(typedDeclaration(T:Type, X:Id))
@@ -215,7 +215,7 @@ module C11-TRANS-ERROR
 
      rule <k> verifySpecifiers(X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <typeSpecifiers>... tup(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
+          <typeSpecifiers>... kpair(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
           when notBool (Static in Qs andBool Extern in Qs)
                andBool notBool (Auto in Qs)
                andBool notBool (Register in Qs)
@@ -223,12 +223,12 @@ module C11-TRANS-ERROR
      syntax K ::= saveSpecifiers(Type, Id)
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <typeSpecifiers> Decls:Map (. => tup(Tu, X) |-> qs(getQualities(T))) </typeSpecifiers>
-          when notBool (tup(Tu, X) in keys Decls)
+          <typeSpecifiers> Decls:Map (. => kpair(Tu, X) |-> qs(getQualities(T))) </typeSpecifiers>
+          when notBool (kpair(Tu, X) in keys Decls)
           [structural] 
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <typeSpecifiers>...  tup(Tu, X) |-> qs(_ (. => getQualities(T))) </typeSpecifiers>
+          <typeSpecifiers>...  kpair(Tu, X) |-> qs(_ (. => getQualities(T))) </typeSpecifiers>
           [structural] 
 
      rule (. => ERROR("00208a",
@@ -244,7 +244,7 @@ module C11-TRANS-ERROR
           ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers>... 
-               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
+               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
           ...</typeSpecifiers>
 
      // TODO(chathhorn): giving up on these damn error numberings for now.
@@ -254,7 +254,7 @@ module C11-TRANS-ERROR
           ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers>... 
-               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
+               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
           ...</typeSpecifiers>
      rule <k> (. => ERROR("90692b",
                "Declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
@@ -262,7 +262,7 @@ module C11-TRANS-ERROR
           ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers>... 
-               tup(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
+               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
           ...</typeSpecifiers>
 
      rule (. => ERROR("90058",
@@ -271,11 +271,11 @@ module C11-TRANS-ERROR
 
      rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <rawTypes> Types:Map (. => tup(Tu, X) |-> T) </rawTypes>
-          when notBool (tup(Tu, X) in keys Types)
+          <rawTypes> Types:Map (. => kpair(Tu, X) |-> T) </rawTypes>
+          when notBool (kpair(Tu, X) in keys Types)
      rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
-          <rawTypes>... tup(Tu, X) |-> (PrevT:Type => T) </rawTypes>
+          <rawTypes>... kpair(Tu, X) |-> (PrevT:Type => T) </rawTypes>
           when isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
      rule <k> (. => ERROR("00215",
@@ -284,7 +284,7 @@ module C11-TRANS-ERROR
                verifyCompat(T:Type, Identifier(S:String)) 
           ...</k>
           <currTU> Tu:String </currTU>
-          <rawTypes>... tup(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
+          <rawTypes>... kpair(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
      rule (. => ERROR("00267",
