@@ -447,6 +447,11 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
+
+     rule isVoidType(t(_, void)) => true
+     rule isVoidType(t(_, K:K)) => false
+          when K =/=K void
+
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T) 
           

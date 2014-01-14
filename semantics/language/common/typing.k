@@ -36,6 +36,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteType(Type) [function]
      syntax Bool ::= isArithmeticType(Type) [function]
      syntax Bool ::= isFloatType(Type) [function]
+     syntax Bool ::= isVoidType(Type) [function]
      
      // Composite types
      syntax SimpleType ::= "enumType" "(" Id ")" 
