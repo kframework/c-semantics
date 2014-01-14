@@ -4,7 +4,7 @@ endmodule
 
 module C-EXPRESSION-FUNCTION-CALL
      imports C-EXPRESSION-FUNCTION-CALL-SYNTAX
-     imports C-EXPRESSION-SYNTAX
+     imports C-EXPRESSION-IDENTIFIER-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -80,17 +80,6 @@ module C-EXPRESSION-FUNCTION-CALL
      rule [call]:
           application(Fun:KResult, L:KList) 
           => application'(Fun, L:KList)
-          [structural]
-
-     rule [populateFromGlobal]:
-          <k> populateFromGlobal => . ...</k>
-          <currTU> Tu:K </currTU>
-          <genv>... Tu |-> map(G:Map) ...</genv> 
-          <env> _ => G </env>
-          <gtypes>... Tu |-> map(GT:Map) ...</gtypes> 
-          <types> _ => GT </types>
-          <gstructs> GS:Map </gstructs> 
-          <structs> _ => GS </structs>
           [structural]
 
      rule [function-application]:

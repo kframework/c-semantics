@@ -3,7 +3,6 @@ module C-STATEMENT-RETURN
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports COMPAT-SYNTAX
 

@@ -11,7 +11,6 @@ module C11-EXEC-ERROR
      imports C-TYPING-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-BITS-SYNTAX
 
      imports C-TYPING-MISC-SYNTAX

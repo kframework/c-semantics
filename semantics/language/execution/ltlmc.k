@@ -36,7 +36,6 @@ module C11-LTLMC
      imports C11-LTLMC-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX

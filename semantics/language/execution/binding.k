@@ -11,7 +11,6 @@ module C-BINDING
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-EXPRESSION-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
 
@@ -88,6 +87,7 @@ module C-BINDING
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
           when notBool isArrayType(T)
+               andBool notBool isVoidType(T)
           [structural] 
           
      // TODO(chathhorn): consider adding back a check here, isTypeCompat no
