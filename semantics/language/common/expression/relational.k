@@ -261,8 +261,7 @@ module C-EXPRESSION-RELATIONAL
                andBool N ==K NullPointerConstant
           [structural]
      rule [nequal-null-right]: 
-          tv(_, T:Type) != (tv(N:Int, T':Type)
-          => tv(NullPointer, T))
+          tv(_, T:Type) != (tv(N:Int, T':Type) => tv(NullPointer, T))
           when isPointerType(T) 
                andBool isPromoted(T')
                andBool N ==K NullPointerConstant
