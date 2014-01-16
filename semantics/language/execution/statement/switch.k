@@ -1,5 +1,5 @@
 module C-STATEMENT-SWITCH
-     imports C-COMMON-STATEMENT-SYNTAX
+     imports C-STATEMENT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

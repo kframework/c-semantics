@@ -4,7 +4,7 @@ endmodule
 
 module C-PROCESS-LABEL
      imports C-PROCESS-LABEL-SYNTAX
-     imports C-COMMON-STATEMENT-SYNTAX
+     imports C-STATEMENT-SYNTAX
      imports C-DECLARATION-SYNTAX
 
      imports C-SYNTAX
@@ -103,7 +103,6 @@ module C-PROCESS-LABEL
      rule <computation> 
                DeclarationDefinition(InitNameGroup(T:K, klist(K:K))) => .K 
           ...</computation>
-          <br/>
           <declarationStack>... 
                .List 
                => ListItem(frozenDeclaration(Depth, BlockNum,

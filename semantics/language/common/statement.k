@@ -1,4 +1,4 @@
-module C-COMMON-STATEMENT-SYNTAX
+module C-STATEMENT-SYNTAX
      //  switchid, value (tv or 'Default)
      syntax K ::= genLabel(Int, K) [klabel('genLabel)]
 
