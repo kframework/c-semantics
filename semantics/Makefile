@@ -1,7 +1,7 @@
 KOMPILE = kompile
 
 C11_TRANS_FILES = $(wildcard *.k) \
-	$(wildcard language/translation/*.k) \
+	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \
 	$(wildcard language/common/*.k) $(wildcard language/common/*/*.k)
 	
 C11_FILES = $(wildcard *.k) \
