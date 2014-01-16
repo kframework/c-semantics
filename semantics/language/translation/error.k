@@ -13,7 +13,7 @@ module C11-TRANS-ERROR
 
      imports C-TYPING-MISC-SYNTAX
 
-     imports C-DECLARATION-SYNTAX
+     imports C-DECLARATION-GLOBAL-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -208,7 +208,7 @@ module C11-TRANS-ERROR
      syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
      syntax K ::= qs(Set)
 
-     // TODO(chathhorn): a lot of this is likely redundant (e.g., "preTypes").
+     // TODO(chathhorn): a lot of this is likely redundant (e.g., with "preTypes").
      rule <k> verifyDecl(typedDeclaration(T:Type, X:Id))
           => verifyCompat(T, X) ~> saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>
           when notBool (isStaticType(T) andBool isExternType(T))

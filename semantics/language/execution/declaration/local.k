@@ -1,6 +1,11 @@
+module C-DECLARATION-LOCAL-SYNTAX
+     syntax K ::= declareOnly(Id, Type)
+endmodule
+
 module C-DECLARATION-LOCAL
      imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-LOCAL-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
@@ -9,17 +14,42 @@ module C-DECLARATION-LOCAL
 
      imports C-SYNTAX
 
-     // TODO(chathhorn): split out from common/declaration/general.k, need to
-     // clean up/refactor the divide better. In particular, much that's still
-     // in that file could probably be moved into translation/.
-          
      //- internal variables
+
+     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+               => declareInternalVariable(X, T, K)
+          ...</k>
+          <currentFunction> F:K </currentFunction>
+          when notBool isFunctionType(T)
+               andBool F =/=K file-scope
+          [structural] 
+          
+     syntax K ::= declareInternalVariable(Id, Type, K)
+
+     rule [declareExternInternal]:
+          <k> 
+               declareInternalVariable(X:Id, T:Type, NoInit)
+               => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))
+          ...</k>
+          <externalLocations>... X |-> Loc:SymLoc ...</externalLocations>
+          when notBool isIncompleteType(T)
+               andBool isExternType(T)
+          [structural] 
      
      // fixme need to look for bad use
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => declareWithLinkage(X, T, K, noLinkage)
+     rule declareInternalVariable(X:Id, T:Type, NoInit)
+          => declareOnly(X, T)
           when notBool isStaticType(T) 
                andBool (notBool isExternType(T))
+          [structural] 
+
+     syntax K ::= declareAndDefine(Id, Type, K)
+
+     rule declareInternalVariable(X:Id, T:Type, K:K)
+          => declareAndDefine(X, T, K)
+          when notBool isStaticType(T) 
+               andBool (notBool isExternType(T))
+               andBool (K =/=K NoInit)
           [structural] 
           
      rule <k> 
@@ -92,20 +122,9 @@ module C-DECLARATION-LOCAL
      rule reseenStatic(X:Id, _, initValue(X:Id, T:Type, _), Loc:SymLoc)
           => addToEnv(X, Loc) ~> giveType(X, T)
           [structural] 
-          
-     // fixme this terribly needs to be refactored.  I'm duplicating the two
-     // rules (...for the common declareWithLinkage, without "noLinkage") so I
-     // don't add locals to the declaration order
-     rule declareWithLinkage(X:Id, T:Type, NoInit, noLinkage) 
-          => declareOnly(X, T, noLinkage)
-          [structural] 
-     rule declareWithLinkage(X:Id, T:Type, K:K, noLinkage)
-          => declareAndDefine(X, T, K, noLinkage)
-          when K =/=K NoInit
-          [structural] 
 
      rule <k> 
-               declareOnly(X:Id, T:Type, noLinkage)
+               declareOnly(X:Id, T:Type)
                => allocateType(Loc, T) ~> addToEnv(X, Loc) ~> giveType(X, T)
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -121,7 +140,7 @@ module C-DECLARATION-LOCAL
      // same as above, but for the case where the variable has already been
      // declared.  this is seen if we goto earlier in the same block
      rule <k> 
-               declareOnly(X:Id, T:Type, noLinkage)
+               declareOnly(X:Id, T:Type)
                => .K
           ...</k>
           <localVariables>... ListItem(X) ...</localVariables>
@@ -131,7 +150,7 @@ module C-DECLARATION-LOCAL
           [structural] 
 
      rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K, noLinkage)
+               declareAndDefine(X:Id, T:Type, K:K)
                => defineAndInit(X, T, figureInit(X, T, K), Loc)
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -144,11 +163,39 @@ module C-DECLARATION-LOCAL
      // this happens when we jump before a variable declaration with an
      // initialization in the same block
      rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K, noLinkage)
+               declareAndDefine(X:Id, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
           <localVariables>... ListItem(X) ...</localVariables>
           [structural] 
 
+     syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
+
+     rule <k> 
+               defineAndInit(X:Id, _, 
+                    initValue(X:Id, T:Type, K:K), Loc:SymLoc)
+               => allocateTypeIfAbsent(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+                    ~> initialize(X, T, K)
+          ...</k>
+          <shouldInit> true </shouldInit>
+          [structural] 
+          
+     rule <k> 
+               defineAndInit(X:Id, _,
+                    initValue(X:Id, T:Type, _), Loc:SymLoc)
+               => allocateTypeIfAbsent(Loc, T)
+                    ~> addToEnv(X, Loc)
+                    ~> giveType(X, T)
+          ...</k>
+          <shouldInit> false </shouldInit>
+          [structural]
+          
+     syntax K ::= justInit(K) [strict(1)]
+
+     rule justInit(initValue(X:Id, T:Type, K:K)) => initialize(X, T, K)
+          [structural]
+          
 endmodule
 

@@ -17,7 +17,7 @@ module C11-EXECUTION-INIT
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-EXPRESSION-IDENTIFIER-SYNTAX
-     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-LOCAL-SYNTAX
      imports LIBC-IO-SYNTAX
      imports COMPAT-SYNTAX
           
@@ -79,8 +79,7 @@ module C11-EXECUTION-INIT
           => declareOnly(
                Identifier("#incomingArgumentsArray"), 
                t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
-               (lengthKList L) +Int 1)),
-               noLinkage)
+               (lengthKList L) +Int 1)))
           [structural]
 
      /*@ These helpers are used to get around a bug in \K related to successive
