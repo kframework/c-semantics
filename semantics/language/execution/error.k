@@ -3,7 +3,7 @@ module C11-EXEC-ERROR
      imports C11-ERROR-MAP-SYNTAX
      imports C11-CONSTRAINT-MAP-SYNTAX
 
-     imports C11-EXECUTION-SYNTAX
+     imports C11-EXECUTION-INIT-SYNTAX
 
      imports C-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -276,15 +276,6 @@ module C11-EXEC-ERROR
           ...</k>
           <notWritable>... Loc |-> _ ...</notWritable>
           [structural, large]
-
-     rule verifyDecl(typedDeclaration(T:Type, _:Id)) => .
-          when notBool (isStaticType(T) andBool isExternType(T))
-
-     rule (. => ERROR("00208",
-               "The declaration of " +String S +String " appears with both"
-               +String " static and extern specifiers.", 8)) ~>
-          verifyDecl(typedDeclaration(T:Type, Identifier(S:String)))
-          when isStaticType(T) andBool isExternType(T)
 
      rule
           (. => ERROR("00500", 

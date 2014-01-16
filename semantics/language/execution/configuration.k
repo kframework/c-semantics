@@ -1,5 +1,5 @@
 module C11-CONFIGURATION
-     imports C11-EXECUTION-SYNTAX
+     imports C11-EXECUTION-INIT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
