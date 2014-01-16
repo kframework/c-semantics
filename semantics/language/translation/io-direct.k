@@ -84,16 +84,4 @@ module C-IO-DIRECT
           when notBool Offset in (keys M)
           [large, structural]
 
-     rule [delete-sized-block]:
-          <k>
-               deleteSizedBlock(loc(Base:SymBase, _:Int, _:Int), Len:Int) => . 
-          ...</k>
-          <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
-          [structural] 
-     
-     rule [delete-block]:
-          <k> deleteBlock(loc(Base:SymBase, _:Int, _:Int)) => .K ...</k>
-          <mem>... Base |-> memblock(_, _, _) => .Map ...</mem>
-          [structural] 
-
 endmodule

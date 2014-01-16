@@ -8,6 +8,7 @@ module LIBC-STDLIB
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 

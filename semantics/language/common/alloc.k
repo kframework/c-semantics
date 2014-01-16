@@ -15,15 +15,8 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= allocWString(SymLoc, KList)
 
      syntax K ::= alloc(SymLoc, K) [strict(2)]
-     syntax K ::= realloc(SymLoc, SymLoc, Int, Int)
 
      syntax K ::= zeroBlock(SymLoc)
-
-     // deletes the base object from memory, given a location
-     syntax K ::= deleteBlock(SymLoc)
-     // deletes the base object from memory, given a location and it size (as a
-     // check)
-     syntax K ::= deleteSizedBlock(SymLoc, Int)
 
      syntax K ::= sizeofLocation(SymLoc)
 
@@ -98,45 +91,6 @@ module C-MEMORY-ALLOC
           <mem>... .Map => Base |-> memblock(value(Len), .Bag, .Map) ...</mem>
           [structural]
      
-     syntax K ::= "realloc-aux" "(" Int "," SymLoc "," SymLoc "," Int "," Int ")"
-     rule [realloc-start]:
-          <k> 
-               realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)
-               => alloc(New, NewLen)
-                    ~> realloc-aux(minInt(OldLen, NewLen), 
-                         Old, New, OldLen, NewLen)
-          ...</k>
-          [structural]
-          
-     rule [realloc-found]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN:Int -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), 
-                    loc(NewBase:SymBase, 0, 0), _, _)
-          ...</k>
-          <mem>... 
-               OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
-               NewBase |-> memblock(_, _, (_ (.Map => SNatN:Int -Int 1 |-> K:K)))
-          ...</mem>
-          when (N ==Int SNatN -Int 1)
-               andBool (SNatN >Int 0)
-          [structural]   
-          
-     // fixme sNat
-     rule [realloc-unfound]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), loc(_:SymBase, 0, 0), _, _)
-          ...</k>
-          <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
-          when (notBool SNatN:Int -Int 1 in keys M:Map)
-               andBool (SNatN >Int 0)
-          [structural]
-     rule [realloc-0]:
-          realloc-aux(0, loc(OldBase:SymBase, 0, 0), _, OldLen:Int, _)
-          => deleteSizedBlock(loc(OldBase, 0, 0), OldLen:Int) 
-          [structural]   
-          
      rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
      rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
      

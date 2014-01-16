@@ -1,7 +1,7 @@
 module C-STATEMENT-RETURN
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports COMPAT-SYNTAX
