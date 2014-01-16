@@ -1,20 +1,40 @@
-module C-STATIC-SYNTAX
-     syntax K ::= "initBuiltins"
-endmodule
-
-module C-STATIC
-     imports C-STATIC-SYNTAX
+module C-TRANSLATION-INIT
      imports C-DECLARATION-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      imports C-DECLARATION-SYNTAX
+     imports C-DECLARATION-RESOLUTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     rule Computation(_:KResult) => sequencePoint
-     rule Nop => .
+     imports COMPAT-SYNTAX
 
+     rule <k> Program(klist(P:KList)) 
+          => klistToK(P) ~> resolveReferences ~> initBuiltins </k>
+          <threadLocal>...
+               <control>...
+                    <currentFunction> 
+                         _ => file-scope
+                    </currentFunction>
+                    <currentProgramLoc>
+                         _ => UnknownCabsLoc
+                    </currentProgramLoc>
+               ...</control>
+          ...</threadLocal>
+          <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
+          [structural, large]
+
+     syntax SemMode ::= "InterpMode" | "DebugMode"
+     rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
+          
+     // TODO(chathhorn): It'd be nice to remove sequence points altogether from
+     // this part of the semantics.
+     rule [sequencePoint]:
+          sequencePoint => .
+          [structural]
+
+     syntax K ::= "initBuiltins"
      syntax K ::= initBuiltins(Map)
 
      rule <k> initBuiltins => initBuiltins(T) ...</k>

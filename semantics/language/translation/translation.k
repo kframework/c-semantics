@@ -5,9 +5,26 @@ require "error.k"
 require "io-direct.k"
 require "process-label.k"
 require "function-def.k"
-require "resolution.k"
 require "settings.k"
-require "static.k"
+require "init.k"
+require "sym-val.k"
+
+require "declaration/resolution.k"
+require "declaration/global.k"
+
+require "expression/function-call.k"
+require "expression/id-rval.k"
+require "expression/inc-and-dec.k"
+require "expression/sequencing.k"
+
+require "statement/block.k"
+require "statement/break.k"
+require "statement/goto.k"
+require "statement/if-then.k"
+require "statement/labeled.k"
+require "statement/loop.k"
+require "statement/return.k"
+require "statement/switch.k"
 
 module C11-TRANSLATION
      imports C11-CONFIGURATION
@@ -18,31 +35,25 @@ module C11-TRANSLATION
      imports C-PROCESS-LABEL
      imports C-FUNCTION-DEF
      imports C-COMPOUND-LITERAL
-     imports C-DECLARATION-RESOLUTION
-     imports C-STATIC
      imports C-DYNAMIC-SYNTAX
+     imports C-TRANSLATION-INIT
+     imports C-SYM-VAL-SYNTAX
 
-     rule <k> Program(klist(P:KList)) => klistToK(P) ...</k>
-          <threadLocal>...
-               <control>...
-                    <currentFunction> 
-                         _ => file-scope
-                    </currentFunction>
-                    <currentProgramLoc>
-                         _ => UnknownCabsLoc
-                    </currentProgramLoc>
-               ...</control>
-          ...</threadLocal>
-          <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
-          [structural, large]
+     imports C-DECLARATION-RESOLUTION
+     imports C-DECLARATION-GLOBAL
 
-     syntax SemMode ::= "InterpMode" | "DebugMode"
-     rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
-          
-     // TODO(chathhorn): It'd be nice to remove sequence points altogether from
-     // this part of the semantics.
-     rule [sequencePoint]:
-          sequencePoint => .
-          [structural]
+     imports C-EXPRESSION-FUNCTION-CALL
+     imports C-EXPRESSION-ID-RVAL
+     imports C-EXPRESSION-INC-AND-DEC
+     imports C-EXPRESSION-SEQUENCING
+
+     imports C-STATEMENT-BLOCK
+     imports C-STATEMENT-BREAK
+     imports C-STATEMENT-GOTO
+     imports C-STATEMENT-IF-THEN
+     imports C-STATEMENT-LABELED
+     imports C-STATEMENT-LOOP
+     imports C-STATEMENT-RETURN
+     imports C-STATEMENT-SWITCH
 
 endmodule

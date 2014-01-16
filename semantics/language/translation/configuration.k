@@ -1,6 +1,4 @@
 module C11-CONFIGURATION
-     imports C-DECLARATION-RESOLUTION-SYNTAX
-     imports C-STATIC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -44,8 +42,6 @@ module C11-CONFIGURATION
 
           <k color="green" multiplicity="?"> 
                $PGM:K 
-               ~> resolveReferences 
-               ~> initBuiltins
           </k>
 
           <finalComputation multiplicity="?" color="lightgray">
@@ -90,6 +86,7 @@ module C11-CONFIGURATION
                               <types color="lightgray"> .Map </types>
                               <structs color="lightgray"> .Map </structs>
                          </local>
+                         <blockStack color="violet"> .List </blockStack>
 
                          // used to control initialization when gotoing
                          <shouldInit color="lightgray"> true </shouldInit>

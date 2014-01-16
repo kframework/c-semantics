@@ -4,6 +4,7 @@ endmodule
 
 module C-DECLARATION-RESOLUTION
      imports C-DECLARATION-RESOLUTION-SYNTAX
+     imports C-DECLARATION-GLOBAL-SYNTAX
      imports C-DECLARATION-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
@@ -46,7 +47,7 @@ module C-DECLARATION-RESOLUTION
           when notBool $hasMapping(Env, TUName)
           [structural, large]
           
-     syntax K ::= "preDeclareStrings" "(" K ")"
+     syntax K ::= preDeclareStrings(K)
      
      rule preDeclareStrings(klist((K:K,, L:KList)))
           => K ~> discard ~> preDeclareStrings(klist(L))
@@ -88,8 +89,8 @@ module C-DECLARATION-RESOLUTION
           <leftoverExterns> .Bag </leftoverExterns>
           [structural]
                
-     syntax K ::= "resolveInternal" "(" Id "," K "," K ")"
-     syntax K ::= "resolveExternal" "(" Id "," K "," Bag "," K ")"
+     syntax K ::= resolveInternal(Id, K, K)
+     syntax K ::= resolveExternal(Id, K, Bag, K)
      syntax K ::= "resolveExternal'" "(" Id "," K "," Bag "," K "," SymLoc "," K ")"
           [strict(6)]
      
