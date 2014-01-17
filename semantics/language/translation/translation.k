@@ -10,6 +10,7 @@ require "init.k"
 
 require "declaration/resolution.k"
 require "declaration/global.k"
+require "declaration/local.k"
 
 require "symbolic/function-call.k"
 require "symbolic/id-rval.k"
@@ -49,6 +50,7 @@ module C11-TRANSLATION
 
      imports C-DECLARATION-RESOLUTION
      imports C-DECLARATION-GLOBAL
+     imports C-DECLARATION-LOCAL
 
      imports C-SYMBOLIC-FUNCTION-CALL
      imports C-SYMBOLIC-ID-RVAL

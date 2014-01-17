@@ -6,6 +6,7 @@ endmodule
 
 module C-DECLARATION-GLOBAL
      imports C-DECLARATION-GLOBAL-SYNTAX
+     imports C-DECLARATION-LOCAL-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-TYPING-SYNTAX
@@ -16,11 +17,19 @@ module C-DECLARATION-GLOBAL
 
      imports COMPAT-SYNTAX
 
-     syntax K ::= "doDeclare'" "(" Type "," K ")" 
-
      rule doDeclare(T:Type, K:K) 
           => verifyDecl(T) ~> doDeclare'(T, K)
 
+     syntax K ::= "doDeclare'" "(" Type "," K ")" 
+
+     rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
+               => declareInternalVariable(X, T, K)
+          ...</k>
+          <currentFunction> F:K </currentFunction>
+          when notBool isFunctionType(T)
+               andBool F =/=K file-scope
+          [structural] 
+          
      // function declaration
      rule <k> 
                doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
@@ -133,8 +142,7 @@ module C-DECLARATION-GLOBAL
      rule <k>
                declareWithLinkage(X:Id, T:Type, NoInit, L:Linkage)
                => declareOnly(X, T, L)
-               ~> addToEnv(X, firstLoc(1)) // TODO(chathhorn): better way.
-               ~> giveType(X, T)
+               ~> giveType(X, T) // chathhorn: fake adding to env.
           ...</k>
           <declarationOrder>...
                Tu |-> ListToK(_ (. => ListItem(X)))
@@ -144,8 +152,7 @@ module C-DECLARATION-GLOBAL
      rule <k>
                declareWithLinkage(X:Id, T:Type, K:K, L:Linkage)
                => declareAndDefine(X, T, K, L)
-               ~> addToEnv(X, firstLoc(1)) // TODO(chathhorn): better way.
-               ~> giveType(X, T)
+               ~> giveType(X, T) // chathhorn: fake adding to env.
           ...</k>
           <declarationOrder>...
                Tu |-> ListToK(_ (. => ListItem(X)))

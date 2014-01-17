@@ -58,6 +58,10 @@ module C-DYNAMIC
           _:KResult ~> discard => .
           [structural]
 
+     rule [discard]:
+          discard => .
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
      A preprocessing directive of the form
      \cdisplay{# pragma pp-tokensoptnew-line}

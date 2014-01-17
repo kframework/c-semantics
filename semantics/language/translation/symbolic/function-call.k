@@ -11,7 +11,7 @@ module C-SYMBOLIC-FUNCTION-CALL
      syntax KResult ::= rvlist(KList)
 
      syntax K ::= revalParams(K)
-     context revalParams(klist(_,, (HOLE => reval(HOLE)),, _)) [ndheat]
+     context revalParams(klist(_,, (HOLE => reval(HOLE)),, _))
      rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
@@ -19,6 +19,9 @@ module C-SYMBOLIC-FUNCTION-CALL
      context Call(_, (HOLE => revalParams(HOLE)))
 
      rule Call(tv(_, t(_, pointerType(t(_, prototype(t(_, functionType(T:Type, _))))))), _)
+          => tv(symVal, T)
+          [structural]
+     rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, _))))), _)
           => tv(symVal, T)
           [structural]
 

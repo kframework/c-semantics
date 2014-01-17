@@ -27,7 +27,7 @@ module C-FUNCTION-DEF
           => createNewFun(X, T, K)
           // TODO(chathhorn): could these be combined?
           ~> calculateGotoMap(X, K)
-          ~> staticEval(X, T, K)
+          ~> staticEval(X, unqualifyType(T), K)
 
      syntax K ::= createNewFun(Id, Type, K) [function]
 

@@ -19,6 +19,7 @@ module C11-TRANS-ERROR
 
      imports DEBUG-SYNTAX
 
+     // TODO(chathhorn): clean up.
      // dynamic exp
      // rule [err00001]: 
      //      (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
@@ -208,6 +209,7 @@ module C11-TRANS-ERROR
      syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
      syntax K ::= qs(Set)
 
+     // TODO(chathhorn):move this stuff.
      // TODO(chathhorn): a lot of this is likely redundant (e.g., with "preTypes").
      rule <k> verifyDecl(typedDeclaration(T:Type, X:Id))
           => verifyCompat(T, X) ~> saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>

@@ -3,9 +3,9 @@ module C-DECLARATION-LOCAL-SYNTAX
 endmodule
 
 module C-DECLARATION-LOCAL
-     imports C-DECLARATION-SYNTAX
-     imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-LOCAL-SYNTAX
+     imports C-DECLARATION-GENERAL-SYNTAX
+     imports C-DECLARATION-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
@@ -14,14 +14,9 @@ module C-DECLARATION-LOCAL
 
      imports C-SYNTAX
 
-     //- internal variables
-
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
-               => declareInternalVariable(X, T, K)
-          ...</k>
-          <currentFunction> F:K </currentFunction>
+     rule doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+          => declareInternalVariable(X, T, K)
           when notBool isFunctionType(T)
-               andBool F =/=K file-scope
           [structural] 
           
      syntax K ::= declareInternalVariable(Id, Type, K)

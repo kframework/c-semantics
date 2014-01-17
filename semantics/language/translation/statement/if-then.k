@@ -12,7 +12,7 @@ module C-STATEMENT-IF-THEN
      rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
           => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
 
-     rule IfThenElse(V:TypedValue, S1:K, S2:K) => S1 ~> S2
+     rule IfThenElse(V:TypedValue, S1:K, S2:K) => S1 ~> discard ~> S2
           when isTruthValue(V)
           [structural]
      rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
