@@ -7,8 +7,8 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= "skipval"
      syntax TypedValue ::= tv(KList, Type) 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-     syntax LValue ::= "lv" "(" SymLoc "," Type ")" [klabel('lv)]
-     syntax Value ::= "lval" "(" SymLoc "," Type ")" [klabel('lval)]
+     syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
+     syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
 
      syntax Type ::= type(K) [function]
      syntax K ::= value(TypedValue) [function]

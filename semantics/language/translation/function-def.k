@@ -81,12 +81,8 @@ module C-FUNCTION-DEF
           
      rule <k> 
                dummyBind((typedDeclaration(T:Type, X:Id),, P:KList))
-               => allocateType(firstLoc(1), T)
-                    ~> addToEnv(X, firstLoc(1))
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, 
-                         Computation(allowWrite(X) := tv(0, T)))
-                    ~> dummyBind(P)
+               => giveType(X, T)
+               ~> dummyBind(P)
           ...</k> 
           when notBool isArrayType(T)
                andBool notBool isVoidType(T)

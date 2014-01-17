@@ -110,18 +110,17 @@ module C-DECLARATION-GLOBAL
           when notBool isStaticType(T)
                andBool notBool $hasMapping(Lnk, X)
           [structural] 
-     // not triggering
-     // TODO(chathhorn): necessary?
-     // rule [declareExtern-again]:
-     //      <k> 
-     //           declareExternalVariable(X:Id, T:Type, K:K)
-     //           => declareWithLinkage(X, T, K, Lnk:Map(X))
-     //      ...</k>
-     //      <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
-     //      <currTU> Tu:K </currTU>
-     //      when notBool isStaticType(T)
-     //           andBool $hasMapping(Lnk, X)
-     //      [structural] 
+
+     rule [declareExtern-again]:
+          <k> 
+               declareExternalVariable(X:Id, T:Type, K:K)
+               => declareWithLinkage(X, T, K, Lnk:Map(X))
+          ...</k>
+          <preLinkage>... Tu |-> map(Lnk:Map) ...</preLinkage>
+          <currTU> Tu:K </currTU>
+          when notBool isStaticType(T)
+               andBool $hasMapping(Lnk, X)
+          [structural] 
      rule declareExternalVariable(X:Id, T:Type, K:K)
           => declareWithLinkage(X, T, K, internal)
           when isStaticType(T)

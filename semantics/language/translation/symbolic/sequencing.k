@@ -1,6 +1,5 @@
-module C-EXPRESSION-SEQUENCING
+module C-SYMBOLIC-SEQUENCING
      imports C-EXPRESSION-EVAL-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX

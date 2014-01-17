@@ -16,11 +16,8 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
-     rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
-          => T ==K int andBool (V ==K 0 orBool V ==K 1)
-
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
-     
+
      rule char => cfg:charAlias [structural, anywhere]
 
      syntax Int ::= numBytes(Type) [function]

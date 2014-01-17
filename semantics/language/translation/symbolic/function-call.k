@@ -1,6 +1,5 @@
-module C-EXPRESSION-FUNCTION-CALL
-     imports C-EXPRESSION-IDENTIFIER-SYNTAX
-     imports C-SYM-VAL-SYNTAX
+module C-SYMBOLIC-FUNCTION-CALL
+     imports C-SYMBOLIC-VALUE-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -19,7 +18,7 @@ module C-EXPRESSION-FUNCTION-CALL
      
      context Call(_, (HOLE => revalParams(HOLE)))
 
-     rule Call(tv(_, t(_, pointerType(t(_, prototype(t(_, functionType(T:Type, _))))))), rvlist(L:KList))
+     rule Call(tv(_, t(_, pointerType(t(_, prototype(t(_, functionType(T:Type, _))))))), _)
           => tv(symVal, T)
           [structural]
 

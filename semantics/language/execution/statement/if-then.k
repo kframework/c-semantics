@@ -1,7 +1,17 @@
+module C-STATEMENT-IF-THEN-SYNTAX
+     // TODO(chathhorn): I suppose this might not be the best place for this.
+     syntax Bool ::= isTruthValue(TypedValue) [function]
+endmodule
+
 module C-STATEMENT-IF-THEN
+     imports C-STATEMENT-IF-THEN-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+
+     rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
+          => T ==K int andBool (V ==K 0 orBool V ==K 1)
+
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
      \ldots There is a sequence point between the evaluation of a full
      expression and the evaluation of the next full expression to be evaluated.

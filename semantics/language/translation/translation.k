@@ -7,15 +7,24 @@ require "process-label.k"
 require "function-def.k"
 require "settings.k"
 require "init.k"
-require "sym-val.k"
 
 require "declaration/resolution.k"
 require "declaration/global.k"
 
-require "expression/function-call.k"
-require "expression/id-rval.k"
-require "expression/inc-and-dec.k"
-require "expression/sequencing.k"
+require "symbolic/function-call.k"
+require "symbolic/id-rval.k"
+require "symbolic/inc-and-dec.k"
+require "symbolic/sequencing.k"
+
+require "symbolic/additive-operators.k"
+require "symbolic/bitwise.k"
+require "symbolic/conversion.k"
+require "symbolic/identifier.k"
+require "symbolic/logical.k"
+require "symbolic/multiplicative-operators.k"
+require "symbolic/relational.k"
+require "symbolic/unary-arithmetic.k"
+require "symbolic/value.k"
 
 require "statement/block.k"
 require "statement/break.k"
@@ -37,15 +46,24 @@ module C11-TRANSLATION
      imports C-COMPOUND-LITERAL
      imports C-DYNAMIC-SYNTAX
      imports C-TRANSLATION-INIT
-     imports C-SYM-VAL-SYNTAX
 
      imports C-DECLARATION-RESOLUTION
      imports C-DECLARATION-GLOBAL
 
-     imports C-EXPRESSION-FUNCTION-CALL
-     imports C-EXPRESSION-ID-RVAL
-     imports C-EXPRESSION-INC-AND-DEC
-     imports C-EXPRESSION-SEQUENCING
+     imports C-SYMBOLIC-FUNCTION-CALL
+     imports C-SYMBOLIC-ID-RVAL
+     imports C-SYMBOLIC-INC-AND-DEC
+     imports C-SYMBOLIC-SEQUENCING
+
+     imports C-SYMBOLIC-ADDITIVE-OPERATORS
+     imports C-SYMBOLIC-BITWISE
+     imports C-SYMBOLIC-CONVERSION
+     imports C-SYMBOLIC-IDENTIFIER
+     imports C-SYMBOLIC-LOGICAL
+     imports C-SYMBOLIC-MULTIPLICATIVE-OPERATORS
+     imports C-SYMBOLIC-RELATIONAL
+     imports C-SYMBOLIC-UNARY-ARITHMETIC
+     imports C-SYMBOLIC-VALUE
 
      imports C-STATEMENT-BLOCK
      imports C-STATEMENT-BREAK
@@ -55,5 +73,4 @@ module C11-TRANSLATION
      imports C-STATEMENT-LOOP
      imports C-STATEMENT-RETURN
      imports C-STATEMENT-SWITCH
-
 endmodule

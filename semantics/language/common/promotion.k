@@ -179,20 +179,26 @@ module C-PROMOTION
      whether a ``plain'' \cinline{char} is treated as signed is
      implementation-defined.
      }*/
+
+     syntax Bool ::= "#isPromoted" "(" Type ")" [function]
+
+     // Although isPromoted doesn't make sense for non-integer types, it makes
+     // things more convenient if it's total.
+     rule isPromoted(T:Type) => #isPromoted(T) ==K true
      
-     rule isPromoted(t(_, enumType(_:Id))) => true
-     rule isPromoted(t(_, int)) => true
-     rule isPromoted(t(_, unsigned-int)) => true
-     rule isPromoted(t(_, long-int)) => true
-     rule isPromoted(t(_, unsigned-long-int)) => true
-     rule isPromoted(t(_, long-long-int)) => true
-     rule isPromoted(t(_, unsigned-long-long-int)) => true
+     rule #isPromoted(t(_, enumType(_:Id))) => true
+     rule #isPromoted(t(_, int)) => true
+     rule #isPromoted(t(_, unsigned-int)) => true
+     rule #isPromoted(t(_, long-int)) => true
+     rule #isPromoted(t(_, unsigned-long-int)) => true
+     rule #isPromoted(t(_, long-long-int)) => true
+     rule #isPromoted(t(_, unsigned-long-long-int)) => true
      
-     rule isPromoted(t(_, bool)) => false
-     rule isPromoted(t(_, signed-char)) => false
-     rule isPromoted(t(_, unsigned-char)) => false
-     rule isPromoted(t(_, short-int)) => false
-     rule isPromoted(t(_, unsigned-short-int)) => false
+     rule #isPromoted(t(_, bool)) => false
+     rule #isPromoted(t(_, signed-char)) => false
+     rule #isPromoted(t(_, unsigned-char)) => false
+     rule #isPromoted(t(_, short-int)) => false
+     rule #isPromoted(t(_, unsigned-short-int)) => false
      
      rule isPromoted(t(_, bitfieldType(_, _:Int))) => false
      
@@ -200,21 +206,27 @@ module C-PROMOTION
           L:KLabel(
                (tv(V:K, T:Type) => tv(V, promote(T)))
           )
-          when isArithUnaryOp(L) andBool notBool isPromoted(T)
+          when isArithUnaryOp(L) 
+               andBool hasIntegerType(T) 
+               andBool notBool isPromoted(T)
           [structural]
      rule [promote-binary-left]:
           L:KLabel(
                (tv(V:K, T:Type) => tv(V, promote(T)))
                ,, _
           )
-          when isArithBinOp(L) andBool notBool isPromoted(T)
+          when isArithBinOp(L) 
+               andBool hasIntegerType(T)
+               andBool notBool isPromoted(T)
           [structural]
      rule [promote-binary-right]:
           L:KLabel(
                _,,
                (tv(V:K, T:Type) => tv(V, promote(T)))
           ) 
-          when isArithBinOp(L) andBool notBool isPromoted(T)
+          when isArithBinOp(L) 
+               andBool hasIntegerType(T)
+               andBool notBool isPromoted(T)
           [structural]
           
      // <= so enums become ints

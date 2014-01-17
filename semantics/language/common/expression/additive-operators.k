@@ -1,8 +1,8 @@
 module C-EXPRESSION-ADDITIVE-OPERATORS-SYNTAX
-     syntax K ::= "fromArray" "(" Int "," Int ")" // offset, length
+     syntax K ::= fromArray(Int, Int) // offset, length
 
      // TODO(chathhorn): error check
-     syntax K ::= "addToPointer" "(" SymLoc "," Type "," K "," K ")" [strict(4)]
+     syntax K ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
      syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
 endmodule
 

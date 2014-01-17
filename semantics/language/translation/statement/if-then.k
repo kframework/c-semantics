@@ -1,8 +1,22 @@
-module C-STATEMENT-IF-THEN
-     imports C-SYNTAX
+module C-STATEMENT-IF-THEN-SYNTAX
+     syntax Bool ::= isTruthValue(TypedValue) [function]
+endmodule
 
-     rule [if-then-else]:
-          IfThenElse(_:KResult, S1:K, S2:K) => S1 ~> S2
+module C-STATEMENT-IF-THEN
+     imports C-STATEMENT-IF-THEN-SYNTAX
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+
+     rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
+          => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
+
+     rule IfThenElse(V:TypedValue, S1:K, S2:K) => S1 ~> S2
+          when isTruthValue(V)
+          [structural]
+     rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
+          when notBool isTruthValue(V)
           [structural]
 
 endmodule
