@@ -1,10 +1,10 @@
 module C-BITSIZE-SYNTAX
      // needs to be heated to top of K for struct and union types
      syntax K ::= bitSizeofType(K) [strict]
-     syntax K ::= "byteSizeofType" "(" Type ")"
+     syntax K ::= byteSizeofType(Type)
 
      // generates a tv(size, cfg:sizeut)
-     syntax K ::= "sizeofType" "(" K ")" [strict]
+     syntax K ::= sizeofType(K) [strict]
 endmodule
 
 module C-BITSIZE

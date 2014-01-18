@@ -2,6 +2,7 @@ module C-EXPRESSION-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
      syntax K ::= rkludge(K) [function, klabel('rkludge)]
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
+     syntax K ::= instantiateIdVal(SymLoc, Type)
 endmodule
 
 module C-EXPRESSION-EVAL
@@ -107,5 +108,11 @@ module C-EXPRESSION-EVAL
           pkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
+
+     rule rkludge(lval(Loc:SymLoc, T:Type)) 
+          => instantiateIdVal(Loc, unqualifyType(T))
+          when notBool isArrayType(T) 
+               andBool notBool isFunctionType(T) 
+          [structural]
      
 endmodule

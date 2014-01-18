@@ -11,16 +11,16 @@ module C-BITS-SYNTAX
      syntax Bits ::= bitRange(Bits, Int, Int)
 
      // loc, size in bytes
-     syntax Bits ::= "encodedFloat" "(" Float ")"
+     syntax Bits ::= encodedFloat(Float)
      // object, start piece, end piece
-     syntax Bits ::= "subObject" "(" Ptr "," K "," K ")"
+     syntax Bits ::= subObject(Ptr, K, K)
 
-     syntax Int ::= "bitsToBytes" "(" Int ")" [function]
+     syntax Int ::= bitsToBytes(Int) [function]
 
-     syntax K ::= "fillToBytes" "(" K ")" [strict] 
+     syntax K ::= fillToBytes(K) [strict] 
      syntax K ::= "fillToBytes-aux" "(" K "," KList ")" [function]
 
-     syntax KResult ::= "dataList" "(" KList ")"
+     syntax KResult ::= dataList(KList)
 
      syntax Bits ::= right:
                    "~Bits" Bits

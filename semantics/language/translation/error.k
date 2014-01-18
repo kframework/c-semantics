@@ -13,6 +13,7 @@ module C11-TRANS-ERROR
 
      imports C-TYPING-MISC-SYNTAX
 
+     imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GLOBAL-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -217,10 +218,18 @@ module C11-TRANS-ERROR
 
      rule <k> verifySpecifiers(X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
+          <currentFunction> file-scope </currentFunction>
           <typeSpecifiers>... kpair(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
           when notBool (Static in Qs andBool Extern in Qs)
                andBool notBool (Auto in Qs)
                andBool notBool (Register in Qs)
+
+     rule <k> verifySpecifiers(X:Id) => . ...</k>
+          <currTU> Tu:String </currTU>
+          <currentFunction> F:Id </currentFunction>
+          <typeSpecifiers>... kpair(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
+          when notBool (Static in Qs andBool Extern in Qs)
+               andBool (F =/=K file-scope)
 
      syntax K ::= saveSpecifiers(Type, Id)
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
@@ -249,27 +258,30 @@ module C11-TRANS-ERROR
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
           ...</typeSpecifiers>
 
-     // TODO(chathhorn): giving up on these damn error numberings for now.
+     // TODO(chathhorn): figure out what to do with these error numbers.
      rule <k> (. => ERROR("90692a",
-               "Declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
+               "Global declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
                verifySpecifiers(Identifier(S:String))
           ...</k>
           <currTU> Tu:String </currTU>
+          <currentFunction> file-scope </currentFunction>
           <typeSpecifiers>... 
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
           ...</typeSpecifiers>
      rule <k> (. => ERROR("90692b",
-               "Declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
+               "Global declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
                verifySpecifiers(Identifier(S:String))
           ...</k>
           <currTU> Tu:String </currTU>
+          <currentFunction> file-scope </currentFunction>
           <typeSpecifiers>... 
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
           ...</typeSpecifiers>
 
-     rule (. => ERROR("90058",
+     rule <k> (. => ERROR("90058",
           "Initializer element is not a compile-time constant.", 58))
-          ~> rkludge(lval(_, _))
+          ~> instantiateIdVal(_, _) ...</k>
+          <currentFunction> file-scope </currentFunction>
 
      rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
           <currTU> Tu:String </currTU>
