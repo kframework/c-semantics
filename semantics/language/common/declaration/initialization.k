@@ -12,7 +12,7 @@ module C-DECLARATION-INITIALIZATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
      
      syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
