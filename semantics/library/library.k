@@ -10,10 +10,7 @@ require "string.k"
 require "threads.k"
 require "time.k"
 
-module C11-LIBRARY-SYNTAX
-endmodule
-
-module C11-LIBRARY
+module C-LIBRARY
      ////////////////////////////////
      //- C standard library
      imports LIBC-BOOTSTRAP

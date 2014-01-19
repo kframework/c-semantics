@@ -9,7 +9,7 @@ module LIBC-STDLIB
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      syntax K ::= "printString" "(" K ")"
