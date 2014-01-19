@@ -6,24 +6,13 @@ module C-DECLARATION-ZERO
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     // c1x 6.7.8:21 ... the remainder of the aggregate shall be initialized
-     // implicitly the same as objects that have static storage duration
-     rule <k> 
-               initialize(X:Id, _:Type, K:K)
-               => #if (F ==K file-scope) #then zero(X) #else (.) #fi 
-                    ~> K
-                    ~> sequencePoint
-          ...</k>
-          <currentFunction> F:Id </currentFunction>
-          [structural] 
-
      rule <k>
                zero(Sym:K) => zeroType(Sym, unqualifyType(T))
           ...</k>
           <types>... Sym |-> T:Type ...</types>
           [structural] 
           
-     syntax K ::= "zeroType" "(" K "," Type ")"
+     syntax K ::= zeroType(K, Type)
      
      rule zeroType(N:K, T:Type)
           => Computation(allowWrite(N) := tv(0, t(.Set, int)))
@@ -34,7 +23,7 @@ module C-DECLARATION-ZERO
           when isFloatType(T)
           [structural] 
           
-     syntax K ::= "zeroStruct" "(" K "," KList ")"
+     syntax K ::= zeroStruct(K, KList)
      
      // c1x 6.7.9:10 If an object that has automatic storage duration is not
      // initialized explicitly, its value is indeterminate. If an object that

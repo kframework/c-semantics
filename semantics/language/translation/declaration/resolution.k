@@ -94,7 +94,8 @@ module C-DECLARATION-RESOLUTION
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
-               ~> initialize(X, T, K)
+               ~> zero(X)
+               ~> K
                ~> recordFunTUInfo(X, T, Tu, Tu)
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>

@@ -5,8 +5,8 @@ module C-COMPOUND-LITERAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     syntax Id ::= "compoundLiteral" "(" Int ")"
-     syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]
+     syntax Id ::= compoundLiteral(Int)
+     syntax K ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage
@@ -47,12 +47,23 @@ module C-COMPOUND-LITERAL
      rule <k> 
                handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
                => allocateType(Loc, T)
-                    ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, Init)
-                    ~> X
+               ~> addToEnv(X, Loc)
+               ~> giveType(X, T)
+               ~> zero(X)
+               ~> Init
+               ~> X
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          <currentFunction> file-scope </currentFunction>
+          [structural]
+
+     rule <k> 
+               handleCompoundLiteral(initValue(X:Id, T:Type, _))
+               => giveType(X, T)
+               ~> X
+          ...</k>
+          <currentFunction> F:Id </currentFunction>
+          when F =/=K file-scope
           [structural]
           
 endmodule

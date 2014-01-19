@@ -10,6 +10,7 @@ module C-DECLARATION-LOCAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      imports C-SYNTAX
@@ -88,9 +89,8 @@ module C-DECLARATION-LOCAL
           
      rule <k> 
                declareInternalVariable(X:Id, T:Type, K:K)
-               => defineAndInit(X, unqualifyType(T),
-                    figureInit(X,
-                    removeStorageSpecifiers(T), K), Loc)
+               => defineAndInit(X, T,
+                    figureInit(X, removeStorageSpecifiers(T), K), Loc)
           ...</k>
           <internalLocations>... 
                Tu |-> map((Locs:Map => Locs:Map[Loc / kpair(X, BlockNum)])) 
@@ -175,29 +175,32 @@ module C-DECLARATION-LOCAL
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
 
      rule <k> 
-               defineAndInit(X:Id, _, 
-                    initValue(X:Id, T:Type, K:K), Loc:SymLoc)
-               => allocateTypeIfAbsent(Loc, T)
+               defineAndInit(X:Id, T:Type, 
+                    initValue(X:Id, T':Type, K:K), Loc:SymLoc)
+               => allocateTypeIfAbsent(Loc, T')
                     ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, K)
+                    ~> giveType(X, T')
+                    ~> #if (isStaticType(T)) #then zero(X) #else (.) #fi
+                    ~> K
+                    ~> sequencePoint
           ...</k>
           <shouldInit> true </shouldInit>
           [structural] 
           
      rule <k> 
                defineAndInit(X:Id, _,
-                    initValue(X:Id, T:Type, _), Loc:SymLoc)
-               => allocateTypeIfAbsent(Loc, T)
+                    initValue(X:Id, T':Type, _), Loc:SymLoc)
+               => allocateTypeIfAbsent(Loc, T')
                     ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
+                    ~> giveType(X, T')
           ...</k>
           <shouldInit> false </shouldInit>
           [structural]
           
      syntax K ::= justInit(K) [strict(1)]
 
-     rule justInit(initValue(X:Id, T:Type, K:K)) => initialize(X, T, K)
+     rule justInit(initValue(_, _, K:K)) 
+          => K ~> sequencePoint
           [structural]
           
 endmodule

@@ -242,7 +242,8 @@ module C-DECLARATION-GLOBAL
           => allocateType(Loc, T)
           ~> addToEnv(X, Loc)
           ~> giveType(X, T)
-          ~> initialize(X, T, K)
+          ~> zero(X)
+          ~> K
           ~> addDef(X, Tu, preDefined(Tu, Loc, T), Lnk)
           [structural]
 

@@ -9,8 +9,6 @@ module C-DECLARATION-SYNTAX
      // Used for builtins.
      syntax Value ::= functionPrototype(Id, Type)
 
-     syntax K ::= initialize(Id, Type, K)
-          
      // id, type, initializer
      syntax K ::= figureInit(Id, K, K) [strict(2)] 
 

@@ -1,11 +1,12 @@
 module C-BINDING-SYNTAX
-     syntax K ::= "bind" "(" KList "," KList ")"
+     syntax K ::= bind(KList, KList)
 endmodule
 
 module C-BINDING
      imports C-BINDING-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -80,8 +81,7 @@ module C-BINDING
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, T)
-                    ~> initialize(X, T, 
-                         Computation(allowWrite(X) := tv(V, T')))
+                    ~> Computation(allowWrite(X) := tv(V, T'))
                     ~> bind-aux(Loc, L, P)
           ...</k> 
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -119,7 +119,7 @@ module C-BINDING
 
      rule promoteList(.KList) => .KList
      
-     syntax K ::= "bindVariadic" "(" SymLoc "," KList ")"
+     syntax K ::= bindVariadic(SymLoc, KList)
      syntax K ::= "bindVariadic-pre" "(" SymLoc "," KList ")"
      
      // the idea here is that there should have been a previous argument, so we

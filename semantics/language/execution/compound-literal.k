@@ -4,9 +4,10 @@ module C-COMPOUND-LITERAL
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
-     syntax Id ::= "compoundLiteral" "(" Int ")"
-     syntax K ::= "handleCompoundLiteral" "(" K ")" [strict]
+     syntax Id ::= compoundLiteral(Int)
+     syntax K ::= handleCompoundLiteral(K) [strict]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed
@@ -45,7 +46,7 @@ module C-COMPOUND-LITERAL
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, T)
-                    ~> initialize(X, T, Init)
+                    ~> Init ~> sequencePoint
                     ~> X
           ...</k>
           <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
@@ -61,7 +62,7 @@ module C-COMPOUND-LITERAL
                handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
                => addToEnv(X, Loc)
                     ~> giveType(X, T)
-                    ~> initialize(X, T, Init)
+                    ~> Init ~> sequencePoint
                     ~> X
           ...</k>
           <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
