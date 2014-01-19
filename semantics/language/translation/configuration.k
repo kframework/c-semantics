@@ -20,7 +20,6 @@ module C11-CONFIGURATION
           <freshUnnamed color="black"> 0 </freshUnnamed>
           <functions color="lightgray"> .Map </functions>
           <notWritable> .Map </notWritable>
-          <internalLocations color="cyan"> .Map </internalLocations>
           <externalLocations color="cyan"> .Map </externalLocations>
      </global>
      <T multiplicity="?">

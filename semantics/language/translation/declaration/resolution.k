@@ -15,46 +15,6 @@ module C-DECLARATION-RESOLUTION
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
      
-     syntax K ::= "canonicalizeTranslationUnitVariables"
-     rule [unpack-TranslationUnit]:
-          <k> 
-               TranslationUnit(TUName:String, Strings:K, K:K) 
-               => preDeclareStrings(Strings)
-                    ~> klistToK(eraseKLabel('StmtCons, K))
-          ...</k>
-          <currTU> _ => TUName </currTU>
-          <declarationOrder> 
-               DeclOrder:Map => DeclOrder:Map[ListToK(.List) / TUName] 
-          </declarationOrder>
-          <internalLocations>
-               ExtLoc:Map => ExtLoc:Map[map(.) / TUName]
-          </internalLocations>
-          <funTUs> Funs:Map => Funs:Map[map(.) / TUName] </funTUs>
-          <translationUnits>...
-               . => BagItem(TUName)
-          ...</translationUnits>
-          <preLinkage>
-               Lnk:Map => Lnk:Map[map(.) / TUName]
-          </preLinkage>
-          <preTypes>
-               Types:Map => Types:Map[map(.) / TUName]
-          </preTypes>
-          <internalDefinitions>
-               Def:Map => Def:Map[map(.) / TUName]
-          </internalDefinitions>
-          <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
-          <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
-          when notBool $hasMapping(Env, TUName)
-          [structural, large]
-          
-     syntax K ::= preDeclareStrings(K)
-     
-     rule preDeclareStrings(klist((K:K,, L:KList)))
-          => K ~> discard ~> preDeclareStrings(klist(L))
-          [structural]
-     rule preDeclareStrings(klist(.KList)) => .
-          [structural]
-     
      // TODO(chathhorn): move to translation
      syntax K ::= resolve(K)
      rule <k> (. => resolve(Tu)) ~> resolveReferences ...</k>
@@ -91,8 +51,6 @@ module C-DECLARATION-RESOLUTION
                
      syntax K ::= resolveInternal(Id, K, K)
      syntax K ::= resolveExternal(Id, K, Bag, K)
-     syntax K ::= "resolveExternal'" "(" Id "," K "," Bag "," K "," SymLoc "," K ")"
-          [strict(6)]
      
      // name, type, context, where defined
      syntax K ::= recordFunTUInfo(K, Type, K, K)
@@ -120,48 +78,37 @@ module C-DECLARATION-RESOLUTION
      // fixme
      // should be adding to env after figuring initializer
      // should be changing env to be correct env before figuring initializer
-     syntax K ::= "resolveInternal'" "(" Id "," K "," K "," K ")" [strict(4)] 
+     syntax K ::= "resolveInternal'" "(" Id "," K "," K ")" [strict(3)] 
      rule <k> 
                resolveInternal(X:Id, Tu:K, 
                     declarationObject(T:Type, Tu:K, K:K))
-               => resolveInternal'(X, Tu, 
-                    declarationObject(T, Tu, K), 
-                    figureInit(X, T, K))
+               => resolveInternal'(X, Tu, figureInit(X, T, K))
           ...</k>
           <currTU> _ => Tu </currTU>
           [structural] 
+     rule resolveInternal(X:Id, Tu:K, preDefined(_, _, T:Type))
+          => recordFunTUInfo(X, T, Tu, Tu)
+          [structural] 
      rule <k> 
-               resolveInternal'(X:Id, Tu:K, 
-                    declarationObject(_, Tu:K, _), 
-                    initValue(X:Id, T:Type, K:K))
+               resolveInternal'(X:Id, Tu:K, initValue(X:Id, T:Type, K:K))
                => allocateType(Loc, T)
-                    ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, K)
-                    ~> recordFunTUInfo(X, T, Tu, Tu)
+               ~> addToEnv(X, Loc)
+               ~> giveType(X, T)
+               ~> initialize(X, T, K)
+               ~> recordFunTUInfo(X, T, Tu, Tu)
           ...</k>
           <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> _ => Tu </currTU>
           [structural] 
                
      rule <k> 
-               resolveExternal(X:Id, Tu:K, Units:Bag, 
-                    declarationObject(T:Type, DefTu:K, K:K))
-               => resolveExternal'(X, Tu, Units,
-                    declarationObject(T, DefTu, K), Loc, 
-                    figureInit(X, T, K))
-          ...</k>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          [structural] 
-     rule <k> 
                ( .K
                => addToEnv(X, Loc)
                     ~> giveType(X, T)
                     ~> recordFunTUInfo(X, T, Tu', DefTu)
-               ) ~> resolveExternal'(X:Id, _:K, 
+               ) ~> resolveExternal(X:Id, _, 
                     ((BagItem(Tu':K) => .) _:Bag),
-                    declarationObject(_, DefTu:K, _), Loc:SymLoc, 
-                    initValue(X:Id, T:Type, _:K))
+                    preDefined(DefTu:K, Loc:SymLoc, T:Type))
           ...</k>
           <currTU> _ => Tu' </currTU>
           <preLinkage>...
@@ -169,14 +116,9 @@ module C-DECLARATION-RESOLUTION
           ...</preLinkage>
           [structural, large] 
      rule <k> 
-               resolveExternal'(X:Id, Tu:K, .Bag,
-                    declarationObject(_, DefTu:K, _), Loc:SymLoc,
-                    initValue(X:Id, T:Type, K:K))
-               => allocateType(Loc, T)
-                    ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> initialize(X, T, K)
-                    ~> recordFunTUInfo(X, T, Tu, DefTu)
+               resolveExternal(X:Id, Tu:K, .Bag,
+                    preDefined(DefTu:K, Loc:SymLoc, T:Type))
+               => recordFunTUInfo(X, T, Tu, DefTu)
           ...</k>
           <currTU> _ => Tu </currTU>
           <externalLocations>
@@ -185,16 +127,14 @@ module C-DECLARATION-RESOLUTION
           when notBool $hasMapping(Locs, X)
           [structural] 
      rule <k>
-               resolveExternal'(X:Id, _,
-                    ((BagItem(Tu:K) => .) _:Bag), _, _, _)
+               resolveExternal(X:Id, _, ((BagItem(Tu:K) => .) _:Bag), _)
           ...</k>
           <preLinkage>... Tu |-> map(M:Map) ...</preLinkage>
           when notBool $hasMapping(M, X)
           [structural] 
      rule [resolveExternal-internal]:
           <k>
-               resolveExternal'(X:Id, _,
-                    ((BagItem(Tu:K) => .) _:Bag), _, _, _)
+               resolveExternal(X:Id, _, ((BagItem(Tu:K) => .) _:Bag), _)
           ...</k>
           <preLinkage>... Tu |-> map((_ X:Id |-> internal)) ...</preLinkage>
           [structural] 
@@ -215,7 +155,7 @@ module C-DECLARATION-RESOLUTION
      rule <k> 
                (. => resolveInternal(X, Tu, 
                     declarationObject(unqualifyType(T), Tu, 
-                    initializer(zero(X))))) ~> resolve(Tu:K)
+                    initializer(zero(X))))) ~> resolve(Tu:String)
           ...</k>
           <preLinkage>...
                Tu |-> map((_ (X:Id |-> internal => .Map)))
@@ -236,7 +176,6 @@ module C-DECLARATION-RESOLUTION
                (. => resolveExternal(X, Tu, Units, K)) 
                ~> resolve(Tu:K)
           ...</k>
-          <br/>
           <preLinkage>...
                Tu |-> map((_ (X:Id |-> external => .Map)))
           ...</preLinkage>
@@ -251,6 +190,7 @@ module C-DECLARATION-RESOLUTION
           [structural, large] 
 
      
+     // TODO(chathhorn): probably needs to be cut.
      // fixme this means we've declared it twice (like a prototype maybe_), but
      // already handled it.  happening with getc in clib.c
      rule <k> resolve(Tu:K) ...</k>
@@ -299,7 +239,7 @@ module C-DECLARATION-RESOLUTION
      // identifier, with the composite type as of the end of the translation
      // unit, with an initializer equal to 0
      rule <k> 
-               (. 
+               (.
                => allocateType(Loc, unqualifyType(T))
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, unqualifyType(T))

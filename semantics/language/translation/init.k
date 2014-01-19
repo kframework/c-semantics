@@ -25,6 +25,43 @@ module C-TRANSLATION-INIT
           <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
           [structural, large]
 
+     syntax K ::= "canonicalizeTranslationUnitVariables"
+     rule [unpack-TranslationUnit]:
+          <k> 
+               TranslationUnit(TUName:String, Strings:K, K:K) 
+               => preDeclareStrings(Strings)
+               ~> klistToK(eraseKLabel('StmtCons, K))
+          ...</k>
+          <currTU> _ => TUName </currTU>
+          <declarationOrder> 
+               DeclOrder:Map => DeclOrder:Map[ListToK(.List) / TUName] 
+          </declarationOrder>
+          <funTUs> Funs:Map => Funs:Map[map(.) / TUName] </funTUs>
+          <translationUnits>...
+               . => BagItem(TUName)
+          ...</translationUnits>
+          <preLinkage>
+               Lnk:Map => Lnk:Map[map(.) / TUName]
+          </preLinkage>
+          <preTypes>
+               Types:Map => Types:Map[map(.) / TUName]
+          </preTypes>
+          <internalDefinitions>
+               Def:Map => Def:Map[map(.) / TUName]
+          </internalDefinitions>
+          <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
+          <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
+          when notBool $hasMapping(Env, TUName)
+          [structural, large]
+          
+     syntax K ::= preDeclareStrings(K)
+     
+     rule preDeclareStrings(klist((K:K,, L:KList)))
+          => K ~> discard ~> preDeclareStrings(klist(L))
+          [structural]
+     rule preDeclareStrings(klist(.KList)) => .
+          [structural]
+     
      syntax SemMode ::= "InterpMode" | "DebugMode"
      rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
           

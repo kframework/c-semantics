@@ -47,6 +47,14 @@ module C-DECLARATION-LOCAL
                andBool (K =/=K NoInit)
           [structural] 
           
+     rule <k> declareInternalVariable(_, _, _) ... </k>
+          <currTU> Tu:K </currTU>
+          <internalLocations> 
+               Locs:Map (. => Tu |-> map(.Map))
+          </internalLocations>
+          when notBool $hasMapping(Locs, Tu)
+          [structural]
+
      rule <k> 
                declareInternalVariable(X:Id, T:Type, NoInit)
                => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))

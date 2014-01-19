@@ -92,7 +92,6 @@ module C11-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
-                    <br/>
                     <threadId> _ => 1 </threadId>
                     <nextLoc> _ => firstLoc(1) </nextLoc>
                     <threadLocal>...

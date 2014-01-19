@@ -2,6 +2,7 @@ module C-DECLARATION-GLOBAL-SYNTAX
      syntax Linkage ::= "external" | "internal"
      syntax K ::= declareFunction(Id, Type, K)
      syntax K ::= verifyDecl(K) [strict]
+     syntax K ::= preDefined(K, SymLoc, Type)
 endmodule
 
 module C-DECLARATION-GLOBAL
@@ -10,6 +11,8 @@ module C-DECLARATION-GLOBAL
      imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -141,8 +144,8 @@ module C-DECLARATION-GLOBAL
      
      rule <k>
                declareWithLinkage(X:Id, T:Type, NoInit, L:Linkage)
-               => declareOnly(X, T, L)
-               ~> giveType(X, T) // chathhorn: fake adding to env.
+               => giveType(X, T) // chathhorn: possibly incomplete type.
+               ~> declareOnly(X, T, L)
           ...</k>
           <declarationOrder>...
                Tu |-> ListToK(_ (. => ListItem(X)))
@@ -152,7 +155,6 @@ module C-DECLARATION-GLOBAL
      rule <k>
                declareWithLinkage(X:Id, T:Type, K:K, L:Linkage)
                => declareAndDefine(X, T, K, L)
-               ~> giveType(X, T) // chathhorn: fake adding to env.
           ...</k>
           <declarationOrder>...
                Tu |-> ListToK(_ (. => ListItem(X)))
@@ -233,21 +235,42 @@ module C-DECLARATION-GLOBAL
 
      syntax K ::= declareAndDefine(Id, Type, K, Linkage)
 
+     syntax K ::= preDefine(K, SymLoc, Linkage, K) [strict(4)]
+                | addDef(Id, K, K, Linkage)
+
+     rule preDefine(Tu:K, Loc:SymLoc, Lnk:Linkage, initValue(X:Id, T:Type, K:K))
+          => allocateType(Loc, T)
+          ~> addToEnv(X, Loc)
+          ~> giveType(X, T)
+          ~> initialize(X, T, K)
+          ~> addDef(X, Tu, preDefined(Tu, Loc, T), Lnk)
+          [structural]
+
+     rule <k> addDef(X:Id, _, Def:K, external) => . ...</k>
+          <externalDefinitions> 
+               _:Map (. => (X |-> Def))
+          </externalDefinitions>
+          [structural]
+
+     rule <k> addDef(X:Id, Tu:K, Def:K, internal) => . ...</k>
+          <internalDefinitions>...
+               Tu |-> map(_:Map (. => (X |-> Def)))
+          ...</internalDefinitions>
+          [structural]
+
      rule <k> 
                declareAndDefine(X:Id, T:Type, K:K, external)
-               => .
+               => preDefine(Tu, Loc, external, 
+                    figureInit(X, unqualifyType(T), K))
           ...</k>
           <declarations>... .Set => SetItem(X) ...</declarations>
           <externalDefinitions> 
-               Def:Map => Def:Map (X |->
-                    declarationObject(unqualifyType(T), Tu, K)) 
+               Def:Map
           </externalDefinitions>
           <preLinkage>...
                Tu |-> map((Lnk:Map => Lnk:Map[external / X]))
           ...</preLinkage>
-          <preTypes>...
-               Tu |-> map((Types:Map => Types:Map[T / X]))
-          ...</preTypes>
+          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> Tu:K </currTU>
           when (notBool $hasMapping(Def, X)
                     orBool isFunctionType(T))
@@ -258,19 +281,15 @@ module C-DECLARATION-GLOBAL
      // case when it has a previous linkage (internal).  
      rule <k> 
                declareAndDefine(X:Id, T:Type, K:K, external)
-               => .
+               => preDefine(Tu, Loc, internal, 
+                    figureInit(X, unqualifyType(T), K))
           ...</k>
           <declarations>... .Set => SetItem(X) ...</declarations>
           <internalDefinitions>... 
-               Tu |-> map((Def:Map 
-               => Def:Map[
-                    declarationObject(unqualifyType(T), Tu, K)
-                    / X])) 
+               Tu |-> map(Def:Map) 
           ...</internalDefinitions>
           <preLinkage>... Tu:K |-> map(Lnk:Map) ...</preLinkage>
-          <preTypes>...
-               Tu |-> map((Types:Map => Types:Map[T / X]))
-          ...</preTypes>
+          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> Tu:K </currTU>
           when (notBool $hasMapping(Def, X) orBool isFunctionType(T))
                andBool Lnk:Map(X) ==K internal
@@ -278,20 +297,17 @@ module C-DECLARATION-GLOBAL
           
      rule <k> 
                declareAndDefine(X:Id, T:Type, K:K, internal)
-               => .
+               => preDefine(Tu, Loc, internal, 
+                    figureInit(X, unqualifyType(T), K))
           ...</k>
           <declarations>... .Set => SetItem(X) ...</declarations>
           <internalDefinitions>... 
-               Tu |-> map((Def:Map 
-               => Def:Map[
-                    declarationObject(unqualifyType(T), Tu, K) / X])) 
+               Tu |-> map(Def:Map) 
           ...</internalDefinitions>
           <preLinkage>...
                Tu |-> map((Lnk:Map => Lnk:Map[internal / X]))
           ...</preLinkage>
-          <preTypes>...
-               Tu |-> map((Types:Map => Types:Map[T / X]))
-          ...</preTypes>
+          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
           <currTU> Tu:K </currTU>
           when (notBool $hasMapping(Def, X) 
                     orBool isFunctionType(T))

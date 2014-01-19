@@ -23,7 +23,6 @@ module C11-CONFIGURATION
                <freshUnnamed color="black"> 0 </freshUnnamed>
                <functions color="lightgray"> .Map </functions>
                <notWritable> .Map </notWritable>
-               <internalLocations color="cyan"> .Map </internalLocations>
                <externalLocations color="cyan"> .Map </externalLocations>
           </global>
 
@@ -36,12 +35,8 @@ module C11-CONFIGURATION
           // 0 is global, 1 is main
           // TODO(chathhorn) 0 global (static), 1 static, 2 dynamic??
           <nextThreadId color="black"> 3 </nextThreadId>
-          <declarationOrder color="cyan"> .Map </declarationOrder>
-          <externalDefinitions color="cyan"> .Map </externalDefinitions>
-          <internalDefinitions color="cyan"> .Map </internalDefinitions>
+          <internalLocations color="cyan"> .Map </internalLocations>
 
-          <preLinkage color="cyan"> .Map </preLinkage>
-          <preTypes color="cyan"> .Map </preTypes>
           <declarations color="cyan"> .Set </declarations>
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>
@@ -151,8 +146,7 @@ module C11-CONFIGURATION
                </thread>
           </threads>
 
-     // TODO(chathhorn): I'm not sure what to do with these. Also,
-     // multiplicity...?
+     // TODO(chathhorn): not sure where to put these.
      <callStackFrame multiplicity="*">
           <continuation> .K </continuation>
           <stackCurrentFunction> .K </stackCurrentFunction>
