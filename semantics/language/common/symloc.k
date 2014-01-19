@@ -34,7 +34,7 @@ endmodule
 module C-SYMLOC
      imports C-SYMLOC-SYNTAX
 
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
      

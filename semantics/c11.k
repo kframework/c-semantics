@@ -4,12 +4,12 @@ require "library/library.k"
 
 module C11-SYNTAX
      imports C-SYNTAX
-     imports C11-LTLMC-SYNTAX
+     imports C-LTLMC-SYNTAX
 endmodule
 
 module C11
      imports C11-SYNTAX
-     imports C11-EXECUTION
-     imports C11-COMMON
-     imports C11-LIBRARY
+     imports C-EXECUTION
+     imports C-COMMON
+     imports C-LIBRARY
 endmodule

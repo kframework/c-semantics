@@ -6,7 +6,7 @@ module C-TYPING-EXPRESSION
      imports C-DYNAMIC-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-DECLARATION-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      // FIXME need to automatically pad structs

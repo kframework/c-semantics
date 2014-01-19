@@ -1,12 +1,12 @@
-module C11-ERROR-MAP-SYNTAX
+module C-ERROR-MAP-SYNTAX
      syntax Map ::= "Errors" [function]
      // passage, ref.
      syntax ErrorTxt ::= err(String, String)
      syntax ErrorRef ::= ub(Int) // "undefined behavior"
 endmodule
 
-module C11-ERROR-MAP
-     imports C11-ERROR-MAP-SYNTAX
+module C-ERROR-MAP
+     imports C-ERROR-MAP-SYNTAX
 
      rule Errors => 
 1 |-> err("A \"shall\" or \"shall not\" requirement that appears outside of a constraint is violated.", "clause 4")

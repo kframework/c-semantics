@@ -1,4 +1,4 @@
-module C11-CONFIGURATION
+module C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -87,8 +87,6 @@ module C11-CONFIGURATION
                          </local>
                          <blockStack color="violet"> .List </blockStack>
 
-                         // used to control initialization when gotoing
-                         <shouldInit color="lightgray"> true </shouldInit>
                          // used to figure initializers
                          <currentObject color="cyan">
                               .List

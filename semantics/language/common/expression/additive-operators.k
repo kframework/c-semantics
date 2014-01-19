@@ -17,7 +17,7 @@ module C-EXPRESSION-ADDITIVE-OPERATORS
      imports C-CONVERSION-SYNTAX
      imports C-BITSIZE-SYNTAX
 
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
      For addition, either both operands shall have arithmetic type, or one

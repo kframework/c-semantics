@@ -1,4 +1,4 @@
-module C11-SETTINGS-SYNTAX
+module C-SETTINGS-SYNTAX
      syntax Type ::= "cfg:charAlias" [function]
      syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]
@@ -22,8 +22,8 @@ module C11-SETTINGS-SYNTAX
      syntax Int ::= "cfg:enumMax" [function]
 endmodule
 
-module C11-SETTINGS
-     imports C11-SETTINGS-SYNTAX
+module C-SETTINGS
+     imports C-SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      

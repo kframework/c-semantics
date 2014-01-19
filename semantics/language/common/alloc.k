@@ -39,7 +39,7 @@ module C-MEMORY-ALLOC
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
      
      rule [write-string]:

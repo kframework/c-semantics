@@ -7,6 +7,6 @@ endmodule
 
 module C11-TRANS
      imports C11-TRANS-SYNTAX
-     imports C11-TRANSLATION
-     imports C11-COMMON
+     imports C-TRANSLATION
+     imports C-COMMON
 endmodule

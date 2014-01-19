@@ -1,6 +1,6 @@
 require "builtins/model-checker.k"
 
-module C11-LTLMC-SYNTAX
+module C-LTLMC-SYNTAX
      imports LTL-HOOKS
      imports MODEL-CHECKER-HOOKS
 
@@ -32,8 +32,8 @@ module C11-LTLMC-SYNTAX
 
 endmodule
 
-module C11-LTLMC
-     imports C11-LTLMC-SYNTAX
+module C-LTLMC
+     imports C-LTLMC-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

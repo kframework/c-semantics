@@ -6,8 +6,8 @@ require "configuration.k"
 require "error.k"
 require "io-buffered.k"
 require "ltlmc.k"
-require "settings.k"
 require "init.k"
+require "sequence-point.k"
 
 require "statement/block.k"
 require "statement/break.k"
@@ -19,24 +19,25 @@ require "statement/return.k"
 require "statement/switch.k"
 
 require "expression/function-call.k"
-require "expression/inc-and-dec.k"
-require "expression/sequencing.k"
 require "expression/id-rval.k"
+require "expression/inc-and-dec.k"
+require "expression/logical.k"
+require "expression/sequencing.k"
 
 require "declaration/local.k"
 
-module C11-EXECUTION
-     imports C11-CONFIGURATION
-     imports C11-LTLMC
-     imports C11-SETTINGS
-     imports C11-EXEC-ERROR
-     imports C11-EXECUTION-INIT
+module C-EXECUTION
+     imports C-CONFIGURATION
+     imports C-LTLMC
+     imports C-EXECUTION-ERROR
+     imports C-EXECUTION-INIT
 
      imports C-BINDING
      imports C-BUILTIN
      imports C-CHECK-LOC
      imports C-COMPOUND-LITERAL
      imports C-IO-BUFFERED
+     imports C-SEQUENCE-POINT
 
      imports C-STATEMENT-LABELED
      imports C-STATEMENT-IF-THEN 
@@ -48,9 +49,10 @@ module C11-EXECUTION
      imports C-STATEMENT-BREAK
 
      imports C-EXPRESSION-FUNCTION-CALL
-     imports C-EXPRESSION-INC-AND-DEC
-     imports C-EXPRESSION-SEQUENCING
      imports C-EXPRESSION-ID-RVAL
+     imports C-EXPRESSION-INC-AND-DEC
+     imports C-EXPRESSION-LOGICAL
+     imports C-EXPRESSION-SEQUENCING
 
      imports C-DECLARATION-LOCAL
 endmodule

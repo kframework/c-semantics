@@ -1,9 +1,9 @@
-module C11-EXEC-ERROR
-     imports C11-ERROR-SYNTAX
-     imports C11-ERROR-MAP-SYNTAX
-     imports C11-CONSTRAINT-MAP-SYNTAX
+module C-EXECUTION-ERROR
+     imports C-ERROR-SYNTAX
+     imports C-ERROR-MAP-SYNTAX
+     imports C-CONSTRAINT-MAP-SYNTAX
 
-     imports C11-EXECUTION-INIT-SYNTAX
+     imports C-EXECUTION-INIT-SYNTAX
 
      imports C-SYNTAX
      imports C-SYMLOC-SYNTAX

@@ -5,7 +5,7 @@ module C-TYPING-INTERPRETATION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      // rules that use specifier should be careful to use extractActualType if

@@ -16,7 +16,7 @@ module C-MEMORY-WRITING
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
           
      syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 

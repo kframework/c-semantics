@@ -1,11 +1,11 @@
-module C11-CONSTRAINT-MAP-SYNTAX
+module C-CONSTRAINT-MAP-SYNTAX
      syntax Map ::= "Constraints" [function]
      syntax ErrorRef ::= cv(String) // "constraint violation"
      syntax ErrorTxt ::= String
 endmodule
 
-module C11-CONSTRAINT-MAP
-     imports C11-CONSTRAINT-MAP-SYNTAX
+module C-CONSTRAINT-MAP
+     imports C-CONSTRAINT-MAP-SYNTAX
 
      rule Constraints => 
 "6.5.2.3:1" |-> "The first operand of the . operator shall have an atomic, qualified, or unqualified structure or union type, and the second operand shall name a member of that type."

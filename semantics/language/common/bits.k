@@ -43,7 +43,7 @@ endmodule
 module C-BITS
      imports C-BITS-SYNTAX
 
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      // this maintains byte order
      rule [fillToBytes-start]:

@@ -5,7 +5,6 @@ require "error.k"
 require "io-direct.k"
 require "process-label.k"
 require "function-def.k"
-require "settings.k"
 require "init.k"
 
 require "declaration/resolution.k"
@@ -36,10 +35,9 @@ require "statement/loop.k"
 require "statement/return.k"
 require "statement/switch.k"
 
-module C11-TRANSLATION
-     imports C11-CONFIGURATION
-     imports C11-TRANS-ERROR
-     imports C11-SETTINGS
+module C-TRANSLATION
+     imports C-CONFIGURATION
+     imports C-TRANSLATION-ERROR
      imports C-CHECK-LOC
      imports C-IO-DIRECT
      imports C-PROCESS-LABEL

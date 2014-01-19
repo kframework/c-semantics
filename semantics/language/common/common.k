@@ -11,6 +11,7 @@ require "conversion.k"
 require "promotion.k"
 require "alloc.k"
 require "symloc.k"
+require "settings.k"
 
 require "error.k"
 require "error-map.k"
@@ -25,7 +26,6 @@ require "expression/cast.k"
 require "expression/conditional.k"
 require "expression/eval.k"
 require "expression/identifier.k"
-require "expression/logical.k"
 require "expression/members.k"
 require "expression/multiplicative-operators.k"
 require "expression/reference.k"
@@ -37,7 +37,7 @@ require "dynamic.k"
 
 require "debug.k"
 
-module C11-COMMON
+module C-COMMON
      imports COMPAT
 
      imports C-DECLARATION
@@ -49,10 +49,11 @@ module C11-COMMON
      imports C-MEMORY-ALLOC
      imports C-SYMLOC
      imports C-PROMOTION
+     imports C-SETTINGS
 
-     imports C11-ERROR
-     imports C11-ERROR-MAP
-     imports C11-CONSTRAINT-MAP
+     imports C-ERROR
+     imports C-ERROR-MAP
+     imports C-CONSTRAINT-MAP
 
      imports C-MEMORY
 
@@ -63,7 +64,6 @@ module C11-COMMON
      imports C-EXPRESSION-CONDITIONAL
      imports C-EXPRESSION-EVAL
      imports C-EXPRESSION-IDENTIFIER
-     imports C-EXPRESSION-LOGICAL
      imports C-EXPRESSION-MEMBERS
      imports C-EXPRESSION-MULTIPLICATIVE-OPERATORS
      imports C-EXPRESSION-REFERENCE

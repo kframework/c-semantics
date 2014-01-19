@@ -38,7 +38,6 @@ module C-EXPRESSION-ASSIGNMENT
      versions of a compatible type; otherwise, the behavior is undefined.}
      }*/
      
-     
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
      Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the
      simple assignment expression \cinline{E1 = E1 op (E2)}, except that the

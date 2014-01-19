@@ -16,7 +16,7 @@ module C-IO-BUFFERED
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-BITS-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      imports DEBUG-SYNTAX

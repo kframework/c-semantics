@@ -11,7 +11,7 @@ module C-TYPING-MISC
      imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DECLARATION-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.

@@ -1,12 +1,12 @@
-module C11-ERROR-SYNTAX
+module C-ERROR-SYNTAX
      syntax K ::= ERROR(String, String)
      syntax K ::= ERROR(String, String, KList)
 endmodule
 
-module C11-ERROR
-     imports C11-ERROR-SYNTAX
-     imports C11-ERROR-MAP-SYNTAX
-     imports C11-CONSTRAINT-MAP-SYNTAX
+module C-ERROR
+     imports C-ERROR-SYNTAX
+     imports C-ERROR-MAP-SYNTAX
+     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

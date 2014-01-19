@@ -7,7 +7,7 @@ module C-SYMBOLIC-ADDITIVE-OPERATORS
      imports C-PROMOTION-SYNTAX
      imports C-BITSIZE-SYNTAX
 
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      rule tv(V':K, t(S:Set, pointerType(T':Type))) + tv(V:K, T:Type)
           => tv(symVal, t(S, pointerType(T')))

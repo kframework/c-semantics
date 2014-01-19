@@ -5,7 +5,7 @@ module C-LITERAL
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
 
