@@ -70,6 +70,7 @@ module C-FUNCTION-DEF
      
      rule dummyBind((typedDeclaration(t(.Set, void), _),, _:KList)) => .
      rule dummyBind(.KList) => .
+     rule dummyBind(t(_, variadic)) => .
 
      rule dummyBind((typedDeclaration(
           (t(_, (arrayType(T:Type, _:Int) => pointerType(T)))), 
