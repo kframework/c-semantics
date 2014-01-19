@@ -2,7 +2,7 @@ module C-STATEMENT-GOTO
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule <k> Goto(Lbl:K) => . </k>
+     rule <k> Goto(Lbl:Id) => . ...</k>
           <currentFunction> F:Id </currentFunction>
           <currTU> Tu:K </currTU>
           <gotoMap>... 
