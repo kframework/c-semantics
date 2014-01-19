@@ -1,15 +1,16 @@
-module C11-EXECUTION-INIT-SYNTAX
-     syntax K ::= "pgmArgs" "(" KList ")" [function]
-     syntax K ::= "incomingArguments" "(" KList ")" [klabel('incomingArguments)]
-     syntax K ::= "callMain" "(" Int "," K ")" [klabel('callMain)]
+module C-EXECUTION-INIT-SYNTAX
+     syntax K ::= pgmArgs(KList) [function]
+     syntax K ::= incomingArguments(KList) [klabel('incomingArguments)]
+     syntax K ::= callMain(Int, K) [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initMainThread"
 
      syntax K ::= loadConfig(Bag)
+
 endmodule
 
-module C11-EXECUTION-INIT
-     imports C11-EXECUTION-INIT-SYNTAX
+module C-EXECUTION-INIT
+     imports C-EXECUTION-INIT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -21,11 +22,6 @@ module C11-EXECUTION-INIT
      imports LIBC-IO-SYNTAX
      imports COMPAT-SYNTAX
           
-     rule [sequencePoint]:
-          <k> sequencePoint => . ...</k>
-          <locsWrittenTo> _ => .Bag </locsWrittenTo>
-          [structural]
-
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
      following constraints:

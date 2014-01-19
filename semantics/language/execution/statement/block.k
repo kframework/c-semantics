@@ -4,6 +4,7 @@ module C-STATEMENT-BLOCK
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{

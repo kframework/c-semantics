@@ -4,6 +4,7 @@ module C-STATEMENT-RETURN
      imports C-IO-BUFFERED-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{

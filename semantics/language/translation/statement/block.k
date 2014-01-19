@@ -31,7 +31,7 @@ module C-STATEMENT-BLOCK
           [structural] 
           
      rule [expression-statement]:
-          Computation(_:KResult) => sequencePoint
+          Computation(_:KResult) => .
           [structural]
 
      rule Nop => .

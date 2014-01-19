@@ -3,6 +3,7 @@ module C-EXPRESSION-LOGICAL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-STATEMENT-IF-THEN-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
      /*@ Here, we wrapped the controlling expressions with
      \kinline{simplifyTruth} when heating them, so that we are guaranteed

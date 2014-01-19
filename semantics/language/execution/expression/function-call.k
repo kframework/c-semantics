@@ -11,6 +11,7 @@ module C-EXPRESSION-FUNCTION-CALL
      imports C-TYPING-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-BINDING-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
      imports COMPAT-SYNTAX
 

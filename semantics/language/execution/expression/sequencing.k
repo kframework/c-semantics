@@ -3,6 +3,7 @@ module C-EXPRESSION-SEQUENCING
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{

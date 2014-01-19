@@ -1,7 +1,4 @@
 module C-DYNAMIC-SYNTAX
-
-     // TODO(chathhorn): move
-     syntax K ::= "sequencePoint"
      syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
      syntax Value ::= "skipval"

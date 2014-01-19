@@ -65,12 +65,6 @@ module C-TRANSLATION-INIT
      syntax SemMode ::= "InterpMode" | "DebugMode"
      rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
           
-     // TODO(chathhorn): It'd be nice to remove sequence points altogether from
-     // this part of the semantics.
-     rule [sequencePoint]:
-          sequencePoint => .
-          [structural]
-
      syntax K ::= "initBuiltins"
      syntax K ::= initBuiltins(Map)
 

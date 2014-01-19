@@ -8,6 +8,7 @@ module C-STATEMENT-IF-THEN
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
      rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
           => T ==K int andBool (V ==K 0 orBool V ==K 1)

@@ -6,6 +6,7 @@ module C-STATEMENT-SWITCH
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
