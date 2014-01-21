@@ -53,6 +53,10 @@ module C-DECLARATION-GENERAL
      rule figureInit(X:Id, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
           [structural]
+
+     rule figureInit(X:Id, T:Type, NoInit) 
+          => initValue(X, T, .K)
+          [structural]
      
      // aggregates
      rule figureInit(X:Id, T:Type, CompoundInit(L:K))
