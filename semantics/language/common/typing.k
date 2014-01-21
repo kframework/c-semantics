@@ -6,15 +6,15 @@ require "typing/strictness.k"
 require "typing/expression.k"
 
 module C-TYPING-SYNTAX
-     syntax K ::= "typeof" "(" K ")"
-     syntax Id ::= "typedef" "(" Id ")"
-     syntax Id ::= "unnamed" "(" Int ")"
+     syntax K ::= typeof(K)
+     syntax Id ::= typedef(Id)
+     syntax Id ::= unnamed(Int)
 
-     syntax K ::= "allowWrite" "(" K ")" [strict]
+     syntax K ::= allowWrite(K) [strict]
 
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax K ::= "DeclType" "(" K "," K ")" [avoid, strict(1)] 
+     syntax K ::= DeclType(K, K) [avoid, strict(1)] 
      syntax Set ::= "setOfTypes" [function]
      
      syntax Bool ::= isTypeCompatible(Type, Type) [function]
@@ -39,25 +39,25 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isVoidType(Type) [function]
      
      // Composite types
-     syntax SimpleType ::= "enumType" "(" Id ")" 
+     syntax SimpleType ::= enumType(Id)
           [klabel('enumType)]
-     syntax SimpleType ::= "arrayType" "(" Type "," Int ")" 
+     syntax SimpleType ::= arrayType(Type, Int) 
           [klabel('arrayType)]
-     syntax SimpleType ::= "incompleteArrayType" "(" Type ")" 
+     syntax SimpleType ::= incompleteArrayType(Type) 
           [klabel('incompleteArrayType)]
-     syntax SimpleType ::= "flexibleArrayType" "(" Type ")" 
+     syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
-     syntax SimpleType ::= "bitfieldType" "(" Type "," Int ")" 
+     syntax SimpleType ::= bitfieldType(Type, Int)
           [klabel('bitfieldType)]
-     syntax SimpleType ::= "functionType" "(" Type "," KList ")" 
+     syntax SimpleType ::= functionType(Type, KList)
           [klabel('functionType)]
-     syntax SimpleType ::= "pointerType" "(" Type ")" 
+     syntax SimpleType ::= pointerType(Type)
           [klabel('pointerType)]
-     syntax SimpleType ::= "structType" "(" Id ")" 
+     syntax SimpleType ::= structType(Id)
           [klabel('structType)]
-     syntax SimpleType ::= "unionType" "(" Id ")" 
+     syntax SimpleType ::= unionType(Id)
           [klabel('unionType)]
-     syntax SimpleType ::= "qualifiedType" "(" Type "," K ")" 
+     syntax SimpleType ::= qualifiedType(Type, K)
           [klabel('qualifiedType)]
 
      // Basic types
@@ -70,11 +70,11 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= "no-type"
 
      // these aren't real types, but are values that can appear in type contexts
-     syntax SimpleType ::= "prototype" "(" Type ")" [klabel('prototype)]
-     syntax SimpleType ::= "typedefType" "(" Id "," Type ")"
+     syntax SimpleType ::= prototype(Type) [klabel('prototype)]
+     syntax SimpleType ::= typedefType(Id, Type)
      syntax SimpleType ::= "variadic"
 
-     syntax Bool ::= "isBasicType" "(" K ")" [function]
+     syntax Bool ::= isBasicType(K) [function]
 
      syntax Set ::= getQualities(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
@@ -93,12 +93,12 @@ module C-TYPING-SYNTAX
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]
 
-     syntax Set ::= "getModifiers" "(" K ")" [function]
+     syntax Set ::= getModifiers(K) [function]
 
      syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
-     syntax K ::= "giveType" "(" Id "," Type ")"
+     syntax K ::= giveType(Id, Type)
 
      syntax Int ::= numBits(Type) [function]
 

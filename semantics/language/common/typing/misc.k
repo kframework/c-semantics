@@ -418,7 +418,6 @@ module C-TYPING-MISC
      rule [isPointerType-other]: isPointerType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'pointerType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
      
      rule [isBoolType-bool]: isBoolType(t(_, bool)) => true 
      rule [isBoolType-qualifiedType]:
@@ -444,7 +443,6 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
-
      rule isVoidType(t(_, void)) => true
      rule isVoidType(t(_, K:K)) => false
           when K =/=K void
@@ -482,14 +480,12 @@ module C-TYPING-MISC
      rule [isExternType-qualified]: 
           isExternType(t(_, qualifiedType(T:Type, K:K))) 
           => #if (K ==K Extern) #then (true) #else (isExternType(T)) #fi 
-          
      rule [isExternType-false]: isExternType(t(_, T:SimpleType)) => false
           when getKLabel(T) =/=KLabel 'qualifiedType 
           
      rule [isStaticType-qualified]: 
           isStaticType(t(_, qualifiedType(T:Type, K:K))) 
           => #if (K ==K Static) #then (true) #else (isStaticType(T)) #fi
-          
      rule [isStaticType-false]: isStaticType(t(_, T:SimpleType)) => false
           when getKLabel(T) =/=KLabel 'qualifiedType 
           

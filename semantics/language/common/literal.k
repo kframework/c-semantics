@@ -23,7 +23,7 @@ module C-LITERAL
           when (firstChar(S) =/=String "0")
                orBool (lengthString(S) ==Int 1)
           
-     syntax K ::= "hexOrOctalConstant" "(" K ")"
+     syntax K ::= hexOrOctalConstant(K)
      rule HexConstant(S:String)
           => hexOrOctalConstant(string2Base(simplifyForHex(S), 16))
           [structural, anywhere]
@@ -267,7 +267,7 @@ module C-LITERAL
           when notBool (S in keys(M))
           [large, structural]
           
-     syntax K ::= "wstring" "(" KList ")"
+     syntax K ::= wstring(KList)
      rule [const-wstring-notfound]:
           <k> (.K => allocWString(Loc, S))
                ~> Constant(WStringLiteral(S:KList))

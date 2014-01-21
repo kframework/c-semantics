@@ -1,14 +1,14 @@
 module C-SYNTAX
      // these are semantic
-     syntax K ::= "reval" "(" K ")" [semantic]
-     syntax K ::= "peval" "(" K ")" [semantic]
+     syntax K ::= reval(K) [semantic]
+     syntax K ::= peval(K) [semantic]
      
      // the rest are syntactic
-     syntax C ::= "AttributeWrapper" "(" K "," K ")" [klabel('AttributeWrapper)]
+     syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
      
      syntax C ::= Id
      
-     syntax K ::= "StmtCons" "(" K "," K ")" [klabel('StmtCons)]
+     syntax K ::= StmtCons(K, K) [klabel('StmtCons)]
 
      syntax KResult ::= SpecifierElem
      
@@ -53,7 +53,7 @@ module C-SYNTAX
           lineOffsetEnd : int;
      }
      */
-     syntax CabsLoc ::= "CabsLoc" "(" String "," Int "," Int "," Int ")"
+     syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
           [klabel('CabsLoc)]
      
      /*
@@ -82,7 +82,7 @@ module C-SYNTAX
      syntax TypeSpecifier ::= "Signed"
      syntax TypeSpecifier ::= "Unsigned"
      syntax Float ::= "inf"
-     syntax TypeSpecifier ::= "Named" "(" Id ")" [klabel('Named)]
+     syntax TypeSpecifier ::= Named(Id) [klabel('Named)]
      /*
      (* each of the following three kinds of specifiers contains a field 
      * or item list iff it corresponds to a definition (as opposed to
@@ -95,35 +95,35 @@ module C-SYNTAX
      | TtypeofE of expression                      (* GCC __typeof__ *)
      | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
      */   
-     syntax TypeSpecifier ::= "StructRef" "(" Id ")"
+     syntax TypeSpecifier ::= StructRef(Id)
           [klabel('StructRef)] // new
      // new // Id, List
-     syntax C ::= "StructDef" "(" Id "," K ")"
+     syntax C ::= StructDef(Id, K)
           [strict(2), klabel('StructDef)] 
-     syntax TypeSpecifier ::= "UnionRef" "(" Id ")"
+     syntax TypeSpecifier ::= UnionRef(Id)
           [klabel('UnionRef)] // new
      // new // Id, List
-     syntax C ::= "UnionDef" "(" Id "," K ")"
+     syntax C ::= UnionDef(Id, K)
           [strict(2), klabel('UnionDef)] 
-     syntax TypeSpecifier ::= "EnumRef" "(" Id ")"
+     syntax TypeSpecifier ::= EnumRef(Id)
           [klabel('EnumRef)] // new
      // new // Id, List
-     syntax C ::= "EnumDef" "(" Id "," K ")"
+     syntax C ::= EnumDef(Id, K)
           [klabel('EnumDef)] 
-     syntax TypeSpecifier ::= "TypeofExpression" "(" K ")"
+     syntax TypeSpecifier ::= TypeofExpression(K)
           [klabel('TypeofExpression)]
-     syntax TypeSpecifier ::= "TypeofType" "(" K "," K ")"
+     syntax TypeSpecifier ::= TypeofType(K, K)
           [klabel('TypeofType)]
      
      syntax TypeSpecifier ::= "Complex" 
      syntax TypeSpecifier ::= "Imaginary"
-     syntax TypeSpecifier ::= "TAtomic" "(" K "," K ")"
+     syntax TypeSpecifier ::= TAtomic(K, K)
           [klabel('TAtomic)]
      // this will be used as the actual modifier
      syntax TypeSpecifier ::= "Atomic"
-     syntax TypeSpecifier ::= "AlignasExpression" "(" K ")"
+     syntax TypeSpecifier ::= AlignasExpression(K)
           [klabel('AlignasExpression)]
-     syntax TypeSpecifier ::= "AlignasType" "(" K "," K ")"
+     syntax TypeSpecifier ::= AlignasType(K, K)
           [klabel('AlignasType)]
 
      /*
@@ -162,13 +162,13 @@ module C-SYNTAX
      syntax SpecifierElem ::= "Inline"
      syntax SpecifierElem ::= "Noreturn"
      syntax SpecifierElem ::= TypeSpecifier
-     syntax SpecifierElem ::= "SpecPattern" "(" Id ")"
+     syntax SpecifierElem ::= SpecPattern(Id)
           [klabel('SpecPattern)]
 
      /*
      and specifier = spec_elem list
      */
-     syntax Specifier ::= "Specifier" "(" K ")" [avoid, klabel('Specifier)]
+     syntax Specifier ::= Specifier(K) [avoid, klabel('Specifier)]
      
      /*
      and decl_type =
@@ -191,17 +191,17 @@ module C-SYNTAX
                 * decl is never a PTR.*)
      */
      syntax K ::= "JustBase"
-     syntax DeclType ::= "FunctionType" "(" K ")"
+     syntax DeclType ::= FunctionType(K)
           [klabel('FunctionType), strict]
      // third argument should also be strict, but not doing anything with
      // [strict 5] yet
-     syntax DeclType ::= "ArrayType" "(" K "," K "," K ")"
+     syntax DeclType ::= ArrayType(K, K, K)
           [klabel('ArrayType), strict(1)]
      context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
-     syntax DeclType ::= "PointerType" "(" K ")"
+     syntax DeclType ::= PointerType(K)
           [klabel('PointerType), strict]
      // K, List, Bool
-     syntax DeclType ::= "Prototype" "(" K "," K "," Bool ")"
+     syntax DeclType ::= Prototype(K, K, Bool)
           [klabel('Prototype), strict(1, 2)]
      
      syntax K ::= "NotVariadic"
@@ -211,18 +211,18 @@ module C-SYNTAX
      /*
      and name_group = specifier * name list
      */
-     syntax NameGroup ::= "NameGroup" "(" K "," K ")"
+     syntax NameGroup ::= NameGroup(K, K)
           [klabel('NameGroup), strict] // K, List
      
      /*
      (* The optional expression is the bitfield *)
      and field_group = specifier * (name * expression option) list
      */
-     syntax FieldGroup ::= "FieldGroup" "(" K "," K ")"
+     syntax FieldGroup ::= FieldGroup(K, K)
           [klabel('FieldGroup), strict(1)] // K, List
-     syntax FieldName ::= "FieldName" "(" K ")"
+     syntax FieldName ::= FieldName(K)
           [klabel('FieldName)] // new
-     syntax FieldName ::= "BitFieldName" "(" K "," K ")"
+     syntax FieldName ::= BitFieldName(K, K)
           [klabel('BitFieldName)] // new
      
      /*
@@ -245,11 +245,11 @@ module C-SYNTAX
      */
      // TODO(chathhorn): better solution?
      // first argument is id, second is basetype
-     syntax Name ::= "Name" "(" K "," K ")" [avoid, klabel('Name)]
+     syntax Name ::= Name(K, K) [avoid, klabel('Name)]
      syntax K ::= "AnonymousName" // new, argument is type
      syntax Id ::= "#NoName" // new
      syntax Id ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
-     syntax Id ::= "Identifier" "(" String ")" [klabel('Identifier)] // new     
+     syntax Id ::= Identifier(String) [klabel('Identifier)] // new     
      
      rule AnonymousName => #NoName [macro, structural]
      
@@ -650,19 +650,19 @@ module C-SYNTAX
      syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")"
           [klabel('HexFloatConstant)]
      
-     syntax Constant ::= "LitU" "(" K ")" [avoid, klabel('LitU)] // new
-     syntax Constant ::= "LitL" "(" K ")" [avoid, klabel('LitL)] // new
-     syntax Constant ::= "LitF" "(" K ")" [klabel('LitF)] // new
-     syntax Constant ::= "LitLL" "(" K ")" [klabel('LitLL)] // new
-     syntax Constant ::= "LitUL" "(" K ")" [klabel('LitUL)] // new
-     syntax Constant ::= "LitULL" "(" K ")" [klabel('LitULL)] // new
+     syntax Constant ::= LitU(K) [avoid, klabel('LitU)] // new
+     syntax Constant ::= LitL(K) [avoid, klabel('LitL)] // new
+     syntax Constant ::= LitF(K) [klabel('LitF)] // new
+     syntax Constant ::= LitLL(K) [klabel('LitLL)] // new
+     syntax Constant ::= LitUL(K) [klabel('LitUL)] // new
+     syntax Constant ::= LitULL(K) [klabel('LitULL)] // new
 
-     syntax Constant ::= "NoSuffix" "(" K ")" [klabel('NoSuffix)] // new
+     syntax Constant ::= NoSuffix(K) [klabel('NoSuffix)] // new
      
-     syntax Constant ::= "CharLiteral" "(" Int ")" [klabel('CharLiteral)]
-     syntax Constant ::= "WCharLiteral" "(" Int ")" [klabel('WCharLiteral)]
-     syntax Constant ::= "StringLiteral" "(" String ")" [klabel('StringLiteral)]
-     syntax Constant ::= "WStringLiteral" "(" KList ")" [klabel('WStringLiteral)]
+     syntax Constant ::= CharLiteral(Int) [klabel('CharLiteral)]
+     syntax Constant ::= WCharLiteral(Int) [klabel('WCharLiteral)]
+     syntax Constant ::= StringLiteral(String) [klabel('StringLiteral)]
+     syntax Constant ::= WStringLiteral(KList) [klabel('WStringLiteral)]
      
      /*
      and init_expression =
@@ -671,13 +671,13 @@ module C-SYNTAX
      | COMPOUND_INIT of (initwhat * init_expression) list
      */
      syntax KResult ::= "NoInit" // InitExpression
-     syntax InitExpression ::= "SingleInit" "(" K ")"
+     syntax InitExpression ::= SingleInit(K)
           [klabel('SingleInit), hybrid, strict]
      // List
-     syntax InitExpression ::= "CompoundInit" "(" K ")"
+     syntax InitExpression ::= CompoundInit(K)
           [klabel('CompoundInit), hybrid, strict]
      // new; (initwhat * init_expression)
-     syntax InitFragment ::= "InitFragment" "(" K "," K ")"
+     syntax InitFragment ::= InitFragment(K, K)
           [klabel('InitFragment)]
      
      /*
@@ -814,12 +814,12 @@ module C-SYNTAX
           [klabel('AssignRightShift)]
      rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro, structural]
      
-     syntax Expression ::= "Dot" "(" K "," Id ")" [klabel('Dot)]
+     syntax Expression ::= Dot(K, Id) [klabel('Dot)]
      rule Dot(K:K, X:Id) => K:K . X:Id [macro, structural]
-     syntax Expression ::= "Arrow" "(" K "," Id ")" [klabel('Arrow)]
+     syntax Expression ::= Arrow(K, Id) [klabel('Arrow)]
      rule Arrow(K:K, X:Id) => K:K -> X:Id [macro, structural]
      
-     syntax KLabel ::= "TranslationUnitName" "(" String ")" 
+     syntax KLabel ::= TranslationUnitName(String) 
           [klabel('TranslationUnitName)]
 
 endmodule

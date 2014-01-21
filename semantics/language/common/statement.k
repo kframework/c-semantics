@@ -9,8 +9,8 @@ module C-STATEMENT-SYNTAX
      syntax K ::= "popLoop"
 
      //  nestingDepth, currentBlock, decl
-     syntax K ::= "frozenDeclaration" "(" Int "," Int "," K ")"
+     syntax K ::= frozenDeclaration(Int, Int, K)
      //  nestingDepth, block history, continuation, loop stack, decl stack
-     syntax K ::= "gotoObject" "(" Int "," List "," K "," List "," List ")"
+     syntax K ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 endmodule

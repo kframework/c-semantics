@@ -1,75 +1,75 @@
 module COMPAT-SYNTAX
-     syntax K ::= "l" "(" KLabel ")" [avoid]
+     syntax K ::= l(KLabel) [avoid]
      // hybrid doesn't work with list operator, and strict doesn't do what's
      // expected
-     syntax K ::= "klist" "(" KList ")" [klabel('klist)]
+     syntax K ::= klist(KList) [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
-     syntax String ::= "nthChar" "(" String "," Int ")" [function]
-     syntax String ::= "butFirstChar" "(" String ")" [function]
+     syntax String ::= nthChar(String, Int) [function]
+     syntax String ::= butFirstChar(String) [function]
      
-     syntax List ::= "stringToList" "(" String ")" [function]
+     syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
 
      syntax String ::= toUpperCase(String) [function]
 
-     syntax Bool ::= "all" "(" KList "," KLabel ")" [function]
+     syntax Bool ::= all(KList, KLabel) [function]
 
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 
      syntax Bag ::= toBag(List) [function]
-                | toBag(KList) [function]
+                  | toBag(KList) [function]
 
      syntax Int ::= "lengthKList" KList [function]
 
      syntax Bool ::= BagItem "in" Bag [function]
-               | K "#inBag" Bag [function]
+                   | K "#inBag" Bag [function]
 
      syntax KList ::= eraseKLabel(KLabel, KList) [function]
 
-     syntax Int ::= "string2Base" "(" String "," Int ")"
+     syntax Int ::= string2Base(String, Int)
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
-     syntax String ::= "base2String" "(" Int "," Int ")"
+     syntax String ::= base2String(Int, Int)
           [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
-     syntax Float ::= "sqrtFloat" "(" Float ")" 
+     syntax Float ::= sqrtFloat(Float)
           [function, hook(#FLOAT:sqrtFloat)]
-     syntax Float ::= "logFloat" "(" Float ")" 
+     syntax Float ::= logFloat(Float)
           [function, hook(#FLOAT:logFloat)]
-     syntax Float ::= "expFloat" "(" Float ")" 
+     syntax Float ::= expFloat(Float)
           [function, hook(#FLOAT:expFloat)]
-     syntax Float ::= "atanFloat" "(" Float ")" 
+     syntax Float ::= atanFloat(Float)
           [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "acosFloat" "(" Float ")" 
+     syntax Float ::= acosFloat(Float)
           [function, hook(#FLOAT:acosFloat)]
-     syntax Float ::= "asinFloat" "(" Float ")" 
+     syntax Float ::= asinFloat(Float)
           [function, hook(#FLOAT:asinFloat)]
-     syntax Float ::= "tanFloat" "(" Float ")" 
+     syntax Float ::= tanFloat(Float)
           [function, hook(#FLOAT:tanFloat)]
-     syntax Float ::= "cosFloat" "(" Float ")" 
+     syntax Float ::= cosFloat(Float)
           [function, hook(#FLOAT:cosFloat)]
-     syntax Float ::= "sinFloat" "(" Float ")" 
+     syntax Float ::= sinFloat(Float)
           [function, hook(#FLOAT:sinFloat)]
-     syntax Float ::= "atan2Float" "(" Float "," Float ")" 
+     syntax Float ::= atan2Float(Float, Float)
           [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "floorFloat" "(" Float ")" 
+     syntax Float ::= floorFloat(Float)
           [function, hook(#FLOAT:floorFloat)]
 
      // TODO(chathhorn): ugly
-     syntax K ::= "toKRList" "(" KList ")"
+     syntax K ::= toKRList(KList)
 
-     syntax KResult ::= "krlist" "(" KList ")"
+     syntax KResult ::= krlist(KList)
 
      syntax KList ::= reverseList(KList) [function]
 
-     syntax ListItem ::= "ListItem" "(" Bag ")"
+     syntax ListItem ::= ListItem(Bag)
      syntax K ::= ListToK(List)
-     syntax K ::= "map" "(" Map ")"
+     syntax K ::= map(Map)
 
-     syntax K ::= "klistToK" "(" KList ")" [function]
+     syntax K ::= klistToK(KList) [function]
      
-     syntax K ::= "kpair" "(" K "," K ")"
+     syntax K ::= kpair(K, K)
 
      syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
@@ -187,39 +187,5 @@ module COMPAT
      rule times(N:Int, K:K) => (K,, times(N -Int 1, K))
           when N >Int 0
 
-     // Read/write the current configuration.
-     // syntax K ::= saveConfiguration(Int, String) 
-               //  | loadConfiguration(Int, String) 
-               //  | loadConfigurationByte(K)
-
-     // rule <exec>
-     //           <global> B:Bag </global>
-     //           <k> 
-     //                writeConfig(F:String) 
-     //                => saveConfiguration(#open(F), K2String(CompiledProgram(B))) 
-     //           ...</k>
-     //      ...</exec>
-
-     // rule (. => #write(Fd, substrString(S, 0, 1000))) 
-     //      ~> saveConfiguration(Fd:Int, 
-     //           (S:String => substrString(S, 1000, lengthString(S)))) 
-     //      when S =/=String ""
-
-     // syntax K ::= fuzz(String)
-
-     // rule (. => #write(Fd, S)  ~> fuzz(S))
-     //      ~> saveConfiguration(Fd:Int, (S:String => "")) 
-     //      when S =/=String ""
-
-     // rule saveConfiguration(Fd:Int, "") => #close(Fd)
-
-     // rule readConfig(F:String) 
-     //      => loadConfiguration(#open(F, "r"), "")
-     // rule (. => loadConfigurationByte(#read(Fd, 1000))) 
-     //      ~> loadConfiguration(Fd:Int, _)
-     // rule (loadConfigurationByte(S2:String) => .) 
-     //      ~> loadConfiguration(_, (S:String => S +String S2))
-     // rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) 
-     //      => #close(Fd) ~> doLoadConfiguration(String2Bag(S))
 endmodule
 
