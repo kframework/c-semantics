@@ -97,12 +97,14 @@ module C-ERROR
           [structural, large]
      
      rule [err00024a]:
-          (. => ERROR("00024a", "Bitwise & used on a symbolic address.") ) ~>
-          tv(_:SymLoc, _) & _
+          (. => ERROR("00024a", "Bitwise & used on a pointer type.") ) ~>
+          tv(_, T:Type) & _
+          when isPointerType(T)
           [structural, large]
      rule [err00024b]:
-          (. => ERROR("00024b", "Bitwise & used on a symbolic address.") ) ~>
-          _ & tv(_:SymLoc, _)
+          (. => ERROR("00024b", "Bitwise & used on a pointer type.") ) ~>
+          _ & tv(_, T:Type)
+          when isPointerType(T)
           [structural, large]
      rule [err00024c]:
           (. => ERROR("00024c", "Bitwise & used on a float.") ) ~>
@@ -111,6 +113,25 @@ module C-ERROR
      rule [err00024d]:
           (. => ERROR("00024d", "Bitwise & used on a float.") ) ~>
           _ & tv(_:Float, _)
+          [structural, large]
+
+     rule [err00024a]:
+          (. => ERROR("00025a", "Bitwise | used on a pointer type.") ) ~>
+          tv(_, T:Type) | _
+          when isPointerType(T)
+          [structural, large]
+     rule [err00024b]:
+          (. => ERROR("00025b", "Bitwise | used on a pointer type.") ) ~>
+          _ | tv(_, T:Type)
+          when isPointerType(T)
+          [structural, large]
+     rule [err00024c]:
+          (. => ERROR("00025c", "Bitwise | used on a float.") ) ~>
+          tv(_:Float, _) | _
+          [structural, large]
+     rule [err00024d]:
+          (. => ERROR("00025d", "Bitwise | used on a float.") ) ~>
+          _ | tv(_:Float, _)
           [structural, large]
           
      rule [err00030]:
