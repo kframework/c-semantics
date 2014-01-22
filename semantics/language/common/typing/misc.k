@@ -470,12 +470,16 @@ module C-TYPING-MISC
      rule [isIncompleteType-true]:
           isIncompleteType(t(_, incompleteArrayType(_)))
           => true 
+     rule [isIncompleteType-true]:
+          isIncompleteType(t(_, void))
+          => true 
      rule [isIncompleteType-qualified]:
           isIncompleteType(t(_, qualifiedType(T:Type, _)))
           => isIncompleteType(T) 
      rule [isIncompleteType-false]: isIncompleteType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
+               andBool (getKLabel(T) =/=KLabel 'void)
           
      rule [isExternType-qualified]: 
           isExternType(t(_, qualifiedType(T:Type, K:K))) 
