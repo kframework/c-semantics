@@ -37,7 +37,6 @@ module C-CONFIGURATION
           <nextThreadId color="black"> 3 </nextThreadId>
           <internalLocations color="cyan"> .Map </internalLocations>
 
-          <declarations color="cyan"> .Set </declarations>
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>
                <mutexes color="yellow"> .Map </mutexes>
