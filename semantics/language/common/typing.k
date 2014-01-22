@@ -69,8 +69,8 @@ module C-TYPING-SYNTAX
                          | "unsigned-long-int" | "unsigned-long-long-int"
      syntax SimpleType ::= "no-type"
 
-     // these aren't real types, but are values that can appear in type contexts
-     syntax SimpleType ::= prototype(Type) [klabel('prototype)]
+     // These aren't real types, but are values that can appear in type
+     // contexts.
      syntax SimpleType ::= typedefType(Id, Type)
      syntax SimpleType ::= "variadic"
 

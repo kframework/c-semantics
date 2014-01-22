@@ -65,16 +65,9 @@ module C-DECLARATION-GLOBAL
      // function definition
      rule declareFunction(X:Id, T:Type, K:K)
           => declareExternalVariable(X, T, K)
-          when K =/=K NoInit
-               andBool (getQualifiers(T) ==Set .Set)
-          [structural] 
-
-     rule declareFunction(X:Id, T:Type, NoInit)
-          => declareExternalVariable(X,
-               t(.Set, prototype(T)), NoInit)
           when getQualifiers(T) ==Set .Set
           [structural] 
-          
+
      syntax K ::= declareExternalVariable(Id, Type, K)
 
      // *** External variables ***

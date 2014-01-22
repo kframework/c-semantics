@@ -259,9 +259,6 @@ module C-TYPING-MISC
           #isCompat(typedDeclaration(T:Type, _:Id), 
                typedDeclaration(T':Type, _:Id))
           => #isCompat(T, T') 
-     rule [typeCompatible-prototypes]:
-          #isCompat(t(_, prototype(T:Type)), t(_, prototype(T':Type))) 
-          => #isCompat(T, T') 
 
      rule [typeCompatible-array-right]:
           #isCompat(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
@@ -512,16 +509,12 @@ module C-TYPING-MISC
      rule [isFunctionType-true]:
           isFunctionType(t(_, functionType(_, _:KList)))
           => true 
-     rule [isFunctionType-prototype]:
-          isFunctionType(t(_, prototype(T:Type)))
-          => isFunctionType(T) 
      rule [isFunctionType-qualified]:
           isFunctionType(t(_, qualifiedType(T:Type, _)))
           => isFunctionType(T) 
      rule [isFunctionType-false]: isFunctionType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'functionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'prototype)
           
      rule [isFunctionPointerType-fp]:
           isFunctionPointerType(t(_, pointerType(t(_,
@@ -561,7 +554,6 @@ module C-TYPING-MISC
      rule getQualities(t(S:Set, T:SimpleType)) => S
           when (getKLabel(T) =/=KLabel 'qualifiedType)
 
-     // TODO(chathhorn): not clear to me whether to descend into prototypes.
      syntax Set ::= "getQualifiers'" "(" Type ")" [function]
      rule getQualifiers(T:Type) => SetItem(Const) getQualifiers'(T)
           when isConstType(T)
@@ -586,11 +578,8 @@ module C-TYPING-MISC
           SetItem(Atomic)
 
      rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
-     rule unqualifyType(t(_:Set, prototype(T:Type))) 
-          => t(.Set, prototype(unqualifyType(T)))
      rule unqualifyType(t(_:Set, T:SimpleType)) => t(.Set, T)
-          when (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'prototype)
+          when getKLabel(T) =/=KLabel 'qualifiedType
           
      // TODO(chathhorn): clearly this doesn't do exactly what it claims to do.
      rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
