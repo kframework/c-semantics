@@ -9,7 +9,6 @@ module C-CONFIGURATION
           <gtypes color="lightgray"> .Map </gtypes>
           <gstructs color="lightgray"> .Map </gstructs>
           <stringLiterals color="lightgray"> .Map </stringLiterals>
-          // should be initialized with a pair (threadId, 0)
           <nextSharedLoc color="black"> .K </nextSharedLoc>
           <mem> .Map </mem>
 
@@ -32,7 +31,9 @@ module C-CONFIGURATION
 
           <preLinkage color="cyan"> .Map </preLinkage>
           <preTypes color="cyan"> .Map </preTypes>
-          <declarations color="cyan"> .Set </declarations>
+
+          <externals> .Map </externals>
+          <internals> .Map </internals>
 
           <rawTypes> .Map </rawTypes>
           <typeSpecifiers> .Map </typeSpecifiers>

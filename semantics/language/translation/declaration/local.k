@@ -4,6 +4,7 @@ endmodule
 
 module C-DECLARATION-LOCAL
      imports C-DECLARATION-LOCAL-SYNTAX
+     imports C-DECLARATION-GLOBAL-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-DECLARATION-GENERAL-SYNTAX
 
@@ -14,34 +15,62 @@ module C-DECLARATION-LOCAL
 
      // TODO(chathhorn): note that execution/declaration/local.k starts from
      // doDeclare, not declareInternalVariable.
-     rule [declareExternInternal]:
-          <k>
-               declareInternalVariable(X:Id, T:Type, NoInit)
+
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
+               => addToEnv(X, Loc)
+               ~> giveType(X, unqualifyType(T))
+          ...</k>
+          <externals>... X |-> declState(Loc:SymLoc, _, _) ...</externals> 
+          when notBool isIncompleteType(T)
+               andBool isFunctionType(T)
+          [structural] 
+
+     // TODO(chathhorn): Need to actually cause an extern to be declared or
+     // completed at this point. 
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
                => giveType(X, unqualifyType(T))
           ...</k>
-          <externalLocations>... X |-> _ ...</externalLocations>
-          when notBool isIncompleteType(T)
-               andBool isExternType(T)
+          <externals> Exts:Map </externals> 
+          when isExternType(T) orBool isFunctionType(T)
+               andBool (notBool $hasMapping(Exts, X))
+          [structural]
+
+     // TODO(chathhorn): Possibly complete the extern.
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
+               => addToEnv(X, Loc)
+               ~> giveType(X, unqualifyType(T))
+          ...</k>
+          <externals>... X |-> declState(Loc:SymLoc, _, _) ...</externals>
+          when isExternType(T)
+               andBool (notBool isIncompleteType(T))
+          [structural] 
+     rule [declareExternInternal]:
+          <k> declareInternalVariable(X:Id, T:Type, NoInit)
+               => addToEnv(X, Loc)
+               ~> giveType(X, unqualifyType(T))
+          ...</k>
+          <externals>... 
+               X |-> declState(Loc:SymLoc, T:Type, _) 
+          ...</externals>
+          when isExternType(T)
+               andBool isIncompleteType(T)
           [structural] 
      
      rule declareInternalVariable(X:Id, T:Type, NoInit)
           => giveType(X, T)
-          when notBool isStaticType(T) 
-               andBool (notBool isExternType(T))
+          when isNaked(T)
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
           => defineAndInit(X, T, figureInit(X, T, K))
-          when notBool isStaticType(T) 
-               andBool (notBool isExternType(T))
+          when isNaked(T)
                andBool (K =/=K NoInit)
           [structural] 
           
      rule declareInternalVariable(X:Id, T:Type, NoInit)
           => giveType(X, unqualifyType(T))
           when isStaticType(T)
-               andBool notBool isExternType(T)
-          [structural, large] 
+          [structural] 
           
      rule declareInternalVariable(X:Id, T:Type, K:K)
           => defineAndInit(X, unqualifyType(T),
@@ -56,6 +85,5 @@ module C-DECLARATION-LOCAL
      rule defineAndInit(X:Id, _, initValue(X:Id, T:Type, _))
           => giveType(X, T)
           [structural] 
-          
 endmodule
 

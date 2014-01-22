@@ -16,7 +16,7 @@ module C-FUNCTION-DEF
      rule [function-definition]:
           FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
           => verifyDecl(typedDeclaration(T, X))
-               ~> processFunDef(X, T, safeBody(X, Blk))
+          ~> processFunDef(X, T, safeBody(X, Blk))
           when isFunctionType(T)
           [structural]
 

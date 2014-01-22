@@ -49,6 +49,9 @@ module C-TRANSLATION-INIT
           <internalDefinitions>
                Def:Map => Def:Map[map(.) / TUName]
           </internalDefinitions>
+          <internals>
+               Ints:Map => Ints:Map[map(.) / TUName]
+          </internals>
           <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
           <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
           when notBool $hasMapping(Env, TUName)
