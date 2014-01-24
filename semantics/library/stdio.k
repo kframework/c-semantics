@@ -21,10 +21,10 @@ module LIBC-STDIO
 
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]
-     syntax String ::= subPointerToString(SymBase) [function]
+     syntax String ::= symBaseToString(SymBase) [function]
 
      // getString returns the string without the null terminator
-     syntax K ::= "getString" "(" K ")"
+     syntax K ::= getString(K)
      syntax K ::= "getString-aux" "(" SymLoc "," String ")"
      rule getString(Loc:SymLoc) => getString-aux(Loc, "")
           [structural, anywhere]
@@ -49,25 +49,37 @@ module LIBC-STDIO
           
      rule [pointerToString]:
           pointerToString(loc(N:SymBase, M:Int, 0))
-          => "[sym(" +String subPointerToString(N) +String ") + " 
+          => "[sym(" +String symBaseToString(N) +String ") + " 
                +String Int2String(M) +String "]"
           [structural]
           
-     rule [subPointerToString-auto]:
-          subPointerToString(B:Int @ Th:Int)
-          => Int2String(B) +String " @ " +String Int2String(Th)
+     rule [symBaseToString-thread]:
+          symBaseToString(B:Int @ thread(Th:Int))
+          => Int2String(B) +String " @ " 
+          +String "thread(" +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
-          subPointerToString(B:Int @ allocatedDuration)
-          => Int2String(B) +String " @ " +String "allocatedDuration" 
+          symBaseToString(B:Int @ allocated)
+          => Int2String(B) +String " @ " 
+          +String "allocated" 
+          [structural]
+     rule [sub-pointerToString-static]:
+          symBaseToString(B:Int @ static(Tu:String))
+          => Int2String(B) +String " @ " 
+          +String "static(" +String Tu +String ")"
+          [structural]
+     rule [sub-pointerToString-link]:
+          symBaseToString(B:Int @ link(Tu:String))
+          => Int2String(B) +String " @ " 
+          +String "link(" +String Tu +String ")"
           [structural]
      
      rule [pointerToString-done]:
           pointerToString(NullPointer) => "NullPointer" 
           [structural]
 
-     syntax C ::= "nextvarg" "(" SymLoc "," K ")" [strict(2)] // loc, type
-     syntax C ::= "vpair" "(" K "," K ")" [hybrid, strict]
+     syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
+     syntax C ::= vpair(K, K) [hybrid, strict]
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)

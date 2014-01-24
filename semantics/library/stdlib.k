@@ -46,8 +46,10 @@ module LIBC-STDLIB
      The malloc function returns either a null pointer or a pointer to the
      allocated space.
      }*/
-     syntax K ::= "newAlloc" "(" Int ")" [function]
-     rule newAlloc(Base:Int) => loc(Base @ allocatedDuration, 0, 0)
+     // TODO(chathhorn): move this. Should try to hide the details of our
+     // symbolic addresses from the library semantics.
+     syntax K ::= newAlloc(Int) [function]
+     rule newAlloc(Base:Int) => loc(Base @ allocated, 0, 0)
      
      rule [malloc]:
           <k> 
