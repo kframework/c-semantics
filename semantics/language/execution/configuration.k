@@ -7,23 +7,33 @@ module C-CONFIGURATION
      <T>
      <exec>
           <global>
-               <gotoMap color="lightgray"> .Map </gotoMap>
-               <genv color="lightgray"> .Map </genv>
-               <gtypes color="lightgray"> .Map </gtypes>
                <gstructs color="lightgray"> .Map </gstructs>
                <stringLiterals color="lightgray"> .Map </stringLiterals>
-               // should be initialized with a pair (threadId, 0)
-               <nextSharedLoc color="black"> .K </nextSharedLoc>
+
                <mem> .Map </mem>
 
-               // map from current tu to (map from id to where function was
-               // defined)             
-               <funTUs color="lightgray"> .Map </funTUs>
                <mainTU color="lightgray"> .K </mainTU>
                <freshUnnamed color="black"> 0 </freshUnnamed>
                <functions color="lightgray"> .Map </functions>
                <notWritable> .Map </notWritable>
                <externalLocations color="cyan"> .Map </externalLocations>
+
+               <translation-units>
+                    <tu multiplicity="*">
+                         <tu-id> .K </tu-id>
+                         <genv color="lightgray"> .Map </genv>
+                         <gtypes color="lightgray"> .Map </gtypes>
+                         <externals> .Map </externals>
+                         <internals> .Map </internals>
+                         // dummy link loc |-> real loc
+                         <linkings> .Map </linkings> 
+                         // TODO(chathhorn): consider combining.
+                         <next-link-loc> .K </next-link-loc>
+                         <next-static-loc> .K </next-static-loc>
+
+                         <goto-map color="lightgray"> .Map </goto-map>
+                    </tu>
+               </translation-units>
           </global>
 
           // stdlib
@@ -32,9 +42,7 @@ module C-CONFIGURATION
           <malloced color="lightgray"> .Map </malloced>
           <nextMalloced> 0 </nextMalloced>
 
-          // 0 is global, 1 is main
-          // TODO(chathhorn) 0 global (static), 1 static, 2 dynamic??
-          <nextThreadId color="black"> 3 </nextThreadId>
+          <nextThreadId color="black"> 0 </nextThreadId>
           <internalLocations color="cyan"> .Map </internalLocations>
 
           <threadInformation color="yellow">

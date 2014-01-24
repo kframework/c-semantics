@@ -66,6 +66,7 @@ module COMPAT-SYNTAX
      syntax ListItem ::= ListItem(Bag)
      syntax K ::= ListToK(List)
      syntax K ::= map(Map)
+     syntax K ::= set(Set)
 
      syntax K ::= klistToK(KList) [function]
      

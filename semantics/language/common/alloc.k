@@ -71,24 +71,22 @@ module C-MEMORY-ALLOC
           => alloc(Loc, byteSizeofType(T))
           [structural]
      rule [allocateTypeIfAbsent-absent]:
-          <k> 
-               allocateTypeIfAbsent(Loc:SymLoc, T:Type) 
+          <k> allocateTypeIfAbsent(Loc:SymLoc, T:Type) 
                => alloc(Loc, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
           [structural] 
      rule [allocateTypeIfAbsent-present]:
-          <k> 
-               allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:Type) 
-               => .K 
+          <k> allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _:Type) => . 
           ...</k>
           <mem>... Base |-> memblock(_, _, _) ...</mem>
           [structural]
 
      rule [alloc-lazy]:
-          <k> alloc(loc(Base:SymBase, 0, 0), Len:TypedValue) => .K ...</k>
+          <k> alloc(loc(Base:SymBase, 0, 0), Len:TypedValue) => . ...</k>
           <mem>... .Map => Base |-> memblock(value(Len), .Bag, .Map) ...</mem>
+          when notBool isLinkerLoc(loc(Base, 0, 0))
           [structural]
      
      rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte

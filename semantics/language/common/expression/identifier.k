@@ -23,11 +23,12 @@ module C-EXPRESSION-IDENTIFIER
      rule [populateFromGlobal]:
           <k> populateFromGlobal => . ...</k>
           <currTU> Tu:K </currTU>
-          <genv>... Tu |-> map(G:Map) ...</genv> 
-          <env> _ => G </env>
-          <gtypes>... Tu |-> map(GT:Map) ...</gtypes> 
-          <types> _ => GT </types>
+          <tu-id> Tu </tu-id>
+          <genv> G:Map </genv> 
+          <gtypes> GT:Map </gtypes> 
           <gstructs> GS:Map </gstructs> 
+          <env> _ => G </env>
+          <types> _ => GT </types>
           <structs> _ => GS </structs>
           [structural]
 

@@ -258,7 +258,9 @@ module C-LITERAL
           <k> (. => allocString(Loc, S))
                ~> Constant(StringLiteral(S:String))
           ...</k>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <stringLiterals>
                M:Map
                (. => S |-> lv(Loc, t(.Set, 
@@ -272,7 +274,9 @@ module C-LITERAL
           <k> (.K => allocWString(Loc, S))
                ~> Constant(WStringLiteral(S:KList))
           ...</k>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <stringLiterals>
                M:Map
                (.Map => wstring(S) |-> lv(Loc, t(.Set, 
@@ -287,9 +291,7 @@ module C-LITERAL
           [structural]
      rule [const-wstring-found]:
           <k> Constant(WStringLiteral(S:KList)) => V ...</k>
-          <stringLiterals>...
-               wstring(S) |-> V:LValue
-          ...</stringLiterals>
+          <stringLiterals>... wstring(S) |-> V:LValue ...</stringLiterals>
           [structural]
 endmodule
 

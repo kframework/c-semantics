@@ -97,10 +97,11 @@ module C-STATEMENT-GOTO
      syntax K ::= processGotoSameBlock(List, List)
      rule <k> Goto(Lbl:K) ~> _ => processGoto(GotoInfo) </k>
           <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <gotoMap>... 
-               kpair(Tu:K, F:Id) |-> map((_ (Lbl:K |-> GotoInfo:K))) 
-          ...</gotoMap>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>... 
+               F |-> map((_ (Lbl |-> GotoInfo:K))) 
+          ...</goto-map>
           [structural]  // rule so that looping programs see repetition
           
      // - first case, when we're in the same block

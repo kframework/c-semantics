@@ -15,6 +15,7 @@ module C-EXECUTION-INIT
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-DECLARATION-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-EXPRESSION-IDENTIFIER-SYNTAX
@@ -72,10 +73,17 @@ module C-EXECUTION-INIT
           [structural]
           
      rule pgmArgs(L:KList)
-          => declareOnly(
+          => makeArgv(
                Identifier("#incomingArgumentsArray"), 
                t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
                (lengthKList L) +Int 1)))
+          [structural]
+
+     syntax K ::= makeArgv(Id, Type)
+     rule makeArgv(X:Id, T:Type) 
+          => allocateType(argvLoc, T)
+          ~> addToEnv(X, argvLoc)
+          ~> giveType(X, T)
           [structural]
 
      /*@ These helpers are used to get around a bug in \K related to successive
@@ -89,7 +97,7 @@ module C-EXECUTION-INIT
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
                     <threadId> _ => 1 </threadId>
-                    <nextLoc> _ => firstLoc(1) </nextLoc>
+                    <nextLoc> _ => firstLoc(thread(0)) </nextLoc>
                     <threadLocal>...
                          <control>...
                               <currentFunction> 
@@ -135,6 +143,7 @@ module C-EXECUTION-INIT
                <k> loadConfig'(C:Bag) => . ...</k>
                <global> (_:Bag => C) </global>
           ...</exec>
+          [structural]
 
      /*@ 
      \begin{lrbox}{\LstBox}

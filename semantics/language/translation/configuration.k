@@ -4,37 +4,46 @@ module C-CONFIGURATION
 
      configuration 
      <global>
-          <gotoMap color="lightgray"> .Map </gotoMap>
-          <genv color="lightgray"> .Map </genv>
-          <gtypes color="lightgray"> .Map </gtypes>
           <gstructs color="lightgray"> .Map </gstructs>
           <stringLiterals color="lightgray"> .Map </stringLiterals>
-          <nextSharedLoc color="black"> .K </nextSharedLoc>
-          <mem> .Map </mem>
 
-          // map from current tu to (map from id to where function was
-          // defined)             
-          <funTUs color="lightgray"> .Map </funTUs>
+          <mem> .Map </mem>
+          <functions color="lightgray"> .Map </functions>
+
           <mainTU color="lightgray"> .K </mainTU>
           <freshUnnamed color="black"> 0 </freshUnnamed>
-          <functions color="lightgray"> .Map </functions>
           <notWritable> .Map </notWritable>
           <externalLocations color="cyan"> .Map </externalLocations>
+
+          <linking-state>
+               // Id |-> Set(TUs)
+               <external-decls> .Map </external-decls>
+               // Id |-> Type
+               <external-types> .Map </external-types>
+               // Id |-> Loc
+               <external-defs> .Map </external-defs>
+          </linking-state>
+
+          // dummy link loc |-> real loc
+          <linkings> .Map </linkings>
+
+          <translation-units>
+               <tu multiplicity="*">
+                    <tu-id> .K </tu-id>
+                    <genv color="lightgray"> .Map </genv>
+                    <gtypes color="lightgray"> .Map </gtypes>
+                    <externals> .Map </externals>
+                    <internals> .Map </internals>
+                    // TODO(chathhorn): consider combining.
+                    <next-link-loc> .K </next-link-loc>
+                    <next-static-loc> .K </next-static-loc>
+
+                    <goto-map color="lightgray"> .Map </goto-map>
+               </tu>
+          </translation-units>
      </global>
      <T multiplicity="?">
      <exec>
-          <leftoverExterns color="cyan"> .Bag </leftoverExterns>
-          <translationUnits color="cyan"> .Bag </translationUnits>
-          <declarationOrder color="cyan"> .Map </declarationOrder>
-          <externalDefinitions color="cyan"> .Map </externalDefinitions>
-          <internalDefinitions color="cyan"> .Map </internalDefinitions>
-
-          <preLinkage color="cyan"> .Map </preLinkage>
-          <preTypes color="cyan"> .Map </preTypes>
-
-          <externals> .Map </externals>
-          <internals> .Map </internals>
-
           <rawTypes> .Map </rawTypes>
           <typeSpecifiers> .Map </typeSpecifiers>
 
@@ -48,70 +57,68 @@ module C-CONFIGURATION
                .K
           </finalComputation>
 
-          <threadLocal>
-               <calculateGotoMap color="cyan">
-                    <gotoCalculation multiplicity="*" color="cyan">
-                         <computation color="cyan"> .K </computation>
-                         <computationTail color="cyan">
-                              .K
-                         </computationTail>
-                         <declarationStack color="cyan">
-                              .List
-                         </declarationStack>
-                         <nestingDepthGoto color="cyan">
-                              0
-                         </nestingDepthGoto>
-                         <blockHistoryGoto color="cyan">
-                              .List
-                         </blockHistoryGoto>
-                         <loopStackGoto color="cyan">
-                              .List
-                         </loopStackGoto>
-                    </gotoCalculation>
-               </calculateGotoMap>
-               <control>
-                    // general information
-                    <currTU color="lightgray"> "" </currTU>
-                    <currentFunction color="lightgray">
+          <calculateGotoMap color="cyan">
+               <gotoCalculation multiplicity="*" color="cyan">
+                    <computation color="cyan"> .K </computation>
+                    <computationTail color="cyan">
                          .K
-                    </currentFunction>
-                    <currentProgramLoc color="black">
+                    </computationTail>
+                    <declarationStack color="cyan">
+                         .List
+                    </declarationStack>
+                    <nestingDepthGoto color="cyan">
+                         0
+                    </nestingDepthGoto>
+                    <blockHistoryGoto color="cyan">
+                         .List
+                    </blockHistoryGoto>
+                    <loopStackGoto color="cyan">
+                         .List
+                    </loopStackGoto>
+               </gotoCalculation>
+          </calculateGotoMap>
+          <control>
+               // general information
+               <currTU color="lightgray"> "" </currTU>
+               <currentFunction color="lightgray">
+                    .K
+               </currentFunction>
+               <currentProgramLoc color="black">
+                    .K
+               </currentProgramLoc>
+
+               <controlDetails> // TODO(chathhorn): dumb name
+                    <local>
+                         // maps from Ids
+                         <env color="red"> .Map </env>
+                         <types color="lightgray"> .Map </types>
+                         <structs color="lightgray"> .Map </structs>
+                    </local>
+                    <blockStack color="violet"> .List </blockStack>
+
+                    // used to figure initializers
+                    <currentObject color="cyan">
+                         .List
+                    </currentObject>
+                    <currentSubObject color="cyan">
+                         .List
+                    </currentSubObject>
+                    <incompleteLength color="cyan">
+                         0
+                    </incompleteLength>
+                    <savedInitialization color="cyan">
                          .K
-                    </currentProgramLoc>
+                    </savedInitialization>
 
-                    <controlDetails> // TODO(chathhorn): dumb name
-                         <local>
-                              // maps from Ids
-                              <env color="red"> .Map </env>
-                              <types color="lightgray"> .Map </types>
-                              <structs color="lightgray"> .Map </structs>
-                         </local>
-                         <blockStack color="violet"> .List </blockStack>
-
-                         // used to figure initializers
-                         <currentObject color="cyan">
-                              .List
-                         </currentObject>
-                         <currentSubObject color="cyan">
-                              .List
-                         </currentSubObject>
-                         <incompleteLength color="cyan">
-                              0
-                         </incompleteLength>
-                         <savedInitialization color="cyan">
-                              .K
-                         </savedInitialization>
-
-                         // used for typing expressions
-                         <type multiplicity="?" color="cyan"> .K </type>
-                         // holds the innermost type while we unroll the
-                         // type around it
-                         <declarationTypeHolder color="cyan">
-                              .K
-                         </declarationTypeHolder>
-                    </controlDetails>        
-               </control>
-          </threadLocal>
+                    // used for typing expressions
+                    <type multiplicity="?" color="cyan"> .K </type>
+                    // holds the innermost type while we unroll the
+                    // type around it
+                    <declarationTypeHolder color="cyan">
+                         .K
+                    </declarationTypeHolder>
+               </controlDetails>        
+          </control>
 
      </exec>
 

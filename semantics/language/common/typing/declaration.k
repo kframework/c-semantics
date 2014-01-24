@@ -37,10 +37,11 @@ module C-TYPING-DECLARATION
           
      rule <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
-          <gtypes>...
-               Tu:K |-> map((M':Map => M':Map[T:KResult / X:Id]))
-          ...</gtypes>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <gtypes>
+               M':Map => M':Map[T:KResult / X:Id]
+          </gtypes>
           [structural]
      rule <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>

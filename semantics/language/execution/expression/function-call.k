@@ -1,5 +1,5 @@
 module C-EXPRESSION-FUNCTION-CALL-SYNTAX
-     syntax K ::= "application'" "(" K "," KList ")" [strict(1)]
+     syntax K ::= "application'" "(" String "," K "," KList ")" [strict(2)]
 endmodule
 
 module C-EXPRESSION-FUNCTION-CALL
@@ -9,17 +9,20 @@ module C-EXPRESSION-FUNCTION-CALL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-BINDING-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
 
      imports COMPAT-SYNTAX
 
-     syntax K ::= application(K, KList) [strict(1)]
+     syntax K ::= application(String, K, KList) [strict(2)]
 
      // TODO(chathhorn): KList heating bug
-     rule application(K:K, L:KList) => K ~> application(HOLE, L) [heat]
-     rule K:K ~> application(HOLE, L:KList) => application(K, L) [cool]
+     rule application(Tu:String, K:K, L:KList) 
+          => K ~> application(Tu, HOLE, L) [heat]
+     rule K:K ~> application(Tu:String, HOLE, L:KList) 
+          => application(Tu, K, L) [cool]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
@@ -70,22 +73,22 @@ module C-EXPRESSION-FUNCTION-CALL
 
      rule [function-application-pre]:
           <k> Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:KList))
-          => sequencePoint ~> application(Fun, L)
+          => sequencePoint ~> application(getTU(Loc), Fun, L)
           ...</k>
           <functions>... Loc |-> Fun:KResult ...</functions>
           when isFunctionType(T)
           [structural]
 
-     /*@ this extra step is useful for putting the function name in the
-        transition graph */
+     /*@ This extra step is useful for putting the function name in the
+        transition graph. */
      rule [call]:
-          application(Fun:KResult, L:KList) 
-          => application'(Fun, L:KList)
+          application(Tu:String, Fun:KResult, L:KList) 
+          => application'(Tu, Fun, L:KList)
           [structural]
 
      rule [function-application]:
           <k> 
-               application'(functionObject(X:Id, 
+               application'(Tu:String, functionObject(X:Id, 
                     t(_, functionType(_:Type, P:KList)), B:K), L:KList) 
                     ~> K:K 
                => sequencePoint
@@ -111,7 +114,6 @@ module C-EXPRESSION-FUNCTION-CALL
                // TODO(chathhorn): better way to initialize?
                (C:Bag => <controlDetails>... .Bag ...</controlDetails>)
           </control>
-          <funTUs>... OldTu |-> map((_ X |-> Tu:K)) ...</funTUs>
           [structural, large]
 endmodule
 

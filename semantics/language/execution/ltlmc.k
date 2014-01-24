@@ -213,10 +213,10 @@ module C-LTLMC
      rule ltlLVal'(
           <generatedTop>... <T>...
                <genv>... 
-                    _ |-> map(_ Identifier(S) |-> Loc:SymLoc) 
+                    Identifier(S) |-> Loc:SymLoc
                ...</genv>
                <gtypes>... 
-                    _ |-> map(_ Identifier(S) |-> T:Type) 
+                    Identifier(S) |-> T:Type
                ...</gtypes>
           ...</T> ...</generatedTop>, 
           S:String)

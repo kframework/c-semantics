@@ -137,8 +137,7 @@ module C-DECLARATION-GENERAL
           when notBool (isAggregateType(T) orBool isUnionType(T))
           [structural] 
                
-     rule <k> 
-               figureInit-aux(_:Id, t(_, 
+     rule <k> figureInit-aux(_:Id, t(_, 
                     (incompleteArrayType(T:Type) 
                     => arrayType(T, N))), initializer(_))
           ...</k>
@@ -151,30 +150,30 @@ module C-DECLARATION-GENERAL
           => defineType(SingleName(T, K))
                ~> Typedef(NameGroup(T, klist(L)))
           [structural]
-     rule Typedef(NameGroup(_:Type, klist(.KList))) => .K
+     rule Typedef(NameGroup(_:Type, klist(.KList))) => .
           [structural]
 
-     syntax K ::= "defineType" "(" K ")" [strict] 
+     syntax K ::= defineType(K) [strict] 
 
      rule defineType(typedDeclaration(T:Type, X:Id)) 
           => giveType(typedef(X), T) 
           [structural] 
 
-     syntax K ::= "addToLinkage" "(" Id "," Type ")"
-     syntax K ::= "addToGlobalEnv" "(" K "," SymLoc ")"
-     syntax K ::= "addToLocalEnv" "(" K "," SymLoc ")"
+     syntax K ::= addToGlobalEnv(K, SymLoc)
+     syntax K ::= addToLocalEnv(K, SymLoc)
      
      rule <k> addToEnv(X:Id, Loc:SymLoc) => addToGlobalEnv(X, Loc) ...</k>
           <currentFunction> file-scope </currentFunction>
           [structural] 
      rule <k> addToEnv(X:Id, Loc:SymLoc) => addToLocalEnv(X, Loc) ...</k>
-          <currentFunction> F:K </currentFunction>
+          <currentFunction> F:Id </currentFunction>
           when F =/=K file-scope
           [structural] 
           
      rule <k> addToGlobalEnv(X:Id, Loc:SymLoc) => . ...</k>
-          <genv>... Tu:K |-> map((M':Map => M':Map[Loc / X:Id])) ...</genv>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id> 
+          <genv> G:Map => G:Map[Loc / X] </genv>
           <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
      rule <k> addToLocalEnv(X:Id, Loc:SymLoc) => . ...</k>

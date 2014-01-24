@@ -44,8 +44,9 @@ module C-STATEMENT-SWITCH
                => handleSwitch-aux(SN, V, map(M)) 
           ...</k>
           <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu, F) |-> map(M:Map) ...</gotoMap>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>... F |-> map(M:Map) ...</goto-map>
           [structural] 
           
      // K to be evaluated, val it should be, casehelper

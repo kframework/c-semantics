@@ -56,21 +56,18 @@ module C-MEMORY-READING
           when notBool(isFunctionType(T))
           [structural]
      
-     syntax K ::= "readActual" "(" SymLoc "," Type "," K ")" 
+     syntax K ::= readActual(SymLoc, Type, K) 
           [strict(3), klabel('readActual)]
      
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule [read-thread-local]:
-          ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
-          when Th =/=Int 0
+          read-aux(Loc:SymLoc, T:Type, K:K) => readActual(Loc, T, K)
+          when isThreadDuration(Loc)
           [structural]
-     rule [read-shared]: // read global or shared data
-          ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
-          [ndtrans]
      rule [read-allocated]: // read data of "allocated" duration
-          ('read-aux => 'readActual)
-               (loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
+          read-aux(Loc:SymLoc, T:Type, K:K) => readActual(Loc, T, K)
+          when notBool isThreadDuration(Loc)
           [ndtrans]
      
      rule [read]:

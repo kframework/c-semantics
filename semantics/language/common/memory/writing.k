@@ -32,32 +32,21 @@ module C-MEMORY-WRITING
      
      syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
      
+     // Write thread-local or auto.
      rule [write-thread-local]:
                write-aux(
-                    loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), 
+                    Loc:SymLoc,
                     tv(L:KList, T:Type), BitSize:TypedValue)
                => write-specific(
-                    loc(N @ Th, Offset, BitOffset), 
+                    Loc:SymLoc,
                     tv(L, T), value(BitSize))
-          when Th =/=Int 0
+          when isThreadDuration(Loc)
           [structural]
-     // write global or shared data
-     rule [write]:
-          write-aux(
-               loc(N:Int @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:Type), BitSize:TypedValue)
-          => write-specific(
-               loc(N @ 0, Offset, BitOffset), 
-               tv(L, T), value(BitSize))
-          [ndtrans]
-     // write data of "allocated" duration
+     // Write global, shared data, or "allocated" duration.
      rule [write-allocated]:
-          write-aux(
-               loc(N:Int @ allocatedDuration, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:Type), BitSize:TypedValue)
-          => write-specific(
-               loc(N @ allocatedDuration, Offset, BitOffset), 
-               tv(L, T), value(BitSize))
+          write-aux(Loc:SymLoc, tv(L:KList, T:Type), BitSize:TypedValue)
+          => write-specific(Loc, tv(L, T), value(BitSize))
+          when notBool isThreadDuration(Loc)
           [ndtrans]
 
      syntax Set ::= attrs(Type) [function]

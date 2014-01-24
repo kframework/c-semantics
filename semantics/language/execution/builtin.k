@@ -12,8 +12,8 @@ module C-BUILTIN
      imports C-SYMLOC-SYNTAX
      
      rule [builtin-application]:
-          application'(functionPrototype(X:Id, T:Type), L:KList)
-          => application'(functionObject(X, T, handleBuiltin(X, T)), L)
+          application'(Tu:String, functionPrototype(X:Id, T:Type), L:KList)
+          => application'(Tu, functionObject(X, T, handleBuiltin(X, T)), L)
           [structural]
 
      rule [lookup-builtin-function-notfound]:

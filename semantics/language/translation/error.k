@@ -303,7 +303,8 @@ module C-TRANSLATION-ERROR
 
      rule (. => ERROR("00267",
                "Function " +String S +String " declared with type qualifiers.", 67)) 
-          ~> declareFunction(Identifier(S:String), T:Type, _)
-          when getQualifiers(T) =/=Set .Set
+          ~> doDeclare'(typedDeclaration(T:Type, Identifier(S:String)), _)
+          when isFunctionType(T)
+               andBool getQualifiers(T) =/=Set .Set
 
 endmodule

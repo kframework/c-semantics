@@ -1,5 +1,5 @@
 module C-FUNCTION-DEF
-     imports C-DECLARATION-GLOBAL-SYNTAX
+     imports C-DECLARATION-GENERAL-SYNTAX
      imports C-DECLARATION-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
      imports C-TYPING-SYNTAX
@@ -15,8 +15,7 @@ module C-FUNCTION-DEF
      // FIXME check prototypes
      rule [function-definition]:
           FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
-          => verifyDecl(typedDeclaration(T, X))
-          ~> processFunDef(X, T, safeBody(X, Blk))
+          => processFunDef(X, T, safeBody(X, Blk))
           when isFunctionType(T)
           [structural]
 
@@ -24,27 +23,21 @@ module C-FUNCTION-DEF
                 | staticEval(Id, Type, K)
 
      rule processFunDef(X:Id, T:Type, K:K) 
-          => createNewFun(X, T, K)
-          // TODO(chathhorn): could these be combined?
-          ~> calculateGotoMap(X, K)
-          ~> staticEval(X, unqualifyType(T), K)
-
-     syntax K ::= createNewFun(Id, Type, K) [function]
-
-     rule createNewFun(X:Id, T:Type, Blk:K)
-          => declareFunction(
-               X, 
-               T, 
+          => doDeclare(
+               typedDeclaration(T, X), 
                initializer(initFunction(
                     &(X), 
                     functionObject(
                          X, 
                          unqualifyType(T), 
-                         Blk
+                         K
                     )
                ))
           )
-          
+          // TODO(chathhorn): could these be combined?
+          ~> calculateGotoMap(X, K)
+          ~> staticEval(X, unqualifyType(T), K)
+
      syntax K ::= safeBody(Id, K) [function]
 
      rule safeBody(X:Id, Blk:K) 

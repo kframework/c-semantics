@@ -494,10 +494,9 @@ module C-DECLARATION-INITIALIZATION
      // set of global envs, one for each tu
      
      rule [initialize-function]:
-          <k> 
-               initFunction(tv(Loc:SymLoc, 
-                    t(_, pointerType(T:Type))), Fun:KResult) 
-               => .K
+          <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), 
+                    Fun:KResult) 
+               => .
           ...</k>
           <functions> M:Map => M:Map[Fun / Loc] </functions>
           when isFunctionType(T)

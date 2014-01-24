@@ -1,4 +1,5 @@
 module C-DECLARATION-RESOLUTION-SYNTAX
+     syntax K ::= "allocateIncompleteInternals"
      syntax K ::= "resolveReferences"
 endmodule
 
@@ -15,7 +16,44 @@ module C-DECLARATION-RESOLUTION
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule resolveReferences => .
+     rule allocateIncompleteInternals => .
+
+     rule <k> resolveReferences ...</k>
+          <external-decls>...
+               X:Id |-> set((SetItem(Tu:String) => .) _)
+          ...</external-decls>
+          <external-defs>...
+               X:Id |-> Loc:SymLoc
+          ...</external-defs>
+          <external-types>...
+               X:Id |-> T:Type
+          ...</external-types>
+          <tu-id> Tu </tu-id>
+          <genv>...
+               X |-> (_ => Loc)
+          ...</genv>
+          <gtypes>...
+               X |-> (_ => T)
+          ...</gtypes>
+
+     rule <k> resolveReferences ...</k>
+          <external-decls>...
+               X:Id |-> set(.Set)
+          ...</external-decls>
+          <external-defs>...
+               (X:Id |-> _ => .)
+          ...</external-defs>
+          <external-types>...
+               (X:Id |-> _ => .)
+          ...</external-types>
+
+     rule <k> resolveReferences => . ...</k>
+          (<linking-state>
+               <external-decls> .Map </external-decls>
+               <external-defs> .Map </external-defs>
+               <external-types> .Map </external-types>
+          </linking-state> => .Bag)
+
      
    //   syntax K ::= resolve(K)
    //   rule <k> (. => resolve(Tu)) ~> resolveReferences ...</k>

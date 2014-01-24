@@ -18,14 +18,14 @@ module C-CHECK-LOC
      rule [check-valid-loc]:
           <k> 
                checkValidLoc-aux(
-                    loc(N:Int @ PtrThreadId:ThreadId, Offset:Int, 0)) 
+                    loc(N:Int @ Dur:Duration, Offset:Int, 0)) 
                => . 
           ...</k>
-          <mem>... N @ PtrThreadId |-> memblock(Len:Int, _, _) ...</mem>
-          <threadId> MyThreadId:ThreadId </threadId>
-          when (PtrThreadId ==K MyThreadId
-               orBool (PtrThreadId ==K 0)
-               orBool (PtrThreadId ==K allocatedDuration)
+          <mem>... N @ Dur |-> memblock(Len:Int, _, _) ...</mem>
+          <threadId> ThreadId:Int </threadId>
+          when (Dur ==K thread(ThreadId)
+               orBool isStaticDuration(loc(N @ Dur, Offset, 0))
+               orBool isAllocatedDuration(loc(N @ Dur, Offset, 0))
                ) // my thread, global memory, or allocated (malloced) memory
                andBool (Offset <=Int Len) // we're allowed to address one past
           [structural]

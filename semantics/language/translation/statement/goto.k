@@ -4,10 +4,11 @@ module C-STATEMENT-GOTO
 
      rule <k> Goto(Lbl:Id) => . ...</k>
           <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <gotoMap>... 
-               kpair(Tu, F) |-> map((_ (Lbl |-> _))) 
-          ...</gotoMap>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>... 
+               F |-> map((_ (Lbl |-> _))) 
+          ...</goto-map>
           [structural]
           
 endmodule

@@ -44,8 +44,7 @@ module C-COMPOUND-LITERAL
                figureInit(compoundLiteral(N), DeclType(T, K), Init))
           [structural]
           
-     rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
@@ -53,16 +52,19 @@ module C-COMPOUND-LITERAL
                ~> Init
                ~> X
           ...</k>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <currentFunction> file-scope </currentFunction>
           [structural]
 
-     rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:Type, _))
+     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, _))
                => giveType(X, T)
                ~> X
           ...</k>
-          <currentFunction> F:Id </currentFunction>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> F:Id </next-static-loc>
           when F =/=K file-scope
           [structural]
           

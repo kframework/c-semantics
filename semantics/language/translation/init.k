@@ -11,50 +11,33 @@ module C-TRANSLATION-INIT
      imports COMPAT-SYNTAX
 
      rule <k> Program(klist(P:KList)) 
-          => klistToK(P) ~> resolveReferences ~> initBuiltins </k>
-          <threadLocal>...
-               <control>...
-                    <currentFunction> 
-                         _ => file-scope
-                    </currentFunction>
-                    <currentProgramLoc>
-                         _ => UnknownCabsLoc
-                    </currentProgramLoc>
-               ...</control>
-          ...</threadLocal>
-          <nextSharedLoc> _ => firstLoc(0) </nextSharedLoc>
+               => klistToK(P) ~> resolveReferences ~> initBuiltins 
+          </k>
+          <control>...
+               <currentFunction> 
+                    _ => file-scope
+               </currentFunction>
+               <currentProgramLoc>
+                    _ => UnknownCabsLoc
+               </currentProgramLoc>
+          ...</control>
           [structural, large]
 
-     syntax K ::= "canonicalizeTranslationUnitVariables"
+     // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule [unpack-TranslationUnit]:
-          <k> 
-               TranslationUnit(TUName:String, Strings:K, K:K) 
+          <k> TranslationUnit(Tu:String, Strings:K, K:K) 
                => preDeclareStrings(Strings)
                ~> klistToK(eraseKLabel('StmtCons, K))
+               ~> allocateIncompleteInternals
           ...</k>
-          <currTU> _ => TUName </currTU>
-          <declarationOrder> 
-               DeclOrder:Map => DeclOrder:Map[ListToK(.List) / TUName] 
-          </declarationOrder>
-          <funTUs> Funs:Map => Funs:Map[map(.) / TUName] </funTUs>
-          <translationUnits>...
-               . => BagItem(TUName)
-          ...</translationUnits>
-          <preLinkage>
-               Lnk:Map => Lnk:Map[map(.) / TUName]
-          </preLinkage>
-          <preTypes>
-               Types:Map => Types:Map[map(.) / TUName]
-          </preTypes>
-          <internalDefinitions>
-               Def:Map => Def:Map[map(.) / TUName]
-          </internalDefinitions>
-          <internals>
-               Ints:Map => Ints:Map[map(.) / TUName]
-          </internals>
-          <genv> Env:Map => Env:Map[map(.) / TUName] </genv>
-          <gtypes> Gtypes:Map => Gtypes:Map[map(.) / TUName]</gtypes>
-          when notBool $hasMapping(Env, TUName)
+          <currTU> _ => Tu </currTU>
+          <translation-units>...
+               (. => <tu>...
+                    <tu-id> Tu </tu-id>
+                    <next-link-loc> firstLoc(link(Tu)) </next-link-loc>
+                    <next-static-loc> firstLoc(static(Tu)) </next-static-loc>
+               ...</tu>)
+          ...</translation-units>
           [structural, large]
           
      syntax K ::= preDeclareStrings(K)
@@ -67,43 +50,44 @@ module C-TRANSLATION-INIT
      
      syntax SemMode ::= "InterpMode" | "DebugMode"
      rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
+          [structural]
           
      syntax K ::= "initBuiltins"
      syntax K ::= initBuiltins(Map)
 
      rule <k> initBuiltins => initBuiltins(T) ...</k>
           <types> T:Map </types>
+          [structural]
 
      // TODO(chathhorn): this is mostly duped from execution.k
      rule [lookup-builtin-id-notfound]:
-          <k> (.K 
-                    => addToEnv(X, Loc)
-                         ~> initFunction(
-                              tv(Loc, t(.Set, pointerType(T))),
-                              functionPrototype(X, T)
-                         )
-               )
+          <k> (. => addToEnv(X, Loc)
+                    ~> initFunction(
+                         tv(Loc, t(.Set, pointerType(T))), 
+                         functionPrototype(X, T))) 
                ~> X:Id
           ...</k>
           <env> Env:Map </env>
           <types>... X |-> T:Type ...</types>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when isFunctionType(T)
                andBool notBool X in keys Env
           [large, structural]
 
      rule [lookup-builtin-function-notfound]:
-          <k> (.K 
-                    => addToEnv(X, Loc)
-                         ~> initFunction(
-                              tv(Loc, t(.Set, pointerType(T))),
-                              functionPrototype(X, T)
-                         )
-               )
-               ~> initBuiltins(X:Id |-> T:Type M:Map => M)
+          <k> (. => addToEnv(X, Loc)
+                    ~> initFunction(
+                         tv(Loc, t(.Set, pointerType(T))),
+                         functionPrototype(X, T)))
+               ~> initBuiltins((X:Id |-> T:Type => .) _:Map)
           ...</k>
           <env> Env:Map </env>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
+          // TODO(chathhorn): need to get correct TU!
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when isFunctionType(T)
                andBool notBool X in keys Env
           [large, structural]
@@ -113,7 +97,9 @@ module C-TRANSLATION-INIT
           <env> Env:Map </env>
           when (notBool isFunctionType(T))
                orBool (X in keys Env)
+          [structural]
 
      rule initBuiltins(.Map) => .
+          [structural]
 
 endmodule

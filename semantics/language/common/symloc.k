@@ -1,14 +1,38 @@
 module C-SYMLOC-SYNTAX
-     syntax K ::= firstLoc(K) [function]
+     syntax K ::= firstLoc(Duration) [function]
      syntax SymBase ::= base(SymLoc) [function]
 
-     syntax ThreadId ::= Int
-     syntax ThreadId ::= "allocatedDuration"
-     syntax SymBase ::= Int "@" ThreadId
+     // We got basically 4 different memory sorts:
+     // allocated -- allocated duration. The heap.
+     // thread -- thread local and also auto storage class. Automatic storage
+     // duration (the stack) plus thread-local.
+     // static -- per-TU memory allocated during the translation phase.
+     // Corresponds to the static storage class, data segment, bss, etc.
+     // argv -- where the arguments to main() go.
+     // 
+     // Also, we have special "linker" locations for unresolved (before
+     // linking) external references.
+     // 
+     // TODO(chathhorn): maybe add an actual "auto" storage duration?
+     syntax Duration ::= "allocated" [avoid]
+     syntax Duration ::= link(String)
+     syntax Duration ::= static(String)
+     syntax Duration ::= thread(Int)
 
-     // Base, byte offset, bit offset
+     syntax Bool ::= isAllocatedDuration(SymLoc) [function]
+     // I.e., static or link.
+     syntax Bool ::= isStaticDuration(SymLoc) [function]
+     syntax Bool ::= isThreadDuration(SymLoc) [function]
+     syntax Bool ::= isLinkerLoc(SymLoc) [function]
+
+     syntax SymBase ::= Int "@" Duration
+     syntax SymBase ::= "argv"
+
+     // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int, Int) [klabel('loc)]
      syntax SymLoc ::= "NullPointer"
+
+     syntax SymLoc ::= "argvLoc" [function]
 
      syntax KResult ::= SymLoc
 
@@ -23,12 +47,15 @@ module C-SYMLOC-SYNTAX
                    | SymLoc "<=bytes" SymLoc [function]
                    | SymLoc "==bytes" SymLoc [function]
 
-     // loc with possible bit offset returning base byte     
+     // Loc with possible bit offset returning base byte.
      syntax SymLoc ::= floorLoc(SymLoc) [function] 
-     // loc with possible bit offset returning upperbounded byte     
+     // Loc with possible bit offset returning upperbounded byte.
      syntax SymLoc ::= ceilingLoc(SymLoc) [function]
 
      syntax Bool ::= sameBase(SymLoc, SymLoc) [function]
+
+     syntax String ::= getTU(SymLoc) [function]
+
 endmodule
 
 module C-SYMLOC
@@ -36,12 +63,38 @@ module C-SYMLOC
 
      imports C-SETTINGS-SYNTAX
 
-     rule firstLoc(ThreadId:Int) => loc(0 @ ThreadId:Int, 0, 0)
+     syntax Bool ::= "#isAllocatedDuration" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
+
+     syntax Bool ::= "#isLinkerLoc" "(" SymLoc ")" [function]
+
+     rule isAllocatedDuration(Loc:SymLoc) 
+          => #isAllocatedDuration(Loc) ==K true
+     rule isStaticDuration(Loc:SymLoc)
+          => #isStaticDuration(Loc) ==K true
+     rule isThreadDuration(Loc:SymLoc)
+          => #isThreadDuration(Loc) ==K true
+     rule isLinkerLoc(Loc:SymLoc)
+          => #isLinkerLoc(Loc) ==K true
+
+     rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
+
+     rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
+     rule #isStaticDuration(loc(_ @ link(_), _, _)) => true
+
+     rule #isThreadDuration(loc(_ @ thread(_), _, _)) => true
+
+     rule #isLinkerLoc(loc(_ @ link(_), _, _)) => true
+
+     rule firstLoc(D:Duration) => loc(0 @ D, 0, 0)
      
      rule base(loc(Base:SymBase, _, _)) => Base
+
+     rule argvLoc => loc(argv, 0, 0)
      
-     rule linc(loc(X:Int @ Th:ThreadId, ByOff:Int, BiOff:Int))
-          => loc(X +Int 1 @ Th, ByOff, BiOff)
+     rule linc(loc(X:Int @ D:Duration, ByOff:Int, BiOff:Int))
+          => loc(X +Int 1 @ D, ByOff, BiOff)
 
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bits N:Int
           => loc(Base, Offset, BitOffset +Int N)
@@ -73,4 +126,8 @@ module C-SYMLOC
                BitOffset %Int cfg:bitsPerByte)
           when BitOffset:Int >=Int cfg:bitsPerByte
           [structural, anywhere]
+
+     rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
+     rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
 endmodule
+

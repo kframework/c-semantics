@@ -23,11 +23,13 @@ module C-DECLARATION-LOCAL
      syntax K ::= declareInternalVariable(Id, Type, K)
 
      rule [declareExternInternal]:
-          <k> 
-               declareInternalVariable(X:Id, T:Type, NoInit)
+          <k> declareInternalVariable(X:Id, T:Type, NoInit)
                => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))
           ...</k>
-          <externalLocations>... X |-> Loc:SymLoc ...</externalLocations>
+          <genv>...
+               Tu |-> map(_ X |-> Loc:SymLoc)
+          ...</genv>
+          <currTU> Tu:K </currTU>
           when notBool isIncompleteType(T)
                andBool isExternType(T)
           [structural] 
@@ -49,15 +51,14 @@ module C-DECLARATION-LOCAL
           [structural] 
           
      rule <k> declareInternalVariable(_, _, _) ... </k>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
           <internalLocations> 
                Locs:Map (. => Tu |-> map(.Map))
           </internalLocations>
           when notBool $hasMapping(Locs, Tu)
           [structural]
 
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, NoInit)
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
                => addToEnv(X, Loc) ~> giveType(X, unqualifyType(T))
           ...</k>
           <internalLocations>... 
@@ -68,8 +69,9 @@ module C-DECLARATION-LOCAL
           when isStaticType(T)
                andBool notBool isExternType(T)
           [structural, large] 
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, NoInit)
+     // TODO(chathhorn): handle initialization of statics during the
+     // translation phase.
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, unqualifyType(T))
@@ -80,15 +82,15 @@ module C-DECLARATION-LOCAL
                     Loc / kpair(X, BlockNum)])) 
           ...</internalLocations>
           <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when isStaticType(T)
                andBool notBool isExternType(T)
                andBool notBool $hasMapping(Locs, kpair(X, BlockNum))
           [structural, large] 
           
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, K:K)
+     rule <k> declareInternalVariable(X:Id, T:Type, K:K)
                => defineAndInit(X, T,
                     figureInit(X, removeStorageSpecifiers(T), K), Loc)
           ...</k>
@@ -96,19 +98,19 @@ module C-DECLARATION-LOCAL
                Tu |-> map((Locs:Map => Locs:Map[Loc / kpair(X, BlockNum)])) 
           ...</internalLocations>
           <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <nextSharedLoc> Loc:SymLoc => linc(Loc) </nextSharedLoc>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when isStaticType(T)
                andBool (K =/=K NoInit)
                andBool (notBool $hasMapping(Locs, kpair(X, BlockNum)))
           [structural, large] 
                     
-     // this is essentially defineandinit, but that checks if type has been
-     // seen for allocation
-     syntax K ::= "reseenStatic" "(" Id "," Type "," K "," SymLoc ")"
+     // This is essentially defineAndInit, but that checks if the type has been
+     // seen for allocation.
+     syntax K ::= reseenStatic(Id, Type, K, SymLoc)
           [strict(3)] 
-     rule <k> 
-               declareInternalVariable(X:Id, T:Type, K:K)
+     rule <k> declareInternalVariable(X:Id, T:Type, K:K)
                => reseenStatic(X, unqualifyType(T),
                     figureInit(X,
                     removeStorageSpecifiers(T), K), Loc)
@@ -126,8 +128,7 @@ module C-DECLARATION-LOCAL
           => addToEnv(X, Loc) ~> giveType(X, T)
           [structural] 
 
-     rule <k> 
-               declareOnly(X:Id, T:Type)
+     rule <k> declareOnly(X:Id, T:Type)
                => allocateType(Loc, T) ~> addToEnv(X, Loc) ~> giveType(X, T)
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -140,10 +141,9 @@ module C-DECLARATION-LOCAL
                andBool (notBool X in Vars)
           [structural]
 
-     // same as above, but for the case where the variable has already been
-     // declared.  this is seen if we goto earlier in the same block
-     rule <k> 
-               declareOnly(X:Id, T:Type)
+     // Same as above, but for the case where the variable has already been
+     // declared. This is seen if we goto earlier in the same block.
+     rule <k> declareOnly(X:Id, T:Type)
                => .K
           ...</k>
           <localVariables>... ListItem(X) ...</localVariables>
@@ -152,8 +152,7 @@ module C-DECLARATION-LOCAL
                andBool (notBool isExternType(T))
           [structural] 
 
-     rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K)
+     rule <k> declareAndDefine(X:Id, T:Type, K:K)
                => defineAndInit(X, T, figureInit(X, T, K), Loc)
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -165,8 +164,7 @@ module C-DECLARATION-LOCAL
           
      // this happens when we jump before a variable declaration with an
      // initialization in the same block
-     rule <k> 
-               declareAndDefine(X:Id, T:Type, K:K)
+     rule <k> declareAndDefine(X:Id, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
           <localVariables>... ListItem(X) ...</localVariables>
@@ -174,8 +172,7 @@ module C-DECLARATION-LOCAL
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
 
-     rule <k> 
-               defineAndInit(X:Id, T:Type, 
+     rule <k> defineAndInit(X:Id, T:Type, 
                     initValue(X:Id, T':Type, K:K), Loc:SymLoc)
                => allocateTypeIfAbsent(Loc, T')
                     ~> addToEnv(X, Loc)
@@ -187,8 +184,7 @@ module C-DECLARATION-LOCAL
           <shouldInit> true </shouldInit>
           [structural] 
           
-     rule <k> 
-               defineAndInit(X:Id, _,
+     rule <k> defineAndInit(X:Id, _,
                     initValue(X:Id, T':Type, _), Loc:SymLoc)
                => allocateTypeIfAbsent(Loc, T')
                     ~> addToEnv(X, Loc)

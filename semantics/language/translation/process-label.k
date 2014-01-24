@@ -32,9 +32,10 @@ module C-PROCESS-LABEL
      
      syntax K ::= "waitingOnGotoMap"
      rule <k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
-          <gotoMap> M:Map => M:Map[map(.Map) / kpair(Tu, F)] </gotoMap>
           <currentFunction> _ => F </currentFunction>
-          <currTU> Tu:K </currTU>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map> M:Map => M:Map[map(.Map) / F] </goto-map>
           <calculateGotoMap>
                .Bag => (<gotoCalculation>... 
                          <computation> 
@@ -53,13 +54,15 @@ module C-PROCESS-LABEL
           <calculateGotoMap> .Bag </calculateGotoMap>
           <currentFunction> F:Id => file-scope </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu, F) |-> map(.Map) => .Map ...</gotoMap>
+          <tu-id> Tu </tu-id>
+          <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural] 
      rule <k> waitingOnGotoMap => . ...</k>
           <calculateGotoMap> .Bag </calculateGotoMap>
           <currentFunction> F:Id => file-scope </currentFunction>
           <currTU> Tu:K </currTU>
-          <gotoMap>... kpair(Tu, F) |-> map(M:Map) ...</gotoMap>
+          <tu-id> Tu </tu-id>
+          <goto-map>... F |-> map(M:Map) ...</goto-map>
           when M =/=Map .Map
           [structural] 
 
@@ -279,17 +282,18 @@ module C-PROCESS-LABEL
           <computationTail> Tail:K </computationTail>
           <loopStackGoto> LoopStack:List </loopStackGoto>
           <declarationStack> DeclStack:List </declarationStack>
-          <gotoMap>...
-               kpair(Tu, F) |-> map(
+          <currentFunction> F:Id </currentFunction>
+          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
+          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          <currTU> Tu:K </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>...
+               F |-> map(
                     (M:Map => M:Map[
                     gotoObject(Depth, BlockHistory, 
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
                     / Target]))
-          ...</gotoMap>
-          <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          ...</goto-map>
           when notBool $hasMapping(M, Target)
           [structural, large]
           
@@ -299,19 +303,20 @@ module C-PROCESS-LABEL
           <computationTail> Tail:K </computationTail>
           <loopStackGoto> LoopStack:List </loopStackGoto>
           <declarationStack> DeclStack:List </declarationStack>
-          <gotoMap>... 
-               kpair(Tu:K, F:Id) |-> map(
+          <currentFunction> F:Id </currentFunction>
+          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
+          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          <currTU> Tu:K </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>... 
+               F:Id |-> map(
                     (M:Map => (M:Map[
                          case(CaseNum) 
                          / genLabel(SwitchNum, Val)])[
                     gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)
                     / case(CaseNum)])) 
-          ...</gotoMap>
-          <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          ...</goto-map>
           when notBool $hasMapping(M, genLabel(SwitchNum, Val))
           [structural, large] 
      rule <computation>
@@ -320,17 +325,18 @@ module C-PROCESS-LABEL
           <computationTail> Tail:K </computationTail>
           <loopStackGoto> LoopStack:List </loopStackGoto>
           <declarationStack> DeclStack:List </declarationStack>
-          <gotoMap>... 
-               kpair(Tu:K, F:Id) |-> map(
+          <currentFunction> F:Id </currentFunction>
+          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
+          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          <currTU> Tu:K </currTU>
+          <tu-id> Tu </tu-id>
+          <goto-map>... 
+               F:Id |-> map(
                     (M:Map => M:Map[
                     gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
                     / genLabel(SwitchNum, l('Default))])) 
-          ...</gotoMap>
-          <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:K </currTU>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
+          ...</goto-map>
           when notBool $hasMapping(M, genLabel(SwitchNum, l('Default)))
           [structural, large]
 endmodule
