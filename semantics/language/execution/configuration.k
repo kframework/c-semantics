@@ -18,17 +18,16 @@ module C-CONFIGURATION
                <notWritable> .Map </notWritable>
                <externalLocations color="cyan"> .Map </externalLocations>
 
+               // dummy link loc |-> real loc
+               <linkings> .Map </linkings> 
+
                <translation-units>
                     <tu multiplicity="*">
                          <tu-id> .K </tu-id>
                          <genv color="lightgray"> .Map </genv>
                          <gtypes color="lightgray"> .Map </gtypes>
-                         <externals> .Map </externals>
-                         <internals> .Map </internals>
-                         // dummy link loc |-> real loc
-                         <linkings> .Map </linkings> 
-                         // TODO(chathhorn): consider combining.
-                         <next-link-loc> .K </next-link-loc>
+
+                         // TODO(chathhorn): remove.
                          <next-static-loc> .K </next-static-loc>
 
                          <goto-map color="lightgray"> .Map </goto-map>

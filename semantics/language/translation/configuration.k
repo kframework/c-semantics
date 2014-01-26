@@ -32,10 +32,13 @@ module C-CONFIGURATION
                     <tu-id> .K </tu-id>
                     <genv color="lightgray"> .Map </genv>
                     <gtypes color="lightgray"> .Map </gtypes>
-                    <externals> .Map </externals>
-                    <internals> .Map </internals>
-                    // TODO(chathhorn): consider combining.
-                    <next-link-loc> .K </next-link-loc>
+
+                    <tu-linking-state>
+                         <externals> .Map </externals>
+                         <internals> .Map </internals>
+                         <next-link-loc> .K </next-link-loc>
+                    </tu-linking-state>
+
                     <next-static-loc> .K </next-static-loc>
 
                     <goto-map color="lightgray"> .Map </goto-map>

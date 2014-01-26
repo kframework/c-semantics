@@ -315,6 +315,7 @@ module C-DECLARATION-GLOBAL
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (. => X |-> T') </external-types>
           when notBool X in keys Decls
+          [structural]
      // Incomplete type, no def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <currTU> Tu:String </currTU>
@@ -324,6 +325,7 @@ module C-DECLARATION-GLOBAL
                andBool isIncompleteType(T')
                // TODO(chathhorn)
                // andBool isTypeCompatible(T, T')
+          [structural]
      // Complete type, no def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <currTU> Tu:String </currTU>
@@ -333,6 +335,7 @@ module C-DECLARATION-GLOBAL
                andBool notBool isIncompleteType(T')
                // TODO(chathhorn)
                // andBool isTypeCompatible(T, T')
+          [structural]
      // New def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <external-types>... X |-> (_ => T') ...</external-types>
@@ -341,9 +344,11 @@ module C-DECLARATION-GLOBAL
                andBool (notBool X in keys Defs)
                // TODO(chathhorn)
                // andBool isTypeCompatible(T, T')
+          [structural]
      // Def already encountered.
      rule <k> updateLinkState(X:Id, _, Loc':SymLoc) => . ...</k>
           <external-defs>... X |-> Loc' ...</external-defs>
+          [structural]
    
      syntax K ::= allocateDecl(Id, Type, SymLoc)
      rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 

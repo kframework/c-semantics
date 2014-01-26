@@ -6,6 +6,7 @@ require "io-direct.k"
 require "process-label.k"
 require "function-def.k"
 require "init.k"
+require "builtins.k"
 
 require "declaration/resolution.k"
 require "declaration/global.k"
@@ -44,6 +45,7 @@ module C-TRANSLATION
      imports C-FUNCTION-DEF
      imports C-COMPOUND-LITERAL
      imports C-DYNAMIC-SYNTAX
+     imports C-BUILTINS
      imports C-TRANSLATION-INIT
 
      imports C-DECLARATION-RESOLUTION

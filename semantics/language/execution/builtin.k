@@ -1,5 +1,5 @@
 module C-BUILTIN-SYNTAX
-     syntax K ::= "handleBuiltin" "(" Id "," Type ")"
+     syntax K ::= handleBuiltin(Id, Type)
 endmodule
 
 module C-BUILTIN

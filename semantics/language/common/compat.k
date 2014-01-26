@@ -11,6 +11,8 @@ module COMPAT-SYNTAX
      syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
 
+     syntax String ::= idToString(Id) [function]
+
      syntax String ::= toUpperCase(String) [function]
 
      syntax Bool ::= all(KList, KLabel) [function]
@@ -100,6 +102,8 @@ module COMPAT
      rule listToString(.List) => ""
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
+
+     rule idToString(Identifier(S:String)) => S
 
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)

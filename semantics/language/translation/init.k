@@ -7,11 +7,13 @@ module C-TRANSLATION-INIT
      imports C-DECLARATION-RESOLUTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-BUILTINS-SYNTAX
 
      imports COMPAT-SYNTAX
 
+     // TODO(chathhorn): check that main is defined.
      rule <k> Program(klist(P:KList)) 
-               => klistToK(P) ~> resolveReferences ~> initBuiltins 
+               => klistToK(P) ~> resolveReferences
           </k>
           <control>...
                <currentFunction> 
@@ -29,6 +31,7 @@ module C-TRANSLATION-INIT
                => preDeclareStrings(Strings)
                ~> klistToK(eraseKLabel('StmtCons, K))
                ~> allocateIncompleteInternals
+               ~> initBuiltins
           ...</k>
           <currTU> _ => Tu </currTU>
           <translation-units>...
@@ -55,48 +58,49 @@ module C-TRANSLATION-INIT
      syntax K ::= "initBuiltins"
      syntax K ::= initBuiltins(Map)
 
-     rule <k> initBuiltins => initBuiltins(T) ...</k>
-          <types> T:Map </types>
+     // TODO(chathhorn): this is mostly duped from execution.k
+     // rule [lookup-builtin-id-notfound]:
+     //      <k> (. => addToEnv(X, Loc)
+     //                ~> initFunction(
+     //                     tv(Loc, t(.Set, pointerType(T))), 
+     //                     functionPrototype(X, T))) 
+     //           ~> X:Id
+     //      ...</k>
+     //      <env> Env:Map </env>
+     //      <types>... X |-> T:Type ...</types>
+     //      <currTU> Tu:String </currTU>
+     //      <tu-id> Tu </tu-id>
+     //      <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+     //      when isFunctionType(T)
+     //           andBool notBool X in keys Env
+     //      [large, structural]
+
+     rule <k> initBuiltins => initBuiltins(Env) ...</k>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <genv> Env:Map </genv>
           [structural]
 
-     // TODO(chathhorn): this is mostly duped from execution.k
-     rule [lookup-builtin-id-notfound]:
-          <k> (. => addToEnv(X, Loc)
-                    ~> initFunction(
-                         tv(Loc, t(.Set, pointerType(T))), 
-                         functionPrototype(X, T))) 
-               ~> X:Id
-          ...</k>
-          <env> Env:Map </env>
-          <types>... X |-> T:Type ...</types>
-          <currTU> Tu:String </currTU>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-          when isFunctionType(T)
-               andBool notBool X in keys Env
-          [large, structural]
-
      rule [lookup-builtin-function-notfound]:
-          <k> (. => addToEnv(X, Loc)
+          <k> (. => addToEnv(X, Loc')
                     ~> initFunction(
-                         tv(Loc, t(.Set, pointerType(T))),
+                         tv(Loc', t(.Set, pointerType(T))),
                          functionPrototype(X, T)))
-               ~> initBuiltins((X:Id |-> T:Type => .) _:Map)
+               ~> initBuiltins((X:Id |-> Loc:SymLoc => .) _:Map)
           ...</k>
-          <env> Env:Map </env>
-          // TODO(chathhorn): need to get correct TU!
+          // TODO(chathhorn): it'd be nice to use a correct TU.
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-          when isFunctionType(T)
-               andBool notBool X in keys Env
+          <gtypes>... X |-> T:Type ...</gtypes>
+          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
+          when isLinkerLoc(Loc) 
+               andBool (idToString(X) in builtins)
           [large, structural]
 
      rule [lookup-builtin-function-found]:
-          <k> initBuiltins(X:Id |-> T:Type M:Map => M) ...</k>
-          <env> Env:Map </env>
-          when (notBool isFunctionType(T))
-               orBool (X in keys Env)
+          <k> initBuiltins(X:Id |-> Loc:SymLoc M:Map => M) ...</k>
+          when notBool isLinkerLoc(Loc)
+               orBool (notBool idToString(X) in builtins)
           [structural]
 
      rule initBuiltins(.Map) => .
