@@ -96,7 +96,6 @@ module C-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
-                    <threadId> _ => 1 </threadId>
                     <nextLoc> _ => firstLoc(thread(0)) </nextLoc>
                     <threadLocal>...
                          <control>...
@@ -217,7 +216,7 @@ module C-EXECUTION-INIT
           (<exec>...
                <thread>... 
                     // main's thread, not the global "thread"
-                    <threadId> 1 </threadId>
+                    <threadId> 0 </threadId>
                     <k> V:KResult </k>
                ...</thread>
           ...</exec> => .Bag)

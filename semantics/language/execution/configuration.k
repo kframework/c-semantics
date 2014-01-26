@@ -41,7 +41,7 @@ module C-CONFIGURATION
           <malloced color="lightgray"> .Map </malloced>
           <nextMalloced> 0 </nextMalloced>
 
-          <nextThreadId color="black"> 0 </nextThreadId>
+          <nextThreadId color="black"> 1 </nextThreadId>
           <internalLocations color="cyan"> .Map </internalLocations>
 
           <threadInformation color="yellow">
