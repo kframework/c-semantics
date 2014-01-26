@@ -1,6 +1,6 @@
 module C-STMT-LOOP
      imports C-SYNTAX
-     imports C-STMT-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
      
      rule ForClauseExpression(K:K) => Computation(K) [structural]

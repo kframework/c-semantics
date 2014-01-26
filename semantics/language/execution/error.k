@@ -9,7 +9,6 @@ module C-EXECUTION-ERROR
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-BITS-SYNTAX
 
@@ -19,11 +18,9 @@ module C-EXECUTION-ERROR
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-COMMON-EXPR-BITWISE-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-OPERATORS-SYNTAX
+     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-CHECK-LOC-SYNTAX
-
-     imports C-DECL-SYNTAX
 
      imports COMPAT-SYNTAX
 

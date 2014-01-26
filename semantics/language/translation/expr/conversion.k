@@ -4,7 +4,6 @@ module C-EXPR-CONVERSION
 
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      rule cast(t(S:Set, bool), tv(symVal, T:Type)) => tv(symVal, t(S, bool))

@@ -13,15 +13,16 @@ module C-IO-BUFFERED
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      imports DEBUG-SYNTAX
 
-     syntax ListItem ::= "bwrite" "(" SymLoc "," K ")"
+     syntax ListItem ::= bwrite(SymLoc, K)
 
      rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), false)
           => writeByte(Loc, V) ~> 

@@ -5,8 +5,8 @@ module C-TYPING-EXPR
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-PROMOTION-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports COMPAT-SYNTAX
 
      // FIXME need to automatically pad structs

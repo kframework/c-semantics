@@ -1,6 +1,6 @@
 module C-TYPING-MISC-SYNTAX
-     syntax K ::= "addStruct" "(" Id "," KList ")"
-     syntax K ::= "addUnion" "(" Id "," KList ")"
+     syntax K ::= addStruct(Id, KList)
+     syntax K ::= addUnion(Id, KList)
 endmodule
 
 module C-TYPING-MISC
@@ -9,8 +9,8 @@ module C-TYPING-MISC
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -327,8 +327,7 @@ module C-TYPING-MISC
           => addStruct-aux(S, L, V + bitSizeofType(T),
                Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
           [structural]
-     rule <k> 
-               addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
+     rule <k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
                => #if (F:Id ==K file-scope) 
                     #then (addGlobalAggregate(S, 
                          aggregateInfo(L, Types, Offsets))) 
@@ -366,6 +365,7 @@ module C-TYPING-MISC
           <currentFunction> F:Id </currentFunction>
           [structural]
 
+     // TODO(chathhorn): should move this elsewhere.
      rule <k> addGlobalAggregate(X:Id, K:K) => . ...</k>
           <structs> M':Map => M':Map[K / X] </structs>
           <gstructs> M:Map => M:Map[K / X] </gstructs>
@@ -588,5 +588,20 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'qualifiedType
           
      rule getModifiers(t(S:Set, _)) => S
+          
+     rule [innerType-arrayType]:
+          innerType(t(_, arrayType(T:Type, _:Int))) => T
+     rule [innerType-incompleteArrayType]: 
+          innerType(t(_, incompleteArrayType(T:Type))) => T
+     rule [innerType-flexibleArrayType]: 
+          innerType(t(_, flexibleArrayType(T:Type))) => T
+     rule [innerType-qualifiedType]:
+          innerType(t(_, qualifiedType(T:Type, _))) => innerType(T)
+     rule [innerType-pointerType]:
+          innerType(t(_, pointerType(T:Type))) => T
+     rule [innerType-bitfieldType]:
+          innerType(t(_, bitfieldType(T:Type, _:Int))) => T
+     rule [innerType-functionType]:
+          innerType(t(_, functionType(T:Type, _:KList))) => T
 endmodule
 

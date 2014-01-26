@@ -1,16 +1,23 @@
+module C-FUNCTION-DEF-SYNTAX
+     syntax K ::= initFunction(K, K) [strict]
+endmodule
+
 module C-FUNCTION-DEF
-     imports C-DECL-GENERAL-SYNTAX
-     imports C-DECL-SYNTAX
+     imports C-FUNCTION-DEF-SYNTAX
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+
      imports C-PROCESS-LABEL-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
-
      imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
+     imports C-ENV-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports COMPAT-SYNTAX
 
      // FIXME check prototypes
      rule [function-definition]:
@@ -37,6 +44,16 @@ module C-FUNCTION-DEF
           // TODO(chathhorn): could these be combined?
           ~> calculateGotoMap(X, K)
           ~> staticEval(X, unqualifyType(T), K)
+
+     rule [initialize-function]:
+          <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), 
+                    Fun:KResult) 
+               => .
+          ...</k>
+          <functions> M:Map => M:Map[Fun / Loc] </functions>
+          when isFunctionType(T)
+               andBool notBool $hasMapping(M, Loc)
+          [structural]
 
      syntax K ::= safeBody(Id, K) [function]
 

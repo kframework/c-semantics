@@ -1,6 +1,4 @@
 module C-STMT-SWITCH
-     imports C-STMT-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-PROMOTION-SYNTAX

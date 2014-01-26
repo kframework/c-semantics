@@ -8,13 +8,14 @@ module C-TRANSLATION-ERROR
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
 
      imports C-COMMON-EXPR-EVAL-SYNTAX
 
      imports C-TYPING-MISC-SYNTAX
 
-     imports C-DECL-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
 
      imports COMPAT-SYNTAX
 

@@ -2,8 +2,9 @@ module C-IO-DIRECT
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX

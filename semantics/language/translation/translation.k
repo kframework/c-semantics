@@ -6,7 +6,6 @@ require "io-direct.k"
 require "process-label.k"
 require "function-def.k"
 require "init.k"
-require "builtins.k"
 
 require "decl/resolution.k"
 require "decl/global.k"
@@ -17,14 +16,14 @@ require "expr/function-call.k"
 require "expr/id-rval.k"
 require "expr/inc-and-dec.k"
 require "expr/sequencing.k"
-require "expr/additive-operators.k"
+require "expr/additive.k"
 require "expr/bitwise.k"
 require "expr/conversion.k"
 require "expr/identifier.k"
 require "expr/logical.k"
-require "expr/multiplicative-operators.k"
+require "expr/multiplicative.k"
 require "expr/relational.k"
-require "expr/unary-arithmetic.k"
+require "expr/unary.k"
 
 require "symbolic-value.k"
 
@@ -46,7 +45,6 @@ module C-TRANSLATION
      imports C-FUNCTION-DEF
      imports C-COMPOUND-LITERAL
      imports C-DYNAMIC-SYNTAX
-     imports C-BUILTINS
      imports C-TRANSLATION-INIT
 
      imports C-DECL-RESOLUTION
@@ -58,14 +56,14 @@ module C-TRANSLATION
      imports C-EXPR-ID-RVAL
      imports C-EXPR-INC-AND-DEC
      imports C-EXPR-SEQUENCING
-     imports C-EXPR-ADDITIVE-OPERATORS
+     imports C-EXPR-ADDITIVE
      imports C-EXPR-BITWISE
      imports C-EXPR-CONVERSION
      imports C-EXPR-IDENTIFIER
      imports C-EXPR-LOGICAL
-     imports C-EXPR-MULTIPLICATIVE-OPERATORS
+     imports C-EXPR-MULTIPLICATIVE
      imports C-EXPR-RELATIONAL
-     imports C-EXPR-UNARY-ARITHMETIC
+     imports C-EXPR-UNARY
 
      imports C-SYMBOLIC-VALUE
 

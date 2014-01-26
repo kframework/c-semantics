@@ -7,13 +7,11 @@ endmodule
 
 module C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-OPERATORS-SYNTAX
+     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
-     imports C-DECL-SYNTAX
 
      syntax Int ::= arrayLength(K) [function]
      rule arrayLength(t(_:Set, arrayType(_:Type, N:Int))) => N

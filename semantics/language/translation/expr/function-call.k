@@ -4,7 +4,6 @@ module C-EXPR-FUNCTION-CALL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECL-SYNTAX
 
      imports COMPAT-SYNTAX
 

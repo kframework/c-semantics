@@ -5,8 +5,9 @@ endmodule
 module C-DECL-LOCAL
      imports C-DECL-LOCAL-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-SYNTAX
-     imports C-DECL-GENERAL-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-ENV-SYNTAX
 
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

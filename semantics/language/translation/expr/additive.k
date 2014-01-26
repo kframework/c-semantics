@@ -1,4 +1,4 @@
-module C-EXPR-ADDITIVE-OPERATORS
+module C-EXPR-ADDITIVE
      imports C-SYMBOLIC-VALUE-SYNTAX
 
      imports C-SYNTAX

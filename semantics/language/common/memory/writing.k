@@ -1,12 +1,24 @@
 module C-MEMORY-WRITING-SYNTAX
+     // location, value
+     syntax K ::= write(K, K) [strict(2)]
+
+     syntax K ::= fromUnion(Id) [klabel('fromUnion)]
+
+     // Either buffered or unbuffered depending on whether we're executing.
+     // If the flag is true, then we disable checking undefinedness checking
+     // (i.e., multiple, unsequenced writes to a single location). This is
+     // always disabled in direct io mode.
+     syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
+     syntax K ::= writeByte(SymLoc, K)
+
      syntax KList ::= explodeToBits(KList) [function]
-     // For error.k.
+
+     // TODO(chathhorn): For error.k.
      syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
 endmodule
 
 module C-MEMORY-WRITING
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 

@@ -1,8 +1,8 @@
 module C-STMT-GOTO
-     imports C-STMT-SYNTAX
      imports C-STMT-LOOP-SYNTAX
 
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
      syntax K ::= getIdOfDeclaration(K) [function]

@@ -1,10 +1,11 @@
 module C-COMMON-EXPR-MEMBERS
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
 

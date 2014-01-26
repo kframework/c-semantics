@@ -4,9 +4,9 @@ endmodule
 
 module C-BINDING
      imports C-BINDING-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-ENV-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

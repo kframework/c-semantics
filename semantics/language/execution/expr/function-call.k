@@ -6,11 +6,11 @@ module C-EXPR-FUNCTION-CALL
      imports C-EXPR-FUNCTION-CALL-SYNTAX
      imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
 
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-BINDING-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
 

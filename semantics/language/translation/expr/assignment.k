@@ -1,8 +1,7 @@
 module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-SYNTAX
-     imports C-DECL-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
 
      // TODO(chathhorn): it would be nice to just limit this to "initializers
      // of objects with static storage class," but we can't do that yet.

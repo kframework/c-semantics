@@ -1,11 +1,10 @@
 module C-STMT-LOOP-SYNTAX
-     syntax K ::= "addToHistory" "(" Int ")"
+     syntax K ::= addToHistory(Int)
           [latex(\terminal{addToHist}\!({#1}\!))]
 endmodule
 
 module C-STMT-LOOP
      imports C-STMT-LOOP-SYNTAX
-     imports C-STMT-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

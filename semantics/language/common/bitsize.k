@@ -11,8 +11,8 @@ module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
      imports C-BITS-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

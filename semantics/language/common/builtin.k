@@ -1,11 +1,12 @@
-module C-BUILTINS-SYNTAX
+module C-BUILTIN-SYNTAX
 
      syntax Set ::= "builtins" [function]
+     syntax Value ::= builtinPrototype(Id, Type)
 
 endmodule
 
-module C-BUILTINS
-     imports C-BUILTINS-SYNTAX
+module C-BUILTIN
+     imports C-BUILTIN-SYNTAX
 
      // This set prevents our "linker" from choking due to unresolved
      // references.

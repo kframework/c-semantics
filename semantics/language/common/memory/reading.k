@@ -1,17 +1,29 @@
 module C-MEMORY-READING-SYNTAX
-     // TODO(chathhorn) error check
+     // location, type
+     syntax K ::= read(SymLoc, K) [strict(2)]
+
+     // Returns the bytes in the order in which they are in memory.
+     syntax K ::= readBytes(SymLoc, Int) 
+     syntax K ::= readByte(SymLoc) 
+
+     syntax K ::= concretize(Type, K) [strict(2)] 
+
+     // data, offset, size in bits
+     syntax K ::= extractBitsFromList(K, Int, Int) [strict(1)]
+
+     // TODO(chathhorn) used error check?
      syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
      syntax K ::= "read-aux" "(" SymLoc "," Type "," K ")" [klabel('read-aux)]
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
+     // TODO(chathhorn): used in ltlmc?
      syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
           [function]
 endmodule
 
 module C-MEMORY-READING
      imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 

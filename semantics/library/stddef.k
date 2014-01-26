@@ -4,7 +4,7 @@ module LIBC-STDDEF
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECL-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
 

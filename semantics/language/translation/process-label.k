@@ -4,8 +4,6 @@ endmodule
 
 module C-PROCESS-LABEL
      imports C-PROCESS-LABEL-SYNTAX
-     imports C-STMT-SYNTAX
-     imports C-DECL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

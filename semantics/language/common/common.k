@@ -1,25 +1,28 @@
-require "syntax.k"
-require "statement.k"
-
-require "compat.k"
-require "decl.k"
 require "bitsize.k"
 require "bits.k"
-require "typing.k"
-require "literal.k"
+require "builtin.k"
+require "compat.k"
+require "constraint-map.k"
 require "conversion.k"
-require "promotion.k"
-require "alloc.k"
-require "symloc.k"
-require "settings.k"
-
+require "debug.k"
+require "dynamic.k"
+require "env.k"
 require "error.k"
 require "error-map.k"
-require "constraint-map.k"
+require "literal.k"
+require "promotion.k"
+require "settings.k"
+require "symloc.k"
+require "syntax.k"
+require "typing.k"
 
-require "memory.k"
+require "decl/definition.k"
+require "decl/enum.k"
+require "decl/initializer.k"
+require "decl/typedef.k"
+require "decl/zero.k"
 
-require "expr/additive-operators.k"
+require "expr/additive.k"
 require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
@@ -27,37 +30,42 @@ require "expr/conditional.k"
 require "expr/eval.k"
 require "expr/identifier.k"
 require "expr/members.k"
-require "expr/multiplicative-operators.k"
+require "expr/multiplicative.k"
 require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sizeof.k"
-require "expr/unary-arithmetic.k"
+require "expr/unary.k"
 
-require "dynamic.k"
-
-require "debug.k"
+require "memory/alloc.k"
+require "memory/reading.k"
+require "memory/writing.k"
 
 module C-COMMON
-     imports COMPAT
-
-     imports C-DECL
      imports C-BITSIZE
      imports C-BITS
-     imports C-TYPING
-     imports C-LITERAL
+     imports C-BUILTIN
+     imports COMPAT
+     imports C-CONSTRAINT-MAP
      imports C-CONVERSION
-     imports C-MEMORY-ALLOC
-     imports C-SYMLOC
-     imports C-PROMOTION
-     imports C-SETTINGS
-
+     imports DEBUG
+     imports C-DYNAMIC
+     imports C-ENV
      imports C-ERROR
      imports C-ERROR-MAP
-     imports C-CONSTRAINT-MAP
+     imports C-LITERAL
+     imports C-PROMOTION
+     imports C-SETTINGS
+     imports C-SYMLOC
+     imports C-SYNTAX
+     imports C-TYPING
 
-     imports C-MEMORY
+     imports C-DECL-DEFINITION
+     imports C-DECL-ENUM
+     imports C-DECL-INITIALIZER
+     imports C-DECL-TYPEDEF
+     imports C-DECL-ZERO
 
-     imports C-COMMON-EXPR-ADDITIVE-OPERATORS
+     imports C-COMMON-EXPR-ADDITIVE
      imports C-COMMON-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST
@@ -65,14 +73,14 @@ module C-COMMON
      imports C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-MEMBERS
-     imports C-COMMON-EXPR-MULTIPLICATIVE-OPERATORS
+     imports C-COMMON-EXPR-MULTIPLICATIVE
      imports C-COMMON-EXPR-REFERENCE
      imports C-COMMON-EXPR-RELATIONAL
      imports C-COMMON-EXPR-SIZEOF
-     imports C-COMMON-EXPR-UNARY-ARITHMETIC
+     imports C-COMMON-EXPR-UNARY
 
-     imports C-DYNAMIC
-
-     imports DEBUG
+     imports C-MEMORY-ALLOC
+     imports C-MEMORY-READING
+     imports C-MEMORY-WRITING
 
 endmodule

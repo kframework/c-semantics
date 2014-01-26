@@ -5,6 +5,7 @@ module C-TYPING-INTERPRETATION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 

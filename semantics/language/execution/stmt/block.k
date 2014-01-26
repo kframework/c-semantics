@@ -1,6 +1,4 @@
 module C-STMT-BLOCK
-     imports C-STMT-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX

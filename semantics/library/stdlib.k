@@ -6,7 +6,6 @@ module LIBC-STDLIB
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-SETTINGS-SYNTAX

@@ -1,6 +1,6 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
-     syntax K ::= "types" "(" KList ")"
+     syntax K ::= types(KList)
 endmodule
 
 module C-COMMON-EXPR-CONDITIONAL
@@ -11,11 +11,10 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-TYPING-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-DECL-SYNTAX
 
-     syntax K ::= "getTypes" "(" KList ")"
+     syntax K ::= getTypes(KList)
      context types((_,, HOLE,, _))
-     syntax K ::= "convertedType" "(" K ")" [strict]
+     syntax K ::= convertedType(K) [strict]
      
      rule getTypes(L:KList) => types(wrapWithTypeOf(L)) [structural]
      

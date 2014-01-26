@@ -1,4 +1,4 @@
-module C-COMMON-EXPR-UNARY-ARITHMETIC
+module C-COMMON-EXPR-UNARY
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

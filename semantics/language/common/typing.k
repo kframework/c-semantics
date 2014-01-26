@@ -1,5 +1,4 @@
 require "typing/canonicalization.k"
-require "typing/decl.k"
 require "typing/interpretation.k"
 require "typing/misc.k"
 require "typing/strictness.k"
@@ -98,17 +97,15 @@ module C-TYPING-SYNTAX
      syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
-     syntax K ::= giveType(Id, Type)
-
      syntax Int ::= numBits(Type) [function]
 
      syntax K ::= simplifyTruth(K) [function]
+     syntax Type ::= innerType(Type) [function]
 
 endmodule
 
 module C-TYPING
      imports C-TYPING-CANONICALIZATION
-     imports C-TYPING-DECL
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
      imports C-TYPING-STRICTNESS

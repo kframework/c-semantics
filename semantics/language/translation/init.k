@@ -1,13 +1,13 @@
 module C-TRANSLATION-INIT
-     imports C-DECL-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     imports C-DECL-SYNTAX
      imports C-DECL-RESOLUTION-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-BUILTINS-SYNTAX
+     imports C-BUILTIN-SYNTAX
+     imports C-FUNCTION-DEF-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -63,7 +63,7 @@ module C-TRANSLATION-INIT
      //      <k> (. => addToEnv(X, Loc)
      //                ~> initFunction(
      //                     tv(Loc, t(.Set, pointerType(T))), 
-     //                     functionPrototype(X, T))) 
+     //                     builtinPrototype(X, T))) 
      //           ~> X:Id
      //      ...</k>
      //      <env> Env:Map </env>
@@ -85,10 +85,12 @@ module C-TRANSLATION-INIT
           <k> (. => addToEnv(X, Loc')
                     ~> initFunction(
                          tv(Loc', t(.Set, pointerType(T))),
-                         functionPrototype(X, T)))
+                         builtinPrototype(X, T)))
                ~> initBuiltins((X:Id |-> Loc:SymLoc => .) _:Map)
           ...</k>
-          // TODO(chathhorn): it'd be nice to use a correct TU.
+          // TODO(chathhorn): it'd be nice to use a correct TU. As it is, every
+          // reference to a builtin function is like a call to a function
+          // defined in the same TU where the reference appears.
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <gtypes>... X |-> T:Type ...</gtypes>

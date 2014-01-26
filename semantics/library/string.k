@@ -4,7 +4,8 @@ module LIBC-STRING
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      
      // try to use getString

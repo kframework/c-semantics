@@ -6,9 +6,8 @@ endmodule
 module C-DECL-RESOLUTION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-SYNTAX
 
-     imports C-BUILTINS-SYNTAX
+     imports C-BUILTIN-SYNTAX
 
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

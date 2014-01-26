@@ -1,6 +1,7 @@
 module C-COMPOUND-LITERAL
      imports C-SYNTAX
-     imports C-DECL-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -41,8 +42,7 @@ module C-COMPOUND-LITERAL
                figureInit(compoundLiteral(N), DeclType(T, K), Init))
           [structural]
           
-     rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, T)

@@ -1,24 +1,132 @@
-module C-DECL-INITIALIZATION-SYNTAX
-     syntax K ::= "startInit" "(" Type "," Id "," K ")"
+module C-DECL-INITIALIZER-SYNTAX
+     syntax KResult ::= initializer(K)
+
+     syntax Value ::= functionObject(Id, Type, K)
+
+     // id, type, initializer
+     syntax K ::= figureInit(Id, K, K) [strict(2)] 
+
+     // these are also used by compound literals
+     syntax KResult ::= initValue(Id, Type, K)
+
+     // TODO(chathhorn): it would be nice to move this elsewhere.
+     // First map is for type, second map is for offset.
+     syntax K ::= aggregateInfo(KList, Map, Map)
 endmodule
 
-module C-DECL-INITIALIZATION
-     imports C-DECL-INITIALIZATION-SYNTAX
-     imports C-DECL-GENERAL-SYNTAX
-     imports C-DECL-SYNTAX
+module C-DECL-INITIALIZER
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
+
+     rule figureInit(X:Id, T:Type, CodeLoc(K:K, L:K)) 
+          => CodeLoc(.K, L) ~> figureInit(X, T, K) 
+          [structural]
+
+     rule figureInit(X:Id, T:Type, NoInit) 
+          => initValue(X, T, .K)
+          [structural]
      
-     syntax K ::= "te" "(" K "," Type ")" [klabel('te)]
+     // aggregates
+     rule figureInit(X:Id, T:Type, CompoundInit(L:K))
+          => giveType(X, T)
+          ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
+          when isAggregateType(T) orBool isUnionType(T)
+          [structural] 
+
+     rule figureInit(
+               _:Id, 
+               t(_:Set, arrayType(T:Type, Len:Int)), 
+               (SingleInit(Constant(StringLiteral(S:String))) 
+               => CompoundInit(klist(InitFragment(NextInit,
+                    SingleInit(Constant(StringLiteral(S)))))))
+          )
+          when isCharType(T) andBool (lengthString(S) <=Int Len)
+          [structural]
+
+     rule figureInit(
+               _:Id, 
+               t(_:Set, arrayType(T:Type, Len:Int)), 
+               (SingleInit(Constant(WStringLiteral(S:KList))) 
+               => CompoundInit(klist(InitFragment(NextInit,
+                    SingleInit(Constant(WStringLiteral(S)))))))
+          )
+          when isWCharType(T) andBool (lengthKList S <=Int Len)
+          [structural] 
+     
+     rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type) 
+          => arrayType(T, lengthString(S) +Int 1))),
+               SingleInit(Constant(StringLiteral(S:String)))) 
+          when isCharType(T)
+          [structural]
+
+     rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type)
+          => arrayType(T, lengthKList S +Int 1))),
+               SingleInit(Constant(WStringLiteral(S:KList)))) 
+          when isWCharType(T)
+          [structural] 
+          
+     rule figureInit(X:Id, t(Se:Set, incompleteArrayType(T:Type)),
+               CompoundInit(klist(InitFragment(NextInit,
+               SingleInit(Constant(StringLiteral(S:String)))))))
+          => figureInit(X, t(Se, incompleteArrayType(T)),
+               SingleInit(Constant(StringLiteral(S))))
+          [structural] 
+          
+     // this comes from function declarations.  should probably adjust this
+     rule figureInit(X:Id, T:Type, initializer(K:K))
+          => figureInit-aux(X, T, initializer(K))
+          [structural] 
+
+     // id, type, initializer
+     syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
+     rule figureInit-aux(X:Id, T:Type, initializer(K:K))
+          => initValue(X, T, K)
+          // I'd like to get rid of this cleanly
+          when notBool isIncompleteType(T)
+               andBool notBool isConstType(T)
+          [structural]
+     rule figureInit-aux(X:Id, T:Type, initializer(K:K))
+          => initValue(X, T, (K ~> makeUnwritableVar(X)))
+          // I'd like to get rid of this cleanly
+          when notBool isIncompleteType(T)
+               andBool isConstType(T)
+          [structural]
+     
+     // base types
+     rule figureInit(X:Id, T:Type, SingleInit(K:K))
+          => figureInit-aux(X, T, 
+               initializer(Computation(allowWrite(X) := K)))
+          when notBool isArrayType(T)
+          [structural] 
+     // c1x 6.7.8:11
+     rule figureInit(X:Id, T:Type,
+               CompoundInit(klist(InitFragment(NextInit, SingleInit(K:K)))))
+          => figureInit-aux(X, T,
+               initializer(Computation(allowWrite(X) := K)))
+          when notBool (isAggregateType(T) orBool isUnionType(T))
+          [structural] 
+               
+     rule <k> figureInit-aux(_:Id, t(_, 
+                    (incompleteArrayType(T:Type) 
+                    => arrayType(T, N))), initializer(_))
+          ...</k>
+          <incompleteLength> N:Int </incompleteLength>
+          [structural] 
+          
+     
+     syntax K ::= te(K, Type) [klabel('te)]
      syntax K ::= "getInit"
-     syntax K ::= "fillInit" "(" K ")"
-                | "fillInits" "(" KList ")"
+     syntax K ::= fillInit(K)
+                | fillInits(KList)
                 | "fillInit-aux" "(" K ")"
 
      rule <k> getInit => initializer(K:K) ...</k>
@@ -27,8 +135,8 @@ module C-DECL-INITIALIZATION
           <currentSubObject> _:List => . </currentSubObject> 
           [structural] 
 
-     rule <k> 
-               startInit(T:Type, X:Id, CompoundInit(klist(L:KList)))
+     syntax K ::= startInit(Type, Id, K)
+     rule <k> startInit(T:Type, X:Id, CompoundInit(klist(L:KList)))
                => fillInits(L) ~> getInit
           ...</k>
           <incompleteLength> _ => 0 </incompleteLength>
@@ -240,21 +348,6 @@ module C-DECL-INITIALIZATION
      rule <k> buildDesignator(NextInit) => NextInit ...</k>
           <currentSubObject> (block => .List) ...</currentSubObject>
           [structural] 
-          
-     rule [innerType-arrayType]:
-          innerType(t(_, arrayType(T:Type, _:Int))) => T
-     rule [innerType-incompleteArrayType]: 
-          innerType(t(_, incompleteArrayType(T:Type))) => T
-     rule [innerType-flexibleArrayType]: 
-          innerType(t(_, flexibleArrayType(T:Type))) => T
-     rule [innerType-qualifiedType]:
-          innerType(t(_, qualifiedType(T:Type, _))) => innerType(T)
-     rule [innerType-pointerType]:
-          innerType(t(_, pointerType(T:Type))) => T
-     rule [innerType-bitfieldType]:
-          innerType(t(_, bitfieldType(T:Type, _:Int))) => T
-     rule [innerType-functionType]:
-          innerType(t(_, functionType(T:Type, _:KList))) => T
 
      context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
      rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K)) 
@@ -300,7 +393,7 @@ module C-DECL-INITIALIZATION
                andBool (notBool isUnionType(T'))
           [structural]
      
-     syntax K ::= "possiblyMakeConst" "(" Type "," K ")"
+     syntax K ::= possiblyMakeConst(Type, K)
      
      rule possiblyMakeConst(T:Type, K:K) => makeUnwritableSubObject(K)
           when isConstType(T)
@@ -311,14 +404,14 @@ module C-DECL-INITIALIZATION
           
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
-     syntax K ::= "initFromAggregateRHS" "(" K "," Type ")"
+     syntax K ::= initFromAggregateRHS(K, Type)
      rule T:Type ~> initializeSingleInit(K:K) 
           => initFromAggregateRHS(K, T)
           when isStructType(T)
                orBool isUnionType(T)
           [structural] 
           
-     syntax K ::= "initFromStructRHS" "(" K "," Type ")"
+     syntax K ::= initFromStructRHS(K, Type)
      rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(I:Id)))
                => initFromStructRHS(K, t(S, structType(I)))
           ...</k>
@@ -327,7 +420,7 @@ module C-DECL-INITIALIZATION
           ...</currentSubObject>
           [structural] 
           
-     syntax ListItem ::= "findStruct" "(" Type ")"
+     syntax ListItem ::= findStruct(Type)
           
      rule <currentSubObject>
                findStruct(T:Type) (ListItem(te(_, T':Type)) => .List)
@@ -430,8 +523,8 @@ module C-DECL-INITIALIZATION
           when S =/=String "" andBool isCharType(T)
           [structural]
           
-     syntax K ::= "initHead" "(" String "," Type ")"
-     syntax K ::= "initTail" "(" String ")"
+     syntax K ::= initHead(String, Type)
+     syntax K ::= initTail(String)
      rule initHead(S:String, T:Type)
           => SingleInit(tv(ordChar(firstChar(S)),
                t(getModifiers(T), char)))
@@ -486,21 +579,6 @@ module C-DECL-INITIALIZATION
           when notBool isWCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
-          [structural]
-
-     // need to worry about things that don't have definitions that may
-     // override externs
-     // want to make it so env is always correct local env, so need to have a
-     // set of global envs, one for each tu
-     
-     rule [initialize-function]:
-          <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), 
-                    Fun:KResult) 
-               => .
-          ...</k>
-          <functions> M:Map => M:Map[Fun / Loc] </functions>
-          when isFunctionType(T)
-               andBool notBool $hasMapping(M, Loc)
           [structural]
 
 endmodule

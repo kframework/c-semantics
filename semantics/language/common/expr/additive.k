@@ -1,4 +1,4 @@
-module C-COMMON-EXPR-ADDITIVE-OPERATORS-SYNTAX
+module C-COMMON-EXPR-ADDITIVE-SYNTAX
      syntax K ::= fromArray(Int, Int) // offset, length
 
      // TODO(chathhorn): error check
@@ -6,8 +6,8 @@ module C-COMMON-EXPR-ADDITIVE-OPERATORS-SYNTAX
      syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
 endmodule
 
-module C-COMMON-EXPR-ADDITIVE-OPERATORS
-     imports C-COMMON-EXPR-ADDITIVE-OPERATORS-SYNTAX
+module C-COMMON-EXPR-ADDITIVE
+     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

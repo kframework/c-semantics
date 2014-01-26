@@ -1,14 +1,16 @@
-module C-DECL-ZERO
-     imports C-DECL-SYNTAX
+module C-DECL-ZERO-SYNTAX
+     syntax K ::= zero(K)
+endmodule
 
+module C-DECL-ZERO
+     imports C-DECL-ZERO-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     rule <k>
-               zero(Sym:K) => zeroType(Sym, unqualifyType(T))
-          ...</k>
+     rule <k> zero(Sym:K) => zeroType(Sym, unqualifyType(T)) ...</k>
           <types>... Sym |-> T:Type ...</types>
           [structural] 
           
@@ -38,8 +40,7 @@ module C-DECL-ZERO
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule <k> 
-               zeroType(N:K, t(_, structType(S:Id))) 
+     rule <k> zeroType(N:K, t(_, structType(S:Id))) 
                => zeroStruct(N, Fields)
           ...</k>
           <structs>... S |-> aggregateInfo(Fields:KList, _, _) ...</structs> 

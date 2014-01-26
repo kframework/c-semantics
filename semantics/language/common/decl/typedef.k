@@ -1,0 +1,22 @@
+module C-DECL-TYPEDEF
+     imports C-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
+               
+     context Typedef(NameGroup(HOLE, _))
+
+     rule Typedef(NameGroup(T:Type, klist((K:K,, L:KList)))) 
+          => defineType(SingleName(T, K))
+               ~> Typedef(NameGroup(T, klist(L)))
+          [structural]
+     rule Typedef(NameGroup(_:Type, klist(.KList))) => .
+          [structural]
+
+     syntax K ::= defineType(K) [strict] 
+
+     rule defineType(typedDeclaration(T:Type, X:Id)) 
+          => giveType(typedef(X), T) 
+          [structural] 
+
+endmodule

@@ -13,8 +13,8 @@ module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-DECL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
