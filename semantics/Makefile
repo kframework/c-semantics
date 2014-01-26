@@ -39,7 +39,7 @@ all: fast nd thread
 
 fast: c11-translation-kompiled c11-kompiled
 
-nd: c11-nd-kompiled-nd
+nd: c11-nd-kompiled
 
 thread: c11-nd-thread-kompiled
 

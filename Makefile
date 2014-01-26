@@ -34,8 +34,8 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-trans-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd-thread $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
 	@echo "Compiling the standard library..."
