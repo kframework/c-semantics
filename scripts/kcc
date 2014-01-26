@@ -33,7 +33,7 @@ my $cparser = catfile($myDirectory, 'cparser');
 my @temporaryFiles = ();
 
 my $TRANS_DEF =
-      catfile($myDirectory, "c11-trans-kompiled");
+      catfile($myDirectory, "c11-translation-kompiled");
 
 our @cppDefines = ();
 our @cppIncludeDirs = ();
