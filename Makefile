@@ -32,7 +32,7 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-trans-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
