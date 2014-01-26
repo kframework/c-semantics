@@ -1,9 +1,4 @@
-module C-EXPR-FUNCTION-CALL-SYNTAX
-     syntax K ::= "application'" "(" String "," K "," KList ")" [strict(2)]
-endmodule
-
 module C-EXPR-FUNCTION-CALL
-     imports C-EXPR-FUNCTION-CALL-SYNTAX
      imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
 
      imports C-DECL-INITIALIZER-SYNTAX
@@ -12,6 +7,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-BINDING-SYNTAX
+     imports C-BUILTIN-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -84,6 +80,13 @@ module C-EXPR-FUNCTION-CALL
      rule [call]:
           application(Tu:String, Fun:KResult, L:KList) 
           => application'(Tu, Fun, L:KList)
+          [structural]
+
+     syntax K ::= "application'" "(" String "," K "," KList ")" [strict(2)]
+
+     rule [builtin-application]:
+          application'(Tu:String, builtinPrototype(X:Id, T:Type), L:KList)
+          => application'(Tu, functionObject(X, T, handleBuiltin(X, T)), L)
           [structural]
 
      rule [function-application]:
