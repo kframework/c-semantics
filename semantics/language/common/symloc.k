@@ -1,6 +1,7 @@
 module C-SYMLOC-SYNTAX
      syntax K ::= firstLoc(Duration) [function]
      syntax SymBase ::= base(SymLoc) [function]
+     syntax Int ::= offset(SymLoc) [function]
 
      // We got basically 4 different memory sorts:
      // allocated -- allocated duration. The heap.
@@ -20,6 +21,7 @@ module C-SYMLOC-SYNTAX
      syntax Duration ::= thread(Int)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
+     syntax Bool ::= isArgvDuration(SymLoc) [function]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
@@ -55,6 +57,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= sameBase(SymLoc, SymLoc) [function]
 
      syntax String ::= getTU(SymLoc) [function]
+     syntax Int ::= getThreadId(SymLoc) [function]
 
 endmodule
 
@@ -64,6 +67,7 @@ module C-SYMLOC
      imports C-SETTINGS-SYNTAX
 
      syntax Bool ::= "#isAllocatedDuration" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isArgvDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
 
@@ -71,6 +75,8 @@ module C-SYMLOC
 
      rule isAllocatedDuration(Loc:SymLoc) 
           => #isAllocatedDuration(Loc) ==K true
+     rule isArgvDuration(Loc:SymLoc) 
+          => #isArgvDuration(Loc) ==K true
      rule isStaticDuration(Loc:SymLoc)
           => #isStaticDuration(Loc) ==K true
      rule isThreadDuration(Loc:SymLoc)
@@ -79,6 +85,8 @@ module C-SYMLOC
           => #isLinkerLoc(Loc) ==K true
 
      rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
+
+     rule #isArgvDuration(loc(argv, _, _)) => true
 
      rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
      rule #isStaticDuration(loc(_ @ link(_), _, _)) => true
@@ -90,6 +98,8 @@ module C-SYMLOC
      rule firstLoc(D:Duration) => loc(0 @ D, 0, 0)
      
      rule base(loc(Base:SymBase, _, _)) => Base
+
+     rule offset(loc(_, Offset:Int, _)) => Offset
 
      rule argvLoc => loc(argv, 0, 0)
      
@@ -129,5 +139,7 @@ module C-SYMLOC
 
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
      rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
+
+     rule getThreadId(loc (_ @ thread(Th:Int), _, _)) => Th
 endmodule
 

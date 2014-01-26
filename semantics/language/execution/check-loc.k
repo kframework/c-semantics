@@ -16,16 +16,13 @@ module C-CHECK-LOC
      // fixme could additionally use the type to check whether that type is
      // valid for that pointer
      rule [check-valid-loc]:
-          <k> 
-               checkValidLoc-aux(
-                    loc(N:Int @ Dur:Duration, Offset:Int, 0)) 
-               => . 
-          ...</k>
-          <mem>... N @ Dur |-> memblock(Len:Int, _, _) ...</mem>
+          <k> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, 0)) => . ...</k>
+          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           <threadId> ThreadId:Int </threadId>
-          when (Dur ==K thread(ThreadId)
-               orBool isStaticDuration(loc(N @ Dur, Offset, 0))
-               orBool isAllocatedDuration(loc(N @ Dur, Offset, 0))
+          when (ThreadId ==K getThreadId(loc(Base, Offset, 0))
+               orBool isStaticDuration(loc(Base, Offset, 0))
+               orBool isAllocatedDuration(loc(Base, Offset, 0))
+               orBool isArgvDuration(loc(Base, Offset, 0))
                ) // my thread, global memory, or allocated (malloced) memory
                andBool (Offset <=Int Len) // we're allowed to address one past
           [structural]
