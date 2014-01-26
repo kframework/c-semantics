@@ -1,5 +1,5 @@
-module C-EXPRESSION-ASSIGNMENT
-     imports C-EXPRESSION-EVAL-SYNTAX
+module C-COMMON-EXPRESSION-ASSIGNMENT
+     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -22,10 +22,9 @@ module C-EXPRESSION-ASSIGNMENT
      stored in the object designated by the left operand.
      }*/
 
-     rule [assign]:
-          lval(Loc:SymLoc, T:Type) := tv(V:KList, T)
-          => write(lv(Loc, T), tv(V, T)) ~> tv(V, T)
-          [structural]
+     // The actual rule for assignment that results in a write is in the
+     // translation/execution semantics.
+
      rule [convert-for-assignment]:
           lval(_, T:Type) := (tv(V:KList, T':Type) => cast(T, tv(V, T')))
           when T =/=K T'

@@ -1,4 +1,4 @@
-module C-EXPRESSION-CAST
+module C-COMMON-EXPRESSION-CAST
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX

@@ -7,7 +7,7 @@ module C-FUNCTION-DEF
      imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
 
-     imports C-EXPRESSION-IDENTIFIER-SYNTAX
+     imports C-COMMON-EXPRESSION-IDENTIFIER-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

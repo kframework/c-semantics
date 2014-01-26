@@ -1,4 +1,4 @@
-module C-SYMBOLIC-RELATIONAL
+module C-EXPRESSION-RELATIONAL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX

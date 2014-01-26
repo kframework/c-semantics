@@ -1,5 +1,5 @@
 module C-EXPRESSION-SEQUENCING
-     imports C-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

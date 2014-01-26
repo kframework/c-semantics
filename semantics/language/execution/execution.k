@@ -18,6 +18,7 @@ require "statement/labeled.k"
 require "statement/return.k"
 require "statement/switch.k"
 
+require "expression/assignment.k"
 require "expression/function-call.k"
 require "expression/id-rval.k"
 require "expression/inc-and-dec.k"
@@ -48,6 +49,7 @@ module C-EXECUTION
      imports C-STATEMENT-BLOCK
      imports C-STATEMENT-BREAK
 
+     imports C-EXPRESSION-ASSIGNMENT
      imports C-EXPRESSION-FUNCTION-CALL
      imports C-EXPRESSION-ID-RVAL
      imports C-EXPRESSION-INC-AND-DEC

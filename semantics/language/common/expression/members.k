@@ -1,4 +1,4 @@
-module C-EXPRESSION-MEMBERS
+module C-COMMON-EXPRESSION-MEMBERS
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX

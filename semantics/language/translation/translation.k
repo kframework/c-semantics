@@ -12,20 +12,21 @@ require "declaration/resolution.k"
 require "declaration/global.k"
 require "declaration/local.k"
 
-require "symbolic/function-call.k"
-require "symbolic/id-rval.k"
-require "symbolic/inc-and-dec.k"
-require "symbolic/sequencing.k"
+require "expression/assignment.k"
+require "expression/function-call.k"
+require "expression/id-rval.k"
+require "expression/inc-and-dec.k"
+require "expression/sequencing.k"
+require "expression/additive-operators.k"
+require "expression/bitwise.k"
+require "expression/conversion.k"
+require "expression/identifier.k"
+require "expression/logical.k"
+require "expression/multiplicative-operators.k"
+require "expression/relational.k"
+require "expression/unary-arithmetic.k"
 
-require "symbolic/additive-operators.k"
-require "symbolic/bitwise.k"
-require "symbolic/conversion.k"
-require "symbolic/identifier.k"
-require "symbolic/logical.k"
-require "symbolic/multiplicative-operators.k"
-require "symbolic/relational.k"
-require "symbolic/unary-arithmetic.k"
-require "symbolic/value.k"
+require "symbolic-value.k"
 
 require "statement/block.k"
 require "statement/break.k"
@@ -52,19 +53,20 @@ module C-TRANSLATION
      imports C-DECLARATION-GLOBAL
      imports C-DECLARATION-LOCAL
 
-     imports C-SYMBOLIC-FUNCTION-CALL
-     imports C-SYMBOLIC-ID-RVAL
-     imports C-SYMBOLIC-INC-AND-DEC
-     imports C-SYMBOLIC-SEQUENCING
+     imports C-EXPRESSION-ASSIGNMENT
+     imports C-EXPRESSION-FUNCTION-CALL
+     imports C-EXPRESSION-ID-RVAL
+     imports C-EXPRESSION-INC-AND-DEC
+     imports C-EXPRESSION-SEQUENCING
+     imports C-EXPRESSION-ADDITIVE-OPERATORS
+     imports C-EXPRESSION-BITWISE
+     imports C-EXPRESSION-CONVERSION
+     imports C-EXPRESSION-IDENTIFIER
+     imports C-EXPRESSION-LOGICAL
+     imports C-EXPRESSION-MULTIPLICATIVE-OPERATORS
+     imports C-EXPRESSION-RELATIONAL
+     imports C-EXPRESSION-UNARY-ARITHMETIC
 
-     imports C-SYMBOLIC-ADDITIVE-OPERATORS
-     imports C-SYMBOLIC-BITWISE
-     imports C-SYMBOLIC-CONVERSION
-     imports C-SYMBOLIC-IDENTIFIER
-     imports C-SYMBOLIC-LOGICAL
-     imports C-SYMBOLIC-MULTIPLICATIVE-OPERATORS
-     imports C-SYMBOLIC-RELATIONAL
-     imports C-SYMBOLIC-UNARY-ARITHMETIC
      imports C-SYMBOLIC-VALUE
 
      imports C-STATEMENT-BLOCK

@@ -1,11 +1,11 @@
-module C-EXPRESSION-BITWISE-SYNTAX
+module C-COMMON-EXPRESSION-BITWISE-SYNTAX
      // TODO(chathhorn): error check
      syntax K ::= leftShiftInterpret(Type, BaseValue, K) [function]
      syntax K ::= rightShiftInterpret(Type, BaseValue) [function]
 endmodule
 
-module C-EXPRESSION-BITWISE
-     imports C-EXPRESSION-BITWISE-SYNTAX
+module C-COMMON-EXPRESSION-BITWISE
+     imports C-COMMON-EXPRESSION-BITWISE-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

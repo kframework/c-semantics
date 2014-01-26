@@ -1,4 +1,4 @@
-module C-SYMBOLIC-INC-AND-DEC
+module C-EXPRESSION-INC-AND-DEC
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

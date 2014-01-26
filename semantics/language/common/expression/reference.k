@@ -1,4 +1,4 @@
-module C-EXPRESSION-REFERENCE
+module C-COMMON-EXPRESSION-REFERENCE
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

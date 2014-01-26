@@ -9,7 +9,7 @@ module C-TRANSLATION-ERROR
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
 
-     imports C-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
 
      imports C-TYPING-MISC-SYNTAX
 

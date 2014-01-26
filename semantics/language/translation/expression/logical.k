@@ -1,4 +1,4 @@
-module C-SYMBOLIC-LOGICAL
+module C-EXPRESSION-LOGICAL
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

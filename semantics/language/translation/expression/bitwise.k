@@ -1,4 +1,4 @@
-module C-SYMBOLIC-BITWISE
+module C-EXPRESSION-BITWISE
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

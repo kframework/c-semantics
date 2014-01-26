@@ -12,7 +12,7 @@ module LIBC-BOOTSTRAP
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-BUILTIN-SYNTAX
-     imports C-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
      imports C-TYPING-SYNTAX
 
      // TODO(chathhorn): not pretty

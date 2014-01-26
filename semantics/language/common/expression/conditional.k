@@ -1,10 +1,10 @@
-module C-EXPRESSION-CONDITIONAL-SYNTAX
+module C-COMMON-EXPRESSION-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
      syntax K ::= "types" "(" KList ")"
 endmodule
 
-module C-EXPRESSION-CONDITIONAL
-     imports C-EXPRESSION-CONDITIONAL-SYNTAX
+module C-COMMON-EXPRESSION-CONDITIONAL
+     imports C-COMMON-EXPRESSION-CONDITIONAL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
