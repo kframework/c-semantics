@@ -70,7 +70,7 @@ module C-ERROR
                orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large] 
 
-     // See C-EXPRESSION-IDENTIFIER.
+     // See C-COMMON-EXPR-IDENTIFIER.
      rule [err00021a]:
           <k> 
                (. => ERROR("00021a", "Trying to look up identifier " 

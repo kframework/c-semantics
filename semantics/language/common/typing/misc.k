@@ -10,7 +10,7 @@ module C-TYPING-MISC
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 

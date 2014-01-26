@@ -13,7 +13,7 @@ module C-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      rule [arithInterpret-done]:

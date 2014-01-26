@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax C ::= "vararg" "(" K ")" [hybrid, strict]
-     syntax K ::= "prepareBuiltin" "(" Id "," KList ")" 
+     syntax C ::= vararg(K) [hybrid, strict]
+     syntax K ::= prepareBuiltin(Id, KList) 
      syntax K ::= incSymbolic(K)
 endmodule
 
@@ -12,7 +12,7 @@ module LIBC-BOOTSTRAP
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-BUILTIN-SYNTAX
-     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-TYPING-SYNTAX
 
      // TODO(chathhorn): not pretty

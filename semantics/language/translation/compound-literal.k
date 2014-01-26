@@ -1,6 +1,6 @@
 module C-COMPOUND-LITERAL
      imports C-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX

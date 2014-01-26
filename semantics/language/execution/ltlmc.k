@@ -39,7 +39,7 @@ module C-LTLMC
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
 
      imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX

@@ -1,0 +1,39 @@
+require "decl/enum.k"
+require "decl/general.k"
+require "decl/initialization.k"
+require "decl/zero.k"
+
+module C-DECL-SYNTAX
+     syntax Value ::= functionObject(Id, Type, K)
+
+     // Used for builtins.
+     syntax Value ::= functionPrototype(Id, Type)
+
+     // id, type, initializer
+     syntax K ::= figureInit(Id, K, K) [strict(2)] 
+
+     syntax K ::= zero(K)
+
+     // these are also used by compound literals
+     syntax KResult ::= initValue(Id, Type, K)
+     syntax Type ::= innerType(Type) [function]
+     syntax K ::= addToEnv(Id, SymLoc)
+     syntax K ::= initFunction(K, K) [strict]
+     syntax Id ::= "file-scope"
+
+     // first map is for type, second map is for offset
+     syntax K ::= aggregateInfo(KList, Map, Map)
+
+     // type, translation unit it was defined in, definition
+     syntax K ::= declarationObject(Type, K, K)
+          [latex(\terminal{declObj(}{#1}, {#2}, {#3}\terminal{)})]
+
+     syntax KResult ::= initializer(K)
+endmodule
+
+module C-DECL
+     imports C-DECL-ENUM
+     imports C-DECL-GENERAL
+     imports C-DECL-INITIALIZATION
+     imports C-DECL-ZERO
+endmodule

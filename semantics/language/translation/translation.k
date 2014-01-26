@@ -8,34 +8,34 @@ require "function-def.k"
 require "init.k"
 require "builtins.k"
 
-require "declaration/resolution.k"
-require "declaration/global.k"
-require "declaration/local.k"
+require "decl/resolution.k"
+require "decl/global.k"
+require "decl/local.k"
 
-require "expression/assignment.k"
-require "expression/function-call.k"
-require "expression/id-rval.k"
-require "expression/inc-and-dec.k"
-require "expression/sequencing.k"
-require "expression/additive-operators.k"
-require "expression/bitwise.k"
-require "expression/conversion.k"
-require "expression/identifier.k"
-require "expression/logical.k"
-require "expression/multiplicative-operators.k"
-require "expression/relational.k"
-require "expression/unary-arithmetic.k"
+require "expr/assignment.k"
+require "expr/function-call.k"
+require "expr/id-rval.k"
+require "expr/inc-and-dec.k"
+require "expr/sequencing.k"
+require "expr/additive-operators.k"
+require "expr/bitwise.k"
+require "expr/conversion.k"
+require "expr/identifier.k"
+require "expr/logical.k"
+require "expr/multiplicative-operators.k"
+require "expr/relational.k"
+require "expr/unary-arithmetic.k"
 
 require "symbolic-value.k"
 
-require "statement/block.k"
-require "statement/break.k"
-require "statement/goto.k"
-require "statement/if-then.k"
-require "statement/labeled.k"
-require "statement/loop.k"
-require "statement/return.k"
-require "statement/switch.k"
+require "stmt/block.k"
+require "stmt/break.k"
+require "stmt/goto.k"
+require "stmt/if-then.k"
+require "stmt/labeled.k"
+require "stmt/loop.k"
+require "stmt/return.k"
+require "stmt/switch.k"
 
 module C-TRANSLATION
      imports C-CONFIGURATION
@@ -49,32 +49,32 @@ module C-TRANSLATION
      imports C-BUILTINS
      imports C-TRANSLATION-INIT
 
-     imports C-DECLARATION-RESOLUTION
-     imports C-DECLARATION-GLOBAL
-     imports C-DECLARATION-LOCAL
+     imports C-DECL-RESOLUTION
+     imports C-DECL-GLOBAL
+     imports C-DECL-LOCAL
 
-     imports C-EXPRESSION-ASSIGNMENT
-     imports C-EXPRESSION-FUNCTION-CALL
-     imports C-EXPRESSION-ID-RVAL
-     imports C-EXPRESSION-INC-AND-DEC
-     imports C-EXPRESSION-SEQUENCING
-     imports C-EXPRESSION-ADDITIVE-OPERATORS
-     imports C-EXPRESSION-BITWISE
-     imports C-EXPRESSION-CONVERSION
-     imports C-EXPRESSION-IDENTIFIER
-     imports C-EXPRESSION-LOGICAL
-     imports C-EXPRESSION-MULTIPLICATIVE-OPERATORS
-     imports C-EXPRESSION-RELATIONAL
-     imports C-EXPRESSION-UNARY-ARITHMETIC
+     imports C-EXPR-ASSIGNMENT
+     imports C-EXPR-FUNCTION-CALL
+     imports C-EXPR-ID-RVAL
+     imports C-EXPR-INC-AND-DEC
+     imports C-EXPR-SEQUENCING
+     imports C-EXPR-ADDITIVE-OPERATORS
+     imports C-EXPR-BITWISE
+     imports C-EXPR-CONVERSION
+     imports C-EXPR-IDENTIFIER
+     imports C-EXPR-LOGICAL
+     imports C-EXPR-MULTIPLICATIVE-OPERATORS
+     imports C-EXPR-RELATIONAL
+     imports C-EXPR-UNARY-ARITHMETIC
 
      imports C-SYMBOLIC-VALUE
 
-     imports C-STATEMENT-BLOCK
-     imports C-STATEMENT-BREAK
-     imports C-STATEMENT-GOTO
-     imports C-STATEMENT-IF-THEN
-     imports C-STATEMENT-LABELED
-     imports C-STATEMENT-LOOP
-     imports C-STATEMENT-RETURN
-     imports C-STATEMENT-SWITCH
+     imports C-STMT-BLOCK
+     imports C-STMT-BREAK
+     imports C-STMT-GOTO
+     imports C-STMT-IF-THEN
+     imports C-STMT-LABELED
+     imports C-STMT-LOOP
+     imports C-STMT-RETURN
+     imports C-STMT-SWITCH
 endmodule

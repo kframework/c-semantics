@@ -1,9 +1,9 @@
 require "typing/canonicalization.k"
-require "typing/declaration.k"
+require "typing/decl.k"
 require "typing/interpretation.k"
 require "typing/misc.k"
 require "typing/strictness.k"
-require "typing/expression.k"
+require "typing/expr.k"
 
 module C-TYPING-SYNTAX
      syntax K ::= typeof(K)
@@ -108,9 +108,9 @@ endmodule
 
 module C-TYPING
      imports C-TYPING-CANONICALIZATION
-     imports C-TYPING-DECLARATION
+     imports C-TYPING-DECL
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
      imports C-TYPING-STRICTNESS
-     imports C-TYPING-EXPRESSION
+     imports C-TYPING-EXPR
 endmodule

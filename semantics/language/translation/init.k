@@ -1,10 +1,10 @@
 module C-TRANSLATION-INIT
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     imports C-DECLARATION-SYNTAX
-     imports C-DECLARATION-RESOLUTION-SYNTAX
+     imports C-DECL-SYNTAX
+     imports C-DECL-RESOLUTION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-BUILTINS-SYNTAX

@@ -1,13 +1,13 @@
 module C-FUNCTION-DEF
-     imports C-DECLARATION-GENERAL-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-GENERAL-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
 
-     imports C-COMMON-EXPRESSION-IDENTIFIER-SYNTAX
+     imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX

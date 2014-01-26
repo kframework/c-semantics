@@ -2,7 +2,7 @@ require "syntax.k"
 require "statement.k"
 
 require "compat.k"
-require "declaration.k"
+require "decl.k"
 require "bitsize.k"
 require "bits.k"
 require "typing.k"
@@ -19,19 +19,19 @@ require "constraint-map.k"
 
 require "memory.k"
 
-require "expression/additive-operators.k"
-require "expression/assignment.k"
-require "expression/bitwise.k"
-require "expression/cast.k"
-require "expression/conditional.k"
-require "expression/eval.k"
-require "expression/identifier.k"
-require "expression/members.k"
-require "expression/multiplicative-operators.k"
-require "expression/reference.k"
-require "expression/relational.k"
-require "expression/sizeof.k"
-require "expression/unary-arithmetic.k"
+require "expr/additive-operators.k"
+require "expr/assignment.k"
+require "expr/bitwise.k"
+require "expr/cast.k"
+require "expr/conditional.k"
+require "expr/eval.k"
+require "expr/identifier.k"
+require "expr/members.k"
+require "expr/multiplicative-operators.k"
+require "expr/reference.k"
+require "expr/relational.k"
+require "expr/sizeof.k"
+require "expr/unary-arithmetic.k"
 
 require "dynamic.k"
 
@@ -40,7 +40,7 @@ require "debug.k"
 module C-COMMON
      imports COMPAT
 
-     imports C-DECLARATION
+     imports C-DECL
      imports C-BITSIZE
      imports C-BITS
      imports C-TYPING
@@ -57,19 +57,19 @@ module C-COMMON
 
      imports C-MEMORY
 
-     imports C-COMMON-EXPRESSION-ADDITIVE-OPERATORS
-     imports C-COMMON-EXPRESSION-ASSIGNMENT
-     imports C-COMMON-EXPRESSION-BITWISE
-     imports C-COMMON-EXPRESSION-CAST
-     imports C-COMMON-EXPRESSION-CONDITIONAL
-     imports C-COMMON-EXPRESSION-EVAL
-     imports C-COMMON-EXPRESSION-IDENTIFIER
-     imports C-COMMON-EXPRESSION-MEMBERS
-     imports C-COMMON-EXPRESSION-MULTIPLICATIVE-OPERATORS
-     imports C-COMMON-EXPRESSION-REFERENCE
-     imports C-COMMON-EXPRESSION-RELATIONAL
-     imports C-COMMON-EXPRESSION-SIZEOF
-     imports C-COMMON-EXPRESSION-UNARY-ARITHMETIC
+     imports C-COMMON-EXPR-ADDITIVE-OPERATORS
+     imports C-COMMON-EXPR-ASSIGNMENT
+     imports C-COMMON-EXPR-BITWISE
+     imports C-COMMON-EXPR-CAST
+     imports C-COMMON-EXPR-CONDITIONAL
+     imports C-COMMON-EXPR-EVAL
+     imports C-COMMON-EXPR-IDENTIFIER
+     imports C-COMMON-EXPR-MEMBERS
+     imports C-COMMON-EXPR-MULTIPLICATIVE-OPERATORS
+     imports C-COMMON-EXPR-REFERENCE
+     imports C-COMMON-EXPR-RELATIONAL
+     imports C-COMMON-EXPR-SIZEOF
+     imports C-COMMON-EXPR-UNARY-ARITHMETIC
 
      imports C-DYNAMIC
 

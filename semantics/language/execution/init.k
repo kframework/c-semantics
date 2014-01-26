@@ -14,12 +14,12 @@ module C-EXECUTION-INIT
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-COMMON-EXPRESSION-IDENTIFIER-SYNTAX
-     imports C-DECLARATION-LOCAL-SYNTAX
+     imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
+     imports C-DECL-LOCAL-SYNTAX
      imports LIBC-IO-SYNTAX
      imports COMPAT-SYNTAX
           

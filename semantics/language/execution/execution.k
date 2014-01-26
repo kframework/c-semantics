@@ -9,23 +9,23 @@ require "ltlmc.k"
 require "init.k"
 require "sequence-point.k"
 
-require "statement/block.k"
-require "statement/break.k"
-require "statement/loop.k"
-require "statement/goto.k"
-require "statement/if-then.k"
-require "statement/labeled.k"
-require "statement/return.k"
-require "statement/switch.k"
+require "stmt/block.k"
+require "stmt/break.k"
+require "stmt/loop.k"
+require "stmt/goto.k"
+require "stmt/if-then.k"
+require "stmt/labeled.k"
+require "stmt/return.k"
+require "stmt/switch.k"
 
-require "expression/assignment.k"
-require "expression/function-call.k"
-require "expression/id-rval.k"
-require "expression/inc-and-dec.k"
-require "expression/logical.k"
-require "expression/sequencing.k"
+require "expr/assignment.k"
+require "expr/function-call.k"
+require "expr/id-rval.k"
+require "expr/inc-and-dec.k"
+require "expr/logical.k"
+require "expr/sequencing.k"
 
-require "declaration/local.k"
+require "decl/local.k"
 
 module C-EXECUTION
      imports C-CONFIGURATION
@@ -40,23 +40,23 @@ module C-EXECUTION
      imports C-IO-BUFFERED
      imports C-SEQUENCE-POINT
 
-     imports C-STATEMENT-LABELED
-     imports C-STATEMENT-IF-THEN 
-     imports C-STATEMENT-LOOP 
-     imports C-STATEMENT-SWITCH 
-     imports C-STATEMENT-GOTO 
-     imports C-STATEMENT-RETURN 
-     imports C-STATEMENT-BLOCK
-     imports C-STATEMENT-BREAK
+     imports C-STMT-LABELED
+     imports C-STMT-IF-THEN 
+     imports C-STMT-LOOP 
+     imports C-STMT-SWITCH 
+     imports C-STMT-GOTO 
+     imports C-STMT-RETURN 
+     imports C-STMT-BLOCK
+     imports C-STMT-BREAK
 
-     imports C-EXPRESSION-ASSIGNMENT
-     imports C-EXPRESSION-FUNCTION-CALL
-     imports C-EXPRESSION-ID-RVAL
-     imports C-EXPRESSION-INC-AND-DEC
-     imports C-EXPRESSION-LOGICAL
-     imports C-EXPRESSION-SEQUENCING
+     imports C-EXPR-ASSIGNMENT
+     imports C-EXPR-FUNCTION-CALL
+     imports C-EXPR-ID-RVAL
+     imports C-EXPR-INC-AND-DEC
+     imports C-EXPR-LOGICAL
+     imports C-EXPR-SEQUENCING
 
-     imports C-DECLARATION-LOCAL
+     imports C-DECL-LOCAL
 endmodule
 
 

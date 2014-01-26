@@ -9,12 +9,12 @@ module C-TRANSLATION-ERROR
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
 
-     imports C-COMMON-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
 
      imports C-TYPING-MISC-SYNTAX
 
-     imports C-DECLARATION-SYNTAX
-     imports C-DECLARATION-GLOBAL-SYNTAX
+     imports C-DECL-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
 
      imports COMPAT-SYNTAX
 

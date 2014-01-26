@@ -5,8 +5,8 @@ endmodule
 module C-BUILTIN
      imports C-BUILTIN-SYNTAX
 
-     imports C-EXPRESSION-FUNCTION-CALL-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-EXPR-FUNCTION-CALL-SYNTAX
+     imports C-DECL-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
