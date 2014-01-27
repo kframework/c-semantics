@@ -13,7 +13,7 @@ module C-TYPING-INTERPRETATION
      // going to be used in a typed name
      syntax Type ::= extractActualType(Type) [function] 
 
-     syntax K ::= "BitFieldType" "(" K "," K ")" [strict] 
+     syntax K ::= BitFieldType(K, K) [strict] 
      
      rule Specifier(klist(L:KList)) => canonicalizeType(toBag(L))
           [structural]
@@ -21,8 +21,8 @@ module C-TYPING-INTERPRETATION
      rule BitFieldType(T:Type, tv(N:Int, _))
           => t(.Set, bitfieldType(T, N)) [structural, anywhere]
      
-     syntax KLabel ::= "makeArrayType" "(" Int ")"
-     syntax KLabel ::= "makeFunctionType" "(" KList ")"
+     syntax KLabel ::= makeArrayType(Int)
+     syntax KLabel ::= makeFunctionType(KList)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
      syntax KLabel ::= "makePointerType"
      syntax KLabel ::= "makeIncompleteArrayType"
@@ -118,12 +118,11 @@ module C-TYPING-INTERPRETATION
           [structural]
      
      rule <k> JustBase => T ...</k>
-          <declarationTypeHolder> T:Type => .K ...</declarationTypeHolder>
+          <declarationTypeHolder> T:Type => . ...</declarationTypeHolder>
           [structural]
 
      syntax K ::= "extractActualTypeFreezer"
-     rule <k>
-               DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer
+     rule <k> DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer
           ...</k>
           <declarationTypeHolder> (. => T) ...</declarationTypeHolder>
           [structural]
@@ -277,7 +276,7 @@ module C-TYPING-INTERPRETATION
           extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))
           
-     syntax K ::= "NameAndType" "(" K "," K ")" [strict(2)] 
+     syntax K ::= NameAndType(K, K) [strict(2)] 
           
      rule SingleName(T:Type, Name(X:Id, K:K)) 
           => NameAndType(X, DeclType(T, K))

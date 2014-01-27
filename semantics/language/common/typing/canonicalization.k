@@ -27,8 +27,8 @@ module C-TYPING-CANONICALIZATION
           ~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K:K))), _, _, _, _) 
           [structural]
           
-     syntax K ::= "atomic" "(" Type ")"
-     syntax K ::= "alignas" "(" Type ")"
+     syntax K ::= atomic(Type)
+     syntax K ::= alignas(Type)
      
      rule (T:Type => .)
           ~> canonicalizeType-aux(

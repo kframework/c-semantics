@@ -48,7 +48,13 @@ module C-DECL-GLOBAL
           <currentFunction> file-scope </currentFunction>
           <currentProgramLoc> L:CabsLoc </currentProgramLoc>
           when isFunctionType(T)
-               andBool getQualifiers(T) ==Set .Set
+               // TODO(chathhorn): type canonicalization doesn't work right so
+               // we can't do this. Qualifiers on function decls appear to
+               // always be applied to the declared function type, and not to
+               // the function's return type. AFAIK, the only time qualifiers
+               // should be applied to the declared function type is when the
+               // function type is actually a typedef.
+               //andBool getQualifiers(T) ==Set .Set
           [structural] 
      rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
@@ -327,14 +333,14 @@ module C-DECL-GLOBAL
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <currTU> Tu:String </currTU>
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
-          <external-types>... X |-> (T => T') ...</external-types>
+          <external-types>... X |-> (T:Type => T') ...</external-types>
           when isLinkerLoc(Loc')
                andBool notBool isIncompleteType(T')
                andBool isTypeCompatible(T, T')
           [structural]
      // New def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <external-types>... X |-> (T => T') ...</external-types>
+          <external-types>... X |-> (T:Type => T') ...</external-types>
           <external-defs> Defs:Map (. => X |-> Loc') </external-defs>
           when notBool isLinkerLoc(Loc')
                andBool (notBool X in keys Defs)
