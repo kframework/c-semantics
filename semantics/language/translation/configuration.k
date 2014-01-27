@@ -12,8 +12,7 @@ module C-CONFIGURATION
 
           <mainTU color="lightgray"> .K </mainTU>
           <freshUnnamed color="black"> 0 </freshUnnamed>
-          <notWritable> .Map </notWritable>
-          <externalLocations color="cyan"> .Map </externalLocations>
+          <notWritable> .Set </notWritable>
 
           <linking-state>
                // Id |-> Set(TUs)

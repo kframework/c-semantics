@@ -52,10 +52,10 @@ module C-IO-BUFFERED
           <locsWrittenTo>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
           </locsWrittenTo>
-          <notWritable> NotWritable:Map </notWritable>
+          <notWritable> NotWritable:Set </notWritable>
           when (notBool BagItem(loc(Base, Offset, 0)) in Locs)
                andBool (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable))
+               andBool (notBool (loc(Base, Offset, 0) in NotWritable))
                andBool (Offset <Int Len)
           [large, structural]
           

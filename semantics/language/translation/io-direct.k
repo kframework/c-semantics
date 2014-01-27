@@ -28,9 +28,9 @@ module C-IO-DIRECT
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, M:Map => M:Map[V / Offset]) 
           ...</mem>
-          <notWritable> NotWritable:Map </notWritable>
+          <notWritable> NotWritable:Set </notWritable>
           when (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable))
+               andBool (notBool (loc(Base, Offset, 0) in NotWritable))
                andBool (Offset <Int Len)
           [large, structural]
 

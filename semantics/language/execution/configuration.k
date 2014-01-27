@@ -15,8 +15,7 @@ module C-CONFIGURATION
                <mainTU color="lightgray"> .K </mainTU>
                <freshUnnamed color="black"> 0 </freshUnnamed>
                <functions color="lightgray"> .Map </functions>
-               <notWritable> .Map </notWritable>
-               <externalLocations color="cyan"> .Map </externalLocations>
+               <notWritable> .Set </notWritable>
 
                // dummy link loc |-> real loc
                <linkings> .Map </linkings> 

@@ -271,7 +271,7 @@ module C-EXECUTION-ERROR
                (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
                writeByte(Loc:SymLoc, _)
           ...</k>
-          <notWritable>... Loc |-> _ ...</notWritable>
+          <notWritable>... SetItem(Loc) ...</notWritable>
           [structural, large]
 
      rule
@@ -285,7 +285,7 @@ module C-EXECUTION-ERROR
      
      // TODO(chathhorn): Silly way to do things. Probably need to allow
      // multiple error cells at least. Also, add more details (loc?).
-     // fixme possible to miss dataraces with bitfields
+     // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
           <k> 
                (. => ERROR("00048", "Have a read-write datarace.")) ~> 

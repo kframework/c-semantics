@@ -143,9 +143,9 @@ module C-MEMORY-ALLOC
                     lval(loc(Base:SymBase, Offset:Int, _), _)) 
                => . 
           ...</k>
-          <notWritable> 
-               M:Map => M:Map[1 / loc(Base, Offset:Int, 0)] 
-          </notWritable>
+          <notWritable>...
+               (. => SetItem(loc(Base, Offset:Int, 0)))
+          ...</notWritable>
           [structural]
      rule [makeUnwritable]:
           <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>

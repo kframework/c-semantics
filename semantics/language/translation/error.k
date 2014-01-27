@@ -205,7 +205,7 @@ module C-TRANSLATION-ERROR
      //           (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
      //           writeByte(Loc:SymLoc, _)
      //      ...</k>
-     //      <notWritable>... Loc |-> _ ...</notWritable>
+     //      <notWritable>... SetItem(Loc) ...</notWritable>
      //      [structural, large]
 
      syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
