@@ -292,15 +292,11 @@ module C-DECL-GLOBAL
           <genv>... X |-> Loc':SymLoc ...</genv>
           <gtypes>... X |-> T':Type ...</gtypes>
           <externals>... 
-               X |-> declState((_ => Loc'), (_ => T'), (_ => S))
+               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S))
           ...</externals>
-          // TODO(chathhorn): doesn't work because isTypeCompatible doesn't
-          // handle things like structs or enums correctly.
-          // when isTypeCompatible(T, T') 
+          when isTypeCompatible(T, T') 
           [structural]
-     rule <k> updateDecl(X:Id, S:DeclState, internal)
-               => .
-          ...</k>
+     rule <k> updateDecl(X:Id, S:DeclState, internal) => . ...</k>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <genv>... X |-> Loc':SymLoc ...</genv>
@@ -322,30 +318,27 @@ module C-DECL-GLOBAL
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <currTU> Tu:String </currTU>
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
-          // <external-types>... X |-> T:Type ...</external-types>
+          <external-types>... X |-> T:Type ...</external-types>
           when isLinkerLoc(Loc')
                andBool isIncompleteType(T')
-               // TODO(chathhorn)
-               // andBool isTypeCompatible(T, T')
+               andBool isTypeCompatible(T, T')
           [structural]
      // Complete type, no def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <currTU> Tu:String </currTU>
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
-          <external-types>... X |-> (_ => T') ...</external-types>
+          <external-types>... X |-> (T => T') ...</external-types>
           when isLinkerLoc(Loc')
                andBool notBool isIncompleteType(T')
-               // TODO(chathhorn)
-               // andBool isTypeCompatible(T, T')
+               andBool isTypeCompatible(T, T')
           [structural]
      // New def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <external-types>... X |-> (_ => T') ...</external-types>
+          <external-types>... X |-> (T => T') ...</external-types>
           <external-defs> Defs:Map (. => X |-> Loc') </external-defs>
           when notBool isLinkerLoc(Loc')
                andBool (notBool X in keys Defs)
-               // TODO(chathhorn)
-               // andBool isTypeCompatible(T, T')
+               andBool isTypeCompatible(T, T')
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X:Id, _, Loc':SymLoc) => . ...</k>

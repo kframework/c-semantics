@@ -208,13 +208,13 @@ module C-TRANSLATION-ERROR
      //      <notWritable>... SetItem(Loc) ...</notWritable>
      //      [structural, large]
 
-     syntax K ::= verifySpecifiers(Id) | verifyCompat(Type, Id)
+     syntax K ::= verifySpecifiers(Id)
      syntax K ::= qs(Set)
 
      // TODO(chathhorn):move this stuff.
      // TODO(chathhorn): a lot of this is likely redundant (e.g., with "preTypes").
      rule <k> verifyDecl(typedDeclaration(T:Type, X:Id))
-          => verifyCompat(T, X) ~> saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>
+          => saveSpecifiers(T, X)  ~> verifySpecifiers(X) ...</k>
           when notBool (isStaticType(T) andBool isExternType(T))
 
      rule <k> verifySpecifiers(X:Id) => . ...</k>
@@ -252,7 +252,7 @@ module C-TRANSLATION-ERROR
      rule <k> (. => ERROR("00208b",
                "The declaration of " +String S +String " appears with both"
                +String " static and extern specifiers (at different locations in the same translation unit).", 8)) ~>
-               verifySpecifiers(Identifier(S:String))
+          verifySpecifiers(Identifier(S:String))
           ...</k>
           <currTU> Tu:String </currTU>
           <typeSpecifiers>... 
@@ -284,23 +284,15 @@ module C-TRANSLATION-ERROR
           ~> instantiateIdVal(_, _) ...</k>
           <currentFunction> file-scope </currentFunction>
 
-     rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <rawTypes> Types:Map (. => kpair(Tu, X) |-> T) </rawTypes>
-          when notBool (kpair(Tu, X) in keys Types)
-     rule <k> verifyCompat(T:Type, X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <rawTypes>... kpair(Tu, X) |-> (PrevT:Type => T) </rawTypes>
-          when isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
-
-     rule <k> (. => ERROR("00215",
-               "Found multiple declarations of " +String S 
-               +String " with incompatible types.", 15)) ~>
-               verifyCompat(T:Type, Identifier(S:String)) 
-          ...</k>
-          <currTU> Tu:String </currTU>
-          <rawTypes>... kpair(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
-          when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
+// TODO(chathhorn): add this back.
+//      rule <k> (. => ERROR("00215",
+//                "Found multiple declarations of " +String S 
+//                +String " with incompatible types.", 15)) ~>
+//                verifyCompat(T:Type, Identifier(S:String)) 
+//           ...</k>
+//           <currTU> Tu:String </currTU>
+//           <rawTypes>... kpair(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
+//           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
      rule (. => ERROR("00267",
                "Function " +String S +String " declared with type qualifiers.", 67)) 

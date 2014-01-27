@@ -239,6 +239,9 @@ module C-TYPING-MISC
 
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(T1, T2) ==K true
+
+     // TODO(chathhorn): fill this in.
+     rule #isCompat(t(_, structType(_)), t(_, structType(_))) => true
      
      rule [typeCompatible-identical]:
           #isCompat(T:Type, T:Type) => true 
