@@ -294,10 +294,12 @@ module C-TRANSLATION-ERROR
 //           <rawTypes>... kpair(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
 //           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
-     rule (. => ERROR("00267",
-               "Function " +String S +String " declared with type qualifiers.", 67)) 
-          ~> doDeclare'(typedDeclaration(T:Type, Identifier(S:String)), _)
-          when isFunctionType(T)
-               andBool getQualifiers(T) =/=Set .Set
+// TODO(chathhorn): our type normalizer incorrectly puts the qualifiers on
+// the function instead of its return value.
+//      rule (. => ERROR("00267",
+//                "Function " +String S +String " declared with type qualifiers.", 67)) 
+//           ~> doDeclare'(typedDeclaration(T:Type, Identifier(S:String)), _)
+//           when isFunctionType(T)
+//                andBool getQualifiers(T) =/=Set .Set
 
 endmodule
