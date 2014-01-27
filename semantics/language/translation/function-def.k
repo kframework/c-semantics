@@ -14,7 +14,6 @@ module C-FUNCTION-DEF
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
      imports C-ENV-SYNTAX
 
      imports COMPAT-SYNTAX

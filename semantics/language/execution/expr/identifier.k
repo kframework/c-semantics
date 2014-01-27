@@ -1,13 +1,10 @@
-module C-COMMON-EXPR-IDENTIFIER-SYNTAX
-     syntax K ::= "populateFromGlobal"
-endmodule
-
-module C-COMMON-EXPR-IDENTIFIER
-     imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
+module C-EXPR-IDENTIFIER
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
      An identifier is a primary expression, provided it has been declared as
@@ -19,17 +16,8 @@ module C-COMMON-EXPR-IDENTIFIER
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
-          
-     rule [populateFromGlobal]:
-          <k> populateFromGlobal => . ...</k>
-          <currTU> Tu:K </currTU>
-          <tu-id> Tu </tu-id>
-          <genv> G:Map </genv> 
-          <gtypes> GT:Map </gtypes> 
-          <gstructs> GS:Map </gstructs> 
-          <env> _ => G </env>
-          <types> _ => GT </types>
-          <structs> _ => GS </structs>
+
+     rule instantiateIdVal(L:SymLoc, T:Type) => read(L, T)
           [structural]
 
 endmodule

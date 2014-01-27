@@ -28,7 +28,6 @@ require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/conditional.k"
 require "expr/eval.k"
-require "expr/identifier.k"
 require "expr/members.k"
 require "expr/multiplicative.k"
 require "expr/reference.k"
@@ -71,7 +70,6 @@ module C-COMMON
      imports C-COMMON-EXPR-CAST
      imports C-COMMON-EXPR-CONDITIONAL
      imports C-COMMON-EXPR-EVAL
-     imports C-COMMON-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-MEMBERS
      imports C-COMMON-EXPR-MULTIPLICATIVE
      imports C-COMMON-EXPR-REFERENCE

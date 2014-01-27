@@ -1,4 +1,5 @@
 module C-CONFIGURATION
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -21,6 +22,8 @@ module C-CONFIGURATION
                <external-types> .Map </external-types>
                // Id |-> Loc
                <external-defs> .Map </external-defs>
+               // Ids
+               <external-uses> SetItem(Identifier("main")) </external-uses>
           </linking-state>
 
           // dummy link loc |-> real loc

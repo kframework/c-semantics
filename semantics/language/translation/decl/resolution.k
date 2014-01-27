@@ -24,8 +24,11 @@ module C-DECL-RESOLUTION
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
      rule <k> resolveReferences ...</k>
+          <external-uses>...
+               SetItem(X:Id)
+          ...</external-uses>
           <external-decls>...
-               X:Id |-> set((SetItem(Tu:String) => .) _)
+               X |-> set((SetItem(Tu:String) => .) _)
           ...</external-decls>
           <external-defs>...
                X |-> Loc:SymLoc
@@ -44,8 +47,11 @@ module C-DECL-RESOLUTION
      // Resolve references to builtins by just ignoring them (but we go ahead
      // and add the complete type to every TU where it appears).
      rule <k> resolveReferences ...</k>
+          <external-uses>...
+               SetItem(X:Id)
+          ...</external-uses>
           <external-decls>...
-               X:Id |-> set((SetItem(Tu:String) => .) _)
+               X |-> set((SetItem(Tu:String) => .) _)
           ...</external-decls>
           <external-defs> Defs:Map </external-defs>
           <external-types>...
@@ -59,6 +65,9 @@ module C-DECL-RESOLUTION
                andBool idToString(X) in builtins
 
      rule <k> resolveReferences ...</k>
+          <external-uses>...
+               (SetItem(X:Id) => .)
+          ...</external-uses>
           <external-decls>...
                (X:Id |-> set(.Set) => .)
           ...</external-decls>
@@ -72,6 +81,9 @@ module C-DECL-RESOLUTION
 
      rule <k> resolveReferences ...</k>
           <mainTU> . => MainTu </mainTU>
+          <external-uses>...
+               (SetItem(Identifier("main")) => .)
+          ...</external-uses>
           <external-decls>...
                (Identifier("main") |-> set(.Set) => .)
           ...</external-decls>
@@ -85,8 +97,11 @@ module C-DECL-RESOLUTION
 
      // Clean up builtins.
      rule <k> resolveReferences ...</k>
+          <external-uses>...
+               (SetItem(X:Id) => .)
+          ...</external-uses>
           <external-decls>...
-               (X:Id |-> set(.Set) => .)
+               (X |-> set(.Set) => .)
           ...</external-decls>
           <external-defs> Defs:Map </external-defs>
           <external-types>...
@@ -94,14 +109,12 @@ module C-DECL-RESOLUTION
           ...</external-types>
           when notBool X in keys Defs
 
-     // Now everything left in <external-decls> should be an unresolved
+     // Now everything left in <external-uses> should be an unresolved
      // reference.
      
      rule <k> resolveReferences => . ...</k>
-          (<linking-state>
-               <external-decls> .Map </external-decls>
-               <external-defs> .Map </external-defs>
-               <external-types> .Map </external-types>
-          </linking-state> => .Bag)
+          (<linking-state>...
+               <external-uses> .Set </external-uses>
+          ...</linking-state> => .Bag)
 
 endmodule

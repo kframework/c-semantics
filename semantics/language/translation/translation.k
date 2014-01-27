@@ -13,7 +13,6 @@ require "decl/local.k"
 
 require "expr/assignment.k"
 require "expr/function-call.k"
-require "expr/id-rval.k"
 require "expr/inc-and-dec.k"
 require "expr/sequencing.k"
 require "expr/additive.k"
@@ -53,7 +52,6 @@ module C-TRANSLATION
 
      imports C-EXPR-ASSIGNMENT
      imports C-EXPR-FUNCTION-CALL
-     imports C-EXPR-ID-RVAL
      imports C-EXPR-INC-AND-DEC
      imports C-EXPR-SEQUENCING
      imports C-EXPR-ADDITIVE

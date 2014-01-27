@@ -1,6 +1,7 @@
 module C-ENV-SYNTAX
      syntax K ::= addToEnv(Id, SymLoc)
      syntax K ::= giveType(Id, Type)
+     syntax K ::= "populateFromGlobal"
 endmodule
 
 module C-ENV
@@ -10,6 +11,18 @@ module C-ENV
 
      syntax K ::= addToGlobalEnv(K, SymLoc)
      syntax K ::= addToLocalEnv(K, SymLoc)
+          
+     rule [populateFromGlobal]:
+          <k> populateFromGlobal => . ...</k>
+          <currTU> Tu:K </currTU>
+          <tu-id> Tu </tu-id>
+          <genv> G:Map </genv> 
+          <gtypes> GT:Map </gtypes> 
+          <gstructs> GS:Map </gstructs> 
+          <env> _ => G </env>
+          <types> _ => GT </types>
+          <structs> _ => GS </structs>
+          [structural]
      
      rule <k> addToEnv(X:Id, Loc:SymLoc) => addToGlobalEnv(X, Loc) ...</k>
           <currentFunction> file-scope </currentFunction>

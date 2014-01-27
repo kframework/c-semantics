@@ -18,7 +18,6 @@ module C-EXECUTION-INIT
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-COMMON-EXPR-IDENTIFIER-SYNTAX
      imports C-DECL-LOCAL-SYNTAX
      imports LIBC-IO-SYNTAX
      imports COMPAT-SYNTAX
