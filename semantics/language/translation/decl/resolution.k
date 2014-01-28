@@ -7,8 +7,6 @@ module C-DECL-RESOLUTION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
 
-     imports C-BUILTIN-SYNTAX
-
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -31,38 +29,22 @@ module C-DECL-RESOLUTION
                X |-> set((SetItem(Tu:String) => .) _)
           ...</external-decls>
           <external-defs>...
-               X |-> Loc:SymLoc
+               X |-> Loc':SymLoc
           ...</external-defs>
           <external-types>...
                X |-> T:Type
           ...</external-types>
           <tu-id> Tu </tu-id>
           <genv>...
-               X |-> (_ => Loc)
+               X |-> (Loc:SymLoc => Loc')
           ...</genv>
           <gtypes>...
                X |-> (_ => T)
           ...</gtypes>
+          <linkings>...
+               (. => Loc |-> Loc')
+          ...</linkings>
 
-     // Resolve references to builtins by just ignoring them (but we go ahead
-     // and add the complete type to every TU where it appears).
-     rule <k> resolveReferences ...</k>
-          <external-uses>...
-               SetItem(X:Id)
-          ...</external-uses>
-          <external-decls>...
-               X |-> set((SetItem(Tu:String) => .) _)
-          ...</external-decls>
-          <external-defs> Defs:Map </external-defs>
-          <external-types>...
-               X |-> T:Type
-          ...</external-types>
-          <tu-id> Tu </tu-id>
-          <gtypes>...
-               X |-> (_ => T)
-          ...</gtypes>
-          when (notBool X in keys Defs)
-               andBool idToString(X) in builtins
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
@@ -94,20 +76,6 @@ module C-DECL-RESOLUTION
           <external-types>...
                (Identifier("main") |-> _ => .)
           ...</external-types>
-
-     // Clean up builtins.
-     rule <k> resolveReferences ...</k>
-          <external-uses>...
-               (SetItem(X:Id) => .)
-          ...</external-uses>
-          <external-decls>...
-               (X |-> set(.Set) => .)
-          ...</external-decls>
-          <external-defs> Defs:Map </external-defs>
-          <external-types>...
-               (X |-> _ => .)
-          ...</external-types>
-          when notBool X in keys Defs
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.

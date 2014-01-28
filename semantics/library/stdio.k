@@ -36,7 +36,7 @@ module LIBC-STDIO
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
           
-     syntax Value ::= "str" "(" String ")"
+     syntax Value ::= str(String)
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
           => getString-aux(Loc, S +String chrChar(N))

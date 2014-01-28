@@ -421,7 +421,7 @@ location:
 global:
 | declaration                           { $1 }
 | function_def                          { $1 } 
-/*(* Some C header files ar shared with the C++ compiler and have linkage 
+/*(* Some C header files are shared with the C++ compiler and have linkage 
    * specification *)*/
 | EXTERN string_constant declaration    { LINKAGE (fst $2, (*handleLoc*) (snd $2), [ $3 ]) }
 | EXTERN string_constant LBRACE globals RBRACE 

@@ -43,12 +43,14 @@ module C-STMT-RETURN
                ~> cast(T, V) 
                ~> K
           </k>
-          <tu-id> Tu </tu-id>
+          // We look up the function type in the caller's TU because this might
+          // be a builtin (i.e., we're in a fake TU with no type env).
+          <tu-id> OldTu </tu-id>
           <gtypes>... 
               F:Id |-> t(_, functionType(T:KResult, _))
           ...</gtypes>
           <control>
-               <currTU> Tu:K => OldTu </currTU>
+               <currTU> _ => OldTu </currTU>
                <currentFunction> (F:Id => CurrFun) </currentFunction>
                <currentProgramLoc> _ => CurrLoc </currentProgramLoc>
                (<controlDetails>... 
@@ -61,7 +63,7 @@ module C-STMT-RETURN
                     <callStackFrame>...
                          <continuation> K:K </continuation>
                          <stackControl>
-                              <currTU> OldTu:K </currTU>
+                              <currTU> OldTu:String </currTU>
                               C:Bag
                          </stackControl>
                          <stackCurrentFunction>

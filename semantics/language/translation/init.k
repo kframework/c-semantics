@@ -11,9 +11,12 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): check that main is defined.
+     // TODO(chathhorn): check that main is (correctly) defined.
      rule <k> Program(klist(P:KList)) 
-               => klistToK(P) ~> resolveReferences
+               => klistToK(P) 
+               ~> TranslationUnit(
+                    "builtin", klist(.KList), addBuiltins(builtins))
+               ~> resolveReferences
           </k>
           <control>...
                <currentFunction> 
@@ -31,7 +34,6 @@ module C-TRANSLATION-INIT
                => preDeclareStrings(Strings)
                ~> klistToK(eraseKLabel('StmtCons, K))
                ~> allocateIncompleteInternals
-               ~> initBuiltins
           ...</k>
           <currTU> _ => Tu </currTU>
           <translation-units>...
@@ -55,57 +57,34 @@ module C-TRANSLATION-INIT
      rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
           [structural]
           
-     syntax K ::= "initBuiltins"
-     syntax K ::= initBuiltins(Map)
+     syntax K ::= addBuiltins(Set)
 
-     // TODO(chathhorn): this is mostly duped from execution.k
-     // rule [lookup-builtin-id-notfound]:
-     //      <k> (. => addToEnv(X, Loc)
-     //                ~> initFunction(
-     //                     tv(Loc, t(.Set, pointerType(T))), 
-     //                     builtinPrototype(X, T))) 
-     //           ~> X:Id
-     //      ...</k>
-     //      <env> Env:Map </env>
-     //      <types>... X |-> T:Type ...</types>
-     //      <currTU> Tu:String </currTU>
-     //      <tu-id> Tu </tu-id>
-     //      <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-     //      when isFunctionType(T)
-     //           andBool notBool X in keys Env
-     //      [large, structural]
-
-     rule <k> initBuiltins => initBuiltins(Env) ...</k>
-          <currTU> Tu:String </currTU>
-          <tu-id> Tu </tu-id>
-          <genv> Env:Map </genv>
-          [structural]
-
-     rule [lookup-builtin-function-notfound]:
-          <k> (. => addToEnv(X, Loc')
-                    ~> initFunction(
-                         tv(Loc', t(.Set, pointerType(T))),
-                         builtinPrototype(X, T)))
-               ~> initBuiltins((X:Id |-> Loc:SymLoc => .) _:Map)
+     // Only add a builtin if it has an external type (that is, it's been
+     // declared somewhere) and if it doesn't already have a definition.
+     // Therefore, if someone redefines a builtin, we won't co-opt it (although
+     // redefining it should probably be an error).
+     rule <k> (. => initFunction(
+               tv(Loc, t(.Set, pointerType(T))), 
+               builtinPrototype(Identifier(B), T)))
+               ~> addBuiltins((SetItem(B:String) => .) _)
           ...</k>
-          // TODO(chathhorn): it'd be nice to use a correct TU. As it is, every
-          // reference to a builtin function is like a call to a function
-          // defined in the same TU where the reference appears.
+          <external-types>...
+               Identifier(B) |-> T:Type
+          ...</external-types>
+          <external-defs> 
+               Defs:Map (. => Identifier(B) |-> Loc)
+          </external-defs>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
-          <gtypes>... X |-> T:Type ...</gtypes>
-          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
-          when isLinkerLoc(Loc) 
-               andBool (idToString(X) in builtins)
-          [large, structural]
-
-     rule [lookup-builtin-function-found]:
-          <k> initBuiltins(X:Id |-> Loc:SymLoc M:Map => M) ...</k>
-          when notBool isLinkerLoc(Loc)
-               orBool (notBool idToString(X) in builtins)
-          [structural]
-
-     rule initBuiltins(.Map) => .
-          [structural]
+          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          when notBool Identifier(B) in keys Defs
+          
+     rule <k> addBuiltins((SetItem(B:String) => .) _) ...</k>
+          <external-types> Types:Map </external-types>
+          <external-defs> Defs:Map </external-defs>
+          when (Identifier(B) in keys Defs)
+               orBool (notBool Identifier(B) in keys Types)
+          
+     rule addBuiltins(.Set) => .
 
 endmodule

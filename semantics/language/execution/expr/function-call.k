@@ -89,8 +89,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule [function-application]:
-          <k> 
-               application'(Tu:String, functionObject(X:Id, 
+          <k> application'(Tu:String, functionObject(X:Id, 
                     t(_, functionType(_:Type, P:KList)), B:K), L:KList) 
                     ~> K:K 
                => sequencePoint

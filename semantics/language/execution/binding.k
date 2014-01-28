@@ -75,8 +75,7 @@ module C-BINDING
           [structural, anywhere] 
           
      rule [bind-one]:
-          <k> 
-               bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
+          <k> bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
                     (typedDeclaration(T:Type, X:Id),, P:KList))
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)

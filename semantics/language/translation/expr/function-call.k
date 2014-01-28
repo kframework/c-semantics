@@ -17,7 +17,8 @@ module C-EXPR-FUNCTION-CALL
      
      context Call(_, (HOLE => revalParams(HOLE)))
 
-     rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, _))))), _)
+     rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, _))))), 
+               rvlist(_))
           => tv(symVal, T)
           [structural]
 

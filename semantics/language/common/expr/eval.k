@@ -36,7 +36,7 @@ module C-COMMON-EXPR-EVAL
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
      
-     // fixme Whoah!  What about char types?  What is this about?
+     // FIXME Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
      // could have been declared with the register storage class (never had its
      // address taken), and that object is uninitialized (not declared with an
