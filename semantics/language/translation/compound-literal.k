@@ -7,6 +7,7 @@ module C-COMPOUND-LITERAL
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
 
      syntax Id ::= compoundLiteral(Int)
      syntax K ::= handleCompoundLiteral(K) [strict]
@@ -61,13 +62,13 @@ module C-COMPOUND-LITERAL
           <currentFunction> file-scope </currentFunction>
           [structural]
 
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, _))
-               => giveType(X, T)
+     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+               => addToEnv(X, symVal)
+               ~> giveType(X, T)
+               ~> Init
                ~> X
           ...</k>
-          <currTU> Tu:String </currTU>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> F:Id </next-static-loc>
+          <currentFunction> F:Id </currentFunction>
           when F =/=K file-scope
           [structural]
           

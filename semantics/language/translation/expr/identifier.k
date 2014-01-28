@@ -34,13 +34,6 @@ module C-EXPR-IDENTIFIER
           when isLinkerLoc(Loc)
           [structural]
 
-     rule [lookup-symbolic]:
-          <k> X:Id => lv(symVal, T) ...</k>
-          <env>  Env:Map </env>
-          <types>... X |-> T:Type ...</types>
-          when notBool (X in keys Env)
-          [structural]
-
      rule <k> instantiateIdVal(_, T:Type) => tv(symVal, T) ...</k>
           <currentFunction> F:Id </currentFunction>
           when F =/=K file-scope

@@ -8,6 +8,7 @@ module C-DECL-LOCAL
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
 
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -17,74 +18,58 @@ module C-DECL-LOCAL
      // TODO(chathhorn): note that execution/declaration/local.k starts from
      // doDeclare, not declareInternalVariable.
 
-     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
+     // TODO(chathhorn): Totally not sure what to do about these first cases.
+     // Should the external types be updated/completed?
+     rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
                => addToEnv(X, Loc)
-               ~> giveType(X, unqualifyType(T))
+               ~> giveType(X, unqualifyType(T'))
           ...</k>
-          <externals>... X |-> declState(Loc:SymLoc, _, _) ...</externals> 
-          when notBool isIncompleteType(T)
-               andBool isFunctionType(T)
+          <external-types>... X |-> T:Type ...</external-types>
+          <external-defs>... X |-> Loc:SymLoc ...</external-defs>
+          when (isFunctionType(T') orBool isExternType(T'))
+               andBool notBool isStaticType(T')
+               andBool isTypeCompatible(T, T')
           [structural] 
-
-     // TODO(chathhorn): Need to actually cause an extern to be declared or
-     // completed at this point. 
-     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
-               => giveType(X, unqualifyType(T))
+     rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
+               => addToEnv(X, symVal)
+               ~> giveType(X, unqualifyType(T'))
           ...</k>
-          <externals> Exts:Map </externals> 
-          when isExternType(T) orBool isFunctionType(T)
-               andBool (notBool $hasMapping(Exts, X))
-          [structural]
-
-     // TODO(chathhorn): Possibly complete the extern.
-     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
-               => addToEnv(X, Loc)
-               ~> giveType(X, unqualifyType(T))
-          ...</k>
-          <externals>... X |-> declState(Loc:SymLoc, _, _) ...</externals>
-          when isExternType(T)
-               andBool (notBool isIncompleteType(T))
+          <external-types>... X |-> T:Type ...</external-types>
+          <external-defs> Defs:Map </external-defs>
+          when (isFunctionType(T') orBool isExternType(T'))
+               andBool notBool isStaticType(T')
+               andBool isTypeCompatible(T, T')
+               andBool notBool (X in keys Defs)
           [structural] 
-     rule [declareExternInternal]:
-          <k> declareInternalVariable(X:Id, T:Type, NoInit)
-               => addToEnv(X, Loc)
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
+               => addToEnv(X, symVal)
                ~> giveType(X, unqualifyType(T))
           ...</k>
-          <externals>... 
-               X |-> declState(Loc:SymLoc, T:Type, _) 
-          ...</externals>
-          when isExternType(T)
-               andBool isIncompleteType(T)
+          <external-types> Types:Map </external-types>
+          when (isFunctionType(T) orBool isExternType(T))
+               andBool notBool isStaticType(T)
+               andBool notBool (X in keys Types)
           [structural] 
      
      rule declareInternalVariable(X:Id, T:Type, NoInit)
-          => giveType(X, T)
-          when isNaked(T)
+          => addToEnv(X, symVal)
+          ~> giveType(X, unqualifyType(T))
+          when isNaked(T) orBool isStaticType(T)
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
-          => defineAndInit(X, T, figureInit(X, T, K))
-          when isNaked(T)
+          => addToEnv(X, symVal)
+          ~> defineAndInit(X, unqualifyType(T), 
+               figureInit(X, removeStorageSpecifiers(T), K))
+          when (isNaked(T) orBool isStaticType(T))
                andBool (K =/=K NoInit)
           [structural] 
           
-     rule declareInternalVariable(X:Id, T:Type, NoInit)
-          => giveType(X, unqualifyType(T))
-          when isStaticType(T)
-          [structural] 
-          
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => defineAndInit(X, unqualifyType(T),
-               figureInit(X,
-               removeStorageSpecifiers(T), K))
-          when isStaticType(T)
-               andBool (K =/=K NoInit)
-          [structural, large] 
-                    
      syntax K ::= defineAndInit(Id, Type, K) [strict(3)] 
-
-     rule defineAndInit(X:Id, _, initValue(X:Id, T:Type, _))
+     rule defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
           => giveType(X, T)
+          ~> K
           [structural] 
+
 endmodule
 

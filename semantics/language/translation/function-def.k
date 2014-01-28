@@ -15,6 +15,7 @@ module C-FUNCTION-DEF
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -91,7 +92,8 @@ module C-FUNCTION-DEF
           
      rule <k> 
                dummyBind((typedDeclaration(T:Type, X:Id),, P:KList))
-               => giveType(X, T)
+               => addToEnv(X, symVal)
+               ~> giveType(X, T)
                ~> dummyBind(P)
           ...</k> 
           when notBool isArrayType(T)

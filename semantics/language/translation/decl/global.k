@@ -351,33 +351,17 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     syntax K ::= allocateDecl(Id, Type, SymLoc)
-     rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 
-          => allocateType(Loc, T) 
-          ~> zero(X)
-          when notBool isFunctionType(T)
-               andBool (notBool isLinkerLoc(Loc))
-          [structural]
-     rule allocateDecl(_, T:Type, Loc:SymLoc) => .
-          when isFunctionType(T)
-               andBool notBool isLinkerLoc(Loc)
-          [structural]
-
      // If we're asked to allocate a symbolic linker loc, then we need to
      // create a "real" static location and allocate that. We also go ahead and
      // add the new location to the environment. This means both locations
      // might end up in memory if the address of the symbol is taken in
      // multiple initializers, but it should work out as long as the symbolic
      // linker locs are transparent enough.
-     rule <k> allocateDecl(X:Id, T:Type, Loc:SymLoc) 
-               => addToEnv(X, Loc') 
-          ...</k>
-          <currTU> Tu:String </currTU>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
-          <linkings>... (. => Loc |-> Loc') </linkings>
-          when isFunctionType(T)
-               andBool isLinkerLoc(Loc)
+     syntax K ::= allocateDecl(Id, Type, SymLoc)
+     rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 
+          => allocateType(Loc, T) 
+          ~> zero(X)
+          when notBool isLinkerLoc(Loc)
           [structural]
      rule <k> allocateDecl(X:Id, T:Type, Loc:SymLoc) 
                => addToEnv(X, Loc')
@@ -388,8 +372,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
           <linkings>... (. => Loc |-> Loc') </linkings>
-          when notBool isFunctionType(T)
-               andBool isLinkerLoc(Loc)
+          when isLinkerLoc(Loc)
           [structural]
           
 endmodule

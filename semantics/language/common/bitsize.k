@@ -54,7 +54,7 @@ module C-BITSIZE
           => tv(Len:Int, cfg:largestUnsigned)
           [structural]
           
-     syntax K ::= "maxBitSizeofList" "(" KList ")"
+     syntax K ::= maxBitSizeofList(KList)
      syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
      rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L, 0)
           [structural, anywhere]

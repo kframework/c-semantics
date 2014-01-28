@@ -44,10 +44,10 @@ module C-COMPOUND-LITERAL
           
      rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
                => allocateType(Loc, T)
-                    ~> addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> Init ~> sequencePoint
-                    ~> X
+               ~> addToEnv(X, Loc)
+               ~> giveType(X, T)
+               ~> Init ~> sequencePoint
+               ~> X
           ...</k>
           <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
@@ -58,12 +58,11 @@ module C-COMPOUND-LITERAL
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
-     rule <k> 
-               handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
                => addToEnv(X, Loc)
-                    ~> giveType(X, T)
-                    ~> Init ~> sequencePoint
-                    ~> X
+               ~> giveType(X, T)
+               ~> Init ~> sequencePoint
+               ~> X
           ...</k>
           <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
           [structural]
