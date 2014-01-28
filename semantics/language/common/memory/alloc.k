@@ -134,12 +134,11 @@ module C-MEMORY-ALLOC
           <k> makeUnwritableVar(X:Id) => makeUnwritable(Loc)  ...</k>
           <env>... X:Id |-> Loc:SymLoc ...</env>
           [structural]
-     // fixme shouldn't need both of these
-     // fixme could do better with bitfields
+     // FIXME shouldn't need both of these
+     // FIXME could do better with bitfields
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
      rule [makeUnwritable-subobject]:
-          <k> 
-               makeUnwritableSubObject(
+          <k> makeUnwritableSubObject(
                     lval(loc(Base:SymBase, Offset:Int, _), _)) 
                => . 
           ...</k>
@@ -147,11 +146,19 @@ module C-MEMORY-ALLOC
                (. => SetItem(loc(Base, Offset:Int, 0)))
           ...</notWritable>
           [structural]
+     rule [makeUnwritable-subobject]:
+          makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
+          when notBool isPhysicalLoc(Loc)
+          [structural]
      rule [makeUnwritable]:
           <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>
           <mem>... 
                Base |-> memblock(_, _ (.Bag => BagItem(mconst)), _) 
           ...</mem>
+          [structural]
+     rule [makeUnwritable-symbolic]:
+          makeUnwritable(Loc:SymLoc) => .
+          when notBool isPhysicalLoc(Loc)
           [structural]
 
      rule checkDerefLoc(Loc:SymLoc) => checkValidLoc(Loc) 

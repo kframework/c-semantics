@@ -27,6 +27,11 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isThreadDuration(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
 
+     // I.e., static, argv, allocated, or thread (the same as "not
+     // isLinkerLoc," except it's a "positive" check). This is mostly intended
+     // to test for the symbolic locs added in translation (a bit of a hack).
+     syntax Bool ::= isPhysicalLoc(SymLoc) [function]
+
      syntax SymBase ::= Int "@" Duration
      syntax SymBase ::= "argv"
 
@@ -72,6 +77,12 @@ module C-SYMLOC
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
 
      syntax Bool ::= "#isLinkerLoc" "(" SymLoc ")" [function]
+
+     rule isPhysicalLoc(Loc:SymLoc) 
+          => (isAllocatedDuration(Loc) 
+               orBool isArgvDuration(Loc)
+               orBool isStaticDuration(Loc)
+               orBool isThreadDuration(Loc))
 
      rule isAllocatedDuration(Loc:SymLoc) 
           => #isAllocatedDuration(Loc) ==K true

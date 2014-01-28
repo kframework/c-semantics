@@ -240,9 +240,12 @@ module C-TYPING-MISC
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(T1, T2) ==K true
 
-     // TODO(chathhorn): fill this in.
+     // TODO(chathhorn): fill in for structs.
      rule #isCompat(t(_, structType(_)), t(_, structType(_))) => true
-     
+
+     // TODO(chathhorn): are enums compatible with e.g. ints?
+     rule #isCompat(t(_, enumType(_)), t(_, enumType(_))) => true
+
      rule [typeCompatible-identical]:
           #isCompat(T:Type, T:Type) => true 
      rule [typeCompatible-two-ints]:
@@ -296,10 +299,6 @@ module C-TYPING-MISC
           #isCompat(t(_, functionType(T:Type, .KList)),
                t(_, functionType(T':Type, .KList)))
           => #isCompat(T, T') 
-     // TODO(chathhorn): why was this here??
-     // rule #isCompat(T:Type, T':Type) => true
-     //      when (hasIntegerType(T) orBool isFloatType(T))
-     //           andBool (hasIntegerType(T') orBool isFloatType(T')) 
                
      syntax K ::= addGlobalAggregate(Id, K)
                 | addLocalAggregate(Id, K)
@@ -572,7 +571,7 @@ module C-TYPING-MISC
      rule getQualifiers'(t(_, T:SimpleType)) => .Set
           when (getKLabel(T) =/=KLabel 'qualifiedType)
 
-     // These are the only "real" type qualifiers.
+     // These are the only actual members "type qualifier" syntactic class.
      syntax Set ::= "typeQualifiers" [function]
      rule typeQualifiers =>
           SetItem(Const)
@@ -580,13 +579,16 @@ module C-TYPING-MISC
           SetItem(Volatile)
           SetItem(Atomic)
 
-     rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
-     rule unqualifyType(t(_:Set, T:SimpleType)) => t(.Set, T)
+     // TODO(chathhorn): probably poorly named.
+     rule unqualifyType(t(_, qualifiedType(T:Type, _))) 
+          => unqualifyType(T)
+     rule unqualifyType(t(_, T:SimpleType)) => t(.Set, T)
           when getKLabel(T) =/=KLabel 'qualifiedType
           
-     // TODO(chathhorn): clearly this doesn't do exactly what it claims to do.
+     // TODO(chathhorn): doesn't do exactly what it claims to. It does the
+     // same thing as unqualifyType, but I guess it leaves Const alone.
      rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
-          => T
+          => removeStorageSpecifiers(T)
      rule removeStorageSpecifiers(t(S:Set, T:SimpleType)) => t(S, T)
           when getKLabel(T) =/=KLabel 'qualifiedType
           
