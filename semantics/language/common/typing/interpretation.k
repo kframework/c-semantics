@@ -1,4 +1,12 @@
+module C-TYPING-INTERPRETATION-SYNTAX
+     // TODO(chathhorn): these are used in translation/symbolic-value.k. Should
+     // probably just make symVal known everywhere.
+     syntax Type ::= pushTypeDown(Type, KLabel) [function]
+     syntax KLabel ::= makeArrayType(Int)
+endmodule
+
 module C-TYPING-INTERPRETATION
+     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
@@ -9,8 +17,8 @@ module C-TYPING-INTERPRETATION
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     // rules that use specifier should be careful to use extractActualType if
-     // going to be used in a typed name
+     // Rules that use specifier should be careful to use extractActualType if
+     // going to be used in a typed name.
      syntax Type ::= extractActualType(Type) [function] 
 
      syntax K ::= BitFieldType(K, K) [strict] 
@@ -21,13 +29,11 @@ module C-TYPING-INTERPRETATION
      rule BitFieldType(T:Type, tv(N:Int, _))
           => t(.Set, bitfieldType(T, N)) [structural, anywhere]
      
-     syntax KLabel ::= makeArrayType(Int)
      syntax KLabel ::= makeFunctionType(KList)
-     syntax Type ::= pushTypeDown(Type, KLabel) [function]
      syntax KLabel ::= "makePointerType"
      syntax KLabel ::= "makeIncompleteArrayType"
      
-     // fixme, throwing away specifier
+     // FIXME: throwing away specifier.
      rule ArrayType(T:Type, tv(N:Int, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
@@ -38,7 +44,8 @@ module C-TYPING-INTERPRETATION
      rule PointerType(T:Type)
           => pushTypeDown(T, makePointerType)
           [structural, anywhere]
-     // fixme I'm assuming functiontype is always below a prototype in the ast
+     // FIXME: I'm assuming functiontype is always below a prototype in the
+     // AST.
      rule FunctionType(T:Type) => T
           [structural, anywhere]
      rule Prototype(T:Type, krlist(L:KList), false) 
@@ -212,7 +219,7 @@ module C-TYPING-INTERPRETATION
                N +Int N')), #NoName) 
           [structural, anywhere]
      
-     // fixme chould check for some struct contraints here
+     // FIXME: chould check for some struct contraints here.
      syntax KList ::= incompleteToFlexibleArrayMember(KList) [function]
 
      rule incompleteToFlexibleArrayMember((typedDeclaration(T:Type, X:Id),, 
@@ -235,7 +242,7 @@ module C-TYPING-INTERPRETATION
                ~> giveType(X, t(.Set, unionType(X)))
           [structural]
 
-     // the K will resolve to a type, so throw it away
+     // The K will resolve to a type, so throw it away.
      rule OnlyTypedef(K:K) => K ~> discard
           [structural]
           
