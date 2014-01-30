@@ -146,10 +146,8 @@ module C-BITS
      //- derived
      rule bitsToBytes(N:Int) => absInt(N:Int /Int cfg:bitsPerByte)
           when cfg:bitsPerByte dividesInt N:Int
-          [structural]
      rule bitsToBytes(N:Int) => absInt((N:Int /Int cfg:bitsPerByte) +Int 1) 
           when notBool cfg:bitsPerByte dividesInt N:Int
-          [structural]
 
      // these could be so much better...
      rule ~Bits X:Int => ~Int X
