@@ -62,7 +62,7 @@ module C-DECL-RESOLUTION
           when X =/=K Identifier("main")
 
      rule <k> resolveReferences ...</k>
-          <mainTU> . => MainTu </mainTU>
+          <mainTU>... (.Set => SetItem(MainTu)) </mainTU>
           <external-uses>...
                (SetItem(Identifier("main")) => .)
           ...</external-uses>

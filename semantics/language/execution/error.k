@@ -163,7 +163,7 @@ module C-EXECUTION-ERROR
                (. => ERROR("00025b", "Main must exist.", 4) ) ~>
                callMain(_, _)
           ...</k>
-          <mainTU> .K </mainTU>
+          <mainTU> .Set </mainTU>
           [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>

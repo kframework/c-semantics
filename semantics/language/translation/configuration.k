@@ -1,19 +1,20 @@
 module C-CONFIGURATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-TRANSLATION-INIT-SYNTAX
      imports COMPAT-SYNTAX
 
      configuration 
      <global>
+          <mem> .Map </mem>
+
+          <functions color="lightgray"> .Map </functions>
           <gstructs color="lightgray"> .Map </gstructs>
           <stringLiterals color="lightgray"> .Map </stringLiterals>
 
-          <mem> .Map </mem>
-          <functions color="lightgray"> .Map </functions>
-
-          <mainTU color="lightgray"> .K </mainTU>
-          <freshUnnamed color="black"> 0 </freshUnnamed>
           <notWritable> .Set </notWritable>
+
+          <mainTU color="lightgray"> .Set </mainTU>
 
           <linking-state>
                // Id |-> Set(TUs)
@@ -43,6 +44,8 @@ module C-CONFIGURATION
 
                     <next-static-loc> .K </next-static-loc>
 
+                    <freshUnnamed color="black"> 0 </freshUnnamed>
+
                     <goto-map color="lightgray"> .Map </goto-map>
                </tu>
           </translation-units>
@@ -52,10 +55,10 @@ module C-CONFIGURATION
           <rawTypes> .Map </rawTypes>
           <typeSpecifiers> .Map </typeSpecifiers>
 
-          <mode> $MODE:SemMode </mode>
-
           <k color="green" multiplicity="?"> 
-               $PGM:K 
+               loadObj(mergeObj(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag)))
+               ~> $PGM:K 
+               ~> outputMode($MODE:SemMode, $DEBUG:Bool)
           </k>
 
           <finalComputation multiplicity="?" color="lightgray">
@@ -86,10 +89,10 @@ module C-CONFIGURATION
                // general information
                <currTU color="lightgray"> "" </currTU>
                <currentFunction color="lightgray">
-                    .K
+                    file-scope
                </currentFunction>
                <currentProgramLoc color="black">
-                    .K
+                    UnknownCabsLoc
                </currentProgramLoc>
 
                <controlDetails> // TODO(chathhorn): dumb name

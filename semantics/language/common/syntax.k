@@ -34,7 +34,6 @@ module C-SYNTAX
      syntax C ::= Expression
      syntax C ::= Constant
      syntax C ::= InitExpression
-     syntax C ::= Program
      syntax C ::= TranslationUnit
      syntax C ::= IntConstant
      syntax C ::= InitFragment
@@ -331,7 +330,6 @@ module C-SYNTAX
      // new: Filename, strings, ast, code
      syntax TranslationUnit ::= TranslationUnit(String, K, K)
           [klabel('TranslationUnit)]
-     syntax Program ::= Program(K) [klabel('Program)] // new // List
 
      /*
      (* A block contains a list of local label declarations ( GCC's ({ __label__ 

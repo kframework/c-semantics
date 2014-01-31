@@ -136,10 +136,11 @@ module C-TYPING-CANONICALIZATION
           when X =/=K Identifier("")
           [structural]
      
-     rule <k> 
-               canonicalizeSpecifier(BagItem(
-                    Lbl:KLabel(((Identifier("") => unnamed(N)),, _))))
+     rule <k> canonicalizeSpecifier(BagItem(
+               Lbl:KLabel(((Identifier("") => unnamed(N, TU)),, _))))
           ...</k>
+          <currTU> TU:String </currTU>
+          <tu-id> TU </tu-id>
           <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
           when Lbl ==KLabel 'StructDef
                orBool Lbl ==KLabel 'EnumDef
@@ -157,10 +158,10 @@ module C-TYPING-CANONICALIZATION
 
      // FIXME what good is this_
      rule BagItem(SpecTypedef) => .Bag [structural, anywhere]
-     // fixme ignoring inlines
+     // FIXME ignoring inlines
      rule [ignore-inline]: BagItem(Inline) => .Bag [structural, anywhere]
      rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural, anywhere]
-     // fixme should save these for later use
+     // FIXME should save these for later use
      rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
 
      rule canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B)),

@@ -1,6 +1,6 @@
 module DEBUG-SYNTAX
      syntax K ::= assert(Bool, Int) // check, error#
-     syntax K ::= "PAUSE" | PAUSE(K) | ASSERT(Bool, K)
+     syntax K ::= "HALT" | HALT(K) | ASSERT(Bool, K)
 endmodule
 
 module DEBUG

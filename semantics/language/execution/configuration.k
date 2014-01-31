@@ -12,7 +12,7 @@ module C-CONFIGURATION
 
                <mem> .Map </mem>
 
-               <mainTU color="lightgray"> .K </mainTU>
+               <mainTU color="lightgray"> .Set </mainTU>
                <freshUnnamed color="black"> 0 </freshUnnamed>
                <functions color="lightgray"> .Map </functions>
                <notWritable> .Set </notWritable>
@@ -55,7 +55,7 @@ module C-CONFIGURATION
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 
-                         loadConfig($PGM:Bag)
+                         loadObj(unwrapObj($PGM:Bag))
                          ~> initMainThread
                          ~> pgmArgs($ARGV:KList) 
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))

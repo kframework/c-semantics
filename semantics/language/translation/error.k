@@ -21,6 +21,10 @@ module C-TRANSLATION-ERROR
 
      imports DEBUG-SYNTAX
 
+     rule ERROR(Num:String, Msg:String, _) 
+          => #write(#stderr, "Error " +String Num +String ": " +String Msg)
+          ~> HALT
+
      // TODO(chathhorn): clean up.
      // dynamic exp
      // rule [err00001]: 

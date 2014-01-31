@@ -1,4 +1,11 @@
+module C-TRANSLATION-INIT-SYNTAX
+     syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax SemMode ::= "link" | "nolink"
+     syntax K ::= outputMode(SemMode, Bool) [function]
+endmodule
+
 module C-TRANSLATION-INIT
+     imports C-TRANSLATION-INIT-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
@@ -11,23 +18,24 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): check that main is (correctly) defined.
-     rule <k> Program(klist(P:KList)) 
-               => klistToK(P) 
-               ~> TranslationUnit(
-                    "builtin", klist(.KList), addBuiltins(builtins))
-               ~> resolveReferences
-          </k>
-          <control>...
-               <currentFunction> 
-                    _ => file-scope
-               </currentFunction>
-               <currentProgramLoc>
-                    _ => UnknownCabsLoc
-               </currentProgramLoc>
-          ...</control>
-          [structural, large]
+     rule outputMode(link, Debug:Bool) 
+          => TranslationUnit("builtin", klist(.KList), addBuiltins(builtins))
+          ~> resolveReferences
+          ~> #if (Debug)
+             #then (.K)
+             #else (cleanup)
+             #fi
 
+     rule outputMode(nolink, Debug:Bool)
+          => #if (Debug)
+             #then (.K)
+             #else (cleanup)
+             #fi
+
+     syntax K ::= "cleanup"
+     rule <T>... <k> cleanup </k> ...</T> => .Bag
+          [structural]
+          
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule [unpack-TranslationUnit]:
           <k> TranslationUnit(Tu:String, Strings:K, K:K) 
@@ -53,10 +61,6 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(klist(.KList)) => .
           [structural]
      
-     syntax SemMode ::= "InterpMode" | "DebugMode"
-     rule <T>... <mode> InterpMode </mode> <k> .K </k> ...</T> => .Bag
-          [structural]
-          
      syntax K ::= addBuiltins(Set)
 
      // Only add a builtin if it has an external type (that is, it's been
@@ -86,5 +90,67 @@ module C-TRANSLATION-INIT
                orBool (notBool Identifier(B) in keys Types)
           
      rule addBuiltins(.Set) => .
+
+     rule mergeObj(B:Bag, .Bag) => B
+     rule mergeObj(.Bag, B:Bag) => B
+
+     rule mergeObj(
+          (<global>
+               <mem> M1:Map </mem>
+               <functions> F1:Map </functions>
+               <gstructs> Structs1:Map </gstructs>
+               <stringLiterals> StrLits1:Map </stringLiterals>
+               <notWritable> NoWrite1:Set </notWritable>
+
+               <external-decls> ExtDecls1:Map </external-decls>
+               <external-types> ExtTypes1:Map </external-types>
+               <external-defs> ExtDefs1:Map </external-defs>
+               <external-uses> ExtUses1:Set </external-uses>
+
+               <linkings> Links1:Map </linkings>
+
+               <mainTU> Main1:Set </mainTU>
+
+               <translation-units> TUs1:Bag </translation-units>
+          </global>),
+          (<global>
+               <mem> M2:Map </mem>
+               <functions> F2:Map </functions>
+               <gstructs> Structs2:Map </gstructs>
+               <stringLiterals> StrLits2:Map </stringLiterals>
+               <notWritable> NoWrite2:Set </notWritable>
+
+               <external-decls> ExtDecls2:Map </external-decls>
+               <external-types> ExtTypes2:Map </external-types>
+               <external-defs> ExtDefs2:Map </external-defs>
+               <external-uses> ExtUses2:Set </external-uses>
+
+               <linkings> Links2:Map </linkings>
+
+               <mainTU> Main2:Set </mainTU>
+
+               <translation-units> TUs2:Bag </translation-units>
+          </global>))
+          =>
+          (<global>
+               <mem> M1 M2 </mem>
+               <functions> F1 F2 </functions>
+               <gstructs> Structs1 Structs2 </gstructs>
+               // TODO(chathhorn): string lits need work.
+               <stringLiterals> StrLits1 StrLits2 </stringLiterals>
+               <notWritable> NoWrite1 NoWrite2 </notWritable>
+
+               <external-decls> ExtDecls1 ExtDecls2 </external-decls>
+               <external-types> ExtTypes1 ExtTypes2 </external-types>
+               <external-defs> ExtDefs1 ExtDefs2 </external-defs>
+               <external-uses> ExtUses1 ExtUses2 </external-uses>
+
+               <linkings> Links1 Links2 </linkings>
+
+               <mainTU> Main1 Main2 </mainTU>
+
+               <translation-units> TUs1 TUs2 </translation-units>
+          </global>)
+
 
 endmodule

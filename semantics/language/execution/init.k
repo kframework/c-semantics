@@ -5,8 +5,6 @@ module C-EXECUTION-INIT-SYNTAX
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initMainThread"
 
-     syntax K ::= loadConfig(Bag)
-
 endmodule
 
 module C-EXECUTION-INIT
@@ -109,7 +107,7 @@ module C-EXECUTION-INIT
                     ...</threadLocal>
                ...</thread>
           </threads>
-          <mainTU> MainTU:K </mainTU>
+          <mainTU> SetItem(MainTU:String) </mainTU>
           <files>...
                ( .Bag =>
                <file>...
@@ -132,17 +130,6 @@ module C-EXECUTION-INIT
           when MainTU =/=K .K
           [structural, large]
      
-     syntax K ::= "loadConfig'" "(" TCellFragment ")"
-
-     rule loadConfig(<generatedTop> <global> P:Bag </global> </generatedTop>) 
-          => loadConfig'(P)
-
-     rule <exec>
-               <k> loadConfig'(C:Bag) => . ...</k>
-               <global> (_:Bag => C) </global>
-          ...</exec>
-          [structural]
-
      /*@ 
      \begin{lrbox}{\LstBox}
      \begin{lstlisting}

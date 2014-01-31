@@ -98,19 +98,13 @@ sub main {
       if (! $args->{'-s'}) {
             push(@compiledPrograms, @stdlib);
       }
-      my $linked = linker(@compiledPrograms);
+      my $merged = mergeObjs(@compiledPrograms);
 
       unlink(@shouldBeDeleted);
 
-      if ($linked eq ""){
-            die "Nothing returned from linker";
+      if ($merged eq ""){
+            die "Nothing returned from the compilation phase.";
       }
-
-      my $programInTmp = File::Temp->new( 
-            TEMPLATE => 'tmp-kcc-pgm-XXXX', 
-            SUFFIX => '.kil', 
-            UNLINK => 0 );
-      push(@temporaryFiles, $programInTmp);
 
       my $programRunnerTmp = File::Temp->new( 
             TEMPLATE => 'tmp-kcc-runner-XXXX', 
@@ -124,66 +118,45 @@ sub main {
             UNLINK => 0 );
       push(@temporaryFiles, $confOutTmp);
 
-      my $confOutRawTmp = File::Temp->new( 
-            TEMPLATE => 'tmp-kcc-conf-XXXX', 
-            SUFFIX => '.txt', 
-            UNLINK => 0 );
-      push(@temporaryFiles, $confOutRawTmp);
-
       my $confOutPrettyTmp = File::Temp->new( 
             TEMPLATE => 'tmp-kcc-conf-pretty-XXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0 );
       push(@temporaryFiles, $confOutPrettyTmp);
 
-      print $programInTmp "$linked\n\n";
-      close($programInTmp);
-
-      # TODO(chathhorn): it'd be nice if we could get krun to just output all
-      # three versions. As it is, we get the pretty version for debugging, the
-      # raw version so as to parse for any errors, and the binary version to
-      # send on to the next semantic phase.
       my @krun_args = (
             '--output binary', 
             "--output-file $confOutTmp",
-            '-cMODE=InterpMode', 
-            '--parser cat', 
+            '-cMODE="link"', 
+            '-cDEBUG="false"', 
+            '-cPGM=".K"',
+            "-cOBJ1=\".Bag\"",
+            '--config-var-parser "kast --parser binary"',
+            "-cOBJ2=\"$merged\"",
             "-d $TRANS_DEF",
-            '--io off', 
-            $programInTmp
-            );
-
-      my @krun_args_raw = (
-            '--output raw', 
-            "--output-file $confOutRawTmp",
-            '-cMODE=InterpMode', 
-            '--parser cat', 
-            "-d $TRANS_DEF",
-            '--io off', 
-            $programInTmp
+            '--io on'
             );
 
       my @krun_args_pretty = (
             '--output pretty', 
             "--output-file $confOutPrettyTmp",
-            '-cMODE=DebugMode', 
-            '--parser cat', 
+            '-cMODE="link"', 
+            '-cDEBUG="true"', 
+            '-cPGM=".K"',
+            "-cOBJ1=\".Bag\"",
+            '--config-var-parser "kast --parser binary"',
+            "-cOBJ2=\"$merged\"",
             "-d $TRANS_DEF",
-            '--io off', 
-            $programInTmp
+            '--io on'
             );
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args));
-      my $cmd_raw = "$KRUN " . (join ' ', (@krun_args_raw));
       my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
 
       print $cmd_pretty . "\n" if ($args->{'-d'});
       system($cmd_pretty) if ($args->{'-d'});
 
-      print $cmd_raw . "\n" if ($args->{'-d'});
-      system($cmd_raw);
-
-      processResult($confOutRawTmp);
+      # TODO(chathhorn): check result (or rather output to stderr).
 
       print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
@@ -219,13 +192,68 @@ sub main {
 sub performSpecializations {
       my ($file) = (@_);
       
-      # TODO(chathhorn): is there some rule that the first source file must
-      # contain a main()? I don't get this.
       my $mainFileName = $args->{'<files>'}[0];
       
       $file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
       $file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
       return $file;
+}
+
+sub mergeObjs {
+      my @objFiles = @_;
+
+      return "" if ((scalar @objFiles) < 1);
+
+      my $accum = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-accum-XXXX', 
+            SUFFIX => '.o', 
+            UNLINK => 0 );
+      push(@temporaryFiles, $accum);
+
+      my $objFile = shift @objFiles;
+
+      my @krun_args = (
+            '--output binary', 
+            "--output-file \"$accum\"",
+            '-cMODE="nolink"', 
+            '-cDEBUG="false"',
+            '-cPGM=".K"',
+            "-cOBJ1=\".Bag\"",
+            '--config-var-parser="kast --parser binary"',
+            "-cOBJ2=\"$objFile\"",
+            "-d $TRANS_DEF",
+            '--io on'
+            );
+
+      my $cmd = "$KRUN " . (join ' ', (@krun_args));
+
+      print $cmd . "\n" if ($args->{'-d'});
+      system($cmd);
+
+      while ((scalar @objFiles) > 0) {
+
+            $objFile = shift @objFiles;
+
+            @krun_args = (
+                  '--output binary', 
+                  "--output-file \"$accum\"",
+                  '-cMODE="nolink"', 
+                  '-cDEBUG="false"',
+                  '-cPGM=".K"',
+                  '--config-var-parser="kast --parser binary"',
+                  "-cOBJ1=\"$accum\"",
+                  "-cOBJ2=\"$objFile\"",
+                  "-d $TRANS_DEF",
+                  '--io on'
+                  );
+
+            $cmd = "$KRUN " . (join ' ', (@krun_args));
+
+            print $cmd . "\n" if ($args->{'-d'});
+            system($cmd);
+      }
+
+      return $accum;
 }
 
 sub compile {
@@ -242,6 +270,7 @@ sub compile {
             push(@compiledPrograms, $inputFile);
             return;
       }
+
       open my $fh, $inputFile 
             or die "Could not open $inputFile for reading: $!\n";
       my $line = <$fh>;
@@ -249,15 +278,32 @@ sub compile {
 
       # Assume it's a normal input file, so compile it.
       my $localOval = "$baseName.o";
-      compileProgram($args->{'-w'}, $args->{'-d'}, $inputFile) 
-            or die "Compilation failed";
+      preprocess($args->{'-w'}, $args->{'-d'}, $inputFile) 
+            or die "Parsing failed";
 
-      (-e "program-$baseName-compiled.maude")
-            or die "Expected to find program-$baseName-compiled.maude, but did not";
+      (-e "$baseName-parsed.maude")
+            or die "Expected to find $baseName-parsed.maude, but did not";
 
-      move("program-$baseName-compiled.maude", $localOval) 
-            or die "Failed to rename the compiled program to the local output file $localOval";
-      
+      push(@temporaryFiles, "$baseName-parsed.maude");
+
+      my @krun_args = (
+            '--output binary', 
+            "--output-file \"$localOval\"",
+            '-cMODE=nolink', 
+            "-cDEBUG=false",
+            '-cOBJ1=".Bag"',
+            '-cOBJ2=".Bag"',
+            '--parser cat', 
+            "-d $TRANS_DEF",
+            '--io on', 
+            "$baseName-parsed.maude"
+            );
+
+      my $cmd = "$KRUN " . (join ' ', (@krun_args));
+
+      print $cmd . "\n" if ($args->{'-d'});
+      system($cmd);
+
       push(@compiledPrograms, $localOval);
       if ($args->{'-c'}) {
             if ($args->{'-o'}) {
@@ -267,9 +313,10 @@ sub compile {
       } else {
             push(@shouldBeDeleted, $localOval);
       }
+
 }
 
-sub compileProgram {
+sub preprocess {
       my ($nowarn, $dflag, $inputFile) = (@_);
       
       my $PEDANTRY_OPTIONS = 
@@ -334,7 +381,7 @@ sub compileProgram {
             or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
       
       my $PROGRAMRET = 
-            system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> program-$filename-compiled.maude");
+            system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> $filename-parsed.maude");
       open FILE, "$compilationLog" 
             or die "Could not open $compilationLog";
       @lines = <FILE>;
@@ -354,40 +401,6 @@ sub compileProgram {
       return 1;
 }
 
-sub linker {
-      my @files = (@_);
-      my @programs;
-      my @operators;
-      my $retval = "";
-      if (scalar(@files) == 0) {
-            die "No files passed to linker\n";
-      }
-      for (@files) {
-            my @contents;
-            if (/\.a$/) {
-                  @contents = `ar -p $_`;
-			if ($?) {
-				die "Something went wrong when trying to unarchive $_\n";
-			}
-            } else {
-                  open(my $newFile, $_) 
-                        or die "Couldn't open file $_\n";
-                  @contents = <$newFile>;
-            }
-
-            for (@contents) {
-                  push(@programs, $_);
-            }
-      }
-
-      $retval .= "'Program(";
-      $retval .= "'klist(_`(_`)(KList2KLabel_(";
-      $retval .= printNested(@programs);
-      $retval .= '), .KList))';
-      $retval .= ')';
-      return $retval;
-}
-
 sub printNested {
       my ($name, @rest) = (@_);
 
@@ -398,97 +411,7 @@ sub printNested {
       }
 }
 
-# TODO(chathhorn): a lot of duplication here with program-runner.
-sub parseResultLine {
-      my ($parsed) = (@_);
 
-      /< k > (.*) <\/ k >/ && do {
-            $parsed->{finalComp} = $1;
-      };
-
-      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
-            $parsed->{haveError} = 1;
-            my $output = $1;
-            $output =~ s/\%/\%\%/g;
-            $output =~ s/`/\\`/g;
-            $output =~ s/\\\\/\\\\\\\\/g;
-            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
-      };
-
-      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
-            $parsed->{errorFunc} = $1;
-      };
-
-      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
-            $parsed->{errorFile} = $1;
-            $parsed->{errorLine} = $2;
-      };
-
-      /< finalComputation > (.*) <\/ finalComputation >/ && do {
-            $parsed->{finalComp} = $1;
-      };
-
-      /< computation > (.*) <\/ computation >/ && do {
-            $parsed->{finalCompGoto} = $1;
-      };
-
-      /< type > (.*) <\/ type >/ && do {
-            $parsed->{finalCompType} = $1;
-      };
-
-}
-
-sub processResult {
-      my ($fileOutput) = (@_);
-      my %parsed;
-
-      open(OUT, "<$fileOutput");
-
-      for (<OUT>) {
-            parseResultLine(\%parsed);
-      }
-
-      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg}) {
-            print "\n=============================================================\n";
-            print "ERROR! KCC encountered an error while translating this program.\n";
-
-            if (defined $parsed{errorMsg}) {
-                  print "=============================================================\n";
-                  print "$parsed{errorMsg}\n";
-            }
-
-            print "=============================================================\n";
-            print "File: $parsed{errorFile}\n" if defined $parsed{errorFile};
-            print "Function: $parsed{errorFunc}\n" if defined $parsed{errorFunc};
-            print "Line: $parsed{errorLine}\n" if defined $parsed{errorLine};
-
-            if (defined $parsed{finalComp}) {
-                  print "=============================================================\n";
-                  print "Final Computation:\n";
-                  print substr($parsed{finalComp}, 0, 1000);
-                  print "\n";
-            }
-
-            if (defined $parsed{finalCompGoto}) {
-                  print "=============================================================\n";
-                  print "Final Goto Map Computation:\n";
-                  print substr($parsed{finalCompGoto}, 0, 1000);
-                  print "\n";
-            }
-
-            if (defined $parsed{finalCompType}) {
-                  print "=============================================================\n";
-                  print "Final Type Computation:\n";
-                  print substr($parsed{finalCompType}, 0, 1000);
-                  print "\n";
-            }
-
-            exit(1);
-      }
-      return;
-}
- 
 sub interruptHandler {
       # Call single cleanup point.
       finalCleanup();

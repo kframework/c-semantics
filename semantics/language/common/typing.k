@@ -7,7 +7,7 @@ require "typing/expr.k"
 module C-TYPING-SYNTAX
      syntax K ::= typeof(K)
      syntax Id ::= typedef(Id)
-     syntax Id ::= unnamed(Int)
+     syntax Id ::= unnamed(Int, String)
 
      syntax K ::= allowWrite(K) [strict]
 

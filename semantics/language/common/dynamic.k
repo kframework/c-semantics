@@ -42,11 +42,17 @@ module C-DYNAMIC-SYNTAX
      //  nestingDepth, block history, continuation, loop stack, decl stack
      syntax K ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
+
+
+     syntax K ::= loadObj(Bag)
+     syntax Bag ::= unwrapObj(Bag) [function]
+
 endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule value(tv(V:KList, _)) => V
 
@@ -95,5 +101,20 @@ module C-DYNAMIC
      rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
 
      rule NothingExpression => emptyValue
-     
+
+     rule unwrapObj(<generatedTop>... 
+               <global> G:Bag </global> 
+          ...</generatedTop>) 
+          => (<global> G </global>)
+
+     rule unwrapObj(.Bag) => .Bag
+
+     rule <k> loadObj(G:Bag) => . ...</k>
+          <global> (_:Bag => G) </global>
+          when G =/=Bag .Bag
+          [structural]
+
+     rule loadObj(.Bag) => .
+          [structural]
+
 endmodule
