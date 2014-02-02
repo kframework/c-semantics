@@ -580,12 +580,14 @@ module CIL-EXP
    * Casting
    */
 // TODO(AndreiS): fix isKeyword issue
-//  rule <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
-//    <env> E:MyMap </env>
+  rule
+//    <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
+    <k> T:Type => nt(T) ...</k>
+    <env> E:MyMap </env>
 //    // If it's a CId then we look it up in the env until we get an unambiguous
 //    // type.
-//    when ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
-//      andBool (isNormType(T) =/=K true)
+    when (isNormType(T) =/=K true)
+//      andBool ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
 //      // This case is ambiguous with the Exp syntax.
 //      andBool ($isConstArrayDeref(T, E) =/=K true)
 
@@ -648,27 +650,29 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) + tv(T, F2:Float) => tv(T, F1 +Float F2)
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
-  context tv(_, PtrAdd(_, _, HOLE))
-  rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
-    => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
-    when isPtrType(T)
-  rule tv(_, I:MInt) + tv(T:Type, P:Ptr) 
-    => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
-    when isPtrType(T)
-  rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
-    => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
-    when isPtrType(T)
+  // TODO(AndreiS): fix matching on a function
+  //context tv(_, PtrAdd(_, _, HOLE))
+  //rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
+  //  => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
+  //  when isPtrType(T)
+  //rule tv(_, I:MInt) + tv(T:Type, P:Ptr) 
+  //  => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
+  //  when isPtrType(T)
+  //rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
+  //  => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
+  //  when isPtrType(T)
 
   rule
     tv(T:Type, P:Ptr) - tv(_, I:MInt)
     => tv(T, PtrAdd(P, 0 -Int iMInt(I), sizeof(downPtr(T))))
     when isPtrType(T)
 
-  context tv(_, PtrSub(_, _, HOLE))
-  rule
-    tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
-    => tv(T, PtrSub(P1, P2, sizeof(downPtr(T))))
-    when isPtrType(T)
+  // TODO(AndreiS): fix matching on a function
+  //context tv(_, PtrSub(_, _, HOLE))
+  //rule
+  //  tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
+  //  => tv(T, PtrSub(P1, P2, sizeof(downPtr(T))))
+  //  when isPtrType(T)
 
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)
   rule tv(T:Type, F1:Float) <= tv(T, F2:Float) => norm(int, F1 <=Float F2)

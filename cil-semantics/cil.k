@@ -22,7 +22,8 @@ module CIL
   imports CIL-DECL
   imports CIL-EXP
   imports CIL-STMT
-  //imports CIL-TYPING
+  //imports CIL-TMP
+  imports CIL-TYPING
   imports CIL-IMPLEMENTATION
   //imports CIL-LIB
 

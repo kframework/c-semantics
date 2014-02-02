@@ -50,12 +50,29 @@ module CIL-TYPING-SYNTAX
   syntax Type ::= normType(Type) [function]
 endmodule
 
+module CIL-TMP
+  imports MAP
+  imports K-FUNCTIONAL-VISITOR
+  imports CIL-SYNTAX
+  imports CIL-TYPING-SYNTAX
+  imports CIL-COMMON
+
+  rule getId(X:CId) => X
+  rule getId(_:Pointer D:DirectDecl) => getId(D)
+  rule getId('`(_`)(D:Declarator)) => getId(D)
+  rule getId(D:DirectDecl()) => getId(D)
+  rule getId(D:DirectDecl[]) => getId(D)
+  rule getId(D:DirectDecl(_:Params)) => getId(D)
+  rule getId(D:DirectDecl[_]) => getId(D)
+endmodule
+
 module CIL-TYPING
   imports MAP
   imports K-FUNCTIONAL-VISITOR
   imports CIL-SYNTAX
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
+  imports CIL-TMP
 
   syntax SymId ::= "#__id__"
   syntax DirectDecl ::= SymId
@@ -184,14 +201,6 @@ module CIL-TYPING
   rule $needsDownFunConv(_:SymId(_:Params)) => true
   rule downFunConv(X:SymId()) => X
   rule downFunConv(X:SymId(_:Params)) => X
-
-  rule getId(X:CId) => X
-  rule getId(_:Pointer D:DirectDecl) => getId(D)
-  rule getId('`(_`)(D:Declarator)) => getId(D)
-  rule getId(D:DirectDecl()) => getId(D)
-  rule getId(D:DirectDecl[]) => getId(D)
-  rule getId(D:DirectDecl(_:Params)) => getId(D)
-  rule getId(D:DirectDecl[_]) => getId(D)
 
   syntax Int ::= "getArraySize'" "(" K ")" [function]
   rule getArraySize(_:TypeSpec D:Declarator) 
