@@ -52,7 +52,7 @@ module CIL-STMT
    * Compute the goto table (Map{Label, Stmt}). We do this at "runtime" to
    * improve the performance of the interpreter.
    */
-  syntax K ::= "make-goto-table"
+  syntax KItem ::= "make-goto-table"
   rule
     <k> make-goto-table ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
@@ -158,9 +158,9 @@ module CIL-STMT
   // This is a somewhat hackish method for evaluating the constant expressions
   // in the case labels of switch statements. It seems to slow things down
   // quite a bit too.
-  syntax K ::= "eval-case-labels"
-             | "eval-case-labels" "(" MyMap "," MyMap ")"
-             | "case-label-freezer" "(" Int "," Stmts ")"
+  syntax KItem ::= "eval-case-labels"
+                 | "eval-case-labels" "(" MyMap "," MyMap ")"
+                 | "case-label-freezer" "(" Int "," Stmts ")"
 
   rule <k> eval-case-labels => eval-case-labels(Lbls, .MyMap) ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
@@ -302,8 +302,8 @@ module CIL-STMT
     <phase> _ => terminated </phase>
   [structural]
 
-  syntax K ::= initializeParams(Params, TypedValues)
-             | deleteLocals(MySet)
+  syntax KItem ::= initializeParams(Params, TypedValues)
+                 | deleteLocals(MySet)
   rule
     initializeParams(
         ((DS:DeclSpecs D:Declarator), Ps:Params),

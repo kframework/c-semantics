@@ -198,11 +198,11 @@ module CIL-COMMON-MMU
   /*
    * Memory management.
    */
-  syntax K ::= newObject(Type)
-             | newZeroObject(Type)
-             | "$newObject" "(" Type "," K "," ByteValue ")"   [strict(2)]
-             | castObject(Type, Ptr)
-             | deleteObject(Ptr)
+  syntax KItem ::= newObject(Type)
+                 | newZeroObject(Type)
+                 | "$newObject" "(" Type "," K "," ByteValue ")"   [strict(2)]
+                 | castObject(Type, Ptr)
+                 | deleteObject(Ptr)
   rule newObject(T:Type) => $newObject(T, sizeof(T), undef)
   [structural]
   rule newZeroObject(T:Type) => $newObject(T, sizeof(T), 0)
@@ -240,11 +240,11 @@ module CIL-COMMON-MMU
   /*
    * Memory access.
    */
-  syntax K ::= "load" "(" Type "," Ptr ")"
-             | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
-             | "$load" "(" Type "," Ptr "," Int "," MyList ")"
-             | "store" "(" Type "," Ptr "," Value ")"
-             | "$store" "(" Ptr "," MyList ")"
+  syntax KItem ::= "load" "(" Type "," Ptr ")"
+                 | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
+                 | "$load" "(" Type "," Ptr "," Int "," MyList ")"
+                 | "store" "(" Type "," Ptr "," Value ")"
+                 | "$store" "(" Ptr "," MyList ")"
 
   rule 
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))

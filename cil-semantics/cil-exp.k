@@ -207,7 +207,7 @@ endmodule
 module CIL-PROMOTION
   imports CIL-COMMON
 
-  syntax K ::= "typeinfo" "(" Int "," Int "," Int ")"
+  syntax KItem ::= "typeinfo" "(" Int "," Int "," Int ")"
 
   /* empty: implicit casts inserted by cilly */
 endmodule
@@ -221,13 +221,13 @@ module CIL-EXP
   imports CIL-IMPLEMENTATION
   imports CIL-LITERAL
 
-  syntax K ::= "noLeftValueConversion"
+  syntax KItem ::= "noLeftValueConversion"
 
-  syntax K ::= Type [avoid]
+  syntax KItem ::= Type [avoid]
 
   rule I:Int => norm(int, I)
 
-  syntax K ::= "$exp2bool" "(" Exp ")"    [strict]
+  syntax KItem ::= "$exp2bool" "(" Exp ")"    [strict]
   rule $exp2bool(tv(_:Type, MI:MInt))
     => norm(int, notBool isZero(MI))
   [structural]
@@ -406,7 +406,7 @@ module CIL-EXP
     <k> S:String => lv(normType(char [lengthString(S) +Int 1]), P) ...</k>
     <strings>... S |-> P:Ptr ...</strings>
 
-  syntax K ::= newString(String, K) [strict(2)]
+  syntax KItem ::= newString(String, K) [strict(2)]
   rule <k> newString(S:String, tv(T:Type, P:Ptr))
     => store(downPtr(T), P, S) ~> lv(downPtr(T), P)
     ...</k>
@@ -556,10 +556,10 @@ module CIL-EXP
    */
 
   // Things are special inside a sizeof (in particular, arrays don't decay).
-  syntax K ::= "sizeofContext"
+  syntax KItem ::= "sizeofContext"
   context sizeof(HOLE => HOLE ~> sizeofContext)
 
-  syntax K ::= "sizeof'" "(" Type ")"
+  syntax KItem ::= "sizeof'" "(" Type ")"
   rule sizeof(nt(T:Type)) => sizeof'(T)
   rule sizeof(tv(T:Type, _:Value)) => sizeof'(T)
 

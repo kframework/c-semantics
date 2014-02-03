@@ -24,9 +24,9 @@ module CIL-DECL
   rule enum _:CId { _:EnumInits } ; => .
   rule enum _:CId ; => .
 
-  syntax K ::= declInternal(CId, K) [strict(2)]
-             | declExternal(CId, K) [strict(2)]
-             | defineFun(Ptr, Type, Params, FunBody)
+  syntax KItem ::= declInternal(CId, K) [strict(2)]
+                 | declExternal(CId, K) [strict(2)]
+                 | defineFun(Ptr, Type, Params, FunBody)
 
   /*
    * Function definition.
@@ -208,7 +208,7 @@ module CIL-DECL
     ...</k>
     <phase> _:TransUnit </phase>
 
-  syntax K ::= initVar(Exp, Initializers, Int)
+  syntax KItem ::= initVar(Exp, Initializers, Int)
 
   rule initVar(X:Exp, (E:Exp, Is:Initializers), Pos:Int) 
     => (X @ Pos) = E ; ~> initVar(X, Is, Pos +Int 1)
@@ -236,7 +236,7 @@ module CIL-DECL
   /*
    * Lower break and continue statements to goto statements 
    */
-  syntax K ::= "lower-break-continue-to-goto-control" "(" Ptr ")"
+  syntax KItem ::= "lower-break-continue-to-goto-control" "(" Ptr ")"
   rule
     <k> lower-break-continue-to-goto-control(F:Ptr) => .K ...</k>
     <fun>...
@@ -306,14 +306,14 @@ module CIL-DECL
     ...</k>
     <phase> executing </phase>
 
-  syntax K ::= bindLocal(CId, K) [strict(2)]
+  syntax KItem ::= bindLocal(CId, KItem) [strict(2)]
   rule
     <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
     <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
   [structural]
 
-  syntax K ::= declStruct(CId, K, K, Int) [strict(3)]
-             | declUnion(CId, K, K, Int) [strict(3)]
+  syntax KItem ::= declStruct(CId, K, K, Int) [strict(3)]
+                 | declUnion(CId, K, K, Int) [strict(3)]
 
   // Elide declarations without definitions.
   rule struct _:CId ; => . [structural]
@@ -348,7 +348,7 @@ module CIL-DECL
      <size> _ => mival(Offset) </size>
     [structural]
 
-  syntax K ::= maxK(K, K) [strict]
+  syntax KItem ::= maxK(KItem, KItem) [strict]
   rule maxK(X:TypedValue, Y:TypedValue) => X 
     when mival(X) >=Int mival(Y)
   rule maxK(X:TypedValue, Y:TypedValue) => Y 
