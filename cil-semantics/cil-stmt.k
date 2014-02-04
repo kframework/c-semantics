@@ -173,7 +173,7 @@ module CIL-STMT
 //    (_:MyMap, (.MyMap => L |-> Ss)))
 //    when getKLabel(L) =/=KLabel '$caseLabel
 //    [structural]
-  rule (. => E ~> case-label-freezer(I, Ss)) 
+  rule (. => (E ~> case-label-freezer(I, Ss))) 
     ~> eval-case-labels(
       (_:MyMap, ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .MyMap)), _:MyMap) 
     [structural]

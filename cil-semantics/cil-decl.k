@@ -32,19 +32,19 @@ module CIL-DECL
    * Function definition.
    */
   rule 
-    <k> TS:TypeSpec D:Declarator FB:FunBody
-    => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
+    <k> (TS:TypeSpec D:Declarator FB:FunBody)
+    => (declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(
       FunPtr(getId(D), Tu), 
       expandTypedefs(downFun(normType(TS D)), E), 
-      getParams(D), FB)
+      getParams(D), FB))
     ...</k>
     <env> E:MyMap </env>
     <external> ExtLnk:MySet </external>
     <phase> Tu:TransUnit </phase>
     when getId(D) in ExtLnk
   rule 
-    <k> TS:TypeSpec D:Declarator FB:FunBody
+    <k> (TS:TypeSpec D:Declarator FB:FunBody)
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), 
       expandTypedefs(downFun(normType(TS D)), E), 
@@ -59,7 +59,7 @@ module CIL-DECL
       andBool notBool (getId(D) in ExtLnk)
         
   rule 
-    <k> TS:TypeSpec D:Declarator FB:FunBody
+    <k> (TS:TypeSpec D:Declarator FB:FunBody)
     => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), 
       expandTypedefs(downFun(normType(TS D)), E), 
@@ -72,7 +72,7 @@ module CIL-DECL
     when getId(D) in IntLnk
 
   rule 
-    <k> extern TS:TypeSpec D:Declarator FB:FunBody
+    <k> (extern TS:TypeSpec D:Declarator FB:FunBody)
     => declExternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu))) 
     ~> defineFun(FunPtr(getId(D), Tu), 
       expandTypedefs(downFun(normType(TS D)), E), 
@@ -82,7 +82,7 @@ module CIL-DECL
     <phase> Tu:TransUnit </phase>
 
   rule 
-    <k> static TS:TypeSpec D:Declarator FB:FunBody
+    <k> (static TS:TypeSpec D:Declarator FB:FunBody)
     => declInternal(getId(D), nclv(normType(TS D), FunPtr(getId(D), Tu)))
     ~> defineFun(FunPtr(getId(D), Tu), 
       expandTypedefs(downFun(normType(TS D)), E), 
@@ -174,21 +174,21 @@ module CIL-DECL
    */
   // TODO(chathhorn): Correct semantics for tentative definitions.
   rule 
-    <k> TS:TypeSpec D:Declarator ;  
+    <k> (TS:TypeSpec D:Declarator ;)  
     => declExternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) =/=K true
 
   rule 
-    <k> extern TS:TypeSpec D:Declarator ;  
+    <k> (extern TS:TypeSpec D:Declarator ;)
     => declExternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) =/=K true
 
   rule 
-    <k> static TS:TypeSpec D:Declarator ;  
+    <k> (static TS:TypeSpec D:Declarator ;)
     => declInternal(getId(D), newZeroObject(normType(TS D)))
     ...</k>
     <phase> _:TransUnit </phase>
@@ -198,13 +198,13 @@ module CIL-DECL
    * File-scope variable declarations (with initializers).
    */
   rule 
-    <k> S:DeclSpecs D:Declarator = E:Exp ;
-    => S D ; ~> getId(D) = E ;
+    <k> (S:DeclSpecs D:Declarator = E:Exp ;)
+    => ((S D ;) ~> (getId(D) = E ;))
     ...</k>
     <phase> _:TransUnit </phase>
   rule 
-    <k> S:DeclSpecs D:Declarator = { Is:Initializers } ;
-    => S D ; ~> initVar(getId(D), Is, 0)
+    <k> (S:DeclSpecs D:Declarator = { Is:Initializers } ;)
+    => ((S D ;) ~> initVar(getId(D), Is, 0))
     ...</k>
     <phase> _:TransUnit </phase>
 
@@ -306,7 +306,7 @@ module CIL-DECL
     ...</k>
     <phase> executing </phase>
 
-  syntax KItem ::= bindLocal(CId, KItem) [strict(2)]
+  syntax KItem ::= bindLocal(CId, K) [strict(2)]
   rule
     <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
     <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
@@ -348,7 +348,7 @@ module CIL-DECL
      <size> _ => mival(Offset) </size>
     [structural]
 
-  syntax KItem ::= maxK(KItem, KItem) [strict]
+  syntax KItem ::= maxK(K, K) [strict]
   rule maxK(X:TypedValue, Y:TypedValue) => X 
     when mival(X) >=Int mival(Y)
   rule maxK(X:TypedValue, Y:TypedValue) => Y 
