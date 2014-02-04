@@ -162,10 +162,10 @@ module C-ERROR
      
      rule [err00039]:
           (. => ERROR("00039", "Unions cannot be empty.", 61) ) ~>
-          addUnion(_:Id, .KList)
+          addUnion(_:Id, .List)
           [structural, large]
      rule [err00040]:
           (. => ERROR("00040", "Structs cannot be empty.", 61) ) ~>
-          addStruct(_:Id, .KList)
+          addStruct(_:Id, .List)
           [structural, large]
 endmodule

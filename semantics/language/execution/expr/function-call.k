@@ -11,13 +11,9 @@ module C-EXPR-FUNCTION-CALL
 
      imports COMPAT-SYNTAX
 
-     syntax K ::= application(String, K, KList) [strict(2)]
+     syntax K ::= application(String, K, List) [strict(2)]
 
-     // TODO(chathhorn): KList heating bug
-     rule application(Tu:String, K:K, L:KList) 
-          => K ~> application(Tu, HOLE, L) [heat]
-     rule K:K ~> application(Tu:String, HOLE, L:KList) 
-          => application(Tu, K, L) [cool]
+     context application(_, HOLE, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
@@ -53,11 +49,11 @@ module C-EXPR-FUNCTION-CALL
      }}*/
 
      syntax K ::= "Call'" "(" K "," K ")"
-     syntax KResult ::= rvlist(KList)
+     syntax KResult ::= rvlist(List)
 
      syntax K ::= revalParams(K)
-     context revalParams(klist(_,, (HOLE => reval(HOLE)),, _)) [ndheat]
-     rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
+     context revalParams(list(_:List ListItem((HOLE => reval(HOLE))) _:List)) [ndheat]
+     rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
      
@@ -67,7 +63,7 @@ module C-EXPR-FUNCTION-CALL
      context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule [function-application-pre]:
-          <k> Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:KList))
+          <k> Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:List))
           => sequencePoint ~> application(getTU(Loc), Fun, L)
           ...</k>
           <functions>... Loc |-> Fun:KResult ...</functions>
@@ -77,20 +73,20 @@ module C-EXPR-FUNCTION-CALL
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      rule [call]:
-          application(Tu:String, Fun:KResult, L:KList) 
-          => application'(Tu, Fun, L:KList)
+          application(Tu:String, Fun:KResult, L:List) 
+          => application'(Tu, Fun, L)
           [structural]
 
-     syntax K ::= "application'" "(" String "," K "," KList ")" [strict(2)]
+     syntax K ::= "application'" "(" String "," K "," List ")" [strict(2)]
 
      rule [builtin-application]:
-          application'(Tu:String, builtinPrototype(X:Id, T:Type), L:KList)
+          application'(Tu:String, builtinPrototype(X:Id, T:Type), L:List)
           => application'(Tu, functionObject(X, T, handleBuiltin(X, T)), L)
           [structural]
 
      rule [function-application]:
           <k> application'(Tu:String, functionObject(X:Id, 
-                    t(_, functionType(_:Type, P:KList)), B:K), L:KList) 
+                    t(_, functionType(_:Type, P:List)), B:K), L:List) 
                     ~> K:K 
                => sequencePoint
                     ~> populateFromGlobal

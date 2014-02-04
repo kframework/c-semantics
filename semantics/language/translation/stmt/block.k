@@ -36,9 +36,8 @@ module C-STMT-BLOCK
           [structural]
      
      rule [dissolve-block]:
-          <k> 
-               Block(_, _, klist(Statements:KList))
-               => klistToK(Statements)
+          <k> Block(_, _, list(Statements:List))
+               => listToK(Statements)
           ...</k>
           [structural]
 endmodule

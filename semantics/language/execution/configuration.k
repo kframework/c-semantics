@@ -57,8 +57,8 @@ module C-CONFIGURATION
                     <k color="green" multiplicity="?"> 
                          loadObj(unwrapObj($PGM:Bag))
                          ~> initMainThread
-                         ~> pgmArgs($ARGV:KList) 
-                         ~> callMain($ARGC:Int, incomingArguments($ARGV:KList))
+                         ~> pgmArgs($ARGV:List) 
+                         ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                     </k>
 
                     <nextLoc color="black"> 0 </nextLoc>

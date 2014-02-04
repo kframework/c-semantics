@@ -25,7 +25,7 @@ module C-DECL-ZERO
           when isFloatType(T)
           [structural] 
           
-     syntax K ::= zeroStruct(K, KList)
+     syntax K ::= zeroStruct(K, List)
      
      // c1x 6.7.9:10 If an object that has automatic storage duration is not
      // initialized explicitly, its value is indeterminate. If an object that
@@ -43,21 +43,21 @@ module C-DECL-ZERO
      rule <k> zeroType(N:K, t(_, structType(S:Id))) 
                => zeroStruct(N, Fields)
           ...</k>
-          <structs>... S |-> aggregateInfo(Fields:KList, _, _) ...</structs> 
+          <structs>... S |-> aggregateInfo(Fields:List, _, _) ...</structs> 
           [structural] 
           
      rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
                => zeroType(N . F, T)
           ...</k>
           <structs>... 
-               S |-> aggregateInfo((typedDeclaration(T:Type, F:Id),, _), _, _) 
+               S |-> aggregateInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           ...</structs> 
           [structural] 
           
-     rule zeroStruct(Sym:K, (typedDeclaration(T:Type, F:Id),, L:KList)) 
+     rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:Id)) L:List) 
           => zeroType(Sym . F, T) ~> zeroStruct(Sym, L) 
           [structural] 
-     rule zeroStruct(_, .KList) => .
+     rule zeroStruct(_, .List) => .
           [structural] 
 
      rule zeroType(Sym:K, T:Type) 

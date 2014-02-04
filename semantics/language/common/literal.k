@@ -280,7 +280,7 @@ module C-LITERAL
           <stringLiterals>
                M:Map
                (.Map => wstring(S) |-> lv(Loc, t(.Set, 
-                    arrayType(cfg:wcharut, (lengthKList S) +Int 1))))
+                    arrayType(cfg:wcharut, lengthKList(S) +Int 1))))
           </stringLiterals>
           when notBool wstring(S) in keys M
           [large, structural]

@@ -1,6 +1,6 @@
 module C-EXECUTION-INIT-SYNTAX
-     syntax K ::= pgmArgs(KList) [function]
-     syntax K ::= incomingArguments(KList) [klabel('incomingArguments)]
+     syntax K ::= pgmArgs(List) [function]
+     syntax K ::= incomingArguments(List) [klabel('incomingArguments)]
      syntax K ::= callMain(Int, K) [klabel('callMain)]
      syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initMainThread"
@@ -53,27 +53,27 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
      
-     syntax K ::= "incomingArguments-aux" "(" KList "," Int ")"
+     syntax K ::= "incomingArguments-aux" "(" List "," Int ")"
      
-     rule incomingArguments(L:KList) 
+     rule incomingArguments(L:List) 
           => incomingArguments-aux(L, 0) 
           [structural]
-     rule incomingArguments-aux((S:String,, L:KList), N:Int) 
+     rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
           => Computation(
                Identifier("#incomingArgumentsArray")[N] 
                     := Constant(StringLiteral(S)))
-          ~> incomingArguments-aux(L:KList, N:Int +Int 1)
+          ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
-     rule incomingArguments-aux(.KList, N:Int) 
+     rule incomingArguments-aux(.List, N:Int) 
           => Computation(
                Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
           [structural]
           
-     rule pgmArgs(L:KList)
+     rule pgmArgs(L:List)
           => makeArgv(
                Identifier("#incomingArgumentsArray"), 
                t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
-               (lengthKList L) +Int 1)))
+               (lengthList L) +Int 1)))
           [structural]
 
      syntax K ::= makeArgv(Id, Type)
@@ -172,28 +172,27 @@ module C-EXECUTION-INIT
      // fixme void isn't supposed to have a name
      // fixme figure out type of string
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               typedDeclaration(t(.Set, void), _:Id))), _:Int, _:Id, _) 
-          => Call(Identifier("main"), klist(.KList))
+               ListItem(typedDeclaration(t(.Set, void), _:Id)))),
+               _:Int, _:Id, _) 
+          => Call(Identifier("main"), list(.List))
           [structural]
      rule callMain-aux(t(.Set,
-               functionType(t(.Set, int), .KList)), _:Int, _:Id, _) 
-          => Call(Identifier("main"), klist(.KList))
+               functionType(t(.Set, int), .List)), _:Int, _:Id, _) 
+          => Call(Identifier("main"), list(.List))
           [structural]
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, 
-                    incompleteArrayType(t(.Set, 
-                    pointerType(T:Type)))), _:Id)))), 
+               ListItem(typedDeclaration(t(.Set, int), _:Id))
+               ListItem(typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), _:Id)))), 
                N:Int, X:Id, Args:K)
-          => Args ~> Call(Identifier("main"), klist((N,, X)))
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)
           [structural]
      rule callMain-aux(t(.Set,
                functionType(t(.Set, int),
-               (typedDeclaration(t(.Set, int), _:Id),, typedDeclaration(t(.Set, 
-                    pointerType(t(.Set,
-                    pointerType(T:Type)))), _:Id)))), 
+               ListItem(typedDeclaration(t(.Set, int), _:Id)) 
+               ListItem(typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), _:Id)))), 
                N:Int, X:Id, Args:K)
-          => Args ~> Call(Identifier("main"), klist((N,, X)))
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)
           [structural]
 

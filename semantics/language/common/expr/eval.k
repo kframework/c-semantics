@@ -48,9 +48,9 @@ module C-COMMON-EXPR-EVAL
      rule [reval-emptyval]:
           rkludge(emptyValue) => emptyValue
      rule [reval-tv-normal]:
-          rkludge(tv(L:KList, T:Type)) => tv(L, T)
+          rkludge(tv(V:CValue, T:Type)) => tv(V, T)
      rule [peval-tv-normal]:
-          pkludge(tv(V:KList, T:Type)) => tv(V, T)
+          pkludge(tv(V:CValue, T:Type)) => tv(V, T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the

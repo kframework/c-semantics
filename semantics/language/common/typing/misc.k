@@ -1,6 +1,6 @@
 module C-TYPING-MISC-SYNTAX
-     syntax K ::= addStruct(Id, KList)
-     syntax K ::= addUnion(Id, KList)
+     syntax K ::= addStruct(Id, List)
+     syntax K ::= addUnion(Id, List)
 endmodule
 
 module C-TYPING-MISC
@@ -284,52 +284,54 @@ module C-TYPING-MISC
      // declaration with any number of arguments.
      rule [typeCompatible-function-void]:
           #isCompat(
-               t(_, functionType(T:Type, Args:KList)),
-               t(_, functionType(T':Type, Args':KList)))
+               t(_, functionType(T:Type, Args:List)),
+               t(_, functionType(T':Type, Args':List)))
           => #isCompat(T, T') 
-          when (Args ==KList .KList) orBool (Args' ==KList .KList)
+          when (Args ==List .List) orBool (Args' ==List .List)
      rule [typeCompatible-function]:
           #isCompat(
-               t(S:Set,  functionType(T:Type,  (TA:Type,,  L:KList))),
-               t(S':Set, functionType(T':Type, (TA':Type,, L':KList))))
-          => #isCompat(t(S, functionType(T, L)), 
+               t(S:Set,  functionType(T:Type,  ListItem(TA:Type) L:List)),
+               t(S':Set, functionType(T':Type, ListItem(TA':Type) L':List)))
+          => #isCompat(
+               t(S, functionType(T, L)), 
                t(S', functionType(T', L')))
                andBool #isCompat(TA, TA') 
      rule [typeCompatible-function-nil]:
-          #isCompat(t(_, functionType(T:Type, .KList)),
-               t(_, functionType(T':Type, .KList)))
+          #isCompat(
+               t(_, functionType(T:Type, .List)),
+               t(_, functionType(T':Type, .List)))
           => #isCompat(T, T') 
                
      syntax K ::= addGlobalAggregate(Id, K)
                 | addLocalAggregate(Id, K)
      
-     syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")"
+     syntax K ::= "addStruct-aux" "(" Id "," List "," K "," Map "," Map "," List ")"
           [strict(3)]
-     syntax K ::= "addUnion-aux" "(" Id "," KList "," Map "," Map "," KList ")"
+     syntax K ::= "addUnion-aux" "(" Id "," List "," Map "," Map "," List ")"
 
      // TODO(chathhorn): should be able to use context here (bug?).
-     rule addStruct-aux(A:Id, B:KList, K:K, C:Map, D:Map, E:KList) 
+     rule addStruct-aux(A:Id, B:List, K:K, C:Map, D:Map, E:List) 
           => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
-     rule K:K ~> addStruct-aux(A:Id, B:KList, HOLE, C:Map, D:Map, E:KList)
+     rule K:K ~> addStruct-aux(A:Id, B:List, HOLE, C:Map, D:Map, E:List)
           => addStruct-aux(A, B, K, C, D, E) [cool]
 
-     rule addStruct(S:Id, L:KList) 
-          => addStruct-aux(S:Id, L:KList,
-               tv(0, cfg:largestUnsigned), .Map, .Map, L:KList)
-          when L:KList =/=KList .KList
+     rule addStruct(S:Id, L:List) 
+          => addStruct-aux(S:Id, L:List,
+               tv(0, cfg:largestUnsigned), .Map, .Map, L:List)
+          when L:List =/=List .List
           [structural]
      rule addStruct-aux(
                S:Id
-               , (typedDeclaration(T:Type, Field:Id),, L:KList)
+               , ListItem(typedDeclaration(T:Type, Field:Id)) L:List
                , V:TypedValue
                , Types:Map
                , Offsets:Map
-               , L':KList
+               , L':List
           ) 
           => addStruct-aux(S, L, V + bitSizeofType(T),
                Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
           [structural]
-     rule <k> addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
+     rule <k> addStruct-aux(S:Id, .List, _, Types:Map, Offsets:Map, L:List) 
                => #if (F:Id ==K file-scope) 
                     #then (addGlobalAggregate(S, 
                          aggregateInfo(L, Types, Offsets))) 
@@ -340,23 +342,23 @@ module C-TYPING-MISC
           <currentFunction> F:Id </currentFunction>
           [structural]        
           
-     rule addUnion(S:Id, L:KList) 
-          => addUnion-aux(S:Id, L:KList, .Map, .Map, L:KList)
-          when L:KList =/=KList .KList
+     rule addUnion(S:Id, L:List) 
+          => addUnion-aux(S:Id, L:List, .Map, .Map, L:List)
+          when L:List =/=List .List
           [structural]
      rule addUnion-aux(
                S:Id
-               , (typedDeclaration(T:Type, Field:Id),, L:KList)
+               , ListItem(typedDeclaration(T:Type, Field:Id)) L:List
                , Types:Map
                , Offsets:Map
-               , L':KList
+               , L':List
           ) 
           => addUnion-aux(S, L,
                Types:Map[T / Field], Offsets:Map[0 / Field],
                L')
           [structural]
      rule <k> 
-               addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
+               addUnion-aux(S:Id, .List, Types:Map, Offsets:Map, L:List) 
                => #if (F ==K file-scope)
                     #then (addGlobalAggregate(S,
                          aggregateInfo(L, Types, Offsets))) 
@@ -509,7 +511,7 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'bitfieldType
           
      rule [isFunctionType-true]:
-          isFunctionType(t(_, functionType(_, _:KList)))
+          isFunctionType(t(_, functionType(_, _:List)))
           => true 
      rule [isFunctionType-qualified]:
           isFunctionType(t(_, qualifiedType(T:Type, _)))
@@ -520,7 +522,7 @@ module C-TYPING-MISC
           
      rule [isFunctionPointerType-fp]:
           isFunctionPointerType(t(_, pointerType(t(_,
-               functionType(_, _:KList)))))
+               functionType(_, _:List)))))
           => true 
      rule [isFunctionPointerType-qualified]:
           isFunctionPointerType(t(_, qualifiedType(T:Type, _)))
@@ -607,6 +609,6 @@ module C-TYPING-MISC
      rule [innerType-bitfieldType]:
           innerType(t(_, bitfieldType(T:Type, _:Int))) => T
      rule [innerType-functionType]:
-          innerType(t(_, functionType(T:Type, _:KList))) => T
+          innerType(t(_, functionType(T:Type, _:List))) => T
 endmodule
 

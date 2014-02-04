@@ -1,5 +1,5 @@
 module C-BINDING-SYNTAX
-     syntax K ::= bind(KList, KList)
+     syntax K ::= bind(List, List)
 endmodule
 
 module C-BINDING
@@ -18,17 +18,16 @@ module C-BINDING
      // empty binding
      // fixme not really a sequence point
      
-     syntax K ::= "bind-aux" "(" SymLoc "," KList "," KList ")"
-     rule bind(L:KList, L':KList) 
-          => bind-aux(NullPointer, L, L')
+     syntax K ::= "bind-aux" "(" SymLoc "," List "," List ")"
+     rule bind(L:List, L':List) => bind-aux(NullPointer, L, L')
           [structural] 
      
      rule [bind-empty-void]:
-          bind-aux(_, .KList, typedDeclaration(t(.Set, void), _:Id))
+          bind-aux(_, .List, ListItem(typedDeclaration(t(.Set, void), _:Id)))
           => sequencePoint
           [structural] 
      rule [bind-empty]:
-          bind-aux(_, .KList, .KList)
+          bind-aux(_, .List, .List)
           => sequencePoint
           [structural] 
           
@@ -56,27 +55,27 @@ module C-BINDING
      rule [bind-coerce-array]:
           bind-aux(
                _
-               , _:KList
-               , (typedDeclaration(
+               , _:List
+               , ListItem(typedDeclaration(
                         (t(_, (arrayType(T:Type, _:Int)
                         => pointerType(T)))), _:Id
-               ),, _:KList)
+               )) _:List
           )
           [structural, anywhere] 
      rule [bind-coerce-incompleteArray]:
           bind-aux(
                _
-               , _:KList
-               , (typedDeclaration(
+               , _:List
+               , ListItem(typedDeclaration(
                         (t(_, (incompleteArrayType(T:Type)
                         => pointerType(T)))), _:Id
-               ),, _:KList)
+               )) _:List
           )
           [structural, anywhere] 
           
      rule [bind-one]:
-          <k> bind-aux(_, (tv(V:KList, T':Type),, L:KList), 
-                    (typedDeclaration(T:Type, X:Id),, P:KList))
+          <k> bind-aux(_, ListItem(tv(V:CValue, T':Type)) L:List, 
+                    ListItem(typedDeclaration(T:Type, X:Id)) P:List)
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
                     ~> giveType(X, T)
@@ -93,22 +92,23 @@ module C-BINDING
      // longer makes sense in this context.
      // rule [bind-one-check-type]:
      //      (. => isTypeCompatible(T, T')) 
-     //      ~> bind-aux(_, (tv(_:KList, T':Type),, _:KList), 
-     //           (typedDeclaration(T:Type, _:Id),, _:KList))
+     //      ~> bind-aux(_, ListItem(tv(_:CValue, T':Type)) _:List, 
+     //           ListItem(typedDeclaration(T:Type, _:Id)) _:List)
      //      [structural] 
      
-     syntax KList ::= promoteList(KList) [function]
+     syntax List ::= promoteList(List) [function]
      rule [promoteList-needs-promoting]: 
-          promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
-          => cast(argPromote(t(S, T)), tv(V, t(S, T))),, promoteList(L)
+          promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
+          => ListItem(cast(argPromote(t(S, T)), tv(V, t(S, T)))) 
+               promoteList(L)
           when (T ==K float) 
                orElseBool (hasIntegerType(t(S:Set, T:K)) 
                     andBool ((rank(t(S, T)) <Int rank(t(.Set, int))) 
                          orElseBool isBitfieldType(t(S, T))))
 
      rule [promoteList-promoted]: 
-          promoteList((tv(V:KList, t(S:Set, T:K)),, L:KList)) 
-          => (tv(V, t(S, T)),, promoteList(L))
+          promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
+          => ListItem(tv(V, t(S, T))) promoteList(L)
           when ((notBool(hasIntegerType(t(S, T))) 
                     andBool (notBool T ==K float)
                     andBool (notBool isArrayType(t(S, T)))) 
@@ -116,20 +116,20 @@ module C-BINDING
                orBool (T ==K long-double))
                orElseBool (rank(t(S, T)) >=Int rank(t(.Set, int)))
 
-     rule promoteList(.KList) => .KList
+     rule promoteList(.List) => .List
      
-     syntax K ::= bindVariadic(SymLoc, KList)
-     syntax K ::= "bindVariadic-pre" "(" SymLoc "," KList ")"
+     syntax K ::= bindVariadic(SymLoc, List)
+     syntax K ::= "bindVariadic-pre" "(" SymLoc "," List ")"
      
      // the idea here is that there should have been a previous argument, so we
      // can use its address to append all of the variadic arguments 
      rule [bind-variadic-pre]:
-          bind-aux(Loc:SymLoc, L:KList, t(_, variadic))
+          bind-aux(Loc:SymLoc, L:List, ListItem(t(_, variadic)))
           => bindVariadic-pre(Loc, promoteList(L))
           [structural] 
 
      rule [bind-variadic-start]:
-          bindVariadic-pre(Loc:SymLoc, L:KList)
+          bindVariadic-pre(Loc:SymLoc, L:List)
           => bindVariadic(Loc, L)
           [structural]
      
@@ -146,14 +146,14 @@ module C-BINDING
                     ~> Computation(
                          *(tv(Loc, t(.Set, pointerType(type(V))))) := V)
                ) 
-               ~> bindVariadic(_, ((V:K => .KList),, _:KList)) 
+               ~> bindVariadic(_, (ListItem(V:K) => .List) _:List) 
           ...</k>
           <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
           <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
           [structural]
      
      rule [bind-variadic-done]:
-          bindVariadic(_, .KList) => sequencePoint
+          bindVariadic(_, .List) => sequencePoint
           [structural]
 endmodule
 

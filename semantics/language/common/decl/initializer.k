@@ -11,7 +11,7 @@ module C-DECL-INITIALIZER-SYNTAX
 
      // TODO(chathhorn): it would be nice to move this elsewhere.
      // First map is for type, second map is for offset.
-     syntax K ::= aggregateInfo(KList, Map, Map)
+     syntax K ::= aggregateInfo(List, Map, Map)
 endmodule
 
 module C-DECL-INITIALIZER
@@ -46,8 +46,8 @@ module C-DECL-INITIALIZER
                _:Id, 
                t(_:Set, arrayType(T:Type, Len:Int)), 
                (SingleInit(Constant(StringLiteral(S:String))) 
-               => CompoundInit(klist(InitFragment(NextInit,
-                    SingleInit(Constant(StringLiteral(S)))))))
+               => CompoundInit(list(ListItem(InitFragment(NextInit,
+                    SingleInit(Constant(StringLiteral(S))))))))
           )
           when isCharType(T) andBool (lengthString(S) <=Int Len)
           [structural]
@@ -56,10 +56,10 @@ module C-DECL-INITIALIZER
                _:Id, 
                t(_:Set, arrayType(T:Type, Len:Int)), 
                (SingleInit(Constant(WStringLiteral(S:KList))) 
-               => CompoundInit(klist(InitFragment(NextInit,
-                    SingleInit(Constant(WStringLiteral(S)))))))
+               => CompoundInit(list(ListItem(InitFragment(NextInit,
+                    SingleInit(Constant(WStringLiteral(S))))))))
           )
-          when isWCharType(T) andBool (lengthKList S <=Int Len)
+          when isWCharType(T) andBool (lengthKList(S) <=Int Len)
           [structural] 
      
      rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type) 
@@ -69,14 +69,14 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, lengthKList S +Int 1))),
+          => arrayType(T, lengthKList(S) +Int 1))),
                SingleInit(Constant(WStringLiteral(S:KList)))) 
           when isWCharType(T)
           [structural] 
           
      rule figureInit(X:Id, t(Se:Set, incompleteArrayType(T:Type)),
-               CompoundInit(klist(InitFragment(NextInit,
-               SingleInit(Constant(StringLiteral(S:String)))))))
+               CompoundInit(list(ListItem(InitFragment(NextInit,
+               SingleInit(Constant(StringLiteral(S:String))))))))
           => figureInit(X, t(Se, incompleteArrayType(T)),
                SingleInit(Constant(StringLiteral(S))))
           [structural] 
@@ -109,7 +109,7 @@ module C-DECL-INITIALIZER
           [structural] 
      // c1x 6.7.8:11
      rule figureInit(X:Id, T:Type,
-               CompoundInit(klist(InitFragment(NextInit, SingleInit(K:K)))))
+               CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
           => figureInit-aux(X, T,
                initializer(Computation(allowWrite(X) := K)))
           when notBool (isAggregateType(T) orBool isUnionType(T))
@@ -126,7 +126,7 @@ module C-DECL-INITIALIZER
      syntax K ::= te(K, Type) [klabel('te)]
      syntax K ::= "getInit"
      syntax K ::= fillInit(K)
-                | fillInits(KList)
+                | fillInits(List)
                 | "fillInit-aux" "(" K ")"
 
      rule <k> getInit => initializer(K:K) ...</k>
@@ -136,7 +136,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      syntax K ::= startInit(Type, Id, K)
-     rule <k> startInit(T:Type, X:Id, CompoundInit(klist(L:KList)))
+     rule <k> startInit(T:Type, X:Id, CompoundInit(list(L:List)))
                => fillInits(L) ~> getInit
           ...</k>
           <incompleteLength> _ => 0 </incompleteLength>
@@ -150,10 +150,10 @@ module C-DECL-INITIALIZER
           when isUnionType(T) orBool isAggregateType(T)
           [structural] 
      
-     rule fillInits((InitFragment(K:K, Exp:K),, L:KList))
+     rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
           [structural] 
-     rule fillInits(.KList) => .
+     rule fillInits(.List) => .K
           [structural] 
      
      syntax ListItem ::= "next"
@@ -177,7 +177,8 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</currentSubObject>
           <structs>... 
-               S |-> aggregateInfo((typedDeclaration(T:Type, F:Id),, _), _, _)
+               S |-> aggregateInfo(
+                    ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
           ...</structs> 
           [structural] 
           
@@ -188,7 +189,8 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, unionType(S))))
           ...</currentSubObject>
           <structs>... 
-               S |-> aggregateInfo((typedDeclaration(T:Type, F:Id),, _), _, _) 
+               S |-> aggregateInfo(
+                    ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           ...</structs> 
           [structural] 
           
@@ -225,8 +227,9 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</currentSubObject>
           <structs>...
-               S |-> aggregateInfo((_,, typedDeclaration(T, F),,
-                    typedDeclaration(T':Type, F':Id),, _), _, _)
+               S |-> aggregateInfo(_ 
+                    ListItem(typedDeclaration(T, F))
+                    ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
           ...</structs> 
           when F' =/=K #NoName
           [structural, large] 
@@ -239,9 +242,10 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</currentSubObject>
           <structs>...
-               S |-> aggregateInfo((_,, typedDeclaration(T, F),,
-                    typedDeclaration(_, #NoName),,
-                    typedDeclaration(T':Type, F':Id),, _), _, _)
+               S |-> aggregateInfo(_ 
+                    ListItem(typedDeclaration(T, F))
+                    ListItem(typedDeclaration(_, #NoName))
+                    ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
           ...</structs>
           [structural, large] 
           
@@ -251,7 +255,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</currentSubObject>
           <structs>...
-               S |-> aggregateInfo((_,, typedDeclaration(T, F)), _, _)
+               S |-> aggregateInfo(_ ListItem(typedDeclaration(T, F)), _, _)
           ...</structs> 
           [structural, large] 
      rule [init-next-struct-element-done-noname]:
@@ -260,9 +264,9 @@ module C-DECL-INITIALIZER
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</currentSubObject>
           <structs>...
-               S |-> aggregateInfo((_,, 
-                    typedDeclaration(T, F),,
-                    typedDeclaration(_, #NoName)), _, _)
+               S |-> aggregateInfo(_
+                    ListItem(typedDeclaration(T, F))
+                    ListItem(typedDeclaration(_, #NoName)), _, _)
           ...</structs> 
           [structural, large] 
           
@@ -278,7 +282,7 @@ module C-DECL-INITIALIZER
           
      syntax K ::= "finishCompoundInit" "(" List ")"
      rule <k> 
-               fillInit(CompoundInit(klist(L:KList)))
+               fillInit(CompoundInit(list(L:List)))
                => fillInits(L)
                     ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
           ...</k>
@@ -466,7 +470,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</currentSubObject>
-          when isWCharType(T) andBool lengthKList S ==Int Len
+          when isWCharType(T) andBool lengthKList(S) ==Int Len
           [structural] 
      rule [fillInit-string-array-lt]:
           <k> 
@@ -489,7 +493,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                     ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</currentSubObject>
-          when isWCharType(T) andBool lengthKList S <Int Len
+          when isWCharType(T) andBool lengthKList(S) <Int Len
           [structural] 
      rule [fillInit-string-char]:
           <k> 

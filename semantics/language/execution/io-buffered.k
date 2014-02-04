@@ -24,15 +24,15 @@ module C-IO-BUFFERED
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
-     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), false)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:K) L:List), false)
           => writeByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L), false)
           [structural]
-     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)), true)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:K) L:List), true)
           => stealthWriteByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L), true)
           [structural]
-     rule writeBytes(_, dataList(.KList), _) => .K
+     rule writeBytes(_, dataList(.List), _) => .K
           [structural] 
 
      syntax K ::= stealthWriteByte(SymLoc, K)
@@ -75,28 +75,29 @@ module C-IO-BUFFERED
           => SetItem(Loc) locations(L:List)
 
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," KList ")"
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
      
      rule readBytes(Loc:SymLoc, Size:Int) 
-          => readBytes-aux(Loc, Size, .KList) 
+          => readBytes-aux(Loc, Size, .List) 
           [structural] 
           
      // fixme sNat
-     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:KList)
+     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
           => readByte(Loc)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
           when Size:Int >Int 0
           [structural]
-     rule (tv(V:KList, T:Type) => .K)
-               ~> readBytes-aux(_, _, 
-                    (Aux:KList => (Aux,, tv(V, T))))
+     rule (tv(V:CValue, T:Type) => .K)
+          ~> readBytes-aux(_, _, 
+               (Aux:List => Aux ListItem(tv(V, T))))
           [structural]        
      
-     syntax KList ::= values(KList) [function]
-     rule values((tv(K:K, _),, L:KList)) => (K:K,, values(L:KList))
-     rule values(.KList) => .KList
-     rule readBytes-aux(_, 0, Aux:KList) 
-          => dataList(values(Aux:KList)) 
+     syntax List ::= values(List) [function]
+     rule values(ListItem(tv(K:K, _)) L:List) 
+          => ListItem(K:K) values(L:List)
+     rule values(.List) => .List
+     rule readBytes-aux(_, 0, Aux:List) 
+          => dataList(values(Aux:List)) 
           [structural] 
      
      // FIXME make sure it's a byte

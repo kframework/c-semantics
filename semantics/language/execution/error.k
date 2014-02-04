@@ -56,7 +56,7 @@ module C-EXECUTION-ERROR
      rule [err00006]:
           (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
                21) ) ~>
-          joinIntegerBytes-aux(T:Type, (_:KList,, piece(unknown(Len:Int), Len:Int)), _:K)
+          joinIntegerBytes-aux(T:Type, _:List ListItem(piece(unknown(Len:Int), Len:Int)), _:K)
           when notBool isCharType(T)
           [structural, large]
           
@@ -72,13 +72,15 @@ module C-EXECUTION-ERROR
      
      rule [err00008]:
           (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
-          concretize(t(_, pointerType(_)), dataList((piece(unknown(Len:Int), Len:Int),, _)))
+          concretize(t(_, pointerType(_)),
+               dataList(ListItem(piece(unknown(Len:Int), Len:Int)) _:List))
           [structural, large]
      
      rule [err00009]:
           (. => ERROR("00009", "Reading uninitialized memory.",
                21) ) ~>
-          concretize(T:Type, dataList((piece(unknown(Len:Int), Len:Int),, _)))
+          concretize(T:Type,
+               dataList(ListItem(piece(unknown(Len:Int), Len:Int)) _:List))
           when isFloatType(T)
           [structural, large]
           
@@ -100,8 +102,7 @@ module C-EXECUTION-ERROR
           
           
      rule [err00016]:
-          <k> 
-               (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
+          <k> (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
                writeByte(Loc:SymLoc, _) 
           ...</k>
           <locsWrittenTo> Locs:Bag </locsWrittenTo>
@@ -131,8 +132,7 @@ module C-EXECUTION-ERROR
           [structural, large]
           
      rule [err00020]:
-          <k> 
-               (. => ERROR("00020", "Tried to write outside the bounds of an object.") ) ~>
+          <k> (. => ERROR("00020", "Tried to write outside the bounds of an object.") ) ~>
                writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) 
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
@@ -155,19 +155,18 @@ module C-EXECUTION-ERROR
      
      rule [err00025a]:
           (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
+          callMain-aux(t(_, functionType(t(_, T:SimpleType), _:List)), _:Int, _:Id, _)
           when T =/=K int
           [structural, large]
      rule [err00025b]:
-          <k> 
-               (. => ERROR("00025b", "Main must exist.", 4) ) ~>
+          <k> (. => ERROR("00025b", "Main must exist.", 4) ) ~>
                callMain(_, _)
           ...</k>
           <mainTU> .Set </mainTU>
           [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id),, _:KList))), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), ListItem(typedDeclaration(t(_, T:SimpleType), _:Id)) _:List)), _:Int, _:Id, _) 
           when T =/=K int andBool T =/=K void
           [structural, large]
           
@@ -193,17 +192,23 @@ module C-EXECUTION-ERROR
      
      rule [err00027]:
           (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
-          int), _:Id),, typedDeclaration(T:Type, _:Id)))), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), 
+               ListItem(typedDeclaration(t(_, int), _:Id)) 
+               ListItem(typedDeclaration(T:Type, _:Id)))),
+               _:Int, _:Id, _) 
           when #isArgvType(T) ==K false
           [structural, large]
      rule [err00028]:
           (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (_:Type,, _:Type,, _:Type,, _:KList))), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), 
+               ListItem(_:Type) ListItem(_:Type) ListItem(_:Type) _:List)),
+               _:Int, _:Id, _) 
           [structural, large]
      rule [err00029]:
           (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id)))), _:Int, _:Id, _)
+          callMain-aux(t(_, functionType(t(_, int),
+               ListItem(typedDeclaration(t(_, T:SimpleType), _:Id)))),
+               _:Int, _:Id, _)
           when T =/=K void
           [structural, large]
           
@@ -230,17 +235,17 @@ module C-EXECUTION-ERROR
           
      rule [err00041]:
           (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
-          types((t(_, void),, t(_, T:K)))
+          types(ListItem(t(_, void)) ListItem(t(_, T:K)))
           when T:K =/=K void
           [structural, large]
      rule [err00042]:
           (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types((t(_, T:K),, t(_, void)))
+          types(ListItem(t(_, T:K)) ListItem(t(_, void)))
           when T:K =/=K void
           [structural, large]
      rule [err00043]:
           (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
-          types((T:Type,, T':Type))
+          types(ListItem(T:Type) ListItem(T':Type))
           when (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))
@@ -262,13 +267,12 @@ module C-EXECUTION-ERROR
           
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
-          concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
+          concretize(T:Type, dataList(ListItem(piece(N:Int, _:Int)) _:List))
           when isFloatType(T) andBool (N >=Int 0)
           [structural, large]
           
      rule [err00047]:
-          <k> 
-               (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
+          <k> (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
                writeByte(Loc:SymLoc, _)
           ...</k>
           <notWritable>... SetItem(Loc) ...</notWritable>
@@ -287,12 +291,10 @@ module C-EXECUTION-ERROR
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> 
-               (. => ERROR("00048", "Have a read-write datarace.")) ~> 
+          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
                read-aux(Loc:SymLoc, _, BitSize:Int) 
           ...</k>
-          <k> 
-               (. => ERROR("00048", "Have a read-write datarace.")) ~> 
+          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
                write-aux(Loc':SymLoc, _, BitSize':Int) 
           ...</k>
           when sameBase(Loc, Loc') andBool
@@ -303,12 +305,10 @@ module C-EXECUTION-ERROR
           [computational, large]
            
       rule [write-write-race]:
-          <k> 
-               (. => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
                write-aux(Loc:SymLoc, _, BitSize:Int) 
           ...</k>
-          <k> 
-               (. => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
                write-aux(Loc':SymLoc, _, BitSize':Int) 
           ...</k>
           when sameBase(Loc, Loc') andBool

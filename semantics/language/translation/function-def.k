@@ -65,7 +65,7 @@ module C-FUNCTION-DEF
 
      syntax K ::= "returnToFileScope"
 
-     rule <k> staticEval(X:Id, t(_, functionType(_, P:KList)), Blk:K)
+     rule <k> staticEval(X:Id, t(_, functionType(_, P:List)), Blk:K)
           => populateFromGlobal
           ~> dummyBind(P)
           ~> Blk
@@ -76,26 +76,24 @@ module C-FUNCTION-DEF
      rule <k> returnToFileScope => . ...</k>
           <currentFunction> _ => file-scope </currentFunction>
 
-     syntax K ::= dummyBind(KList)
+     syntax K ::= dummyBind(List)
      
-     rule dummyBind((typedDeclaration(t(.Set, void), _),, _:KList)) => .
-     rule dummyBind(.KList) => .
-     rule dummyBind(t(_, variadic)) => .
+     rule dummyBind(ListItem(typedDeclaration(t(.Set, void), _)) _:List) => .
+     rule dummyBind(.List) => .
+     rule dummyBind(ListItem(t(_, variadic))) => .
 
-     rule dummyBind((typedDeclaration(
-          (t(_, (arrayType(T:Type, _:Int) => pointerType(T)))), 
-          _),, _:KList))
+     rule dummyBind(ListItem(typedDeclaration(
+          (t(_, (arrayType(T:Type, _:Int) => pointerType(T)))),
+          _)) _:List)
 
-     rule dummyBind((typedDeclaration(
+     rule dummyBind(ListItem(typedDeclaration(
           (t(_, (incompleteArrayType(T:Type) => pointerType(T)))), 
-          _),, _:KList))
+          _)) _:List)
           
-     rule <k> 
-               dummyBind((typedDeclaration(T:Type, X:Id),, P:KList))
-               => addToEnv(X, symVal)
-               ~> giveType(X, T)
-               ~> dummyBind(P)
-          ...</k> 
+     rule dummyBind(ListItem(typedDeclaration(T:Type, X:Id)) P:List)
+          => addToEnv(X, symVal)
+          ~> giveType(X, T)
+          ~> dummyBind(P)
           when notBool isArrayType(T)
                andBool notBool isVoidType(T)
           [structural] 

@@ -6,11 +6,10 @@ module C-DECL-TYPEDEF
                
      context Typedef(NameGroup(HOLE, _))
 
-     rule Typedef(NameGroup(T:Type, klist((K:K,, L:KList)))) 
-          => defineType(SingleName(T, K))
-               ~> Typedef(NameGroup(T, klist(L)))
+     rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List))) 
+          => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))
           [structural]
-     rule Typedef(NameGroup(_:Type, klist(.KList))) => .
+     rule Typedef(NameGroup(_:Type, list(.List))) => .K
           [structural]
 
      syntax K ::= defineType(K) [strict] 

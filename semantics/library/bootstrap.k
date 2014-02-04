@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      syntax C ::= vararg(K) [hybrid, strict]
-     syntax K ::= prepareBuiltin(Id, KList) 
+     syntax K ::= prepareBuiltin(Id, List) 
      syntax K ::= incSymbolic(K)
 endmodule
 
@@ -18,36 +18,40 @@ module LIBC-BOOTSTRAP
      // TODO(chathhorn): not pretty
      rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]
 
-     syntax KList ::= idsFromDeclList(KList) [function]
+     syntax List ::= idsFromDeclList(List) [function]
      
      rule [idsFromDeclList-one]:
-          idsFromDeclList((L:KList,, typedDeclaration(t(_, T:K), X:Id)))
-          => idsFromDeclList(L:KList),, X:Id
+          idsFromDeclList(L:List ListItem(typedDeclaration(t(_, T:K), X:Id)))
+          => idsFromDeclList(L) ListItem(X)
           when T:K =/=K void
           [structural]
      rule [idsFromDeclList-void]:
-          idsFromDeclList((L:KList,, typedDeclaration(t(_, void), _:Id)))
-          => idsFromDeclList(L:KList)
+          idsFromDeclList(L:List ListItem(typedDeclaration(t(_, void), _:Id)))
+          => idsFromDeclList(L)
           [structural]
      rule [idsFromDeclList-vararg]:
-          idsFromDeclList((L:KList,, 
-               typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
-          => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
+          idsFromDeclList(
+               L:List
+               ListItem(typedDeclaration(T:KResult, X:Id))
+               ListItem(t(_, variadic)))
+          => idsFromDeclList(
+               L:List 
+               ListItem(typedDeclaration(T:KResult, X:Id)))
                // assumes variadic args are placed in incremental blocks
-               ,, vararg(incSymbolic(cast(t(.Set, 
-               pointerType(t(.Set, unsigned-char))), &(X:Id))))
+               ListItem(vararg(incSymbolic(cast(t(.Set, 
+                    pointerType(t(.Set, unsigned-char))), &(X:Id)))))
           [structural]
      rule [idsFromDeclList-done]:
-          idsFromDeclList(.KList) => .KList [structural]
+          idsFromDeclList(.List) => .List [structural]
 
      context incSymbolic((HOLE => reval(HOLE)))
      rule [incSymbolic]:
           incSymbolic(tv(Loc:SymLoc, T:KResult)) => tv(linc(Loc), T:KResult)
           [structural]
           
-     context prepareBuiltin(_, (_,, (HOLE => reval(HOLE)),, _))
+     context prepareBuiltin(_, _:List ListItem(HOLE => reval(HOLE)) _:List)
      rule [prepareBuiltin]:
-          handleBuiltin(F:Id, t(_, functionType(_:KResult, L:KList)))
-          => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
+          handleBuiltin(F:Id, t(_, functionType(_:KResult, L:List)))
+          => Return(prepareBuiltin(F:Id, idsFromDeclList(L:List)))
           [structural]
 endmodule

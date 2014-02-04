@@ -9,10 +9,10 @@ module C-EXPR-SEQUENCING
      rule commaEval(R:KResult) => rkludge(R)
           [structural]
 
-     rule Comma(klist(K:K,, L:KList)) 
-          => commaEval(K) ~> discard ~> Comma(klist(L))
-          when L =/=KList .KList
+     rule Comma(list(ListItem(K:K) L:List)) 
+          => commaEval(K) ~> discard ~> Comma(list(L))
+          when L =/=List .List
           [structural]
-     rule Comma(klist(K:K)) => commaEval(K)
+     rule Comma(list(ListItem(K:K))) => commaEval(K)
           [structural]
 endmodule

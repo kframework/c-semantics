@@ -53,7 +53,7 @@ sub main {
       print $fileInput decode_base64(linkedProgram());
 
       my $argc = $#ARGV + 2;
-      my $argv = join(',,', map {qq|\\"$_\\"|} ($0, @ARGV));
+      my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
 
       my %krun_args = (
                   '--output' => 'raw', 
@@ -61,7 +61,7 @@ sub main {
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
-                  "-cARGV=\"$argv,,.KList\"" => '',
+                  "-cARGV=\"($argv .List)\"" => '',
                   '--load-cfg' => $fileInput
                   );
 
@@ -222,7 +222,7 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+      /< resultValue > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
             $parsed->{exitCode} = $1;
       };
 }

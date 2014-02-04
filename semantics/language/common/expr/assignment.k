@@ -25,7 +25,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      // translation/execution semantics.
 
      rule [convert-for-assignment]:
-          lval(_, T:Type) := (tv(V:KList, T':Type) => cast(T, tv(V, T')))
+          lval(_, T:Type) := (tv(V:CValue, T':Type) => cast(T, tv(V, T')))
           when T =/=K T'
           [structural]
 

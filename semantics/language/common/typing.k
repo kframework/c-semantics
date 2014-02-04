@@ -48,7 +48,7 @@ module C-TYPING-SYNTAX
           [klabel('flexibleArrayType)]
      syntax SimpleType ::= bitfieldType(Type, Int)
           [klabel('bitfieldType)]
-     syntax SimpleType ::= functionType(Type, KList)
+     syntax SimpleType ::= functionType(Type, List)
           [klabel('functionType)]
      syntax SimpleType ::= pointerType(Type)
           [klabel('pointerType)]

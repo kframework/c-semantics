@@ -1,9 +1,9 @@
 module LIBC-IO-SYNTAX
-     syntax K ::= "writeToFD" "(" Int "," Int ")"
-     syntax K ::= "writeToFD" "(" Int "," String ")"
-     syntax K ::= "readFromFD" "(" Int ")"
-     syntax K ::= "readFromFD" "(" Int "," Int ")"
-     syntax K ::= "flush" "(" Int ")"
+     syntax K ::= writeToFD(Int, Int)
+     syntax K ::= writeToFD(Int, String)
+     syntax K ::= readFromFD(Int)
+     syntax K ::= readFromFD(Int, Int)
+     syntax K ::= flush(Int)
      syntax K ::= "f-flush" "(" Int ")"
 endmodule
 
@@ -29,8 +29,7 @@ module LIBC-IO
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
-          <k> 
-               readFromFD(FD:Int) 
+          <k> readFromFD(FD:Int) 
                => tv(ordChar(firstChar(S:String)), t(.Set, int))  
           ...</k>
           <fid> FD </fid>
@@ -59,8 +58,6 @@ module LIBC-IO
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"
      
-     // can't lex string2KList correctly in #fPrint(N:Int,,
-     // string2KList(S:String))
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
           <fileCommands>... 

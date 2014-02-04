@@ -11,7 +11,7 @@ module LIBC-STDLIB
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= "printString" "(" K ")"
+     syntax K ::= printString(K)
 
      rule printString(S:String)
           => writeToFD(1, ordChar(firstChar(S:String)))
@@ -26,15 +26,16 @@ module LIBC-STDLIB
           [interpRule]
      
      rule [exit]:
-          <k> 
-               prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _
+          <k> prepareBuiltin(Identifier("exit"), 
+                    ListItem(tv(I:Int, t(_, int))))
+               ~> _
                => tv(I:Int, t(.Set, int)) 
           </k>
           [structural]
 
      rule [abort]:
-          <k> 
-               prepareBuiltin((Identifier("abort")), .KList) ~> _ 
+          <k> prepareBuiltin(Identifier("abort"), .List) 
+               ~> _ 
                => printString("Aborted") ~> tv(134, t(.Set, int)) 
           </k>
      
@@ -51,11 +52,10 @@ module LIBC-STDLIB
      rule newAlloc(Base:Int) => loc(Base @ allocated, 0, 0)
      
      rule [malloc]:
-          <k> 
-               prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
+          <k> prepareBuiltin(Identifier("malloc"),
+                    ListItem(tv(Len:Int, _:KResult)))
                => alloc(newAlloc(N), Len:Int)
-                    ~> tv(newAlloc(N), 
-                         t(.Set, pointerType(t(.Set, void))))
+               ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>
           <nextMalloced> N:Int => N +Int 1 </nextMalloced>
@@ -82,11 +82,11 @@ module LIBC-STDLIB
      if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> 
-               prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
-                    tv(NewLen:Int, _:KResult)))
+          <k> prepareBuiltin(Identifier("realloc"), 
+                    ListItem(tv(OldLoc:SymLoc, _))
+                    ListItem(tv(NewLen:Int, _:KResult)))
                => realloc(OldLoc, newAlloc(N), OldLen:Int, NewLen:Int)
-                    ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
+               ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
                (OldLoc => newAlloc(N)) |-> (OldLen:Int => NewLen:Int) 
@@ -96,17 +96,19 @@ module LIBC-STDLIB
           [structural]
      
      rule [realloc-null]:
-          prepareBuiltin((Identifier("realloc")), 
-               (tv(NullPointer, _),, Len:KResult)) 
-          => prepareBuiltin((Identifier("malloc")), Len:KResult)
+          prepareBuiltin(Identifier("realloc"),
+               ListItem(tv(NullPointer, _))
+               ListItem(Len:KResult))
+          => prepareBuiltin(Identifier("malloc"), ListItem(Len:KResult))
           [structural]
 
      syntax K ::= "calloc-aux"
      rule [calloc]:
-          prepareBuiltin((Identifier("calloc")), 
-               (tv(N:Int, _),, tv(Size:Int, _)))
-          => prepareBuiltin((Identifier("malloc")),
-               tv(N:Int *Int Size:Int, cfg:sizeut))
+          prepareBuiltin(Identifier("calloc"),
+               ListItem(tv(N:Int, _))
+               ListItem(tv(Size:Int, _)))
+          => prepareBuiltin(Identifier("malloc"),
+               ListItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
      rule [calloc-aux]:
@@ -116,11 +118,10 @@ module LIBC-STDLIB
           [structural]
 
      rule [free]:
-          <k> 
-               prepareBuiltin((Identifier("free")),
-                    tv(Loc:SymLoc, t(_, pointerType(_))))
+          <k> prepareBuiltin(Identifier("free"),
+                    ListItem(tv(Loc:SymLoc, t(_, pointerType(_)))))
                => deleteSizedBlock(Loc, Len:Int) 
-                    ~> skipval
+               ~> skipval
           ...</k>
           <malloced>... Loc |-> Len:Int => .Map ...</malloced>
           [structural]
@@ -128,8 +129,7 @@ module LIBC-STDLIB
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
-          <k> 
-               prepareBuiltin((Identifier("rand")), .KList)
+          <k> prepareBuiltin((Identifier("rand")), .List)
                => tv(absInt(randomRandom(Seed:Int)) 
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
@@ -137,9 +137,8 @@ module LIBC-STDLIB
           [structural]
           
      rule [srand]:
-          <k> 
-               prepareBuiltin((Identifier("srand")),
-                    tv(N:Int, t(.Set, unsigned-int)))
+          <k> prepareBuiltin(Identifier("srand"),
+                    ListItem(tv(N:Int, t(.Set, unsigned-int))))
                => skipval
           ...</k>
           <randNat> _ => N:Int </randNat>

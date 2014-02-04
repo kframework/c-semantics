@@ -12,13 +12,13 @@ module C-MEMORY-READING-SYNTAX
      syntax K ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
      // TODO(chathhorn) used error check?
-     syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
+     syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
      syntax K ::= "read-aux" "(" SymLoc "," Type "," K ")" [klabel('read-aux)]
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
-     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
+     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
           [function]
 endmodule
 
@@ -36,31 +36,31 @@ module C-MEMORY-READING
      imports COMPAT-SYNTAX
 
      // loc, size in bits
-     syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
+     syntax K ::= extractBitsFromMem(SymLoc, Int)
      
-     rule extractBitsFromList(dataList(L:KList), N:Int, M:Int) 
+     rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
           => extractBitsFromList-aux(
-               dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
+               dataList(explodeToBits(L:List)), N:Int, M:Int, .List)
           [structural]
      // fixme snat
      rule extractBitsFromList-aux(
-               dataList((piece(_, 1),, L:KList)), 
-               Offset:Int, NumBits:Int, .KList)
+               dataList(ListItem(piece(_, 1)) L:List), 
+               Offset:Int, NumBits:Int, .List)
           => extractBitsFromList-aux(
-               dataList(L:KList), 
-               Offset:Int -Int 1, NumBits:Int, .KList)
+               dataList(L:List), 
+               Offset:Int -Int 1, NumBits:Int, .List)
           when Offset:Int >Int 0
           [structural] 
      rule extractBitsFromList-aux(
-               dataList((piece(N:Bits, 1),, L:KList)), 
-               0, NumBits:Int, Done:KList)
+               dataList(ListItem(piece(N:Bits, 1)) L:List), 
+               0, NumBits:Int, Done:List)
           => extractBitsFromList-aux(
-               dataList(L:KList), 
-               0, NumBits:Int -Int 1, (Done:KList,, piece(N, 1)))
+               dataList(L:List), 
+               0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
           when NumBits >Int 0
           [structural] 
      
-     rule extractBitsFromList-aux(_, 0, 0, Done:KList) => dataList(Done:KList)
+     rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
           [structural] 
      
      rule read(Loc:SymLoc, T:Type) 
@@ -95,14 +95,13 @@ module C-MEMORY-READING
           when isBitfieldType(T)
           [structural]
      
-     syntax K ::= "joinIntegerBytes" "(" Type "," KList ")"
-     rule concretize(T:Type, dataList(L:KList)) 
+     syntax K ::= joinIntegerBytes(Type, List)
+     rule concretize(T:Type, dataList(L:List)) 
           => joinIntegerBytes(T, L) 
           when hasIntegerType(T) 
                andBool notBool isBitfieldType(T) 
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
-               dataList(L:KList)) 
+     rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), dataList(L:List)) 
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
           [structural]
           
@@ -134,65 +133,65 @@ module C-MEMORY-READING
                andBool hasIntegerType(T)
           
      // FIXME very unsafe, not checking size of list or its contents
-     rule concretize(T:KResult, 
-               dataList((piece(encodedFloat(F:Float), Len:Int),, _))) 
+     rule concretize(T:KResult, dataList(
+               ListItem(piece(encodedFloat(F:Float), Len:Int)) _:List)) 
           => tv(F:Float, T:KResult)
           when isFloatType(T:KResult)
                andBool (Len:Int ==Int cfg:bitsPerByte)
           [structural]
 
-     syntax K ::= "joinPointerBytes" "(" Type "," KList ")"
-     syntax K ::= "joinPointerBytes-aux" "(" Type "," KList "," K ")"
+     syntax K ::= joinPointerBytes(Type, List)
+     syntax K ::= "joinPointerBytes-aux" "(" Type "," List "," K ")"
      // fixme should also check sizes are appropriate
-     rule concretize(T:Type, dataList(L:KList)) 
+     rule concretize(T:Type, dataList(L:List)) 
           => joinPointerBytes(T, L)
           when isPointerType(T)
           [structural]
-     rule joinPointerBytes(T:Type, (piece(N:Bits, Len:Int),, L:KList))
+     rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
           [structural]
 
      rule joinPointerBytes-aux(T:Type, 
-               (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, 
-               L:KList), subObject(N, 0, End:Int))
+               ListItem(piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int))
+               L:List, subObject(N, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
           when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
           [structural]
-     rule joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, _:Int))
+     rule joinPointerBytes-aux(T:KResult, .List, subObject(N:SymLoc, 0, _:Int))
           => checkValidLoc(N) ~> tv(N, T:KResult)
           [structural]
 
-     rule concretize(t(S:Set, structType(I:Id)), dataList(L:KList)) 
-          => tv(L, t(S, structType(I))) 
+     rule concretize(t(S:Set, structType(I:Id)), dataList(L:List)) 
+          => tv(agg(L), t(S, structType(I))) 
           [structural]
-     rule concretize(t(S:Set, unionType(I:Id)), dataList(L:KList)) 
-          => tv(L, t(S, unionType(I)))
+     rule concretize(t(S:Set, unionType(I:Id)), dataList(L:List)) 
+          => tv(agg(L), t(S, unionType(I)))
           [structural]
 
      // FIXME assuming bytes?
      rule [joinIntegerBytes-start]:
-          joinIntegerBytes(T:Type, L:KList) 
+          joinIntegerBytes(T:Type, L:List) 
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 
           [structural]
      
      // fixme may want to consider restricting further, or loosening
      rule [joinIntegerBytes-unknown-char]:
           joinIntegerBytes-aux(T:Type, 
-               piece(unknown(Len:Int), Len:Int), piece(0, 0))
+               ListItem(piece(unknown(Len:Int), Len:Int)), piece(0, 0))
           => tv(piece(unknown(Len), Len), T)
           when isCharType(T)
           [structural]
      
      rule [joinIntegerBytes-step]:
           joinIntegerBytes-aux(T:Type, 
-               (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
+               L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
           [structural]
      rule [joinIntegerBytes-done]:
-          joinIntegerBytes-aux(T:Type, .KList, piece(N:Int, Len:Int)) 
+          joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
           => interpret(T, piece(N, Len)) 
           [structural]
      

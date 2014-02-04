@@ -1,6 +1,6 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
-     syntax K ::= types(KList)
+     syntax K ::= types(List)
 endmodule
 
 module C-COMMON-EXPR-CONDITIONAL
@@ -12,16 +12,16 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
 
-     syntax K ::= getTypes(KList)
-     context types((_,, HOLE,, _))
+     syntax K ::= getTypes(List)
+     context types(_:List ListItem(HOLE) _:List)
      syntax K ::= convertedType(K) [strict]
      
-     rule getTypes(L:KList) => types(wrapWithTypeOf(L)) [structural]
+     rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]
      
-     syntax KList ::=  wrapWithTypeOf(KList) [function]
-     rule wrapWithTypeOf((K:K,, L:KList))
-          => (retype(typeof(K)),, wrapWithTypeOf(L))
-     rule wrapWithTypeOf(.KList) => .KList
+     syntax List ::=  wrapWithTypeOf(List) [function]
+     rule wrapWithTypeOf(ListItem(K:K) L:List)
+          => ListItem(retype(typeof(K))) wrapWithTypeOf(L)
+     rule wrapWithTypeOf(.List) => .List
      
      syntax K ::= retype(K) [strict]
      
@@ -43,7 +43,7 @@ module C-COMMON-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/  
-     rule (. => getTypes((E1,, E2))) ~> _ ? E1:K : E2:K 
+     rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K 
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -53,7 +53,7 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types((T1:Type,, T2:Type))
+     rule (types(ListItem(T1:Type) ListItem(T2:Type))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           when T1 =/=K T2
@@ -77,27 +77,27 @@ module C-COMMON-EXPR-CONDITIONAL
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
      rule [conditional-left-is-null]:
-          (types((T1:Type,, T2:Type)) => convertedType(T2))
+          (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
           when hasIntegerType(T1)
                andBool isPointerType(T2)
           [structural]
      rule [conditional-right-is-null]:
-          (types((T1:Type,, T2:Type)) => convertedType(T1))
+          (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
           when hasIntegerType(T2)
                andBool isPointerType(T1)
           [structural]
           
      // fixme, this is wrong
-     rule (types((T1:Type,, T2:Type)) => convertedType(T1))
+     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : _
           when isPointerType(T1)
                andBool isPointerType(T2)
           [structural]
           
      // this should take care of the void/struct cases
-     rule (types((T:Type,, T:Type)) => convertedType(T))
+     rule (types(ListItem(T:Type) ListItem(T:Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
           [structural]

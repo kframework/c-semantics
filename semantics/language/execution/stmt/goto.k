@@ -9,7 +9,7 @@ module C-STMT-GOTO
      syntax K ::= getIdOfName(K) [function]
 
      rule getIdOfDeclaration(
-               DeclarationDefinition(InitNameGroup(_, klist(K:K))))
+               DeclarationDefinition(InitNameGroup(_, list(ListItem(K:K)))))
           => getIdOfName(K)
 
      rule getIdOfName(InitName(K:K, _)) => getIdOfName(K)

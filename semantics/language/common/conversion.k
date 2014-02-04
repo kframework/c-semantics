@@ -45,11 +45,11 @@ module C-CONVERSION
 
      context cast(_, (HOLE => reval(HOLE)))
      //- switch assumes casts can happen anywhere
-     rule cast(T:Type, tv(L:KList, T:Type)) => tv(L, T)
+     rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
           [structural, anywhere]
           
-     rule cast(t(S:Set, T:SimpleType), tv(L:KList, t(_, T:SimpleType))) 
-          => tv(L, t(S, T))
+     rule cast(t(S:Set, T:SimpleType), tv(V:CValue, t(_, T:SimpleType))) 
+          => tv(V, t(S, T))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -66,8 +66,8 @@ module C-CONVERSION
           when hasIntegerType(T)
           [structural, anywhere]
      rule [cast-non-integer-to-bool]:
-          cast(t(S:Set, bool), tv(L:KList, T:Type)) 
-          => cast(t(S, bool), tv(0, t(.Set, int)) != tv(L, T))
+          cast(t(S:Set, bool), tv(V:CValue, T:Type)) 
+          => cast(t(S, bool), tv(0, t(.Set, int)) != tv(V, T))
           when notBool hasIntegerType(T)
           [structural, anywhere]
      

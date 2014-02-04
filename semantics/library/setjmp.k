@@ -33,7 +33,7 @@ module LIBC-SETJMP
      // reached that point normally or from a call to longjmp
      // fixme check bounds
      // fixme obviously need to rework configuration to make this easy
-     syntax K ::= "bag" "(" Bag ")"
+     syntax K ::= bag(Bag)
      
      syntax K ::= "ignoreLocals"
      
@@ -91,10 +91,9 @@ module LIBC-SETJMP
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> 
-               (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, 
-                    t(_, pointerType(t(_, 
-                    structType(Identifier("__jmp_buf_tag")))))))
+          <k> (prepareBuiltin(Identifier("setjmp"),
+               ListItem(tv(Loc:SymLoc, t(_, pointerType(t(_, 
+                    structType(Identifier("__jmp_buf_tag"))))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
                          <threadState>
@@ -112,8 +111,10 @@ module LIBC-SETJMP
      syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
      context longjmp-aux(HOLE => reval(HOLE), _)
      rule [longjmp-prepare]:
-          prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
-          => longjmp-aux(*(V:KResult), V':KResult)
+          prepareBuiltin(Identifier("longjmp"),
+               ListItem(V:KResult)
+               ListItem(V':KResult))
+          => longjmp-aux(*(V), V')
           [structural]
      
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive

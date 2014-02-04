@@ -130,7 +130,7 @@ module C-TYPING-EXPR
           [structural]
      rule <type>
                Constant(WStringLiteral(L:KList)) 
-               => t(.Set, arrayType(cfg:wcharut, (lengthKList L) +Int 1)) 
+               => t(.Set, arrayType(cfg:wcharut, lengthKList(L) +Int 1)) 
           ...</type>
           [structural]
           
@@ -144,7 +144,7 @@ module C-TYPING-EXPR
      operand. Then the right operand is evaluated; the result has its type and
      value.
      }*/
-     rule <type> Comma(klist((_,, K:K))) => K ...</type>
+     rule <type> Comma(list(ListItem(_:K) ListItem(K:K))) => K ...</type>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{5}}}{

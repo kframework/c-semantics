@@ -37,12 +37,12 @@ module C-DECL-DEFINITION
      context DeclarationDefinition(InitNameGroup(HOLE, _)) 
 
      rule DeclarationDefinition(
-               InitNameGroup(T:Type, klist((K:K,, K':K,, L:KList))))
-          => DeclarationDefinition(InitNameGroup(T, klist(K)))
-               ~> DeclarationDefinition(InitNameGroup(T, klist((K',, L))))
+               InitNameGroup(T:Type, list(ListItem(K:K) ListItem(K':K) L:List)))
+          => DeclarationDefinition(InitNameGroup(T, list(ListItem(K))))
+               ~> DeclarationDefinition(InitNameGroup(T, list(ListItem(K') L)))
           [structural]
      rule DeclarationDefinition(
-               InitNameGroup(T:Type, klist(InitName(N:K, Exp:K))))
+               InitNameGroup(T:Type, list(ListItem(InitName(N:K, Exp:K)))))
           => doDeclare(SingleName(T, N), Exp)
           [structural]
 

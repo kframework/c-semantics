@@ -69,9 +69,8 @@ module C-STMT-BLOCK
      appear.
      }*/
      rule [dissolve-block]:
-          <k> 
-               Block(BlockNum:Int, _, klist(Statements:KList))
-               => klistToK(Statements)
+          <k> Block(BlockNum:Int, _, list(Statements:List))
+               => listToK(Statements)
           ...</k>
           <blockHistory> .List => ListItem(BlockNum) ...</blockHistory>
           [structural]

@@ -18,9 +18,9 @@ module C-BITS-SYNTAX
      syntax Int ::= bitsToBytes(Int) [function]
 
      syntax K ::= fillToBytes(K) [strict] 
-     syntax K ::= "fillToBytes-aux" "(" K "," KList ")" [function]
+     syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
-     syntax KResult ::= dataList(KList)
+     syntax KResult ::= dataList(List)
 
      syntax Bits ::= right:
                    "~Bits" Bits
@@ -47,32 +47,36 @@ module C-BITS
 
      // this maintains byte order
      rule [fillToBytes-start]:
-          fillToBytes(dataList(L:KList)) 
-          => fillToBytes-aux(dataList(L), .KList) 
+          fillToBytes(dataList(L:List)) 
+          => fillToBytes-aux(dataList(L), .List) 
           [structural]
      rule [fillToBytes-foundByte]:
-          fillToBytes-aux(dataList((L:KList,, 
-               piece(N:Bits, Len:Int))), L':KList)
-          => fillToBytes-aux(dataList(L), (piece(N, Len),, L'))
+          fillToBytes-aux(dataList(
+               L:List ListItem(piece(N:Bits, Len:Int))), 
+               L':List)
+          => fillToBytes-aux(dataList(L), ListItem(piece(N, Len)) L')
           when Len ==Int cfg:bitsPerByte
           [structural]
      
      rule [fillToBytes-addBit]:
-          fillToBytes-aux(dataList(piece(N:Bits, Len:Int)), L':KList)
-          => fillToBytes-aux(dataList((piece(0, 1),, piece(N, Len))), L')
+          fillToBytes-aux(dataList(ListItem(piece(N:Bits, Len:Int))), L':List)
+          => fillToBytes-aux(dataList(
+               ListItem(piece(0, 1)) ListItem(piece(N, Len))),
+               L')
           when Len <Int cfg:bitsPerByte
           [structural]
           
      rule [fillToBytes-combineBits]:
-          fillToBytes-aux(dataList((L:KList,, piece(N:Bits, Len:Int),, 
-               piece(N':Bits, Len':Int))), L':KList)
-          => fillToBytes-aux(dataList((L,, piece(piece(N, Len) 
+          fillToBytes-aux(dataList(
+               L:List ListItem(piece(N:Bits, Len:Int))
+               ListItem(piece(N':Bits, Len':Int))), L':List)
+          => fillToBytes-aux(dataList(L ListItem(piece(piece(N, Len) 
                bit:: piece(N', Len'), Len +Int Len'))), L')
           when Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
                     
      rule [fillToBytes-done]:
-          fillToBytes-aux(dataList(.KList), L:KList) => dataList(L)
+          fillToBytes-aux(dataList(.List), L:List) => dataList(L)
           [structural]
           
      // coallesce bitranges that are adjacent

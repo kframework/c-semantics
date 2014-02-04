@@ -56,7 +56,9 @@ module C-CONFIGURATION
           <typeSpecifiers> .Map </typeSpecifiers>
 
           <k color="green" multiplicity="?"> 
-               loadObj(mergeObj(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag)))
+               loadObj(mergeObj(
+                    unwrapObj($OBJ1:Bag), 
+                    unwrapObj($OBJ2:Bag)))
                ~> $PGM:K 
                ~> outputMode($MODE:SemMode, $DEBUG:Bool)
           </k>

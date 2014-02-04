@@ -19,7 +19,7 @@ module C-TRANSLATION-INIT
      imports COMPAT-SYNTAX
 
      rule outputMode(link, Debug:Bool) 
-          => TranslationUnit("builtin", klist(.KList), addBuiltins(builtins))
+          => TranslationUnit("builtin", list(.List), addBuiltins(builtins))
           ~> resolveReferences
           ~> #if (Debug)
              #then (.K)
@@ -38,27 +38,27 @@ module C-TRANSLATION-INIT
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule [unpack-TranslationUnit]:
-          <k> TranslationUnit(Tu:String, Strings:K, K:K) 
+          <k> TranslationUnit(TU:String, Strings:K, K:K) 
                => preDeclareStrings(Strings)
-               ~> klistToK(eraseKLabel('StmtCons, K))
+               ~> listToK(deCons(K))
                ~> allocateIncompleteInternals
           ...</k>
-          <currTU> _ => Tu </currTU>
+          <currTU> _:String => TU </currTU>
           <translation-units>...
-               (. => <tu>...
-                    <tu-id> Tu </tu-id>
-                    <next-link-loc> firstLoc(link(Tu)) </next-link-loc>
-                    <next-static-loc> firstLoc(static(Tu)) </next-static-loc>
+               (.Bag => <tu>...
+                    <tu-id> TU </tu-id>
+                    <next-link-loc> firstLoc(link(TU)) </next-link-loc>
+                    <next-static-loc> firstLoc(static(TU)) </next-static-loc>
                ...</tu>)
           ...</translation-units>
           [structural, large]
           
      syntax K ::= preDeclareStrings(K)
      
-     rule preDeclareStrings(klist((K:K,, L:KList)))
-          => K ~> discard ~> preDeclareStrings(klist(L))
+     rule preDeclareStrings(list(ListItem(K:K) L:List))
+          => K ~> discard ~> preDeclareStrings(list(L))
           [structural]
-     rule preDeclareStrings(klist(.KList)) => .
+     rule preDeclareStrings(list(.List)) => .K
           [structural]
      
      syntax K ::= addBuiltins(Set)
@@ -67,29 +67,33 @@ module C-TRANSLATION-INIT
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
-     rule <k> (. => initFunction(
+
+     rule <k> (.K => initFunction(
                tv(Loc, t(.Set, pointerType(T))), 
                builtinPrototype(Identifier(B), T)))
-               ~> addBuiltins((SetItem(B:String) => .) _)
+               ~> addBuiltins((SetItem(B:String) => .Set) _)
           ...</k>
           <external-types>...
                Identifier(B) |-> T:Type
           ...</external-types>
           <external-defs> 
-               Defs:Map (. => Identifier(B) |-> Loc)
+               Defs:Map => Defs:Map[Loc / Identifier(B)]
           </external-defs>
-          <currTU> Tu:String </currTU>
-          <tu-id> Tu </tu-id>
+          <currTU> TU:String </currTU>
+          <tu-id> TU </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when notBool Identifier(B) in keys Defs
           
-     rule <k> addBuiltins((SetItem(B:String) => .) _) ...</k>
+     rule <k> addBuiltins((SetItem(B:String) => .Set) _) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           when (Identifier(B) in keys Defs)
                orBool (notBool Identifier(B) in keys Types)
-          
-     rule addBuiltins(.Set) => .
+     
+     rule addBuiltins(.Set) => .K
+
+     // TODO(chathhorn): it'd be nice to remove the unused builtins from
+     // <functions />.
 
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B

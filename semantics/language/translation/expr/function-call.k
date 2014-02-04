@@ -7,11 +7,11 @@ module C-EXPR-FUNCTION-CALL
 
      imports COMPAT-SYNTAX
 
-     syntax KResult ::= rvlist(KList)
+     syntax KResult ::= rvlist(List)
 
      syntax K ::= revalParams(K)
-     context revalParams(klist(_,, (HOLE => reval(HOLE)),, _))
-     rule revalParams(klist(L:KList)) => revalParams(rvlist(L))
+     context revalParams(list(_:List ListItem((HOLE => reval(HOLE))) _:List))
+     rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
      

@@ -19,8 +19,8 @@ module C-BITSIZE
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     syntax K ::= bitSizeofList(KList)
-     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
+     syntax K ::= bitSizeofList(List)
+     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," List ")" [strict(1)]
      
      rule sizeofType(T:Type)
           => cast(cfg:sizeut, byteSizeofType(T)) 
@@ -35,36 +35,36 @@ module C-BITSIZE
           [structural]
 
      // TODO(chathhorn): BUG? Note doesn't heat when .K.
-     rule bitSizeofList-aux(K:K, X:Int, L:KList)
+     rule bitSizeofList-aux(K:K, X:Int, L:List)
           => K ~> bitSizeofList-aux(HOLE, X, L) 
           when notBool (K ==K .K) [heat]
-     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:KList)
+     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:List)
           => bitSizeofList-aux(K, X, L) [cool]
      
       // TODO(chathhorn)
-     rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
+     rule bitSizeofList(L:List) => bitSizeofList-aux(.K, 0, L:List)
           [structural]
-     rule bitSizeofList-aux((. => bitSizeofType(T:K)),
-               _:Int, ((T:K => .KList),, _:KList))
+     rule bitSizeofList-aux((.K => bitSizeofType(T:K)),
+               _:Int, (ListItem(T:K) => .List) _:List)
           [structural]
-     rule bitSizeofList-aux((tv(Len':Int, _) => .),
+     rule bitSizeofList-aux((tv(Len':Int, _) => .K),
                (Len:Int => Len:Int +Int Len':Int), _)
           [structural]
-     rule bitSizeofList-aux(., Len:Int, .KList) 
+     rule bitSizeofList-aux(.K, Len:Int, .List) 
           => tv(Len:Int, cfg:largestUnsigned)
           [structural]
           
-     syntax K ::= maxBitSizeofList(KList)
-     syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
-     rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L, 0)
+     syntax K ::= maxBitSizeofList(List)
+     syntax K ::= "maxBitSizeofList-aux" "(" List "," Int ")"
+     rule maxBitSizeofList(L:List) => maxBitSizeofList-aux(L, 0)
           [structural, anywhere]
-     rule maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
+     rule maxBitSizeofList-aux(ListItem(T:KResult) L:List, N:Int)
           => bitSizeofType(T) ~> maxBitSizeofList-aux(L, N) 
           [structural] 
      rule (tv(N':Int, _) => .) 
-          ~> maxBitSizeofList-aux(_:KList, (N:Int => maxInt(N, N'))) 
+          ~> maxBitSizeofList-aux(_:List, (N:Int => maxInt(N, N'))) 
           [structural] 
-     rule maxBitSizeofList-aux(.KList, N:Int) => tv(N, cfg:largestUnsigned)
+     rule maxBitSizeofList-aux(.List, N:Int) => tv(N, cfg:largestUnsigned)
           [structural] 
      
      rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
@@ -93,15 +93,13 @@ module C-BITSIZE
           => bitSizeofType(T) 
           [structural, anywhere]
 
-     rule <k> 
-               bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:KList) 
+     rule <k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L) 
           ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
+          <structs>... S:Id |-> aggregateInfo(L:List, _, _) ...</structs>
           [structural] 
-     rule <k> 
-               bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L) 
+     rule <k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L) 
           ...</k>
-          <structs>... S |-> aggregateInfo(L:KList, _, _) ...</structs>
+          <structs>... S |-> aggregateInfo(L:List, _, _) ...</structs>
           [structural]
           
 endmodule

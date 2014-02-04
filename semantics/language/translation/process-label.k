@@ -72,7 +72,7 @@ module C-PROCESS-LABEL
           <blockHistoryGoto> ListItem(_:Int) ...</blockHistoryGoto>
           [structural] 
      rule <computation>
-               Block(Num:Int, _, klist(L:KList)) => klistToK(L)
+               Block(Num:Int, _, list(L:List)) => listToK(L)
           ...</computation> 
           <blockHistoryGoto> . => ListItem(Num) ...</blockHistoryGoto>
           [structural] 
@@ -94,20 +94,22 @@ module C-PROCESS-LABEL
      // to be reduced yet
      rule <computation> 
                DeclarationDefinition(
-                    InitNameGroup(T:K, klist((K:K,, K':K,, L:KList))))
-               => DeclarationDefinition(InitNameGroup(T, klist(K)))
-                    ~> DeclarationDefinition(InitNameGroup(T, klist((K',, L))))
+                    InitNameGroup(T:K, 
+                         list(ListItem(K:K) ListItem(K':K) L:List)))
+               => DeclarationDefinition(InitNameGroup(T, list(ListItem(K))))
+               ~> DeclarationDefinition(InitNameGroup(T, list(ListItem(K') L)))
           ...</computation>
           [structural]
           
      //  fixme would like to combine the below rules
      rule <computation> 
-               DeclarationDefinition(InitNameGroup(T:K, klist(K:K))) => .K 
+               DeclarationDefinition(InitNameGroup(T:K, list(ListItem(K:K)))) 
+               => .K 
           ...</computation>
           <declarationStack>... 
                .List 
                => ListItem(frozenDeclaration(Depth, BlockNum,
-                    DeclarationDefinition(InitNameGroup(T, klist(K))))) 
+                    DeclarationDefinition(InitNameGroup(T, list(ListItem(K)))))) 
           </declarationStack>
           <nestingDepthGoto> Depth:Int </nestingDepthGoto>
           <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>

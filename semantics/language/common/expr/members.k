@@ -35,13 +35,13 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
 
      // bytes of struct, type, field id
-     syntax K ::= "extractField" "(" KList "," K "," Id ")" 
-     syntax K ::= "extractField-pre" "(" KList "," Type "," Int "," K ")"
+     syntax K ::= extractField(List, K, Id) 
+     syntax K ::= "extractField-pre" "(" List "," Type "," Int "," K ")"
           [strict(4)]
      
      // fixme could speed things up by caching bitsizeoftype as well
      rule [extractField-start]:
-          <k> extractField(L:KList, 't(_,, Lb:KLabel(S:Id)), F:Id)
+          <k> extractField(L:List, 't(_,, Lb:KLabel(S:Id)), F:Id)
                => extractField-pre(L, T, Offset, bitSizeofType(T)) 
           ...</k>
           <structs>... 
@@ -52,12 +52,12 @@ module C-COMMON-EXPR-MEMBERS
                orBool Lb ==KLabel 'structType
           [structural]
 
-     rule extractField-pre(L:KList, T:Type, Offset:Int, tv(Len:Int, _))
+     rule extractField-pre(L:List, T:Type, Offset:Int, tv(Len:Int, _))
           => concretize(T, 
                fillToBytes(extractBitsFromList(dataList(L), Offset, Len)))
           [structural]
      
-     rule tv(L:KList, T:Type) . F:Id => extractField(L, T, F)
+     rule tv(agg(L:List), T:Type) . F:Id => extractField(L, T, F)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{

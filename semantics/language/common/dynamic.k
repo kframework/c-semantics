@@ -2,8 +2,12 @@ module C-DYNAMIC-SYNTAX
      syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
      syntax Value ::= "skipval"
-     syntax TypedValue ::= tv(KList, Type) 
+
+     syntax Agg ::= agg(List)
+     syntax CValue ::= Bits | Ptr | Float | Agg
+     syntax TypedValue ::= tv(CValue, Type) 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+
      syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
      syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
 
@@ -54,7 +58,7 @@ module C-DYNAMIC
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule value(tv(V:KList, _)) => V
+     rule value(tv(V:CValue, _)) => V
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
@@ -109,7 +113,7 @@ module C-DYNAMIC
 
      rule unwrapObj(.Bag) => .Bag
 
-     rule <k> loadObj(G:Bag) => . ...</k>
+     rule <k> loadObj(<global> G:Bag </global>) => . ...</k>
           <global> (_:Bag => G) </global>
           when G =/=Bag .Bag
           [structural]
