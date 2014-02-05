@@ -7,27 +7,28 @@ module C-CONFIGURATION
      <T>
      <exec>
           <global>
+               <mem> .Map </mem>
+
+               <functions color="lightgray"> .Map </functions>
                <gstructs color="lightgray"> .Map </gstructs>
                <stringLiterals color="lightgray"> .Map </stringLiterals>
 
-               <mem> .Map </mem>
+               <notWritable> .Set </notWritable>
 
                <mainTU color="lightgray"> .Set </mainTU>
-               <freshUnnamed color="black"> 0 </freshUnnamed>
-               <functions color="lightgray"> .Map </functions>
-               <notWritable> .Set </notWritable>
 
                // dummy link loc |-> real loc
                <linkings> .Map </linkings> 
 
                <translation-units>
                     <tu multiplicity="*">
-                         <tu-id> .K </tu-id>
+                         <tu-id> "" </tu-id>
                          <genv color="lightgray"> .Map </genv>
                          <gtypes color="lightgray"> .Map </gtypes>
 
                          // TODO(chathhorn): remove.
                          <next-static-loc> .K </next-static-loc>
+                         <freshUnnamed color="black"> 0 </freshUnnamed>
 
                          <goto-map color="lightgray"> .Map </goto-map>
                     </tu>

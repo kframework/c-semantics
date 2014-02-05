@@ -32,7 +32,7 @@ module C-CONFIGURATION
 
           <translation-units>
                <tu multiplicity="*">
-                    <tu-id> .K </tu-id>
+                    <tu-id> "" </tu-id>
                     <genv color="lightgray"> .Map </genv>
                     <gtypes color="lightgray"> .Map </gtypes>
 
@@ -43,7 +43,6 @@ module C-CONFIGURATION
                     </tu-linking-state>
 
                     <next-static-loc> .K </next-static-loc>
-
                     <freshUnnamed color="black"> 0 </freshUnnamed>
 
                     <goto-map color="lightgray"> .Map </goto-map>

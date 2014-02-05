@@ -1,5 +1,5 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
-     syntax K ::= "canonicalizeType" "(" Bag ")"
+     syntax K ::= canonicalizeType(Bag)
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -9,6 +9,7 @@ module C-TYPING-CANONICALIZATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
+     imports DEBUG-SYNTAX
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
@@ -18,13 +19,13 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux((_:Bag BagItem(TAtomic(K1:K, K2:K))), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(TAtomic(K1:K, K2:K)), _, _, _, _) 
           [structural]
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux((_:Bag BagItem(AlignasType(K1:K, K2:K))), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(AlignasType(K1:K, K2:K)), _, _, _, _) 
           [structural]
      rule (. => typeof(K))
-          ~> canonicalizeType-aux((_:Bag BagItem(AlignasExpression(K:K))), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _) 
           [structural]
           
      syntax K ::= atomic(Type)
@@ -110,8 +111,7 @@ module C-TYPING-CANONICALIZATION
           => t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
           [structural, anywhere]
      
-     rule <k> 
-               canonicalizeSpecifier(BagItem(Named(X:Id)))
+     rule <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
                => t(.Set, typedefType(X, T))
           ...</k>
           <types>... typedef(X) |-> T:Type ...</types>
@@ -137,14 +137,25 @@ module C-TYPING-CANONICALIZATION
           [structural]
      
      rule <k> canonicalizeSpecifier(BagItem(
-               Lbl:KLabel(((Identifier("") => unnamed(N, TU)),, _))))
+                StructDef((Identifier("") => unnamed(N, TU)), _)))
+           ...</k>
+           <currTU> TU:String </currTU>
+           <tu-id> TU </tu-id>
+           <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
+           [structural]
+     rule <k> canonicalizeSpecifier(BagItem(
+               EnumDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
           <currTU> TU:String </currTU>
           <tu-id> TU </tu-id>
           <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
-          when Lbl ==KLabel 'StructDef
-               orBool Lbl ==KLabel 'EnumDef
-               orBool Lbl ==KLabel 'UnionDef
+          [structural]
+     rule <k> canonicalizeSpecifier(BagItem(
+               UnionDef((Identifier("") => unnamed(N, TU)), _)))
+          ...</k>
+          <currTU> TU:String </currTU>
+          <tu-id> TU </tu-id>
+          <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
           [structural]
      
      rule canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
