@@ -38,8 +38,7 @@ module C-STMT-LOOP
      
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
-          <k> 
-               For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
+          <k> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
                => pushBlock 
                     ~> addToHistory(ForNum) 
                     ~> Pre

@@ -30,6 +30,11 @@ module C-CONFIGURATION
                          <next-static-loc> .K </next-static-loc>
                          <freshUnnamed color="black"> 0 </freshUnnamed>
 
+                         // kpair(Id, BlockNum) |-> SymLoc
+                         <local-statics> .Map </local-statics>
+                         // kpair(Id, BlockNum) |-> Type
+                         <local-types> .Map </local-types>
+
                          <goto-map color="lightgray"> .Map </goto-map>
                     </tu>
                </translation-units>
@@ -42,7 +47,6 @@ module C-CONFIGURATION
           <nextMalloced> 0 </nextMalloced>
 
           <nextThreadId color="black"> 1 </nextThreadId>
-          <internalLocations color="cyan"> .Map </internalLocations>
 
           <threadInformation color="yellow">
                <threadStatus color="yellow"> .Map </threadStatus>

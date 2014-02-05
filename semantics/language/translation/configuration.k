@@ -45,6 +45,11 @@ module C-CONFIGURATION
                     <next-static-loc> .K </next-static-loc>
                     <freshUnnamed color="black"> 0 </freshUnnamed>
 
+                    // kpair(Id, BlockNum) |-> SymLoc
+                    <local-statics> .Map </local-statics>
+                    // kpair(Id, BlockNum) |-> Type
+                    <local-types> .Map </local-types>
+
                     <goto-map color="lightgray"> .Map </goto-map>
                </tu>
           </translation-units>
@@ -92,6 +97,7 @@ module C-CONFIGURATION
                <currentFunction color="lightgray">
                     file-scope
                </currentFunction>
+               <current-block> 0 </current-block>
                <currentProgramLoc color="black">
                     UnknownCabsLoc
                </currentProgramLoc>

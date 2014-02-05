@@ -36,8 +36,9 @@ module C-STMT-BLOCK
           [structural]
      
      rule [dissolve-block]:
-          <k> Block(_, _, list(Statements:List))
+          <k> Block(BlockNum:Int, _, list(Statements:List))
                => listToK(Statements)
           ...</k>
+          <current-block> _ => BlockNum </current-block>
           [structural]
 endmodule
