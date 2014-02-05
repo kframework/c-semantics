@@ -106,10 +106,12 @@ module C-TRANSLATION-INIT
                <stringLiterals> StrLits1:Map </stringLiterals>
                <notWritable> NoWrite1:Set </notWritable>
 
-               <external-decls> ExtDecls1:Map </external-decls>
-               <external-types> ExtTypes1:Map </external-types>
-               <external-defs> ExtDefs1:Map </external-defs>
-               <external-uses> ExtUses1:Set </external-uses>
+               <linking-state>
+                    <external-decls> ExtDecls1:Map </external-decls>
+                    <external-types> ExtTypes1:Map </external-types>
+                    <external-defs> ExtDefs1:Map </external-defs>
+                    <external-uses> ExtUses1:Set </external-uses>
+               </linking-state>
 
                <linkings> Links1:Map </linkings>
 
@@ -124,10 +126,12 @@ module C-TRANSLATION-INIT
                <stringLiterals> StrLits2:Map </stringLiterals>
                <notWritable> NoWrite2:Set </notWritable>
 
-               <external-decls> ExtDecls2:Map </external-decls>
-               <external-types> ExtTypes2:Map </external-types>
-               <external-defs> ExtDefs2:Map </external-defs>
-               <external-uses> ExtUses2:Set </external-uses>
+               <linking-state>
+                    <external-decls> ExtDecls2:Map </external-decls>
+                    <external-types> ExtTypes2:Map </external-types>
+                    <external-defs> ExtDefs2:Map </external-defs>
+                    <external-uses> ExtUses2:Set </external-uses>
+               </linking-state>
 
                <linkings> Links2:Map </linkings>
 
@@ -136,7 +140,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs2:Bag </translation-units>
           </global>))
           =>
-          (<global>
+          <global>
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
                <gstructs> Structs1 Structs2 </gstructs>
@@ -144,17 +148,19 @@ module C-TRANSLATION-INIT
                <stringLiterals> StrLits1 StrLits2 </stringLiterals>
                <notWritable> NoWrite1 NoWrite2 </notWritable>
 
-               <external-decls> ExtDecls1 ExtDecls2 </external-decls>
-               <external-types> ExtTypes1 ExtTypes2 </external-types>
-               <external-defs> ExtDefs1 ExtDefs2 </external-defs>
-               <external-uses> ExtUses1 ExtUses2 </external-uses>
+               <linking-state>
+                    <external-decls> ExtDecls1 ExtDecls2 </external-decls>
+                    <external-types> ExtTypes1 ExtTypes2 </external-types>
+                    <external-defs> ExtDefs1 ExtDefs2 </external-defs>
+                    <external-uses> ExtUses1 ExtUses2 </external-uses>
+               </linking-state>
 
                <linkings> Links1 Links2 </linkings>
 
                <mainTU> Main1 Main2 </mainTU>
 
                <translation-units> TUs1 TUs2 </translation-units>
-          </global>)
+          </global>
 
 
 endmodule

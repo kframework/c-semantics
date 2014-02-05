@@ -113,12 +113,12 @@ module C-DYNAMIC
 
      rule unwrapObj(.Bag) => .Bag
 
-     rule <k> loadObj(<global> G:Bag </global>) => . ...</k>
+     rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
           <global> (_:Bag => G) </global>
           when G =/=Bag .Bag
           [structural]
 
-     rule loadObj(.Bag) => .
+     rule loadObj(.Bag) => .K
           [structural]
 
 endmodule

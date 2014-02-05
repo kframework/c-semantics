@@ -27,7 +27,6 @@ int sprintf(char * restrict s, const char * restrict format, ...);
 int snprintf(char * restrict s, size_t n, const char * restrict format, ...);
 int puts(const char * str);
 
-//int getc(FILE *stream);
 int getc(FILE *stream);
 int feof(FILE * stream);
 FILE* fopen(const char *filename, const char *mode);

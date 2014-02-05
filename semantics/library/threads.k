@@ -24,8 +24,7 @@ module LIBC-THREADS
      
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
-          <k> 
-               prepareBuiltin(Identifier("thrd_create"), 
+          <k> prepareBuiltin(Identifier("thrd_create"), 
                     ListItem(ThIdPointer:KResult)
                     ListItem(ThFuncPointer:KResult)
                     ListItem(ThArg:KResult))
