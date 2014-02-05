@@ -270,8 +270,8 @@ sub mergeObjs {
             my $obj2 = shift @objFiles;
 
             my @krun_args = (
-                  '--output binary', 
-                  "--output-file \"$obj1\"",
+                  '--output="binary"',
+                  "--output-file=\"$obj1\"",
                   '-cMODE="nolink"', 
                   '-cDEBUG="false"',
                   '-cPGM=".K"',
@@ -279,7 +279,7 @@ sub mergeObjs {
                   "-cOBJ1=\"$obj1\"",
                   "-cOBJ2=\"$obj2\"",
                   "-d $TRANS_DEF",
-                  '--io on'
+                  '--io="on"'
                   );
 
             my $cmd = "$KRUN " . (join ' ', (@krun_args));
@@ -324,16 +324,16 @@ sub compile {
             or die "Parsing failed: expected to find $baseName.c11-translation, but did not";
 
       my @krun_args = (
-            '--output binary', 
-            "--output-file \"$localOval\"",
+            '--output="binary"', 
+            "--output-file=\"$localOval\"",
             '-cMODE=nolink', 
             "-cDEBUG=false",
             '-cOBJ1=".Bag"',
             '-cOBJ2=".Bag"',
             '--parser="cat"', 
             "-d $TRANS_DEF",
-            '--io on', 
-            "$baseName-parsed.c11-translation"
+            '--io="on"', 
+            $ppResult
             );
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args));
