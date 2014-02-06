@@ -10,6 +10,8 @@ module C-DECL-GLOBAL-SYNTAX
 
      // Used in error.k...
      syntax K ::= "doDeclare'" "(" Type "," K ")" 
+
+     syntax K ::= allowInit(K) [function]
 endmodule
 
 module C-DECL-GLOBAL
@@ -267,7 +269,7 @@ module C-DECL-GLOBAL
                Loc:SymLoc, declared, Lnk:Linkage, _)
           => giveType(X, T)
           ~> allocateDecl(X, T, Loc)
-          ~> K
+          ~> allowInit(K)
           ~> updateDecl(X, initialized, Lnk)
           when K =/=K .K
           [structural]
@@ -276,7 +278,7 @@ module C-DECL-GLOBAL
      rule declareExternalVariable'(initValue(X:Id, T:Type, K:K), 
                Loc:SymLoc, completed, Lnk:Linkage, _)
           => allocateDecl(X, T, Loc)
-          ~> K
+          ~> allowInit(K)
           ~> updateDecl(X, initialized, Lnk)
           when K =/=K .K
           [structural]
@@ -284,9 +286,19 @@ module C-DECL-GLOBAL
      // allocated => initialized
      rule declareExternalVariable'(initValue(X:Id, _, K:K), 
                _, allocated, Lnk:Linkage, _)
-          => K
+          => allowInit(K)
           ~> updateDecl(X, initialized, Lnk)
           when K =/=K .K
+          [structural]
+
+     rule allowInit(K:K)
+          => setInitializing(true)
+          ~> K
+          ~> setInitializing(false)
+
+     syntax K ::= setInitializing(Bool)
+     rule <k> setInitializing(I:Bool) => .K ...</k>
+          <initializing> _ => I </initializing>
           [structural]
 
      syntax K ::= updateDecl(Id, DeclState, Linkage)

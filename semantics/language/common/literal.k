@@ -287,10 +287,14 @@ module C-LITERAL
           
      rule [const-string-found]:
           <k> Constant(StringLiteral(S:String)) => V ...</k>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
           <stringLiterals>... S |-> V:LValue ...</stringLiterals>
           [structural]
      rule [const-wstring-found]:
           <k> Constant(WStringLiteral(S:KList)) => V ...</k>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
           <stringLiterals>... wstring(S) |-> V:LValue ...</stringLiterals>
           [structural]
 endmodule

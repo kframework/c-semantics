@@ -10,6 +10,7 @@ module C-TRANSLATION-INIT
      imports C-DYNAMIC-SYNTAX
 
      imports C-DECL-RESOLUTION-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -43,7 +44,7 @@ module C-TRANSLATION-INIT
                ~> listToK(deCons(K))
                ~> allocateIncompleteInternals
           ...</k>
-          <currTU> _:String => TU </currTU>
+          <currTU> _ => TU </currTU>
           <translation-units>...
                (.Bag => <tu>...
                     <tu-id> TU </tu-id>
@@ -56,7 +57,8 @@ module C-TRANSLATION-INIT
      syntax K ::= preDeclareStrings(K)
      
      rule preDeclareStrings(list(ListItem(K:K) L:List))
-          => K ~> discard ~> preDeclareStrings(list(L))
+          => allowInit(K ~> discard)
+          ~> preDeclareStrings(list(L))
           [structural]
      rule preDeclareStrings(list(.List)) => .K
           [structural]
@@ -103,7 +105,6 @@ module C-TRANSLATION-INIT
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
                <gstructs> Structs1:Map </gstructs>
-               <stringLiterals> StrLits1:Map </stringLiterals>
                <notWritable> NoWrite1:Set </notWritable>
 
                <linking-state>
@@ -123,7 +124,6 @@ module C-TRANSLATION-INIT
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
                <gstructs> Structs2:Map </gstructs>
-               <stringLiterals> StrLits2:Map </stringLiterals>
                <notWritable> NoWrite2:Set </notWritable>
 
                <linking-state>
@@ -144,8 +144,6 @@ module C-TRANSLATION-INIT
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
                <gstructs> Structs1 Structs2 </gstructs>
-               // TODO(chathhorn): string lits need work.
-               <stringLiterals> StrLits1 StrLits2 </stringLiterals>
                <notWritable> NoWrite1 NoWrite2 </notWritable>
 
                <linking-state>

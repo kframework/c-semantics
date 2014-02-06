@@ -25,7 +25,8 @@ module C-DECL-LOCAL
 
      rule [declareExternInternal]:
           <k> declareInternalVariable(X:Id, T:Type, NoInit)
-               => addToEnv(X, Loc) ~> giveType(X, T')
+               => addToEnv(X, Loc) 
+               ~> giveType(X, T')
           ...</k>
           <currTU> TU:String </currTU>
           <tu-id> TU </tu-id>
@@ -39,9 +40,9 @@ module C-DECL-LOCAL
                orBool isFunctionType(T)
           [structural] 
           
-     rule <k> declareInternalVariable(X:Id, _, _)
+     rule <k> declareInternalVariable(X:Id, T:Type, _)
                => addToEnv(X, Loc)
-               ~> giveType(X, T)
+               ~> giveType(X, T')
           ...</k>
           <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
           <currTU> TU:String </currTU>
@@ -50,10 +51,10 @@ module C-DECL-LOCAL
                kpair(X, BlockNum) |-> Loc:SymLoc
           ...</local-statics>
           <local-types>... 
-               kpair(X, BlockNum) |-> T:Type
+               kpair(X, BlockNum) |-> T':Type
           ...</local-types>
           when isStaticType(T)
-          [structural, large] 
+          [structural] 
      
      rule declareInternalVariable(X:Id, T:Type, NoInit)
           => declareOnly(X, T)
@@ -118,7 +119,7 @@ module C-DECL-LOCAL
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
 
-     rule <k> defineAndInit(X:Id, T:Type, initValue(X:Id, T':Type, K:K), Loc:SymLoc)
+     rule <k> defineAndInit(X:Id, _, initValue(X:Id, T':Type, K:K), Loc:SymLoc)
                => allocateTypeIfAbsent(Loc, T')
                ~> addToEnv(X, Loc)
                ~> giveType(X, T')

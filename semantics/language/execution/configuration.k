@@ -11,7 +11,6 @@ module C-CONFIGURATION
 
                <functions color="lightgray"> .Map </functions>
                <gstructs color="lightgray"> .Map </gstructs>
-               <stringLiterals color="lightgray"> .Map </stringLiterals>
 
                <notWritable> .Set </notWritable>
 
@@ -36,6 +35,7 @@ module C-CONFIGURATION
                          <local-types> .Map </local-types>
 
                          <goto-map color="lightgray"> .Map </goto-map>
+                         <stringLiterals color="lightgray"> .Map </stringLiterals>
                     </tu>
                </translation-units>
           </global>
@@ -92,8 +92,6 @@ module C-CONFIGURATION
                                         <env color="red"> .Map </env>
                                         <types color="lightgray"> .Map </types>
                                         <structs color="lightgray"> .Map </structs>
-
-
 
                                         // printf
                                         <formatting multiplicity="?">

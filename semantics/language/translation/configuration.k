@@ -10,7 +10,6 @@ module C-CONFIGURATION
 
           <functions color="lightgray"> .Map </functions>
           <gstructs color="lightgray"> .Map </gstructs>
-          <stringLiterals color="lightgray"> .Map </stringLiterals>
 
           <notWritable> .Set </notWritable>
 
@@ -51,6 +50,7 @@ module C-CONFIGURATION
                     <local-types> .Map </local-types>
 
                     <goto-map color="lightgray"> .Map </goto-map>
+                    <stringLiterals color="lightgray"> .Map </stringLiterals>
                </tu>
           </translation-units>
      </global>
@@ -92,15 +92,16 @@ module C-CONFIGURATION
                </gotoCalculation>
           </calculateGotoMap>
           <control>
-               // general information
                <currTU color="lightgray"> "" </currTU>
                <currentFunction color="lightgray">
                     file-scope
                </currentFunction>
-               <current-block> 0 </current-block>
                <currentProgramLoc color="black">
                     UnknownCabsLoc
                </currentProgramLoc>
+
+               // Toggle to allow writes for initializers.
+               <initializing> false </initializing>
 
                <controlDetails> // TODO(chathhorn): dumb name
                     <local>
@@ -108,10 +109,11 @@ module C-CONFIGURATION
                          <env color="red"> .Map </env>
                          <types color="lightgray"> .Map </types>
                          <structs color="lightgray"> .Map </structs>
+                         <current-block> 0 </current-block>
                     </local>
                     <blockStack color="violet"> .List </blockStack>
 
-                    // used to figure initializers
+                    // Used to figure initializers.
                     <currentObject color="cyan">
                          .List
                     </currentObject>
@@ -125,10 +127,10 @@ module C-CONFIGURATION
                          .K
                     </savedInitialization>
 
-                    // used for typing expressions
+                    // Used for typing expressions.
                     <type multiplicity="?" color="cyan"> .K </type>
-                    // holds the innermost type while we unroll the
-                    // type around it
+                    // Holds the innermost type while we unroll the
+                    // type around it.
                     <declarationTypeHolder color="cyan">
                          .K
                     </declarationTypeHolder>

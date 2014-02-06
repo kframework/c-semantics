@@ -45,7 +45,6 @@ module C-DECL-RESOLUTION
                (. => Loc |-> Loc')
           ...</linkings>
 
-
      rule <k> resolveReferences ...</k>
           <external-uses>...
                (SetItem(X:Id) => .)

@@ -122,7 +122,6 @@ module C-DECL-INITIALIZER
           <incompleteLength> N:Int </incompleteLength>
           [structural] 
           
-     
      syntax K ::= te(K, Type) [klabel('te)]
      syntax K ::= "getInit"
      syntax K ::= fillInit(K)
@@ -280,11 +279,10 @@ module C-DECL-INITIALIZER
      rule fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) 
           [structural] 
           
-     syntax K ::= "finishCompoundInit" "(" List ")"
-     rule <k> 
-               fillInit(CompoundInit(list(L:List)))
+     syntax K ::= finishCompoundInit(List)
+     rule <k> fillInit(CompoundInit(list(L:List)))
                => fillInits(L)
-                    ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
+               ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
           ...</k>
           <currentSubObject> 
                (_:List => .) 
@@ -304,12 +302,11 @@ module C-DECL-INITIALIZER
           [structural] 
 
      context fillInit(InitFragment(HOLE, _)) 
-     syntax K ::= "buildDesignator" "(" K ")"
+     syntax K ::= buildDesignator(K)
      
      // note that these clear the current subobject cell, because it will be
      // repopulated when building the designator
-     rule <k> 
-               fillInit(InitFragment(InFieldInit(F:Id, K':K), Exp:K))
+     rule <k> fillInit(InitFragment(InFieldInit(F:Id, K':K), Exp:K))
                => fillInit(InitFragment(buildDesignator(
                     InFieldInit(F, K')), Exp))
           ...</k>
@@ -320,8 +317,7 @@ module C-DECL-INITIALIZER
           when isStructType(T) orBool isUnionType(T)
           [structural] 
      // fixme does this need to worry about incompleteLength_
-     rule <k> 
-               fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
+     rule <k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
                => fillInit(InitFragment(
                     buildDesignator(AtIndexInit(Index, K')), Exp))
           ...</k>
@@ -335,8 +331,7 @@ module C-DECL-INITIALIZER
      // fixme these are also too restrictive on type.  if we try to assign an
      // int to a long-int field, it will fail
      // i don't think this is true anymore
-     rule <k> 
-               buildDesignator(InFieldInit(F:Id, More:K)) 
+     rule <k> buildDesignator(InFieldInit(F:Id, More:K)) 
                => buildDesignator(More)
           ...</k>
           <currentSubObject> 
@@ -374,7 +369,7 @@ module C-DECL-INITIALIZER
      rule getTopArrayUse((K:K[N:Int])[_]) => getTopArrayUse(K[N])
      rule getTopArrayUse((K:K . _:Id)[_]) => getTopArrayUse(K)
      
-     syntax K ::= "initializeSingleInit" "(" K ")"
+     syntax K ::= initializeSingleInit(K)
           
      rule (. => typeof(K)) ~> initializeSingleInit(K:K)
           [structural] 
@@ -451,8 +446,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      rule [fillInit-string-array-eq]:
-          <k> 
-               fillInit(SingleInit(Constant(StringLiteral(S:String))))
+          <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit-aux(SingleInit(Constant(StringLiteral(S))))
           ...</k>
           <currentSubObject>
@@ -462,8 +456,7 @@ module C-DECL-INITIALIZER
           when isCharType(T) andBool lengthString(S) ==Int Len
           [structural] 
      rule [fillInit-wstring-array-eq]:
-          <k> 
-               fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit-aux(SingleInit(Constant(WStringLiteral(S))))
           ...</k>
           <currentSubObject>
@@ -473,8 +466,7 @@ module C-DECL-INITIALIZER
           when isWCharType(T) andBool lengthKList(S) ==Int Len
           [structural] 
      rule [fillInit-string-array-lt]:
-          <k> 
-               fillInit(SingleInit(Constant(StringLiteral(S:String))))
+          <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit(SingleInit(Constant(
                     StringLiteral(S +String "\x00"))))
           ...</k>
@@ -485,8 +477,7 @@ module C-DECL-INITIALIZER
           when isCharType(T) andBool lengthString(S) <Int Len
           [structural] 
      rule [fillInit-wstring-array-lt]:
-          <k> 
-               fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit(SingleInit(Constant(WStringLiteral((S,, 0)))))
           ...</k>
           <currentSubObject>
@@ -496,8 +487,7 @@ module C-DECL-INITIALIZER
           when isWCharType(T) andBool lengthKList(S) <Int Len
           [structural] 
      rule [fillInit-string-char]:
-          <k> 
-               fillInit(SingleInit(Constant(StringLiteral(S:String))))
+          <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit-aux(SingleInit(Constant(
                     StringLiteral(S +String "\x00"))))
           ...</k>
@@ -508,8 +498,7 @@ module C-DECL-INITIALIZER
           when isCharType(T)
           [structural] 
      rule [fillInit-wstring-wchar]:
-          <k> 
-               fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit-aux(SingleInit(Constant(WStringLiteral((S,, 0)))))
           ...</k>
           <currentSubObject>
@@ -519,19 +508,18 @@ module C-DECL-INITIALIZER
           when isWCharType(T)
           [structural]
      rule [fillInitAux-string-some]:
-          <k> 
-               fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
-               => fillInit(initHead(S, T)) ~> fillInit-aux(initTail(S))
+          <k> fillInit-aux(SingleInit(Constant(StringLiteral(S:String))))
+               => fillInit(initHead(S, T))
+               ~> fillInit-aux(initTail(S))
           ...</k>
           <currentSubObject> ListItem(te(_:K, T:Type)) ...</currentSubObject>
-          when S =/=String "" andBool isCharType(T)
+          when (S =/=String "") andBool isCharType(T)
           [structural]
           
      syntax K ::= initHead(String, Type)
      syntax K ::= initTail(String)
-     rule initHead(S:String, T:Type)
-          => SingleInit(tv(ordChar(firstChar(S)),
-               t(getModifiers(T), char)))
+     rule initHead(S:String, T:Type) 
+          => SingleInit(tv(ordChar(firstChar(S)), t(getModifiers(T), char)))
           [structural, anywhere]
      
      rule initTail(S:String) 
@@ -539,8 +527,7 @@ module C-DECL-INITIALIZER
           [structural, anywhere]
           
      rule [fillInitAux-wstring-some]:
-          <k> 
-               fillInit-aux(SingleInit(Constant(
+          <k> fillInit-aux(SingleInit(Constant(
                     WStringLiteral((N:Int,, S:KList)))))
                => fillInit(SingleInit(tv(N, cfg:wcharut)))
                     ~> fillInit-aux(SingleInit(Constant(WStringLiteral(S)))) 
@@ -562,8 +549,7 @@ module C-DECL-INITIALIZER
      // be a rule. Alternatively, I've added the condition below which might be
      // enough.
      rule [fillInit-string-notchar]:
-          <k> 
-               fillInit(SingleInit(Constant(StringLiteral(S:String))))
+          <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => initializeSingleInit(Constant(StringLiteral(S)))
           ...</k>
           <currentSubObject> 
@@ -586,4 +572,3 @@ module C-DECL-INITIALIZER
           [structural]
 
 endmodule
-

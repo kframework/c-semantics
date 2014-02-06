@@ -53,11 +53,20 @@ module C-DECL-LOCAL
                andBool notBool (X in keys Types)
           [structural] 
 
-     rule <k> declareInternalVariable(X:Id, T:Type, K:K)
+     rule declareInternalVariable(X:Id, T:Type, K:K)
+          => initLocalStatic(X, figureInit(X, unqualifyType(T), K))
+          when isStaticType(T)
+               andBool (notBool isExternType(T))
+               andBool (notBool isFunctionType(T))
+          [structural] 
+
+     syntax K ::= initLocalStatic(Id, K) [strict(2)] 
+     rule <k> initLocalStatic(X:Id, initValue(_, T:Type, K:K))
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
-               ~> initLocalStatic(X, unqualifyType(T), 
-                    figureInit(X, unqualifyType(T), K))
+               ~> giveType(X, T)
+               ~> zero(X)
+               ~> allowInit(K)
           ...</k>
           <current-block> BlockNum:Int </current-block>
           <currTU> TU:String </currTU>
@@ -66,24 +75,11 @@ module C-DECL-LOCAL
           <local-statics>
                LocalStatics:Map (.Map =>  kpair(X, BlockNum) |-> Loc)
           </local-statics>
-          when isStaticType(T)
-               andBool (notBool isExternType(T))
-               andBool (notBool kpair(X, BlockNum) in keys LocalStatics)
-          [structural] 
-
-     syntax K ::= initLocalStatic(Id, Type, K) [strict(3)] 
-     rule <k> initLocalStatic(X:Id, _, initValue(_, T:Type, K:K))
-               => giveType(X, T)
-               ~> zero(X)
-               ~> K
-          ...</k>
-          <current-block> BlockNum:Int </current-block>
-          <currTU> TU:String </currTU>
-          <tu-id> TU </tu-id>
           <local-types>
-               LocalStaticsTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
+               LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
           </local-types>
-          when notBool kpair(X, BlockNum) in keys LocalStaticsTypes
+          when notBool kpair(X, BlockNum) in keys LocalTypes
+               andBool (notBool kpair(X, BlockNum) in keys LocalStatics)
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, NoInit)

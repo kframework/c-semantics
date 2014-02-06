@@ -6,16 +6,20 @@ module C-STMT-LOOP
      rule ForClauseExpression(K:K) => Computation(K) [structural]
 
      rule [for]:
-          <k> For(BlockNum:Int, Pre:K, Control:K, Post:K, S:K)
-               => pushBlock 
-               ~> Pre
-               ~> Computation(Control)
-               ~> S ~> Computation(Post)
-               ~> popBlock
-          ...</k>
-          <current-block> _ => BlockNum </current-block>
+          For(BlockNum:Int, Pre:K, Control:K, Post:K, S:K)
+          => pushBlock 
+          ~> setCurrentBlock(BlockNum)
+          ~> Pre
+          ~> Computation(Control)
+          ~> S ~> Computation(Post)
+          ~> popBlock
           [structural] 
           
+     syntax K ::= setCurrentBlock(Int)
+     rule <k> setCurrentBlock(BlockNum:Int) => .K ...</k>
+          <current-block> _ => BlockNum </current-block>
+          [structural]
+
      rule [while]:
           While(B:K, S:K)
           => Computation(B)
