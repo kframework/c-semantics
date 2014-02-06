@@ -65,8 +65,7 @@ module C-DECL-LOCAL
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
-               ~> zero(X)
-               ~> allowInit(K)
+               ~> allowInit(zero(X) ~> K)
           ...</k>
           <current-block> BlockNum:Int </current-block>
           <currTU> TU:String </currTU>

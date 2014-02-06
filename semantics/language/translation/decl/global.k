@@ -372,13 +372,13 @@ module C-DECL-GLOBAL
      syntax K ::= allocateDecl(Id, Type, SymLoc)
      rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 
           => allocateType(Loc, T) 
-          ~> zero(X)
+          ~> allowInit(zero(X))
           when notBool isLinkerLoc(Loc)
           [structural]
      rule <k> allocateDecl(X:Id, T:Type, Loc:SymLoc) 
                => addToEnv(X, Loc')
                ~> allocateType(Loc', T) 
-               ~> zero(X)
+               ~> allowInit(zero(X))
           ...</k>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
