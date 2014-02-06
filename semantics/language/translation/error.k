@@ -14,6 +14,8 @@ module C-TRANSLATION-ERROR
 
      imports C-TYPING-MISC-SYNTAX
 
+     imports C-SYMBOLIC-VALUE-SYNTAX
+
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
 
@@ -285,8 +287,8 @@ module C-TRANSLATION-ERROR
 
      rule <k> (. => ERROR("90058",
           "Initializer element is not a compile-time constant.", 58))
-          ~> instantiateIdVal(_, _) ...</k>
-          <currentFunction> file-scope </currentFunction>
+          ~> instantiateIdVal(symVal, _) ...</k>
+          <initializing> true </initializing>
 
 // TODO(chathhorn): add this back.
 //      rule <k> (. => ERROR("00215",

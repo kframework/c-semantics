@@ -3,6 +3,7 @@ module C-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
 
      rule [lookup]:
           <k> X:Id => lv(Loc, T) ...</k>
@@ -35,7 +36,9 @@ module C-EXPR-IDENTIFIER
           [structural]
 
      rule <k> instantiateIdVal(_, T:Type) => tv(symVal, T) ...</k>
-          <currentFunction> F:Id </currentFunction>
-          when F =/=K file-scope
-          
+          <initializing> false </initializing>
+
+     rule <k> instantiateIdVal(L:SymLoc, T:Type) => read(L, T) ...</k>
+          <initializing> true </initializing>
+          when L =/=K symVal
 endmodule

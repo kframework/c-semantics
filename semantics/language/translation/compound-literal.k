@@ -59,7 +59,7 @@ module C-COMPOUND-LITERAL
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-          <currentFunction> file-scope </currentFunction>
+          <initializing> true </initializing>
           [structural]
 
      rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
@@ -68,8 +68,7 @@ module C-COMPOUND-LITERAL
                ~> Init
                ~> X
           ...</k>
-          <currentFunction> F:Id </currentFunction>
-          when F =/=K file-scope
+          <initializing> false </initializing>
           [structural]
           
 endmodule
