@@ -18,7 +18,7 @@ module CIL-IMPLEMENTATION
 
   /*
    * FIXME: it would be faster to treat each basic type individually, rather
-   * that us byteWidthMacro
+   * that use byteWidthMacro
    */
   syntax Int ::= "byteWidthMacro" [function]
   rule byteWidthMacro => 8

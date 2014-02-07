@@ -254,11 +254,10 @@ module CIL-TYPING
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
         (E, X |-> T))
 // TODO(AndreiS): fix isKeyword issue
-//  rule expandParamDecl(TS:TypeSpec, _) => TS
-//    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
-//  rule expandParamDecl(TS:TypeSpec D:Declarator, E:MyMap) 
-//    => TS expandDecl(D, E)
-//    when isCId(TS) =/=K true orBool isKeyword(TS) ==K true
+  rule expandParamDecl(TS:TypeSpec, _) => TS
+    when isCId(TS) =/=K true //orBool isKeyword(TS) ==K true
+  rule expandParamDecl(TS:TypeSpec D:Declarator, E:MyMap) => TS expandDecl(D, E)
+    when isCId(TS) =/=K true //orBool isKeyword(TS) ==K true
 
   rule expandDecl(D:DirectDecl, E:MyMap) => expandDirectDecl(D, E)
   rule expandDecl(P:Pointer D:DirectDecl, E:MyMap) => P expandDirectDecl(D, E)
@@ -357,7 +356,9 @@ module CIL-TYPING
   syntax Bool ::= "$needsParensNorm" "(" K ")" [function]
   syntax Bool ::= "$hasParens" "(" Declarator ")" [function]
   syntax Type ::= normParens(Type) [function]
-  syntax K ::= "normParens'" "(" K ")" [function]
+  // TODO(AndreiS): this does not work with KItem
+  // syntax KItem ::= "normParens'" "(" KItem ")" [function]
+  syntax KItem ::= "normParens'" "(" K ")" [function]
   syntax KList ::= "normParens''" "(" KList ")" [function]
 
   rule $needsParensNorm('`(_`)('`(_`)(_))::DirectDecl) => true
@@ -374,12 +375,12 @@ module CIL-TYPING
     => normParens(TS D)
 
   // Remove other parens.
-  rule normParens'(Lbl:KLabel(K:K)) => normParens'(K)
-    when $needsParensNorm(Lbl(K)) ==K true
+  rule normParens'(Lbl:KLabel(KI:KItem)) => normParens'(KI)
+    when $needsParensNorm(Lbl(KI)) ==K true
   rule normParens'(Lbl:KLabel(L:KList)) => Lbl(normParens''(L))
     when $needsParensNorm(Lbl(L)) =/=K true
 
-  rule normParens''(K:K,, L:KList) => normParens'(K),, normParens''(L)
+  rule normParens''(KI:KItem,, L:KList) => normParens'(KI),, normParens''(L)
   rule normParens''(.KList) => .KList
 
   // Turns things like "*(* #__id__)" into "** #__id__"

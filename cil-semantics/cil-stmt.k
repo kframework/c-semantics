@@ -309,7 +309,7 @@ module CIL-STMT
         ((DS:DeclSpecs D:Declarator), Ps:Params),
         (TV:TypedValue, TVs:TypedValues))
   =>
-    DS D; ~> getId(D) = TV; ~> initializeParams(Ps, TVs)
+    (DS D;) ~> (getId(D) = TV;) ~> initializeParams(Ps, TVs)
   [structural]
 
   rule initializeParams(.Params, TVs:TypedValues) => .

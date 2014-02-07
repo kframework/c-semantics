@@ -579,14 +579,13 @@ module CIL-EXP
   /*
    * Casting
    */
-// TODO(AndreiS): fix isKeyword issue
   rule
-//    <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
-    <k> T:Type => nt(T) ...</k>
+    <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
     <env> E:MyMap </env>
-//    // If it's a CId then we look it up in the env until we get an unambiguous
-//    // type.
+    // If it's a CId then we look it up in the env until we get an unambiguous
+    // type.
     when (isNormType(T) =/=K true)
+// TODO(AndreiS): fix isKeyword issue
 //      andBool ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
 //      // This case is ambiguous with the Exp syntax.
 //      andBool ($isConstArrayDeref(T, E) =/=K true)

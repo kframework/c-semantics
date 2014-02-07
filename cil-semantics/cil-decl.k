@@ -2,7 +2,7 @@
 require "builtins/list.k"
 require "builtins/map.k"
 require "builtins/set.k"
-//require "modules/k-functional-visitor.k"
+require "modules/k-functional-visitor.k"
 
 require "cil-typing.k"
 require "cil-common.k"
@@ -11,7 +11,7 @@ require "cil-exp.k"
 module CIL-DECL
   imports MAP
   imports SET
-  //imports K-FUNCTIONAL-VISITOR 
+  imports K-FUNCTIONAL-VISITOR 
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON
   imports CIL-EXP
@@ -286,13 +286,12 @@ module CIL-DECL
       }
     when fresh(I:Int)
 
-  // TODO(AndreiS): fix use of KLabels
-//  rule normLabelsStmt(S:Stmt, I:Int)
-//    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
-//  rule normLabelsStmts(Ss:Stmts, I:Int)
-//    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
-//  rule normLabels(FB:FunBody)
-//    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
+  rule normLabelsStmt(S:Stmt, I:Int)
+    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
+  rule normLabelsStmts(Ss:Stmts, I:Int)
+    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
+  rule normLabels(FB:FunBody)
+    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
 
   /*
    * Local variable declarations (without initializers).
