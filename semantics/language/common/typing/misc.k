@@ -238,7 +238,7 @@ module C-TYPING-MISC
      syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
 
      rule isTypeCompatible(T1:Type, T2:Type) 
-          => #isCompat(T1, T2) ==K true
+          => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
      // TODO(chathhorn): fill in for structs.
      rule #isCompat(t(_, structType(_)), t(_, structType(_))) => true

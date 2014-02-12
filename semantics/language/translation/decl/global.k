@@ -212,7 +212,7 @@ module C-DECL-GLOBAL
 
      // *** Incomplete ***
 
-     // If this declaration has an incomplete type, then do nothing.
+     // If this declaration has an incomplete type, then we're done.
      rule declareExternalVariable'(initValue(_, T:Type, _), _, _, _, _) => .
           when isIncompleteType(T)
           [structural]

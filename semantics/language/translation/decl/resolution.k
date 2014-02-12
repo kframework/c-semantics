@@ -50,36 +50,36 @@ module C-DECL-RESOLUTION
                (SetItem(X:Id) => .)
           ...</external-uses>
           <external-decls>...
-               (X:Id |-> set(.Set) => .)
+               (X:Id |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
-               (X |-> _ => .)
+               (X |-> _ => .Map)
           ...</external-defs>
           <external-types>...
-               (X |-> _ => .)
+               (X |-> _ => .Map)
           ...</external-types>
           when X =/=K Identifier("main")
 
      rule <k> resolveReferences ...</k>
           <mainTU>... (.Set => SetItem(MainTu)) </mainTU>
           <external-uses>...
-               (SetItem(Identifier("main")) => .)
+               (SetItem(Identifier("main")) => .Set)
           ...</external-uses>
           <external-decls>...
-               (Identifier("main") |-> set(.Set) => .)
+               (Identifier("main") |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
                (Identifier("main") |-> 
-                    loc(_ @ static(MainTu:String), _, _) => .)
+                    loc(_ @ static(MainTu:String), _, _) => .Map)
           ...</external-defs>
           <external-types>...
-               (Identifier("main") |-> _ => .)
+               (Identifier("main") |-> _ => .Map)
           ...</external-types>
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
      
-     rule <k> resolveReferences => . ...</k>
+     rule <k> resolveReferences => .K ...</k>
           (<linking-state>...
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)
