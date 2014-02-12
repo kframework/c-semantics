@@ -11,17 +11,18 @@ require "decl/resolution.k"
 require "decl/global.k"
 require "decl/local.k"
 
-require "expr/assignment.k"
-require "expr/function-call.k"
-require "expr/inc-and-dec.k"
-require "expr/sequencing.k"
 require "expr/additive.k"
+require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/conversion.k"
+require "expr/function-call.k"
 require "expr/identifier.k"
+require "expr/inc-and-dec.k"
 require "expr/logical.k"
+require "expr/members.k"
 require "expr/multiplicative.k"
 require "expr/relational.k"
+require "expr/sequencing.k"
 require "expr/unary.k"
 
 require "symbolic-value.k"
@@ -50,17 +51,18 @@ module C-TRANSLATION
      imports C-DECL-GLOBAL
      imports C-DECL-LOCAL
 
-     imports C-EXPR-ASSIGNMENT
-     imports C-EXPR-FUNCTION-CALL
-     imports C-EXPR-INC-AND-DEC
-     imports C-EXPR-SEQUENCING
      imports C-EXPR-ADDITIVE
+     imports C-EXPR-ASSIGNMENT
      imports C-EXPR-BITWISE
      imports C-EXPR-CONVERSION
+     imports C-EXPR-FUNCTION-CALL
      imports C-EXPR-IDENTIFIER
+     imports C-EXPR-INC-AND-DEC
      imports C-EXPR-LOGICAL
+     imports C-EXPR-MEMBERS
      imports C-EXPR-MULTIPLICATIVE
      imports C-EXPR-RELATIONAL
+     imports C-EXPR-SEQUENCING
      imports C-EXPR-UNARY
 
      imports C-SYMBOLIC-VALUE
