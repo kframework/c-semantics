@@ -5,24 +5,26 @@ module C-EXPR-LOGICAL
      imports C-TYPING-SYNTAX
      imports C-STMT-IF-THEN-SYNTAX
 
-     rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
+     context _ && HOLE
+     rule tv(0, t(.Set, int)) && _:KResult => tv(0, t(.Set, int))
           [structural]
-     rule tv(1, t(_, int)) && E:K => simplifyTruth(E)
+     rule tv(1, t(_, int)) && V:KResult => simplifyTruth(V)
           [structural]
-     rule tv(symVal, t(_, int)) && _ => tv(symVal, t(.Set, int))
+     rule tv(symVal, t(.Set, int)) && _:KResult => tv(symVal, t(.Set, int))
           [structural]
-     rule (V:TypedValue => simplifyTruth(V)) && _ 
-          when notBool isTruthValue(V)
-          [structural]   
+     rule (tv(V:CValue, T:Type) => simplifyTruth(tv(V,T))) && _
+          when notBool isTruthValue(tv(V,T)) // symVal is a truth value.
+          [structural]
                     
-     rule tv(0, t(_, int)) || E:K => simplifyTruth(E)
+     context _ || HOLE
+     rule tv(0, t(_, int)) || V:KResult => V
           [structural]
-     rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
+     rule tv(1, t(.Set, int)) || _:KResult => tv(1, t(.Set, int))
           [structural]
-     rule tv(symVal, t(_, int)) || _ => tv(symVal, t(.Set, int))
+     rule tv(symVal, t(.Set, int)) || _:KResult => tv(symVal, t(.Set, int))
           [structural]
-     rule (V:TypedValue => simplifyTruth(V)) || _
-          when notBool isTruthValue(V)
+     rule (tv(V:CValue, T:Type) => simplifyTruth(tv(V,T))) || _
+          when notBool isTruthValue(tv(V,T))
           [structural]
 
 endmodule
