@@ -143,17 +143,16 @@ module CIL-STMT
       { Ss1:Stmts } Ss2:Stmts => Ss1 @Stmts Ss2
     </make-goto-table-stmts>
   [structural]
-  // TODO(AndreiS): fix getKLabel
-//  rule
-//    <make-goto-table-stmts>
-//      KI:KItem Ss:Stmts => Ss
-//    </make-goto-table-stmts>
-//  when isStmt(KI)
-//    andBool getKLabel(KI) =/=KLabel '_:_ 
-//    andBool getKLabel(KI) =/=KLabel 'if`(_`)_else_ 
-//    andBool getKLabel(KI) =/=KLabel 'while`(_`)_ 
-//    andBool getKLabel(KI) =/=KLabel '`{_`}
-//  [structural]
+  rule
+    <make-goto-table-stmts>
+      KI:KItem Ss:Stmts => Ss
+    </make-goto-table-stmts>
+  when isStmt(KI)
+    andBool getKLabel(KI) =/=KLabel '_:_ 
+    andBool getKLabel(KI) =/=KLabel 'if`(_`)_else_ 
+    andBool getKLabel(KI) =/=KLabel 'while`(_`)_ 
+    andBool getKLabel(KI) =/=KLabel '`{_`}
+  [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
   // in the case labels of switch statements. It seems to slow things down

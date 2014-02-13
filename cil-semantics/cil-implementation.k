@@ -20,8 +20,11 @@ module CIL-IMPLEMENTATION
    * FIXME: it would be faster to treat each basic type individually, rather
    * that use byteWidthMacro
    */
-  syntax Int ::= "byteWidthMacro" [function]
-  rule byteWidthMacro => 8
+  // TODO(AndreiS): function does not work in the java engine
+  //syntax Int ::= "byteWidthMacro" [function]
+  //rule byteWidthMacro => 8
+  syntax Int ::= "byteWidthMacro"
+  rule byteWidthMacro => 8 [macro]
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
   /* This is also defined in a standard library header. */

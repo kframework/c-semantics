@@ -32,7 +32,9 @@ module CIL-SYNTAX
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
 
-  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
+  // TODO(AndreiS): macro does not work correctly; it can narrow the left-hand side of rule, instead of rewriting it
+  //rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
+  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B }
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 
@@ -230,113 +232,6 @@ module CIL-SYNTAX
                | Token{"main"}
   syntax CIds ::= List{CId, ","}
 
-//  /* exclude keywords */
-//  // TODO(chathhorn): and yet isCId(int) ==K true?? Frustrating. The duplicate
-//  // list below lets us distinguish CIds from keywords.
-//  syntax CId ::=
-//      "auto"             [reject]
-//    | "break"            [reject]
-//    | "case"             [reject]
-//    | "char"             [reject]
-//    | "const"            [reject]
-//    | "continue"         [reject]
-//    | "default"          [reject]
-//    | "do"               [reject]
-//    | "double"           [reject]
-//    | "else"             [reject]
-//    | "enum"             [reject]
-//    | "extern"           [reject]
-//    | "float"            [reject]
-//    | "for"              [reject]
-//    | "goto"             [reject]
-//    | "if"               [reject]
-//    | "inline"           [reject]
-//    | "int"              [reject]
-//    | "long"             [reject]
-//    | "register"         [reject]
-//    | "restrict"         [reject]
-//    | "return"           [reject]
-//    | "short"            [reject]
-//    | "signed"           [reject]
-//    | "sizeof"           [reject]
-//    | "static"           [reject]
-//    | "struct"           [reject]
-//    | "switch"           [reject]
-//    | "typedef"          [reject]
-//    | "union"            [reject]
-//    | "unsigned"         [reject]
-//    | "void"             [reject]
-//    | "volatile"         [reject]
-//    | "while"            [reject]
-//    | "_Alignas"         [reject]
-//    | "_Alignof"         [reject]
-//    | "_Atomic"          [reject]
-//    | "_Bool"            [reject]
-//    | "_Complex"         [reject]
-//    | "_Generic"         [reject]
-//    | "_Imaginary"       [reject]
-//    | "_Noreturn"        [reject]
-//    | "_Static_assert"   [reject]
-//    | "_Thread_local"    [reject]
-//    // CIL versions.
-//    | "__restrict"       [reject]
-//    | "__inline"         [reject]
-//    // Bonus.
-//    | "__builtin_va_list" [reject]
-
-  // Complete list of C11 reserved words plus some extras from CIL.
-  // TODO(chathhorn): This duplicate list allows us distinguish CIds from
-  // keywords. (Because, e.g., isCId(int) == true, despite the "reject.")
-//  syntax Keyword ::=
-//      "auto"             [reject]
-//    | "break"            [reject]
-//    | "case"             [reject]
-//    | "char"             [reject]
-//    | "const"            [reject]
-//    | "continue"         [reject]
-//    | "default"          [reject]
-//    | "do"               [reject]
-//    | "double"           [reject]
-//    | "else"             [reject]
-//    | "enum"             [reject]
-//    | "extern"           [reject]
-//    | "float"            [reject]
-//    | "for"              [reject]
-//    | "goto"             [reject]
-//    | "if"               [reject]
-//    | "inline"           [reject]
-//    | "int"              [reject]
-//    | "long"             [reject]
-//    | "register"         [reject]
-//    | "restrict"         [reject]
-//    | "return"           [reject]
-//    | "short"            [reject]
-//    | "signed"           [reject]
-//    | "sizeof"           [reject]
-//    | "static"           [reject]
-//    | "struct"           [reject]
-//    | "switch"           [reject]
-//    | "typedef"          [reject]
-//    | "union"            [reject]
-//    | "unsigned"         [reject]
-//    | "void"             [reject]
-//    | "volatile"         [reject]
-//    | "while"            [reject]
-//    | "_Alignas"         [reject]
-//    | "_Alignof"         [reject]
-//    | "_Atomic"          [reject]
-//    | "_Bool"            [reject]
-//    | "_Complex"         [reject]
-//    | "_Generic"         [reject]
-//    | "_Imaginary"       [reject]
-//    | "_Noreturn"        [reject]
-//    | "_Static_assert"   [reject]
-//    | "_Thread_local"    [reject]
-//    // CIL versions.
-//    | "__restrict"       [reject]
-//    | "__inline"         [reject]
-//    // Bonus.
-//    | "__builtin_va_list" [reject]
 
   /*
    * Declarations (variables, functions, and typedefs).

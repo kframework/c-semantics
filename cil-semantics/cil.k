@@ -100,5 +100,15 @@ module CIL
   syntax KResult ::= TypedValue
                    | NoConversionLeftValue
                    | NormType
+
+  // Hacks
+  rule
+    #visit(X:CId,
+           VisitLabel:KLabel,
+           VisitList:KList,
+           IfLabel:KLabel,
+           IfList:KList)
+  =>
+    #if IfLabel(X,,IfList) ==K true #then VisitLabel(X,,VisitList) #else X #fi
 endmodule
 

@@ -123,7 +123,6 @@ module CIL-DECL
     <k>
       defineFun(F:Ptr, T:Type, Ps:Params, FB:FunBody)
     => lower-break-continue-to-goto-control(F) 
-      //~> propagate-constants(F)
     ...</k>
     <funs>...
       .Bag
