@@ -13,7 +13,9 @@ module C-DECL-RESOLUTION
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): actually do it.
+     imports C-ERROR-SYNTAX
+
+     // TODO(chathhorn): actually do it. Also tentantive defs.
      rule <k> allocateIncompleteInternals => . ...</k>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
@@ -59,6 +61,23 @@ module C-DECL-RESOLUTION
                (X |-> _ => .Map)
           ...</external-types>
           when X =/=K Identifier("main")
+
+     rule <k> (.K => ERROR("DR1", 
+                    "no definition for symbol with external linkage: " 
+                    +String idToString(X))) 
+               ~> resolveReferences
+          ...</k>
+          <external-uses>...
+               SetItem(X:Id)
+          ...</external-uses>
+          <external-defs>
+               Defs:Map
+          </external-defs>
+          <external-types>
+               Types:Map
+          </external-types>
+          when notBool (X in keys Defs)
+               orBool notBool (X in keys Types)
 
      rule <k> resolveReferences ...</k>
           <mainTU>... (.Set => SetItem(MainTu)) </mainTU>

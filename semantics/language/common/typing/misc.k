@@ -468,6 +468,7 @@ module C-TYPING-MISC
           when (getKLabel(T) =/=KLabel 'unionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType )
 
+     // Incomplete structs and unions?
      rule [isIncompleteType-true]:
           isIncompleteType(t(_, incompleteArrayType(_)))
           => true 
