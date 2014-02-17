@@ -1,6 +1,7 @@
 // 6.9.2p3
 static int x[];
+extern int x[];
 
 int main(void) {
-      return 0;
+      return x[0];
 }
