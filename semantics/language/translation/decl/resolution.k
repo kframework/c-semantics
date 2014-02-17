@@ -1,25 +1,55 @@
 module C-DECL-RESOLUTION-SYNTAX
-     syntax K ::= "allocateIncompleteInternals"
+     syntax K ::= "allocateIncompleteTentatives"
      syntax K ::= "resolveReferences"
 endmodule
 
 module C-DECL-RESOLUTION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
 
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
 
      imports C-ERROR-SYNTAX
 
-     // TODO(chathhorn): actually do it. Also tentantive defs.
-     rule <k> allocateIncompleteInternals => . ...</k>
+     rule <k> allocateIncompleteTentatives => . ...</k>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
-          (<tu-linking-state>... .Bag ...</tu-linking-state> => .Bag)
+          (<tu-linking-state>...
+               <externals> .Map </externals>
+          ...</tu-linking-state> => .Bag)
+          [structural]
+     // TODO(chathhorn): reuse more from global.k.
+     rule <k> (.K => giveType(X, t(S, arrayType(T, 1)))
+                    ~> addToEnv(X, Loc')
+                    ~> allocateType(Loc', t(S, arrayType(T, 1)))
+                    ~> allowInit(zero(X))
+                    ~> updateLinkState(X, t(S, arrayType(T, 1)), Loc'))
+               ~> allocateIncompleteTentatives
+          ...</k>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
+          <linkings>... (. => Loc |-> Loc') </linkings>
+          <externals>...
+               (X:Id |-> declState(Loc:SymLoc,
+                    t(S:Set, incompleteArrayType(T:Type)), declared, true) 
+               => .Map)
+          ...</externals>
+          [structural]
+     rule <k> allocateIncompleteTentatives ...</k>
+          <currTU> Tu:String </currTU>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               (_ |-> declState(_, _, _, false) => .Map)
+          ...</externals>
+          [structural]
 
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.

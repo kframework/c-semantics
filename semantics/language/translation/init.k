@@ -42,7 +42,7 @@ module C-TRANSLATION-INIT
           <k> TranslationUnit(TU:String, Strings:K, K:K) 
                => preDeclareStrings(Strings)
                ~> listToK(deCons(K))
-               ~> allocateIncompleteInternals
+               ~> allocateIncompleteTentatives
           ...</k>
           <currTU> _ => TU </currTU>
           <translation-units>...

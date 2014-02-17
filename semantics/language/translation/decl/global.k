@@ -6,12 +6,21 @@ module C-DECL-GLOBAL-SYNTAX
 
      syntax DeclState ::= "declared" | "completed" 
                         | "allocated" | "initialized"
-     syntax K ::= declState(SymLoc, Type, DeclState)
+
+     // The last bool argument indicates whether a tentative def has been
+     // encountered. This is only relevant in the case of symbols with external
+     // linkage, which must then be completed and allocated at the end of
+     // processing the TU if a tentative def exists and the type is still
+     // incomplete.
+     syntax K ::= declState(SymLoc, Type, DeclState, Bool)
 
      // Used in error.k...
      syntax K ::= "doDeclare'" "(" Type "," K ")" 
 
      syntax K ::= allowInit(K) [function]
+     syntax K ::= updateDecl(Id, DeclState, Linkage)
+     syntax K ::= updateLinkState(Id, Type, SymLoc)
+     syntax K ::= allocateDecl(Id, Type, SymLoc)
 endmodule
 
 module C-DECL-GLOBAL
@@ -28,6 +37,7 @@ module C-DECL-GLOBAL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-ERROR-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -124,7 +134,7 @@ module C-DECL-GLOBAL
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <internals>...
-               X |-> declState(Loc:SymLoc, _, State:DeclState)
+               X |-> declState(Loc:SymLoc, _, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
           [structural]
@@ -139,7 +149,7 @@ module C-DECL-GLOBAL
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <externals>... 
-               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState) 
+               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
           ...</externals>
           when isNaked(T)
           [structural]
@@ -149,13 +159,12 @@ module C-DECL-GLOBAL
                => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
-                    Loc, State, external, 
-                    true)
+                    Loc, State, external, true)
           ...</k>
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <externals>... 
-               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState) 
+               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
           ...</externals>
           <internals> Ints:Map </internals>
           when isExtern(T)
@@ -173,7 +182,8 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <next-link-loc> Loc:SymLoc => linc(Loc) </next-link-loc>
           <externals>
-               Exts:Map (. => X |-> declState(Loc, unqualifyType(T), declared))
+               Exts:Map
+               (. => X |-> declState(Loc, unqualifyType(T), declared, false))
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
@@ -192,7 +202,8 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <internals>
-               Ints:Map (. => X |-> declState(Loc, unqualifyType(T), declared))
+               Ints:Map
+               (. => X |-> declState(Loc, unqualifyType(T), declared, false))
           </internals>
           when isStaticType(T)
                andBool notBool (X in keys Ints)
@@ -213,7 +224,13 @@ module C-DECL-GLOBAL
      // *** Incomplete ***
 
      // If this declaration has an incomplete type, then we're done.
-     rule declareExternalVariable'(initValue(_, T:Type, _), _, _, _, _) => .
+     rule declareExternalVariable'(initValue(_, T:Type, .K), _, _, _, true)
+          => .
+          when isIncompleteType(T)
+          [structural]
+     rule declareExternalVariable'(initValue(X:Id, T:Type, .K),
+               _, _, Lnk:Linkage, false)
+          => recordTentDef(X, Lnk)
           when isIncompleteType(T)
           [structural]
 
@@ -227,6 +244,9 @@ module C-DECL-GLOBAL
 
      // *** Complete, no initializer ***
 
+     // static or naked => tentative def
+     // extern => external def
+
      // Completed type, no init.
      // declared => allocated
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
@@ -234,6 +254,7 @@ module C-DECL-GLOBAL
           => giveType(X, T)
           ~> allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
+          ~> recordTentDef(X, Lnk)
           when notBool isIncompleteType(T)
           [structural]
 
@@ -251,13 +272,14 @@ module C-DECL-GLOBAL
                Loc:SymLoc, completed, Lnk:Linkage, false)
           => allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
+          ~> recordTentDef(X, Lnk)
           when notBool isIncompleteType(T)
           [structural]
 
      // Already encountered a allocated or initialized decl, no init.
-     rule declareExternalVariable'(initValue(_, T:Type, .K), 
-               _, State:DeclState, _, false)
-          => .
+     rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
+               _, State:DeclState, Lnk:Linkage, false)
+          => recordTentDef(X, Lnk) // Don't really need this.
           when notBool isIncompleteType(T)
                andBool (State ==K allocated orBool State ==K initialized)
           [structural]
@@ -301,7 +323,6 @@ module C-DECL-GLOBAL
           <initializing> _ => I </initializing>
           [structural]
 
-     syntax K ::= updateDecl(Id, DeclState, Linkage)
      rule <k> updateDecl(X:Id, S:DeclState, external) 
                => updateLinkState(X, T', Loc') 
           ...</k>
@@ -310,7 +331,7 @@ module C-DECL-GLOBAL
           <genv>... X |-> Loc':SymLoc ...</genv>
           <gtypes>... X |-> T':Type ...</gtypes>
           <externals>... 
-               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S))
+               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S), _)
           ...</externals>
           when isTypeCompatible(T, T') 
           [structural]
@@ -320,12 +341,11 @@ module C-DECL-GLOBAL
           <genv>... X |-> Loc':SymLoc ...</genv>
           <gtypes>... X |-> T':Type ...</gtypes>
           <internals>...
-               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S))
+               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S), _)
           ...</internals>
           when isTypeCompatible(T, T')
           [structural]
 
-     syntax K ::= updateLinkState(Id, Type, SymLoc)
      rule <k> updateLinkState(X:Id, T':Type, _) ...</k>
           <currTU> Tu:String </currTU>
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
@@ -363,13 +383,36 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
+     rule <k> (.K => ERROR("DG1",
+                    "redefinition of symbol with external linkage: "
+                    +String idToString(X)))
+               ~> updateLinkState(X:Id, _, Loc':SymLoc)
+          ...</k>
+          <external-defs>...
+               X |-> Loc:SymLoc
+          ...</external-defs>
+          when notBool isLinkerLoc(Loc')
+               andBool (Loc =/=K Loc')
+          [structural]
+     
+     syntax K ::= recordTentDef(Id, Linkage)
+     rule <k> recordTentDef(X:Id, internal) => . ...</k>
+          <internals>...
+               X |-> declState(_, _, _, (_ => true))
+          ...</internals>
+          [structural]
+     rule <k> recordTentDef(X:Id, external) => . ...</k>
+          <externals>...
+               X |-> declState(_, _, _, (_ => true))
+          ...</externals>
+          [structural]
+
      // If we're asked to allocate a symbolic linker loc, then we need to
      // create a "real" static location and allocate that. We also go ahead and
      // add the new location to the environment. This means both locations
      // might end up in memory if the address of the symbol is taken in
      // multiple initializers, but it should work out as long as the symbolic
      // linker locs are transparent enough.
-     syntax K ::= allocateDecl(Id, Type, SymLoc)
      rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 
           => allocateType(Loc, T) 
           ~> allowInit(zero(X))
