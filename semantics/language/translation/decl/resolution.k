@@ -47,8 +47,10 @@ module C-DECL-RESOLUTION
           <currTU> Tu:String </currTU>
           <tu-id> Tu </tu-id>
           <externals>...
-               (_ |-> declState(_, _, _, false) => .Map)
+               (_ |-> declState(_, _, State:DeclState, Tentative:Bool) => .Map)
           ...</externals>
+          when notBool Tentative
+               orBool (State =/=K declared)
           [structural]
 
      // Add the real location at which an external reference is defined to the
