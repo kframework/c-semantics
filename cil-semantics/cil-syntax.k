@@ -33,8 +33,7 @@ module CIL-SYNTAX
                    | Block
 
   // TODO(AndreiS): macro does not work correctly; it can narrow the left-hand side of rule, instead of rewriting it
-  //rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
-  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B }
+  rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
 

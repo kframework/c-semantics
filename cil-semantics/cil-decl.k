@@ -251,7 +251,7 @@ module CIL-DECL
                  | "$caseLabel" "(" Int "," Exp ")" [klabel('$caseLabel)]
                  | "$defaultLabel" "(" Int ")"
   syntax Bool ::= needsLabelNorm(K) [function]
-  syntax K ::= normLabelsVisitor(K, Int) [function]
+  syntax KItem ::= normLabelsVisitor(K, Int) [function]
   syntax Stmt ::= normLabelsStmt(Stmt, Int) [function]
   syntax Stmts ::= normLabelsStmts(Stmts, Int) [function]
   syntax FunBody ::= normLabels(FunBody) [function]
@@ -310,7 +310,7 @@ module CIL-DECL
     <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
   [structural]
 
-  syntax KItem ::= declStruct(CId, K, K, Int) [strict(3)]
+  syntax KItem ::= declStruct(CId, VarDecls, Exp, Int) [strict(3)]
                  | declUnion(CId, K, K, Int) [strict(3)]
 
   // Elide declarations without definitions.
@@ -321,13 +321,8 @@ module CIL-DECL
     <k> struct X:CId { VDs:VarDecls } ; => declStruct(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> struct X </agg-id> ...</aggregate>)
        
-  rule declStruct(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _, _) 
-    [structural]
-  rule declStruct(_, (.VarDecls => .) , _, _) 
-    [structural]
-
   rule 
-     <k> declStruct(X:CId, TS:TypeSpec D:Declarator; ~> VDs:VarDecls, Offset:TypedValue, Pos:Int) 
+     <k> declStruct(X:CId, (TS:TypeSpec D:Declarator; VDs:VarDecls), Offset:TypedValue, Pos:Int)
      => declStruct(X, VDs, (size_t) Offset + sizeof'(normType(TS D)), Pos +Int 1) ...</k>
      <agg-id> struct X </agg-id>
      <fields>...
@@ -339,9 +334,8 @@ module CIL-DECL
         ...</field>)
      ...</fields>
     [structural]
-     
   rule 
-     <k> declStruct(X:CId, .K, Offset:TypedValue, _) => . ...</k>
+     <k> declStruct(X:CId, .VarDecls, Offset:TypedValue, _) => . ...</k>
      <agg-id> struct X </agg-id>
      <size> _ => mival(Offset) </size>
     [structural]

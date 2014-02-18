@@ -247,17 +247,17 @@ module CIL-TYPING
   // TODO(chathhorn): It'd be nice to generalize this process of walking the
   // declaration syntax tree.
   rule expandTypedefs(T:ParamDecl, E:MyMap) => normType(expandParamDecl(T, E))
+  rule expandTypedefs(T:ParamDecl, E:MyMap) => T
 
   rule expandParamDecl(X:CId, (E:MyMap, X |-> T:Type))
     => expandTypedefs(T, (E, X |-> T))
   rule expandParamDecl(X:CId D:Declarator, (E:MyMap, X |-> T:Type))
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
         (E, X |-> T))
-// TODO(AndreiS): fix isKeyword issue
   rule expandParamDecl(TS:TypeSpec, _) => TS
-    when isCId(TS) =/=K true //orBool isKeyword(TS) ==K true
+    when isCId(TS) =/=K true
   rule expandParamDecl(TS:TypeSpec D:Declarator, E:MyMap) => TS expandDecl(D, E)
-    when isCId(TS) =/=K true //orBool isKeyword(TS) ==K true
+    when isCId(TS) =/=K true
 
   rule expandDecl(D:DirectDecl, E:MyMap) => expandDirectDecl(D, E)
   rule expandDecl(P:Pointer D:DirectDecl, E:MyMap) => P expandDirectDecl(D, E)
@@ -395,7 +395,7 @@ module CIL-TYPING
 
   syntax Bool ::= "$needsPtrsNorm" "(" K ")" [function]
   syntax Type ::= normPtrs(Type) [function]
-  syntax K ::= "normPtrs'" "(" K ")" [function]
+  syntax KItem ::= "normPtrs'" "(" K ")" [function]
   syntax KList ::= "normPtrs''" "(" KList ")" [function]
 
   rule normPtrs(TS:TypeSpec) => TS

@@ -20,11 +20,8 @@ module CIL-IMPLEMENTATION
    * FIXME: it would be faster to treat each basic type individually, rather
    * that use byteWidthMacro
    */
-  // TODO(AndreiS): function does not work in the java engine
-  //syntax Int ::= "byteWidthMacro" [function]
-  //rule byteWidthMacro => 8
-  syntax Int ::= "byteWidthMacro"
-  rule byteWidthMacro => 8 [macro]
+  syntax Int ::= "byteWidthMacro" [function]
+  rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
   /* This is also defined in a standard library header. */
@@ -124,9 +121,10 @@ module CIL-IMPLEMENTATION
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.
-  rule bytes2Value(T:Type, L:MyList) 
-    => bytes2UnsignedMInt(L)
-    when isPtrType(T)
+  // TODO(AndreiS): this rules conflicts with the one above
+  //rule bytes2Value(T:Type, L:MyList) 
+  //  => bytes2UnsignedMInt(L)
+  //  when isPtrType(T)
 
   /*
    * Aggregates and arrays.

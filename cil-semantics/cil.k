@@ -10,7 +10,8 @@ require "cil-exp.k"
 require "cil-stmt.k"
 require "cil-typing.k"
 require "cil-implementation.k"
-//require "cil-lib.k"
+require "cil-lib.k"
+
 
 module CIL
   imports LIST
@@ -22,10 +23,10 @@ module CIL
   imports CIL-DECL
   imports CIL-EXP
   imports CIL-STMT
-  //imports CIL-TMP
   imports CIL-TYPING
   imports CIL-IMPLEMENTATION
-  //imports CIL-LIB
+  imports CIL-LIB
+
 
   configuration
     <final-computation multiplicity="?"> .K </final-computation>
@@ -45,9 +46,9 @@ module CIL
          .Bag
        </stacked-frame>
     </frame-stack>
-    <funs>
+    <funs map="">
       <fun multiplicity="*">
-        <fun-id> .K </fun-id> // Ptr
+        <fun-id key=""> .K </fun-id> // Ptr
         <fun-type> void </fun-type> // Type
         <formals> .Params </formals>
         <body> .K </body> // FunBody
@@ -66,13 +67,13 @@ module CIL
         <internal> .MySet </internal> // Set{CId}. Symbols with internal linkage.
       </tu>
     </tus>
-    <aggregates> // structs and unions
+    <aggregates map=""> // structs and unions
       <aggregate multiplicity="*">
-        <agg-id> .K </agg-id> // TypeId
+        <agg-id key=""> .K </agg-id> // TypeId
         <size> 0 </size>
-        <fields>
+        <fields map="">
           <field multiplicity="*">
-            <field-id> .K </field-id> // CId
+            <field-id key=""> .K </field-id> // CId
             <field-pos> 0 </field-pos> // The pos it appeared in the decl.
             <field-type> .K </field-type> // Type
             <offset> 0 </offset> 
@@ -80,7 +81,7 @@ module CIL
         </fields>
       </aggregate>
     </aggregates>
-    <heap>
+    <heap map="">
       <object multiplicity="*">
         <base-ptr key=""> Null </base-ptr>
         //<object-type> void </object-type>
@@ -110,5 +111,7 @@ module CIL
            IfList:KList)
   =>
     #if IfLabel(X,,IfList) ==K true #then VisitLabel(X,,VisitList) #else X #fi
+  rule normParens'(X:CId) => X
+  rule normPtrs'(X:CId) => X
 endmodule
 

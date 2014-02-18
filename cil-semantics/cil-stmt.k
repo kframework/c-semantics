@@ -33,7 +33,9 @@ module CIL-STMT
   [computational]
 
   rule 
-    <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
+    // TODO(AndreiS): fix implementation of case labels
+    // <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
+    <k> (. => make-goto-table) ~> goto _:Label ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels-generated> false => true </labels-generated>
@@ -145,13 +147,12 @@ module CIL-STMT
   [structural]
   rule
     <make-goto-table-stmts>
-      KI:KItem Ss:Stmts => Ss
+      S:Stmt Ss:Stmts => Ss
     </make-goto-table-stmts>
-  when isStmt(KI)
-    andBool getKLabel(KI) =/=KLabel '_:_ 
-    andBool getKLabel(KI) =/=KLabel 'if`(_`)_else_ 
-    andBool getKLabel(KI) =/=KLabel 'while`(_`)_ 
-    andBool getKLabel(KI) =/=KLabel '`{_`}
+  when getKLabel(S) =/=KLabel '_:_ 
+    andBool getKLabel(S) =/=KLabel 'if`(_`)_else_ 
+    andBool getKLabel(S) =/=KLabel 'while`(_`)_ 
+    andBool getKLabel(S) =/=KLabel '`{_`}
   [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
@@ -256,7 +257,7 @@ module CIL-STMT
       ...</frame>
     =>
       <frame>
-        <k> tv(T, V) ~> K:K </k> // TODO: deleteLocals
+        <k> tv(T, V) ~> K:K </k> // TODO(AndreiS): deleteLocals
         Cells:Bag
       </frame>
     )

@@ -635,7 +635,9 @@ module CIL-EXP
     when isPtrType(To) ==K true
 
   syntax Int ::= symToInt(K) [function]
-  rule symToInt(#symInt(I:Int)) => I
+  // TODO(AndreiS): pointers now have concrete bases
+  // rule symToInt(#symInt(I:Int)) => I
+  rule symToInt(I:Int) => I
 
   // Pointers of one type may be converted to pointers of another type and back
   // again. The result should compare equal to the original pointer.
