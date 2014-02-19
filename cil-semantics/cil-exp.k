@@ -675,10 +675,12 @@ module CIL-EXP
     when isPtrType(T)
 
   syntax KItem ::= PtrAddHelper(Type, Ptr, Int, Exp)    [strict(4)]
-  rule PtrAddHelper(T:Type, P:Ptr, I:Int, N:Int) => tv(T, PtrAdd(P, I, N))
+  rule PtrAddHelper(T:Type, P:Ptr, I:Int, TV:TypedValue)
+    => tv(T, PtrAdd(P, I, TV))
 
   syntax KItem ::= PtrSubHelper(Type, Ptr, Ptr, Exp)    [strict(4)]
-  rule PtrSubHelper(T:Type, P1:Ptr, P2:Ptr, N:Int) => tv(T, PtrSub(P1, P2, N))
+  rule PtrSubHelper(T:Type, P1:Ptr, P2:Ptr, TV:TypedValue)
+    => tv(T, PtrSub(P1, P2, TV))
 
   // float comparisons
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)
