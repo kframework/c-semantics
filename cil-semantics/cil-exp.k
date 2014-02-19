@@ -651,30 +651,36 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) + tv(T, F2:Float) => tv(T, F1 +Float F2)
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
-  // TODO(AndreiS): fix matching on a function
-  //context tv(_, PtrAdd(_, _, HOLE))
-  //rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
-  //  => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
-  //  when isPtrType(T)
-  //rule tv(_, I:MInt) + tv(T:Type, P:Ptr) 
-  //  => tv(T, PtrAdd(P, iMInt(I), sizeof(downPtr(T))))
-  //  when isPtrType(T)
-  //rule tv(_, I:Int) + tv(T:Type, P:Ptr) 
-  //  => tv(T, PtrAdd(P, I, sizeof(downPtr(T))))
-  //  when isPtrType(T)
-
+  // pointer arithmetic
+  rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
+    => PtrAddHelper(T, P, iMInt(I), sizeof(downPtr(T)))
+    when isPtrType(T)
+  rule tv(_, I:MInt) + tv(T:Type, P:Ptr)
+    => PtrAddHelper(T, P, iMInt(I), sizeof(downPtr(T)))
+    when isPtrType(T)
+  rule tv(_, I:Int) + tv(T:Type, P:Ptr)
+    => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
+    when isPtrType(T)
+  rule tv(T:Type, P:Ptr) + tv(_, I:Int)
+    => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
+    when isPtrType(T)
   rule
     tv(T:Type, P:Ptr) - tv(_, I:MInt)
-    => tv(T, PtrAdd(P, 0 -Int iMInt(I), sizeof(downPtr(T))))
+    => PtrAddHelper(T, P, 0 -Int iMInt(I), sizeof(downPtr(T)))
     when isPtrType(T)
 
-  // TODO(AndreiS): fix matching on a function
-  //context tv(_, PtrSub(_, _, HOLE))
-  //rule
-  //  tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
-  //  => tv(T, PtrSub(P1, P2, sizeof(downPtr(T))))
-  //  when isPtrType(T)
+  rule
+    tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
+    => PtrSubHelper(T, P1, P2, sizeof(downPtr(T)))
+    when isPtrType(T)
 
+  syntax KItem ::= PtrAddHelper(Type, Ptr, Int, Exp)    [strict(4)]
+  rule PtrAddHelper(T:Type, P:Ptr, I:Int, N:Int) => tv(T, PtrAdd(P, I, N))
+
+  syntax KItem ::= PtrSubHelper(Type, Ptr, Ptr, Exp)    [strict(4)]
+  rule PtrSubHelper(T:Type, P1:Ptr, P2:Ptr, N:Int) => tv(T, PtrSub(P1, P2, N))
+
+  // float comparisons
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)
   rule tv(T:Type, F1:Float) <= tv(T, F2:Float) => norm(int, F1 <=Float F2)
   rule tv(T:Type, F1:Float) > tv(T, F2:Float) => norm(int, F1 >Float F2)
