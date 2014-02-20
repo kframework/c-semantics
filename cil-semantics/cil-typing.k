@@ -247,7 +247,6 @@ module CIL-TYPING
   // TODO(chathhorn): It'd be nice to generalize this process of walking the
   // declaration syntax tree.
   rule expandTypedefs(T:ParamDecl, E:MyMap) => normType(expandParamDecl(T, E))
-  rule expandTypedefs(T:ParamDecl, E:MyMap) => T
 
   rule expandParamDecl(X:CId, (E:MyMap, X |-> T:Type))
     => expandTypedefs(T, (E, X |-> T))

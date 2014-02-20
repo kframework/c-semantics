@@ -196,7 +196,9 @@ module CIL-SYNTAX
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
                  | Exp "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
-                 | Exp "++" ";"
+
+  // TODO(AndreiS): are these part of CIL?
+  syntax Instr ::= Exp "++" ";"
                  | Exp "--" ";"
                  | Exp "+=" Exp ";"
                  | Exp "-=" Exp ";"
@@ -207,6 +209,11 @@ module CIL-SYNTAX
                  | Exp "|=" Exp ";"
                  | Exp "^=" Exp ";"
 
+  // TODO(chathhorn): Doesn't quite make sense if X has a pointer type...
+  // rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
+  // rule X:Exp -- ; => X = X - (typeof(X)) 1 ; [macro]
+  rule X:Exp ++ ; => X = X + 1 ; [macro]
+  rule X:Exp ++ ; => X = X + 1 ; [macro]
   rule X:Exp += E:Exp ; => X = X + E ; [macro]
   rule X:Exp -= E:Exp ; => X = X - E ; [macro]
   rule X:Exp *= E:Exp ; => X = X * E ; [macro]
@@ -216,7 +223,7 @@ module CIL-SYNTAX
   rule X:Exp |= E:Exp ; => X = X | E ; [macro]
   rule X:Exp ^= E:Exp ; => X = X ^ E ; [macro]
 
-  syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
+  syntax FunCall ::= Exp "(" Exps ")"   [klabel('call), strict(2)]
   syntax Block ::= "{" Stmts "}"
   syntax Label ::= CId
                  | "case" Exp

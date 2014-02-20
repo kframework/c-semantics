@@ -60,9 +60,9 @@ module CIL
     <global-env> .MyMap </global-env> // Map{CId, Ptr}
 //    //<phase> initializing </phase> // Phase
     <phase> tu("unknown") </phase> // Phase
-    <tus>
+    <tus map="">
       <tu multiplicity="+">
-        <tu-id> tu("unknown") </tu-id> // TransUnit
+        <tu-id key=""> tu("unknown") </tu-id> // TransUnit
         <tu-env> .MyMap </tu-env> // Map{CId, Ptr}
         <internal> .MySet </internal> // Set{CId}. Symbols with internal linkage.
       </tu>
@@ -112,6 +112,8 @@ module CIL
   =>
     #if IfLabel(X,,IfList) ==K true #then VisitLabel(X,,VisitList) #else X #fi
   rule normParens'(X:CId) => X
+  rule normParens'(I:Int) => I
   rule normPtrs'(X:CId) => X
+  rule normPtrs'(I:Int) => I
 endmodule
 
