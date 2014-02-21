@@ -102,7 +102,8 @@ module CIL
                    | NoConversionLeftValue
                    | NormType
 
-  // Hacks
+  // TODO(AndreiS): remove hacks because tokens are not labels in the java
+  // rewrite engine
   rule
     #visit(X:CId,
            VisitLabel:KLabel,

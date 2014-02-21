@@ -440,5 +440,7 @@ module CIL-SYNTAX
   syntax Initializer ::= Exp | "{" Initializers "}"
   syntax Initializers ::= List{Initializer, ","}
 
+  // TODO(AndreiS): remove hask for getting the result
+  syntax KItem ::= "###result-value" "(" K ")"
 endmodule
 
