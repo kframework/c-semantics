@@ -224,9 +224,7 @@ module CIL-STMT
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
-        // FIXME(AndreiS):
-        //<env> GEnv, TuEnv </env>
-        <env> GEnv </env>
+        <env> GEnv, TuEnv </env>
       ...</frame>
     )
     // TODO(AndreiS): rename k cell to prevent failed attempts at rewriting
