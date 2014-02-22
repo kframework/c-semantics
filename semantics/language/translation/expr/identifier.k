@@ -16,7 +16,7 @@ module C-EXPR-IDENTIFIER
           <k> X:Id => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals>... X |-> _ ...</internals>
           when isLinkerLoc(Loc)
@@ -28,7 +28,7 @@ module C-EXPR-IDENTIFIER
           <k> X:Id => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
           <external-uses>... (. => SetItem(X)) </external-uses>

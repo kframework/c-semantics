@@ -14,7 +14,7 @@ module C-ENV
           
      rule [populateFromGlobal]:
           <k> populateFromGlobal => . ...</k>
-          <currTU> Tu:K </currTU>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv> 
           <gtypes> GT:Map </gtypes> 
@@ -25,15 +25,15 @@ module C-ENV
           [structural]
      
      rule <k> addToEnv(X:Id, Loc:SymLoc) => addToGlobalEnv(X, Loc) ...</k>
-          <currentFunction> file-scope </currentFunction>
+          <curr-function> file-scope </curr-function>
           [structural] 
      rule <k> addToEnv(X:Id, Loc:SymLoc) => addToLocalEnv(X, Loc) ...</k>
-          <currentFunction> F:Id </currentFunction>
+          <curr-function> F:Id </curr-function>
           when F =/=K file-scope
           [structural] 
           
      rule <k> addToGlobalEnv(X:Id, Loc:SymLoc) => . ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id> 
           <genv> G:Map => G:Map[Loc / X] </genv>
           <env> E:Map => E:Map[Loc / X] </env>
@@ -51,12 +51,12 @@ module C-ENV
                #else giveLocalType(X:Id, unqualifyType(T:KResult)) 
                #fi
           ...</k>
-          <currentFunction> Fun:Id </currentFunction>
+          <curr-function> Fun:Id </curr-function>
           [structural]
           
      rule <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
                M':Map => M':Map[T:KResult / X:Id]

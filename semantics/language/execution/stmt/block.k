@@ -16,32 +16,34 @@ module C-STMT-BLOCK
           <k> pushBlock => . ...</k>
           <local>
                C:Bag
-               <localVariables> Vars:List => .List </localVariables>
-               <localAddresses> Addresses:Set => .Set </localAddresses>
-               <nestingDepth> N:Int => N:Int +Int 1 </nestingDepth>
+               <local-vars> Vars:List => .List </local-vars>
+               <local-addresses> Addresses:Set => .Set </local-addresses>
+               <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
           </local>
-          <blockStack> .List 
+          <block-stack> .List 
                => ListItem(C
-               <nestingDepth> N </nestingDepth> 
-               <localVariables> Vars </localVariables>
-               <localAddresses> Addresses </localAddresses>)
-          ...</blockStack>
+               <nesting-depth> N </nesting-depth> 
+               <local-vars> Vars </local-vars>
+               <local-addresses> Addresses </local-addresses>)
+          ...</block-stack>
           [structural, large] 
           
      rule [pop-block-free-memory]:
           <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
-          <localAddresses>... (SetItem(Loc:SymLoc) => .Set) ...</localAddresses>
+          <local-addresses>...
+               (SetItem(Loc:SymLoc) => .Set)
+          ...</local-addresses>
           [structural] 
           
      rule [pop-block]:
           <k> popBlock => . ...</k>
           <local>
                (_ => C)
-               (<localAddresses> .Set </localAddresses> => .Bag)
+               (<local-addresses> .Set </local-addresses> => .Bag)
           </local>
-          <blockStack> 
+          <block-stack> 
                ListItem(C:Bag) => .List 
-          ...</blockStack>
+          ...</block-stack>
           [structural] 
           
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
@@ -72,6 +74,6 @@ module C-STMT-BLOCK
           <k> Block(BlockNum:Int, _, list(Statements:List))
                => listToK(Statements)
           ...</k>
-          <blockHistory> .List => ListItem(BlockNum) ...</blockHistory>
+          <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]
 endmodule

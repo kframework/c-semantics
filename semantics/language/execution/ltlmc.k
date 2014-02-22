@@ -74,7 +74,7 @@ module C-LTLMC
      syntax Bool ::= "#error" "(" Bag ")" [function]
      rule #error(
           <generatedTop>... <T>...
-               <errorCell> _ </errorCell> 
+               <error-cell> _ </error-cell> 
           ...</T> ...</generatedTop>)
           => true
      

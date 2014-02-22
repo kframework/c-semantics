@@ -28,7 +28,7 @@ module C-DECL-LOCAL
                => addToEnv(X, Loc) 
                ~> giveType(X, T')
           ...</k>
-          <currTU> TU:String </currTU>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <genv>...
                X |-> Loc:SymLoc
@@ -44,8 +44,8 @@ module C-DECL-LOCAL
                => addToEnv(X, Loc)
                ~> giveType(X, T')
           ...</k>
-          <blockHistory> ListItem(BlockNum:Int) ...</blockHistory>
-          <currTU> TU:String </currTU>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-statics>... 
                kpair(X, BlockNum) |-> Loc:SymLoc
@@ -78,9 +78,9 @@ module C-DECL-LOCAL
                ~> addToEnv(X, Loc) 
                ~> giveType(X, T)
           ...</k>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localVariables> Vars:List (. => ListItem(X)) </localVariables>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           when (notBool isIncompleteType(T))
                andBool (notBool isStaticType(T))
                andBool (notBool isExternType(T))
@@ -93,7 +93,7 @@ module C-DECL-LOCAL
      rule <k> declareOnly(X:Id, T:Type)
                => .K
           ...</k>
-          <localVariables>... ListItem(X) ...</localVariables>
+          <local-vars>... ListItem(X) ...</local-vars>
           when (notBool isIncompleteType(T))
                andBool (notBool isStaticType(T))
                andBool (notBool isExternType(T))
@@ -102,9 +102,9 @@ module C-DECL-LOCAL
      rule <k> declareAndDefine(X:Id, T:Type, K:K)
                => defineAndInit(X, T, figureInit(X, T, K), Loc)
           ...</k>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localVariables> Vars:List (. => ListItem(X)) </localVariables>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           // Again, this should be needed statically, but not dynamically.
           when notBool X in Vars
           [structural] 
@@ -114,7 +114,7 @@ module C-DECL-LOCAL
      rule <k> declareAndDefine(X:Id, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
-          <localVariables>... ListItem(X) ...</localVariables>
+          <local-vars>... ListItem(X) ...</local-vars>
           [structural] 
 
      syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
@@ -126,7 +126,7 @@ module C-DECL-LOCAL
                ~> K
                ~> sequencePoint
           ...</k>
-          <shouldInit> true </shouldInit>
+          <should-init> true </should-init>
           [structural] 
           
      rule <k> defineAndInit(X:Id, _, initValue(X:Id, T':Type, _), Loc:SymLoc)
@@ -134,7 +134,7 @@ module C-DECL-LOCAL
                ~> addToEnv(X, Loc)
                ~> giveType(X, T')
           ...</k>
-          <shouldInit> false </shouldInit>
+          <should-init> false </should-init>
           [structural]
           
      syntax K ::= justInit(K) [strict(1)]

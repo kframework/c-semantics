@@ -93,23 +93,23 @@ module C-EXPR-FUNCTION-CALL
                     ~> bind(L, P)
                     ~> B
           </k>
-          <callStack> .List => ListItem(
-               <callStackFrame>...
-                    <stackControl> 
-                         <currTU> OldTu:K </currTU>
+          <call-stack> .List => ListItem(
+               <call-stack-frame>...
+                    <stack-control> 
+                         <curr-tu> OldTu:K </curr-tu>
                          C:Bag 
-                    </stackControl>
+                    </stack-control>
                     <continuation> K:K </continuation>
-                    <stackCurrentFunction> CurrFun:K </stackCurrentFunction>
-                    <stackCurrentProgramLoc> CurrLoc:K </stackCurrentProgramLoc>
-               ...</callStackFrame>
-          ) ...</callStack>
+                    <stack-curr-function> CurrFun:K </stack-curr-function>
+                    <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
+               ...</call-stack-frame>
+          ) ...</call-stack>
           <control>
-               <currTU> OldTu:K => Tu </currTU>
-               <currentFunction> CurrFun:K => X </currentFunction>
-               <currentProgramLoc> CurrLoc:K </currentProgramLoc>
+               <curr-tu> OldTu:K => Tu </curr-tu>
+               <curr-function> CurrFun:K => X </curr-function>
+               <curr-program-loc> CurrLoc:K </curr-program-loc>
                // TODO(chathhorn): better way to initialize?
-               (C:Bag => <controlDetails>... .Bag ...</controlDetails>)
+               (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural, large]
 endmodule

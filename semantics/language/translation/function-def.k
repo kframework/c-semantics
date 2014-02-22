@@ -71,10 +71,10 @@ module C-FUNCTION-DEF
           ~> Blk
           ~> returnToFileScope
           ...</k>
-          <currentFunction> _ => X </currentFunction>
+          <curr-function> _ => X </curr-function>
 
      rule <k> returnToFileScope => . ...</k>
-          <currentFunction> _ => file-scope </currentFunction>
+          <curr-function> _ => file-scope </curr-function>
 
      syntax K ::= dummyBind(List)
      

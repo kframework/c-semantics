@@ -49,12 +49,12 @@ module C-COMPOUND-LITERAL
                ~> Init ~> sequencePoint
                ~> X
           ...</k>
-          <compoundLiteralMap> M:Map => M:Map[Loc / X] </compoundLiteralMap>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
+          <compound-lit-map> M:Map => M:Map[Loc / X] </compound-lit-map>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
           when notBool X in keys M
           [structural]
 
-     // This and the compoundLiteralMap is apparently needed to properly handle
+     // This and the compound-lit-map is apparently needed to properly handle
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
@@ -64,6 +64,6 @@ module C-COMPOUND-LITERAL
                ~> Init ~> sequencePoint
                ~> X
           ...</k>
-          <compoundLiteralMap>... X |-> Loc:SymLoc ...</compoundLiteralMap>
+          <compound-lit-map>... X |-> Loc:SymLoc ...</compound-lit-map>
           [structural]
 endmodule

@@ -119,7 +119,7 @@ module C-DECL-INITIALIZER
                     (incompleteArrayType(T:Type) 
                     => arrayType(T, N))), initializer(_))
           ...</k>
-          <incompleteLength> N:Int </incompleteLength>
+          <incomplete-length> N:Int </incomplete-length>
           [structural] 
           
      syntax K ::= te(K, Type) [klabel('te)]
@@ -129,23 +129,23 @@ module C-DECL-INITIALIZER
                 | "fillInit-aux" "(" K ")"
 
      rule <k> getInit => initializer(K:K) ...</k>
-          <savedInitialization> K:K => . </savedInitialization> 
-          <currentObject> _:List => . </currentObject> 
-          <currentSubObject> _:List => . </currentSubObject> 
+          <saved-init> K:K => . </saved-init> 
+          <curr-object> _:List => . </curr-object> 
+          <curr-subobject> _:List => . </curr-subobject> 
           [structural] 
 
      syntax K ::= startInit(Type, Id, K)
      rule <k> startInit(T:Type, X:Id, CompoundInit(list(L:List)))
                => fillInits(L) ~> getInit
           ...</k>
-          <incompleteLength> _ => 0 </incompleteLength>
-          <currentSubObject>
+          <incomplete-length> _ => 0 </incomplete-length>
+          <curr-subobject>
                .List => ListItem(te(X, T))
-          </currentSubObject>
-          <currentObject>
+          </curr-subobject>
+          <curr-object>
                .List => ListItem(te(X, T))
-          </currentObject>
-          <savedInitialization>... .K => zero(X) </savedInitialization> 
+          </curr-object>
+          <saved-init>... .K => zero(X) </saved-init> 
           when isUnionType(T) orBool isAggregateType(T)
           [structural] 
      
@@ -158,23 +158,23 @@ module C-DECL-INITIALIZER
      syntax ListItem ::= "next"
      syntax ListItem ::= "block"
      
-     rule <currentSubObject> 
+     rule <curr-subobject> 
                ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:Int))))
                => ListItem(te(K[0], T)) 
                     ListItem(te(K, t(S, arrayType(T, Len))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           [structural] 
-     rule <currentSubObject> 
+     rule <curr-subobject> 
                ListItem(te(K:K, t(Se:Set, incompleteArrayType(T:Type))))
                => ListItem(te(K[0], T))
                     ListItem(te(K, t(Se, incompleteArrayType(T))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           [structural] 
-     rule <currentSubObject> 
+     rule <curr-subobject> 
                ListItem(te(K:K, t(Se:Set, structType(S:Id))))
                => ListItem(te(K . F, T)) 
                     ListItem(te(K, t(Se, structType(S))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>... 
                S |-> aggregateInfo(
                     ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
@@ -182,11 +182,11 @@ module C-DECL-INITIALIZER
           [structural] 
           
      // fixme these are terrible!
-     rule <currentSubObject> 
+     rule <curr-subobject> 
                ListItem(te(K:K, t(Se:Set, unionType(S:Id))))
                => ListItem(te(K . F, T))
                     ListItem(te(K, t(Se, unionType(S))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>... 
                S |-> aggregateInfo(
                     ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
@@ -195,36 +195,36 @@ module C-DECL-INITIALIZER
           
      // fixme should i worry about basetype here_
      rule [init-next-array-element]:
-          <currentSubObject> 
+          <curr-subobject> 
                (next ListItem(te(K:K[N:Int], T:Type)) 
                     => ListItem(te(K[N +Int 1], T)))
                ListItem(te(K, t(_, arrayType(_, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when Len >Int N +Int 1
           [structural] 
      rule [init-next-array-element-done]:
-          <currentSubObject>
+          <curr-subobject>
                next (ListItem(te(K:K[N:Int], _:Type)) => .List)
                     ListItem(te(K:K, t(_, arrayType(_, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when notBool Len >Int N +Int 1
           [structural] 
      
      rule [init-next-incomplete-array-element]:
-          <currentSubObject>
+          <curr-subobject>
                (next ListItem(te(K:K[N:Int], T:Type)) 
                     => ListItem(te(K[N +Int 1], T))) 
                ListItem(te(K, t(_, incompleteArrayType(_))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           [structural] 
      
      rule [init-next-struct-element]:
-          <currentSubObject>
+          <curr-subobject>
                next ListItem(te(K:K . F:Id, T:Type))
                     ListItem(te(K:K, t(Se:Set, structType(S:Id))))
                => ListItem(te(K . F', T'))
                     ListItem(te(K, t(Se, structType(S))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>...
                S |-> aggregateInfo(_ 
                     ListItem(typedDeclaration(T, F))
@@ -234,12 +234,12 @@ module C-DECL-INITIALIZER
           [structural, large] 
       
      rule [init-next-struct-element-noname]:
-          <currentSubObject>
+          <curr-subobject>
                next ListItem(te(K:K . F:Id, T:Type))
                     ListItem(te(K:K, t(Se:Set, structType(S:Id))))
                => ListItem(te(K . F', T'))
                     ListItem(te(K, t(Se, structType(S))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>...
                S |-> aggregateInfo(_ 
                     ListItem(typedDeclaration(T, F))
@@ -249,19 +249,19 @@ module C-DECL-INITIALIZER
           [structural, large] 
           
      rule [init-next-struct-element-done]:
-          <currentSubObject>
+          <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
                     ListItem(te(K:K, t(_, structType(S:Id))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>...
                S |-> aggregateInfo(_ ListItem(typedDeclaration(T, F)), _, _)
           ...</structs> 
           [structural, large] 
      rule [init-next-struct-element-done-noname]:
-          <currentSubObject>
+          <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
                     ListItem(te(K:K, t(_, structType(S:Id))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>...
                S |-> aggregateInfo(_
                     ListItem(typedDeclaration(T, F))
@@ -270,10 +270,10 @@ module C-DECL-INITIALIZER
           [structural, large] 
           
      rule [init-next-union-element-done]:
-          <currentSubObject>
+          <curr-subobject>
                next (ListItem(te(K:K . _:Id, _:Type)) => .List)
                     ListItem(te(K:K, t(_, unionType(_:Id))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           [structural] 
           
      rule fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) 
@@ -284,21 +284,21 @@ module C-DECL-INITIALIZER
                => fillInits(L)
                ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
           ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                (_:List => .) 
                ListItem(te(K:K, T:Type)) 
                (Remainder:ListItem => .)
-          </currentSubObject>
-          <currentObject>
+          </curr-subobject>
+          <curr-object>
                (. => ListItem(te(K, T)))
-          ...</currentObject>
+          ...</curr-object>
           when isAggregateType(T) orBool isUnionType(T)
           [structural]
      rule <k> finishCompoundInit(L:List) => . ...</k>
-          <currentObject>
+          <curr-object>
                (ListItem(te(_:K, _:Type)) => .)
-          ...</currentObject>
-          <currentSubObject> (_ => L) </currentSubObject>
+          ...</curr-object>
+          <curr-subobject> (_ => L) </curr-subobject>
           [structural] 
 
      context fillInit(InitFragment(HOLE, _)) 
@@ -310,10 +310,10 @@ module C-DECL-INITIALIZER
                => fillInit(InitFragment(buildDesignator(
                     InFieldInit(F, K')), Exp))
           ...</k>
-          <currentObject> ListItem(te(K:K, T:Type)) ...</currentObject>
-          <currentSubObject>
+          <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
+          <curr-subobject>
                _:List => block ListItem(te(K, T))
-          </currentSubObject>
+          </curr-subobject>
           when isStructType(T) orBool isUnionType(T)
           [structural] 
      // fixme does this need to worry about incompleteLength_
@@ -321,10 +321,10 @@ module C-DECL-INITIALIZER
                => fillInit(InitFragment(
                     buildDesignator(AtIndexInit(Index, K')), Exp))
           ...</k>
-          <currentObject> ListItem(te(K:K, T:Type)) ...</currentObject>
-          <currentSubObject>
+          <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
+          <curr-subobject>
                _:List => block ListItem(te(K, T))
-          </currentSubObject>
+          </curr-subobject>
           when isArrayType(T)
           [structural] 
      
@@ -334,10 +334,10 @@ module C-DECL-INITIALIZER
      rule <k> buildDesignator(InFieldInit(F:Id, More:K)) 
                => buildDesignator(More)
           ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                block (.List => ListItem(te(K . F, T)))
                     ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:Id))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           <structs>... 
                S |-> aggregateInfo(_, (_ F:Id |-> T:Type), _)
           ...</structs>
@@ -345,17 +345,17 @@ module C-DECL-INITIALIZER
           [structural] 
           
      rule <k> buildDesignator(NextInit) => NextInit ...</k>
-          <currentSubObject> (block => .List) ...</currentSubObject>
+          <curr-subobject> (block => .List) ...</curr-subobject>
           [structural] 
 
      context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
      rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K)) 
                => buildDesignator(More)
           ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                block (.List => ListItem(te(K[N], innerType(T))))
                     ListItem(te(K:K, T:Type)) 
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isArrayType(T)
           [structural] 
      
@@ -376,15 +376,15 @@ module C-DECL-INITIALIZER
      
      // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':K) => . ...</k>
-          <currentSubObject>
+          <curr-subobject>
                (.List => next) ListItem(te(K:K, T:Type))
-          ...</currentSubObject>
-          <incompleteLength>
+          ...</curr-subobject>
+          <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
-          </incompleteLength>
-          <savedInitialization>... 
+          </incomplete-length>
+          <saved-init>... 
                . => Computation(allowWrite(K) := K') ~> possiblyMakeConst(T, K)
-          </savedInitialization>
+          </saved-init>
           when (isBasicType(T) 
                     orBool isPointerType(T) 
                     orBool isBitfieldType(T))
@@ -414,31 +414,31 @@ module C-DECL-INITIALIZER
      rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(I:Id)))
                => initFromStructRHS(K, t(S, structType(I)))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                .List => findStruct(t(S, structType(I)))
-          ...</currentSubObject>
+          ...</curr-subobject>
           [structural] 
           
      syntax ListItem ::= findStruct(Type)
           
-     rule <currentSubObject>
+     rule <curr-subobject>
                findStruct(T:Type) (ListItem(te(_, T':Type)) => .List)
-          ...</currentSubObject>
+          ...</curr-subobject>
           when T =/=K T'
           [structural] 
           
      // fixme unsafe, might have started to initialize other things
      rule <k> initFromStructRHS(K':K, t(_, structType(S:Id))) => . ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                findStruct(t(_, structType(S:Id)))
                     ListItem(te(K:K, t(_, structType(S:Id)))) => next 
-          ...</currentSubObject>
-          <incompleteLength>
+          ...</curr-subobject>
+          <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
-          </incompleteLength>
-          <savedInitialization>...
+          </incomplete-length>
+          <saved-init>...
                .K => Computation(allowWrite(K) := K')
-          </savedInitialization> 
+          </saved-init> 
           [structural, large] 
      
      rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
@@ -449,20 +449,20 @@ module C-DECL-INITIALIZER
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => fillInit-aux(SingleInit(Constant(StringLiteral(S))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type)) 
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isCharType(T) andBool lengthString(S) ==Int Len
           [structural] 
      rule [fillInit-wstring-array-eq]:
           <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit-aux(SingleInit(Constant(WStringLiteral(S))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isWCharType(T) andBool lengthKList(S) ==Int Len
           [structural] 
      rule [fillInit-string-array-lt]:
@@ -470,20 +470,20 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(Constant(
                     StringLiteral(S +String "\x00"))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isCharType(T) andBool lengthString(S) <Int Len
           [structural] 
      rule [fillInit-wstring-array-lt]:
           <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit(SingleInit(Constant(WStringLiteral((S,, 0)))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type))
                     ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isWCharType(T) andBool lengthKList(S) <Int Len
           [structural] 
      rule [fillInit-string-char]:
@@ -491,20 +491,20 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(Constant(
                     StringLiteral(S +String "\x00"))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, incompleteArrayType(T:Type))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isCharType(T)
           [structural] 
      rule [fillInit-wstring-wchar]:
           <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => fillInit-aux(SingleInit(Constant(WStringLiteral((S,, 0)))))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type)) 
                ListItem(te(_, t(_, incompleteArrayType(T:Type))))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isWCharType(T)
           [structural]
      rule [fillInitAux-string-some]:
@@ -512,7 +512,7 @@ module C-DECL-INITIALIZER
                => fillInit(initHead(S, T))
                ~> fillInit-aux(initTail(S))
           ...</k>
-          <currentSubObject> ListItem(te(_:K, T:Type)) ...</currentSubObject>
+          <curr-subobject> ListItem(te(_:K, T:Type)) ...</curr-subobject>
           when (S =/=String "") andBool isCharType(T)
           [structural]
           
@@ -532,9 +532,9 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(tv(N, cfg:wcharut)))
                     ~> fillInit-aux(SingleInit(Constant(WStringLiteral(S)))) 
           ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                ListItem(te(_:K, T:Type))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when isWCharType(T)
           [structural]
      // fixme not sure what happens in the case of   char *x = "";
@@ -552,9 +552,9 @@ module C-DECL-INITIALIZER
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
                => initializeSingleInit(Constant(StringLiteral(S)))
           ...</k>
-          <currentSubObject> 
+          <curr-subobject> 
                ListItem(te(_:K, T:Type)) 
-          ...</currentSubObject>
+          ...</curr-subobject>
           when notBool isCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
@@ -563,9 +563,9 @@ module C-DECL-INITIALIZER
           <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
                => initializeSingleInit(Constant(WStringLiteral(S)))
           ...</k>
-          <currentSubObject>
+          <curr-subobject>
                ListItem(te(_:K, T:Type))
-          ...</currentSubObject>
+          ...</curr-subobject>
           when notBool isWCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))

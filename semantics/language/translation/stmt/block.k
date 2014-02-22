@@ -13,9 +13,9 @@ module C-STMT-BLOCK
           <local>
                C:Bag
           </local>
-          <blockStack> 
+          <block-stack> 
                .List => ListItem(C)
-          ...</blockStack>
+          ...</block-stack>
           [structural, large] 
           
      rule [pop-block]:
@@ -23,9 +23,9 @@ module C-STMT-BLOCK
           <local>
                (_ => C)
           </local>
-          <blockStack>
+          <block-stack>
                ListItem(C:Bag) => .List 
-          ...</blockStack>
+          ...</block-stack>
           [structural] 
           
      rule [expression-statement]:
@@ -39,7 +39,7 @@ module C-STMT-BLOCK
           <k> Block(BlockNum:Int, _, list(Statements:List))
                => listToK(Statements)
           ...</k>
-          <current-block> _ => BlockNum </current-block>
+          <curr-block> _ => BlockNum </curr-block>
           [structural]
 
 endmodule

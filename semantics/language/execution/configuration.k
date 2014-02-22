@@ -12,9 +12,9 @@ module C-CONFIGURATION
                <functions color="lightgray"> .Map </functions>
                <gstructs color="lightgray"> .Map </gstructs>
 
-               <notWritable> .Set </notWritable>
+               <not-writable> .Set </not-writable>
 
-               <mainTU color="lightgray"> .Set </mainTU>
+               <main-tu color="lightgray"> .Set </main-tu>
 
                // dummy link loc |-> real loc
                <linkings> .Map </linkings> 
@@ -27,7 +27,7 @@ module C-CONFIGURATION
 
                          // TODO(chathhorn): remove.
                          <next-static-loc> .K </next-static-loc>
-                         <freshUnnamed color="black"> 0 </freshUnnamed>
+                         <fresh-unnamed color="black"> 0 </fresh-unnamed>
 
                          // kpair(Id, BlockNum) |-> SymLoc
                          <local-statics> .Map </local-statics>
@@ -35,28 +35,28 @@ module C-CONFIGURATION
                          <local-types> .Map </local-types>
 
                          <goto-map color="lightgray"> .Map </goto-map>
-                         <stringLiterals color="lightgray"> .Map </stringLiterals>
+                         <string-lits color="lightgray"> .Map </string-lits>
                     </tu>
                </translation-units>
           </global>
 
           // stdlib
-          <randNat color="black"> 0 </randNat>
+          <rand-nat color="black"> 0 </rand-nat>
           // stdlib
           <malloced color="lightgray"> .Map </malloced>
-          <nextMalloced> 0 </nextMalloced>
+          <next-malloced> 0 </next-malloced>
 
-          <nextThreadId color="black"> 1 </nextThreadId>
+          <next-thread-id color="black"> 1 </next-thread-id>
 
-          <threadInformation color="yellow">
-               <threadStatus color="yellow"> .Map </threadStatus>
+          <thread-info color="yellow">
+               <thread-status color="yellow"> .Map </thread-status>
                <mutexes color="yellow"> .Map </mutexes>
                <glocks color="yellow"> .Bag </glocks>
-          </threadInformation>
-          <compoundLiteralMap> .Map </compoundLiteralMap>
+          </thread-info>
+          <compound-lit-map> .Map </compound-lit-map>
           <threads color="yellow">
                <thread multiplicity="*" color="yellow">
-                    <threadId color="yellow"> 0 </threadId>
+                    <thread-id color="yellow"> 0 </thread-id>
                     <buffer color="lightgray"> .List </buffer>
 
                     <k color="green" multiplicity="?"> 
@@ -66,27 +66,29 @@ module C-CONFIGURATION
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                     </k>
 
-                    <nextLoc color="black"> 0 </nextLoc>
-                    <finalComputation multiplicity="?" color="lightgray">
+                    <next-loc color="black"> 0 </next-loc>
+                    <final-computation multiplicity="?" color="lightgray">
                          .K
-                    </finalComputation>
-                    <threadLocal>
+                    </final-computation>
+                    <thread-local>
                          // stack of "control" cells
-                         <callStack color="violet"> .List </callStack>
+                         <call-stack color="violet"> .List </call-stack>
                          <locks> .Bag </locks>
                          <control>
                               // general information
-                              <currTU color="lightgray"> "" </currTU>
-                              <currentFunction color="lightgray">
+                              <curr-tu color="lightgray"> "" </curr-tu>
+                              <curr-function color="lightgray">
                                    .K
-                              </currentFunction>
-                              <currentProgramLoc color="black">
+                              </curr-function>
+                              <curr-program-loc color="black">
                                    .K
-                              </currentProgramLoc>
+                              </curr-program-loc>
 
-                              <controlDetails> // TODO(chathhorn): dumb name
+                              <control-details> // TODO(chathhorn): dumb name
                                    // stack of "local" cells
-                                   <blockStack color="violet"> .List </blockStack>
+                                   <block-stack color="violet"> 
+                                        .List
+                                   </block-stack>
                                    <local>
                                         // maps from Ids
                                         <env color="red"> .Map </env>
@@ -96,87 +98,95 @@ module C-CONFIGURATION
                                         // printf
                                         <formatting multiplicity="?">
                                              <format> .List </format>
-                                             <formatArg> .K </formatArg>
-                                             <formatResult> .List </formatResult>
-                                             <formatState> "normal" </formatState>
-                                             <formatModifiers>
+                                             <format-arg> .K </format-arg>
+                                             <format-result> 
+                                                  .List
+                                             </format-result>
+                                             <format-state> 
+                                                  "normal"
+                                             </format-state>
+                                             <format-mods>
                                                   .Map
-                                             </formatModifiers>
-                                             <formatLength> "" </formatLength>
+                                             </format-mods>
+                                             <format-length> "" </format-length>
                                         </formatting>
                                         // information about the block we're in
-                                        <nestingDepth color="lightgray">
+                                        <nesting-depth color="lightgray">
                                              0
-                                        </nestingDepth>
-                                        <blockHistory color="lightgray">
+                                        </nesting-depth>
+                                        <block-history color="lightgray">
                                              .List
-                                        </blockHistory>
+                                        </block-history>
                                         // used to make sure we don't declare a
                                         // variable twice in the same scope
-                                        <localVariables color="lightgray">
+                                        <local-vars color="lightgray">
                                              .List
-                                        </localVariables> 
+                                        </local-vars> 
                                         // used to deallocate memory on leaving a
                                         // block
-                                        <localAddresses color="lightgray">
+                                        <local-addresses color="lightgray">
                                              .Set
-                                        </localAddresses> 
+                                        </local-addresses> 
                                    </local>
                                    // used to control initialization when gotoing
-                                   <shouldInit color="lightgray"> true </shouldInit>
+                                   <should-init color="lightgray">
+                                        true
+                                   </should-init>
                                    // used to figure initializers
-                                   <currentObject color="cyan">
+                                   <curr-object color="cyan">
                                         .List
-                                   </currentObject>
-                                   <currentSubObject color="cyan">
+                                   </curr-object>
+                                   <curr-subobject color="cyan">
                                         .List
-                                   </currentSubObject>
-                                   <incompleteLength color="cyan">
+                                   </curr-subobject>
+                                   <incomplete-length color="cyan">
                                         0
-                                   </incompleteLength>
-                                   <savedInitialization color="cyan">
+                                   </incomplete-length>
+                                   <saved-init color="cyan">
                                         .K
-                                   </savedInitialization>
-                                   <loopStack color="violet"> .List </loopStack>
-                                   <locsWrittenTo color="lightgray">
+                                   </saved-init>
+                                   <loop-stack color="violet">
+                                        .List
+                                   </loop-stack>
+                                   <locs-written color="lightgray">
                                         .Bag
-                                   </locsWrittenTo>
+                                   </locs-written>
                                    // used for typing expressions
                                    <type multiplicity="?" color="cyan"> .K </type>
                                    // holds the innermost type while we unroll the
                                    // type around it
-                                   <declarationTypeHolder color="cyan">
+                                   <decl-type-holder color="cyan">
                                         .K
-                                   </declarationTypeHolder>
-                              </controlDetails>        
+                                   </decl-type-holder>
+                              </control-details>        
                          </control>
-                    </threadLocal>
+                    </thread-local>
                </thread>
           </threads>
 
      // TODO(chathhorn): not sure where to put these.
-     <callStackFrame multiplicity="*">
+     <call-stack-frame multiplicity="*">
           <continuation> .K </continuation>
-          <stackCurrentFunction> .K </stackCurrentFunction>
-          <stackCurrentProgramLoc> .K </stackCurrentProgramLoc>
-          <stackControl> .Bag </stackControl>
-     </callStackFrame>
+          <stack-curr-function> .K </stack-curr-function>
+          <stack-curr-program-loc> .K </stack-curr-program-loc>
+          <stack-control> .Bag </stack-control>
+     </call-stack-frame>
 
-     <threadState multiplicity="*">
-          <threadContinuation> .K </threadContinuation>
-          <savedThreadLocal> .Bag </savedThreadLocal>
-     </threadState>
+     <thread-state multiplicity="*">
+          <thread-continuation> .K </thread-continuation>
+          <saved-thread-local> .Bag </saved-thread-local>
+     </thread-state>
 
      </exec>
 
      <files color="lightgray">
-          <fileCommands> .K </fileCommands>
+          <file-commands> .K </file-commands>
           <file multiplicity="*">
                <fid> .K </fid>
                <uri> .K </uri>
                <pos> 0 </pos>
                <mode> "r" </mode>
-               <nextByte> .K </nextByte>
+               <next-byte> .K </next-byte>
                <buff> "" </buff>
                <sending> .List </sending>
                <done> ListItem("") </done>
@@ -184,8 +194,8 @@ module C-CONFIGURATION
      </files> 
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
-     <resultValue color="red"> .K </resultValue>
-     <errorCell multiplicity="?" color="black"> .K </errorCell>
+     <result-value color="red"> .K </result-value>
+     <error-cell multiplicity="?" color="black"> .K </error-cell>
      <status> initializing </status>
 
      </T>

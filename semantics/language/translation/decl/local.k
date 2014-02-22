@@ -67,8 +67,8 @@ module C-DECL-LOCAL
                ~> giveType(X, T)
                ~> allowInit(zero(X) ~> K)
           ...</k>
-          <current-block> BlockNum:Int </current-block>
-          <currTU> TU:String </currTU>
+          <curr-block> BlockNum:Int </curr-block>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <local-statics>

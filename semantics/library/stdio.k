@@ -229,7 +229,7 @@ module LIBC-STDIO
      rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
-          <formatArg> _ => K:K </formatArg>
+          <format-arg> _ => K:K </format-arg>
           [structural]
 
      rule [format-start]:
@@ -253,9 +253,9 @@ module LIBC-STDIO
           (
                <formatting>...
                     <format> .List </format>
-                    <formatResult> Result:List </formatResult>
-                    <formatState> "normal" </formatState>
-                    <formatModifiers> .Map </formatModifiers>
+                    <format-result> Result:List </format-result>
+                    <format-state> "normal" </format-state>
+                    <format-mods> .Map </format-mods>
                ...</formatting>
                => .Bag
           )
@@ -264,22 +264,22 @@ module LIBC-STDIO
      rule [format-normal]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem(S:String) => .List ...</format>
-          <formatResult>... .List => ListItem(S:String) </formatResult>
-          <formatState> "normal" </formatState>
+          <format-result>... .List => ListItem(S:String) </format-result>
+          <format-state> "normal" </format-state>
           when S:String =/=String "%"
           [structural]
           
      rule [format-reset]:
           <k> formatter-aux(_) ...</k>
-          <formatModifiers> _ => .Map </formatModifiers>
-          <formatLength> _ => "" </formatLength>
-          <formatState> "reset" => "normal" </formatState>
+          <format-mods> _ => .Map </format-mods>
+          <format-length> _ => "" </format-length>
+          <format-state> "reset" => "normal" </format-state>
           [structural]
 
      rule [format-%]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem("%") => .List ...</format>
-          <formatState> "normal" => "%" </formatState>
+          <format-state> "normal" => "%" </format-state>
           [structural]
 
      // %[flags][width][.precision][length]type   
@@ -373,14 +373,14 @@ module LIBC-STDIO
      rule [format-%0]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem("0") => .List ...</format>
-          <formatState> "%" </formatState>
+          <format-state> "%" </format-state>
           [structural]
           
      // ignoring num width
      rule [format-width]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
-          <formatState> "%" </formatState>
+          <format-state> "%" </format-state>
           when ordChar(C:String) >Int ordChar("0")
                andBool ordChar(C:String) <=Int ordChar("9")
           [structural]   
@@ -458,8 +458,8 @@ module LIBC-STDIO
      syntax K ::= "getFormatType"
      syntax K ::= "getFormatType-aux" "(" K "," K ")"
      rule <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
-          <formatLength> Length:K </formatLength>
-          <formatState> State:K </formatState>
+          <format-length> Length:K </format-length>
+          <format-state> State:K </format-state>
           [structural]
 
      rule getFormatType-aux("%a", _) => t(.Set, double) [structural]
@@ -535,16 +535,16 @@ module LIBC-STDIO
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem(S:String) => .List ...</format>
-          <formatState> "%" => "%d" </formatState>
+          <format-state> "%" => "%d" </format-state>
           when S:String ==String "d" orBool S:String ==String "i"
           [structural]
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Int => .K </formatArg>
-          <formatResult>...
+          <format-arg> D:Int => .K </format-arg>
+          <format-result>...
                .List => ListItem(Int2String(D:Int))
-          </formatResult>
-          <formatState> "%d" => "reset" </formatState>
+          </format-result>
+          <format-state> "%d" => "reset" </format-state>
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -566,60 +566,60 @@ module LIBC-STDIO
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("o") => .List ...</format>
-          <formatState> "%" => "%o" </formatState>
+          <format-state> "%" => "%o" </format-state>
           [structural]
      rule [format-%o]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Int => .K </formatArg>
-          <formatResult>...
+          <format-arg> D:Int => .K </format-arg>
+          <format-result>...
                .List => ListItem(base2String(D:Int, 8))
-          </formatResult>
-          <formatState> "%o" => "reset" </formatState>
+          </format-result>
+          <format-state> "%o" => "reset" </format-state>
           [structural]
      rule [format-%u-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("u") => .List ...</format>
-          <formatState> "%" => "%u" </formatState>
+          <format-state> "%" => "%u" </format-state>
           [structural]
      rule [format-%u]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Int => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Int => .K </format-arg>
+          <format-result>... 
                .List => ListItem(Int2String(D:Int))
-          </formatResult>
-          <formatState> "%u" => "reset" </formatState>
+          </format-result>
+          <format-state> "%u" => "reset" </format-state>
           [structural]
      rule [format-%x-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("x") => .List ...</format>
-          <formatState> "%" => "%x" </formatState>
+          <format-state> "%" => "%x" </format-state>
           [structural]
      rule [format-%x]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Int => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Int => .K </format-arg>
+          <format-result>... 
                .List => ListItem(base2String(D:Int, 16)) 
-          </formatResult>
-          <formatState> "%x" => "reset" </formatState>
+          </format-result>
+          <format-state> "%x" => "reset" </format-state>
           [structural]
      rule [format-%X-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("X") => .List ...</format>
-          <formatState> "%" => "%X" </formatState>
+          <format-state> "%" => "%X" </format-state>
           [structural]
      rule [format-%X]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Int => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Int => .K </format-arg>
+          <format-result>... 
                .List => ListItem(toUpperCase(base2String(D:Int, 16))) 
-          </formatResult>
-          <formatState> "%X" => "reset" </formatState>
+          </format-result>
+          <format-state> "%X" => "reset" </format-state>
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -650,30 +650,30 @@ module LIBC-STDIO
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("f") => .List ...</format>
-          <formatState> "%" => "%f" </formatState>
+          <format-state> "%" => "%f" </format-state>
           [structural]
      rule [format-%f]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Float => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Float => .K </format-arg>
+          <format-result>... 
                .List => ListItem(Float2String(D:Float)) 
-          </formatResult>
-          <formatState> "%f" => "reset" </formatState>
+          </format-result>
+          <format-state> "%f" => "reset" </format-state>
           [structural]
      rule [format-%F-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("F") => .List ...</format>
-          <formatState> "%" => "%F" </formatState>
+          <format-state> "%" => "%F" </format-state>
           [structural]
      rule [format-%F]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Float => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Float => .K </format-arg>
+          <format-result>... 
                .List => ListItem(toUpperCase(Float2String(D:Float))) 
-          </formatResult>
-          <formatState> "%F" => "reset" </formatState>
+          </format-result>
+          <format-state> "%F" => "reset" </format-state>
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -730,30 +730,30 @@ module LIBC-STDIO
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("g") => .List ...</format>
-          <formatState> "%" => "%g" </formatState>
+          <format-state> "%" => "%g" </format-state>
           [structural]
      rule [format-%g]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Float => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Float => .K </format-arg>
+          <format-result>... 
                .List => ListItem(Float2String(D:Float)) 
-          </formatResult>
-          <formatState> "%g" => "reset" </formatState>
+          </format-result>
+          <format-state> "%g" => "reset" </format-state>
           [structural]
      rule [format-%G-start]:
           <k> formatter-aux(V:KResult)
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("G") => .List ...</format>
-          <formatState> "%" => "%G" </formatState>
+          <format-state> "%" => "%G" </format-state>
           [structural]
      rule [format-%G]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> D:Float => .K </formatArg>
-          <formatResult>... 
+          <format-arg> D:Float => .K </format-arg>
+          <format-result>... 
                .List => ListItem(toUpperCase(Float2String(D:Float))) 
-          </formatResult>
-          <formatState> "%G" => "reset" </formatState>
+          </format-result>
+          <format-state> "%G" => "reset" </format-state>
           [structural]
 
      /* \source[n1570]{\para{7.21.6.1}{8}}
@@ -783,16 +783,16 @@ module LIBC-STDIO
                => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("c") => .List ...</format>
-          <formatState> "%" => "%c" </formatState>
+          <format-state> "%" => "%c" </format-state>
           [structural]
      rule [format-%c]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> C:Int => .K </formatArg>
-          <formatResult>... 
+          <format-arg> C:Int => .K </format-arg>
+          <format-result>... 
                .List => ListItem(chrChar(((C:Int %Int 256) +Int 256) 
                     %Int 256)) 
-          </formatResult>
-          <formatState> "%c" => "reset" </formatState>
+          </format-result>
+          <format-state> "%c" => "reset" </format-state>
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -827,23 +827,23 @@ module LIBC-STDIO
                => formatter-next(V:KResult)       
           ...</k>
           <format> ListItem("s") => .List ...</format>
-          <formatState> "%" => "%s" </formatState>
+          <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
           <k> (.K => getString(Loc))
                ~> formatter-aux(_)
           ...</k>
-          <formatArg> Loc:SymLoc => .K </formatArg>
-          <formatState> "%s" => "%s-read" </formatState>
+          <format-arg> Loc:SymLoc => .K </format-arg>
+          <format-state> "%s" => "%s-read" </format-state>
           [structural]
      rule [format-%s-done]:
           <k> (str(S:String) => .K)
                ~> formatter-aux(_)
           ...</k>
-          <formatResult>... 
+          <format-result>... 
                .List => ListItem(S:String)
-          </formatResult>
-          <formatState> "%s-read" => "reset" </formatState>
+          </format-result>
+          <format-state> "%s-read" => "reset" </format-state>
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -859,15 +859,15 @@ module LIBC-STDIO
                => formatter-next(V:KResult)       
           ...</k>
           <format> ListItem("p") => .List ...</format>
-          <formatState> "%" => "%p" </formatState>
+          <format-state> "%" => "%p" </format-state>
           [structural]
      rule [format-%p]:
           <k> formatter-aux(_) ...</k>
-          <formatArg> Loc:SymLoc => .K </formatArg>
-          <formatResult>...
+          <format-arg> Loc:SymLoc => .K </format-arg>
+          <format-result>...
                .List => ListItem(pointerToString(Loc))
-          </formatResult>
-          <formatState> "%p" => "reset" </formatState>
+          </format-result>
+          <format-state> "%p" => "reset" </format-state>
           [structural]
           
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
@@ -891,19 +891,19 @@ module LIBC-STDIO
      rule [format-%%]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem("%") => .List ...</format>
-          <formatResult>...
+          <format-result>...
                .List => ListItem("%") 
-          </formatResult>
-          <formatState> "%" => "reset" </formatState>
+          </format-result>
+          <format-state> "%" => "reset" </format-state>
           [structural]
 
      rule [format-%l]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem("l") => .List ...</format>
-          <formatState> "%" </formatState>
-          <formatLength>
+          <format-state> "%" </format-state>
+          <format-length>
                Length:String => Length:String +String "l"
-          </formatLength>
+          </format-length>
           [structural]
 endmodule
 

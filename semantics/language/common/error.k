@@ -42,8 +42,8 @@ module C-ERROR
 
      rule ERROR(Title:String, Msg:String) => ERROR(Title, Msg, .KList)
      rule (<k> ERROR(Title:String, Msg:String, Refs:KList) ~> K:K </k> 
-          => <finalComputation> K </finalComputation>)
-          (.Bag => <errorCell> Error(Title, Msg, Refs) </errorCell>)
+          => <final-computation> K </final-computation>)
+          (.Bag => <error-cell> Error(Title, Msg, Refs) </error-cell>)
 
      rule [err00011]:
           (. => ERROR("00011", "Directly comparing an integer type with a pointer type.") ) ~>

@@ -33,7 +33,7 @@ module LIBC-THREADS
                     ~> spawn-aux(
                     Fresh:Int, ThFuncPointer:KResult, ThArg:KResult)
           ...</k>
-          <nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
+          <next-thread-id> Fresh:Int => Fresh:Int +Int 1 </next-thread-id>
           [structural]
      /*
      See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
@@ -44,22 +44,22 @@ module LIBC-THREADS
                          ThId:Int, ThFuncPointer:KResult, ThArg:KResult) 
                     => thrd-success 
                ...</k>
-               <currTU> Tu:K </currTU>
+               <curr-tu> Tu:K </curr-tu>
                <buffer> .List </buffer>
           ...</thread>
           <genv> Env:Map </genv>
-          <threadStatus> 
+          <thread-status> 
                Status:Map => Status:Map[threadRunning / ThId:Int]
-          </threadStatus>
+          </thread-status>
           <br/>
           (.Bag =>
           <thread>...
-               <nextLoc> firstLoc(thread(ThId:Int)) </nextLoc>
-               <threadId> ThId:Int </threadId>
+               <next-loc> firstLoc(thread(ThId:Int)) </next-loc>
+               <thread-id> ThId:Int </thread-id>
                <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
                </k>
                <env> Env:Map </env>
-               <currTU> Tu:K </currTU>
+               <curr-tu> Tu:K </curr-tu>
           ...</thread>)
           [large, ndthread]
           
@@ -67,7 +67,7 @@ module LIBC-THREADS
           <k> prepareBuiltin(Identifier("thrd_current"), .List)
                => tv(ThId:Int, t(.Set, int))
           ...</k>
-          <threadId> ThId:Int </threadId>
+          <thread-id> ThId:Int </thread-id>
           [structural]
           
      syntax K ::= "join-aux" "(" Int "," Value ")"
@@ -92,7 +92,7 @@ module LIBC-THREADS
           ...</thread>
           <thread>...
                <k> V:KResult </k>
-               <threadId> ThId:Int </threadId>
+               <thread-id> ThId:Int </thread-id>
           ...</thread>
           [ndthread]
 

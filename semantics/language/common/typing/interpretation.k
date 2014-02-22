@@ -128,12 +128,12 @@ module C-TYPING-INTERPRETATION
           [structural]
      
      rule <k> JustBase => T ...</k>
-          <declarationTypeHolder> T:Type => . ...</declarationTypeHolder>
+          <decl-type-holder> T:Type => . ...</decl-type-holder>
           [structural]
 
      syntax K ::= "extractActualTypeFreezer"
      rule <k> DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</k>
-          <declarationTypeHolder> (. => T) ...</declarationTypeHolder>
+          <decl-type-holder> (. => T) ...</decl-type-holder>
           [structural]
      
      rule T:Type ~> extractActualTypeFreezer 

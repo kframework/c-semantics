@@ -30,35 +30,35 @@ module C-PROCESS-LABEL
      
      syntax K ::= "waitingOnGotoMap"
      rule <k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
-          <currentFunction> _ => F </currentFunction>
-          <currTU> Tu:String </currTU>
+          <curr-function> _ => F </curr-function>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map> M:Map => M:Map[map(.Map) / F] </goto-map>
-          <calculateGotoMap>
-               .Bag => (<gotoCalculation>... 
+          <goto-map-calc>
+               .Bag => (<goto-calc>... 
                          <computation> 
                               K:K ~> Return(NothingExpression)
                          </computation>
-                    ...</gotoCalculation>)
-          </calculateGotoMap>
+                    ...</goto-calc>)
+          </goto-map-calc>
           [structural] 
           
-     rule (<gotoCalculation>
+     rule (<goto-calc>
                <computation> .K </computation>
-          ...</gotoCalculation>) => .Bag
+          ...</goto-calc>) => .Bag
           [structural] 
 
      rule <k> waitingOnGotoMap => . ...</k>
-          <calculateGotoMap> .Bag </calculateGotoMap>
-          <currentFunction> F:Id => file-scope </currentFunction>
-          <currTU> Tu:K </currTU>
+          <goto-map-calc> .Bag </goto-map-calc>
+          <curr-function> F:Id => file-scope </curr-function>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural] 
      rule <k> waitingOnGotoMap => . ...</k>
-          <calculateGotoMap> .Bag </calculateGotoMap>
-          <currentFunction> F:Id => file-scope </currentFunction>
-          <currTU> Tu:K </currTU>
+          <goto-map-calc> .Bag </goto-map-calc>
+          <curr-function> F:Id => file-scope </curr-function>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
           when M =/=Map .Map
@@ -68,26 +68,26 @@ module C-PROCESS-LABEL
      rule <computation> 
                   BlockStatement(Blk:K) => Blk ~> popBlock
           ...</computation>
-          <nestingDepthGoto> N:Int => N +Int 1 </nestingDepthGoto>
-          <blockHistoryGoto> ListItem(_:Int) ...</blockHistoryGoto>
+          <goto-nesting-depth> N:Int => N +Int 1 </goto-nesting-depth>
+          <goto-block-history> ListItem(_:Int) ...</goto-block-history>
           [structural] 
      rule <computation>
                Block(Num:Int, _, list(L:List)) => listToK(L)
           ...</computation> 
-          <blockHistoryGoto> . => ListItem(Num) ...</blockHistoryGoto>
+          <goto-block-history> . => ListItem(Num) ...</goto-block-history>
           [structural] 
           
      rule <computation> popBlock => .K ...</computation>
-          <nestingDepthGoto> I:Int => I -Int 1 </nestingDepthGoto>
-          <blockHistoryGoto>
+          <goto-nesting-depth> I:Int => I -Int 1 </goto-nesting-depth>
+          <goto-block-history>
                (_:ListItem => .List) ListItem(_:Int)
-          ...</blockHistoryGoto>
+          ...</goto-block-history>
           when I:Int >Int 0
           [structural] 
           
      rule [DefinitionLoc-computation]:
           <computation> CodeLoc(K:K, L:CabsLoc) => K ...</computation>
-          <currentProgramLoc> _ => L </currentProgramLoc>
+          <curr-program-loc> _ => L </curr-program-loc>
           [structural] 
 
      // this rule is different than the dynamic one because we don't enforce T
@@ -106,30 +106,30 @@ module C-PROCESS-LABEL
                DeclarationDefinition(InitNameGroup(T:K, list(ListItem(K:K)))) 
                => .K 
           ...</computation>
-          <declarationStack>... 
+          <decl-stack>... 
                .List 
                => ListItem(frozenDeclaration(Depth, BlockNum,
                     DeclarationDefinition(InitNameGroup(T, list(ListItem(K)))))) 
-          </declarationStack>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
+          </decl-stack>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
           [structural, large]
           
      rule <computation> OnlyTypedef(K:K) => .K ...</computation>
-          <declarationStack>... .List 
+          <decl-stack>... .List 
                => ListItem(frozenDeclaration(Depth, BlockNum, OnlyTypedef(K)))
-          </declarationStack>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
+          </decl-stack>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
           [structural] 
           
      rule [compute-label-typedef]:
           <computation> Typedef(K:K) => .K ...</computation>
-          <declarationStack>... .List 
+          <decl-stack>... .List 
                => ListItem(frozenDeclaration(Depth, BlockNum, Typedef(K))) 
-          </declarationStack>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> ListItem(BlockNum:Int) ...</blockHistoryGoto>
+          </decl-stack>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
           [structural] 
           
      rule [compute-label-ignore-non-statement]:
@@ -146,23 +146,23 @@ module C-PROCESS-LABEL
           
      // - should do this with a split
      rule [compute-label-for]:
-          <gotoCalculation>
+          <goto-calc>
                <computation> 
                     (For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) => .K) 
                     ~> K:K 
                </computation>
-               <computationTail> Tail:K </computationTail>
+               <computation-tail> Tail:K </computation-tail>
                B:Bag
-               <nestingDepthGoto> N:Int </nestingDepthGoto>
-               <blockHistoryGoto>
+               <goto-nesting-depth> N:Int </goto-nesting-depth>
+               <goto-block-history>
                     ListItem(Num:Int) OldBlockHistory:List
-               </blockHistoryGoto>
-               <loopStackGoto> OldLoopStack:List </loopStackGoto>
-          </gotoCalculation>
+               </goto-block-history>
+               <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
+          </goto-calc>
           (. =>
-               <gotoCalculation> 
+               <goto-calc> 
                     <computation> S </computation>
-                    <computationTail>
+                    <computation-tail>
                          Computation(Post)
                          ~> loopMarked
                          ~> For(ForNum, Pre, (
@@ -173,49 +173,49 @@ module C-PROCESS-LABEL
                          ~> popLoop
                          ~> K
                          ~> Tail
-                    </computationTail>
+                    </computation-tail>
                     B
-                    <nestingDepthGoto> N +Int 1 </nestingDepthGoto>
-                    <blockHistoryGoto>
+                    <goto-nesting-depth> N +Int 1 </goto-nesting-depth>
+                    <goto-block-history>
                          ListItem(ForNum) 
                          ListItem(Num) OldBlockHistory
-                    </blockHistoryGoto>
-                    <loopStackGoto>
+                    </goto-block-history>
+                    <goto-loop-stack>
                          ListItem(kpair(Num, (K ~> Tail))) 
                          OldLoopStack
-                    </loopStackGoto>
-               </gotoCalculation>
+                    </goto-loop-stack>
+               </goto-calc>
           )
           [structural, large] 
           
      rule [compute-label-do-while]:
-          <gotoCalculation>
+          <goto-calc>
                <computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
-               <computationTail> Tail:K </computationTail>
+               <computation-tail> Tail:K </computation-tail>
                B:Bag
-               <blockHistoryGoto>
+               <goto-block-history>
                     ListItem(Num:Int) OldBlockHistory:List
-               </blockHistoryGoto>
-               <loopStackGoto> OldLoopStack:List </loopStackGoto>
-          </gotoCalculation>
+               </goto-block-history>
+               <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
+          </goto-calc>
           (. =>
-               <gotoCalculation> 
+               <goto-calc> 
                     <computation> S </computation>
-                    <computationTail>
+                    <computation-tail>
                          IfThenElse(E, (loopMarked ~> DoWhile(E, S)), Nop)
                          ~> popLoop
                          ~> K
                          ~> Tail
-                    </computationTail>
+                    </computation-tail>
                     B
-                    <blockHistoryGoto>
+                    <goto-block-history>
                          ListItem(Num) OldBlockHistory
-                    </blockHistoryGoto>
-                    <loopStackGoto>
+                    </goto-block-history>
+                    <goto-loop-stack>
                          ListItem(kpair(Num, (K ~> Tail)))
                          OldLoopStack
-                    </loopStackGoto>
-               </gotoCalculation>
+                    </goto-loop-stack>
+               </goto-calc>
           )
           [structural, large]
           
@@ -226,11 +226,11 @@ module C-PROCESS-LABEL
                ~> (. => popLoop)
                ~> K:K
           </computation>
-          <computationTail> Tail:K </computationTail>
-          <blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>
-          <loopStackGoto>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-block-history> ListItem(Num:Int) ...</goto-block-history>
+          <goto-loop-stack>
                (. => ListItem(kpair(Num, (K ~> Tail))))
-          ...</loopStackGoto>
+          ...</goto-loop-stack>
           [structural] 
      rule [compute-label-while-done]:
           <computation>
@@ -239,26 +239,26 @@ module C-PROCESS-LABEL
           [structural] 
           
      rule [compute-label-if-then-else]:
-          <gotoCalculation>
+          <goto-calc>
                <computation>
                     (IfThenElse(_, S1:K, S2:K) => .K) ~> K:K
                </computation>
-               <computationTail> Tail:K </computationTail>
+               <computation-tail> Tail:K </computation-tail>
                B:Bag
-          </gotoCalculation>
+          </goto-calc>
           (. =>
-               <gotoCalculation> 
+               <goto-calc> 
                     <computation> S1 </computation> 
-                    <computationTail> K ~> Tail </computationTail>
+                    <computation-tail> K ~> Tail </computation-tail>
                     B
-               </gotoCalculation>
+               </goto-calc>
           )
           (. =>
-               <gotoCalculation> 
+               <goto-calc> 
                     <computation> S2 </computation>
-                    <computationTail> K ~> Tail </computationTail>
+                    <computation-tail> K ~> Tail </computation-tail>
                     B
-               </gotoCalculation>
+               </goto-calc>
           )
           [structural, large] 
           
@@ -266,26 +266,26 @@ module C-PROCESS-LABEL
           <computation>
                (Switch(_, _, S:K) => S ~> popLoop) ~> K:K
           </computation>
-          <computationTail> Tail:K </computationTail>
-          <blockHistoryGoto> ListItem(Num:Int) ...</blockHistoryGoto>
-          <loopStackGoto>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-block-history> ListItem(Num:Int) ...</goto-block-history>
+          <goto-loop-stack>
                (. => ListItem(kpair(Num, (K ~> Tail))))
-          ...</loopStackGoto>
+          ...</goto-loop-stack>
           [structural] 
           
      rule [compute-label-poploop]:
           <computation> popLoop => .K ...</computation>
-          <loopStackGoto> (_:ListItem => .) ...</loopStackGoto>
+          <goto-loop-stack> (_:ListItem => .) ...</goto-loop-stack>
           [structural] 
           
      rule <computation> (Label(Target:Id, S:K) => S) ~> K:K </computation>
-          <computationTail> Tail:K </computationTail>
-          <loopStackGoto> LoopStack:List </loopStackGoto>
-          <declarationStack> DeclStack:List </declarationStack>
-          <currentFunction> F:Id </currentFunction>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
-          <currTU> Tu:K </currTU>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-loop-stack> LoopStack:List </goto-loop-stack>
+          <decl-stack> DeclStack:List </decl-stack>
+          <curr-function> F:Id </curr-function>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> BlockHistory:List </goto-block-history>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
                F |-> map(
@@ -300,13 +300,13 @@ module C-PROCESS-LABEL
      rule <computation> 
                (Case(SwitchNum:Int, CaseNum:Int, Val:K, S:K) => S) ~> K:K
           </computation>
-          <computationTail> Tail:K </computationTail>
-          <loopStackGoto> LoopStack:List </loopStackGoto>
-          <declarationStack> DeclStack:List </declarationStack>
-          <currentFunction> F:Id </currentFunction>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
-          <currTU> Tu:K </currTU>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-loop-stack> LoopStack:List </goto-loop-stack>
+          <decl-stack> DeclStack:List </decl-stack>
+          <curr-function> F:Id </curr-function>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> BlockHistory:List </goto-block-history>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:Id |-> map(
@@ -322,13 +322,13 @@ module C-PROCESS-LABEL
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
           </computation>
-          <computationTail> Tail:K </computationTail>
-          <loopStackGoto> LoopStack:List </loopStackGoto>
-          <declarationStack> DeclStack:List </declarationStack>
-          <currentFunction> F:Id </currentFunction>
-          <nestingDepthGoto> Depth:Int </nestingDepthGoto>
-          <blockHistoryGoto> BlockHistory:List </blockHistoryGoto>
-          <currTU> Tu:K </currTU>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-loop-stack> LoopStack:List </goto-loop-stack>
+          <decl-stack> DeclStack:List </decl-stack>
+          <curr-function> F:Id </curr-function>
+          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
+          <goto-block-history> BlockHistory:List </goto-block-history>
+          <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:Id |-> map(

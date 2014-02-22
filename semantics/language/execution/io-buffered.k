@@ -49,10 +49,10 @@ module C-IO-BUFFERED
                (.List => bwrite(loc(Base, Offset, 0), V))
           </buffer>
           <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
-          <locsWrittenTo>
+          <locs-written>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
-          </locsWrittenTo>
-          <notWritable> NotWritable:Set </notWritable>
+          </locs-written>
+          <not-writable> NotWritable:Set </not-writable>
           when (notBool BagItem(loc(Base, Offset, 0)) in Locs)
                andBool (notBool (BagItem(mconst) in Attrs))
                andBool (notBool (loc(Base, Offset, 0) in NotWritable))
@@ -111,7 +111,7 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locsWrittenTo> Locs:Bag </locsWrittenTo>
+          <locs-written> Locs:Bag </locs-written>
           <buffer> .List </buffer>
           [large, structural]
 
@@ -125,7 +125,7 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locsWrittenTo> Locs:Bag </locsWrittenTo>
+          <locs-written> Locs:Bag </locs-written>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset, 0) in locations(Mem)
           [large, structural]
@@ -153,7 +153,7 @@ module C-IO-BUFFERED
 //                  => assert(notBool BagItem(Loc) in Locs:Bag, 3)
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
-//             <locsWrittenTo> Locs:Bag </locsWrittenTo>
+//             <locs-written> Locs:Bag </locs-written>
 //             <buffer>... bwrite(Loc, V:K) Mem:List </buffer>
 //             when notBool Loc in locations(Mem:List)
 //             [structural]

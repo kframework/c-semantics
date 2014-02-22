@@ -59,24 +59,24 @@ module C-STMT-GOTO
                     declarations, so we need to figure out which variables
                     should be left alone, allocated but not initialized, or
                     deallocated
-                         a. Skip any entries in the frozen declarationStack
-                         where the nestingDepth is smaller than our current
-                         nestingDepth
+                         a. Skip any entries in the frozen decl-stack
+                         where the nesting-depth is smaller than our current
+                         nesting-depth
                          b. All that remains should be variables in the same
                          block as the target
                          c. As we step through the variables in the frozen
-                         declarationStack
+                         decl-stack
                               i. any variables we see that we have already
                               declared stay allocated and keep their old value
                               ii. any variables that are in the
-                              declarationStack but have not been declared are
+                              decl-stack but have not been declared are
                               variables we must allocate but not initialize
                               iii. any variables that have been declared but
-                              are not in the declarationStack need to be
+                              are not in the decl-stack need to be
                               deallocated
                - Case 2: We are in a different block than the target
                     1. We need to unwind blocks from the blockstack until we're
-                    in at nestingDepth 1 less than the nesting depth of the
+                    in at nesting-depth 1 less than the nesting depth of the
                     target
                          a. for each block we pop, we need to unallocate the
                          memory
@@ -96,8 +96,8 @@ module C-STMT-GOTO
      // declaration stack, actual local variables
      syntax K ::= processGotoSameBlock(List, List)
      rule <k> Goto(Lbl:K) ~> _ => processGoto(GotoInfo) </k>
-          <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:String </currTU>
+          <curr-function> F:Id </curr-function>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F |-> map((_ (Lbl |-> GotoInfo:K))) 
@@ -113,11 +113,11 @@ module C-STMT-GOTO
                => addVariablesForBlock(CurrentBlock, DeclStack)
                     ~> K
           </k>
-          <nestingDepth> Depth:Int </nestingDepth>
-          <blockHistory> 
+          <nesting-depth> Depth:Int </nesting-depth>
+          <block-history> 
                ListItem(CurrentBlock:Int) BlockHistory:List
-          </blockHistory>
-          <loopStack> _ => LoopStack </loopStack>
+          </block-history>
+          <loop-stack> _ => LoopStack </loop-stack>
           when (L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown)
           [structural] 
@@ -132,9 +132,9 @@ module C-STMT-GOTO
                ~> processGoto(gotoObject(
                     _:Int, TargetBlockHistory:List, _, _, _))
           ...</k>
-          <blockHistory> 
+          <block-history> 
                ListItem(BlockNum:Int) _:List
-          </blockHistory>
+          </block-history>
           when notBool BlockNum in TargetBlockHistory
           [structural] 
           
@@ -146,9 +146,9 @@ module C-STMT-GOTO
                     _:List ListItem(BlockNum:Int)
                     TargetBlockHistory:List, _, _, _))
           ...</k>
-          <blockHistory>
+          <block-history>
                ListItem(BlockNum:Int) ActualHistory:List
-          </blockHistory>
+          </block-history>
           when TargetBlockHistory =/=List ActualHistory
           [structural] 
                
@@ -162,10 +162,10 @@ module C-STMT-GOTO
                          (Prefix ListItem(CurrentBlock) ActualHistory),
                          K, LoopStack, DeclStack))
           ...</k>
-          <nestingDepth> ActualDepth:Int </nestingDepth>
-          <blockHistory>
+          <nesting-depth> ActualDepth:Int </nesting-depth>
+          <block-history>
                ListItem(CurrentBlock:Int) ActualHistory:List
-          </blockHistory>
+          </block-history>
           when ActualDepth +Int 1 =/=Int TargetDepth
           [structural, large] 
           
@@ -177,8 +177,8 @@ module C-STMT-GOTO
                     (_ ListItem(TargetBlk:Int) ActualHist:List), _, _,
                     DeclStk:List))
           ...</k>
-          <nestingDepth> ActualDepth:Int </nestingDepth>
-          <blockHistory> ActualHist:List </blockHistory>
+          <nesting-depth> ActualDepth:Int </nesting-depth>
+          <block-history> ActualHist:List </block-history>
           when ActualDepth +Int 1 =/=Int TargetDepth
           [structural, large] 
      
@@ -196,9 +196,9 @@ module C-STMT-GOTO
                     ~> addVariablesForBlock(TargetBlock, DeclStack)
                     ~> K
           </k>
-          <nestingDepth> Depth:Int </nestingDepth>
-          <blockHistory> BlockHistory:List </blockHistory>
-          <loopStack> _ => LoopStack </loopStack>
+          <nesting-depth> Depth:Int </nesting-depth>
+          <block-history> BlockHistory:List </block-history>
+          <loop-stack> _ => LoopStack </loop-stack>
           when ((L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown))
                andBool (SIntDepth ==Int Depth +Int 1)
@@ -214,7 +214,7 @@ module C-STMT-GOTO
                     _:List)
                )
           ...</k>
-          <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
+          <block-history> ListItem(TargetBlock:Int) ...</block-history>
           when BlockNum =/=Int TargetBlock
           [structural] 
           
@@ -226,15 +226,15 @@ module C-STMT-GOTO
                     _:List)
                )
           ...</k>
-          <localVariables> Vars:List </localVariables>
-          <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
+          <local-vars> Vars:List </local-vars>
+          <block-history> ListItem(TargetBlock:Int) ...</block-history>
           when getIdOfDeclaration(Decl) in Vars
           [structural]
      
      syntax K ::= "enableInits"
      
      rule <k> enableInits => . ...</k>
-          <shouldInit> _ => true </shouldInit>
+          <should-init> _ => true </should-init>
           [structural] 
      
      rule <k> (. => Decl:K
@@ -245,9 +245,9 @@ module C-STMT-GOTO
                          _:Int, TargetBlock:Int, Decl:K)) => .List) _)
                )
           ...</k>
-          <localVariables> Vars:List </localVariables>
-          <blockHistory> ListItem(TargetBlock:Int) ...</blockHistory>
-          <shouldInit> _ => false </shouldInit>
+          <local-vars> Vars:List </local-vars>
+          <block-history> ListItem(TargetBlock:Int) ...</block-history>
+          <should-init> _ => false </should-init>
           when notBool getIdOfDeclaration(Decl) in Vars
           [structural]
           

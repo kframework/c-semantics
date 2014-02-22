@@ -105,7 +105,7 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
                writeByte(Loc:SymLoc, _) 
           ...</k>
-          <locsWrittenTo> Locs:Bag </locsWrittenTo>
+          <locs-written> Locs:Bag </locs-written>
           when BagItem(Loc) in Locs:Bag
           [structural, large] 
           
@@ -162,7 +162,7 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00025b", "Main must exist.", 4) ) ~>
                callMain(_, _)
           ...</k>
-          <mainTU> .Set </mainTU>
+          <main-tu> .Set </main-tu>
           [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
@@ -275,7 +275,7 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
                writeByte(Loc:SymLoc, _)
           ...</k>
-          <notWritable>... SetItem(Loc) ...</notWritable>
+          <not-writable>... SetItem(Loc) ...</not-writable>
           [structural, large]
 
      rule

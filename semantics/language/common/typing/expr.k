@@ -290,7 +290,7 @@ module C-TYPING-EXPR
           
      rule [ExpressionLoc-type]:
           <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
-          <currentProgramLoc> _ => L:CabsLoc </currentProgramLoc>
+          <curr-program-loc> _ => L:CabsLoc </curr-program-loc>
           [structural]
 endmodule
 

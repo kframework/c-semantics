@@ -139,23 +139,23 @@ module C-TYPING-CANONICALIZATION
      rule <k> canonicalizeSpecifier(BagItem(
                 StructDef((Identifier("") => unnamed(N, TU)), _)))
            ...</k>
-           <currTU> TU:String </currTU>
+           <curr-tu> TU:String </curr-tu>
            <tu-id> TU </tu-id>
-           <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
+           <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
            [structural]
      rule <k> canonicalizeSpecifier(BagItem(
                EnumDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
-          <currTU> TU:String </currTU>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
+          <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(
                UnionDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
-          <currTU> TU:String </currTU>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <freshUnnamed> N:Int => N +Int 1 </freshUnnamed>
+          <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
           [structural]
      
      rule canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))

@@ -41,18 +41,18 @@ module LIBC-IO
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD </fid>
-          <nextByte> .K => chrChar(#getc(FD)) </nextByte>
+          <next-byte> .K => chrChar(#getc(FD)) </next-byte>
           <buff> "" </buff>
           [structural]
-     rule <nextByte> Byte:String => .K </nextByte>
+     rule <next-byte> Byte:String => .K </next-byte>
           <buff> Buff:String => Buff +String Byte </buff>
           [structural]
      rule <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
           <fid> FD </fid>
-          <nextByte> #EOF </nextByte>
+          <next-byte> #EOF </next-byte>
           [observable]
 
-     rule <nextByte> chrChar((#EOF)::K) => #EOF </nextByte>
+     rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
           [structural, simplification]
 
      syntax K ::= "f-sent" "(" Int "," String ")"
@@ -60,14 +60,14 @@ module LIBC-IO
      
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
-          <fileCommands>... 
+          <file-commands>... 
                . => f-flush(FD)
-          </fileCommands>
+          </file-commands>
           [structural]
      rule [f-flush]:
-          <fileCommands>
+          <file-commands>
                f-flush(FD:Int) => f-sendString(FD, S) ~> f-sent(FD, S)
-          ...</fileCommands>
+          ...</file-commands>
           <file>...
                <fid> FD:Int </fid>
                <buff> S:String => "" </buff>
@@ -76,19 +76,19 @@ module LIBC-IO
           [structural]
 
      rule [sendString-one]:
-          <fileCommands> 
+          <file-commands> 
                f-sendString(FD:Int, S:String) 
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
-          ...</fileCommands>
+          ...</file-commands>
           when S =/=String ""
           [structural]
      rule [sendString-done]:
-          <fileCommands> f-sendString(_, "") => . ...</fileCommands>
+          <file-commands> f-sendString(_, "") => . ...</file-commands>
           [structural]
 
      rule [f-sent]:
-          <fileCommands> f-sent(FD:Int, S:String) => . ...</fileCommands>
+          <file-commands> f-sent(FD:Int, S:String) => . ...</file-commands>
           <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>

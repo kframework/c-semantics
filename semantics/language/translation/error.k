@@ -63,7 +63,7 @@ module C-TRANSLATION-ERROR
      //           (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
      //           writeByte(Loc:SymLoc, _) 
      //      ...</k>
-     //      <locsWrittenTo> Locs:Bag </locsWrittenTo>
+     //      <locs-written> Locs:Bag </locs-written>
      //      when BagItem(Loc) in Locs:Bag
      //      [structural, large] 
      //      
@@ -116,7 +116,7 @@ module C-TRANSLATION-ERROR
    //             (. => ERROR("00025b", "Main must exist.", 4) ) ~>
    //             callMain(_, _)
    //        ...</k>
-   //        <mainTU> .K </mainTU>
+   //        <main-tu> .K </main-tu>
    //        [structural, large]
    //   rule [err00026]:
    //        (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
@@ -211,7 +211,7 @@ module C-TRANSLATION-ERROR
      //           (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
      //           writeByte(Loc:SymLoc, _)
      //      ...</k>
-     //      <notWritable>... SetItem(Loc) ...</notWritable>
+     //      <not-writable>... SetItem(Loc) ...</not-writable>
      //      [structural, large]
 
      syntax K ::= verifySpecifiers(Id)
@@ -224,29 +224,33 @@ module C-TRANSLATION-ERROR
           when notBool (isStaticType(T) andBool isExternType(T))
 
      rule <k> verifySpecifiers(X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <currentFunction> file-scope </currentFunction>
-          <typeSpecifiers>... kpair(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
+          <curr-tu> Tu:String </curr-tu>
+          <curr-function> file-scope </curr-function>
+          <type-specifiers>... kpair(Tu, X) |-> qs(Qs:Set) </type-specifiers>
           when notBool (Static in Qs andBool Extern in Qs)
                andBool notBool (Auto in Qs)
                andBool notBool (Register in Qs)
 
      rule <k> verifySpecifiers(X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <currentFunction> F:Id </currentFunction>
-          <typeSpecifiers>... kpair(Tu, X) |-> qs(Qs:Set) </typeSpecifiers>
+          <curr-tu> Tu:String </curr-tu>
+          <curr-function> F:Id </curr-function>
+          <type-specifiers>... kpair(Tu, X) |-> qs(Qs:Set) </type-specifiers>
           when notBool (Static in Qs andBool Extern in Qs)
                andBool (F =/=K file-scope)
 
      syntax K ::= saveSpecifiers(Type, Id)
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <typeSpecifiers> Decls:Map (. => kpair(Tu, X) |-> qs(getQualities(T))) </typeSpecifiers>
+          <curr-tu> Tu:String </curr-tu>
+          <type-specifiers>
+               Decls:Map (. => kpair(Tu, X) |-> qs(getQualities(T)))
+          </type-specifiers>
           when notBool (kpair(Tu, X) in keys Decls)
           [structural] 
      rule <k> saveSpecifiers(T:Type, X:Id) => . ...</k>
-          <currTU> Tu:String </currTU>
-          <typeSpecifiers>...  kpair(Tu, X) |-> qs(_ (. => getQualities(T))) </typeSpecifiers>
+          <curr-tu> Tu:String </curr-tu>
+          <type-specifiers>... 
+               kpair(Tu, X) |-> qs(_ (. => getQualities(T)))
+          </type-specifiers>
           [structural] 
 
      rule (. => ERROR("00208a",
@@ -260,30 +264,30 @@ module C-TRANSLATION-ERROR
                +String " static and extern specifiers (at different locations in the same translation unit).", 8)) ~>
           verifySpecifiers(Identifier(S:String))
           ...</k>
-          <currTU> Tu:String </currTU>
-          <typeSpecifiers>... 
+          <curr-tu> Tu:String </curr-tu>
+          <type-specifiers>... 
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
-          ...</typeSpecifiers>
+          ...</type-specifiers>
 
      // TODO(chathhorn): figure out what to do with these error numbers.
      rule <k> (. => ERROR("90692a",
                "Global declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
                verifySpecifiers(Identifier(S:String))
           ...</k>
-          <currTU> Tu:String </currTU>
-          <currentFunction> file-scope </currentFunction>
-          <typeSpecifiers>... 
+          <curr-tu> Tu:String </curr-tu>
+          <curr-function> file-scope </curr-function>
+          <type-specifiers>... 
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
-          ...</typeSpecifiers>
+          ...</type-specifiers>
      rule <k> (. => ERROR("90692b",
                "Global declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
                verifySpecifiers(Identifier(S:String))
           ...</k>
-          <currTU> Tu:String </currTU>
-          <currentFunction> file-scope </currentFunction>
-          <typeSpecifiers>... 
+          <curr-tu> Tu:String </curr-tu>
+          <curr-function> file-scope </curr-function>
+          <type-specifiers>... 
                kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
-          ...</typeSpecifiers>
+          ...</type-specifiers>
 
      rule <k> (. => ERROR("90058",
           "Initializer element is not a compile-time constant.", 58))
@@ -296,8 +300,8 @@ module C-TRANSLATION-ERROR
 //                +String " with incompatible types.", 15)) ~>
 //                verifyCompat(T:Type, Identifier(S:String)) 
 //           ...</k>
-//           <currTU> Tu:String </currTU>
-//           <rawTypes>... kpair(Tu, Identifier(S)) |-> PrevT:Type </rawTypes>
+//           <curr-tu> Tu:String </curr-tu>
+//           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>
 //           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
 
 // TODO(chathhorn): our type normalizer incorrectly puts the qualifiers on

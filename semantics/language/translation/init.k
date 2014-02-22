@@ -44,7 +44,7 @@ module C-TRANSLATION-INIT
                ~> listToK(deCons(K))
                ~> allocateIncompleteTentatives
           ...</k>
-          <currTU> _ => TU </currTU>
+          <curr-tu> _ => TU </curr-tu>
           <translation-units>...
                (.Bag => <tu>...
                     <tu-id> TU </tu-id>
@@ -81,7 +81,7 @@ module C-TRANSLATION-INIT
           <external-defs> 
                Defs:Map => Defs:Map[Loc / Identifier(B)]
           </external-defs>
-          <currTU> TU:String </currTU>
+          <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           when notBool Identifier(B) in keys Defs
@@ -105,7 +105,7 @@ module C-TRANSLATION-INIT
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
                <gstructs> Structs1:Map </gstructs>
-               <notWritable> NoWrite1:Set </notWritable>
+               <not-writable> NoWrite1:Set </not-writable>
 
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
@@ -116,7 +116,7 @@ module C-TRANSLATION-INIT
 
                <linkings> Links1:Map </linkings>
 
-               <mainTU> Main1:Set </mainTU>
+               <main-tu> Main1:Set </main-tu>
 
                <translation-units> TUs1:Bag </translation-units>
           </global>),
@@ -124,7 +124,7 @@ module C-TRANSLATION-INIT
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
                <gstructs> Structs2:Map </gstructs>
-               <notWritable> NoWrite2:Set </notWritable>
+               <not-writable> NoWrite2:Set </not-writable>
 
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
@@ -135,7 +135,7 @@ module C-TRANSLATION-INIT
 
                <linkings> Links2:Map </linkings>
 
-               <mainTU> Main2:Set </mainTU>
+               <main-tu> Main2:Set </main-tu>
 
                <translation-units> TUs2:Bag </translation-units>
           </global>))
@@ -144,7 +144,7 @@ module C-TRANSLATION-INIT
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
                <gstructs> Structs1 Structs2 </gstructs>
-               <notWritable> NoWrite1 NoWrite2 </notWritable>
+               <not-writable> NoWrite1 NoWrite2 </not-writable>
 
                <linking-state>
                     <external-decls> ExtDecls1 ExtDecls2 </external-decls>
@@ -155,7 +155,7 @@ module C-TRANSLATION-INIT
 
                <linkings> Links1 Links2 </linkings>
 
-               <mainTU> Main1 Main2 </mainTU>
+               <main-tu> Main1 Main2 </main-tu>
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>

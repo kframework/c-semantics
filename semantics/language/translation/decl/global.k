@@ -47,7 +47,7 @@ module C-DECL-GLOBAL
      rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
-          <currentFunction> F:K </currentFunction>
+          <curr-function> F:K </curr-function>
           when F =/=K file-scope
           [structural] 
           
@@ -57,8 +57,8 @@ module C-DECL-GLOBAL
                     #then NoInit 
                     #else CodeLoc(K, L) #fi)
           ...</k>
-          <currentFunction> file-scope </currentFunction>
-          <currentProgramLoc> L:CabsLoc </currentProgramLoc>
+          <curr-function> file-scope </curr-function>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
           when isFunctionType(T)
                // TODO(chathhorn): type canonicalization doesn't work right so
                // we can't do this. Qualifiers on function decls appear to
@@ -74,8 +74,8 @@ module C-DECL-GLOBAL
                     #then NoInit 
                     #else CodeLoc(K, L) #fi)
           ...</k>
-          <currentFunction> file-scope </currentFunction>
-          <currentProgramLoc> L:CabsLoc </currentProgramLoc>
+          <curr-function> file-scope </curr-function>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
           when notBool isFunctionType(T)
           [structural] 
           
@@ -131,7 +131,7 @@ module C-DECL-GLOBAL
                => declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
                     Loc, State, internal, isExtern(T))
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals>...
                X |-> declState(Loc:SymLoc, _, State:DeclState, _)
@@ -146,7 +146,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
                     Loc, State, external, false)
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... 
                X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
@@ -161,7 +161,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
                     Loc, State, external, true)
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... 
                X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
@@ -178,7 +178,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
                     Loc, declared, external, isExtern(T))
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-link-loc> Loc:SymLoc => linc(Loc) </next-link-loc>
           <externals>
@@ -198,7 +198,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
                     Loc, declared, internal, false)
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <internals>
@@ -326,7 +326,7 @@ module C-DECL-GLOBAL
      rule <k> updateDecl(X:Id, S:DeclState, external) 
                => updateLinkState(X, T', Loc') 
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv>... X |-> Loc':SymLoc ...</genv>
           <gtypes>... X |-> T':Type ...</gtypes>
@@ -336,7 +336,7 @@ module C-DECL-GLOBAL
           when isTypeCompatible(T, T') 
           [structural]
      rule <k> updateDecl(X:Id, S:DeclState, internal) => . ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv>... X |-> Loc':SymLoc ...</genv>
           <gtypes>... X |-> T':Type ...</gtypes>
@@ -347,14 +347,14 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> updateLinkState(X:Id, T':Type, _) ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (. => X |-> T') </external-types>
           when notBool X in keys Decls
           [structural]
      // Incomplete type, no def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> T:Type ...</external-types>
           when isLinkerLoc(Loc')
@@ -363,7 +363,7 @@ module C-DECL-GLOBAL
           [structural]
      // Complete type, no def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> (T:Type => T') ...</external-types>
           when isLinkerLoc(Loc')
@@ -423,7 +423,7 @@ module C-DECL-GLOBAL
                ~> allocateType(Loc', T) 
                ~> allowInit(zero(X))
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
           <linkings>... (. => Loc |-> Loc') </linkings>

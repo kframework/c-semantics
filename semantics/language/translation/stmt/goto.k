@@ -3,8 +3,8 @@ module C-STMT-GOTO
      imports COMPAT-SYNTAX
 
      rule <k> Goto(Lbl:Id) => . ...</k>
-          <currentFunction> F:Id </currentFunction>
-          <currTU> Tu:String </currTU>
+          <curr-function> F:Id </curr-function>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F |-> map((_ (Lbl |-> _))) 

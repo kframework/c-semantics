@@ -188,7 +188,7 @@ sub parseResultLine {
             $parsed->{finalComp} = $1;
       };
 
-      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+      /< error-cell > # "(.*)"\(\.KList\) <\/ error-cell >/ && do {
             $parsed->{haveError} = 1;
             my $output = $1;
             $output =~ s/\%/\%\%/g;
@@ -197,16 +197,16 @@ sub parseResultLine {
             $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
       };
 
-      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
+      /< curr-function > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ curr-function >/ && do {
             $parsed->{errorFunc} = $1;
       };
 
-      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
+      /< curr-program-loc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ curr-program-loc >/ && do {
             $parsed->{errorFile} = $1;
             $parsed->{errorLine} = $2;
       };
 
-      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+      /< final-computation > (.*) <\/ final-computation >/ && do {
             $parsed->{finalComp} = $1;
       };
 
@@ -222,7 +222,7 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< resultValue > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+      /< result-value > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ result-value >/ && do {
             $parsed->{exitCode} = $1;
       };
 }
@@ -364,7 +364,7 @@ sub graphSearch {
                               $states{$currentStateNumber} = $currentOutput;
                         };
 
-                        /< errorCell > (.*) <\/ errorCell >/ && do {
+                        /< error-cell > (.*) <\/ error-cell >/ && do {
                               my $currentOutput = $1;
                               $errorStates{$currentStateNumber} = "";
                         };

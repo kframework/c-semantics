@@ -258,14 +258,14 @@ module C-LITERAL
           <k> (. => allocString(Loc, S))
                ~> Constant(StringLiteral(S:String))
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-          <stringLiterals>
+          <string-lits>
                M:Map
                (. => S |-> lv(Loc, t(.Set, 
                     arrayType(t(.Set, char), lengthString(S) +Int 1))))
-          </stringLiterals>
+          </string-lits>
           when notBool (S in keys(M))
           [large, structural]
           
@@ -274,28 +274,28 @@ module C-LITERAL
           <k> (.K => allocWString(Loc, S))
                ~> Constant(WStringLiteral(S:KList))
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
-          <stringLiterals>
+          <string-lits>
                M:Map
                (.Map => wstring(S) |-> lv(Loc, t(.Set, 
                     arrayType(cfg:wcharut, lengthKList(S) +Int 1))))
-          </stringLiterals>
+          </string-lits>
           when notBool wstring(S) in keys M
           [large, structural]
           
      rule [const-string-found]:
           <k> Constant(StringLiteral(S:String)) => V ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <stringLiterals>... S |-> V:LValue ...</stringLiterals>
+          <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
      rule [const-wstring-found]:
           <k> Constant(WStringLiteral(S:KList)) => V ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <stringLiterals>... wstring(S) |-> V:LValue ...</stringLiterals>
+          <string-lits>... wstring(S) |-> V:LValue ...</string-lits>
           [structural]
 endmodule
 

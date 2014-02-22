@@ -11,9 +11,9 @@ module C-CONFIGURATION
           <functions color="lightgray"> .Map </functions>
           <gstructs color="lightgray"> .Map </gstructs>
 
-          <notWritable> .Set </notWritable>
+          <not-writable> .Set </not-writable>
 
-          <mainTU color="lightgray"> .Set </mainTU>
+          <main-tu color="lightgray"> .Set </main-tu>
 
           <linking-state>
                // Id |-> Set(TUs)
@@ -42,7 +42,7 @@ module C-CONFIGURATION
                     </tu-linking-state>
 
                     <next-static-loc> .K </next-static-loc>
-                    <freshUnnamed color="black"> 0 </freshUnnamed>
+                    <fresh-unnamed color="black"> 0 </fresh-unnamed>
 
                     // kpair(Id, BlockNum) |-> SymLoc
                     <local-statics> .Map </local-statics>
@@ -50,14 +50,14 @@ module C-CONFIGURATION
                     <local-types> .Map </local-types>
 
                     <goto-map color="lightgray"> .Map </goto-map>
-                    <stringLiterals color="lightgray"> .Map </stringLiterals>
+                    <string-lits color="lightgray"> .Map </string-lits>
                </tu>
           </translation-units>
      </global>
      <T multiplicity="?">
      <exec>
-          <rawTypes> .Map </rawTypes>
-          <typeSpecifiers> .Map </typeSpecifiers>
+          <raw-types> .Map </raw-types>
+          <type-specifiers> .Map </type-specifiers>
 
           <k color="green" multiplicity="?"> 
                loadObj(mergeObj(
@@ -67,79 +67,79 @@ module C-CONFIGURATION
                ~> outputMode($MODE:SemMode, $DEBUG:Bool)
           </k>
 
-          <finalComputation multiplicity="?" color="lightgray">
+          <final-computation multiplicity="?" color="lightgray">
                .K
-          </finalComputation>
+          </final-computation>
 
-          <calculateGotoMap color="cyan">
-               <gotoCalculation multiplicity="*" color="cyan">
+          <goto-map-calc color="cyan">
+               <goto-calc multiplicity="*" color="cyan">
                     <computation color="cyan"> .K </computation>
-                    <computationTail color="cyan">
+                    <computation-tail color="cyan">
                          .K
-                    </computationTail>
-                    <declarationStack color="cyan">
+                    </computation-tail>
+                    <decl-stack color="cyan">
                          .List
-                    </declarationStack>
-                    <nestingDepthGoto color="cyan">
+                    </decl-stack>
+                    <goto-nesting-depth color="cyan">
                          0
-                    </nestingDepthGoto>
-                    <blockHistoryGoto color="cyan">
+                    </goto-nesting-depth>
+                    <goto-block-history color="cyan">
                          .List
-                    </blockHistoryGoto>
-                    <loopStackGoto color="cyan">
+                    </goto-block-history>
+                    <goto-loop-stack color="cyan">
                          .List
-                    </loopStackGoto>
-               </gotoCalculation>
-          </calculateGotoMap>
+                    </goto-loop-stack>
+               </goto-calc>
+          </goto-map-calc>
           <control>
-               <currTU color="lightgray"> "" </currTU>
-               <currentFunction color="lightgray">
+               <curr-tu color="lightgray"> "" </curr-tu>
+               <curr-function color="lightgray">
                     file-scope
-               </currentFunction>
-               <currentProgramLoc color="black">
+               </curr-function>
+               <curr-program-loc color="black">
                     UnknownCabsLoc
-               </currentProgramLoc>
+               </curr-program-loc>
 
                // Toggle to allow writes for initializers.
                <initializing> false </initializing>
 
-               <controlDetails> // TODO(chathhorn): dumb name
+               <control-details> // TODO(chathhorn): dumb name
                     <local>
                          // maps from Ids
                          <env color="red"> .Map </env>
                          <types color="lightgray"> .Map </types>
                          <structs color="lightgray"> .Map </structs>
-                         <current-block> 0 </current-block>
+                         <curr-block> 0 </curr-block>
                     </local>
-                    <blockStack color="violet"> .List </blockStack>
+                    <block-stack color="violet"> .List </block-stack>
 
                     // Used to figure initializers.
-                    <currentObject color="cyan">
+                    <curr-object color="cyan">
                          .List
-                    </currentObject>
-                    <currentSubObject color="cyan">
+                    </curr-object>
+                    <curr-subobject color="cyan">
                          .List
-                    </currentSubObject>
-                    <incompleteLength color="cyan">
+                    </curr-subobject>
+                    <incomplete-length color="cyan">
                          0
-                    </incompleteLength>
-                    <savedInitialization color="cyan">
+                    </incomplete-length>
+                    <saved-init color="cyan">
                          .K
-                    </savedInitialization>
+                    </saved-init>
 
                     // Used for typing expressions.
                     <type multiplicity="?" color="cyan"> .K </type>
                     // Holds the innermost type while we unroll the
                     // type around it.
-                    <declarationTypeHolder color="cyan">
+                    <decl-type-holder color="cyan">
                          .K
-                    </declarationTypeHolder>
-               </controlDetails>        
+                    </decl-type-holder>
+               </control-details>        
           </control>
 
      </exec>
 
-     <errorCell multiplicity="?" color="black"> .K </errorCell>
+     <error-cell multiplicity="?" color="black"> .K </error-cell>
 
      <status> initializing </status>
 

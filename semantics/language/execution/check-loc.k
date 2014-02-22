@@ -18,7 +18,7 @@ module C-CHECK-LOC
      rule [check-valid-loc]:
           <k> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, 0)) => . ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          <threadId> ThreadId:Int </threadId>
+          <thread-id> ThreadId:Int </thread-id>
           when (ThreadId ==K getThreadId(loc(Base, Offset, 0))
                orBool isStaticDuration(loc(Base, Offset, 0))
                orBool isAllocatedDuration(loc(Base, Offset, 0))

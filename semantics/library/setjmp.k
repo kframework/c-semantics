@@ -41,7 +41,7 @@ module LIBC-SETJMP
      // never called?
      rule [ignoreLocals]:
           <k> ignoreLocals => . ...</k>
-          <localAddresses> _ => .Set </localAddresses>
+          <local-addresses> _ => .Set </local-addresses>
           [structural]
           
      /*@ 
@@ -96,16 +96,16 @@ module LIBC-SETJMP
                     structType(Identifier("__jmp_buf_tag"))))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
-                         <threadState>
-                              <threadContinuation> K:K </threadContinuation>
-                              <savedThreadLocal>C:Bag</savedThreadLocal>
-                         </threadState>
+                         <thread-state>
+                              <thread-continuation> K:K </thread-continuation>
+                              <saved-thread-local>C:Bag</saved-thread-local>
+                         </thread-state>
                     ))
                     ~> tv(0, t(.Set, int))
                )
                ~> K:K
           </k>
-          <threadLocal> C:Bag </threadLocal>
+          <thread-local> C:Bag </thread-local>
           [structural]
 
      syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
@@ -122,10 +122,10 @@ module LIBC-SETJMP
      rule [longjmp]:
           <k> 
                longjmp-aux(tv(bag(
-                    <threadState>
-                         <threadContinuation> K:K </threadContinuation>
-                         <savedThreadLocal>C:Bag</savedThreadLocal>
-                    </threadState>
+                    <thread-state>
+                         <thread-continuation> K:K </thread-continuation>
+                         <saved-thread-local>C:Bag</saved-thread-local>
+                    </thread-state>
                ), t(_, structType(Identifier("__jmp_buf_tag")))), 
                     tv(I:Int, t(_, int))) ~> _
                => ignoreLocals 
@@ -134,6 +134,6 @@ module LIBC-SETJMP
                          #else tv(I:Int, t(.Set, int)) #fi 
                     ~> K:K
           </k>
-          <threadLocal> _ => C:Bag </threadLocal>
+          <thread-local> _ => C:Bag </thread-local>
           [structural]
 endmodule

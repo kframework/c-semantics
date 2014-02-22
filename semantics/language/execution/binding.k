@@ -82,8 +82,8 @@ module C-BINDING
                     ~> Computation(allowWrite(X) := tv(V, T'))
                     ~> bind-aux(Loc, L, P)
           ...</k> 
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           when notBool isArrayType(T)
                andBool notBool isVoidType(T)
           [structural] 
@@ -148,8 +148,8 @@ module C-BINDING
                ) 
                ~> bindVariadic(_, (ListItem(V:K) => .List) _:List) 
           ...</k>
-          <nextLoc> Loc:SymLoc => linc(Loc) </nextLoc>
-          <localAddresses>... .Set => SetItem(Loc) ...</localAddresses>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           [structural]
      
      rule [bind-variadic-done]:

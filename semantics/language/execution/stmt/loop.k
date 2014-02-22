@@ -33,7 +33,7 @@ module C-STMT-LOOP
      rule ForClauseExpression(K:K) => Computation(K) [structural]
      
      rule <k> addToHistory(Num:Int) => .K ...</k>
-          <blockHistory> .List => ListItem(Num) ...</blockHistory>
+          <block-history> .List => ListItem(Num) ...</block-history>
           [structural] 
      
      //  fixme fishy interaction with continue i think
@@ -50,8 +50,8 @@ module C-STMT-LOOP
                          Post, S)
                     ~> popLoop
           </k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
+          <block-history> ListItem(Num:Int) ...</block-history>
+          <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
           [structural, large] 
           
      rule [for]:
@@ -60,7 +60,7 @@ module C-STMT-LOOP
                     (S:K ~> Computation(Post:K) ~> loopMarked 
                     ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)), Nop)
           ...</k>
-          <blockHistory> ListItem(_:Int) ...</blockHistory>
+          <block-history> ListItem(_:Int) ...</block-history>
           [structural] // rule so that looping programs see repetition 
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
@@ -75,8 +75,8 @@ module C-STMT-LOOP
                     ~> While(B, S) 
                     ~> popLoop
           </k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
+          <block-history> ListItem(Num:Int) ...</block-history>
+          <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
           [structural] 
      rule [while]:
           loopMarked ~> While(B:K, S:K)
@@ -95,8 +95,8 @@ module C-STMT-LOOP
                     ~> DoWhile(B, S) 
                     ~> popLoop
           </k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> .List => ListItem(kpair(Num, K)) ...</loopStack>
+          <block-history> ListItem(Num:Int) ...</block-history>
+          <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
           [structural] 
      rule [do-while]:
           loopMarked ~> DoWhile(B:K, S:K)
@@ -164,14 +164,14 @@ module C-STMT-LOOP
           
      rule [popLoop]:
           <k> popLoop ~> _ => K </k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> ListItem(kpair(Num:Int, K:K)) => .List ...</loopStack>
+          <block-history> ListItem(Num:Int) ...</block-history>
+          <loop-stack> ListItem(kpair(Num:Int, K:K)) => .List ...</loop-stack>
           [structural] 
 
      rule [popLoop-popBlock]:
           <k> (. => popBlock) ~> popLoop ...</k>
-          <blockHistory> ListItem(Num:Int) ...</blockHistory>
-          <loopStack> ListItem(kpair(Num':Int, _)) ...</loopStack>
+          <block-history> ListItem(Num:Int) ...</block-history>
+          <loop-stack> ListItem(kpair(Num':Int, _)) ...</loop-stack>
           when Num' =/=Int Num
           [structural] 
 endmodule

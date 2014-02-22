@@ -339,7 +339,7 @@ module C-TYPING-MISC
                          aggregateInfo(L, Types, Offsets)))
                     #fi
           ...</k>
-          <currentFunction> F:Id </currentFunction>
+          <curr-function> F:Id </curr-function>
           [structural]        
           
      rule addUnion(S:Id, L:List) 
@@ -366,7 +366,7 @@ module C-TYPING-MISC
                          aggregateInfo(L, Types, Offsets)))
                     #fi
           ...</k>
-          <currentFunction> F:Id </currentFunction>
+          <curr-function> F:Id </curr-function>
           [structural]
 
      // TODO(chathhorn): should move this elsewhere.

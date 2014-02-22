@@ -17,7 +17,7 @@ module C-STMT-LOOP
           
      syntax K ::= setCurrentBlock(Int)
      rule <k> setCurrentBlock(BlockNum:Int) => .K ...</k>
-          <current-block> _ => BlockNum </current-block>
+          <curr-block> _ => BlockNum </curr-block>
           [structural]
 
      rule [while]:

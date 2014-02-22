@@ -56,7 +56,7 @@ module C-COMPOUND-LITERAL
                ~> Init
                ~> X
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
           <initializing> true </initializing>

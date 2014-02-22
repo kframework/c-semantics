@@ -142,9 +142,9 @@ module C-MEMORY-ALLOC
                     lval(loc(Base:SymBase, Offset:Int, _), _)) 
                => . 
           ...</k>
-          <notWritable>...
+          <not-writable>...
                (. => SetItem(loc(Base, Offset:Int, 0)))
-          ...</notWritable>
+          ...</not-writable>
           [structural]
      rule [makeUnwritable-subobject]:
           makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 

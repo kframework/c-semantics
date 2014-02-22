@@ -58,7 +58,7 @@ module LIBC-STDLIB
                ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>
-          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
+          <next-malloced> N:Int => N +Int 1 </next-malloced>
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
@@ -91,7 +91,7 @@ module LIBC-STDLIB
           <malloced>... 
                (OldLoc => newAlloc(N)) |-> (OldLen:Int => NewLen:Int) 
           ...</malloced>
-          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
+          <next-malloced> N:Int => N +Int 1 </next-malloced>
           when OldLoc =/=K NullPointer
           [structural]
      
@@ -133,7 +133,7 @@ module LIBC-STDLIB
                => tv(absInt(randomRandom(Seed:Int)) 
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
-          <randNat> Seed:Int => Seed:Int +Int 1 </randNat>
+          <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
           [structural]
           
      rule [srand]:
@@ -141,7 +141,7 @@ module LIBC-STDLIB
                     ListItem(tv(N:Int, t(.Set, unsigned-int))))
                => skipval
           ...</k>
-          <randNat> _ => N:Int </randNat>
+          <rand-nat> _ => N:Int </rand-nat>
           [structural]
 
 endmodule

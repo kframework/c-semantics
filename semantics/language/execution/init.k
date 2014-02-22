@@ -93,21 +93,21 @@ module C-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
-                    <nextLoc> _ => firstLoc(thread(0)) </nextLoc>
-                    <threadLocal>...
+                    <next-loc> _ => firstLoc(thread(0)) </next-loc>
+                    <thread-local>...
                          <control>...
-                              <currentFunction> 
+                              <curr-function> 
                                    _ => file-scope
-                              </currentFunction>
-                              <currentProgramLoc>
+                              </curr-function>
+                              <curr-program-loc>
                                    _ => UnknownCabsLoc
-                              </currentProgramLoc>
-                              <currTU> _ => MainTU </currTU>
+                              </curr-program-loc>
+                              <curr-tu> _ => MainTU </curr-tu>
                          ...</control>
-                    ...</threadLocal>
+                    ...</thread-local>
                ...</thread>
           </threads>
-          <mainTU> SetItem(MainTU:String) </mainTU>
+          <main-tu> SetItem(MainTU:String) </main-tu>
           <files>...
                ( .Bag =>
                <file>...
@@ -201,15 +201,15 @@ module C-EXECUTION-INIT
           (<exec>...
                <thread>... 
                     // main's thread, not the global "thread"
-                    <threadId> 0 </threadId>
+                    <thread-id> 0 </thread-id>
                     <k> V:KResult </k>
                ...</thread>
           ...</exec> => .Bag)
           <status> _ => mainExited </status>
-          <resultValue> .K => V </resultValue>
+          <result-value> .K => V </result-value>
           <files>...
                // Flush stdout.
-               <fileCommands>... (. => f-flush(1)) </fileCommands>
+               <file-commands>... (. => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
 endmodule

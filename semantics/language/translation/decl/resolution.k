@@ -19,7 +19,7 @@ module C-DECL-RESOLUTION
      imports C-ERROR-SYNTAX
 
      rule <k> allocateIncompleteTentatives => . ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           (<tu-linking-state>...
                <externals> .Map </externals>
@@ -33,7 +33,7 @@ module C-DECL-RESOLUTION
                     ~> updateLinkState(X, t(S, arrayType(T, 1)), Loc'))
                ~> allocateIncompleteTentatives
           ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
           <linkings>... (. => Loc |-> Loc') </linkings>
@@ -44,7 +44,7 @@ module C-DECL-RESOLUTION
           ...</externals>
           [structural]
      rule <k> allocateIncompleteTentatives ...</k>
-          <currTU> Tu:String </currTU>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>...
                (_ |-> declState(_, _, State:DeclState, Tentative:Bool) => .Map)
@@ -112,7 +112,7 @@ module C-DECL-RESOLUTION
                orBool notBool (X in keys Types)
 
      rule <k> resolveReferences ...</k>
-          <mainTU>... (.Set => SetItem(MainTu)) </mainTU>
+          <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           <external-uses>...
                (SetItem(Identifier("main")) => .Set)
           ...</external-uses>

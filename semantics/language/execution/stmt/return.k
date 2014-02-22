@@ -23,16 +23,16 @@ module C-STMT-RETURN
      
      rule [return-clean-local]:
           <k> (.K => deleteBlock(Loc)) ~> Return(_:KResult) ...</k>
-          <localAddresses>... SetItem(Loc:SymLoc) => .Set ...</localAddresses>     
+          <local-addresses>... SetItem(Loc:SymLoc) => .Set ...</local-addresses>     
           [structural] 
           
      rule [fetch-all-locals]:
           <k> Return(_:KResult) ...</k>
-          <localAddresses> .Set => Addresses </localAddresses>
-          <blockStack> 
-               ListItem(_ <localAddresses> Addresses:Set </localAddresses>)
+          <local-addresses> .Set => Addresses </local-addresses>
+          <block-stack> 
+               ListItem(_ <local-addresses> Addresses:Set </local-addresses>)
                => .List
-          ...</blockStack>
+          ...</block-stack>
           [structural] 
 
      //  this is used for returns with no return value as well, since we return
@@ -50,30 +50,30 @@ module C-STMT-RETURN
               F:Id |-> t(_, functionType(T:KResult, _))
           ...</gtypes>
           <control>
-               <currTU> _ => OldTu </currTU>
-               <currentFunction> (F:Id => CurrFun) </currentFunction>
-               <currentProgramLoc> _ => CurrLoc </currentProgramLoc>
-               (<controlDetails>... 
-                    <local>... <localAddresses> .Set </localAddresses> ...</local> 
-                    <blockStack> .List </blockStack> 
-               ...</controlDetails>  => C)
+               <curr-tu> _ => OldTu </curr-tu>
+               <curr-function> (F:Id => CurrFun) </curr-function>
+               <curr-program-loc> _ => CurrLoc </curr-program-loc>
+               (<control-details>... 
+                    <local>... <local-addresses> .Set </local-addresses> ...</local> 
+                    <block-stack> .List </block-stack> 
+               ...</control-details>  => C)
           </control>
-          <callStack>
+          <call-stack>
                ListItem(
-                    <callStackFrame>...
+                    <call-stack-frame>...
                          <continuation> K:K </continuation>
-                         <stackControl>
-                              <currTU> OldTu:String </currTU>
+                         <stack-control>
+                              <curr-tu> OldTu:String </curr-tu>
                               C:Bag
-                         </stackControl>
-                         <stackCurrentFunction>
+                         </stack-control>
+                         <stack-curr-function>
                               CurrFun:K
-                         </stackCurrentFunction>
-                         <stackCurrentProgramLoc> 
+                         </stack-curr-function>
+                         <stack-curr-program-loc> 
                               CurrLoc:K
-                         </stackCurrentProgramLoc>
-                    ...</callStackFrame>
+                         </stack-curr-program-loc>
+                    ...</call-stack-frame>
                ) => .List
-          ...</callStack>
+          ...</call-stack>
           [structural, large] 
 endmodule

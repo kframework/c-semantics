@@ -41,9 +41,9 @@ module C-DYNAMIC-SYNTAX
      syntax Statement ::= "loopMarked"
      syntax K ::= "popLoop"
 
-     //  nestingDepth, currentBlock, decl
+     //  nesting-depth, currentBlock, decl
      syntax K ::= frozenDeclaration(Int, Int, K)
-     //  nestingDepth, block history, continuation, loop stack, decl stack
+     //  nesting-depth, block history, continuation, loop stack, decl stack
      syntax K ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
@@ -76,7 +76,7 @@ module C-DYNAMIC
 
      rule [CodeLoc-k]:
           <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <currentProgramLoc> _ => L </currentProgramLoc>
+          <curr-program-loc> _ => L </curr-program-loc>
           [structural]
 
      rule [discard]:
