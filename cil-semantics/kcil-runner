@@ -51,8 +51,8 @@ sub main {
 
       my %krun_args = (
                   '--backend' => 'java', 
-                  #'--output-mode' => 'raw', 
-                  '--output' => $fileOutput, 
+                  '--output' => 'raw', 
+                  '--output-file' => $fileOutput, 
                   '--parser' => 'kast', 
                   #'-d' => catfile($SCRIPTS_DIR, "cil-kompiled"), 
                   '-d' => $SCRIPTS_DIR,
@@ -221,6 +221,10 @@ sub parseResultLine {
       };
 
       /< result-value > # (-?\d+)\(\.KList\) <\/ result-value >/ && do {
+            $parsed->{exitCode} = $1;
+      };
+
+      /'###result-value`\(_`\)\((-?\d+)\)/ && do {
             $parsed->{exitCode} = $1;
       };
 }
