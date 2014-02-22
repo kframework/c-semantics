@@ -35,19 +35,19 @@ module C-CONFIGURATION
                     <genv color="lightgray"> .Map </genv>
                     <gtypes color="lightgray"> .Map </gtypes>
 
-                    <tu-linking-state>
-                         <externals> .Map </externals>
-                         <internals> .Map </internals>
-                         <next-link-loc> .K </next-link-loc>
-                    </tu-linking-state>
-
-                    <next-static-loc> .K </next-static-loc>
-                    <fresh-unnamed color="black"> 0 </fresh-unnamed>
-
                     // kpair(Id, BlockNum) |-> SymLoc
                     <local-statics> .Map </local-statics>
                     // kpair(Id, BlockNum) |-> Type
                     <local-types> .Map </local-types>
+
+                    <tu-linking-state>
+                         <externals> .Map </externals>
+                         <internals> .Map </internals>
+                         <next-link-loc> .K </next-link-loc>
+                         <next-static-loc> .K </next-static-loc>
+                    </tu-linking-state>
+
+                    <fresh-unnamed color="black"> 0 </fresh-unnamed>
 
                     <goto-map color="lightgray"> .Map </goto-map>
                     <string-lits color="lightgray"> .Map </string-lits>

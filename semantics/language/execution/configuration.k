@@ -25,14 +25,12 @@ module C-CONFIGURATION
                          <genv color="lightgray"> .Map </genv>
                          <gtypes color="lightgray"> .Map </gtypes>
 
-                         // TODO(chathhorn): remove.
-                         <next-static-loc> .K </next-static-loc>
-                         <fresh-unnamed color="black"> 0 </fresh-unnamed>
-
                          // kpair(Id, BlockNum) |-> SymLoc
                          <local-statics> .Map </local-statics>
                          // kpair(Id, BlockNum) |-> Type
                          <local-types> .Map </local-types>
+
+                         <fresh-unnamed color="black"> 0 </fresh-unnamed>
 
                          <goto-map color="lightgray"> .Map </goto-map>
                          <string-lits color="lightgray"> .Map </string-lits>

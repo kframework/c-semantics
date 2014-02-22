@@ -66,4 +66,18 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map>... X |-> Loc:SymLoc ...</compound-lit-map>
           [structural]
+          
+     syntax K ::= wstring(KList)
+     rule [const-string-found]:
+          <k> Constant(StringLiteral(S:String)) => V ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <string-lits>... S |-> V:LValue ...</string-lits>
+          [structural]
+     rule [const-wstring-found]:
+          <k> Constant(WStringLiteral(S:KList)) => V ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <string-lits>... wstring(S) |-> V:LValue ...</string-lits>
+          [structural]
 endmodule
