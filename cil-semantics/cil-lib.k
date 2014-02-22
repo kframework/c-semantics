@@ -13,7 +13,7 @@ module CIL-LIB
     (<frame>... <k> 
       nclv(_, ExtFun("exit"))(V:TypedValue)
     ...</k> ...</frame>
-    => <result-value> mival(V) </result-value>)
+    => <result-value> ###result-value(mival(V)) </result-value>)
     <phase> _ => terminated </phase>
     [computational]
 
@@ -23,7 +23,7 @@ module CIL-LIB
       nclv(T:Type, ExtFun("abort"))( .Exps ) ~> K:K 
     </k> Cells:Bag </frame> 
     => <frame> Cells </frame>)
-    (. => <result-value> 134 </result-value>)
+    (. => <result-value> ###result-value(134) </result-value>)
     (. => <final-computation> 
       nclv(T, ExtFun("abort"))( .Exps ) ~> K 
     </final-computation>)
