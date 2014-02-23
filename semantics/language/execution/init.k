@@ -59,9 +59,11 @@ module C-EXECUTION-INIT
           => incomingArguments-aux(L, 0) 
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
-          => Computation(
+          => allocString(argvLoc(N +Int 1), S)
+          ~> Computation(
                Identifier("#incomingArgumentsArray")[N] 
-                    := Constant(StringLiteral(S)))
+                    := lv(argvLoc(N +Int 1), t(.Set, 
+                         arrayType(t(.Set, char), lengthString(S) +Int 1))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int) 
@@ -78,8 +80,8 @@ module C-EXECUTION-INIT
 
      syntax K ::= makeArgv(Id, Type)
      rule makeArgv(X:Id, T:Type) 
-          => allocateType(argvLoc, T)
-          ~> addToEnv(X, argvLoc)
+          => allocateType(argvLoc(0), T)
+          ~> addToEnv(X, argvLoc(0))
           ~> giveType(X, T)
           [structural]
 

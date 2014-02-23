@@ -16,6 +16,7 @@ module C-SYMLOC-SYNTAX
      // 
      // TODO(chathhorn): maybe add an actual "auto" storage duration?
      syntax Duration ::= "allocated" [avoid]
+     syntax Duration ::= "argv"
      syntax Duration ::= link(String)
      syntax Duration ::= static(String)
      syntax Duration ::= thread(Int)
@@ -33,13 +34,12 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isPhysicalLoc(SymLoc) [function]
 
      syntax SymBase ::= Int "@" Duration
-     syntax SymBase ::= "argv"
 
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int, Int) [klabel('loc)]
      syntax SymLoc ::= "NullPointer"
 
-     syntax SymLoc ::= "argvLoc" [function]
+     syntax SymLoc ::= argvLoc(Int) [function]
 
      syntax KResult ::= SymLoc
 
@@ -97,7 +97,7 @@ module C-SYMLOC
 
      rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
 
-     rule #isArgvDuration(loc(argv, _, _)) => true
+     rule #isArgvDuration(loc(_ @ argv, _, _)) => true
 
      rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
      rule #isStaticDuration(loc(_ @ link(_), _, _)) => true
@@ -112,7 +112,7 @@ module C-SYMLOC
 
      rule offset(loc(_, Offset:Int, _)) => Offset
 
-     rule argvLoc => loc(argv, 0, 0)
+     rule argvLoc(N:Int) => loc(N @ argv, 0, 0)
      
      rule linc(loc(X:Int @ D:Duration, ByOff:Int, BiOff:Int))
           => loc(X +Int 1 @ D, ByOff, BiOff)
