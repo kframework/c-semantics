@@ -104,17 +104,9 @@ module CIL
 
   // TODO(AndreiS): remove hacks because tokens are not labels in the java
   // rewrite engine
-  rule
-    #visit(X:CId,
-           VisitLabel:KLabel,
-           VisitList:KList,
-           IfLabel:KLabel,
-           IfList:KList)
-  =>
-    #if IfLabel(X,,IfList) ==K true #then VisitLabel(X,,VisitList) #else X #fi
-  rule normParens'(X:CId) => X
-  rule normParens'(I:Int) => I
-  rule normPtrs'(X:CId) => X
-  rule normPtrs'(I:Int) => I
+  rule normParens'(KI:KItem) => KI
+  when isBuiltin(KI)
+  rule normPtrs'(KI:KItem) => KI
+  when isBuiltin(KI)
 endmodule
 
