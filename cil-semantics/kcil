@@ -113,6 +113,11 @@ sub main {
       print $programTemp "$runner\n\n";
 
       print $programTemp "sub linkedProgram {\nreturn <<'THEPROGRAM';\n$linked\nTHEPROGRAM\n }\n";
+      if ($args->{'-d'}) {
+            open(CIL_FILE, ">$oval.cil.c");
+            print CIL_FILE "$linked\n";
+            close(CIL_FILE); 
+      }
 
       close($programTemp);
 
