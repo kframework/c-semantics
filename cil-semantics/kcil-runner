@@ -50,8 +50,8 @@ sub main {
       my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
 
       my %krun_args = (
-                  '--output-mode' => 'raw', 
-                  '--output' => $fileOutput, 
+                  '--output' => 'raw', 
+                  '--output-file' => $fileOutput, 
                   '--parser' => 'kast', 
                   #'-d' => catfile($SCRIPTS_DIR, "cil-kompiled"), 
                   '-d' => $SCRIPTS_DIR,
