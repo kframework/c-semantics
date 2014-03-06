@@ -543,8 +543,8 @@ module CIL-EXP
   rule tv(T:Type, MI1:MInt) != tv(T, MI2:MInt)
     => norm(int, MI1 =/=MInt MI2)
 
-  rule ! E:Exp => $exp2bool(E) ~> ! HOLE
-  rule TV:TypedValue ~> ! HOLE => ! TV
+  rule ! E:Exp => $exp2bool(E) ~> ! HOLE    [heat]
+  rule TV:TypedValue ~> ! HOLE => ! TV      [cool]
 
   rule !tv(_:Type, I:MInt) => norm(int, 1)
     when isZero(I)
@@ -587,8 +587,8 @@ module CIL-EXP
     when (isNormType(T) =/=K true)
 // TODO(AndreiS): fix isKeyword issue
 //      andBool ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
-//      // This case is ambiguous with the Exp syntax.
-//      andBool ($isConstArrayDeref(T, E) =/=K true)
+      // This case is ambiguous with the Exp syntax.
+      andBool ($isConstArrayDeref(T, E) =/=K true)
 
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
   syntax Bool ::= "$isConstArrayDeref" "(" K "," MyMap ")" [function]
