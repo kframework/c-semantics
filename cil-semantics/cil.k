@@ -97,6 +97,7 @@ module CIL
         </make-goto-table-task>
       </make-goto-table-tasks>
     </make-goto-table>
+    <make-case-labels> .MyMap </make-case-labels>
 
   syntax KResult ::= TypedValue
                    | NoConversionLeftValue

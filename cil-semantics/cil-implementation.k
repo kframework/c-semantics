@@ -14,7 +14,7 @@ module CIL-IMPLEMENTATION
 
   // "each enumerated type shall be compatible with char, a signed integer
   // type, or an unsigned integer type"
-  rule enum X:CId => int [macro]
+  rule enum _:CId => int [macro]
 
   /*
    * FIXME: it would be faster to treat each basic type individually, rather
@@ -117,7 +117,7 @@ module CIL-IMPLEMENTATION
   rule value2Bytes(T:Type, P:Ptr) 
     => MyListItem(P), padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_, (MyListItem(P:Ptr), _:MyList))
+  rule bytes2Value(T, (MyListItem(P:Ptr), _:MyList))
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.

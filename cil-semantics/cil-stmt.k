@@ -29,9 +29,7 @@ module CIL-STMT
   [computational]
 
   rule 
-    // TODO(AndreiS): fix implementation of case labels
-    // <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
-    <k> (. => make-goto-table) ~> goto _:Label ; ...</k>
+    <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
     <labels-generated> false => true </labels-generated>
@@ -155,34 +153,37 @@ module CIL-STMT
   // in the case labels of switch statements. It seems to slow things down
   // quite a bit too.
   syntax KItem ::= "eval-case-labels"
-                 | "eval-case-labels" "(" MyMap "," MyMap ")"
-                 | "case-label-freezer" "(" Int "," Stmts ")"
+                 | "eval-case-labels0"
+                 | "eval-case-label" "(" Label "," Stmts ")"
 
-  rule <k> eval-case-labels => eval-case-labels(Lbls, .MyMap) ...</k>
+  rule <k> eval-case-labels => eval-case-labels0 ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:MyMap </labels>
-
-  // TODO(AndreiS): fix getKLabel
-//  rule eval-case-labels(
-//    (_:MyMap, (L:Label |-> Ss:Stmts => .MyMap)), 
-//    (_:MyMap, (.MyMap => L |-> Ss)))
-//    when getKLabel(L) =/=KLabel '$caseLabel
-//    [structural]
-  rule (. => (E ~> case-label-freezer(I, Ss))) 
-    ~> eval-case-labels(
-      (_:MyMap, ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .MyMap)), _:MyMap) 
-    [structural]
-  rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
-    ~> eval-case-labels(
-      _:MyMap, (_:MyMap, (.MyMap => $caseLabel(I, E) |-> Ss)))
+    <labels> Lbls:MyMap => .MyMap </labels>
+    <make-case-labels> .MyMap => Lbls </make-case-labels>
+  rule <k> eval-case-labels0 => .K ...</k>
+    <make-case-labels> .MyMap </make-case-labels>
     [structural]
 
-  rule <k> eval-case-labels(.MyMap, Lbls:MyMap) => . ...</k>
+  // TODO(AndreiS): eval-case-labels mentioned for better indexing
+  rule
+    <k> (.K => eval-case-label(L, Ss)) ~> eval-case-labels0 ...</k>
+    <make-case-labels>... L:Label |-> Ss:Stmts => .MyMap ...</make-case-labels>
+  rule
+    <k> eval-case-label(L:Label, Ss:Stmts) => .K ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> _ => Lbls </labels>
+    <labels>... .MyMap => L |-> Ss ...</labels>
+    when getKLabel(L) =/=KLabel '$caseLabel
     [structural]
+  context eval-case-label($caseLabel(_:Int, HOLE:Exp), _:Stmts)
+  rule
+    <k> eval-case-label($caseLabel(I:Int, E:KResult), Ss:Stmts) => .K ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels>... .MyMap => $caseLabel(I, E) |-> Ss ...</labels>
+    [structural]
+
 
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
@@ -306,14 +307,17 @@ module CIL-STMT
     (DS D;) ~> (getId(D) = TV;) ~> initializeParams(Ps, TVs)
   [structural]
 
-  rule initializeParams(.Params, TVs:TypedValues) => .
+  //rule initializeParams(.Params, .TypedValues) => .   [structural]
+  rule initializeParams(.Params, _:TypedValues) => .   [structural]
 
   rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>   
     <frame-fun-va-args> _ => TVs </frame-fun-va-args>
     [structural]
 
   // TODO(chathhorn): could probably be handled better.
-  rule initializeParams((void, .Params), _:TypedValues) => .K   [structural]
+  //rule initializeParams(((void, .Params) => .Params), _:TypedValues)
+  //  [structural]
+  rule initializeParams((void, .Params), _:TypedValues) => .    [structural]
 
   // TODO(chathhorn): delete stuff.
   // rule

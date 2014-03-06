@@ -311,7 +311,7 @@ module CIL-DECL
   [structural]
 
   syntax KItem ::= declStruct(CId, VarDecls, Exp, Int) [strict(3)]
-                 | declUnion(CId, K, K, Int) [strict(3)]
+                 | declUnion(CId,  VarDecls, Exp, Int) [strict(3)]
 
   // Elide declarations without definitions.
   rule struct _:CId ; => . [structural]
@@ -340,23 +340,12 @@ module CIL-DECL
      <size> _ => mival(Offset) </size>
     [structural]
 
-  syntax KItem ::= maxK(K, K) [strict]
-  rule maxK(X:TypedValue, Y:TypedValue) => X 
-    when mival(X) >=Int mival(Y)
-  rule maxK(X:TypedValue, Y:TypedValue) => Y 
-    when mival(X) <Int mival(Y)
-
   rule 
     <k> union X:CId { VDs:VarDecls } ; => declUnion(X, VDs, 0, 0) ...</k>
     (. => <aggregate>... <agg-id> union X </agg-id> ...</aggregate>)
-       
-  rule declUnion(_, (VD:VarDecl VDs:VarDecls => VD ~> VDs), _, _) 
-    [structural]
-  rule declUnion(_, (.VarDecls => .), _, _) 
-    [structural]
 
   rule 
-     <k> declUnion(X:CId, TS:TypeSpec D:Declarator; ~> VDs:VarDecls, Size:TypedValue, Pos:Int)
+     <k> declUnion(X:CId, (TS:TypeSpec D:Declarator; VDs:VarDecls), Size:TypedValue, Pos:Int)
      => declUnion(X, VDs, maxK(Size, sizeof'(normType(TS D))), Pos +Int 1) ...</k>
      <agg-id> union X </agg-id>
      <fields>...
@@ -368,11 +357,17 @@ module CIL-DECL
         ...</field>)
      ...</fields>
     [structural]
-     
   rule 
-     <k> declUnion(X:CId, .K, Size:TypedValue, _) => . ...</k>
+     <k> declUnion(X:CId, .VarDecls, Size:TypedValue, _) => . ...</k>
      <agg-id> union X </agg-id>
      <size> _ => mival(Size) </size>
     [structural]
 
+  syntax KItem ::= maxK(K, K) [strict]
+  rule maxK(X:TypedValue, Y:TypedValue) => X 
+    when mival(X) >=Int mival(Y)
+  rule maxK(X:TypedValue, Y:TypedValue) => Y 
+    when mival(X) <Int mival(Y)
+
 endmodule
+
