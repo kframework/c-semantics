@@ -24,8 +24,9 @@ module CIL-IMPLEMENTATION
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
-  /* This is also defined in a standard library header. */
+  /* These are also defined in a standard library header. */
   rule size_t => unsigned long
+  rule size_ptr => unsigned long
 
   /*
    * Integer types.

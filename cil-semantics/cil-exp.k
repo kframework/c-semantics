@@ -114,22 +114,17 @@ module CIL-LITERAL
 
   rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
     => getNumericPart(cdrStr(S), Pre, Suf)
-    when (carStr(S) in Pre)
-      andBool (S =/=String "")
+    when (S =/=String "") andBool (carStr(S) in Pre)
   rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
     => getNumericPart'(S, "", Suf)
-    when notBool (carStr(S) in Pre)
-      andBool (S =/=String "")
+    when (S =/=String "") andBool (notBool (carStr(S) in Pre))
   rule getNumericPart("", _:MySet, _:MySet) => "0"
   
   rule getNumericPart'(S:String, Num:String, Suf:MySet)
     => getNumericPart'(cdrStr(S), Num +String carStr(S), Suf)
-    when notBool (carStr(S) in Suf)
-      andBool (S =/=String "")
+    when (S =/=String "") andBool (notBool (carStr(S) in Suf))
   rule getNumericPart'(S:String, Num:String, Suf:MySet) => Num
-    when (carStr(S) in Suf)
-      andBool (Num =/=String "")
-
+    when (S =/=String "") andBool (carStr(S) in Suf) andBool (Num =/=String "")
   rule getNumericPart'("", Num:String, _:MySet) => Num
     when Num =/=String ""
   rule getNumericPart'(S:String, "", Suf:MySet) => "0"
@@ -516,7 +511,7 @@ module CIL-EXP
     => norm(T, iMInt(I) <<Int iMInt(N))
     when iMInt(N) <Int width(T)
   rule tv(T:Type, I:MInt) >> tv(_:Type, N:MInt) 
-    => norm(T, iMInt(I) <<Int iMInt(N))
+    => norm(T, iMInt(I) >>Int iMInt(N))
     when iMInt(N) <Int width(T)
 
   /* Relation operators */
@@ -671,16 +666,16 @@ module CIL-EXP
 
   rule
     tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
-    => PtrSubHelper(T, P1, P2, sizeof(downPtr(T)))
+    => PtrSubHelper(P1, P2, sizeof(downPtr(T)))
     when isPtrType(T)
 
   syntax KItem ::= PtrAddHelper(Type, Ptr, Int, Exp)    [strict(4)]
   rule PtrAddHelper(T:Type, P:Ptr, I:Int, TV:TypedValue)
     => tv(T, PtrAdd(P, I, TV))
 
-  syntax KItem ::= PtrSubHelper(Type, Ptr, Ptr, Exp)    [strict(4)]
-  rule PtrSubHelper(T:Type, P1:Ptr, P2:Ptr, TV:TypedValue)
-    => tv(T, PtrSub(P1, P2, TV))
+  syntax KItem ::= PtrSubHelper(Ptr, Ptr, Exp)    [strict(3)]
+  rule PtrSubHelper(P1:Ptr, P2:Ptr, TV:TypedValue)
+    => tv(size_ptr, mi(width(size_ptr), PtrSub(P1, P2, TV)))
 
   // float comparisons
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)

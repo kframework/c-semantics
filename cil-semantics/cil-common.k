@@ -313,8 +313,9 @@ module CIL-COMMON
   /* Marker for starting execution (after static pre-processing). */
   syntax KItem ::= "callMain"
 
-  /* This is also defined in a standard library header. */
+  /* These are also defined in a standard library header. */
   syntax Type ::= "size_t" [function]
+                | "size_ptr" [function]
 
   syntax Int ::= mival(TypedValue) [function]
   rule mival(tv(_, I:MInt)) => iMInt(I)
