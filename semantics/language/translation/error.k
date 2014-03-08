@@ -23,9 +23,23 @@ module C-TRANSLATION-ERROR
 
      imports DEBUG-SYNTAX
 
-     rule ERROR(Num:String, Msg:String, _) 
+     rule <k> ERROR(Num:String, Msg:String, _) 
           => #write(#stderr, "Error " +String Num +String ": " +String Msg +String "\n")
-          ~> HALT
+          ~> #write(#stderr, "Location: " 
+               +String File +String ":" 
+               +String Int2String(Line)
+               // +String ":"
+               // +String Int2String(ColStart) +String "-"
+               // +String Int2String(ColEnd)
+               +String "\n")
+          ~> HALT ... </k>
+          <curr-program-loc> 
+               CabsLoc(File:String, Line:Int, _, _)
+          </curr-program-loc>
+     rule <k> ERROR(Num:String, Msg:String, _) 
+          => #write(#stderr, "Error " +String Num +String ": " +String Msg +String "\n")
+          ~> HALT ... </k>
+          <curr-program-loc> UnknownCabsLoc </curr-program-loc>
 
      // TODO(chathhorn): clean up.
      // dynamic exp
