@@ -155,9 +155,10 @@ module C-ERROR
           when Base =/=K Base'
           [structural, large]
 
-     rule [err00038]:
-          (. => ERROR("00038", "Arrays cannot be of 0 length.", cv("6.7.6.2:1"))) ~>
-          ArrayType(_:Type, tv(0, _), _)
+     rule [err00038a]:
+          (. => ERROR("00038", "Arrays must have positive length.", cv("6.7.6.2:1"))) ~>
+          ArrayType(_:Type, tv(Len:Int, _), _)
+          when Len <=Int 0
           [structural, large]
      
      rule [err00039]:
