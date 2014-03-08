@@ -33,7 +33,7 @@ module LIBC-SETJMP
      // reached that point normally or from a call to longjmp
      // fixme check bounds
      // fixme obviously need to rework configuration to make this easy
-     syntax K ::= bag(Bag)
+     syntax CValue ::= bag(Bag)
      
      syntax K ::= "ignoreLocals"
      
@@ -121,12 +121,12 @@ module LIBC-SETJMP
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
           <k> 
-               longjmp-aux(tv(bag(
+               longjmp-aux(tv(agg(ListItem(bag(
                     <thread-state>
                          <thread-continuation> K:K </thread-continuation>
                          <saved-thread-local>C:Bag</saved-thread-local>
                     </thread-state>
-               ), t(_, structType(Identifier("__jmp_buf_tag")))), 
+               ))), t(_, structType(Identifier("__jmp_buf_tag")))), 
                     tv(I:Int, t(_, int))) ~> _
                => ignoreLocals 
                     ~> #if I:Int ==Int 0 

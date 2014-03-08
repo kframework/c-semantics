@@ -24,11 +24,11 @@ module C-IO-BUFFERED
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:K) L:List), false)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), false)
           => writeByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L), false)
           [structural]
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:K) L:List), true)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), true)
           => stealthWriteByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L), true)
           [structural]
@@ -44,7 +44,7 @@ module C-IO-BUFFERED
           [large, structural]
 
      rule [write-byte-buffer]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
+          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
           <buffer>...
                (.List => bwrite(loc(Base, Offset, 0), V))
           </buffer>

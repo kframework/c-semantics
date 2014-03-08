@@ -9,7 +9,7 @@ module C-MEMORY-WRITING-SYNTAX
      // (i.e., multiple, unsequenced writes to a single location). This is
      // always disabled in direct io mode.
      syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
-     syntax K ::= writeByte(SymLoc, K)
+     syntax K ::= writeByte(SymLoc, CValue)
 
      syntax List ::= explodeToBits(List) [function]
 

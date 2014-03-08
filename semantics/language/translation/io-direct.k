@@ -16,7 +16,7 @@ module C-IO-DIRECT
      rule writeBytes(Loc:SymLoc, K:KResult, _)
           => writeBytes(Loc, K)
 
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:K) L:List))
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
           => writeByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
@@ -24,7 +24,7 @@ module C-IO-DIRECT
           [structural] 
 
      rule [write-byte]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
+          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, M:Map => M:Map[V / Offset]) 
           ...</mem>
