@@ -53,17 +53,21 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
      
-     syntax K ::= "incomingArguments-aux" "(" List "," Int ")"
+     syntax Type ::= strType(String) [function]
+     rule strType(S:String)
+          => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
      
+     syntax K ::= "incomingArguments-aux" "(" List "," Int ")"
+
      rule incomingArguments(L:List) 
           => incomingArguments-aux(L, 0) 
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
-          => allocString(argvLoc(N +Int 1), S)
+          => allocateType(argvLoc(N +Int 1), strType(S))
+          ~> writeString(argvLoc(N +Int 1), S)
           ~> Computation(
                Identifier("#incomingArgumentsArray")[N] 
-                    := lv(argvLoc(N +Int 1), t(.Set, 
-                         arrayType(t(.Set, char), lengthString(S) +Int 1))))
+                    := lv(argvLoc(N +Int 1), strType(S)))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int) 
