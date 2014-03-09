@@ -15,7 +15,7 @@ module C-BITS-SYNTAX
      // object, start piece, end piece
      syntax Bits ::= subObject(Ptr, K, K)
 
-     syntax Int ::= bitsToBytes(BitSize) [function]
+     syntax Int ::= bitsToBytes(CSize) [function]
 
      syntax K ::= fillToBytes(K) [strict] 
      syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]
@@ -148,12 +148,12 @@ module C-BITS
           [structural, anywhere]
 
      //- derived
-     rule bitsToBytes(N:Int) => absInt(N:Int /Int cfg:bitsPerByte)
-          when cfg:bitsPerByte dividesInt N:Int
-     rule bitsToBytes(N:Int) => absInt((N:Int /Int cfg:bitsPerByte) +Int 1) 
-          when notBool cfg:bitsPerByte dividesInt N:Int
-     rule bitsToBytes(N:BitSize) => N // Pass through sym values.
-          when notBool isInt(N)
+     rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
+          when cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1) 
+          when notBool cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:CSize) => N // Pass through sym values.
+          when isInt(N) =/=K true
 
      // these could be so much better...
      rule ~Bits X:Int => ~Int X

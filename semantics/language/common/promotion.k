@@ -200,7 +200,7 @@ module C-PROMOTION
      rule #isPromoted(t(_, short-int)) => false
      rule #isPromoted(t(_, unsigned-short-int)) => false
      
-     rule isPromoted(t(_, bitfieldType(_, _:Int))) => false
+     rule isPromoted(t(_, bitfieldType(_, _))) => false
      
      rule [promote-unary]:
           L:KLabel(
@@ -241,14 +241,13 @@ module C-PROMOTION
           when rank(T) >Int rank(t(.Set, int))
 
      rule [promote-bitfield-fits]:
-          promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+          promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:CSize)))
           => t(.Set, int)
-          when ((T:K ==K bool) orBool (T:K ==K int) 
-                    orBool (T:K ==K unsigned-int))
+          when ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
                andBool min(t(.Set, int)) 
-                    <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+                    <=Int min(t(S, bitfieldType(t(S', T), Len)))
                andBool max(t(.Set, int)) 
-                    >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+                    >=Int max(t(S, bitfieldType(t(S', T), Len)))
      // fixme unclear what 6.3.1.1:3 means
 
      rule [promote-lte-int-nofits]:
@@ -260,14 +259,14 @@ module C-PROMOTION
                )
 
      rule [promote-bitfield-nofits]:
-          promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+          promote(t(S:Set, bitfieldType(t(S':Set, T:K), Len:CSize)))
           => t(.Set, unsigned-int)
           when (T:K ==K bool orBool T:K ==K int orBool T:K ==K unsigned-int)
                andBool notBool (
                     min(t(.Set, int))
-                         <=Int min(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+                         <=Int min(t(S, bitfieldType(t(S', T), Len)))
                     andBool max(t(.Set, int))
-                         >=Int max(t(S:Set, bitfieldType(t(S':Set, T:K), Len:Int)))
+                         >=Int max(t(S, bitfieldType(t(S', T), Len)))
                )
      
      // fixme these could be done more cleanly

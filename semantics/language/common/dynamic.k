@@ -57,6 +57,7 @@ endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -123,4 +124,10 @@ module C-DYNAMIC
      rule loadObj(.Bag) => .K
           [structural]
 
+     rule N:Int => tv(N, cfg:largestUnsigned)
+          [structural] // for internal computations
+     
+     rule N:CSize => tv(N, cfg:largestUnsigned)
+          [structural] // for internal computations
+     
 endmodule

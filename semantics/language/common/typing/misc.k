@@ -44,7 +44,7 @@ module C-TYPING-MISC
      rule numBits(t(S:Set, T:SimpleType)) 
           => numBytes(t(S, T)) *Int cfg:bitsPerByte
           when getKLabel(T) =/=KLabel 'bitfieldType
-     rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
+     rule numBits(t(_, bitfieldType(_, N:CSize))) => N
 
      syntax SimpleType ::= simpleType(Type) [function]
      rule simpleType(t(_, T:SimpleType)) => T
@@ -133,9 +133,9 @@ module C-TYPING-MISC
           when (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool ((l(getKLabel(T)) in setOfTypes) 
                     orBool isFloatType(t(S, T)))
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
+     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _))) => true
           when hasUnsignedIntegerType(T) ==Bool true
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
+     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _))) => false
           when hasUnsignedIntegerType(T) ==Bool false
      
      rule hasSignedIntegerType(t(_, T:SimpleType)) => true
@@ -148,22 +148,22 @@ module C-TYPING-MISC
           when (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool ((l(getKLabel(T)) in setOfTypes) 
                     orBool isFloatType(t(S, T)))
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
+     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _))) => true
           when hasSignedIntegerType(T) ==Bool true
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
+     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _))) => false
           when hasSignedIntegerType(T) ==Bool false
 
-     rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
+     rule min(t(_, bitfieldType(T:Type, _))) => 0
           when hasUnsignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
-          => (2 ^Int absInt(N:Int)) -Int 1
+          => (2 ^Int absInt(N)) -Int 1
           when hasUnsignedIntegerType(T)
      
      rule min(t(_, bitfieldType(T:Type, N:Int)))
-          => 0 -Int (2 ^Int absInt(N:Int -Int 1))
+          => 0 -Int (2 ^Int absInt(N -Int 1))
           when hasSignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int)))
-          => (2 ^Int absInt(N:Int -Int 1)) -Int 1
+          => (2 ^Int absInt(N -Int 1)) -Int 1
           when hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
@@ -267,10 +267,10 @@ module C-TYPING-MISC
           => #isCompat(T, T') 
 
      rule [typeCompatible-array-right]:
-          #isCompat(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
+          #isCompat(T:Type, t(S:Set, arrayType(T':Type, _)))
           => #isCompat(T, t(S:Set, pointerType(T'))) 
      rule [typeCompatible-array-left]:
-          #isCompat(t(S:Set, arrayType(T:Type, _:Int)), T':Type)
+          #isCompat(t(S:Set, arrayType(T:Type, _)), T':Type)
           => #isCompat(t(S, pointerType(T)), T') 
      
      rule [typeCompatible-incompleteArray-right]:
@@ -428,7 +428,7 @@ module C-TYPING-MISC
           when (T =/=K bool)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
-     rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
+     rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _))) => true 
      rule [isArrayType-incompleteArray]:
           isArrayType(t(_, incompleteArrayType(_)))
           => true 
@@ -507,7 +507,7 @@ module C-TYPING-MISC
           isConstType(t(SetItem(Const) _, _)) => true
           
      rule [isBitfieldType-true]:
-          isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
+          isBitfieldType(t(_, bitfieldType(_, _))) => true 
      rule [isBitfieldType-false]: isBitfieldType(t(_, T:SimpleType)) => false
           when getKLabel(T) =/=KLabel 'bitfieldType
           
@@ -598,7 +598,7 @@ module C-TYPING-MISC
      rule getModifiers(t(S:Set, _)) => S
           
      rule [innerType-arrayType]:
-          innerType(t(_, arrayType(T:Type, _:Int))) => T
+          innerType(t(_, arrayType(T:Type, _))) => T
      rule [innerType-incompleteArrayType]: 
           innerType(t(_, incompleteArrayType(T:Type))) => T
      rule [innerType-flexibleArrayType]: 
@@ -608,8 +608,8 @@ module C-TYPING-MISC
      rule [innerType-pointerType]:
           innerType(t(_, pointerType(T:Type))) => T
      rule [innerType-bitfieldType]:
-          innerType(t(_, bitfieldType(T:Type, _:Int))) => T
+          innerType(t(_, bitfieldType(T:Type, _))) => T
      rule [innerType-functionType]:
-          innerType(t(_, functionType(T:Type, _:List))) => T
+          innerType(t(_, functionType(T:Type, _))) => T
 endmodule
 

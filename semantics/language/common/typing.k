@@ -37,21 +37,19 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
 
-     syntax ArraySize ::= Int
-     syntax CValue ::= ArraySize
-     syntax BitSize ::= Int
-     syntax CValue ::= BitSize
+     syntax CSize ::= Int
+     syntax CValue ::= CSize
      
      // Composite types
      syntax SimpleType ::= enumType(Id)
           [klabel('enumType)]
-     syntax SimpleType ::= arrayType(Type, ArraySize) 
+     syntax SimpleType ::= arrayType(Type, CSize) 
           [klabel('arrayType)]
      syntax SimpleType ::= incompleteArrayType(Type) 
           [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
-     syntax SimpleType ::= bitfieldType(Type, BitSize)
+     syntax SimpleType ::= bitfieldType(Type, CSize)
           [klabel('bitfieldType)]
      syntax SimpleType ::= functionType(Type, List)
           [klabel('functionType)]

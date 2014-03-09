@@ -237,9 +237,5 @@ module C-LITERAL
      rule Constant(V:KResult) => V 
           [structural, anywhere]
 
-     rule [create-internal-value]: N:Int 
-          => tv(N, cfg:largestUnsigned)
-          [structural] // for internal computations
-     
 endmodule
 

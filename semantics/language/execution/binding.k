@@ -57,7 +57,7 @@ module C-BINDING
                _
                , _:List
                , ListItem(typedDeclaration(
-                        (t(_, (arrayType(T:Type, _:Int)
+                        (t(_, (arrayType(T:Type, _)
                         => pointerType(T)))), _:Id
                )) _:List
           )

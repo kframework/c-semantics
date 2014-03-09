@@ -83,7 +83,7 @@ module C-FUNCTION-DEF
      rule dummyBind(ListItem(t(_, variadic))) => .
 
      rule dummyBind(ListItem(typedDeclaration(
-          (t(_, (arrayType(T:Type, _:Int) => pointerType(T)))),
+          (t(_, (arrayType(T:Type, _) => pointerType(T)))),
           _)) _:List)
 
      rule dummyBind(ListItem(typedDeclaration(

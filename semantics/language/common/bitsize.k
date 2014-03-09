@@ -30,7 +30,7 @@ module C-BITSIZE
      rule byteSizeofType(T:Type)
           => byteSizeofType-aux(bitSizeofType(T)) 
           [structural, anywhere]
-     rule byteSizeofType-aux(tv(N:BitSize, _))
+     rule byteSizeofType-aux(tv(N:CSize, _))
           => bitsToBytes(N)
           [structural]
 
@@ -63,8 +63,8 @@ module C-BITSIZE
      rule maxBitSizeofList-aux(.List, N:Int) => tv(N, cfg:largestUnsigned)
           [structural] 
      
-     rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
-          => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) 
+     rule bitSizeofType(t(_, arrayType(T:KResult, N:CSize))) 
+          => bitSizeofType(T) * tv(N, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
           => tv(0, cfg:largestUnsigned) 
@@ -75,8 +75,8 @@ module C-BITSIZE
      rule bitSizeofType(t(_, pointerType(_))) 
           => tv(cfg:ptrsize *Int cfg:bitsPerByte, cfg:largestUnsigned) 
           [structural, anywhere]
-     rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
-          => tv(N:Int, cfg:largestUnsigned) 
+     rule bitSizeofType(t(_, bitfieldType(_, N:CSize))) 
+          => tv(N, cfg:largestUnsigned) 
           [structural, anywhere]
      rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
           => bitSizeofType(T:KResult) 

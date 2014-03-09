@@ -104,19 +104,19 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
      rule <type>
-               t(S:Set, arrayType(T:Type, _:Int)) + T':Type
+               t(S:Set, arrayType(T:Type, _)) + T':Type
                => t(S, pointerType(T))
           ...</type>
           when hasIntegerType(T')
           [structural]
      rule <type>
-               T':Type + t(S:Set, arrayType(T:Type, _:Int))
+               T':Type + t(S:Set, arrayType(T:Type, _))
                => t(S, pointerType(T))
           ...</type>
           when hasIntegerType(T')
           [structural]
      rule <type>
-               t(S:Set, arrayType(T:Type, _:Int)) - T':Type
+               t(S:Set, arrayType(T:Type, _)) - T':Type
                => t(S, pointerType(T))
           ...</type>
           when hasIntegerType(T')
@@ -227,13 +227,13 @@ module C-TYPING-EXPR
           
      rule [type-ternary-array-left]: 
           <type>
-               _:K ? (t(S:Set, arrayType(T:Type, _:Int))
+               _:K ? (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T))) : _
           ...</type> 
           [structural]
      rule [type-ternary-array-right]: 
           <type>
-               _:K ? _:K : (t(S:Set, arrayType(T:Type, _:Int))
+               _:K ? _:K : (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T)))
           ...</type>
           [structural]

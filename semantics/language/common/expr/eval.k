@@ -14,7 +14,7 @@ module C-COMMON-EXPR-EVAL
      imports C-TYPING-SYNTAX
 
      syntax Int ::= arrayLength(K) [function]
-     rule arrayLength(t(_:Set, arrayType(_:Type, N:Int))) => N
+     rule arrayLength(t(_:Set, arrayType(_:Type, N:CSize))) => N
      /*@ these large numbers are used instead of an infinity---the result of
      these rules shouldn't be used later anyway */
      rule arrayLength(t(_:Set, flexibleArrayType(_:Type)))

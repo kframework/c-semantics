@@ -18,13 +18,13 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(toBag(L))
           [structural]
           
-     rule BitFieldType(T:Type, tv(N:Int, _))
+     rule BitFieldType(T:Type, tv(N:CSize, _))
           => t(.Set, bitfieldType(T, N)) [structural, anywhere]
      
      syntax KLabel ::= makeFunctionType(List)
      syntax KLabel ::= "makePointerType"
      syntax KLabel ::= "makeIncompleteArrayType"
-     syntax KLabel ::= makeArrayType(ArraySize)
+     syntax KLabel ::= makeArrayType(CSize)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
      
      // FIXME: throwing away specifier.
@@ -32,9 +32,9 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
           [structural, anywhere]
-     rule ArrayType(T:Type, tv(N:ArraySize, _), _) 
+     rule ArrayType(T:Type, tv(N:CSize, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
-          when notBool isInt(N) // For possible symbolic values.
+          when isInt(N) =/=K true // For possible symbolic values.
           [structural, anywhere]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
@@ -56,7 +56,7 @@ module C-TYPING-INTERPRETATION
           [structural, anywhere]
      
      rule [pushdown-array]: 
-          pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:KLabel) 
+          pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule [pushdown-incomplete]: 
           pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
@@ -89,7 +89,7 @@ module C-TYPING-INTERPRETATION
           when isBasicType(T)
           [structural]
      
-     rule makeArrayType(N:Int)(T:Type)
+     rule makeArrayType(N:CSize)(T:Type)
           => t(.Set, arrayType(T, N)) 
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
@@ -191,7 +191,8 @@ module C-TYPING-INTERPRETATION
      
      rule [fillBitHoles-aux-bitfield-normal]:
           fillBitHoles-aux(N:Int, 
-               ListItem(typedDeclaration(t(S:Set, bitfieldType(T:Type, N':Int)), X:Id)) 
+               ListItem(typedDeclaration(t(S:Set,
+               bitfieldType(T:Type, N':Int)), X:Id))
                L:List) 
           => ListItem(typedDeclaration(t(S, bitfieldType(T, N')), X))
                fillBitHoles-aux(N +Int N', L)
@@ -210,7 +211,8 @@ module C-TYPING-INTERPRETATION
      
      rule [fillBitHoles-done]:
           fillBitHoles-aux(N:Int, .List) 
-          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
+          => ListItem(typedDeclaration(
+               t(.Set, bitfieldType(t(.Set, unsigned-int), 
                absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte))
                %Int cfg:bitsPerByte)), #NoName))
           [structural]
@@ -265,13 +267,13 @@ module C-TYPING-INTERPRETATION
           extractActualType(t(S:Set, unionType(X:Id))) 
           => t(S, unionType(X))
      rule [extract-array]:
-          extractActualType(t(S:Set, arrayType(T:Type, N:Int))) 
+          extractActualType(t(S:Set, arrayType(T:Type, N:CSize))) 
           => t(S, arrayType(extractActualType(T), N))
      rule [extract-incompleteArray]:
           extractActualType(t(S:Set, incompleteArrayType(T:Type))) 
           => t(S, incompleteArrayType(extractActualType(T)))
      rule [extract-bitfield]:
-          extractActualType(t(S:Set, bitfieldType(T:Type, N:Int))) 
+          extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize))) 
           => t(S, bitfieldType(extractActualType(T), N))
      rule [extract-function]:
           extractActualType(t(S:Set, functionType(T:Type, L:List))) 

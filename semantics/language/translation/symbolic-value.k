@@ -1,6 +1,5 @@
 module C-SYMBOLIC-VALUE-SYNTAX
-     syntax ArraySize ::= SymVal
-     syntax BitSize ::= SymVal
+     syntax CSize ::= SymVal
      syntax SymLoc ::= SymVal
      syntax SymVal ::= "symVal"
 endmodule
@@ -30,5 +29,5 @@ module C-SYMBOLIC-VALUE
      rule bitSizeofType(T:Type) => tv(symVal, T)
           when isIncompleteType(T)
 
-     rule symVal => tv(symVal, t(.Set, no-type))
+     //rule symVal => tv(symVal, t(.Set, no-type))
 endmodule

@@ -159,7 +159,7 @@ module C-DECL-INITIALIZER
      syntax ListItem ::= "block"
      
      rule <curr-subobject> 
-               ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:Int))))
+               ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:CSize))))
                => ListItem(te(K[0], T)) 
                     ListItem(te(K, t(S, arrayType(T, Len))))
           ...</curr-subobject>

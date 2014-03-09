@@ -107,8 +107,8 @@ module C-TYPING-CANONICALIZATION
      If the specification of an array type includes any type qualifiers, the
      element type is so-qualified, not the array type. \ldots
      }*/
-     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
-          => t(S:Set, arrayType(t(SetItem(Const) S':Set, T:K), N:Int))
+     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
+          => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      
      rule <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
