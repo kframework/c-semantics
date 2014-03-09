@@ -1,12 +1,4 @@
-module C-TYPING-INTERPRETATION-SYNTAX
-     // TODO(chathhorn): these are used in translation/symbolic-value.k. Should
-     // probably just make symVal known everywhere.
-     syntax Type ::= pushTypeDown(Type, KLabel) [function]
-     syntax KLabel ::= makeArrayType(Int)
-endmodule
-
 module C-TYPING-INTERPRETATION
-     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
@@ -32,11 +24,17 @@ module C-TYPING-INTERPRETATION
      syntax KLabel ::= makeFunctionType(List)
      syntax KLabel ::= "makePointerType"
      syntax KLabel ::= "makeIncompleteArrayType"
+     syntax KLabel ::= makeArrayType(ArraySize)
+     syntax Type ::= pushTypeDown(Type, KLabel) [function]
      
      // FIXME: throwing away specifier.
      rule ArrayType(T:Type, tv(N:Int, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
+          [structural, anywhere]
+     rule ArrayType(T:Type, tv(N:ArraySize, _), _) 
+          => pushTypeDown(T, makeArrayType(N)) 
+          when notBool isInt(N) // For possible symbolic values.
           [structural, anywhere]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)

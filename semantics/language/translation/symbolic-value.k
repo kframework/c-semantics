@@ -1,5 +1,6 @@
 module C-SYMBOLIC-VALUE-SYNTAX
-     syntax Int ::= SymVal
+     syntax ArraySize ::= SymVal
+     syntax BitSize ::= SymVal
      syntax SymLoc ::= SymVal
      syntax SymVal ::= "symVal"
 endmodule
@@ -12,7 +13,6 @@ module C-SYMBOLIC-VALUE
      imports C-TYPING-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-BITS-SYNTAX
 
      // Various rules for cramming this symVal down the throat of the
@@ -30,11 +30,5 @@ module C-SYMBOLIC-VALUE
      rule bitSizeofType(T:Type) => tv(symVal, T)
           when isIncompleteType(T)
 
-     rule bitsToBytes(symVal) => symVal
-
-     // From typing/interpretation.k
-     rule ArrayType(T:Type, tv(symVal, _), _) 
-          => pushTypeDown(T, makeArrayType(symVal)) 
-          [structural, anywhere]
-
+     rule symVal => tv(symVal, t(.Set, no-type))
 endmodule

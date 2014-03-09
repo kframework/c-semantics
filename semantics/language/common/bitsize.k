@@ -30,16 +30,12 @@ module C-BITSIZE
      rule byteSizeofType(T:Type)
           => byteSizeofType-aux(bitSizeofType(T)) 
           [structural, anywhere]
-     rule byteSizeofType-aux(V:TypedValue)
-          => bitsToBytes(value(V))
+     rule byteSizeofType-aux(tv(N:BitSize, _))
+          => bitsToBytes(N)
           [structural]
 
-     // TODO(chathhorn): BUG? Note doesn't heat when .K.
-     rule bitSizeofList-aux(K:K, X:Int, L:List)
-          => K ~> bitSizeofList-aux(HOLE, X, L) 
-          when notBool (K ==K .K) [heat]
-     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:List)
-          => bitSizeofList-aux(K, X, L) [cool]
+     context bitSizeofList-aux(HOLE, _, _)
+          when HOLE =/=K .K
      
       // TODO(chathhorn)
      rule bitSizeofList(L:List) => bitSizeofList-aux(.K, 0, L:List)

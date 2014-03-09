@@ -36,7 +36,7 @@ module C-MEMORY-READING
      imports COMPAT-SYNTAX
 
      // loc, size in bits
-     syntax K ::= extractBitsFromMem(SymLoc, Int)
+     syntax K ::= extractBitsFromMem(SymLoc, BitSize)
      
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
           => extractBitsFromList-aux(
@@ -83,15 +83,15 @@ module C-MEMORY-READING
           [ndtrans]
      
      rule [read]:
-          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
+          readActual(Loc:SymLoc, T:Type, tv(N:BitSize, _))
           => concretize(T, 
-               readBytes(Loc, bitsToBytes(value(BitSize))))
+               readBytes(Loc, bitsToBytes(N)))
           when notBool isBitfieldType(T)
           [structural]
      rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
+          readActual(Loc:SymLoc, T:Type, tv(N:BitSize, _))
           => concretize(T, 
-               fillToBytes(extractBitsFromMem(Loc, value(BitSize)))) 
+               fillToBytes(extractBitsFromMem(Loc, N))) 
           when isBitfieldType(T)
           [structural]
      
