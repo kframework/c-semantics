@@ -114,7 +114,7 @@ module C-LTLMC
 
      rule ltlRVal(
           <generatedTop>... <T>... <gstructs>...
-               S |-> aggregateInfo(_,
+               S |-> aggInfo(_,
                     (_ X |-> T:Type),
                     (_ X |-> Offset:Int))
           ...</gstructs> ...</T> ...</generatedTop>,
@@ -127,7 +127,7 @@ module C-LTLMC
                     .List))
      rule ltlRVal(
           <generatedTop>... <T>... <gstructs>...
-               S |-> aggregateInfo(_,
+               S |-> aggInfo(_,
                     (_ X |-> T:Type),
                     (_ X |-> Offset:Int))
           ...</gstructs> ...</T> ...</generatedTop>,

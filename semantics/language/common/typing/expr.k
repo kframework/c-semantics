@@ -167,13 +167,13 @@ module C-TYPING-EXPR
      rule [type-struct-dot]:
           <type> t(_, structType(S:Id)) . F:Id => T ...</type>
           <structs>...
-               S |-> aggregateInfo(_, (_ F |-> T:KResult), _)
+               S |-> aggInfo(_, (_ F |-> T:KResult), _)
           ...</structs>
           [structural]
      rule [type-union-dot]:
           <type> t(_, unionType(S:Id)) . F:Id => T ...</type>
           <structs>...
-               S |-> aggregateInfo(_, (_ F |-> T:KResult), _)
+               S |-> aggInfo(_, (_ F |-> T:KResult), _)
           ...</structs>
           [structural]
 

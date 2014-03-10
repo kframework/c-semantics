@@ -11,7 +11,7 @@ module C-DECL-INITIALIZER-SYNTAX
 
      // TODO(chathhorn): it would be nice to move this elsewhere.
      // First map is for type, second map is for offset.
-     syntax K ::= aggregateInfo(List, Map, Map)
+     syntax AggInfo ::= aggInfo(List, Map, Map)
 endmodule
 
 module C-DECL-INITIALIZER
@@ -176,7 +176,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</curr-subobject>
           <structs>... 
-               S |-> aggregateInfo(
+               S |-> aggInfo(
                     ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
           ...</structs> 
           [structural] 
@@ -188,7 +188,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, unionType(S))))
           ...</curr-subobject>
           <structs>... 
-               S |-> aggregateInfo(
+               S |-> aggInfo(
                     ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           ...</structs> 
           [structural] 
@@ -226,7 +226,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</curr-subobject>
           <structs>...
-               S |-> aggregateInfo(_ 
+               S |-> aggInfo(_ 
                     ListItem(typedDeclaration(T, F))
                     ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
           ...</structs> 
@@ -241,7 +241,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K, t(Se, structType(S))))
           ...</curr-subobject>
           <structs>...
-               S |-> aggregateInfo(_ 
+               S |-> aggInfo(_ 
                     ListItem(typedDeclaration(T, F))
                     ListItem(typedDeclaration(_, #NoName))
                     ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
@@ -254,7 +254,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</curr-subobject>
           <structs>...
-               S |-> aggregateInfo(_ ListItem(typedDeclaration(T, F)), _, _)
+               S |-> aggInfo(_ ListItem(typedDeclaration(T, F)), _, _)
           ...</structs> 
           [structural, large] 
      rule [init-next-struct-element-done-noname]:
@@ -263,7 +263,7 @@ module C-DECL-INITIALIZER
                     ListItem(te(K:K, t(_, structType(S:Id))))
           ...</curr-subobject>
           <structs>...
-               S |-> aggregateInfo(_
+               S |-> aggInfo(_
                     ListItem(typedDeclaration(T, F))
                     ListItem(typedDeclaration(_, #NoName)), _, _)
           ...</structs> 
@@ -339,7 +339,7 @@ module C-DECL-INITIALIZER
                     ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:Id))))
           ...</curr-subobject>
           <structs>... 
-               S |-> aggregateInfo(_, (_ F:Id |-> T:Type), _)
+               S |-> aggInfo(_, (_ F:Id |-> T:Type), _)
           ...</structs>
           when Lbl ==KLabel 'structType orBool Lbl ==KLabel 'unionType
           [structural] 

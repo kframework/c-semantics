@@ -1,8 +1,9 @@
 require "typing/canonicalization.k"
+require "typing/expr.k"
 require "typing/interpretation.k"
 require "typing/misc.k"
+require "typing/predicates.k"
 require "typing/strictness.k"
-require "typing/expr.k"
 
 module C-TYPING-SYNTAX
      syntax K ::= typeof(K)
@@ -43,22 +44,26 @@ module C-TYPING-SYNTAX
      // Composite types
      syntax SimpleType ::= enumType(Id)
           [klabel('enumType)]
-     syntax SimpleType ::= arrayType(Type, CSize) 
-          [klabel('arrayType)]
-     syntax SimpleType ::= incompleteArrayType(Type) 
-          [klabel('incompleteArrayType)]
-     syntax SimpleType ::= flexibleArrayType(Type)
-          [klabel('flexibleArrayType)]
      syntax SimpleType ::= bitfieldType(Type, CSize)
           [klabel('bitfieldType)]
      syntax SimpleType ::= functionType(Type, List)
           [klabel('functionType)]
      syntax SimpleType ::= pointerType(Type)
           [klabel('pointerType)]
+
+     syntax SimpleType ::= arrayType(Type, CSize) 
+          [klabel('arrayType)]
+     syntax SimpleType ::= incompleteArrayType(Type) 
+          [klabel('incompleteArrayType)]
+     syntax SimpleType ::= flexibleArrayType(Type)
+          [klabel('flexibleArrayType)]
+
      syntax SimpleType ::= structType(Id)
           [klabel('structType)]
+
      syntax SimpleType ::= unionType(Id)
           [klabel('unionType)]
+
      syntax SimpleType ::= qualifiedType(Type, K)
           [klabel('qualifiedType)]
 
@@ -109,8 +114,9 @@ endmodule
 
 module C-TYPING
      imports C-TYPING-CANONICALIZATION
+     imports C-TYPING-EXPR
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
+     imports C-TYPING-PREDICATES
      imports C-TYPING-STRICTNESS
-     imports C-TYPING-EXPR
 endmodule

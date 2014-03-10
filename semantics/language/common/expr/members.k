@@ -21,7 +21,7 @@ module C-COMMON-EXPR-MEMBERS
                => lv(Loc +bits Offset, T)
           ...</k>
           <structs>...
-               S |-> aggregateInfo(_, 
+               S |-> aggInfo(_, 
                     (_ F |-> T:Type), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
@@ -29,7 +29,7 @@ module C-COMMON-EXPR-MEMBERS
                => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
           ...</k>
           <structs>...
-               S |-> aggregateInfo(_, 
+               S |-> aggInfo(_, 
                     (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
@@ -45,7 +45,7 @@ module C-COMMON-EXPR-MEMBERS
                => extractField-pre(L, T, Offset, bitSizeofType(T)) 
           ...</k>
           <structs>... 
-               S |-> aggregateInfo(_, 
+               S |-> aggInfo(_, 
                     (_ F |-> T:Type), (_ F |-> Offset:Int)) 
           ...</structs>
           when Lb ==KLabel 'unionType

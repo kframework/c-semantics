@@ -43,14 +43,14 @@ module C-DECL-ZERO
      rule <k> zeroType(N:K, t(_, structType(S:Id))) 
                => zeroStruct(N, Fields)
           ...</k>
-          <structs>... S |-> aggregateInfo(Fields:List, _, _) ...</structs> 
+          <structs>... S |-> aggInfo(Fields:List, _, _) ...</structs> 
           [structural] 
           
      rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
                => zeroType(N . F, T)
           ...</k>
           <structs>... 
-               S |-> aggregateInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+               S |-> aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           ...</structs> 
           [structural] 
           

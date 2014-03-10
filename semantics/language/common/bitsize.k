@@ -91,11 +91,11 @@ module C-BITSIZE
 
      rule <k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L) 
           ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:List, _, _) ...</structs>
+          <structs>... S:Id |-> aggInfo(L:List, _, _) ...</structs>
           [structural] 
      rule <k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L) 
           ...</k>
-          <structs>... S |-> aggregateInfo(L:List, _, _) ...</structs>
+          <structs>... S |-> aggInfo(L:List, _, _) ...</structs>
           [structural]
           
 endmodule
