@@ -6,6 +6,8 @@ module C-CONFIGURATION
 
      configuration 
      <global>
+          // TODO(chathhorn): move.
+          <incomplete-aggs> .Set </incomplete-aggs>
           <mem> .Map </mem>
 
           <functions color="lightgray"> .Map </functions>
@@ -24,6 +26,7 @@ module C-CONFIGURATION
                <external-defs> .Map </external-defs>
                // Ids
                <external-uses> SetItem(Identifier("main")) </external-uses>
+
           </linking-state>
 
           // dummy link loc |-> real loc

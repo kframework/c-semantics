@@ -1,12 +1,19 @@
 module C-ENV-SYNTAX
+     syntax AggInfo ::= makeStructAggInfo(List) [function]
+     syntax AggInfo ::= makeUnionAggInfo(List) [function]
+     syntax K ::= addAgg(Id, AggInfo)
      syntax K ::= addToEnv(Id, SymLoc)
      syntax K ::= giveType(Id, Type)
      syntax K ::= "populateFromGlobal"
+
+     // First map is for type, second map is for offset.
+     syntax AggInfo ::= aggInfo(List, Map, Map)
 endmodule
 
 module C-ENV
      imports C-ENV-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
 
      syntax K ::= addToGlobalEnv(K, SymLoc)
@@ -65,4 +72,70 @@ module C-ENV
      rule <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
           <types> M:Map => M:Map[T:KResult / X:Id] </types>
           [structural]   
+
+
+     syntax K ::= addGlobalAggregate(Id, K)
+                | addLocalAggregate(Id, K)
+
+     syntax AggInfo ::= "makeStructAggInfo'" "(" List "," Int "," Map ","  Map "," List ")"
+                         [function]
+     rule makeStructAggInfo(L:List) 
+          => makeStructAggInfo'(L:List, 0, .Map, .Map, L:List)
+          when L:List =/=List .List
+     rule makeStructAggInfo'(
+               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               , V:Int
+               , Types:Map
+               , Offsets:Map
+               , L':List
+          )
+          => makeStructAggInfo'(L, V +Int bitSizeofType(T),
+               Types:Map[T / Field], Offsets:Map[V / Field], L')
+     rule makeStructAggInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
+          => aggInfo(L, Types, Offsets)
+
+     rule <k> addAgg(S:Id, Info:AggInfo)
+               => addGlobalAggregate(S, Info)
+          ...</k>
+          <curr-function> file-scope </curr-function>
+          [structural]        
+     rule <k> addAgg(S:Id, Info:AggInfo)
+               => addLocalAggregate(S, Info)
+          ...</k>
+          <curr-function> F:Id </curr-function>
+          when F =/=K file-scope
+          [structural]        
+
+     syntax AggInfo ::= "makeUnionAggInfo'" "(" List "," Map ","  Map "," List ")"
+                         [function]
+     
+     rule makeUnionAggInfo(L:List) 
+          => makeUnionAggInfo'(L, .Map, .Map, L)
+          when L =/=List .List
+     rule makeUnionAggInfo'(
+               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               , Types:Map
+               , Offsets:Map
+               , L':List
+          ) 
+          => makeUnionAggInfo'(L,
+               Types:Map[T / Field], Offsets:Map[0 / Field],
+               L')
+     rule makeUnionAggInfo'(.List, Types:Map, Offsets:Map, L:List) 
+          => aggInfo(L, Types, Offsets)
+          
+     rule <k> addGlobalAggregate(X:Id, Agg:AggInfo) => . ...</k>
+          <structs> M':Map => M':Map[Agg / X] </structs>
+          <gstructs> M:Map => M:Map[Agg / X] </gstructs>
+          <incomplete-aggs>... SetItem(X) => .Set ...</incomplete-aggs>
+          [structural]
+     rule <k> addGlobalAggregate(X:Id, Agg:AggInfo) => . ...</k>
+          <structs> M':Map => M':Map[Agg / X] </structs>
+          <gstructs> M:Map => M:Map[Agg / X] </gstructs>
+          <incomplete-aggs> Incs:Set </incomplete-aggs>
+          when notBool (X in Incs)
+          [structural]
+     rule <k> addLocalAggregate(X:Id, Agg:AggInfo) => . ...</k>
+          <structs> M:Map => M:Map[Agg / X] </structs>
+          [structural]
 endmodule

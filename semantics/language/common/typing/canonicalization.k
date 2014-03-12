@@ -8,11 +8,13 @@ module C-TYPING-CANONICALIZATION
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
-     context canonicalizeType-aux(_,HOLE,_,_,_) when HOLE =/=K .K 
+     context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
+          when HOLE =/=K .K 
 
      rule canonicalizeType(B:Bag)
           => canonicalizeType-aux(B, .K, .Bag, .Bag, .Bag)
@@ -111,6 +113,8 @@ module C-TYPING-CANONICALIZATION
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      
+     syntax K ::= canonicalizeSpecifier(Bag)
+
      rule <k> canonicalizeSpecifier(BagItem(Named(X:Id)))
                => t(.Set, typedefType(X, T))
           ...</k>
@@ -118,17 +122,41 @@ module C-TYPING-CANONICALIZATION
           when X =/=K Identifier("")
           [structural]
           
-     rule canonicalizeSpecifier(BagItem(StructRef(X:Id)))
-          => t(.Set, structType(X))
+     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
+               => t(.Set, structType(X, bitSizeofStruct(Info)))
+          ...</k>
+          <structs>...
+               X |-> Info:AggInfo
+          ...</structs>
           when X =/=K Identifier("")
+          [structural]
+     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
+               => t(.Set, incompleteStructType(X))
+          ...</k>
+          <structs> Structs:Map </structs>
+          <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
+          when (X =/=K Identifier(""))
+               andBool notBool (X in keys Structs)
           [structural]
      rule canonicalizeSpecifier(BagItem(EnumRef(X:Id)))
           => t(.Set, enumType(X))
           when X =/=K Identifier("")
           [structural]
-     rule canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-          => t(.Set, unionType(X))
+     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
+               => t(.Set, unionType(X, bitSizeofUnion(Info)))
+          ...</k>
+          <structs>...
+               X |-> Info:AggInfo
+          ...</structs>
           when X =/=K Identifier("")
+          [structural]
+     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
+               => t(.Set, incompleteUnionType(X))
+          ...</k>
+          <structs> Structs:Map </structs>
+          <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
+          when (X =/=K Identifier(""))
+               andBool notBool (X in keys Structs)
           [structural]
           
      rule canonicalizeSpecifier(BagItem(EnumDef(X:Id, L:K)))
@@ -158,12 +186,14 @@ module C-TYPING-CANONICALIZATION
           <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
           [structural]
      
-     rule canonicalizeSpecifier(BagItem(StructDef(X:Id, L:K)))
-          => StructDef(X, L) ~> t(.Set, structType(X))
+     rule (.K => StructDef(X, L))
+          ~> canonicalizeSpecifier(BagItem(
+               StructDef(X:Id, L:K) => StructRef(X)))
           when X =/=K Identifier("")
           [structural]
-     rule canonicalizeSpecifier(BagItem(UnionDef(X:Id, L:K)))
-          => UnionDef(X, L) ~> t(.Set, unionType(X))
+     rule (.K => UnionDef(X, L))
+          ~> canonicalizeSpecifier(BagItem(
+               UnionDef(X:Id, L:K) => UnionRef(X)))
           when X =/=K Identifier("")
           [structural]
 
@@ -183,7 +213,6 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeType-aux(.Bag, T:Type, .Bag, .Bag, .Bag) => T
           [structural]
           
-     syntax K ::= canonicalizeSpecifier(Bag) [function]
      // C99 6.7.2:2
      rule canonicalizeSpecifier(BagItem(Void)) => t(.Set, void)
      rule canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool)

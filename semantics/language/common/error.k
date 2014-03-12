@@ -11,8 +11,8 @@ module C-ERROR
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-TYPING-MISC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax String ::= Error(String, String, KList) [function]
      rule Error(Title:String, Msg:String, _:KList)  => 
@@ -163,10 +163,10 @@ module C-ERROR
      
      rule [err00039]:
           (. => ERROR("00039", "Unions cannot be empty.", 61) ) ~>
-          addUnion(_:Id, .List)
+          StructDef(_, krlist(.List))
           [structural, large]
      rule [err00040]:
           (. => ERROR("00040", "Structs cannot be empty.", 61) ) ~>
-          addStruct(_:Id, .List)
+          UnionDef(_, krlist(.List))
           [structural, large]
 endmodule

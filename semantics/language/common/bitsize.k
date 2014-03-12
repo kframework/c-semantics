@@ -1,7 +1,9 @@
 module C-BITSIZE-SYNTAX
-     // needs to be heated to top of K for struct and union types
-     syntax K ::= bitSizeofType(K) [strict]
-     syntax K ::= byteSizeofType(Type)
+     syntax Int ::= bitSizeofType(Type) [function]
+     syntax Int ::= byteSizeofType(Type) [function]
+
+     syntax Int ::= bitSizeofStruct(AggInfo) [function]
+     syntax Int ::= bitSizeofUnion(AggInfo) [function]
 
      // generates a tv(size, cfg:sizeut)
      syntax K ::= sizeofType(K) [strict]
@@ -11,6 +13,7 @@ module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
      imports C-BITS-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
 
@@ -19,83 +22,57 @@ module C-BITSIZE
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     syntax K ::= bitSizeofList(List)
-     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," List ")" [strict(1)]
+     syntax Int ::= bitSizeofList(List) [function]
+     syntax Int ::= "bitSizeofList'" "(" Int "," List ")" [function]
      
      rule sizeofType(T:Type)
-          => cast(cfg:sizeut, byteSizeofType(T)) 
+          => cast(cfg:sizeut, tv(byteSizeofType(T), cfg:largestUnsigned))
           [structural]
 
-     syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
      rule byteSizeofType(T:Type)
-          => byteSizeofType-aux(bitSizeofType(T)) 
-          [structural, anywhere]
-     rule byteSizeofType-aux(tv(N:CSize, _))
-          => bitsToBytes(N)
-          [structural]
+          => bitsToBytes(bitSizeofType(T)) 
 
-     context bitSizeofList-aux(HOLE, _, _)
-          when HOLE =/=K .K
-     
-      // TODO(chathhorn)
-     rule bitSizeofList(L:List) => bitSizeofList-aux(.K, 0, L:List)
-          [structural]
-     rule bitSizeofList-aux((.K => bitSizeofType(T:K)),
-               _:Int, (ListItem(T:K) => .List) _:List)
-          [structural]
-     rule bitSizeofList-aux((tv(Len':Int, _) => .K),
-               (Len:Int => Len:Int +Int Len':Int), _)
-          [structural]
-     rule bitSizeofList-aux(.K, Len:Int, .List) 
-          => tv(Len:Int, cfg:largestUnsigned)
-          [structural]
+     rule bitSizeofList(L:List) => bitSizeofList'(0, L)
+     rule bitSizeofList'(
+          (Sz:Int => Sz +Int bitSizeofType(T)),
+          (ListItem(T:Type) => .List) _:List)
+     rule bitSizeofList'(Sz:Int, .List) => Sz
           
-     syntax K ::= maxBitSizeofList(List)
-     syntax K ::= "maxBitSizeofList-aux" "(" List "," Int ")"
-     rule maxBitSizeofList(L:List) => maxBitSizeofList-aux(L, 0)
-          [structural, anywhere]
-     rule maxBitSizeofList-aux(ListItem(T:KResult) L:List, N:Int)
-          => bitSizeofType(T) ~> maxBitSizeofList-aux(L, N) 
-          [structural] 
-     rule (tv(N':Int, _) => .) 
-          ~> maxBitSizeofList-aux(_:List, (N:Int => maxInt(N, N'))) 
-          [structural] 
-     rule maxBitSizeofList-aux(.List, N:Int) => tv(N, cfg:largestUnsigned)
-          [structural] 
+     syntax Int ::= maxBitSizeofList(List) [function]
+     syntax Int ::= "maxBitSizeofList'" "(" Int "," List ")" [function]
+     rule maxBitSizeofList(L:List) => maxBitSizeofList'(0, L)
+     rule maxBitSizeofList'(
+          (Sz:Int => maxInt(Sz, bitSizeofType(T))),
+          (ListItem(T:Type) => .List) _:List)
+     rule maxBitSizeofList'(Sz:Int, .List) => Sz
      
-     rule bitSizeofType(t(_, arrayType(T:KResult, N:CSize))) 
-          => bitSizeofType(T) * tv(N, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
-          => tv(0, cfg:largestUnsigned) 
-          [structural, anywhere]
+     rule bitSizeofType(t(_, arrayType(T:Type, N:Int))) 
+          => bitSizeofType(T) *Int N
+     rule bitSizeofType(t(_, flexibleArrayType(_))) 
+          => 0
+     // TODO(chathhorn): why is a functionType 8 bits?
      rule bitSizeofType(t(_, functionType(_, _))) 
-          => tv(cfg:bitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
+          => cfg:bitsPerByte
      rule bitSizeofType(t(_, pointerType(_))) 
-          => tv(cfg:ptrsize *Int cfg:bitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, bitfieldType(_, N:CSize))) 
-          => tv(N, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
-          => bitSizeofType(T:KResult) 
-          [structural, anywhere]
+          => cfg:ptrsize *Int cfg:bitsPerByte
+     rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
+          => N
+     rule bitSizeofType(t(_, qualifiedType(T:Type, _))) 
+          => bitSizeofType(T:Type) 
      rule bitSizeofType(T:Type) 
-          => tv(numBits(T), cfg:largestUnsigned) 
+          => numBits(T)
           when isBasicType(T)
-          [structural, anywhere]
-     rule bitSizeofType(typedDeclaration(T:Type, _:Id)) 
-          => bitSizeofType(T) 
-          [structural, anywhere]
+     rule bitSizeofType(typedDeclaration(T:Type, _)) 
+          => bitSizeofType(T)
 
-     rule <k> bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L) 
-          ...</k>
-          <structs>... S:Id |-> aggInfo(L:List, _, _) ...</structs>
-          [structural] 
-     rule <k> bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L) 
-          ...</k>
-          <structs>... S |-> aggInfo(L:List, _, _) ...</structs>
-          [structural]
-          
+     rule bitSizeofType(t(_, structType(_, NBits:Int))) 
+          => NBits
+     rule bitSizeofType(t(_, unionType(_, NBits:Int)))
+          => NBits
+
+     rule bitSizeofStruct(aggInfo(L:List, _, _))
+          => bitSizeofList(L)
+     rule bitSizeofUnion(aggInfo(L:List, _, _))
+          => maxBitSizeofList(L)
+
 endmodule

@@ -12,7 +12,6 @@ module C-EXECUTION-ERROR
      imports C-PROMOTION-SYNTAX
      imports C-BITS-SYNTAX
 
-     imports C-TYPING-MISC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX

@@ -7,6 +7,7 @@ module C-DECL-ZERO
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
@@ -40,18 +41,20 @@ module C-DECL-ZERO
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule <k> zeroType(N:K, t(_, structType(S:Id))) 
+     rule <k> zeroType(N:K, t(_, structType(S:Id, _)))
                => zeroStruct(N, Fields)
           ...</k>
-          <structs>... S |-> aggInfo(Fields:List, _, _) ...</structs> 
+          <structs>...
+               S |-> aggInfo(Fields:List, _, _)
+          ...</structs>
           [structural] 
           
-     rule <k> zeroType(N:K, t(_, unionType(S:Id))) 
+     rule <k> zeroType(N:K, t(_, unionType(S:Id, _)))
                => zeroType(N . F, T)
           ...</k>
-          <structs>... 
+          <structs>...
                S |-> aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
-          ...</structs> 
+          ...</structs>
           [structural] 
           
      rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:Id)) L:List) 
@@ -61,7 +64,7 @@ module C-DECL-ZERO
           [structural] 
 
      rule zeroType(Sym:K, T:Type) 
-               => Computation(allowWrite(Sym) := tv(NullPointer, T))
+          => Computation(allowWrite(Sym) := tv(NullPointer, T))
           when isPointerType(T)
           [structural]
      rule zeroType(_, T:Type) => .

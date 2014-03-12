@@ -131,6 +131,7 @@ module C-DECL-RESOLUTION
      // reference.
      
      rule <k> resolveReferences => .K ...</k>
+          <incomplete-aggs> .Set </incomplete-aggs>
           (<linking-state>...
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)

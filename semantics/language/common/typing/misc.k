@@ -1,10 +1,4 @@
-module C-TYPING-MISC-SYNTAX
-     syntax K ::= addStruct(Id, List)
-     syntax K ::= addUnion(Id, List)
-endmodule
-
 module C-TYPING-MISC
-     imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-SYNTAX
@@ -121,76 +115,6 @@ module C-TYPING-MISC
 
      rule min(t(_, enumType(_:Id))) => cfg:enumMin
      rule max(t(_, enumType(_:Id))) => cfg:enumMax
-     
-     syntax K ::= addGlobalAggregate(Id, K)
-                | addLocalAggregate(Id, K)
-     
-     syntax K ::= "addStruct-aux" "(" Id "," List "," K "," Map "," Map "," List ")"
-          [strict(3)]
-     syntax K ::= "addUnion-aux" "(" Id "," List "," Map "," Map "," List ")"
-
-     rule addStruct(S:Id, L:List) 
-          => addStruct-aux(S:Id, L:List,
-               tv(0, cfg:largestUnsigned), .Map, .Map, L:List)
-          when L:List =/=List .List
-          [structural]
-     rule addStruct-aux(
-               S:Id
-               , ListItem(typedDeclaration(T:Type, Field:Id)) L:List
-               , V:TypedValue
-               , Types:Map
-               , Offsets:Map
-               , L':List
-          ) 
-          => addStruct-aux(S, L, V + bitSizeofType(T),
-               Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
-          [structural]
-     rule <k> addStruct-aux(S:Id, .List, _, Types:Map, Offsets:Map, L:List) 
-               => #if (F:Id ==K file-scope)
-                    #then (addGlobalAggregate(S, 
-                         aggInfo(L, Types, Offsets))) 
-                    #else (addLocalAggregate(S, 
-                         aggInfo(L, Types, Offsets)))
-                    #fi
-          ...</k>
-          <curr-function> F:Id </curr-function>
-          [structural]        
-          
-     rule addUnion(S:Id, L:List) 
-          => addUnion-aux(S:Id, L:List, .Map, .Map, L:List)
-          when L:List =/=List .List
-          [structural]
-     rule addUnion-aux(
-               S:Id
-               , ListItem(typedDeclaration(T:Type, Field:Id)) L:List
-               , Types:Map
-               , Offsets:Map
-               , L':List
-          ) 
-          => addUnion-aux(S, L,
-               Types:Map[T / Field], Offsets:Map[0 / Field],
-               L')
-          [structural]
-     rule <k> 
-               addUnion-aux(S:Id, .List, Types:Map, Offsets:Map, L:List) 
-               => #if (F ==K file-scope)
-                    #then (addGlobalAggregate(S,
-                         aggInfo(L, Types, Offsets))) 
-                    #else (addLocalAggregate(S,
-                         aggInfo(L, Types, Offsets)))
-                    #fi
-          ...</k>
-          <curr-function> F:Id </curr-function>
-          [structural]
-
-     // TODO(chathhorn): should move this elsewhere.
-     rule <k> addGlobalAggregate(X:Id, Agg:AggInfo) => . ...</k>
-          <structs> M':Map => M':Map[Agg / X] </structs>
-          <gstructs> M:Map => M:Map[Agg / X] </gstructs>
-          [structural]
-     rule <k> addLocalAggregate(X:Id, Agg:AggInfo) => . ...</k>
-          <structs> M:Map => M:Map[Agg / X] </structs>
-          [structural]
 
      // Returns both type qualifiers and storage class specifiers.
      rule getQualities(t(S:Set, qualifiedType(T:Type, K:K))) 

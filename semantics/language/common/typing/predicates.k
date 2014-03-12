@@ -122,7 +122,7 @@ module C-TYPING-PREDICATES
           => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
      // TODO(chathhorn): fill in for structs.
-     rule #isCompat(t(_, structType(_)), t(_, structType(_))) => true
+     rule #isCompat(t(_, structType(_, _)), t(_, structType(_, _))) => true
 
      // TODO(chathhorn): are enums compatible with e.g. ints?
      rule #isCompat(t(_, enumType(_)), t(_, enumType(_))) => true
@@ -260,34 +260,49 @@ module C-TYPING-PREDICATES
           => isArrayType(T) orBool isStructType(T) 
           
      rule [isStructType-struct]:
-          isStructType(t(_, structType(_:Id))) => true 
+          isStructType(t(_, structType(_, _))) => true 
+     rule [isStructType-inc-struct]:
+          isStructType(t(_, incompleteStructType(_))) => true 
      rule [isStructType-qualified]:
           isStructType(t(_, qualifiedType(T:Type, _)))
           => isStructType(T) 
      rule [isStructType-other]: isStructType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'structType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
-     rule [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
+     rule [isUnionType-union]:
+          isUnionType(t(_, unionType(_, _))) => true 
+     rule [isUnionType-inc-union]:
+          isUnionType(t(_, incompleteUnionType(_))) => true 
      rule [isUnionType-qualified]:
           isUnionType(t(_, qualifiedType(T:Type, _)))
           => isUnionType(T) 
      rule [isUnionType-other]: isUnionType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'unionType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType )
 
-     // Incomplete structs and unions?
-     rule [isIncompleteType-true]:
+     rule [isIncompleteType-array]:
           isIncompleteType(t(_, incompleteArrayType(_)))
           => true 
-     rule [isIncompleteType-true]:
+     rule [isIncompleteType-struct]:
+          isIncompleteType(t(_, incompleteStructType(_)))
+          => true 
+     rule [isIncompleteType-union]:
+          isIncompleteType(t(_, incompleteUnionType(_)))
+          => true 
+     rule [isIncompleteType-void]:
           isIncompleteType(t(_, void))
           => true 
      rule [isIncompleteType-qualified]:
           isIncompleteType(t(_, qualifiedType(T:Type, _)))
           => isIncompleteType(T) 
-     rule [isIncompleteType-false]: isIncompleteType(t(_, T:SimpleType)) => false
+     rule [isIncompleteType-false]: isIncompleteType(t(_, T:SimpleType))
+          => false
           when (getKLabel(T) =/=KLabel 'incompleteArrayType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
                andBool (getKLabel(T) =/=KLabel 'void)
           

@@ -38,6 +38,7 @@ module C-LTLMC
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
 
@@ -123,7 +124,7 @@ module C-LTLMC
                fillToBytes-aux(
                     extractBitsFromList-aux(
                          dataList(explodeToBits(V)), 
-                         Offset, value(bitSizeofType(T)), .List),
+                         Offset, bitSizeofType(T), .List),
                     .List))
      rule ltlRVal(
           <generatedTop>... <T>... <gstructs>...
@@ -136,7 +137,7 @@ module C-LTLMC
                fillToBytes-aux(
                     extractBitsFromList-aux(
                          dataList(explodeToBits(V)), 
-                         Offset, value(bitSizeofType(T)), .List),
+                         Offset, bitSizeofType(T), .List),
                     .List))
 
      rule ltlRVal(_, L:Int * R:Int) => L *Int R
@@ -158,14 +159,12 @@ module C-LTLMC
 
      rule ltlRVal(B:Bag, X:Id) => ltlRVal(B, * ltlLVal(B, X))
 
-     // TODO(chathhorn): need to rework how bitSizeofType() functions in order
-     // to actually support structs/unions here.
      rule dumbRead(
                <generatedTop>... <T>... 
                     <mem> Mem:Map </mem> 
                ...</T> ...</generatedTop>, 
                Loc:SymLoc, T:Type) 
-          => dumbRead'(Mem, Loc, T, value(byteSizeofType(T)), .List)
+          => dumbRead'(Mem, Loc, T, byteSizeofType(T), .List)
 
      rule dumbRead'(
           (_ Base |-> memblock(_, _, (_ Offset |-> V:K))), 
@@ -191,9 +190,9 @@ module C-LTLMC
      rule joinBytes(t(_, pointerType(T:Type)), 
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))
           => ptr(L, T)
-     rule joinBytes(t(_, structType(S:Id)), dataList(V:List))
+     rule joinBytes(t(_, structType(S:Id, _)), dataList(V:List))
           => struct(V, S)
-     rule joinBytes(t(_, unionType(S:Id)), dataList(V:List))
+     rule joinBytes(t(_, unionType(S:Id, _)), dataList(V:List))
           => union(V, S)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)

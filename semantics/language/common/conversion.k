@@ -251,10 +251,8 @@ module C-CONVERSION
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
           cast(T:Type, tv(piece(unknown(Len:Int), Len:Int), T':Type)) 
-          => tv(piece(unknown(value(bitSizeofType(T))),
-               value(bitSizeofType(T))), T)
-          when hasIntegerType(T)
-               andBool hasIntegerType(T')
+          => tv(piece(unknown(bitSizeofType(T)), bitSizeofType(T)), T)
+          when hasIntegerType(T) andBool hasIntegerType(T')
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{

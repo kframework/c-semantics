@@ -9,9 +9,6 @@ module C-DECL-INITIALIZER-SYNTAX
      // these are also used by compound literals
      syntax KResult ::= initValue(Id, Type, K)
 
-     // TODO(chathhorn): it would be nice to move this elsewhere.
-     // First map is for type, second map is for offset.
-     syntax AggInfo ::= aggInfo(List, Map, Map)
 endmodule
 
 module C-DECL-INITIALIZER
@@ -171,9 +168,9 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural] 
      rule <curr-subobject> 
-               ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+               ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
                => ListItem(te(K . F, T)) 
-                    ListItem(te(K, t(Se, structType(S))))
+                    ListItem(te(K, t(Se, structType(S, NBits))))
           ...</curr-subobject>
           <structs>... 
                S |-> aggInfo(
@@ -183,9 +180,9 @@ module C-DECL-INITIALIZER
           
      // fixme these are terrible!
      rule <curr-subobject> 
-               ListItem(te(K:K, t(Se:Set, unionType(S:Id))))
+               ListItem(te(K:K, t(Se:Set, unionType(S:Id, NBits:Int))))
                => ListItem(te(K . F, T))
-                    ListItem(te(K, t(Se, unionType(S))))
+                    ListItem(te(K, t(Se, unionType(S, NBits))))
           ...</curr-subobject>
           <structs>... 
                S |-> aggInfo(
@@ -221,9 +218,9 @@ module C-DECL-INITIALIZER
      rule [init-next-struct-element]:
           <curr-subobject>
                next ListItem(te(K:K . F:Id, T:Type))
-                    ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+                    ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
                => ListItem(te(K . F', T'))
-                    ListItem(te(K, t(Se, structType(S))))
+                    ListItem(te(K, t(Se, structType(S, NBits))))
           ...</curr-subobject>
           <structs>...
                S |-> aggInfo(_ 
@@ -236,9 +233,9 @@ module C-DECL-INITIALIZER
      rule [init-next-struct-element-noname]:
           <curr-subobject>
                next ListItem(te(K:K . F:Id, T:Type))
-                    ListItem(te(K:K, t(Se:Set, structType(S:Id))))
+                    ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
                => ListItem(te(K . F', T'))
-                    ListItem(te(K, t(Se, structType(S))))
+                    ListItem(te(K, t(Se, structType(S, NBits))))
           ...</curr-subobject>
           <structs>...
                S |-> aggInfo(_ 
@@ -251,7 +248,7 @@ module C-DECL-INITIALIZER
      rule [init-next-struct-element-done]:
           <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
-                    ListItem(te(K:K, t(_, structType(S:Id))))
+                    ListItem(te(K:K, t(_, structType(S:Id, _))))
           ...</curr-subobject>
           <structs>...
                S |-> aggInfo(_ ListItem(typedDeclaration(T, F)), _, _)
@@ -260,7 +257,7 @@ module C-DECL-INITIALIZER
      rule [init-next-struct-element-done-noname]:
           <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .)
-                    ListItem(te(K:K, t(_, structType(S:Id))))
+                    ListItem(te(K:K, t(_, structType(S:Id, _))))
           ...</curr-subobject>
           <structs>...
                S |-> aggInfo(_
@@ -272,7 +269,7 @@ module C-DECL-INITIALIZER
      rule [init-next-union-element-done]:
           <curr-subobject>
                next (ListItem(te(K:K . _:Id, _:Type)) => .List)
-                    ListItem(te(K:K, t(_, unionType(_:Id))))
+                    ListItem(te(K:K, t(_, unionType(_, _))))
           ...</curr-subobject>
           [structural] 
           
@@ -336,7 +333,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject> 
                block (.List => ListItem(te(K . F, T)))
-                    ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:Id))))
+                    ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:Id,, _))))
           ...</curr-subobject>
           <structs>... 
                S |-> aggInfo(_, (_ F:Id |-> T:Type), _)
@@ -411,11 +408,11 @@ module C-DECL-INITIALIZER
           [structural] 
           
      syntax K ::= initFromStructRHS(K, Type)
-     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(I:Id)))
-               => initFromStructRHS(K, t(S, structType(I)))
+     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:Id, NBits:Int)))
+               => initFromStructRHS(K, t(S, structType(X, NBits)))
           ...</k>
           <curr-subobject>
-               .List => findStruct(t(S, structType(I)))
+               .List => findStruct(t(S, structType(X, NBits)))
           ...</curr-subobject>
           [structural] 
           
@@ -428,10 +425,10 @@ module C-DECL-INITIALIZER
           [structural] 
           
      // fixme unsafe, might have started to initialize other things
-     rule <k> initFromStructRHS(K':K, t(_, structType(S:Id))) => . ...</k>
+     rule <k> initFromStructRHS(K':K, t(_, structType(S:Id, _))) => . ...</k>
           <curr-subobject> 
-               findStruct(t(_, structType(S:Id)))
-                    ListItem(te(K:K, t(_, structType(S:Id)))) => next 
+               findStruct(t(_, structType(S:Id, _)))
+                    ListItem(te(K:K, t(_, structType(S:Id, _)))) => next 
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))

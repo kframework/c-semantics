@@ -58,11 +58,15 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
 
-     syntax SimpleType ::= structType(Id)
+     syntax SimpleType ::= structType(Id, Int)
           [klabel('structType)]
+     syntax SimpleType ::= incompleteStructType(Id)
+          [klabel('incompleteStructType)]
 
-     syntax SimpleType ::= unionType(Id)
+     syntax SimpleType ::= unionType(Id, Int)
           [klabel('unionType)]
+     syntax SimpleType ::= incompleteUnionType(Id)
+          [klabel('incompleteUnionType)]
 
      syntax SimpleType ::= qualifiedType(Type, K)
           [klabel('qualifiedType)]

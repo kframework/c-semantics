@@ -13,7 +13,8 @@ module C-MEMORY-READING-SYNTAX
 
      // TODO(chathhorn) used error check?
      syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
-     syntax K ::= "read-aux" "(" SymLoc "," Type "," K ")" [klabel('read-aux)]
+     syntax K ::= "read-aux" "(" SymLoc "," Type "," CSize ")"
+          [klabel('read-aux)]
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
@@ -68,30 +69,27 @@ module C-MEMORY-READING
           when notBool(isFunctionType(T))
           [structural]
      
-     syntax K ::= readActual(SymLoc, Type, K) 
-          [strict(3), klabel('readActual)]
+     syntax K ::= readActual(SymLoc, Type, CSize) [klabel('readActual)]
      
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule [read-thread-local]:
-          read-aux(Loc:SymLoc, T:Type, K:K) => readActual(Loc, T, K)
+          read-aux(Loc:SymLoc, T:Type, Len:CSize) => readActual(Loc, T, Len)
           when isThreadDuration(Loc)
           [structural]
      rule [read-allocated]: // read data of "allocated" duration
-          read-aux(Loc:SymLoc, T:Type, K:K) => readActual(Loc, T, K)
+          read-aux(Loc:SymLoc, T:Type, Len:CSize) => readActual(Loc, T, Len)
           when notBool isThreadDuration(Loc)
           [ndtrans]
      
      rule [read]:
-          readActual(Loc:SymLoc, T:Type, tv(N:CSize, _))
-          => concretize(T, 
-               readBytes(Loc, bitsToBytes(N)))
+          readActual(Loc:SymLoc, T:Type, N:CSize)
+          => concretize(T, readBytes(Loc, bitsToBytes(N)))
           when notBool isBitfieldType(T)
           [structural]
      rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:Type, tv(N:CSize, _))
-          => concretize(T, 
-               fillToBytes(extractBitsFromMem(Loc, N))) 
+          readActual(Loc:SymLoc, T:Type, N:CSize)
+          => concretize(T, fillToBytes(extractBitsFromMem(Loc, N))) 
           when isBitfieldType(T)
           [structural]
      
@@ -163,11 +161,11 @@ module C-MEMORY-READING
           => checkValidLoc(N) ~> tv(N, T:KResult)
           [structural]
 
-     rule concretize(t(S:Set, structType(I:Id)), dataList(L:List)) 
-          => tv(agg(L), t(S, structType(I))) 
+     rule concretize(t(S:Set, structType(X:Id, NBits:Int)), dataList(L:List)) 
+          => tv(agg(L), t(S, structType(X, NBits))) 
           [structural]
-     rule concretize(t(S:Set, unionType(I:Id)), dataList(L:List)) 
-          => tv(agg(L), t(S, unionType(I)))
+     rule concretize(t(S:Set, unionType(X:Id, NBits:Int)), dataList(L:List)) 
+          => tv(agg(L), t(S, unionType(X, NBits)))
           [structural]
 
      // FIXME assuming bytes?

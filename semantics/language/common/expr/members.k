@@ -5,6 +5,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
@@ -17,46 +18,43 @@ module C-COMMON-EXPR-MEMBERS
      has the so-qualified version of the type of the designated member.}
      }*/
      // fixme tool bug, can't use L:KLabel
-     rule <k> lval(Loc:SymLoc, t(_, structType(S:Id))) . F:Id
+     rule <k> lval(Loc:SymLoc, t(_, structType(S:Id, _))) . F:Id
                => lv(Loc +bits Offset, T)
           ...</k>
           <structs>...
-               S |-> aggInfo(_, 
-                    (_ F |-> T:Type), (_ F |-> Offset:Int))
+               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
-     rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id))) . F:Id
+     rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id, _))) . F:Id
                => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
           ...</k>
           <structs>...
-               S |-> aggInfo(_, 
-                    (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
+               S |-> aggInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
           ...</structs>
           [structural]
 
      // bytes of struct, type, field id
-     syntax K ::= extractField(List, K, Id) 
-     syntax K ::= "extractField-pre" "(" List "," Type "," Int "," K ")"
-          [strict(4)]
+     syntax K ::= extractField(List, Type, Id)
      
-     // fixme could speed things up by caching bitsizeoftype as well
-     rule [extractField-start]:
-          <k> extractField(L:List, 't(_,, Lb:KLabel(S:Id)), F:Id)
-               => extractField-pre(L, T, Offset, bitSizeofType(T)) 
+     rule [extractField-struct-start]:
+          <k> extractField(L:List, t(_, structType(S:Id, _)), F:Id)
+               => concretize(T,
+                    fillToBytes(extractBitsFromList(dataList(L), Offset,
+                         bitSizeofType(T))))
           ...</k>
-          <structs>... 
-               S |-> aggInfo(_, 
-                    (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+          <structs>...
+               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
           ...</structs>
-          when Lb ==KLabel 'unionType
-               orBool Lb ==KLabel 'structType
-          [structural]
+     rule [extractField-union-start]:
+          <k> extractField(L:List, t(_, unionType(S:Id, _)), F:Id)
+               => concretize(T,
+                    fillToBytes(extractBitsFromList(dataList(L), Offset,
+                         bitSizeofType(T))))
+          ...</k>
+          <structs>
+               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+          ...</structs>
 
-     rule extractField-pre(L:List, T:Type, Offset:Int, tv(Len:Int, _))
-          => concretize(T, 
-               fillToBytes(extractBitsFromList(dataList(L), Offset, Len)))
-          [structural]
-     
      rule tv(agg(L:List), T:Type) . F:Id => extractField(L, T, F)
           [structural]
           

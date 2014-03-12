@@ -14,7 +14,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax List ::= explodeToBits(List) [function]
 
      // TODO(chathhorn): For error.k.
-     syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
+     syntax K ::= "write-aux" "(" SymLoc "," Value "," CSize ")"
 endmodule
 
 module C-MEMORY-WRITING
@@ -42,18 +42,18 @@ module C-MEMORY-WRITING
           when notBool isConstType(T')
           [structural]
      
-     syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
+     syntax K ::= "write-specific" "(" SymLoc "," Value "," CSize ")"
      
      // Write thread-local or auto.
      rule [write-thread-local]:
-          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), BitSize:TypedValue)
-          => write-specific(Loc:SymLoc, tv(V, T), value(BitSize))
+          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
+          => write-specific(Loc:SymLoc, tv(V, T), NBits)
           when isThreadDuration(Loc)
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule [write-allocated]:
-          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), BitSize:TypedValue)
-          => write-specific(Loc, tv(V, T), value(BitSize))
+          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
+          => write-specific(Loc, tv(V, T), NBits)
           when notBool isThreadDuration(Loc)
           [ndtrans]
 
@@ -61,17 +61,21 @@ module C-MEMORY-WRITING
      rule attrs(t(S:Set, _)) => S
 
      rule [write-normal]:
-          write-specific(Loc:SymLoc, tv(V:CValue, T:Type), BitSize:Int)
+          write-specific(Loc:SymLoc, tv(V:CValue, T:Type), NBits:Int)
           => writeBytes(Loc, splitBytes(tv(V, T)), false)
-          when (BitSize %Int cfg:bitsPerByte ==Int 0)
+          when (NBits %Int cfg:bitsPerByte ==Int 0)
                andBool (isByteLoc(Loc) ==K true)
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(T))
           [structural]
      rule [write-normal-union-field]:
-          (. => makeUnknown(Loc, t(.Set, unionType(S))))
-          ~> write-specific(Loc:SymLoc, 
-               tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
+          <k> (. => makeUnknown(Loc, t(.Set, unionType(S, bitSizeofUnion(Info)))))
+               ~> write-specific(Loc:SymLoc, 
+                    tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
+          ...</k>
+          <structs>...
+               S |-> Info:AggInfo
+          ...</structs>
           when isByteLoc(Loc)
           [structural]
           
@@ -94,9 +98,9 @@ module C-MEMORY-WRITING
      rule [write-struct]:
           write-specific(Loc:SymLoc, 
                tv(agg(ListItem(V:K) ListItem(V':K) L:List), T:Type), 
-               BitSize:Int)
+               NBits:Int)
           => writeBytes(Loc, dataList(ListItem(V) ListItem(V') L), false)
-          when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
+          when (NBits:Int %Int cfg:bitsPerByte ==Int 0)
                andBool isByteLoc(Loc)
                andBool (notBool isBitfieldType(T))
           [structural]
@@ -117,28 +121,28 @@ module C-MEMORY-WRITING
           when Len >Int 0 andBool N >=Int 0
      
      rule [massage-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
-          => write-specific(Loc, tv(justBits(I, T), T), BitSize)
-          when (BitSize %Int cfg:bitsPerByte =/=Int 0
+          write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
+          => write-specific(Loc, tv(justBits(I, T), T), NBits)
+          when (NBits %Int cfg:bitsPerByte =/=Int 0
                orBool notBool(isByteLoc(Loc))
                orBool isBitfieldType(T))
                andBool (I <Int 0)
           [structural]
      
      rule [write-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
+          write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
           => writeBitfield(
                Loc
                , T
                , calculateNewBytes(
                     getBitOffset(Loc)
-                    , piece(I, BitSize)
+                    , piece(I, NBits)
                     , readBytes(floorLoc(Loc), 
-                         bitsToBytes(BitSize +Int getBitOffset(Loc))
+                         bitsToBytes(NBits +Int getBitOffset(Loc))
                     )
                )
           )
-          when (BitSize:Int %Int cfg:bitsPerByte =/=Int 0)
+          when (NBits %Int cfg:bitsPerByte =/=Int 0)
                orBool (notBool isByteLoc(Loc))
                orBool (isBitfieldType(T) 
                     andBool notBool hasUnionMarker(T))
@@ -232,13 +236,13 @@ module C-MEMORY-WRITING
           => splitPointerBytes(I, t(S, pointerType(T)), 
                byteSizeofType(t(.Set, pointerType(T))))
      rule [splitBytes-struct]:
-          splitBytes(tv(agg(L:List), t(S:Set, structType(I:Id)))) 
-          => splitStructBytes(dataList(L), t(S, structType(I)), 
-               byteSizeofType(t(S, structType(I))))
+          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int)))) 
+          => splitStructBytes(dataList(L), t(S, structType(X, NBits)), 
+               byteSizeofType(t(S, structType(X, NBits))))
      rule [splitBytes-union]:
-          splitBytes(tv(agg(L:List), t(S:Set, unionType(I:Id)))) 
-          => splitStructBytes(dataList(L), t(S, unionType(I)), 
-               byteSizeofType(t(S, unionType(I))))
+          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int)))) 
+          => splitStructBytes(dataList(L), t(S, unionType(X, NBits)), 
+               byteSizeofType(t(S, unionType(X, NBits))))
      
      syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
      syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," List ")"

@@ -1,11 +1,11 @@
 module C-TYPING-INTERPRETATION
      imports C-TYPING-SYNTAX
-     imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -71,11 +71,17 @@ module C-TYPING-INTERPRETATION
           pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
           => t(S, functionType(pushTypeDown(T, Lbl), L))
      rule [pushdown-struct]: 
-          pushTypeDown(t(S:Set, structType(X:Id)), Lbl:KLabel) 
-          => Lbl(t(S, structType(X)))
+          pushTypeDown(t(S:Set, structType(X:Id, NBits:Int)), Lbl:KLabel) 
+          => Lbl(t(S, structType(X, NBits)))
+     rule [pushdown-inc-struct]: 
+          pushTypeDown(t(S:Set, incompleteStructType(X:Id)), Lbl:KLabel) 
+          => Lbl(t(S, incompleteStructType(X)))
      rule [pushdown-union]: 
-          pushTypeDown(t(S:Set, unionType(X:Id)), Lbl:KLabel) 
-          => Lbl(t(S, unionType(X)))
+          pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int)), Lbl:KLabel) 
+          => Lbl(t(S, unionType(X, NBits)))
+     rule [pushdown-inc-union]: 
+          pushTypeDown(t(S:Set, incompleteUnionType(X:Id)), Lbl:KLabel) 
+          => Lbl(t(S, incompleteUnionType(X)))
      rule [pushdown-enum]: 
           pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, enumType(X)))
@@ -238,13 +244,29 @@ module C-TYPING-INTERPRETATION
           [structural]
      rule incompleteToFlexibleArrayMember(.List) => .List
      
+     // TODO(chathhorn): consider moving to some decls module, but note that
+     // these struct defs might appear buried in a type.
      rule StructDef(X:Id, krlist(L:List))
-          => addStruct(X, fillBitHoles(incompleteToFlexibleArrayMember(L)))
-               ~> giveType(X, t(.Set, structType(X)))
+          => structDef'(X,
+               makeStructAggInfo(fillBitHoles(incompleteToFlexibleArrayMember(L))))
+          when L =/=List .List
           [structural]
      rule UnionDef(X:Id, krlist(L:List))
-          => addUnion(X, fillUnionBitHoles(L))
-               ~> giveType(X, t(.Set, unionType(X)))
+          => unionDef'(X, makeUnionAggInfo(fillUnionBitHoles(L)))
+          when L =/=List .List
+          [structural]
+     
+     syntax K ::= "structDef'" "(" Id "," AggInfo ")"
+                | "unionDef'" "(" Id "," AggInfo ")"
+
+     rule structDef'(X:Id, Info:AggInfo)
+          => addAgg(X, Info)
+          ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info))))
+          [structural]
+
+     rule unionDef'(X:Id, Info:AggInfo)
+          => addAgg(X, Info)
+          ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info))))
           [structural]
 
      // The K will resolve to a type, so throw it away.
@@ -261,11 +283,17 @@ module C-TYPING-INTERPRETATION
           extractActualType(t(S:Set, enumType(X:Id))) 
           => t(S, enumType(X))
      rule [extract-struct]:
-          extractActualType(t(S:Set, structType(X:Id))) 
-          => t(S, structType(X))
+          extractActualType(t(S:Set, structType(X:Id, NBits:Int))) 
+          => t(S, structType(X, NBits))
+     rule [extract-inc-struct]:
+          extractActualType(t(S:Set, incompleteStructType(X:Id))) 
+          => t(S, incompleteStructType(X))
      rule [extract-union]:
-          extractActualType(t(S:Set, unionType(X:Id))) 
-          => t(S, unionType(X))
+          extractActualType(t(S:Set, unionType(X:Id, NBits:Int))) 
+          => t(S, unionType(X, NBits))
+     rule [extract-inc-union]:
+          extractActualType(t(S:Set, incompleteUnionType(X:Id))) 
+          => t(S, incompleteUnionType(X))
      rule [extract-array]:
           extractActualType(t(S:Set, arrayType(T:Type, N:CSize))) 
           => t(S, arrayType(extractActualType(T), N))

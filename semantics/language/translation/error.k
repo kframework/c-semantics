@@ -12,8 +12,6 @@ module C-TRANSLATION-ERROR
 
      imports C-COMMON-EXPR-EVAL-SYNTAX
 
-     imports C-TYPING-MISC-SYNTAX
-
      imports C-SYMBOLIC-VALUE-SYNTAX
 
      imports C-DECL-GLOBAL-SYNTAX

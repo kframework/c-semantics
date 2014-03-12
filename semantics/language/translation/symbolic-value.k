@@ -26,7 +26,7 @@ module C-SYMBOLIC-VALUE
      rule write-aux(symVal, _, _) => .
           [structural]
 
-     rule bitSizeofType(T:Type) => tv(symVal, T)
+     rule bitSizeofType(T:Type) => symVal
           when isIncompleteType(T)
 
      //rule symVal => tv(symVal, t(.Set, no-type))

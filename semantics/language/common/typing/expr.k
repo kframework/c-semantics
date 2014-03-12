@@ -4,6 +4,7 @@ module C-TYPING-EXPR
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
@@ -165,15 +166,15 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule [type-struct-dot]:
-          <type> t(_, structType(S:Id)) . F:Id => T ...</type>
+          <type> t(_, structType(S:Id, _)) . F:Id => T ...</type>
           <structs>...
-               S |-> aggInfo(_, (_ F |-> T:KResult), _)
+               S |-> aggInfo(_, (_ F |-> T:Type), _)
           ...</structs>
           [structural]
      rule [type-union-dot]:
-          <type> t(_, unionType(S:Id)) . F:Id => T ...</type>
+          <type> t(_, unionType(S:Id, _)) . F:Id => T ...</type>
           <structs>...
-               S |-> aggInfo(_, (_ F |-> T:KResult), _)
+               S |-> aggInfo(_, (_ F |-> T:Type), _)
           ...</structs>
           [structural]
 
