@@ -26,21 +26,19 @@ module C-DECL-RESOLUTION
           ...</tu-linking-state> => .Bag)
           [structural]
      // TODO(chathhorn): reuse more from global.k.
-     rule <k> (.K => giveType(X, t(S, arrayType(T, 1)))
-                    ~> addToEnv(X, Loc')
-                    ~> allocateType(Loc', t(S, arrayType(T, 1)))
-                    ~> allowInit(zero(X))
-                    ~> updateLinkState(X, t(S, arrayType(T, 1)), Loc'))
+         // (.K => giveType(X, t(S, arrayType(T, 1)))
+         //           ~> addToEnv(X, Loc')
+         //           ~> allocateType(Loc', t(S, arrayType(T, 1)))
+         //           ~> allowInit(zero(X))
+         //           ~> updateLinkState(X, t(S, arrayType(T, 1)), Loc'))
+     rule <k> (.K => doDeclare'(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
-          <linkings>... (. => Loc |-> Loc') </linkings>
           <externals>...
-               (X:Id |-> declState(Loc:SymLoc,
+               X:Id |-> declState(_,
                     t(S:Set, incompleteArrayType(T:Type)), declared, true) 
-               => .Map)
           ...</externals>
           [structural]
      rule <k> allocateIncompleteTentatives ...</k>

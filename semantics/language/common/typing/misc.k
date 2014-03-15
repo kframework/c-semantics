@@ -174,5 +174,42 @@ module C-TYPING-MISC
           innerType(t(_, bitfieldType(T:Type, _))) => T
      rule [innerType-functionType]:
           innerType(t(_, functionType(T:Type, _))) => T
+
+     // TODO(chathhorn): should probably generalize this.
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
+          => t(S, bitfieldType(completeAgg(X, NBits, T), Sz))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, functionType(R:Type, Args:List)))
+          => t(S, functionType(completeAgg(X, NBits, R), completeAggInList(X, NBits, Args)))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, pointerType(T:Type)))
+          => t(S, pointerType(completeAgg(X, NBits, T)))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, arrayType(T:Type, Sz:CSize)))
+          => t(S, arrayType(completeAgg(X, NBits, T), Sz))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, incompleteArrayType(T:Type)))
+          => t(S, incompleteArrayType(completeAgg(X, NBits, T)))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, flexibleArrayType(T:Type)))
+          => t(S, flexibleArrayType(completeAgg(X, NBits, T)))
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, incompleteStructType(X)))
+          => t(S, structType(X, NBits)) 
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, incompleteUnionType(X)))
+          => t(S, unionType(X, NBits)) 
+     rule completeAgg(X:Id, NBits:Int, t(S:Set, qualifiedType(T:Type, K:K)))
+          => t(S, qualifiedType(completeAgg(X, NBits, T), K))
+     rule completeAgg(_, _, t(S:Set, T:SimpleType))
+          => t(S, T)
+          when (getKLabel(T) =/=KLabel 'bitfieldType)
+               andBool (getKLabel(T) =/=KLabel 'functionType )
+               andBool (getKLabel(T) =/=KLabel 'pointerType )
+               andBool (getKLabel(T) =/=KLabel 'arrayType )
+               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
+               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
+               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
+               andBool (getKLabel(T) =/=KLabel 'qualifiedType )
+
+     syntax List ::= completeAggInList(Id, Int, List) [function]
+     rule completeAggInList(X:Id, NBits:Int, ListItem(T:Type) L:List)
+          => ListItem(completeAgg(X, NBits, T)) completeAggInList(X, NBits, L)
+     rule completeAggInList(_, _, .List) => .List
+
 endmodule
 

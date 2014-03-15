@@ -114,11 +114,15 @@ module C-LTLMC
           => ltlRVal(B, (* P) . X)
 
      rule ltlRVal(
-          <generatedTop>... <T>... <gstructs>...
+          <generatedTop>... <T>...
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gstructs>...
                S |-> aggInfo(_,
                     (_ X |-> T:Type),
                     (_ X |-> Offset:Int))
-          ...</gstructs> ...</T> ...</generatedTop>,
+          ...</gstructs>
+          ...</T> ...</generatedTop>,
           struct(V:List, S:Id) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(
@@ -127,11 +131,15 @@ module C-LTLMC
                          Offset, bitSizeofType(T), .List),
                     .List))
      rule ltlRVal(
-          <generatedTop>... <T>... <gstructs>...
+          <generatedTop>... <T>...
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gstructs>...
                S |-> aggInfo(_,
                     (_ X |-> T:Type),
                     (_ X |-> Offset:Int))
-          ...</gstructs> ...</T> ...</generatedTop>,
+          ...</gstructs>
+          ...</T> ...</generatedTop>,
           union(V:List, S:Id) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(

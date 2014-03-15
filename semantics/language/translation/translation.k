@@ -1,6 +1,7 @@
 require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
+require "conversion.k"
 require "error.k"
 require "io-direct.k"
 require "process-label.k"
@@ -37,14 +38,15 @@ require "stmt/return.k"
 require "stmt/switch.k"
 
 module C-TRANSLATION
-     imports C-CONFIGURATION
-     imports C-TRANSLATION-ERROR
      imports C-CHECK-LOC
+     imports C-COMPOUND-LITERAL
+     imports C-CONFIGURATION
+     imports C-DYNAMIC-SYNTAX
+     imports C-FUNCTION-DEF
      imports C-IO-DIRECT
      imports C-PROCESS-LABEL
-     imports C-FUNCTION-DEF
-     imports C-COMPOUND-LITERAL
-     imports C-DYNAMIC-SYNTAX
+     imports C-TRANSLATION-CONVERSION
+     imports C-TRANSLATION-ERROR
      imports C-TRANSLATION-INIT
 
      imports C-DECL-RESOLUTION

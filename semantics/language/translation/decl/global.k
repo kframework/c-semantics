@@ -430,4 +430,195 @@ module C-DECL-GLOBAL
           when isLinkerLoc(Loc)
           [structural]
           
+     syntax AggInfo ::= makeStructAggInfo(List) [function]
+     syntax AggInfo ::= makeUnionAggInfo(List) [function]
+     // First map is for type, second map is for offset.
+     syntax AggInfo ::= aggInfo(List, Map, Map)
+
+     // TODO(chathhorn): handle global/local differently.
+     // note that struct defs might appear buried in a type.
+     rule StructDef(X:Id, krlist(L:List))
+          => structDef'(X,
+               makeStructAggInfo(fillBitHoles(incompleteToFlexibleArrayMember(L))))
+          when L =/=List .List
+          [structural]
+     rule UnionDef(X:Id, krlist(L:List))
+          => unionDef'(X, makeUnionAggInfo(fillUnionBitHoles(L)))
+          when L =/=List .List
+          [structural]
+     
+     syntax K ::= "structDef'" "(" Id "," AggInfo ")"
+                | "unionDef'" "(" Id "," AggInfo ")"
+
+     rule structDef'(X:Id, Info:AggInfo)
+          => addAgg(X, bitSizeofStruct(Info), Info)
+          ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info))))
+          [structural]
+
+     rule unionDef'(X:Id, Info:AggInfo)
+          => addAgg(X, bitSizeofUnion(Info), Info)
+          ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info))))
+          [structural]
+
+     syntax K ::= addGlobalAggregate(Id, Int, AggInfo)
+                | addLocalAggregate(Id, AggInfo)
+
+     syntax AggInfo ::= "makeStructAggInfo'" "(" List "," Int "," Map ","  Map "," List ")"
+                         [function]
+     rule makeStructAggInfo(L:List) 
+          => makeStructAggInfo'(L:List, 0, .Map, .Map, L:List)
+          when L:List =/=List .List
+     rule makeStructAggInfo'(
+               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               , V:Int
+               , Types:Map
+               , Offsets:Map
+               , L':List
+          )
+          => makeStructAggInfo'(L, V +Int bitSizeofType(T),
+               Types:Map[T / Field], Offsets:Map[V / Field], L')
+     rule makeStructAggInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
+          => aggInfo(L, Types, Offsets)
+
+     syntax AggInfo ::= "makeUnionAggInfo'" "(" List "," Map ","  Map "," List ")"
+                         [function]
+     
+     rule makeUnionAggInfo(L:List) 
+          => makeUnionAggInfo'(L, .Map, .Map, L)
+          when L =/=List .List
+     rule makeUnionAggInfo'(
+               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               , Types:Map
+               , Offsets:Map
+               , L':List
+          ) 
+          => makeUnionAggInfo'(L,
+               Types:Map[T / Field], Offsets:Map[0 / Field],
+               L')
+     rule makeUnionAggInfo'(.List, Types:Map, Offsets:Map, L:List) 
+          => aggInfo(L, Types, Offsets)
+
+     rule <k> addAgg(S:Id, NBits:Int, Info:AggInfo)
+               => addGlobalAggregate(S, NBits, Info)
+          ...</k>
+          <curr-function> file-scope </curr-function>
+          [structural]        
+     rule <k> addAgg(S:Id, _, Info:AggInfo)
+               => addLocalAggregate(S, Info)
+          ...</k>
+          <curr-function> F:Id </curr-function>
+          when F =/=K file-scope
+          [structural]        
+
+     rule <k> addGlobalAggregate(X:Id, NBits:Int, Agg:AggInfo)
+               => completeAggInExtDecls(X, NBits, keys Exts)
+               ~> completeAggInIntDecls(X, NBits, keys Ints)
+               ~> completeAggInTypes(X, NBits, keys GTypes)
+               ~> completeAggInAggs(X, NBits, keys Structs)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gtypes> GTypes:Map </gtypes>
+          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
+          <gstructs> GStructs:Map => GStructs:Map[Agg / X] </gstructs>
+          <externals> Exts:Map </externals>
+          <internals> Ints:Map </internals>
+          <incomplete-aggs>... SetItem(X) => .Set ...</incomplete-aggs>
+          [structural]
+
+     rule <k> addGlobalAggregate(X:Id, _, Agg:AggInfo) => . ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
+          <gstructs> GStructs:Map => GStructs:Map[Agg / X] </gstructs>
+          <incomplete-aggs> Incs:Set </incomplete-aggs>
+          when notBool (X in Incs)
+          [structural]
+     rule <k> addLocalAggregate(X:Id, Agg:AggInfo) => . ...</k>
+          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
+          [structural]
+
+     // TODO(chathhorn): I just don't know.
+     // Re-evaluate declarations that can now be allocated...
+     syntax K ::= completeAggInExtDecls(Id, Int, Set)
+     rule <k> (.K => doDeclare(
+                    typedDeclaration(completeAgg(Tag, NBits, T), X), NoInit))
+               ~> completeAggInExtDecls(Tag:Id, NBits:Int,
+                    (SetItem(X:Id) => .Set) _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu:String </tu-id>
+          <externals>...
+               X |-> declState(_, T:Type, declared, _)
+          ...</externals>
+          when notBool isIncompleteType(completeAgg(Tag, NBits, T))
+     rule <k> completeAggInExtDecls(Tag:Id, _, (SetItem(X:Id) => .Set) _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu:String </tu-id>
+          <externals>...
+               X |-> declState(_, T:Type, declared, _)
+          ...</externals>     
+          when isIncompleteType(completeAgg(Tag, NBits, T))
+     rule completeAggInExtDecls(_, _, .Set) => .K
+
+     syntax K ::= completeAggInIntDecls(Id, Int, Set)
+     rule <k> (.K => doDeclare(
+                    typedDeclaration(
+                         qualifiedType(completeAgg(Tag, NBits, T), Static), X),
+                         NoInit))
+               ~> completeAggInIntDecls(Tag:Id, NBits:Int,
+                    (SetItem(X:Id) => .Set) _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu:String </tu-id>
+          <internals>...
+               X |-> declState(_, T:Type, declared, _)
+          ...</internals>     
+          when notBool isIncompleteType(completeAgg(Tag, NBits, T))
+     rule <k> completeAggInIntDecls(Tag:Id, _, (SetItem(X:Id) => .Set) _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu:String </tu-id>
+          <internals>...
+               X |-> declState(_, T:Type, declared, _)
+          ...</internals>     
+          when isIncompleteType(completeAgg(Tag, NBits, T))
+     rule completeAggInIntDecls(_, _, .Set) => .K
+
+     syntax K ::= completeAggInTypes(Id, Int, Set)
+     rule <k> completeAggInTypes(S:Id, NBits:Int, (SetItem(X:Id) => .Set)  _)
+          ...</k>
+          <gtypes>...
+               X |-> (T:Type => completeAgg(S, NBits, T))
+          ...</gtypes>
+          [structural]
+     rule completeAggInTypes(_, _, .Set) => .K
+          [structural]
+
+     syntax K ::= completeAggInAggs(Id, Int, Set)
+     rule <k> (.K => completeAggInAgg(S, NBits, S2, keys(Fields)))
+               ~> completeAggInAggs(S:Id, NBits:Int, (SetItem(S2:Id) => .Set)  _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gstructs>...
+               S2 |-> aggInfo(_, Fields:Map, _)
+          ...</gstructs>
+          [structural]
+     rule completeAggInAggs(_, _, .Set) => .K
+          [structural]
+
+     syntax K ::= completeAggInAgg(Id, Int, Id, Set)
+     rule <k> completeAggInAgg(S:Id, NBits:Int, S2:Id, (SetItem(F:Id) => .Set)  _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gstructs>...
+               S2 |-> aggInfo(_, _ F |-> (T:Type => completeAgg(S, NBits, T)), _)
+          ...</gstructs>
+          [structural]
+     rule completeAggInAgg(_, _, _, .Set) => .K
+          [structural]
+
 endmodule

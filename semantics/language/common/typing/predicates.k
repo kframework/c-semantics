@@ -270,7 +270,7 @@ module C-TYPING-PREDICATES
           when (getKLabel(T) =/=KLabel 'structType)
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
+
      rule [isUnionType-union]:
           isUnionType(t(_, unionType(_, _))) => true 
      rule [isUnionType-inc-union]:
@@ -335,7 +335,7 @@ module C-TYPING-PREDICATES
           when getKLabel(T) =/=KLabel 'bitfieldType
           
      rule [isFunctionType-true]:
-          isFunctionType(t(_, functionType(_, _:List)))
+          isFunctionType(t(_, functionType(_, _)))
           => true 
      rule [isFunctionType-qualified]:
           isFunctionType(t(_, qualifiedType(T:Type, _)))

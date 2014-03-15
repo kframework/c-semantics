@@ -114,6 +114,7 @@ module C-TYPING-SYNTAX
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
+     syntax Type ::= completeAgg(Id, Int, Type) [function]
 endmodule
 
 module C-TYPING

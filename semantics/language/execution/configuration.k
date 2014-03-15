@@ -12,7 +12,6 @@ module C-CONFIGURATION
                <mem> .Map </mem>
 
                <functions color="lightgray"> .Map </functions>
-               <gstructs color="lightgray"> .Map </gstructs>
 
                <not-writable> .Set </not-writable>
 
@@ -26,11 +25,14 @@ module C-CONFIGURATION
                          <tu-id> "" </tu-id>
                          <genv color="lightgray"> .Map </genv>
                          <gtypes color="lightgray"> .Map </gtypes>
+                         <gstructs color="lightgray"> .Map </gstructs>
 
                          // kpair(Id, BlockNum) |-> SymLoc
                          <local-statics> .Map </local-statics>
                          // kpair(Id, BlockNum) |-> Type
                          <local-types> .Map </local-types>
+                         // kpair(Id, BlockNum) |-> AggInfo
+                         <local-structs> .Map </local-structs>
 
                          <fresh-unnamed color="black"> 0 </fresh-unnamed>
 

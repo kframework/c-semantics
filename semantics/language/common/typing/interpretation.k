@@ -223,10 +223,11 @@ module C-TYPING-INTERPRETATION
                %Int cfg:bitsPerByte)), #NoName))
           [structural]
      
-     rule typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName),,
-               typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName) 
-          => typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
-               N +Int N')), #NoName) 
+     // TODO(chathhorn): this surely doesn't work.
+     rule ListItem(typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName))
+          ListItem(typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName))
+          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
+               N +Int N')), #NoName))
           [structural, anywhere]
      
      // FIXME: chould check for some struct contraints here.
@@ -243,31 +244,6 @@ module C-TYPING-INTERPRETATION
           => ListItem(typedDeclaration(t(S, flexibleArrayType(T)), X))
           [structural]
      rule incompleteToFlexibleArrayMember(.List) => .List
-     
-     // TODO(chathhorn): consider moving to some decls module, but note that
-     // these struct defs might appear buried in a type.
-     rule StructDef(X:Id, krlist(L:List))
-          => structDef'(X,
-               makeStructAggInfo(fillBitHoles(incompleteToFlexibleArrayMember(L))))
-          when L =/=List .List
-          [structural]
-     rule UnionDef(X:Id, krlist(L:List))
-          => unionDef'(X, makeUnionAggInfo(fillUnionBitHoles(L)))
-          when L =/=List .List
-          [structural]
-     
-     syntax K ::= "structDef'" "(" Id "," AggInfo ")"
-                | "unionDef'" "(" Id "," AggInfo ")"
-
-     rule structDef'(X:Id, Info:AggInfo)
-          => addAgg(X, Info)
-          ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info))))
-          [structural]
-
-     rule unionDef'(X:Id, Info:AggInfo)
-          => addAgg(X, Info)
-          ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info))))
-          [structural]
 
      // The K will resolve to a type, so throw it away.
      rule OnlyTypedef(K:K) => K ~> discard
