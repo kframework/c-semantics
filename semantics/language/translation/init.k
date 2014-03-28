@@ -104,6 +104,7 @@ module C-TRANSLATION-INIT
           (<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
+               <gstructs> Structs1:Map </gstructs>
                <not-writable> NoWrite1:Set </not-writable>
 
                <linking-state>
@@ -122,6 +123,7 @@ module C-TRANSLATION-INIT
           (<global>
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
+               <gstructs> Structs2:Map </gstructs>
                <not-writable> NoWrite2:Set </not-writable>
 
                <linking-state>

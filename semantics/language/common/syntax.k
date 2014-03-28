@@ -483,7 +483,8 @@ module C-SYNTAX
                          > K "&&" K [prefer, prec(47), left]
                          > K "||" K [prec(49), left]
      /* | QUESTION of expression * expression * expression */
-                         > K "?" K ":" K [prec(51), left, gather(e & E)]
+                         // Ternary operator is right-associative.
+                         > K "?" K ":" K [prec(51), right, gather(e & E)]
                          > K "*=" K [prec(53)]
                          | K "/=" K [prec(53)]
                          | K "%=" K [prec(53)]

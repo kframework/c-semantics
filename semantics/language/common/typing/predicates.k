@@ -121,8 +121,19 @@ module C-TYPING-PREDICATES
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
-     // TODO(chathhorn): fill in for structs.
-     rule #isCompat(t(_, structType(_, _)), t(_, structType(_, _))) => true
+     // TODO(chathhorn): struct/union fields.
+     rule #isCompat(t(_, structType(X:Id, _)), t(_, structType(X:Id, _)))
+          => true
+     rule #isCompat(t(_, structType(X:Id, _)), t(_, incompleteStructType(X:Id)))
+          => true
+     rule #isCompat(t(_, incompleteStructType(X:Id)), t(_, structType(X:Id, _)))
+          => true
+     rule #isCompat(t(_, unionType(X:Id, _)), t(_, unionType(X:Id, _)))
+          => true
+     rule #isCompat(t(_, unionType(X:Id, _)), t(_, incompleteUnionType(X:Id)))
+          => true
+     rule #isCompat(t(_, incompleteUnionType(X:Id)), t(_, unionType(X:Id, _)))
+          => true
 
      // TODO(chathhorn): are enums compatible with e.g. ints?
      rule #isCompat(t(_, enumType(_)), t(_, enumType(_))) => true

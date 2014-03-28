@@ -39,6 +39,9 @@ module C-DECL-GLOBAL
      imports C-SYMLOC-SYNTAX
      imports C-ERROR-SYNTAX
 
+     imports C-BITSIZE-SYNTAX
+     imports C-SETTINGS-SYNTAX
+
      imports COMPAT-SYNTAX
 
      rule doDeclare(T:Type, K:K) 
@@ -429,11 +432,12 @@ module C-DECL-GLOBAL
           <linkings>... (. => Loc |-> Loc') </linkings>
           when isLinkerLoc(Loc)
           [structural]
+
+     // *** TODO *** Struct/UnionDef *** TODO ***
           
+     // First map is for type, second map is for offset.
      syntax AggInfo ::= makeStructAggInfo(List) [function]
      syntax AggInfo ::= makeUnionAggInfo(List) [function]
-     // First map is for type, second map is for offset.
-     syntax AggInfo ::= aggInfo(List, Map, Map)
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
@@ -446,6 +450,108 @@ module C-DECL-GLOBAL
           => unionDef'(X, makeUnionAggInfo(fillUnionBitHoles(L)))
           when L =/=List .List
           [structural]
+
+     // FIXME: chould check for some struct contraints here.
+     syntax List ::= incompleteToFlexibleArrayMember(List) [function]
+
+     rule incompleteToFlexibleArrayMember(
+          ListItem(typedDeclaration(T:Type, X:Id)) 
+          L:List)
+          => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
+          when notBool isIncompleteType(T)
+          [structural]
+     rule incompleteToFlexibleArrayMember(
+          ListItem(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:Id)))
+          => ListItem(typedDeclaration(t(S, flexibleArrayType(T)), X))
+          [structural]
+     rule incompleteToFlexibleArrayMember(.List) => .List
+
+     syntax List ::= fillBitHoles(List) [function]
+     syntax List ::=  "fillBitHoles-aux" "(" Int "," List ")" [function]
+     rule [fillBitHoles-none]:
+          fillBitHoles(.List) => .List 
+          [structural]
+     // if we haven't seen bitfields
+     rule [fillBitHoles-not-bitfield]:
+          fillBitHoles(ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+          => ListItem(typedDeclaration(T, X)) fillBitHoles(L)
+          when notBool isBitfieldType(T) 
+          [structural]
+     
+     rule [fillBitHoles-bitfield]:
+          fillBitHoles(ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+          => fillBitHoles-aux(0, ListItem(typedDeclaration(T, X)) L)
+          when isBitfieldType(T) 
+          [structural]
+     
+     // if we have seen bitfields
+     rule [fillBitHoles-aux-not-bitfield]:
+          fillBitHoles-aux(N:Int, 
+               ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
+               %Int cfg:bitsPerByte)), #NoName))
+               fillBitHoles(ListItem(typedDeclaration(T, X)) L)
+          when notBool isBitfieldType(T) 
+          [structural]
+     
+     rule [fillBitHoles-aux-bitfield-normal]:
+          fillBitHoles-aux(N:Int, 
+               ListItem(typedDeclaration(t(S:Set,
+               bitfieldType(T:Type, N':Int)), X:Id))
+               L:List) 
+          => ListItem(typedDeclaration(t(S, bitfieldType(T, N')), X))
+               fillBitHoles-aux(N +Int N', L)
+          when N' =/=Int 0 
+          [structural]
+          
+     rule [fillBitHoles-bitfield-zero]:
+          fillBitHoles-aux(N:Int, ListItem(typedDeclaration(t(_, 
+               bitfieldType(_:Type, N':Int)), _:Id)) L:List) 
+          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
+               %Int cfg:bitsPerByte)), #NoName))
+               fillBitHoles(L)
+          when N' ==Int 0
+          [structural]
+     
+     rule [fillBitHoles-done]:
+          fillBitHoles-aux(N:Int, .List) 
+          => ListItem(typedDeclaration(
+               t(.Set, bitfieldType(t(.Set, unsigned-int), 
+               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte))
+               %Int cfg:bitsPerByte)), #NoName))
+          [structural]
+          
+     syntax List ::= fillUnionBitHoles(List) [function]
+     syntax List ::= "fillUnionBitHoles-aux" "(" Int "," List ")" [function]
+     rule fillUnionBitHoles(.List) => .List
+     rule fillUnionBitHoles(ListItem(K:K) L:List) 
+          => fillUnionBitHoles-aux(0, ListItem(K) L)
+     rule fillUnionBitHoles-aux(N:Int, 
+               ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+          => ListItem(typedDeclaration(T, X))
+               fillUnionBitHoles-aux(N, L)
+          when notBool isBitfieldType(T)
+          [structural]
+     rule fillUnionBitHoles-aux(N:Int, ListItem(typedDeclaration(t(S:Set, 
+               bitfieldType(T:Type, N':Int)), X:Id)) L:List) 
+          => ListItem(typedDeclaration(t(S, bitfieldType(T, N')), X))
+               fillUnionBitHoles-aux(maxInt(N, N'), L)
+          [structural]
+     rule fillUnionBitHoles-aux(N:Int, .List) 
+          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
+               N +Int (absInt(cfg:bitsPerByte -Int 
+               (N %Int cfg:bitsPerByte)) %Int cfg:bitsPerByte))), #NoName))
+          [structural]
+     
+     // TODO(chathhorn): this surely doesn't work.
+     rule ListItem(typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName))
+          ListItem(typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName))
+          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
+               N +Int N')), #NoName))
+          [structural, anywhere]
+     
      
      syntax K ::= "structDef'" "(" Id "," AggInfo ")"
                 | "unionDef'" "(" Id "," AggInfo ")"
@@ -498,6 +604,7 @@ module C-DECL-GLOBAL
      rule makeUnionAggInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => aggInfo(L, Types, Offsets)
 
+     syntax K ::= addAgg(Id, Int, AggInfo)
      rule <k> addAgg(S:Id, NBits:Int, Info:AggInfo)
                => addGlobalAggregate(S, NBits, Info)
           ...</k>
@@ -552,7 +659,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, T:Type, declared, _)
           ...</externals>
           when notBool isIncompleteType(completeAgg(Tag, NBits, T))
-     rule <k> completeAggInExtDecls(Tag:Id, _, (SetItem(X:Id) => .Set) _)
+     rule <k> completeAggInExtDecls(Tag:Id, NBits:Int, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
@@ -564,8 +671,8 @@ module C-DECL-GLOBAL
 
      syntax K ::= completeAggInIntDecls(Id, Int, Set)
      rule <k> (.K => doDeclare(
-                    typedDeclaration(
-                         qualifiedType(completeAgg(Tag, NBits, T), Static), X),
+                    typedDeclaration(t(.Set,
+                         qualifiedType(completeAgg(Tag, NBits, T), Static)), X),
                          NoInit))
                ~> completeAggInIntDecls(Tag:Id, NBits:Int,
                     (SetItem(X:Id) => .Set) _)
@@ -576,7 +683,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, T:Type, declared, _)
           ...</internals>     
           when notBool isIncompleteType(completeAgg(Tag, NBits, T))
-     rule <k> completeAggInIntDecls(Tag:Id, _, (SetItem(X:Id) => .Set) _)
+     rule <k> completeAggInIntDecls(Tag:Id, NBits:Int, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
@@ -620,5 +727,8 @@ module C-DECL-GLOBAL
           [structural]
      rule completeAggInAgg(_, _, _, .Set) => .K
           [structural]
+
+     // *** TODO *** End Struct/UnionDef *** TODO ***
+
 
 endmodule

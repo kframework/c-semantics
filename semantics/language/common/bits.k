@@ -22,7 +22,7 @@ module C-BITS-SYNTAX
 
      syntax KResult ::= dataList(List)
 
-     syntax Bits ::= right:
+     syntax Bits ::= 
                    "~Bits" Bits
                    [function, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
                    > left:

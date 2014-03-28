@@ -11,12 +11,16 @@ module C-TYPING-SYNTAX
      syntax Id ::= unnamed(Int, String)
 
      syntax K ::= allowWrite(K) [strict]
+     
+     // TODO(chathhorn): move?
+     // Offsets and field names for structs and unions.
+     syntax AggInfo ::= aggInfo(List, Map, Map)
 
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)] 
      syntax Set ::= "setOfTypes" [function]
-     
+
      syntax Bool ::= isTypeCompatible(Type, Type) [function]
      
      syntax Bool ::= isCharType(Type) [function]
@@ -68,7 +72,7 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= incompleteUnionType(Id)
           [klabel('incompleteUnionType)]
 
-     syntax SimpleType ::= qualifiedType(Type, K)
+     syntax SimpleType ::= qualifiedType(Type, Storage)
           [klabel('qualifiedType)]
 
      // Basic types
