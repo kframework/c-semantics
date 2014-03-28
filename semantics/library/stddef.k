@@ -19,7 +19,7 @@ module LIBC-STDDEF
                => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           ...</k>
           <structs>...
-               S:Id |-> aggregateInfo(_, _, (_ F:Id |-> Offset:Int))
+               S:Id |-> aggInfo(_, _, (_ F:Id |-> Offset:Int))
           ...</structs>
           [structural]
 
