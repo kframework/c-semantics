@@ -7,8 +7,6 @@ module C-CONFIGURATION
      <T>
      <exec>
           <global>
-               // TODO(chathhorn): remove.
-               <incomplete-aggs> .Set </incomplete-aggs>
                <mem> .Map </mem>
 
                <functions color="lightgray"> .Map </functions>
@@ -38,6 +36,9 @@ module C-CONFIGURATION
 
                          <goto-map color="lightgray"> .Map </goto-map>
                          <string-lits color="lightgray"> .Map </string-lits>
+
+                         // TODO(chathhorn): remove.
+                         <incomplete-aggs> .Set </incomplete-aggs>
                     </tu>
                </translation-units>
           </global>

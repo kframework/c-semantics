@@ -24,13 +24,9 @@ module C-DECL-RESOLUTION
           (<tu-linking-state>...
                <externals> .Map </externals>
           ...</tu-linking-state> => .Bag)
+          // TODO(chathhorn): move
+          <incomplete-aggs> .Set </incomplete-aggs>
           [structural]
-     // TODO(chathhorn): reuse more from global.k.
-         // (.K => giveType(X, t(S, arrayType(T, 1)))
-         //           ~> addToEnv(X, Loc')
-         //           ~> allocateType(Loc', t(S, arrayType(T, 1)))
-         //           ~> allowInit(zero(X))
-         //           ~> updateLinkState(X, t(S, arrayType(T, 1)), Loc'))
      rule <k> (.K => doDeclare'(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives
           ...</k>
@@ -129,7 +125,6 @@ module C-DECL-RESOLUTION
      // reference.
      
      rule <k> resolveReferences => .K ...</k>
-          <incomplete-aggs> .Set </incomplete-aggs>
           (<linking-state>...
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)

@@ -8,14 +8,13 @@ module LIBC-STDDEF
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     syntax K ::= "offsetOf" "(" K "," K ")" [strict(1)]
+     syntax K ::= offsetOf(K, K) [strict(1)]
      rule OffsetOf(T:KResult, K:K, F:Id)
           => offsetOf(DeclType(T:KResult, K:K), F:Id)
           [structural]
 
      // fixme should check for bitfield offset
-     rule <k> 
-               offsetOf(t(_, structType(S:Id)), F:Id)
+     rule <k> offsetOf(t(_, structType(S:Id, _)), F:Id)
                => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           ...</k>
           <structs>...
@@ -23,6 +22,6 @@ module LIBC-STDDEF
           ...</structs>
           [structural]
 
-     rule offsetOf(t(_, unionType(_:Id)), _) => tv(0, cfg:sizeut)
+     rule offsetOf(t(_, unionType(_, _)), _) => tv(0, cfg:sizeut)
           [structural]
 endmodule

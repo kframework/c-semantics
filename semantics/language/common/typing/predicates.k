@@ -121,18 +121,30 @@ module C-TYPING-PREDICATES
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
-     // TODO(chathhorn): struct/union fields.
-     rule #isCompat(t(_, structType(X:Id, _)), t(_, structType(X:Id, _)))
+     // TODO(chathhorn): struct/union fields and unnameds.
+     // rule #isCompat(t(_, structType(X:Id, _)), t(_, structType(X:Id, _)))
+     //      => true
+     // rule #isCompat(t(_, structType(X:Id, _)), t(_, incompleteStructType(X:Id)))
+     //      => true
+     // rule #isCompat(t(_, incompleteStructType(X:Id)), t(_, structType(X:Id, _)))
+     //      => true
+     // rule #isCompat(t(_, unionType(X:Id, _)), t(_, unionType(X:Id, _)))
+     //      => true
+     // rule #isCompat(t(_, unionType(X:Id, _)), t(_, incompleteUnionType(X:Id)))
+     //      => true
+     // rule #isCompat(t(_, incompleteUnionType(X:Id)), t(_, unionType(X:Id, _)))
+     //      => true
+     rule #isCompat(t(_, structType(_, _)), t(_, structType(_, _)))
           => true
-     rule #isCompat(t(_, structType(X:Id, _)), t(_, incompleteStructType(X:Id)))
+     rule #isCompat(t(_, structType(_, _)), t(_, incompleteStructType(_)))
           => true
-     rule #isCompat(t(_, incompleteStructType(X:Id)), t(_, structType(X:Id, _)))
+     rule #isCompat(t(_, incompleteStructType(_)), t(_, structType(_, _)))
           => true
-     rule #isCompat(t(_, unionType(X:Id, _)), t(_, unionType(X:Id, _)))
+     rule #isCompat(t(_, unionType(_, _)), t(_, unionType(_, _)))
           => true
-     rule #isCompat(t(_, unionType(X:Id, _)), t(_, incompleteUnionType(X:Id)))
+     rule #isCompat(t(_, unionType(_, _)), t(_, incompleteUnionType(_)))
           => true
-     rule #isCompat(t(_, incompleteUnionType(X:Id)), t(_, unionType(X:Id, _)))
+     rule #isCompat(t(_, incompleteUnionType(_)), t(_, unionType(_, _)))
           => true
 
      // TODO(chathhorn): are enums compatible with e.g. ints?

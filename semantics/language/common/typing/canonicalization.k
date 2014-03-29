@@ -134,6 +134,8 @@ module C-TYPING-CANONICALIZATION
                => t(.Set, incompleteStructType(X))
           ...</k>
           <structs> Structs:Map </structs>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
           <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
           when (X =/=K Identifier(""))
                andBool notBool (X in keys Structs)
@@ -154,6 +156,8 @@ module C-TYPING-CANONICALIZATION
                => t(.Set, incompleteUnionType(X))
           ...</k>
           <structs> Structs:Map </structs>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
           <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
           when (X =/=K Identifier(""))
                andBool notBool (X in keys Structs)
