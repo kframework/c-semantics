@@ -62,12 +62,12 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
 
-     syntax SimpleType ::= structType(Id, Int)
+     syntax SimpleType ::= structType(Id, Int, AggInfo)
           [klabel('structType)]
      syntax SimpleType ::= incompleteStructType(Id)
           [klabel('incompleteStructType)]
 
-     syntax SimpleType ::= unionType(Id, Int)
+     syntax SimpleType ::= unionType(Id, Int, AggInfo)
           [klabel('unionType)]
      syntax SimpleType ::= incompleteUnionType(Id)
           [klabel('incompleteUnionType)]
@@ -118,7 +118,7 @@ module C-TYPING-SYNTAX
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
-     syntax Type ::= completeAgg(Id, Int, Type) [function]
+     syntax Type ::= completeAgg(Id, Int, AggInfo, Type) [function]
 endmodule
 
 module C-TYPING

@@ -32,7 +32,7 @@ module C-CONFIGURATION
                          // kpair(Id, BlockNum) |-> AggInfo
                          <local-structs> .Map </local-structs>
 
-                         <fresh-unnamed color="black"> 0 </fresh-unnamed>
+                         <next-unnamed color="black"> 0 </next-unnamed>
 
                          <goto-map color="lightgray"> .Map </goto-map>
                          <string-lits color="lightgray"> .Map </string-lits>

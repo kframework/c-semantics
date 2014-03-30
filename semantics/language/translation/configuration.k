@@ -50,7 +50,7 @@ module C-CONFIGURATION
                          <next-static-loc> .K </next-static-loc>
                     </tu-linking-state>
 
-                    <fresh-unnamed color="black"> 0 </fresh-unnamed>
+                    <next-unnamed color="black"> 0 </next-unnamed>
 
                     <goto-map color="lightgray"> .Map </goto-map>
                     <string-lits color="lightgray"> .Map </string-lits>

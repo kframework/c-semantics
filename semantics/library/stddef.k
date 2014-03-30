@@ -14,14 +14,12 @@ module LIBC-STDDEF
           [structural]
 
      // fixme should check for bitfield offset
-     rule <k> offsetOf(t(_, structType(S:Id, _)), F:Id)
-               => tv(bitsToBytes(Offset:Int), cfg:sizeut)
-          ...</k>
-          <structs>...
-               S:Id |-> aggInfo(_, _, (_ F:Id |-> Offset:Int))
-          ...</structs>
+     rule offsetOf(t(_, structType(_, _, 
+               aggInfo(_, _, (_ F:Id |-> Offset:Int))
+          )), F:Id)
+          => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           [structural]
 
-     rule offsetOf(t(_, unionType(_, _)), _) => tv(0, cfg:sizeut)
+     rule offsetOf(t(_, unionType(_, _, _)), _) => tv(0, cfg:sizeut)
           [structural]
 endmodule

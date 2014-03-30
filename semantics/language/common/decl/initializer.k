@@ -40,8 +40,8 @@ module C-DECL-INITIALIZER
           [structural] 
 
      rule figureInit(
-               _:Id, 
-               t(_:Set, arrayType(T:Type, Len:Int)), 
+               _, 
+               t(_, arrayType(T:Type, Len:Int)), 
                (SingleInit(Constant(StringLiteral(S:String))) 
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(Constant(StringLiteral(S))))))))
@@ -50,8 +50,8 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit(
-               _:Id, 
-               t(_:Set, arrayType(T:Type, Len:Int)), 
+               _, 
+               t(_, arrayType(T:Type, Len:Int)), 
                (SingleInit(Constant(WStringLiteral(S:KList))) 
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(Constant(WStringLiteral(S))))))))
@@ -59,13 +59,13 @@ module C-DECL-INITIALIZER
           when isWCharType(T) andBool (lengthKList(S) <=Int Len)
           [structural] 
      
-     rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type) 
+     rule figureInit(_, t(_, (incompleteArrayType(T:Type) 
           => arrayType(T, lengthString(S) +Int 1))),
                SingleInit(Constant(StringLiteral(S:String)))) 
           when isCharType(T)
           [structural]
 
-     rule figureInit(_:Id, t(_, (incompleteArrayType(T:Type)
+     rule figureInit(_, t(_, (incompleteArrayType(T:Type)
           => arrayType(T, lengthKList(S) +Int 1))),
                SingleInit(Constant(WStringLiteral(S:KList)))) 
           when isWCharType(T)
@@ -168,26 +168,20 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural] 
      rule <curr-subobject> 
-               ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
-               => ListItem(te(K . F, T)) 
-                    ListItem(te(K, t(Se, structType(S, NBits))))
+               (.List => ListItem(te(K . F, T)))
+               ListItem(te(K:K, t(_, structType(_, _,
+                    aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
+               ))))
           ...</curr-subobject>
-          <structs>... 
-               S |-> aggInfo(
-                    ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
-          ...</structs> 
           [structural] 
           
      // fixme these are terrible!
      rule <curr-subobject> 
-               ListItem(te(K:K, t(Se:Set, unionType(S:Id, NBits:Int))))
-               => ListItem(te(K . F, T))
-                    ListItem(te(K, t(Se, unionType(S, NBits))))
+               (.List => ListItem(te(K . F, T)))
+               ListItem(te(K:K, t(_, unionType(_, _,
+                    aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+               ))))
           ...</curr-subobject>
-          <structs>... 
-               S |-> aggInfo(
-                    ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
-          ...</structs> 
           [structural] 
           
      // fixme should i worry about basetype here_
@@ -217,59 +211,53 @@ module C-DECL-INITIALIZER
      
      rule [init-next-struct-element]:
           <curr-subobject>
-               next ListItem(te(K:K . F:Id, T:Type))
-                    ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
-               => ListItem(te(K . F', T'))
-                    ListItem(te(K, t(Se, structType(S, NBits))))
+               (next ListItem(te(K:K . F:Id, T:Type))
+                    => ListItem(te(K . F', T')))
+               ListItem(te(K:K, t(_, structType(_, _,
+                    aggInfo(_ 
+                         ListItem(typedDeclaration(T, F))
+                         ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
+               ))))
           ...</curr-subobject>
-          <structs>...
-               S |-> aggInfo(_ 
-                    ListItem(typedDeclaration(T, F))
-                    ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
-          ...</structs> 
           when F' =/=K #NoName
           [structural, large] 
       
      rule [init-next-struct-element-noname]:
           <curr-subobject>
-               next ListItem(te(K:K . F:Id, T:Type))
-                    ListItem(te(K:K, t(Se:Set, structType(S:Id, NBits:Int))))
-               => ListItem(te(K . F', T'))
-                    ListItem(te(K, t(Se, structType(S, NBits))))
+               (next ListItem(te(K:K . F:Id, T:Type)) 
+                    => ListItem(te(K . F', T')))
+               ListItem(te(K:K, t(_, structType(_, _,
+                    aggInfo(_ 
+                         ListItem(typedDeclaration(T, F))
+                         ListItem(typedDeclaration(_, #NoName))
+                         ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
+               ))))
           ...</curr-subobject>
-          <structs>...
-               S |-> aggInfo(_ 
-                    ListItem(typedDeclaration(T, F))
-                    ListItem(typedDeclaration(_, #NoName))
-                    ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
-          ...</structs>
           [structural, large] 
           
      rule [init-next-struct-element-done]:
           <curr-subobject>
-               next (ListItem(te(K:K . F:Id, T:Type)) => .)
-                    ListItem(te(K:K, t(_, structType(S:Id, _))))
+               next (ListItem(te(K:K . F:Id, T:Type)) => .List)
+               ListItem(te(K:K, t(_, structType(_, _,
+                    aggInfo(_ ListItem(typedDeclaration(T, F)), _, _)
+               ))))
           ...</curr-subobject>
-          <structs>...
-               S |-> aggInfo(_ ListItem(typedDeclaration(T, F)), _, _)
-          ...</structs> 
           [structural, large] 
      rule [init-next-struct-element-done-noname]:
           <curr-subobject>
-               next (ListItem(te(K:K . F:Id, T:Type)) => .)
-                    ListItem(te(K:K, t(_, structType(S:Id, _))))
+               next (ListItem(te(K:K . F:Id, T:Type)) => .List)
+               ListItem(te(K:K, t(_, structType(_, _,
+                    aggInfo(_
+                         ListItem(typedDeclaration(T, F))
+                         ListItem(typedDeclaration(_, #NoName)), _, _)
+               ))))
           ...</curr-subobject>
-          <structs>...
-               S |-> aggInfo(_
-                    ListItem(typedDeclaration(T, F))
-                    ListItem(typedDeclaration(_, #NoName)), _, _)
-          ...</structs> 
           [structural, large] 
           
      rule [init-next-union-element-done]:
           <curr-subobject>
-               next (ListItem(te(K:K . _:Id, _:Type)) => .List)
-                    ListItem(te(K:K, t(_, unionType(_, _))))
+               next (ListItem(te(K:K . _, _)) => .List)
+               ListItem(te(K:K, t(_, unionType(_, _, _))))
           ...</curr-subobject>
           [structural] 
           
@@ -408,11 +396,11 @@ module C-DECL-INITIALIZER
           [structural] 
           
      syntax K ::= initFromStructRHS(K, Type)
-     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:Id, NBits:Int)))
-               => initFromStructRHS(K, t(S, structType(X, NBits)))
+     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)))
+               => initFromStructRHS(K, t(S, structType(X, NBits, Info)))
           ...</k>
           <curr-subobject>
-               .List => findStruct(t(S, structType(X, NBits)))
+               .List => findStruct(t(S, structType(X, NBits, Info)))
           ...</curr-subobject>
           [structural] 
           
@@ -425,10 +413,10 @@ module C-DECL-INITIALIZER
           [structural] 
           
      // fixme unsafe, might have started to initialize other things
-     rule <k> initFromStructRHS(K':K, t(_, structType(S:Id, _))) => . ...</k>
+     rule <k> initFromStructRHS(K':K, t(_, structType(S:Id, _, _))) => . ...</k>
           <curr-subobject> 
-               findStruct(t(_, structType(S:Id, _)))
-                    ListItem(te(K:K, t(_, structType(S:Id, _)))) => next 
+               findStruct(t(_, structType(S:Id, _, _)))
+                    ListItem(te(K:K, t(_, structType(S:Id, _, _)))) => next 
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))

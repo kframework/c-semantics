@@ -122,29 +122,29 @@ module C-TYPING-PREDICATES
           => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
      // TODO(chathhorn): struct/union fields and unnameds.
-     // rule #isCompat(t(_, structType(X:Id, _)), t(_, structType(X:Id, _)))
+     // rule #isCompat(t(_, structType(X:Id, _, _)), t(_, structType(X:Id, _, _)))
      //      => true
-     // rule #isCompat(t(_, structType(X:Id, _)), t(_, incompleteStructType(X:Id)))
+     // rule #isCompat(t(_, structType(X:Id, _, _)), t(_, incompleteStructType(X:Id)))
      //      => true
-     // rule #isCompat(t(_, incompleteStructType(X:Id)), t(_, structType(X:Id, _)))
+     // rule #isCompat(t(_, incompleteStructType(X:Id)), t(_, structType(X:Id, _, _)))
      //      => true
-     // rule #isCompat(t(_, unionType(X:Id, _)), t(_, unionType(X:Id, _)))
+     // rule #isCompat(t(_, unionType(X:Id, _, _)), t(_, unionType(X:Id, _, _)))
      //      => true
-     // rule #isCompat(t(_, unionType(X:Id, _)), t(_, incompleteUnionType(X:Id)))
+     // rule #isCompat(t(_, unionType(X:Id, _, _)), t(_, incompleteUnionType(X:Id)))
      //      => true
-     // rule #isCompat(t(_, incompleteUnionType(X:Id)), t(_, unionType(X:Id, _)))
+     // rule #isCompat(t(_, incompleteUnionType(X:Id)), t(_, unionType(X:Id, _, _)))
      //      => true
-     rule #isCompat(t(_, structType(_, _)), t(_, structType(_, _)))
+     rule #isCompat(t(_, structType(_, _, _)), t(_, structType(_, _, _)))
           => true
-     rule #isCompat(t(_, structType(_, _)), t(_, incompleteStructType(_)))
+     rule #isCompat(t(_, structType(_, _, _)), t(_, incompleteStructType(_)))
           => true
-     rule #isCompat(t(_, incompleteStructType(_)), t(_, structType(_, _)))
+     rule #isCompat(t(_, incompleteStructType(_)), t(_, structType(_, _, _)))
           => true
-     rule #isCompat(t(_, unionType(_, _)), t(_, unionType(_, _)))
+     rule #isCompat(t(_, unionType(_, _, _)), t(_, unionType(_, _, _)))
           => true
-     rule #isCompat(t(_, unionType(_, _)), t(_, incompleteUnionType(_)))
+     rule #isCompat(t(_, unionType(_, _, _)), t(_, incompleteUnionType(_)))
           => true
-     rule #isCompat(t(_, incompleteUnionType(_)), t(_, unionType(_, _)))
+     rule #isCompat(t(_, incompleteUnionType(_)), t(_, unionType(_, _, _)))
           => true
 
      // TODO(chathhorn): are enums compatible with e.g. ints?
@@ -283,7 +283,7 @@ module C-TYPING-PREDICATES
           => isArrayType(T) orBool isStructType(T) 
           
      rule [isStructType-struct]:
-          isStructType(t(_, structType(_, _))) => true 
+          isStructType(t(_, structType(_, _, _))) => true 
      rule [isStructType-inc-struct]:
           isStructType(t(_, incompleteStructType(_))) => true 
      rule [isStructType-qualified]:
@@ -295,7 +295,7 @@ module C-TYPING-PREDICATES
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
 
      rule [isUnionType-union]:
-          isUnionType(t(_, unionType(_, _))) => true 
+          isUnionType(t(_, unionType(_, _, _))) => true 
      rule [isUnionType-inc-union]:
           isUnionType(t(_, incompleteUnionType(_))) => true 
      rule [isUnionType-qualified]:

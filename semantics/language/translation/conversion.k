@@ -3,7 +3,7 @@ module C-TRANSLATION-CONVERSION
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule cast(t(S:Set, structType(X:Id, NBits:Int)),
+     rule cast(t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
-          => tv(V, t(S, structType(X, NBits)))
+          => tv(V, t(S, structType(X, NBits, Info)))
 endmodule

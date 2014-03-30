@@ -41,20 +41,16 @@ module C-DECL-ZERO
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule <k> zeroType(N:K, t(_, structType(S:Id, _)))
-               => zeroStruct(N, Fields)
-          ...</k>
-          <structs>...
-               S |-> aggInfo(Fields:List, _, _)
-          ...</structs>
+     rule zeroType(N:K, t(_, structType(_, _, 
+               aggInfo(Fields:List, _, _)
+          )))
+          => zeroStruct(N, Fields)
           [structural] 
           
-     rule <k> zeroType(N:K, t(_, unionType(S:Id, _)))
-               => zeroType(N . F, T)
-          ...</k>
-          <structs>...
-               S |-> aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
-          ...</structs>
+     rule zeroType(N:K, t(_, unionType(_, _,
+               aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+          )))
+          => zeroType(N . F, T)
           [structural] 
           
      rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:Id)) L:List) 

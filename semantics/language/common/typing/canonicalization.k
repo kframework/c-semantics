@@ -123,7 +123,7 @@ module C-TYPING-CANONICALIZATION
           [structural]
           
      rule <k> canonicalizeSpecifier(BagItem(StructRef(X:Id)))
-               => t(.Set, structType(X, bitSizeofStruct(Info)))
+               => t(.Set, structType(X, bitSizeofStruct(Info), Info))
           ...</k>
           <structs>...
                X |-> Info:AggInfo
@@ -145,7 +145,7 @@ module C-TYPING-CANONICALIZATION
           when X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-               => t(.Set, unionType(X, bitSizeofUnion(Info)))
+               => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
           ...</k>
           <structs>...
                X |-> Info:AggInfo
@@ -173,21 +173,21 @@ module C-TYPING-CANONICALIZATION
            ...</k>
            <curr-tu> TU:String </curr-tu>
            <tu-id> TU </tu-id>
-           <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
+           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
            [structural]
      rule <k> canonicalizeSpecifier(BagItem(
                EnumDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
+          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(
                UnionDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <fresh-unnamed> N:Int => N +Int 1 </fresh-unnamed>
+          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
      
      rule (.K => StructDef(X, L))

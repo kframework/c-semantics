@@ -19,6 +19,7 @@ require "typing.k"
 require "decl/definition.k"
 require "decl/enum.k"
 require "decl/initializer.k"
+require "decl/tagged.k"
 require "decl/typedef.k"
 require "decl/zero.k"
 
@@ -61,6 +62,7 @@ module C-COMMON
      imports C-DECL-DEFINITION
      imports C-DECL-ENUM
      imports C-DECL-INITIALIZER
+     imports C-DECL-TAGGED
      imports C-DECL-TYPEDEF
      imports C-DECL-ZERO
 

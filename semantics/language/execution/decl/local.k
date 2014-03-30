@@ -13,9 +13,10 @@ module C-DECL-LOCAL
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
-     imports COMPAT-SYNTAX
 
      imports C-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      rule doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
           => declareInternalVariable(X, T, K)
@@ -142,6 +143,5 @@ module C-DECL-LOCAL
      rule justInit(initValue(_, _, K:K)) 
           => K ~> sequencePoint
           [structural]
-          
 endmodule
 

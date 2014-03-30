@@ -18,42 +18,34 @@ module C-COMMON-EXPR-MEMBERS
      has the so-qualified version of the type of the designated member.}
      }*/
      // fixme tool bug, can't use L:KLabel
-     rule <k> lval(Loc:SymLoc, t(_, structType(S:Id, _))) . F:Id
-               => lv(Loc +bits Offset, T)
-          ...</k>
-          <structs>...
-               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
-          ...</structs>
+     rule lval(Loc:SymLoc, t(_, structType(_, _, 
+               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
+          ))) . F:Id
+          => lv(Loc +bits Offset, T)
           [structural]
-     rule <k> lval(Loc:SymLoc, t(_, unionType(S:Id, _))) . F:Id
-               => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
-          ...</k>
-          <structs>...
-               S |-> aggInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
-          ...</structs>
+     rule lval(Loc:SymLoc, t(_, unionType(S:Id, _,
+               aggInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
+          ))) . F:Id
+          => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
           [structural]
 
      // bytes of struct, type, field id
      syntax K ::= extractField(List, Type, Id)
      
      rule [extractField-struct-start]:
-          <k> extractField(L:List, t(_, structType(S:Id, _)), F:Id)
-               => concretize(T,
-                    fillToBytes(extractBitsFromList(dataList(L), Offset,
-                         bitSizeofType(T))))
-          ...</k>
-          <structs>...
-               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
-          ...</structs>
+          extractField(L:List, t(_, structType(_, _,
+               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+          )), F:Id)
+          => concretize(T,
+               fillToBytes(extractBitsFromList(dataList(L), Offset,
+                    bitSizeofType(T))))
      rule [extractField-union-start]:
-          <k> extractField(L:List, t(_, unionType(S:Id, _)), F:Id)
-               => concretize(T,
-                    fillToBytes(extractBitsFromList(dataList(L), Offset,
-                         bitSizeofType(T))))
-          ...</k>
-          <structs>
-               S |-> aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
-          ...</structs>
+          extractField(L:List, t(_, unionType(_, _,
+               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+          )), F:Id)
+          => concretize(T,
+               fillToBytes(extractBitsFromList(dataList(L), Offset,
+                    bitSizeofType(T))))
 
      rule tv(agg(L:List), T:Type) . F:Id => extractField(L, T, F)
           [structural]

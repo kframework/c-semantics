@@ -166,16 +166,16 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule [type-struct-dot]:
-          <type> t(_, structType(S:Id, _)) . F:Id => T ...</type>
-          <structs>...
-               S |-> aggInfo(_, (_ F |-> T:Type), _)
-          ...</structs>
+          <type> 
+               t(_, structType(_, _, aggInfo(_, (_ F |-> T:Type), _))) . F:Id
+               => T
+          ...</type>
           [structural]
      rule [type-union-dot]:
-          <type> t(_, unionType(S:Id, _)) . F:Id => T ...</type>
-          <structs>...
-               S |-> aggInfo(_, (_ F |-> T:Type), _)
-          ...</structs>
+          <type>
+               t(_, unionType(_, _, aggInfo(_, (_ F |-> T:Type), _))) . F:Id
+               => T
+          ...</type>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

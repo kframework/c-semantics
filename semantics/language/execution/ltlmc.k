@@ -7,8 +7,8 @@ module C-LTLMC-SYNTAX
      // Ltl atomic propositions.
      syntax ValueProp ::= Int  
                         | ptr(SymLoc, Type) 
-                        | struct(List, Id)
-                        | union(List, Id)
+                        | struct(List, AggInfo)
+                        | union(List, AggInfo)
 
      syntax CProp ::= ValueProp | Id 
                     | "-" CProp
@@ -113,34 +113,20 @@ module C-LTLMC
      rule ltlRVal(B:Bag, P:CProp -> X:Id)
           => ltlRVal(B, (* P) . X)
 
-     rule ltlRVal(
-          <generatedTop>... <T>...
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <gstructs>...
-               S |-> aggInfo(_,
-                    (_ X |-> T:Type),
-                    (_ X |-> Offset:Int))
-          ...</gstructs>
-          ...</T> ...</generatedTop>,
-          struct(V:List, S:Id) . X:Id)
+     rule ltlRVal(_,
+          struct(V:List,
+               aggInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+          ) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(
                     extractBitsFromList-aux(
                          dataList(explodeToBits(V)), 
                          Offset, bitSizeofType(T), .List),
                     .List))
-     rule ltlRVal(
-          <generatedTop>... <T>...
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <gstructs>...
-               S |-> aggInfo(_,
-                    (_ X |-> T:Type),
-                    (_ X |-> Offset:Int))
-          ...</gstructs>
-          ...</T> ...</generatedTop>,
-          union(V:List, S:Id) . X:Id)
+     rule ltlRVal(_,
+          union(V:List,
+               aggInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+          ) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(
                     extractBitsFromList-aux(
@@ -198,10 +184,10 @@ module C-LTLMC
      rule joinBytes(t(_, pointerType(T:Type)), 
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))
           => ptr(L, T)
-     rule joinBytes(t(_, structType(S:Id, _)), dataList(V:List))
-          => struct(V, S)
-     rule joinBytes(t(_, unionType(S:Id, _)), dataList(V:List))
-          => union(V, S)
+     rule joinBytes(t(_, structType(_, _, Info:AggInfo)), dataList(V:List))
+          => struct(V, Info)
+     rule joinBytes(t(_, unionType(_, _, Info:AggInfo)), dataList(V:List))
+          => union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)
           when hasIntegerType(T)

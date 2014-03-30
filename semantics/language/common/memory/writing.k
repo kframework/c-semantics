@@ -69,7 +69,7 @@ module C-MEMORY-WRITING
                andBool (notBool hasUnionMarker(T))
           [structural]
      rule [write-normal-union-field]:
-          <k> (. => makeUnknown(Loc, t(.Set, unionType(S, bitSizeofUnion(Info)))))
+          <k> (. => makeUnknown(Loc, t(.Set, unionType(S, bitSizeofUnion(Info), Info))))
                ~> write-specific(Loc:SymLoc, 
                     tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
           ...</k>
@@ -236,13 +236,13 @@ module C-MEMORY-WRITING
           => splitPointerBytes(I, t(S, pointerType(T)), 
                byteSizeofType(t(.Set, pointerType(T))))
      rule [splitBytes-struct]:
-          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int)))) 
-          => splitStructBytes(dataList(L), t(S, structType(X, NBits)), 
-               byteSizeofType(t(S, structType(X, NBits))))
+          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)))) 
+          => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
+               byteSizeofType(t(S, structType(X, NBits, Info))))
      rule [splitBytes-union]:
-          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int)))) 
-          => splitStructBytes(dataList(L), t(S, unionType(X, NBits)), 
-               byteSizeofType(t(S, unionType(X, NBits))))
+          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:AggInfo)))) 
+          => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
+               byteSizeofType(t(S, unionType(X, NBits, Info))))
      
      syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
      syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," List ")"

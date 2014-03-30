@@ -65,9 +65,9 @@ module C-BITSIZE
      rule bitSizeofType(typedDeclaration(T:Type, _)) 
           => bitSizeofType(T)
 
-     rule bitSizeofType(t(_, structType(_, NBits:Int))) 
+     rule bitSizeofType(t(_, structType(_, NBits:Int, _))) 
           => NBits
-     rule bitSizeofType(t(_, unionType(_, NBits:Int)))
+     rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
           => NBits
 
      rule bitSizeofStruct(aggInfo(L:List, _, _))
