@@ -479,9 +479,10 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <externals>...
-               X |-> declState(_, T:Type, declared, _)
+               X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>     
           when isIncompleteType(completeAgg(Tag, NBits, Info, T))
+               orBool DS =/=K declared
      rule completeAggInExtDecls(_, _, _, .Set) => .K
 
      syntax K ::= completeAggInIntDecls(Id, Int, AggInfo, Set)
@@ -503,9 +504,10 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <internals>...
-               X |-> declState(_, T:Type, declared, _)
+               X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>     
           when isIncompleteType(completeAgg(Tag, NBits, Info, T))
+               orBool DS =/=K declared
      rule completeAggInIntDecls(_, _, _, .Set) => .K
 
      syntax K ::= completeAggInTypes(Id, Int, AggInfo, Set)
