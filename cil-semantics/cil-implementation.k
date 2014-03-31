@@ -16,10 +16,6 @@ module CIL-IMPLEMENTATION
   // type, or an unsigned integer type"
   rule enum _:CId => int [macro]
 
-  /*
-   * FIXME: it would be faster to treat each basic type individually, rather
-   * that use byteWidthMacro
-   */
   syntax Int ::= "byteWidthMacro" [function]
   rule byteWidthMacro => 8
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
@@ -49,40 +45,19 @@ module CIL-IMPLEMENTATION
   rule byteWidth(unsigned long)      => 8
   rule byteWidth(unsigned long long) => 8
 
-  rule byteWidth(__builtin_va_list) => byteWidth(normType(void*))
-
-  syntax MInt ::= bytes2SignedMInt(MyList)      [function]
-                | bytes2UnsignedMInt(MyList)    [function]
-  rule
-    bytes2UnsignedMInt(MyListItem(M:Int), L:MyList)
-  =>
-    mi((wMInt(bytes2UnsignedMInt(L)) +Int byteWidthMacro),
-       (iMInt(bytes2UnsignedMInt(L)) <<Int byteWidthMacro) +Int M)
-  rule bytes2UnsignedMInt(.MyList) => mi(0, 0)
-  rule bytes2SignedMInt(L:MyList) => sMInt(bytes2UnsignedMInt(L))
-
-  syntax MyList ::= "MInt2Bytes" "(" MInt ")" [function]
-  rule
-    MInt2Bytes(mi(N:Int, I:Int))
-  =>
-    MyListItem(I modInt (1 <<Int byteWidthMacro)),
-    MInt2Bytes(mi((N -Int byteWidthMacro), I >>Int byteWidthMacro))
-  when N >Int 0
-  rule MInt2Bytes(mi((0), _)) => .MyList
-
-  /* Size of pointers is 4 bytes (also the size of int) */
-  rule byteWidth(T:Type) => 4
+  /* Size of pointers is  size of int */
+  rule byteWidth(T:Type) => byteWidth(int)
      when isPtrType(T)
 
-  /* implement conversions */
+  rule byteWidth(__builtin_va_list) => byteWidth(normType(void*))
 
+
+  /* implement conversions */
   /*
    * Integers.
    */
-  rule value2Bytes(_, MI:MInt) => MInt2Bytes(MI)
-
-  rule bytes2Value(_:UnsignedIntType, L:MyList) => bytes2UnsignedMInt(L)
-  rule bytes2Value(_:SignedIntType, L:MyList) => bytes2SignedMInt(L)
+  rule value2Bytes(_:IntType, MI:MInt) => digitsOfMInt(MI, byteWidthMacro)
+  rule bytes2Value(_:IntType, L:MyList) => mIntOfDigits(L, byteWidthMacro)
 
   /*
    * Floats.
@@ -107,10 +82,10 @@ module CIL-IMPLEMENTATION
    * Strings.
    */
   rule value2Bytes(T:Type, S:String)
-    => MyListItem(ordChar(substrString(S, 0, 1))),
+    => MyListItem(mi(width(char), ordChar(substrString(S, 0, 1)))),
        value2Bytes(T, substrString(S, 1, lengthString(S)))
     when lengthString(S) >Int 0
-  rule value2Bytes(_, "") => MyListItem(0)
+  rule value2Bytes(_, "") => MyListItem(mi(width(char), 0))
 
   /*
    * Pointers.
@@ -118,7 +93,7 @@ module CIL-IMPLEMENTATION
   rule value2Bytes(T:Type, P:Ptr) 
     => MyListItem(P), padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(T, (MyListItem(P:Ptr), _:MyList))
+  rule bytes2Value(_:Type, (MyListItem(P:Ptr), _:MyList))
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.

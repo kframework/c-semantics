@@ -92,19 +92,19 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
 
   syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(MyList) | String
 
-  syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"
+  syntax ByteValue ::= Int | Float | Ptr | MInt | "undef" | "used"
 
   /*
    * @invariant:
-   * Int ::= bytes2Value(IntType, List)
+   * MInt  ::= bytes2Value(IntType, List)
    * Float ::= bytes2Value(FloatingType, List)
-   * Ptr ::= bytes2Value(PtrType, List)
+   * Ptr   ::= bytes2Value(PtrType, List)
    * byteWidth(T:Type) =Int #lenList(L:List)
    */
   syntax Value ::= bytes2Value(Type, MyList) [function]
   /*
    * @invariant:
-   * value2Bytes(T:IntType, I:Int)
+   * value2Bytes(T:IntType, MI:MInt)
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
@@ -118,12 +118,12 @@ module CIL-COMMON-TYPED-VALUE
   syntax Exp ::= TypedValue
   /*
    * @invariant:
-   * tv(T:IntType, I:Int)
+   * tv(T:IntType, MI:MInt)
    * tv(T:FloatingType, F:Float)
    * tv(T:PtrType, P:Ptr)
    */
   syntax TypedValue ::= tv(Type, Value)
-                      | "norm" "(" Type "," Value ")"    [function]
+                      | norm(Type, Value)   [function]
   syntax TypedValues ::= List{TypedValue, ","}
 
   syntax Exp ::= LeftValue
@@ -135,18 +135,15 @@ module CIL-COMMON-TYPED-VALUE
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, V:Value)) => V
 
-  rule norm(T:Type, I:MInt) => norm(T, iMInt(I))
-
-  rule norm(T:IntType, true) => tv(T, mi(width(T), 1)) 
-  rule norm(T:IntType, false) => tv(T, mi(width(T), 0)) 
-
-  rule norm(T:IntType, F:Float) => norm(T, Float2Int(F))
-  rule norm(T:UnsignedIntType, I:Int) => tv(T, uMInt(mi(width(T), I)))
-  rule norm(T:SignedIntType, I:Int) => tv(T, sMInt(mi(width(T), I)))
+  rule norm(T:IntType, MI:MInt) => tv(T, MI)
+  rule norm(T:IntType, I:Int)   => tv(T, mi(width(T), I))
+  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1)) 
+  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0)) 
+  rule norm(T:IntType, F:Float) => tv(T, mi(width(T), Float2Int(F)))
 
   // TODO(chathhorn): not sure about the best way to handle this.
-  rule norm(T:Type, I:Int) => tv(T, uMInt(mi(width(T), I)))
-    when isPtrType(T) ==K true
+  rule norm(T:Type, I:Int) => tv(T, mi(width(T), I))
+  when isPtrType(T) ==K true
 
   rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
@@ -317,12 +314,12 @@ module CIL-COMMON
   syntax Type ::= "size_t" [function]
                 | "size_ptr" [function]
 
+  /*
+   * Returns the unsigned interpretation of the machine integer stored inside
+   * this typed value.
+   */
   syntax Int ::= mival(TypedValue) [function]
-  rule mival(tv(_, I:MInt)) => iMInt(I)
-
-  /* 0 has identical signed and unsigned representations */
-  syntax Bool ::= isZero(MInt) [function]
-  rule isZero(MI:MInt) => iMInt(uMInt(MI)) ==Int 0
+  rule mival(tv(_, I:MInt)) => uvalueMInt(I)
 
   /*
    * List{Stmt} concatenation

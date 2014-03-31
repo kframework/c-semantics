@@ -192,8 +192,12 @@ module CIL-STMT
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
   [cool]
 
-  rule if (tv(_, mi(_, 1))) S:Stmt else _:Stmt => S   [computational]
-  rule if (tv(_, mi(_, 0))) _:Stmt else S:Stmt => S   [computational]
+  rule if (tv(_, MI:MInt)) S:Stmt else _:Stmt => S
+  when uvalueMInt(MI) ==K 1
+  [computational]
+  rule if (tv(_, MI:MInt)) _:Stmt else S:Stmt => S
+  when uvalueMInt(MI) ==K 0
+  [computational]
   
   rule while(E:Exp) S:Stmt => if (E) { S while(E) S }   [structural]
 
@@ -293,7 +297,7 @@ module CIL-STMT
     <k> tv(int, I:MInt) </k>
     <frame-fun-id> Null </frame-fun-id>
     ...</frame> 
-    => <result-value> ###result-value(iMInt(I)) </result-value>)
+    => <result-value> ###result-value(uvalueMInt(I)) </result-value>)
     <phase> _ => terminated </phase>
   [structural]
 

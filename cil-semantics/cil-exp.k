@@ -224,7 +224,7 @@ module CIL-EXP
 
   syntax KItem ::= "$exp2bool" "(" Exp ")"    [strict]
   rule $exp2bool(tv(_:Type, MI:MInt))
-    => norm(int, notBool isZero(MI))
+    => norm(int, notBool zeroMInt(MI))
   [structural]
   rule $exp2bool(tv(_:Type, Null))
     => norm(int, false)
@@ -449,6 +449,7 @@ module CIL-EXP
   rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) ~> KI:KItem 
     when (KI =/=K noLeftValueConversion) andBool (isFunType(T) ==K true)
 
+  // TODO
   //rule ('lv => 'nclv)(_:KList) ~> noLeftValueConversion
   rule ('lv => 'nclv)(_:K,,_:K) ~> noLeftValueConversion
   [structural]
@@ -462,94 +463,93 @@ module CIL-EXP
   /* FIXME standard is unclear about the semantics of unary minus. */
   rule -tv(T:Type, I:MInt) => norm(T, 0) - tv(T, I)
 
-  // TODO: under/overflow.
   /* Addition */
   rule tv(T:SignedIntType, MI1:MInt) + tv(T, MI2:MInt) 
-    => tv(T, miMInt(addMInt(MI1, MI2)))
-//    when notBool ufMInt(addMInt(MI1, MI2)) andBool
-//      notBool ofMInt(addMInt(MI1, MI2))
+    => tv(T, miMInt(saddMInt(MI1, MI2)))
+  when notBool overflowMInt(saddMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) + tv(T, MI2:MInt)
-    => tv(T, miMInt(uaddMInt(MI1, MI2)))
+    => tv(T, addMInt(MI1, MI2))
 
   /* Subtraction */
   rule tv(T:SignedIntType, MI1:MInt) - tv(T, MI2:MInt)
-    => tv(T, miMInt(subMInt(MI1, MI2)))
-//  when notBool ufMInt(subMInt(MI1, MI2)) andBool
-//    notBool ofMInt(subMInt(MI1, MI2))
+    => tv(T, miMInt(ssubMInt(MI1, MI2)))
+  when notBool overflowMInt(ssubMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) - tv(T, MI2:MInt)
-    => tv(T, miMInt(usubMInt(MI1, MI2)))
+    => tv(T, subMInt(MI1, MI2))
 
   /* Multiplication */
   rule tv(T:SignedIntType, MI1:MInt) * tv(T, MI2:MInt)
-    => tv(T, miMInt(mulMInt(MI1, MI2)))
-//  when notBool ufMInt(mulMInt(MI1, MI2)) andBool
-//    notBool ofMInt(mulMInt(MI1, MI2))
+    => tv(T, miMInt(smulMInt(MI1, MI2)))
+  when notBool overflowMInt(smulMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) * tv(T, MI2:MInt)
-    => tv(T, miMInt(umulMInt(MI1, MI2)))
+    => tv(T, mulMInt(MI1, MI2))
 
   /* Division */
   rule tv(T:SignedIntType, MI1:MInt) / tv(T, MI2:MInt)
-    => tv(T, miMInt(divMInt(MI1, MI2)))
-    when divMInt(MI1, MI2) =/=K errMInt 
-      andBool notBool ofMInt(divMInt(MI1, MI2))
+    => tv(T, miMInt(sdivMInt(MI1, MI2)))
+  when notBool(zeroMInt(MI2)) andBool notBool(overflowMInt(sdivMInt(MI1, MI2)))
   rule tv(T:UnsignedIntType, MI1:MInt) / tv(T, MI2:MInt)
-    => tv(T, miMInt(udivMInt(MI1, MI2)))
-    when udivMInt(MI1, MI2) =/=K errMInt
+    => tv(T, udivMInt(MI1, MI2))
+  when notBool zeroMInt(MI2)
 
-  /* Remainder */
-  /* signed remainder is defined only when signed division is defined */
+  /* Remainder is defined only when division is defined */
   rule tv(T:SignedIntType, MI1:MInt) % tv(T, MI2:MInt)
-    => tv(T, miMInt(remMInt(MI1, MI2)))
-    when divMInt(MI1, MI2) =/=K errMInt 
-      andBool notBool ofMInt(divMInt(MI1, MI2))
+    => tv(T, miMInt(sremMInt(MI1, MI2)))
+  when notBool(zeroMInt(MI2)) andBool notBool(overflowMInt(sremMInt(MI1, MI2)))
   rule tv(T:UnsignedIntType, MI1:MInt) % tv(T, MI2:MInt)
-    => tv(T, miMInt(uremMInt(MI1, MI2)))
-    when udivMInt(MI1, MI2) =/=K errMInt
+    => tv(T, uremMInt(MI1, MI2))
+  when notBool zeroMInt(MI2)
 
-  rule ~tv(T:Type, I:MInt) => norm(T, ~Int iMInt(I))
+  rule ~tv(T:Type, MI:MInt) => tv(T, negMInt(MI))
+
+  /* Shift */
+  // TODO(AndreiS): use library shift
+  // TODO(AndreiS): negative shifts 
   rule tv(T:Type, I:MInt) << tv(_:Type, N:MInt) 
-    => norm(T, iMInt(I) <<Int iMInt(N))
-    when iMInt(N) <Int width(T)
-  rule tv(T:Type, I:MInt) >> tv(_:Type, N:MInt) 
-    => norm(T, iMInt(I) >>Int iMInt(N))
-    when iMInt(N) <Int width(T)
+    => norm(T, uvalueMInt(I) <<Int uvalueMInt(N))
+    when uvalueMInt(N) <Int width(T)
+  rule tv(T:SignedIntType, I:MInt) >> tv(_:Type, N:MInt) 
+    => norm(T, svalueMInt(I) >>Int uvalueMInt(N))
+    when uvalueMInt(N) <Int width(T)
+  rule tv(T:UnsignedIntType, I:MInt) >> tv(_:Type, N:MInt) 
+    => norm(T, uvalueMInt(I) >>Int uvalueMInt(N))
+    when uvalueMInt(N) <Int width(T)
 
   /* Relation operators */
   rule tv(T:SignedIntType, MI1:MInt) < tv(T, MI2:MInt)
-    => norm(int, ltMInt(MI1, MI2))
+    => norm(int, sltMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) < tv(T, MI2:MInt)
     => norm(int, ultMInt(MI1, MI2))
   rule tv(T:SignedIntType, MI1:MInt) <= tv(T, MI2:MInt)
-    => norm(int, leqMInt(MI1, MI2))
+    => norm(int, sleMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) <= tv(T, MI2:MInt)
-    => norm(int, uleqMInt(MI1, MI2))
+    => norm(int, uleMInt(MI1, MI2))
   rule tv(T:SignedIntType, MI1:MInt) > tv(T, MI2:MInt)
-    => norm(int, gtMInt(MI1, MI2))
+    => norm(int, sgtMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) > tv(T, MI2:MInt)
     => norm(int, ugtMInt(MI1, MI2))
   rule tv(T:SignedIntType, MI1:MInt) >= tv(T, MI2:MInt)
-    => norm(int, geqMInt(MI1, MI2))
+    => norm(int, sgeMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) >= tv(T, MI2:MInt)
-    => norm(int, ugeqMInt(MI1, MI2))
+    => norm(int, ugeMInt(MI1, MI2))
 
   /* Relation operators */
   rule tv(T:Type, MI1:MInt) == tv(T, MI2:MInt)
-    => norm(int, MI1 ==MInt MI2)
+    => norm(int, eqMInt(MI1, MI2))
   rule tv(T:Type, MI1:MInt) != tv(T, MI2:MInt)
-    => norm(int, MI1 =/=MInt MI2)
+    => norm(int, neMInt(MI1, MI2))
 
   rule ! E:Exp => $exp2bool(E) ~> ! HOLE    [heat]
   rule TV:TypedValue ~> ! HOLE => ! TV      [cool]
 
   rule !tv(_:Type, I:MInt) => norm(int, 1)
-    when isZero(I)
+    when zeroMInt(I)
   rule !tv(_:Type, I:MInt) => norm(int, 0)
-    when notBool isZero(I)
+    when notBool zeroMInt(I)
 
   /*
    * Sizeof
    */
-
   // Things are special inside a sizeof (in particular, arrays don't decay).
   syntax KItem ::= "sizeofContext"
   context sizeof(HOLE => HOLE ~> sizeofContext)
@@ -595,11 +595,19 @@ module CIL-EXP
     <env>... X |-> lv(_,_) ...</env>
 
   /* the rule for signed integer types is implementation defined */
-  rule (nt(T:SignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
-  rule (nt(T:SignedIntType)) tv(_:Type, I:Int) => norm(T, I)
+  rule
+    (nt(T:SignedIntType)) tv(_:Type, I:MInt)
+  => 
+    tv(T, mi(width(T), svalueMInt(I)))
+  // TODO: unnecessary?
+  //rule (nt(T:SignedIntType)) tv(_:Type, I:Int) => norm(T, I)
 
-  rule (nt(T:UnsignedIntType)) tv(_:Type, I:MInt) => norm(T, I)
-  rule (nt(T:UnsignedIntType)) tv(_:Type, I:Int) => norm(T, I)
+  rule
+    (nt(T:UnsignedIntType)) tv(_:Type, I:MInt)
+  =>
+    tv(T, mi(width(T), uvalueMInt(I)))
+  // TODO: unnecessary?
+  //rule (nt(T:UnsignedIntType)) tv(_:Type, I:Int) => norm(T, I)
 
   // Allowing all casts between floating point types.
   rule (nt(To:FloatingType)) tv(_:Type, F:Float) => norm(To, F)
@@ -615,7 +623,7 @@ module CIL-EXP
 
   // Null pointers (or 0) may be cast to any pointer type.
   rule (nt(To:Type)) tv(_:Type, I:MInt) => tv(To, Null)
-    when (isPtrType(To) ==K true) andBool (iMInt(I) ==Int 0)
+    when (isPtrType(To) ==K true) andBool zeroMInt(I)
   rule (nt(To:IntType)) tv(_:Type, Null) => norm(To, 0)
 
   // TODO(chathhorn): Pointers may be converted to integers and the result is
@@ -647,27 +655,27 @@ module CIL-EXP
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
  
   // pointer arithmetic
-  rule tv(T:Type, P:Ptr) + tv(_, I:MInt)
-    => PtrAddHelper(T, P, iMInt(I), sizeof(downPtr(T)))
-    when isPtrType(T)
-  rule tv(_, I:MInt) + tv(T:Type, P:Ptr)
-    => PtrAddHelper(T, P, iMInt(I), sizeof(downPtr(T)))
-    when isPtrType(T)
-  rule tv(_, I:Int) + tv(T:Type, P:Ptr)
-    => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
-    when isPtrType(T)
-  rule tv(T:Type, P:Ptr) + tv(_, I:Int)
-    => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
-    when isPtrType(T)
-  rule
-    tv(T:Type, P:Ptr) - tv(_, I:MInt)
-    => PtrAddHelper(T, P, 0 -Int iMInt(I), sizeof(downPtr(T)))
-    when isPtrType(T)
+  rule tv(T:Type, P:Ptr) + tv(_:SignedIntType, MI:MInt)
+    => PtrAddHelper(T, P, svalueMInt(MI), sizeof(downPtr(T)))
+  rule tv(T:Type, P:Ptr) + tv(_:UnsignedIntType, MI:MInt)
+    => PtrAddHelper(T, P, uvalueMInt(MI), sizeof(downPtr(T)))
+  when isPtrType(T)
+  rule tv(T1:IntType, MI:MInt) + tv(T2:Type, P:Ptr) => tv(T2, P) + tv(T1, MI)
+  when isPtrType(T2)
+  // TODO: unnecessary?
+  //rule tv(_, I:Int) + tv(T:Type, P:Ptr)
+  //  => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
+  //  when isPtrType(T)
+  //rule tv(T:Type, P:Ptr) + tv(_, I:Int)
+  //  => PtrAddHelper(T, P, I, sizeof(downPtr(T)))
+  //  when isPtrType(T)
 
-  rule
-    tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
+  rule tv(T1:Type, P:Ptr) - tv(T2:IntType, MI:MInt) => tv(T1, P) + (-tv(T2, MI))
+  when isPtrType(T1)
+
+  rule tv(T:Type, P1:Ptr) - tv(T, P2:Ptr)
     => PtrSubHelper(P1, P2, sizeof(downPtr(T)))
-    when isPtrType(T)
+  when isPtrType(T)
 
   syntax KItem ::= PtrAddHelper(Type, Ptr, Int, Exp)    [strict(4)]
   rule PtrAddHelper(T:Type, P:Ptr, I:Int, TV:TypedValue)
@@ -697,12 +705,8 @@ module CIL-EXP
   rule tv(_:Type, P1:Ptr) == tv(_:Type, P2:Ptr) => norm(int, P1 ==Ptr P2)
   rule tv(_:Type, P1:Ptr) != tv(_:Type, P2:Ptr) => norm(int, P1 =/=Ptr P2)
 
-  rule tv(T:Type, I1:MInt) & tv(T, I2:MInt) 
-    => norm(T, iMInt(I1) &Int iMInt(I2))
-  rule tv(T:Type, I1:MInt) ^ tv(T, I2:MInt) 
-    => norm(T, iMInt(I1) xorInt iMInt(I2))
-  rule tv(T:Type, I1:MInt) | tv(T, I2:MInt) 
-    => norm(T, iMInt(I1) |Int iMInt(I2))
-
+  rule tv(T:Type, I1:MInt) & tv(T, I2:MInt) => tv(T, andMInt(I1, I2))
+  rule tv(T:Type, I1:MInt) | tv(T, I2:MInt) => tv(T, orMInt(I1, I2))
+  rule tv(T:Type, I1:MInt) ^ tv(T, I2:MInt) => tv(T, xorMInt(I1, I2))
 endmodule
 
