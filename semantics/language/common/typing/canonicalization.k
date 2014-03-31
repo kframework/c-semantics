@@ -14,7 +14,6 @@ module C-TYPING-CANONICALIZATION
      
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
-          when HOLE =/=K .K 
 
      rule canonicalizeType(B:Bag)
           => canonicalizeType-aux(B, .K, .Bag, .Bag, .Bag)

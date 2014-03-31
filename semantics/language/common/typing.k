@@ -72,7 +72,8 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= incompleteUnionType(Id)
           [klabel('incompleteUnionType)]
 
-     syntax SimpleType ::= qualifiedType(Type, Storage)
+     syntax TypeQuality ::= Storage | CVSpecifier
+     syntax SimpleType ::= qualifiedType(Type, TypeQuality)
           [klabel('qualifiedType)]
 
      // Basic types
