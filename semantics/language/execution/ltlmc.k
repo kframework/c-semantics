@@ -7,8 +7,8 @@ module C-LTLMC-SYNTAX
      // Ltl atomic propositions.
      syntax ValueProp ::= Int  
                         | ptr(SymLoc, Type) 
-                        | struct(List, AggInfo)
-                        | union(List, AggInfo)
+                        | struct(List, FieldInfo)
+                        | union(List, FieldInfo)
 
      syntax CProp ::= ValueProp | Id 
                     | "-" CProp
@@ -115,7 +115,7 @@ module C-LTLMC
 
      rule ltlRVal(_,
           struct(V:List,
-               aggInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+               fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(
@@ -125,7 +125,7 @@ module C-LTLMC
                     .List))
      rule ltlRVal(_,
           union(V:List,
-               aggInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+               fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:Id)
           => joinBytes(T, 
                fillToBytes-aux(
@@ -184,9 +184,9 @@ module C-LTLMC
      rule joinBytes(t(_, pointerType(T:Type)), 
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))
           => ptr(L, T)
-     rule joinBytes(t(_, structType(_, _, Info:AggInfo)), dataList(V:List))
+     rule joinBytes(t(_, structType(_, _, Info:FieldInfo)), dataList(V:List))
           => struct(V, Info)
-     rule joinBytes(t(_, unionType(_, _, Info:AggInfo)), dataList(V:List))
+     rule joinBytes(t(_, unionType(_, _, Info:FieldInfo)), dataList(V:List))
           => union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)

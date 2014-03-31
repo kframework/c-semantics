@@ -161,10 +161,10 @@ module C-MEMORY-READING
           => checkValidLoc(N) ~> tv(N, T:KResult)
           [structural]
 
-     rule concretize(t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)), dataList(L:List)) 
+     rule concretize(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), dataList(L:List)) 
           => tv(agg(L), t(S, structType(X, NBits, Info))) 
           [structural]
-     rule concretize(t(S:Set, unionType(X:Id, NBits:Int, Info:AggInfo)), dataList(L:List)) 
+     rule concretize(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), dataList(L:List)) 
           => tv(agg(L), t(S, unionType(X, NBits, Info)))
           [structural]
 

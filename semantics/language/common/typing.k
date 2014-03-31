@@ -14,7 +14,7 @@ module C-TYPING-SYNTAX
      
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
-     syntax AggInfo ::= aggInfo(List, Map, Map)
+     syntax FieldInfo ::= fieldInfo(List, Map, Map)
 
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
@@ -62,12 +62,12 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
 
-     syntax SimpleType ::= structType(Id, Int, AggInfo)
+     syntax SimpleType ::= structType(Id, Int, FieldInfo)
           [klabel('structType)]
      syntax SimpleType ::= incompleteStructType(Id)
           [klabel('incompleteStructType)]
 
-     syntax SimpleType ::= unionType(Id, Int, AggInfo)
+     syntax SimpleType ::= unionType(Id, Int, FieldInfo)
           [klabel('unionType)]
      syntax SimpleType ::= incompleteUnionType(Id)
           [klabel('incompleteUnionType)]
@@ -119,7 +119,7 @@ module C-TYPING-SYNTAX
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
-     syntax Type ::= completeAgg(Id, Int, AggInfo, Type) [function]
+     syntax Type ::= completeTag(Id, Int, FieldInfo, Type) [function]
 endmodule
 
 module C-TYPING

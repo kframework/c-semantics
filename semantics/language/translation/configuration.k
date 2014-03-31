@@ -40,7 +40,7 @@ module C-CONFIGURATION
                     <local-statics> .Map </local-statics>
                     // kpair(Id, BlockNum) |-> Type
                     <local-types> .Map </local-types>
-                    // kpair(Id, BlockNum) |-> AggInfo
+                    // kpair(Id, BlockNum) |-> FieldInfo
                     <local-structs> .Map </local-structs>
 
                     <tu-linking-state>
@@ -56,7 +56,7 @@ module C-CONFIGURATION
                     <string-lits color="lightgray"> .Map </string-lits>
 
                     // TODO(chathhorn): move.
-                    <incomplete-aggs> .Set </incomplete-aggs>
+                    <incomplete-tags> .Set </incomplete-tags>
                </tu>
           </translation-units>
      </global>

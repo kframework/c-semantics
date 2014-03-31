@@ -74,7 +74,7 @@ module C-MEMORY-WRITING
                     tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
           ...</k>
           <structs>...
-               S |-> Info:AggInfo
+               S |-> Info:FieldInfo
           ...</structs>
           when isByteLoc(Loc)
           [structural]
@@ -236,11 +236,11 @@ module C-MEMORY-WRITING
           => splitPointerBytes(I, t(S, pointerType(T)), 
                byteSizeofType(t(.Set, pointerType(T))))
      rule [splitBytes-struct]:
-          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)))) 
+          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
                byteSizeofType(t(S, structType(X, NBits, Info))))
      rule [splitBytes-union]:
-          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:AggInfo)))) 
+          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
                byteSizeofType(t(S, unionType(X, NBits, Info))))
      

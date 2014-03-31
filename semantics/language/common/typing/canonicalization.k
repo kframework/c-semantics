@@ -125,7 +125,7 @@ module C-TYPING-CANONICALIZATION
                => t(.Set, structType(X, bitSizeofStruct(Info), Info))
           ...</k>
           <structs>...
-               X |-> Info:AggInfo
+               X |-> Info:FieldInfo
           ...</structs>
           when X =/=K Identifier("")
           [structural]
@@ -135,7 +135,7 @@ module C-TYPING-CANONICALIZATION
           <structs> Structs:Map </structs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
+          <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           when (X =/=K Identifier(""))
                andBool notBool (X in keys Structs)
           [structural]
@@ -147,7 +147,7 @@ module C-TYPING-CANONICALIZATION
                => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
           ...</k>
           <structs>...
-               X |-> Info:AggInfo
+               X |-> Info:FieldInfo
           ...</structs>
           when X =/=K Identifier("")
           [structural]
@@ -157,7 +157,7 @@ module C-TYPING-CANONICALIZATION
           <structs> Structs:Map </structs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <incomplete-aggs>... .Set => SetItem(X) </incomplete-aggs>
+          <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           when (X =/=K Identifier(""))
                andBool notBool (X in keys Structs)
           [structural]

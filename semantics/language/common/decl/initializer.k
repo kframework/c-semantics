@@ -170,7 +170,7 @@ module C-DECL-INITIALIZER
      rule <curr-subobject> 
                (.List => ListItem(te(K . F, T)))
                ListItem(te(K:K, t(_, structType(_, _,
-                    aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
+                    fieldInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _)
                ))))
           ...</curr-subobject>
           [structural] 
@@ -179,7 +179,7 @@ module C-DECL-INITIALIZER
      rule <curr-subobject> 
                (.List => ListItem(te(K . F, T)))
                ListItem(te(K:K, t(_, unionType(_, _,
-                    aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+                    fieldInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
                ))))
           ...</curr-subobject>
           [structural] 
@@ -214,7 +214,7 @@ module C-DECL-INITIALIZER
                (next ListItem(te(K:K . F:Id, T:Type))
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
-                    aggInfo(_ 
+                    fieldInfo(_ 
                          ListItem(typedDeclaration(T, F))
                          ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
                ))))
@@ -227,7 +227,7 @@ module C-DECL-INITIALIZER
                (next ListItem(te(K:K . F:Id, T:Type)) 
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
-                    aggInfo(_ 
+                    fieldInfo(_ 
                          ListItem(typedDeclaration(T, F))
                          ListItem(typedDeclaration(_, #NoName))
                          ListItem(typedDeclaration(T':Type, F':Id)) _, _, _)
@@ -239,7 +239,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .List)
                ListItem(te(K:K, t(_, structType(_, _,
-                    aggInfo(_ ListItem(typedDeclaration(T, F)), _, _)
+                    fieldInfo(_ ListItem(typedDeclaration(T, F)), _, _)
                ))))
           ...</curr-subobject>
           [structural, large] 
@@ -247,7 +247,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                next (ListItem(te(K:K . F:Id, T:Type)) => .List)
                ListItem(te(K:K, t(_, structType(_, _,
-                    aggInfo(_
+                    fieldInfo(_
                          ListItem(typedDeclaration(T, F))
                          ListItem(typedDeclaration(_, #NoName)), _, _)
                ))))
@@ -324,7 +324,7 @@ module C-DECL-INITIALIZER
                     ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:Id,, _))))
           ...</curr-subobject>
           <structs>... 
-               S |-> aggInfo(_, (_ F:Id |-> T:Type), _)
+               S |-> fieldInfo(_, (_ F:Id |-> T:Type), _)
           ...</structs>
           when Lbl ==KLabel 'structType orBool Lbl ==KLabel 'unionType
           [structural] 
@@ -396,7 +396,7 @@ module C-DECL-INITIALIZER
           [structural] 
           
      syntax K ::= initFromStructRHS(K, Type)
-     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)))
+     rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)))
                => initFromStructRHS(K, t(S, structType(X, NBits, Info)))
           ...</k>
           <curr-subobject>

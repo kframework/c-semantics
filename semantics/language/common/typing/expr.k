@@ -167,13 +167,13 @@ module C-TYPING-EXPR
      }*/
      rule [type-struct-dot]:
           <type> 
-               t(_, structType(_, _, aggInfo(_, (_ F |-> T:Type), _))) . F:Id
+               t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
                => T
           ...</type>
           [structural]
      rule [type-union-dot]:
           <type>
-               t(_, unionType(_, _, aggInfo(_, (_ F |-> T:Type), _))) . F:Id
+               t(_, unionType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
                => T
           ...</type>
           [structural]

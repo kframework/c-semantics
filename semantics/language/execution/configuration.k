@@ -29,7 +29,7 @@ module C-CONFIGURATION
                          <local-statics> .Map </local-statics>
                          // kpair(Id, BlockNum) |-> Type
                          <local-types> .Map </local-types>
-                         // kpair(Id, BlockNum) |-> AggInfo
+                         // kpair(Id, BlockNum) |-> FieldInfo
                          <local-structs> .Map </local-structs>
 
                          <next-unnamed color="black"> 0 </next-unnamed>
@@ -38,7 +38,7 @@ module C-CONFIGURATION
                          <string-lits color="lightgray"> .Map </string-lits>
 
                          // TODO(chathhorn): remove.
-                         <incomplete-aggs> .Set </incomplete-aggs>
+                         <incomplete-tags> .Set </incomplete-tags>
                     </tu>
                </translation-units>
           </global>

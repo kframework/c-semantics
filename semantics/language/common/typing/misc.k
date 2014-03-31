@@ -176,25 +176,25 @@ module C-TYPING-MISC
           innerType(t(_, functionType(T:Type, _))) => T
 
      // TODO(chathhorn): should probably generalize this.
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
-          => t(S, bitfieldType(completeAgg(X, NBits, Info, T), Sz))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, functionType(R:Type, Args:List)))
-          => t(S, functionType(completeAgg(X, NBits, Info, R), completeAggInList(X, NBits, Info, Args)))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, pointerType(T:Type)))
-          => t(S, pointerType(completeAgg(X, NBits, Info, T)))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, arrayType(T:Type, Sz:CSize)))
-          => t(S, arrayType(completeAgg(X, NBits, Info, T), Sz))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, incompleteArrayType(T:Type)))
-          => t(S, incompleteArrayType(completeAgg(X, NBits, Info, T)))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, flexibleArrayType(T:Type)))
-          => t(S, flexibleArrayType(completeAgg(X, NBits, Info, T)))
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, incompleteStructType(X)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
+          => t(S, bitfieldType(completeTag(X, NBits, Info, T), Sz))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, functionType(R:Type, Args:List)))
+          => t(S, functionType(completeTag(X, NBits, Info, R), completeTagInList(X, NBits, Info, Args)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, pointerType(T:Type)))
+          => t(S, pointerType(completeTag(X, NBits, Info, T)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, arrayType(T:Type, Sz:CSize)))
+          => t(S, arrayType(completeTag(X, NBits, Info, T), Sz))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, incompleteArrayType(T:Type)))
+          => t(S, incompleteArrayType(completeTag(X, NBits, Info, T)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, flexibleArrayType(T:Type)))
+          => t(S, flexibleArrayType(completeTag(X, NBits, Info, T)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, incompleteStructType(X)))
           => t(S, structType(X, NBits, Info)) 
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, incompleteUnionType(X)))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, incompleteUnionType(X)))
           => t(S, unionType(X, NBits, Info)) 
-     rule completeAgg(X:Id, NBits:Int, Info:AggInfo, t(S:Set, qualifiedType(T:Type, K:K)))
-          => t(S, qualifiedType(completeAgg(X, NBits, Info, T), K))
-     rule completeAgg(_, _, _, t(S:Set, T:SimpleType))
+     rule completeTag(X:Id, NBits:Int, Info:FieldInfo, t(S:Set, qualifiedType(T:Type, K:K)))
+          => t(S, qualifiedType(completeTag(X, NBits, Info, T), K))
+     rule completeTag(_, _, _, t(S:Set, T:SimpleType))
           => t(S, T)
           when (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool (getKLabel(T) =/=KLabel 'functionType )
@@ -206,10 +206,10 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType )
 
-     syntax List ::= completeAggInList(Id, Int, AggInfo, List) [function]
-     rule completeAggInList(X:Id, NBits:Int, Info:AggInfo, ListItem(T:Type) L:List)
-          => ListItem(completeAgg(X, NBits, Info, T)) completeAggInList(X, NBits, Info, L)
-     rule completeAggInList(_, _, _, .List) => .List
+     syntax List ::= completeTagInList(Id, Int, FieldInfo, List) [function]
+     rule completeTagInList(X:Id, NBits:Int, Info:FieldInfo, ListItem(T:Type) L:List)
+          => ListItem(completeTag(X, NBits, Info, T)) completeTagInList(X, NBits, Info, L)
+     rule completeTagInList(_, _, _, .List) => .List
 
 endmodule
 

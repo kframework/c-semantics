@@ -71,13 +71,13 @@ module C-TYPING-INTERPRETATION
           pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
           => t(S, functionType(pushTypeDown(T, Lbl), L))
      rule [pushdown-struct]: 
-          pushTypeDown(t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo)), Lbl:KLabel) 
+          pushTypeDown(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, structType(X, NBits, Info)))
      rule [pushdown-inc-struct]: 
           pushTypeDown(t(S:Set, incompleteStructType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, incompleteStructType(X)))
      rule [pushdown-union]: 
-          pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int, Info:AggInfo)), Lbl:KLabel) 
+          pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, unionType(X, NBits, Info)))
      rule [pushdown-inc-union]: 
           pushTypeDown(t(S:Set, incompleteUnionType(X:Id)), Lbl:KLabel) 
@@ -158,13 +158,13 @@ module C-TYPING-INTERPRETATION
           extractActualType(t(S:Set, enumType(X:Id))) 
           => t(S, enumType(X))
      rule [extract-struct]:
-          extractActualType(t(S:Set, structType(X:Id, NBits:Int, Info:AggInfo))) 
+          extractActualType(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo))) 
           => t(S, structType(X, NBits, Info))
      rule [extract-inc-struct]:
           extractActualType(t(S:Set, incompleteStructType(X:Id))) 
           => t(S, incompleteStructType(X))
      rule [extract-union]:
-          extractActualType(t(S:Set, unionType(X:Id, NBits:Int, Info:AggInfo))) 
+          extractActualType(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo))) 
           => t(S, unionType(X, NBits, Info))
      rule [extract-inc-union]:
           extractActualType(t(S:Set, incompleteUnionType(X:Id))) 

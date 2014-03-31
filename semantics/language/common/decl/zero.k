@@ -42,13 +42,13 @@ module C-DECL-ZERO
      // to zero bits;
      
      rule zeroType(N:K, t(_, structType(_, _, 
-               aggInfo(Fields:List, _, _)
+               fieldInfo(Fields:List, _, _)
           )))
           => zeroStruct(N, Fields)
           [structural] 
           
      rule zeroType(N:K, t(_, unionType(_, _,
-               aggInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+               fieldInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           )))
           => zeroType(N . F, T)
           [structural] 

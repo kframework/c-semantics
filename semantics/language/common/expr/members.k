@@ -19,12 +19,12 @@ module C-COMMON-EXPR-MEMBERS
      }*/
      // fixme tool bug, can't use L:KLabel
      rule lval(Loc:SymLoc, t(_, structType(_, _, 
-               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
+               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
           ))) . F:Id
           => lv(Loc +bits Offset, T)
           [structural]
      rule lval(Loc:SymLoc, t(_, unionType(S:Id, _,
-               aggInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
+               fieldInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
           ))) . F:Id
           => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
           [structural]
@@ -34,14 +34,14 @@ module C-COMMON-EXPR-MEMBERS
      
      rule [extractField-struct-start]:
           extractField(L:List, t(_, structType(_, _,
-               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
           )), F:Id)
           => concretize(T,
                fillToBytes(extractBitsFromList(dataList(L), Offset,
                     bitSizeofType(T))))
      rule [extractField-union-start]:
           extractField(L:List, t(_, unionType(_, _,
-               aggInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
+               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
           )), F:Id)
           => concretize(T,
                fillToBytes(extractBitsFromList(dataList(L), Offset,

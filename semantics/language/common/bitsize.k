@@ -2,8 +2,8 @@ module C-BITSIZE-SYNTAX
      syntax Int ::= bitSizeofType(Type) [function]
      syntax Int ::= byteSizeofType(Type) [function]
 
-     syntax Int ::= bitSizeofStruct(AggInfo) [function]
-     syntax Int ::= bitSizeofUnion(AggInfo) [function]
+     syntax Int ::= bitSizeofStruct(FieldInfo) [function]
+     syntax Int ::= bitSizeofUnion(FieldInfo) [function]
 
      // generates a tv(size, cfg:sizeut)
      syntax K ::= sizeofType(K) [strict]
@@ -70,9 +70,9 @@ module C-BITSIZE
      rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
           => NBits
 
-     rule bitSizeofStruct(aggInfo(L:List, _, _))
+     rule bitSizeofStruct(fieldInfo(L:List, _, _))
           => bitSizeofList(L)
-     rule bitSizeofUnion(aggInfo(L:List, _, _))
+     rule bitSizeofUnion(fieldInfo(L:List, _, _))
           => maxBitSizeofList(L)
 
 endmodule

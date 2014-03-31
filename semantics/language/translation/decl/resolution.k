@@ -25,7 +25,7 @@ module C-DECL-RESOLUTION
                <externals> .Map </externals>
           ...</tu-linking-state> => .Bag)
           // TODO(chathhorn): move
-          <incomplete-aggs> .Set </incomplete-aggs>
+          <incomplete-tags> .Set </incomplete-tags>
           [structural]
      rule <k> (.K => doDeclare'(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives

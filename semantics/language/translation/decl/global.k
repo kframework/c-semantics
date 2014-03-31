@@ -435,37 +435,37 @@ module C-DECL-GLOBAL
 
      // *** TODO(chathhorn) struct/union stuff *** 
 
-     rule <k> addGlobalAggregate(X:Id, NBits:Int, Agg:AggInfo)
-               => completeAggInExtDecls(X, NBits, Agg, keys Exts)
-               ~> completeAggInIntDecls(X, NBits, Agg, keys Ints)
-               ~> completeAggInTypes(X, NBits, Agg, keys GTypes)
-               ~> completeAggInAggs(X, NBits, Agg, keys Structs)
+     rule <k> addGlobalTag(X:Id, NBits:Int, Info:FieldInfo)
+               => completeTagInExtDecls(X, NBits, Info, keys Exts)
+               ~> completeTagInIntDecls(X, NBits, Info, keys Ints)
+               ~> completeTagInTypes(X, NBits, Info, keys GTypes)
+               ~> completeTagInTags(X, NBits, Info, keys Structs)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes> GTypes:Map </gtypes>
-          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
-          <gstructs> GStructs:Map => GStructs:Map[Agg / X] </gstructs>
+          <structs> Structs:Map => Structs:Map[Info / X] </structs>
+          <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
-          <incomplete-aggs>... SetItem(X) => .Set ...</incomplete-aggs>
+          <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
           [structural]
 
-     rule <k> addGlobalAggregate(X:Id, _, Agg:AggInfo) => . ...</k>
+     rule <k> addGlobalTag(X:Id, _, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
-          <gstructs> GStructs:Map => GStructs:Map[Agg / X] </gstructs>
-          <incomplete-aggs> Incs:Set </incomplete-aggs>
+          <structs> Structs:Map => Structs:Map[Info / X] </structs>
+          <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
+          <incomplete-tags> Incs:Set </incomplete-tags>
           when notBool (X in Incs)
           [structural]
 
      // TODO(chathhorn): I just don't know.
      // Re-evaluate declarations that can now be allocated...
-     syntax K ::= completeAggInExtDecls(Id, Int, AggInfo, Set)
+     syntax K ::= completeTagInExtDecls(Id, Int, FieldInfo, Set)
      rule <k> (.K => doDeclare(
-                    typedDeclaration(completeAgg(Tag, NBits, Info, T), X), NoInit))
-               ~> completeAggInExtDecls(Tag:Id, NBits:Int, Info:AggInfo,
+                    typedDeclaration(completeTag(Tag, NBits, Info, T), X), NoInit))
+               ~> completeTagInExtDecls(Tag:Id, NBits:Int, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -473,24 +473,24 @@ module C-DECL-GLOBAL
           <externals>...
                X |-> declState(_, T:Type, declared, _)
           ...</externals>
-          when notBool isIncompleteType(completeAgg(Tag, NBits, Info, T))
-     rule <k> completeAggInExtDecls(Tag:Id, NBits:Int, Info:AggInfo, (SetItem(X:Id) => .Set) _)
+          when notBool isIncompleteType(completeTag(Tag, NBits, Info, T))
+     rule <k> completeTagInExtDecls(Tag:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>     
-          when isIncompleteType(completeAgg(Tag, NBits, Info, T))
+          when isIncompleteType(completeTag(Tag, NBits, Info, T))
                orBool DS =/=K declared
-     rule completeAggInExtDecls(_, _, _, .Set) => .K
+     rule completeTagInExtDecls(_, _, _, .Set) => .K
 
-     syntax K ::= completeAggInIntDecls(Id, Int, AggInfo, Set)
+     syntax K ::= completeTagInIntDecls(Id, Int, FieldInfo, Set)
      rule <k> (.K => doDeclare(
                     typedDeclaration(t(.Set,
-                         qualifiedType(completeAgg(Tag, NBits, Info, T), Static)), X),
+                         qualifiedType(completeTag(Tag, NBits, Info, T), Static)), X),
                          NoInit))
-               ~> completeAggInIntDecls(Tag:Id, NBits:Int, Info:AggInfo,
+               ~> completeTagInIntDecls(Tag:Id, NBits:Int, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -498,51 +498,51 @@ module C-DECL-GLOBAL
           <internals>...
                X |-> declState(_, T:Type, declared, _)
           ...</internals>     
-          when notBool isIncompleteType(completeAgg(Tag, NBits, Info, T))
-     rule <k> completeAggInIntDecls(Tag:Id, NBits:Int, Info:AggInfo, (SetItem(X:Id) => .Set) _)
+          when notBool isIncompleteType(completeTag(Tag, NBits, Info, T))
+     rule <k> completeTagInIntDecls(Tag:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>     
-          when isIncompleteType(completeAgg(Tag, NBits, Info, T))
+          when isIncompleteType(completeTag(Tag, NBits, Info, T))
                orBool DS =/=K declared
-     rule completeAggInIntDecls(_, _, _, .Set) => .K
+     rule completeTagInIntDecls(_, _, _, .Set) => .K
 
-     syntax K ::= completeAggInTypes(Id, Int, AggInfo, Set)
-     rule <k> completeAggInTypes(S:Id, NBits:Int, Info:AggInfo, (SetItem(X:Id) => .Set)  _)
+     syntax K ::= completeTagInTypes(Id, Int, FieldInfo, Set)
+     rule <k> completeTagInTypes(S:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set)  _)
           ...</k>
           <gtypes>...
-               X |-> (T:Type => completeAgg(S, NBits, Info, T))
+               X |-> (T:Type => completeTag(S, NBits, Info, T))
           ...</gtypes>
           [structural]
-     rule completeAggInTypes(_, _, _, .Set) => .K
+     rule completeTagInTypes(_, _, _, .Set) => .K
           [structural]
 
-     syntax K ::= completeAggInAggs(Id, Int, AggInfo, Set)
-     rule <k> (.K => completeAggInAgg(S, NBits, Info, S2, keys(Fields)))
-               ~> completeAggInAggs(S:Id, NBits:Int, Info:AggInfo, (SetItem(S2:Id) => .Set)  _)
+     syntax K ::= completeTagInTags(Id, Int, FieldInfo, Set)
+     rule <k> (.K => completeTagInTag(S, NBits, Info, S2, keys(Fields)))
+               ~> completeTagInTags(S:Id, NBits:Int, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs>...
-               S2 |-> aggInfo(_, Fields:Map, _)
+               S2 |-> fieldInfo(_, Fields:Map, _)
           ...</gstructs>
           [structural]
-     rule completeAggInAggs(_, _, _, .Set) => .K
+     rule completeTagInTags(_, _, _, .Set) => .K
           [structural]
 
-     syntax K ::= completeAggInAgg(Id, Int, AggInfo, Id, Set)
-     rule <k> completeAggInAgg(S:Id, NBits:Int, Info:AggInfo, S2:Id, (SetItem(F:Id) => .Set)  _)
+     syntax K ::= completeTagInTag(Id, Int, FieldInfo, Id, Set)
+     rule <k> completeTagInTag(S:Id, NBits:Int, Info:FieldInfo, S2:Id, (SetItem(F:Id) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs>...
-               S2 |-> aggInfo(_, _ F |-> (T:Type => completeAgg(S, NBits, Info, T)), _)
+               S2 |-> fieldInfo(_, _ F |-> (T:Type => completeTag(S, NBits, Info, T)), _)
           ...</gstructs>
           [structural]
-     rule completeAggInAgg(_, _, _, _, .Set) => .K
+     rule completeTagInTag(_, _, _, _, .Set) => .K
           [structural]
 
 endmodule

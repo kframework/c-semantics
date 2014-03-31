@@ -1,6 +1,6 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
-     syntax K ::= addGlobalAggregate(Id, Int, AggInfo)
+     syntax K ::= addGlobalTag(Id, Int, FieldInfo)
 endmodule
 
 module C-DECL-TAGGED
@@ -19,18 +19,18 @@ module C-DECL-TAGGED
      // *** TODO *** Struct/UnionDef *** TODO ***
           
      // First map is for type, second map is for offset.
-     syntax AggInfo ::= makeStructAggInfo(List) [function]
-     syntax AggInfo ::= makeUnionAggInfo(List) [function]
+     syntax FieldInfo ::= makeStructFieldInfo(List) [function]
+     syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
      rule StructDef(X:Id, krlist(L:List))
           => structDef'(X,
-               makeStructAggInfo(fillBitHoles(incompleteToFlexibleArrayMember(L))))
+               makeStructFieldInfo(fillBitHoles(incompleteToFlexibleArrayMember(L))))
           when L =/=List .List
           [structural]
      rule UnionDef(X:Id, krlist(L:List))
-          => unionDef'(X, makeUnionAggInfo(fillUnionBitHoles(L)))
+          => unionDef'(X, makeUnionFieldInfo(fillUnionBitHoles(L)))
           when L =/=List .List
           [structural]
 
@@ -136,71 +136,71 @@ module C-DECL-TAGGED
           [structural, anywhere]
      
      
-     syntax K ::= "structDef'" "(" Id "," AggInfo ")"
-                | "unionDef'" "(" Id "," AggInfo ")"
+     syntax K ::= "structDef'" "(" Id "," FieldInfo ")"
+                | "unionDef'" "(" Id "," FieldInfo ")"
 
-     rule structDef'(X:Id, Info:AggInfo)
-          => addAgg(X, bitSizeofStruct(Info), Info)
+     rule structDef'(X:Id, Info:FieldInfo)
+          => addTag(X, bitSizeofStruct(Info), Info)
           ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info), Info)))
           [structural]
 
-     rule unionDef'(X:Id, Info:AggInfo)
-          => addAgg(X, bitSizeofUnion(Info), Info)
+     rule unionDef'(X:Id, Info:FieldInfo)
+          => addTag(X, bitSizeofUnion(Info), Info)
           ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info), Info)))
           [structural]
 
-     syntax K ::= addLocalAggregate(Id, AggInfo)
+     syntax K ::= addLocalTag(Id, FieldInfo)
 
-     syntax AggInfo ::= "makeStructAggInfo'" "(" List "," Int "," Map ","  Map "," List ")"
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
-     rule makeStructAggInfo(L:List) 
-          => makeStructAggInfo'(L:List, 0, .Map, .Map, L:List)
+     rule makeStructFieldInfo(L:List) 
+          => makeStructFieldInfo'(L:List, 0, .Map, .Map, L:List)
           when L:List =/=List .List
-     rule makeStructAggInfo'(
+     rule makeStructFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:Id)) L:List
                , V:Int
                , Types:Map
                , Offsets:Map
                , L':List
           )
-          => makeStructAggInfo'(L, V +Int bitSizeofType(T),
+          => makeStructFieldInfo'(L, V +Int bitSizeofType(T),
                Types:Map[T / Field], Offsets:Map[V / Field], L')
-     rule makeStructAggInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
-          => aggInfo(L, Types, Offsets)
+     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
+          => fieldInfo(L, Types, Offsets)
 
-     syntax AggInfo ::= "makeUnionAggInfo'" "(" List "," Map ","  Map "," List ")"
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
      
-     rule makeUnionAggInfo(L:List) 
-          => makeUnionAggInfo'(L, .Map, .Map, L)
+     rule makeUnionFieldInfo(L:List) 
+          => makeUnionFieldInfo'(L, .Map, .Map, L)
           when L =/=List .List
-     rule makeUnionAggInfo'(
+     rule makeUnionFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:Id)) L:List
                , Types:Map
                , Offsets:Map
                , L':List
           ) 
-          => makeUnionAggInfo'(L,
+          => makeUnionFieldInfo'(L,
                Types:Map[T / Field], Offsets:Map[0 / Field],
                L')
-     rule makeUnionAggInfo'(.List, Types:Map, Offsets:Map, L:List) 
-          => aggInfo(L, Types, Offsets)
+     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
+          => fieldInfo(L, Types, Offsets)
 
-     syntax K ::= addAgg(Id, Int, AggInfo)
-     rule <k> addAgg(S:Id, NBits:Int, Info:AggInfo)
-               => addGlobalAggregate(S, NBits, Info)
+     syntax K ::= addTag(Id, Int, FieldInfo)
+     rule <k> addTag(S:Id, NBits:Int, Info:FieldInfo)
+               => addGlobalTag(S, NBits, Info)
           ...</k>
           <curr-function> file-scope </curr-function>
           [structural]        
-     rule <k> addAgg(S:Id, _, Info:AggInfo)
-               => addLocalAggregate(S, Info)
+     rule <k> addTag(S:Id, _, Info:FieldInfo)
+               => addLocalTag(S, Info)
           ...</k>
           <curr-function> F:Id </curr-function>
           when F =/=K file-scope
           [structural]        
 
-     rule <k> addLocalAggregate(X:Id, Agg:AggInfo) => . ...</k>
-          <structs> Structs:Map => Structs:Map[Agg / X] </structs>
+     rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
+          <structs> Structs:Map => Structs:Map[Info / X] </structs>
           [structural]
 
 endmodule

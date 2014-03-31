@@ -15,7 +15,7 @@ module LIBC-STDDEF
 
      // fixme should check for bitfield offset
      rule offsetOf(t(_, structType(_, _, 
-               aggInfo(_, _, (_ F:Id |-> Offset:Int))
+               fieldInfo(_, _, (_ F:Id |-> Offset:Int))
           )), F:Id)
           => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           [structural]
