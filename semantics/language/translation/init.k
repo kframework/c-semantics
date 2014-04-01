@@ -22,13 +22,15 @@ module C-TRANSLATION-INIT
      rule outputMode(link, Debug:Bool) 
           => TranslationUnit("builtin", list(.List), addBuiltins(builtins))
           ~> resolveReferences
+          ~> printSuccess
           ~> #if (Debug)
              #then (.K)
              #else (cleanup)
              #fi
 
      rule outputMode(nolink, Debug:Bool)
-          => #if (Debug)
+          => printSuccess
+          ~> #if (Debug)
              #then (.K)
              #else (cleanup)
              #fi
@@ -157,5 +159,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
+     syntax K ::= "printSuccess"
+     rule printSuccess => #write(#stdout, "Translation successful!\n")
 
 endmodule

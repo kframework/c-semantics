@@ -147,7 +147,13 @@ sub main {
             TEMPLATE => 'tmp-kcc-conf-pretty-XXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0 );
-      push(@tempFiles, $confOutPrettyTmp);
+      push(@tempFiles, $confOutPrettyTmp) if (!$args->{'-d'});
+
+      my $linkStdout = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-link-stdout-XXXX', 
+            SUFFIX => '.txt', 
+            UNLINK => 0 );
+      push(@tempFiles, $linkStdout);
 
       # At this point, we have 0-1 source files and 0-2 object files left for
       # the final call(s) to kcc. Setting up the arguments is kinda difficult
@@ -198,16 +204,14 @@ sub main {
       push (@krun_args, @file_args);
       push (@krun_args_pretty, @file_args);
 
-      my $cmd = "$KRUN " . (join ' ', (@krun_args));
+      my $cmd = "$KRUN " . (join ' ', (@krun_args)) . " > $linkStdout 2>&1";
       my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
-
-      print $cmd_pretty . "\n" if ($args->{'-d'});
-      system($cmd_pretty) if ($args->{'-d'});
-
-      # TODO(chathhorn): check result (or rather output to stderr).
 
       print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
+
+      print $cmd_pretty . "\n" if ($args->{'-d'});
+      system($cmd_pretty) if ($args->{'-d'});
 
       open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
       my $programRunner = join("", <FILE>);
@@ -217,6 +221,17 @@ sub main {
       binmode(FILE, ':raw');
       my $programConf = encode_base64(join("", <FILE>));
       close(FILE);
+
+      if (!checkTransSuccess($linkStdout)) {
+            print "Error during linking.\n";
+            if ($args->{'-d'}) {
+                  print "Final configuration saved to $confOutPrettyTmp.\n";
+            } else {
+                  print "Command line: $cmd\n";
+                  print "Use \"kcc -d\" to get the final configuration.\n";
+            }
+            die();
+      }
 
       $programRunner = performSpecializations($programRunner);
 
@@ -235,6 +250,27 @@ sub main {
             or die "Call to chmod $oval failed";
 
       return 0;
+}
+
+sub checkTransSuccess {
+      my ($file) = (@_);
+
+      open(OUT, "<$file");
+
+      my $success = 0;
+      my $output = "";
+
+      { 
+            local $/ = undef;
+            $output = <OUT>;
+      }
+
+      if ($output =~ /Translation successful!/) {
+            return 1;
+      } else {
+            print $output;
+            return 0;
+      }
 }
 
 sub performSpecializations {
@@ -257,6 +293,12 @@ sub mergeObjs {
             SUFFIX => '.o', 
             UNLINK => 0 );
       push(@tempFiles, $accum);
+
+      my $mergeStdout = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-merge-stdout-XXXX', 
+            SUFFIX => '.o', 
+            UNLINK => 0 );
+      push(@tempFiles, $mergeStdout);
 
       my $objFile = shift @objFiles;
 
@@ -282,10 +324,16 @@ sub mergeObjs {
                   '--io="on"'
                   );
 
-            my $cmd = "$KRUN " . (join ' ', (@krun_args));
+            my $cmd = "$KRUN " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
 
             print $cmd . "\n" if ($args->{'-d'});
             system($cmd);
+
+            if (!checkTransSuccess($mergeStdout)) {
+                  print "Error merging objects: $obj1, $obj2\n";
+                  print "Command line: $cmd\n";
+                  die();
+            }
 
             unshift(@objFiles, $obj1);
       }
@@ -318,10 +366,17 @@ sub compile {
 
       # Assume it's a normal input file, so compile it.
       my $localOval = "$baseName.o";
+      my $localOvalPretty = "$baseName.pretty.o";
       my $ppResult = preprocess($args->{'-w'}, $inputFile);
 
       (-e $ppResult)
             or die "Parsing failed: expected to find $baseName.c11-translation, but did not";
+
+      my $compileStdout = File::Temp->new( 
+            TEMPLATE => 'tmp-kcc-compile-stdout-XXXX', 
+            SUFFIX => '.o', 
+            UNLINK => 0 );
+      push(@tempFiles, $compileStdout);
 
       my @krun_args = (
             '--output="binary"', 
@@ -336,16 +391,46 @@ sub compile {
             $ppResult
             );
 
-      my $cmd = "$KRUN " . (join ' ', (@krun_args));
+      my @krun_args_pretty = (
+            '--output="pretty"', 
+            "--output-file=\"$localOvalPretty\"",
+            '-cMODE=nolink', 
+            "-cDEBUG=false",
+            '-cOBJ1=".Bag"',
+            '-cOBJ2=".Bag"',
+            '--parser="cat"', 
+            "-d $TRANS_DEF",
+            '--io="on"', 
+            $ppResult
+            );
+
+      my $cmd = "$KRUN " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
+      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
 
       print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
+
+      print $cmd_pretty . "\n" if ($args->{'-d'});
+      system($cmd_pretty) if ($args->{'-d'});
 
       push(@objFiles, $localOval);
 	if (!$args->{'-c'}) {
             push(@tempFiles, $localOval);
 	}
+      if (!$args->{'-d'}) {
+            push(@tempFiles, $localOvalPretty);
+      }
 
+      if (!checkTransSuccess($compileStdout)) {
+            print "Error compiling: $localOval\n";
+            if ($args->{'-d'}) {
+                  print "Final configuration saved to $localOvalPretty.\n";
+            } else {
+                  print "Command line: $cmd\n";
+                  print "Use \"kcc -d\" to get the final configuration.\n";
+            }
+            die();
+      }
 }
 
 sub preprocess {
@@ -460,10 +545,8 @@ sub interruptHandler {
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-      if (! $args->{'-d'}) {
-            for (@tempFiles) {
-                  unlink;
-            }
+      for (@tempFiles) {
+            unlink;
       }
 }
  
