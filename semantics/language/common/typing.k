@@ -37,7 +37,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isExternType(Type) [function]
      syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
-     syntax Bool ::= isIncompleteType(Type) [function]
+     syntax Bool ::= isCompleteType(Type) [function]
      syntax Bool ::= isArithmeticType(Type) [function]
      syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
@@ -119,7 +119,10 @@ module C-TYPING-SYNTAX
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
-     syntax Type ::= completeTag(Id, Int, FieldInfo, Type) [function]
+     syntax Type ::= completeTag(Id, FieldInfo, Type) [function]
+                   | completeTags(Map, Type) [function]
+     syntax K ::= completeTags(Type)
+
 endmodule
 
 module C-TYPING

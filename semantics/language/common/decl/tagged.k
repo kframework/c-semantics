@@ -1,6 +1,6 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
-     syntax K ::= addGlobalTag(Id, Int, FieldInfo)
+     syntax K ::= addGlobalTag(Id, FieldInfo)
 endmodule
 
 module C-DECL-TAGGED
@@ -41,7 +41,7 @@ module C-DECL-TAGGED
           ListItem(typedDeclaration(T:Type, X:Id)) 
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
-          when notBool isIncompleteType(T)
+          when isCompleteType(T)
           [structural]
      rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(S:Set, incompleteArrayType(T:Type)), X:Id)))
@@ -140,12 +140,12 @@ module C-DECL-TAGGED
                 | "unionDef'" "(" Id "," FieldInfo ")"
 
      rule structDef'(X:Id, Info:FieldInfo)
-          => addTag(X, bitSizeofStruct(Info), Info)
+          => addTag(X, Info)
           ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info), Info)))
           [structural]
 
      rule unionDef'(X:Id, Info:FieldInfo)
-          => addTag(X, bitSizeofUnion(Info), Info)
+          => addTag(X, Info)
           ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info), Info)))
           [structural]
 
@@ -186,13 +186,13 @@ module C-DECL-TAGGED
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
 
-     syntax K ::= addTag(Id, Int, FieldInfo)
-     rule <k> addTag(S:Id, NBits:Int, Info:FieldInfo)
-               => addGlobalTag(S, NBits, Info)
+     syntax K ::= addTag(Id, FieldInfo)
+     rule <k> addTag(S:Id, Info:FieldInfo)
+               => addGlobalTag(S, Info)
           ...</k>
           <curr-function> file-scope </curr-function>
           [structural]        
-     rule <k> addTag(S:Id, _, Info:FieldInfo)
+     rule <k> addTag(S:Id, Info:FieldInfo)
                => addLocalTag(S, Info)
           ...</k>
           <curr-function> F:Id </curr-function>

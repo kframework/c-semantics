@@ -228,12 +228,12 @@ module C-DECL-GLOBAL
      // If this declaration has an incomplete type, then we're done.
      rule declareExternalVariable'(initValue(_, T:Type, .K), _, _, _, true)
           => .
-          when isIncompleteType(T)
+          when notBool isCompleteType(T)
           [structural]
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K),
                _, _, Lnk:Linkage, false)
           => recordTentDef(X, Lnk)
-          when isIncompleteType(T)
+          when notBool isCompleteType(T)
           [structural]
 
      // *** Extern, already completed.  ***
@@ -257,7 +257,7 @@ module C-DECL-GLOBAL
           ~> allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
           ~> recordTentDef(X, Lnk)
-          when notBool isIncompleteType(T)
+          when isCompleteType(T)
           [structural]
 
      // declared => completed
@@ -265,7 +265,7 @@ module C-DECL-GLOBAL
                _, declared, Lnk:Linkage, true)
           => giveType(X, T)
           ~> updateDecl(X, completed, Lnk)
-          when notBool isIncompleteType(T)
+          when isCompleteType(T)
           [structural]
 
      // Already encountered a completed decl, no init.
@@ -275,14 +275,14 @@ module C-DECL-GLOBAL
           => allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
           ~> recordTentDef(X, Lnk)
-          when notBool isIncompleteType(T)
+          when isCompleteType(T)
           [structural]
 
      // Already encountered a allocated or initialized decl, no init.
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
                _, State:DeclState, Lnk:Linkage, false)
           => recordTentDef(X, Lnk) // Don't really need this.
-          when notBool isIncompleteType(T)
+          when isCompleteType(T)
                andBool (State ==K allocated orBool State ==K initialized)
           [structural]
 
@@ -360,7 +360,7 @@ module C-DECL-GLOBAL
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> T:Type ...</external-types>
           when isLinkerLoc(Loc')
-               andBool isIncompleteType(T')
+               andBool (notBool isCompleteType(T'))
                andBool isTypeCompatible(T, T')
           [structural]
      // Complete type, no def.
@@ -369,7 +369,7 @@ module C-DECL-GLOBAL
           <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> (T:Type => T') ...</external-types>
           when isLinkerLoc(Loc')
-               andBool notBool isIncompleteType(T')
+               andBool isCompleteType(T')
                andBool isTypeCompatible(T, T')
           [structural]
      // New def.
@@ -435,11 +435,11 @@ module C-DECL-GLOBAL
 
      // *** TODO(chathhorn) struct/union stuff *** 
 
-     rule <k> addGlobalTag(X:Id, NBits:Int, Info:FieldInfo)
-               => completeTagInExtDecls(X, NBits, Info, keys Exts)
-               ~> completeTagInIntDecls(X, NBits, Info, keys Ints)
-               ~> completeTagInTypes(X, NBits, Info, keys GTypes)
-               ~> completeTagInTags(X, NBits, Info, keys Structs)
+     rule <k> addGlobalTag(X:Id, Info:FieldInfo)
+               => completeTagInExtDecls(X, Info, keys Exts)
+               ~> completeTagInIntDecls(X, Info, keys Ints)
+               ~> completeTagInTypes(X, Info, keys GTypes)
+               ~> completeTagInTags(X, Info, keys Structs)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -451,7 +451,7 @@ module C-DECL-GLOBAL
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
           [structural]
 
-     rule <k> addGlobalTag(X:Id, _, Info:FieldInfo) => . ...</k>
+     rule <k> addGlobalTag(X:Id, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <structs> Structs:Map => Structs:Map[Info / X] </structs>
@@ -462,10 +462,10 @@ module C-DECL-GLOBAL
 
      // TODO(chathhorn): I just don't know.
      // Re-evaluate declarations that can now be allocated...
-     syntax K ::= completeTagInExtDecls(Id, Int, FieldInfo, Set)
+     syntax K ::= completeTagInExtDecls(Id, FieldInfo, Set)
      rule <k> (.K => doDeclare(
-                    typedDeclaration(completeTag(Tag, NBits, Info, T), X), NoInit))
-               ~> completeTagInExtDecls(Tag:Id, NBits:Int, Info:FieldInfo,
+                    typedDeclaration(completeTag(Tag, Info, T), X), NoInit))
+               ~> completeTagInExtDecls(Tag:Id, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -473,24 +473,26 @@ module C-DECL-GLOBAL
           <externals>...
                X |-> declState(_, T:Type, declared, _)
           ...</externals>
-          when notBool isIncompleteType(completeTag(Tag, NBits, Info, T))
-     rule <k> completeTagInExtDecls(Tag:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
+          when notBool isFunctionType(T)
+               andBool isCompleteType(completeTag(Tag, Info, T))
+     rule <k> completeTagInExtDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>     
-          when isIncompleteType(completeTag(Tag, NBits, Info, T))
+          when isFunctionType(T)
+               orBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
-     rule completeTagInExtDecls(_, _, _, .Set) => .K
+     rule completeTagInExtDecls(_, _, .Set) => .K
 
-     syntax K ::= completeTagInIntDecls(Id, Int, FieldInfo, Set)
+     syntax K ::= completeTagInIntDecls(Id, FieldInfo, Set)
      rule <k> (.K => doDeclare(
                     typedDeclaration(t(.Set,
-                         qualifiedType(completeTag(Tag, NBits, Info, T), Static)), X),
+                         qualifiedType(completeTag(Tag, Info, T), Static)), X),
                          NoInit))
-               ~> completeTagInIntDecls(Tag:Id, NBits:Int, Info:FieldInfo,
+               ~> completeTagInIntDecls(Tag:Id, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -498,31 +500,33 @@ module C-DECL-GLOBAL
           <internals>...
                X |-> declState(_, T:Type, declared, _)
           ...</internals>     
-          when notBool isIncompleteType(completeTag(Tag, NBits, Info, T))
-     rule <k> completeTagInIntDecls(Tag:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
+          when notBool isFunctionType(T)
+               andBool isCompleteType(completeTag(Tag, Info, T))
+     rule <k> completeTagInIntDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>     
-          when isIncompleteType(completeTag(Tag, NBits, Info, T))
+          when isFunctionType(T)
+               orBool (notBool isCompleteType(completeTag(Tag, Info, T)))
                orBool DS =/=K declared
-     rule completeTagInIntDecls(_, _, _, .Set) => .K
+     rule completeTagInIntDecls(_, _, .Set) => .K
 
-     syntax K ::= completeTagInTypes(Id, Int, FieldInfo, Set)
-     rule <k> completeTagInTypes(S:Id, NBits:Int, Info:FieldInfo, (SetItem(X:Id) => .Set)  _)
+     syntax K ::= completeTagInTypes(Id, FieldInfo, Set)
+     rule <k> completeTagInTypes(S:Id, Info:FieldInfo, (SetItem(X:Id) => .Set)  _)
           ...</k>
           <gtypes>...
-               X |-> (T:Type => completeTag(S, NBits, Info, T))
+               X |-> (T:Type => completeTag(S, Info, T))
           ...</gtypes>
           [structural]
-     rule completeTagInTypes(_, _, _, .Set) => .K
+     rule completeTagInTypes(_, _, .Set) => .K
           [structural]
 
-     syntax K ::= completeTagInTags(Id, Int, FieldInfo, Set)
-     rule <k> (.K => completeTagInTag(S, NBits, Info, S2, keys(Fields)))
-               ~> completeTagInTags(S:Id, NBits:Int, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
+     syntax K ::= completeTagInTags(Id, FieldInfo, Set)
+     rule <k> (.K => completeTagInTag(S, Info, S2, keys(Fields)))
+               ~> completeTagInTags(S:Id, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -530,19 +534,19 @@ module C-DECL-GLOBAL
                S2 |-> fieldInfo(_, Fields:Map, _)
           ...</gstructs>
           [structural]
-     rule completeTagInTags(_, _, _, .Set) => .K
+     rule completeTagInTags(_, _, .Set) => .K
           [structural]
 
-     syntax K ::= completeTagInTag(Id, Int, FieldInfo, Id, Set)
-     rule <k> completeTagInTag(S:Id, NBits:Int, Info:FieldInfo, S2:Id, (SetItem(F:Id) => .Set)  _)
+     syntax K ::= completeTagInTag(Id, FieldInfo, Id, Set)
+     rule <k> completeTagInTag(S:Id, Info:FieldInfo, S2:Id, (SetItem(F:Id) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs>...
-               S2 |-> fieldInfo(_, _ F |-> (T:Type => completeTag(S, NBits, Info, T)), _)
+               S2 |-> fieldInfo(_, _ F |-> (T:Type => completeTag(S, Info, T)), _)
           ...</gstructs>
           [structural]
-     rule completeTagInTag(_, _, _, _, .Set) => .K
+     rule completeTagInTag(_, _, _, .Set) => .K
           [structural]
 
 endmodule

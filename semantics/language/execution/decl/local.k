@@ -82,7 +82,7 @@ module C-DECL-LOCAL
           <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
           <local-vars> Vars:List (. => ListItem(X)) </local-vars>
           <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
-          when (notBool isIncompleteType(T))
+          when isCompleteType(T)
                andBool (notBool isStaticType(T))
                andBool (notBool isExternType(T))
                // this should be here statically, but not dynamically
@@ -95,7 +95,7 @@ module C-DECL-LOCAL
                => .K
           ...</k>
           <local-vars>... ListItem(X) ...</local-vars>
-          when (notBool isIncompleteType(T))
+          when isCompleteType(T)
                andBool (notBool isStaticType(T))
                andBool (notBool isExternType(T))
           [structural] 

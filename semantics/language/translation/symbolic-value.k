@@ -27,7 +27,8 @@ module C-SYMBOLIC-VALUE
           [structural]
 
      rule bitSizeofType(T:Type) => symVal
-          when isIncompleteType(T)
+          when notBool isCompleteType(T)
+     rule bitSizeofType(t(_, arrayType(T:Type, symVal))) => symVal
 
      //rule symVal => tv(symVal, t(.Set, no-type))
 endmodule

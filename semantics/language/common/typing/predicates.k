@@ -274,10 +274,12 @@ module C-TYPING-PREDICATES
                andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
+
+     rule isVoidType(T:Type) => #isVoidType'(T) ==K true
           
-     rule isVoidType(t(_, void)) => true
-     rule isVoidType(t(_, K:K)) => false
-          when K =/=K void
+     syntax Bool ::= "#isVoidType'" "(" Type ")" [function]
+     rule #isVoidType'(t(_, void)) => true
+     rule #isVoidType'(typedDeclaration(T:Type, _)) => #isVoidType'(T)
 
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T) 
@@ -306,28 +308,47 @@ module C-TYPING-PREDICATES
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType )
 
-     rule [isIncompleteType-array]:
-          isIncompleteType(t(_, incompleteArrayType(_)))
+     rule isCompleteType(T:Type)
+          => notBool (isIncompleteArrayType(T)
+               orBool isIncompleteStructType(T)
+               orBool isIncompleteUnionType(T)
+               orBool isVoidType(T))
+
+     syntax Bool ::= isIncompleteArrayType(Type)  [function]
+                   | isIncompleteStructType(Type) [function]
+                   | isIncompleteUnionType(Type)  [function]
+
+     syntax Bool ::= "#isIncompleteArrayType'" "(" Type ")"  [function]
+                   | "#isIncompleteStructType'" "(" Type ")" [function]
+                   | "#isIncompleteUnionType'" "(" Type ")"  [function]
+
+     rule isIncompleteArrayType(T:Type)
+          => #isIncompleteArrayType'(T) ==K true
+     rule isIncompleteStructType(T:Type)
+          => #isIncompleteStructType'(T) ==K true
+     rule isIncompleteUnionType(T:Type)
+          => #isIncompleteUnionType'(T) ==K true
+
+     rule #isIncompleteArrayType'(t(_, incompleteArrayType(_)))
           => true 
-     rule [isIncompleteType-struct]:
-          isIncompleteType(t(_, incompleteStructType(_)))
+     rule #isIncompleteArrayType'(t(_, qualifiedType(T:Type, _)))
+          => #isIncompleteArrayType'(T) 
+     rule #isIncompleteArrayType'(typedDeclaration(T:Type, _))
+          => #isIncompleteArrayType'(T) 
+
+     rule #isIncompleteStructType'(t(_, incompleteStructType(_)))
           => true 
-     rule [isIncompleteType-union]:
-          isIncompleteType(t(_, incompleteUnionType(_)))
+     rule #isIncompleteStructType'(t(_, qualifiedType(T:Type, _)))
+          => #isIncompleteStructType'(T) 
+     rule #isIncompleteStructType'(typedDeclaration(T:Type, _))
+          => #isIncompleteStructType'(T) 
+
+     rule #isIncompleteUnionType'(t(_, incompleteUnionType(_)))
           => true 
-     rule [isIncompleteType-void]:
-          isIncompleteType(t(_, void))
-          => true 
-     rule [isIncompleteType-qualified]:
-          isIncompleteType(t(_, qualifiedType(T:Type, _)))
-          => isIncompleteType(T) 
-     rule [isIncompleteType-false]: isIncompleteType(t(_, T:SimpleType))
-          => false
-          when (getKLabel(T) =/=KLabel 'incompleteArrayType)
-               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
-               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'void)
+     rule #isIncompleteUnionType'(t(_, qualifiedType(T:Type, _)))
+          => #isIncompleteUnionType'(T) 
+     rule #isIncompleteUnionType'(typedDeclaration(T:Type, _))
+          => #isIncompleteUnionType'(T) 
           
      rule [isExternType-qualified]: 
           isExternType(t(_, qualifiedType(T:Type, K:K))) 

@@ -88,14 +88,12 @@ module C-DECL-INITIALIZER
      rule figureInit-aux(X:Id, T:Type, initializer(K:K))
           => initValue(X, T, K)
           // I'd like to get rid of this cleanly
-          when notBool isIncompleteType(T)
-               andBool notBool isConstType(T)
+          when isCompleteType(T) andBool notBool isConstType(T)
           [structural]
      rule figureInit-aux(X:Id, T:Type, initializer(K:K))
           => initValue(X, T, (K ~> makeUnwritableVar(X)))
           // I'd like to get rid of this cleanly
-          when notBool isIncompleteType(T)
-               andBool isConstType(T)
+          when isCompleteType(T) andBool isConstType(T)
           [structural]
      
      // base types

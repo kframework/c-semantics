@@ -204,7 +204,7 @@ module C-LTLMC
      syntax ValueProp ::= ltlLVal(Bag, Id) [function]
      syntax ValueProp ::= "ltlLVal'" "(" Bag "," String ")" [function]
 
-     rule ltlLVal(B:Bag, X:Id) => ltlLVal'(B, Id2String(X))
+     rule ltlLVal(B:Bag, X:Id) => ltlLVal'(B, idToString(X))
      rule ltlLVal'(
           <generatedTop>... <T>...
                <genv>... 
