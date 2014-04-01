@@ -56,7 +56,9 @@ module C-FUNCTION-DEF
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
      rule isVoidOrComplete(T:Type)
-          => isCompleteType(T) orBool isVoidType(T)
+          => isCompleteType(T)
+          orBool isVoidType(T)
+          orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
      rule areVoidOrComplete(ListItem(Head:Type) Tail:List)

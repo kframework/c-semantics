@@ -314,10 +314,6 @@ module C-TYPING-PREDICATES
                orBool isIncompleteUnionType(T)
                orBool isVoidType(T))
 
-     syntax Bool ::= isIncompleteArrayType(Type)  [function]
-                   | isIncompleteStructType(Type) [function]
-                   | isIncompleteUnionType(Type)  [function]
-
      syntax Bool ::= "#isIncompleteArrayType'" "(" Type ")"  [function]
                    | "#isIncompleteStructType'" "(" Type ")" [function]
                    | "#isIncompleteUnionType'" "(" Type ")"  [function]
