@@ -23,6 +23,7 @@ module CIL-IMPLEMENTATION
   /* These are also defined in a standard library header. */
   rule size_t => unsigned long
   rule size_ptr => unsigned long
+  rule ptrdiff_t => long
 
   /*
    * Integer types.

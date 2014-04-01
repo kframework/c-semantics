@@ -683,7 +683,7 @@ module CIL-EXP
 
   syntax KItem ::= PtrSubHelper(Ptr, Ptr, Exp)    [strict(3)]
   rule PtrSubHelper(P1:Ptr, P2:Ptr, TV:TypedValue)
-    => tv(size_ptr, mi(width(size_ptr), PtrSub(P1, P2, TV)))
+    => tv(ptrdiff_t, mi(width(size_ptr), PtrSub(P1, P2, TV)))
 
   // float comparisons
   rule tv(T:Type, F1:Float) < tv(T, F2:Float) => norm(int, F1 <Float F2)

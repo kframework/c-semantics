@@ -313,6 +313,7 @@ module CIL-COMMON
   /* These are also defined in a standard library header. */
   syntax Type ::= "size_t" [function]
                 | "size_ptr" [function]
+                | "ptrdiff_t" [function]
 
   /*
    * Returns the unsigned interpretation of the machine integer stored inside
