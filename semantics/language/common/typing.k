@@ -126,6 +126,9 @@ module C-TYPING-SYNTAX
                    | completeTags(Map, Type) [function]
      syntax K ::= completeTags(Type)
 
+     syntax List ::= completeTagsInList(Map, List) [function]
+     syntax Map ::= completeTagsInMap(Map, Map) [function]
+
 endmodule
 
 module C-TYPING

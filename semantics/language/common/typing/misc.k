@@ -181,6 +181,9 @@ module C-TYPING-MISC
      rule <k> completeTags(T:Type) => T ...</k>
           <structs> .Map </structs>
 
+     // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
+     // checking it to tell whether a tag has been completed or not was
+     // probably the better way to do things.
      rule completeTag(X:Id, Info:FieldInfo, T:Type)
           => completeTags(X |-> Info, T)
 
@@ -196,18 +199,37 @@ module C-TYPING-MISC
           => t(S, incompleteArrayType(completeTags(Tags, T)))
      rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
           => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
+
      rule completeTags(_ X:Id |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:Id)))
           => t(S, structType(X, bitSizeofStruct(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:Id)))
           => t(S, incompleteStructType(X))
           when notBool X in keys Tags
+     rule completeTags(Tags:Map, t(S:Set,
+               structType(X:Id, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, structType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+
      rule completeTags(_ X:Id |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:Id)))
           => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:Id)))
           => t(S, incompleteUnionType(X))
           when notBool X in keys Tags
+     rule completeTags(Tags:Map, t(S:Set,
+               unionType(X:Id, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, unionType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+
      rule completeTags(Tags:Map, t(S:Set, qualifiedType(T:Type, K:K)))
           => t(S, qualifiedType(completeTags(Tags, T), K))
      rule completeTags(_, t(S:Set, T:SimpleType))
@@ -225,10 +247,13 @@ module C-TYPING-MISC
      rule completeTags(Tags:Map, typedDeclaration(T:Type, X:Id))
           => typedDeclaration(completeTags(Tags, T), X)
 
-     syntax List ::= completeTagsInList(Map, List) [function]
      rule completeTagsInList(Tags:Map, ListItem(T:Type) L:List)
           => ListItem(completeTags(Tags, T)) completeTagsInList(Tags, L)
      rule completeTagsInList(_, .List) => .List
+
+     rule completeTagsInMap(Tags:Map, X:Id |-> T:Type M:Map)
+          => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
+     rule completeTagsInMap(_, .Map) => .Map
 
 endmodule
 

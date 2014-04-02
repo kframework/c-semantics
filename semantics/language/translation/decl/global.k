@@ -438,12 +438,12 @@ module C-DECL-GLOBAL
      rule <k> addGlobalTag(X:Id, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys Exts)
                ~> completeTagInIntDecls(X, Info, keys Ints)
-               ~> completeTagInTypes(X, Info, keys GTypes)
                ~> completeTagInTags(X, Info, keys Structs)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <gtypes> GTypes:Map </gtypes>
+          <gtypes> GTypes:Map => completeTagsInMap(X |-> Info, GTypes) </gtypes>
+          <types> Types:Map => completeTagsInMap(X |-> Info, Types) </types>
           <structs> Structs:Map => Structs:Map[Info / X] </structs>
           <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
           <externals> Exts:Map </externals>
@@ -460,7 +460,8 @@ module C-DECL-GLOBAL
           when notBool (X in Incs)
           [structural]
 
-     // TODO(chathhorn): I just don't know.
+     // TODO(chathhorn): I just don't know. Really need to come up with a
+     // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax K ::= completeTagInExtDecls(Id, FieldInfo, Set)
      rule <k> (.K => doDeclare(
@@ -514,39 +515,23 @@ module C-DECL-GLOBAL
                orBool DS =/=K declared
      rule completeTagInIntDecls(_, _, .Set) => .K
 
-     syntax K ::= completeTagInTypes(Id, FieldInfo, Set)
-     rule <k> completeTagInTypes(S:Id, Info:FieldInfo, (SetItem(X:Id) => .Set)  _)
-          ...</k>
-          <gtypes>...
-               X |-> (T:Type => completeTag(S, Info, T))
-          ...</gtypes>
-          [structural]
-     rule completeTagInTypes(_, _, .Set) => .K
-          [structural]
-
      syntax K ::= completeTagInTags(Id, FieldInfo, Set)
-     rule <k> (.K => completeTagInTag(S, Info, S2, keys(Fields)))
-               ~> completeTagInTags(S:Id, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
+     rule <k> completeTagInTags(S:Id, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs>...
-               S2 |-> fieldInfo(_, Fields:Map, _)
+               S2 |-> fieldInfo(
+                    (Decls:List => completeTagsInList(S |-> Info, Decls)),
+                    (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
           ...</gstructs>
+          <structs>...
+               S2 |-> fieldInfo(
+                    (Decls:List => completeTagsInList(S |-> Info, Decls)),
+                    (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
+          ...</structs>
           [structural]
      rule completeTagInTags(_, _, .Set) => .K
-          [structural]
-
-     syntax K ::= completeTagInTag(Id, FieldInfo, Id, Set)
-     rule <k> completeTagInTag(S:Id, Info:FieldInfo, S2:Id, (SetItem(F:Id) => .Set)  _)
-          ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <gstructs>...
-               S2 |-> fieldInfo(_, _ F |-> (T:Type => completeTag(S, Info, T)), _)
-          ...</gstructs>
-          [structural]
-     rule completeTagInTag(_, _, _, .Set) => .K
           [structural]
 
 endmodule
