@@ -223,7 +223,7 @@ sub main {
       close(FILE);
 
       if (!checkTransSuccess($linkStdout)) {
-            print "Error during linking.\n";
+            print "Error during translation.\n";
             if ($args->{'-d'}) {
                   print "Final configuration saved to $confOutPrettyTmp.\n";
             } else {
@@ -330,7 +330,7 @@ sub mergeObjs {
             system($cmd);
 
             if (!checkTransSuccess($mergeStdout)) {
-                  print "Error merging objects: $obj1, $obj2\n";
+                  print "Error merging object files: $obj1, $obj2\n";
                   print "Command line: $cmd\n";
                   die();
             }
@@ -422,7 +422,7 @@ sub compile {
       }
 
       if (!checkTransSuccess($compileStdout)) {
-            print "Error compiling: $localOval\n";
+            print "Error during translation: $localOval\n";
             if ($args->{'-d'}) {
                   print "Final configuration saved to $localOvalPretty.\n";
             } else {
