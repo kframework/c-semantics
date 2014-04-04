@@ -3,7 +3,6 @@ require "io.k"
 require "math.k"
 require "setjmp.k"
 require "stdarg.k"
-require "stddef.k"
 require "stdio.k"
 require "stdlib.k"
 require "string.k"
@@ -19,7 +18,6 @@ module C-LIBRARY
      imports LIBC-MATH
      imports LIBC-SETJMP
      imports LIBC-STDARG
-     imports LIBC-STDDEF
      imports LIBC-STDIO 
      imports LIBC-STDLIB
      imports LIBC-STRING

@@ -8,6 +8,11 @@ endmodule
 
 module C-BUILTIN
      imports C-BUILTIN-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // This set prevents our "linker" from choking due to unresolved
      // references.
@@ -55,5 +60,21 @@ module C-BUILTIN
           SetItem("thrd_current")
           SetItem("thrd_join")
           SetItem("time")
+
+     // Used by stddef.h.
+     syntax K ::= offsetOf(K, K) [strict(1)]
+     rule OffsetOf(T:KResult, K:K, F:Id)
+          => offsetOf(DeclType(T:KResult, K:K), F:Id)
+          [structural]
+
+     // fixme should check for bitfield offset
+     rule offsetOf(t(_, structType(_, _, 
+               fieldInfo(_, _, (_ F:Id |-> Offset:Int))
+          )), F:Id)
+          => tv(bitsToBytes(Offset:Int), cfg:sizeut)
+          [structural]
+
+     rule offsetOf(t(_, unionType(_, _, _)), _) => tv(0, cfg:sizeut)
+          [structural]
 
 endmodule
