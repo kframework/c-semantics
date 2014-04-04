@@ -17,38 +17,48 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. \broken{If the first expression has qualified type, the result
      has the so-qualified version of the type of the designated member.}
      }*/
-     // fixme tool bug, can't use L:KLabel
-     rule lval(Loc:SymLoc, t(_, structType(_, _, 
-               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int))
-          ))) . F:Id
-          => lv(Loc +bits Offset, T)
+     rule lval(Loc:SymLoc, t(Se:Set,
+               structType(S:Id, _, Fields:FieldInfo))) . F:Id
+          => lookupField(F, Loc, Se, S, Fields, Fields)
           [structural]
-     rule lval(Loc:SymLoc, t(_, unionType(S:Id, _,
-               fieldInfo(_, (_ F |-> t(Se:Set, T:K)), (_ F |-> Offset:Int))
-          ))) . F:Id
-          => lv(Loc +bits Offset, t(SetItem(fromUnion(S)) Se, T))
+     rule lval(Loc:SymLoc, t(Se:Set,
+               unionType(S:Id, _, Fields:FieldInfo))) . F:Id
+          => lookupField(F, Loc, Se, S, Fields, Fields)
           [structural]
 
-     // bytes of struct, type, field id
-     syntax K ::= extractField(List, Type, Id)
+     // The last two parameters are for convenience and should be the same.
+     // TODO(chathhorn): it would be nice to have a way to tag pieces of syntax
+     // that we've also decomposed (like @X in haskell).
+     syntax K ::= lookupField(Id, SymLoc, Set, Id, FieldInfo, FieldInfo)
+          [function]
+
+     rule lookupField(F:Id, Loc:SymLoc, Se:Set, S:Id, Fields:FieldInfo,
+          fieldInfo(_,
+               F |-> t(Se':Set, T':SimpleType) _,
+               F |-> Offset:Int _))
+          // Complete recursive struct/union definitions.
+          => lv(Loc +bits Offset, completeTag(S, Fields, t(Se Se', T')))
+
+     // Same deal as above, only for byte lists.
+     rule tv(agg(L:List), t(Se:Set,
+               structType(S:Id, _, Fields:FieldInfo))) . F:Id
+          => extractField(F, L, Se, S, Fields, Fields)
+          [structural]
+     rule tv(agg(L:List), t(Se:Set,
+               unionType(S:Id, _, Fields:FieldInfo))) . F:Id
+          => extractField(F, L, Se, S, Fields, Fields)
+          [structural]
+
+     syntax K ::= extractField(Id, List, Set, Id, FieldInfo, FieldInfo)
+          [function]
      
-     rule [extractField-struct-start]:
-          extractField(L:List, t(_, structType(_, _,
-               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
-          )), F:Id)
-          => concretize(T,
+     rule extractField(F:Id, L:List, Se:Set, S:Id, Fields:FieldInfo,
+          fieldInfo(_,
+               F |-> t(Se':Set, T':SimpleType) _,
+               F |-> Offset:Int _))
+          => concretize(completeTag(S, Fields, t(Se Se', T')),
                fillToBytes(extractBitsFromList(dataList(L), Offset,
-                    bitSizeofType(T))))
-     rule [extractField-union-start]:
-          extractField(L:List, t(_, unionType(_, _,
-               fieldInfo(_, (_ F |-> T:Type), (_ F |-> Offset:Int)) 
-          )), F:Id)
-          => concretize(T,
-               fillToBytes(extractBitsFromList(dataList(L), Offset,
-                    bitSizeofType(T))))
-
-     rule tv(agg(L:List), T:Type) . F:Id => extractField(L, T, F)
-          [structural]
+                    bitSizeofType(completeTag(S, Fields, t(Se Se', T'))))))
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an

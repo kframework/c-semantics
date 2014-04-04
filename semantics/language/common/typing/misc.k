@@ -206,6 +206,15 @@ module C-TYPING-MISC
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:Id)))
           => t(S, incompleteStructType(X))
           when notBool X in keys Tags
+     rule completeTags(X |-> _ Tags:Map, t(S:Set,
+               structType(X:Id, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, structType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+     // Don't complete recursive struct definitions.
      rule completeTags(Tags:Map, t(S:Set,
                structType(X:Id, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -214,6 +223,7 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
+          when notBool (X in keys Tags)
 
      rule completeTags(_ X:Id |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:Id)))
@@ -221,6 +231,14 @@ module C-TYPING-MISC
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:Id)))
           => t(S, incompleteUnionType(X))
           when notBool X in keys Tags
+     rule completeTags(X |-> _ Tags:Map, t(S:Set,
+               unionType(X:Id, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, unionType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
      rule completeTags(Tags:Map, t(S:Set,
                unionType(X:Id, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -229,6 +247,7 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
+          when notBool (X in keys Tags)
 
      rule completeTags(Tags:Map, t(S:Set, qualifiedType(T:Type, K:K)))
           => t(S, qualifiedType(completeTags(Tags, T), K))

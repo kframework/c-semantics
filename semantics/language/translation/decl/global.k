@@ -530,8 +530,11 @@ module C-DECL-GLOBAL
                     (Decls:List => completeTagsInList(S |-> Info, Decls)),
                     (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
           ...</structs>
+          when S =/=K S2
           [structural]
      rule completeTagInTags(_, _, .Set) => .K
+          [structural]
+     rule completeTagInTags(S:Id, _, SetItem(S)) => .K
           [structural]
 
 endmodule

@@ -2,8 +2,6 @@ module C-MEMORY-WRITING-SYNTAX
      // location, value
      syntax K ::= write(K, K) [strict(2)]
 
-     syntax K ::= fromUnion(Id) [klabel('fromUnion)]
-
      // Either buffered or unbuffered depending on whether we're executing.
      // If the flag is true, then we disable checking undefinedness checking
      // (i.e., multiple, unsequenced writes to a single location). This is

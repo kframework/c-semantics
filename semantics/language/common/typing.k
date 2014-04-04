@@ -129,6 +129,10 @@ module C-TYPING-SYNTAX
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
 
+     // Used to tag union members so the rest of the bytes in the union can be
+     // marked as undefined upon write.
+     syntax K ::= fromUnion(Id)
+
 endmodule
 
 module C-TYPING
