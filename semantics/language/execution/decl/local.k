@@ -31,12 +31,12 @@ module C-DECL-LOCAL
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <genv>...
+          <external-defs>...
                X |-> Loc:SymLoc
-          ...</genv>
-          <gtypes>...
+          ...</external-defs>
+          <external-types>...
                X |-> T':Type
-          ...</gtypes>
+          ...</external-types>
           when isExternType(T) 
                orBool isFunctionType(T)
           [structural] 

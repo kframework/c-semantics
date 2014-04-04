@@ -102,16 +102,19 @@ module C-TRANSLATION-INIT
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
 
+     // TODO(chathhorn): Check compatibility of decls instead of dumbly
+     // merging.
      rule mergeObj(
           (<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
                <not-writable> NoWrite1:Set </not-writable>
 
+               <external-types> ExtTypes1:Map </external-types>
+               <external-defs> ExtDefs1:Map </external-defs>
+
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
-                    <external-types> ExtTypes1:Map </external-types>
-                    <external-defs> ExtDefs1:Map </external-defs>
                     <external-uses> ExtUses1:Set </external-uses>
                </linking-state>
 
@@ -126,10 +129,11 @@ module C-TRANSLATION-INIT
                <functions> F2:Map </functions>
                <not-writable> NoWrite2:Set </not-writable>
 
+               <external-types> ExtTypes2:Map </external-types>
+               <external-defs> ExtDefs2:Map </external-defs>
+
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
-                    <external-types> ExtTypes2:Map </external-types>
-                    <external-defs> ExtDefs2:Map </external-defs>
                     <external-uses> ExtUses2:Set </external-uses>
                </linking-state>
 
@@ -145,10 +149,11 @@ module C-TRANSLATION-INIT
                <functions> F1 F2 </functions>
                <not-writable> NoWrite1 NoWrite2 </not-writable>
 
+               <external-types> ExtTypes1 ExtTypes2 </external-types>
+               <external-defs> ExtDefs1 ExtDefs2 </external-defs>
+
                <linking-state>
                     <external-decls> ExtDecls1 ExtDecls2 </external-decls>
-                    <external-types> ExtTypes1 ExtTypes2 </external-types>
-                    <external-defs> ExtDefs1 ExtDefs2 </external-defs>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 

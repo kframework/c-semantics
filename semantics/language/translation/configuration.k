@@ -14,16 +14,16 @@ module C-CONFIGURATION
 
           <main-tu color="lightgray"> .Set </main-tu>
 
+          // Id |-> Type
+          <external-types> .Map </external-types>
+          // Id |-> Loc
+          <external-defs> .Map </external-defs>
+
           <linking-state>
                // Id |-> Set(TUs)
                <external-decls> .Map </external-decls>
-               // Id |-> Type
-               <external-types> .Map </external-types>
-               // Id |-> Loc
-               <external-defs> .Map </external-defs>
                // Ids
                <external-uses> SetItem(Identifier("main")) </external-uses>
-
           </linking-state>
 
           // dummy link loc |-> real loc

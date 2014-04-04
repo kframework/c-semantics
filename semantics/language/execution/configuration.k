@@ -15,6 +15,11 @@ module C-CONFIGURATION
 
                <main-tu color="lightgray"> .Set </main-tu>
 
+               // Id |-> Type
+               <external-types> .Map </external-types>
+               // Id |-> Loc
+               <external-defs> .Map </external-defs>
+
                // dummy link loc |-> real loc
                <linkings> .Map </linkings> 
 

@@ -81,10 +81,10 @@ module C-DECL-RESOLUTION
                (X:Id |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
-               (X |-> _ => .Map)
+               X |-> _
           ...</external-defs>
           <external-types>...
-               (X |-> _ => .Map)
+               X |-> _
           ...</external-types>
           when X =/=K Identifier("main")
 
@@ -114,11 +114,10 @@ module C-DECL-RESOLUTION
                (Identifier("main") |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
-               (Identifier("main") |-> 
-                    loc(_ @ static(MainTu:String), _, _) => .Map)
+               Identifier("main") |-> loc(_ @ static(MainTu:String), _, _)
           ...</external-defs>
           <external-types>...
-               (Identifier("main") |-> _ => .Map)
+               Identifier("main") |-> _
           ...</external-types>
 
      // Now everything left in <external-uses> should be an unresolved
