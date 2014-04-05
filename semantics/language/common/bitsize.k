@@ -7,6 +7,8 @@ module C-BITSIZE-SYNTAX
 
      // generates a tv(size, cfg:sizeut)
      syntax K ::= sizeofType(K) [strict]
+
+     syntax Int ::= maxBitSizeofList(List) [function]
 endmodule
 
 module C-BITSIZE
@@ -35,10 +37,9 @@ module C-BITSIZE
      rule bitSizeofList(L:List) => bitSizeofList'(0, L)
      rule bitSizeofList'(
           (Sz:Int => Sz +Int bitSizeofType(T)),
-          (ListItem(T:Type) => .List) _:List)
+          (ListItem(T:Type) => .List) _)
      rule bitSizeofList'(Sz:Int, .List) => Sz
           
-     syntax Int ::= maxBitSizeofList(List) [function]
      syntax Int ::= "maxBitSizeofList'" "(" Int "," List ")" [function]
      rule maxBitSizeofList(L:List) => maxBitSizeofList'(0, L)
      rule maxBitSizeofList'(

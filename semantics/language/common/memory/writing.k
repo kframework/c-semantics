@@ -67,31 +67,31 @@ module C-MEMORY-WRITING
                andBool (notBool hasUnionMarker(T))
           [structural]
      rule [write-normal-union-field]:
-          <k> (. => makeUnknown(Loc, t(.Set, unionType(S, bitSizeofUnion(Info), Info))))
-               ~> write-specific(Loc:SymLoc, 
-                    tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
-          ...</k>
-          <structs>...
-               S |-> Info:FieldInfo
-          ...</structs>
+          (. => makeUnknown(UnionLoc, F, Fields))
+          ~> write-specific(Loc:SymLoc, tv(_, t(
+               (SetItem(fromUnion(UnionLoc:SymLoc, F:Id, Fields:FieldInfo)) => .Set) _, _)), _)
           when isByteLoc(Loc)
           [structural]
           
-     syntax K ::= makeUnknown(SymLoc, Type) [function]
-     syntax K ::= "makeUnknown-aux" "(" SymLoc "," K ")" [strict(2)]
+     syntax K ::= makeUnknown(SymLoc, Id, FieldInfo) [function]
      
-     rule makeUnknown(Loc:SymLoc, T:Type)
-          => makeUnknown-aux(Loc, byteSizeofType(T)) 
-     rule makeUnknown-aux(Loc:SymLoc, Len:TypedValue)
-          => writeBytes(Loc, dataList(times(value(Len), 
-               piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
-          [structural]
+     // Zero from (&union + sizeof union.F) to (&union + sizeof union).
+     // TODO(chathhorn): breaks into a lot of abstractions.
+     rule makeUnknown(Loc:SymLoc, F:Id, fieldInfo(L:List,
+               F |-> T:Type _, _))
+          => writeBytes(Loc +bits bitSizeofType(T),
+               dataList(times(bitsToBytes(
+                    maxBitSizeofList(L) -Int bitSizeofType(T)), 
+                    piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
+          when maxBitSizeofList(L) >Int bitSizeofType(T)
+     rule makeUnknown(_, F:Id, fieldInfo(L:List, F |-> T:Type _, _)) => .
+          when maxBitSizeofList(L) <=Int bitSizeofType(T)
           
      syntax Bool ::= hasUnionMarker(Type) [function]
      rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
 
      syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_)) _:Set), _)) => true
+     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
      
      rule [write-struct]:
           write-specific(Loc:SymLoc, 

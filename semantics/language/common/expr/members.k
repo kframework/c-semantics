@@ -23,7 +23,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
      rule lval(Loc:SymLoc, t(Se:Set,
                unionType(S:Id, _, Fields:FieldInfo))) . F:Id
-          => lookupField(F, Loc, Se, S, Fields, Fields)
+          => lookupField(F, Loc, Se SetItem(fromUnion(Loc, F, Fields)), S, Fields, Fields)
           [structural]
 
      // The last two parameters are for convenience and should be the same.

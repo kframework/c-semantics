@@ -144,7 +144,7 @@ module C-TYPING-CANONICALIZATION
           when X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-               => t(SetItem(fromUnion(X)), unionType(X, bitSizeofUnion(Info), Info))
+               => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
           ...</k>
           <structs>...
                X |-> Info:FieldInfo
@@ -152,7 +152,7 @@ module C-TYPING-CANONICALIZATION
           when X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:Id)))
-               => t(SetItem(fromUnion(X)), incompleteUnionType(X))
+               => t(.Set, incompleteUnionType(X))
           ...</k>
           <structs> Structs:Map </structs>
           <curr-tu> Tu:String </curr-tu>
