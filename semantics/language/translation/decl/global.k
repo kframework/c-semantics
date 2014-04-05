@@ -1,6 +1,5 @@
 module C-DECL-GLOBAL-SYNTAX
      syntax Linkage ::= "external" | "internal"
-     syntax K ::= verifyDecl(K) [strict]
 
      syntax Bool ::= isNaked(Type) [function]
 
@@ -13,9 +12,6 @@ module C-DECL-GLOBAL-SYNTAX
      // processing the TU if a tentative def exists and the type is still
      // incomplete.
      syntax K ::= declState(SymLoc, Type, DeclState, Bool)
-
-     // Used in error.k...
-     syntax K ::= "doDeclare'" "(" Type "," K ")" 
 
      syntax K ::= allowInit(K) [function]
      syntax K ::= updateDecl(Id, DeclState, Linkage)
@@ -43,17 +39,15 @@ module C-DECL-GLOBAL
 
      imports COMPAT-SYNTAX
 
-     rule doDeclare(T:Type, K:K) 
-          => verifyDecl(T) ~> doDeclare'(T, K)
-
-     rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K) 
+     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
           when F =/=K file-scope
+               andBool validLocalStorageClass(T)
           [structural] 
           
-     rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K)
+     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit 
                     #then NoInit 
@@ -62,15 +56,9 @@ module C-DECL-GLOBAL
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           when isFunctionType(T)
-               // TODO(chathhorn): type canonicalization doesn't work right so
-               // we can't do this. Qualifiers on function decls appear to
-               // always be applied to the declared function type, and not to
-               // the function's return type. AFAIK, the only time qualifiers
-               // should be applied to the declared function type is when the
-               // function type is actually a typedef.
-               //andBool getQualifiers(T) ==Set .Set
+               andBool validGlobalStorageClass(T)
           [structural] 
-     rule <k> doDeclare'(typedDeclaration(T:Type, X:Id), K:K)
+     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit 
                     #then NoInit 
@@ -79,9 +67,86 @@ module C-DECL-GLOBAL
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           when notBool isFunctionType(T)
+               andBool validGlobalStorageClass(T)
+          [structural] 
+
+     rule (. => ERROR("DG1", "Declaration for " +String idToString(X)
+               +String " appears with multiple storage class specifiers.", 8))
+          ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          when notBool validStorageClass(T)
+          [structural] 
+
+     rule <k> (. => ERROR("DG2", "Declaration for " +String idToString(X)
+               +String " appears with invalid storage class specifiers.", 8))
+               ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          ...</k>
+          <curr-function> F:K </curr-function>
+          when F =/=K file-scope
+               andBool validStorageClass(T)
+               andBool notBool validLocalStorageClass(T)
+          [structural] 
+
+     rule <k> (. => ERROR("DG3", "Declaration for " +String idToString(X)
+               +String " appears with invalid storage class specifiers.", 8))
+               ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          ...</k>
+          <curr-function> file-scope </curr-function>
+          when validStorageClass(T)
+               andBool notBool validGlobalStorageClass(T)
           [structural] 
           
      syntax K ::= declareExternalVariable(Id, Type, K)
+
+     syntax Bool ::= validStorageClass(Type) [function]
+                   | "validStorageClass'" "(" Type "," Set ")" [function]
+     syntax Bool ::= validGlobalStorageClass(Type) [function]
+                   | "validGlobalStorageClass'" "(" Type "," Set ")" [function]
+     syntax Bool ::= validLocalStorageClass(Type) [function]
+                   | "validLocalStorageClass'" "(" Type "," Set ")" [function]
+
+     // TODO(chathhorn): storage class of function parameters (only register is
+     // allowed).
+
+     // TODO(chathhorn): probably cleaner just to check the intersection
+     // between the storage class specifiers and the "qualities," but there are
+     // some annoying special cases (ThreadLocal & extern/static is legal).
+     // Also, consider moving this to type canonicalization.
+     rule validStorageClass(T:Type) => validStorageClass'(T, getQualities(T))
+     rule validStorageClass'(T:Type, Qualities:Set) => notBool (
+               // TODO(chathhorn): type canonicalization doesn't work right so
+               // we can't do this. Qualifiers on function decls appear to
+               // always be applied to the declared function type, and not to
+               // the function's return type. AFAIK, the only time qualifiers
+               // should be applied to the declared function type is when the
+               // function type is actually a typedef.
+               (Static in Qualities andBool Extern in Qualities)
+               orBool (Auto in Qualities andBool Static in Qualities)
+               orBool (Auto in Qualities andBool Extern in Qualities)
+               orBool (Auto in Qualities andBool ThreadLocal in Qualities)
+               orBool (Register in Qualities andBool Static in Qualities)
+               orBool (Register in Qualities andBool Extern in Qualities)
+               orBool (Register in Qualities andBool ThreadLocal in Qualities)
+               orBool (isFunctionType(T) andBool ThreadLocal in Qualities)
+               orBool (isFunctionType(T) andBool Auto in Qualities)
+               orBool (isFunctionType(T) andBool Register in Qualities)
+          )
+
+     rule validGlobalStorageClass(T:Type)
+          => validGlobalStorageClass'(T, getQualities(T))
+     rule validGlobalStorageClass'(T:Type, Qualities:Set) =>
+          validStorageClass'(T, Qualities)
+          andBool notBool (
+               (Auto in Qualities)
+               orBool (Register in Qualities)
+          )
+
+     rule validLocalStorageClass(T:Type)
+          => validLocalStorageClass'(T, getQualities(T))
+     rule validLocalStorageClass'(T:Type, Qualities:Set) =>
+          validStorageClass'(T, Qualities)
+          andBool notBool (
+               (isFunctionType(T) andBool Static in Qualities)
+          )
 
      // *** External variables ***
      //
@@ -115,9 +180,10 @@ module C-DECL-GLOBAL
      // Naked function declarations are treated as though they were qualified
      // extern.
      syntax K ::= isExtern(Type) [function]
-     rule isExtern(T:Type) => isExternType(T) orBool isFunctionType(T)
+     rule isExtern(T:Type)
+          => (isExternType(T) orBool isFunctionType(T))
+               andBool notBool isStaticType(T)
 
-     
      /*@ \fromStandard{\source[n1570]{\para{6.2.2}{4}}}{
      For an identifier declared with the storage-class specifier
      \cinline{extern} in a scope in which a prior declaration of that
@@ -135,10 +201,12 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
+          <externals> Exts:Map </externals>
           <internals>...
                X |-> declState(Loc:SymLoc, _, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
+               andBool notBool (X in keys Exts)
           [structural]
 
      // Naked, previously declared extern.
@@ -153,7 +221,9 @@ module C-DECL-GLOBAL
           <externals>... 
                X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
           ...</externals>
+          <internals> Ints:Map </internals>
           when isNaked(T)
+               andBool notBool (X in keys Ints)
           [structural]
 
      // Extern, previously declared extern.
@@ -203,12 +273,27 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <externals> Exts:Map </externals>
           <internals>
                Ints:Map
                (. => X |-> declState(Loc, unqualifyType(T), declared, false))
           </internals>
           when isStaticType(T)
+               andBool notBool (X in keys Exts)
                andBool notBool (X in keys Ints)
+          [structural]
+
+     // Static, previously extern.
+     rule <k> (. => ERROR("DG4",
+               "Static declaration of " +String idToString(X)
+               +String " follows non-static declaration.", 8))
+               ~> declareExternalVariable(X:Id, T:Type, K:K)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals> Exts:Map </externals>
+          when isStaticType(T)
+               andBool (X in keys Exts)
           [structural]
 
      // Now we just need to handle allocation, initialization, and updating the
@@ -385,7 +470,7 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     rule <k> (.K => ERROR("DG1",
+     rule <k> (.K => ERROR("DG5",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, _, Loc':SymLoc)

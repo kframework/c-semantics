@@ -62,9 +62,6 @@ module C-CONFIGURATION
      </global>
      <T multiplicity="?">
      <exec>
-          <raw-types> .Map </raw-types>
-          <type-specifiers> .Map </type-specifiers>
-
           <k color="green" multiplicity="?"> 
                loadObj(mergeObj(
                     unwrapObj($OBJ1:Bag), 
