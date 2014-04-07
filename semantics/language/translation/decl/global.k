@@ -287,7 +287,7 @@ module C-DECL-GLOBAL
      rule <k> (. => ERROR("DG4",
                "Static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
-               ~> declareExternalVariable(X:Id, T:Type, K:K)
+               ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

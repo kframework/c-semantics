@@ -8,9 +8,12 @@ module C-TRANSLATION-ERROR
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
 
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
+     imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
 
      imports C-SYMBOLIC-VALUE-SYNTAX
 
@@ -172,37 +175,35 @@ module C-TRANSLATION-ERROR
    //        when T =/=K void
    //        [structural, large]
           
-     // dynamic exp
-     // rule [err00034]:
-     //      (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
-     //      cast(t(_, T:K), skipval)
-     //      when (T:K =/=K void)
-     //      [structural, large]
+     rule [err00034]:
+          (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
+          cast(t(_, T:K), skipval)
+          when (T:K =/=K void)
+          [structural, large]
           
-     // dynamic exp
-     // rule [err00041]:
-     //      (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
-     //      types((t(_, void),, t(_, T:K)))
-     //      when T:K =/=K void
-     //      [structural, large]
-     // rule [err00042]:
-     //      (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-     //      types((t(_, T:K),, t(_, void)))
-     //      when T:K =/=K void
-     //      [structural, large]
-     // rule [err00043]:
-     //      (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
-     //      types((T:Type,, T':Type))
-     //      when (T =/=K T')
-     //           andBool (isStructType(T) orBool isUnionType(T))
-     //           andBool (isStructType(T') orBool isUnionType(T'))
-     //      [structural, large]
+     rule [err00041]:
+          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
+          types(ListItem(t(_, void)) ListItem(t(_, T:K)))
+          when T:K =/=K void
+          [structural, large]
+     rule [err00042]:
+          (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
+          types(ListItem(t(_, T:K)) ListItem(t(_, void)))
+          when T:K =/=K void
+          [structural, large]
+     rule [err00043]:
+          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
+          types(ListItem(T:Type) ListItem(T':Type))
+          when (T =/=K T')
+               andBool (isStructType(T) orBool isUnionType(T))
+               andBool (isStructType(T') orBool isUnionType(T'))
+          [structural, large]
           
-     // rule [err00044]:
-     //      (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
-     //      addToPointer(_:SymLoc, T:Type, I:Int, tv(_:Int, _))
-     //      when notBool ifFromArrayInBounds(T, I)
-     //      [structural, large]
+     rule [err00044]:
+          (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
+          addToPointer(_:SymLoc, T:Type, I:Int, tv(_:Int, _))
+          when notBool ifFromArrayInBounds(T, I)
+          [structural, large]
           
      // rule [err00045]:
      //      <k> 
