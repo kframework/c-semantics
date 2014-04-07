@@ -3,25 +3,23 @@ module C-TRANSLATION-ERROR
      imports C-ERROR-MAP-SYNTAX
      imports C-CONSTRAINT-MAP-SYNTAX
 
-     imports C-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-CONVERSION-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-
-     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-COMMON-EXPR-ADDITIVE-SYNTAX
+     imports C-COMMON-EXPR-BITWISE-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
-
-     imports C-SYMBOLIC-VALUE-SYNTAX
-
-     imports C-DECL-GLOBAL-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
-
      imports DEBUG-SYNTAX
 
      rule <k> ERROR(Num:String, Msg:String, _) 
@@ -44,11 +42,11 @@ module C-TRANSLATION-ERROR
 
      // TODO(chathhorn): clean up.
      // dynamic exp
-     // rule [err00001]: 
-     //      (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
-     //      cast(t(_, T:K), emptyValue)
-     //      when T:K =/=K void
-     //      [structural, large]
+     rule [err00001]: 
+          (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
+          cast(t(_, T:K), emptyValue)
+          when T:K =/=K void
+          [structural, large]
          
      // rule [err00003]:
      //      (. => ERROR("00003", "Unsequenced side effect on scalar object with value computation of same object.", 315) ) ~>
@@ -65,12 +63,12 @@ module C-TRANSLATION-ERROR
      //      [structural, large]
           
      // dynamic exp
-     // rule [err00015]:
-     //      (. => ERROR("00015", "Signed overflow.", 36) ) ~>
-     //      arithInterpret(T:Type, I:Int)
-     //      when hasSignedIntegerType(T)
-     //           andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
-     //      [structural, large]      
+     rule [err00015]:
+          (. => ERROR("00015", "Signed overflow.", 36) ) ~>
+          arithInterpret(T:Type, I:Int)
+          when hasSignedIntegerType(T)
+               andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
+          [structural, large]      
           
           
      // rule [err00016]:
@@ -82,45 +80,42 @@ module C-TRANSLATION-ERROR
      //      when BagItem(Loc) in Locs:Bag
      //      [structural, large] 
      //      
-     // rule [err00017]:
-     //      (. => ERROR("00017", "Division by 0.", 319) ) ~>
-     //      tv(_:Int, T:Type) / tv(0, T:Type)
-     //      when hasIntegerType(T) andBool isPromoted(T)
-     //      [structural, large]
+     rule [err00017]:
+          (. => ERROR("00017", "Division by 0.", 319) ) ~>
+          tv(_:Int, T:Type) / tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
+          [structural, large]
      
-     // rule [err00018]:
-     //      (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
-     //      tv(_:Int, T:Type) % tv(0, T:Type)
-     //      when hasIntegerType(T) andBool isPromoted(T)
-     //      [structural, large]
-     //      
-     // rule [err00019]:
-     //      (. => ERROR("00019", "Signed overflow.", 36) ) ~>
-     //      tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
-     //      when hasIntegerType(T)
-     //           andBool notBool (min(T) <=Int I1 /Int I2
-     //                andBool max(T) >=Int I1 /Int I2)
-     //           andBool isPromoted(T)
-     //           andBool I2 =/=Int 0
-     //      [structural, large]
+     rule [err00018]:
+          (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
+          tv(_:Int, T:Type) % tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
+          [structural, large]
           
-     // dynamic exp     
-     // rule [err00022]:
-     //      (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
-     //      leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
-     //      when hasSignedIntegerType(T)
-     //           andBool E1 <Int 0
-     //      [structural, large]
-     //      
-     // rule [err00023]:
-     //      (. => ERROR("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.", 52) ) ~>
-     //      leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
-     //      when hasSignedIntegerType(T)
-     //           andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
-     //      [structural, large]
+     rule [err00019]:
+          (. => ERROR("00019", "Signed overflow.", 36) ) ~>
+          tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
+          when hasIntegerType(T)
+               andBool notBool (min(T) <=Int I1 /Int I2
+                    andBool max(T) >=Int I1 /Int I2)
+               andBool isPromoted(T)
+               andBool I2 =/=Int 0
+          [structural, large]
           
-   //   TODO(chathhorn): catch these in translation, but maybe hold off on e.g.
-   //   "main must exist" in case we add a link phase.
+     rule [err00022]:
+          (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
+          leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
+          when hasSignedIntegerType(T)
+               andBool E1 <Int 0
+          [structural, large]
+          
+     rule [err00023]:
+          (. => ERROR("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.", 52) ) ~>
+          leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
+          when hasSignedIntegerType(T)
+               andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
+          [structural, large]
+          
    //   rule [err00025a]:
    //        (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
    //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
@@ -227,22 +222,6 @@ module C-TRANSLATION-ERROR
      //      <not-writable>... SetItem(Loc) ...</not-writable>
      //      [structural, large]
 
-//     rule (. => ERROR("00208a",
-//               "The declaration of " +String S +String " appears with both"
-//               +String " static and extern specifiers.", 8)) ~>
-//          verifyDecl(typedDeclaration(T:Type, Identifier(S:String)))
-//          when isStaticType(T) andBool isExternType(T)
-//
-//     rule <k> (. => ERROR("00208b",
-//               "The declaration of " +String S +String " appears with both"
-//               +String " static and extern specifiers (at different locations in the same translation unit).", 8)) ~>
-//          verifySpecifiers(Identifier(S:String))
-//          ...</k>
-//          <curr-tu> Tu:String </curr-tu>
-//          <type-specifiers>... 
-//               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Static) SetItem(Extern))
-//          ...</type-specifiers>
-//
 //     // TODO(chathhorn): figure out what to do with these error numbers.
 //     rule <k> (. => ERROR("90692a",
 //               "Global declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
