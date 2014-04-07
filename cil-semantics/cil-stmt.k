@@ -252,16 +252,17 @@ module CIL-STMT
     (
       <frame>...
         <k> return (tv(T:Type, V:Value)); ...</k>
+        <locals> S:MySet </locals>
         <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
       <frame>
-        <k> tv(T, V) ~> K:K </k> // TODO(AndreiS): deleteLocals
-        Cells:Bag
+        <k> deleteLocals(S) ~> tv(T, V) ~> K </k>
+        Cells
       </frame>
     )
     <frame-stack>...
-      <stacked-frame> <k> K </k> Cells </stacked-frame> => .
+      <stacked-frame> <k> K:K </k> Cells:Bag </stacked-frame> => .
     </frame-stack>   
     <fun>...
       <fun-id> F </fun-id>
@@ -323,11 +324,12 @@ module CIL-STMT
   //  [structural]
   rule initializeParams((void, .Params), _:TypedValues) => .    [structural]
 
-  // TODO(chathhorn): delete stuff.
-  // rule
-  //   deleteLocals(MySetItem(P:Ptr) S:MySet) => deleteObject(P) ~> deleteLocals(S)
-  // [structural]
-  // rule deleteLocals(.MySet) => .K   [structural] 
+  rule
+    deleteLocals(MySetItem(P:Ptr), S:MySet)
+  =>
+    deleteObject(P) ~> deleteLocals(S)
+  [structural]
+  rule deleteLocals(.MySet) => .K   [structural] 
 
   rule 
     <k> # pragma KCIL_TU Filename:String => . ...</k>

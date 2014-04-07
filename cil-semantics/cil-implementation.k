@@ -57,8 +57,11 @@ module CIL-IMPLEMENTATION
   /*
    * Integers.
    */
-  rule value2Bytes(_:IntType, MI:MInt) => digitsOfMInt(MI, byteWidthMacro)
-  rule bytes2Value(_:IntType, L:MyList) => mIntOfDigits(L, byteWidthMacro)
+  rule
+    value2Bytes(T:IntType, MI:MInt)
+  =>
+    digitsOfMInt(MI, byteWidthMacro, byteWidth(T))
+  rule bytes2Value(_:IntType, L:MyList) => mIntOfDigits(L)
 
   /*
    * Floats.

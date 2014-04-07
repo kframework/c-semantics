@@ -559,8 +559,7 @@ module CIL-EXP
   rule sizeof(tv(T:Type, _:Value)) => sizeof'(T)
 
   rule sizeof'(T:Type) => (size_t) byteWidth(T)
-    when (isBasicType(T) ==K true) 
-      orBool (isPtrType(T) ==K true)
+    when (isBasicType(T) ==K true) orBool (isPtrType(T) ==K true)
     [structual]
   rule sizeof'(T:Type) 
     => (size_t) sizeof'(downArray(T)) * (size_t) getArraySize(T)
@@ -577,11 +576,10 @@ module CIL-EXP
   rule
     <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
     <env> E:MyMap </env>
-    // If it's a CId then we look it up in the env until we get an unambiguous
-    // type.
     when (isNormType(T) =/=K true)
-// TODO(AndreiS): fix isKeyword issue
-//      andBool ((isCId(T) =/=K true) orBool (isKeyword(T) ==K true))
+      // If it's a CId then we look it up in the env until we get an unambiguous
+      // type.
+      andBool (isCId(T) =/=K true)
       // This case is ambiguous with the Exp syntax.
       andBool ($isConstArrayDeref(T, E) =/=K true)
 

@@ -123,8 +123,13 @@ module CIL-COMMON-TYPED-VALUE
    * tv(T:PtrType, P:Ptr)
    */
   syntax TypedValue ::= tv(Type, Value)
-                      | norm(Type, Value)   [function]
+                      // TODO(AndreiS): [function] is not necessary and
+                      // does not work in symbolic execution
+                      //| norm(Type, Value)   [function]
   syntax TypedValues ::= List{TypedValue, ","}
+
+  /* helper operator */
+  syntax KItem ::= norm(Type, Value)
 
   syntax Exp ::= LeftValue
   syntax LeftValue ::= lv(Type, Ptr)

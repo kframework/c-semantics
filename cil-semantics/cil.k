@@ -37,9 +37,11 @@ module CIL
     //<frame multiplicity="*">
     <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
+      //<k> $PGM:File </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
       <frame-fun-va-args> .K </frame-fun-va-args>
       <env> .MyMap </env> // Map{CId, lv(Type, Ptr)|Type}
+      <locals> .MySet </locals> // Set{Ptr}
     </frame>
     <frame-stack list="">  // List{<frame> ... </frame>}
        <stacked-frame>

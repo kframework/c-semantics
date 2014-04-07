@@ -308,6 +308,7 @@ module CIL-DECL
   rule
     <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
     <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
+    <locals>... .MySet => MySetItem(P) ...</locals>
   [structural]
 
   syntax KItem ::= declStruct(CId, VarDecls, Exp, Int) [strict(3)]

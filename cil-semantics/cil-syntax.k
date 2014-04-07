@@ -442,5 +442,9 @@ module CIL-SYNTAX
 
   // TODO(AndreiS): remove hask for getting the result
   syntax KItem ::= "###result-value" "(" K ")"
+
+  // TODO(AndrieS): handle this
+  syntax CId ::= "sum" | "s" | "n" | "tmp"
+  syntax DecimalFloatConstant ::= "0U"
 endmodule
 
