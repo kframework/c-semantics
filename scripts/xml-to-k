@@ -73,7 +73,7 @@ my %ignoreThese = (
 	'ForClauseDeclaration' => 1,
 );
 
-my $reader = new XML::LibXML::Reader(string => $input) 
+my $reader = new XML::LibXML::Reader(string => $input, huge => 1) 
       or die "cannot create XML::LibXML::Reader object\n";
 $reader->read;
 
@@ -107,7 +107,6 @@ print nameToLabel('TranslationUnit') . $tu ;
 if ($ltl ne "") {
 	print $ltl;
 }
-
 
 sub printStatus {
 	my ($reader) = (@_);

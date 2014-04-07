@@ -128,7 +128,7 @@ and printSource (sourceCode : string) =
 	printCell "SourceCode" [] (printRawString sourceCode)
 and printDefs defs =
 	if !defsPrinted = 1 then !ast else 
-		let result = List.fold_left (fun aux arg -> printCell "StmtCons" [] (aux ^ (printDef arg))) (printNop) defs in
+            let result = printNewList printDef defs in
 			defsPrinted := 1;
 			ast := result;
 			result

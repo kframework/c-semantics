@@ -20,7 +20,8 @@ module C-TRANSLATION-INIT
      imports COMPAT-SYNTAX
 
      rule outputMode(link, Debug:Bool) 
-          => TranslationUnit("builtin", list(.List), addBuiltins(builtins))
+          => TranslationUnit("builtin", list(.List),
+               list(ListItem(addBuiltins(builtins))))
           ~> resolveReferences
           ~> printSuccess
           ~> #if (Debug)
@@ -41,9 +42,9 @@ module C-TRANSLATION-INIT
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule [unpack-TranslationUnit]:
-          <k> TranslationUnit(TU:String, Strings:K, K:K) 
+          <k> TranslationUnit(TU:String, Strings:K, list(Decls:List)) 
                => preDeclareStrings(Strings)
-               ~> listToK(deCons(K))
+               ~> listToK(Decls)
                ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> _ => TU </curr-tu>
