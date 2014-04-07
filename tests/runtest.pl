@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -132,8 +133,8 @@ sub performTest {
 
 	if ($kccCompileRetval) {
 		if ($shouldFail) {
-			if ($lookForError) {
-				return reportFailure($testName, $timer, "Failure---Was expecting particular runtime message but failed to compile");
+			if ($lookForError && !($kccCompileOutput =~ /Error: $lookForError/m)) {
+				return reportFailure($testName, $timer, "Failure---Was expecting particular error message but failed to compile");
 			}
 			return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
 		} else {
