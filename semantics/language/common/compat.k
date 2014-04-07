@@ -26,8 +26,6 @@ module COMPAT-SYNTAX
      syntax Bool ::= BagItem "in" Bag [function]
                    | K "#inBag" Bag [function]
 
-     syntax List ::= deCons(K) [function]
-
      syntax Int ::= string2Base(String, Int)
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
      syntax String ::= base2String(Int, Int)
@@ -156,10 +154,6 @@ module COMPAT
 
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
-
-     rule deCons(StmtCons(K1:K, K2:K)) => deCons(K1) ListItem(K2)
-     rule deCons(K:K) => ListItem(K)
-          when getKLabel(K) =/=KLabel 'StmtCons
 
      rule list(L:List) => toKRList(L) 
           [structural]

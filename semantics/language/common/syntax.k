@@ -8,8 +8,6 @@ module C-SYNTAX
      
      syntax C ::= Id
      
-     syntax K ::= StmtCons(K, K) [klabel('StmtCons)]
-
      syntax KResult ::= SpecifierElem
      
      syntax C ::= CabsLoc
