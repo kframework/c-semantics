@@ -205,7 +205,7 @@ sub main {
       push (@krun_args_pretty, @file_args);
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args)) . " > $linkStdout 2>&1";
-      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
+      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
 
       print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
@@ -405,7 +405,7 @@ sub compile {
             );
 
       my $cmd = "$KRUN " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
-      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty));
+      my $cmd_pretty = "$KRUN " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
 
       print $cmd . "\n" if ($args->{'-d'});
       system($cmd);
