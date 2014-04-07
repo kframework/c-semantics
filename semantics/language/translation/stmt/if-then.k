@@ -42,6 +42,7 @@ module C-STMT-IF-THEN
 
      rule maybeSymVal(noResult, noResult) => .K
      rule maybeSymVal(tv(_, T:Type), tv(_, T:Type)) => tv(symVal, T)
+     rule maybeSymVal(skipval, skipval) => skipval
 
 endmodule
 
