@@ -74,18 +74,26 @@ module C-MEMORY-WRITING
           [structural]
           
      syntax K ::= makeUnknown(SymLoc, Id, FieldInfo) [function]
-     
+
      // Zero from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks into a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:Id, fieldInfo(L:List,
                F |-> T:Type _, _))
-          => writeBytes(Loc +bits bitSizeofType(T),
+          => writeBytes(Loc +bits roundUpToByte(bitSizeofType(T)),
                dataList(times(bitsToBytes(
-                    maxBitSizeofList(L) -Int bitSizeofType(T)), 
+                    maxBitSizeofList(L) -Int roundUpToByte(bitSizeofType(T))), 
                     piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
-          when maxBitSizeofList(L) >Int bitSizeofType(T)
+          when maxBitSizeofList(L) >Int roundUpToByte(bitSizeofType(T))
      rule makeUnknown(_, F:Id, fieldInfo(L:List, F |-> T:Type _, _)) => .
-          when maxBitSizeofList(L) <=Int bitSizeofType(T)
+          when maxBitSizeofList(L) <=Int roundUpToByte(bitSizeofType(T))
+
+     // TODO(chathhorn): move/replace.
+     syntax Int ::= roundUpToByte(Int) [function]
+     rule roundUpToByte(I:Int) => I
+          when (I %Int cfg:bitsPerByte) ==Int 0
+     rule roundUpToByte(I:Int)
+          => I +Int (cfg:bitsPerByte -Int (I %Int cfg:bitsPerByte))
+          when (I %Int cfg:bitsPerByte) =/=Int 0
           
      syntax Bool ::= hasUnionMarker(Type) [function]
      rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
