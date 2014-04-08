@@ -329,7 +329,7 @@ and handleStringLiteral s =
 and handleWStringLiteral ws =
 	let result = wrap [printRawString (string_of_list_of_int64 ws)] "WStringLiteral" in
 	stringLiterals := result :: !stringLiterals;
-	result	
+	result
 and splitFloat (xs, i) =
 	let lastOne = if (String.length i > 1) then String.uppercase (Str.last_chars i 1) else ("x") in
 	let newi = (Str.string_before i (String.length i - 1)) in

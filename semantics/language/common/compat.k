@@ -19,9 +19,6 @@ module COMPAT-SYNTAX
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 
      syntax Bag ::= toBag(List) [function]
-                  | toBag(KList) [function]
-
-     syntax Int ::= lengthKList(KList) [function]
 
      syntax Bool ::= BagItem "in" Bag [function]
                    | K "#inBag" Bag [function]
@@ -70,10 +67,9 @@ module COMPAT-SYNTAX
      
      syntax K ::= kpair(K, K)
 
+     syntax KList ::= Int "to" Int [function]
      syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
-
-     syntax KList ::= Int "to" Int [function]
 
      syntax List ::= times(Int, K) [function]
 
@@ -82,8 +78,6 @@ module COMPAT-SYNTAX
 
      // TODO(chathhorn): better place for this?
      syntax K ::= case(Int)
-
-     syntax List ::= klistToList(KList) [function]
 
 endmodule
 
@@ -146,12 +140,6 @@ module COMPAT
      rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
      rule toBag(.List) => .Bag
 
-     rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
-     rule toBag(.KList) => .Bag
-
-     rule lengthKList(_:K,, L:KList) => 1 +Int lengthKList(L)
-     rule lengthKList(.KList) => 0
-
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
 
@@ -172,16 +160,18 @@ module COMPAT
      rule reverseList(ListItem(K:K) L:List)
           => reverseList(L:List) ListItem(K:K)
 
-	rule N:Int to N => .KList
-	rule N:Int to N':Int => (N,,((N +Int 1) to N'))
-		when N <Int N'
-
      rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
      rule listToK(.List) => .K
+
+     rule N:Int to N => .KList
+     rule N:Int to N':Int => (N,, ((N +Int 1) to N'))
+          when N <Int N'
 
      rule times(0, _) => .List
      rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
           when N >Int 0
+
+     syntax List ::= klistToList(KList) [function]
 
      rule klistToList((K:K,, L:KList)) => ListItem(K) klistToList(L)
      rule klistToList(.KList) => .List

@@ -103,10 +103,10 @@ module C-COMPOUND-LITERAL
           when notBool (S in keys(M))
           [large, structural]
           
-     syntax K ::= wstring(KList)
+     syntax K ::= wstring(List)
      rule [const-wstring-notfound]:
           <k> (.K => allocWString(Loc, S))
-               ~> Constant(WStringLiteral(S:KList))
+               ~> Constant(WStringLiteral(list(S:List)))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -114,7 +114,7 @@ module C-COMPOUND-LITERAL
           <string-lits>
                M:Map
                (.Map => wstring(S) |-> lv(Loc, t(.Set, 
-                    arrayType(cfg:wcharut, lengthKList(S) +Int 1))))
+                    arrayType(cfg:wcharut, lengthList(S) +Int 1))))
           </string-lits>
           when notBool wstring(S) in keys M
           [large, structural]
@@ -126,7 +126,7 @@ module C-COMPOUND-LITERAL
           <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
      rule [const-wstring-found]:
-          <k> Constant(WStringLiteral(S:KList)) => V ...</k>
+          <k> Constant(WStringLiteral(list(S:List))) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... wstring(S) |-> V:LValue ...</string-lits>

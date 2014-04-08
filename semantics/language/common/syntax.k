@@ -659,7 +659,7 @@ module C-SYNTAX
      syntax Constant ::= CharLiteral(Int) [klabel('CharLiteral)]
      syntax Constant ::= WCharLiteral(Int) [klabel('WCharLiteral)]
      syntax Constant ::= StringLiteral(String) [klabel('StringLiteral)]
-     syntax Constant ::= WStringLiteral(KList) [klabel('WStringLiteral)]
+     syntax Constant ::= WStringLiteral(K) [klabel('WStringLiteral)]
      
      /*
      and init_expression =

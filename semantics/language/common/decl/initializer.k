@@ -52,11 +52,11 @@ module C-DECL-INITIALIZER
      rule figureInit(
                _, 
                t(_, arrayType(T:Type, Len:Int)), 
-               (SingleInit(Constant(WStringLiteral(S:KList))) 
+               (SingleInit(Constant(WStringLiteral(list(S:List)))) 
                => CompoundInit(list(ListItem(InitFragment(NextInit,
-                    SingleInit(Constant(WStringLiteral(S))))))))
+                    SingleInit(Constant(WStringLiteral(list(S)))))))))
           )
-          when isWCharType(T) andBool (lengthKList(S) <=Int Len)
+          when isWCharType(T) andBool (lengthList(S) <=Int Len)
           [structural] 
      
      rule figureInit(_, t(_, (incompleteArrayType(T:Type) 
@@ -66,8 +66,8 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, lengthKList(S) +Int 1))),
-               SingleInit(Constant(WStringLiteral(S:KList)))) 
+          => arrayType(T, lengthList(S) +Int 1))),
+               SingleInit(Constant(WStringLiteral(list(S:List))))) 
           when isWCharType(T)
           [structural] 
           
@@ -439,14 +439,14 @@ module C-DECL-INITIALIZER
           when isCharType(T) andBool lengthString(S) ==Int Len
           [structural] 
      rule [fillInit-wstring-array-eq]:
-          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-               => fillInit-aux(SingleInit(Constant(WStringLiteral(S))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(list(S:List)))))
+               => fillInit-aux(SingleInit(Constant(WStringLiteral(list(S)))))
           ...</k>
           <curr-subobject>
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isWCharType(T) andBool lengthKList(S) ==Int Len
+          when isWCharType(T) andBool lengthList(S) ==Int Len
           [structural] 
      rule [fillInit-string-array-lt]:
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
@@ -460,14 +460,14 @@ module C-DECL-INITIALIZER
           when isCharType(T) andBool lengthString(S) <Int Len
           [structural] 
      rule [fillInit-wstring-array-lt]:
-          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-               => fillInit(SingleInit(Constant(WStringLiteral((S,, 0)))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(list(S:List)))))
+               => fillInit(SingleInit(Constant(WStringLiteral(list(S ListItem(0))))))
           ...</k>
           <curr-subobject>
                ListItem(te(_:K, T:Type))
                     ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isWCharType(T) andBool lengthKList(S) <Int Len
+          when isWCharType(T) andBool lengthList(S) <Int Len
           [structural] 
      rule [fillInit-string-char]:
           <k> fillInit(SingleInit(Constant(StringLiteral(S:String))))
@@ -481,8 +481,9 @@ module C-DECL-INITIALIZER
           when isCharType(T)
           [structural] 
      rule [fillInit-wstring-wchar]:
-          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-               => fillInit-aux(SingleInit(Constant(WStringLiteral((S,, 0)))))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(list(S:List)))))
+               => fillInit-aux(SingleInit(
+                    Constant(WStringLiteral(list(S ListItem(0))))))
           ...</k>
           <curr-subobject>
                ListItem(te(_:K, T:Type)) 
@@ -511,9 +512,9 @@ module C-DECL-INITIALIZER
           
      rule [fillInitAux-wstring-some]:
           <k> fillInit-aux(SingleInit(Constant(
-                    WStringLiteral((N:Int,, S:KList)))))
+                    WStringLiteral(list(ListItem(N:Int) S:List)))))
                => fillInit(SingleInit(tv(N, cfg:wcharut)))
-                    ~> fillInit-aux(SingleInit(Constant(WStringLiteral(S)))) 
+                    ~> fillInit-aux(SingleInit(Constant(WStringLiteral(list(S))))) 
           ...</k>
           <curr-subobject> 
                ListItem(te(_:K, T:Type))
@@ -525,7 +526,7 @@ module C-DECL-INITIALIZER
           fillInit-aux(SingleInit(Constant(StringLiteral("")))) => .
           [structural]
      rule [fillInitAux-wstring-done]:
-          fillInit-aux(SingleInit(Constant(WStringLiteral(.KList)))) => .
+          fillInit-aux(SingleInit(Constant(WStringLiteral(list(.List))))) => .
           [structural] 
           
      // This rule assumes all unrollings have already occurred, so it needs to
@@ -543,8 +544,8 @@ module C-DECL-INITIALIZER
                     orBool isBitfieldType(T))
           [structural] 
      rule [fillinit-wstring-notwchar]:
-          <k> fillInit(SingleInit(Constant(WStringLiteral(S:KList))))
-               => initializeSingleInit(Constant(WStringLiteral(S)))
+          <k> fillInit(SingleInit(Constant(WStringLiteral(list(S:List)))))
+               => initializeSingleInit(Constant(WStringLiteral(list(S))))
           ...</k>
           <curr-subobject>
                ListItem(te(_:K, T:Type))

@@ -130,8 +130,8 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
      rule <type>
-               Constant(WStringLiteral(L:KList)) 
-               => t(.Set, arrayType(cfg:wcharut, lengthKList(L) +Int 1)) 
+               Constant(WStringLiteral(list(L:List))) 
+               => t(.Set, arrayType(cfg:wcharut, lengthList(L) +Int 1)) 
           ...</type>
           [structural]
           

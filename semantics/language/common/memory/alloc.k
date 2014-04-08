@@ -2,7 +2,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= memblock(Int, Bag, Map)
 
      syntax K ::= writeString(SymLoc, String)
-     syntax K ::= writeWString(SymLoc, KList)
+     syntax K ::= writeWString(SymLoc, List)
 
      // fixme would be better to keep canonical
      syntax Int ::= getBitOffset(SymLoc) [function]
@@ -12,7 +12,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= checkDerefLoc(SymLoc)
 
      syntax K ::= allocString(SymLoc, String)
-     syntax K ::= allocWString(SymLoc, KList)
+     syntax K ::= allocWString(SymLoc, List)
 
      syntax K ::= alloc(SymLoc, K) [strict(2)]
 
@@ -51,7 +51,7 @@ module C-MEMORY-ALLOC
           [structural]
      // fixme this bare 4 needs to be updated to handle different size wchar_ts
      rule [write-wstring]:
-          writeWString(Loc:SymLoc, (N:Int,, S:KList))
+          writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
           => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
                := tv(N, cfg:wcharut))
                ~> writeWString(Loc +bytes 4, S)
@@ -62,7 +62,7 @@ module C-MEMORY-ALLOC
                := tv(0, t(.Set, char)))
           [structural]
      rule [write-wstring]:
-          writeWString(Loc:SymLoc, .KList)
+          writeWString(Loc:SymLoc, .List)
           => Computation((* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
                := tv(0, cfg:wcharut))
           [structural] 
@@ -124,9 +124,9 @@ module C-MEMORY-ALLOC
                ~> writeString(Loc, S) ~> makeUnwritable(Loc)
           [structural]
      rule [alloc-wstring]:
-          allocWString(Loc:SymLoc, S:KList)
+          allocWString(Loc:SymLoc, S:List)
           => allocateType(Loc, 
-               t(.Set, arrayType(cfg:wcharut, 4 *Int (lengthKList(S) +Int 1))))
+               t(.Set, arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1))))
                ~> writeWString(Loc, S) ~> makeUnwritable(Loc)
           [structural] 
      

@@ -7,6 +7,8 @@ module C-COMPOUND-LITERAL
      imports C-SYMLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
 
+     imports COMPAT-SYNTAX
+
      syntax Id ::= compoundLiteral(Int)
      syntax K ::= handleCompoundLiteral(K) [strict]
      
@@ -67,7 +69,7 @@ module C-COMPOUND-LITERAL
           <compound-lit-map>... X |-> Loc:SymLoc ...</compound-lit-map>
           [structural]
           
-     syntax K ::= wstring(KList)
+     syntax K ::= wstring(List)
      rule [const-string-found]:
           <k> Constant(StringLiteral(S:String)) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -75,7 +77,7 @@ module C-COMPOUND-LITERAL
           <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
      rule [const-wstring-found]:
-          <k> Constant(WStringLiteral(S:KList)) => V ...</k>
+          <k> Constant(WStringLiteral(list(S:List))) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... wstring(S) |-> V:LValue ...</string-lits>

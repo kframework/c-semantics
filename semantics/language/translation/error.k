@@ -118,7 +118,7 @@ module C-TRANSLATION-ERROR
           
    //   rule [err00025a]:
    //        (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-   //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _:KList)), _:Int, _:Id, _)
+   //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _)), _:Int, _:Id, _)
    //        when T =/=K int
    //        [structural, large]
    //   rule [err00025b]:
