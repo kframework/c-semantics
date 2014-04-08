@@ -259,17 +259,11 @@ module C-TYPING-PREDICATES
           when (T =/=K bool)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
-     rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _))) => true 
-     rule [isArrayType-incompleteArray]:
-          isArrayType(t(_, incompleteArrayType(_)))
-          => true 
-     rule [isArrayType-flexibleArray]:
-          isArrayType(t(_, flexibleArrayType(_)))
-          => true 
-     rule [isArrayType-qualified]:
-          isArrayType(t(_, qualifiedType(T:Type, _)))
-          => isArrayType(T)
-     rule [isArrayType-other]: isArrayType(t(_, T:SimpleType)) => false
+     rule isArrayType(t(_, arrayType(_, _))) => true 
+     rule isArrayType(t(_, incompleteArrayType(_))) => true 
+     rule isArrayType(t(_, flexibleArrayType(_))) => true 
+     rule isArrayType(t(_, qualifiedType(T:Type, _))) => isArrayType(T)
+     rule isArrayType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'arrayType)
                andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)

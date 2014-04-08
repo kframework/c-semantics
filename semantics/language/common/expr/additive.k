@@ -109,22 +109,31 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
           
      syntax KResult ::= newFromArray(K, Int) [function]
-     rule newFromArray(t(SetItem(fromArray(Offset:Int, Len:Int)), 
+     rule newFromArray(
+               t(SetItem(fromArray(Offset:Int, Len:Int)) S:Set,
                pointerType(T:Type)), I:Int) 
-          => t(SetItem(fromArray(Offset +Int I, Len)), pointerType(T))
-     rule newFromArray(t(.Set, pointerType(T:Type)), _:Int) 
-          => t(.Set, pointerType(T))
-          
-     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(_:Type)), I:Int)
+          => t(SetItem(fromArray(Offset +Int I, Len)) S, pointerType(T))
+     rule newFromArray(T:Type, _) => T
+          when notBool isFromArray(T)
+
+     rule ifFromArrayInBounds(
+               t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
+               pointerType(_)), I:Int)
           => true
           when Offset +Int I <=Int Len
-     rule ifFromArrayInBounds(t(SetItem(fromArray(Offset:Int, Len:Int)), 
-               pointerType(_:Type)), I:Int)
+     rule ifFromArrayInBounds(
+               t(SetItem(fromArray(Offset:Int, Len:Int)) _,
+               pointerType(_)), I:Int)
           => false
           when Offset +Int I >Int Len
-     rule ifFromArrayInBounds(t(.Set, pointerType(_:Type)), _:Int)
-          => true
+     rule ifFromArrayInBounds(T:Type, _) => true
+          when notBool isFromArray(T)
+
+     syntax Bool ::= isFromArray(Type) [function]
+                   | "#isFromArray" "(" Type ")" [function]
+
+     rule isFromArray(T:Type) => #isFromArray(T) ==K true
+     rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same

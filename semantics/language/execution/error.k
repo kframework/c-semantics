@@ -252,7 +252,7 @@ module C-EXECUTION-ERROR
           
      rule [err00044]:
           (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
-          addToPointer(_:SymLoc, T:Type, I:Int, tv(_:Int, _))
+          addToPointer(_, T:Type, I:Int, tv(_:Int, _))
           when notBool ifFromArrayInBounds(T, I)
           [structural, large]
           
