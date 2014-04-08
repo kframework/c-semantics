@@ -198,7 +198,8 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, State, internal, isExtern(T))
+                    Loc, State, internal, 
+                    #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -229,7 +230,7 @@ module C-DECL-GLOBAL
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, State, external, false)
+                    Loc, State, external, .K)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -248,7 +249,7 @@ module C-DECL-GLOBAL
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, State, external, true)
+                    Loc, State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -279,7 +280,8 @@ module C-DECL-GLOBAL
                ~> giveType(X, unqualifyType(T)) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, declared, external, isExtern(T))
+                    Loc, declared, external,
+                    #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -300,7 +302,7 @@ module C-DECL-GLOBAL
                ~> giveType(X, unqualifyType(T)) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, declared, internal, false)
+                    Loc, declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -329,34 +331,35 @@ module C-DECL-GLOBAL
           [structural]
 
      // Now we just need to handle allocation, initialization, and updating the
-     // declState, when necessary. The last argument might be called "isExtern"
-     // or "don't allocate (unless initialized)." In C11, because
-     // extern-qualified declarations can have initializers, the difference
-     // between a global extern-qualified declaration and a global naked
-     // declaration is very slight: they only differ in the case of
-     // declarations without initializers. A naked declaration without an
-     // initializer constitutes a tentative definition, but an extern
-     // declaration without an initializer does not.
-     syntax K ::= "declareExternalVariable'" 
-          "(" K "," SymLoc "," DeclState "," Linkage "," Bool")" [strict(1)]
+     // declState, when necessary. The last argument can be thought of as the
+     // "true" storage class specifier of the decl, counting functions as
+     // extern. In C11, because extern-qualified declarations can have
+     // initializers, the difference between a global extern-qualified
+     // declaration and a global naked declaration is very slight: they only
+     // differ in the case of declarations without initializers. A naked
+     // declaration without an initializer constitutes a tentative definition,
+     // but an extern declaration without an initializer does not.
+     syntax K ::= "declareExternalVariable'" "(" K "," SymLoc "," DeclState ","
+     Linkage "," Storage ")" [strict(1)]
 
      // *** Incomplete ***
 
      // If this declaration has an incomplete type, then we're done.
-     rule declareExternalVariable'(initValue(_, T:Type, .K), _, _, _, true)
+     rule declareExternalVariable'(initValue(_, T:Type, .K), _, _, _, Extern)
           => .
           when notBool isCompleteType(T)
           [structural]
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K),
-               _, _, Lnk:Linkage, false)
+               _, _, Lnk:Linkage, Sto:Storage)
           => recordTentDef(X, Lnk)
           when notBool isCompleteType(T)
+               andBool Sto =/=K Extern
           [structural]
 
      // *** Extern, already completed.  ***
 
      rule declareExternalVariable'(initValue(_, _, .K), 
-               _, State:DeclState, _, true)
+               _, State:DeclState, _, Extern)
           => .
           when State =/=K declared
           [structural]
@@ -369,17 +372,18 @@ module C-DECL-GLOBAL
      // Completed type, no init.
      // declared => allocated
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, declared, Lnk:Linkage, false)
+               Loc:SymLoc, declared, Lnk:Linkage, Sto:Storage)
           => giveType(X, T)
           ~> allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
           ~> recordTentDef(X, Lnk)
           when isCompleteType(T)
+               andBool Sto =/=K Extern
           [structural]
 
      // declared => completed
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               _, declared, Lnk:Linkage, true)
+               _, declared, Lnk:Linkage, Extern)
           => giveType(X, T)
           ~> updateDecl(X, completed, Lnk)
           when isCompleteType(T)
@@ -388,19 +392,21 @@ module C-DECL-GLOBAL
      // Already encountered a completed decl, no init.
      // completed => allocated
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, completed, Lnk:Linkage, false)
+               Loc:SymLoc, completed, Lnk:Linkage, Sto:Storage)
           => allocateDecl(X, T, Loc)
           ~> updateDecl(X, allocated, Lnk)
           ~> recordTentDef(X, Lnk)
           when isCompleteType(T)
+               andBool Sto =/=K Extern
           [structural]
 
      // Already encountered a allocated or initialized decl, no init.
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               _, State:DeclState, Lnk:Linkage, false)
+               _, State:DeclState, Lnk:Linkage, Sto:Storage)
           => recordTentDef(X, Lnk) // Don't really need this.
           when isCompleteType(T)
                andBool (State ==K allocated orBool State ==K initialized)
+               andBool Sto =/=K Extern
           [structural]
 
      // *** Initializer ***
@@ -572,7 +578,7 @@ module C-DECL-GLOBAL
           when notBool (X in Incs)
           [structural]
 
-     // TODO(chathhorn): I just don't know. Really need to come up with a
+     // TODO(chathhorn): This is all a mess, I really need to come up with a
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax K ::= completeTagInExtDecls(Id, FieldInfo, Set)
