@@ -99,7 +99,6 @@ module C-TYPING-SYNTAX
      syntax Set ::= getQualifiers(Type) [function]
      // takes a type, but sometimes things like maps give K
      syntax KResult ::= unqualifyType(K) [function]
-     syntax Type ::= removeStorageSpecifiers(K) [function]
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 

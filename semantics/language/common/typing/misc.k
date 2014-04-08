@@ -145,17 +145,9 @@ module C-TYPING-MISC
           SetItem(Volatile)
           SetItem(Atomic)
 
-     // TODO(chathhorn): probably poorly named.
-     rule unqualifyType(t(_, qualifiedType(T:Type, _))) 
-          => unqualifyType(T)
-     rule unqualifyType(t(_, T:SimpleType)) => t(.Set, T)
-          when getKLabel(T) =/=KLabel 'qualifiedType
-          
-     // TODO(chathhorn): doesn't do exactly what it claims to. It does the
-     // same thing as unqualifyType, but I guess it leaves Const alone.
-     rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
-          => removeStorageSpecifiers(T)
-     rule removeStorageSpecifiers(t(S:Set, T:SimpleType)) => t(S, T)
+     rule unqualifyType(t(S:Set, qualifiedType(t(S':Set, T':SimpleType), _))) 
+          => unqualifyType(t(S S', T'))
+     rule unqualifyType(t(S:Set, T:SimpleType)) => t(S, T)
           when getKLabel(T) =/=KLabel 'qualifiedType
           
      rule getModifiers(t(S:Set, _)) => S

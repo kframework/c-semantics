@@ -54,7 +54,8 @@ module C-DECL-LOCAL
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
-          => initLocalStatic(X, figureInit(X, unqualifyType(T), K))
+          => initLocalStatic(X,
+               allowInit(figureInit(X, unqualifyType(T), K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
@@ -90,7 +91,7 @@ module C-DECL-LOCAL
      rule declareInternalVariable(X:Id, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, unqualifyType(T), 
-               figureInit(X, unqualifyType(T), K))
+               allowInit(figureInit(X, unqualifyType(T), K)))
           when isNaked(T)
                andBool (K =/=K NoInit)
           [structural] 

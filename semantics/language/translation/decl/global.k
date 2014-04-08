@@ -13,7 +13,7 @@ module C-DECL-GLOBAL-SYNTAX
      // incomplete.
      syntax K ::= declState(SymLoc, Type, DeclState, Bool)
 
-     syntax K ::= allowInit(K) [function]
+     syntax K ::= allowInit(K)
      syntax K ::= updateDecl(Id, DeclState, Linkage)
      syntax K ::= updateLinkState(Id, Type, SymLoc)
      syntax K ::= allocateDecl(Id, Type, SymLoc)
@@ -196,7 +196,8 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
+               => declareExternalVariable'(
+                    allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, State, internal, isExtern(T))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -226,7 +227,8 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
-               ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
+               ~> declareExternalVariable'(
+                    allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, State, external, false)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -244,7 +246,8 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
-               ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
+               ~> declareExternalVariable'(
+                    allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, State, external, true)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -274,7 +277,8 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
                ~> giveType(X, unqualifyType(T)) // Tentative type.
-               ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
+               ~> declareExternalVariable'(
+                    allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, declared, external, isExtern(T))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -294,7 +298,8 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
                ~> giveType(X, unqualifyType(T)) // Tentative type.
-               ~> declareExternalVariable'(figureInit(X, unqualifyType(T), K), 
+               ~> declareExternalVariable'(
+                    allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, declared, internal, false)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -426,11 +431,6 @@ module C-DECL-GLOBAL
           ~> updateDecl(X, initialized, Lnk)
           when K =/=K .K
           [structural]
-
-     rule allowInit(K:K)
-          => setInitializing(true)
-          ~> K
-          ~> setInitializing(false)
 
      syntax K ::= setInitializing(Bool)
      rule <k> setInitializing(I:Bool) => .K ...</k>
@@ -647,6 +647,19 @@ module C-DECL-GLOBAL
      rule completeTagInTags(_, _, .Set) => .K
           [structural]
      rule completeTagInTags(S:Id, _, SetItem(S)) => .K
+          [structural]
+
+     syntax K ::= "allowInit'" [strict]
+
+     rule allowInit(K:K)
+          => setInitializing(true)
+          ~> K
+          ~> allowInit'
+          [structural]
+     rule R:KResult ~> allowInit'
+          => setInitializing(false) ~> R
+          [structural]
+     rule allowInit' => setInitializing(false)
           [structural]
 
 endmodule
