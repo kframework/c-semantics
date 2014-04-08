@@ -144,7 +144,7 @@ module C-BINDING
                (.K 
                => allocateType(Loc, type(V))
                     ~> Computation(
-                         *(tv(Loc, t(.Set, pointerType(type(V))))) := V)
+                         allowWrite(*(tv(Loc, t(.Set, pointerType(type(V)))))) := V)
                ) 
                ~> bindVariadic(_, (ListItem(V:K) => .List) _:List) 
           ...</k>

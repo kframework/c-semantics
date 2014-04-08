@@ -11,6 +11,7 @@ module C-TYPING-SYNTAX
      syntax Id ::= unnamed(Int, String)
 
      syntax K ::= allowWrite(K) [strict]
+     syntax Type ::= stripConst(Type) [function]
      
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.

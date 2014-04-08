@@ -40,8 +40,6 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'bitfieldType
      rule numBits(t(_, bitfieldType(_, N:CSize))) => N
 
-     syntax Type ::= stripConst(Type) [function]
-
      rule stripConst(t(S:Set, qualifiedType(T:Type, K:K))) 
           => t((S -Set SetItem(Const)), qualifiedType(stripConst(T), K))
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
