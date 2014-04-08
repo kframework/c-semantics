@@ -1,3 +1,4 @@
+#include <stdlib.h>
 // based on pr19687.c from gcc torture tests
 union U
 {

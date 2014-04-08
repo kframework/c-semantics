@@ -1,5 +1,5 @@
 #include <stdio.h>
-int z;
+extern int z;
 static int w = 13;
 static int r = 15;
 
