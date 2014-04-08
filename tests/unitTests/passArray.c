@@ -1,3 +1,4 @@
+#include <stdio.h>
 // this comes from the cq test suite
 int array(int a[], int size, int start){
 	int i;
