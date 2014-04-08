@@ -194,6 +194,8 @@ module C-DECL-GLOBAL
      then the identifier has external linkage. 
      }*/
 
+     syntax Storage ::= "Naked"
+
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => declareExternalVariable'(
@@ -230,7 +232,7 @@ module C-DECL-GLOBAL
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
-                    Loc, State, external, .K)
+                    Loc, State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -339,8 +341,8 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax K ::= "declareExternalVariable'" "(" K "," SymLoc "," DeclState ","
-     Linkage "," Storage ")" [strict(1)]
+     syntax K ::= "declareExternalVariable'" "(" K "," SymLoc "," DeclState "," Linkage "," K ")"
+          [strict(1)]
 
      // *** Incomplete ***
 
