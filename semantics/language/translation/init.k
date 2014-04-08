@@ -42,7 +42,7 @@ module C-TRANSLATION-INIT
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule [unpack-TranslationUnit]:
-          <k> TranslationUnit(TU:String, Strings:K, list(Decls:List)) 
+          <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
                => preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
@@ -57,13 +57,13 @@ module C-TRANSLATION-INIT
           ...</translation-units>
           [structural, large]
           
-     syntax K ::= preDeclareStrings(K)
+     syntax K ::= preDeclareStrings(List)
      
-     rule preDeclareStrings(list(ListItem(K:K) L:List))
+     rule preDeclareStrings(ListItem(K:K) L:List)
           => allowInit(K ~> discard)
-          ~> preDeclareStrings(list(L))
+          ~> preDeclareStrings(L)
           [structural]
-     rule preDeclareStrings(list(.List)) => .K
+     rule preDeclareStrings(.List) => .K
           [structural]
      
      syntax K ::= addBuiltins(Set)

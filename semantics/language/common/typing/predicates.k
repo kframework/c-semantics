@@ -117,7 +117,10 @@ module C-TYPING-PREDICATES
      }*/
 
      syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
 
+     // TODO(chathhorn): I think there are various notions of type
+     // compatibility being conflated here.
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
 
@@ -166,8 +169,7 @@ module C-TYPING-PREDICATES
           when hasIntegerType(T)
           
      rule [typeCompatible-declarations]:
-          #isCompat(typedDeclaration(T:Type, _:Id), 
-               typedDeclaration(T':Type, _:Id))
+          #isCompat(typedDeclaration(T:Type, _), typedDeclaration(T':Type, _))
           => #isCompat(T, T') 
 
      rule [typeCompatible-array-right]:
@@ -186,7 +188,8 @@ module C-TYPING-PREDICATES
 
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments.
-     rule [typeCompatible-function-void]:
+     // TODO(chathhorn): still needs work. Also, specifiers.
+     rule [typeCompatible-function-empty-args]:
           #isCompat(
                t(_, functionType(T:Type, Args:List)),
                t(_, functionType(T':Type, Args':List)))
@@ -194,17 +197,14 @@ module C-TYPING-PREDICATES
           when (Args ==List .List) orBool (Args' ==List .List)
      rule [typeCompatible-function]:
           #isCompat(
-               t(S:Set,  functionType(T:Type,  ListItem(TA:Type) L:List)),
-               t(S':Set, functionType(T':Type, ListItem(TA':Type) L':List)))
-          => #isCompat(
-               t(S, functionType(T, L)), 
-               t(S', functionType(T', L')))
-               andBool #isCompat(TA, TA') 
-     rule [typeCompatible-function-nil]:
-          #isCompat(
-               t(_, functionType(T:Type, .List)),
-               t(_, functionType(T':Type, .List)))
-          => #isCompat(T, T') 
+               t(_, functionType(T:Type,  L:List)),
+               t(_, functionType(T':Type, L':List)))
+          => #isCompat(T, T') andBool #areCompat(L, L')
+          when lengthList(L) ==Int lengthList(L')
+
+     rule #areCompat(ListItem(T:Type) L:List, ListItem(T':Type) L':List)
+          => #isCompat(T, T') andBool #areCompat(L, L')
+     rule #areCompat(.List, .List) => true
           
      rule isFloatType(t(_, float)) => true 
      rule isFloatType(t(_, double)) => true 

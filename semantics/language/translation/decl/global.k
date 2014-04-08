@@ -203,10 +203,23 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
           <internals>...
-               X |-> declState(Loc:SymLoc, _, State:DeclState, _)
+               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
                andBool notBool (X in keys Exts)
+               andBool isTypeCompatible(T, OldT)
+          [structural]
+
+     rule <k> (. => ERROR("DG4", "Conflicting types for "
+                    +String idToString(X) +String "."))
+               ~> declareExternalVariable(X:Id, T:Type, _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <internals>... 
+               X |-> declState(_, OldT:Type, _, _) 
+          ...</internals>
+          when notBool isTypeCompatible(T, OldT)
           [structural]
 
      // Naked, previously declared extern.
@@ -224,6 +237,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isNaked(T)
                andBool notBool (X in keys Ints)
+               andBool isTypeCompatible(T, OldT)
           [structural]
 
      // Extern, previously declared extern.
@@ -241,6 +255,19 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isExtern(T)
                andBool notBool (X in keys Ints)
+               andBool isTypeCompatible(T, OldT)
+          [structural]
+
+     rule <k> (. => ERROR("DG5", "Conflicting types for "
+                    +String idToString(X) +String "."))
+               ~> declareExternalVariable(X:Id, T:Type, _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>... 
+               X |-> declState(_, OldT:Type, _, _) 
+          ...</externals>
+          when notBool isTypeCompatible(T, OldT)
           [structural]
 
      // Naked or extern, not previously declared.
@@ -284,7 +311,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // Static, previously extern.
-     rule <k> (. => ERROR("DG4",
+     rule <k> (. => ERROR("DG6",
                "Static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
                ~> declareExternalVariable(X:Id, T:Type, _)
@@ -470,7 +497,7 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     rule <k> (.K => ERROR("DG5",
+     rule <k> (.K => ERROR("DG7",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, _, Loc':SymLoc)
