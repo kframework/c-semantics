@@ -6,6 +6,7 @@ use File::Spec::Functions qw(catfile);
 use File::Temp;
 use File::Copy;
 use MIME::Base64;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 setpgrp;
 
@@ -50,7 +51,14 @@ sub main {
       # The function "linkedProgram()" is attached to the bottom of this script
       # by kcc.
       binmode($fileInput, ':raw');
-      print $fileInput decode_base64(linkedProgram());
+
+      my $gzippedConf = decode_base64(linkedProgram());
+      my $gunzippedConf;
+
+      gunzip \$gzippedConf => \$gunzippedConf
+            or die "gunzip failed: $GunzipError\n";
+
+      print $fileInput $gunzippedConf;
 
       my $argc = $#ARGV + 2;
       my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));

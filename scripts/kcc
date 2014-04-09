@@ -8,6 +8,7 @@ use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
 use Getopt::Declare;
 use MIME::Base64;
+use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -219,8 +220,15 @@ sub main {
 
       open(FILE, $confOutTmp) or die "Couldn't open file: $!";
       binmode(FILE, ':raw');
-      my $programConf = encode_base64(join("", <FILE>));
+      my $programConf = join("", <FILE>);
       close(FILE);
+
+      my $gzippedConf;
+
+      gzip \$programConf => \$gzippedConf
+            or die "gzip failed: $GzipError\n";
+
+      $programConf = encode_base64($gzippedConf);
 
       if (!checkTransSuccess($linkStdout)) {
             print "Error during translation.\n";
