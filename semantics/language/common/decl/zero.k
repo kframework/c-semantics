@@ -11,7 +11,7 @@ module C-DECL-ZERO
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     rule <k> zero(Sym:K) => zeroType(Sym, unqualifyType(T)) ...</k>
+     rule <k> zero(Sym:K) => zeroType(Sym, T) ...</k>
           <types>... Sym |-> T:Type ...</types>
           [structural] 
           
@@ -47,6 +47,12 @@ module C-DECL-ZERO
           => zeroStruct(N, Fields)
           [structural] 
           
+     // TODO(chathhorn): what does the standard mean by "any padding is
+     // initialized to zero bits"? Does it mean the padding around bitfields
+     // and caused by other alignment concerns, or the padding caused by the
+     // size of other fields in the union? As things are, we set the padding
+     // between the end of the first field and the end of the union to be set
+     // to unknown.
      rule zeroType(N:K, t(_, unionType(_, _,
                fieldInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
           )))

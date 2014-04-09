@@ -24,7 +24,7 @@ module C-DECL-LOCAL
      // Should the external types be updated/completed?
      rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
                => addToEnv(X, Loc)
-               ~> giveType(X, unqualifyType(T'))
+               ~> giveType(X, T')
           ...</k>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Loc:SymLoc ...</external-defs>
@@ -34,7 +34,7 @@ module C-DECL-LOCAL
           [structural] 
      rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
                => addToEnv(X, symVal)
-               ~> giveType(X, unqualifyType(T'))
+               ~> giveType(X, T')
           ...</k>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
@@ -45,7 +45,7 @@ module C-DECL-LOCAL
           [structural] 
      rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
                => addToEnv(X, symVal)
-               ~> giveType(X, unqualifyType(T))
+               ~> giveType(X, T)
           ...</k>
           <external-types> Types:Map </external-types>
           when (isFunctionType(T) orBool isExternType(T))
@@ -84,7 +84,7 @@ module C-DECL-LOCAL
 
      rule declareInternalVariable(X:Id, T:Type, NoInit)
           => addToEnv(X, symVal)
-          ~> giveType(X, unqualifyType(T))
+          ~> giveType(X, T)
           when isNaked(T)
           [structural] 
 

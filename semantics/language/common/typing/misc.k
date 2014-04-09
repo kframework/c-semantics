@@ -148,6 +148,11 @@ module C-TYPING-MISC
      rule unqualifyType(t(S:Set, T:SimpleType)) => t(S, T)
           when getKLabel(T) =/=KLabel 'qualifiedType
           
+     rule stripQualities(t(_, qualifiedType(t(_, T':SimpleType), _))) 
+          => stripQualities(t(.Set, T'))
+     rule stripQualities(t(_, T:SimpleType)) => t(.Set, T)
+          when getKLabel(T) =/=KLabel 'qualifiedType
+          
      rule getModifiers(t(S:Set, _)) => S
           
      rule [innerType-arrayType]:

@@ -98,8 +98,16 @@ module C-TYPING-SYNTAX
 
      syntax Set ::= getQualities(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
-     // takes a type, but sometimes things like maps give K
-     syntax KResult ::= unqualifyType(K) [function]
+
+     // TODO(chathhorn): rework how qualifiers/specifiers are handled. Rename
+     // these to be more in line with the standard's terminology.
+     // 
+     // This just removes stuff that appears in the "qualifiedType"
+     // constructor. Generally storage class specifiers.
+     syntax Type ::= unqualifyType(Type) [function]
+     // This removes everything that unqualifyType does, but also stuff like
+     // Const and the fromUnion tag.
+     syntax Type ::= stripQualities(Type) [function]
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 

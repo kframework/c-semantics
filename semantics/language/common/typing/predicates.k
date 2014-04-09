@@ -121,8 +121,9 @@ module C-TYPING-PREDICATES
 
      // TODO(chathhorn): I think there are various notions of type
      // compatibility being conflated here.
+     // TODO(chathhorn): const?
      rule isTypeCompatible(T1:Type, T2:Type) 
-          => #isCompat(unqualifyType(T1), unqualifyType(T2)) ==K true
+          => #isCompat(stripQualities(T1), stripQualities(T2)) ==K true
 
      // TODO(chathhorn): struct/union fields and unnameds.
      // rule #isCompat(t(_, structType(X:Id, _, _)), t(_, structType(X:Id, _, _)))

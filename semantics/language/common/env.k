@@ -49,25 +49,25 @@ module C-ENV
      syntax K ::= giveGlobalType(K, Type)
      syntax K ::= giveLocalType(K, Type)
      
-     rule <k> giveType(X:Id, T:KResult) => 
-               #if (Fun:Id ==K file-scope) 
-               #then giveGlobalType(X:Id, unqualifyType(T:KResult)) 
-               #else giveLocalType(X:Id, unqualifyType(T:KResult)) 
+     rule <k> giveType(X:Id, T:Type) => 
+               #if (Fun ==K file-scope) 
+               #then giveGlobalType(X, unqualifyType(T)) 
+               #else giveLocalType(X, unqualifyType(T)) 
                #fi
           ...</k>
           <curr-function> Fun:Id </curr-function>
           [structural]
           
-     rule <k> giveGlobalType(X:Id, T:KResult) => .K ...</k>
-          <types> M:Map => M:Map[T:KResult / X:Id] </types>
+     rule <k> giveGlobalType(X:Id, T:Type) => .K ...</k>
+          <types> M:Map => M:Map[T / X] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
-               M':Map => M':Map[T:KResult / X:Id]
+               M':Map => M':Map[T / X]
           </gtypes>
           [structural]
-     rule <k> giveLocalType(X:Id, T:KResult) => .K ...</k>
-          <types> M:Map => M:Map[T:KResult / X:Id] </types>
+     rule <k> giveLocalType(X:Id, T:Type) => .K ...</k>
+          <types> M:Map => M:Map[T / X] </types>
           [structural]   
 
 endmodule

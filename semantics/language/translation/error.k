@@ -255,7 +255,7 @@ module C-TRANSLATION-ERROR
 //           ...</k>
 //           <curr-tu> Tu:String </curr-tu>
 //           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>
-//           when notBool isTypeCompatible(unqualifyType(PrevT), unqualifyType(T))
+//           when notBool isTypeCompatible(PrevT, T)
 
 // TODO(chathhorn): our type normalizer incorrectly puts the qualifiers on
 // the function instead of its return value.

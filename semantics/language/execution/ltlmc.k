@@ -215,6 +215,6 @@ module C-LTLMC
                ...</gtypes>
           ...</T> ...</generatedTop>, 
           S:String)
-          => ptr(Loc, unqualifyType(T))
+          => ptr(Loc, T)
 
 endmodule

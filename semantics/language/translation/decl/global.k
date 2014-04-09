@@ -279,7 +279,7 @@ module C-DECL-GLOBAL
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
-               ~> giveType(X, unqualifyType(T)) // Tentative type.
+               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, declared, external,
@@ -301,7 +301,7 @@ module C-DECL-GLOBAL
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => addToEnv(X, Loc)
-               ~> giveType(X, unqualifyType(T)) // Tentative type.
+               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, unqualifyType(T), K)), 
                     Loc, declared, internal, Static)
