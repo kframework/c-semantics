@@ -118,7 +118,9 @@ module C-SYMLOC
           => loc(X +Int 1 @ D, ByOff, BiOff)
 
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bits N:Int
-          => loc(Base, Offset, BitOffset +Int N)
+          => loc(Base, Offset +Int (BitOffset +Int N) /Int cfg:bitsPerByte,
+               (BitOffset +Int N) %Int cfg:bitsPerByte)
+
      rule loc(Base:SymBase, Offset:Int, BitOffset:Int) +bytes N:Int
           => loc(Base, Offset +Int N, BitOffset)
 
@@ -141,12 +143,6 @@ module C-SYMLOC
 
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _))
           => A ==K B
-
-     rule loc(Base:SymBase, Offset:Int, BitOffset:Int)
-          => loc(Base, Offset +Int BitOffset /Int cfg:bitsPerByte,
-               BitOffset %Int cfg:bitsPerByte)
-          when BitOffset:Int >=Int cfg:bitsPerByte
-          [structural, anywhere]
 
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
      rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
