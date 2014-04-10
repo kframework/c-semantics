@@ -8,7 +8,7 @@ my @requiredModules = qw(
 	Getopt::Declare
       MIME::Base64
       IO::Compress::Gzip
-      IO::Compress::Gunzip
+      IO::Uncompress::Gunzip
 );
 my @missingPackages = ();
 
