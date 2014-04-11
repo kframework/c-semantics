@@ -198,7 +198,7 @@ sub main {
             push(@file_args, '--parser="cat"');
             push(@file_args, $sourceFile);
       } else {
-            push(@file_args, '--config-var-parser="kast -e"');
+            push(@file_args, '--config-var-parser="kast --parser ground -e"');
             push(@file_args, '-cPGM=".K"');
       }
 
