@@ -17,7 +17,7 @@ default: fast
 
 c11-translation-kompiled: $(C11_TRANSLATION_FILES)
 	@echo "Kompiling the static C semantics..."
-	@$(KOMPILE) c11-translation.k -d "c11-translation-kompiled" -w all -v --transition "interpRule"
+	@$(KOMPILE) c11-translation.k -d "c11-translation-kompiled" -w all -v
 	@touch c11-translation-kompiled
 
 c11-kompiled: $(C11_FILES)
