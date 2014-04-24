@@ -203,8 +203,12 @@ module C-CONFIGURATION
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
      <result-value color="red"> .K </result-value>
+
      <error-cell multiplicity="?" color="black"> .K </error-cell>
+
      <status> initializing </status>
+
+     <options> $OPTIONS:Set </options>
 
      </T>
           

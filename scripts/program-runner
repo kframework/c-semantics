@@ -73,6 +73,8 @@ sub main {
                   '--load-cfg' => $fileInput
                   );
 
+      my @options = ();
+
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
             print "DEBUG --- runs krun with the --debug flag.\n";
@@ -119,7 +121,7 @@ sub main {
 
       if (defined $ENV{SEARCH}) {
             $krun_args{'--search-final'} = '';
-            $krun_args{'--io'} = 'off';
+            push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
@@ -127,7 +129,7 @@ sub main {
 
       if (defined $ENV{THREADSEARCH}) {
             $krun_args{'--search-final'} = '';
-            $krun_args{'--io'} = 'off';
+            push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
@@ -137,11 +139,15 @@ sub main {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
             $krun_args{'-d'} = $EXEC_ND_DEF;
             $krun_args{'--output-mode'} = 'pretty';
-            $krun_args{'--io'} = 'off';
+            push @options, 'NOIO';
             delete $krun_args{'--output'};
             print 'LTL model checking... ';
             print "(with non-deterministic expression sequencing)\n";
       }
+
+      @options = map {"SetItem($_)"} @options;
+      push @options, ".Set";
+      $krun_args{'-cOPTIONS="(' . (join ' ', @options) . ')"'} = '';
 
       # Execute krun with the arguments in (flattened) %krun_args.
       my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));

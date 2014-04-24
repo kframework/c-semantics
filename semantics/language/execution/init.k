@@ -19,7 +19,7 @@ module C-EXECUTION-INIT
      imports C-DECL-LOCAL-SYNTAX
      imports LIBC-IO-SYNTAX
      imports COMPAT-SYNTAX
-          
+
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
      following constraints:

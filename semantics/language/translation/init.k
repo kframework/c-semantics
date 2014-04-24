@@ -1,7 +1,9 @@
 module C-TRANSLATION-INIT-SYNTAX
      syntax Bag ::= mergeObj(Bag, Bag) [function]
-     syntax SemMode ::= "link" | "nolink"
-     syntax K ::= outputMode(SemMode, Bool) [function]
+     syntax K ::= "link" | "cleanup"
+
+     syntax TransOpts ::= "DEBUG" | "NOLINK"
+
 endmodule
 
 module C-TRANSLATION-INIT
@@ -19,25 +21,25 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     rule outputMode(link, Debug:Bool) 
-          => TranslationUnit("builtin", list(.List),
-               list(ListItem(addBuiltins(builtins))))
-          ~> resolveReferences
-          ~> printSuccess
-          ~> #if (Debug)
-             #then (.K)
-             #else (cleanup)
-             #fi
+     rule <k> link
+               => TranslationUnit("builtin", list(.List),
+                    list(ListItem(addBuiltins(builtins))))
+               ~> resolveReferences
+               ~> printSuccess
+          ...</k>
+          <options> Opts:Set </options>
+          when notBool (NOLINK in Opts)
 
-     rule outputMode(nolink, Debug:Bool)
-          => printSuccess
-          ~> #if (Debug)
-             #then (.K)
-             #else (cleanup)
-             #fi
+     rule <k> link
+               => printSuccess
+          ...</k>
+          <options> SetItem(NOLINK) ...</options>
 
-     syntax K ::= "cleanup"
-     rule <T>... <k> cleanup </k> ...</T> => .Bag
+     rule (<T>...
+               <k> cleanup </k>
+               <options> Opts:Set </options>
+          ...</T> => .Bag)
+          when notBool (DEBUG in Opts)
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.

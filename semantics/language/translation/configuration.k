@@ -67,7 +67,8 @@ module C-CONFIGURATION
                     unwrapObj($OBJ1:Bag), 
                     unwrapObj($OBJ2:Bag)))
                ~> $PGM:K 
-               ~> outputMode($MODE:SemMode, $DEBUG:Bool)
+               ~> link
+               ~> cleanup
           </k>
 
           <final-computation multiplicity="?" color="lightgray">
@@ -145,6 +146,8 @@ module C-CONFIGURATION
      <error-cell multiplicity="?" color="black"> .K </error-cell>
 
      <status> initializing </status>
+
+     <options> $OPTIONS:Set </options>
 
      </T>
           

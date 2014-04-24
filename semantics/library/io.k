@@ -5,6 +5,8 @@ module LIBC-IO-SYNTAX
      syntax K ::= readFromFD(Int, Int)
      syntax K ::= flush(Int)
      syntax K ::= "f-flush" "(" Int ")"
+
+     syntax ExecOpts ::= "NOIO"
 endmodule
 
 module LIBC-IO
@@ -66,7 +68,9 @@ module LIBC-IO
           [structural]
      rule [f-flush]:
           <file-commands>
-               f-flush(FD:Int) => f-sendString(FD, S) ~> f-sent(FD, S)
+               f-flush(FD:Int)
+               => f-sendString(FD, S)
+               ~> f-sent(FD, S)
           ...</file-commands>
           <file>...
                <fid> FD:Int </fid>
@@ -81,7 +85,14 @@ module LIBC-IO
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</file-commands>
-          when S =/=String ""
+          <options> Opts:Set </options>
+          when (S =/=String "")
+               andBool notBool (NOIO in Opts)
+          [structural]
+     rule <file-commands> 
+               f-sendString(_, _) => .
+          ...</file-commands>
+          <options> SetItem(NOIO) ...</options>
           [structural]
      rule [sendString-done]:
           <file-commands> f-sendString(_, "") => . ...</file-commands>
