@@ -147,6 +147,13 @@ module C-IO-BUFFERED
                andBool (notBool Offset in (keys M))
           [large, structural]
           
+     rule [read-byte-linker]:
+          <k> readByte(loc((LinkBase:SymBase => Base), _, _)) ...</k>
+          <linkings>... 
+               loc(LinkBase, 0, 0) |-> loc(Base:SymBase, _, _)
+          ...</linkings>
+          [structural]
+          
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc) 

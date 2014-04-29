@@ -63,10 +63,12 @@ module C-EXECUTION-ERROR
           <k> 
                (. => ERROR("00007", "Referring to an object outside of its lifetime.",
                     (9,, 10)) ) ~>
-               checkValidLoc-aux(loc(B:SymBase, _:Int, _:Int)) 
+               checkValidLoc-aux(loc(B:SymBase, Offset:Int, _)) 
           ...</k>
           <mem> M:Map </mem>
-          when notBool SetItem(B) in (keys M:Map)
+          <linkings> L:Map </linkings>
+          when (notBool B in keys M)
+               andBool (notBool loc(B, Offset, 0) in keys L)
           [structural, large]
      
      rule [err00008]:

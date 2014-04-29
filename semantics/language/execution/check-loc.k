@@ -19,12 +19,15 @@ module C-CHECK-LOC
           <k> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, 0)) => . ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           <thread-id> ThreadId:Int </thread-id>
-          when (ThreadId ==K getThreadId(loc(Base, Offset, 0))
-               orBool isStaticDuration(loc(Base, Offset, 0))
-               orBool isAllocatedDuration(loc(Base, Offset, 0))
-               orBool isArgvDuration(loc(Base, Offset, 0))
+          when (notBool isThreadDuration(loc(Base, Offset, 0))
+                    orBool (ThreadId ==K getThreadId(loc(Base, Offset, 0)))
                ) // my thread, global memory, or allocated (malloced) memory
                andBool (Offset <=Int Len) // we're allowed to address one past
+          [structural]
+
+     rule [check-valid-loc-linker]:
+          <k> checkValidLoc-aux(loc((LinkBase:SymBase => Base), _, _)) ...</k>
+          <linkings>... loc(LinkBase, 0, 0) |-> loc(Base:SymBase, _, _) ...</linkings>
           [structural]
 
 endmodule
