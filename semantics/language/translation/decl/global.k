@@ -347,22 +347,24 @@ module C-DECL-GLOBAL
      // *** Incomplete ***
 
      // If this declaration has an incomplete type, then we're done.
-     rule declareExternalVariable'(initValue(_, T:Type, .K), _, _, _, Extern)
-          => .
+     rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
+               Loc:SymLoc, _, _, Extern)
+          => updateLinkState(X, T, Loc)
           when notBool isCompleteType(T)
           [structural]
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K),
-               _, _, Lnk:Linkage, Sto:Storage)
-          => recordTentDef(X, Lnk)
+               Loc:SymLoc, _, Lnk:Linkage, Sto:Storage)
+          => updateLinkState(X, T, Loc)
+          ~> recordTentDef(X, Lnk)
           when notBool isCompleteType(T)
                andBool Sto =/=K Extern
           [structural]
 
      // *** Extern, already completed.  ***
 
-     rule declareExternalVariable'(initValue(_, _, .K), 
-               _, State:DeclState, _, Extern)
-          => .
+     rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
+               Loc:SymLoc, State:DeclState, _, Extern)
+          => updateLinkState(X, T, Loc)
           when State =/=K declared
           [structural]
 

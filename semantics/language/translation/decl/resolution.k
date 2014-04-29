@@ -73,6 +73,28 @@ module C-DECL-RESOLUTION
           <linkings>...
                (. => Loc |-> Loc')
           ...</linkings>
+          when isLinkerLoc(Loc)
+     rule <k> resolveReferences ...</k>
+          <external-uses>...
+               SetItem(X:Id)
+          ...</external-uses>
+          <external-decls>...
+               X |-> set((SetItem(Tu:String) => .) _)
+          ...</external-decls>
+          <external-defs>...
+               X |-> Loc:SymLoc
+          ...</external-defs>
+          <external-types>...
+               X |-> T:Type
+          ...</external-types>
+          <tu-id> Tu </tu-id>
+          <genv>...
+               X |-> Loc
+          ...</genv>
+          <gtypes>...
+               X |-> (_ => T) // TODO not sure.
+          ...</gtypes>
+          when notBool isLinkerLoc(Loc)
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
