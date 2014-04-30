@@ -83,5 +83,15 @@ module C-ENV
                LocalTypes:Map => LocalTypes:Map[T / kpair(X, BlockNum)]
           </local-types>
           [structural]   
+     // For function parameters. TODO(chathhorn): handle better?
+     rule <k> giveLocalType(X:Id, T:Type) => .K ...</k>
+          <types> M:Map => M:Map[T / X] </types>
+          <block-history> .List </block-history>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-types>
+               LocalTypes:Map => LocalTypes:Map[T / kpair(X, 0)]
+          </local-types>
+          [structural]   
 
 endmodule

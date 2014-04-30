@@ -123,7 +123,7 @@ module C-CONFIGURATION
                                              0
                                         </nesting-depth>
                                         <block-history color="lightgray">
-                                             ListItem(0)
+                                             .List
                                         </block-history>
                                         // used to make sure we don't declare a
                                         // variable twice in the same scope
