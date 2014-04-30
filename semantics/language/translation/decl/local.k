@@ -109,24 +109,37 @@ module C-DECL-LOCAL
           when notBool kpair(X, BlockNum) in keys LocalStatics
           [structural] 
 
-     rule declareInternalVariable(X:Id, T:Type, NoInit)
-          => addToEnv(X, symVal)
-          ~> giveType(X, T)
-          when isNaked(T)
-          [structural] 
-
      rule declareInternalVariable(X:Id, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, unqualifyType(T), 
                allowInit(figureInit(X, unqualifyType(T), K)))
           when isNaked(T)
-               andBool (K =/=K NoInit)
           [structural] 
           
      syntax K ::= defineAndInit(Id, Type, K) [strict(3)] 
-     rule defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
-          => giveType(X, T)
-          ~> K
+     rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
+               => giveType(X, T)
+               ~> K
+          ...</k>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-types>
+               // TODO(chathhorn): local-types is just a flag in this case.
+               LocalTypes:Map => LocalTypes:Map[.K / kpair(X, BlockNum)]
+          </local-types>
+          [structural] 
+     // For function parameters. TODO(chathhorn): handle better?
+     rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
+               => giveType(X, T)
+               ~> K
+          ...</k>
+          <block-history> .List </block-history>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-types>
+               LocalTypes:Map => LocalTypes:Map[.K / kpair(X, 0)]
+          </local-types>
           [structural] 
 
 endmodule
