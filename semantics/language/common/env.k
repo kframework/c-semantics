@@ -2,6 +2,8 @@ module C-ENV-SYNTAX
      syntax K ::= addToEnv(Id, SymLoc)
      syntax K ::= giveType(Id, Type)
      syntax K ::= "populateFromGlobal"
+     syntax K ::= addToHistory(Int)
+          [latex(\terminal{addToHist}\!({#1}\!))]
 
 endmodule
 
@@ -12,6 +14,12 @@ module C-ENV
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
+
+     imports COMPAT-SYNTAX
+
+     rule <k> addToHistory(Num:Int) => .K ...</k>
+          <block-history> .List => ListItem(Num) ...</block-history>
+          [structural] 
 
      syntax K ::= addToGlobalEnv(K, SymLoc)
      syntax K ::= addToLocalEnv(K, SymLoc)
@@ -68,6 +76,12 @@ module C-ENV
           [structural]
      rule <k> giveLocalType(X:Id, T:Type) => .K ...</k>
           <types> M:Map => M:Map[T / X] </types>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-types>
+               LocalTypes:Map => LocalTypes:Map[T / kpair(X, BlockNum)]
+          </local-types>
           [structural]   
 
 endmodule

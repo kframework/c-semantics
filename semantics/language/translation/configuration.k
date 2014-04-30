@@ -113,7 +113,7 @@ module C-CONFIGURATION
                          <env color="red"> .Map </env>
                          <types color="lightgray"> .Map </types>
                          <structs color="lightgray"> .Map </structs>
-                         <curr-block> 0 </curr-block>
+                         <block-history> ListItem(0) </block-history>
                     </local>
                     <block-stack color="violet"> .List </block-stack>
 

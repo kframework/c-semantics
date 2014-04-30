@@ -1,6 +1,7 @@
 module C-STMT-LOOP
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
      
      rule ForClauseExpression(K:K) => Computation(K) [structural]
@@ -8,18 +9,13 @@ module C-STMT-LOOP
      rule [for]:
           For(BlockNum:Int, Pre:K, Control:K, Post:K, S:K)
           => pushBlock 
-          ~> setCurrentBlock(BlockNum)
+          ~> addToHistory(BlockNum)
           ~> Pre
           ~> Computation(Control)
           ~> S ~> Computation(Post)
           ~> popBlock
           [structural] 
           
-     syntax K ::= setCurrentBlock(Int)
-     rule <k> setCurrentBlock(BlockNum:Int) => .K ...</k>
-          <curr-block> _ => BlockNum </curr-block>
-          [structural]
-
      rule [while]:
           While(B:K, S:K)
           => Computation(B)

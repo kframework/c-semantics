@@ -39,7 +39,7 @@ module C-STMT-BLOCK
           <k> Block(BlockNum:Int, _, list(Statements:List))
                => listToK(Statements)
           ...</k>
-          <curr-block> _ => BlockNum </curr-block>
+          <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]
 
 endmodule

@@ -1,14 +1,8 @@
-module C-STMT-LOOP-SYNTAX
-     syntax K ::= addToHistory(Int)
-          [latex(\terminal{addToHist}\!({#1}\!))]
-endmodule
-
 module C-STMT-LOOP
-     imports C-STMT-LOOP-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement 
@@ -32,23 +26,19 @@ module C-STMT-LOOP
      
      rule ForClauseExpression(K:K) => Computation(K) [structural]
      
-     rule <k> addToHistory(Num:Int) => .K ...</k>
-          <block-history> .List => ListItem(Num) ...</block-history>
-          [structural] 
-     
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
           <k> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
                => pushBlock 
-                    ~> addToHistory(ForNum) 
-                    ~> Pre
-                    ~> loopMarked 
-                    ~> For(ForNum, Pre, 
-                         (#if Control =/=K emptyValue 
-                         #then Control
-                         #else tv(1, t(.Set, int)) #fi),
-                         Post, S)
-                    ~> popLoop
+               ~> addToHistory(ForNum) 
+               ~> Pre
+               ~> loopMarked 
+               ~> For(ForNum, Pre, 
+                    (#if Control =/=K emptyValue 
+                    #then Control
+                    #else tv(1, t(.Set, int)) #fi),
+                    Post, S)
+               ~> popLoop
           </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
