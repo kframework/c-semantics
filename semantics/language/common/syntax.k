@@ -116,8 +116,6 @@ module C-SYNTAX
      syntax TypeSpecifier ::= "Imaginary"
      syntax TypeSpecifier ::= TAtomic(K, K)
           [klabel('TAtomic)]
-     // this will be used as the actual modifier
-     syntax TypeSpecifier ::= "Atomic"
      syntax TypeSpecifier ::= AlignasExpression(K)
           [klabel('AlignasExpression)]
      syntax TypeSpecifier ::= AlignasType(K, K)
@@ -127,6 +125,8 @@ module C-SYNTAX
      and storage =
      NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
      */
+     // this will be used as the actual atomic modifier
+     syntax Storage ::= "Atomic"
      syntax Storage ::= "NoStorage"
      syntax Storage ::= "Auto"
      syntax Storage ::= "Static"
