@@ -244,11 +244,9 @@ module C-TYPING-PREDICATES
           isWCharType(t(_, qualifiedType(T:Type, _)))
           => isWCharType(T) 
      
-     rule [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true 
-     rule [isPointerType-qualified]:
-          isPointerType(t(_, qualifiedType(T:Type, _)))
-          => isPointerType(T) 
-     rule [isPointerType-other]: isPointerType(t(_, T:SimpleType)) => false
+     rule isPointerType(t(_, pointerType(_))) => true 
+     rule isPointerType(t(_, qualifiedType(T:Type, _))) => isPointerType(T) 
+     rule isPointerType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'pointerType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
      
@@ -274,6 +272,7 @@ module C-TYPING-PREDICATES
           
      syntax Bool ::= "#isVoidType'" "(" Type ")" [function]
      rule #isVoidType'(t(_, void)) => true
+     rule #isVoidType'(t(_, qualifiedType(T:Type, _))) => #isVoidType'(T)
      rule #isVoidType'(typedDeclaration(T:Type, _)) => #isVoidType'(T)
 
      rule isAggregateType(T:Type)

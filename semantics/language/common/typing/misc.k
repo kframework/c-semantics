@@ -269,5 +269,9 @@ module C-TYPING-MISC
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
+     // TODO(chathhorn): what to do with qualifiers?
+     rule downPointer(t(_, pointerType(T:Type))) => T 
+     rule downPointer(t(_, qualifiedType(T:Type, _))) => downPointer(T) 
+
 endmodule
 

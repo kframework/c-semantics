@@ -46,6 +46,8 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
 
+     syntax Type ::= downPointer(Type) [function]
+
      syntax CSize ::= Int
      syntax CValue ::= CSize
      

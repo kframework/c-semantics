@@ -6,6 +6,9 @@ module C-EXPR-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
+     // TODO(chathhorn) double check these and try to merge them with the
+     // common conversions.
+
      rule cast(t(S:Set, bool), tv(symVal, T:Type)) => tv(symVal, t(S, bool))
           when hasIntegerType(T) orBool isBitfieldType(T)
           [structural, anywhere]

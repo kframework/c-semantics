@@ -14,6 +14,10 @@ module C-CONVERSION
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     
+     // Remove
+     imports COMPAT-SYNTAX
+     imports DEBUG-SYNTAX
 
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)
@@ -78,12 +82,12 @@ module C-CONVERSION
      is unchanged.
      }*/
      rule [cast-integer-no-value-change]:
-          cast(T:Type, tv(I:Int, T':Type)) => tv(I, T)
-          when (min(T) <=Int I)
-               andBool (max(T) >=Int I)
-               andBool hasIntegerType(T')
+          cast(T':Type, tv(I:Int, T:Type)) => tv(I, T')
+          when (min(T') <=Int I)
+               andBool (max(T') >=Int I)
                andBool hasIntegerType(T)
-               andBool notBool isBoolType (T)
+               andBool hasIntegerType(T')
+               andBool notBool isBoolType (T')
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
@@ -93,90 +97,90 @@ module C-CONVERSION
      type.
      }*/
      rule [cast-ubitfield-of-small]:
-          cast(T:Type, tv(I:Int, T':Type)) 
-          => cast(T, tv(I +Int max(T) +Int 1, T'))
-          when isBitfieldType(T)
-               andBool (I <Int min(T))
-               andBool hasIntegerType(T')
-               andBool hasUnsignedIntegerType(innerType(T))
+          cast(T':Type, tv(I:Int, T:Type)) 
+          => cast(T', tv(I +Int max(T') +Int 1, T))
+          when isBitfieldType(T')
+               andBool (I <Int min(T'))
+               andBool hasIntegerType(T)
+               andBool hasUnsignedIntegerType(innerType(T'))
           [structural, anywhere]
      rule [cast-uchar-of-small]:
-          cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-char), tv(I:Int, T:Type)) 
           => cast(t(S, unsigned-char), 
-               tv(I +Int max(t(S, unsigned-char)) +Int 1, T'))
+               tv(I +Int max(t(S, unsigned-char)) +Int 1, T))
           when (I <Int min(t(S, unsigned-char)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-usint-of-small]:
-          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-short-int), tv(I:Int, T:Type)) 
           => cast(t(S, unsigned-short-int),
-               tv(I +Int max(t(S, unsigned-short-int)) +Int 1, T'))
+               tv(I +Int max(t(S, unsigned-short-int)) +Int 1, T))
           when (I <Int min(t(S, unsigned-short-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-uint-of-small]:
-          cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-int), tv(I:Int, T:Type)) 
           => cast(t(S, unsigned-int),
-               tv(I +Int max(t(S, unsigned-int)) +Int 1, T'))
+               tv(I +Int max(t(S, unsigned-int)) +Int 1, T))
           when (I <Int min(t(S, unsigned-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-ulong-of-small]:
-          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-long-int), tv(I:Int, T:Type)) 
           => cast(t(S, unsigned-long-int),
-               tv(I +Int max(t(S, unsigned-long-int)) +Int 1, T'))
+               tv(I +Int max(t(S, unsigned-long-int)) +Int 1, T))
           when (I <Int min(t(S, unsigned-long-int))) 
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-ullong-of-small]:
-          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T:Type)) 
           => cast(t(S, unsigned-long-long-int),
-               tv(I +Int max(t(S, unsigned-long-long-int)) +Int 1, T'))
+               tv(I +Int max(t(S, unsigned-long-long-int)) +Int 1, T))
           when (I <Int min(t(S, unsigned-long-long-int)))
-               andBool hasIntegerType(T')          
+               andBool hasIntegerType(T)          
           [structural, anywhere]
      
      rule [cast-ubitfield-of-big]:
-          cast(T:Type, tv(I:Int, T':Type)) 
-          => tv(I %Int (max(T) +Int 1), T)
-          when isBitfieldType(T)
-               andBool (I >Int max(T))
-               andBool hasIntegerType(T')
-               andBool hasUnsignedIntegerType(innerType(T))
+          cast(T':Type, tv(I:Int, T:Type)) 
+          => tv(I %Int (max(T') +Int 1), T')
+          when isBitfieldType(T')
+               andBool (I >Int max(T'))
+               andBool hasIntegerType(T)
+               andBool hasUnsignedIntegerType(innerType(T'))
           [structural, anywhere]
      rule [cast-uchar-of-big]:
-          cast(t(S:Set, unsigned-char), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-char), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(S, unsigned-char)) +Int 1), t(S, unsigned-char))
           when (I >Int max(t(S, unsigned-char)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-usint-of-big]:
-          cast(t(S:Set, unsigned-short-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-short-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(S, unsigned-short-int)) +Int 1),
                t(S, unsigned-short-int))
           when (I >Int max(t(S, unsigned-short-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-uint-of-big]:
-          cast(t(S:Set, unsigned-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(S, unsigned-int)) +Int 1),
                t(S, unsigned-int))
           when (I >Int max(t(S, unsigned-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-ulong-of-big]:
-          cast(t(S:Set, unsigned-long-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-long-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(S, unsigned-long-int)) +Int 1),
                t(S, unsigned-long-int))
           when (I >Int max(t(S, unsigned-long-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-ullong-of-big]:
-          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, unsigned-long-long-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(S, unsigned-long-long-int)) +Int 1),
                t(S, unsigned-long-long-int))
           when (I >Int max(t(S, unsigned-long-long-int)))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{3}}}{
@@ -186,73 +190,73 @@ module C-CONVERSION
      }*/
      // choice
      rule [cast-sbitfield-of-huge]:
-          cast(T:Type, tv(I:Int, T':Type)) 
-          => cast(T, tv(I %Int (2 ^Int absInt(numBits(T))), T')) 
-          when isBitfieldType(T)
-               andBool (absInt(I) >Int (2 ^Int absInt(numBits(T))))
-               andBool hasIntegerType(T')
-               andBool hasSignedIntegerType(innerType(T))
+          cast(T':Type, tv(I:Int, T:Type)) 
+          => cast(T', tv(I %Int (2 ^Int absInt(numBits(T'))), T)) 
+          when isBitfieldType(T')
+               andBool (absInt(I) >Int (2 ^Int absInt(numBits(T'))))
+               andBool hasIntegerType(T)
+               andBool hasSignedIntegerType(innerType(T'))
           [structural, anywhere]
      rule [cast-schar-of-huge]:
-          cast(t(S:Set, signed-char), tv(I:Int, T':Type)) 
+          cast(t(S:Set, signed-char), tv(I:Int, T:Type)) 
           => cast(t(S, signed-char),
-               tv(I %Int (2 ^Int absInt(numBits(t(S, signed-char)))), T')) 
+               tv(I %Int (2 ^Int absInt(numBits(t(S, signed-char)))), T)) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, signed-char)))))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-sint-of-huge]:
-          cast(t(S:Set, short-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, short-int), tv(I:Int, T:Type)) 
           => cast(t(S, short-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(S, short-int)))), T')) 
+               tv(I %Int (2 ^Int absInt(numBits(t(S, short-int)))), T)) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, short-int)))))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-int-of-huge]:
-          cast(t(S:Set, int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, int), tv(I:Int, T:Type)) 
           => cast(t(S, int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(S, int)))), T')) 
+               tv(I %Int (2 ^Int absInt(numBits(t(S, int)))), T)) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, int)))))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-long-of-huge]:
-          cast(t(S:Set, long-int), tv(I:Int, T':Type)) 
+          cast(t(S:Set, long-int), tv(I:Int, T:Type)) 
           => cast(t(S, long-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(S, long-int)))), T')) 
+               tv(I %Int (2 ^Int absInt(numBits(t(S, long-int)))), T)) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, long-int)))))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
      rule [cast-llong-of-huge]:
-          cast(t(S:Set, long-long-int), tv(I:Int, T':Type))
+          cast(t(S:Set, long-long-int), tv(I:Int, T:Type))
           => cast(t(S, long-long-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(S, long-long-int)))), T')) 
+               tv(I %Int (2 ^Int absInt(numBits(t(S, long-long-int)))), T)) 
           when (absInt(I) >Int (2 ^Int absInt(numBits(t(S, long-long-int)))))
-               andBool hasIntegerType(T')
+               andBool hasIntegerType(T)
           [structural, anywhere]
           
      rule [cast-signed-of-small]:
-          cast(T:Type, tv(I:Int, T':Type))
-          => tv(I +Int (2 ^Int absInt(numBits(T))), T)
-          when (I <Int min(T))
-               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
-               andBool hasSignedIntegerType(T)
-               andBool hasIntegerType(T')
-               andBool notBool isBoolType (T)
+          cast(T':Type, tv(I:Int, T:Type))
+          => tv(I +Int (2 ^Int absInt(numBits(T'))), T')
+          when (I <Int min(T'))
+               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+               andBool hasSignedIntegerType(T')
+               andBool hasIntegerType(T)
+               andBool notBool isBoolType (T')
           [structural, anywhere] 
      rule [cast-signed-of-big]:
-          cast(T:Type, tv(I:Int, T':Type)) 
-          => tv(I -Int (2 ^Int absInt(numBits(T))), T)
-          when (I >Int max(T))
-               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T))))
-               andBool hasSignedIntegerType(T)
-               andBool hasIntegerType(T')
-               andBool notBool isBoolType (T)
+          cast(T':Type, tv(I:Int, T:Type)) 
+          => tv(I -Int (2 ^Int absInt(numBits(T'))), T')
+          when (I >Int max(T'))
+               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+               andBool hasSignedIntegerType(T')
+               andBool hasIntegerType(T)
+               andBool notBool isBoolType (T')
           [structural, anywhere]
 
      // this is starting to get into sketchy land
      rule [cast-unknown-integer]:
-          cast(T:Type, tv(piece(unknown(Len:Int), Len:Int), T':Type)) 
-          => tv(piece(unknown(bitSizeofType(T)), bitSizeofType(T)), T)
-          when hasIntegerType(T) andBool hasIntegerType(T')
+          cast(T':Type, tv(piece(unknown(Len:Int), Len:Int), T:Type)) 
+          => tv(piece(unknown(bitSizeofType(T')), bitSizeofType(T')), T')
+          when hasIntegerType(T') andBool hasIntegerType(T)
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
@@ -350,6 +354,10 @@ module C-CONVERSION
      converted to a pointer to the $q$-qualified version of the type; the
      values stored in the original and converted pointers shall compare equal.
      }*/
+     rule cast(T':Type, tv(N:CValue, T:Type)) => tv(N, T')
+          when isPointerType(T) andBool isPointerType(T')
+               andBool (T ==K unqualifyType(T'))
+          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
      An integer constant expression with the value 0, or such an expression
@@ -358,9 +366,9 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(t(S:Set, pointerType(T:Type)), tv(N:Int, T':Type)) 
-          => tv(NullPointer, t(S, pointerType(T)))
-          when hasIntegerType(T')
+     rule cast(t(S:Set, pointerType(T':Type)), tv(N:CValue, T:Type)) 
+          => tv(NullPointer, t(S, pointerType(T')))
+          when hasIntegerType(T)
                andBool N ==K NullPointerConstant
           [structural, anywhere]
           
@@ -376,14 +384,14 @@ module C-CONVERSION
      a trap representation.
      }*/
      // choice implementation defined behavior
-     rule cast(t(S:Set, pointerType(T:Type)), tv(N:Int, T':Type)) 
-          => tv(N, t(S, pointerType(T)))
-          when hasIntegerType(T')
+     rule cast(t(S:Set, pointerType(T':Type)), tv(N:CValue, T:Type)) 
+          => tv(N, t(S, pointerType(T')))
+          when hasIntegerType(T)
                andBool N =/=K NullPointerConstant
           [structural, anywhere]
-     rule cast(t(S:Set, pointerType(T:Type)), tv(N:SymLoc, T':Type)) 
-          => tv(N, t(S, pointerType(T)))
-          when hasIntegerType(T')
+     rule cast(t(S:Set, pointerType(T':Type)), tv(N:SymLoc, T:Type)) 
+          => tv(N, t(S, pointerType(T')))
+          when hasIntegerType(T)
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{

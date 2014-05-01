@@ -32,9 +32,10 @@ module C-COMMON-EXPR-REFERENCE
      \cinline{*} operator is undefined.
      }*/
      rule [deref]:
-          *(tv(Loc:SymLoc, t(_, pointerType(t(S:Set, T:K)))))
-          => checkDerefLoc(Loc) ~> lv(Loc, t(S, T))
-          when notBool T ==K void
+          *(tv(Loc:SymLoc, T:Type))
+          => checkDerefLoc(Loc) ~> lv(Loc, downPointer(T))
+          when isPointerType(T)
+               andBool notBool isVoidType(downPointer(T))
           [structural]
 endmodule
 
