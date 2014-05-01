@@ -106,7 +106,27 @@ module C-DECL-LOCAL
           <local-statics>
                LocalStatics:Map (.Map =>  kpair(X, BlockNum) |-> Loc)
           </local-statics>
-          when notBool kpair(X, BlockNum) in keys LocalStatics
+          <local-types>
+               LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
+          </local-types>
+          when notBool (kpair(X, BlockNum) in keys LocalStatics)
+               andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
+          [structural] 
+     rule <k> (.K => ERROR("DL2","Redeclaration of " +String idToString(X)
+                    +String " with no linkage."))
+               ~> initLocalStatic(X:Id, _)
+          ...</k>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-tu> TU:String </curr-tu>
+          <tu-id> TU </tu-id>
+          <local-statics>
+               LocalStatics:Map
+          </local-statics>
+          <local-types>
+               LocalTypes:Map
+          </local-types>
+          when (kpair(X, BlockNum) in keys LocalStatics)
+               orBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
