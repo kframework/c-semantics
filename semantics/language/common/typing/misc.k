@@ -143,11 +143,15 @@ module C-TYPING-MISC
           SetItem(Volatile)
           SetItem(Atomic)
 
+     // TODO(chathhorn): fix how type qualifiers are handled.
+     // Technically only removes volatile and maybe restrict. Also maybe
+     // atomic.
      rule unqualifyType(t(S:Set, qualifiedType(t(S':Set, T':SimpleType), _))) 
           => unqualifyType(t(S S', T'))
      rule unqualifyType(t(S:Set, T:SimpleType)) => t(S, T)
           when getKLabel(T) =/=KLabel 'qualifiedType
           
+     // Technically only removes const.
      rule stripQualities(t(_, qualifiedType(t(_, T':SimpleType), _))) 
           => stripQualities(t(.Set, T'))
      rule stripQualities(t(_, T:SimpleType)) => t(.Set, T)

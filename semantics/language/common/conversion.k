@@ -15,10 +15,6 @@ module C-CONVERSION
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
      
-     // Remove
-     imports COMPAT-SYNTAX
-     imports DEBUG-SYNTAX
-
      rule [arithInterpret-done]:
           arithInterpret(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
@@ -354,9 +350,14 @@ module C-CONVERSION
      converted to a pointer to the $q$-qualified version of the type; the
      values stored in the original and converted pointers shall compare equal.
      }*/
+
+     // Covers adding any qualifiers.
+     // TODO(chathhorn): I'm not sure exactly where or how the non-pointer case
+     // is covered in the standard, but it's got to be there somewhere.
+     // Although, it might be hidden in the language describing when qualifiers
+     // are dropped for r-values and such.
      rule cast(T':Type, tv(N:CValue, T:Type)) => tv(N, T')
-          when isPointerType(T) andBool isPointerType(T')
-               andBool (T ==K unqualifyType(T'))
+          when getQualifiers(T) <=Set getQualifiers(T')
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{

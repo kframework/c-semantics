@@ -5,26 +5,30 @@ module C-TYPING-PREDICATES
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule isBasicType('t(_,, K:K)) => #if (
-          (K:K ==K bool)
-          orBool (K:K ==K void)
-          orBool (K:K ==K char)
-          orBool (K:K ==K short-int)
-          orBool (K:K ==K int)
-          orBool (K:K ==K long-int)
-          orBool (K:K ==K long-long-int)
-          orBool (K:K ==K float)
-          orBool (K:K ==K double)
-          orBool (K:K ==K long-double)
-          orBool (K:K ==K signed-char)
-          orBool (K:K ==K unsigned-char)
-          orBool (K:K ==K unsigned-short-int)
-          orBool (K:K ==K unsigned-int)
-          orBool (K:K ==K unsigned-long-int)
-          orBool (K:K ==K unsigned-long-long-int)
-          orBool (K:K ==K no-type)
-          orBool (getKLabel(K:K) ==KLabel 'enumType)
-          ) #then true #else false #fi
+     rule isBasicType(T:Type) => #isBasicType'(T) ==K true
+
+     syntax Bool ::= "#isBasicType'" "(" Type ")" [function]
+
+     rule #isBasicType'(t(_, K:SimpleType)) => true
+          when (K ==K bool)
+               orBool (K ==K void)
+               orBool (K ==K char)
+               orBool (K ==K short-int)
+               orBool (K ==K int)
+               orBool (K ==K long-int)
+               orBool (K ==K long-long-int)
+               orBool (K ==K float)
+               orBool (K ==K double)
+               orBool (K ==K long-double)
+               orBool (K ==K signed-char)
+               orBool (K ==K unsigned-char)
+               orBool (K ==K unsigned-short-int)
+               orBool (K ==K unsigned-int)
+               orBool (K ==K unsigned-long-int)
+               orBool (K ==K unsigned-long-long-int)
+               orBool (K ==K no-type)
+               orBool (getKLabel(K) ==KLabel 'enumType)
+     rule #isBasicType'(t(_, qualifiedType(T:Type, _))) => #isBasicType'(T)
 
      rule setOfTypes => 
           SetItem(l('arrayType))
@@ -51,8 +55,7 @@ module C-TYPING-PREDICATES
           SetItem(long-int)
           SetItem(long-long-int)
 
-     rule [hasSameSignedness]: 
-          hasSameSignedness(T:Type, T':Type)
+     rule hasSameSignedness(T:Type, T':Type)
           => (hasSignedIntegerType(T) andBool hasSignedIntegerType(T'))
                orBool 
                (hasUnsignedIntegerType(T) andBool hasUnsignedIntegerType(T'))
@@ -60,35 +63,29 @@ module C-TYPING-PREDICATES
      rule hasIntegerType(T:Type) 
           => ((hasUnsignedIntegerType(T) ==K true) 
                orBool (hasSignedIntegerType(T) ==K true))
-     
-     rule hasUnsignedIntegerType(t(_, T:SimpleType)) => true
-          when (T in unsignedIntegerTypes)
-     rule hasUnsignedIntegerType(t(_, T:SimpleType)) => false
-          when (T in signedIntegerTypes)
 
-     rule hasUnsignedIntegerType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T)) in setOfTypes) 
-                    orBool isFloatType(t(S, T)))
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _))) => true
-          when hasUnsignedIntegerType(T) ==Bool true
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _))) => false
-          when hasUnsignedIntegerType(T) ==Bool false
-     
-     rule hasSignedIntegerType(t(_, T:SimpleType)) => true
-          when (T in signedIntegerTypes)
-     rule hasSignedIntegerType(t(_, T:SimpleType)) => false
-          when (T in unsignedIntegerTypes)
+     rule hasUnsignedIntegerType(T:Type)
+          => #hasUnsignedIntegerType'(T) ==K true
+     rule hasSignedIntegerType(T:Type)
+          => #hasSignedIntegerType'(T) ==K true
 
-     rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
-     rule hasSignedIntegerType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T)) in setOfTypes) 
-                    orBool isFloatType(t(S, T)))
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _))) => true
-          when hasSignedIntegerType(T) ==Bool true
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _))) => false
-          when hasSignedIntegerType(T) ==Bool false
+     syntax Bool ::= "#hasUnsignedIntegerType'" "(" Type ")" [function]
+                   | "#hasSignedIntegerType'" "(" Type ")" [function]
+     
+     rule #hasUnsignedIntegerType'(t(_, T:SimpleType)) => true
+          when (T in unsignedIntegerTypes)
+     rule #hasUnsignedIntegerType'(t(_, bitfieldType(T:Type, _))) => true
+          when hasUnsignedIntegerType(T)
+     rule #hasUnsignedIntegerType'(t(_, qualifiedType(T:Type, _)))
+          => #hasUnsignedIntegerType'(T)
+
+     rule #hasSignedIntegerType'(t(_, T:SimpleType)) => true
+          when (T in signedIntegerTypes)
+     rule #hasSignedIntegerType'(t(_, qualifiedType(T:Type, _)))
+          => #hasSignedIntegerType'(T)
+     rule #hasSignedIntegerType'(t(_, enumType(_))) => true
+     rule #hasSignedIntegerType'(t(_, bitfieldType(T:Type, _))) => true
+          when #hasSignedIntegerType'(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -365,8 +362,10 @@ module C-TYPING-PREDICATES
           
      rule [isBitfieldType-true]:
           isBitfieldType(t(_, bitfieldType(_, _))) => true 
+     rule isBitfieldType(t(_, qualifiedType(T:Type, _))) => isBitfieldType(T)
      rule [isBitfieldType-false]: isBitfieldType(t(_, T:SimpleType)) => false
           when getKLabel(T) =/=KLabel 'bitfieldType
+               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
      rule [isFunctionType-true]:
           isFunctionType(t(_, functionType(_, _)))
@@ -377,30 +376,19 @@ module C-TYPING-PREDICATES
      rule [isFunctionType-false]: isFunctionType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'functionType)
                andBool (getKLabel(T) =/=KLabel 'qualifiedType)
+
+     syntax Bool ::= "#isFunctionPointerType'" "(" Type ")" [function]
+
+     rule isFunctionPointerType(T:Type) => #isFunctionPointerType'(T) ==K true
           
-     rule [isFunctionPointerType-fp]:
-          isFunctionPointerType(t(_, pointerType(t(_,
-               functionType(_, _:List)))))
+     rule #isFunctionPointerType'(t(_, pointerType(t(_, functionType(_, _)))))
           => true 
-     rule [isFunctionPointerType-qualified]:
-          isFunctionPointerType(t(_, qualifiedType(T:Type, _)))
-          => isFunctionPointerType(T) 
-     rule [isFunctionPointerType-qualified-pointer]: 
-          isFunctionPointerType(t(_, pointerType(t(_,
+     rule #isFunctionPointerType'(t(_, qualifiedType(T:Type, _)))
+          => #isFunctionPointerType'(T) 
+     rule #isFunctionPointerType'(t(_, pointerType(t(_,
                qualifiedType(T:Type, _))))) 
-          => isFunctionPointerType(t(.Set, pointerType(T))) 
-     rule [isFunctionPointerType-notPointer]:
-          isFunctionPointerType(t(_, T:SimpleType))
-          => false
-          when (getKLabel(T) =/=KLabel 'pointerType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isFunctionPointerType-notFunction]:
-          isFunctionPointerType(t(_, pointerType(t(_, T:SimpleType))))
-          => false
-          when (getKLabel(T) =/=KLabel 'functionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
+          => #isFunctionPointerType'(t(.Set, pointerType(T))) 
+
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.
      // Each arithmetic type belongs to one type domain: the real type domain

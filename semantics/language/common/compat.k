@@ -73,9 +73,6 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
-     // syntax K ::= writeConfig(String)
-                // | readConfig(String)
-
      // TODO(chathhorn): better place for this?
      syntax K ::= case(Int)
 
