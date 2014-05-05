@@ -194,14 +194,6 @@ module C-PROMOTION
      rule #isPromoted(t(_, long-long-int)) => true
      rule #isPromoted(t(_, unsigned-long-long-int)) => true
      
-     rule #isPromoted(t(_, bool)) => false
-     rule #isPromoted(t(_, signed-char)) => false
-     rule #isPromoted(t(_, unsigned-char)) => false
-     rule #isPromoted(t(_, short-int)) => false
-     rule #isPromoted(t(_, unsigned-short-int)) => false
-     
-     rule isPromoted(t(_, bitfieldType(_, _))) => false
-     
      rule [promote-unary]:
           L:KLabel(
                (tv(V:K, T:Type) => tv(V, promote(T)))

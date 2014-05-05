@@ -358,6 +358,7 @@ module C-CONVERSION
      // are dropped for r-values and such.
      rule cast(T':Type, tv(N:CValue, T:Type)) => tv(N, T')
           when getQualifiers(T) <=Set getQualifiers(T')
+               andBool (unqualifyType(T) ==K unqualifyType(T'))
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
