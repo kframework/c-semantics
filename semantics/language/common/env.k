@@ -59,8 +59,8 @@ module C-ENV
      
      rule <k> giveType(X:Id, T:Type) => 
                #if (Fun ==K file-scope) 
-               #then giveGlobalType(X, unqualifyType(T)) 
-               #else giveLocalType(X, unqualifyType(T)) 
+               #then giveGlobalType(X, stripStorageSpecifiers(T)) 
+               #else giveLocalType(X, stripStorageSpecifiers(T)) 
                #fi
           ...</k>
           <curr-function> Fun:Id </curr-function>
