@@ -356,10 +356,27 @@ module C-CONVERSION
      // is covered in the standard, but it's got to be there somewhere.
      // Although, it might be hidden in the language describing when qualifiers
      // are dropped for r-values and such.
-     rule cast(T':Type, tv(N:CValue, T:Type)) => tv(N, T')
-          when getQualifiers(T) <=Set getQualifiers(T')
-               andBool (unqualifyType(T) ==K unqualifyType(T'))
+     rule cast(T':Type, tv(V:CValue, T:Type))
+          => restoreQualifiers(
+               cast(unqualifyType(T'), tv(V, unqualifyType(T))),
+               getQualifiers(T'))
+          when getQualifiers(T') =/=Set .Set
+               andBool (getQualifiers(T) <=Set getQualifiers(T'))
           [structural, anywhere]
+
+     syntax K ::= restoreQualifiers(K, Set) [strict(1)]
+
+     rule restoreQualifiers(tv(_,
+          (T:Type => t(.Set, qualifiedType(T, Q)))), 
+          (SetItem(Q:K) => .Set) _:Set)
+          when Q =/=K Const
+          [structural]
+
+     rule restoreQualifiers(tv(V:CValue, t(S:Set, T:SimpleType)), SetItem(Const))
+          => tv(V, t(SetItem(Const) S, T))
+          [structural]
+     rule restoreQualifiers(V:TypedValue, .Set) => V
+          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{3}}}{
      An integer constant expression with the value 0, or such an expression
