@@ -17,7 +17,7 @@ module C-DECL-ENUM
 
      rule fillEnums-aux(EnumDef(X:Id, list(ListItem(EnumItem(E:Id)) L:List)), K:K) 
           => doDeclare(typedDeclaration(
-               t(SetItem(Const), qualifiedType(t(.Set, int), Static)), E),
+               t(SetItem(Static) SetItem(Const), int), E),
                SingleInit(K))
           ~> fillEnums-aux(
                EnumDef(X, list(L)), K + tv(1, t(.Set, int)))
@@ -25,13 +25,13 @@ module C-DECL-ENUM
      rule fillEnums-aux(EnumDef(X:Id, list(
                ListItem(EnumItemInit(E:Id, Exp:K)) L:List)), _)
           => doDeclare(typedDeclaration(
-               t(SetItem(Const), qualifiedType(t(.Set, int), Static)), E),
+               t(SetItem(Static) SetItem(Const), int), E),
                SingleInit(Exp))
           ~> fillEnums-aux(
                EnumDef(X, list(L)), Exp + tv(1, t(.Set, int)))
           when Exp =/=K NothingExpression
           [structural] 
-     rule fillEnums-aux(EnumDef(_:Id, list(.List)), _) => . 
+     rule fillEnums-aux(EnumDef(_, list(.List)), _) => . 
           [structural] 
 
 endmodule

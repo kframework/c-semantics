@@ -49,8 +49,6 @@ module C-FUNCTION-DEF
           ~> staticEval(X, unqualifyType(T), K)
 
      syntax K ::= checkFunctionDef(Id, Type) [function]
-     rule checkFunctionDef(X:Id, t(_, qualifiedType(T:Type, _)))
-          => checkFunctionDef(X, T)
      rule checkFunctionDef(_, t(_, functionType(Ret:Type, Params:List))) => .
           when isVoidOrComplete(Ret) andBool areVoidOrComplete(Params)
 

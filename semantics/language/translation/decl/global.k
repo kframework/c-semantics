@@ -111,41 +111,41 @@ module C-DECL-GLOBAL
      // between the storage class specifiers and the "qualities," but there are
      // some annoying special cases (ThreadLocal & extern/static is legal).
      // Also, consider moving this to type canonicalization.
-     rule validStorageClass(T:Type) => validStorageClass'(T, getQualities(T))
-     rule validStorageClass'(T:Type, Qualities:Set) => notBool (
+     rule validStorageClass(T:Type) => validStorageClass'(T, getModifiers(T))
+     rule validStorageClass'(T:Type, Modifiers:Set) => notBool (
                // TODO(chathhorn): type canonicalization doesn't work right so
                // we can't do this. Qualifiers on function decls appear to
                // always be applied to the declared function type, and not to
                // the function's return type. AFAIK, the only time qualifiers
                // should be applied to the declared function type is when the
                // function type is actually a typedef.
-               (Static in Qualities andBool Extern in Qualities)
-               orBool (Auto in Qualities andBool Static in Qualities)
-               orBool (Auto in Qualities andBool Extern in Qualities)
-               orBool (Auto in Qualities andBool ThreadLocal in Qualities)
-               orBool (Register in Qualities andBool Static in Qualities)
-               orBool (Register in Qualities andBool Extern in Qualities)
-               orBool (Register in Qualities andBool ThreadLocal in Qualities)
-               orBool (isFunctionType(T) andBool ThreadLocal in Qualities)
-               orBool (isFunctionType(T) andBool Auto in Qualities)
-               orBool (isFunctionType(T) andBool Register in Qualities)
+               (Static in Modifiers andBool Extern in Modifiers)
+               orBool (Auto in Modifiers andBool Static in Modifiers)
+               orBool (Auto in Modifiers andBool Extern in Modifiers)
+               orBool (Auto in Modifiers andBool ThreadLocal in Modifiers)
+               orBool (Register in Modifiers andBool Static in Modifiers)
+               orBool (Register in Modifiers andBool Extern in Modifiers)
+               orBool (Register in Modifiers andBool ThreadLocal in Modifiers)
+               orBool (isFunctionType(T) andBool ThreadLocal in Modifiers)
+               orBool (isFunctionType(T) andBool Auto in Modifiers)
+               orBool (isFunctionType(T) andBool Register in Modifiers)
           )
 
      rule validGlobalStorageClass(T:Type)
-          => validGlobalStorageClass'(T, getQualities(T))
-     rule validGlobalStorageClass'(T:Type, Qualities:Set) =>
-          validStorageClass'(T, Qualities)
+          => validGlobalStorageClass'(T, getModifiers(T))
+     rule validGlobalStorageClass'(T:Type, Modifiers:Set) =>
+          validStorageClass'(T, Modifiers)
           andBool notBool (
-               (Auto in Qualities)
-               orBool (Register in Qualities)
+               (Auto in Modifiers)
+               orBool (Register in Modifiers)
           )
 
      rule validLocalStorageClass(T:Type)
-          => validLocalStorageClass'(T, getQualities(T))
-     rule validLocalStorageClass'(T:Type, Qualities:Set) =>
-          validStorageClass'(T, Qualities)
+          => validLocalStorageClass'(T, getModifiers(T))
+     rule validLocalStorageClass'(T:Type, Modifiers:Set) =>
+          validStorageClass'(T, Modifiers)
           andBool notBool (
-               (isFunctionType(T) andBool Static in Qualities)
+               (isFunctionType(T) andBool Static in Modifiers)
           )
 
      // *** External variables ***
@@ -612,8 +612,8 @@ module C-DECL-GLOBAL
 
      syntax K ::= completeTagInIntDecls(Id, FieldInfo, Set)
      rule <k> (.K => doDeclare(
-                    typedDeclaration(t(.Set,
-                         qualifiedType(completeTag(Tag, Info, T), Static)), X),
+               typedDeclaration(
+                    completeTag(Tag, Info, addStorage(Static, T)), X),
                          NoInit))
                ~> completeTagInIntDecls(Tag:Id, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
@@ -622,9 +622,11 @@ module C-DECL-GLOBAL
           <tu-id> Tu:String </tu-id>
           <internals>...
                X |-> declState(_, T:Type, declared, _)
-          ...</internals>     
+          ...</internals>
           when notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
+     
+
      rule <k> completeTagInIntDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>

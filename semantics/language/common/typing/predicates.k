@@ -9,35 +9,25 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= "#isBasicType'" "(" Type ")" [function]
 
-     rule #isBasicType'(t(_, K:SimpleType)) => true
-          when (K ==K bool)
-               orBool (K ==K void)
-               orBool (K ==K char)
-               orBool (K ==K short-int)
-               orBool (K ==K int)
-               orBool (K ==K long-int)
-               orBool (K ==K long-long-int)
-               orBool (K ==K float)
-               orBool (K ==K double)
-               orBool (K ==K long-double)
-               orBool (K ==K signed-char)
-               orBool (K ==K unsigned-char)
-               orBool (K ==K unsigned-short-int)
-               orBool (K ==K unsigned-int)
-               orBool (K ==K unsigned-long-int)
-               orBool (K ==K unsigned-long-long-int)
-               orBool (K ==K no-type)
-               orBool (getKLabel(K) ==KLabel 'enumType)
-     rule #isBasicType'(t(_, qualifiedType(T:Type, _))) => #isBasicType'(T)
-
-     rule setOfTypes => 
-          SetItem(l('arrayType))
-          SetItem(l('bitfieldType))
-          SetItem(l('functionType))
-          SetItem(l('pointerType))
-          SetItem(l('structType))
-          SetItem(l('unionType))
-          SetItem(l('qualifiedType))
+     rule #isBasicType'(t(_, T:SimpleType)) => true
+          when (T ==K bool)
+               orBool (T ==K void)
+               orBool (T ==K char)
+               orBool (T ==K short-int)
+               orBool (T ==K int)
+               orBool (T ==K long-int)
+               orBool (T ==K long-long-int)
+               orBool (T ==K float)
+               orBool (T ==K double)
+               orBool (T ==K long-double)
+               orBool (T ==K signed-char)
+               orBool (T ==K unsigned-char)
+               orBool (T ==K unsigned-short-int)
+               orBool (T ==K unsigned-int)
+               orBool (T ==K unsigned-long-int)
+               orBool (T ==K unsigned-long-long-int)
+               orBool (T ==K no-type)
+               orBool (getKLabel(T) ==KLabel 'enumType)
 
      rule unsignedIntegerTypes => 
           SetItem(bool)
@@ -76,13 +66,9 @@ module C-TYPING-PREDICATES
           when (T in unsignedIntegerTypes)
      rule #hasUnsignedIntegerType'(t(_, bitfieldType(T:Type, _))) => true
           when hasUnsignedIntegerType(T)
-     rule #hasUnsignedIntegerType'(t(_, qualifiedType(T:Type, _)))
-          => #hasUnsignedIntegerType'(T)
 
      rule #hasSignedIntegerType'(t(_, T:SimpleType)) => true
           when (T in signedIntegerTypes)
-     rule #hasSignedIntegerType'(t(_, qualifiedType(T:Type, _)))
-          => #hasSignedIntegerType'(T)
      rule #hasSignedIntegerType'(t(_, enumType(_))) => true
      rule #hasSignedIntegerType'(t(_, bitfieldType(T:Type, _))) => true
           when #hasSignedIntegerType'(T)
@@ -120,7 +106,7 @@ module C-TYPING-PREDICATES
      // compatibility being conflated here.
      // TODO(chathhorn): const?
      rule isTypeCompatible(T1:Type, T2:Type) 
-          => #isCompat(stripQualities(T1), stripQualities(T2)) ==K true
+          => #isCompat(stripModifiers(T1), stripModifiers(T2)) ==K true
 
      // TODO(chathhorn): struct/union fields and unnameds.
      // rule #isCompat(t(_, structType(X:Id, _, _)), t(_, structType(X:Id, _, _)))
@@ -207,97 +193,61 @@ module C-TYPING-PREDICATES
      rule isFloatType(t(_, float)) => true 
      rule isFloatType(t(_, double)) => true 
      rule isFloatType(t(_, long-double)) => true 
-     rule isFloatType(t(_, qualifiedType(T:Type, _)))
-          => isFloatType(T) 
      rule isFloatType(t(_, T:SimpleType)) => false
           when (T =/=K float)
                andBool (T =/=K double)
                andBool (T =/=K long-double)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
      rule [isCharType-char]: isCharType(t(_, char)) => true 
-     rule [isCharType-qualified]:
-          isCharType(t(_, qualifiedType(T:Type, _)))
-          => isCharType(T) 
      rule [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true 
      rule [isCharType-signed-char]: isCharType(t(_, signed-char)) => true 
      rule [isCharType-other]: isCharType(t(_, T:SimpleType)) => false
           when (T =/=K char)
                andBool (T =/=K unsigned-char)
                andBool (T =/=K signed-char)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
      syntax SimpleType ::= simpleType(Type) [function]
      rule simpleType(t(_, T:SimpleType)) => T
 
-     rule [isWCharType-wchar]: isWCharType(t(_, T:SimpleType)) => true 
-          when T ==K simpleType(cfg:wcharut)
+     rule isWCharType(t(_, T:SimpleType)) 
+          => T ==K simpleType(cfg:wcharut)
           
-     rule [isWCharType-other]: isWCharType(t(_, T:SimpleType)) => false
-          when (T =/=K simpleType(cfg:wcharut))
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType )
-          
-     rule [isWCharType-qualified]:
-          isWCharType(t(_, qualifiedType(T:Type, _)))
-          => isWCharType(T) 
-     
      rule isPointerType(t(_, pointerType(_))) => true 
-     rule isPointerType(t(_, qualifiedType(T:Type, _))) => isPointerType(T) 
      rule isPointerType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'pointerType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
      
      rule [isBoolType-bool]: isBoolType(t(_, bool)) => true 
-     rule [isBoolType-qualifiedType]:
-          isBoolType(t(_, qualifiedType(T:Type, _)))
-          => isBoolType(T) 
      rule [isBoolType-other]: isBoolType(t(_, T:SimpleType)) => false
           when (T =/=K bool)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
      rule isArrayType(t(_, arrayType(_, _))) => true 
      rule isArrayType(t(_, incompleteArrayType(_))) => true 
      rule isArrayType(t(_, flexibleArrayType(_))) => true 
-     rule isArrayType(t(_, qualifiedType(T:Type, _))) => isArrayType(T)
      rule isArrayType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'arrayType)
                andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
 
      rule isVoidType(T:Type) => #isVoidType'(T) ==K true
           
      syntax Bool ::= "#isVoidType'" "(" Type ")" [function]
      rule #isVoidType'(t(_, void)) => true
-     rule #isVoidType'(t(_, qualifiedType(T:Type, _))) => #isVoidType'(T)
      rule #isVoidType'(typedDeclaration(T:Type, _)) => #isVoidType'(T)
 
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T) 
           
-     rule [isStructType-struct]:
-          isStructType(t(_, structType(_, _, _))) => true 
-     rule [isStructType-inc-struct]:
-          isStructType(t(_, incompleteStructType(_))) => true 
-     rule [isStructType-qualified]:
-          isStructType(t(_, qualifiedType(T:Type, _)))
-          => isStructType(T) 
-     rule [isStructType-other]: isStructType(t(_, T:SimpleType)) => false
+     rule isStructType(t(_, structType(_, _, _))) => true 
+     rule isStructType(t(_, incompleteStructType(_))) => true 
+     rule isStructType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'structType)
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
 
-     rule [isUnionType-union]:
-          isUnionType(t(_, unionType(_, _, _))) => true 
-     rule [isUnionType-inc-union]:
-          isUnionType(t(_, incompleteUnionType(_))) => true 
-     rule [isUnionType-qualified]:
-          isUnionType(t(_, qualifiedType(T:Type, _)))
-          => isUnionType(T) 
-     rule [isUnionType-other]: isUnionType(t(_, T:SimpleType)) => false
+     rule isUnionType(t(_, unionType(_, _, _))) => true 
+     rule isUnionType(t(_, incompleteUnionType(_))) => true 
+     rule isUnionType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'unionType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType )
 
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
@@ -318,76 +268,38 @@ module C-TYPING-PREDICATES
 
      rule #isIncompleteArrayType'(t(_, incompleteArrayType(_)))
           => true 
-     rule #isIncompleteArrayType'(t(_, qualifiedType(T:Type, _)))
-          => #isIncompleteArrayType'(T) 
      rule #isIncompleteArrayType'(typedDeclaration(T:Type, _))
           => #isIncompleteArrayType'(T) 
 
      rule #isIncompleteStructType'(t(_, incompleteStructType(_)))
           => true 
-     rule #isIncompleteStructType'(t(_, qualifiedType(T:Type, _)))
-          => #isIncompleteStructType'(T) 
      rule #isIncompleteStructType'(typedDeclaration(T:Type, _))
           => #isIncompleteStructType'(T) 
 
      rule #isIncompleteUnionType'(t(_, incompleteUnionType(_)))
           => true 
-     rule #isIncompleteUnionType'(t(_, qualifiedType(T:Type, _)))
-          => #isIncompleteUnionType'(T) 
      rule #isIncompleteUnionType'(typedDeclaration(T:Type, _))
           => #isIncompleteUnionType'(T) 
           
-     rule [isExternType-qualified]: 
-          isExternType(t(_, qualifiedType(T:Type, K:K))) 
-          => #if (K ==K Extern) #then (true) #else (isExternType(T)) #fi 
-     rule [isExternType-false]: isExternType(t(_, T:SimpleType)) => false
-          when getKLabel(T) =/=KLabel 'qualifiedType 
+     rule isExternType(t(Quals:Set, _)) => Extern in Quals
           
-     rule [isStaticType-qualified]: 
-          isStaticType(t(_, qualifiedType(T:Type, K:K))) 
-          => #if (K ==K Static) #then (true) #else (isStaticType(T)) #fi
-     rule [isStaticType-false]: isStaticType(t(_, T:SimpleType)) => false
-          when getKLabel(T) =/=KLabel 'qualifiedType 
+     rule isStaticType(t(Quals:Set, _)) => Static in Quals
           
-     rule [isConstType-qualified]: 
-          isConstType(t(S:Set, qualifiedType(T:Type, _)))
-          => isConstType(T)
-          when notBool (Const in S)
-     rule [isConstType-false]: 
-          isConstType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (notBool Const in S)
-     rule [isConstType-true]: 
-          isConstType(t(SetItem(Const) _, _)) => true
+     rule isConstType(t(Quals:Set, _)) => Const in Quals
           
-     rule [isBitfieldType-true]:
-          isBitfieldType(t(_, bitfieldType(_, _))) => true 
-     rule isBitfieldType(t(_, qualifiedType(T:Type, _))) => isBitfieldType(T)
-     rule [isBitfieldType-false]: isBitfieldType(t(_, T:SimpleType)) => false
+     rule isBitfieldType(t(_, bitfieldType(_, _))) => true 
+     rule isBitfieldType(t(_, T:SimpleType)) => false
           when getKLabel(T) =/=KLabel 'bitfieldType
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
           
-     rule [isFunctionType-true]:
-          isFunctionType(t(_, functionType(_, _)))
-          => true 
-     rule [isFunctionType-qualified]:
-          isFunctionType(t(_, qualifiedType(T:Type, _)))
-          => isFunctionType(T) 
-     rule [isFunctionType-false]: isFunctionType(t(_, T:SimpleType)) => false
+     rule isFunctionType(t(_, functionType(_, _))) => true 
+     rule isFunctionType(t(_, T:SimpleType)) => false
           when (getKLabel(T) =/=KLabel 'functionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-
-     syntax Bool ::= "#isFunctionPointerType'" "(" Type ")" [function]
 
      rule isFunctionPointerType(T:Type) => #isFunctionPointerType'(T) ==K true
-          
+
+     syntax Bool ::= "#isFunctionPointerType'" "(" Type ")" [function]
      rule #isFunctionPointerType'(t(_, pointerType(t(_, functionType(_, _)))))
           => true 
-     rule #isFunctionPointerType'(t(_, qualifiedType(T:Type, _)))
-          => #isFunctionPointerType'(T) 
-     rule #isFunctionPointerType'(t(_, pointerType(t(_,
-               qualifiedType(T:Type, _))))) 
-          => #isFunctionPointerType'(t(.Set, pointerType(T))) 
 
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.

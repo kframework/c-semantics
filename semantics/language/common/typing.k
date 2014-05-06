@@ -20,7 +20,6 @@ module C-TYPING-SYNTAX
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)] 
-     syntax Set ::= "setOfTypes" [function]
 
      syntax Bool ::= isTypeCompatible(Type, Type) [function]
      
@@ -45,8 +44,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isArithmeticType(Type) [function]
      syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
-
-     syntax Type ::= downPointer(Type) [function]
 
      syntax CSize ::= Int
      syntax CValue ::= CSize
@@ -79,8 +76,6 @@ module C-TYPING-SYNTAX
           [klabel('incompleteUnionType)]
 
      syntax TypeQuality ::= Storage | CVSpecifier
-     syntax SimpleType ::= qualifiedType(Type, TypeQuality)
-          [klabel('qualifiedType)]
 
      // Basic types
      syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" 
@@ -98,18 +93,15 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isBasicType(K) [function]
 
-     syntax Set ::= getQualities(Type) [function]
+     syntax Set ::= getModifiers(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
+     syntax Set ::= getStorageSpecifiers(Type) [function]
 
-     // TODO(chathhorn): rework how qualifiers/specifiers are handled. Rename
-     // these to be more in line with the standard's terminology.
-     // 
-     // This just removes stuff that appears in the "qualifiedType"
-     // constructor. Generally storage class specifiers.
+     // This removes everything that unqualifyType does, but also specifiers
+     // and stuff like Const and the fromUnion tag.
+     syntax Type ::= stripModifiers(Type) [function]
+     syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= unqualifyType(Type) [function]
-     // This removes everything that unqualifyType does, but also stuff like
-     // Const and the fromUnion tag.
-     syntax Type ::= stripQualities(Type) [function]
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
@@ -123,6 +115,8 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(Type) [function]
 
      syntax Set ::= getModifiers(K) [function]
+
+     syntax Type ::= addStorage(Storage, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 

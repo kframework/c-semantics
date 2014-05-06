@@ -55,57 +55,47 @@ module C-TYPING-INTERPRETATION
                makeFunctionType(L ListItem(t(.Set, variadic)))) 
           [structural, anywhere]
      
-     rule [pushdown-array]: 
-          pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
-     rule [pushdown-incomplete]: 
-          pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
           => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
-     rule [pushdown-pointer]: 
-          pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel) 
           => t(S, pointerType(pushTypeDown(T, Lbl)))
-     rule [pushdown-qualified]: 
-          pushTypeDown(t(S:Set, qualifiedType(T:Type, K:K)), Lbl:KLabel) 
-          => t(S, qualifiedType(pushTypeDown(T, Lbl), K))
-     rule [pushdown-function]: 
-          pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
           => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule [pushdown-struct]: 
-          pushTypeDown(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, structType(X, NBits, Info)))
-     rule [pushdown-inc-struct]: 
-          pushTypeDown(t(S:Set, incompleteStructType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteStructType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, incompleteStructType(X)))
-     rule [pushdown-union]: 
-          pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, unionType(X, NBits, Info)))
-     rule [pushdown-inc-union]: 
-          pushTypeDown(t(S:Set, incompleteUnionType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteUnionType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, incompleteUnionType(X)))
-     rule [pushdown-enum]: 
-          pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, enumType(X)))
      
-     rule [pushdown-typedef]: 
-          pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), Lbl:KLabel) 
           => Lbl(t(S S', T))
      
-     rule [pushdown-basic]: 
-          pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
+     rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
           when isBasicType(T)
           [structural]
      
      rule makeArrayType(N:CSize)(T:Type)
-          => t(.Set, arrayType(T, N)) 
+          => t(getStorageSpecifiers(T),
+               arrayType(stripStorageSpecifiers(T), N)) 
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
-          => t(.Set, functionType(T, giveNamesToArgs(L))) 
+          => t(getStorageSpecifiers(T),
+               functionType(stripStorageSpecifiers(T), giveNamesToArgs(L))) 
           [structural, anywhere]
      rule makePointerType(T:Type)
-          => t(.Set, pointerType(T))
+          => t(getStorageSpecifiers(T),
+               pointerType(stripStorageSpecifiers(T)))
           [structural, anywhere]
      rule makeIncompleteArrayType(T:Type)
-          => t(.Set, incompleteArrayType(T))
+          => t(getStorageSpecifiers(T),
+               incompleteArrayType(stripStorageSpecifiers(T)))
           [structural, anywhere]
      
      syntax List ::= giveNamesToArgs(List) [function]
@@ -124,10 +114,10 @@ module C-TYPING-INTERPRETATION
                giveNamesToArgs-aux(N +Int 1, L)
           when X ==K #NoName
           [structural]
-     rule giveNamesToArgs-aux(_:Int, ListItem(t(.Set, variadic)))
+     rule giveNamesToArgs-aux(_, ListItem(t(.Set, variadic)))
           => ListItem(t(.Set, variadic))
           [structural]
-     rule giveNamesToArgs-aux(_:Int, .List)
+     rule giveNamesToArgs-aux(_, .List)
           => .List
           [structural]
      
@@ -184,9 +174,6 @@ module C-TYPING-INTERPRETATION
      rule [extract-pointer]:
           extractActualType(t(S:Set, pointerType(T:Type))) 
           => t(S, pointerType(extractActualType(T)))
-     rule [extract-qualified]:
-          extractActualType(t(S:Set, qualifiedType(T:Type, K:K))) 
-          => t(S, qualifiedType(extractActualType(T), K))
      rule [extract-typedef]:
           extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))

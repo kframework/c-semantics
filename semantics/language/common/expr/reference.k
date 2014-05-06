@@ -33,9 +33,9 @@ module C-COMMON-EXPR-REFERENCE
      }*/
      rule [deref]:
           *(tv(Loc:SymLoc, T:Type))
-          => checkDerefLoc(Loc) ~> lv(Loc, downPointer(T))
+          => checkDerefLoc(Loc) ~> lv(Loc, innerType(T))
           when isPointerType(T)
-               andBool notBool isVoidType(downPointer(T))
+               andBool notBool isVoidType(innerType(T))
           [structural]
 endmodule
 

@@ -58,8 +58,6 @@ module C-BITSIZE
           => cfg:ptrsize *Int cfg:bitsPerByte
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
           => N
-     rule bitSizeofType(t(_, qualifiedType(T:Type, _))) 
-          => bitSizeofType(T:Type) 
      rule bitSizeofType(T:Type) 
           => numBits(T)
           when isBasicType(T)

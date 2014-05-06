@@ -88,7 +88,7 @@ module C-TYPING-CANONICALIZATION
           [structural]
           
      rule canonicalizeType-aux(.Bag, 
-               (T:Type => t(.Set, qualifiedType(T, Q))),
+               t((.Set => SetItem(Q)) _:Set, _),
                .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
           when (Q ==K Extern)
                orBool (Q ==K Static)
