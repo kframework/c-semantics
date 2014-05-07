@@ -13,7 +13,6 @@ require "decl/global.k"
 require "decl/local.k"
 
 require "expr/additive.k"
-require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/conversion.k"
 require "expr/function-call.k"
@@ -54,7 +53,6 @@ module C-TRANSLATION
      imports C-DECL-LOCAL
 
      imports C-EXPR-ADDITIVE
-     imports C-EXPR-ASSIGNMENT
      imports C-EXPR-BITWISE
      imports C-EXPR-CONVERSION
      imports C-EXPR-FUNCTION-CALL

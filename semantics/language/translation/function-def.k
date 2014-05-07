@@ -39,14 +39,14 @@ module C-FUNCTION-DEF
                     &(X), 
                     functionObject(
                          X, 
-                         unqualifyType(T), 
+                         stripStorageSpecifiers(T), 
                          K
                     )
                ))
           )
           // TODO(chathhorn): could these be combined?
           ~> calculateGotoMap(X, K)
-          ~> staticEval(X, unqualifyType(T), K)
+          ~> staticEval(X, stripStorageSpecifiers(T), K)
 
      syntax K ::= checkFunctionDef(Id, Type) [function]
      rule checkFunctionDef(_, t(_, functionType(Ret:Type, Params:List))) => .

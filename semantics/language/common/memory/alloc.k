@@ -4,10 +4,6 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, List)
 
-     // fixme would be better to keep canonical
-     syntax Int ::= getBitOffset(SymLoc) [function]
-     syntax Int ::= getByteOffset(SymLoc) [function]
-
      syntax K ::= checkValidLoc(SymLoc)
      syntax K ::= checkDerefLoc(SymLoc)
 
@@ -89,9 +85,6 @@ module C-MEMORY-ALLOC
           when notBool isLinkerLoc(loc(Base, 0, 0))
           [structural]
      
-     rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
-     rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
-     
      // used by calloc
      rule <k> zeroBlock(loc(Base:SymBase, 0, 0)) => . ...</k>
           <mem>...
@@ -100,8 +93,7 @@ module C-MEMORY-ALLOC
           ...</mem>
           [structural]
           
-     rule <k> 
-               sizeofLocation(loc(Base:SymBase, _:Int, _:Int)) 
+     rule <k> sizeofLocation(loc(Base:SymBase, _:Int, _:Int)) 
                => tv(Len:Int, cfg:sizeut)
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>

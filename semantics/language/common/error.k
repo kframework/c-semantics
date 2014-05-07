@@ -12,6 +12,7 @@ module C-ERROR
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports COMPAT-SYNTAX
 
      syntax String ::= Error(String, String, KList) [function]
@@ -153,6 +154,11 @@ module C-ERROR
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
           tv(loc(Base:SymBase, _:Int, _:Int), T:Type) >= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
           when Base =/=K Base'
+          [structural, large]
+
+     rule [err00035]:
+          (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
+          write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
           [structural, large]
 
      rule [err00038a]:

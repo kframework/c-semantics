@@ -1,11 +1,11 @@
 module C-MEMORY-WRITING-SYNTAX
      // location, value
-     syntax K ::= write(K, K) [strict(2)]
+     syntax K ::= write(LValue, K) [strict(2)]
 
-     // Either buffered or unbuffered depending on whether we're executing.
-     // If the flag is true, then we disable checking undefinedness checking
-     // (i.e., multiple, unsequenced writes to a single location). This is
-     // always disabled in direct io mode.
+     // Either buffered or unbuffered depending on whether we're executing. If
+     // the flag is true, then we disable undefinedness checking (i.e.,
+     // multiple, unsequenced writes to a single location). This is always
+     // disabled in direct io mode.
      syntax K ::= writeBytes(SymLoc, K, Bool) [strict(2)] 
      syntax K ::= writeByte(SymLoc, CValue)
 
@@ -13,6 +13,13 @@ module C-MEMORY-WRITING-SYNTAX
 
      // TODO(chathhorn): For error.k.
      syntax K ::= "write-aux" "(" SymLoc "," Value "," CSize ")"
+
+     // TODO(chathhorn): For trans/symbolic-value.k
+     syntax K ::= splitBytes(Value) [function]
+     syntax K ::= "write-specific" "(" SymLoc "," Value "," CSize ")"
+     syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
+     syntax K ::= calculateNewBytes(Int, K, K)
+          [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
 endmodule
 
 module C-MEMORY-WRITING
@@ -28,19 +35,11 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
-          
-     syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
-     syntax Bool ::= isByteLoc(SymLoc) [function]
-     syntax K ::= splitBytes(Value) [function]
-     syntax K ::= calculateNewBytes(Int, K, K)
-          [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
      
      rule write(lv(Dest:SymLoc, T':Type), tv(V:CValue, T:Type)) 
           => write-aux(Dest, tv(V, T), bitSizeofType(T)) 
           when notBool isConstType(T')
           [structural]
-     
-     syntax K ::= "write-specific" "(" SymLoc "," Value "," CSize ")"
      
      // Write thread-local or auto.
      rule [write-thread-local]:
@@ -95,12 +94,6 @@ module C-MEMORY-WRITING
           => I +Int (cfg:bitsPerByte -Int (I %Int cfg:bitsPerByte))
           when (I %Int cfg:bitsPerByte) =/=Int 0
           
-     syntax Bool ::= hasUnionMarker(Type) [function]
-     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
-
-     syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
-     
      rule [write-struct]:
           write-specific(Loc:SymLoc, 
                tv(agg(ListItem(V:K) ListItem(V':K) L:List), T:Type), 
@@ -225,28 +218,22 @@ module C-MEMORY-WRITING
           when Pos <Int Len
           
      // this general rule is useful for unknowns, abstracts, etc
-     rule [splitBytes-other]:
-          splitBytes(tv(N:Bits, T:Type))
+     rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
           when isCharType(T) andBool (isInt(N) =/=K true)
-     rule [splitBytes-int]:
-          splitBytes(tv(I:Int, T:Type)) 
+     rule splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, byteSizeofType(T))
           when hasIntegerType(T)
-     rule [splitBytes-float]:
-          splitBytes(tv(F:Float, T:Type)) 
+     rule splitBytes(tv(F:Float, T:Type)) 
           => splitFloatBytes(F, T, byteSizeofType(T))
           when isFloatType(T)
-     rule [splitBytes-pointer]:
-          splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:Type)))) 
-          => splitPointerBytes(I, t(S, pointerType(T)), 
-               byteSizeofType(t(.Set, pointerType(T))))
-     rule [splitBytes-struct]:
-          splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)))) 
+     rule splitBytes(tv(I:Ptr, T:Type))
+          => splitPointerBytes(I, T, byteSizeofType(T))
+          when isPointerType(T)
+     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
                byteSizeofType(t(S, structType(X, NBits, Info))))
-     rule [splitBytes-union]:
-          splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)))) 
+     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
                byteSizeofType(t(S, unionType(X, NBits, Info))))
      
@@ -322,6 +309,4 @@ module C-MEMORY-WRITING
 
      rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
           
-     rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0
 endmodule
-

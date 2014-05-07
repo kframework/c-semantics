@@ -219,11 +219,6 @@ module C-EXECUTION-ERROR
           when (T:K =/=K void)
           [structural, large]
           
-     rule [err00035]:
-          (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
-          write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
-          [structural, large]
-     
      rule [err00036]:
           (. => ERROR("00036", "Trying to dereference a null pointer.") ) ~>
           checkDerefLoc(NullPointer)

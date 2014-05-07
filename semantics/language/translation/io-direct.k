@@ -13,8 +13,15 @@ module C-IO-DIRECT
 
      syntax K ::= writeBytes(SymLoc, K)
 
-     rule writeBytes(Loc:SymLoc, K:KResult, _)
-          => writeBytes(Loc, K)
+     // In the static semantics, we only allow writing to memory during
+     // initialization (of statics).
+     rule <k> writeBytes(Loc:SymLoc, K:KResult, _)
+               => writeBytes(Loc, K)
+          ...</k>
+          <initializing> true </initializing>
+
+     rule <k> writeBytes(_, _, _) => . ...</k>
+          <initializing> false </initializing>
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
           => writeByte(Loc, V) ~> 

@@ -252,5 +252,9 @@ module C-TYPING-MISC
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
+     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
+
+     syntax Bool ::= #hasUnionMarker(Type) [function]
+     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
 endmodule
 

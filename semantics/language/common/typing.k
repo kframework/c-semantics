@@ -136,6 +136,7 @@ module C-TYPING-SYNTAX
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax K ::= fromUnion(SymLoc, Id, FieldInfo)
+     syntax Bool ::= hasUnionMarker(Type) [function]
 
 endmodule
 

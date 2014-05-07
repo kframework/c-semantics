@@ -64,6 +64,12 @@ module C-SYMLOC-SYNTAX
      syntax String ::= getTU(SymLoc) [function]
      syntax Int ::= getThreadId(SymLoc) [function]
 
+     // fixme would be better to keep canonical
+     syntax Int ::= getBitOffset(SymLoc) [function]
+     syntax Int ::= getByteOffset(SymLoc) [function]
+
+     syntax Bool ::= isByteLoc(SymLoc) [function]
+
 endmodule
 
 module C-SYMLOC
@@ -148,5 +154,10 @@ module C-SYMLOC
      rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
 
      rule getThreadId(loc (_ @ thread(Th:Int), _, _)) => Th
+
+     rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
+     rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
+     
+     rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0
 endmodule
 

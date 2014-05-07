@@ -4,6 +4,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
@@ -84,5 +85,10 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule compoundAssignment(L:KLabel, V:Value, V':Value)
           => pkludge(V) := L(rkludge(V),, rkludge(V'))
           [structural]
+
+     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
+               => write(lv(Loc, T), tv(V, T)) ~> tv(V, T)
+          [structural]
+
 endmodule
 

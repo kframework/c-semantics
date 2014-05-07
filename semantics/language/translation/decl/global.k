@@ -199,7 +199,7 @@ module C-DECL-GLOBAL
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
                => declareExternalVariable'(
-                    allowInit(figureInit(X, unqualifyType(T), K)), 
+                    allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, State, internal, 
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -231,7 +231,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, unqualifyType(T), K)), 
+                    allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -250,7 +250,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, unqualifyType(T), K)), 
+                    allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -281,7 +281,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, unqualifyType(T), K)), 
+                    allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -290,7 +290,7 @@ module C-DECL-GLOBAL
           <next-link-loc> Loc:SymLoc => linc(Loc) </next-link-loc>
           <externals>
                Exts:Map
-               (. => X |-> declState(Loc, unqualifyType(T), declared, false))
+               (. => X |-> declState(Loc, stripStorageSpecifiers(T), declared, false))
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
@@ -303,7 +303,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, unqualifyType(T), K)), 
+                    allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -312,7 +312,7 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals>
                Ints:Map
-               (. => X |-> declState(Loc, unqualifyType(T), declared, false))
+               (. => X |-> declState(Loc, stripStorageSpecifiers(T), declared, false))
           </internals>
           when isStaticType(T)
                andBool notBool (X in keys Exts)
