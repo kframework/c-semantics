@@ -98,7 +98,7 @@ and cvspec =
 and spec_elem =
     SpecTypedef          
   | SpecCV of cvspec            (* const/volatile *)
-  | SpecAttr of attribute       (* __attribute__ *)
+  | SpecAttr of (string * expression list)       (* __attribute__ *)
   | SpecStorage of storage
   (* technically these two should be grouped too *)
   | SpecInline
@@ -338,5 +338,5 @@ and initwhat =
 
                                         (* Each attribute has a name and some
                                          * optional arguments *)
-and attribute = string * expression list
+and attribute = spec_elem
 

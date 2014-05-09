@@ -856,7 +856,7 @@ block_begin:
 block_attrs:
    /* empty */                                              { [] }
 |  BLOCKATTRIBUTE paren_attr_list_ne
-                                        { [("__blockattribute__", $2)] }
+                                        { [SpecAttr("__blockattribute__", $2)] }
 ;
 
 /* statements and declarations in a block, in any order (for C99 support) */
@@ -980,7 +980,8 @@ decl_spec_list:                         /* ISO 6.7 */
 |   INLINE decl_spec_list_opt           { SpecInline :: $2, $1 }
 |   NORETURN decl_spec_list_opt           { SpecNoReturn :: $2, $1 }
 |   cvspec decl_spec_list_opt           { (fst $1) :: $2, snd $1 }
-|   attribute_nocv decl_spec_list_opt   { SpecAttr (fst $1) :: $2, snd $1 }
+|   attribute_nocv decl_spec_list_opt   
+      { (SpecAttr (fst (fst $1), snd (fst $1))) :: $2, snd $1 }
 /* specifier pattern variable (must be last in spec list) */
 |   AT_SPECIFIER LPAREN IDENT RPAREN    { [ SpecPattern(fst $3) ], $1 }
 |	alignment_specifier decl_spec_list_opt { SpecAlignment (fst $1) :: $2, snd $1 }
@@ -1340,8 +1341,8 @@ function_def_start:  /* (* ISO 6.9.1 *) */
 /* const/volatile as type specifier elements */
 cvspec:
     CONST                               { SpecCV(CV_CONST), $1 }
-|   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   RESTRICT                            { SpecCV(CV_RESTRICT), $1 }
+|   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   ATOMIC                              { 
 parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
 SpecCV(CV_ATOMIC), $1 }
@@ -1359,7 +1360,7 @@ attributes_with_asm:
     /* empty */                         { [] }
 |   attribute attributes_with_asm       { fst $1 :: $2 }
 |   ASM LPAREN string_constant RPAREN attributes        
-                                        { ("__asm__", 
+                                        { SpecAttr("__asm__", 
 					   [CONSTANT(CONST_STRING (fst $3))]) :: $5 }
 ;
 
@@ -1385,10 +1386,10 @@ attribute_nocv_list:
 
 /* __attribute__ plus const/volatile */
 attribute:
-    attribute_nocv                      { $1 }
-|   CONST                               { ("const", []), $1 }
-|   RESTRICT                            { ("restrict",[]), $1 }
-|   VOLATILE                            { ("volatile",[]), $1 }
+    attribute_nocv         { SpecAttr (fst $1), (snd $1) }
+|   CONST                  { SpecCV CV_CONST, $1 }
+|   RESTRICT               { SpecCV CV_RESTRICT, $1 }
+|   VOLATILE               { SpecCV CV_VOLATILE, $1 }
 ;
 
 /* (* sm: I need something that just includes __attribute__ and nothing more,
@@ -1403,8 +1404,8 @@ just_attribute:
 /* this can't be empty, b/c I folded that possibility into the calling
  * productions to avoid some S/R conflicts */
 just_attributes:
-    just_attribute                      { [$1] }
-|   just_attribute just_attributes      { $1 :: $2 }
+    just_attribute                      { [SpecAttr $1] }
+|   just_attribute just_attributes      { (SpecAttr $1) :: $2 }
 ;
 
 /** (* PRAGMAS and ATTRIBUTES *) ***/
@@ -1622,8 +1623,8 @@ paren_attr_list:
 /*** GCC ASM instructions ***/
 asmattr:
      /* empty */                        { [] }
-|    VOLATILE  asmattr                  { ("volatile", []) :: $2 }
-|    CONST asmattr                      { ("const", []) :: $2 } 
+|    VOLATILE  asmattr                  { (SpecCV CV_VOLATILE) :: $2 }
+|    CONST asmattr                      { (SpecCV CV_CONST) :: $2 } 
 ;
 asmtemplate: 
     one_string_constant                          { [$1] }

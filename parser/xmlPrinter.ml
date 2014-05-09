@@ -175,10 +175,8 @@ and printBlock a =
 	let blockNum = ((counter := (!counter + 1); !counter)) in
 	let blockNumCell = (printRawInt blockNum) in
 	let idCell = printCell "BlockId" [] blockNumCell in
-	let block = 
-	wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block" in
+	wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block"
 	(* printCell "Block" attribs ((printBlockLabels a.blabels) ^ (printStatementList a.bstmts)) in *)
-	printAttr block a.battrs
 
 	(*	
 and block = 
@@ -216,9 +214,9 @@ and printIdentifier a =
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
 	if a = "" then 
 		(* printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c *)
-		printAttr (printNameLoc (wrap ((printCell "AnonymousName" [] "") :: (printDeclType b) :: []) "Name") d) c
+		printNameLoc (wrap ((printCell "AnonymousName" [] "") :: (printDeclType b) :: []) "Name") d
 	else 
-		printAttr (printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: []) "Name") d) c
+		printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: []) "Name") d
 	
 	
 and printInitNameGroup (a, b) = 
@@ -269,11 +267,11 @@ and printDeclType a =
 	| PTR (a, b) -> printPointerType a b
 	| PROTO (a, b, c) -> printProtoType a b c)
 and printParenType a b c =
-	printAttr (wrap ((printAttr (printDeclType b) c) :: []) "FunctionType") a
+	(wrap ((printDeclType b) :: []) "FunctionType")
 and printArrayType a b c d =
-	printAttr (wrap ((printDeclType a) :: (printExpression c) :: (printSpecifier d) :: []) "ArrayType") b
+	(wrap ((printDeclType a) :: (printExpression c) :: (printSpecifier (b@d)) :: []) "ArrayType")
 and printPointerType a b =
-	printAttr (wrap ((printDeclType b) :: []) "PointerType") a
+	(wrap ((printSpecifier a) :: (printDeclType b) :: []) "PointerType")
 and printProtoType a b c =
 	(* printCell "Prototype" [Attrib ("variadic", string_of_bool c)] (printList (fun x -> x) ((printDeclType a) :: (printSingleNameList b) :: [])) *)
 	let variadicName = (if c then "Variadic" else "NotVariadic") in
@@ -711,20 +709,17 @@ and printTypeSpec = function
 	| Timaginary ->	printCell "Imaginary" [] ""
 	| Tatomic (s, d) ->	wrap ((printSpecifier s) :: (printDeclType d) :: []) "TAtomic"
 and printStructType a b c =
-	printAttr (match b with
+	match b with
 		| None -> wrap ((printIdentifier a) :: []) "StructRef"
 		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: []) "StructDef"
-	) c
 and printUnionType a b c = 
-	printAttr (match b with
+	match b with
 		| None -> wrap ((printIdentifier a) :: []) "UnionRef"
 		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: []) "UnionDef"
-	) c
 and printEnumType a b c =
-	printAttr (match b with
+	match b with
 		| None -> wrap ((printIdentifier a) :: []) "EnumRef"
 		| Some b -> wrap ((printIdentifier a) :: (printEnumItemList b) :: []) "EnumDef"
-	) c
 
 
 
