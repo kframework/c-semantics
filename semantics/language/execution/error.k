@@ -159,12 +159,6 @@ module C-EXECUTION-ERROR
           callMain-aux(t(_, functionType(t(_, T:SimpleType), _:List)), _:Int, _:Id, _)
           when T =/=K int
           [structural, large]
-     rule [err00025b]:
-          <k> (. => ERROR("00025b", "Main must exist.", 4) ) ~>
-               callMain(_, _)
-          ...</k>
-          <main-tu> .Set </main-tu>
-          [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
           callMain-aux(t(_, functionType(t(_, int), ListItem(typedDeclaration(t(_, T:SimpleType), _:Id)) _:List)), _:Int, _:Id, _) 

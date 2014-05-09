@@ -44,11 +44,20 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-function> F:K </curr-function>
           when F =/=K file-scope
+               andBool notBool isFunctionType(T)
+               andBool validLocalStorageClass(T)
+          [structural] 
+     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+               => declareInternalVariable(X, adjustParams(T), K)
+          ...</k>
+          <curr-function> F:K </curr-function>
+          when F =/=K file-scope
+               andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural] 
           
      rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
-               => declareExternalVariable(X, T,
+               => declareExternalVariable(X, adjustParams(T),
                     #if K ==K NoInit 
                     #then NoInit 
                     #else CodeLoc(K, L) #fi)
@@ -94,6 +103,32 @@ module C-DECL-GLOBAL
           when validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
           [structural] 
+
+     syntax Type ::= adjustParams(Type) [function]
+     syntax List ::= "adjustParams'" "(" List ")" [function]
+     syntax Type ::= "adjustParam'" "(" Type ")" [function]
+
+     rule adjustParams(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(Mods, functionType(R, adjustParams'(Params)))
+
+     rule adjustParams'(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam'(T)) adjustParams'(Params)
+     rule adjustParams'(.List) => .List
+
+     rule adjustParam'(typedDeclaration(T:Type, X:Id))
+          => typedDeclaration(adjustParam'(T), X)
+     rule adjustParam'(t(Mods:Set, arrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam'(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, pointerType(T))
+     rule adjustParam'(T) => t(.Set, pointerType(T))
+          when isFunctionType(T)
+
+     rule adjustParam'(T:Type) => T
+          when notBool isTypedDeclaration(T)
+               andBool notBool isArrayType(T)
+               andBool notBool isIncompleteArrayType(T)
+               andBool notBool isFunctionType(T)
           
      syntax K ::= declareExternalVariable(Id, Type, K)
 
@@ -111,41 +146,41 @@ module C-DECL-GLOBAL
      // between the storage class specifiers and the "qualities," but there are
      // some annoying special cases (ThreadLocal & extern/static is legal).
      // Also, consider moving this to type canonicalization.
-     rule validStorageClass(T:Type) => validStorageClass'(T, getModifiers(T))
-     rule validStorageClass'(T:Type, Modifiers:Set) => notBool (
+     rule validStorageClass(T:Type) => validStorageClass'(T, getStorageSpecifiers(T))
+     rule validStorageClass'(T:Type, Specs:Set) => notBool (
                // TODO(chathhorn): type canonicalization doesn't work right so
                // we can't do this. Qualifiers on function decls appear to
                // always be applied to the declared function type, and not to
                // the function's return type. AFAIK, the only time qualifiers
                // should be applied to the declared function type is when the
                // function type is actually a typedef.
-               (Static in Modifiers andBool Extern in Modifiers)
-               orBool (Auto in Modifiers andBool Static in Modifiers)
-               orBool (Auto in Modifiers andBool Extern in Modifiers)
-               orBool (Auto in Modifiers andBool ThreadLocal in Modifiers)
-               orBool (Register in Modifiers andBool Static in Modifiers)
-               orBool (Register in Modifiers andBool Extern in Modifiers)
-               orBool (Register in Modifiers andBool ThreadLocal in Modifiers)
-               orBool (isFunctionType(T) andBool ThreadLocal in Modifiers)
-               orBool (isFunctionType(T) andBool Auto in Modifiers)
-               orBool (isFunctionType(T) andBool Register in Modifiers)
+               (Static in Specs andBool Extern in Specs)
+               orBool (Auto in Specs andBool Static in Specs)
+               orBool (Auto in Specs andBool Extern in Specs)
+               orBool (Auto in Specs andBool ThreadLocal in Specs)
+               orBool (Register in Specs andBool Static in Specs)
+               orBool (Register in Specs andBool Extern in Specs)
+               orBool (Register in Specs andBool ThreadLocal in Specs)
+               orBool (isFunctionType(T) andBool ThreadLocal in Specs)
+               orBool (isFunctionType(T) andBool Auto in Specs)
+               orBool (isFunctionType(T) andBool Register in Specs)
           )
 
      rule validGlobalStorageClass(T:Type)
-          => validGlobalStorageClass'(T, getModifiers(T))
-     rule validGlobalStorageClass'(T:Type, Modifiers:Set) =>
-          validStorageClass'(T, Modifiers)
+          => validGlobalStorageClass'(T, getStorageSpecifiers(T))
+     rule validGlobalStorageClass'(T:Type, Specs:Set) =>
+          validStorageClass'(T, Specs)
           andBool notBool (
-               (Auto in Modifiers)
-               orBool (Register in Modifiers)
+               (Auto in Specs)
+               orBool (Register in Specs)
           )
 
      rule validLocalStorageClass(T:Type)
-          => validLocalStorageClass'(T, getModifiers(T))
-     rule validLocalStorageClass'(T:Type, Modifiers:Set) =>
-          validStorageClass'(T, Modifiers)
+          => validLocalStorageClass'(T, getStorageSpecifiers(T))
+     rule validLocalStorageClass'(T:Type, Specs:Set) =>
+          validStorageClass'(T, Specs)
           andBool notBool (
-               (isFunctionType(T) andBool Static in Modifiers)
+               (isFunctionType(T) andBool Static in Specs)
           )
 
      // *** External variables ***
@@ -518,6 +553,15 @@ module C-DECL-GLOBAL
           when notBool isLinkerLoc(Loc')
                andBool (Loc =/=K Loc')
           [structural]
+     rule <k> (.K => ERROR("DG8",
+                    "incompatible redeclaration of symbol with external linkage: "
+                    +String idToString(X)))
+               ~> updateLinkState(X:Id, T':Type, _)
+          ...</k>
+          <external-types>... X |-> T:Type ...</external-types>
+          when notBool isTypeCompatible(T, T')
+          [structural]
+     
      
      syntax K ::= recordTentDef(Id, Linkage)
      rule <k> recordTentDef(X:Id, internal) => . ...</k>

@@ -48,9 +48,10 @@ module C-FUNCTION-DEF
           ~> calculateGotoMap(X, K)
           ~> staticEval(X, stripStorageSpecifiers(T), K)
 
-     syntax K ::= checkFunctionDef(Id, Type) [function]
+     syntax K ::= checkFunctionDef(Id, Type)
      rule checkFunctionDef(_, t(_, functionType(Ret:Type, Params:List))) => .
           when isVoidOrComplete(Ret) andBool areVoidOrComplete(Params)
+          [structural]
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
      rule isVoidOrComplete(T:Type)
@@ -67,11 +68,13 @@ module C-FUNCTION-DEF
                +String "function " +String idToString(X) +String " (6.7.6.3p4)."))
           ~> checkFunctionDef(X:Id, t(_, functionType(Ret:Type, _)))
           when notBool isVoidOrComplete(Ret)
+          [structural]
 
      rule (. => ERROR("FD2", "incomplete parameter type in the definition for "
                +String "function " +String idToString(X) +String " (6.7.6.3p4)."))
           ~> checkFunctionDef(X:Id, t(_, functionType(_, Params:List)))
           when notBool areVoidOrComplete(Params)
+          [structural]
 
      rule [initialize-function]:
           <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), 
@@ -108,7 +111,7 @@ module C-FUNCTION-DEF
      
      rule dummyBind(ListItem(typedDeclaration(t(.Set, void), _)) _:List) => .
      rule dummyBind(.List) => .
-     rule dummyBind(ListItem(t(_, variadic))) => .
+     rule dummyBind(ListItem(variadic)) => .
 
      rule dummyBind(ListItem(typedDeclaration(
           (t(_, (arrayType(T:Type, _) => pointerType(T)))),

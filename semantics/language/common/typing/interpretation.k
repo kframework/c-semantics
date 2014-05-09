@@ -22,7 +22,7 @@ module C-TYPING-INTERPRETATION
           => t(.Set, bitfieldType(T, N)) [structural, anywhere]
      
      syntax KLabel ::= makeFunctionType(List)
-     syntax KLabel ::= "makePointerType"
+     syntax KLabel ::= makePointerType(Set)
      syntax KLabel ::= "makeIncompleteArrayType"
      syntax KLabel ::= makeArrayType(CSize)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
@@ -39,9 +39,14 @@ module C-TYPING-INTERPRETATION
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural, anywhere]
-     rule PointerType(T:Type)
-          => pushTypeDown(T, makePointerType)
+     rule PointerType(Specifier(list(Quals:List)), T:Type)
+          => pushTypeDown(T, makePointerType(listToSet(Quals)))
           [structural, anywhere]
+
+     syntax Set ::= listToSet(List) [function]
+     rule listToSet(ListItem(K:K) L:List) => SetItem(K) listToSet(L)
+     rule listToSet(.List) => .Set
+
      // FIXME: I'm assuming functiontype is always below a prototype in the
      // AST.
      rule FunctionType(T:Type) => T
@@ -52,7 +57,7 @@ module C-TYPING-INTERPRETATION
           [structural, anywhere]
      rule Prototype(T:Type, krlist(L:List), true) 
           => pushTypeDown(T, 
-               makeFunctionType(L ListItem(t(.Set, variadic)))) 
+               makeFunctionType(L ListItem(variadic))) 
           [structural, anywhere]
      
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
@@ -89,8 +94,8 @@ module C-TYPING-INTERPRETATION
           => t(getStorageSpecifiers(T),
                functionType(stripStorageSpecifiers(T), giveNamesToArgs(L))) 
           [structural, anywhere]
-     rule makePointerType(T:Type)
-          => t(getStorageSpecifiers(T),
+     rule makePointerType(Quals:Set)(T:Type)
+          => t(Quals getStorageSpecifiers(T),
                pointerType(stripStorageSpecifiers(T)))
           [structural, anywhere]
      rule makeIncompleteArrayType(T:Type)
@@ -114,8 +119,8 @@ module C-TYPING-INTERPRETATION
                giveNamesToArgs-aux(N +Int 1, L)
           when X ==K #NoName
           [structural]
-     rule giveNamesToArgs-aux(_, ListItem(t(.Set, variadic)))
-          => ListItem(t(.Set, variadic))
+     rule giveNamesToArgs-aux(_, ListItem(variadic))
+          => ListItem(variadic)
           [structural]
      rule giveNamesToArgs-aux(_, .List)
           => .List
@@ -141,50 +146,37 @@ module C-TYPING-INTERPRETATION
      rule NameAndType(X:Id, T:Type) => typedDeclaration(T, X)
           [structural, anywhere] 
      
-     rule [extract-basic]: 
-          extractActualType(T:Type) => T
+     rule extractActualType(T:Type) => T
           when isBasicType(T)
-     rule [extract-enum]: 
-          extractActualType(t(S:Set, enumType(X:Id))) 
+     rule extractActualType(t(S:Set, enumType(X:Id))) 
           => t(S, enumType(X))
-     rule [extract-struct]:
-          extractActualType(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo))) 
+     rule extractActualType(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo))) 
           => t(S, structType(X, NBits, Info))
-     rule [extract-inc-struct]:
-          extractActualType(t(S:Set, incompleteStructType(X:Id))) 
+     rule extractActualType(t(S:Set, incompleteStructType(X:Id))) 
           => t(S, incompleteStructType(X))
-     rule [extract-union]:
-          extractActualType(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo))) 
+     rule extractActualType(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo))) 
           => t(S, unionType(X, NBits, Info))
-     rule [extract-inc-union]:
-          extractActualType(t(S:Set, incompleteUnionType(X:Id))) 
+     rule extractActualType(t(S:Set, incompleteUnionType(X:Id))) 
           => t(S, incompleteUnionType(X))
-     rule [extract-array]:
-          extractActualType(t(S:Set, arrayType(T:Type, N:CSize))) 
+     rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize))) 
           => t(S, arrayType(extractActualType(T), N))
-     rule [extract-incompleteArray]:
-          extractActualType(t(S:Set, incompleteArrayType(T:Type))) 
+     rule extractActualType(t(S:Set, incompleteArrayType(T:Type))) 
           => t(S, incompleteArrayType(extractActualType(T)))
-     rule [extract-bitfield]:
-          extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize))) 
+     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize))) 
           => t(S, bitfieldType(extractActualType(T), N))
-     rule [extract-function]:
-          extractActualType(t(S:Set, functionType(T:Type, L:List))) 
+     rule extractActualType(t(S:Set, functionType(T:Type, L:List))) 
           => t(S, functionType(extractActualType(T), L))
-     rule [extract-pointer]:
-          extractActualType(t(S:Set, pointerType(T:Type))) 
+     rule extractActualType(t(S:Set, pointerType(T:Type))) 
           => t(S, pointerType(extractActualType(T)))
-     rule [extract-typedef]:
-          extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
+     rule extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))
           
-     syntax K ::= NameAndType(K, K) [strict(2)] 
+     syntax K ::= NameAndType(Id, K) [strict(2)] 
           
      rule SingleName(T:Type, Name(X:Id, K:K)) 
           => NameAndType(X, DeclType(T, K))
           [structural, anywhere] 
-     rule [Separate-FieldGroups]:
-          FieldGroup(K:K, list(ListItem(C:K) ListItem(C':K) L:List)) 
+     rule FieldGroup(K:K, list(ListItem(C:K) ListItem(C':K) L:List)) 
           => FieldGroup(K, list(ListItem(C))),, 
                FieldGroup(K, list(ListItem(C') L))
           [structural, anywhere]

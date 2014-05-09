@@ -195,15 +195,14 @@ module C-SYNTAX
      syntax DeclType ::= ArrayType(K, K, K)
           [klabel('ArrayType), strict(1)]
      context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
-     syntax DeclType ::= PointerType(K)
-          [klabel('PointerType), strict]
+     syntax DeclType ::= PointerType(Specifier, K)
+          [klabel('PointerType), strict(2)]
      // K, List, Bool
      syntax DeclType ::= Prototype(K, K, Bool)
           [klabel('Prototype), strict(1, 2)]
      
      syntax K ::= "NotVariadic"
      syntax K ::= "Variadic"
-     
      
      /*
      and name_group = specifier * name list

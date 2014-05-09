@@ -40,11 +40,12 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'bitfieldType
      rule numBits(t(_, bitfieldType(_, N:CSize))) => N
 
+     rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
+          [structural]
+
+     syntax Type ::= stripConst(Type) [function]
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
 
-     rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
-          [structural, anywhere]
-     
      rule [correspondingUnsigned-int]: 
           correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
@@ -137,11 +138,9 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
-     rule unqualifyType(t(Mods:Set, T:SimpleType))
+     rule stripQualifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set typeQualifiers, T)
           
-     rule stripModifiers(t(_, T:SimpleType)) => t(.Set, T)
-
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
 
@@ -154,7 +153,7 @@ module C-TYPING-MISC
      rule innerType(t(_, pointerType(T:Type))) => T
      rule innerType(t(_, bitfieldType(T:Type, _))) => T
      rule innerType(t(_, functionType(T:Type, _))) => T
-
+     rule innerType(typedDeclaration(T:Type, _)) => T
 
      rule <k> completeTags(T:Type) => completeTags(Tags, T) ...</k>
           <structs> Tags:Map </structs>
@@ -243,6 +242,7 @@ module C-TYPING-MISC
      // Function parameters.
      rule completeTags(Tags:Map, typedDeclaration(T:Type, X:Id))
           => typedDeclaration(completeTags(Tags, T), X)
+     rule completeTags(_, variadic) => variadic
 
      rule completeTagsInList(Tags:Map, ListItem(T:Type) L:List)
           => ListItem(completeTags(Tags, T)) completeTagsInList(Tags, L)

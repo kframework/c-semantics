@@ -11,6 +11,8 @@ module C-DECL-ZERO
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
+     imports DEBUG-SYNTAX
+
      rule <k> zero(Sym:K) => zeroType(Sym, T) ...</k>
           <types>... Sym |-> T:Type ...</types>
           [structural] 

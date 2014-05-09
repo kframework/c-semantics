@@ -123,13 +123,11 @@ module C-BINDING
      
      // the idea here is that there should have been a previous argument, so we
      // can use its address to append all of the variadic arguments 
-     rule [bind-variadic-pre]:
-          bind-aux(Loc:SymLoc, L:List, ListItem(t(_, variadic)))
+     rule bind-aux(Loc:SymLoc, L:List, ListItem(variadic))
           => bindVariadic-pre(Loc, promoteList(L))
           [structural] 
 
-     rule [bind-variadic-start]:
-          bindVariadic-pre(Loc:SymLoc, L:List)
+     rule bindVariadic-pre(Loc:SymLoc, L:List)
           => bindVariadic(Loc, L)
           [structural]
      
@@ -139,9 +137,7 @@ module C-BINDING
      // bindings for the same function.  This is all wrong if it is
      // computational instead of structural because of other threads
      // interleaving
-     rule [bind-variadic]:
-          <k> 
-               (.K 
+     rule <k> (.K 
                => allocateType(Loc, type(V))
                     ~> Computation(
                          allowWrite(*(tv(Loc, t(.Set, pointerType(type(V)))))) := V)
@@ -152,8 +148,7 @@ module C-BINDING
           <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           [structural]
      
-     rule [bind-variadic-done]:
-          bindVariadic(_, .List) => sequencePoint
+     rule bindVariadic(_, .List) => sequencePoint
           [structural]
 endmodule
 

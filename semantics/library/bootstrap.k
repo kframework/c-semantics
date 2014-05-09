@@ -33,7 +33,7 @@ module LIBC-BOOTSTRAP
           idsFromDeclList(
                L:List
                ListItem(typedDeclaration(T:KResult, X:Id))
-               ListItem(t(_, variadic)))
+               ListItem(variadic))
           => idsFromDeclList(
                L:List 
                ListItem(typedDeclaration(T:KResult, X:Id)))

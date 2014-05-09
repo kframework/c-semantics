@@ -1,4 +1,5 @@
 require "typing/canonicalization.k"
+require "typing/compatibility.k"
 require "typing/expr.k"
 require "typing/interpretation.k"
 require "typing/misc.k"
@@ -10,12 +11,10 @@ module C-TYPING-SYNTAX
      syntax Id ::= typedef(Id)
      syntax Id ::= unnamed(Int, String)
 
-     syntax K ::= allowWrite(K) [strict]
-     syntax Type ::= stripConst(Type) [function]
-     
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Map, Map)
+     syntax K ::= allowWrite(K) [strict]
 
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
@@ -44,6 +43,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isArithmeticType(Type) [function]
      syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
+     syntax Bool ::= isTypedDeclaration(Type) [function]
 
      syntax CSize ::= Int
      syntax CValue ::= CSize
@@ -89,7 +89,7 @@ module C-TYPING-SYNTAX
      // These aren't real types, but are values that can appear in type
      // contexts.
      syntax SimpleType ::= typedefType(Id, Type)
-     syntax SimpleType ::= "variadic"
+     syntax Type ::= "variadic"
 
      syntax Bool ::= isBasicType(K) [function]
 
@@ -97,16 +97,11 @@ module C-TYPING-SYNTAX
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
 
-     // This removes everything that unqualifyType does, but also specifiers
-     // and stuff like Const and the fromUnion tag.
-     syntax Type ::= stripModifiers(Type) [function]
      syntax Type ::= stripStorageSpecifiers(Type) [function]
-     syntax Type ::= unqualifyType(Type) [function]
+     syntax Type ::= stripQualifiers(Type) [function]
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
-     syntax Set ::= "unsignedIntegerTypes" [function]
-     syntax Set ::= "signedIntegerTypes" [function]
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
@@ -142,6 +137,7 @@ endmodule
 
 module C-TYPING
      imports C-TYPING-CANONICALIZATION
+     imports C-TYPING-COMPATIBILITY
      imports C-TYPING-EXPR
      imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
