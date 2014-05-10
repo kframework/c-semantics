@@ -1,5 +1,5 @@
 #include <stdlib.h>
-extern int printf (const char *,...);
+extern int printf (const char * restrict,...);
 
 struct s { struct s *n; } *p;
 struct s ss;

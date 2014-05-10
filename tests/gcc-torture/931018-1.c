@@ -2,6 +2,7 @@ void exit(int status);
 void abort(void);
 unsigned int a[0x1000];
 extern const unsigned long v;
+void f();
 
 int main ()
 {
