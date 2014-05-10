@@ -12,14 +12,15 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-LITERAL-SYNTAX
 
-     syntax Int ::= arrayLength(K) [function]
-     rule arrayLength(t(_:Set, arrayType(_:Type, N:CSize))) => N
+     syntax Int ::= arrayLength(Type) [function]
+     rule arrayLength(t(_, arrayType(_, N:CSize))) => N
      /*@ these large numbers are used instead of an infinity---the result of
      these rules shouldn't be used later anyway */
-     rule arrayLength(t(_:Set, flexibleArrayType(_:Type)))
+     rule arrayLength(t(_, flexibleArrayType(_)))
           => 36893488147419103232
-     rule arrayLength(t(_:Set, incompleteArrayType(_:Type)))
+     rule arrayLength(t(_, incompleteArrayType(_)))
           => 36893488147419103232
      
      // chathhorn: to work around the new semantics for contexts.
@@ -43,14 +44,10 @@ module C-COMMON-EXPR-EVAL
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
      
-     rule [reval-skipval]: 
-          rkludge(skipval) => skipval
-     rule [reval-emptyval]:
-          rkludge(emptyValue) => emptyValue
-     rule [reval-tv-normal]:
-          rkludge(tv(V:CValue, T:Type)) => tv(V, T)
-     rule [peval-tv-normal]:
-          pkludge(tv(V:CValue, T:Type)) => tv(V, T)
+     rule rkludge(skipval) => skipval
+     rule rkludge(emptyValue) => emptyValue
+     rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
+     rule pkludge(tv(V:CValue, T:Type)) => tv(V, T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -78,13 +75,11 @@ module C-COMMON-EXPR-EVAL
      an lvalue. If the array object has register storage class, the behavior is
      undefined.
      }*/
-     rule [reval-lv-array]: 
-          rkludge(lval(Loc:SymLoc, T:Type))
+     rule rkludge(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
                pointerType(innerType(T))))
           when isArrayType(T) 
-     rule [peval-lv-array]: 
-          pkludge(lval(Loc:SymLoc, T:Type))
+     rule pkludge(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
                pointerType(innerType(T))))
           when isArrayType(T) 
@@ -98,12 +93,10 @@ module C-COMMON-EXPR-EVAL
      designator with type ``function returning T'' is converted to an
      expression that has type ``pointer to a function returning T''.
      }*/
-     rule [reval-function]: 
-          rkludge(lval(Loc:SymLoc, T:Type)) 
+     rule rkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
-     rule [peval-function]: 
-          pkludge(lval(Loc:SymLoc, T:Type)) 
+     rule pkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
 

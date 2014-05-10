@@ -6,6 +6,6 @@ endmodule
 module DEBUG
      imports DEBUG-SYNTAX
 
-     rule assert(true, _) => . [structural, anywhere]
-     rule ASSERT(true, _) => . [structural, anywhere]
+     rule assert(true, _) => . [structural]
+     rule ASSERT(true, _) => . [structural]
 endmodule

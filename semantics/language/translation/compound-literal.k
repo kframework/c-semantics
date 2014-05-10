@@ -1,13 +1,14 @@
 module C-COMPOUND-LITERAL
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-ZERO-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports C-SETTINGS-SYNTAX
 
@@ -88,9 +89,8 @@ module C-COMPOUND-LITERAL
 
      }*/  
           
-     rule [const-string-notfound]:
-          <k> (. => allocString(Loc, S))
-               ~> Constant(StringLiteral(S:String))
+     rule <k> (. => allocString(Loc, S))
+               ~> stringLiteral(S:String)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -104,9 +104,8 @@ module C-COMPOUND-LITERAL
           [large, structural]
           
      syntax K ::= wstring(List)
-     rule [const-wstring-notfound]:
-          <k> (.K => allocWString(Loc, S))
-               ~> Constant(WStringLiteral(list(S:List)))
+     rule <k> (.K => allocWString(Loc, S))
+               ~> wstringLiteral(S:List)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -119,14 +118,12 @@ module C-COMPOUND-LITERAL
           when notBool wstring(S) in keys M
           [large, structural]
           
-     rule [const-string-found]:
-          <k> Constant(StringLiteral(S:String)) => V ...</k>
+     rule <k> stringLiteral(S:String) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
-     rule [const-wstring-found]:
-          <k> Constant(WStringLiteral(list(S:List))) => V ...</k>
+     rule <k> wstringLiteral(S:List) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... wstring(S) |-> V:LValue ...</string-lits>

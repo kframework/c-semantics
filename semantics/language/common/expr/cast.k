@@ -15,7 +15,11 @@ module C-COMMON-EXPR-CAST
      as the named type and removes any extra range and precision.
      }*/
      rule Cast(T:Type, K:K, V:Value)
-          => cast(DeclType(T, K), V)
+          => Cast(DeclType(T, K), V)
           [structural]
+     
+     rule Cast(T:Type, V:Value) => cast(T, V)
+          [structural]
+
 endmodule
 

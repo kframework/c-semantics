@@ -70,24 +70,20 @@ module C-DYNAMIC
 
      rule NullPointerConstant => 0
 
-     rule [unknown-loc]: 
-          CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
+     rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
           [structural, anywhere]
 
-     rule [expression-loc]: ExpressionLoc(K:K, _) => K
+     rule ExpressionLoc(K:K, _) => K
           [structural, anywhere]
 
-     rule [CodeLoc-k]:
-          <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
+     rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
           [structural]
 
-     rule [discard]:
-          _:KResult ~> discard => .
+     rule _:KResult ~> discard => .
           [structural]
 
-     rule [discard]:
-          discard => .
+     rule discard => .
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
@@ -100,7 +96,7 @@ module C-DYNAMIC
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule [Pragma]: Pragma(_:K) => .
+     rule Pragma(_:K) => .
           [structural]
           
      rule AttributeWrapper(K:K, _) => K [structural, anywhere]

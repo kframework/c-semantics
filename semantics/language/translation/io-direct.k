@@ -7,6 +7,8 @@ module C-IO-DIRECT
      imports C-MEMORY-WRITING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
      imports COMPAT-SYNTAX
 
      imports DEBUG-SYNTAX
@@ -27,11 +29,11 @@ module C-IO-DIRECT
           => writeByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
+
      rule writeBytes(_, dataList(.List)) => .
           [structural] 
 
-     rule [write-byte]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, M:Map => M:Map[V / Offset]) 
           ...</mem>
@@ -39,7 +41,13 @@ module C-IO-DIRECT
           when (notBool (BagItem(mconst) in Attrs))
                andBool (notBool (loc(Base, Offset, 0) in NotWritable))
                andBool (Offset <Int Len)
+               andBool notBool isSymbolic(V)
           [large, structural]
+
+     rule (. => ERROR("IO1", "non-constant initializer."))
+          ~> writeByte(_, V:CValue)
+          when isSymbolic(V)
+          [structural]
 
      // loc, size in bytes, aux list
      syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
@@ -67,8 +75,7 @@ module C-IO-DIRECT
           [structural] 
      
      // FIXME make sure it's a byte
-     rule [read-byte-fast]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0))
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0))
                => assert(Offset <Int Len, 2) ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -76,8 +83,7 @@ module C-IO-DIRECT
           ...</mem>
           [large, structural]
           
-     rule [read-byte-lazy]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
                => assert(Offset:Int <Int Len:Int, 2)
                     ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
                          t(.Set, no-type))

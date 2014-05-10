@@ -34,9 +34,6 @@ module C-TYPING-COMPATIBILITY
      syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
 
-     // TODO(chathhorn): I think there are various notions of type
-     // compatibility being conflated here.
-     // TODO(chathhorn): const?
      rule isTypeCompatible(T1:Type, T2:Type) 
           => #isCompat(stripStorageSpecifiers(T1), stripStorageSpecifiers(T2))
                ==K true
@@ -47,32 +44,38 @@ module C-TYPING-COMPATIBILITY
                andBool hasIntegerType(T') 
                andBool (getQualifiers(T) ==Set getQualifiers(T'))
 
-     // TODO(chathhorn): struct/union fields and unnameds.
      rule #isCompat(
-               t(Quals:Set, structType(_, _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, structType(_, _, fieldInfo(Fs':List, _, _))))
+               t(Quals:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
+               t(Quals:Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
-     // rule #isCompat(
-     //           t(Quals:Set, structType(X:Id, _, _)),
-     //           t(Quals:Set, incompleteStructType(X:Id)))
-     //      => true
-     // rule #isCompat(
-     //           t(Quals:Set, incompleteStructType(X:Id)),
-     //           t(Quals:Set, structType(X:Id, _, _)))
-     //      => true
      rule #isCompat(
-               t(Quals:Set, unionType(_, _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, unionType(_, _, fieldInfo(Fs':List, _, _))))
+               t(Quals:Set, structType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
+               t(Quals:Set, structType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
-     // rule #isCompat(
-     // rule #isCompat(
-     //           t(Quals:Set, unionType(_, _, _)),
-     //           t(Quals:Set, incompleteUnionType(_)))
-     //      => true
-     // rule #isCompat(
-     //           t(Quals:Set, incompleteUnionType(_)),
-     //           t(Quals:Set, unionType(_, _, _)))
-     //      => true
+     rule #isCompat(
+               t(Quals:Set, structType(X:Id, _, _)),
+               t(Quals:Set, incompleteStructType(X:Id)))
+          => true
+     rule #isCompat(
+               t(Quals:Set, incompleteStructType(X:Id)),
+               t(Quals:Set, structType(X:Id, _, _)))
+          => true
+     rule #isCompat(
+               t(Quals:Set, unionType(X:Id, _, fieldInfo(Fs:List, _, _))),
+               t(Quals:Set, unionType(X:Id, _, fieldInfo(Fs':List, _, _))))
+          => #areCompat(Fs, Fs')
+     rule #isCompat(
+               t(Quals:Set, unionType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
+               t(Quals:Set, unionType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
+          => #areCompat(Fs, Fs')
+     rule #isCompat(
+               t(Quals:Set, unionType(X:Id, _, _)),
+               t(Quals:Set, incompleteUnionType(X:Id)))
+          => true
+     rule #isCompat(
+               t(Quals:Set, incompleteUnionType(X:Id)),
+               t(Quals:Set, unionType(X:Id, _, _)))
+          => true
      rule #isCompat(
                t(Quals:Set, arrayType(T:Type, N:Int)),
                t(Quals:Set, arrayType(T':Type, N:Int)))

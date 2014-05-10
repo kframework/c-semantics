@@ -37,8 +37,7 @@ module C-STMT-SWITCH
           when hasIntegerType(T)
           [structural] 
           
-     rule <k> 
-               handleSwitch(SN:Int, V:KResult) 
+     rule <k> handleSwitch(SN:Int, V:KResult) 
                => handleSwitch-aux(SN, V, map(M)) 
           ...</k>
           <curr-function> F:Id </curr-function>

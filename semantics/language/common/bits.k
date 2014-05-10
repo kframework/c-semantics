@@ -20,7 +20,8 @@ module C-BITS-SYNTAX
      syntax K ::= fillToBytes(K) [strict] 
      syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
-     syntax KResult ::= dataList(List)
+     syntax DataList ::= dataList(List)
+     syntax KResult ::= DataList
 
      syntax Bits ::= 
                    "~Bits" Bits
@@ -104,9 +105,9 @@ module C-BITS
           [structural, anywhere]
           
      rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N, 1)
-          [anywhere, anywhere]
+          [structural, anywhere]
      rule bitRange(piece(N:Bits, 1), 0, 0) => piece(N, 1)
-          [anywhere, anywhere]
+          [structural, anywhere]
           
      rule bitRange(piece(bitRange(N:Bits, Start:Int, End:Int), Len:Int), 0, 0)
           => bitRange(piece(bitRange(N, Start, Start), 1), 0, 0)

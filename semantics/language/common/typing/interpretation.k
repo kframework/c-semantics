@@ -19,7 +19,7 @@ module C-TYPING-INTERPRETATION
           [structural]
           
      rule BitFieldType(T:Type, tv(N:CSize, _))
-          => t(.Set, bitfieldType(T, N)) [structural, anywhere]
+          => t(.Set, bitfieldType(T, N)) [structural]
      
      syntax KLabel ::= makeFunctionType(List)
      syntax KLabel ::= makePointerType(Set)
@@ -31,17 +31,17 @@ module C-TYPING-INTERPRETATION
      rule ArrayType(T:Type, tv(N:Int, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
-          [structural, anywhere]
+          [structural]
      rule ArrayType(T:Type, tv(N:CSize, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when isInt(N) =/=K true // For possible symbolic values.
-          [structural, anywhere]
+          [structural]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
-          [structural, anywhere]
+          [structural]
      rule PointerType(Specifier(list(Quals:List)), T:Type)
           => pushTypeDown(T, makePointerType(listToSet(Quals)))
-          [structural, anywhere]
+          [structural]
 
      syntax Set ::= listToSet(List) [function]
      rule listToSet(ListItem(K:K) L:List) => SetItem(K) listToSet(L)
@@ -50,15 +50,15 @@ module C-TYPING-INTERPRETATION
      // FIXME: I'm assuming functiontype is always below a prototype in the
      // AST.
      rule FunctionType(T:Type) => T
-          [structural, anywhere]
+          [structural]
      rule Prototype(T:Type, krlist(L:List), false) 
           => pushTypeDown(T, 
                makeFunctionType(L)) 
-          [structural, anywhere]
+          [structural]
      rule Prototype(T:Type, krlist(L:List), true) 
           => pushTypeDown(T, 
                makeFunctionType(L ListItem(variadic))) 
-          [structural, anywhere]
+          [structural]
      
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
@@ -84,7 +84,6 @@ module C-TYPING-INTERPRETATION
      
      rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
           when isBasicType(T)
-          [structural]
      
      rule makeArrayType(N:CSize)(T:Type)
           => t(getStorageSpecifiers(T),
@@ -144,7 +143,7 @@ module C-TYPING-INTERPRETATION
           [structural]
           
      rule NameAndType(X:Id, T:Type) => typedDeclaration(T, X)
-          [structural, anywhere] 
+          [structural] 
      
      rule extractActualType(T:Type) => T
           when isBasicType(T)
@@ -175,19 +174,18 @@ module C-TYPING-INTERPRETATION
           
      rule SingleName(T:Type, Name(X:Id, K:K)) 
           => NameAndType(X, DeclType(T, K))
-          [structural, anywhere] 
+          [structural] 
      rule FieldGroup(K:K, list(ListItem(C:K) ListItem(C':K) L:List)) 
-          => FieldGroup(K, list(ListItem(C))),, 
-               FieldGroup(K, list(ListItem(C') L))
-          [structural, anywhere]
+          => list(ListItem(FieldGroup(K, list(ListItem(C))))
+               ListItem(FieldGroup(K, list(ListItem(C') L))))
+          [structural]
 
-     rule FieldGroup(T:Type, list(ListItem(Name(X:Id, K:K)))) 
+     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:Id, K:K)))))
           => NameAndType(X, DeclType(T, K))
-          [structural, anywhere]
+          [structural]
           
      rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:Id, K:K), Size:K))))
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
-          [structural, anywhere] 
-     rule FieldName(K:K) => K [structural, anywhere]
+          [structural] 
 endmodule
 

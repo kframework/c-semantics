@@ -3,6 +3,8 @@ module C-SYMBOLIC-VALUE-SYNTAX
      syntax SymLoc ::= SymVal
      syntax Bits ::= SymVal
      syntax SymVal ::= "symVal"
+
+     syntax Bool ::= isSymbolic(CValue) [function]
 endmodule
 
 module C-SYMBOLIC-VALUE
@@ -40,21 +42,24 @@ module C-SYMBOLIC-VALUE
                times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
 
      rule write-specific(Loc:SymLoc, tv(symVal, T:Type), NBits:Int)
-          => writeBitfield(
-               Loc
-               , T
-               , calculateNewBytes(
-                    getBitOffset(Loc)
-                    , piece(symVal, NBits)
-                    , readBytes(floorLoc(Loc), 
-                         bitsToBytes(NBits +Int getBitOffset(Loc))
-                    )
-               )
-          )
+          => writeBitfield(Loc, T, dataList(ListItem(symVal)))
           when (NBits %Int cfg:bitsPerByte =/=Int 0)
                orBool (notBool isByteLoc(Loc))
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
           [structural]
 
      //rule symVal => tv(symVal, t(.Set, no-type))
+
+     rule isSymbolic(V:CValue) => #isSymbolic(V) ==K true
+
+     syntax Bool ::= "#isSymbolic" "(" CValue ")" [function]
+                   | "#areSymbolic" "(" List ")" [function]
+
+     rule #isSymbolic(symVal) => true
+     rule #isSymbolic(piece(symVal, _)) => true
+     rule #isSymbolic(agg(L:List)) => #areSymbolic(L)
+
+     rule #areSymbolic(ListItem(V:CValue) L:List)
+          => isSymbolic(V) orElseBool #areSymbolic(L)
+
 endmodule

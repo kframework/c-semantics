@@ -206,20 +206,16 @@ module C-SYNTAX
      
      /*
      and name_group = specifier * name list
-     */
-     syntax NameGroup ::= NameGroup(K, K)
-          [klabel('NameGroup), strict] // K, List
+     */ // K, List
+     syntax NameGroup ::= NameGroup(K, K) [klabel('NameGroup), strict]
      
      /*
      (* The optional expression is the bitfield *)
      and field_group = specifier * (name * expression option) list
-     */
-     syntax FieldGroup ::= FieldGroup(K, K)
-          [klabel('FieldGroup), strict(1)] // K, List
-     syntax FieldName ::= FieldName(K)
-          [klabel('FieldName)] // new
-     syntax FieldName ::= BitFieldName(K, K)
-          [klabel('BitFieldName)] // new
+     */ // K, List
+     syntax FieldGroup ::= FieldGroup(K, K) [klabel('FieldGroup), strict(1)]
+     syntax FieldName ::= FieldName(K) [klabel('FieldName)]
+     syntax FieldName ::= BitFieldName(K, K) [klabel('BitFieldName)]
      
      /*
      (* like name_group, except the declared variables are allowed to have
@@ -307,7 +303,7 @@ module C-SYNTAX
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
           [klabel('ExpressionTransformer)]
 
-     syntax PureDefinition ::= "StaticAssert" "(" Expression "," Constant ")"
+     syntax PureDefinition ::= StaticAssert(Expression, Constant)
           [klabel('StaticAssert)]
 
      // name
@@ -561,6 +557,10 @@ module C-SYNTAX
      syntax Expression ::= "Cast" "(" K "," K "," K ")"
           [klabel('Cast), strict(1)]
      context Cast(_, _, (HOLE => reval(HOLE)))
+
+     syntax Expression ::= "Cast" "(" K "," K ")"
+          [klabel('Cast), strict(1)]
+     context Cast(_, (HOLE => reval(HOLE)))
      
      // new // comp-lit id, spec, decl, init
      syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")"
@@ -585,7 +585,7 @@ module C-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= "Constant" "(" K ")" [klabel('Constant)]
+     syntax Expression ::= Constant(K) [klabel('Constant)]
      // String constants aren't revals
      // for paren, just putting parentheses
      syntax Expression ::= Id
@@ -619,8 +619,8 @@ module C-SYNTAX
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
-     syntax Expression ::= "GnuBody" "(" K ")" [klabel('GnuBody)]
-     syntax Expression ::= "ExpressionPattern" "(" String ")"
+     syntax Expression ::= GnuBody(K) [klabel('GnuBody)]
+     syntax Expression ::= ExpressionPattern(String)
           [klabel('ExpressionPattern)]
      
      /*
@@ -632,28 +632,25 @@ module C-SYNTAX
      | CONST_STRING of string
      | CONST_WSTRING of int64 list 
      */
-     syntax IntConstant ::= "DecimalConstant" "(" K ")"
-          [klabel('DecimalConstant)] // new
-     syntax IntConstant ::= "OctalConstant" "(" K ")"
-          [klabel('OctalConstant)]  // new
-     // new // expected to be string
-     syntax IntConstant ::= "HexConstant" "(" K ")" [klabel('HexConstant)]
+     syntax IntConstant ::= DecimalConstant(K) [klabel('DecimalConstant)]
+     syntax IntConstant ::= OctalConstant(K) [klabel('OctalConstant)]
+     syntax IntConstant ::= HexConstant(K) [klabel('HexConstant)]
 
-     // new; significand, exponent, approx
-     syntax IntConstant ::= "DecimalFloatConstant" "(" String "," Int "," Float ")"
+     // significand, exponent, approx
+     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)
           [klabel('DecimalFloatConstant)]
-     // new; significand, exponent, approx
-     syntax IntConstant ::= "HexFloatConstant" "(" String "," Int "," Float ")"
+     // significand, exponent, approx
+     syntax IntConstant ::= HexFloatConstant(String, Int, Float)
           [klabel('HexFloatConstant)]
      
-     syntax Constant ::= LitU(K) [avoid, klabel('LitU)] // new
-     syntax Constant ::= LitL(K) [avoid, klabel('LitL)] // new
-     syntax Constant ::= LitF(K) [klabel('LitF)] // new
-     syntax Constant ::= LitLL(K) [klabel('LitLL)] // new
-     syntax Constant ::= LitUL(K) [klabel('LitUL)] // new
-     syntax Constant ::= LitULL(K) [klabel('LitULL)] // new
+     syntax Constant ::= LitU(K) [klabel('LitU)]
+     syntax Constant ::= LitL(K) [klabel('LitL)]
+     syntax Constant ::= LitF(K) [klabel('LitF)]
+     syntax Constant ::= LitLL(K) [klabel('LitLL)]
+     syntax Constant ::= LitUL(K) [klabel('LitUL)]
+     syntax Constant ::= LitULL(K) [klabel('LitULL)]
 
-     syntax Constant ::= NoSuffix(K) [klabel('NoSuffix)] // new
+     syntax Constant ::= NoSuffix(K) [klabel('NoSuffix)]
      
      syntax Constant ::= CharLiteral(Int) [klabel('CharLiteral)]
      syntax Constant ::= WCharLiteral(Int) [klabel('WCharLiteral)]
@@ -684,18 +681,17 @@ module C-SYNTAX
      | ATINDEXRANGE_INIT of expression * expression
      */
      syntax KResult ::= "NextInit"
-     syntax KResult ::= "InFieldInit" "(" Id "," K ")" [klabel('InFieldInit)]
-     syntax KResult ::= "AtIndexInit" "(" K "," K ")" [klabel('AtIndexInit)]
-     syntax KResult ::= "AtIndexRangeInit" "(" K "," K ")"
-          [klabel('AtIndexRangeInit)] // nonstandard
+     syntax KResult ::= InFieldInit(Id, K) [klabel('InFieldInit)]
+     syntax KResult ::= AtIndexInit(K, K) [klabel('AtIndexInit)]
+     syntax KResult ::= AtIndexRangeInit(K, K) [klabel('AtIndexRangeInit)]
      
      /*
      and attribute = String * expression list
      */
      // String, List
-     syntax C ::= "Attribute" "(" String "," K ")" [klabel('Attribute)]
+     syntax C ::= Attribute(String, K) [klabel('Attribute)]
      
-     syntax K ::= "CodeLoc" "(" K "," K ")" [klabel('CodeLoc)]
+     syntax K ::= CodeLoc(K, K) [klabel('CodeLoc)]
      rule DefinitionLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
      rule StatementLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
      rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro, structural]
@@ -708,73 +704,69 @@ module C-SYNTAX
      /*@ The below rules simply transform the prefix AST names to the
      infix/mixfix names we use from now on */
      
-     syntax Expression ::= "Conditional" "(" K "," K "," K ")"
+     syntax Expression ::= Conditional(K, K, K)
           [klabel('Conditional)]
      rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro, structural]
      
-     syntax Expression ::= "ArrayIndex" "(" K "," K ")" [klabel('ArrayIndex)]
+     syntax Expression ::= ArrayIndex(K, K) [klabel('ArrayIndex)]
      rule ArrayIndex(K1:K, K2:K) => K1:K[K2:K] [macro, structural]
      
-     syntax Expression ::= "Negative" "(" K ")" [klabel('Negative)]
+     syntax Expression ::= Negative(K) [klabel('Negative)]
      rule Negative(K:K) => - K:K [macro, structural]
-     syntax Expression ::= "Positive" "(" K ")" [klabel('Positive)]
+     syntax Expression ::= Positive(K) [klabel('Positive)]
      rule Positive(K:K) => + K:K [macro, structural]
-     syntax Expression ::= "LogicalNot" "(" K ")" [klabel('LogicalNot)]
+     syntax Expression ::= LogicalNot(K) [klabel('LogicalNot)]
      rule LogicalNot(K:K) => ! K:K [macro, structural]
-     syntax Expression ::= "BitwiseNot" "(" K ")" [klabel('BitwiseNot)]
+     syntax Expression ::= BitwiseNot(K) [klabel('BitwiseNot)]
      rule BitwiseNot(K:K) => ~ K:K [macro, structural]
-     syntax Expression ::= "Dereference" "(" K ")" [klabel('Dereference)]
+     syntax Expression ::= Dereference(K) [klabel('Dereference)]
      rule Dereference(K:K) => * K:K [macro, structural]
-     syntax Expression ::= "Reference" "(" K ")" [klabel('Reference)]
+     syntax Expression ::= Reference(K) [klabel('Reference)]
      rule Reference(K:K) => & K:K [macro, structural]
-     syntax Expression ::= "PreIncrement" "(" K ")" [klabel('PreIncrement)]
+     syntax Expression ::= PreIncrement(K) [klabel('PreIncrement)]
      rule PreIncrement(K:K) => ++ K:K [macro, structural]
-     syntax Expression ::= "PreDecrement" "(" K ")" [klabel('PreDecrement)]
+     syntax Expression ::= PreDecrement(K) [klabel('PreDecrement)]
      rule PreDecrement(K:K) => -- K:K [macro, structural]
-     syntax Expression ::= "PostIncrement" "(" K ")" [klabel('PostIncrement)]
+     syntax Expression ::= PostIncrement(K) [klabel('PostIncrement)]
      rule PostIncrement(K:K) => K:K ++ [macro, structural]
-     syntax Expression ::= "PostDecrement" "(" K ")" [klabel('PostDecrement)]
+     syntax Expression ::= PostDecrement(K) [klabel('PostDecrement)]
      rule PostDecrement(K:K) => K:K -- [macro, structural]
 
-     syntax Expression ::= "Multiply" "(" K "," K ")" [klabel('Multiply)]
+     syntax Expression ::= Multiply(K, K) [klabel('Multiply)]
      rule Multiply(K1:K, K2:K) => K1:K * K2:K [macro, structural]
-     syntax Expression ::= "Divide" "(" K "," K ")" [klabel('Divide)]
+     syntax Expression ::= Divide(K, K) [klabel('Divide)]
      rule Divide(K1:K, K2:K) => K1:K / K2:K [macro, structural]
-     syntax Expression ::= "Modulo" "(" K "," K ")" [klabel('Modulo)]
+     syntax Expression ::= Modulo(K, K) [klabel('Modulo)]
      rule Modulo(K1:K, K2:K) => K1:K % K2:K [macro, structural]
-     syntax Expression ::= "Plus" "(" K "," K ")" [klabel('Plus)]
+     syntax Expression ::= Plus(K, K) [klabel('Plus)]
      rule Plus(K1:K, K2:K) => K1:K + K2:K [macro, structural]
-     syntax Expression ::= "Minus" "(" K "," K ")" [klabel('Minus)]
+     syntax Expression ::= Minus(K, K) [klabel('Minus)]
      rule Minus(K1:K, K2:K) => K1:K - K2:K [macro, structural]
-     syntax Expression ::= "LeftShift" "(" K "," K ")" [klabel('LeftShift)]
+     syntax Expression ::= LeftShift(K, K) [klabel('LeftShift)]
      rule LeftShift(K1:K, K2:K) => K1:K << K2:K [macro, structural]
-     syntax Expression ::= "RightShift" "(" K "," K ")" [klabel('RightShift)]
+     syntax Expression ::= RightShift(K, K) [klabel('RightShift)]
      rule RightShift(K1:K, K2:K) => K1:K >> K2:K [macro, structural]
-     syntax Expression ::= "LessThan" "(" K "," K ")" [klabel('LessThan)]
+     syntax Expression ::= LessThan(K, K) [klabel('LessThan)]
      rule LessThan(K1:K, K2:K) => K1:K < K2:K [macro, structural]
-     syntax Expression ::= "LessThanOrEqual" "(" K "," K ")"
-          [klabel('LessThanOrEqual)]
+     syntax Expression ::= LessThanOrEqual(K, K) [klabel('LessThanOrEqual)]
      rule LessThanOrEqual(K1:K, K2:K) => K1:K <= K2:K [macro, structural]
-     syntax Expression ::= "GreaterThan" "(" K "," K ")"
-          [klabel('GreaterThan)]
+     syntax Expression ::= GreaterThan(K, K) [klabel('GreaterThan)]
      rule GreaterThan(K1:K, K2:K) => K1:K > K2:K [macro, structural]
-     syntax Expression ::= "GreaterThanOrEqual" "(" K "," K ")"
-          [klabel('GreaterThanOrEqual)]
+     syntax Expression ::= GreaterThanOrEqual(K, K) [klabel('GreaterThanOrEqual)]
      rule GreaterThanOrEqual(K1:K, K2:K) => K1:K >= K2:K [macro, structural]
-     syntax Expression ::= "Equality" "(" K "," K ")" [klabel('Equality)]
+     syntax Expression ::= Equality(K, K) [klabel('Equality)]
      rule Equality(K1:K, K2:K) => K1:K == K2:K [macro, structural]
-     syntax Expression ::= "NotEquality" "(" K "," K ")"
-          [klabel('NotEquality)]
+     syntax Expression ::= NotEquality(K, K) [klabel('NotEquality)]
      rule NotEquality(K1:K, K2:K) => K1:K != K2:K [macro, structural]
-     syntax Expression ::= "BitwiseAnd" "(" K "," K ")" [klabel('BitwiseAnd)]
+     syntax Expression ::= BitwiseAnd(K, K) [klabel('BitwiseAnd)]
      rule BitwiseAnd(K1:K, K2:K) => K1:K & K2:K [macro, structural]
-     syntax Expression ::= "BitwiseXor" "(" K "," K ")" [klabel('BitwiseXor)]
+     syntax Expression ::= BitwiseXor(K, K) [klabel('BitwiseXor)]
      rule BitwiseXor(K1:K, K2:K) => K1:K ^ K2:K [macro, structural]
-     syntax Expression ::= "BitwiseOr" "(" K "," K ")" [klabel('BitwiseOr)]
+     syntax Expression ::= BitwiseOr(K, K) [klabel('BitwiseOr)]
      rule BitwiseOr(K1:K, K2:K) => K1:K | K2:K [macro, structural]
-     syntax Expression ::= "LogicalAnd" "(" K "," K ")" [klabel('LogicalAnd)]
+     syntax Expression ::= LogicalAnd(K, K) [klabel('LogicalAnd)]
      rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro, structural]
-     syntax Expression ::= "LogicalOr" "(" K "," K ")" [klabel('LogicalOr)]
+     syntax Expression ::= LogicalOr(K, K) [klabel('LogicalOr)]
      rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro, structural]
      
      syntax Expression ::= "Assign" "(" K "," K ")" [klabel('Assign)]

@@ -102,7 +102,7 @@ module C-COMMON-EXPR-CONDITIONAL
           when notBool isPointerType(T)
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
-          => IfThenElse(E, cast(T, E1), cast(T, E2))
+          => IfThenElse(E, Cast(T, E1), Cast(T, E2))
           [structural]
 endmodule
 

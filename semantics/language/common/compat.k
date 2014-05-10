@@ -54,7 +54,7 @@ module COMPAT-SYNTAX
      // TODO(chathhorn): ugly
      syntax K ::= toKRList(List)
 
-     syntax KResult ::= krlist(List)
+     syntax KResult ::= krlist(List) [klabel('krlist)]
 
      syntax List ::= reverseList(List) [function]
 
@@ -149,6 +149,11 @@ module COMPAT
           [structural]
      rule toKRList'(_:List (ListItem(V:KResult) => .List)) 
           ~> krlist((.List => ListItem(V)) _:List) 
+          when getKLabel(V) =/=KLabel 'krlist
+          [structural]
+     // Somewhat contrived feature: nested lists are flattened.
+     rule toKRList'(_:List (ListItem(krlist(L:List)) => .List)) 
+          ~> krlist((.List => L) _:List) 
           [structural]
      rule toKRList'(.List) => .
           [structural]

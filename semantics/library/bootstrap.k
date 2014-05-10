@@ -20,38 +20,33 @@ module LIBC-BOOTSTRAP
 
      syntax List ::= idsFromDeclList(List) [function]
      
-     rule [idsFromDeclList-one]:
-          idsFromDeclList(L:List ListItem(typedDeclaration(t(_, T:K), X:Id)))
+     rule idsFromDeclList(
+               L:List ListItem(typedDeclaration(t(_, T:SimpleType), X:Id)))
           => idsFromDeclList(L) ListItem(X)
-          when T:K =/=K void
+          when T =/=K void
           [structural]
-     rule [idsFromDeclList-void]:
-          idsFromDeclList(L:List ListItem(typedDeclaration(t(_, void), _:Id)))
+     rule idsFromDeclList(
+               L:List ListItem(typedDeclaration(t(_, void), _)))
           => idsFromDeclList(L)
           [structural]
-     rule [idsFromDeclList-vararg]:
-          idsFromDeclList(
+     rule idsFromDeclList(
                L:List
-               ListItem(typedDeclaration(T:KResult, X:Id))
+               ListItem(typedDeclaration(T:Type, X:Id))
                ListItem(variadic))
           => idsFromDeclList(
-               L:List 
-               ListItem(typedDeclaration(T:KResult, X:Id)))
+               L
+               ListItem(typedDeclaration(T, X)))
                // assumes variadic args are placed in incremental blocks
-               ListItem(vararg(incSymbolic(cast(t(.Set, 
-                    pointerType(t(.Set, unsigned-char))), &(X:Id)))))
+               ListItem(vararg(incSymbolic(&(X))))
           [structural]
-     rule [idsFromDeclList-done]:
-          idsFromDeclList(.List) => .List [structural]
+     rule idsFromDeclList(.List) => .List [structural]
 
      context incSymbolic((HOLE => reval(HOLE)))
-     rule [incSymbolic]:
-          incSymbolic(tv(Loc:SymLoc, T:KResult)) => tv(linc(Loc), T:KResult)
+     rule incSymbolic(tv(Loc:SymLoc, T:Type)) => tv(linc(Loc), T)
           [structural]
           
      context prepareBuiltin(_, _:List ListItem(HOLE => reval(HOLE)) _:List)
-     rule [prepareBuiltin]:
-          handleBuiltin(F:Id, t(_, functionType(_:KResult, L:List)))
-          => Return(prepareBuiltin(F:Id, idsFromDeclList(L:List)))
+     rule handleBuiltin(F:Id, t(_, functionType(_:KResult, L:List)))
+          => Return(prepareBuiltin(F, idsFromDeclList(L)))
           [structural]
 endmodule

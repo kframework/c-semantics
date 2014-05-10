@@ -2,12 +2,13 @@ module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
      imports C-TYPING-STRICTNESS-SYNTAX
 
-     imports C-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-LITERAL-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-SYNTAX
      imports COMPAT-SYNTAX
 
      // FIXME need to automatically pad structs
@@ -125,18 +126,18 @@ module C-TYPING-EXPR
 
      // c99 6.4.5
      rule <type>
-               Constant(StringLiteral(S:String)) 
+               stringLiteral(S:String)
                => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)) 
           ...</type>
           [structural]
      rule <type>
-               Constant(WStringLiteral(list(L:List))) 
+               wstringLiteral(L:List)
                => t(.Set, arrayType(cfg:wcharut, lengthList(L) +Int 1)) 
           ...</type>
           [structural]
           
-     rule <type> K:K => T ...</type>
-          <types>... K |-> T:Type ...</types>
+     rule <type> X:Id => T ...</type>
+          <types>... X |-> T:Type ...</types>
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
@@ -154,8 +155,7 @@ module C-TYPING-EXPR
      same type as that object type, and has the value determined as specified
      in 6.8.6.4. Otherwise, the function call has type \cinline{void}.
      }*/
-     rule [type-call-func]:
-          <type> Call(T:Type, _) => innerType(T) ...</type>
+     rule <type> Call(T:Type, _) => innerType(T) ...</type>
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
@@ -165,14 +165,12 @@ module C-TYPING-EXPR
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule [type-struct-dot]:
-          <type> 
+     rule <type> 
                t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
                => T
           ...</type>
           [structural]
-     rule [type-union-dot]:
-          <type>
+     rule <type>
                t(_, unionType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
                => T
           ...</type>
@@ -184,20 +182,17 @@ module C-TYPING-EXPR
      object, the result is an lvalue designating the object. If the operand has
      type ``pointer to type'', the result has type ``type''. \ldots
      }*/
-     rule [type-deref-type]:
-          <type> * T:Type => innerType(T) ...</type>
+     rule <type> * T:Type => innerType(T) ...</type>
           [structural]
 
-     rule [type-compound-literal]:
-          <type> 
+     rule <type> 
                CompoundLiteral(_, Spec:K, Decl:K, _)
                // sort of hackish, assumes cast will evaluate to type
                => Cast(Spec, Decl, emptyValue)
           ...</type>
           [structural]
      
-     rule [type-assignment]:
-          <type> 
+     rule <type> 
                L:KLabel(K:K,, _)
                => K:K
           ...</type>
@@ -213,35 +208,30 @@ module C-TYPING-EXPR
                andBool (hasIntegerType(T') orBool isFloatType(T'))
           [structural]
           
-     rule [type-ternary-arithmetic]:
-          <type>
+     rule <type>
                _:K ? T:Type : T':Type 
                => usualArithmeticConversion(T, T')
           ...</type>
           when (hasIntegerType(T) orBool isFloatType(T))
                andBool (hasIntegerType(T') orBool isFloatType(T'))
           [structural]
-     rule [type-ternary-identical]:
-          <type> _:K ? T:Type : T:Type => T:Type ...</type>
+     rule <type> _:K ? T:Type : T:Type => T:Type ...</type>
           when notBool isArrayType(T)
           [structural]
           
-     rule [type-ternary-array-left]: 
-          <type>
+     rule <type>
                _:K ? (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T))) : _
           ...</type> 
           [structural]
-     rule [type-ternary-array-right]: 
-          <type>
+     rule <type>
                _:K ? _:K : (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T)))
           ...</type>
           [structural]
           
      // not safe, could be incompatible types
-     rule [type-ternary-pointer]:
-          <type>
+     rule <type>
                _ ? t(S:Set, pointerType(T:Type)) : t(_, pointerType(_:Type))
                => t(S, pointerType(T))
           ...</type>
@@ -264,8 +254,7 @@ module C-TYPING-EXPR
                andBool l(L) in typeStrictLeftBinaryOperators
           [structural]
           
-     rule [type-inc-dec]:
-          <type> L:KLabel(T:Type) => T ...</type>
+     rule <type> L:KLabel(T:Type) => T ...</type>
           when isPointerType(T)
                andBool (
                     (L ==KLabel ('_++))
@@ -285,12 +274,10 @@ module C-TYPING-EXPR
                orBool (L:KLabel ==KLabel '_||_)
           [structural]
 
-     rule [type-address]:
-          <type> & T:Type => t(.Set, pointerType(T)) ...</type>
+     rule <type> & T:Type => t(.Set, pointerType(T)) ...</type>
           [structural]
           
-     rule [ExpressionLoc-type]:
-          <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
+     rule <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
           <curr-program-loc> _ => L:CabsLoc </curr-program-loc>
           [structural]
 endmodule

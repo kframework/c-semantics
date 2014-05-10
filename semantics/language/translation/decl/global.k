@@ -121,7 +121,7 @@ module C-DECL-GLOBAL
           => t(Mods, pointerType(T))
      rule adjustParam'(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, pointerType(T))
-     rule adjustParam'(T) => t(.Set, pointerType(T))
+     rule adjustParam'(T:Type) => t(.Set, pointerType(T))
           when isFunctionType(T)
 
      rule adjustParam'(T:Type) => T

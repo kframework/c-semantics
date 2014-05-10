@@ -1,11 +1,12 @@
 module C-COMPOUND-LITERAL
-     imports C-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -70,14 +71,12 @@ module C-COMPOUND-LITERAL
           [structural]
           
      syntax K ::= wstring(List)
-     rule [const-string-found]:
-          <k> Constant(StringLiteral(S:String)) => V ...</k>
+     rule <k> stringLiteral(S:String) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
-     rule [const-wstring-found]:
-          <k> Constant(WStringLiteral(list(S:List))) => V ...</k>
+     rule <k> wstringLiteral(S:List) => V ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <string-lits>... wstring(S) |-> V:LValue ...</string-lits>

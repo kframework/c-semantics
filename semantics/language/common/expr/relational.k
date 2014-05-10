@@ -77,26 +77,22 @@ module C-COMMON-EXPR-RELATIONAL
      //- comparison of pointers
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
-     rule [ptr-compare-lt]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                < tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
           => makeTruth(Offset <Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule [ptr-compare-lte]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                <= tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
           => makeTruth(Offset <=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule [ptr-compare-gt]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                > tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
           => makeTruth(Offset >Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule [ptr-compare-gte]: 
-          tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                >= tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
           => makeTruth(Offset >=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
@@ -206,9 +202,7 @@ module C-COMMON-EXPR-RELATIONAL
      // here, if the two objects are alive, and our pointers are in bounds, we
      // can conclude something.  if one of the objects is dead, we can't
      // conclude anything (the address could have been reused)
-     rule [compare-eq-different-objects]: 
-          <k> 
-               tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                     == tv(loc(Base':SymBase, Offset':Int, 0), T':Type) 
                => tv(0, t(.Set, int))
           ...</k>
@@ -221,9 +215,7 @@ module C-COMMON-EXPR-RELATIONAL
                andBool (Offset <Int Len)
                andBool (Offset' <Int Len')
           [structural]
-     rule [compare-neq-different-objects]: 
-          <k> 
-               tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
+     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
                     != tv(loc(Base':SymBase, Offset':Int, 0), T':Type) 
                => tv(1, t(.Set, int))
           ...</k>
@@ -241,27 +233,23 @@ module C-COMMON-EXPR-RELATIONAL
           
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
-     rule [equal-null-left]:
-          (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':Type)
+     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':Type)
           when isPromoted(T)
                andBool isPointerType(T')
                andBool (N ==K NullPointerConstant)
           [structural]
-     rule [equal-null-right]:
-          tv(_, T:Type) == (tv(N:Int, T':Type) => tv(NullPointer, T))
+     rule tv(_, T:Type) == (tv(N:Int, T':Type) => tv(NullPointer, T))
           when isPointerType(T) 
                andBool isPromoted(T')
                andBool N ==K NullPointerConstant
           [structural]
      
-     rule [nequal-null-left]: 
-          (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':Type)
+     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':Type)
           when isPromoted(T) 
                andBool isPointerType(T')
                andBool N ==K NullPointerConstant
           [structural]
-     rule [nequal-null-right]: 
-          tv(_, T:Type) != (tv(N:Int, T':Type) => tv(NullPointer, T))
+     rule tv(_, T:Type) != (tv(N:Int, T':Type) => tv(NullPointer, T))
           when isPointerType(T) 
                andBool isPromoted(T')
                andBool N ==K NullPointerConstant

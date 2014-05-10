@@ -1,5 +1,11 @@
+module C-LITERAL-SYNTAX
+     syntax StringLiteral ::= stringLiteral(String)
+     syntax StringLiteral ::= wstringLiteral(List)
+endmodule
+
 module C-LITERAL
      imports C-CONVERSION-SYNTAX
+     imports C-LITERAL-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -12,7 +18,7 @@ module C-LITERAL
      imports COMPAT-SYNTAX
 
      syntax Bool ::= withinRange(Int, SimpleType) [function]
-     rule withinRange(I:Int, T:K)
+     rule withinRange(I:Int, T:SimpleType)
           => (I <=Int max(t(.Set, T))) andBool (I >=Int min(t(.Set, T)))
      
      syntax String ::= simplifyForHex(String) [function]
@@ -22,13 +28,23 @@ module C-LITERAL
      rule simplifyForHex(S:String) => S
           when (firstChar(S) =/=String "0")
                orBool (lengthString(S) ==Int 1)
-          
-     syntax K ::= hexOrOctalConstant(K)
+
+     syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
           => hexOrOctalConstant(string2Base(simplifyForHex(S), 16))
           [structural, anywhere]
      rule OctalConstant(N:Int)
           => hexOrOctalConstant(string2Base(base2String(N, 10), 8))
+          [structural, anywhere]
+          
+     // Included for symmetry.
+     syntax Constant ::= decimalConstant(Int)
+     rule DecimalConstant(N:Int) => decimalConstant(N)
+          [structural, anywhere]
+
+     rule StringLiteral(S:String) => stringLiteral(S)
+          [structural, anywhere]
+     rule WStringLiteral(list(S:List)) => wstringLiteral(S)
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
@@ -79,7 +95,7 @@ module C-LITERAL
      cannot be represented by any type in its list and has no extended integer
      type, then the integer constant has no type.
      }*/  
-     rule NoSuffix(DecimalConstant(I:Int)) =>
+     rule NoSuffix(decimalConstant(I:Int)) =>
           #if withinRange(I, int) 
                #then tv(I, t(.Set, int)) 
           #else #if withinRange(I, long-int)
@@ -156,7 +172,7 @@ module C-LITERAL
           #fi
           [structural, anywhere]
           
-     rule LitU(DecimalConstant(I:Int)) =>
+     rule LitU(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
                #then tv(I, t(.Set, unsigned-int))
           #else #if withinRange(I, unsigned-long-int)
@@ -166,7 +182,7 @@ module C-LITERAL
           #else tv(I, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
-     rule LitL(DecimalConstant(I:Int)) =>
+     rule LitL(decimalConstant(I:Int)) =>
           #if withinRange(I, long-int)
                #then tv(I, t(.Set, long-int))
           #else #if withinRange(I, long-long-int)
@@ -174,7 +190,7 @@ module C-LITERAL
           #else tv(I, t(.Set, no-type))
           #fi #fi
           [structural, anywhere]
-     rule LitUL(DecimalConstant(I:Int)) =>
+     rule LitUL(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
                #then tv(I, t(.Set, unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
@@ -182,13 +198,13 @@ module C-LITERAL
           #else tv(I, t(.Set, no-type))
           #fi #fi        
           [structural, anywhere]
-     rule LitLL(DecimalConstant(I:Int)) =>
+     rule LitLL(decimalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
                #then tv(I, t(.Set, long-long-int))
           #else tv(I, t(.Set, no-type))
           #fi
           [structural, anywhere]
-     rule LitULL(DecimalConstant(I:Int)) =>
+     rule LitULL(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
                #then tv(I, t(.Set, unsigned-long-long-int))
           #else tv(I, t(.Set, no-type))
@@ -201,12 +217,10 @@ module C-LITERAL
      suffixed by the letter \cinline{l} or \cinline{L}, it has type
      \cinline{long double}.
      }*/
-     syntax K ::= "reducedFloat" "(" Float ")"
-     rule DecimalFloatConstant(_:String, _:Int, F:Float)
-          => reducedFloat(F)
+     syntax Constant ::= reducedFloat(Float)
+     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)
           [structural, anywhere]
-     rule HexFloatConstant(_:String, _:Int, F:Float)
-          => reducedFloat(F)
+     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
           [structural, anywhere]
      
      rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
@@ -234,7 +248,9 @@ module C-LITERAL
           [structural, anywhere]
      rule WCharLiteral(N:Int) => tv(N, cfg:wcharut) 
           [structural, anywhere]
-     rule Constant(V:KResult) => V 
+     rule Constant(V:Value) => V 
+          [structural, anywhere]
+     rule Constant(S:StringLiteral) => S 
           [structural, anywhere]
 
 endmodule

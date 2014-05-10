@@ -15,11 +15,9 @@ module C-MEMORY-WRITING-SYNTAX
      syntax K ::= "write-aux" "(" SymLoc "," Value "," CSize ")"
 
      // TODO(chathhorn): For trans/symbolic-value.k
-     syntax K ::= splitBytes(Value) [function]
+     syntax DataList ::= splitBytes(Value) [function]
      syntax K ::= "write-specific" "(" SymLoc "," Value "," CSize ")"
      syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
-     syntax K ::= calculateNewBytes(Int, K, K)
-          [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
 endmodule
 
 module C-MEMORY-WRITING
@@ -42,14 +40,12 @@ module C-MEMORY-WRITING
           [structural]
      
      // Write thread-local or auto.
-     rule [write-thread-local]:
-          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
+     rule write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
           => write-specific(Loc:SymLoc, tv(V, T), NBits)
           when isThreadDuration(Loc)
           [structural]
      // Write global, shared data, or "allocated" duration.
-     rule [write-allocated]:
-          write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
+     rule write-aux(Loc:SymLoc, tv(V:CValue, T:Type), NBits:CSize)
           => write-specific(Loc, tv(V, T), NBits)
           when notBool isThreadDuration(Loc)
           [ndtrans]
@@ -57,16 +53,14 @@ module C-MEMORY-WRITING
      syntax Set ::= attrs(Type) [function]
      rule attrs(t(S:Set, _)) => S
 
-     rule [write-normal]:
-          write-specific(Loc:SymLoc, tv(V:CValue, T:Type), NBits:Int)
+     rule write-specific(Loc:SymLoc, tv(V:CValue, T:Type), NBits:Int)
           => writeBytes(Loc, splitBytes(tv(V, T)), false)
           when (NBits %Int cfg:bitsPerByte ==Int 0)
                andBool (isByteLoc(Loc) ==K true)
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(T))
           [structural]
-     rule [write-normal-union-field]:
-          (. => makeUnknown(UnionLoc, F, Fields))
+     rule (. => makeUnknown(UnionLoc, F, Fields))
           ~> write-specific(Loc:SymLoc, tv(_, t(
                (SetItem(fromUnion(UnionLoc:SymLoc, F:Id, Fields:FieldInfo)) => .Set) _, _)), _)
           when isByteLoc(Loc)
@@ -75,7 +69,7 @@ module C-MEMORY-WRITING
      syntax K ::= makeUnknown(SymLoc, Id, FieldInfo) [function]
 
      // Zero from (&union + sizeof union.F) to (&union + sizeof union).
-     // TODO(chathhorn): breaks into a lot of abstractions.
+     // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:Id, fieldInfo(L:List,
                F |-> T:Type _, _))
           => writeBytes(Loc +bits roundUpToByte(bitSizeofType(T)),
@@ -94,9 +88,8 @@ module C-MEMORY-WRITING
           => I +Int (cfg:bitsPerByte -Int (I %Int cfg:bitsPerByte))
           when (I %Int cfg:bitsPerByte) =/=Int 0
           
-     rule [write-struct]:
-          write-specific(Loc:SymLoc, 
-               tv(agg(ListItem(V:K) ListItem(V':K) L:List), T:Type), 
+     rule write-specific(Loc:SymLoc, 
+               tv(agg(ListItem(V:CValue) ListItem(V':CValue) L:List), T:Type), 
                NBits:Int)
           => writeBytes(Loc, dataList(ListItem(V) ListItem(V') L), false)
           when (NBits:Int %Int cfg:bitsPerByte ==Int 0)
@@ -119,8 +112,7 @@ module C-MEMORY-WRITING
           => N +Int (1 <<Int (Len -Int 1))
           when Len >Int 0 andBool N >=Int 0
      
-     rule [massage-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
+     rule write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
           => write-specific(Loc, tv(justBits(I, T), T), NBits)
           when (NBits %Int cfg:bitsPerByte =/=Int 0
                orBool notBool(isByteLoc(Loc))
@@ -128,8 +120,7 @@ module C-MEMORY-WRITING
                andBool (I <Int 0)
           [structural]
      
-     rule [write-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
+     rule write-specific(Loc:SymLoc, tv(I:Int, T:Type), NBits:Int)
           => writeBitfield(
                Loc
                , T
@@ -151,6 +142,9 @@ module C-MEMORY-WRITING
      rule writeBitfield(Loc:SymLoc, _, dataList(L:List))
           => writeBytes(floorLoc(Loc), dataList(L), false)
           [structural] 
+
+     syntax K ::= calculateNewBytes(Int, K, K)
+          [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
           
      syntax K ::= "calculateNewBytes-aux" "(" Int "," K "," K "," List ")"
      rule calculateNewBytes(Len:Int, N:Bits, dataList(L:List)) 
@@ -237,24 +231,22 @@ module C-MEMORY-WRITING
           => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
                byteSizeofType(t(S, unionType(X, NBits, Info))))
      
-     syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
-     syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," List ")"
-          [function]
-     rule splitIntegerBytes(I:Int, T:Type, Len:TypedValue) 
-          => splitIntegerBytes-aux(I, T, value(Len), .List)
-     rule splitIntegerBytes-aux(I:Int, T:Type, Len:Int, L:List)
-          => splitIntegerBytes-aux(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
+     syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
+     syntax DataList ::= splitIntegerBytes(Int, Type, Int, List) [function]
+
+     rule splitIntegerBytes(I:Int, T:Type, Len:Int) 
+          => splitIntegerBytes(I, T, Len, .List)
+     rule splitIntegerBytes(I:Int, T:Type, Len:Int, L:List)
+          => splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
                L ListItem(lowestByte(I, T)))
           when Len >Int 0
-     rule splitIntegerBytes-aux(_, _, 0, L:List)
-          => dataList(L) 
+     rule splitIntegerBytes(_, _, 0, L:List) => dataList(L) 
           
-     syntax K ::= splitStructBytes(K, Type, K) [strict(3)]
-     syntax K ::= splitStructBytes(K, Type, Int, List) 
+     syntax DataList ::= splitStructBytes(K, Type, Int) [function]
+     syntax DataList ::= splitStructBytes(K, Type, Int, List)  [function]
 
-     rule splitStructBytes(dataList(L:List), T:Type, Len:TypedValue) 
-          => splitStructBytes(dataList(L), T, value(Len), .List) 
-          [structural, anywhere]
+     rule splitStructBytes(dataList(L:List), T:Type, Len:Int) 
+          => splitStructBytes(dataList(L), T, Len, .List) 
      rule splitStructBytes(
           dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
                T:Type, Len:Int, L:List)
@@ -262,41 +254,31 @@ module C-MEMORY-WRITING
                L ListItem(piece(N, PieceLen)))
           when PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
-          [structural, anywhere]
      rule splitStructBytes(_, _, 0, L:List) => dataList(L) 
-          [structural, anywhere]
           
-     syntax K ::= splitPointerBytes(Ptr, Type, K) [strict(3)]
-     syntax K ::= "splitPointerBytes-aux" "(" Ptr "," Type "," Int "," K "," List ")"
+     syntax DataList ::= splitPointerBytes(Ptr, Type, Int) [function]
+     syntax DataList ::= splitPointerBytes(Ptr, Type, Int, K, List) [function]
 
-     rule splitPointerBytes(I:Ptr, T:Type, Len:TypedValue)
-          => splitPointerBytes-aux(I, T, value(Len), 0, .List) 
-          [structural, anywhere]
-     rule splitPointerBytes-aux(I:Ptr, T:Type, Len:Int, N:Int, L:List)
-          => splitPointerBytes-aux(I, T, Len -Int 1, N +Int 1,
+     rule splitPointerBytes(I:Ptr, T:Type, Len:Int)
+          => splitPointerBytes(I, T, Len, 0, .List) 
+     rule splitPointerBytes(I:Ptr, T:Type, Len:Int, N:Int, L:List)
+          => splitPointerBytes(I, T, Len -Int 1, N +Int 1,
                L ListItem(piece(subObject(I, N, N), cfg:bitsPerByte)))
           when Len >Int 0
-          [structural, anywhere]
-     rule splitPointerBytes-aux(_, _, 0, _, L:List) 
-          => dataList(L:List)
-          [structural, anywhere]
+     rule splitPointerBytes(_, _, 0, _, L:List) => dataList(L:List)
           
-     syntax K ::= splitFloatBytes(Float, Type, K) [strict(3)]
-     syntax K ::= splitFloatBytes(Float, Type, Int, List)
+     syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
+     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
 
-     rule splitFloatBytes(F:Float, T:Type, Len:TypedValue) 
-          => splitFloatBytes(F, T, value(Len) -Int 1, 
+     rule splitFloatBytes(F:Float, T:Type, Len:Int) 
+          => splitFloatBytes(F, T, Len -Int 1, 
                ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
-          when value(Len) >Int 0
-          [structural, anywhere]
+          when Len >Int 0
      rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List) 
           => splitFloatBytes(F, T, Len -Int 1,
                L ListItem(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
           when Len >Int 0
-          [structural, anywhere]
-     rule splitFloatBytes(_, _:Type, 0, L:List) 
-          => dataList(L) 
-          [structural, anywhere]
+     rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L) 
           
      syntax Bits ::= lowestByte(Int, Type) [function]
 
