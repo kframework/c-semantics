@@ -54,7 +54,7 @@ module C-CONVERSION
                #else tv(1, t(S, bool)) #fi
           when hasIntegerType(T)
      rule cast(t(S:Set, bool), tv(F:Float, T:Type))
-          => #if Float2Int(F) ==Int 0 
+          => #if F ==Float Int2Float(0)
                #then tv(0, t(S, bool)) 
                #else tv(1, t(S, bool)) #fi
           when isFloatType(T)
