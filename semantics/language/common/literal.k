@@ -105,7 +105,6 @@ module C-LITERAL
           #else tv(I, t(.Set, no-type))
           #fi #fi #fi
           [structural, anywhere]
-     
      rule NoSuffix(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, int)
                #then tv(I, t(.Set, int)) 
@@ -123,6 +122,16 @@ module C-LITERAL
           #fi #fi #fi #fi #fi #fi
           [structural, anywhere]
 
+     rule LitU(decimalConstant(I:Int)) =>
+          #if withinRange(I, unsigned-int)
+               #then tv(I, t(.Set, unsigned-int))
+          #else #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
+          #fi #fi #fi
+          [structural, anywhere]
      rule LitU(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
                #then tv(I, t(.Set, unsigned-int))
@@ -134,6 +143,14 @@ module C-LITERAL
           #fi #fi #fi
           [structural, anywhere]
           
+     rule LitL(decimalConstant(I:Int)) =>
+          #if withinRange(I, long-int)
+               #then tv(I, t(.Set, long-int))
+          #else #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else tv(I, t(.Set, no-type))
+          #fi #fi
+          [structural, anywhere]
      rule LitL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-int)
                #then tv(I, t(.Set, long-int))
@@ -147,6 +164,14 @@ module C-LITERAL
           #fi #fi #fi #fi
           [structural, anywhere]
           
+     rule LitUL(decimalConstant(I:Int)) =>
+          #if withinRange(I, unsigned-long-int)
+               #then tv(I, t(.Set, unsigned-long-int))
+          #else #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
+          #fi #fi        
+          [structural, anywhere]
      rule LitUL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
                #then tv(I, t(.Set, unsigned-long-int))
@@ -156,6 +181,12 @@ module C-LITERAL
           #fi #fi
           [structural, anywhere]
           
+     rule LitLL(decimalConstant(I:Int)) =>
+          #if withinRange(I, long-long-int)
+               #then tv(I, t(.Set, long-long-int))
+          #else tv(I, t(.Set, no-type))
+          #fi
+          [structural, anywhere]
      rule LitLL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
                #then tv(I, t(.Set, long-long-int))
@@ -165,6 +196,12 @@ module C-LITERAL
           #fi #fi
           [structural, anywhere]
      
+     rule LitULL(decimalConstant(I:Int)) =>
+          #if withinRange(I, unsigned-long-long-int)
+               #then tv(I, t(.Set, unsigned-long-long-int))
+          #else tv(I, t(.Set, no-type))
+          #fi
+          [structural, anywhere]
      rule LitULL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
                #then tv(I, t(.Set, unsigned-long-long-int))
@@ -172,45 +209,6 @@ module C-LITERAL
           #fi
           [structural, anywhere]
           
-     rule LitU(decimalConstant(I:Int)) =>
-          #if withinRange(I, unsigned-int)
-               #then tv(I, t(.Set, unsigned-int))
-          #else #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(.Set, unsigned-long-int))
-          #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(.Set, unsigned-long-long-int))
-          #else tv(I, t(.Set, no-type))
-          #fi #fi #fi
-          [structural, anywhere]
-     rule LitL(decimalConstant(I:Int)) =>
-          #if withinRange(I, long-int)
-               #then tv(I, t(.Set, long-int))
-          #else #if withinRange(I, long-long-int)
-               #then tv(I, t(.Set, long-long-int))
-          #else tv(I, t(.Set, no-type))
-          #fi #fi
-          [structural, anywhere]
-     rule LitUL(decimalConstant(I:Int)) =>
-          #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(.Set, unsigned-long-int))
-          #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(.Set, unsigned-long-long-int))
-          #else tv(I, t(.Set, no-type))
-          #fi #fi        
-          [structural, anywhere]
-     rule LitLL(decimalConstant(I:Int)) =>
-          #if withinRange(I, long-long-int)
-               #then tv(I, t(.Set, long-long-int))
-          #else tv(I, t(.Set, no-type))
-          #fi
-          [structural, anywhere]
-     rule LitULL(decimalConstant(I:Int)) =>
-          #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(.Set, unsigned-long-long-int))
-          #else tv(I, t(.Set, no-type))
-          #fi
-          [structural, anywhere]
-     
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.2}{4}}}{
      An unsuffixed floating constant has type \cinline{double}. If suffixed by
      the letter \cinline{f} or \cinline{F}, it has type \cinline{float}. If
