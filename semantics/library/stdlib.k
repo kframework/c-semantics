@@ -51,10 +51,9 @@ module LIBC-STDLIB
      syntax K ::= newAlloc(Int) [function]
      rule newAlloc(Base:Int) => loc(Base @ allocated, 0, 0)
      
-     rule [malloc]:
-          <k> prepareBuiltin(Identifier("malloc"),
+     rule <k> prepareBuiltin(Identifier("malloc"),
                     ListItem(tv(Len:Int, _:KResult)))
-               => alloc(newAlloc(N), Len:Int)
+               => alloc(newAlloc(N), Len:Int, .Bag)
                ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>

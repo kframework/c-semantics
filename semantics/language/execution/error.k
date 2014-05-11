@@ -11,6 +11,7 @@ module C-EXECUTION-ERROR
      imports C-TYPING-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -20,6 +21,8 @@ module C-EXECUTION-ERROR
      imports C-COMMON-EXPR-ADDITIVE-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-CHECK-LOC-SYNTAX
+
+     imports C-IO-BUFFERED-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -41,6 +44,10 @@ module C-EXECUTION-ERROR
      rule [err00003]:
           (. => ERROR("00003", "Unsequenced side effect on scalar object with value computation of same object.", 315) ) ~>
           assert(false, 3)
+          [structural, large]
+     rule [err00003b]:
+          (. => ERROR("0003b", "Trying to access an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
+          assert(false, 4)
           [structural, large]
 
     //  rule [err00005]:
@@ -104,7 +111,7 @@ module C-EXECUTION-ERROR
           
      rule [err00016]:
           <k> (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
-               writeByte(Loc:SymLoc, _) 
+               checkWrite(Loc:SymLoc, _) 
           ...</k>
           <locs-written> Locs:Bag </locs-written>
           when BagItem(Loc) in Locs:Bag
@@ -133,8 +140,8 @@ module C-EXECUTION-ERROR
           [structural, large]
           
      rule [err00020]:
-          <k> (. => ERROR("00020", "Tried to write outside the bounds of an object.") ) ~>
-               writeByte(loc(Base:SymBase, Offset:Int, _:Int), _) 
+          <k> (. => ERROR("00020", "Trying to write outside the bounds of an object.") ) ~>
+               checkWrite(loc(Base:SymBase, Offset:Int, _), _) 
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           when notBool Offset <Int Len
@@ -220,7 +227,7 @@ module C-EXECUTION-ERROR
           
      rule [err00037]:
           (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
-          read-aux(NullPointer, _, _)
+          read(NullPointer, _)
           [structural, large]
           
      rule [err00041]:
@@ -248,11 +255,18 @@ module C-EXECUTION-ERROR
           [structural, large]
           
      rule [err00045]:
-          <k> 
-               (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-               writeByte(loc(Base:SymBase, _, _), _)
+          <k> (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
+               checkWrite(loc(Base:SymBase, _, _), _)
           ...</k>
           <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
+          [structural, large]
+          
+     rule [err00045b]:
+          <k> (. => ERROR("00045b", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
+               checkWrite(loc(Base:SymBase, _, _), T:Type)
+          ...</k>
+          <mem>... Base |-> memblock(_, (_ BagItem(mvolatile)), _) ...</mem>
+          when notBool isVolatileType(T)
           [structural, large]
           
      rule [err00046]:
@@ -263,13 +277,12 @@ module C-EXECUTION-ERROR
           
      rule [err00047]:
           <k> (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
-               writeByte(Loc:SymLoc, _)
+               checkWrite(Loc:SymLoc, _)
           ...</k>
           <not-writable>... SetItem(Loc) ...</not-writable>
           [structural, large]
 
-     rule
-          (. => ERROR("00500", 
+     rule (. => ERROR("00500", 
                "printf: Format string expects type of size " +String
                Int2String(value(A)) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", 409) ) ~>
@@ -282,29 +295,29 @@ module C-EXECUTION-ERROR
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
           <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
-               read-aux(Loc:SymLoc, _, BitSize:Int) 
+               read(Loc:SymLoc, T:Type) 
           ...</k>
           <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
-               write-aux(Loc':SymLoc, _, BitSize':Int) 
+               write(Loc':SymLoc, _, T':Type) 
           ...</k>
           when sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc' 
-                    andBool Loc' <bytes (Loc +bytes bitsToBytes(BitSize)))
+                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
                orBool (Loc >bytes Loc' 
-                    andBool (Loc' +bytes bitsToBytes(BitSize')) >bytes Loc))
+                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
           [computational, large]
            
       rule [write-write-race]:
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
-               write-aux(Loc:SymLoc, _, BitSize:Int) 
+               write(Loc:SymLoc, _, T:Type) 
           ...</k>
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
-               write-aux(Loc':SymLoc, _, BitSize':Int) 
+               write(Loc':SymLoc, _, T':Type) 
           ...</k>
           when sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc' 
-                    andBool Loc' <bytes (Loc +bytes bitsToBytes(BitSize)))
+                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
                orBool (Loc >bytes Loc' 
-                    andBool (Loc' +bytes bitsToBytes(BitSize')) >bytes Loc))
-          [computational, large]        
+                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
+          [computational, large]
 endmodule

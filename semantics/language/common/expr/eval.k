@@ -101,7 +101,7 @@ module C-COMMON-EXPR-EVAL
           when isFunctionType(T) 
 
      rule rkludge(lval(Loc:SymLoc, T:Type)) 
-          => instantiateIdVal(Loc, stripQualifiers(T))
+          => instantiateIdVal(Loc, T)
           when notBool isArrayType(T) 
                andBool notBool isFunctionType(T) 
           [structural]

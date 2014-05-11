@@ -158,7 +158,8 @@ module C-ERROR
 
      rule [err00035]:
           (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
-          write(lv(_:SymLoc, t(SetItem(Const) _, _)), _)
+          write(_, _, T:Type)
+          when isConstType(T)
           [structural, large]
 
      rule [err00038a]:

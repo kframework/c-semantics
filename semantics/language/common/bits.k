@@ -158,44 +158,33 @@ module C-BITS
 
      // these could be so much better...
      rule ~Bits X:Int => ~Int X
-     rule [bnot-unknown]: 
-          ~Bits piece(unknown(Len:Int), Len:Int) 
+     rule ~Bits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len:Int), Len:Int)
      
      rule X:Int /Bits Y:Int => X /Int Y
+     rule piece(unknown(N:Int), N) /Bits M:Int => piece(unknown(N), N)
+          when M =/=Int 0
 
      rule X:Int xorBits Y:Int => X xorInt Y
-     rule [xor-unknown-right]: 
-          _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [xor-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) xorBits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
+     rule _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
+          => piece(unknown(Len), Len)
+     rule piece(unknown(Len:Int), Len:Int) xorBits _:Bits
+          => piece(unknown(Len), Len)
 
      rule X:Int |Bits Y:Int => X |Int Y
-     rule [or-unknown-right]: 
-          _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [or-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
+     rule _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
+          => piece(unknown(Len), Len)
+     rule piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
+          => piece(unknown(Len), Len)
 
      rule X:Int &Bits Y:Int => X &Int Y
-     rule [and-unknown-zero-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
+     rule N:Int &Bits piece(unknown(Len:Int), Len) => 0
           when N ==Int 0 
-     rule [and-unknown-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
+     rule N:Int &Bits piece(unknown(Len:Int), Len) => 0
           when N =/=Int 0 
-     rule [and-unknown-zero-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
+     rule piece(unknown(Len:Int), Len) &Bits N:Int => 0
           when N ==Int 0 
-     rule [and-unknown-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
+     rule piece(unknown(Len:Int), Len) &Bits N:Int => 0
           when N =/=Int 0
 
 endmodule

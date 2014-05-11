@@ -4,7 +4,7 @@ module LIBC-SETJMP
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
 
      /*@ 
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{

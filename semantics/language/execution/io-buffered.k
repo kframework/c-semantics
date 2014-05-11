@@ -6,6 +6,10 @@ module C-IO-BUFFERED-SYNTAX
      // deletes the base object from memory, given a location and it size (as a
      // check)
      syntax K ::= deleteSizedBlock(SymLoc, Int)
+
+     syntax K ::= checkWrite(SymLoc, Type)
+
+     syntax K ::= writeByte(SymLoc, CValue)
 endmodule
 
 module C-IO-BUFFERED
@@ -24,43 +28,43 @@ module C-IO-BUFFERED
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), false)
-          => writeByte(Loc, V) ~> 
-               writeBytes(Loc +bytes 1, dataList(L), false)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), T:Type)
+          => checkWrite(Loc, T) 
+          ~> writeByte(Loc, V)
+          ~> writeBytes(Loc +bytes 1, dataList(L), T)
+          when notBool isInitializerType(T)
           [structural]
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), true)
-          => stealthWriteByte(Loc, V) ~> 
-               writeBytes(Loc +bytes 1, dataList(L), true)
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), T:Type)
+          => writeByte(Loc, V)
+          ~> writeBytes(Loc +bytes 1, dataList(L), T)
+          when isInitializerType(T)
           [structural]
-     rule writeBytes(_, dataList(.List), _) => .K
+     rule writeBytes(_, dataList(.List), _) => .
           [structural] 
 
-     syntax K ::= stealthWriteByte(SymLoc, K)
-     rule [write-byte-stealth]:
-          <k> 
-               stealthWriteByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . 
-          ...</k>
-          <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
-          [large, structural]
-
-     rule [write-byte-buffer]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
-          <buffer>...
-               (.List => bwrite(loc(Base, Offset, 0), V))
-          </buffer>
+     rule <k> checkWrite(loc(Base:SymBase, Offset:Int, 0), T:Type) => . ...</k>
           <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
           <locs-written>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
           </locs-written>
           <not-writable> NotWritable:Set </not-writable>
-          when (notBool BagItem(loc(Base, Offset, 0)) in Locs)
+          when // Sequencing.
+               (notBool BagItem(loc(Base, Offset, 0)) in Locs)
+               // Bounds.
+               andBool (Offset <Int Len)
+               // Const.
                andBool (notBool (BagItem(mconst) in Attrs))
                andBool (notBool (loc(Base, Offset, 0) in NotWritable))
-               andBool (Offset <Int Len)
+               // Volatile.
+               andBool (notBool (BagItem(mvolatile) in Attrs)
+                    orBool isVolatileType(T))
           [large, structural]
+
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
+          <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
+          [structural]
           
-     rule [commit-byte]:
-          <buffer>
+     rule <buffer>
                (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
           ...</buffer>
           <mem>...
@@ -70,74 +74,71 @@ module C-IO-BUFFERED
           [structural]
 
      syntax Set ::= locations(List) [function]
-     rule [locations-none]: locations(.List) => .Set
-     rule [locations-some]: locations(bwrite(Loc:SymLoc, _) L:List)
-          => SetItem(Loc) locations(L:List)
+     rule locations(.List) => .Set
+     rule locations(bwrite(Loc:SymLoc, _) L:List)
+          => SetItem(Loc) locations(L)
 
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
+     syntax K ::= readByte(SymLoc, Type)
      
-     rule readBytes(Loc:SymLoc, Size:Int) 
-          => readBytes-aux(Loc, Size, .List) 
+     rule readBytes(Loc:SymLoc, Size:Int, T:Type)
+          => readBytes-aux(Loc, Size, .List, T) 
           [structural] 
           
-     // fixme sNat
-     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
-          => readByte(Loc)
-          ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
-          when Size:Int >Int 0
+     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List, T:Type)
+          => readByte(Loc, T)
+          ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
+          when Size >Int 0
           [structural]
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, 
-               (Aux:List => Aux ListItem(tv(V, T))))
+               (Aux:List => Aux ListItem(tv(V, T))), _)
           [structural]        
      
      syntax List ::= values(List) [function]
-     rule values(ListItem(tv(K:K, _)) L:List) 
-          => ListItem(K:K) values(L:List)
+     rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K) values(L)
      rule values(.List) => .List
-     rule readBytes-aux(_, 0, Aux:List) 
-          => dataList(values(Aux:List)) 
+
+     rule readBytes-aux(_, 0, Aux:List, _) => dataList(values(Aux)) 
           [structural] 
      
      // FIXME make sure it's a byte
      
-     rule [read-byte-fast]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0))
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
                => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs), 3)
-                    ~> assert(Offset <Int Len, 2)
-                    ~> tv(V, t(.Set, no-type))
+               ~> assert(Offset <Int Len, 2)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
+               Base |-> memblock(Len:Int, Attrs:Bag, (_ Offset:Int |-> V:K)) 
           ...</mem>
           <locs-written> Locs:Bag </locs-written>
           <buffer> .List </buffer>
           [large, structural]
 
-     rule [read-byte]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0))
-               => assert(notBool 
-                    (BagItem(loc(Base, Offset, 0)) in Locs), 3)
-                    ~> assert(Offset <Int Len, 2)
-                    ~> tv(V, t(.Set, no-type))
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
+               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs), 3)
+               ~> assert(Offset <Int Len, 2)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
+               Base |-> memblock(Len:Int, Attrs:Bag, (_ Offset:Int |-> V:K)) 
           ...</mem>
           <locs-written> Locs:Bag </locs-written>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset, 0) in locations(Mem)
           [large, structural]
           
-     rule [read-byte-lazy]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, 2)
-                    ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
-                         t(.Set, no-type))
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, 
+               Base |-> memblock(Len:Int, Attrs:Bag, 
                     M:Map => M:Map[
                          piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
                          / Offset]) 
@@ -147,8 +148,8 @@ module C-IO-BUFFERED
                andBool (notBool Offset in (keys M))
           [large, structural]
           
-     rule [read-byte-linker]:
-          <k> readByte(loc((LinkBase:SymBase => Base), _, _)) ...</k>
+     // Resolve a linker address to a real "physical" address.
+     rule <k> readByte(loc((LinkBase:SymBase => Base), _, _), _) ...</k>
           <linkings>... 
                loc(LinkBase, 0, 0) |-> loc(Base:SymBase, _, _)
           ...</linkings>
@@ -169,47 +170,48 @@ module C-IO-BUFFERED
 //             //[interpRule] 
 
      syntax K ::= "realloc-aux" "(" Int "," SymLoc "," SymLoc "," Int "," Int ")"
-     rule [realloc-start]:
-          <k> 
-               realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)
-               => alloc(New, NewLen)
+     rule <k> realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)
+               => alloc(New, NewLen, .Bag)
                     ~> realloc-aux(minInt(OldLen, NewLen), 
                          Old, New, OldLen, NewLen)
           ...</k>
           [structural]
           
-     rule [realloc-found]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN:Int -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), 
-                    loc(NewBase:SymBase, 0, 0), _, _)
+     rule <k> realloc-aux((SNatN:Int => SNatN -Int 1), 
+               loc(OldBase:SymBase, _, _), 
+               loc(NewBase:SymBase, _, _), _, _)
           ...</k>
           <mem>... 
                OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
-               NewBase |-> memblock(_, _, (_ (.Map => SNatN:Int -Int 1 |-> K:K)))
+               NewBase |-> memblock(_, _, (_ (.Map => SNatN -Int 1 |-> K)))
           ...</mem>
           when (N ==Int SNatN -Int 1)
                andBool (SNatN >Int 0)
           [structural]   
           
      // fixme sNat
-     rule [realloc-unfound]:
-          <k> 
-               realloc-aux((SNatN:Int => SNatN -Int 1), 
-                    loc(OldBase:SymBase, 0, 0), loc(_:SymBase, 0, 0), _, _)
+     rule <k> realloc-aux((SNatN:Int => SNatN -Int 1), 
+                    loc(OldBase:SymBase, _, _), _, _, _)
           ...</k>
           <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
-          when (notBool SNatN:Int -Int 1 in keys M:Map)
+          when (notBool SNatN -Int 1 in keys M)
                andBool (SNatN >Int 0)
           [structural]
-     rule [realloc-0]:
-          realloc-aux(0, loc(OldBase:SymBase, 0, 0), _, OldLen:Int, _)
-          => deleteSizedBlock(loc(OldBase, 0, 0), OldLen:Int) 
+     rule realloc-aux(0,
+               loc(OldBase:SymBase, _, _),
+               loc(NewBase:SymBase, _, _), OldLen:Int, _)
+          => copyModifiers(OldBase, NewBase)
+          ~> deleteSizedBlock(loc(OldBase, 0, 0), OldLen)
           [structural]   
+
+     syntax K ::= copyModifiers(SymBase, SymBase)
+     rule <k> copyModifiers(OldBase:SymBase, NewBase:SymBase) => . ...</k>
+          <mem>... 
+               OldBase |-> memblock(_, Mods:Bag, _)
+               NewBase |-> memblock(_, (_ => Mods), _)
+          ...</mem>
           
-     rule [delete-sized-block]:
-          <k>
-               deleteSizedBlock(loc(Base:SymBase, _:Int, _:Int), Len:Int) => . 
+     rule <k> deleteSizedBlock(loc(Base:SymBase, _, _), Len:Int) => . 
           ...</k>
           <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
@@ -217,8 +219,7 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural] 
      
-     rule [delete-block]:
-          <k> deleteBlock(loc(Base:SymBase, _:Int, _:Int)) => .K ...</k>
+     rule <k> deleteBlock(loc(Base:SymBase, _, _)) => .K ...</k>
           <mem>... Base |-> memblock(_, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
           [structural] 

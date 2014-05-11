@@ -70,16 +70,6 @@ module C-TRANSLATION-ERROR
                andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
           [structural, large]      
           
-          
-     // rule [err00016]:
-     //      <k> 
-     //           (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
-     //           writeByte(Loc:SymLoc, _) 
-     //      ...</k>
-     //      <locs-written> Locs:Bag </locs-written>
-     //      when BagItem(Loc) in Locs:Bag
-     //      [structural, large] 
-     //      
      rule [err00017]:
           (. => ERROR("00017", "Division by 0.", 319) ) ~>
           tv(_:Int, T:Type) / tv(0, T:Type)
@@ -200,28 +190,12 @@ module C-TRANSLATION-ERROR
           when notBool ifFromArrayInBounds(T, I)
           [structural, large]
           
-     // rule [err00045]:
-     //      <k> 
-     //           (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-     //           writeByte(loc(Base:SymBase, _, _), _)
-     //      ...</k>
-     //      <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
-     //      [structural, large]
-          
      // rule [err00046]:
      //      (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
      //      concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
      //      when isFloatType(T) andBool (N >=Int 0)
      //      [structural, large]
           
-     // rule [err00047]:
-     //      <k> 
-     //           (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
-     //           writeByte(Loc:SymLoc, _)
-     //      ...</k>
-     //      <not-writable>... SetItem(Loc) ...</not-writable>
-     //      [structural, large]
-
 //     // TODO(chathhorn): figure out what to do with these error numbers.
 //     rule <k> (. => ERROR("90692a",
 //               "Global declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>

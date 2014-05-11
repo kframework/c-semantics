@@ -276,7 +276,7 @@ module C-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/     
-     rule cast(t(_, void), _:Value) => skipval
+     rule cast(t(_, void), _) => skipval
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object

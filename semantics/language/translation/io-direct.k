@@ -13,17 +13,18 @@ module C-IO-DIRECT
 
      imports DEBUG-SYNTAX
 
-     syntax K ::= writeBytes(SymLoc, K)
+     syntax K ::= writeBytes(SymLoc, DataList)
+     syntax K ::= writeByte(SymLoc, CValue)
 
      // In the static semantics, we only allow writing to memory during
      // initialization (of statics).
-     rule <k> writeBytes(Loc:SymLoc, K:KResult, _)
-               => writeBytes(Loc, K)
-          ...</k>
-          <initializing> true </initializing>
+     rule writeBytes(Loc:SymLoc, D:DataList, T:Type) => writeBytes(Loc, D)
+          when isInitializerType(T)
+          [structural]
 
-     rule <k> writeBytes(_, _, _) => . ...</k>
-          <initializing> false </initializing>
+     rule writeBytes(_, _, T:Type) => .
+          when notBool isInitializerType(T)
+          [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
           => writeByte(Loc, V) ~> 
@@ -35,13 +36,9 @@ module C-IO-DIRECT
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, Attrs:Bag, M:Map => M:Map[V / Offset]) 
+               Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset]) 
           ...</mem>
-          <not-writable> NotWritable:Set </not-writable>
-          when (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in NotWritable))
-               andBool (Offset <Int Len)
-               andBool notBool isSymbolic(V)
+          when (Offset <Int Len) andBool notBool isSymbolic(V)
           [large, structural]
 
      rule (. => ERROR("IO1", "non-constant initializer."))
@@ -49,10 +46,11 @@ module C-IO-DIRECT
           when isSymbolic(V)
           [structural]
 
+     syntax K ::= readByte(SymLoc) 
      // loc, size in bytes, aux list
      syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
      
-     rule readBytes(Loc:SymLoc, Size:Int) 
+     rule readBytes(Loc:SymLoc, Size:Int, _) 
           => readBytes-aux(Loc, Size, .List) 
           [structural] 
           

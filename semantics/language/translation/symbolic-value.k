@@ -30,7 +30,8 @@ module C-SYMBOLIC-VALUE
      rule floorLoc(symVal) => symVal
      rule ceilingLoc(symVal) => symVal
 
-     rule write-aux(symVal, _, _) => .
+     rule write(symVal, _, T:Type) => .
+          when notBool isConstType(T)
           [structural]
 
      rule bitSizeofType(T:Type) => symVal
@@ -41,9 +42,9 @@ module C-SYMBOLIC-VALUE
           => dataList(
                times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
 
-     rule write-specific(Loc:SymLoc, tv(symVal, T:Type), NBits:Int)
-          => writeBitfield(Loc, T, dataList(ListItem(symVal)))
-          when (NBits %Int cfg:bitsPerByte =/=Int 0)
+     rule write-specific(Loc:SymLoc, symVal, T:Type)
+          => writeBitfield(Loc, dataList(ListItem(symVal)), T)
+          when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (notBool isByteLoc(Loc))
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
           [structural]

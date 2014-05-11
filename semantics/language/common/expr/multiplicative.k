@@ -40,11 +40,6 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      rule tv(F1:Float, T:Type) / tv(F2:Float, T:Type)
           => arithInterpret(T, F1 /Float F2)
           [structural]
-     // fixme this seems out of place and strange
-     rule piece(unknown(N:Int), N) /Bits M:Int
-          => piece(unknown(N), N)
-          when M =/=Int 0
-          [structural, anywhere]
           
      rule tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
           => arithInterpret(T, I1 %Int I2)

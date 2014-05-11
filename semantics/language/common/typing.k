@@ -14,7 +14,6 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Map, Map)
-     syntax K ::= allowWrite(K) [strict]
 
      // represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
@@ -36,6 +35,8 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isExternType(Type) [function]
      syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
+     syntax Bool ::= isVolatileType(Type) [function]
+     syntax Bool ::= isInitializerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
      syntax Bool ::= isIncompleteArrayType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
@@ -75,7 +76,10 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= incompleteUnionType(Id)
           [klabel('incompleteUnionType)]
 
-     syntax TypeQuality ::= Storage | CVSpecifier
+     // Writing to an lvalue with this qualifier ignores qualifiers on the
+     // underlying object (const and volatile) and disables checking for
+     // unsequenced reads/writes.
+     syntax Storage ::= "Initializer"
 
      // Basic types
      syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" 
@@ -93,12 +97,12 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isBasicType(K) [function]
 
-     syntax Set ::= getModifiers(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
+     syntax Type ::= stripConst(Type) [function]
      
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
@@ -109,9 +113,10 @@ module C-TYPING-SYNTAX
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]
 
-     syntax Set ::= getModifiers(K) [function]
+     syntax Modifier ::= Storage | CVSpecifier
 
      syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addQualifier(CVSpecifier, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 

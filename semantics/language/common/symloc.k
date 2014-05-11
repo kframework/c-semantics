@@ -70,6 +70,8 @@ module C-SYMLOC-SYNTAX
 
      syntax Bool ::= isByteLoc(SymLoc) [function]
 
+     syntax Int ::= roundUpToByte(Int) [function]
+
 endmodule
 
 module C-SYMLOC
@@ -140,11 +142,8 @@ module C-SYMLOC
           => loc(Base, Offset:Int, 0)
           when BitOffset <Int cfg:bitsPerByte
      
-     rule [ceilingLoc-null]: 
-          ceilingLoc(NullPointer) => NullPointer
-
-     rule [ceilingLoc]:
-          ceilingLoc(loc(N:SymBase, R:Int, M:Int))
+     rule ceilingLoc(NullPointer) => NullPointer
+     rule ceilingLoc(loc(N:SymBase, R:Int, M:Int))
           => loc(N, (M /Int cfg:bitsPerByte) +Int R, 0)
 
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _))
@@ -159,5 +158,11 @@ module C-SYMLOC
      rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
      
      rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0
+
+     rule roundUpToByte(I:Int) => I
+          when (I %Int cfg:bitsPerByte) ==Int 0
+     rule roundUpToByte(I:Int)
+          => I +Int (cfg:bitsPerByte -Int (I %Int cfg:bitsPerByte))
+          when (I %Int cfg:bitsPerByte) =/=Int 0
 endmodule
 

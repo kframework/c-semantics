@@ -11,27 +11,23 @@ module LIBC-STRING
      // try to use getString
      // fixme should detect overlaps
      syntax K ::= strcpy(SymLoc, SymLoc, SymLoc)
-     rule [strcpy-start]:
-          prepareBuiltin(Identifier("strcpy"),
+     rule prepareBuiltin(Identifier("strcpy"),
                ListItem(tv(Dest:SymLoc, t(_, pointerType(_))))
                ListItem(tv(Src:SymLoc, t(_, pointerType(_)))))
           => strcpy(Dest, Src, Dest)
           [structural]
           
-     rule [strcpy-pre]:
-          (. => read(Src:SymLoc, t(.Set, char))) 
+     rule (. => read(Src:SymLoc, t(.Set, char))) 
           ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]
      
-     rule [strcpy-some]:
-          (tv(I:Int, T:KResult) => write(lv(Dest, t(.Set, char)), tv(I, T)))
+     rule (tv(I:Int, T:Type) => write(Dest, I, T))
           ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
           when I =/=Int 0
           [structural]
-     rule [strcpy-done]:
-          tv(0, T:KResult) 
+     rule tv(0, T:Type) 
           ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)
-          => write(lv(Dest, t(.Set, char)), tv(0, T)) 
+          => write(Dest, 0, T) 
           ~> tv(Orig, t(.Set, pointerType(t(.Set, char))))
           [structural]
 endmodule

@@ -48,16 +48,19 @@ module C-DECL-GLOBAL
                andBool validLocalStorageClass(T)
           [structural] 
      rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
-               => declareInternalVariable(X, adjustParams(T), K)
+               => checkParams(T)
+               ~> declareInternalVariable(X, adjustParams(T), K)
           ...</k>
           <curr-function> F:K </curr-function>
           when F =/=K file-scope
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
+               andBool getQualifiers(T) ==Set .Set
           [structural] 
           
      rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
-               => declareExternalVariable(X, adjustParams(T),
+               => checkParams(T)
+               ~> declareExternalVariable(X, adjustParams(T),
                     #if K ==K NoInit 
                     #then NoInit 
                     #else CodeLoc(K, L) #fi)
@@ -66,6 +69,7 @@ module C-DECL-GLOBAL
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           when isFunctionType(T)
                andBool validGlobalStorageClass(T)
+               andBool getQualifiers(T) ==Set .Set
           [structural] 
      rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
@@ -79,13 +83,20 @@ module C-DECL-GLOBAL
                andBool validGlobalStorageClass(T)
           [structural] 
 
-     rule (. => ERROR("DG1", "Declaration for " +String idToString(X)
+     rule (. => ERROR("DG1", "Declaration for the function " +String idToString(X)
+               +String " appears with type qualifiers."))
+          ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          when isFunctionType(T)
+               andBool getQualifiers(T) =/=Set .Set
+          [structural] 
+
+     rule (. => ERROR("DG2", "Declaration for " +String idToString(X)
                +String " appears with multiple storage class specifiers.", 8))
           ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
           when notBool validStorageClass(T)
           [structural] 
 
-     rule <k> (. => ERROR("DG2", "Declaration for " +String idToString(X)
+     rule <k> (. => ERROR("DG3", "Declaration for " +String idToString(X)
                +String " appears with invalid storage class specifiers.", 8))
                ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
           ...</k>
@@ -95,7 +106,7 @@ module C-DECL-GLOBAL
                andBool notBool validLocalStorageClass(T)
           [structural] 
 
-     rule <k> (. => ERROR("DG3", "Declaration for " +String idToString(X)
+     rule <k> (. => ERROR("DG4", "Declaration for " +String idToString(X)
                +String " appears with invalid storage class specifiers.", 8))
                ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
           ...</k>
@@ -104,9 +115,35 @@ module C-DECL-GLOBAL
                andBool notBool validGlobalStorageClass(T)
           [structural] 
 
+     syntax K ::= checkParams(Type) | checkParam(Type)
+
+     rule (. => checkParam(T))
+          ~> checkParams(t(_, functionType(_, (ListItem(T:Type) => .List)  _)))
+     rule checkParams(t(_, functionType(_, .List))) => .
+
+     rule checkParam(T:Type) => .
+          when getStorageSpecifiers(T) ==Set .Set
+               orBool (notBool isVoidType(T)
+                    andBool getStorageSpecifiers(T) ==Set SetItem(Register))
+
+     rule (. => ERROR("DG5", "Function parameter appears with storage "
+               +String "class other than register."))
+          ~> checkParam(T:Type)
+          when getStorageSpecifiers(T) =/=Set .Set
+               andBool getStorageSpecifiers(T) =/=Set SetItem(Register)
+               andBool notBool isVoidType(T)
+          [structural] 
+
+     rule (. => ERROR("DG6", "Void parameter appears with a storage class."))
+          ~> checkParam(T:Type)
+          when getStorageSpecifiers(T) =/=Set .Set
+               andBool isVoidType(T)
+          [structural] 
+
      syntax Type ::= adjustParams(Type) [function]
      syntax List ::= "adjustParams'" "(" List ")" [function]
      syntax Type ::= "adjustParam'" "(" Type ")" [function]
+
 
      rule adjustParams(t(Mods:Set, functionType(R:Type, Params:List)))
           => t(Mods, functionType(R, adjustParams'(Params)))
@@ -249,7 +286,7 @@ module C-DECL-GLOBAL
                andBool isTypeCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG4", "Conflicting types for "
+     rule <k> (. => ERROR("DG7", "Conflicting types for "
                     +String idToString(X) +String "."))
                ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
@@ -299,7 +336,7 @@ module C-DECL-GLOBAL
                andBool isTypeCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG5", "Conflicting types for "
+     rule <k> (. => ERROR("DG8", "Conflicting types for "
                     +String idToString(X) +String "."))
                ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
@@ -355,7 +392,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // Static, previously extern.
-     rule <k> (. => ERROR("DG6",
+     rule <k> (. => ERROR("DG9",
                "Static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
                ~> declareExternalVariable(X:Id, T:Type, _)
@@ -542,7 +579,7 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     rule <k> (.K => ERROR("DG7",
+     rule <k> (.K => ERROR("DG10",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, _, Loc':SymLoc)
@@ -553,7 +590,7 @@ module C-DECL-GLOBAL
           when notBool isLinkerLoc(Loc')
                andBool (Loc =/=K Loc')
           [structural]
-     rule <k> (.K => ERROR("DG8",
+     rule <k> (.K => ERROR("DG11",
                     "incompatible redeclaration of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, T':Type, _)
@@ -705,7 +742,7 @@ module C-DECL-GLOBAL
      rule completeTagInTags(S:Id, _, SetItem(S)) => .K
           [structural]
 
-     syntax K ::= "allowInit'" [strict]
+     syntax K ::= "allowInit'"
 
      rule allowInit(K:K)
           => setInitializing(true)

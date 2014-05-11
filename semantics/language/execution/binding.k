@@ -4,16 +4,17 @@ endmodule
 
 module C-BINDING
      imports C-BINDING-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
-     imports C-ENV-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // empty binding
      // fixme not really a sequence point
@@ -52,29 +53,22 @@ module C-BINDING
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
      
-     rule [bind-coerce-array]:
-          bind-aux(
-               _
-               , _:List
-               , ListItem(typedDeclaration(
-                        (t(_, (arrayType(T:Type, _)
-                        => pointerType(T)))), _:Id
+     // Array to pointer.
+     rule bind-aux(_, _,
+               ListItem(typedDeclaration(t(_,
+                    (arrayType(T:Type, _) => pointerType(T))), _
                )) _:List
           )
-          [structural, anywhere] 
-     rule [bind-coerce-incompleteArray]:
-          bind-aux(
-               _
-               , _:List
-               , ListItem(typedDeclaration(
-                        (t(_, (incompleteArrayType(T:Type)
-                        => pointerType(T)))), _:Id
+          [structural] 
+     // Incomplete array to pointer.
+     rule bind-aux(_, _,
+               ListItem(typedDeclaration(t(_,
+                    (incompleteArrayType(T:Type) => pointerType(T))), _
                )) _:List
           )
-          [structural, anywhere] 
+          [structural] 
           
-     rule [bind-one]:
-          <k> bind-aux(_, ListItem(tv(V:CValue, T':Type)) L:List, 
+     rule <k> bind-aux(_, ListItem(tv(V:CValue, T':Type)) L:List, 
                     ListItem(typedDeclaration(T:Type, X:Id)) P:List)
                => allocateType(Loc, T)
                     ~> addToEnv(X, Loc)
@@ -97,8 +91,7 @@ module C-BINDING
      //      [structural] 
      
      syntax List ::= promoteList(List) [function]
-     rule [promoteList-needs-promoting]: 
-          promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
+     rule promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
           => ListItem(cast(argPromote(t(S, T)), tv(V, t(S, T)))) 
                promoteList(L)
           when (T ==K float) 
@@ -106,8 +99,7 @@ module C-BINDING
                     andBool ((rank(t(S, T)) <Int rank(t(.Set, int))) 
                          orElseBool isBitfieldType(t(S, T))))
 
-     rule [promoteList-promoted]: 
-          promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
+     rule promoteList(ListItem(tv(V:CValue, t(S:Set, T:K))) L:List) 
           => ListItem(tv(V, t(S, T))) promoteList(L)
           when ((notBool(hasIntegerType(t(S, T))) 
                     andBool (notBool T ==K float)
@@ -137,11 +129,10 @@ module C-BINDING
      // bindings for the same function.  This is all wrong if it is
      // computational instead of structural because of other threads
      // interleaving
-     rule <k> (.K 
-               => allocateType(Loc, type(V))
+     rule <k> (. => allocateType(Loc, type(V))
                     ~> Computation(
                          allowWrite(*(tv(Loc, t(.Set, pointerType(type(V)))))) := V)
-               ) 
+               )
                ~> bindVariadic(_, (ListItem(V:K) => .List) _:List) 
           ...</k>
           <next-loc> Loc:SymLoc => linc(Loc) </next-loc>

@@ -40,10 +40,6 @@ module C-TYPING-MISC
           when getKLabel(T) =/=KLabel 'bitfieldType
      rule numBits(t(_, bitfieldType(_, N:CSize))) => N
 
-     rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
-          [structural]
-
-     syntax Type ::= stripConst(Type) [function]
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
 
      rule [correspondingUnsigned-int]: 
@@ -113,10 +109,25 @@ module C-TYPING-MISC
      rule max(t(_, enumType(_:Id))) => cfg:enumMax
 
      // Returns both type qualifiers and storage class specifiers.
+     syntax Set ::= getModifiers(Type) [function]
      rule getModifiers(t(S:Set, _)) => S
+     rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
+     rule getModifiers(variadic) => .Set
 
+     syntax Type ::= setModifiers(Type, Set) [function]
+     rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
+     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+          => setModifiers(T, Mods)
+
+     rule getQualifiers(t(_, arrayType(T:Type, _)))
+          => getQualifiers(T)
+     rule getQualifiers(t(_, incompleteArrayType(T:Type)))
+          => getQualifiers(T)
+     rule getQualifiers(t(_, flexibleArrayType(T:Type)))
+          => getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
+          when notBool isArrayType(T)
 
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
@@ -136,16 +147,38 @@ module C-TYPING-MISC
           SetItem(Auto)
           SetItem(ThreadLocal)
           SetItem(Register)
+          // For disabling various checks during initialization (i.e.,
+          // const-ness and such).
+          SetItem(Initializer)
           // Also typedef, technically.
 
-     rule stripQualifiers(t(Mods:Set, T:SimpleType))
-          => t(Mods -Set typeQualifiers, T)
+     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
+          => t(Mods, arrayType(stripQualifiers(T), N))
+     rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, incompleteArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods, flexibleArrayType(stripQualifiers(T)))
+     rule stripQualifiers(T:Type)
+          => setModifiers(T, getModifiers(T) -Set typeQualifiers)
+          when notBool isArrayType(T)
           
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
 
-     rule addStorage(S:Storage, t(Mods:Set, T:SimpleType))
-          => t(SetItem(S) Mods, T)
+     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
+
+     rule addQualifier(Q:CVSpecifier, t(Mods:Set, arrayType(T:Type, N:Int)))
+          => t(Mods, arrayType(addQualifier(Q, T), N))
+     rule addQualifier(Q:CVSpecifier, t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, incompleteArrayType(addQualifier(Q, T)))
+     rule addQualifier(Q:CVSpecifier, t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods, flexibleArrayType(addQualifier(Q, T)))
+     rule addQualifier(Q:CVSpecifier, T:Type) => addModifier(Q, T)
+          when notBool isArrayType(T)
+
+     syntax Type ::= addModifier(Modifier, Type) [function]
+     rule addModifier(M:Modifier, t(Mods:Set, T:SimpleType))
+          => t(SetItem(M) Mods, T)
           
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T

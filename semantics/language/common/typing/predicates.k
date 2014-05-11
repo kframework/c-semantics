@@ -109,10 +109,6 @@ module C-TYPING-PREDICATES
      rule isIncompleteUnionType(T:Type)
           => #isIncompleteUnion(T) ==K true
 
-     rule isExternType(T:Type) => #isExtern(T) ==K true
-     rule isStaticType(T:Type) => #isStatic(T) ==K true
-     rule isConstType(T:Type) => #isConst(T) ==K true
-
      rule isBitfieldType(T:Type) => #isBitfield(T) ==K true
      rule isFunctionType(T:Type) => #isFunction(T) ==K true
      rule isFunctionPointerType(T:Type) => #isFunctionPointer(T) ==K true
@@ -130,6 +126,12 @@ module C-TYPING-PREDICATES
      rule isArithmeticType(T:Type)
           => hasIntegerType(T) orBool isFloatType(T)
                
+     rule isExternType(T:Type) => Extern in getStorageSpecifiers(T)
+     rule isStaticType(T:Type) => Static in getStorageSpecifiers(T)
+     rule isInitializerType(T:Type) => Initializer in getStorageSpecifiers(T)
+     rule isConstType(T:Type) => Const in getQualifiers(T)
+     rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
+
      syntax Bool ::= "#isFloatT" "(" Type ")" [function]
                    | "#isCharT" "(" Type ")" [function]
                    | "#isPointer" "(" Type ")" [function]
@@ -141,9 +143,6 @@ module C-TYPING-PREDICATES
                    | "#isIncompleteArray" "(" Type ")"  [function]
                    | "#isIncompleteStruct" "(" Type ")" [function]
                    | "#isIncompleteUnion" "(" Type ")"  [function]
-                   | "#isExtern" "(" Type ")" [function]
-                   | "#isStatic" "(" Type ")" [function]
-                   | "#isConst" "(" Type ")" [function]
                    | "#isBitfield" "(" Type ")" [function]
                    | "#isFunction" "(" Type ")" [function]
                    | "#isFunctionPointer" "(" Type ")" [function]
@@ -193,15 +192,6 @@ module C-TYPING-PREDICATES
      rule #isIncompleteUnion(typedDeclaration(T:Type, _))
           => #isIncompleteUnion(T) 
           
-     rule #isExtern(t(Quals:Set, _)) => Extern in Quals
-     rule #isExtern(typedDeclaration(T:Type, _)) => #isExtern(T)
-          
-     rule #isStatic(t(Quals:Set, _)) => Static in Quals
-     rule #isStatic(typedDeclaration(T:Type, _)) => #isStatic(T)
-          
-     rule #isConst(t(Quals:Set, _)) => Const in Quals
-     rule #isConst(typedDeclaration(T:Type, _)) => #isConst(T)
-
      rule #isBitfield(t(_, bitfieldType(_, _))) => true 
      rule #isBitfield(typedDeclaration(T:Type, _)) => #isBitfield(T)
 

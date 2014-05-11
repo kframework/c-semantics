@@ -9,6 +9,8 @@ module C-DECL-INITIALIZER-SYNTAX
      // these are also used by compound literals
      syntax KResult ::= initValue(Id, Type, K)
 
+     syntax K ::= allowWrite(K) [strict]
+     syntax Type ::= initializerType(Type) [function]
 endmodule
 
 module C-DECL-INITIALIZER
@@ -23,6 +25,13 @@ module C-DECL-INITIALIZER
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+
+     rule allowWrite(lval(N:SymLoc, T:Type))
+          => lv(N, initializerType(T))
+          [structural]
+
+     rule initializerType(T:Type)
+          => addStorage(Initializer, stripConst(T))
 
      rule figureInit(X:Id, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
@@ -87,13 +96,7 @@ module C-DECL-INITIALIZER
      syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
      rule figureInit-aux(X:Id, T:Type, initializer(K:K))
           => initValue(X, T, K)
-          // I'd like to get rid of this cleanly
-          when isCompleteType(T) andBool notBool isConstType(T)
-          [structural]
-     rule figureInit-aux(X:Id, T:Type, initializer(K:K))
-          => initValue(X, T, (K ~> makeUnwritableVar(X)))
-          // I'd like to get rid of this cleanly
-          when isCompleteType(T) andBool isConstType(T)
+          when isCompleteType(T)
           [structural]
      
      // base types
@@ -484,15 +487,12 @@ module C-DECL-INITIALIZER
           when (S =/=String "") andBool isCharType(T)
           [structural]
           
-     syntax K ::= initHead(String, Type)
-     syntax K ::= initTail(String)
+     syntax K ::= initHead(String, Type) [function]
+     syntax K ::= initTail(String) [function]
      rule initHead(S:String, T:Type) 
-          => SingleInit(tv(ordChar(firstChar(S)), t(getModifiers(T), char)))
-          [structural, anywhere]
-     
+          => SingleInit(tv(ordChar(firstChar(S)), t(getQualifiers(T), char)))
      rule initTail(S:String) 
           => SingleInit(stringLiteral(butFirstChar(S)))
-          [structural, anywhere]
           
      rule <k> fillInit-aux(SingleInit(wstringLiteral(ListItem(N:Int) S:List)))
                => fillInit(SingleInit(tv(N, cfg:wcharut)))

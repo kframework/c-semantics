@@ -1,10 +1,9 @@
 module C-MEMORY-READING-SYNTAX
      // location, type
-     syntax K ::= read(SymLoc, K) [strict(2)]
+     syntax K ::= read(SymLoc, Type)
 
      // Returns the bytes in the order in which they are in memory.
-     syntax K ::= readBytes(SymLoc, Int) 
-     syntax K ::= readByte(SymLoc) 
+     syntax K ::= readBytes(SymLoc, Int, Type)
 
      syntax K ::= concretize(Type, K) [strict(2)] 
 
@@ -13,8 +12,6 @@ module C-MEMORY-READING-SYNTAX
 
      // TODO(chathhorn) used error check?
      syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
-     syntax K ::= "read-aux" "(" SymLoc "," Type "," CSize ")"
-          [klabel('read-aux)]
      
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
@@ -36,66 +33,31 @@ module C-MEMORY-READING
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     // loc, size in bits
-     syntax K ::= extractBitsFromMem(SymLoc, CSize)
-     
-     rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
-          => extractBitsFromList-aux(
-               dataList(explodeToBits(L:List)), N:Int, M:Int, .List)
-          [structural]
-     // fixme snat
-     rule extractBitsFromList-aux(
-               dataList(ListItem(piece(_, 1)) L:List), 
-               Offset:Int, NumBits:Int, .List)
-          => extractBitsFromList-aux(
-               dataList(L:List), 
-               Offset:Int -Int 1, NumBits:Int, .List)
-          when Offset:Int >Int 0
-          [structural] 
-     rule extractBitsFromList-aux(
-               dataList(ListItem(piece(N:Bits, 1)) L:List), 
-               0, NumBits:Int, Done:List)
-          => extractBitsFromList-aux(
-               dataList(L:List), 
-               0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
-          when NumBits >Int 0
-          [structural] 
-     
-     rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
-          [structural] 
-     
-     rule read(Loc:SymLoc, T:Type) 
-          => read-aux(Loc, T, bitSizeofType(T))
-          when notBool(isFunctionType(T))
-          [structural]
-     
-     syntax K ::= readActual(SymLoc, Type, CSize) [klabel('readActual)]
+     syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
      
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
-     rule [read-thread-local]:
-          read-aux(Loc:SymLoc, T:Type, Len:CSize) => readActual(Loc, T, Len)
+     rule read(Loc:SymLoc, T:Type) => readActual(Loc, T)
           when isThreadDuration(Loc)
           [structural]
-     rule [read-allocated]: // read data of "allocated" duration
-          read-aux(Loc:SymLoc, T:Type, Len:CSize) => readActual(Loc, T, Len)
+     rule  // read data of "allocated" duration
+          read(Loc:SymLoc, T:Type) => readActual(Loc, T)
           when notBool isThreadDuration(Loc)
+               andBool Loc =/=K NullPointer
           [ndtrans]
      
-     rule [read]:
-          readActual(Loc:SymLoc, T:Type, N:CSize)
-          => concretize(T, readBytes(Loc, bitsToBytes(N)))
+     rule readActual(Loc:SymLoc, T:Type)
+          => concretize(T, readBytes(Loc, byteSizeofType(T), T))
           when notBool isBitfieldType(T)
           [structural]
-     rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:Type, N:CSize)
-          => concretize(T, fillToBytes(extractBitsFromMem(Loc, N))) 
+     rule readActual(Loc:SymLoc, T:Type)
+          => concretize(T, fillToBytes(extractBitsFromMem(Loc, T))) 
           when isBitfieldType(T)
           [structural]
      
      syntax K ::= joinIntegerBytes(Type, List)
      rule concretize(T:Type, dataList(L:List)) 
-          => joinIntegerBytes(T, L) 
+          => joinIntegerBytes(T, L)
           when hasIntegerType(T) 
                andBool notBool isBitfieldType(T) 
           [structural]
@@ -111,21 +73,17 @@ module C-MEMORY-READING
      syntax K ::= interpret(Type, K) [function]
      syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
      
-     rule [interpret-start]:
-          interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
+     rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
      
-     rule [interpret-done]:
-          interpret-aux(T:Type, I:Int) => tv(I, T)
+     rule interpret-aux(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
                andBool (max(T) >=Int I)
                andBool hasIntegerType(T)
-     rule [interpret-too-big]:
-          interpret-aux(T:Type, I:Int) 
+     rule interpret-aux(T:Type, I:Int) 
           => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
           when (I:Int >Int max(T))
                andBool hasIntegerType(T)
-     rule [interpret-too-little]:
-          interpret-aux(T:Type, I:Int) 
+     rule interpret-aux(T:Type, I:Int) 
           => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
           when (I:Int <Int min(T))
                andBool hasIntegerType(T)
@@ -193,11 +151,40 @@ module C-MEMORY-READING
           => interpret(T, piece(N, Len)) 
           [structural]
      
-     rule extractBitsFromMem(Loc:SymLoc, Size:Int)
+     // loc, size in bits
+     syntax K ::= extractBitsFromMem(SymLoc, Type)
+     
+     rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
                readBytes(
-                    floorLoc(Loc), bitsToBytes(Size +Int getBitOffset(Loc))), 
-               getBitOffset(Loc), Size)
+                    floorLoc(Loc), bitsToBytes(bitSizeofType(T) +Int
+                    getBitOffset(Loc)), T), 
+               getBitOffset(Loc), bitSizeofType(T))
+          [structural] 
+
+     rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
+          => extractBitsFromList-aux(
+               dataList(explodeToBits(L:List)), N:Int, M:Int, .List)
+          [structural]
+     // fixme snat
+     rule extractBitsFromList-aux(
+               dataList(ListItem(piece(_, 1)) L:List), 
+               Offset:Int, NumBits:Int, .List)
+          => extractBitsFromList-aux(
+               dataList(L:List), 
+               Offset:Int -Int 1, NumBits:Int, .List)
+          when Offset:Int >Int 0
+          [structural] 
+     rule extractBitsFromList-aux(
+               dataList(ListItem(piece(N:Bits, 1)) L:List), 
+               0, NumBits:Int, Done:List)
+          => extractBitsFromList-aux(
+               dataList(L:List), 
+               0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
+          when NumBits >Int 0
+          [structural] 
+     
+     rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
           [structural] 
      
 endmodule

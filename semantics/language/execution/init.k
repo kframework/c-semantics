@@ -10,15 +10,16 @@ endmodule
 module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
-     imports C-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-LOCAL-SYNTAX
-     imports LIBC-IO-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports LIBC-IO-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
@@ -66,13 +67,14 @@ module C-EXECUTION-INIT
           => allocateType(argvLoc(N +Int 1), strType(S))
           ~> writeString(argvLoc(N +Int 1), S)
           ~> Computation(
-               Identifier("#incomingArgumentsArray")[N] 
+               allowWrite(Identifier("#incomingArgumentsArray")[N])
                     := lv(argvLoc(N +Int 1), strType(S)))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int) 
           => Computation(
-               Identifier("#incomingArgumentsArray")[N] := NullPointerConstant)
+               allowWrite(Identifier("#incomingArgumentsArray")[N])
+                    := NullPointerConstant)
           [structural]
           
      rule pgmArgs(L:List)
