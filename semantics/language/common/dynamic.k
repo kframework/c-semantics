@@ -19,8 +19,6 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
      
-     syntax Int ::= "NullPointerConstant" [function]
-
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax Value ::= TypedValue
@@ -67,8 +65,6 @@ module C-DYNAMIC
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
      rule type(lval(_, T:Type)) => T
-
-     rule NullPointerConstant => 0
 
      rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
           [structural, anywhere]

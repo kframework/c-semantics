@@ -80,10 +80,10 @@ module C-DECL-INITIALIZER
           when isWCharType(T)
           [structural] 
           
-     rule figureInit(X:Id, t(Se:Set, incompleteArrayType(T:Type)),
+     rule figureInit(X:Id, t(Mods:Set, incompleteArrayType(T:Type)),
                CompoundInit(list(ListItem(InitFragment(NextInit,
                SingleInit(stringLiteral(S:String)))))))
-          => figureInit(X, t(Se, incompleteArrayType(T)),
+          => figureInit(X, t(Mods, incompleteArrayType(T)),
                SingleInit(stringLiteral(S)))
           [structural] 
           
@@ -91,13 +91,6 @@ module C-DECL-INITIALIZER
      rule figureInit(X:Id, T:Type, initializer(K:K))
           => figureInit-aux(X, T, initializer(K))
           [structural] 
-
-     // id, type, initializer
-     syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
-     rule figureInit-aux(X:Id, T:Type, initializer(K:K))
-          => initValue(X, T, K)
-          when isCompleteType(T)
-          [structural]
      
      // base types
      rule figureInit(X:Id, T:Type, SingleInit(K:K))
@@ -112,6 +105,13 @@ module C-DECL-INITIALIZER
                initializer(Computation(allowWrite(X) := K)))
           when notBool (isAggregateType(T) orBool isUnionType(T))
           [structural] 
+
+     // id, type, initializer
+     syntax K ::= "figureInit-aux" "(" Id "," Type "," K ")" [strict(3)]
+     rule figureInit-aux(X:Id, T:Type, initializer(K:K))
+          => initValue(X, T, K)
+          when isCompleteType(T)
+          [structural]
                
      rule <k> figureInit-aux(_:Id, t(_, 
                     (incompleteArrayType(T:Type) 
@@ -157,15 +157,15 @@ module C-DECL-INITIALIZER
      syntax ListItem ::= "block"
      
      rule <curr-subobject> 
-               ListItem(te(K:K, t(S:Set, arrayType(T:Type, Len:CSize))))
+               ListItem(te(K:K, t(Mods:Set, arrayType(T:Type, Len:CSize))))
                => ListItem(te(K[0], T)) 
-                    ListItem(te(K, t(S, arrayType(T, Len))))
+                    ListItem(te(K, t(Mods, arrayType(T, Len))))
           ...</curr-subobject>
           [structural] 
      rule <curr-subobject> 
-               ListItem(te(K:K, t(Se:Set, incompleteArrayType(T:Type))))
+               ListItem(te(K:K, t(Mods:Set, incompleteArrayType(T:Type))))
                => ListItem(te(K[0], T))
-                    ListItem(te(K, t(Se, incompleteArrayType(T))))
+                    ListItem(te(K, t(Mods, incompleteArrayType(T))))
           ...</curr-subobject>
           [structural] 
      rule <curr-subobject> 
@@ -306,9 +306,6 @@ module C-DECL-INITIALIZER
           when isArrayType(T)
           [structural] 
      
-     // fixme these are also too restrictive on type.  if we try to assign an
-     // int to a long-int field, it will fail
-     // i don't think this is true anymore
      rule <k> buildDesignator(InFieldInit(F:Id, More:K)) 
                => buildDesignator(More)
           ...</k>
@@ -366,8 +363,8 @@ module C-DECL-INITIALIZER
           when (isBasicType(T) 
                     orBool isPointerType(T) 
                     orBool isBitfieldType(T))
-               andBool (notBool isStructType(T'))
-               andBool (notBool isUnionType(T'))
+               andBool notBool isStructType(T')
+               andBool notBool isUnionType(T')
           [structural]
      
      syntax K ::= possiblyMakeConst(Type, K)
@@ -480,18 +477,18 @@ module C-DECL-INITIALIZER
           when isWCharType(T)
           [structural]
      rule <k> fillInit-aux(SingleInit(stringLiteral(S:String)))
-               => fillInit(initHead(S, T))
+               => fillInit(initHead(S))
                ~> fillInit-aux(initTail(S))
           ...</k>
-          <curr-subobject> ListItem(te(_:K, T:Type)) ...</curr-subobject>
+          <curr-subobject> ListItem(te(_, T:Type)) ...</curr-subobject>
           when (S =/=String "") andBool isCharType(T)
           [structural]
           
-     syntax K ::= initHead(String, Type) [function]
+     syntax K ::= initHead(String) [function]
      syntax K ::= initTail(String) [function]
-     rule initHead(S:String, T:Type) 
-          => SingleInit(tv(ordChar(firstChar(S)), t(getQualifiers(T), char)))
-     rule initTail(S:String) 
+     rule initHead(S:String) 
+          => SingleInit(tv(ordChar(firstChar(S)), t(.Set, char)))
+     rule initTail(S:String)
           => SingleInit(stringLiteral(butFirstChar(S)))
           
      rule <k> fillInit-aux(SingleInit(wstringLiteral(ListItem(N:Int) S:List)))
@@ -499,7 +496,7 @@ module C-DECL-INITIALIZER
                     ~> fillInit-aux(SingleInit(wstringLiteral(S)))
           ...</k>
           <curr-subobject> 
-               ListItem(te(_:K, T:Type))
+               ListItem(te(_, T:Type))
           ...</curr-subobject>
           when isWCharType(T)
           [structural]
@@ -516,7 +513,7 @@ module C-DECL-INITIALIZER
                => initializeSingleInit(stringLiteral(S))
           ...</k>
           <curr-subobject> 
-               ListItem(te(_:K, T:Type)) 
+               ListItem(te(_, T:Type)) 
           ...</curr-subobject>
           when notBool isCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)
@@ -526,7 +523,7 @@ module C-DECL-INITIALIZER
                => initializeSingleInit(wstringLiteral(S))
           ...</k>
           <curr-subobject>
-               ListItem(te(_:K, T:Type))
+               ListItem(te(_, T:Type))
           ...</curr-subobject>
           when notBool isWCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)

@@ -45,54 +45,66 @@ module C-TYPING-COMPATIBILITY
                andBool (getQualifiers(T) ==Set getQualifiers(T'))
 
      rule #isCompat(
-               t(Quals:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, structType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, structType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, structType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, structType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, structType(X:Id, _, _)),
-               t(Quals:Set, incompleteStructType(X:Id)))
+               t(Mods:Set, structType(X:Id, _, _)),
+               t(Mods':Set, incompleteStructType(X:Id)))
           => true
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, incompleteStructType(X:Id)),
-               t(Quals:Set, structType(X:Id, _, _)))
+               t(Mods:Set, incompleteStructType(X:Id)),
+               t(Mods':Set, structType(X:Id, _, _)))
           => true
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, unionType(X:Id, _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, unionType(X:Id, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, unionType(X:Id, _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, unionType(X:Id, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, unionType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
-               t(Quals:Set, unionType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, unionType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, unionType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, unionType(X:Id, _, _)),
-               t(Quals:Set, incompleteUnionType(X:Id)))
+               t(Mods:Set, unionType(X:Id, _, _)),
+               t(Mods':Set, incompleteUnionType(X:Id)))
           => true
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, incompleteUnionType(X:Id)),
-               t(Quals:Set, unionType(X:Id, _, _)))
+               t(Mods:Set, incompleteUnionType(X:Id)),
+               t(Mods':Set, unionType(X:Id, _, _)))
           => true
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, arrayType(T:Type, N:Int)),
-               t(Quals:Set, arrayType(T':Type, N:Int)))
+               t(Mods:Set, arrayType(T:Type, N:Int)),
+               t(Mods':Set, arrayType(T':Type, N:Int)))
           => #isCompat(T, T')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, arrayType(T:Type, _)),
-               t(Quals:Set, incompleteArrayType(T':Type)))
+               t(Mods:Set, arrayType(T:Type, _)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
           => #isCompat(T, T')
+          when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, incompleteArrayType(T:Type)),
-               t(Quals:Set, arrayType(T':Type, _)))
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, arrayType(T':Type, _)))
           => #isCompat(T, T')
+          when sameQualifiers(Mods, Mods')
 
      rule #isCompat(
-               t(Quals:Set, pointerType(T:Type)),
-               t(Quals:Set, pointerType(T':Type)))
+               t(Mods:Set, pointerType(T:Type)),
+               t(Mods':Set, pointerType(T':Type)))
           => #isCompat(T, T')
+          when sameQualifiers(Mods, Mods')
           
      // Struct and union fields.
      rule #isCompat(
@@ -101,9 +113,9 @@ module C-TYPING-COMPATIBILITY
           => #isCompat(T, T')
 
      // TODO(chathhorn): left over from something?
-     // rule #isCompat(t(Quals:Set, pointerType(_)), T:Type) => true
+     // rule #isCompat(t(Mods:Set, pointerType(_)), T:Type) => true
      //      when hasIntegerType(T) 
-     // rule #isCompat(T:Type, t(Quals:Set, pointerType(_))) => true
+     // rule #isCompat(T:Type, t(Mods:Set, pointerType(_))) => true
      //      when hasIntegerType(T)
 
      // rule #isCompat(T:Type, t(S:Set, arrayType(T':Type, _)))
@@ -119,15 +131,17 @@ module C-TYPING-COMPATIBILITY
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments.
      rule #isCompat(
-               t(Quals:Set, functionType(T:Type, Args:List)),
-               t(Quals:Set, functionType(T':Type, Args':List)))
+               t(Mods:Set, functionType(T:Type, Args:List)),
+               t(Mods':Set, functionType(T':Type, Args':List)))
           => #isCompat(T, T') 
-          when (Args ==List .List) orBool (Args' ==List .List)
+          when ((Args ==List .List) orBool (Args' ==List .List))
+               andBool sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Quals:Set, functionType(T:Type,  L:List)),
-               t(Quals:Set, functionType(T':Type, L':List)))
+               t(Mods:Set, functionType(T:Type,  L:List)),
+               t(Mods':Set, functionType(T':Type, L':List)))
           => #isCompat(T, T') andBool #areParamsCompat(L, L')
-          when lengthList(L) ==Int lengthList(L')
+          when (lengthList(L) ==Int lengthList(L'))
+               andBool sameQualifiers(Mods, Mods')
 
      syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]
      rule #areParamsCompat(
@@ -141,5 +155,9 @@ module C-TYPING-COMPATIBILITY
           => #isCompat(T, T') andBool #areCompat(L, L')
      rule #areCompat(.List, .List) => true
 
+     syntax Bool ::= sameQualifiers(Set, Set) [function]
+     rule sameQualifiers(Mods:Set, Mods':Set)
+          => intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers)
 endmodule
 

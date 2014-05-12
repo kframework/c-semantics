@@ -84,21 +84,21 @@ module C-COMMON-EXPR-ADDITIVE
      operator that is evaluated.
      }*/
      
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':Type))) 
+     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
                + tv(I:Int, T:Type)
-          => addToPointer(Loc, t(S, pointerType(T')), I, sizeofType(T'))
+          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
           when hasIntegerType(T)
                andBool T' =/=K void
           [structural]
-     rule tv(I:Int, T:Type) 
-               + tv(Loc:SymLoc, t(S:Set, pointerType(T':Type)))
-          => addToPointer(Loc, t(S, pointerType(T')), I, sizeofType(T'))
+     rule tv(I:Int, T:Type)
+               + tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type)))
+          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
           when hasIntegerType(T)
                andBool T' =/=K void
           [structural]
-     rule tv(Loc:SymLoc, t(S:Set, pointerType(T':Type))) 
+     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
                - tv(I:Int, T:Type)
-          => addToPointer(Loc, t(S, pointerType(T')), 0 -Int I, sizeofType(T')) 
+          => addToPointer(Loc, t(Mods, pointerType(T')), 0 -Int I, sizeofType(T')) 
           when hasIntegerType(T)
                andBool T' =/=K void
           [structural]
@@ -110,9 +110,9 @@ module C-COMMON-EXPR-ADDITIVE
           
      syntax KResult ::= newFromArray(K, Int) [function]
      rule newFromArray(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) S:Set,
+               t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
                pointerType(T:Type)), I:Int) 
-          => t(SetItem(fromArray(Offset +Int I, Len)) S, pointerType(T))
+          => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
      rule newFromArray(T:Type, _) => T
           when notBool isFromArray(T)
 
@@ -159,13 +159,11 @@ module C-COMMON-EXPR-ADDITIVE
      // ptr1, ptr2, size of ptr type
      syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
           [strict(3)]
-     rule [start-pointer-difference]: 
-          tv(L1:SymLoc, t(_, pointerType(T:Type)))
+     rule tv(L1:SymLoc, t(_, pointerType(T:Type)))
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
-     rule [pointer-difference]: 
-          computePointerDifference(loc(Base:SymBase, Offset1:Int, 0),
+     rule computePointerDifference(loc(Base:SymBase, Offset1:Int, 0),
                loc(Base:SymBase, Offset2:Int, 0), tv(Size:Int, _))
           => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
           when (Offset1 -Int Offset2) %Int Size ==Int 0

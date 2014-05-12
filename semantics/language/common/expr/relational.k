@@ -236,23 +236,23 @@ module C-COMMON-EXPR-RELATIONAL
      rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':Type)
           when isPromoted(T)
                andBool isPointerType(T')
-               andBool (N ==K NullPointerConstant)
+               andBool isNullPointerConstant(tv(N, T))
           [structural]
      rule tv(_, T:Type) == (tv(N:Int, T':Type) => tv(NullPointer, T))
           when isPointerType(T) 
                andBool isPromoted(T')
-               andBool N ==K NullPointerConstant
+               andBool isNullPointerConstant(tv(N, T'))
           [structural]
      
      rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':Type)
           when isPromoted(T) 
                andBool isPointerType(T')
-               andBool N ==K NullPointerConstant
+               andBool isNullPointerConstant(tv(N, T))
           [structural]
      rule tv(_, T:Type) != (tv(N:Int, T':Type) => tv(NullPointer, T))
           when isPointerType(T) 
                andBool isPromoted(T')
-               andBool N ==K NullPointerConstant
+               andBool isNullPointerConstant(tv(N, T'))
           [structural]
 endmodule
 

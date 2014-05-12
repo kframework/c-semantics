@@ -2,7 +2,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
      syntax K ::= rkludge(K) [function, klabel('rkludge)]
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
-     syntax K ::= instantiateIdVal(SymLoc, Type)
+     syntax K ::= instantiate(SymLoc, Type)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -75,16 +75,18 @@ module C-COMMON-EXPR-EVAL
      an lvalue. If the array object has register storage class, the behavior is
      undefined.
      }*/
+     // TODO(chathhorn): register storage class
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
-               pointerType(innerType(T))))
+          => tv(Loc, stripQualifiers(arrayToPointer(T)))
           when isArrayType(T) 
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, arrayLength(T))),
-               pointerType(innerType(T))))
-          when isArrayType(T) 
-     // should never get to the situation where we have tv(..., arrayType)
-     
+          => tv(Loc, arrayToPointer(T))
+          when isArrayType(T)
+
+     syntax Type ::= arrayToPointer(Type) [function]
+     rule arrayToPointer(t(Mods:Set, T:SimpleType))
+          => t(Mods SetItem(fromArray(0, arrayLength(t(Mods, T)))),
+               pointerType(innerType(t(Mods, T))))
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
      A function designator is an expression that has function type.  Except
@@ -101,8 +103,8 @@ module C-COMMON-EXPR-EVAL
           when isFunctionType(T) 
 
      rule rkludge(lval(Loc:SymLoc, T:Type)) 
-          => instantiateIdVal(Loc, T)
-          when notBool isArrayType(T) 
+          => instantiate(Loc, T)
+          when notBool isArrayType(T)
                andBool notBool isFunctionType(T) 
           [structural]
      

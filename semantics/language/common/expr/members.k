@@ -21,44 +21,44 @@ module C-COMMON-EXPR-MEMBERS
                structType(S:Id, _, Fields:FieldInfo))) . F:Id
           => lookupField(F, Loc, Se, S, Fields, Fields)
           [structural]
-     rule lval(Loc:SymLoc, t(Se:Set,
+     rule lval(Loc:SymLoc, t(Mods:Set,
                unionType(S:Id, _, Fields:FieldInfo))) . F:Id
-          => lookupField(F, Loc, Se SetItem(fromUnion(Loc, F, Fields)), S, Fields, Fields)
+          => lookupField(F, Loc,
+               stripUnionMarker(Mods) SetItem(fromUnion(Loc, F, Fields)),
+               S, Fields, Fields)
           [structural]
 
      // The last two parameters are for convenience and should be the same.
-     // TODO(chathhorn): it would be nice to have a way to tag pieces of syntax
-     // that we've also decomposed (like @X in haskell).
      syntax K ::= lookupField(Id, SymLoc, Set, Id, FieldInfo, FieldInfo)
           [function]
 
-     rule lookupField(F:Id, Loc:SymLoc, Se:Set, S:Id, Fields:FieldInfo,
+     rule lookupField(F:Id, Loc:SymLoc, Mods:Set, S:Id, Fields:FieldInfo,
           fieldInfo(_,
-               F |-> t(Se':Set, T':SimpleType) _,
+               F |-> t(Mods':Set, T':SimpleType) _,
                F |-> Offset:Int _))
           // Complete recursive struct/union definitions.
-          => lv(Loc +bits Offset, completeTag(S, Fields, t(Se Se', T')))
+          => lv(Loc +bits Offset, completeTag(S, Fields, t(Mods Mods', T')))
 
      // Same deal as above, only for byte lists.
-     rule tv(agg(L:List), t(Se:Set,
+     rule tv(agg(L:List), t(Mods:Set,
                structType(S:Id, _, Fields:FieldInfo))) . F:Id
-          => extractField(F, L, Se, S, Fields, Fields)
+          => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
-     rule tv(agg(L:List), t(Se:Set,
+     rule tv(agg(L:List), t(Mods:Set,
                unionType(S:Id, _, Fields:FieldInfo))) . F:Id
-          => extractField(F, L, Se, S, Fields, Fields)
+          => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
 
      syntax K ::= extractField(Id, List, Set, Id, FieldInfo, FieldInfo)
           [function]
      
-     rule extractField(F:Id, L:List, Se:Set, S:Id, Fields:FieldInfo,
+     rule extractField(F:Id, L:List, Mods:Set, S:Id, Fields:FieldInfo,
           fieldInfo(_,
-               F |-> t(Se':Set, T':SimpleType) _,
+               F |-> t(Mods':Set, T':SimpleType) _,
                F |-> Offset:Int _))
-          => concretize(completeTag(S, Fields, t(Se Se', T')),
+          => concretize(completeTag(S, Fields, t(Mods Mods', T')),
                fillToBytes(extractBitsFromList(dataList(L), Offset,
-                    bitSizeofType(completeTag(S, Fields, t(Se Se', T'))))))
+                    bitSizeofType(completeTag(S, Fields, t(Mods Mods', T'))))))
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an
@@ -92,8 +92,7 @@ module C-COMMON-EXPR-MEMBERS
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule [array-subscript]:
-          E1:K[E2:K] => *(E1 + E2) 
+     rule E1:K[E2:K] => *(E1 + E2) 
           [structural]
 
 endmodule

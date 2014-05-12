@@ -46,6 +46,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isVoidType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
 
+     syntax Set ::= "typeQualifiers" [function]
+     syntax Set ::= "storageSpecifiers" [function]
+
      syntax CSize ::= Int
      syntax CValue ::= CSize
      
@@ -135,9 +138,12 @@ module C-TYPING-SYNTAX
 
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
-     syntax K ::= fromUnion(SymLoc, Id, FieldInfo)
+     syntax K ::= fromUnion(SymLoc, Id, FieldInfo) [klabel('fromUnion)]
      syntax Bool ::= hasUnionMarker(Type) [function]
+     syntax Set ::= stripUnionMarker(Set) [function]
 
+     syntax Bool ::= isNullPointerConstant(TypedValue) [function]
+     syntax Bool ::= fromConstantExpr(Type) [function]
 endmodule
 
 module C-TYPING

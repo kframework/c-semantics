@@ -85,11 +85,20 @@ module C-DECL-LOCAL
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
-          => initLocalStatic(X,
+          => checkComplete(X, T, K)
+          ~> initLocalStatic(X,
                allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
+          [structural] 
+
+     rule declareInternalVariable(X:Id, T:Type, K:K)
+          => checkComplete(X, T, K)
+          ~> addToEnv(X, symVal)
+          ~> defineAndInit(X, stripStorageSpecifiers(T), 
+               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
+          when isNaked(T)
           [structural] 
 
      syntax K ::= initLocalStatic(Id, K) [strict(2)] 
@@ -112,7 +121,7 @@ module C-DECL-LOCAL
           when notBool (kpair(X, BlockNum) in keys LocalStatics)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
-     rule <k> (.K => ERROR("DL2","Redeclaration of " +String idToString(X)
+     rule <k> (.K => ERROR("DL4","Redeclaration of " +String idToString(X)
                     +String " with no linkage."))
                ~> initLocalStatic(X:Id, _)
           ...</k>
@@ -127,13 +136,6 @@ module C-DECL-LOCAL
           </local-types>
           when (kpair(X, BlockNum) in keys LocalStatics)
                orBool (kpair(X, BlockNum) in keys LocalTypes)
-          [structural] 
-
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => addToEnv(X, symVal)
-          ~> defineAndInit(X, stripStorageSpecifiers(T), 
-               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
-          when isNaked(T)
           [structural] 
           
      syntax K ::= defineAndInit(Id, Type, K) [strict(3)] 

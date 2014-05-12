@@ -17,6 +17,9 @@ module C-DECL-GLOBAL-SYNTAX
      syntax K ::= updateDecl(Id, DeclState, Linkage)
      syntax K ::= updateLinkState(Id, Type, SymLoc)
      syntax K ::= allocateDecl(Id, Type, SymLoc)
+
+     // Checks if the type is complete if there's an initializer.
+     syntax K ::= checkComplete(Id, Type, K)
 endmodule
 
 module C-DECL-GLOBAL
@@ -55,7 +58,7 @@ module C-DECL-GLOBAL
           when F =/=K file-scope
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
-               andBool getQualifiers(T) ==Set .Set
+               andBool (getQualifiers(T) ==Set .Set)
           [structural] 
           
      rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
@@ -270,7 +273,8 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => declareExternalVariable'(
+               => checkComplete(X, T, K)
+               ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
                     Loc, State, internal, 
                     #if isExtern(T) #then Extern #else Static #fi)
@@ -300,7 +304,8 @@ module C-DECL-GLOBAL
 
      // Naked, previously declared extern.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => checkComplete(X, T, K)
+               ~> addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -319,7 +324,8 @@ module C-DECL-GLOBAL
 
      // Extern, previously declared extern.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => checkComplete(X, T, K)
+               ~> addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -350,7 +356,8 @@ module C-DECL-GLOBAL
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => checkComplete(X, T, K)
+               ~> addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -372,7 +379,8 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => checkComplete(X, T, K)
+               ~> addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -754,5 +762,14 @@ module C-DECL-GLOBAL
           [structural]
      rule allowInit' => setInitializing(false)
           [structural]
+
+     rule checkComplete(_, _, NoInit) => .
+     rule checkComplete(_, T:Type, _) => .
+          when isCompleteType(T) orBool isArrayType(T)
+     rule (.K => ERROR("DG12", "declaration of " +String idToString(X)
+               +String " has initializer but incomplete type."))
+          ~> checkComplete(X:Id, T:Type, K:K)
+          when (K =/=K NoInit)
+               andBool notBool (isCompleteType(T) orBool isArrayType(T))
 
 endmodule

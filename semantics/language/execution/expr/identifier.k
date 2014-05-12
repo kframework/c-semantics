@@ -11,14 +11,12 @@ module C-EXPR-IDENTIFIER
      designating an object (in which case it is an lvalue) or a function (in
      which case it is a function designator).
      }*/
-     rule [lookup]:
-          <k> X:Id => lv(Loc, T) ...</k>
+     rule <k> X:Id => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
 
-     rule instantiateIdVal(L:SymLoc, T:Type) => read(L, T)
+     rule instantiate(L:SymLoc, T:Type) => read(L, T)
           [structural]
-
 endmodule
 

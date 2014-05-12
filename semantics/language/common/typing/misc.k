@@ -1,11 +1,13 @@
 module C-TYPING-MISC
      imports C-TYPING-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+
      imports COMPAT-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
@@ -42,14 +44,11 @@ module C-TYPING-MISC
 
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
 
-     rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int))
+     rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
-     rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int))
+     rule correspondingUnsignedType(t(S:Set, long-int))
           => t(S, unsigned-long-int)
-     rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int))
+     rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
@@ -133,14 +132,12 @@ module C-TYPING-MISC
           => intersectSet(getModifiers(T), storageSpecifiers)
 
      // These are the only actual members "type qualifier" syntactic class.
-     syntax Set ::= "typeQualifiers" [function]
      rule typeQualifiers =>
           SetItem(Const)
           SetItem(Restrict)
           SetItem(Volatile)
           SetItem(Atomic)
 
-     syntax Set ::= "storageSpecifiers" [function]
      rule storageSpecifiers =>
           SetItem(Static)
           SetItem(Extern)
@@ -285,9 +282,28 @@ module C-TYPING-MISC
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
-     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
+     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
 
-     syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
+     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+
+     rule #isNPC(tv(0, T:Type)) => true
+          when hasIntegerType(T)
+               andBool fromConstantExpr(T)
+
+     rule #isNPC(tv(NullPointer, T:Type)) => true
+          when isPointerType(T)
+               andBool (innerType(T) ==K void)
+               andBool fromConstantExpr(T)
+
+     // TODO(chathhorn)
+     rule fromConstantExpr(T:Type) => true
+
+     rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
+          => stripUnionMarker(S)
+     rule stripUnionMarker(SetItem(K:K) S:Set)
+          => SetItem(K) stripUnionMarker(S)
+          when getKLabel(K) =/=KLabel 'fromUnion
+     rule stripUnionMarker(.Set) => .Set
+
 endmodule
 

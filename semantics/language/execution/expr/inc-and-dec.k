@@ -21,12 +21,10 @@ module C-EXPR-INC-AND-DEC
      with atomic type is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/  
-     rule [post-increment-start]:
-          lval(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
+     rule lval(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
           [structural]
-     rule [post-increment]:
-          postInc(Loc:SymLoc, tv(V:K, T:Type), T:Type)
-          => lv(Loc, T) := tv(V, T) + tv(1, t(.Set, int))
+     rule postInc(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
+          => lv(Loc, T') := tv(V, T) + tv(1, t(.Set, int))
                ~> discard ~> tv(V, T)
           [structural]
           
@@ -35,12 +33,10 @@ module C-EXPR-INC-AND-DEC
      operator, except that the value of the operand is decremented (that is,
      the value 1 of the appropriate type is subtracted from it).
      }*/  
-     rule [post-decrement-start]:
-          lval(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
+     rule lval(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
           [structural]
-     rule [post-decrement]:
-          postDec(Loc:SymLoc, tv(V:K, T:Type), T:Type)
-          => lv(Loc, T) := tv(V, T) - tv(1, t(.Set, int))
+     rule postDec(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
+          => lv(Loc, T') := tv(V, T) - tv(1, t(.Set, int))
                ~> discard ~> tv(V, T)
           [structural]
      
@@ -52,12 +48,12 @@ module C-EXPR-INC-AND-DEC
      assignment for information on constraints, types, side effects, and
      conversions and the effects of operations on pointers.
      }*/
-     rule ++ E:K => E:K += tv(1, t(.Set, int)) [structural]
+     rule ++ E:K => E += tv(1, t(.Set, int)) [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{3}}}{
      The prefix \cinline{--} operator is analogous to the prefix \cinline{++}
      operator, except that the value of the operand is decremented.
      }*/
-     rule -- E:K => E:K -= tv(1, t(.Set, int)) [structural]
+     rule -- E:K => E -= tv(1, t(.Set, int)) [structural]
 
 endmodule

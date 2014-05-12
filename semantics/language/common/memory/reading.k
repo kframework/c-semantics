@@ -65,35 +65,12 @@ module C-MEMORY-READING
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
           [structural]
           
-     // fixme not sure about this
-     // interpret is used to "cast" values read from memory
-     // shouldn't need to do the < min one since values start positive
-
-     // interpret the values of reading from mem
-     syntax K ::= interpret(Type, K) [function]
-     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
-     
-     rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     
-     rule interpret-aux(T:Type, I:Int) => tv(I, T)
-          when (min(T) <=Int I) 
-               andBool (max(T) >=Int I)
-               andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
-          when (I:Int >Int max(T))
-               andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
-          when (I:Int <Int min(T))
-               andBool hasIntegerType(T)
-          
      // FIXME very unsafe, not checking size of list or its contents
-     rule concretize(T:KResult, dataList(
-               ListItem(piece(encodedFloat(F:Float), Len:Int)) _:List)) 
-          => tv(F:Float, T:KResult)
-          when isFloatType(T:KResult)
-               andBool (Len:Int ==Int cfg:bitsPerByte)
+     rule concretize(T:Type, dataList(
+               ListItem(piece(encodedFloat(F:Float), Len:Int)) _)) 
+          => tv(F:Float, stripQualifiers(T))
+          when isFloatType(T)
+               andBool (Len ==Int cfg:bitsPerByte)
           [structural]
 
      syntax K ::= joinPointerBytes(Type, List)
@@ -115,41 +92,58 @@ module C-MEMORY-READING
           when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
           [structural]
-     rule joinPointerBytes-aux(T:KResult, .List, subObject(N:SymLoc, 0, _:Int))
-          => checkValidLoc(N) ~> tv(N, T:KResult)
+     rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _:Int))
+          => checkValidLoc(N) ~> tv(N, stripQualifiers(T))
           [structural]
 
-     rule concretize(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), dataList(L:List)) 
-          => tv(agg(L), t(S, structType(X, NBits, Info))) 
-          [structural]
-     rule concretize(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), dataList(L:List)) 
-          => tv(agg(L), t(S, unionType(X, NBits, Info)))
+     rule concretize(T:Type, dataList(L:List)) 
+          => tv(agg(L), stripQualifiers(T))
+          when isStructType(T) orBool isUnionType(T)
           [structural]
 
      // FIXME assuming bytes?
-     rule [joinIntegerBytes-start]:
-          joinIntegerBytes(T:Type, L:List) 
+     rule joinIntegerBytes(T:Type, L:List) 
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 
           [structural]
      
      // fixme may want to consider restricting further, or loosening
-     rule [joinIntegerBytes-unknown-char]:
-          joinIntegerBytes-aux(T:Type, 
+     rule joinIntegerBytes-aux(T:Type, 
                ListItem(piece(unknown(Len:Int), Len:Int)), piece(0, 0))
-          => tv(piece(unknown(Len), Len), T)
+          => tv(piece(unknown(Len), Len), stripQualifiers(T))
           when isCharType(T)
           [structural]
      
-     rule [joinIntegerBytes-step]:
-          joinIntegerBytes-aux(T:Type, 
+     rule joinIntegerBytes-aux(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
           [structural]
-     rule [joinIntegerBytes-done]:
-          joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
-          => interpret(T, piece(N, Len)) 
+     rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
+          => interpret(stripQualifiers(T), piece(N, Len)) 
           [structural]
+
+     // fixme not sure about this
+     // interpret is used to "cast" values read from memory
+     // shouldn't need to do the < min one since values start positive
+
+     // interpret the values of reading from mem
+     syntax K ::= interpret(Type, K) [function]
+     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
+     
+     rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
+     
+     rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
+          when (min(T) <=Int I) 
+               andBool (max(T) >=Int I)
+               andBool hasIntegerType(T)
+     rule interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
+          when (I:Int >Int max(T))
+               andBool hasIntegerType(T)
+     rule interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
+          when (I:Int <Int min(T))
+               andBool hasIntegerType(T)
      
      // loc, size in bits
      syntax K ::= extractBitsFromMem(SymLoc, Type)
