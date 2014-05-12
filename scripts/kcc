@@ -50,7 +50,6 @@ my $spec = q(#
 { push(@main::cppIncludeDirs, " -I$dir "); }
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
-      -p			Profile parsing.
       #-verbose			Do not delete intermediate files.
       -w			Do not print warning messages.
       <files>...		C files to be compiled. [required]
@@ -77,7 +76,7 @@ sub main {
      my @stdlib = ();
      push(@stdlib, catfile($myDirectory, 'lib', 'libc.o'));
 
-     $args->parse() or die "Failed to parse the command line.";
+     $args->parse() or die "Failed to parse the command line.\n";
 
      if ($args->{'-c'}) {
           for (@{$args->{'<files>'}}) {
@@ -86,7 +85,7 @@ sub main {
 
           if ($args->{'-o'}) {
                move($objFiles[0], $args->{'-o'}) 
-                    or die "Failed to move the generated program to its destination $args->{'-o'}: $!";
+                    or die "Failed to move the generated program to its destination $args->{'-o'}: $!\n";
           }
 
           return 0;
@@ -116,7 +115,7 @@ sub main {
      if (defined $unppSourceFile) {
           $sourceFile = preprocess($args->{'-w'}, $unppSourceFile);
           (-e $sourceFile)
-               or die "Parsing failed for $unppSourceFile.";
+               or die "Parsing failed for $unppSourceFile.\n";
      }
 
      for (@srcFiles) {
@@ -210,11 +209,11 @@ sub main {
      print $cmd_pretty . "\n" if ($args->{'-d'});
      system($cmd_pretty) if ($args->{'-d'});
 
-     open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!";
+     open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
      my $programRunner = join("", <FILE>);
      close(FILE);
 
-     open(FILE, $confOutTmp) or die "Couldn't open file: $!";
+     open(FILE, $confOutTmp) or die "Couldn't open file: $!\n";
      binmode(FILE, ':raw');
      my $programConf = join("", <FILE>);
      close(FILE);
@@ -229,12 +228,10 @@ sub main {
      if (!checkTransSuccess($linkStdout)) {
           print "Error during translation.\n";
           if ($args->{'-d'}) {
-               print "Final configuration saved to $confOutPrettyTmp.\n";
+               die "Final configuration saved to $confOutPrettyTmp.\n";
           } else {
-               print "Command line: $cmd\n";
-               print "Use \"kcc -d\" to get the final configuration.\n";
+               die "Use \"kcc -d\" to get the final configuration.\n";
           }
-          die();
      }
 
      $programRunner = performSpecializations($programRunner);
@@ -246,12 +243,12 @@ sub main {
      close($programRunnerTmp);
 
      copy("$programRunnerTmp", $oval)
-          or die "Failed to move the generated program to its destination $oval: $!";
+          or die "Failed to move the generated program to its destination $oval: $!\n";
 
      my $numFilesChanged = chmod(0755, $oval);
 
      ($numFilesChanged == 1)
-          or die "Call to chmod $oval failed";
+          or die "Call to chmod $oval failed\n";
 
      return 0;
 }
@@ -332,9 +329,8 @@ sub mergeObjs {
           system($cmd);
 
           if (!checkTransSuccess($mergeStdout)) {
-               print "Error merging object files: $obj1, $obj2\n";
                print "Command line: $cmd\n";
-               die();
+               die "Error merging object files: $obj1, $obj2\n";
           }
 
           unshift(@objFiles, $obj1);
@@ -361,7 +357,7 @@ sub compile {
      my $inputFile = rel2abs($file);
 
      (-e $inputFile)
-          or die "kcc: $file: No such file or directory";
+          or die "kcc: $file: No such file or directory.\n";
 
      my ($baseName, $inputDirectory, $suffix) = 
           fileparse($inputFile, ('\.c', '\.o', '\.a'));
@@ -372,7 +368,7 @@ sub compile {
      my $ppResult = preprocess($args->{'-w'}, $inputFile);
 
      (-e $ppResult)
-          or die "Parsing failed: expected to find $baseName.c11-translation, but did not";
+          or die "Parsing failed: expected to find $baseName.c11-translation, but did not.\n";
 
      my $compileStdout = File::Temp->new( 
           TEMPLATE => 'tmp-kcc-compile-stdout-XXXX', 
@@ -422,12 +418,10 @@ sub compile {
      if (!checkTransSuccess($compileStdout)) {
           print "Error during translation: $localOval\n";
           if ($args->{'-d'}) {
-               print "Final configuration saved to $localOvalPretty.\n";
+               die "Final configuration saved to $localOvalPretty.\n";
           } else {
-               print "Command line: $cmd\n";
-               print "Use \"kcc -d\" to get the final configuration.\n";
+               die "Use \"kcc -d\" to get the final configuration.\n";
           }
-          die();
      }
 }
 
@@ -437,13 +431,6 @@ sub preprocess {
      my $PEDANTRY_OPTIONS = 
           "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
      my $CPP_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
-
-     my $K_PROGRAM_COMPILE;
-     if ($args->{'-p'}) {
-          $K_PROGRAM_COMPILE = "perl -d:DProf $xmlToK";
-     } else {
-          $K_PROGRAM_COMPILE = "perl $xmlToK";
-     }
 
      my $compilationLog = File::Temp->new( 
           TEMPLATE => 'tmp-kcc-parsing-XXXX', 
@@ -457,7 +444,7 @@ sub preprocess {
      my $ppResult = "$filename.c11-translation";
 
      (-e $fullfilename)
-          or die "$filename.c not found";
+          or die "$filename.c not found.";
 
      my $cppCommand = 
           "gcc $PEDANTRY_OPTIONS $CPP_OPTIONS @main::cppDefines @main::cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
@@ -473,7 +460,7 @@ sub preprocess {
      if ($retval) {
           print STDERR "Error running preprocessor:\n";
           print STDERR join("\n", @lines);
-          die();
+          die "Translation failed.\n"
      }
      if (! $nowarn) {
           print join("\n", @lines);
@@ -489,34 +476,30 @@ sub preprocess {
           unlink("$filename.gen.parse.tmp");
           print STDERR "Error running C parser:\n";
           print STDERR join("\n", @lines);
-          die();            
+          die "Translation failed.\n"
      }
      if (! $nowarn) {
           print join("\n", @lines);
      }
      move("$filename.gen.parse.tmp", "$filename.gen.parse") 
-          or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!";
+          or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!\n";
 
      push(@tempFiles, "$filename.gen.parse");
 
      $retval = 
-          system("cat $filename.gen.parse | $K_PROGRAM_COMPILE 2> $compilationLog 1> $ppResult");
+          system("cat $filename.gen.parse | $xmlToK 2> $compilationLog 1> $ppResult");
 
      push(@tempFiles, $ppResult);
 
      open FILE, "$compilationLog" 
-          or die "Could not open $compilationLog";
+          or die "Could not open $compilationLog.\n";
      @lines = <FILE>;
      close FILE;
 
      if ($retval) {
           print STDERR "Error compiling program:\n";
           print STDERR join("\n", @lines);
-          die();
-     }
-
-     if ($args->{'-p'}) {
-          print `dprofpp`;
+          die "Translation failed.\n"
      }
 
      return $ppResult;

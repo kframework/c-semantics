@@ -179,10 +179,10 @@ sub main {
             if (defined $ENV{GRAPH}) {
                   print "Generating graph...\n";
                   system("dot -Tps2 $graphOutputFile > kcc-search-results.ps") == 0 
-                        or die "Running dot failed: $?";
+                        or die "Running dot failed: $?\n";
                   print "Generated kcc-search-results.ps.\n";
                   system("ps2pdf kcc-search-results.ps kcc-search-results.pdf") == 0 
-                        or die "Running ps2pdf failed: $?";
+                        or die "Running ps2pdf failed: $?\n";
                   print "Generated kcc-search-results.pdf\n";
             }
             return 0;
