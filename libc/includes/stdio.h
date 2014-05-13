@@ -3,7 +3,7 @@
 #include <kcc_settings.h>
 #include <stddef.h>
 
-typedef struct {
+typedef struct FILE_ {
 	unsigned long long int offset;
 	unsigned short handle;
 	unsigned char eof;

@@ -15,11 +15,11 @@
 typedef int cnd_t;
 typedef int thrd_t;
 typedef int tss_t;
-typedef struct { int id; int type; thrd_t owner; int owned; int flag; int alive; } mtx_t;
+typedef struct mtx_t_ { int id; int type; thrd_t owner; int owned; int flag; int alive; } mtx_t;
 typedef void (*tss_dtor_t)(void*);
 typedef int (*thrd_start_t)(void*);
 typedef int once_flag;
-typedef struct {time_t sec; long nsec;} xtime;
+typedef struct xtime_ {time_t sec; long nsec;} xtime;
 // which is a structure type that holds a time specified in seconds and
 // nanoseconds. 
 
