@@ -103,29 +103,11 @@ module C-TYPING-INTERPRETATION
           [structural, anywhere]
 
      syntax List ::= adjustParams(List) [function]
-     syntax Type ::= adjustParam(Type) [function]
-     // syntax Type ::= adjustDeclParams(Type) [function]
-     // rule adjustDeclParams(typedDeclaration(T:Type, X:Id))
-     //      => typedDeclaration(adjustDeclParams(T), X)
-     // rule adjustDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
-     //      => t(Mods, functionType(adjustDeclParams(R), adjustParams(Params)))
-     // rule adjustDeclParams(t(Mods:Set, arrayType(T:Type, N:CSize)))
-     //      => t(Mods, arrayType(adjustDeclParams(T), N))
-     // rule adjustDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
-     //      => t(Mods, incompleteArrayType(adjustDeclParams(T)))
-     // rule adjustDeclParams(t(Mods:Set, pointerType(T:Type)))
-     //      => t(Mods, pointerType(adjustDeclParams(T)))
-     // rule adjustDeclParams(T:Type) => T
-     //      when notBool isTypedDeclaration(T)
-     //           andBool notBool isFunctionType(T)
-     //           andBool notBool isArrayType(T)
-     //           andBool notBool isIncompleteArrayType(T)
-     //           andBool notBool isPointerType(T)
-
      rule adjustParams(ListItem(T:Type) Params:List)
           => ListItem(adjustParam(T)) adjustParams(Params)
      rule adjustParams(.List) => .List
 
+     syntax Type ::= adjustParam(Type) [function]
      rule adjustParam(typedDeclaration(T:Type, X:Id))
           => typedDeclaration(adjustParam(T), X)
      rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
