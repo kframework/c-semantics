@@ -12,7 +12,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
      rule tv(V:K, T:Type) <= tv(V':K, T':Type) 
@@ -21,7 +21,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
      rule tv(V:K, T:Type) > tv(V':K, T':Type) 
@@ -30,7 +30,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
      rule tv(V:K, T:Type) >= tv(V':K, T':Type) 
@@ -39,7 +39,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
      rule tv(V:K, T:Type) == tv(V':K, T':Type) 
@@ -48,7 +48,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
      rule tv(V:K, T:Type) != tv(V':K, T':Type) 
@@ -57,7 +57,7 @@ module C-EXPR-RELATIONAL
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==K T') andBool isPromoted(T))
-                    orBool ((T ==K T') andBool isFloatType(T))
+                    orBool ((T ==K T') andBool hasFloatType(T))
                )
           [structural]
           

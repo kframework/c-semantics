@@ -10,6 +10,7 @@ module C-TYPING-SYNTAX
      syntax K ::= typeof(K)
      syntax Id ::= typedef(Id)
      syntax Id ::= unnamed(Int, String)
+     syntax Id ::= vararg(Int)
 
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
@@ -19,7 +20,8 @@ module C-TYPING-SYNTAX
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)] 
 
-     syntax Bool ::= isTypeCompatible(Type, Type) [function]
+     syntax Bool ::= areCompatibleTypes(Type, Type) [function]
+     syntax Type ::= compositeType(Type, Type) [function]
      
      syntax Bool ::= isCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
@@ -42,7 +44,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isArithmeticType(Type) [function]
-     syntax Bool ::= isFloatType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
 
@@ -100,6 +101,8 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isBasicType(K) [function]
 
+     syntax List ::= getParams(Type) [function]
+
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
 
@@ -112,6 +115,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
+     syntax Bool ::= hasFloatType(Type) [function]
 
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]
@@ -120,6 +124,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
+     syntax Type ::= addQualifiers(Set, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, Id) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
@@ -131,7 +136,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= completeTag(Id, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax K ::= completeTags(Type)
+     syntax K ::= completeTags(K) [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
@@ -144,6 +149,8 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isNullPointerConstant(TypedValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
+
+     syntax List ::= idsFromParams(List) [function]
 endmodule
 
 module C-TYPING

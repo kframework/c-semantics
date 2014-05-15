@@ -107,6 +107,8 @@ module C-TYPING-MISC
      rule min(t(_, enumType(_:Id))) => cfg:enumMin
      rule max(t(_, enumType(_:Id))) => cfg:enumMax
 
+     rule getParams(t(_, functionType(_, P:List))) => P
+
      // Returns both type qualifiers and storage class specifiers.
      syntax Set ::= getModifiers(Type) [function]
      rule getModifiers(t(S:Set, _)) => S
@@ -118,12 +120,12 @@ module C-TYPING-MISC
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
-     rule getQualifiers(t(_, arrayType(T:Type, _)))
-          => getQualifiers(T)
-     rule getQualifiers(t(_, incompleteArrayType(T:Type)))
-          => getQualifiers(T)
-     rule getQualifiers(t(_, flexibleArrayType(T:Type)))
-          => getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
           when notBool isArrayType(T)
@@ -150,11 +152,11 @@ module C-TYPING-MISC
           // Also typedef, technically.
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
-          => t(Mods, arrayType(stripQualifiers(T), N))
+          => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, incompleteArrayType(stripQualifiers(T)))
+          => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
-          => t(Mods, flexibleArrayType(stripQualifiers(T)))
+          => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           when notBool isArrayType(T)
@@ -164,18 +166,27 @@ module C-TYPING-MISC
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
-     rule addQualifier(Q:CVSpecifier, t(Mods:Set, arrayType(T:Type, N:Int)))
-          => t(Mods, arrayType(addQualifier(Q, T), N))
-     rule addQualifier(Q:CVSpecifier, t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, incompleteArrayType(addQualifier(Q, T)))
-     rule addQualifier(Q:CVSpecifier, t(Mods:Set, flexibleArrayType(T:Type)))
-          => t(Mods, flexibleArrayType(addQualifier(Q, T)))
-     rule addQualifier(Q:CVSpecifier, T:Type) => addModifier(Q, T)
+     rule addQualifier(Q:CVSpecifier, T:Type)
+          => addQualifiers(SetItem(Q), T)
+
+     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:Int)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               arrayType(addQualifiers(Quals, T), N))
+     rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               incompleteArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               flexibleArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           when notBool isArrayType(T)
 
      syntax Type ::= addModifier(Modifier, Type) [function]
-     rule addModifier(M:Modifier, t(Mods:Set, T:SimpleType))
-          => t(SetItem(M) Mods, T)
+     rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
+
+     syntax Type ::= addModifiers(Set, Type) [function]
+     rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
+          => t(Mods' Mods, T)
           
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
@@ -304,6 +315,24 @@ module C-TYPING-MISC
           => SetItem(K) stripUnionMarker(S)
           when getKLabel(K) =/=KLabel 'fromUnion
      rule stripUnionMarker(.Set) => .Set
+
+     rule idsFromParams(
+               ListItem(typedDeclaration(t(_, T:SimpleType), X:Id)) L:List )
+          => ListItem(X) idsFromParams(L)
+          when T =/=K void
+     rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
+     rule idsFromParams(ListItem(variadic)) => .List
+     rule idsFromParams(.List) => .List
+     // rule idsFromParams(
+     //           L:List
+     //           ListItem(typedDeclaration(T:Type, X:Id))
+     //           ListItem(variadic))
+     //      => idsFromParams(
+     //           L
+     //           ListItem(typedDeclaration(T, X)))
+     //           // assumes variadic args are placed in incremental blocks
+     //           // TODO(chathhorn)
+     //           ListItem(vararg(incSymbolic(&(X))))
 
 endmodule
 

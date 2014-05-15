@@ -1,8 +1,8 @@
 module C-BUILTIN-SYNTAX
 
      syntax Set ::= "builtins" [function]
-     syntax Value ::= builtinPrototype(Id, Type)
-     syntax K ::= handleBuiltin(Id, Type)
+     syntax Value ::= builtinPrototype(Id)
+     syntax K ::= handleBuiltin(List)
 
 endmodule
 

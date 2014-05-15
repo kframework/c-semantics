@@ -13,8 +13,8 @@ module C-EXPR-CONVERSION
           when hasIntegerType(T) orBool isBitfieldType(T)
      
      rule cast(T:Type, tv(symVal, T':Type)) => tv(symVal, T)
-          when (hasIntegerType(T') orBool isBitfieldType(T') orBool isFloatType(T'))
-               andBool (hasIntegerType(T) orBool isBitfieldType(T) orBool isFloatType(T))
+          when (hasIntegerType(T') orBool isBitfieldType(T') orBool hasFloatType(T'))
+               andBool (hasIntegerType(T) orBool isBitfieldType(T) orBool hasFloatType(T))
                andBool notBool isBoolType(T)
 
 endmodule

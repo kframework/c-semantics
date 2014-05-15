@@ -34,24 +34,15 @@ module C-TYPING-COMPATIBILITY
      syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
 
-     rule isTypeCompatible(T1:Type, T2:Type) 
-          => #isCompat(stripStorageSpecifiers(T1), stripStorageSpecifiers(T2))
-               ==K true
+     rule areCompatibleTypes(T:Type, T':Type) => #isCompat(T, T') ==K true
 
-     rule #isCompat(T:Type, T:Type) => true 
-     rule #isCompat(T:Type, T':Type) => true 
-          when hasIntegerType(T)
-               andBool hasIntegerType(T') 
-               andBool (getQualifiers(T) ==Set getQualifiers(T'))
+     rule #isCompat(T:Type, T) => true 
+     rule #isCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true 
+          when sameQualifiers(Mods, Mods')
 
      rule #isCompat(
                t(Mods:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
-          => #areCompat(Fs, Fs')
-          when sameQualifiers(Mods, Mods')
-     rule #isCompat(
-               t(Mods:Set, structType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, structType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
      rule #isCompat(
@@ -70,11 +61,6 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Mods:Set, unionType(unnamed(_, _), _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, unionType(unnamed(_, _), _, fieldInfo(Fs':List, _, _))))
-          => #areCompat(Fs, Fs')
-          when sameQualifiers(Mods, Mods')
-     rule #isCompat(
                t(Mods:Set, unionType(X:Id, _, _)),
                t(Mods':Set, incompleteUnionType(X:Id)))
           => true
@@ -85,8 +71,8 @@ module C-TYPING-COMPATIBILITY
           => true
           when sameQualifiers(Mods, Mods')
      rule #isCompat(
-               t(Mods:Set, arrayType(T:Type, N:Int)),
-               t(Mods':Set, arrayType(T':Type, N:Int)))
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, arrayType(T':Type, N:CSize)))
           => #isCompat(T, T')
           when sameQualifiers(Mods, Mods')
      rule #isCompat(
@@ -112,22 +98,6 @@ module C-TYPING-COMPATIBILITY
                typedDeclaration(T':Type, X:Id))
           => #isCompat(T, T')
 
-     // TODO(chathhorn): left over from something?
-     // rule #isCompat(t(Mods:Set, pointerType(_)), T:Type) => true
-     //      when hasIntegerType(T) 
-     // rule #isCompat(T:Type, t(Mods:Set, pointerType(_))) => true
-     //      when hasIntegerType(T)
-
-     // rule #isCompat(T:Type, t(S:Set, arrayType(T':Type, _)))
-     //      => #isCompat(T, t(S:Set, pointerType(T'))) 
-     // rule #isCompat(t(S:Set, arrayType(T:Type, _)), T':Type)
-     //      => #isCompat(t(S, pointerType(T)), T') 
-     
-     // rule #isCompat(T:Type, t(S:Set, incompleteArrayType(T':Type)))
-     //      => #isCompat(T, t(S, pointerType(T'))) 
-     // rule #isCompat(t(S:Set, incompleteArrayType(T:Type)), T':Type)
-     //      => #isCompat(t(S, pointerType(T)), T') 
-
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments.
      rule #isCompat(
@@ -145,8 +115,8 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]
      rule #areParamsCompat(
-               ListItem(typedDeclaration(T:Type, _)) L:List,
-               ListItem(typedDeclaration(T':Type, _)) L':List)
+               ListItem(T:Type) L:List,
+               ListItem(T':Type) L':List)
           => #isCompat(T, T') andBool #areParamsCompat(L, L')
      rule #areParamsCompat(ListItem(variadic), ListItem(variadic)) => true
      rule #areParamsCompat(.List, .List) => true
@@ -159,5 +129,122 @@ module C-TYPING-COMPATIBILITY
      rule sameQualifiers(Mods:Set, Mods':Set)
           => intersectSet(Mods, typeQualifiers)
                ==Set intersectSet(Mods', typeQualifiers)
+
+     // We can assume the types are compatible.
+     rule compositeType(T:Type, T:Type) => T
+     rule compositeType(
+               t(Mods:Set, T:SimpleType),
+               t(Mods':Set, T:SimpleType))
+          // The modifiers might include extra information besides just
+          // specifiers and qualifiers, it's probably best to keep it all
+          // around for now.
+          => t(Mods Mods', T)
+
+     rule compositeType(
+               t(Mods:Set, functionType(T:Type, P:List)),
+               t(Mods':Set, functionType(T':Type, P':List)))
+          => t(Mods Mods',
+               functionType(compositeType(T, T'), compositeParams(P, P')))
+
+     rule compositeType(
+               t(Mods:Set, pointerType(T:Type)),
+               t(Mods':Set, pointerType(T':Type)))
+          => t(Mods Mods', pointerType(compositeType(T, T')))
+
+     rule compositeType(
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, arrayType(T':Type, N:CSize)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, arrayType(T':Type, N:CSize)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+
+     // rule compositeType(
+     //           t(Mods:Set, flexibleArrayType(T:Type)),
+     //           t(Mods':Set, flexibleArrayType(T':Type)))
+     //      => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
+
+     rule compositeType(
+               typedDeclaration(T:Type, X:Id),
+               typedDeclaration(T':Type, X:Id))
+          => typedDeclaration(compositeType(T, T'), X)
+
+     // TODO(chathhorn): really not sure about these. The standard doesn't seem
+     // to mention structs/unions at all when talking about forming composite
+     // types, but I think it's got to be defined something like this. There
+     // must be some reason this never comes up, though.
+     // rule compositeType(
+     //           t(Mods:Set,
+     //                structType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
+     //           t(Mods':Set,
+     //                structType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
+     //      => t(Mods Mods', structType(X, N, fieldInfo(
+     //                compositeFields(Fs, Fs'),
+     //                compositeTypes(Ts, Ts'), Offs)))
+     // rule compositeType(
+     //           t(Mods:Set,
+     //                structType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
+     //           t(Mods':Set, incompleteStructType(X:Id)))
+     //      => t(Mods Mods', structType(X, N, fieldInfo(Fs, Ts, Offs)))
+     // rule compositeType(
+     //           t(Mods:Set, incompleteStructType(X:Id)),
+     //           t(Mods':Set,
+     //                structType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
+     //      => t(Mods Mods', structType(X, N, fieldInfo(Fs, Ts, Offs)))
+     // rule compositeType(
+     //           t(Mods:Set, incompleteStructType(X:Id)),
+     //           t(Mods':Set, incompleteStructType(X:Id)))
+     //      => t(Mods Mods', incompleteStructType(X))
+
+     // rule compositeType(
+     //           t(Mods:Set,
+     //                unionType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
+     //           t(Mods':Set,
+     //                unionType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
+     //      => t(Mods Mods', unionType(X, N, fieldInfo(
+     //                compositeFields(Fs, Fs'),
+     //                compositeTypes(Ts, Ts'), Offs)))
+     // rule compositeType(
+     //           t(Mods:Set,
+     //                unionType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
+     //           t(Mods':Set, incompleteUnionType(X:Id)))
+     //      => t(Mods Mods', unionType(X, N, fieldInfo(Fs, Ts, Offs)))
+     // rule compositeType(
+     //           t(Mods:Set, incompleteUnionType(X:Id)),
+     //           t(Mods':Set,
+     //                unionType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
+     //      => t(Mods Mods', unionType(X, N, fieldInfo(Fs, Ts, Offs)))
+     // rule compositeType(
+     //           t(Mods:Set, incompleteUnionType(X:Id)),
+     //           t(Mods':Set, incompleteUnionType(X:Id)))
+     //      => t(Mods Mods', incompleteUnionType(X))
+
+     // syntax List ::= compositeFields(List, List)
+     // rule compositeFields(ListItem(T:Type) Fs:List, ListItem(T':Type) Fs':List)
+     //      => ListItem(compositeType(T, T')) compositeFields(Fs, Fs')
+     // rule compositeFields(.List, .List) => .List
+
+     // syntax Map ::= compositeTypes(Map, Map)
+     // rule compositeTypes(X:Id |-> T:Type Ts:Map, X:Id |-> T':Type Ts':Map)
+     //      => X |-> compositeType(T, T') compositeTypes(Ts, Ts')
+     // rule compositeTypes(.Map, .Map) => .List
+
+     // We replace all ids in non-def param lists with #NoName, so we can get
+     // away with this.
+     syntax List ::= compositeParams(List, List) [function]
+     rule compositeParams(.List, P:List) => P
+     rule compositeParams(P:List, .List) => P
+     rule compositeParams(ListItem(variadic), ListItem(variadic))
+          => ListItem(variadic)
+     rule compositeParams(
+               ListItem(T:Type) P:List,
+               ListItem(T':Type) P':List)
+          => ListItem(compositeType(T, T')) compositeParams(P, P')
+     
 endmodule
 

@@ -14,12 +14,6 @@ module C-DECL-GLOBAL-SYNTAX
      syntax K ::= declState(SymLoc, Type, DeclState, Bool)
 
      syntax K ::= allowInit(K)
-     syntax K ::= updateDecl(Id, DeclState, Linkage)
-     syntax K ::= updateLinkState(Id, Type, SymLoc)
-     syntax K ::= allocateDecl(Id, Type, SymLoc)
-
-     // Checks if the type is complete if there's an initializer.
-     syntax K ::= checkComplete(Id, Type, K)
 endmodule
 
 module C-DECL-GLOBAL
@@ -42,7 +36,12 @@ module C-DECL-GLOBAL
 
      imports COMPAT-SYNTAX
 
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+     rule declare'(T:Type, K:K)
+          => checkDeclType(T, K) 
+          ~> declare''(T, K)
+
+     syntax K ::= "declare''" "(" Type "," K ")"
+     rule <k> declare''(typedDeclaration(T:Type, X:Id), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
@@ -50,9 +49,8 @@ module C-DECL-GLOBAL
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural] 
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
-               => checkParams(T)
-               ~> declareInternalVariable(X, adjustParams(T), K)
+     rule <k> declare''(typedDeclaration(T:Type, X:Id), K:K) 
+               => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
           when F =/=K file-scope
@@ -60,10 +58,8 @@ module C-DECL-GLOBAL
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==Set .Set)
           [structural] 
-          
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
-               => checkParams(T)
-               ~> declareExternalVariable(X, adjustParams(T),
+     rule <k> declare''(typedDeclaration(T:Type, X:Id), K:K)
+               => declareExternalVariable(X, T,
                     #if K ==K NoInit 
                     #then NoInit 
                     #else CodeLoc(K, L) #fi)
@@ -74,7 +70,7 @@ module C-DECL-GLOBAL
                andBool validGlobalStorageClass(T)
                andBool getQualifiers(T) ==Set .Set
           [structural] 
-     rule <k> doDeclare(typedDeclaration(T:Type, X:Id), K:K)
+     rule <k> declare''(typedDeclaration(T:Type, X:Id), K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit 
                     #then NoInit 
@@ -86,22 +82,22 @@ module C-DECL-GLOBAL
                andBool validGlobalStorageClass(T)
           [structural] 
 
-     rule (. => ERROR("DG1", "Declaration for the function " +String idToString(X)
+     rule (. => ERROR("DG1", "declaration for the function " +String idToString(X)
                +String " appears with type qualifiers."))
-          ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          ~> declare''(typedDeclaration(T:Type, X:Id), _)
           when isFunctionType(T)
                andBool getQualifiers(T) =/=Set .Set
           [structural] 
 
-     rule (. => ERROR("DG2", "Declaration for " +String idToString(X)
+     rule (. => ERROR("DG2", "declaration for " +String idToString(X)
                +String " appears with multiple storage class specifiers.", 8))
-          ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+          ~> declare(typedDeclaration(T:Type, X:Id), _)
           when notBool validStorageClass(T)
           [structural] 
 
-     rule <k> (. => ERROR("DG3", "Declaration for " +String idToString(X)
+     rule <k> (. => ERROR("DG3", "declaration for " +String idToString(X)
                +String " appears with invalid storage class specifiers.", 8))
-               ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+               ~> declare''(typedDeclaration(T:Type, X:Id), _)
           ...</k>
           <curr-function> F:K </curr-function>
           when F =/=K file-scope
@@ -109,27 +105,39 @@ module C-DECL-GLOBAL
                andBool notBool validLocalStorageClass(T)
           [structural] 
 
-     rule <k> (. => ERROR("DG4", "Declaration for " +String idToString(X)
+     rule <k> (. => ERROR("DG4", "declaration for " +String idToString(X)
                +String " appears with invalid storage class specifiers.", 8))
-               ~> doDeclare(typedDeclaration(T:Type, X:Id), _)
+               ~> declare''(typedDeclaration(T:Type, X:Id), _)
           ...</k>
           <curr-function> file-scope </curr-function>
           when validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
           [structural] 
+          
+     syntax K ::= checkDeclType(Type, K) [function]
+               | checkParams(Type) [function]
+               | checkParam(Type) [function]
+     // Checks if the type is complete if there's an initializer.
+               | checkComplete(Type, K) [function]
 
-     syntax K ::= checkParams(Type) | checkParam(Type)
+     // TODO(chathhorn): consider checking function init list here (disallowed
+     // in the case of a prototype).
+     rule checkDeclType(T:Type, _) => checkParams(T)
+          when isFunctionType(T)
+     rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
+          when notBool isFunctionType(T)
 
      rule (. => checkParam(T))
           ~> checkParams(t(_, functionType(_, (ListItem(T:Type) => .List)  _)))
      rule checkParams(t(_, functionType(_, .List))) => .
+     rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 
      rule checkParam(T:Type) => .
           when getStorageSpecifiers(T) ==Set .Set
                orBool (notBool isVoidType(T)
                     andBool getStorageSpecifiers(T) ==Set SetItem(Register))
 
-     rule (. => ERROR("DG5", "Function parameter appears with storage "
+     rule (. => ERROR("DG5", "function parameter appears with storage "
                +String "class other than register."))
           ~> checkParam(T:Type)
           when getStorageSpecifiers(T) =/=Set .Set
@@ -137,39 +145,20 @@ module C-DECL-GLOBAL
                andBool notBool isVoidType(T)
           [structural] 
 
-     rule (. => ERROR("DG6", "Void parameter appears with a storage class."))
+     rule (. => ERROR("DG6", "void parameter appears with a storage class."))
           ~> checkParam(T:Type)
           when getStorageSpecifiers(T) =/=Set .Set
                andBool isVoidType(T)
           [structural] 
 
-     syntax Type ::= adjustParams(Type) [function]
-     syntax List ::= "adjustParams'" "(" List ")" [function]
-     syntax Type ::= "adjustParam'" "(" Type ")" [function]
+     rule checkComplete(_, NoInit) => .
+     rule checkComplete(T:Type, _) => .
+          when isCompleteType(T) orBool isArrayType(T)
+     rule (.K => ERROR("DG7", "declaration has initializer but incomplete type."))
+          ~> checkComplete(T:Type, K:K)
+          when (K =/=K NoInit)
+               andBool notBool (isCompleteType(T) orBool isArrayType(T))
 
-
-     rule adjustParams(t(Mods:Set, functionType(R:Type, Params:List)))
-          => t(Mods, functionType(R, adjustParams'(Params)))
-
-     rule adjustParams'(ListItem(T:Type) Params:List)
-          => ListItem(adjustParam'(T)) adjustParams'(Params)
-     rule adjustParams'(.List) => .List
-
-     rule adjustParam'(typedDeclaration(T:Type, X:Id))
-          => typedDeclaration(adjustParam'(T), X)
-     rule adjustParam'(t(Mods:Set, arrayType(T:Type, _)))
-          => t(Mods, pointerType(T))
-     rule adjustParam'(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, pointerType(T))
-     rule adjustParam'(T:Type) => t(.Set, pointerType(T))
-          when isFunctionType(T)
-
-     rule adjustParam'(T:Type) => T
-          when notBool isTypedDeclaration(T)
-               andBool notBool isArrayType(T)
-               andBool notBool isIncompleteArrayType(T)
-               andBool notBool isFunctionType(T)
-          
      syntax K ::= declareExternalVariable(Id, Type, K)
 
      syntax Bool ::= validStorageClass(Type) [function]
@@ -273,10 +262,11 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => checkComplete(X, T, K)
+               => addToEnv(X, Loc)
+               ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
-                    Loc, State, internal, 
+                    State, internal, 
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -287,10 +277,10 @@ module C-DECL-GLOBAL
           ...</internals>
           when notBool isNaked(T)
                andBool notBool (X in keys Exts)
-               andBool isTypeCompatible(T, OldT)
+               andBool areCompatibleTypes(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG7", "Conflicting types for "
+     rule <k> (. => ERROR("DG8", "conflicting types for "
                     +String idToString(X) +String "."))
                ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
@@ -299,17 +289,16 @@ module C-DECL-GLOBAL
           <internals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</internals>
-          when notBool isTypeCompatible(T, OldT)
+          when notBool areCompatibleTypes(T, OldT)
           [structural]
 
      // Naked, previously declared extern.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => checkComplete(X, T, K)
-               ~> addToEnv(X, Loc)
+               => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
-                    Loc, State, external, Naked)
+                    State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -319,17 +308,16 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isNaked(T)
                andBool notBool (X in keys Ints)
-               andBool isTypeCompatible(T, OldT)
+               andBool areCompatibleTypes(T, OldT)
           [structural]
 
      // Extern, previously declared extern.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => checkComplete(X, T, K)
-               ~> addToEnv(X, Loc)
+               => addToEnv(X, Loc)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
-                    Loc, State, external, Extern)
+                    State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -339,10 +327,10 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isExtern(T)
                andBool notBool (X in keys Ints)
-               andBool isTypeCompatible(T, OldT)
+               andBool areCompatibleTypes(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG8", "Conflicting types for "
+     rule <k> (. => ERROR("DG9", "conflicting types for "
                     +String idToString(X) +String "."))
                ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
@@ -351,17 +339,16 @@ module C-DECL-GLOBAL
           <externals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</externals>
-          when notBool isTypeCompatible(T, OldT)
+          when notBool areCompatibleTypes(T, OldT)
           [structural]
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => checkComplete(X, T, K)
-               ~> addToEnv(X, Loc)
+               => addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
-                    Loc, declared, external,
+                    declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -379,12 +366,11 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:Id, T:Type, K:K)
-               => checkComplete(X, T, K)
-               ~> addToEnv(X, Loc)
+               => addToEnv(X, Loc)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
-                    Loc, declared, internal, Static)
+                    declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -400,8 +386,8 @@ module C-DECL-GLOBAL
           [structural]
 
      // Static, previously extern.
-     rule <k> (. => ERROR("DG9",
-               "Static declaration of " +String idToString(X)
+     rule <k> (. => ERROR("DG10",
+               "static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
                ~> declareExternalVariable(X:Id, T:Type, _)
           ...</k>
@@ -421,20 +407,21 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax K ::= "declareExternalVariable'" "(" K "," SymLoc "," DeclState "," Linkage "," K ")"
+     syntax K ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," K ")"
           [strict(1)]
 
      // *** Incomplete ***
 
-     // If this declaration has an incomplete type, then we're done.
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, _, _, Extern)
-          => updateLinkState(X, T, Loc)
+               State:DeclState, Lnk:Linkage, Extern)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, State)
           when notBool isCompleteType(T)
           [structural]
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K),
-               Loc:SymLoc, _, Lnk:Linkage, Sto:Storage)
-          => updateLinkState(X, T, Loc)
+               State:DeclState, Lnk:Linkage, Sto:Storage)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk)
           when notBool isCompleteType(T)
                andBool Sto =/=K Extern
@@ -443,9 +430,11 @@ module C-DECL-GLOBAL
      // *** Extern, already completed.  ***
 
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, State:DeclState, _, Extern)
-          => updateLinkState(X, T, Loc)
-          when State =/=K declared
+               State:DeclState, Lnk:Linkage, Extern)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, State)
+          when isCompleteType(T)
+               andBool State =/=K declared
           [structural]
 
      // *** Complete, no initializer ***
@@ -456,10 +445,10 @@ module C-DECL-GLOBAL
      // Completed type, no init.
      // declared => allocated
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, declared, Lnk:Linkage, Sto:Storage)
-          => giveType(X, T)
-          ~> allocateDecl(X, T, Loc)
-          ~> updateDecl(X, allocated, Lnk)
+               declared, Lnk:Linkage, Sto:Storage)
+          => giveCompositeType(X, T)
+          ~> allocateDecl(X)
+          ~> updateDecl(X, Lnk, allocated)
           ~> recordTentDef(X, Lnk)
           when isCompleteType(T)
                andBool Sto =/=K Extern
@@ -467,18 +456,19 @@ module C-DECL-GLOBAL
 
      // declared => completed
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               _, declared, Lnk:Linkage, Extern)
-          => giveType(X, T)
-          ~> updateDecl(X, completed, Lnk)
+               declared, Lnk:Linkage, Extern)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, completed)
           when isCompleteType(T)
           [structural]
 
      // Already encountered a completed decl, no init.
      // completed => allocated
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               Loc:SymLoc, completed, Lnk:Linkage, Sto:Storage)
-          => allocateDecl(X, T, Loc)
-          ~> updateDecl(X, allocated, Lnk)
+               completed, Lnk:Linkage, Sto:Storage)
+          => giveCompositeType(X, T)
+          ~> allocateDecl(X)
+          ~> updateDecl(X, Lnk, allocated)
           ~> recordTentDef(X, Lnk)
           when isCompleteType(T)
                andBool Sto =/=K Extern
@@ -486,8 +476,10 @@ module C-DECL-GLOBAL
 
      // Already encountered a allocated or initialized decl, no init.
      rule declareExternalVariable'(initValue(X:Id, T:Type, .K), 
-               _, State:DeclState, Lnk:Linkage, Sto:Storage)
-          => recordTentDef(X, Lnk) // Don't really need this.
+               State:DeclState, Lnk:Linkage, Sto:Storage)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, State)
+          ~> recordTentDef(X, Lnk) // Don't really need this.
           when isCompleteType(T)
                andBool (State ==K allocated orBool State ==K initialized)
                andBool Sto =/=K Extern
@@ -497,29 +489,34 @@ module C-DECL-GLOBAL
 
      // declared => initialized
      rule declareExternalVariable'(initValue(X:Id, T:Type, K:K), 
-               Loc:SymLoc, declared, Lnk:Linkage, _)
-          => giveType(X, T)
-          ~> allocateDecl(X, T, Loc)
+               declared, Lnk:Linkage, _)
+          => giveCompositeType(X, T)
+          ~> allocateDecl(X)
+          ~> updateDecl(X, Lnk, initialized)
           ~> allowInit(K)
-          ~> updateDecl(X, initialized, Lnk)
-          when K =/=K .K
+          when isCompleteType(T)
+               andBool K =/=K .K
           [structural]
 
      // completed => initialized
      rule declareExternalVariable'(initValue(X:Id, T:Type, K:K), 
-               Loc:SymLoc, completed, Lnk:Linkage, _)
-          => allocateDecl(X, T, Loc)
+               completed, Lnk:Linkage, _)
+          => giveCompositeType(X, T)
+          ~> allocateDecl(X)
+          ~> updateDecl(X, Lnk, initialized)
           ~> allowInit(K)
-          ~> updateDecl(X, initialized, Lnk)
-          when K =/=K .K
+          when isCompleteType(T)
+               andBool K =/=K .K
           [structural]
 
      // allocated => initialized
-     rule declareExternalVariable'(initValue(X:Id, _, K:K), 
-               _, allocated, Lnk:Linkage, _)
-          => allowInit(K)
-          ~> updateDecl(X, initialized, Lnk)
-          when K =/=K .K
+     rule declareExternalVariable'(initValue(X:Id, T:Type, K:K), 
+               allocated, Lnk:Linkage, _)
+          => giveCompositeType(X, T)
+          ~> updateDecl(X, Lnk, initialized)
+          ~> allowInit(K)
+          when isCompleteType(T)
+               andBool K =/=K .K
           [structural]
 
      syntax K ::= setInitializing(Bool)
@@ -527,67 +524,69 @@ module C-DECL-GLOBAL
           <initializing> _ => I </initializing>
           [structural]
 
-     rule <k> updateDecl(X:Id, S:DeclState, external) 
+     syntax K ::= updateDecl(Id, Linkage, DeclState)
+     rule <k> updateDecl(X:Id, external, S':DeclState) 
                => updateLinkState(X, T', Loc') 
           ...</k>
+          <env>... X |-> Loc':SymLoc ...</env>
+          <types>... X |-> T':Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Loc':SymLoc ...</genv>
-          <gtypes>... X |-> T':Type ...</gtypes>
           <externals>... 
-               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S), _)
+               X |-> declState((_ => Loc'), (_ => T'), (_ => S'), _)
           ...</externals>
-          when isTypeCompatible(T, T') 
           [structural]
-     rule <k> updateDecl(X:Id, S:DeclState, internal) => . ...</k>
+     rule <k> updateDecl(X:Id, internal, S':DeclState)
+               => .
+          ...</k>
+          <env>... X |-> Loc':SymLoc ...</env>
+          <types>... X |-> T':Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Loc':SymLoc ...</genv>
-          <gtypes>... X |-> T':Type ...</gtypes>
           <internals>...
-               X |-> declState((_ => Loc'), (T:Type => T'), (_ => S), _)
+               X |-> declState((_ => Loc'), (_ => T'), (_ => S'), _)
           ...</internals>
-          when isTypeCompatible(T, T')
           [structural]
 
-     rule <k> updateLinkState(X:Id, T':Type, _) ...</k>
+     syntax K ::= updateLinkState(Id, Type, SymLoc)
+     // No previous decl, this isn't a def.
+     rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (. => X |-> T') </external-types>
-          when notBool X in keys Decls
+          when isLinkerLoc(Loc')
+               andBool notBool X in keys Decls
           [structural]
-     // Incomplete type, no def.
+     // No previous decl, this is a def.
+     rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
+          <external-types> _ (.Map => X |-> T') </external-types>
+          <external-defs> _ (.Map => X |-> Loc') </external-defs>
+          when notBool isLinkerLoc(Loc')
+               andBool notBool X in keys Decls
+          [structural]
+     // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
-          <external-types>... X |-> T:Type ...</external-types>
+          <external-decls>... X |-> set(_ (.Set => SetItem(Tu))) ...</external-decls>
+          <external-types>... X |-> (_ => T') ...</external-types>
           when isLinkerLoc(Loc')
-               andBool (notBool isCompleteType(T'))
-               andBool isTypeCompatible(T, T')
-          [structural]
-     // Complete type, no def.
-     rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <external-decls>... X |-> set(_ (. => SetItem(Tu))) ...</external-decls>
-          <external-types>... X |-> (T:Type => T') ...</external-types>
-          when isLinkerLoc(Loc')
-               andBool isCompleteType(T')
-               andBool isTypeCompatible(T, T')
           [structural]
      // New def.
      rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
-          <external-types>... X |-> (T:Type => T') ...</external-types>
-          <external-defs> Defs:Map (. => X |-> Loc') </external-defs>
+          <external-types>... X |-> (_ => T') ...</external-types>
+          <external-defs> Defs:Map (.Map => X |-> Loc') </external-defs>
           when notBool isLinkerLoc(Loc')
                andBool (notBool X in keys Defs)
-               andBool isTypeCompatible(T, T')
           [structural]
      // Def already encountered.
-     rule <k> updateLinkState(X:Id, _, Loc':SymLoc) => . ...</k>
+     rule <k> updateLinkState(X:Id, T':Type, Loc':SymLoc) => . ...</k>
+          <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     rule <k> (.K => ERROR("DG10",
+     rule <k> (.K => ERROR("DG11",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, _, Loc':SymLoc)
@@ -598,15 +597,6 @@ module C-DECL-GLOBAL
           when notBool isLinkerLoc(Loc')
                andBool (Loc =/=K Loc')
           [structural]
-     rule <k> (.K => ERROR("DG11",
-                    "incompatible redeclaration of symbol with external linkage: "
-                    +String idToString(X)))
-               ~> updateLinkState(X:Id, T':Type, _)
-          ...</k>
-          <external-types>... X |-> T:Type ...</external-types>
-          when notBool isTypeCompatible(T, T')
-          [structural]
-     
      
      syntax K ::= recordTentDef(Id, Linkage)
      rule <k> recordTentDef(X:Id, internal) => . ...</k>
@@ -626,23 +616,28 @@ module C-DECL-GLOBAL
      // might end up in memory if the address of the symbol is taken in
      // multiple initializers, but it should work out as long as the symbolic
      // linker locs are transparent enough.
-     rule allocateDecl(X:Id, T:Type, Loc:SymLoc) 
-          => allocateType(Loc, T) 
-          ~> allowInit(zero(X))
+     syntax K ::= allocateDecl(Id)
+     rule <k> allocateDecl(X:Id) 
+               => allocateType(Loc, T) 
+               ~> allowInit(zero(X))
+          ...</k>
+          <types>... X |-> T:Type ...</types>
+          <env>... X |-> Loc:SymLoc ...</env>
           when notBool isLinkerLoc(Loc)
           [structural]
-     rule <k> allocateDecl(X:Id, T:Type, Loc:SymLoc) 
+     rule <k> allocateDecl(X:Id) 
                => addToEnv(X, Loc')
                ~> allocateType(Loc', T) 
                ~> allowInit(zero(X))
           ...</k>
+          <types>... X |-> T:Type ...</types>
+          <env>... X |-> Loc:SymLoc ...</env>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
           <linkings>... (. => Loc |-> Loc') </linkings>
           when isLinkerLoc(Loc)
           [structural]
-
 
      // *** TODO(chathhorn) struct/union stuff *** 
 
@@ -675,7 +670,7 @@ module C-DECL-GLOBAL
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax K ::= completeTagInExtDecls(Id, FieldInfo, Set)
-     rule <k> (.K => doDeclare(
+     rule <k> (.K => declare(
                     typedDeclaration(completeTag(Tag, Info, T), X), NoInit))
                ~> completeTagInExtDecls(Tag:Id, Info:FieldInfo,
                     (SetItem(X:Id) => .Set) _)
@@ -687,6 +682,7 @@ module C-DECL-GLOBAL
           ...</externals>
           when notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
+          [structural]
      rule <k> completeTagInExtDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -697,10 +693,12 @@ module C-DECL-GLOBAL
           when isFunctionType(T)
                orBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
+          [structural]
      rule completeTagInExtDecls(_, _, .Set) => .K
+          [structural]
 
      syntax K ::= completeTagInIntDecls(Id, FieldInfo, Set)
-     rule <k> (.K => doDeclare(
+     rule <k> (.K => declare(
                typedDeclaration(
                     completeTag(Tag, Info, addStorage(Static, T)), X),
                          NoInit))
@@ -714,6 +712,7 @@ module C-DECL-GLOBAL
           ...</internals>
           when notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
+          [structural]
      
 
      rule <k> completeTagInIntDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
@@ -726,7 +725,9 @@ module C-DECL-GLOBAL
           when isFunctionType(T)
                orBool (notBool isCompleteType(completeTag(Tag, Info, T)))
                orBool DS =/=K declared
+          [structural]
      rule completeTagInIntDecls(_, _, .Set) => .K
+          [structural]
 
      syntax K ::= completeTagInTags(Id, FieldInfo, Set)
      rule <k> completeTagInTags(S:Id, Info:FieldInfo, (SetItem(S2:Id) => .Set)  _)
@@ -763,13 +764,26 @@ module C-DECL-GLOBAL
      rule allowInit' => setInitializing(false)
           [structural]
 
-     rule checkComplete(_, _, NoInit) => .
-     rule checkComplete(_, T:Type, _) => .
-          when isCompleteType(T) orBool isArrayType(T)
-     rule (.K => ERROR("DG12", "declaration of " +String idToString(X)
-               +String " has initializer but incomplete type."))
-          ~> checkComplete(X:Id, T:Type, K:K)
-          when (K =/=K NoInit)
-               andBool notBool (isCompleteType(T) orBool isArrayType(T))
+     syntax K ::= giveCompositeType(Id, Type)
+     rule <k> giveCompositeType(X:Id, T':Type)
+               => giveType(X, compositeType(T, T'))
+          ...</k>
+          <types>... X |-> T:Type ...</types>
+          when areCompatibleTypes(T, T')
+          [structural]
+     rule <k> giveCompositeType(X:Id, T':Type)
+               => giveType(X, T')
+          ...</k>
+          <types> Types:Map </types>
+          when notBool X in keys Types
+          [structural]
+
+     rule <k> (.K => ERROR("DG12", "incompatible redeclaration of symbol with internal or external linkage: "
+                    +String idToString(X)))
+               ~> giveCompositeType(X:Id, T':Type)
+          ...</k>
+          <types>... X |-> T:Type ...</types>
+          when notBool areCompatibleTypes(T, T')
+          [structural]
 
 endmodule

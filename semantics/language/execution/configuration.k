@@ -88,6 +88,9 @@ module C-CONFIGURATION
                               <curr-function color="lightgray">
                                    .K
                               </curr-function>
+                              // The identifiers that params are bound to. This
+                              // is used for builtins and var-args.
+                              <curr-function-params> .List </curr-function-params>
                               <curr-program-loc color="black">
                                    .K
                               </curr-program-loc>
@@ -176,6 +179,7 @@ module C-CONFIGURATION
      <call-stack-frame multiplicity="*">
           <continuation> .K </continuation>
           <stack-curr-function> .K </stack-curr-function>
+          <stack-curr-function-params> .List </stack-curr-function-params>
           <stack-curr-program-loc> .K </stack-curr-program-loc>
           <stack-control> .Bag </stack-control>
      </call-stack-frame>

@@ -25,7 +25,7 @@ module C-DECL-ZERO
           [structural] 
      rule zeroType(N:K, T:Type)
           => Computation(allowWrite(N) := tv(0.0, t(.Set, float)))
-          when isFloatType(T)
+          when hasFloatType(T)
           [structural] 
           
      syntax K ::= zeroStruct(K, List)

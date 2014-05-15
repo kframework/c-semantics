@@ -82,7 +82,7 @@ module C-TYPING-PREDICATES
      rule #hasSignedInteger(typedDeclaration(T:Type, _))
           => #hasSignedInteger(T)
 
-     rule isFloatType(T:Type) => #isFloatT(T) ==K true
+     rule hasFloatType(T:Type) => #hasFloat(T) ==K true
      rule isCharType(T:Type) => #isCharT(T) ==K true
      rule isWCharType(t(_, T:SimpleType)) 
           => T ==K simpleType(cfg:wcharut)
@@ -124,7 +124,7 @@ module C-TYPING-PREDICATES
      // types. 
      // */
      rule isArithmeticType(T:Type)
-          => hasIntegerType(T) orBool isFloatType(T)
+          => hasIntegerType(T) orBool hasFloatType(T)
                
      rule isExternType(T:Type) => Extern in getStorageSpecifiers(T)
      rule isStaticType(T:Type) => Static in getStorageSpecifiers(T)
@@ -132,7 +132,7 @@ module C-TYPING-PREDICATES
      rule isConstType(T:Type) => Const in getQualifiers(T)
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
 
-     syntax Bool ::= "#isFloatT" "(" Type ")" [function]
+     syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#isCharT" "(" Type ")" [function]
                    | "#isPointer" "(" Type ")" [function]
                    | "#isBoolT" "(" Type ")" [function]
@@ -147,9 +147,9 @@ module C-TYPING-PREDICATES
                    | "#isFunction" "(" Type ")" [function]
                    | "#isFunctionPointer" "(" Type ")" [function]
 
-     rule #isFloatT(t(_, T:SimpleType)) => true
+     rule #hasFloat(t(_, T:SimpleType)) => true
           when T in floatTypes 
-     rule #isFloatT(typedDeclaration(T:Type, _)) => #isFloatT(T) 
+     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
 
      rule #isCharT(t(_, T:SimpleType)) => true
           when T in charTypes 

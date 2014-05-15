@@ -62,36 +62,6 @@ module C-TRANSLATION-ERROR
      //      when Offset:Int >Int Len:Int
      //      [structural, large]
           
-     // dynamic exp
-     rule [err00015]:
-          (. => ERROR("00015", "Signed overflow.", 36) ) ~>
-          arithInterpret(T:Type, I:Int)
-          when hasSignedIntegerType(T)
-               andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
-          [structural, large]      
-          
-     rule [err00017]:
-          (. => ERROR("00017", "Division by 0.", 319) ) ~>
-          tv(_:Int, T:Type) / tv(0, T:Type)
-          when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
-     
-     rule [err00018]:
-          (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
-          tv(_:Int, T:Type) % tv(0, T:Type)
-          when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
-          
-     rule [err00019]:
-          (. => ERROR("00019", "Signed overflow.", 36) ) ~>
-          tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
-          when hasIntegerType(T)
-               andBool notBool (min(T) <=Int I1 /Int I2
-                    andBool max(T) >=Int I1 /Int I2)
-               andBool isPromoted(T)
-               andBool I2 =/=Int 0
-          [structural, large]
-          
      rule [err00022]:
           (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
           leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
@@ -105,60 +75,6 @@ module C-TRANSLATION-ERROR
           when hasSignedIntegerType(T)
                andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
           [structural, large]
-          
-   //   rule [err00025a]:
-   //        (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-   //        callMain-aux(t(_, functionType(t(_, T:SimpleType), _)), _:Int, _:Id, _)
-   //        when T =/=K int
-   //        [structural, large]
-   //   rule [err00025b]:
-   //        <k> 
-   //             (. => ERROR("00025b", "Main must exist.", 4) ) ~>
-   //             callMain(_, _)
-   //        ...</k>
-   //        <main-tu> .K </main-tu>
-   //        [structural, large]
-   //   rule [err00026]:
-   //        (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id),, _:KList))), _:Int, _:Id, _) 
-   //        when T =/=K int andBool T =/=K void
-   //        [structural, large]
-   //        
-   //   syntax Bool ::= #isArgvType(Type) [function]
-   //   
-   //   rule #isArgvType(t(_, T:SimpleType)) => false
-   //        when notBool (
-   //             getKLabel(T) ==KLabel 'incompleteArrayType 
-   //             orBool getKLabel(T) ==KLabel 'pointerType
-   //        )
-   //   rule #isArgvType(t(_, incompleteArrayType(t(_, T:SimpleType)))) 
-   //        => false
-   //        when notBool getKLabel(T) ==KLabel 'pointerType
-   //   rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType)))))) 
-   //        => false
-   //        when T =/=K char
-   //   rule #isArgvType(t(_, pointerType(t(_, T:SimpleType)))) 
-   //        => false
-   //        when notBool getKLabel(T) ==KLabel 'pointerType
-   //   rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
-   //        => false
-   //        when T =/=K char
-   //
-   //   rule [err00027]:
-   //        (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_,
-   //        int), _:Id),, typedDeclaration(T:Type, _:Id)))), _:Int, _:Id, _) 
-   //        when #isArgvType(T) ==K false
-   //        [structural, large]
-   //   rule [err00028]:
-   //        (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
-   //        callMain-aux(t(_, functionType(t(_, int), (_:Type,, _:Type,, _:Type,, _:KList))), _:Int, _:Id, _) 
-   //        [structural, large]
-   //   rule [err00029]:
-   //        (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
-   //        callMain-aux(t(_, functionType(t(_, int), (typedDeclaration(t(_, T:SimpleType), _:Id)))), _:Int, _:Id, _)
-   //        when T =/=K void
-   //        [structural, large]
           
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
@@ -193,7 +109,7 @@ module C-TRANSLATION-ERROR
      // rule [err00046]:
      //      (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
      //      concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
-     //      when isFloatType(T) andBool (N >=Int 0)
+     //      when hasFloatType(T) andBool (N >=Int 0)
      //      [structural, large]
           
 //     // TODO(chathhorn): figure out what to do with these error numbers.
@@ -229,14 +145,6 @@ module C-TRANSLATION-ERROR
 //           ...</k>
 //           <curr-tu> Tu:String </curr-tu>
 //           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>
-//           when notBool isTypeCompatible(PrevT, T)
-
-// TODO(chathhorn): our type normalizer incorrectly puts the qualifiers on
-// the function instead of its return value.
-//      rule (. => ERROR("00267",
-//                "Function " +String S +String " declared with type qualifiers.", 67)) 
-//           ~> doDeclare(typedDeclaration(T:Type, Identifier(S:String)), _)
-//           when isFunctionType(T)
-//                andBool getQualifiers(T) =/=Set .Set
+//           when notBool areCompatibleTypes(PrevT, T)
 
 endmodule

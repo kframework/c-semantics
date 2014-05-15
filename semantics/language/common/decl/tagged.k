@@ -132,12 +132,12 @@ module C-DECL-TAGGED
 
      rule structDef'(X:Id, Info:FieldInfo)
           => addTag(X, Info)
-          ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info), Info)))
+          // ~> giveType(X, t(.Set, structType(X, bitSizeofStruct(Info), Info)))
           [structural]
 
      rule unionDef'(X:Id, Info:FieldInfo)
           => addTag(X, Info)
-          ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info), Info)))
+          // ~> giveType(X, t(.Set, unionType(X, bitSizeofUnion(Info), Info)))
           [structural]
 
      syntax K ::= addLocalTag(Id, FieldInfo)
@@ -172,19 +172,19 @@ module C-DECL-TAGGED
                , L':List
           )
           => makeUnionFieldInfo'(L,
-               Types:Map[T / Field], Offsets:Map[0 / Field],
-               L')
+               Types:Map[T / Field], Offsets:Map[0 / Field], L')
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
 
      syntax K ::= addTag(Id, FieldInfo)
-     rule <k> addTag(S:Id, Info:FieldInfo)
-               => addGlobalTag(S, Info)
+     rule <k> addTag(S:Id, fieldInfo(Fs:List, Ts:Map, Offs:Map))
+               // Elide function parameter names in struct types.
+               => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> file-scope </curr-function>
           [structural]        
-     rule <k> addTag(S:Id, Info:FieldInfo)
-               => addLocalTag(S, Info)
+     rule <k> addTag(S:Id, fieldInfo(Fs:List, Ts:Map, Offs:Map))
+               => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> F:Id </curr-function>
           when F =/=K file-scope
@@ -193,6 +193,5 @@ module C-DECL-TAGGED
      rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs:Map[Info / X] </structs>
           [structural]
-
 endmodule
 

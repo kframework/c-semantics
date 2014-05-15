@@ -28,7 +28,7 @@ module C-DECL-RESOLUTION
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
-     rule <k> (.K => doDeclare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
+     rule <k> (.K => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> Tu:String </curr-tu>

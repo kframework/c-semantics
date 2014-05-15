@@ -1,12 +1,13 @@
 module C-DECL-INITIALIZER-SYNTAX
      syntax KResult ::= initializer(K)
 
-     syntax Value ::= functionObject(Id, Type, K)
+     // Function id, param ids, body.
+     syntax Value ::= functionObject(Id, List, K)
 
-     // id, type, initializer
+     // Id, type, initializer.
      syntax K ::= figureInit(Id, K, K) [strict(2)] 
 
-     // these are also used by compound literals
+     // These are also used by compound literals.
      syntax KResult ::= initValue(Id, Type, K)
 
      syntax K ::= allowWrite(K) [strict]

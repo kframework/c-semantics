@@ -17,9 +17,9 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. \broken{If the first expression has qualified type, the result
      has the so-qualified version of the type of the designated member.}
      }*/
-     rule lval(Loc:SymLoc, t(Se:Set,
+     rule lval(Loc:SymLoc, t(Mods:Set,
                structType(S:Id, _, Fields:FieldInfo))) . F:Id
-          => lookupField(F, Loc, Se, S, Fields, Fields)
+          => lookupField(F, Loc, Mods, S, Fields, Fields)
           [structural]
      rule lval(Loc:SymLoc, t(Mods:Set,
                unionType(S:Id, _, Fields:FieldInfo))) . F:Id
@@ -34,10 +34,11 @@ module C-COMMON-EXPR-MEMBERS
 
      rule lookupField(F:Id, Loc:SymLoc, Mods:Set, S:Id, Fields:FieldInfo,
           fieldInfo(_,
-               F |-> t(Mods':Set, T':SimpleType) _,
+               F |-> T:Type _,
                F |-> Offset:Int _))
           // Complete recursive struct/union definitions.
-          => lv(Loc +bits Offset, completeTag(S, Fields, t(Mods Mods', T')))
+          => lv(Loc +bits Offset,
+               completeTag(S, Fields, addQualifiers(Mods, T)))
 
      // Same deal as above, only for byte lists.
      rule tv(agg(L:List), t(Mods:Set,

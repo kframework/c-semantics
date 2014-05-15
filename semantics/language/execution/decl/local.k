@@ -18,14 +18,13 @@ module C-DECL-LOCAL
 
      imports COMPAT-SYNTAX
 
-     rule doDeclare(typedDeclaration(T:Type, X:Id), K:K) 
+     rule declare'(typedDeclaration(T:Type, X:Id), K:K) 
           => declareInternalVariable(X, T, K)
           [structural] 
           
      syntax K ::= declareInternalVariable(Id, Type, K)
 
-     rule [declareExternInternal]:
-          <k> declareInternalVariable(X:Id, T:Type, NoInit)
+     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
                => addToEnv(X, Loc) 
                ~> giveType(X, T')
           ...</k>

@@ -55,14 +55,14 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when (isStructType(T') orBool isUnionType(T'))
-               andBool isTypeCompatible(stripQualifiers(T'), T)
+               andBool areCompatibleTypes(stripQualifiers(T'), T)
                andBool T' =/=K T
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(.Set, pointerType(T)))))
-          when isTypeCompatible(stripQualifiers(T'), stripQualifiers(T))
+          when areCompatibleTypes(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
@@ -98,7 +98,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool notBool isVoidType(innerType(T))
                andBool notBool
                     ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
-                    andBool isTypeCompatible(innerType(T'), innerType(T)))
+                    andBool areCompatibleTypes(innerType(T'), innerType(T)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
      In simple assignment (\cinline{=}), the value of the right operand is

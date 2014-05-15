@@ -8,7 +8,7 @@ module C-EXPR-MULTIPLICATIVE
      rule tv(V:K, T:Type) * tv(V':K, T:Type)
           => tv(symVal, T)
           when ((V ==K symVal) orBool V' ==K symVal)
-               andBool (isPromoted(T) orBool isFloatType(T))
+               andBool (isPromoted(T) orBool hasFloatType(T))
           [structural]
 
      rule tv(V:K, T:Type) / tv(V':K, T:Type)
@@ -16,7 +16,7 @@ module C-EXPR-MULTIPLICATIVE
           when ((V ==K symVal) orBool V' ==K symVal)
                andBool (
                     (isPromoted(T) andBool V' =/=K 0)
-                    orBool isFloatType(T))
+                    orBool hasFloatType(T))
           [structural]
           
      rule tv(V:K, T:Type) % tv(V':K, T:Type)

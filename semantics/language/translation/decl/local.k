@@ -18,11 +18,11 @@ module C-DECL-LOCAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): note that execution/declaration/local.k starts from
-     // doDeclare, not declareInternalVariable.
-
      // TODO(chathhorn): Totally not sure what to do about these first cases.
-     // Should the external types be updated/completed?
+     // Should the external types be updated/completed? That appears to be the
+     // case according to 6.2.7p4, but does that update only last for the
+     // scope of the current block?
+     // 
      // Extern, external type and def exist.
      rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
                => addToEnv(X, Loc)
@@ -36,7 +36,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool isTypeCompatible(T, T')
+               andBool areCompatibleTypes(T, T')
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
      // Extern, external type exists but no def.
@@ -52,7 +52,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool isTypeCompatible(T, T')
+               andBool areCompatibleTypes(T, T')
                andBool notBool (X in keys Defs)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
@@ -85,8 +85,7 @@ module C-DECL-LOCAL
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
-          => checkComplete(X, T, K)
-          ~> initLocalStatic(X,
+          => initLocalStatic(X,
                allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
@@ -94,8 +93,7 @@ module C-DECL-LOCAL
           [structural] 
 
      rule declareInternalVariable(X:Id, T:Type, K:K)
-          => checkComplete(X, T, K)
-          ~> addToEnv(X, symVal)
+          => addToEnv(X, symVal)
           ~> defineAndInit(X, stripStorageSpecifiers(T), 
                allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
           when isNaked(T)
@@ -152,17 +150,17 @@ module C-DECL-LOCAL
           </local-types>
           [structural] 
      // For function parameters. TODO(chathhorn): handle better?
-     rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
-               => giveType(X, T)
-               ~> K
-          ...</k>
-          <block-history> .List </block-history>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <local-types>
-               LocalTypes:Map => LocalTypes:Map[.K / kpair(X, 0)]
-          </local-types>
-          [structural] 
+     // rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
+     //           => giveType(X, T)
+     //           ~> K
+     //      ...</k>
+     //      <block-history> .List </block-history>
+     //      <curr-tu> Tu:String </curr-tu>
+     //      <tu-id> Tu </tu-id>
+     //      <local-types>
+     //           LocalTypes:Map => LocalTypes:Map[.K / kpair(X, 0)]
+     //      </local-types>
+     //      [structural] 
 
 endmodule
 

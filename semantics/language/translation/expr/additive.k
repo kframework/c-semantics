@@ -37,12 +37,12 @@ module C-EXPR-ADDITIVE
      rule tv(V:K, T:Type) + tv(V':K, T:Type)
           => tv(symVal, T)
           when ((V ==K symVal) orBool (V' ==K symVal))
-               andBool (isPromoted(T) orBool isFloatType(T))
+               andBool (isPromoted(T) orBool hasFloatType(T))
           [structural]
      rule tv(V:K, T:Type) - tv(V':K, T:Type)
           => tv(symVal, T)
           when ((V ==K symVal) orBool (V' ==K symVal))
-               andBool (isPromoted(T) orBool isFloatType(T))
+               andBool (isPromoted(T) orBool hasFloatType(T))
           [structural]
 
 endmodule

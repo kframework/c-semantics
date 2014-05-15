@@ -16,7 +16,7 @@ module C-DECL-ENUM
           [structural]
 
      rule fillEnums-aux(EnumDef(X:Id, list(ListItem(EnumItem(E:Id)) L:List)), K:K) 
-          => doDeclare(typedDeclaration(
+          => declare(typedDeclaration(
                t(SetItem(Static) SetItem(Const), int), E),
                SingleInit(K))
           ~> fillEnums-aux(
@@ -24,7 +24,7 @@ module C-DECL-ENUM
           [structural] 
      rule fillEnums-aux(EnumDef(X:Id, list(
                ListItem(EnumItemInit(E:Id, Exp:K)) L:List)), _)
-          => doDeclare(typedDeclaration(
+          => declare(typedDeclaration(
                t(SetItem(Static) SetItem(Const), int), E),
                SingleInit(Exp))
           ~> fillEnums-aux(

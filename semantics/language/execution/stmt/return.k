@@ -47,11 +47,12 @@ module C-STMT-RETURN
           // be a builtin (i.e., we're in a fake TU with no type env).
           <tu-id> OldTu </tu-id>
           <gtypes>... 
-              F:Id |-> t(_, functionType(T:KResult, _))
+              F:Id |-> t(_, functionType(T:Type, _))
           ...</gtypes>
           <control>
                <curr-tu> _ => OldTu </curr-tu>
                <curr-function> (F:Id => CurrFun) </curr-function>
+               <curr-function-params> _ => CurrFunParams </curr-function-params>
                <curr-program-loc> _ => CurrLoc </curr-program-loc>
                (<control-details>... 
                     <local>... <local-addresses> .Set </local-addresses> ...</local> 
@@ -69,6 +70,9 @@ module C-STMT-RETURN
                          <stack-curr-function>
                               CurrFun:K
                          </stack-curr-function>
+                         <stack-curr-function-params>
+                              CurrFunParams:List
+                         </stack-curr-function-params>
                          <stack-curr-program-loc> 
                               CurrLoc:K
                          </stack-curr-program-loc>

@@ -32,8 +32,8 @@ module C-EXECUTION-ERROR
 
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
-          cast(t(_, T:K), emptyValue)
-          when T:K =/=K void
+          cast(t(_, T:SimpleType), emptyValue)
+          when T =/=K void
           [structural, large]
          
      rule [err00002]:
@@ -53,7 +53,7 @@ module C-EXECUTION-ERROR
     //  rule [err00005]:
     //       <k> 
     //            (. => ICE("00005", "Referring to an object outside of its lifetime.") ) ~>
-    //            readByte(loc(B:SymBase, _:Int, _:Int)) 
+    //            readByte(loc(B:SymBase, _, _)) 
     //       ...</k>
     //       <mem> M:Map </mem>
     //       when notBool SetItem(B) in keys (M:Map)
@@ -62,7 +62,7 @@ module C-EXECUTION-ERROR
      rule [err00006]:
           (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
                21) ) ~>
-          joinIntegerBytes-aux(T:Type, _:List ListItem(piece(unknown(Len:Int), Len:Int)), _:K)
+          joinIntegerBytes-aux(T:Type, _:List ListItem(piece(unknown(Len:Int), Len:Int)), _)
           when notBool isCharType(T)
           [structural, large]
           
@@ -89,7 +89,7 @@ module C-EXECUTION-ERROR
                21) ) ~>
           concretize(T:Type,
                dataList(ListItem(piece(unknown(Len:Int), Len:Int)) _:List))
-          when isFloatType(T)
+          when hasFloatType(T)
           [structural, large]
           
      rule [err00010]:
@@ -101,13 +101,6 @@ module C-EXECUTION-ERROR
           when Offset:Int >Int Len:Int
           [structural, large]
           
-     rule [err00015]:
-          (. => ERROR("00015", "Signed overflow.", 36) ) ~>
-          arithInterpret(T:Type, I:Int)
-          when hasSignedIntegerType(T)
-               andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
-          [structural, large]      
-          
           
      rule [err00016]:
           <k> (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
@@ -116,29 +109,7 @@ module C-EXECUTION-ERROR
           <locs-written> Locs:Bag </locs-written>
           when BagItem(Loc) in Locs:Bag
           [structural, large] 
-          
-     rule [err00017]:
-          (. => ERROR("00017", "Division by 0.", 319) ) ~>
-          tv(_:Int, T:Type) / tv(0, T:Type)
-          when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
-     
-     rule [err00018]:
-          (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
-          tv(_:Int, T:Type) % tv(0, T:Type)
-          when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
-          
-     rule [err00019]:
-          (. => ERROR("00019", "Signed overflow.", 36) ) ~>
-          tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
-          when hasIntegerType(T)
-               andBool notBool (min(T) <=Int I1 /Int I2
-                    andBool max(T) >=Int I1 /Int I2)
-               andBool isPromoted(T)
-               andBool I2 =/=Int 0
-          [structural, large]
-          
+
      rule [err00020]:
           <k> (. => ERROR("00020", "Trying to write outside the bounds of an object.") ) ~>
                checkWrite(loc(Base:SymBase, Offset:Int, _), _) 
@@ -168,7 +139,7 @@ module C-EXECUTION-ERROR
           [structural, large]
      rule [err00026]:
           (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, int), ListItem(typedDeclaration(t(_, T:SimpleType), _:Id)) _:List)), _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(t(_, int), ListItem(t(_, T:SimpleType)) _)), _, _, _) 
           when T =/=K int andBool T =/=K void
           [structural, large]
           
@@ -194,30 +165,28 @@ module C-EXECUTION-ERROR
      
      rule [err00027]:
           (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), 
-               ListItem(typedDeclaration(t(_, int), _:Id)) 
-               ListItem(typedDeclaration(T:Type, _:Id)))),
-               _:Int, _:Id, _) 
+          callMain-aux(t(_, functionType(
+               t(_, int), ListItem(t(_, int)) ListItem(T:Type))),
+               _, _, _) 
           when #isArgvType(T) ==K false
           [structural, large]
      rule [err00028]:
           (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
           callMain-aux(t(_, functionType(t(_, int), 
-               ListItem(_:Type) ListItem(_:Type) ListItem(_:Type) _:List)),
-               _:Int, _:Id, _) 
+               ListItem(_:Type) ListItem(_:Type) ListItem(_:Type) _)),
+               _, _, _) 
           [structural, large]
      rule [err00029]:
           (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int),
-               ListItem(typedDeclaration(t(_, T:SimpleType), _:Id)))),
-               _:Int, _:Id, _)
+          callMain-aux(t(_, functionType(t(_, int), ListItem(t(_, T:SimpleType)))),
+               _, _, _)
           when T =/=K void
           [structural, large]
           
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
-          cast(t(_, T:K), skipval)
-          when (T:K =/=K void)
+          cast(t(_, T:SimpleType), skipval)
+          when (T =/=K void)
           [structural, large]
           
      rule [err00036]:
@@ -232,13 +201,13 @@ module C-EXECUTION-ERROR
           
      rule [err00041]:
           (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
-          types(ListItem(t(_, void)) ListItem(t(_, T:K)))
-          when T:K =/=K void
+          types(ListItem(t(_, void)) ListItem(t(_, T:SimpleType)))
+          when T =/=K void
           [structural, large]
      rule [err00042]:
           (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types(ListItem(t(_, T:K)) ListItem(t(_, void)))
-          when T:K =/=K void
+          types(ListItem(t(_, T:SimpleType)) ListItem(t(_, void)))
+          when T =/=K void
           [structural, large]
      rule [err00043]:
           (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
@@ -250,7 +219,7 @@ module C-EXECUTION-ERROR
           
      rule [err00044]:
           (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
-          addToPointer(_, T:Type, I:Int, tv(_:Int, _))
+          addToPointer(_, T:Type, I:Int, tv(_, _))
           when notBool ifFromArrayInBounds(T, I)
           [structural, large]
           
@@ -271,8 +240,8 @@ module C-EXECUTION-ERROR
           
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
-          concretize(T:Type, dataList(ListItem(piece(N:Int, _:Int)) _:List))
-          when isFloatType(T) andBool (N >=Int 0)
+          concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
+          when hasFloatType(T) andBool (N >=Int 0)
           [structural, large]
           
      rule [err00047]:

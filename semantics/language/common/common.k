@@ -1,3 +1,4 @@
+require "binding.k"
 require "bitsize.k"
 require "bits.k"
 require "builtin.k"
@@ -41,6 +42,7 @@ require "memory/reading.k"
 require "memory/writing.k"
 
 module C-COMMON
+     imports C-BINDING
      imports C-BITSIZE
      imports C-BITS
      imports C-BUILTIN

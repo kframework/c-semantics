@@ -1,7 +1,6 @@
 module C-PROMOTION-SYNTAX
      // should be K, but is Type for efficiency reasons
      syntax Type ::= promote(Type) [function]
-     syntax Type ::= argPromote(Type) [function]
      syntax Bool ::= isArithBinConversionOp(KLabel) [function]
      syntax Bool ::= isArithUnaryOp(KLabel) [function]
      syntax Type ::= usualArithmeticConversion(Type, Type) [function]
@@ -33,22 +32,6 @@ module C-PROMOTION
      Conversion of an operand value to a compatible type causes no change to
      the value or the representation.
      }*/
-
-     // "integer promotions" are used when doing arithmetic conversions, and
-     // for unary ~, +, - "usual arithmetic conversions" are used when doing
-     // binary arithmetic on numbers, and are used to find a common type there
-     // is another set of promotions called "default argument promotions" used
-     // when calling functions where the type information is not complete. This
-     // is equivalent to integer promotions + (float => double) 
-     rule argPromote(t(_, float))
-          => t(.Set, double)
-     rule argPromote(t(_, double))
-          => t(.Set, double)
-     rule argPromote(t(_, long-double))
-          => t(.Set, long-double)
-     rule argPromote(T:Type)
-          => promote(T)
-          when hasIntegerType(T)
 
      syntax Bool ::= isArithBinOp(KLabel) [function]
 
@@ -262,8 +245,8 @@ module C-PROMOTION
                usualArithmeticConversion(T, T'), tv(V, T)),, 
                cast(usualArithmeticConversion(T, T'), tv(V', T')))
           when isArithBinConversionOp(L:KLabel)
-               andBool (hasIntegerType(T) orBool isFloatType(T))
-               andBool (hasIntegerType(T') orBool isFloatType(T'))
+               andBool (hasIntegerType(T) orBool hasFloatType(T))
+               andBool (hasIntegerType(T') orBool hasFloatType(T'))
                andBool (T =/=K T')
           [structural]
 
@@ -316,8 +299,8 @@ module C-PROMOTION
      
      rule usualArithmeticConversion(T:Type, T':Type)
           => usualArithmeticConversion-aux(promote(T), promote(T'))
-          when notBool isFloatType(T)
-               andBool notBool isFloatType(T')
+          when notBool hasFloatType(T)
+               andBool notBool hasFloatType(T')
           
      /*@ 
      \begin{itemize}

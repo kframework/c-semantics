@@ -1,19 +1,16 @@
 module C-EXPR-FUNCTION-CALL
-     imports C-DECL-INITIALIZER-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-BINDING-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
-
-     syntax K ::= application(String, K, List) [strict(2)]
-
-     context application(_, HOLE, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
@@ -52,7 +49,7 @@ module C-EXPR-FUNCTION-CALL
      syntax KResult ::= rvlist(List)
 
      syntax K ::= revalParams(K)
-     context revalParams(list(_:List ListItem((HOLE => reval(HOLE))) _:List)) [ndheat]
+     context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
@@ -62,36 +59,39 @@ module C-EXPR-FUNCTION-CALL
 
      context Call'(_, (HOLE => revalParams(HOLE)))
 
-     rule [function-application-pre]:
-          <k> Call'(tv(Loc:SymLoc, t(_, pointerType(T:Type))), rvlist(L:List))
-          => sequencePoint ~> application(getTU(Loc), Fun, L)
+     rule <k> Call'(
+               tv(Loc:SymLoc, t(_, pointerType(t(_, functionType(_, P:List))))),
+               rvlist(L:List))
+               => sequencePoint ~> application(getTU(Loc), Fun, P, L)
           ...</k>
           <functions>... Loc |-> Fun:KResult ...</functions>
-          when isFunctionType(T)
           [structural]
+
+     syntax K ::= application(String, K, List, List) [strict(2)]
+     context application(_, HOLE, _, _)
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      rule [call]:
-          application(Tu:String, Fun:KResult, L:List) 
-          => application'(Tu, Fun, L)
+          application(Tu:String, Fun:KResult, P:List, L:List) 
+          => application'(Tu, Fun, P, L)
           [structural]
 
-     syntax K ::= "application'" "(" String "," K "," List ")" [strict(2)]
+     syntax K ::= "application'" "(" String "," K "," List "," List ")" [strict(2)]
 
      rule [builtin-application]:
-          application'(Tu:String, builtinPrototype(X:Id, T:Type), L:List)
-          => application'(Tu, functionObject(X, T, handleBuiltin(X, T)), L)
+          application'(Tu:String, builtinPrototype(X:Id), P:List, L:List)
+          => application'(Tu, functionObject(X, .List, handleBuiltin(P)), P, L)
           [structural]
 
      rule [function-application]:
-          <k> application'(Tu:String, functionObject(X:Id, 
-                    t(_, functionType(_:Type, P:List)), B:K), L:List) 
-                    ~> K:K 
+          <k> application'(Tu:String, functionObject(X:Id, Ids:List, B:K), P:List, L:List) 
+               ~> K:K 
                => sequencePoint
-                    ~> populateFromGlobal
-                    ~> bind(L, P)
-                    ~> B
+               ~> populateFromGlobal
+               ~> bind(Ids, P, L)
+               ~> sequencePoint
+               ~> B
           </k>
           <call-stack> .List => ListItem(
                <call-stack-frame>...
@@ -101,16 +101,31 @@ module C-EXPR-FUNCTION-CALL
                     </stack-control>
                     <continuation> K:K </continuation>
                     <stack-curr-function> CurrFun:K </stack-curr-function>
+                    <stack-curr-function-params> CurrFunParams:List </stack-curr-function-params>
                     <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
                ...</call-stack-frame>
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>
                <curr-function> CurrFun:K => X </curr-function>
+               <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
                // TODO(chathhorn): better way to initialize?
                (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural, large]
-endmodule
 
+     rule <k> bindParam(X:Id, T:Type, V:TypedValue)
+               => allocateType(Loc, T)
+               ~> addToEnv(X, Loc)
+               ~> giveType(X, T)
+               ~> Computation(allowWrite(X) := V)
+          ...</k>
+          <curr-function-params>...
+               (.List => ListItem(X))
+          </curr-function-params>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          [structural]
+
+endmodule

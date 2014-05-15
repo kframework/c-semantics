@@ -8,11 +8,14 @@ module C-ERROR
      imports C-ERROR-MAP-SYNTAX
      imports C-CONSTRAINT-MAP-SYNTAX
 
-     imports C-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      syntax String ::= Error(String, String, KList) [function]
@@ -70,6 +73,35 @@ module C-ERROR
           when (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural, large] 
+
+     rule [err00015]:
+          (. => ERROR("00015", "Signed overflow.", 36) ) ~>
+          arithInterpret(T:Type, I:Int)
+          when hasSignedIntegerType(T)
+               andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
+          [structural, large]      
+          
+     rule [err00017]:
+          (. => ERROR("00017", "Division by 0.", 319) ) ~>
+          tv(_, T:Type) / tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
+          [structural, large]
+     
+     rule [err00018]:
+          (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
+          tv(_, T:Type) % tv(0, T:Type)
+          when hasIntegerType(T) andBool isPromoted(T)
+          [structural, large]
+          
+     rule [err00019]:
+          (. => ERROR("00019", "Signed overflow.", 36) ) ~>
+          tv(I1:Int, T:Type) % tv(I2:Int, T:Type)
+          when hasIntegerType(T)
+               andBool notBool (min(T) <=Int I1 /Int I2
+                    andBool max(T) >=Int I1 /Int I2)
+               andBool isPromoted(T)
+               andBool I2 =/=Int 0
+          [structural, large]
 
      // See C-COMMON-EXPR-IDENTIFIER.
      rule [err00021a]:
@@ -137,22 +169,22 @@ module C-ERROR
           
      rule [err00030]:
           (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) < tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
+          tv(loc(Base:SymBase, _, _), T:Type) < tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00031]:
           (. => ERROR("00031", "Cannot compare pointers with different base objects using '>'.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) > tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
+          tv(loc(Base:SymBase, _, _), T:Type) > tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00032]:
           (. => ERROR("00032", "Cannot compare pointers with different base objects using '<='.") ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) <= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
+          tv(loc(Base:SymBase, _, _), T:Type) <= tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
           [structural, large]
      rule [err00033]:
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
-          tv(loc(Base:SymBase, _:Int, _:Int), T:Type) >= tv(loc(Base':SymBase, _:Int, _:Int), T:Type)
+          tv(loc(Base:SymBase, _, _), T:Type) >= tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
           [structural, large]
 

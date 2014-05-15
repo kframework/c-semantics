@@ -79,7 +79,7 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
           => Lbl(t(S, enumType(X)))
      
-     rule pushTypeDown(t(S:Set, typedefType(_:Id, t(S':Set, T:K))), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:KLabel) 
           => Lbl(t(S S', T))
      
      rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
@@ -91,7 +91,7 @@ module C-TYPING-INTERPRETATION
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
           => t(getStorageSpecifiers(T),
-               functionType(stripStorageSpecifiers(T), giveNamesToArgs(L))) 
+               functionType(stripStorageSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
           [structural, anywhere]
      rule makePointerType(Quals:Set)(T:Type)
           => t(Quals getStorageSpecifiers(T),
@@ -101,7 +101,45 @@ module C-TYPING-INTERPRETATION
           => t(getStorageSpecifiers(T),
                incompleteArrayType(stripStorageSpecifiers(T)))
           [structural, anywhere]
-     
+
+     syntax List ::= adjustParams(List) [function]
+     syntax Type ::= adjustParam(Type) [function]
+     // syntax Type ::= adjustDeclParams(Type) [function]
+     // rule adjustDeclParams(typedDeclaration(T:Type, X:Id))
+     //      => typedDeclaration(adjustDeclParams(T), X)
+     // rule adjustDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
+     //      => t(Mods, functionType(adjustDeclParams(R), adjustParams(Params)))
+     // rule adjustDeclParams(t(Mods:Set, arrayType(T:Type, N:CSize)))
+     //      => t(Mods, arrayType(adjustDeclParams(T), N))
+     // rule adjustDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
+     //      => t(Mods, incompleteArrayType(adjustDeclParams(T)))
+     // rule adjustDeclParams(t(Mods:Set, pointerType(T:Type)))
+     //      => t(Mods, pointerType(adjustDeclParams(T)))
+     // rule adjustDeclParams(T:Type) => T
+     //      when notBool isTypedDeclaration(T)
+     //           andBool notBool isFunctionType(T)
+     //           andBool notBool isArrayType(T)
+     //           andBool notBool isIncompleteArrayType(T)
+     //           andBool notBool isPointerType(T)
+
+     rule adjustParams(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam(T)) adjustParams(Params)
+     rule adjustParams(.List) => .List
+
+     rule adjustParam(typedDeclaration(T:Type, X:Id))
+          => typedDeclaration(adjustParam(T), X)
+     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
+     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(T:Type) => T
+          when notBool isTypedDeclaration(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isArrayType(T)
+               andBool notBool isIncompleteArrayType(T)
+
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
      
@@ -167,7 +205,7 @@ module C-TYPING-INTERPRETATION
           => t(S, functionType(extractActualType(T), L))
      rule extractActualType(t(S:Set, pointerType(T:Type))) 
           => t(S, pointerType(extractActualType(T)))
-     rule extractActualType(t(S:Set, typedefType(_:Id, t(S':Set, T:K)))) 
+     rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))
           
      syntax K ::= NameAndType(Id, K) [strict(2)] 

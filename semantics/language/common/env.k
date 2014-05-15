@@ -24,8 +24,7 @@ module C-ENV
      syntax K ::= addToGlobalEnv(K, SymLoc)
      syntax K ::= addToLocalEnv(K, SymLoc)
           
-     rule [populateFromGlobal]:
-          <k> populateFromGlobal => . ...</k>
+     rule <k> populateFromGlobal => . ...</k>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv> 
@@ -67,15 +66,15 @@ module C-ENV
           [structural]
           
      rule <k> giveGlobalType(X:Id, T:Type) => .K ...</k>
-          <types> M:Map => M:Map[T / X] </types>
+          <types> L:Map => L:Map[T / X] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
-               M':Map => M':Map[T / X]
+               G:Map => G:Map[T / X]
           </gtypes>
           [structural]
      rule <k> giveLocalType(X:Id, T:Type) => .K ...</k>
-          <types> M:Map => M:Map[T / X] </types>
+          <types> L:Map => L:Map[T / X] </types>
           [structural]   
 
 endmodule

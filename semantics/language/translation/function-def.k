@@ -1,5 +1,6 @@
 module C-FUNCTION-DEF-SYNTAX
      syntax K ::= initFunction(K, K) [strict]
+     syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
 module C-FUNCTION-DEF
@@ -17,39 +18,53 @@ module C-FUNCTION-DEF
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
+     imports DEBUG-SYNTAX
+
      imports COMPAT-SYNTAX
 
-     // FIXME check prototypes
-     // TODO(chathhorn): the parameters in a function must be complete types
-     // (but not necessarily in a function prototype, I don't think).
-     rule [function-definition]:
-          FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
-          => processFunDef(X, completeTags(T), safeBody(X, Blk))
-          when isFunctionType(T)
-          [structural]
-
-     syntax K ::= processFunDef(Id, K, K) [strict(2)]
-                | staticEval(Id, Type, K)
-
-     rule processFunDef(X:Id, T:Type, K:K) 
-          => checkFunctionDef(X, T)
-          ~> doDeclare(
-               typedDeclaration(T, X), 
+     rule FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
+          => declare(
+               typedDeclaration(emptyParamsToVoid(T), X), 
                initializer(initFunction(
-                    &(X), 
-                    functionObject(
-                         X, 
-                         stripStorageSpecifiers(T), 
-                         K
-                    )
+                    &(X),
+                    functionObject(X, idsFromParams(getParams(T)), safeBody(X, Blk))
                ))
           )
-          // TODO(chathhorn): could these be combined?
-          ~> calculateGotoMap(X, K)
-          ~> staticEval(X, stripStorageSpecifiers(T), K)
+          ~> calculateGotoMap(X, Blk)
+          ~> processFunDef(X)
+          when isFunctionType(T) andBool notBool hasDupParams(T)
+          [structural]
 
-     syntax K ::= checkFunctionDef(Id, Type)
-     rule checkFunctionDef(_, t(_, functionType(Ret:Type, Params:List))) => .
+     rule (. => ERROR("FD1", "duplicate parameters in "
+               +String "function definition."))
+          ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
+          when hasDupParams(T)
+
+     syntax Type ::= emptyParamsToVoid(Type) [function]
+     rule emptyParamsToVoid(t(Mods:Set, functionType(R:Type, .List)))
+          => t(Mods, functionType(R,
+                    ListItem(typedDeclaration(t(.Set, void), #NoName))))
+     rule emptyParamsToVoid(t(Mods:Set, functionType(R:Type, P:List)))
+          => t(Mods, functionType(R, P))
+          when P =/=List .List
+
+     syntax K ::= processFunDef(Id)
+                | staticEval(Id, List, List, K)
+
+     rule <k> processFunDef(X:Id)
+               => checkFunDefType(T)
+               ~> staticEval(X, Ids, getParams(T), Blk)
+          ...</k>
+          <env>... X |-> Loc:SymLoc ...</env>
+          // Get the type created by processing the declaration (i.e., with
+          // adjusted parameter types).
+          <types>... X |-> T:Type ...</types>
+          <functions>...
+               Loc |-> functionObject(_, Ids:List, Blk:K)
+          ...</functions>
+
+     syntax K ::= checkFunDefType(Type)
+     rule checkFunDefType(t(_, functionType(Ret:Type, Params:List))) => .
           when isVoidOrComplete(Ret) andBool areVoidOrComplete(Params)
           [structural]
 
@@ -64,21 +79,19 @@ module C-FUNCTION-DEF
           => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
      rule areVoidOrComplete(.List) => true
 
-     rule (. => ERROR("FD1", "incomplete return type in the definition for "
-               +String "function " +String idToString(X) +String " (6.7.6.3p4)."))
-          ~> checkFunctionDef(X:Id, t(_, functionType(Ret:Type, _)))
+     rule (. => ERROR("FD2", "incomplete return type in "
+               +String "function definition (6.7.6.3p4)."))
+          ~> checkFunDefType(t(_, functionType(Ret:Type, _)))
           when notBool isVoidOrComplete(Ret)
           [structural]
 
-     rule (. => ERROR("FD2", "incomplete parameter type in the definition for "
-               +String "function " +String idToString(X) +String " (6.7.6.3p4)."))
-          ~> checkFunctionDef(X:Id, t(_, functionType(_, Params:List)))
+     rule (. => ERROR("FD3", "incomplete parameter type in "
+               +String "function definition (6.7.6.3p4)."))
+          ~> checkFunDefType(t(_, functionType(_, Params:List)))
           when notBool areVoidOrComplete(Params)
           [structural]
 
-     rule [initialize-function]:
-          <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), 
-                    Fun:KResult) 
+     rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
                => .
           ...</k>
           <functions> M:Map => M:Map[Fun / Loc] </functions>
@@ -96,37 +109,49 @@ module C-FUNCTION-DEF
 
      syntax K ::= "returnToFileScope"
 
-     rule <k> staticEval(X:Id, t(_, functionType(_, P:List)), Blk:K)
-          => populateFromGlobal
-          ~> dummyBind(P)
-          ~> Blk
-          ~> returnToFileScope
+     rule <k> staticEval(X:Id, Ids:List, P:List, Blk:K)
+               => populateFromGlobal
+               ~> dummyBind(Ids, P)
+               ~> Blk
+               ~> returnToFileScope
           ...</k>
           <curr-function> _ => X </curr-function>
+          [structural]
 
      rule <k> returnToFileScope => . ...</k>
           <curr-function> _ => file-scope </curr-function>
+          [structural]
 
-     syntax K ::= dummyBind(List)
+     syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
+     rule hasDupParams(T:Type) => #hasDupParams'(T) ==K true
+     rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
+     rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
+
+     syntax Bool ::= hasDupIds(List) [function]
+     syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
+     rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
+     rule #hasDupIds'(
+               _
+               ListItem(typedDeclaration(_, X:Id))
+               _
+               ListItem(typedDeclaration(_, X:Id))
+               _
+          ) => true
+
+
+     syntax K ::= dummyBind(List, List)
      
-     rule dummyBind(ListItem(typedDeclaration(t(.Set, void), _)) _:List) => .
-     rule dummyBind(.List) => .
-     rule dummyBind(ListItem(variadic)) => .
-
-     rule dummyBind(ListItem(typedDeclaration(
-          (t(_, (arrayType(T:Type, _) => pointerType(T)))),
-          _)) _:List)
-
-     rule dummyBind(ListItem(typedDeclaration(
-          (t(_, (incompleteArrayType(T:Type) => pointerType(T)))), 
-          _)) _:List)
-          
-     rule dummyBind(ListItem(typedDeclaration(T:Type, X:Id)) P:List)
+     rule dummyBind(.List, ListItem(t(.Set, void)) _) => .
+          [structural]
+     rule dummyBind(.List, ListItem(variadic)) => .
+          [structural]
+     rule dummyBind(ListItem(X:Id) Ids:List, ListItem(T:Type) P:List)
           => addToEnv(X, symVal)
           ~> giveType(X, T)
-          ~> dummyBind(P)
-          when notBool isArrayType(T)
-               andBool notBool isVoidType(T)
+          ~> dummyBind(Ids, P)
+          when notBool isVoidType(T)
           [structural] 
+     rule dummyBind(.List, .List) => .
+          [structural]
 
 endmodule

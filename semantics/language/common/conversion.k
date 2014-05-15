@@ -57,7 +57,7 @@ module C-CONVERSION
           => #if F ==Float Int2Float(0)
                #then tv(0, t(Mods, bool)) 
                #else tv(1, t(Mods, bool)) #fi
-          when isFloatType(T)
+          when hasFloatType(T)
      rule cast(t(Mods:Set, bool), tv(V:CValue, T:Type))
           => #if V ==K NullPointer 
                #then tv(0, t(Mods, bool)) 

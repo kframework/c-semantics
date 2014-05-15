@@ -204,16 +204,16 @@ module C-TYPING-EXPR
                => usualArithmeticConversion(T, T')
           ...</type>
           when isArithBinConversionOp(L)
-               andBool (hasIntegerType(T) orBool isFloatType(T))
-               andBool (hasIntegerType(T') orBool isFloatType(T'))
+               andBool (hasIntegerType(T) orBool hasFloatType(T))
+               andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
           
      rule <type>
                _:K ? T:Type : T':Type 
                => usualArithmeticConversion(T, T')
           ...</type>
-          when (hasIntegerType(T) orBool isFloatType(T))
-               andBool (hasIntegerType(T') orBool isFloatType(T'))
+          when (hasIntegerType(T) orBool hasFloatType(T))
+               andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
      rule <type> _:K ? T:Type : T:Type => T:Type ...</type>
           when notBool isArrayType(T)
@@ -239,14 +239,14 @@ module C-TYPING-EXPR
 
      rule <type> L:KLabel(T:Type) => T ...</type> 
           when isArithUnaryOp(L)
-               andBool isFloatType(T)
+               andBool hasFloatType(T)
           [structural]
      rule <type> L:KLabel(T:Type) => promote(T) ...</type> 
           when isArithUnaryOp(L) andBool hasIntegerType(T)
           [structural]
      
      rule <type> L:KLabel(T:Type,, _:KList) => T ...</type>
-          when isFloatType(T)
+          when hasFloatType(T)
                andBool l(L) in typeStrictLeftBinaryOperators
           [structural]
      rule <type> L:KLabel(T:Type,, _:KList) => promote(T) ...</type>

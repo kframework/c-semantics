@@ -1,5 +1,11 @@
 module C-DECL-DEFINITION-SYNTAX
-     syntax K ::= doDeclare(K, K) [strict(1)] 
+     syntax K ::= declare(K, K) [strict(1)]
+
+     // The declare "backend" implemented in the trans or exec semantics.
+     syntax K ::= "declare'" "(" K "," K ")" [strict(1)]
+
+     syntax List ::= elideList(List) [function]
+     syntax Map ::= elideMap(Map) [function]
 endmodule
 
 module C-DECL-DEFINITION
@@ -43,8 +49,45 @@ module C-DECL-DEFINITION
           [structural]
      rule DeclarationDefinition(
                InitNameGroup(T:Type, list(ListItem(InitName(N:K, Exp:K)))))
-          => doDeclare(SingleName(T, N), Exp)
+          => declare(SingleName(T, N), Exp)
           [structural]
 
+     rule declare(T:Type, K:K)
+          => declare'(completeTags(elideDeclParams(T)), K)
+          [structural]
+
+     // Turns typedDeclarations into Types in function params.
+     syntax Type ::= elideDeclParams(Type) [function]
+     syntax List ::= elideParams(List) [function]
+     rule elideDeclParams(typedDeclaration(T:Type, X:Id))
+          => typedDeclaration(elideDeclParams(T), X)
+     rule elideDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(Mods, functionType(elideDeclParams(R), elideParams(Params)))
+     rule elideDeclParams(t(Mods:Set, arrayType(T:Type, N:CSize)))
+          => t(Mods, arrayType(elideDeclParams(T), N))
+     rule elideDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, incompleteArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
+          => t(Mods, pointerType(elideDeclParams(T)))
+     rule elideDeclParams(T:Type) => T
+          when notBool isTypedDeclaration(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isArrayType(T)
+               andBool notBool isIncompleteArrayType(T)
+               andBool notBool isPointerType(T)
+
+     rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
+          => ListItem(T) elideParams(Params)
+     rule elideParams(ListItem(variadic)) => ListItem(variadic)
+     rule elideParams(.List) => .List
+
+     rule elideList(ListItem(T:Type) L:List)
+          => ListItem(elideDeclParams(T)) elideList(L)
+     rule elideList(.List) => .List
+
+     rule elideMap(K:K |-> T:Type M:Map)
+          => K |-> elideDeclParams(T) elideMap(M)
+     rule elideMap(.Map) => .Map
+       
 endmodule
 

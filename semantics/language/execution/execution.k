@@ -1,4 +1,3 @@
-require "binding.k"
 require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
@@ -31,7 +30,6 @@ module C-EXECUTION
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
 
-     imports C-BINDING
      imports C-CHECK-LOC
      imports C-COMPOUND-LITERAL
      imports C-IO-BUFFERED

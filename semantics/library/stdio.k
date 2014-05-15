@@ -88,7 +88,7 @@ module LIBC-STDIO
      rule [nextvarg]:
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T), 
-               vararg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+               varg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
           when value(Len) ==Int value(Len')
           [structural]
      
@@ -223,7 +223,7 @@ module LIBC-STDIO
      syntax K ::= "formatter-aux" "(" K ")" [strict]
      syntax K ::= "formatter-next" "(" K ")"
      syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule formatter-next(vararg(tv(Loc:SymLoc, _)))
+     rule formatter-next(varg(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
      rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))

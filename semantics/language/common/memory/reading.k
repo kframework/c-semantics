@@ -69,7 +69,7 @@ module C-MEMORY-READING
      rule concretize(T:Type, dataList(
                ListItem(piece(encodedFloat(F:Float), Len:Int)) _)) 
           => tv(F:Float, stripQualifiers(T))
-          when isFloatType(T)
+          when hasFloatType(T)
                andBool (Len ==Int cfg:bitsPerByte)
           [structural]
 

@@ -108,7 +108,7 @@ module C-COMMON-EXPR-ADDITIVE
           when ifFromArrayInBounds(T, I)
           [structural]
           
-     syntax KResult ::= newFromArray(K, Int) [function]
+     syntax Type ::= newFromArray(Type, Int) [function]
      rule newFromArray(
                t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
                pointerType(T:Type)), I:Int) 

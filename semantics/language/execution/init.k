@@ -180,29 +180,24 @@ module C-EXECUTION-INIT
           <status> _ => mainCalled </status>
           [ndtrans]
      
-     // FIXME i think these are slightly different
-     // fixme void isn't supposed to have a name
-     // fixme figure out type of string
-     rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               ListItem(typedDeclaration(t(.Set, void), _:Id)))),
-               _:Int, _:Id, _) 
-          => Call(Identifier("main"), list(.List))
-          [structural]
+     // int main(void) -- also, int main() gets normalized to main(void)
      rule callMain-aux(t(.Set,
-               functionType(t(.Set, int), .List)), _:Int, _:Id, _) 
+          functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _) 
           => Call(Identifier("main"), list(.List))
           [structural]
+     // int main(int argc, char* argv[])
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
-               ListItem(typedDeclaration(t(.Set, int), _:Id))
-               ListItem(typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), _:Id)))), 
+               ListItem(t(.Set, int))
+               ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))), 
                N:Int, X:Id, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)
           [structural]
+     // int main(int argc, char** argv)
      rule callMain-aux(t(.Set,
                functionType(t(.Set, int),
-               ListItem(typedDeclaration(t(.Set, int), _:Id)) 
-               ListItem(typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), _:Id)))), 
+               ListItem(t(.Set, int)) 
+               ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))), 
                N:Int, X:Id, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)

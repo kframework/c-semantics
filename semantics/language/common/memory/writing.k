@@ -194,7 +194,7 @@ module C-MEMORY-WRITING
           when hasIntegerType(T)
      rule splitBytes(tv(F:Float, T:Type)) 
           => splitFloatBytes(F, T, byteSizeofType(T))
-          when isFloatType(T)
+          when hasFloatType(T)
      rule splitBytes(tv(I:Ptr, T:Type))
           => splitPointerBytes(I, T, byteSizeofType(T))
           when isPointerType(T)

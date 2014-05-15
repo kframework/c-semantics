@@ -43,8 +43,7 @@ module C-TRANSLATION-INIT
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule [unpack-TranslationUnit]:
-          <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
+     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
                => preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
@@ -77,7 +76,7 @@ module C-TRANSLATION-INIT
 
      rule <k> (.K => initFunction(
                tv(Loc, t(.Set, pointerType(T))), 
-               builtinPrototype(Identifier(B), T)))
+               builtinPrototype(Identifier(B))))
                ~> addBuiltins((SetItem(B:String) => .Set) _)
           ...</k>
           <external-types>...
