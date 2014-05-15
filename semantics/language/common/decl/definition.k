@@ -77,7 +77,7 @@ module C-DECL-DEFINITION
                andBool notBool isPointerType(T)
 
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
-          => ListItem(T) elideParams(Params)
+          => ListItem(elideDeclParams(T)) elideParams(Params)
      rule elideParams(ListItem(variadic)) => ListItem(variadic)
      rule elideParams(.List) => .List
 
