@@ -38,23 +38,6 @@ module C-BINDING
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
      
-     // TODO(chathhorn): do promotions if no prototype.
-     // rule bind(ListItem(tv(V:CValue, T':Type)) L:List, 
-     //           ListItem(typedDeclaration(T:Type, X:Id)) P:List)
-     //      => bindParam(X, T, tv(V, T'))
-     //      ~> bind(L, P)
-     //      when notBool isVoidType(T)
-     //      [structural] 
-     // // the idea here is that there should have been a previous argument, so we
-     // // can use its address to append all of the variadic arguments 
-     // rule bind(L:List, ListItem(variadic))
-     //      => bindVariadics(promoteList(L), 0)
-     //      [structural] 
-     // rule bind(.List, ListItem(typedDeclaration(t(.Set, void), _))) => .
-     //      [structural] 
-     // rule bind(.List, .List) => .
-     //      [structural] 
-
      syntax TypedValue ::= argPromote(TypedValue) [function]
      rule argPromote(tv(V:CValue, t(Mods:Set, T:SimpleType))) 
           => cast(argPromoteType(t(Mods, T)), tv(V, t(Mods, T)))
@@ -88,37 +71,6 @@ module C-BINDING
           => promote(T)
           when hasIntegerType(T)
      
-     // syntax List ::= promoteList(List) [function]
-     // rule promoteList(ListItem(tv(V:CValue, t(Mods:Set, T:K))) L:List) 
-     //      => ListItem(cast(argPromoteType(t(Mods, T)), tv(V, t(Mods, T)))) 
-     //           promoteList(L)
-     //      when (T ==K float) 
-     //           orElseBool (hasIntegerType(t(Mods:Set, T:K)) 
-     //                andBool ((rank(t(Mods, T)) <Int rank(t(.Set, int))) 
-     //                     orElseBool isBitfieldType(t(Mods, T))))
-     // rule promoteList(ListItem(tv(V:CValue, t(Mods:Set, T:K))) L:List) 
-     //      => ListItem(tv(V, t(Mods, T))) promoteList(L)
-     //      when ((notBool(hasIntegerType(t(Mods, T))) 
-     //                andBool (notBool T ==K float)
-     //                andBool (notBool isArrayType(t(Mods, T)))) 
-     //           orBool (T ==K double)
-     //           orBool (T ==K long-double))
-     //           orElseBool (rank(t(Mods, T)) >=Int rank(t(.Set, int)))
-     // rule promoteList(.List) => .List
-     
-     // this rule assumes it will be run immediately after other normal
-     // bindings for the same function.  This is all wrong if it is
-     // computational instead of structural because of other threads
-     // interleaving
-     // syntax K ::= bindVariadics(List, Int)
-     // rule <k> bindVariadics(ListItem(V:TypedValue) L:List, N:Int)
-     //           => bindParam(vararg(N), type(V), V)
-     //           ~> bindVariadics(L, N +Int 1)
-     //      ...</k>
-     //      [structural]
-     // rule bindVariadics(.List, _) => .
-     //      [structural]
-
      // Construct the function parameters. Takes three lists: the actual
      // (evaluated) parameters, the formal parameters as found in the function
      // type, and the list of identifiers from the function definition. If the

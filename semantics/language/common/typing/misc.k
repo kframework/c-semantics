@@ -323,16 +323,6 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
-     // rule idsFromParams(
-     //           L:List
-     //           ListItem(typedDeclaration(T:Type, X:Id))
-     //           ListItem(variadic))
-     //      => idsFromParams(
-     //           L
-     //           ListItem(typedDeclaration(T, X)))
-     //           // assumes variadic args are placed in incremental blocks
-     //           // TODO(chathhorn)
-     //           ListItem(vararg(incSymbolic(&(X))))
 
 endmodule
 
