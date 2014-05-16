@@ -27,18 +27,17 @@ module LIBC-BOOTSTRAP
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
      context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
-     rule <k> handleBuiltin(_ ListItem(variadic))
-               => Return(prepareBuiltin(F, makeVarArgs(P)))
-          ...</k>
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
           <curr-function> F:Id </curr-function>
           <curr-function-params> P:List </curr-function-params>
+          <types>... F |-> T:Type ...</types>
+          when variadic in getParams(T)
           [structural]
-     rule <k> handleBuiltin(DeclPs:List)
-               => Return(prepareBuiltin(F, P))
-          ...</k>
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, P)) ...</k>
           <curr-function> F:Id </curr-function>
           <curr-function-params> P:List </curr-function-params>
-          when notBool variadic in DeclPs
+          <types>... F |-> T:Type ...</types>
+          when notBool variadic in getParams(T)
           [structural]
 
      syntax List ::= makeVarArgs(List) [function]
