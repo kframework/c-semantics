@@ -13,6 +13,8 @@ module C-TRANSLATION-INIT
 
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -30,9 +32,7 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           when notBool (NOLINK in Opts)
 
-     rule <k> link
-               => printSuccess
-          ...</k>
+     rule <k> link => printSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
 
      rule (<T>...
@@ -67,36 +67,31 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(.List) => .K
           [structural]
      
-     syntax K ::= addBuiltins(Set)
-
+     syntax K ::= addBuiltins(Map)
+          
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
-
-     rule <k> (.K => initFunction(
-               tv(Loc, t(.Set, pointerType(T))), 
-               builtinPrototype(Identifier(B))))
-               ~> addBuiltins((SetItem(B:String) => .Set) _)
+     rule <k> (.K => declare(
+               typedDeclaration(T, Identifier(B)), 
+               initializer(initFunction(
+                    &(Identifier(B)),
+                    functionObject(Identifier(B), .List, handleBuiltin)
+               ))))
+               ~> addBuiltins((B:String |-> T:Type => .Map) _)
           ...</k>
-          <external-types>...
-               Identifier(B) |-> T:Type
-          ...</external-types>
-          <external-defs> 
-               Defs:Map => Defs:Map[Loc / Identifier(B)]
-          </external-defs>
-          <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <external-types>... Identifier(B) |-> _ ...</external-types>
+          <external-defs> Defs:Map </external-defs>
           when notBool Identifier(B) in keys Defs
           
-     rule <k> addBuiltins((SetItem(B:String) => .Set) _) ...</k>
+     rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           when (Identifier(B) in keys Defs)
                orBool (notBool Identifier(B) in keys Types)
      
-     rule addBuiltins(.Set) => .K
+     rule addBuiltins(.Map) => .K
 
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.

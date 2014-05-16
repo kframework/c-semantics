@@ -1,6 +1,9 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
      syntax K ::= addGlobalTag(Id, FieldInfo)
+
+     syntax FieldInfo ::= makeStructFieldInfo(List) [function]
+     syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
 endmodule
 
 module C-DECL-TAGGED
@@ -16,22 +19,14 @@ module C-DECL-TAGGED
 
      imports COMPAT-SYNTAX
 
-     // First map is for type, second map is for offset.
-     syntax FieldInfo ::= makeStructFieldInfo(List) [function]
-     syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
-
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
      rule StructDef(X:Id, krlist(L:List))
-          => structDef'(X,
-               makeStructFieldInfo(
-                    mergeBitfields(
-                         fillBitHoles(incompleteToFlexibleArrayMember(L)))))
+          => structDef'(X, makeStructFieldInfo(L))
           when L =/=List .List
           [structural]
      rule UnionDef(X:Id, krlist(L:List))
-          => unionDef'(X, makeUnionFieldInfo(
-               mergeBitfields(fillUnionBitHoles(L))))
+          => unionDef'(X, makeUnionFieldInfo(L))
           when L =/=List .List
           [structural]
 
@@ -145,7 +140,9 @@ module C-DECL-TAGGED
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
      rule makeStructFieldInfo(L:List) 
-          => makeStructFieldInfo'(L:List, 0, .Map, .Map, L:List)
+          => makeStructFieldInfo'(
+               mergeBitfields(fillBitHoles(incompleteToFlexibleArrayMember(L))),
+               0, .Map, .Map, L)
           when L:List =/=List .List
      rule makeStructFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:Id)) L:List
@@ -163,7 +160,8 @@ module C-DECL-TAGGED
                          [function]
      
      rule makeUnionFieldInfo(L:List) 
-          => makeUnionFieldInfo'(L, .Map, .Map, L)
+          => makeUnionFieldInfo'(mergeBitfields(fillUnionBitHoles(L)),
+               .Map, .Map, L)
           when L =/=List .List
      rule makeUnionFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:Id)) L:List

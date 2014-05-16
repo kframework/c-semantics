@@ -27,6 +27,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isWCharType(Type) [function]
      syntax Bool ::= isPointerType(Type) [function]
      syntax Bool ::= isArrayType(Type) [function]
+     syntax Bool ::= isFlexibleArrayType(Type) [function]
      syntax Bool ::= isBoolType(Type) [function]
      syntax Bool ::= isStructType(Type) [function]
      syntax Bool ::= isUnionType(Type) [function]

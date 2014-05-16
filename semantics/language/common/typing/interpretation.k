@@ -120,7 +120,6 @@ module C-TYPING-INTERPRETATION
           when notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
-               andBool notBool isIncompleteArrayType(T)
 
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]

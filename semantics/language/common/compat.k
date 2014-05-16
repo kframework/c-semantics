@@ -73,9 +73,11 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
+     // The K builtin "values" appears to return a Set.
+     syntax List ::= listValues(Map) [function]
+
      // TODO(chathhorn): better place for this?
      syntax K ::= case(Int)
-
 endmodule
 
 module COMPAT
@@ -180,6 +182,9 @@ module COMPAT
 
      rule klist(L:KList) => list(klistToList(L))
           [structural, anywhere]
+
+     rule listValues(_ |-> V:K M:Map) => ListItem(V) listValues(M)
+     rule listValues(.Map) => .List
 
 endmodule
 

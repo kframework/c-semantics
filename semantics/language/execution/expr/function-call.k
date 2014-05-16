@@ -9,6 +9,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -60,32 +61,45 @@ module C-EXPR-FUNCTION-CALL
      context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule <k> Call'(
-               tv(Loc:SymLoc, t(_, pointerType(t(_, functionType(_, P:List))))),
+               tv(Loc:SymLoc, t(_, pointerType(T:Type))),
                rvlist(L:List))
-               => sequencePoint ~> application(getTU(Loc), Fun, P, L)
+               => sequencePoint ~> application(getTU(Loc), Fun, T, L)
           ...</k>
           <functions>... Loc |-> Fun:KResult ...</functions>
+          when isFunctionType(T)
+          [structural]
+     // Resolve a linker loc to a real loc.
+     rule <k> Call'(tv((Loc:SymLoc => Loc'), _), _) ...</k>
+          <linkings>... Loc |-> Loc':SymLoc ...</linkings>
           [structural]
 
-     syntax K ::= application(String, K, List, List) [strict(2)]
+     syntax K ::= application(String, K, Type, List) [strict(2)]
      context application(_, HOLE, _, _)
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
-     rule [call]:
-          application(Tu:String, Fun:KResult, P:List, L:List) 
-          => application'(Tu, Fun, P, L)
+     rule <k> application(Tu:String, functionObject(X:Id, Ids:List, B:K),
+                    CallT:Type, L:List) 
+               => application'(Tu, functionObject(X, Ids, B),
+                    getParams(DefT), L)
+          ...</k>
+          <tu-id> Tu </tu-id>
+          <gtypes>... X |-> DefT:Type ...</gtypes>
+          when areCompatibleTypes(CallT, DefT)
+          [structural]
+     rule <k> (. => ERROR("FC1", "attempt to call the function " +String
+               idToString(X) +String "through a pointer with incompatible type."))
+               ~> application(Tu:String, functionObject(X:Id, _, _),
+                    CallT:Type, _)
+          ...</k>
+          <tu-id> Tu </tu-id>
+          <gtypes>... X |-> DefT:Type ...</gtypes>
+          when notBool areCompatibleTypes(CallT, DefT)
           [structural]
 
      syntax K ::= "application'" "(" String "," K "," List "," List ")" [strict(2)]
 
-     rule [builtin-application]:
-          application'(Tu:String, builtinPrototype(X:Id), P:List, L:List)
-          => application'(Tu, functionObject(X, .List, handleBuiltin(P)), P, L)
-          [structural]
-
-     rule [function-application]:
-          <k> application'(Tu:String, functionObject(X:Id, Ids:List, B:K), P:List, L:List) 
+     rule <k> application'(Tu:String, functionObject(X:Id, Ids:List, B:K), P:List, L:List) 
                ~> K:K 
                => sequencePoint
                ~> populateFromGlobal

@@ -18,17 +18,20 @@ module C-BITSIZE
      imports C-ENV-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
+     imports COMPAT-SYNTAX
+
      syntax Int ::= bitSizeofList(List) [function]
      syntax Int ::= "bitSizeofList'" "(" Int "," List ")" [function]
      
      rule sizeofType(T:Type)
-          => cast(cfg:sizeut, tv(byteSizeofType(T), cfg:largestUnsigned))
+          => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
           [structural]
 
      rule byteSizeofType(T:Type)
@@ -68,9 +71,11 @@ module C-BITSIZE
      rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
           => NBits
 
-     rule bitSizeofStruct(fieldInfo(L:List, _, _))
-          => bitSizeofList(L)
-     rule bitSizeofUnion(fieldInfo(L:List, _, _))
-          => maxBitSizeofList(L)
+     // Use the values in the Types map because some conversions aren't done on
+     // the decls (in particular, incompleteArray => flexibleArray).
+     rule bitSizeofStruct(fieldInfo(_, Types:Map, _))
+          => bitSizeofList(listValues(Types))
+     rule bitSizeofUnion(fieldInfo(_, Types:Map, _))
+          => maxBitSizeofList(listValues(Types))
 
 endmodule

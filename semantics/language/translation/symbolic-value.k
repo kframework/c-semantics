@@ -36,6 +36,7 @@ module C-SYMBOLIC-VALUE
 
      rule bitSizeofType(T:Type) => symVal
           when notBool isCompleteType(T)
+               andBool notBool isFlexibleArrayType(T)
      rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal
 
      rule splitBytes(tv(symVal, T:Type)) 

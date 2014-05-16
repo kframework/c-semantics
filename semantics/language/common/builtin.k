@@ -1,65 +1,76 @@
 module C-BUILTIN-SYNTAX
-
-     syntax Set ::= "builtins" [function]
-     syntax Value ::= builtinPrototype(Id)
-     syntax K ::= handleBuiltin(List)
-
+     syntax Map ::= "builtins" [function]
+     syntax K ::= "handleBuiltin"
 endmodule
 
 module C-BUILTIN
-     imports C-BUILTIN-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BUILTIN-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
 
-     // This set prevents our "linker" from choking due to unresolved
-     // references.
+     // Types for library functions defined in the semantics. These are the
+     // "definitive" types against which all calls are checked for
+     // compatibility.
      rule builtins =>
-          SetItem("__debug")
-          SetItem("__fslCloseFile")
-          SetItem("__fslFGetC")
-          SetItem("__fslOpenFile")
-          SetItem("__fslPutc")
-          SetItem("__va_copy")
-          SetItem("__va_end")
-          SetItem("__va_inc")
-          SetItem("__va_start")
-          SetItem("abort")
-          SetItem("asin")
-          SetItem("atan")
-          SetItem("atan2")
-          SetItem("calloc")
-          SetItem("cos")
-          SetItem("exit")
-          SetItem("exp")
-          SetItem("floor")
-          SetItem("fmod")
-          SetItem("free")
-          SetItem("getchar")
-          SetItem("log")
-          SetItem("longjmp")
-          SetItem("malloc")
-          SetItem("mtx_init")
-          SetItem("mtx_lock")
-          SetItem("mtx_unlock")
-          SetItem("printf")
-          SetItem("putchar")
-          SetItem("rand")
-          SetItem("realloc")
-          SetItem("setjmp")
-          SetItem("sin")
-          SetItem("snprintf")
-          SetItem("sprintf")
-          SetItem("sqrt")
-          SetItem("srand")
-          SetItem("strcpy")
-          SetItem("tan")
-          SetItem("thrd_create")
-          SetItem("thrd_current")
-          SetItem("thrd_join")
-          SetItem("time")
+          "__debug" |-> fun(void, int)
+          "__fslCloseFile" |-> fun(int, int)
+          "__fslFGetC" |-> fun(int, int, unsigned-long-long-int)
+          "__fslOpenFile" |-> fun(int, ptr(const(char)), ptr(const(char)))
+          "__fslPutc" |-> fun(int, char, int)
+          "__va_copy" |-> fun(void, ptr(ptr(void)), ptr(void))
+          "__va_end" |-> fun(void, ptr(ptr(void)))
+          "__va_inc" |-> fun(ptr(void), ptr(ptr(void)), unsigned-int)
+          "__va_start" |-> fun(void, ptr(ptr(void)), ptr(void))
+          "abort" |-> fun(void)
+          "asin" |-> fun(double, double)
+          "atan" |-> fun(double, double)
+          "atan2" |-> fun(double, double, double)
+          "calloc" |-> fun(ptr(void), unsigned-int, unsigned-int)
+          "cos" |-> fun(double, double)
+          "exit" |-> fun(void, int)
+          "exp" |-> fun(double, double)
+          "floor" |-> fun(double, double)
+          "fmod" |-> fun(double, double, double)
+          "free" |-> fun(void, ptr(void))
+          "getchar" |-> fun(int)
+          "log" |-> fun(double, double)
+          "longjmp" |-> fun(void, jmp_buf, int)
+          "malloc" |-> fun(ptr(void), unsigned-int)
+          "mtx_init" |-> fun(int, ptr(mtx_t), int)
+          "mtx_lock" |-> fun(int, ptr(mtx_t))
+          "mtx_unlock" |-> fun(int, ptr(mtx_t))
+          "printf" |-> fun(int, restrict(ptr(const(char))), variadic)
+          "putchar" |-> fun(int, int)
+          "rand" |-> fun(int)
+          "realloc" |-> fun(ptr(void), ptr(void), unsigned-int)
+          "setjmp" |-> fun(int, jmp_buf)
+          "sin" |-> fun(double, double)
+          "snprintf" |-> fun(int, restrict(ptr(char)), unsigned-int, restrict(ptr(const(char))), variadic)
+          "sprintf" |-> fun(int, restrict(ptr(char)), restrict(ptr(const(char))), variadic)
+          "sqrt" |-> fun(double, double)
+          "srand" |-> fun(void, unsigned-int)
+          "strcpy" |-> fun(ptr(char), ptr(char), ptr(const(char)))
+          "tan" |-> fun(double, double)
+          "thrd_create" |-> fun(int, ptr(int), ptr(fun(int, ptr(void))), ptr(void))
+          "thrd_current" |-> fun(int)
+          "thrd_join" |-> fun(int, int, ptr(int))
+          "time" |-> fun(long-long-int, ptr(long-long-int))
+
+     syntax Type ::= "mtx_t" [function]
+     rule mtx_t => struct("mtx_t_",
+          field(int, "id")
+          field(int, "type")
+          field(int, "owner")
+          field(int, "owned")
+          field(int, "flag")
+          field(int, "alive"))
+
+     syntax Type ::= "jmp_buf" [function]
+     rule mtx_t => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
 
      // Used by stddef.h.
      syntax K ::= offsetOf(K, K) [strict(1)]

@@ -2,6 +2,7 @@ module C-COMMON-EXPR-CAST
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{
      Preceding an expression by a parenthesized type name converts the value of
@@ -18,7 +19,7 @@ module C-COMMON-EXPR-CAST
           => Cast(DeclType(T, K), V)
           [structural]
      
-     rule Cast(T:Type, V:Value) => cast(T, V)
+     rule Cast(T:Type, V:Value) => cast(elideDeclParams(T), V)
           [structural]
 
 endmodule

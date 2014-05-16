@@ -4,6 +4,8 @@ module C-DECL-DEFINITION-SYNTAX
      // The declare "backend" implemented in the trans or exec semantics.
      syntax K ::= "declare'" "(" K "," K ")" [strict(1)]
 
+     // Turns typedDeclarations into Types in function params.
+     syntax Type ::= elideDeclParams(Type) [function]
      syntax List ::= elideList(List) [function]
      syntax Map ::= elideMap(Map) [function]
 endmodule
@@ -56,8 +58,6 @@ module C-DECL-DEFINITION
           => declare'(completeTags(elideDeclParams(T)), K)
           [structural]
 
-     // Turns typedDeclarations into Types in function params.
-     syntax Type ::= elideDeclParams(Type) [function]
      syntax List ::= elideParams(List) [function]
      rule elideDeclParams(typedDeclaration(T:Type, X:Id))
           => typedDeclaration(elideDeclParams(T), X)
@@ -67,6 +67,8 @@ module C-DECL-DEFINITION
           => t(Mods, arrayType(elideDeclParams(T), N))
      rule elideDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, incompleteArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods, flexibleArrayType(elideDeclParams(T)))
      rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
           => t(Mods, pointerType(elideDeclParams(T)))
      rule elideDeclParams(T:Type) => T
@@ -79,6 +81,8 @@ module C-DECL-DEFINITION
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
           => ListItem(elideDeclParams(T)) elideParams(Params)
      rule elideParams(ListItem(variadic)) => ListItem(variadic)
+     rule elideParams(ListItem(t(Mods:Set, T:SimpleType)) Params:List)
+          => ListItem(elideDeclParams(t(Mods, T))) elideParams(Params)
      rule elideParams(.List) => .List
 
      rule elideList(ListItem(T:Type) L:List)

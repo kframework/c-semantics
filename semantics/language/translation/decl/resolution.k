@@ -60,16 +60,10 @@ module C-DECL-RESOLUTION
           <external-defs>...
                X |-> Loc':SymLoc
           ...</external-defs>
-          <external-types>...
-               X |-> T:Type
-          ...</external-types>
           <tu-id> Tu </tu-id>
           <genv>...
                X |-> (Loc:SymLoc => Loc')
           ...</genv>
-          <gtypes>...
-               X |-> (_ => T)
-          ...</gtypes>
           <linkings>...
                (. => Loc |-> Loc')
           ...</linkings>
@@ -84,16 +78,10 @@ module C-DECL-RESOLUTION
           <external-defs>...
                X |-> Loc:SymLoc
           ...</external-defs>
-          <external-types>...
-               X |-> T:Type
-          ...</external-types>
           <tu-id> Tu </tu-id>
           <genv>...
                X |-> Loc
           ...</genv>
-          <gtypes>...
-               X |-> (_ => T) // TODO not sure.
-          ...</gtypes>
           when notBool isLinkerLoc(Loc)
 
      rule <k> resolveReferences ...</k>

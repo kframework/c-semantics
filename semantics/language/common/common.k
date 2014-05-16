@@ -15,6 +15,7 @@ require "promotion.k"
 require "settings.k"
 require "symloc.k"
 require "syntax.k"
+require "type-builder.k"
 require "typing.k"
 
 require "decl/definition.k"
@@ -59,6 +60,7 @@ module C-COMMON
      imports C-SETTINGS
      imports C-SYMLOC
      imports C-SYNTAX
+     imports C-TYPE-BUILDER
      imports C-TYPING
 
      imports C-DECL-DEFINITION
@@ -84,5 +86,4 @@ module C-COMMON
      imports C-MEMORY-ALLOC
      imports C-MEMORY-READING
      imports C-MEMORY-WRITING
-
 endmodule

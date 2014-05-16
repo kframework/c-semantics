@@ -89,6 +89,7 @@ module C-TYPING-PREDICATES
      rule isPointerType(T:Type) => #isPointer(T) ==K true
      rule isBoolType(T:Type) => #isBoolT(T) ==K true
      rule isArrayType(T:Type) => #isArray(T) ==K true
+     rule isFlexibleArrayType(T:Type) => #isFlexibleArray(T) ==K true
      rule isVoidType(T:Type) => #isVoid(T) ==K true
 
      rule isAggregateType(T:Type)
@@ -137,6 +138,7 @@ module C-TYPING-PREDICATES
                    | "#isPointer" "(" Type ")" [function]
                    | "#isBoolT" "(" Type ")" [function]
                    | "#isArray" "(" Type ")" [function]
+                   | "#isFlexibleArray" "(" Type ")" [function]
                    | "#isVoid" "(" Type ")" [function]
                    | "#isStruct" "(" Type ")" [function]
                    | "#isUnion" "(" Type ")" [function]
@@ -169,6 +171,9 @@ module C-TYPING-PREDICATES
      rule #isArray(t(_, flexibleArrayType(_))) => true 
      rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T) 
 
+     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true 
+     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T) 
+
      rule #isVoid(t(_, void)) => true
      rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)
 
@@ -181,6 +186,7 @@ module C-TYPING-PREDICATES
      rule #isUnion(typedDeclaration(T:Type, _)) => #isUnion(T) 
 
      rule #isIncompleteArray(t(_, incompleteArrayType(_))) => true 
+     rule #isIncompleteArray(t(_, flexibleArrayType(_))) => true 
      rule #isIncompleteArray(typedDeclaration(T:Type, _))
           => #isIncompleteArray(T) 
 
