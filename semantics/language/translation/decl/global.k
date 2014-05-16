@@ -519,6 +519,14 @@ module C-DECL-GLOBAL
                andBool K =/=K .K
           [structural]
 
+     // already initialized
+     rule (. => ERROR("DG11", "redefinition of symbol: "
+               +String idToString(X)))
+          ~> declareExternalVariable'(initValue(X:Id, _, K:K), 
+               initialized, _, _)
+          when  K =/=K .K
+          [structural]
+
      syntax K ::= setInitializing(Bool)
      rule <k> setInitializing(I:Bool) => .K ...</k>
           <initializing> _ => I </initializing>
@@ -586,7 +594,7 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Loc' ...</external-defs>
           [structural]
    
-     rule <k> (.K => ERROR("DG11",
+     rule <k> (.K => ERROR("DG12",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:Id, _, Loc':SymLoc)
@@ -655,8 +663,8 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
+          when notBool (X in keys GStructs)
           [structural]
-
      rule <k> addGlobalTag(X:Id, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -664,6 +672,16 @@ module C-DECL-GLOBAL
           <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           when notBool (X in Incs)
+               andBool notBool (X in keys GStructs)
+          [structural]
+     rule <k> (. => ERROR("DG13", "redefinition of a struct, union, or enum: "
+                    +String idToString(X)))
+               ~> addGlobalTag(X:Id, _)
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <gstructs> GStructs:Map </gstructs>
+          when X in keys GStructs
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -678,7 +696,8 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <externals>...
-               X |-> declState(_, T:Type, declared, _)
+               X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
+                         declared, _)
           ...</externals>
           when notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
@@ -691,7 +710,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>     
           when isFunctionType(T)
-               orBool isCompleteType(completeTag(Tag, Info, T))
+               orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
      rule completeTagInExtDecls(_, _, .Set) => .K
@@ -708,13 +727,12 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
           <internals>...
-               X |-> declState(_, T:Type, declared, _)
+               X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
+                    declared, _)
           ...</internals>
           when notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
           [structural]
-     
-
      rule <k> completeTagInIntDecls(Tag:Id, Info:FieldInfo, (SetItem(X:Id) => .Set) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -723,7 +741,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>     
           when isFunctionType(T)
-               orBool (notBool isCompleteType(completeTag(Tag, Info, T)))
+               orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
      rule completeTagInIntDecls(_, _, .Set) => .K
@@ -752,7 +770,6 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax K ::= "allowInit'"
-
      rule allowInit(K:K)
           => setInitializing(true)
           ~> K
@@ -778,7 +795,8 @@ module C-DECL-GLOBAL
           when notBool X in keys Types
           [structural]
 
-     rule <k> (.K => ERROR("DG12", "incompatible redeclaration of symbol with internal or external linkage: "
+     rule <k> (.K => ERROR("DG14", "incompatible redeclaration of symbol "
+                    +String "with internal or external linkage: "
                     +String idToString(X)))
                ~> giveCompositeType(X:Id, T':Type)
           ...</k>

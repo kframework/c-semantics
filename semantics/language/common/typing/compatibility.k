@@ -164,10 +164,10 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T':Type, N:CSize)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
 
-     // rule compositeType(
-     //           t(Mods:Set, flexibleArrayType(T:Type)),
-     //           t(Mods':Set, flexibleArrayType(T':Type)))
-     //      => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
+     rule compositeType(
+               t(Mods:Set, flexibleArrayType(T:Type)),
+               t(Mods':Set, flexibleArrayType(T':Type)))
+          => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
                typedDeclaration(T:Type, X:Id),

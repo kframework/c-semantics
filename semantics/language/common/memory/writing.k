@@ -108,7 +108,7 @@ module C-MEMORY-WRITING
                     readBytes(floorLoc(Loc),
                          bitsToBytes(bitSizeofType(T) +Int getBitOffset(Loc)), T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (notBool isByteLoc(Loc))
+               orBool notBool isByteLoc(Loc)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
                andBool (I >=Int 0)
           [structural]

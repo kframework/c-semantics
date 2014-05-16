@@ -54,7 +54,6 @@ module C-BITSIZE
           => bitSizeofType(T) *Int N
      rule bitSizeofType(t(_, flexibleArrayType(_))) 
           => 0
-     // TODO(chathhorn): why is a functionType 8 bits?
      rule bitSizeofType(t(_, functionType(_, _))) 
           => cfg:bitsPerByte
      rule bitSizeofType(t(_, pointerType(_))) 
@@ -71,11 +70,8 @@ module C-BITSIZE
      rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
           => NBits
 
-     // Use the values in the Types map because some conversions aren't done on
-     // the decls (in particular, incompleteArray => flexibleArray).
-     rule bitSizeofStruct(fieldInfo(_, Types:Map, _))
-          => bitSizeofList(listValues(Types))
-     rule bitSizeofUnion(fieldInfo(_, Types:Map, _))
-          => maxBitSizeofList(listValues(Types))
-
+     rule bitSizeofStruct(fieldInfo(Decls:List, _, _))
+          => bitSizeofList(Decls)
+     rule bitSizeofUnion(fieldInfo(Decls:List, _, _))
+          => maxBitSizeofList(Decls)
 endmodule

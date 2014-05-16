@@ -16,6 +16,7 @@ module C-DECL-LOCAL
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-DECL-TAGGED-SYNTAX
      imports COMPAT-SYNTAX
 
      // TODO(chathhorn): Totally not sure what to do about these first cases.
@@ -71,6 +72,19 @@ module C-DECL-LOCAL
                andBool notBool (X in keys Types)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
+     rule declareInternalVariable(X:Id, T:Type, K:K)
+          => initLocalStatic(X,
+               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
+          when isStaticType(T)
+               andBool (notBool isExternType(T))
+               andBool (notBool isFunctionType(T))
+          [structural] 
+     rule declareInternalVariable(X:Id, T:Type, K:K)
+          => addToEnv(X, symVal)
+          ~> defineAndInit(X, stripStorageSpecifiers(T), 
+               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
+          when isNaked(T)
+          [structural] 
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
      rule <k> (.K => ERROR("DL1", "Extern declaration of "
@@ -83,20 +97,10 @@ module C-DECL-LOCAL
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
           when isExternType(T) andBool notBool isStaticType(T)
           [structural] 
-
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => initLocalStatic(X,
-               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
-          when isStaticType(T)
-               andBool (notBool isExternType(T))
-               andBool (notBool isFunctionType(T))
-          [structural] 
-
-     rule declareInternalVariable(X:Id, T:Type, K:K)
-          => addToEnv(X, symVal)
-          ~> defineAndInit(X, stripStorageSpecifiers(T), 
-               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
-          when isNaked(T)
+     rule (. => ERROR("DL2", "extern declaration of " +String idToString(X)
+               +String " appears at block scope with an initializer."))
+          ~> declareInternalVariable(X:Id, T:Type, K:K)
+          when isExternType(T) andBool K =/=K NoInit
           [structural] 
 
      syntax K ::= initLocalStatic(Id, K) [strict(2)] 
@@ -119,7 +123,7 @@ module C-DECL-LOCAL
           when notBool (kpair(X, BlockNum) in keys LocalStatics)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
-     rule <k> (.K => ERROR("DL4","Redeclaration of " +String idToString(X)
+     rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
                ~> initLocalStatic(X:Id, _)
           ...</k>
@@ -162,5 +166,15 @@ module C-DECL-LOCAL
      //      </local-types>
      //      [structural] 
 
+     rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
+          <structs> Structs:Map => Structs[Info / X] </structs>
+          when notBool (X in keys Structs)
+          [structural]
+     rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
+               +String idToString(X)))
+               ~> addLocalTag(X:Id, _)
+          ...</k>
+          <structs>... X |-> _ ...</structs>
+          [structural]
 endmodule
 

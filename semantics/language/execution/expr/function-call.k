@@ -88,7 +88,7 @@ module C-EXPR-FUNCTION-CALL
           when areCompatibleTypes(CallT, DefT)
           [structural]
      rule <k> (. => ERROR("FC1", "attempt to call the function " +String
-               idToString(X) +String "through a pointer with incompatible type."))
+               idToString(X) +String " through a pointer with incompatible type."))
                ~> application(Tu:String, functionObject(X:Id, _, _),
                     CallT:Type, _)
           ...</k>

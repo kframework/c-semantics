@@ -82,7 +82,7 @@ module C-IO-DIRECT
           [large, structural]
           
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
-               => assert(Offset:Int <Int Len:Int, 2)
+               => assert(Offset <Int Len, 2)
                     ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
                          t(.Set, no-type))
           ...</k>

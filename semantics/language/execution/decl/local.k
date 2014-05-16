@@ -6,6 +6,7 @@ module C-DECL-LOCAL
      imports C-DECL-LOCAL-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-TAGGED-SYNTAX
      imports C-DECL-ZERO-SYNTAX
      imports C-ENV-SYNTAX
 
@@ -141,6 +142,10 @@ module C-DECL-LOCAL
 
      rule justInit(initValue(_, _, K:K)) 
           => K ~> sequencePoint
+          [structural]
+
+     rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
+          <structs> Structs:Map => Structs:Map[Info / X] </structs>
           [structural]
 endmodule
 
