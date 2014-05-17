@@ -70,7 +70,7 @@ module C-BUILTIN
           field(int, "alive"))
 
      syntax Type ::= "jmp_buf" [function]
-     rule mtx_t => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
+     rule jmp_buf => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
 
      // Used by stddef.h.
      syntax K ::= offsetOf(K, K) [strict(1)]

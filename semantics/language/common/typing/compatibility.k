@@ -1,4 +1,11 @@
+module C-TYPING-COMPATIBILITY-SYNTAX
+     syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= sameQualifiers(Set, Set) [function]
+endmodule
+
 module C-TYPING-COMPATIBILITY
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -31,7 +38,6 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
 
      rule areCompatibleTypes(T:Type, T':Type) => #isCompat(T, T') ==K true
@@ -125,7 +131,6 @@ module C-TYPING-COMPATIBILITY
           => #isCompat(T, T') andBool #areCompat(L, L')
      rule #areCompat(.List, .List) => true
 
-     syntax Bool ::= sameQualifiers(Set, Set) [function]
      rule sameQualifiers(Mods:Set, Mods':Set)
           => intersectSet(Mods, typeQualifiers)
                ==Set intersectSet(Mods', typeQualifiers)

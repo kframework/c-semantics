@@ -18,6 +18,7 @@ module C-SYMBOLIC-VALUE
      imports C-DYNAMIC-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -64,4 +65,11 @@ module C-SYMBOLIC-VALUE
      rule #areSymbolic(ListItem(V:CValue) L:List)
           => isSymbolic(V) orElseBool #areSymbolic(L)
 
+     // Not sure about this -- makes all VLAs compat with non-VLAs.
+     rule #isCompat(
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, arrayType(T':Type, N':CSize)))
+          => #isCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+               andBool ((N ==K symVal) orBool (N' ==K symVal))
 endmodule

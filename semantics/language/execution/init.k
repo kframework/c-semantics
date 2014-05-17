@@ -172,8 +172,7 @@ module C-EXECUTION-INIT
      /*@ this bit of indirection is used to check that the main prototype is
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
-          <k> 
-               callMain(N:Int, Args:K)
+          <k> callMain(N:Int, Args:K)
                => callMain-aux(typeof(Identifier("main")), N,
                     Identifier("#incomingArgumentsArray"), Args)
           ...</k>

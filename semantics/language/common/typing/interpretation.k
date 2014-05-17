@@ -7,6 +7,7 @@ module C-TYPING-INTERPRETATION
      imports C-ENV-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
      imports COMPAT-SYNTAX
 
      // Rules that use specifier should be careful to use extractActualType if
@@ -101,25 +102,6 @@ module C-TYPING-INTERPRETATION
           => t(getStorageSpecifiers(T),
                incompleteArrayType(stripStorageSpecifiers(T)))
           [structural, anywhere]
-
-     syntax List ::= adjustParams(List) [function]
-     rule adjustParams(ListItem(T:Type) Params:List)
-          => ListItem(adjustParam(T)) adjustParams(Params)
-     rule adjustParams(.List) => .List
-
-     syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(typedDeclaration(T:Type, X:Id))
-          => typedDeclaration(adjustParam(T), X)
-     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
-          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
-     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(T:Type) => T
-          when notBool isTypedDeclaration(T)
-               andBool notBool isFunctionType(T)
-               andBool notBool isArrayType(T)
 
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]

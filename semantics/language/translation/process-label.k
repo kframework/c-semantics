@@ -10,8 +10,6 @@ module C-PROCESS-LABEL
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     // now that we can have different strictnesses in different cells, maybe
-     // this can be redone easily
      /*
      things I have to keep track of:
           in goto map:

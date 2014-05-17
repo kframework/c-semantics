@@ -30,7 +30,7 @@ module C-FUNCTION-DEF
                     functionObject(X, idsFromParams(getParams(T)), safeBody(X, Blk))
                ))
           )
-          ~> calculateGotoMap(X, Blk)
+          ~> calculateGotoMap(X, safeBody(X, Blk))
           ~> processFunDef(X)
           when isFunctionType(T) andBool notBool hasDupParams(T)
           [structural]

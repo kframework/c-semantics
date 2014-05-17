@@ -15,6 +15,8 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= union(String, List) [function]
      syntax Type ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
+
+     syntax List ::= adjustParams(List) [function]
 endmodule
 
 module C-TYPE-BUILDER
@@ -28,23 +30,23 @@ module C-TYPE-BUILDER
      rule fun(R:FlexType)
           => fun(R, void)
      rule fun(R:FlexType, T:FlexType)
-          => t(.Set, functionType(expand(R),
-               ListItem(expand(T))))
+          => t(.Set, functionType(expand(R), adjustParams(
+               ListItem(expand(T)))))
      rule fun(R:FlexType, T:FlexType, T':FlexType)
-          => t(.Set, functionType(expand(R),
+          => t(.Set, functionType(expand(R), adjustParams(
                ListItem(expand(T))
-               ListItem(expand(T'))))
+               ListItem(expand(T')))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType)
-          => t(.Set, functionType(expand(R),
+          => t(.Set, functionType(expand(R), adjustParams(
                ListItem(expand(T))
                ListItem(expand(T'))
-               ListItem(expand(T''))))
+               ListItem(expand(T'')))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType, T''':FlexType)
-          => t(.Set, functionType(expand(R),
+          => t(.Set, functionType(expand(R), adjustParams(
                ListItem(expand(T))
                ListItem(expand(T'))
                ListItem(expand(T''))
-               ListItem(expand(T'''))))
+               ListItem(expand(T''')))))
 
      rule ptr(T:FlexType) => t(.Set, pointerType(expand(T)))
 
@@ -73,4 +75,22 @@ module C-TYPE-BUILDER
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
      rule expand(T:SimpleType) => t(.Set, T)
+
+     rule adjustParams(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam(T)) adjustParams(Params)
+     rule adjustParams(.List) => .List
+
+     syntax Type ::= adjustParam(Type) [function]
+     rule adjustParam(typedDeclaration(T:Type, X:Id))
+          => typedDeclaration(adjustParam(T), X)
+     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
+     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(T:Type) => T
+          when notBool isTypedDeclaration(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isArrayType(T)
 endmodule
