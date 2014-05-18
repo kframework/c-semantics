@@ -94,18 +94,29 @@ module C-STMT-GOTO
 
      // declaration stack, actual local variables
      syntax K ::= processGotoSameBlock(List, List)
-     rule <k> Goto(Lbl:K) ~> _ => processGoto(GotoInfo) </k>
+     rule <k> Goto(Lbl:Id) ~> _ => processGoto(GotoInfo) </k>
           <curr-function> F:Id </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F |-> map((_ (Lbl |-> GotoInfo:K))) 
           ...</goto-map>
+          when #isFunLabel(Lbl) =/=K true
           [structural]  // rule so that looping programs see repetition
+     rule <k> Goto(Lbl:Id) ~> _ => Blk </k>
+          <curr-function> F:Id </curr-function>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <goto-map>... 
+               F |-> map(_ Lbl |-> gotoObject(_, _, Blk:K, _, _))
+          ...</goto-map>
+          when #isFunLabel(Lbl) ==K true
+
+     syntax Bool ::= "#isFunLabel" "(" Id ")" [function]
+     rule #isFunLabel(funLabel(_)) => true
           
      // - first case, when we're in the same block
-     rule <k> 
-               L:KLabel(gotoObject(Depth:Int, 
+     rule <k> L:KLabel(gotoObject(Depth:Int, 
                     (ListItem(CurrentBlock:Int) BlockHistory:List), 
                     K:K, LoopStack:List, DeclStack:List)) 
                     ~> _ 
@@ -126,8 +137,7 @@ module C-STMT-GOTO
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
      rule [processGoto-pop-differing-1]:
-          <k> 
-               (. => popBlock) 
+          <k> (. => popBlock) 
                ~> processGoto(gotoObject(
                     _:Int, TargetBlockHistory:List, _, _, _))
           ...</k>
@@ -139,8 +149,7 @@ module C-STMT-GOTO
           
      //  same
      rule [processGoto-pop-differing-2]:
-          <k> 
-               (. => popBlock) 
+          <k> (. => popBlock) 
                ~> processGoto(gotoObject(_:Int, 
                     _:List ListItem(BlockNum:Int)
                     TargetBlockHistory:List, _, _, _))
@@ -152,8 +161,7 @@ module C-STMT-GOTO
           [structural] 
                
      //  once we share a history, we start to push
-     rule <k> 
-               processGoto(gotoObject(TargetDepth:Int, 
+     rule <k> processGoto(gotoObject(TargetDepth:Int, 
                     (Prefix:List ListItem(_:Int) ActualHistory:List),
                     K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
@@ -168,8 +176,7 @@ module C-STMT-GOTO
           when ActualDepth +Int 1 =/=Int TargetDepth
           [structural, large] 
           
-     rule <k> 
-               ( . => pushBlock
+     rule <k> ( . => pushBlock
                ~> addToHistory(TargetBlk)
                ~> addVariablesForBlock(TargetBlk, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
@@ -182,8 +189,7 @@ module C-STMT-GOTO
           [structural, large] 
      
      //  We've made it to the block above the target
-     rule <k> 
-               L:KLabel(gotoObject(SIntDepth:Int, 
+     rule <k> L:KLabel(gotoObject(SIntDepth:Int, 
                     (ListItem(TargetBlock:Int) BlockHistory:List),
                     K:K, 
                     LoopStack:List, 
@@ -207,8 +213,7 @@ module C-STMT-GOTO
           [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
      
      //  skip variables from other blocks
-     rule <k> 
-               addVariablesForBlock(TargetBlock:Int, 
+     rule <k> addVariablesForBlock(TargetBlock:Int, 
                     ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .)
                     _:List)
                )
@@ -218,8 +223,7 @@ module C-STMT-GOTO
           [structural] 
           
      //  skip variables in the real history
-     rule <k> 
-               addVariablesForBlock(TargetBlock:Int,
+     rule <k> addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(
                          _:Int, TargetBlock:Int, Decl:K)) => .)
                     _:List)

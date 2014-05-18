@@ -33,7 +33,9 @@ module C-DYNAMIC-SYNTAX
      syntax Id ::= "file-scope"
 
      //  switchid, value (tv or 'Default)
-     syntax K ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax Id ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax Id ::= funLabel(Id)
+     syntax Id ::= case(Int)
 
      syntax K ::= "pushBlock"
      syntax K ::= "popBlock"

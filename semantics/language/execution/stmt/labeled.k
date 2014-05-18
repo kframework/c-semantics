@@ -6,12 +6,12 @@ module C-STMT-LABELED
      continues unimpeded across them.
      }*/
      rule [skip-label]: 
-          Label(_:Id, K:K) => K
+          Label(_, K:K) => K
           [structural]
      rule [case-fall-through]:
-          Case(_:Int, _:Int, _, K:K) => K
+          Case(_, _, _, K:K) => K
           [structural] 
      rule [default-fall-through]:
-          Default(_:Int, K:K) => K
+          Default(_, K:K) => K
           [structural] 
 endmodule

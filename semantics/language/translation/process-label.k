@@ -35,7 +35,7 @@ module C-PROCESS-LABEL
           <goto-map-calc>
                .Bag => (<goto-calc>... 
                          <computation> 
-                              K:K ~> Return(NothingExpression)
+                              K ~> Return(NothingExpression)
                          </computation>
                     ...</goto-calc>)
           </goto-map-calc>
@@ -62,12 +62,12 @@ module C-PROCESS-LABEL
           when M =/=Map .Map
           [structural] 
 
-     syntax K ::= "endBlockForGoto" "(" Int ")"
+     syntax K ::= endBlockForGoto(Int)
      rule <computation> 
                   BlockStatement(Blk:K) => Blk ~> popBlock
           ...</computation>
           <goto-nesting-depth> N:Int => N +Int 1 </goto-nesting-depth>
-          <goto-block-history> ListItem(_:Int) ...</goto-block-history>
+          <goto-block-history> ListItem(_) ...</goto-block-history>
           [structural] 
      rule <computation>
                Block(Num:Int, _, list(L:List)) => listToK(L)

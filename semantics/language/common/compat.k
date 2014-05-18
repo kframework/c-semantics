@@ -73,8 +73,6 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
-     // TODO(chathhorn): better place for this?
-     syntax K ::= case(Int)
 endmodule
 
 module COMPAT

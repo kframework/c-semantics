@@ -1,3 +1,5 @@
+require "syntax.k"
+
 require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"

@@ -3,8 +3,6 @@ require "language/common/common.k"
 require "library/library.k"
 
 module C11-SYNTAX
-     imports C-SYNTAX
-     imports C-LTLMC-SYNTAX
 endmodule
 
 module C11

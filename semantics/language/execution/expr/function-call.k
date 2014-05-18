@@ -78,9 +78,9 @@ module C-EXPR-FUNCTION-CALL
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
-     rule <k> application(Tu:String, functionObject(X:Id, Ids:List, B:K),
+     rule <k> application(Tu:String, functionObject(X:Id, Ids:List, Blk:K),
                     CallT:Type, L:List) 
-               => application'(Tu, functionObject(X, Ids, B),
+               => application'(Tu, functionObject(X, Ids, Blk),
                     getParams(DefT), L)
           ...</k>
           <tu-id> Tu </tu-id>
@@ -99,13 +99,13 @@ module C-EXPR-FUNCTION-CALL
 
      syntax K ::= "application'" "(" String "," K "," List "," List ")" [strict(2)]
 
-     rule <k> application'(Tu:String, functionObject(X:Id, Ids:List, B:K), P:List, L:List) 
+     rule <k> application'(Tu:String, functionObject(X:Id, Ids:List, BlK:K), P:List, L:List) 
                ~> K:K 
                => sequencePoint
                ~> populateFromGlobal
                ~> bind(Ids, P, L)
                ~> sequencePoint
-               ~> B
+               ~> BlK
           </k>
           <call-stack> .List => ListItem(
                <call-stack-frame>...

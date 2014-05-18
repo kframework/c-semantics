@@ -17,8 +17,7 @@ module C-FUNCTION-DEF
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports DEBUG-SYNTAX
+     imports C-BINDING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -27,14 +26,14 @@ module C-FUNCTION-DEF
                typedDeclaration(emptyParamsToVoid(T), X), 
                initializer(initFunction(
                     &(X),
-                    functionObject(X, idsFromParams(getParams(T)), safeBody(X, Blk))
+                    functionObject(X, idsFromParams(getParams(T)),
+                         Goto(funLabel(X)))
                ))
           )
-          ~> calculateGotoMap(X, safeBody(X, Blk))
-          ~> processFunDef(X)
+          ~> calculateGotoMap(X, Label(funLabel(X), safeBody(X, Blk)))
+          ~> processFunDef(X, Blk)
           when isFunctionType(T) andBool notBool hasDupParams(T)
           [structural]
-
      rule (. => ERROR("FD1", "duplicate parameters in "
                +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
@@ -48,10 +47,10 @@ module C-FUNCTION-DEF
           => t(Mods, functionType(R, P))
           when P =/=List .List
 
-     syntax K ::= processFunDef(Id)
+     syntax K ::= processFunDef(Id, K)
                 | staticEval(Id, List, List, K)
 
-     rule <k> processFunDef(X:Id)
+     rule <k> processFunDef(X:Id, Blk:K)
                => checkFunDefType(T)
                ~> staticEval(X, Ids, getParams(T), Blk)
           ...</k>
@@ -60,7 +59,7 @@ module C-FUNCTION-DEF
           // adjusted parameter types).
           <types>... X |-> T:Type ...</types>
           <functions>...
-               Loc |-> functionObject(_, Ids:List, Blk:K)
+               Loc |-> functionObject(_, Ids:List, _)
           ...</functions>
 
      syntax K ::= checkFunDefType(Type)
