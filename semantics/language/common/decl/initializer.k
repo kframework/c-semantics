@@ -51,7 +51,7 @@ module C-DECL-INITIALIZER
 
      rule figureInit(
                _, 
-               t(_, arrayType(T:Type, Len:Int)), 
+               t(_, arrayType(T:Type, Len:CSize)), 
                (SingleInit(stringLiteral(S:String))
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
@@ -61,7 +61,7 @@ module C-DECL-INITIALIZER
 
      rule figureInit(
                _, 
-               t(_, arrayType(T:Type, Len:Int)), 
+               t(_, arrayType(T:Type, Len:CSize)), 
                (SingleInit(wstringLiteral(S:List)) 
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(wstringLiteral(S)))))))

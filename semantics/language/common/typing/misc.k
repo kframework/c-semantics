@@ -151,7 +151,7 @@ module C-TYPING-MISC
           SetItem(Initializer)
           // Also typedef, technically.
 
-     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
+     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
@@ -169,7 +169,7 @@ module C-TYPING-MISC
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
 
-     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:Int)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                arrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
