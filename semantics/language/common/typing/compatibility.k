@@ -108,6 +108,9 @@ module C-TYPING-COMPATIBILITY
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments, as long as they're all
      // promoted.
+
+     // TODO(chathhorn): not sufficient?!? -- apparently we also need to look
+     // at the argument types in a function definition w/no prototype?
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, .List)),
                t(Mods':Set, functionType(T':Type, Args':List)))
@@ -186,66 +189,6 @@ module C-TYPING-COMPATIBILITY
                typedDeclaration(T:Type, X:Id),
                typedDeclaration(T':Type, X:Id))
           => typedDeclaration(compositeType(T, T'), X)
-
-     // TODO(chathhorn): really not sure about these. The standard doesn't seem
-     // to mention structs/unions at all when talking about forming composite
-     // types, but I think it's got to be defined something like this. There
-     // must be some reason this never comes up, though.
-     // rule compositeType(
-     //           t(Mods:Set,
-     //                structType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
-     //           t(Mods':Set,
-     //                structType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
-     //      => t(Mods Mods', structType(X, N, fieldInfo(
-     //                compositeFields(Fs, Fs'),
-     //                compositeTypes(Ts, Ts'), Offs)))
-     // rule compositeType(
-     //           t(Mods:Set,
-     //                structType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
-     //           t(Mods':Set, incompleteStructType(X:Id)))
-     //      => t(Mods Mods', structType(X, N, fieldInfo(Fs, Ts, Offs)))
-     // rule compositeType(
-     //           t(Mods:Set, incompleteStructType(X:Id)),
-     //           t(Mods':Set,
-     //                structType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
-     //      => t(Mods Mods', structType(X, N, fieldInfo(Fs, Ts, Offs)))
-     // rule compositeType(
-     //           t(Mods:Set, incompleteStructType(X:Id)),
-     //           t(Mods':Set, incompleteStructType(X:Id)))
-     //      => t(Mods Mods', incompleteStructType(X))
-
-     // rule compositeType(
-     //           t(Mods:Set,
-     //                unionType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
-     //           t(Mods':Set,
-     //                unionType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
-     //      => t(Mods Mods', unionType(X, N, fieldInfo(
-     //                compositeFields(Fs, Fs'),
-     //                compositeTypes(Ts, Ts'), Offs)))
-     // rule compositeType(
-     //           t(Mods:Set,
-     //                unionType(X:Id, N:CSize, fieldInfo(Fs:List, Ts:Map, Offs:Map))),
-     //           t(Mods':Set, incompleteUnionType(X:Id)))
-     //      => t(Mods Mods', unionType(X, N, fieldInfo(Fs, Ts, Offs)))
-     // rule compositeType(
-     //           t(Mods:Set, incompleteUnionType(X:Id)),
-     //           t(Mods':Set,
-     //                unionType(X:Id, N:CSize, fieldInfo(Fs':List, Ts':Map, Offs:Map))))
-     //      => t(Mods Mods', unionType(X, N, fieldInfo(Fs, Ts, Offs)))
-     // rule compositeType(
-     //           t(Mods:Set, incompleteUnionType(X:Id)),
-     //           t(Mods':Set, incompleteUnionType(X:Id)))
-     //      => t(Mods Mods', incompleteUnionType(X))
-
-     // syntax List ::= compositeFields(List, List)
-     // rule compositeFields(ListItem(T:Type) Fs:List, ListItem(T':Type) Fs':List)
-     //      => ListItem(compositeType(T, T')) compositeFields(Fs, Fs')
-     // rule compositeFields(.List, .List) => .List
-
-     // syntax Map ::= compositeTypes(Map, Map)
-     // rule compositeTypes(X:Id |-> T:Type Ts:Map, X:Id |-> T':Type Ts':Map)
-     //      => X |-> compositeType(T, T') compositeTypes(Ts, Ts')
-     // rule compositeTypes(.Map, .Map) => .List
 
      // We replace all ids in non-def param lists with #NoName, so we can get
      // away with this.

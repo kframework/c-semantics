@@ -87,8 +87,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      rule (. => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
-          ~> application(Tu:String, functionObject(X:Id, _, DefT:Type, _),
-               CallT:Type, _)
+          ~> application(_, functionObject(X:Id, _, DefT:Type, _), CallT:Type, _)
           when notBool areCompatible(CallT, DefT)
           [structural]
 

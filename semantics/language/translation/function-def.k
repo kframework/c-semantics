@@ -26,7 +26,13 @@ module C-FUNCTION-DEF
                typedDeclaration(toPrototype(T), X), 
                initializer(initFunction(
                     &(X),
-                    functionObject(X, getParams(emptyToVoid(T)), toPrototype(T),
+                    functionObject(X,
+                         // The sanitized declared parameters.
+                         elideList(getParams(emptyToVoid(T))),
+                         // The "prototype" -- basically a type with the same
+                         // parameters as above, but the parameters are set to
+                         // .List if there isn't actually a prototype.
+                         toPrototype(T),
                          Goto(funLabel(X)))
                ))
           )
@@ -71,7 +77,7 @@ module C-FUNCTION-DEF
      syntax K ::= processFunDef(Id, K)
 
      rule <k> processFunDef(X:Id, Blk:K)
-               => checkFunDefType(Proto)
+               => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
           ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
@@ -80,9 +86,28 @@ module C-FUNCTION-DEF
           ...</functions>
           [structural]
 
-     syntax K ::= checkFunDefType(Type)
-     rule checkFunDefType(t(_, functionType(Ret:Type, Params:List))) => .
-          when isVoidOrComplete(Ret) andBool areVoidOrComplete(Params)
+     syntax K ::= checkFunDefType(Id, Type)
+     rule checkFunDefType(X:Id, T:Type) => .
+          when isVoidOrComplete(getReturn(T))
+               andBool areVoidOrComplete(getParams(T))
+               andBool notBool ((X ==K Identifier("main"))
+                    andBool isOldStyleFunctionType(T))
+          [structural]
+     rule (. => ERROR("FD2", "incomplete return type in "
+               +String "function definition (6.7.6.3p4)."))
+          ~> checkFunDefType(_, T:Type)
+          when notBool isVoidOrComplete(getReturn(T))
+          [structural]
+     rule (. => ERROR("FD3", "incomplete parameter type in "
+               +String "function definition (6.7.6.3p4)."))
+          ~> checkFunDefType(_, T:Type)
+          when notBool areVoidOrComplete(getParams(T))
+          [structural]
+     rule (. => ERROR("FD3", "definition of main requires "
+               +String "a prototype (5.1.2.2.1p1)."))
+          ~> checkFunDefType(X:Id, T:Type)
+          when (X ==K Identifier("main"))
+               andBool isOldStyleFunctionType(T)
           [structural]
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
@@ -95,18 +120,6 @@ module C-FUNCTION-DEF
      rule areVoidOrComplete(ListItem(Head:Type) Tail:List)
           => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
      rule areVoidOrComplete(.List) => true
-
-     rule (. => ERROR("FD2", "incomplete return type in "
-               +String "function definition (6.7.6.3p4)."))
-          ~> checkFunDefType(t(_, functionType(Ret:Type, _)))
-          when notBool isVoidOrComplete(Ret)
-          [structural]
-
-     rule (. => ERROR("FD3", "incomplete parameter type in "
-               +String "function definition (6.7.6.3p4)."))
-          ~> checkFunDefType(t(_, functionType(_, Params:List)))
-          when notBool areVoidOrComplete(Params)
-          [structural]
 
      rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
                => .

@@ -110,6 +110,7 @@ module C-TYPING-MISC
      rule getParams(t(_, functionType(_, P:List))) => P
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
           => t(Mods, functionType(R, P))
+     rule getReturn(t(_, functionType(R:Type, _))) => R
 
      rule getModifiers(t(S:Set, _)) => S
      rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)

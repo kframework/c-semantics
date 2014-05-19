@@ -105,6 +105,7 @@ module C-TYPING-SYNTAX
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
+     syntax Type ::= getReturn(Type) [function]
 
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 

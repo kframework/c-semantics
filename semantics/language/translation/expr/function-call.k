@@ -20,7 +20,7 @@ module C-EXPR-FUNCTION-CALL
      context Call(_, (HOLE => revalParams(HOLE)))
 
      rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, P:List))))), rvlist(L:List))
-          // Only attempt to bind if we have a parameter list.
+          // Only attempt to bind if we have a prototype.
           => #if (P =/=List .List) #then bind(.List, P, L) #else .K #fi
           ~> tv(symVal, T)
           when (isCompleteType(T) orBool isVoidType(T))

@@ -179,17 +179,13 @@ module C-BINDING
           when notBool hasIntegerType(T)
                andBool notBool hasFloatType(T)
 
-     syntax Bool ::= "#isArgPromoted" "(" Type ")" [function]
-
-     rule isArgPromoted(T:Type) => #isArgPromoted(T) ==K true
-
-     rule #isArgPromoted(t(_, double)) => true
-     rule #isArgPromoted(t(_, long-double)) => true
-     rule #isArgPromoted(T:Type) => isPromoted(T)
-          when hasIntegerType(T)
-
+     // "are argument-promoted".
      rule areArgPromoted(ListItem(T:Type) L:List)
           => isArgPromoted(T) andBool areArgPromoted(L)
+     rule areArgPromoted(.List) => true
      
+     rule isArgPromoted(T:Type) =>
+          areCompatible(T, argPromoteType(T))
+
 endmodule
 
