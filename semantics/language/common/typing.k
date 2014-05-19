@@ -20,10 +20,10 @@ module C-TYPING-SYNTAX
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)] 
 
-     syntax Bool ::= areCompatibleTypes(Type, Type) [function]
+     syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
      
-     syntax Bool ::= isCharType(Type) [function]
+     syntax Bool ::= hasCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
      syntax Bool ::= isPointerType(Type) [function]
      syntax Bool ::= isArrayType(Type) [function]
@@ -33,6 +33,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isUnionType(Type) [function]
      syntax Bool ::= isAggregateType(Type) [function]
      syntax Bool ::= isFunctionType(Type) [function]
+     syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
      syntax Bool ::= isBitfieldType(Type) [function]
      syntax Bool ::= isExternType(Type) [function]
@@ -103,14 +104,8 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isBasicType(K) [function]
 
      syntax List ::= getParams(Type) [function]
+     syntax Type ::= setParams(Type, List) [function]
 
-     syntax Set ::= getQualifiers(Type) [function]
-     syntax Set ::= getStorageSpecifiers(Type) [function]
-
-     syntax Type ::= stripStorageSpecifiers(Type) [function]
-     syntax Type ::= stripQualifiers(Type) [function]
-     syntax Type ::= stripConst(Type) [function]
-     
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
      syntax Bool ::= hasIntegerType(Type) [function]
@@ -122,6 +117,22 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(Type) [function]
 
      syntax Modifier ::= Storage | CVSpecifier
+
+     // Tag for old-style function defs.
+     syntax Modifier ::= "oldStyle"
+
+     // Returns both type qualifiers, storage class specifiers, and any the
+     // other information stored in the modifiers list (e.g., fromUnion,
+     // fromArray, oldStyle).
+     syntax Set ::= getModifiers(Type) [function]
+
+     syntax Set ::= getQualifiers(Type) [function]
+     syntax Set ::= getStorageSpecifiers(Type) [function]
+
+     syntax Type ::= stripStorageSpecifiers(Type) [function]
+     syntax Type ::= stripQualifiers(Type) [function]
+     syntax Type ::= stripConst(Type) [function]
+     
 
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]

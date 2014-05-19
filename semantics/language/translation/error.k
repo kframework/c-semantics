@@ -145,6 +145,6 @@ module C-TRANSLATION-ERROR
 //           ...</k>
 //           <curr-tu> Tu:String </curr-tu>
 //           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>
-//           when notBool areCompatibleTypes(PrevT, T)
+//           when notBool areCompatible(PrevT, T)
 
 endmodule

@@ -23,6 +23,7 @@ module C-TYPING-INTERPRETATION
           => t(.Set, bitfieldType(T, N)) [structural]
      
      syntax KLabel ::= makeFunctionType(List)
+     syntax KLabel ::= makeOldStyleFunctionType(List)
      syntax KLabel ::= makePointerType(Set)
      syntax KLabel ::= "makeIncompleteArrayType"
      syntax KLabel ::= makeArrayType(CSize)
@@ -60,6 +61,11 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, 
                makeFunctionType(L ListItem(variadic))) 
           [structural]
+
+     rule NoPrototype(T:Type, krlist(L:List), false) 
+          => pushTypeDown(T, 
+               makeOldStyleFunctionType(L)) 
+          [structural]
      
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
@@ -92,6 +98,10 @@ module C-TYPING-INTERPRETATION
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
           => t(getStorageSpecifiers(T),
+               functionType(stripStorageSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
+          [structural, anywhere]
+     rule makeOldStyleFunctionType(L:List)(T:Type)
+          => t(getStorageSpecifiers(T) SetItem(oldStyle),
                functionType(stripStorageSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
           [structural, anywhere]
      rule makePointerType(Quals:Set)(T:Type)

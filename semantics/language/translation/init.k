@@ -77,7 +77,7 @@ module C-TRANSLATION-INIT
                typedDeclaration(T, Identifier(B)), 
                initializer(initFunction(
                     &(Identifier(B)),
-                    functionObject(Identifier(B), .List, handleBuiltin)
+                    functionObject(Identifier(B), .List, T, handleBuiltin)
                ))))
                ~> addBuiltins((B:String |-> T:Type => .Map) _)
           ...</k>

@@ -78,32 +78,27 @@ module C-EXPR-FUNCTION-CALL
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
-     rule <k> application(Tu:String, functionObject(X:Id, Ids:List, Blk:K),
+     rule <k> application(Tu:String,
+                    functionObject(X:Id, Params:List, DefT:Type, Blk:K),
                     CallT:Type, L:List) 
-               => application'(Tu, functionObject(X, Ids, Blk),
-                    getParams(DefT), L)
+               => application'(Tu, functionObject(X, Params, DefT, Blk), L)
           ...</k>
-          <tu-id> Tu </tu-id>
-          <gtypes>... X |-> DefT:Type ...</gtypes>
-          when areCompatibleTypes(CallT, DefT)
+          when areCompatible(CallT, DefT)
           [structural]
-     rule <k> (. => ERROR("FC1", "attempt to call the function " +String
+     rule (. => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
-               ~> application(Tu:String, functionObject(X:Id, _, _),
-                    CallT:Type, _)
-          ...</k>
-          <tu-id> Tu </tu-id>
-          <gtypes>... X |-> DefT:Type ...</gtypes>
-          when notBool areCompatibleTypes(CallT, DefT)
+          ~> application(Tu:String, functionObject(X:Id, _, DefT:Type, _),
+               CallT:Type, _)
+          when notBool areCompatible(CallT, DefT)
           [structural]
 
-     syntax K ::= "application'" "(" String "," K "," List "," List ")" [strict(2)]
+     syntax K ::= "application'" "(" String "," K "," List ")"
 
-     rule <k> application'(Tu:String, functionObject(X:Id, Ids:List, BlK:K), P:List, L:List) 
+     rule <k> application'(Tu:String, functionObject(X:Id, Params:List, DefT:Type, BlK:K), L:List) 
                ~> K:K 
                => sequencePoint
                ~> populateFromGlobal
-               ~> bind(Ids, P, L)
+               ~> bind(Params, getParams(DefT), L)
                ~> sequencePoint
                ~> BlK
           </k>

@@ -199,6 +199,8 @@ module C-SYNTAX
      // K, List, Bool
      syntax DeclType ::= Prototype(K, K, Bool)
           [klabel('Prototype), strict(1, 2)]
+     syntax DeclType ::= NoPrototype(K, K, Bool)
+          [klabel('NoPrototype), strict(1, 2)]
      
      syntax K ::= "NotVariadic"
      syntax K ::= "Variadic"

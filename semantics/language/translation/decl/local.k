@@ -37,7 +37,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool areCompatibleTypes(T, T')
+               andBool areCompatible(T, T')
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
      // Extern, external type exists but no def.
@@ -53,7 +53,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool areCompatibleTypes(T, T')
+               andBool areCompatible(T, T')
                andBool notBool (X in keys Defs)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 

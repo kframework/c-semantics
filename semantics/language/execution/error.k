@@ -63,7 +63,7 @@ module C-EXECUTION-ERROR
           (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
                21) ) ~>
           joinIntegerBytes-aux(T:Type, _:List ListItem(piece(unknown(Len:Int), Len:Int)), _)
-          when notBool isCharType(T)
+          when notBool hasCharType(T)
           [structural, large]
           
      rule [err00007]:

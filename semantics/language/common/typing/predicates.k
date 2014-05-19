@@ -83,7 +83,7 @@ module C-TYPING-PREDICATES
           => #hasSignedInteger(T)
 
      rule hasFloatType(T:Type) => #hasFloat(T) ==K true
-     rule isCharType(T:Type) => #isCharT(T) ==K true
+     rule hasCharType(T:Type) => #hasChar(T) ==K true
      rule isWCharType(t(_, T:SimpleType)) 
           => T ==K simpleType(cfg:wcharut)
      rule isPointerType(T:Type) => #isPointer(T) ==K true
@@ -112,6 +112,8 @@ module C-TYPING-PREDICATES
 
      rule isBitfieldType(T:Type) => #isBitfield(T) ==K true
      rule isFunctionType(T:Type) => #isFunction(T) ==K true
+     rule isOldStyleFunctionType(T:Type)
+          => isFunctionType(T) andBool (oldStyle in getModifiers(T))
      rule isFunctionPointerType(T:Type) => #isFunctionPointer(T) ==K true
 
      rule isTypedDeclaration(typedDeclaration(_, _)) => true
@@ -134,7 +136,7 @@ module C-TYPING-PREDICATES
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
-                   | "#isCharT" "(" Type ")" [function]
+                   | "#hasChar" "(" Type ")" [function]
                    | "#isPointer" "(" Type ")" [function]
                    | "#isBoolT" "(" Type ")" [function]
                    | "#isArray" "(" Type ")" [function]
@@ -153,9 +155,9 @@ module C-TYPING-PREDICATES
           when T in floatTypes 
      rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
 
-     rule #isCharT(t(_, T:SimpleType)) => true
+     rule #hasChar(t(_, T:SimpleType)) => true
           when T in charTypes 
-     rule #isCharT(typedDeclaration(T:Type, _)) => #isCharT(T) 
+     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
 
      syntax SimpleType ::= simpleType(Type) [function]
      rule simpleType(t(_, T:SimpleType)) => T

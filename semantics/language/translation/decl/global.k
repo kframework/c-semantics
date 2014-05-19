@@ -277,7 +277,7 @@ module C-DECL-GLOBAL
           ...</internals>
           when notBool isNaked(T)
                andBool notBool (X in keys Exts)
-               andBool areCompatibleTypes(T, OldT)
+               andBool areCompatible(T, OldT)
           [structural]
 
      rule <k> (. => ERROR("DG8", "conflicting types for "
@@ -289,7 +289,7 @@ module C-DECL-GLOBAL
           <internals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</internals>
-          when notBool areCompatibleTypes(T, OldT)
+          when notBool areCompatible(T, OldT)
           [structural]
 
      // Naked, previously declared extern.
@@ -308,7 +308,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isNaked(T)
                andBool notBool (X in keys Ints)
-               andBool areCompatibleTypes(T, OldT)
+               andBool areCompatible(T, OldT)
           [structural]
 
      // Extern, previously declared extern.
@@ -327,7 +327,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           when isExtern(T)
                andBool notBool (X in keys Ints)
-               andBool areCompatibleTypes(T, OldT)
+               andBool areCompatible(T, OldT)
           [structural]
 
      rule <k> (. => ERROR("DG9", "conflicting types for "
@@ -339,7 +339,7 @@ module C-DECL-GLOBAL
           <externals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</externals>
-          when notBool areCompatibleTypes(T, OldT)
+          when notBool areCompatible(T, OldT)
           [structural]
 
      // Naked or extern, not previously declared.
@@ -786,7 +786,7 @@ module C-DECL-GLOBAL
                => giveType(X, compositeType(T, T'))
           ...</k>
           <types>... X |-> T:Type ...</types>
-          when areCompatibleTypes(T, T')
+          when areCompatible(T, T')
           [structural]
      rule <k> giveCompositeType(X:Id, T':Type)
                => giveType(X, T')
@@ -801,7 +801,7 @@ module C-DECL-GLOBAL
                ~> giveCompositeType(X:Id, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
-          when notBool areCompatibleTypes(T, T')
+          when notBool areCompatible(T, T')
           [structural]
 
 endmodule

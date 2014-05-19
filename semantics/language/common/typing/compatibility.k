@@ -1,5 +1,5 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
-     syntax Bool ::= "#isCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= "#areCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
 endmodule
 
@@ -10,6 +10,7 @@ module C-TYPING-COMPATIBILITY
      imports C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-BINDING-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
@@ -40,82 +41,89 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
 
-     rule areCompatibleTypes(T:Type, T':Type) => #isCompat(T, T') ==K true
+     rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
-     rule #isCompat(T:Type, T) => true 
-     rule #isCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true 
+     rule #areCompat(T:Type, T) => true 
+     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true 
           when sameQualifiers(Mods, Mods')
 
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, structType(X:Id, _, _)),
                t(Mods':Set, incompleteStructType(X:Id)))
           => true
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, incompleteStructType(X:Id)),
                t(Mods':Set, structType(X:Id, _, _)))
           => true
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, unionType(X:Id, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, unionType(X:Id, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, unionType(X:Id, _, _)),
                t(Mods':Set, incompleteUnionType(X:Id)))
           => true
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, incompleteUnionType(X:Id)),
                t(Mods':Set, unionType(X:Id, _, _)))
           => true
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, arrayType(T:Type, _)),
                t(Mods':Set, incompleteArrayType(T':Type)))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, _)))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
 
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
           
      // Struct and union fields.
-     rule #isCompat(
+     rule #areCompat(
                typedDeclaration(T:Type, X:Id),
                typedDeclaration(T':Type, X:Id))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
 
      // A function declaration with no arguments is compatible with a
-     // declaration with any number of arguments.
-     rule #isCompat(
-               t(Mods:Set, functionType(T:Type, Args:List)),
+     // declaration with any number of arguments, as long as they're all
+     // promoted.
+     rule #areCompat(
+               t(Mods:Set, functionType(T:Type, .List)),
                t(Mods':Set, functionType(T':Type, Args':List)))
-          => #isCompat(T, T') 
-          when ((Args ==List .List) orBool (Args' ==List .List))
-               andBool sameQualifiers(Mods, Mods')
-     rule #isCompat(
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+               andBool areArgPromoted(Args')
+     rule #areCompat(
+               t(Mods:Set, functionType(T:Type, Args:List)),
+               t(Mods':Set, functionType(T':Type, .List)))
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+               andBool areArgPromoted(Args)
+     rule #areCompat(
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))
-          => #isCompat(T, T') andBool #areParamsCompat(L, L')
+          => #areCompat(T, T') andBool #areParamsCompat(L, L')
           when (lengthList(L) ==Int lengthList(L'))
                andBool sameQualifiers(Mods, Mods')
 
@@ -123,12 +131,12 @@ module C-TYPING-COMPATIBILITY
      rule #areParamsCompat(
                ListItem(T:Type) L:List,
                ListItem(T':Type) L':List)
-          => #isCompat(T, T') andBool #areParamsCompat(L, L')
+          => #areCompat(T, T') andBool #areParamsCompat(L, L')
      rule #areParamsCompat(ListItem(variadic), ListItem(variadic)) => true
      rule #areParamsCompat(.List, .List) => true
 
      rule #areCompat(ListItem(T:Type) L:List, ListItem(T':Type) L':List)
-          => #isCompat(T, T') andBool #areCompat(L, L')
+          => #areCompat(T, T') andBool #areCompat(L, L')
      rule #areCompat(.List, .List) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)

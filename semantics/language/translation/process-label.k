@@ -67,7 +67,7 @@ module C-PROCESS-LABEL
                   BlockStatement(Blk:K) => Blk ~> popBlock
           ...</computation>
           <goto-nesting-depth> N:Int => N +Int 1 </goto-nesting-depth>
-          <goto-block-history> ListItem(_) ...</goto-block-history>
+          <goto-block-history> ListItem(_:Int) ...</goto-block-history>
           [structural] 
      rule <computation>
                Block(Num:Int, _, list(L:List)) => listToK(L)

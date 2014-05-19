@@ -1,8 +1,8 @@
 module C-DECL-INITIALIZER-SYNTAX
      syntax KResult ::= initializer(K)
 
-     // Function id, param ids, body.
-     syntax Value ::= functionObject(Id, List, K)
+     // Function id, param ids, prototype, body.
+     syntax Value ::= functionObject(Id, List, Type, K)
 
      // Id, type, initializer.
      syntax K ::= figureInit(Id, K, K) [strict(2)] 
@@ -51,17 +51,17 @@ module C-DECL-INITIALIZER
 
      rule figureInit(
                _, 
-               t(_, arrayType(T:Type, Len:CSize)), 
+               t(_, arrayType(T:Type, Len:Int)), 
                (SingleInit(stringLiteral(S:String))
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
           )
-          when isCharType(T) andBool (lengthString(S) <=Int Len)
+          when hasCharType(T) andBool (lengthString(S) <=Int Len)
           [structural]
 
      rule figureInit(
                _, 
-               t(_, arrayType(T:Type, Len:CSize)), 
+               t(_, arrayType(T:Type, Len:Int)), 
                (SingleInit(wstringLiteral(S:List)) 
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(wstringLiteral(S)))))))
@@ -72,7 +72,7 @@ module C-DECL-INITIALIZER
      rule figureInit(_, t(_, (incompleteArrayType(T:Type) 
           => arrayType(T, lengthString(S) +Int 1))),
                SingleInit(stringLiteral(S:String))) 
-          when isCharType(T)
+          when hasCharType(T)
           [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
@@ -429,7 +429,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type)) 
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isCharType(T) andBool lengthString(S) ==Int Len
+          when hasCharType(T) andBool lengthString(S) ==Int Len
           [structural] 
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(wstringLiteral(S)))
@@ -447,7 +447,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isCharType(T) andBool lengthString(S) <Int Len
+          when hasCharType(T) andBool lengthString(S) <Int Len
           [structural] 
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit(SingleInit(wstringLiteral(S ListItem(0))))
@@ -465,7 +465,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, incompleteArrayType(T:Type))))
           ...</curr-subobject>
-          when isCharType(T)
+          when hasCharType(T)
           [structural] 
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(
@@ -482,7 +482,7 @@ module C-DECL-INITIALIZER
                ~> fillInit-aux(initTail(S))
           ...</k>
           <curr-subobject> ListItem(te(_, T:Type)) ...</curr-subobject>
-          when (S =/=String "") andBool isCharType(T)
+          when (S =/=String "") andBool hasCharType(T)
           [structural]
           
      syntax K ::= initHead(String) [function]
@@ -516,7 +516,7 @@ module C-DECL-INITIALIZER
           <curr-subobject> 
                ListItem(te(_, T:Type)) 
           ...</curr-subobject>
-          when notBool isCharType(T)
+          when notBool hasCharType(T)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural] 

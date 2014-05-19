@@ -23,10 +23,10 @@ module C-FUNCTION-DEF
 
      rule FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
           => declare(
-               typedDeclaration(emptyParamsToVoid(T), X), 
+               typedDeclaration(toPrototype(T), X), 
                initializer(initFunction(
                     &(X),
-                    functionObject(X, idsFromParams(getParams(T)),
+                    functionObject(X, getParams(emptyToVoid(T)), toPrototype(T),
                          Goto(funLabel(X)))
                ))
           )
@@ -38,29 +38,47 @@ module C-FUNCTION-DEF
                +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
           when hasDupParams(T)
+     
+     // TODO(chathhorn): possibly check that old-style declarations are
+     // promoted types?
 
-     syntax Type ::= emptyParamsToVoid(Type) [function]
-     rule emptyParamsToVoid(t(Mods:Set, functionType(R:Type, .List)))
-          => t(Mods, functionType(R,
-                    ListItem(typedDeclaration(t(.Set, void), #NoName))))
-     rule emptyParamsToVoid(t(Mods:Set, functionType(R:Type, P:List)))
-          => t(Mods, functionType(R, P))
-          when P =/=List .List
+     // Turns empty param list into void and turns an old-style param list into
+     // the empty list so that arguments will be promoted on call.
+     syntax Type ::= toPrototype(Type) [function]
+     rule toPrototype(T:Type) => elideDeclParams(emptyToVoid(T))
+          when notBool isOldStyleFunctionType(T)
+     rule toPrototype(T:Type) => setParams(T, .List)
+          when isOldStyleFunctionType(T)
+
+     syntax Type ::= emptyToVoid(Type) [function]
+     rule emptyToVoid(T:Type)
+          => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
+          when isFunctionType(T)
+               andBool (getParams(T) ==List .List)
+     rule emptyToVoid(T:Type) => T
+          when notBool isFunctionType(T)
+               orBool (getParams(T) =/=List .List)
+     
+     // syntax List ::= toIds(List) [function]
+     // rule toIds(ListItem(typedDeclaration(T:Type, X:Id)) L:List)
+     //      => ListItem(X) toIds(L)
+     //      when notBool isVoidType(T)
+     // rule toIds(ListItem(typedDeclaration(T:Type, _))) => .List
+     //      when isVoidType(T)
+     // rule toIds(ListItem(variadic)) => .List
+     // rule toIds(.List) => .List
 
      syntax K ::= processFunDef(Id, K)
-                | staticEval(Id, List, List, K)
 
      rule <k> processFunDef(X:Id, Blk:K)
-               => checkFunDefType(T)
-               ~> staticEval(X, Ids, getParams(T), Blk)
+               => checkFunDefType(Proto)
+               ~> staticEval(X, Params, Blk)
           ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
-          // Get the type created by processing the declaration (i.e., with
-          // adjusted parameter types).
-          <types>... X |-> T:Type ...</types>
           <functions>...
-               Loc |-> functionObject(_, Ids:List, _)
+               Loc |-> functionObject(_, Params:List, Proto:Type, _)
           ...</functions>
+          [structural]
 
      syntax K ::= checkFunDefType(Type)
      rule checkFunDefType(t(_, functionType(Ret:Type, Params:List))) => .
@@ -108,9 +126,10 @@ module C-FUNCTION-DEF
 
      syntax K ::= "returnToFileScope"
 
-     rule <k> staticEval(X:Id, Ids:List, P:List, Blk:K)
+     syntax K ::= staticEval(Id, List, K)
+     rule <k> staticEval(X:Id, Params:List, Blk:K)
                => populateFromGlobal
-               ~> dummyBind(Ids, P)
+               ~> dummyBind(Params)
                ~> Blk
                ~> returnToFileScope
           ...</k>
@@ -137,20 +156,19 @@ module C-FUNCTION-DEF
                _
           ) => true
 
-
-     syntax K ::= dummyBind(List, List)
+     syntax K ::= dummyBind(List)
      
-     rule dummyBind(.List, ListItem(t(.Set, void)) _) => .
+     rule dummyBind(.List) => .
           [structural]
-     rule dummyBind(.List, ListItem(variadic)) => .
+     rule dummyBind(ListItem(variadic)) => .
           [structural]
-     rule dummyBind(ListItem(X:Id) Ids:List, ListItem(T:Type) P:List)
+     rule dummyBind(ListItem(typedDeclaration(T:Type, _))) => .
+          when isVoidType(T)
+          [structural]
+     rule dummyBind(ListItem(typedDeclaration(T:Type, X:Id)) Params:List)
           => addToEnv(X, symVal)
           ~> giveType(X, T)
-          ~> dummyBind(Ids, P)
+          ~> dummyBind(Params)
           when notBool isVoidType(T)
           [structural] 
-     rule dummyBind(.List, .List) => .
-          [structural]
-
 endmodule

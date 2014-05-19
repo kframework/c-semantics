@@ -66,10 +66,10 @@ module C-SYMBOLIC-VALUE
           => isSymbolic(V) orElseBool #areSymbolic(L)
 
      // Not sure about this -- makes all VLAs compat with non-VLAs.
-     rule #isCompat(
+     rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N':CSize)))
-          => #isCompat(T, T')
+          => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
 endmodule

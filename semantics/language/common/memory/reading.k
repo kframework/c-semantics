@@ -110,7 +110,7 @@ module C-MEMORY-READING
      rule joinIntegerBytes-aux(T:Type, 
                ListItem(piece(unknown(Len:Int), Len:Int)), piece(0, 0))
           => tv(piece(unknown(Len), Len), stripQualifiers(T))
-          when isCharType(T)
+          when hasCharType(T)
           [structural]
      
      rule joinIntegerBytes-aux(T:Type, 
