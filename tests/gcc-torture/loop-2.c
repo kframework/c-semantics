@@ -3,6 +3,7 @@ void abort(void);
 int a[2];
 
 void f (b)
+      int b;
 {
   unsigned int i;
   for (i = 0; i < b; i++)

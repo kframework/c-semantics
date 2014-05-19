@@ -1,6 +1,7 @@
 void exit(int status);
 void abort(void);
 int f (x)
+      int x;
 {
   if (x != 0 || x == 0)
     return 0;

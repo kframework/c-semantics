@@ -1,6 +1,7 @@
 void exit(int status);
 void abort(void);
 int f (x)
+      int x;
 {
   x &= 010000;
   x &= 007777;

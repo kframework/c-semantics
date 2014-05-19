@@ -5,6 +5,7 @@ void abort(void);
 void * a[255];
 
 void f (m)
+      int m;
 {
   int i;
   int sh = 0x100;

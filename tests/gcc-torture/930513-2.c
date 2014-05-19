@@ -6,6 +6,7 @@ void sub3 (i)
 }
 
 void eq (a, b)
+      int a, b;
 {
   static int i = 0;
   if (a != i)

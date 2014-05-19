@@ -1,6 +1,7 @@
 void exit(int status);
 void abort(void);
 void f (x, y)
+      int x, y;
 {
   if (x % y != 0)
     abort ();

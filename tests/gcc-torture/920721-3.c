@@ -14,6 +14,7 @@ static inline int fs (signed short data)
   return data;
 }
 void rs(i)
+      int i;
 {
    if(fs(i++)!=5)abort();
    if(fs(++i)!=7)abort();

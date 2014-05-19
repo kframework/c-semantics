@@ -2,6 +2,7 @@ void exit(int status);
 void abort(void);
 int
 f (b)
+      int b;
 {
   return (b >> 1) > 0;
 }

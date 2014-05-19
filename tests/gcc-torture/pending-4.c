@@ -5,9 +5,7 @@ void dummy (x, y)
      int y;
 {}
 
-int main (argc, argv)
-     int argc;
-     char **argv;
+int main (int argc, char** argv)
 {
   int number_columns=9;
   int cnt0 = 0;

@@ -1,6 +1,6 @@
 void exit(int status);
 void abort(void);
-int f (i) { return 12; }
+int f (i) int i; { return 12; }
 int g () { return 0; }
 
 int main ()
