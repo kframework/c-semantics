@@ -265,7 +265,8 @@ and printDeclType a =
 	| PARENTYPE (a, b, c) -> printParenType a b c
 	| ARRAY (a, b, c, d) -> printArrayType a b c d
 	| PTR (a, b) -> printPointerType a b
-	| PROTO (a, b, c) -> printProtoType a b c)
+	| PROTO (a, b, c) -> printProtoType a b c
+	| NOPROTO (a, b, c) -> printNoProtoType a b c)
 and printParenType a b c =
 	(wrap ((printDeclType b) :: []) "FunctionType")
 and printArrayType a b c d =
@@ -277,6 +278,11 @@ and printProtoType a b c =
 	let variadicName = (if c then "Variadic" else "NotVariadic") in
 	let variadicCell = printCell variadicName [] "" in
 	wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "Prototype"
+and printNoProtoType a b c =
+	(* printCell "Prototype" [Attrib ("variadic", string_of_bool c)] (printList (fun x -> x) ((printDeclType a) :: (printSingleNameList b) :: [])) *)
+	let variadicName = (if c then "Variadic" else "NotVariadic") in
+	let variadicCell = printCell variadicName [] "" in
+	wrap ((printDeclType a) :: (printSingleNameList b) :: variadicCell :: []) "NoPrototype"
 and printNop =
 	printCell "Nop" [] ""
 and printComputation exp =

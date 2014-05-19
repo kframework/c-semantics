@@ -138,6 +138,9 @@ and decl_type =
  | PROTO of decl_type * single_name list * bool 
                                           (* Prints "decl (args[, ...])".
                                            * decl is never a PTR.*)
+ | NOPROTO of decl_type * single_name list * bool 
+                                          (* Prints "decl (args[, ...])".
+                                           * decl is never a PTR.*)
 
 (* The base type and the storage are common to all names. Each name might
  * contain type or storage modifiers *)
