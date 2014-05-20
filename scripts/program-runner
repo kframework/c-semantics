@@ -64,7 +64,7 @@ sub main {
       my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
 
       my %krun_args = (
-                  '--output' => 'raw', 
+                  '--output' => 'pretty', 
                   '--output-file' => $fileOutput, 
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
@@ -100,6 +100,7 @@ sub main {
 
       # Set the arguments to krun based on the value of environment variables.
       if (defined $ENV{PROFILE}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--profile'} = '';
       }
 
@@ -120,6 +121,7 @@ sub main {
       }
 
       if (defined $ENV{SEARCH}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
             push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_DEF;
@@ -128,6 +130,7 @@ sub main {
       }
 
       if (defined $ENV{THREADSEARCH}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
             push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
@@ -195,7 +198,7 @@ sub main {
       return processResult($fileOutput, defined $ENV{VERBOSE});
 }
 
-sub parseResultLine {
+sub parseRawResultLine {
       my ($parsed) = (@_);
 
       /< k > (.*) <\/ k >/ && do {
@@ -241,16 +244,75 @@ sub parseResultLine {
       };
 }
 
+# TODO(chathhorn): We have two functions here because of the newlines -- the
+# regexes below match against the whole file as opposed to a line at a time.
+sub parseResult {
+      my ($parsed) = (@_);
+
+      /<k>(.*?)<\/k>/s && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /<error-cell>.*?"(.*?)".*?<\/error-cell>/s && do {
+            $parsed->{haveError} = 1;
+            my $output = $1;
+            $output =~ s/\%/\%\%/g;
+            $output =~ s/`/\\`/g;
+            $output =~ s/\\\\/\\\\\\\\/g;
+            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
+      };
+
+      /<curr-function>.*?Identifier \( "(.*?)" \).*?<\/curr-function>/s && do {
+            $parsed->{errorFunc} = $1;
+      };
+
+      /<curr-program-loc>.*?CabsLoc \( "(.*?)" , (\d+) .*?<\/curr-program-loc>/s && do {
+            $parsed->{errorFile} = $1;
+            $parsed->{errorLine} = $2;
+      };
+
+      /<final-computation>(.*?)<\/final-computation>/s && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /<computation>(.*?)<\/computation>/s && do {
+            $parsed->{finalCompGoto} = $1;
+      };
+
+      /<type>(.*?)<\/type>/s && do {
+            $parsed->{finalCompType} = $1;
+      };
+
+      /<output>.*?#buffer \( "(.*)" \).*?<\/output>/s && do {
+            $parsed->{output} = $1;
+      };
+
+      /<result-value>.*?tv \( (-?\d+) , t\( \.Set , int \) \).*?<\/result-value>/s && do {
+            $parsed->{exitCode} = $1;
+      };
+}
+
+sub unindent {
+      my ($str) = (@_);
+
+      my @lines = split "\n", $str;
+
+      for (@lines) {
+            s/^\s+//;
+      }
+
+      return join "\n", @lines;
+}
+
 sub processResult {
       my ($fileOutput, $verbose) = (@_);
       my %parsed;
 
       open(OUT, "<$fileOutput");
-
-      for (<OUT>) {
-            print if $verbose;
-            parseResultLine(\%parsed);
-      }
+      local $/;
+      local $_ = <OUT>;
+      print if $verbose;
+      parseResult(\%parsed);
 
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
                   || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
@@ -270,21 +332,21 @@ sub processResult {
             if (defined $parsed{finalComp}) {
                   print "=============================================================\n";
                   print "Final Computation:\n";
-                  print substr($parsed{finalComp}, 0, 1000);
+                  print unindent(substr($parsed{finalComp}, 0, 1000));
                   print "\n";
             }
 
             if (defined $parsed{finalCompGoto}) {
                   print "=============================================================\n";
                   print "Final Goto Map Computation:\n";
-                  print substr($parsed{finalCompGoto}, 0, 1000);
+                  print unindent(substr($parsed{finalCompGoto}, 0, 1000));
                   print "\n";
             }
 
             if (defined $parsed{finalCompType}) {
                   print "=============================================================\n";
                   print "Final Type Computation:\n";
-                  print substr($parsed{finalCompType}, 0, 1000);
+                  print unindent(substr($parsed{finalCompType}, 0, 1000));
                   print "\n";
             }
       }
@@ -342,7 +404,7 @@ sub graphSearch {
                         $solutions[-1]->{'num'} = $numSolutions;
                   };
 
-                  parseResultLine($solutions[-1]);
+                  parseRawResultLine($solutions[-1]);
 
                   # keep reading (and throwing away) until we hit a state
                   /^state (\d+)/ && do {
