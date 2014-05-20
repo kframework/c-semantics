@@ -253,7 +253,7 @@ sub parseResult {
             $parsed->{finalComp} = $1;
       };
 
-      /<error-cell>.*?"(.*?)".*?<\/error-cell>/s && do {
+      /<error-cell>.*?"(.*)".*?<\/error-cell>/s && do {
             $parsed->{haveError} = 1;
             my $output = $1;
             $output =~ s/\%/\%\%/g;
@@ -262,11 +262,11 @@ sub parseResult {
             $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
       };
 
-      /<curr-function>.*?Identifier \( "(.*?)" \).*?<\/curr-function>/s && do {
+      /<curr-function>.*?(Identifier \( "(.*?)" \)|(file-scope)).*?<\/curr-function>/s && do {
             $parsed->{errorFunc} = $1;
       };
 
-      /<curr-program-loc>.*?CabsLoc \( "(.*?)" , (\d+) .*?<\/curr-program-loc>/s && do {
+      /<curr-program-loc>.*?CabsLoc \( "(.*)" , (\d+) .*?<\/curr-program-loc>/s && do {
             $parsed->{errorFile} = $1;
             $parsed->{errorLine} = $2;
       };
