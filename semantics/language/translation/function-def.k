@@ -65,15 +65,6 @@ module C-FUNCTION-DEF
           when notBool isFunctionType(T)
                orBool (getParams(T) =/=List .List)
      
-     // syntax List ::= toIds(List) [function]
-     // rule toIds(ListItem(typedDeclaration(T:Type, X:Id)) L:List)
-     //      => ListItem(X) toIds(L)
-     //      when notBool isVoidType(T)
-     // rule toIds(ListItem(typedDeclaration(T:Type, _))) => .List
-     //      when isVoidType(T)
-     // rule toIds(ListItem(variadic)) => .List
-     // rule toIds(.List) => .List
-
      syntax K ::= processFunDef(Id, K)
 
      rule <k> processFunDef(X:Id, Blk:K)
@@ -90,8 +81,12 @@ module C-FUNCTION-DEF
      rule checkFunDefType(X:Id, T:Type) => .
           when isVoidOrComplete(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
-               andBool notBool ((X ==K Identifier("main"))
-                    andBool isOldStyleFunctionType(T))
+               andBool (X =/=K Identifier("main"))
+          [structural]
+     rule checkFunDefType(X:Id, T:Type) => checkMainDef(T)
+          when isVoidOrComplete(getReturn(T))
+               andBool areVoidOrComplete(getParams(T))
+               andBool (X ==K Identifier("main"))
           [structural]
      rule (. => ERROR("FD2", "incomplete return type in "
                +String "function definition (6.7.6.3p4)."))
@@ -102,12 +97,6 @@ module C-FUNCTION-DEF
                +String "function definition (6.7.6.3p4)."))
           ~> checkFunDefType(_, T:Type)
           when notBool areVoidOrComplete(getParams(T))
-          [structural]
-     rule (. => ERROR("FD3", "definition of main requires "
-               +String "a prototype (5.1.2.2.1p1)."))
-          ~> checkFunDefType(X:Id, T:Type)
-          when (X ==K Identifier("main"))
-               andBool isOldStyleFunctionType(T)
           [structural]
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
@@ -120,6 +109,47 @@ module C-FUNCTION-DEF
      rule areVoidOrComplete(ListItem(Head:Type) Tail:List)
           => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
      rule areVoidOrComplete(.List) => true
+
+     syntax K ::= checkMainDef(Type)
+     rule checkMainDef(t(_, functionType(t(_, int),
+               ListItem(t(_, void)))))
+          => .
+          [structural]
+     rule checkMainDef(t(_, functionType(t(_, int),
+               ListItem(t(_, int)) ListItem(T:Type))))
+          => .
+          when #isArgvType(T) ==K true
+          [structural]
+     rule (. => ERROR("FD4", "definition of main requires a prototype (5.1.2.2.1p1)."))
+          ~> checkMainDef(T:Type)
+          when isOldStyleFunctionType(T)
+          [structural]
+     rule (. => ERROR("FD5", "main must return an int.", 4) )
+          ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
+          when T =/=K int
+          [structural]
+     rule (. => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
+          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _))) 
+          when T =/=K int andBool T =/=K void
+          [structural]
+     rule (. => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
+          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type)))) 
+          when #isArgvType(T) =/=K true
+          [structural]
+     rule (. => ERROR("FD8", "main must have zero or two parameters.") )
+          ~> checkMainDef(t(_, functionType(_, Params:List)))
+          when lengthList(Params) >Int 2
+          [structural]
+     rule (. => ERROR("FD9", "main must have zero or two parameters.") )
+          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
+          when T =/=K void
+          [structural]
+          
+     syntax Bool ::= #isArgvType(Type) [function]
+     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, char))))))
+          => true
+     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, char))))))
+          => true
 
      rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
                => .

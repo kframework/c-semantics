@@ -2,7 +2,6 @@ module C-EXECUTION-INIT-SYNTAX
      syntax K ::= pgmArgs(List) [function]
      syntax K ::= incomingArguments(List) [klabel('incomingArguments)]
      syntax K ::= callMain(Int, K) [klabel('callMain)]
-     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      syntax K ::= "initMainThread"
 
 endmodule
@@ -180,6 +179,7 @@ module C-EXECUTION-INIT
           [ndtrans]
      
      // int main(void) -- also, int main() gets normalized to main(void)
+     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
      rule callMain-aux(t(.Set,
           functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _) 
           => Call(Identifier("main"), list(.List))

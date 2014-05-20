@@ -131,57 +131,6 @@ module C-EXECUTION-ERROR
           when hasSignedIntegerType(T)
                andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
           [structural, large]
-     
-     rule [err00025a]:
-          (. => ERROR("00025a", "Main must return an int.", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, T:SimpleType), _:List)), _:Int, _:Id, _)
-          when T =/=K int
-          [structural, large]
-     rule [err00026]:
-          (. => ERROR("00026", "If main has arguments, the type of the first argument must be equivalent to \"int\".", 4) ) ~>
-          callMain-aux(t(_, functionType(t(_, int), ListItem(t(_, T:SimpleType)) _)), _, _, _) 
-          when T =/=K int andBool T =/=K void
-          [structural, large]
-          
-     syntax Bool ::= #isArgvType(Type) [function]
-     
-     rule #isArgvType(t(_, T:SimpleType)) => false
-          when notBool (
-               getKLabel(T) ==KLabel 'incompleteArrayType 
-               orBool getKLabel(T) ==KLabel 'pointerType
-          )
-     rule #isArgvType(t(_, incompleteArrayType(t(_, T:SimpleType)))) 
-          => false
-          when notBool getKLabel(T) ==KLabel 'pointerType
-     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType)))))) 
-          => false
-          when T =/=K char
-     rule #isArgvType(t(_, pointerType(t(_, T:SimpleType)))) 
-          => false
-          when notBool getKLabel(T) ==KLabel 'pointerType
-     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType)))))) 
-          => false
-          when T =/=K char
-     
-     rule [err00027]:
-          (. => ERROR("00027", "If main has arguments, the type of the second argument must be equivalent to  char** .") ) ~>
-          callMain-aux(t(_, functionType(
-               t(_, int), ListItem(t(_, int)) ListItem(T:Type))),
-               _, _, _) 
-          when #isArgvType(T) ==K false
-          [structural, large]
-     rule [err00028]:
-          (. => ERROR("00028", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), 
-               ListItem(_:Type) ListItem(_:Type) ListItem(_:Type) _)),
-               _, _, _) 
-          [structural, large]
-     rule [err00029]:
-          (. => ERROR("00029", "Main can only have zero or two arguments.") ) ~>
-          callMain-aux(t(_, functionType(t(_, int), ListItem(t(_, T:SimpleType)))),
-               _, _, _)
-          when T =/=K void
-          [structural, large]
           
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
