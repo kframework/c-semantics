@@ -1,2 +1,2 @@
-// kcc-assert-error(00029)
+// kcc-assert-error(FD9)
 int main(int x){ }

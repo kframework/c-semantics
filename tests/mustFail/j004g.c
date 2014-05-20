@@ -1,4 +1,4 @@
-// kcc-assert-error(00028)
+// kcc-assert-error(FD8)
 int main(int a, char** b, int c){
 
 }
