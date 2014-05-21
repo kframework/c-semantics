@@ -6,16 +6,8 @@ module C-EXPR-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     // TODO(chathhorn) double check these and try to merge them with the
-     // common conversions.
-
-     rule cast(t(S:Set, bool), tv(symVal, T:Type)) => tv(symVal, t(S, bool))
-          when hasIntegerType(T) orBool isBitfieldType(T)
-     
-     rule cast(T:Type, tv(symVal, T':Type)) => tv(symVal, T)
-          when (hasIntegerType(T') orBool isBitfieldType(T') orBool hasFloatType(T'))
-               andBool (hasIntegerType(T) orBool isBitfieldType(T) orBool hasFloatType(T))
-               andBool notBool isBoolType(T)
+     rule cast(T':Type, tv(symVal, T:Type)) => tv(symVal, T')
+          [structural, anywhere]
 
 endmodule
 

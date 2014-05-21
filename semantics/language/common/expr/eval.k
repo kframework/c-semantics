@@ -13,6 +13,7 @@ module C-COMMON-EXPR-EVAL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-LITERAL-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
      rule arrayLength(t(_, arrayType(_, N:CSize))) => N
@@ -24,7 +25,7 @@ module C-COMMON-EXPR-EVAL
           => 36893488147419103232
      
      // chathhorn: to work around the new semantics for contexts.
-     rule reval(K:K) => K ~> reval(HOLE) [heat]
+     rule reval(K:K) => maybeCheckLoc(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
      rule rkludge(K:K) => K
           when isKResult(K) =/=K true
@@ -37,6 +38,14 @@ module C-COMMON-EXPR-EVAL
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
      
+     syntax K ::= maybeCheckLoc(K) [strict]
+     rule maybeCheckLoc(V:KResult) => V
+          when isTypedValue(V) =/=K true
+     rule maybeCheckLoc(tv(V:CValue, T:Type)) => tv(V, T)
+          when isSymLoc(V) =/=K true
+     rule maybeCheckLoc(tv(V:SymLoc, T:Type))
+          => checkValidLoc(V) ~> tv(V, T)
+     
      // FIXME Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
      // could have been declared with the register storage class (never had its
@@ -47,6 +56,7 @@ module C-COMMON-EXPR-EVAL
      rule rkludge(skipval) => skipval
      rule rkludge(emptyValue) => emptyValue
      rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
+
      rule pkludge(tv(V:CValue, T:Type)) => tv(V, T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{

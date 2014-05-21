@@ -8,7 +8,7 @@ module C-STMT-SWITCH
      imports COMPAT-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
-     syntax K ::= "handleSwitch" "(" Int "," K ")" [strict(2)] 
+     syntax K ::= handleSwitch(Int, K) [strict(2)] 
      syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{

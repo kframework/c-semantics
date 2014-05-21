@@ -1,7 +1,7 @@
 module C-BINDING-SYNTAX
      // TypedValues, Types, Ids
      syntax K ::= bind(List, List, List)
-     syntax K ::= bindParam(Id, Type, TypedValue)
+     syntax K ::= bindParam(Id, Type, K)
      syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= isArgPromoted(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
@@ -143,7 +143,7 @@ module C-BINDING
      rule representable(V:Int, T:Type)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
-     syntax TypedValue ::= argPromote(TypedValue) [function]
+     syntax TypedValue ::= argPromote(K) [function]
      rule argPromote(tv(V:CValue, T:Type))
           => cast(argPromoteType(T), tv(V, T))
      // TODO(chathhorn): don't understand the purpose of this.

@@ -104,8 +104,28 @@ module C-TYPING-MISC
      rule max(t(_, unsigned-long-long-int)) 
           => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
 
-     rule min(t(_, enumType(_:Id))) => cfg:enumMin
-     rule max(t(_, enumType(_:Id))) => cfg:enumMax
+     rule min(t(_, enumType(_))) => cfg:enumMin
+     rule max(t(_, enumType(_))) => cfg:enumMax
+
+     rule inRange(V:Int, T:Type)
+          => ((V <=Int max(T)) andBool (V >=Int min(T)))
+          when hasIntegerType(T)
+     rule inRange(V:Float, T:Type)
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
+          when hasFloatType(T)
+     
+     syntax Float ::= fmax(Type) [function]
+     syntax Float ::= fmin(Type) [function]
+
+     // TODO(chathhorn): real floating point support.
+     rule fmin(t(_, float)) => -3.4 *Float (10.0 ^Float 38.0)
+     rule fmax(t(_, float)) => 3.4 *Float (10.0 ^Float 38.0)
+
+     rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
+     rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
+
+     rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
+     rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
 
      rule getParams(t(_, functionType(_, P:List))) => P
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)

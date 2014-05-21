@@ -138,11 +138,6 @@ module C-EXECUTION-ERROR
           when (T =/=K void)
           [structural, large]
           
-     rule [err00036]:
-          (. => ERROR("00036", "Trying to dereference a null pointer.") ) ~>
-          checkDerefLoc(NullPointer)
-          [structural, large]
-          
      rule [err00037]:
           (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
           read(NullPointer, _)
@@ -167,7 +162,7 @@ module C-EXECUTION-ERROR
           [structural, large]
           
      rule [err00044]:
-          (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
+          (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
           addToPointer(_, T:Type, I:Int, tv(_, _))
           when notBool ifFromArrayInBounds(T, I)
           [structural, large]

@@ -3,6 +3,7 @@ module C-COMMON-EXPR-REFERENCE
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the
@@ -19,7 +20,8 @@ module C-COMMON-EXPR-REFERENCE
      its operand.
      }
      */
-     rule &(lval(Loc:SymLoc, T:Type)) => tv(Loc, t(.Set, pointerType(T)))
+     rule &(lval(Loc:SymLoc, T:Type))
+          => tv(Loc, t(SetItem(fromArray(0, 1)), pointerType(T)))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

@@ -12,8 +12,7 @@ module C-STMT-BLOCK
           => pushBlock ~> B ~> popBlock
           [structural]
           
-     rule [push-block]:
-          <k> pushBlock => . ...</k>
+     rule <k> pushBlock => . ...</k>
           <local>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
@@ -28,15 +27,13 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural, large] 
           
-     rule [pop-block-free-memory]:
-          <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
+     rule <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
           <local-addresses>...
                (SetItem(Loc:SymLoc) => .Set)
           ...</local-addresses>
           [structural] 
           
-     rule [pop-block]:
-          <k> popBlock => . ...</k>
+     rule <k> popBlock => . ...</k>
           <local>
                (_ => C)
                (<local-addresses> .Set </local-addresses> => .Bag)
@@ -50,8 +47,7 @@ module C-STMT-BLOCK
      The expression in an expression statement is evaluated as a void expression
      for its side effects.
      }*/
-     rule [expression-statement]:
-          Computation(_:KResult) => sequencePoint
+     rule Computation(_:KResult) => sequencePoint
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
@@ -70,8 +66,7 @@ module C-STMT-BLOCK
      were a statement, and within each declaration in the order that declarators
      appear.
      }*/
-     rule [dissolve-block]:
-          <k> Block(BlockNum:Int, _, list(Statements:List))
+     rule <k> Block(BlockNum:Int, _, list(Statements:List))
                => listToK(Statements)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>

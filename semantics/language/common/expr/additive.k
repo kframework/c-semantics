@@ -114,7 +114,7 @@ module C-COMMON-EXPR-ADDITIVE
                pointerType(T:Type)), I:Int) 
           => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
      rule newFromArray(T:Type, _) => T
-          when notBool isFromArray(T)
+          when #isFromArray(T) =/=K true
 
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
@@ -127,12 +127,9 @@ module C-COMMON-EXPR-ADDITIVE
           => false
           when Offset +Int I >Int Len
      rule ifFromArrayInBounds(T:Type, _) => true
-          when notBool isFromArray(T)
+          when #isFromArray(T) =/=K true
 
-     syntax Bool ::= isFromArray(Type) [function]
-                   | "#isFromArray" "(" Type ")" [function]
-
-     rule isFromArray(T:Type) => #isFromArray(T) ==K true
+     syntax Bool ::= "#isFromArray" "(" Type ")" [function]
      rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{

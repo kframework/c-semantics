@@ -2,7 +2,7 @@ module C-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
      syntax K ::= arithInterpret(Type, BaseValue) [function]
      // as described in 6.3 // totype, fromvalue
-     syntax TypedValue ::= cast(Type, Value) [function]
+     syntax K ::= cast(Type, Value)
 endmodule
 
 module C-CONVERSION
@@ -14,6 +14,7 @@ module C-CONVERSION
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-ERROR-SYNTAX
      
      rule arithInterpret(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
@@ -40,9 +41,10 @@ module C-CONVERSION
 
      //- switch assumes casts can happen anywhere
      rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
-          
+          [structural, anywhere]
      rule cast(t(Mods:Set, T:SimpleType), tv(V:CValue, t(_, T:SimpleType))) 
           => tv(V, t(Mods, T))
+          [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if
@@ -53,28 +55,30 @@ module C-CONVERSION
                #then tv(0, t(Mods, bool)) 
                #else tv(1, t(Mods, bool)) #fi
           when hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, bool), tv(F:Float, T:Type))
           => #if F ==Float Int2Float(0)
                #then tv(0, t(Mods, bool)) 
                #else tv(1, t(Mods, bool)) #fi
           when hasFloatType(T)
-     rule cast(t(Mods:Set, bool), tv(V:CValue, T:Type))
+          [structural, anywhere]
+     rule cast(t(Mods:Set, bool), tv(V:SymLoc, T:Type))
           => #if V ==K NullPointer 
                #then tv(0, t(Mods, bool)) 
                #else tv(1, t(Mods, bool)) #fi
           when isPointerType(T)
+          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{1}}}{
      When a value with integer type is converted to another integer type other
      than \cinline{_Bool}, if the value can be represented by the new type, it
      is unchanged.
      }*/
-     rule cast(T':Type, tv(I:Int, T:Type)) => tv(I, T')
-          when (min(T') <=Int I)
-               andBool (max(T') >=Int I)
-               andBool hasIntegerType(T)
-               andBool hasIntegerType(T')
-               andBool notBool isBoolType (T')
+     rule cast(T':Type, tv(V:Int, T:Type)) => tv(V, T')
+          when hasIntegerType(T) andBool hasIntegerType(T')
+               andBool notBool isBoolType(T')
+               andBool inRange(V, T')
+          [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
@@ -88,31 +92,37 @@ module C-CONVERSION
                andBool (I <Int min(T'))
                andBool hasIntegerType(T)
                andBool hasUnsignedIntegerType(innerType(T'))
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:Type)) 
           => cast(t(Mods, unsigned-char), 
                tv(I +Int max(t(Mods, unsigned-char)) +Int 1, T))
           when (I <Int min(t(Mods, unsigned-char)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-short-int), tv(I:Int, T:Type)) 
           => cast(t(Mods, unsigned-short-int),
                tv(I +Int max(t(Mods, unsigned-short-int)) +Int 1, T))
           when (I <Int min(t(Mods, unsigned-short-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-int), tv(I:Int, T:Type)) 
           => cast(t(Mods, unsigned-int),
                tv(I +Int max(t(Mods, unsigned-int)) +Int 1, T))
           when (I <Int min(t(Mods, unsigned-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-long-int), tv(I:Int, T:Type)) 
           => cast(t(Mods, unsigned-long-int),
                tv(I +Int max(t(Mods, unsigned-long-int)) +Int 1, T))
           when (I <Int min(t(Mods, unsigned-long-int))) 
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-long-long-int), tv(I:Int, T:Type)) 
           => cast(t(Mods, unsigned-long-long-int),
                tv(I +Int max(t(Mods, unsigned-long-long-int)) +Int 1, T))
           when (I <Int min(t(Mods, unsigned-long-long-int)))
                andBool hasIntegerType(T)          
+          [structural, anywhere]
      
      rule cast(T':Type, tv(I:Int, T:Type)) 
           => tv(I %Int (max(T') +Int 1), T')
@@ -120,30 +130,36 @@ module C-CONVERSION
                andBool (I >Int max(T'))
                andBool hasIntegerType(T)
                andBool hasUnsignedIntegerType(innerType(T'))
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(Mods, unsigned-char)) +Int 1), t(Mods, unsigned-char))
           when (I >Int max(t(Mods, unsigned-char)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-short-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(Mods, unsigned-short-int)) +Int 1),
                t(Mods, unsigned-short-int))
           when (I >Int max(t(Mods, unsigned-short-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(Mods, unsigned-int)) +Int 1),
                t(Mods, unsigned-int))
           when (I >Int max(t(Mods, unsigned-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-long-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(Mods, unsigned-long-int)) +Int 1),
                t(Mods, unsigned-long-int))
           when (I >Int max(t(Mods, unsigned-long-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
      rule cast(t(Mods:Set, unsigned-long-long-int), tv(I:Int, T:Type)) 
           => tv(I %Int (max(t(Mods, unsigned-long-long-int)) +Int 1),
                t(Mods, unsigned-long-long-int))
           when (I >Int max(t(Mods, unsigned-long-long-int)))
                andBool hasIntegerType(T)
+          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{3}}}{
      Otherwise, the new type is signed and the value cannot be represented in
@@ -151,52 +167,63 @@ module C-CONVERSION
      implementation-defined signal is raised.
      }*/
      // choice
-     rule cast(T':Type, tv(I:Int, T:Type)) 
-          => cast(T', tv(I %Int (2 ^Int absInt(numBits(T'))), T)) 
-          when isBitfieldType(T')
-               andBool (absInt(I) >Int (2 ^Int absInt(numBits(T'))))
-               andBool hasIntegerType(T)
-               andBool hasSignedIntegerType(innerType(T'))
-     rule cast(t(Mods:Set, signed-char), tv(I:Int, T:Type)) 
-          => cast(t(Mods, signed-char),
-               tv(I %Int (2 ^Int absInt(numBits(t(Mods, signed-char)))), T)) 
-          when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, signed-char)))))
-               andBool hasIntegerType(T)
-     rule cast(t(Mods:Set, short-int), tv(I:Int, T:Type)) 
-          => cast(t(Mods, short-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(Mods, short-int)))), T)) 
-          when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, short-int)))))
-               andBool hasIntegerType(T)
-     rule cast(t(Mods:Set, int), tv(I:Int, T:Type)) 
-          => cast(t(Mods, int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(Mods, int)))), T)) 
-          when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, int)))))
-               andBool hasIntegerType(T)
-     rule cast(t(Mods:Set, long-int), tv(I:Int, T:Type)) 
-          => cast(t(Mods, long-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-int)))), T)) 
-          when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-int)))))
-               andBool hasIntegerType(T)
-     rule cast(t(Mods:Set, long-long-int), tv(I:Int, T:Type))
-          => cast(t(Mods, long-long-int), 
-               tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))), T)) 
-          when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))))
-               andBool hasIntegerType(T)
-          
-     rule cast(T':Type, tv(I:Int, T:Type))
-          => tv(I +Int (2 ^Int absInt(numBits(T'))), T')
-          when (I <Int min(T'))
-               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
-               andBool hasSignedIntegerType(T')
-               andBool hasIntegerType(T)
-               andBool notBool isBoolType (T')
-     rule cast(T':Type, tv(I:Int, T:Type)) 
-          => tv(I -Int (2 ^Int absInt(numBits(T'))), T')
-          when (I >Int max(T'))
-               andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
-               andBool hasSignedIntegerType(T')
-               andBool hasIntegerType(T)
-               andBool notBool isBoolType (T')
+     // rule cast(T':Type, tv(I:Int, T:Type)) 
+     //      => cast(T', tv(I %Int (2 ^Int absInt(numBits(T'))), T)) 
+     //      when isBitfieldType(T')
+     //           andBool (absInt(I) >Int (2 ^Int absInt(numBits(T'))))
+     //           andBool hasIntegerType(T)
+     //           andBool hasSignedIntegerType(innerType(T'))
+     //      [structural, anywhere]
+     // rule cast(t(Mods:Set, signed-char), tv(I:Int, T:Type)) 
+     //      => cast(t(Mods, signed-char),
+     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, signed-char)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, signed-char)))))
+     //           andBool hasIntegerType(T)
+     //      [structural, anywhere]
+     // rule cast(t(Mods:Set, short-int), tv(I:Int, T:Type)) 
+     //      => cast(t(Mods, short-int), 
+     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, short-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, short-int)))))
+     //           andBool hasIntegerType(T)
+     //      [structural, anywhere]
+     // rule cast(t(Mods:Set, int), tv(I:Int, T:Type)) 
+     //      => cast(t(Mods, int), 
+     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, int)))))
+     //           andBool hasIntegerType(T)
+     //      [structural, anywhere]
+     // rule cast(t(Mods:Set, long-int), tv(I:Int, T:Type)) 
+     //      => cast(t(Mods, long-int), 
+     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-int)))))
+     //           andBool hasIntegerType(T)
+     //      [structural, anywhere]
+     // rule cast(t(Mods:Set, long-long-int), tv(I:Int, T:Type))
+     //      => cast(t(Mods, long-long-int), 
+     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))))
+     //           andBool hasIntegerType(T)
+     //      [structural, anywhere]
+     // rule cast(T':Type, tv(I:Int, T:Type))
+     //      => tv(I +Int (2 ^Int absInt(numBits(T'))), T')
+     //      when (I <Int min(T'))
+     //           andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+     //           andBool hasSignedIntegerType(T')
+     //           andBool hasIntegerType(T)
+     //           andBool notBool isBoolType (T')
+     //      [structural, anywhere]
+     // rule cast(T':Type, tv(I:Int, T:Type)) 
+     //      => tv(I -Int (2 ^Int absInt(numBits(T'))), T')
+     //      when (I >Int max(T'))
+     //           andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+     //           andBool hasSignedIntegerType(T')
+     //           andBool hasIntegerType(T)
+     //           andBool notBool isBoolType (T')
+     //      [structural, anywhere]
+     rule (. => ERROR("C1", "conversion to signed integer outside the range that can be represented.", "6.3.1.3:3"))
+          ~> cast(T':Type, tv(I:Int, T:Type))
+          when hasSignedIntegerType(T') andBool hasIntegerType(T)
+               andBool notBool inRange(I, T')
 
      // this is starting to get into sketchy land
      rule cast(T':Type, tv(piece(unknown(Len:Int), Len:Int), T:Type)) 
@@ -209,19 +236,15 @@ module C-CONVERSION
      value is truncated toward zero). If the value of the integral part cannot
      be represented by the integer type, the behavior is undefined.
      }*/
-     // fixme
-     rule cast(T:Type, tv(V:Float, t(Mods:Set, double))) 
-          => cast(T, tv(Float2Int(V), t(Mods, long-long-int)))
-          when hasIntegerType(T)
-               andBool notBool isBoolType (T)
-     rule cast(T:Type, tv(V:Float, t(Mods:Set, float))) 
-          => cast(T, tv(Float2Int(V), t(Mods, long-long-int)))
-          when hasIntegerType(T)
-               andBool notBool isBoolType (T)
-     rule cast(T:Type, tv(V:Float, t(Mods:Set, long-double))) 
-          => cast(T, tv(Float2Int(V), t(Mods, long-long-int)))
-          when hasIntegerType(T)
-               andBool notBool isBoolType (T)
+     rule cast(T':Type, tv(V:Float, T:Type)) 
+          => tv(Float2Int(V), T')
+          when hasIntegerType(T') andBool hasFloatType(T)
+               andBool inRange(Float2Int(V), T')
+               andBool notBool isBoolType (T')
+     rule (. => ERROR("C2", "conversion to integer from float outside the range that can be represented.", "6.3.1.4:1"))
+          ~> cast(T':Type, tv(V:Float, T:Type))
+          when hasIntegerType(T') andBool hasFloatType(T)
+               andBool notBool inRange(Float2Int(V), T')
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
      When a value of integer type is converted to a real floating type, if the
@@ -235,14 +258,14 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(t(Mods:Set, float), tv(I:Int, T:Type)) 
-          => tv(Int2Float(I), t(Mods, float))
+     rule cast(t(Mods:Set, float), tv(V:Int, T:Type)) 
+          => tv(Int2Float(V), t(Mods, float))
           when hasIntegerType(T)
-     rule cast(t(Mods:Set, double), tv(I:Int, T:Type)) 
-          => tv(Int2Float(I), t(Mods, double))
+     rule cast(t(Mods:Set, double), tv(V:Int, T:Type)) 
+          => tv(Int2Float(V), t(Mods, double))
           when hasIntegerType(T)
-     rule cast(t(Mods:Set, long-double), tv(I:Int, T:Type)) 
-          => tv(Int2Float(I), t(Mods, long-double))
+     rule cast(t(Mods:Set, long-double), tv(V:Int, T:Type)) 
+          => tv(Int2Float(V), t(Mods, long-double))
           when hasIntegerType(T)
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
@@ -257,16 +280,13 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     // fixme all floats same precision
-     rule cast(t(Mods:Set, T':SimpleType), tv(F:Float, t(_, T:SimpleType))) 
-          => tv(F, t(Mods, T'))
-          when ((T ==K float) 
-                    orBool (T ==K double) 
-                    orBool (T ==K long-double))
-               andBool 
-               ((T' ==K float) 
-                    orBool (T' ==K double) 
-                    orBool (T' ==K long-double))
+     rule cast(T', tv(F:Float, T)) => tv(F, T')
+          when hasFloatType(T') andBool hasFloatType(T)
+               andBool inRange(F, T')
+     rule (. => ERROR("C3", "floating-point value outside the range of values that can be represented after conversion.", "6.3.1.5:1"))
+          ~> cast(T':Type, tv(F:Float, T:Type))
+          when hasFloatType(T') andBool hasFloatType(T)
+               andBool notBool inRange(F, T')
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
      The (nonexistent) value of a void expression (an expression that has type
@@ -312,7 +332,7 @@ module C-CONVERSION
      a trap representation.
      }*/
      // choice implementation defined behavior
-     rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, T')
+     rule cast(T':Type, tv(V:SymLoc, T:Type)) => tv(V, T')
           when hasIntegerType(T)
                andBool notBool isNullPointerConstant(tv(V, T))
                andBool isPointerType(T')

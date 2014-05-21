@@ -10,13 +10,11 @@ module C-CHECK-LOC
      rule checkValidLoc(Loc:SymLoc) => checkValidLoc-aux(ceilingLoc(Loc)) 
           [structural]
 
-     rule [check-valid-loc-null]:
-          checkValidLoc-aux(NullPointer) => . 
+     rule checkValidLoc-aux(NullPointer) => . 
           [structural]
      // fixme could additionally use the type to check whether that type is
      // valid for that pointer
-     rule [check-valid-loc]:
-          <k> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, 0)) => . ...</k>
+     rule <k> checkValidLoc-aux(loc(Base:SymBase, Offset:Int, 0)) => . ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           <thread-id> ThreadId:Int </thread-id>
           when (notBool isThreadDuration(loc(Base, Offset, 0))
@@ -25,8 +23,7 @@ module C-CHECK-LOC
                andBool (Offset <=Int Len) // we're allowed to address one past
           [structural]
 
-     rule [check-valid-loc-linker]:
-          <k> checkValidLoc-aux(loc((LinkBase:SymBase => Base), _, _)) ...</k>
+     rule <k> checkValidLoc-aux(loc((LinkBase:SymBase => Base), _, _)) ...</k>
           <linkings>... loc(LinkBase, 0, 0) |-> loc(Base:SymBase, _, _) ...</linkings>
           [structural]
 

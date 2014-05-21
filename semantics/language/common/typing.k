@@ -116,6 +116,7 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]
+     syntax Bool ::= inRange(CValue, Type) [function]
 
      syntax Modifier ::= Storage | CVSpecifier
 

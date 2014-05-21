@@ -8,17 +8,18 @@ module C-SYMBOLIC-VALUE-SYNTAX
 endmodule
 
 module C-SYMBOLIC-VALUE
-     imports C-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -72,4 +73,5 @@ module C-SYMBOLIC-VALUE
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
+
 endmodule

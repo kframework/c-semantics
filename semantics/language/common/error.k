@@ -15,6 +15,7 @@ module C-ERROR
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -192,6 +193,11 @@ module C-ERROR
           (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
           write(_, _, T:Type)
           when isConstType(T)
+          [structural, large]
+               
+     rule [err00036]:
+          (. => ERROR("00036", "Trying to dereference a null pointer.") ) ~>
+          checkDerefLoc(NullPointer)
           [structural, large]
 
      rule [err00038a]:
