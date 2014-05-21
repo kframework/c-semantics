@@ -263,7 +263,7 @@ sub parseResult {
       };
 
       /<curr-function>.*?(Identifier \( "(.*?)" \)|(file-scope)).*?<\/curr-function>/s && do {
-            $parsed->{errorFunc} = $1;
+            $parsed->{errorFunc} = $2;
       };
 
       /<curr-program-loc>.*?CabsLoc \( "(.*)" , (\d+) .*?<\/curr-program-loc>/s && do {
