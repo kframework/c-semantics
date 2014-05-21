@@ -145,11 +145,13 @@ module C-FUNCTION-DEF
           when T =/=K void
           [structural]
           
-     syntax Bool ::= #isArgvType(Type) [function]
-     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, char))))))
+     syntax Bool ::= "#isArgvType" "(" Type ")" [function]
+     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
-     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, char))))))
+          when T ==K char // char is an alias.
+     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
+          when T ==K char
 
      rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
                => .
