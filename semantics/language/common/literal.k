@@ -241,8 +241,12 @@ module C-LITERAL
      object with type \cinline{char} whose value is that of the single
      character or escape sequence is converted to type \cinline{int}.
      }*/
-     rule CharLiteral(N:Int) 
-          => cast(t(.Set, int), cast(t(.Set, char), tv(N, t(.Set, int))))
+
+     // TODO(chathhorn): using unsigned-char here even though the standard
+     // seems to call for char. Using (signed) char could potentially introduce
+     // a trap, it seems to me, which really doesn't seem right.
+     rule CharLiteral(N:Int)
+          => cast(t(.Set, int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))))
           [structural, anywhere]
      rule WCharLiteral(N:Int) => tv(N, cfg:wcharut) 
           [structural, anywhere]
