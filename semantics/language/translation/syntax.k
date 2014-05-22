@@ -114,10 +114,10 @@ module C-ABSTRACT-SYNTAX
           [klabel('AssignRightShift)]
      rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro, structural]
      
-     syntax Expression ::= Dot(K, Id) [klabel('Dot)]
-     rule Dot(K:K, X:Id) => K:K . X:Id [macro, structural]
-     syntax Expression ::= Arrow(K, Id) [klabel('Arrow)]
-     rule Arrow(K:K, X:Id) => K:K -> X:Id [macro, structural]
+     syntax Expression ::= Dot(K, CId) [klabel('Dot)]
+     rule Dot(K:K, X:CId) => K:K . X:CId [macro, structural]
+     syntax Expression ::= Arrow(K, CId) [klabel('Arrow)]
+     rule Arrow(K:K, X:CId) => K:K -> X:CId [macro, structural]
      
 
      /*@ This macro defines an important identity from

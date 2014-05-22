@@ -56,12 +56,12 @@ module C-DECL-ZERO
      // the padding between the end of the first field and the end of the union
      // to unknown.
      rule zeroType(N:K, t(_, unionType(_, _,
-               fieldInfo(ListItem(typedDeclaration(T:Type, F:Id)) _, _, _) 
+               fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _) 
           )))
           => zeroType(N . F, T)
           [structural] 
           
-     rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:Id)) L:List) 
+     rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List) 
           => zeroType(Sym . F, T) ~> zeroStruct(Sym, L) 
           [structural] 
      rule zeroStruct(_, .List) => .

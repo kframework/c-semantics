@@ -6,7 +6,7 @@ module C-SYNTAX
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
      
-     syntax C ::= Id
+     syntax C ::= CId
      
      syntax KResult ::= SpecifierElem
      
@@ -78,7 +78,7 @@ module C-SYNTAX
      syntax TypeSpecifier ::= "Signed"
      syntax TypeSpecifier ::= "Unsigned"
      syntax Float ::= "inf"
-     syntax TypeSpecifier ::= Named(Id) [klabel('Named)]
+     syntax TypeSpecifier ::= Named(CId) [klabel('Named)]
      /*
      (* each of the following three kinds of specifiers contains a field 
      * or item list iff it corresponds to a definition (as opposed to
@@ -91,20 +91,20 @@ module C-SYNTAX
      | TtypeofE of expression                      (* GCC __typeof__ *)
      | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
      */   
-     syntax TypeSpecifier ::= StructRef(Id)
+     syntax TypeSpecifier ::= StructRef(CId)
           [klabel('StructRef)] // new
-     // new // Id, List
-     syntax C ::= StructDef(Id, K)
+     // new // CId, List
+     syntax C ::= StructDef(CId, K)
           [strict(2), klabel('StructDef)] 
-     syntax TypeSpecifier ::= UnionRef(Id)
+     syntax TypeSpecifier ::= UnionRef(CId)
           [klabel('UnionRef)] // new
-     // new // Id, List
-     syntax C ::= UnionDef(Id, K)
+     // new // CId, List
+     syntax C ::= UnionDef(CId, K)
           [strict(2), klabel('UnionDef)] 
-     syntax TypeSpecifier ::= EnumRef(Id)
+     syntax TypeSpecifier ::= EnumRef(CId)
           [klabel('EnumRef)] // new
-     // new // Id, List
-     syntax C ::= EnumDef(Id, K)
+     // new // CId, List
+     syntax C ::= EnumDef(CId, K)
           [klabel('EnumDef)] 
      syntax TypeSpecifier ::= TypeofExpression(K)
           [klabel('TypeofExpression)]
@@ -158,7 +158,7 @@ module C-SYNTAX
      syntax SpecifierElem ::= "Inline"
      syntax SpecifierElem ::= "Noreturn"
      syntax SpecifierElem ::= TypeSpecifier
-     syntax SpecifierElem ::= SpecPattern(Id)
+     syntax SpecifierElem ::= SpecPattern(CId)
           [klabel('SpecPattern)]
 
      /*
@@ -239,9 +239,9 @@ module C-SYNTAX
      // TODO(chathhorn): better solution?
      // first argument is id, second is basetype
      syntax Name ::= Name(K, K) [avoid, klabel('Name)]
-     syntax Id ::= "#NoName" // new
-     syntax Id ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
-     syntax Id ::= Identifier(String) [klabel('Identifier)] // new     
+     syntax CId ::= "#NoName" // new
+     syntax CId ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
+     syntax CId ::= Identifier(String) [klabel('Identifier)] // new     
      
      /*
      (* A variable declarator ("name") with an initializer *)
@@ -262,10 +262,10 @@ module C-SYNTAX
      and enum_item = String * expression * cabsloc
      */
      // this one has no init
-     syntax PureEnumItem ::= "EnumItem" "(" Id ")"
+     syntax PureEnumItem ::= "EnumItem" "(" CId ")"
           [klabel('EnumItem)]
      // this one has an init
-     syntax PureEnumItem ::= "EnumItemInit" "(" Id "," K ")"
+     syntax PureEnumItem ::= "EnumItemInit" "(" CId "," K ")"
           [klabel('EnumItemInit)]
           
      /*
@@ -305,7 +305,7 @@ module C-SYNTAX
           [klabel('StaticAssert)]
 
      // name
-     syntax PureDefinition ::= "LTLAnnotation" "(" Id "," K ")"
+     syntax PureDefinition ::= "LTLAnnotation" "(" CId "," K ")"
           [klabel('LTLAnnotation)]
      
      /*
@@ -396,8 +396,8 @@ module C-SYNTAX
      | COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
      | DEFINITION of definition (*definition or declaration of a variable or type*)
      */
-     syntax PureStatement ::= "Label" "(" Id "," K ")" [avoid, klabel('Label)]
-     syntax PureStatement ::= "Goto" "(" K ")" [klabel('Goto)] // Id
+     syntax PureStatement ::= "Label" "(" CId "," K ")" [avoid, klabel('Label)]
+     syntax PureStatement ::= "Goto" "(" K ")" [klabel('Goto)] // CId
      syntax PureStatement ::= "CompGoto" "(" K ")" [klabel('CompGoto)]
      
      /*
@@ -577,7 +577,7 @@ module C-SYNTAX
      syntax Expression ::= Constant(K) [klabel('Constant)]
      // String constants aren't revals
      // for paren, just putting parentheses
-     syntax Expression ::= Id
+     syntax Expression ::= CId
      /*
      | EXPR_SIZEOF of expression
      | TYPE_SIZEOF of specifier * decl_type
@@ -600,10 +600,10 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      | MEMBEROFPTR of expression * string
      */
-     syntax Expression ::= K "." Id
-     context (HOLE => peval(HOLE)) . _:Id
-     syntax Expression ::= K "->" Id
-     context (HOLE => reval(HOLE)) -> _:Id
+     syntax Expression ::= K "." CId
+     context (HOLE => peval(HOLE)) . _:CId
+     syntax Expression ::= K "->" CId
+     context (HOLE => reval(HOLE)) -> _:CId
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
@@ -670,7 +670,7 @@ module C-SYNTAX
      | ATINDEXRANGE_INIT of expression * expression
      */
      syntax KResult ::= "NextInit"
-     syntax KResult ::= InFieldInit(Id, K) [klabel('InFieldInit)]
+     syntax KResult ::= InFieldInit(CId, K) [klabel('InFieldInit)]
      syntax KResult ::= AtIndexInit(K, K) [klabel('AtIndexInit)]
      syntax KResult ::= AtIndexRangeInit(K, K) [klabel('AtIndexRangeInit)]
      

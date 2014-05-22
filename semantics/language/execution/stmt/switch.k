@@ -40,7 +40,7 @@ module C-STMT-SWITCH
      rule <k> handleSwitch(SN:Int, V:KResult) 
                => handleSwitch-aux(SN, V, map(M)) 
           ...</k>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>

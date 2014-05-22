@@ -87,8 +87,8 @@ module C-EXECUTION-INIT
                (lengthList L) +Int 1)))
           [structural]
 
-     syntax K ::= makeArgv(Id, Type)
-     rule makeArgv(X:Id, T:Type) 
+     syntax K ::= makeArgv(CId, Type)
+     rule makeArgv(X:CId, T:Type) 
           => allocateType(argvLoc(0), T)
           ~> addToEnv(X, argvLoc(0))
           ~> giveType(X, T)
@@ -179,7 +179,7 @@ module C-EXECUTION-INIT
           [ndtrans]
      
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax K ::= "callMain-aux" "(" K "," Int "," Id "," K ")" [strict(1)]
+     syntax K ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
      rule callMain-aux(t(.Set,
           functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _) 
           => Call(Identifier("main"), list(.List))
@@ -188,7 +188,7 @@ module C-EXECUTION-INIT
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
                ListItem(t(.Set, int))
                ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))), 
-               N:Int, X:Id, Args:K)
+               N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)
           [structural]
@@ -197,7 +197,7 @@ module C-EXECUTION-INIT
                functionType(t(.Set, int),
                ListItem(t(.Set, int)) 
                ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))), 
-               N:Int, X:Id, Args:K)
+               N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           when T ==K t(.Set, char)
           [structural]

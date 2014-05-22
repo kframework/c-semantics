@@ -14,15 +14,15 @@ module C-CONFIGURATION
 
           <main-tu color="lightgray"> .Set </main-tu>
 
-          // Id |-> Type
+          // CId |-> Types
           <external-types> .Map </external-types>
-          // Id |-> Loc
+          // CId |-> Loc
           <external-defs> .Map </external-defs>
 
           <linking-state>
-               // Id |-> Set(TUs)
+               // CId |-> Set(TUs)
                <external-decls> .Map </external-decls>
-               // Ids
+               // CIds
                <external-uses> SetItem(Identifier("main")) </external-uses>
           </linking-state>
 
@@ -36,11 +36,11 @@ module C-CONFIGURATION
                     <gtypes color="lightgray"> .Map </gtypes>
                     <gstructs color="lightgray"> .Map </gstructs>
 
-                    // kpair(Id, BlockNum) |-> SymLoc
+                    // kpair(CId, BlockNum) |-> SymLoc
                     <local-statics> .Map </local-statics>
-                    // kpair(Id, BlockNum) |-> Type
+                    // kpair(CId, BlockNum) |-> Type
                     <local-types> .Map </local-types>
-                    // kpair(Id, BlockNum) |-> FieldInfo
+                    // kpair(CId, BlockNum) |-> FieldInfo
                     <local-structs> .Map </local-structs>
 
                     <tu-linking-state>
@@ -109,7 +109,7 @@ module C-CONFIGURATION
 
                <control-details> // TODO(chathhorn): dumb name
                     <local>
-                         // maps from Ids
+                         // maps from CIds
                          <env color="red"> .Map </env>
                          <types color="lightgray"> .Map </types>
                          <structs color="lightgray"> .Map </structs>

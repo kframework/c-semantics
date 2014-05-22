@@ -84,6 +84,7 @@ module C-TYPING-PREDICATES
 
      rule hasFloatType(T:Type) => #hasFloat(T) ==K true
      rule hasCharType(T:Type) => #hasChar(T) ==K true
+     rule isUCharType(T:Type) => #isUChar(T) ==K true
      rule isWCharType(t(_, T:SimpleType)) 
           => T ==K simpleType(cfg:wcharut)
      rule isPointerType(T:Type) => #isPointer(T) ==K true
@@ -137,6 +138,7 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#hasChar" "(" Type ")" [function]
+                   | "#isUChar" "(" Type ")" [function]
                    | "#isPointer" "(" Type ")" [function]
                    | "#isBoolT" "(" Type ")" [function]
                    | "#isArray" "(" Type ")" [function]
@@ -158,6 +160,9 @@ module C-TYPING-PREDICATES
      rule #hasChar(t(_, T:SimpleType)) => true
           when T in charTypes 
      rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
+
+     rule #isUChar(t(_, unsigned-char)) => true
+     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T) 
 
      syntax SimpleType ::= simpleType(Type) [function]
      rule simpleType(t(_, T:SimpleType)) => T

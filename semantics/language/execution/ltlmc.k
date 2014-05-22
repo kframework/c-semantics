@@ -10,13 +10,13 @@ module C-LTLMC-SYNTAX
                         | struct(List, FieldInfo)
                         | union(List, FieldInfo)
 
-     syntax CProp ::= ValueProp | Id 
+     syntax CProp ::= ValueProp | CId 
                     | "-" CProp
                     | "+" CProp
                     | "*" CProp
                     > CProp "[" CProp "]"
-                    | CProp "." Id
-                    | CProp "->" Id
+                    | CProp "." CId
+                    | CProp "->" CId
                     > CProp "*" CProp [left]
                     | CProp "/" CProp [left]
                     > CProp "+" CProp [left]
@@ -110,13 +110,13 @@ module C-LTLMC
      rule ltlRVal(B:Bag, * ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
-     rule ltlRVal(B:Bag, P:CProp -> X:Id)
+     rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
 
      rule ltlRVal(_,
           struct(V:List,
                fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
-          ) . X:Id)
+          ) . X:CId)
           => joinBytes(T, 
                fillToBytes-aux(
                     extractBitsFromList-aux(
@@ -126,7 +126,7 @@ module C-LTLMC
      rule ltlRVal(_,
           union(V:List,
                fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
-          ) . X:Id)
+          ) . X:CId)
           => joinBytes(T, 
                fillToBytes-aux(
                     extractBitsFromList-aux(
@@ -151,7 +151,7 @@ module C-LTLMC
      syntax Int ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")" 
           [function]
 
-     rule ltlRVal(B:Bag, X:Id) => ltlRVal(B, * ltlLVal(B, X))
+     rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))
 
      rule dumbRead(
                <generatedTop>... <T>... 
@@ -201,10 +201,10 @@ module C-LTLMC
      rule joinBytes'(_, .List, ListItem(piece(N:Int, _))) => N
 
      // Not so interested in l-values.
-     syntax ValueProp ::= ltlLVal(Bag, Id) [function]
+     syntax ValueProp ::= ltlLVal(Bag, CId) [function]
      syntax ValueProp ::= "ltlLVal'" "(" Bag "," String ")" [function]
 
-     rule ltlLVal(B:Bag, X:Id) => ltlLVal'(B, idToString(X))
+     rule ltlLVal(B:Bag, X:CId) => ltlLVal'(B, idToString(X))
      rule ltlLVal'(
           <generatedTop>... <T>...
                <genv>... 

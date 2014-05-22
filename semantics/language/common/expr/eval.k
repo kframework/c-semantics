@@ -14,6 +14,7 @@ module C-COMMON-EXPR-EVAL
      imports C-TYPING-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-ERROR-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
      rule arrayLength(t(_, arrayType(_, N:CSize))) => N
@@ -25,7 +26,7 @@ module C-COMMON-EXPR-EVAL
           => 36893488147419103232
      
      // chathhorn: to work around the new semantics for contexts.
-     rule reval(K:K) => maybeCheckLoc(K) ~> reval(HOLE) [heat]
+     rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
      rule rkludge(K:K) => K
           when isKResult(K) =/=K true
@@ -38,14 +39,22 @@ module C-COMMON-EXPR-EVAL
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
      
-     syntax K ::= maybeCheckLoc(K) [strict]
-     rule maybeCheckLoc(V:KResult) => V
+     syntax K ::= checkUse(K) [strict]
+     rule checkUse(V:KResult) => V
           when isTypedValue(V) =/=K true
-     rule maybeCheckLoc(tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V) =/=K true
-     rule maybeCheckLoc(tv(V:SymLoc, T:Type))
+     rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
+          when (isSymLoc(V) =/=K true)
+               andBool (isTrap(V) =/=K true)
+               andBool (isUnknown(V) =/=K true)
+     rule checkUse(tv(V:SymLoc, T:Type))
           => checkValidLoc(V) ~> tv(V, T)
-     
+     rule checkUse(tv(V:Trap, T:Type))
+          => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
+          ~> tv(V, T)
+     rule checkUse(tv(V:Unknown, T:Type))
+          => ERROR("E2", "unspecified value used in an expression.")
+          ~> tv(V, T)
+
      // FIXME Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
      // could have been declared with the register storage class (never had its

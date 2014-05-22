@@ -9,7 +9,7 @@ module COMPAT-SYNTAX
      syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
 
-     syntax String ::= idToString(Id) [function]
+     syntax String ::= idToString(CId) [function]
 
      syntax String ::= toUpperCase(String) [function]
 

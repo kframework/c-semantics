@@ -34,7 +34,7 @@ module C-DECL-RESOLUTION
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>...
-               X:Id |-> declState(_,
+               X:CId |-> declState(_,
                     t(S:Set, incompleteArrayType(T:Type)), declared, true) 
           ...</externals>
           [structural]
@@ -52,7 +52,7 @@ module C-DECL-RESOLUTION
      // environment of every TU where it appears.
      rule <k> resolveReferences ...</k>
           <external-uses>...
-               SetItem(X:Id)
+               SetItem(X:CId)
           ...</external-uses>
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .) _)
@@ -70,7 +70,7 @@ module C-DECL-RESOLUTION
           when isLinkerLoc(Loc)
      rule <k> resolveReferences ...</k>
           <external-uses>...
-               SetItem(X:Id)
+               SetItem(X:CId)
           ...</external-uses>
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .) _)
@@ -86,10 +86,10 @@ module C-DECL-RESOLUTION
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
-               (SetItem(X:Id) => .)
+               (SetItem(X:CId) => .)
           ...</external-uses>
           <external-decls>...
-               (X:Id |-> set(.Set) => .Map)
+               (X:CId |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
                X |-> _
@@ -105,7 +105,7 @@ module C-DECL-RESOLUTION
                ~> resolveReferences
           ...</k>
           <external-uses>...
-               SetItem(X:Id)
+               SetItem(X:CId)
           ...</external-uses>
           <external-defs>
                Defs:Map

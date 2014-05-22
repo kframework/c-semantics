@@ -10,7 +10,7 @@ module C-COMPOUND-LITERAL
 
      imports COMPAT-SYNTAX
 
-     syntax Id ::= compoundLiteral(Int)
+     syntax CId ::= compoundLiteral(Int)
      syntax K ::= handleCompoundLiteral(K) [strict]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
@@ -45,7 +45,7 @@ module C-COMPOUND-LITERAL
                figureInit(compoundLiteral(N), DeclType(T, K), Init))
           [structural]
           
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
@@ -61,7 +61,7 @@ module C-COMPOUND-LITERAL
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:KResult, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
                => addToEnv(X, Loc)
                ~> giveType(X, T)
                ~> Init ~> sequencePoint

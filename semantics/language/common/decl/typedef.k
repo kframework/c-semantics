@@ -14,7 +14,7 @@ module C-DECL-TYPEDEF
 
      syntax K ::= defineType(K) [strict] 
 
-     rule defineType(typedDeclaration(T:Type, X:Id)) 
+     rule defineType(typedDeclaration(T:Type, X:CId)) 
           => giveType(typedef(X), T) 
           [structural] 
 

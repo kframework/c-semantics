@@ -14,7 +14,7 @@ module C-TYPING-MISC
 
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
-     rule char => cfg:charAlias [structural, anywhere]
+     rule char => cfg:charAlias
 
      syntax Int ::= numBytes(Type) [function]
      rule numBytes(t(_, bool)) => cfg:sizeofBool
@@ -118,14 +118,19 @@ module C-TYPING-MISC
      syntax Float ::= fmin(Type) [function]
 
      // TODO(chathhorn): real floating point support.
-     rule fmin(t(_, float)) => -3.4 *Float (10.0 ^Float 38.0)
+     rule fmin(t(_, float)) => 0.0 -Float (3.4 *Float (10.0 ^Float 38.0))
      rule fmax(t(_, float)) => 3.4 *Float (10.0 ^Float 38.0)
 
-     rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
+     // TODO(chathhorn): maude's floats are double-precision.
+     // rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
+     // rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
      rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
 
-     rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
-     rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
+     // rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
+     // rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
+     rule fmin(t(_, long-double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
+     rule fmax(t(_, long-double)) => 1.79 *Float (10.0 ^Float 308.0)
 
      rule getParams(t(_, functionType(_, P:List))) => P
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
@@ -226,7 +231,7 @@ module C-TYPING-MISC
      // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
      // checking it to tell whether a tag has been completed or not was
      // probably the better way to do things.
-     rule completeTag(X:Id, Info:FieldInfo, T:Type)
+     rule completeTag(X:CId, Info:FieldInfo, T:Type)
           => completeTags(X |-> Info, T)
 
      rule completeTags(Tags:Map, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
@@ -242,14 +247,14 @@ module C-TYPING-MISC
      rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
           => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
 
-     rule completeTags(_ X:Id |-> Info:FieldInfo,
-               t(S:Set, incompleteStructType(X:Id)))
+     rule completeTags(_ X:CId |-> Info:FieldInfo,
+               t(S:Set, incompleteStructType(X:CId)))
           => t(S, structType(X, bitSizeofStruct(Info), Info)) 
-     rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:Id)))
+     rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
           when notBool X in keys Tags
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               structType(X:Id, NBits:Int,
+               structType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
           => t(S, structType(X, NBits,
                fieldInfo(
@@ -258,7 +263,7 @@ module C-TYPING-MISC
                     Offsets)))
      // Don't complete recursive struct definitions.
      rule completeTags(Tags:Map, t(S:Set,
-               structType(X:Id, NBits:Int,
+               structType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
           => t(S, structType(X, NBits,
                fieldInfo(
@@ -267,14 +272,14 @@ module C-TYPING-MISC
                     Offsets)))
           when notBool (X in keys Tags)
 
-     rule completeTags(_ X:Id |-> Info:FieldInfo,
-               t(S:Set, incompleteUnionType(X:Id)))
+     rule completeTags(_ X:CId |-> Info:FieldInfo,
+               t(S:Set, incompleteUnionType(X:CId)))
           => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
-     rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:Id)))
+     rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
           when notBool X in keys Tags
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               unionType(X:Id, NBits:Int,
+               unionType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
           => t(S, unionType(X, NBits,
                fieldInfo(
@@ -282,7 +287,7 @@ module C-TYPING-MISC
                     completeTagsInMap(Tags, Types),
                     Offsets)))
      rule completeTags(Tags:Map, t(S:Set,
-               unionType(X:Id, NBits:Int,
+               unionType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
           => t(S, unionType(X, NBits,
                fieldInfo(
@@ -302,7 +307,7 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
      // Function parameters.
-     rule completeTags(Tags:Map, typedDeclaration(T:Type, X:Id))
+     rule completeTags(Tags:Map, typedDeclaration(T:Type, X:CId))
           => typedDeclaration(completeTags(Tags, T), X)
      rule completeTags(_, variadic) => variadic
 
@@ -310,7 +315,7 @@ module C-TYPING-MISC
           => ListItem(completeTags(Tags, T)) completeTagsInList(Tags, L)
      rule completeTagsInList(_, .List) => .List
 
-     rule completeTagsInMap(Tags:Map, X:Id |-> T:Type M:Map)
+     rule completeTagsInMap(Tags:Map, X:CId |-> T:Type M:Map)
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
@@ -338,7 +343,7 @@ module C-TYPING-MISC
      rule stripUnionMarker(.Set) => .Set
 
      rule idsFromParams(
-               ListItem(typedDeclaration(t(_, T:SimpleType), X:Id)) L:List )
+               ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
           when T =/=K void
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List

@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      syntax K ::= varg(K) [hybrid, strict]
-     syntax K ::= prepareBuiltin(Id, List) 
+     syntax K ::= prepareBuiltin(CId, List) 
      syntax K ::= incSymbolic(K)
 endmodule
 
@@ -28,22 +28,22 @@ module LIBC-BOOTSTRAP
      // addresses thing.
      context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
      rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           when variadic in getParams(T)
           [structural]
      rule <k> handleBuiltin => Return(prepareBuiltin(F, P)) ...</k>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           when notBool variadic in getParams(T)
           [structural]
 
      syntax List ::= makeVarArgs(List) [function]
-     rule makeVarArgs(L:List ListItem(X:Id) ListItem(vararg(0)) _)
+     rule makeVarArgs(L:List ListItem(X:CId) ListItem(vararg(0)) _)
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
-     rule makeVarArgs(L:List ListItem(X:Id))
+     rule makeVarArgs(L:List ListItem(X:CId))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
           when notBool vararg(0) in (L ListItem(X))
 endmodule

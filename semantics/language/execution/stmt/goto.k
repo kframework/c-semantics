@@ -13,7 +13,7 @@ module C-STMT-GOTO
 
      rule getIdOfName(InitName(K:K, _)) => getIdOfName(K)
      rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K)
-     rule getIdOfName(Name(X:Id, _)) => X
+     rule getIdOfName(Name(X:CId, _)) => X
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement
@@ -94,8 +94,8 @@ module C-STMT-GOTO
 
      // declaration stack, actual local variables
      syntax K ::= processGotoSameBlock(List, List)
-     rule <k> Goto(Lbl:Id) ~> _ => processGoto(GotoInfo) </k>
-          <curr-function> F:Id </curr-function>
+     rule <k> Goto(Lbl:CId) ~> _ => processGoto(GotoInfo) </k>
+          <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
@@ -103,8 +103,8 @@ module C-STMT-GOTO
           ...</goto-map>
           when #isFunLabel(Lbl) =/=K true
           [structural]  // rule so that looping programs see repetition
-     rule <k> Goto(Lbl:Id) ~> _ => Blk </k>
-          <curr-function> F:Id </curr-function>
+     rule <k> Goto(Lbl:CId) ~> _ => Blk </k>
+          <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
@@ -112,7 +112,7 @@ module C-STMT-GOTO
           ...</goto-map>
           when #isFunLabel(Lbl) ==K true
 
-     syntax Bool ::= "#isFunLabel" "(" Id ")" [function]
+     syntax Bool ::= "#isFunLabel" "(" CId ")" [function]
      rule #isFunLabel(funLabel(_)) => true
           
      // - first case, when we're in the same block

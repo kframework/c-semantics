@@ -48,33 +48,33 @@ module C-TYPING-COMPATIBILITY
           when sameQualifiers(Mods, Mods')
 
      rule #areCompat(
-               t(Mods:Set, structType(X:Id, _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, structType(X:Id, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, structType(X:CId, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, structType(X:Id, _, _)),
-               t(Mods':Set, incompleteStructType(X:Id)))
+               t(Mods:Set, structType(X:CId, _, _)),
+               t(Mods':Set, incompleteStructType(X:CId)))
           => true
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, incompleteStructType(X:Id)),
-               t(Mods':Set, structType(X:Id, _, _)))
+               t(Mods:Set, incompleteStructType(X:CId)),
+               t(Mods':Set, structType(X:CId, _, _)))
           => true
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, unionType(X:Id, _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, unionType(X:Id, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, unionType(X:CId, _, fieldInfo(Fs:List, _, _))),
+               t(Mods':Set, unionType(X:CId, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, unionType(X:Id, _, _)),
-               t(Mods':Set, incompleteUnionType(X:Id)))
+               t(Mods:Set, unionType(X:CId, _, _)),
+               t(Mods':Set, incompleteUnionType(X:CId)))
           => true
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, incompleteUnionType(X:Id)),
-               t(Mods':Set, unionType(X:Id, _, _)))
+               t(Mods:Set, incompleteUnionType(X:CId)),
+               t(Mods':Set, unionType(X:CId, _, _)))
           => true
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
@@ -101,8 +101,8 @@ module C-TYPING-COMPATIBILITY
           
      // Struct and union fields.
      rule #areCompat(
-               typedDeclaration(T:Type, X:Id),
-               typedDeclaration(T':Type, X:Id))
+               typedDeclaration(T:Type, X:CId),
+               typedDeclaration(T':Type, X:CId))
           => #areCompat(T, T')
 
      // A function declaration with no arguments is compatible with a
@@ -186,8 +186,8 @@ module C-TYPING-COMPATIBILITY
           => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
-               typedDeclaration(T:Type, X:Id),
-               typedDeclaration(T':Type, X:Id))
+               typedDeclaration(T:Type, X:CId),
+               typedDeclaration(T':Type, X:CId))
           => typedDeclaration(compositeType(T, T'), X)
 
      // We replace all ids in non-def param lists with #NoName, so we can get

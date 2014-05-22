@@ -15,9 +15,9 @@ module C-CONFIGURATION
 
                <main-tu color="lightgray"> .Set </main-tu>
 
-               // Id |-> Type
+               // CId |-> Type
                <external-types> .Map </external-types>
-               // Id |-> Loc
+               // CId |-> Loc
                <external-defs> .Map </external-defs>
 
                // dummy link loc |-> real loc
@@ -30,11 +30,11 @@ module C-CONFIGURATION
                          <gtypes color="lightgray"> .Map </gtypes>
                          <gstructs color="lightgray"> .Map </gstructs>
 
-                         // kpair(Id, BlockNum) |-> SymLoc
+                         // kpair(CId, BlockNum) |-> SymLoc
                          <local-statics> .Map </local-statics>
-                         // kpair(Id, BlockNum) |-> Type
+                         // kpair(CId, BlockNum) |-> Type
                          <local-types> .Map </local-types>
-                         // kpair(Id, BlockNum) |-> FieldInfo
+                         // kpair(CId, BlockNum) |-> FieldInfo
                          <local-structs> .Map </local-structs>
 
                          <next-unnamed color="black"> 0 </next-unnamed>
@@ -101,7 +101,7 @@ module C-CONFIGURATION
                                         .List
                                    </block-stack>
                                    <local>
-                                        // maps from Ids
+                                        // maps from CIds
                                         <env color="red"> .Map </env>
                                         <types color="lightgray"> .Map </types>
                                         <structs color="lightgray"> .Map </structs>

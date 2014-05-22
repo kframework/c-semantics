@@ -21,7 +21,7 @@ module C-FUNCTION-DEF
 
      imports COMPAT-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(T:Type, X:Id), Blk:K) 
+     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K) 
           => declare(
                typedDeclaration(toPrototype(T), X), 
                initializer(initFunction(
@@ -65,9 +65,9 @@ module C-FUNCTION-DEF
           when notBool isFunctionType(T)
                orBool (getParams(T) =/=List .List)
      
-     syntax K ::= processFunDef(Id, K)
+     syntax K ::= processFunDef(CId, K)
 
-     rule <k> processFunDef(X:Id, Blk:K)
+     rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
           ...</k>
@@ -77,13 +77,13 @@ module C-FUNCTION-DEF
           ...</functions>
           [structural]
 
-     syntax K ::= checkFunDefType(Id, Type)
-     rule checkFunDefType(X:Id, T:Type) => .
+     syntax K ::= checkFunDefType(CId, Type)
+     rule checkFunDefType(X:CId, T:Type) => .
           when isVoidOrComplete(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X =/=K Identifier("main"))
           [structural]
-     rule checkFunDefType(X:Id, T:Type) => checkMainDef(T)
+     rule checkFunDefType(X:CId, T:Type) => checkMainDef(T)
           when isVoidOrComplete(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
@@ -161,9 +161,9 @@ module C-FUNCTION-DEF
                andBool notBool $hasMapping(M, Loc)
           [structural]
 
-     syntax K ::= safeBody(Id, K) [function]
+     syntax K ::= safeBody(CId, K) [function]
 
-     rule safeBody(X:Id, Blk:K) 
+     rule safeBody(X:CId, Blk:K) 
           => Blk ~> Return(NothingExpression)
           when X =/=K Identifier("main")
      rule safeBody(Identifier("main"), Blk:K) 
@@ -171,8 +171,8 @@ module C-FUNCTION-DEF
 
      syntax K ::= "returnToFileScope"
 
-     syntax K ::= staticEval(Id, List, K)
-     rule <k> staticEval(X:Id, Params:List, Blk:K)
+     syntax K ::= staticEval(CId, List, K)
+     rule <k> staticEval(X:CId, Params:List, Blk:K)
                => populateFromGlobal
                ~> dummyBind(Params)
                ~> Blk
@@ -195,9 +195,9 @@ module C-FUNCTION-DEF
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
      rule #hasDupIds'(
                _
-               ListItem(typedDeclaration(_, X:Id))
+               ListItem(typedDeclaration(_, X:CId))
                _
-               ListItem(typedDeclaration(_, X:Id))
+               ListItem(typedDeclaration(_, X:CId))
                _
           ) => true
 
@@ -210,7 +210,7 @@ module C-FUNCTION-DEF
      rule dummyBind(ListItem(typedDeclaration(T:Type, _))) => .
           when isVoidType(T)
           [structural]
-     rule dummyBind(ListItem(typedDeclaration(T:Type, X:Id)) Params:List)
+     rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
           => addToEnv(X, symVal)
           ~> giveType(X, T)
           ~> dummyBind(Params)

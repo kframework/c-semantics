@@ -18,21 +18,21 @@ module C-COMMON-EXPR-MEMBERS
      has the so-qualified version of the type of the designated member.}
      }*/
      rule lval(Loc:SymLoc, t(Mods:Set,
-               structType(S:Id, _, Fields:FieldInfo))) . F:Id
+               structType(S:CId, _, Fields:FieldInfo))) . F:CId
           => lookupField(F, Loc, Mods, S, Fields, Fields)
           [structural]
      rule lval(Loc:SymLoc, t(Mods:Set,
-               unionType(S:Id, _, Fields:FieldInfo))) . F:Id
+               unionType(S:CId, _, Fields:FieldInfo))) . F:CId
           => lookupField(F, Loc,
                stripUnionMarker(Mods) SetItem(fromUnion(Loc, F, Fields)),
                S, Fields, Fields)
           [structural]
 
      // The last two parameters are for convenience and should be the same.
-     syntax K ::= lookupField(Id, SymLoc, Set, Id, FieldInfo, FieldInfo)
+     syntax K ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
           [function]
 
-     rule lookupField(F:Id, Loc:SymLoc, Mods:Set, S:Id, Fields:FieldInfo,
+     rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
           fieldInfo(_,
                F |-> T:Type _,
                F |-> Offset:Int _))
@@ -42,18 +42,18 @@ module C-COMMON-EXPR-MEMBERS
 
      // Same deal as above, only for byte lists.
      rule tv(agg(L:List), t(Mods:Set,
-               structType(S:Id, _, Fields:FieldInfo))) . F:Id
+               structType(S:CId, _, Fields:FieldInfo))) . F:CId
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
      rule tv(agg(L:List), t(Mods:Set,
-               unionType(S:Id, _, Fields:FieldInfo))) . F:Id
+               unionType(S:CId, _, Fields:FieldInfo))) . F:CId
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
 
-     syntax K ::= extractField(Id, List, Set, Id, FieldInfo, FieldInfo)
+     syntax K ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
           [function]
      
-     rule extractField(F:Id, L:List, Mods:Set, S:Id, Fields:FieldInfo,
+     rule extractField(F:CId, L:List, Mods:Set, S:CId, Fields:FieldInfo,
           fieldInfo(_,
                F |-> t(Mods':Set, T':SimpleType) _,
                F |-> Offset:Int _))
@@ -69,7 +69,7 @@ module C-COMMON-EXPR-MEMBERS
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K:K -> F:Id => (* K) . F [macro, structural]
+     rule K:K -> F:CId => (* K) . F [macro, structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets

@@ -1,5 +1,5 @@
 module C-DECL-LOCAL-SYNTAX
-     syntax K ::= declareOnly(Id, Type)
+     syntax K ::= declareOnly(CId, Type)
 endmodule
 
 module C-DECL-LOCAL
@@ -19,13 +19,13 @@ module C-DECL-LOCAL
 
      imports COMPAT-SYNTAX
 
-     rule declare'(typedDeclaration(T:Type, X:Id), K:K) 
+     rule declare'(typedDeclaration(T:Type, X:CId), K:K) 
           => declareInternalVariable(X, T, K)
           [structural] 
           
-     syntax K ::= declareInternalVariable(Id, Type, K)
+     syntax K ::= declareInternalVariable(CId, Type, K)
 
-     rule <k> declareInternalVariable(X:Id, T:Type, NoInit)
+     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
                => addToEnv(X, Loc) 
                ~> giveType(X, T')
           ...</k>
@@ -41,7 +41,7 @@ module C-DECL-LOCAL
                orBool isFunctionType(T)
           [structural] 
           
-     rule <k> declareInternalVariable(X:Id, T:Type, _)
+     rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Loc)
                ~> giveType(X, T')
           ...</k>
@@ -57,16 +57,16 @@ module C-DECL-LOCAL
           when isStaticType(T)
           [structural] 
      
-     rule declareInternalVariable(X:Id, T:Type, NoInit)
+     rule declareInternalVariable(X:CId, T:Type, NoInit)
           => declareOnly(X, T)
           when notBool isStaticType(T) 
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural] 
 
-     syntax K ::= declareAndDefine(Id, Type, K)
+     syntax K ::= declareAndDefine(CId, Type, K)
 
-     rule declareInternalVariable(X:Id, T:Type, K:K)
+     rule declareInternalVariable(X:CId, T:Type, K:K)
           => declareAndDefine(X, T, K)
           when notBool isStaticType(T) 
                andBool (notBool isExternType(T))
@@ -74,7 +74,7 @@ module C-DECL-LOCAL
                andBool (K =/=K NoInit)
           [structural] 
                     
-     rule <k> declareOnly(X:Id, T:Type)
+     rule <k> declareOnly(X:CId, T:Type)
                => allocateType(Loc, T) 
                ~> addToEnv(X, Loc) 
                ~> giveType(X, T)
@@ -91,7 +91,7 @@ module C-DECL-LOCAL
 
      // Same as above, but for the case where the variable has already been
      // declared. This is seen if we goto earlier in the same block.
-     rule <k> declareOnly(X:Id, T:Type)
+     rule <k> declareOnly(X:CId, T:Type)
                => .K
           ...</k>
           <local-vars>... ListItem(X) ...</local-vars>
@@ -100,7 +100,7 @@ module C-DECL-LOCAL
                andBool (notBool isExternType(T))
           [structural] 
 
-     rule <k> declareAndDefine(X:Id, T:Type, K:K)
+     rule <k> declareAndDefine(X:CId, T:Type, K:K)
                => defineAndInit(X, T, figureInit(X, T, K), Loc)
           ...</k>
           <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
@@ -112,15 +112,15 @@ module C-DECL-LOCAL
           
      // This happens when we jump before a variable declaration with an
      // initialization in the same block.
-     rule <k> declareAndDefine(X:Id, T:Type, K:K)
+     rule <k> declareAndDefine(X:CId, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
           <local-vars>... ListItem(X) ...</local-vars>
           [structural] 
 
-     syntax K ::= defineAndInit(Id, Type, K, SymLoc) [strict(3)] 
+     syntax K ::= defineAndInit(CId, Type, K, SymLoc) [strict(3)] 
 
-     rule <k> defineAndInit(X:Id, _, initValue(X:Id, T':Type, K:K), Loc:SymLoc)
+     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, K:K), Loc:SymLoc)
                => allocateTypeIfAbsent(Loc, T')
                ~> addToEnv(X, Loc)
                ~> giveType(X, T')
@@ -130,7 +130,7 @@ module C-DECL-LOCAL
           <should-init> true </should-init>
           [structural] 
           
-     rule <k> defineAndInit(X:Id, _, initValue(X:Id, T':Type, _), Loc:SymLoc)
+     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, _), Loc:SymLoc)
                => allocateTypeIfAbsent(Loc, T')
                ~> addToEnv(X, Loc)
                ~> giveType(X, T')
@@ -144,7 +144,7 @@ module C-DECL-LOCAL
           => K ~> sequencePoint
           [structural]
 
-     rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
+     rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs:Map[Info / X] </structs>
           [structural]
 endmodule

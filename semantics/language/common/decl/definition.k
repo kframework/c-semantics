@@ -59,7 +59,7 @@ module C-DECL-DEFINITION
           [structural]
 
      syntax List ::= elideParams(List) [function]
-     rule elideDeclParams(typedDeclaration(T:Type, X:Id))
+     rule elideDeclParams(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(elideDeclParams(T), X)
      rule elideDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
           => t(Mods, functionType(elideDeclParams(R), elideParams(Params)))

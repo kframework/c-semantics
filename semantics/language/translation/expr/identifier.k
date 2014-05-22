@@ -6,13 +6,13 @@ module C-EXPR-IDENTIFIER
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule <k> X:Id => lv(Loc, T) ...</k>
+     rule <k> X:CId => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
           when notBool isLinkerLoc(Loc)
           [structural]
 
-     rule <k> X:Id => lv(Loc, T) ...</k>
+     rule <k> X:CId => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>
@@ -23,7 +23,7 @@ module C-EXPR-IDENTIFIER
 
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
-     rule <k> X:Id => lv(Loc, T) ...</k>
+     rule <k> X:CId => lv(Loc, T) ...</k>
           <env>... X |-> Loc:SymLoc ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>

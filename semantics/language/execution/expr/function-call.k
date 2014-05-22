@@ -79,7 +79,7 @@ module C-EXPR-FUNCTION-CALL
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      rule <k> application(Tu:String,
-                    functionObject(X:Id, Params:List, DefT:Type, Blk:K),
+                    functionObject(X:CId, Params:List, DefT:Type, Blk:K),
                     CallT:Type, L:List) 
                => application'(Tu, functionObject(X, Params, DefT, Blk), L)
           ...</k>
@@ -87,13 +87,13 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      rule (. => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
-          ~> application(_, functionObject(X:Id, _, DefT:Type, _), CallT:Type, _)
+          ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
           when notBool areCompatible(CallT, DefT)
           [structural]
 
      syntax K ::= "application'" "(" String "," K "," List ")"
 
-     rule <k> application'(Tu:String, functionObject(X:Id, Params:List, DefT:Type, BlK:K), L:List) 
+     rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, BlK:K), L:List) 
                ~> K:K 
                => sequencePoint
                ~> populateFromGlobal
@@ -123,7 +123,7 @@ module C-EXPR-FUNCTION-CALL
           </control>
           [structural, large]
 
-     rule <k> bindParam(X:Id, T:Type, V:TypedValue)
+     rule <k> bindParam(X:CId, T:Type, V:TypedValue)
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)

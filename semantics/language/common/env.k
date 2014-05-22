@@ -1,6 +1,6 @@
 module C-ENV-SYNTAX
-     syntax K ::= addToEnv(Id, SymLoc)
-     syntax K ::= giveType(Id, Type)
+     syntax K ::= addToEnv(CId, SymLoc)
+     syntax K ::= giveType(CId, Type)
      syntax K ::= "populateFromGlobal"
      syntax K ::= addToHistory(Int)
           [latex(\terminal{addToHist}\!({#1}\!))]
@@ -35,37 +35,37 @@ module C-ENV
           <structs> _ => GS </structs>
           [structural]
      
-     rule <k> addToEnv(X:Id, Loc:SymLoc) => addToGlobalEnv(X, Loc) ...</k>
+     rule <k> addToEnv(X:CId, Loc:SymLoc) => addToGlobalEnv(X, Loc) ...</k>
           <curr-function> file-scope </curr-function>
           [structural] 
-     rule <k> addToEnv(X:Id, Loc:SymLoc) => addToLocalEnv(X, Loc) ...</k>
-          <curr-function> F:Id </curr-function>
+     rule <k> addToEnv(X:CId, Loc:SymLoc) => addToLocalEnv(X, Loc) ...</k>
+          <curr-function> F:CId </curr-function>
           when F =/=K file-scope
           [structural] 
           
-     rule <k> addToGlobalEnv(X:Id, Loc:SymLoc) => . ...</k>
+     rule <k> addToGlobalEnv(X:CId, Loc:SymLoc) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id> 
           <genv> G:Map => G:Map[Loc / X] </genv>
           <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
-     rule <k> addToLocalEnv(X:Id, Loc:SymLoc) => . ...</k>
+     rule <k> addToLocalEnv(X:CId, Loc:SymLoc) => . ...</k>
           <env> E:Map => E:Map[Loc / X] </env>
           [structural] 
 
      syntax K ::= giveGlobalType(K, Type)
      syntax K ::= giveLocalType(K, Type)
      
-     rule <k> giveType(X:Id, T:Type) => 
+     rule <k> giveType(X:CId, T:Type) => 
                #if (Fun ==K file-scope) 
                #then giveGlobalType(X, stripStorageSpecifiers(T)) 
                #else giveLocalType(X, stripStorageSpecifiers(T)) 
                #fi
           ...</k>
-          <curr-function> Fun:Id </curr-function>
+          <curr-function> Fun:CId </curr-function>
           [structural]
           
-     rule <k> giveGlobalType(X:Id, T:Type) => .K ...</k>
+     rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
           <types> L:Map => L:Map[T / X] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -73,7 +73,7 @@ module C-ENV
                G:Map => G:Map[T / X]
           </gtypes>
           [structural]
-     rule <k> giveLocalType(X:Id, T:Type) => .K ...</k>
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
           <types> L:Map => L:Map[T / X] </types>
           [structural]   
 

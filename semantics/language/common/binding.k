@@ -1,7 +1,7 @@
 module C-BINDING-SYNTAX
-     // TypedValues, Types, Ids
+     // TypedValues, Types, CIds
      syntax K ::= bind(List, List, List)
-     syntax K ::= bindParam(Id, Type, K)
+     syntax K ::= bindParam(CId, Type, K)
      syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= isArgPromoted(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
@@ -32,14 +32,14 @@ module C-BINDING
      // Prototype.
      rule (. => bindParam(X, T, V))
           ~> bind(
-               (ListItem(typedDeclaration(_, X:Id)) => .List) _,
+               (ListItem(typedDeclaration(_, X:CId)) => .List) _,
                (ListItem(T:Type) => .List) _,
                (ListItem(V:TypedValue) => .List) _)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (. => bindParam(X, T, argPromote(V)))
           ~> bind(
-               (ListItem(typedDeclaration(T:Type, X:Id)) => .List) _,
+               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:TypedValue) => .List) _)
           when #arePromotedTypesCompat(value(V), T, type(V)) ==K true

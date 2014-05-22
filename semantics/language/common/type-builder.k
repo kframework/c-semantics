@@ -81,7 +81,7 @@ module C-TYPE-BUILDER
      rule adjustParams(.List) => .List
 
      syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(typedDeclaration(T:Type, X:Id))
+     rule adjustParam(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(adjustParam(T), X)
      rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
           => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))

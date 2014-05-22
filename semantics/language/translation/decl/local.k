@@ -1,5 +1,5 @@
 module C-DECL-LOCAL-SYNTAX
-     syntax K ::= declareInternalVariable(Id, Type, K)
+     syntax K ::= declareInternalVariable(CId, Type, K)
 endmodule
 
 module C-DECL-LOCAL
@@ -25,7 +25,7 @@ module C-DECL-LOCAL
      // scope of the current block?
      // 
      // Extern, external type and def exist.
-     rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, Loc)
           ...</k>
           <types> M:Map => M:Map[T / X] </types>
@@ -41,7 +41,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:Id, T':Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
           <types> M:Map => M:Map[T / X] </types>
@@ -58,7 +58,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:Id, T:Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T:Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
           <types> M:Map => M:Map[T / X] </types>
@@ -72,14 +72,14 @@ module C-DECL-LOCAL
                andBool notBool (X in keys Types)
                andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
-     rule declareInternalVariable(X:Id, T:Type, K:K)
+     rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
                allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural] 
-     rule declareInternalVariable(X:Id, T:Type, K:K)
+     rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, stripStorageSpecifiers(T), 
                allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
@@ -89,7 +89,7 @@ module C-DECL-LOCAL
      // in the "local-types" map in order to detect this case.
      rule <k> (.K => ERROR("DL1", "Extern declaration of "
                     +String idToString(X) +String " follows one with no linkage."))
-               ~> declareInternalVariable(X:Id, T:Type, NoInit) 
+               ~> declareInternalVariable(X:CId, T:Type, NoInit) 
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -99,12 +99,12 @@ module C-DECL-LOCAL
           [structural] 
      rule (. => ERROR("DL2", "extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer."))
-          ~> declareInternalVariable(X:Id, T:Type, K:K)
+          ~> declareInternalVariable(X:CId, T:Type, K:K)
           when isExternType(T) andBool K =/=K NoInit
           [structural] 
 
-     syntax K ::= initLocalStatic(Id, K) [strict(2)] 
-     rule <k> initLocalStatic(X:Id, initValue(_, T:Type, K:K))
+     syntax K ::= initLocalStatic(CId, K) [strict(2)] 
+     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
@@ -125,7 +125,7 @@ module C-DECL-LOCAL
           [structural] 
      rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
-               ~> initLocalStatic(X:Id, _)
+               ~> initLocalStatic(X:CId, _)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -140,8 +140,8 @@ module C-DECL-LOCAL
                orBool (kpair(X, BlockNum) in keys LocalTypes)
           [structural] 
           
-     syntax K ::= defineAndInit(Id, Type, K) [strict(3)] 
-     rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
+     syntax K ::= defineAndInit(CId, Type, K) [strict(3)] 
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
                => giveType(X, T)
                ~> K
           ...</k>
@@ -154,7 +154,7 @@ module C-DECL-LOCAL
           </local-types>
           [structural] 
      // For function parameters. TODO(chathhorn): handle better?
-     // rule <k> defineAndInit(X:Id, _, initValue(_, T:Type, K:K))
+     // rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
      //           => giveType(X, T)
      //           ~> K
      //      ...</k>
@@ -166,13 +166,13 @@ module C-DECL-LOCAL
      //      </local-types>
      //      [structural] 
 
-     rule <k> addLocalTag(X:Id, Info:FieldInfo) => . ...</k>
+     rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[Info / X] </structs>
           when notBool (X in keys Structs)
           [structural]
      rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
                +String idToString(X)))
-               ~> addLocalTag(X:Id, _)
+               ~> addLocalTag(X:CId, _)
           ...</k>
           <structs>... X |-> _ ...</structs>
           [structural]

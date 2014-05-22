@@ -136,7 +136,7 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
           
-     rule <type> X:Id => T ...</type>
+     rule <type> X:CId => T ...</type>
           <types>... X |-> T:Type ...</types>
           [structural]
      
@@ -166,12 +166,12 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule <type> 
-               t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
+               t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:CId
                => T
           ...</type>
           [structural]
      rule <type>
-               t(_, unionType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:Id
+               t(_, unionType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:CId
                => T
           ...</type>
           [structural]

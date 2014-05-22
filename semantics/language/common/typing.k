@@ -8,15 +8,15 @@ require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
      syntax K ::= typeof(K)
-     syntax Id ::= typedef(Id)
-     syntax Id ::= unnamed(Int, String)
-     syntax Id ::= vararg(Int)
+     syntax CId ::= typedef(CId)
+     syntax CId ::= unnamed(Int, String)
+     syntax CId ::= vararg(Int)
 
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Map, Map)
 
-     // represents a type before canonicalization.  as in "int *x", first arg
+     // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)] 
 
@@ -24,6 +24,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= compositeType(Type, Type) [function]
      
      syntax Bool ::= hasCharType(Type) [function]
+     syntax Bool ::= isUCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
      syntax Bool ::= isPointerType(Type) [function]
      syntax Bool ::= isArrayType(Type) [function]
@@ -56,7 +57,7 @@ module C-TYPING-SYNTAX
      syntax CValue ::= CSize
      
      // Composite types
-     syntax SimpleType ::= enumType(Id)
+     syntax SimpleType ::= enumType(CId)
           [klabel('enumType)]
      syntax SimpleType ::= bitfieldType(Type, CSize)
           [klabel('bitfieldType)]
@@ -72,14 +73,14 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
 
-     syntax SimpleType ::= structType(Id, Int, FieldInfo)
+     syntax SimpleType ::= structType(CId, Int, FieldInfo)
           [klabel('structType)]
-     syntax SimpleType ::= incompleteStructType(Id)
+     syntax SimpleType ::= incompleteStructType(CId)
           [klabel('incompleteStructType)]
 
-     syntax SimpleType ::= unionType(Id, Int, FieldInfo)
+     syntax SimpleType ::= unionType(CId, Int, FieldInfo)
           [klabel('unionType)]
-     syntax SimpleType ::= incompleteUnionType(Id)
+     syntax SimpleType ::= incompleteUnionType(CId)
           [klabel('incompleteUnionType)]
 
      // Writing to an lvalue with this qualifier ignores qualifiers on the
@@ -88,7 +89,8 @@ module C-TYPING-SYNTAX
      syntax Storage ::= "Initializer"
 
      // Basic types
-     syntax SimpleType ::= "void" | "bool" | "char" | "short-int" | "int" 
+     syntax SimpleType ::= "char" [function]
+     syntax SimpleType ::= "void" | "bool" | "short-int" | "int" 
                          | "long-int" | "long-long-int"
      syntax SimpleType ::= "float" | "double" | "long-double"
      syntax SimpleType ::= "signed-char" | "unsigned-char"
@@ -98,7 +100,7 @@ module C-TYPING-SYNTAX
 
      // These aren't real types, but are values that can appear in type
      // contexts.
-     syntax SimpleType ::= typedefType(Id, Type)
+     syntax SimpleType ::= typedefType(CId, Type)
      syntax Type ::= "variadic"
 
      syntax Bool ::= isBasicType(K) [function]
@@ -140,7 +142,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
 
-     syntax Type ::= typedDeclaration(Type, Id) 
+     syntax Type ::= typedDeclaration(Type, CId) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
      syntax Int ::= numBits(Type) [function]
@@ -148,7 +150,7 @@ module C-TYPING-SYNTAX
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
-     syntax Type ::= completeTag(Id, FieldInfo, Type) [function]
+     syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
      syntax K ::= completeTags(K) [strict]
 
@@ -157,7 +159,7 @@ module C-TYPING-SYNTAX
 
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
-     syntax K ::= fromUnion(SymLoc, Id, FieldInfo) [klabel('fromUnion)]
+     syntax K ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
      syntax Bool ::= hasUnionMarker(Type) [function]
      syntax Set ::= stripUnionMarker(Set) [function]
 

@@ -1,5 +1,5 @@
 module C-PROCESS-LABEL-SYNTAX
-     syntax K ::= calculateGotoMap(Id, K)
+     syntax K ::= calculateGotoMap(CId, K)
 endmodule
 
 module C-PROCESS-LABEL
@@ -27,7 +27,7 @@ module C-PROCESS-LABEL
      */
      
      syntax K ::= "waitingOnGotoMap"
-     rule <k> calculateGotoMap(F:Id, K:K) => waitingOnGotoMap ...</k>
+     rule <k> calculateGotoMap(F:CId, K:K) => waitingOnGotoMap ...</k>
           <curr-function> _ => F </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -48,14 +48,14 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => . ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:Id => file-scope </curr-function>
+          <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural] 
      rule <k> waitingOnGotoMap => . ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:Id => file-scope </curr-function>
+          <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
@@ -276,11 +276,11 @@ module C-PROCESS-LABEL
           <goto-loop-stack> (_:ListItem => .) ...</goto-loop-stack>
           [structural] 
           
-     rule <computation> (Label(Target:Id, S:K) => S) ~> K:K </computation>
+     rule <computation> (Label(Target:CId, S:K) => S) ~> K:K </computation>
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:K </curr-tu>
@@ -301,13 +301,13 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
-               F:Id |-> map(
+               F:CId |-> map(
                     (M:Map => (M:Map[
                          case(CaseNum) 
                          / genLabel(SwitchNum, Val)])[
@@ -323,13 +323,13 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... 
-               F:Id |-> map(
+               F:CId |-> map(
                     (M:Map => M:Map[
                     gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack) 

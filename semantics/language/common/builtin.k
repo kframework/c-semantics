@@ -74,14 +74,14 @@ module C-BUILTIN
 
      // Used by stddef.h.
      syntax K ::= offsetOf(K, K) [strict(1)]
-     rule OffsetOf(T:KResult, K:K, F:Id)
-          => offsetOf(DeclType(T:KResult, K:K), F:Id)
+     rule OffsetOf(T:KResult, K:K, F:CId)
+          => offsetOf(DeclType(T:KResult, K:K), F:CId)
           [structural]
 
      // fixme should check for bitfield offset
      rule offsetOf(t(_, structType(_, _, 
-               fieldInfo(_, _, (_ F:Id |-> Offset:Int))
-          )), F:Id)
+               fieldInfo(_, _, (_ F:CId |-> Offset:Int))
+          )), F:CId)
           => tv(bitsToBytes(Offset:Int), cfg:sizeut)
           [structural]
 

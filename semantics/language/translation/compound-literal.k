@@ -14,7 +14,7 @@ module C-COMPOUND-LITERAL
 
      imports COMPAT-SYNTAX
 
-     syntax Id ::= compoundLiteral(Int)
+     syntax CId ::= compoundLiteral(Int)
      syntax K ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
@@ -53,7 +53,7 @@ module C-COMPOUND-LITERAL
                figureInit(compoundLiteral(N), DeclType(T, K), Init))
           [structural]
           
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
@@ -67,7 +67,7 @@ module C-COMPOUND-LITERAL
           <initializing> true </initializing>
           [structural]
 
-     rule <k> handleCompoundLiteral(initValue(X:Id, T:Type, Init:K))
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)
                ~> giveType(X, T)
                ~> Init

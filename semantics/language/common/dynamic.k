@@ -28,14 +28,14 @@ module C-DYNAMIC-SYNTAX
 
      syntax CabsLoc ::= "UnknownCabsLoc"
 
-     // TODO(chathhorn): seems excessive to make this an Id. Also, it kinda
+     // TODO(chathhorn): seems excessive to make this an CId. Also, it kinda
      // goes against our naming conventions.
-     syntax Id ::= "file-scope"
+     syntax CId ::= "file-scope"
 
      //  switchid, value (tv or 'Default)
-     syntax Id ::= genLabel(Int, K) [klabel('genLabel)]
-     syntax Id ::= funLabel(Id)
-     syntax Id ::= case(Int)
+     syntax CId ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax CId ::= funLabel(CId)
+     syntax CId ::= case(Int)
 
      syntax K ::= "pushBlock"
      syntax K ::= "popBlock"

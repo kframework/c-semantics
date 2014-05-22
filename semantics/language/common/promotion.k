@@ -126,7 +126,7 @@ module C-PROMOTION
      rule rank(t(_, unsigned-long-int)) => 4
      rule rank(t(_, long-long-int)) => 5
      rule rank(t(_, unsigned-long-long-int)) => 5
-     rule rank(t(S:Set, enumType(_:Id))) => rank(t(S:Set, int))
+     rule rank(t(S:Set, enumType(_:CId))) => rank(t(S:Set, int))
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
      The following may be used in an expression wherever an int or unsigned int
@@ -160,7 +160,7 @@ module C-PROMOTION
      // things more convenient if it's total.
      rule isPromoted(T:Type) => #isPromoted(T) ==K true
      
-     rule #isPromoted(t(_, enumType(_:Id))) => true
+     rule #isPromoted(t(_, enumType(_:CId))) => true
      rule #isPromoted(t(_, int)) => true
      rule #isPromoted(t(_, unsigned-int)) => true
      rule #isPromoted(t(_, long-int)) => true

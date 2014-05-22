@@ -75,15 +75,15 @@ module C-TYPING-INTERPRETATION
           => t(S, pointerType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
           => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, structType(X, NBits, Info)))
-     rule pushTypeDown(t(S:Set, incompleteStructType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:KLabel) 
           => Lbl(t(S, incompleteStructType(X)))
-     rule pushTypeDown(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
           => Lbl(t(S, unionType(X, NBits, Info)))
-     rule pushTypeDown(t(S:Set, incompleteUnionType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:KLabel) 
           => Lbl(t(S, incompleteUnionType(X)))
-     rule pushTypeDown(t(S:Set, enumType(X:Id)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:KLabel) 
           => Lbl(t(S, enumType(X)))
      
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:KLabel) 
@@ -118,13 +118,13 @@ module C-TYPING-INTERPRETATION
      
      rule giveNamesToArgs(L:List) => giveNamesToArgs-aux(0, L)
      rule giveNamesToArgs-aux(N:Int, 
-               (ListItem(typedDeclaration(T:Type, X:Id)) L:List))
+               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
           => ListItem(typedDeclaration(T, X))
                giveNamesToArgs-aux(N, L)
           when X =/=K #NoName
           [structural]
      rule giveNamesToArgs-aux(N:Int, 
-               (ListItem(typedDeclaration(T:Type, X:Id)) L:List))
+               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
           => ListItem(typedDeclaration(T, #NoName(N))) 
                giveNamesToArgs-aux(N +Int 1, L)
           when X ==K #NoName
@@ -153,20 +153,20 @@ module C-TYPING-INTERPRETATION
      rule OnlyTypedef(K:K) => K ~> discard
           [structural]
           
-     rule NameAndType(X:Id, T:Type) => typedDeclaration(T, X)
+     rule NameAndType(X:CId, T:Type) => typedDeclaration(T, X)
           [structural] 
      
      rule extractActualType(T:Type) => T
           when isBasicType(T)
-     rule extractActualType(t(S:Set, enumType(X:Id))) 
+     rule extractActualType(t(S:Set, enumType(X:CId))) 
           => t(S, enumType(X))
-     rule extractActualType(t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo))) 
+     rule extractActualType(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo))) 
           => t(S, structType(X, NBits, Info))
-     rule extractActualType(t(S:Set, incompleteStructType(X:Id))) 
+     rule extractActualType(t(S:Set, incompleteStructType(X:CId))) 
           => t(S, incompleteStructType(X))
-     rule extractActualType(t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo))) 
+     rule extractActualType(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo))) 
           => t(S, unionType(X, NBits, Info))
-     rule extractActualType(t(S:Set, incompleteUnionType(X:Id))) 
+     rule extractActualType(t(S:Set, incompleteUnionType(X:CId))) 
           => t(S, incompleteUnionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize))) 
           => t(S, arrayType(extractActualType(T), N))
@@ -181,9 +181,9 @@ module C-TYPING-INTERPRETATION
      rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))
           
-     syntax K ::= NameAndType(Id, K) [strict(2)] 
+     syntax K ::= NameAndType(CId, K) [strict(2)] 
           
-     rule SingleName(T:Type, Name(X:Id, K:K)) 
+     rule SingleName(T:Type, Name(X:CId, K:K)) 
           => NameAndType(X, DeclType(T, K))
           [structural] 
      rule FieldGroup(K:K, list(ListItem(C:K) ListItem(C':K) L:List)) 
@@ -191,11 +191,11 @@ module C-TYPING-INTERPRETATION
                ListItem(FieldGroup(K, list(ListItem(C') L))))
           [structural]
 
-     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:Id, K:K)))))
+     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:CId, K:K)))))
           => NameAndType(X, DeclType(T, K))
           [structural]
           
-     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:Id, K:K), Size:K))))
+     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K), Size:K))))
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural] 
 endmodule

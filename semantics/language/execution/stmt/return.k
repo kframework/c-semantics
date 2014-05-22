@@ -47,11 +47,11 @@ module C-STMT-RETURN
           // be a builtin (i.e., we're in a fake TU with no type env).
           <tu-id> OldTu </tu-id>
           <gtypes>... 
-              F:Id |-> t(_, functionType(T:Type, _))
+              F:CId |-> t(_, functionType(T:Type, _))
           ...</gtypes>
           <control>
                <curr-tu> _ => OldTu </curr-tu>
-               <curr-function> (F:Id => CurrFun) </curr-function>
+               <curr-function> (F:CId => CurrFun) </curr-function>
                <curr-function-params> _ => CurrFunParams </curr-function-params>
                <curr-program-loc> _ => CurrLoc </curr-program-loc>
                (<control-details>... 

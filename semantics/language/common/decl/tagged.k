@@ -1,7 +1,7 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
-     syntax K ::= addGlobalTag(Id, FieldInfo)
-     syntax K ::= addLocalTag(Id, FieldInfo)
+     syntax K ::= addGlobalTag(CId, FieldInfo)
+     syntax K ::= addLocalTag(CId, FieldInfo)
 
      syntax FieldInfo ::= makeStructFieldInfo(List) [function]
      syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
@@ -22,11 +22,11 @@ module C-DECL-TAGGED
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
-     rule StructDef(X:Id, krlist(L:List))
+     rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
           when L =/=List .List
           [structural]
-     rule UnionDef(X:Id, krlist(L:List))
+     rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           when L =/=List .List
           [structural]
@@ -41,7 +41,7 @@ module C-DECL-TAGGED
           when L =/=List .List
 
      rule makeStructFieldInfo'(
-               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , V:Int
                , Types:Map
                , Offsets:Map
@@ -55,12 +55,12 @@ module C-DECL-TAGGED
      // FIXME: chould check for some struct contraints here.
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T:Type, X:Id)) 
+          ListItem(typedDeclaration(T:Type, X:CId)) 
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
           when isCompleteType(T)
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(t(Mods:Set, incompleteArrayType(T:Type)), X:Id)))
+          ListItem(typedDeclaration(t(Mods:Set, incompleteArrayType(T:Type)), X:CId)))
           => ListItem(typedDeclaration(t(Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
@@ -74,7 +74,7 @@ module C-DECL-TAGGED
           when L =/=List .List
 
      rule makeUnionFieldInfo'(
-               ListItem(typedDeclaration(T:Type, Field:Id)) L:List
+               ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , Types:Map
                , Offsets:Map
                , L':List
@@ -88,17 +88,17 @@ module C-DECL-TAGGED
      syntax List ::=  fillBitHoles(Int, List) [function]
      rule fillBitHoles(.List) => .List 
      // if we haven't seen bitfields
-     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
           => ListItem(typedDeclaration(T, X)) fillBitHoles(L)
           when notBool isBitfieldType(T) 
      
-     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
           => fillBitHoles(0, ListItem(typedDeclaration(T, X)) L)
           when isBitfieldType(T) 
      
      // if we have seen bitfields
      rule fillBitHoles(N:Int, 
-               ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+               ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
           => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
                     absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
                     %Int cfg:bitsPerByte)), #NoName))
@@ -107,7 +107,7 @@ module C-DECL-TAGGED
      
      rule fillBitHoles(N:Int, 
                ListItem(typedDeclaration(t(Mods:Set,
-                    bitfieldType(T:Type, N':Int)), X:Id))
+                    bitfieldType(T:Type, N':Int)), X:CId))
                L:List) 
           => ListItem(typedDeclaration(t(Mods, bitfieldType(T, N')), X))
                fillBitHoles(N +Int N', L)
@@ -133,12 +133,12 @@ module C-DECL-TAGGED
      rule fillUnionBitHoles(ListItem(K:K) L:List) 
           => fillUnionBitHoles(0, ListItem(K) L)
      rule fillUnionBitHoles(N:Int, 
-               ListItem(typedDeclaration(T:Type, X:Id)) L:List) 
+               ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
           => ListItem(typedDeclaration(T, X))
                fillUnionBitHoles(N, L)
           when notBool isBitfieldType(T)
      rule fillUnionBitHoles(N:Int, ListItem(typedDeclaration(
-               t(Mods:Set, bitfieldType(T:Type, N':Int)), X:Id)) L:List) 
+               t(Mods:Set, bitfieldType(T:Type, N':Int)), X:CId)) L:List) 
           => ListItem(typedDeclaration(t(Mods, bitfieldType(T, N')), X))
                fillUnionBitHoles(maxInt(N, N'), L)
      rule fillUnionBitHoles(N:Int, .List) 
@@ -164,17 +164,17 @@ module C-DECL-TAGGED
      rule #mergable(typedDeclaration(t(_, bitfieldType(_, _)), #NoName))
           => true
 
-     syntax K ::= addTag(Id, FieldInfo)
-     rule <k> addTag(S:Id, fieldInfo(Fs:List, Ts:Map, Offs:Map))
+     syntax K ::= addTag(CId, FieldInfo)
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
                // Elide function parameter names in struct types.
                => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> file-scope </curr-function>
           [structural]        
-     rule <k> addTag(S:Id, fieldInfo(Fs:List, Ts:Map, Offs:Map))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
                => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
-          <curr-function> F:Id </curr-function>
+          <curr-function> F:CId </curr-function>
           when F =/=K file-scope
           [structural]        
 
