@@ -68,7 +68,7 @@ module C-IO-BUFFERED
                (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
           ...</buffer>
           <mem>...
-               Base |-> memblock(Len:Int, _, M:Map => M:Map[V / Offset])
+               Base |-> memblock(Len:Int, _, M:Map => M[V <- Offset])
           ...</mem>
           when Offset <Int Len
           [structural]
@@ -139,13 +139,12 @@ module C-IO-BUFFERED
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
-                    M:Map => M:Map[
-                         piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) 
-                         / Offset]) 
+               M:Map => M[
+                    piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset, 0) in locations(Mem))
-               andBool (notBool Offset in (keys M))
+               andBool (notBool Offset in (keys(M)))
           [large, structural]
           
      // Resolve a linker address to a real "physical" address.
@@ -194,7 +193,7 @@ module C-IO-BUFFERED
                     loc(OldBase:SymBase, _, _), _, _, _)
           ...</k>
           <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
-          when (notBool SNatN -Int 1 in keys M)
+          when (notBool SNatN -Int 1 in keys(M))
                andBool (SNatN >Int 0)
           [structural]
      rule realloc-aux(0,

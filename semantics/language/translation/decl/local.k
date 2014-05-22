@@ -28,7 +28,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, Loc)
           ...</k>
-          <types> M:Map => M:Map[T / X] </types>
+          <types> M:Map => M[T <- X] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Loc:SymLoc ...</external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -38,13 +38,13 @@ module C-DECL-LOCAL
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      // Extern, external type exists but no def.
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
-          <types> M:Map => M:Map[T / X] </types>
+          <types> M:Map => M[T <- X] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -54,14 +54,14 @@ module C-DECL-LOCAL
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool (X in keys Defs)
-               andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
+               andBool notBool (X in keys(Defs))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
-          <types> M:Map => M:Map[T / X] </types>
+          <types> M:Map => M[T <- X] </types>
           <external-types> Types:Map </external-types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -69,8 +69,8 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
-               andBool notBool (X in keys Types)
-               andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
+               andBool notBool (X in keys(Types))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
@@ -120,8 +120,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
           </local-types>
-          when notBool (kpair(X, BlockNum) in keys LocalStatics)
-               andBool notBool (kpair(X, BlockNum) in keys LocalTypes)
+          when notBool (kpair(X, BlockNum) in keys(LocalStatics))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
@@ -136,8 +136,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map
           </local-types>
-          when (kpair(X, BlockNum) in keys LocalStatics)
-               orBool (kpair(X, BlockNum) in keys LocalTypes)
+          when (kpair(X, BlockNum) in keys(LocalStatics))
+               orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
           
      syntax K ::= defineAndInit(CId, Type, K) [strict(3)] 
@@ -150,7 +150,7 @@ module C-DECL-LOCAL
           <tu-id> Tu </tu-id>
           <local-types>
                // TODO(chathhorn): local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes:Map[.K / kpair(X, BlockNum)]
+               LocalTypes:Map => LocalTypes[.K <- kpair(X, BlockNum)]
           </local-types>
           [structural] 
      // For function parameters. TODO(chathhorn): handle better?
@@ -162,13 +162,13 @@ module C-DECL-LOCAL
      //      <curr-tu> Tu:String </curr-tu>
      //      <tu-id> Tu </tu-id>
      //      <local-types>
-     //           LocalTypes:Map => LocalTypes:Map[.K / kpair(X, 0)]
+     //           LocalTypes:Map => LocalTypes[.K <- kpair(X, 0)]
      //      </local-types>
      //      [structural] 
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
-          <structs> Structs:Map => Structs[Info / X] </structs>
-          when notBool (X in keys Structs)
+          <structs> Structs:Map => Structs[Info <- X] </structs>
+          when notBool (X in keys(Structs))
           [structural]
      rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
                +String idToString(X)))

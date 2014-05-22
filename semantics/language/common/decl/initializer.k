@@ -261,12 +261,12 @@ module C-DECL-INITIALIZER
      syntax K ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L:List)))
                => fillInits(L)
-               ~> finishCompoundInit(next ListItem(te(K, T)) Remainder)
+               ~> finishCompoundInit(next ListItem(te(K, T)) ListItem(Remainder))
           ...</k>
           <curr-subobject> 
                (_:List => .) 
                ListItem(te(K:K, T:Type)) 
-               (Remainder:ListItem => .)
+               (ListItem(Remainder:K) => .)
           </curr-subobject>
           <curr-object>
                (. => ListItem(te(K, T)))

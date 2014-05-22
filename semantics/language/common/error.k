@@ -30,20 +30,20 @@ module C-ERROR
 
      syntax ErrorRef ::= Int
 
-     syntax String ::= citeError(ErrorTxt) [function]
-     syntax String ::= citeConstraint(String, String) [function]
-     syntax String ::= citeErrors(KList) [function]
+     // syntax String ::= citeError(ErrorTxt) [function]
+     // syntax String ::= citeConstraint(String, String) [function]
+     // syntax String ::= citeErrors(KList) [function]
 
-     rule citeError(err(Passage:String, Ref:String)) => 
-          "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
-     rule citeConstraint(Passage:String, Ref:String) => 
-          "Constraint violated (" +String Ref +String "): \"" +String Passage +String "\""
+     // rule citeError(err(Passage:String, Ref:String)) => 
+     //      "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
+     // rule citeConstraint(Passage:String, Ref:String) => 
+     //      "Constraint violated (" +String Ref +String "): \"" +String Passage +String "\""
 
-     rule citeErrors((Ref:Int,, Refs:KList)) =>
-          "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
-     rule citeErrors((cv(Ref:String),, Refs:KList)) =>
-          "\n" +String citeConstraint(Constraints(Ref), Ref) +String citeErrors(Refs)
-     rule citeErrors(.KList) => ""
+     // rule citeErrors((Ref:Int,, Refs:KList)) =>
+     //      "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
+     // rule citeErrors((cv(Ref:String),, Refs:KList)) =>
+     //      "\n" +String citeConstraint(Constraints(Ref), Ref) +String citeErrors(Refs)
+     // rule citeErrors(.KList) => ""
 
      rule ERROR(Title:String, Msg:String) => ERROR(Title, Msg, .KList)
      rule (<k> ERROR(Title:String, Msg:String, Refs:KList) ~> K:K </k> 
@@ -115,8 +115,8 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          when (notBool $hasMapping(Env, Identifier(S)))
-               andBool (notBool $hasMapping(Types, Identifier(S)))
+          when (notBool Identifier(S) in keys(Env))
+               andBool (notBool Identifier(S) in keys(Types))
           [structural, large]
      rule [err00021b]:
           <k> 
@@ -126,7 +126,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
-          when (notBool $hasMapping(Env, Identifier(S)))
+          when (notBool Identifier(S) in keys(Env))
                andBool (notBool isFunctionType(T))
           [structural, large]
      

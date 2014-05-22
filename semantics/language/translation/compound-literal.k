@@ -115,7 +115,7 @@ module C-COMPOUND-LITERAL
                (.Map => wstring(S) |-> lv(Loc, t(.Set, 
                     arrayType(cfg:wcharut, lengthList(S) +Int 1))))
           </string-lits>
-          when notBool wstring(S) in keys M
+          when notBool wstring(S) in keys(M)
           [large, structural]
           
      rule <k> stringLiteral(S:String) => V ...</k>

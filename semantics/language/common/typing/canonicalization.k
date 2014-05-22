@@ -138,7 +138,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           when (X =/=K Identifier(""))
-               andBool notBool (X in keys Structs)
+               andBool notBool (X in keys(Structs))
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(StructRef(X:CId)))
                => t(.Set, incompleteStructType(X))
@@ -146,7 +146,7 @@ module C-TYPING-CANONICALIZATION
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
           when (X =/=K Identifier(""))
-               andBool notBool (X in keys Structs)
+               andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
      rule canonicalizeSpecifier(BagItem(EnumRef(X:CId)))
@@ -170,7 +170,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           when (X =/=K Identifier(""))
-               andBool notBool (X in keys Structs)
+               andBool notBool (X in keys(Structs))
           [structural]
      rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:CId)))
                => t(.Set, incompleteUnionType(X))
@@ -178,7 +178,7 @@ module C-TYPING-CANONICALIZATION
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
           when (X =/=K Identifier(""))
-               andBool notBool (X in keys Structs)
+               andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
           

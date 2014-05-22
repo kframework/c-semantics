@@ -83,13 +83,13 @@ module C-TRANSLATION-INIT
           ...</k>
           <external-types>... Identifier(B) |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool Identifier(B) in keys Defs
+          when notBool Identifier(B) in keys(Defs)
           
      rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (Identifier(B) in keys Defs)
-               orBool (notBool Identifier(B) in keys Types)
+          when (Identifier(B) in keys(Defs))
+               orBool (notBool Identifier(B) in keys(Types))
      
      rule addBuiltins(.Map) => .K
 

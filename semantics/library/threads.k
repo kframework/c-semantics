@@ -49,7 +49,7 @@ module LIBC-THREADS
           ...</thread>
           <genv> Env:Map </genv>
           <thread-status> 
-               Status:Map => Status:Map[threadRunning / ThId:Int]
+               Status:Map => Status[threadRunning <- ThId:Int]
           </thread-status>
           <br/>
           (.Bag =>
@@ -104,7 +104,7 @@ module LIBC-THREADS
           ...</k>
           <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
-          when notBool (Loc in keys M:Map)
+          when notBool (Loc in keys(M))
                andBool (Type ==Int cfg:mtxPlain) 
           [structural]
 

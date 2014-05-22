@@ -113,8 +113,8 @@ module C-DECL-RESOLUTION
           <external-types>
                Types:Map
           </external-types>
-          when notBool (X in keys Defs)
-               orBool notBool (X in keys Types)
+          when notBool (X in keys(Defs))
+               orBool notBool (X in keys(Types))
 
      rule <k> resolveReferences ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>

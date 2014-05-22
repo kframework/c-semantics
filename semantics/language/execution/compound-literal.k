@@ -52,7 +52,7 @@ module C-COMPOUND-LITERAL
                ~> Init ~> sequencePoint
                ~> X
           ...</k>
-          <compound-lit-map> M:Map => M:Map[Loc / X] </compound-lit-map>
+          <compound-lit-map> M:Map => M[Loc <- X] </compound-lit-map>
           <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
           when notBool X in keys M
           [structural]

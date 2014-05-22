@@ -73,6 +73,11 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
+     // syntax Int ::= lengthList(List) [function]
+
+     syntax Map ::= Map "[" K "<-" K "]"
+     rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
+
 endmodule
 
 module COMPAT
@@ -129,7 +134,9 @@ module COMPAT
           when K:K =/=K K':K
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
+     // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
+     // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
 
      rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
      rule toBag(.List) => .Bag
@@ -178,5 +185,6 @@ module COMPAT
      rule klist(L:KList) => list(klistToList(L))
           [structural, anywhere]
 
+     // rule lengthList(L:List) => size(L)
 endmodule
 

@@ -46,11 +46,11 @@ module C-ENV
      rule <k> addToGlobalEnv(X:CId, Loc:SymLoc) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id> 
-          <genv> G:Map => G:Map[Loc / X] </genv>
-          <env> E:Map => E:Map[Loc / X] </env>
+          <genv> G:Map => G[Loc <- X] </genv>
+          <env> E:Map => E[Loc <- X] </env>
           [structural] 
      rule <k> addToLocalEnv(X:CId, Loc:SymLoc) => . ...</k>
-          <env> E:Map => E:Map[Loc / X] </env>
+          <env> E:Map => E[Loc <- X] </env>
           [structural] 
 
      syntax K ::= giveGlobalType(K, Type)
@@ -66,15 +66,15 @@ module C-ENV
           [structural]
           
      rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L:Map[T / X] </types>
+          <types> L:Map => L[T <- X] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
-               G:Map => G:Map[T / X]
+               G:Map => G[T <- X]
           </gtypes>
           [structural]
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L:Map[T / X] </types>
+          <types> L:Map => L[T <- X] </types>
           [structural]   
 
 endmodule

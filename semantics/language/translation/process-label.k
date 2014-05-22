@@ -31,7 +31,7 @@ module C-PROCESS-LABEL
           <curr-function> _ => F </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map> M:Map => M:Map[map(.Map) / F] </goto-map>
+          <goto-map> M:Map => M[map(.Map) <- F] </goto-map>
           <goto-map-calc>
                .Bag => (<goto-calc>... 
                          <computation> 
@@ -78,7 +78,7 @@ module C-PROCESS-LABEL
      rule <computation> popBlock => .K ...</computation>
           <goto-nesting-depth> I:Int => I -Int 1 </goto-nesting-depth>
           <goto-block-history>
-               (_:ListItem => .List) ListItem(_:Int)
+               (ListItem(_:Int) => .List) ListItem(_:Int)
           ...</goto-block-history>
           when I:Int >Int 0
           [structural] 
@@ -227,7 +227,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-block-history> ListItem(Num:Int) ...</goto-block-history>
           <goto-loop-stack>
-               (. => ListItem(kpair(Num, (K ~> Tail))))
+               (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
           [structural] 
      rule [compute-label-while-done]:
@@ -244,14 +244,14 @@ module C-PROCESS-LABEL
                <computation-tail> Tail:K </computation-tail>
                B:Bag
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc> 
                     <computation> S1 </computation> 
                     <computation-tail> K ~> Tail </computation-tail>
                     B
                </goto-calc>
           )
-          (. =>
+          (.Bag =>
                <goto-calc> 
                     <computation> S2 </computation>
                     <computation-tail> K ~> Tail </computation-tail>
@@ -267,13 +267,13 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-block-history> ListItem(Num:Int) ...</goto-block-history>
           <goto-loop-stack>
-               (. => ListItem(kpair(Num, (K ~> Tail))))
+               (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
           [structural] 
           
      rule [compute-label-poploop]:
           <computation> popLoop => .K ...</computation>
-          <goto-loop-stack> (_:ListItem => .) ...</goto-loop-stack>
+          <goto-loop-stack> (ListItem(_:K) => .List) ...</goto-loop-stack>
           [structural] 
           
      rule <computation> (Label(Target:CId, S:K) => S) ~> K:K </computation>
@@ -287,12 +287,12 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>...
                F |-> map(
-                    (M:Map => M:Map[
+                    (M:Map => M[
                     gotoObject(Depth, BlockHistory, 
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
-                    / Target]))
+                    <- Target]))
           ...</goto-map>
-          when notBool $hasMapping(M, Target)
+          when notBool Target in keys(M)
           [structural, large]
           
      rule <computation> 
@@ -308,14 +308,12 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:CId |-> map(
-                    (M:Map => (M:Map[
-                         case(CaseNum) 
-                         / genLabel(SwitchNum, Val)])[
-                    gotoObject(Depth, BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)
-                    / case(CaseNum)])) 
+                    (M:Map => (M[case(CaseNum) <- genLabel(SwitchNum, Val)])[
+                         gotoObject(Depth, BlockHistory,
+                              (S ~> K ~> Tail), LoopStack, DeclStack)
+                              <- case(CaseNum)])) 
           ...</goto-map>
-          when notBool $hasMapping(M, genLabel(SwitchNum, Val))
+          when notBool genLabel(SwitchNum, Val) in keys(M)
           [structural, large] 
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
@@ -330,12 +328,12 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:CId |-> map(
-                    (M:Map => M:Map[
+                    (M:Map => M[
                     gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
-                    / genLabel(SwitchNum, l('Default))])) 
+                    <- genLabel(SwitchNum, l('Default))])) 
           ...</goto-map>
-          when notBool $hasMapping(M, genLabel(SwitchNum, l('Default)))
+          when notBool genLabel(SwitchNum, l('Default)) in keys(M)
           [structural, large]
 endmodule
  

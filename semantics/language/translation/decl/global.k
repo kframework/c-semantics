@@ -276,7 +276,7 @@ module C-DECL-GLOBAL
                X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
-               andBool notBool (X in keys Exts)
+               andBool notBool (X in keys(Exts))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -307,7 +307,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           when isNaked(T)
-               andBool notBool (X in keys Ints)
+               andBool notBool (X in keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -326,7 +326,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           when isExtern(T)
-               andBool notBool (X in keys Ints)
+               andBool notBool (X in keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -360,8 +360,8 @@ module C-DECL-GLOBAL
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
-               andBool notBool (X in keys Exts) 
-               andBool notBool (X in keys Ints)
+               andBool notBool (X in keys(Exts))
+               andBool notBool (X in keys(Ints))
           [structural]
 
      // Static, not previously declared.
@@ -381,8 +381,8 @@ module C-DECL-GLOBAL
                (. => X |-> declState(Loc, stripStorageSpecifiers(T), declared, false))
           </internals>
           when isStaticType(T)
-               andBool notBool (X in keys Exts)
-               andBool notBool (X in keys Ints)
+               andBool notBool (X in keys(Exts))
+               andBool notBool (X in keys(Ints))
           [structural]
 
      // Static, previously extern.
@@ -395,7 +395,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
           when isStaticType(T)
-               andBool (X in keys Exts)
+               andBool (X in keys(Exts))
           [structural]
 
      // Now we just need to handle allocation, initialization, and updating the
@@ -563,7 +563,7 @@ module C-DECL-GLOBAL
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (. => X |-> T') </external-types>
           when isLinkerLoc(Loc')
-               andBool notBool X in keys Decls
+               andBool notBool X in keys(Decls)
           [structural]
      // No previous decl, this is a def.
      rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) ...</k>
@@ -572,7 +572,7 @@ module C-DECL-GLOBAL
           <external-types> _ (.Map => X |-> T') </external-types>
           <external-defs> _ (.Map => X |-> Loc') </external-defs>
           when notBool isLinkerLoc(Loc')
-               andBool notBool X in keys Decls
+               andBool notBool X in keys(Decls)
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) => . ...</k>
@@ -586,7 +586,7 @@ module C-DECL-GLOBAL
           <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs> Defs:Map (.Map => X |-> Loc') </external-defs>
           when notBool isLinkerLoc(Loc')
-               andBool (notBool X in keys Defs)
+               andBool (notBool X in keys(Defs))
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) => . ...</k>
@@ -650,29 +650,29 @@ module C-DECL-GLOBAL
      // *** TODO(chathhorn) struct/union stuff *** 
 
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
-               => completeTagInExtDecls(X, Info, keys Exts)
-               ~> completeTagInIntDecls(X, Info, keys Ints)
-               ~> completeTagInTags(X, Info, keys Structs)
+               => completeTagInExtDecls(X, Info, keys(Exts))
+               ~> completeTagInIntDecls(X, Info, keys(Ints))
+               ~> completeTagInTags(X, Info, keys(Structs))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes> GTypes:Map => completeTagsInMap(X |-> Info, GTypes) </gtypes>
           <types> Types:Map => completeTagsInMap(X |-> Info, Types) </types>
-          <structs> Structs:Map => Structs:Map[Info / X] </structs>
-          <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
+          <structs> Structs:Map => Structs[Info <- X] </structs>
+          <gstructs> GStructs:Map => GStructs[Info <- X] </gstructs>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          when notBool (X in keys GStructs)
+          when notBool (X in keys(GStructs))
           [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs:Map[Info / X] </structs>
-          <gstructs> GStructs:Map => GStructs:Map[Info / X] </gstructs>
+          <structs> Structs:Map => Structs[Info <- X] </structs>
+          <gstructs> GStructs:Map => GStructs[Info <- X] </gstructs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           when notBool (X in Incs)
-               andBool notBool (X in keys GStructs)
+               andBool notBool (X in keys(GStructs))
           [structural]
      rule <k> (. => ERROR("DG13", "redefinition of a struct, union, or enum: "
                     +String idToString(X)))
@@ -681,7 +681,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs> GStructs:Map </gstructs>
-          when X in keys GStructs
+          when X in keys(GStructs)
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -792,7 +792,7 @@ module C-DECL-GLOBAL
                => giveType(X, T')
           ...</k>
           <types> Types:Map </types>
-          when notBool X in keys Types
+          when notBool X in keys(Types)
           [structural]
 
      rule <k> (.K => ERROR("DG14", "incompatible redeclaration of symbol "

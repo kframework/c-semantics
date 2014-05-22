@@ -156,9 +156,9 @@ module C-FUNCTION-DEF
      rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
                => .
           ...</k>
-          <functions> M:Map => M:Map[Fun / Loc] </functions>
+          <functions> M:Map => M[Fun <- Loc] </functions>
           when isFunctionType(T)
-               andBool notBool $hasMapping(M, Loc)
+               andBool (notBool Loc in keys(M))
           [structural]
 
      syntax K ::= safeBody(CId, K) [function]

@@ -56,7 +56,7 @@ module C-EXECUTION-ERROR
     //            readByte(loc(B:SymBase, _, _)) 
     //       ...</k>
     //       <mem> M:Map </mem>
-    //       when notBool SetItem(B) in keys (M:Map)
+    //       when notBool SetItem(B) in keys(M:Map)
     //       [structural, large]
      
      // rule [err00006]:
@@ -74,8 +74,8 @@ module C-EXECUTION-ERROR
           ...</k>
           <mem> M:Map </mem>
           <linkings> L:Map </linkings>
-          when (notBool B in keys M)
-               andBool (notBool loc(B, Offset, 0) in keys L)
+          when (notBool B in keys(M))
+               andBool (notBool loc(B, Offset, 0) in keys(L))
           [structural, large]
      
      // rule [err00008]:
