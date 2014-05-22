@@ -57,7 +57,7 @@ module C-MEMORY-WRITING
           
      syntax K ::= makeUnknown(SymLoc, CId, FieldInfo)
 
-     // Zero from (&union + sizeof union.F) to (&union + sizeof union).
+     // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
                F |-> T:Type _, _))
@@ -261,7 +261,7 @@ module C-MEMORY-WRITING
           when Len >Int 0
      rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List) 
           => splitFloatBytes(F, T, Len -Int 1,
-               L ListItem(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
+               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte))) 
           when Len >Int 0
      rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L) 
           

@@ -64,15 +64,13 @@ module C-MEMORY-READING
           when (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
-     // FIXME very unsafe, not checking size of list or its contents
-     rule concretize(T:Type, dataList(
-               ListItem(piece(encodedFloat(F:Float), Len:Int)) L:List)) 
-          => tv(F:Float, stripQualifiers(T))
+     rule concretize(T:Type, dataList(L:List))
+          => joinFloatBytes(T, L)
           when hasFloatType(T)
-               andBool (Len ==Int cfg:bitsPerByte)
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
+
      // fixme should also check sizes are appropriate
      rule concretize(T:Type, dataList(L:List)) 
           => joinPointerBytes(T, L)
@@ -108,50 +106,54 @@ module C-MEMORY-READING
      rule #hasUnknown(_ ListItem(piece(unknown(_), _)) _) => true
      rule #hasTrap(_ ListItem(piece(trap(_), _)) _) => true
 
+     // TODO(chathhorn): half-assed floating point support.
+     syntax TypedValue ::= joinFloatBytes(Type, List) [function]
+     syntax TypedValue ::= joinFloatBytes(Type, Float, Int, List) [function]
+     rule joinFloatBytes(T:Type,
+               ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
+          => joinFloatBytes(T, F, NBits, L)
+     rule joinFloatBytes(T:Type, F:Float, Len:Int,
+               ListItem(piece(encodedFloat(F), NBits:Int)) L:List)
+          => joinFloatBytes(T, F, Len +Int NBits, L)
+     rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
+          => tv(F, stripQualifiers(T))
+          when Len ==Int bitSizeofType(T)
+
+     syntax TypedValue ::= joinPointerBytes(Type, List) [function]
+     syntax TypedValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
-          [structural]
-
-     syntax K ::= joinPointerBytes(Type, List)
-     syntax K ::= "joinPointerBytes-aux" "(" Type "," List "," K ")"
      rule joinPointerBytes-aux(T:Type, 
                ListItem(piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int))
                L:List, subObject(N, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
           when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
-          [structural]
      rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _:Int))
           => tv(N, stripQualifiers(T))
-          [structural]
 
-     // FIXME assuming bytes?
-     syntax K ::= joinIntegerBytes(Type, List)
-     syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
+     syntax TypedValue ::= joinIntegerBytes(Type, List) [function]
+     syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinIntegerBytes(T:Type, L:List)
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 
-          [structural]
      rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0)) 
           => tv(unknown(bitSizeofType(T)), stripQualifiers(T))
           when hasCharType(T)
-          [structural]
      rule joinIntegerBytes-aux(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-          [structural]
      rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
           => interpret(stripQualifiers(T), piece(N, Len)) 
-          [structural]
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
      // shouldn't need to do the < min one since values start positive
 
      // interpret the values of reading from mem
-     syntax K ::= interpret(Type, K) [function]
-     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
+     syntax TypedValue ::= interpret(Type, K) [function]
+     syntax TypedValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
      rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
           when (min(T) <=Int I) 
