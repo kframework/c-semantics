@@ -50,16 +50,16 @@ module C-MEMORY-WRITING
           [structural]
      rule (. => makeUnknown(UnionLoc, F, Fields))
           ~> write-specific(Loc:SymLoc, _,
-               t((SetItem(fromUnion(UnionLoc:SymLoc, F:Id, Fields:FieldInfo))
+               t((SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
                     => .Set) _, _))
           when isByteLoc(Loc)
           [structural]
           
-     syntax K ::= makeUnknown(SymLoc, Id, FieldInfo)
+     syntax K ::= makeUnknown(SymLoc, CId, FieldInfo)
 
      // Zero from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
-     rule makeUnknown(Loc:SymLoc, F:Id, fieldInfo(L:List,
+     rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
                F |-> T:Type _, _))
           => writeBytes(Loc +bits roundUpToByte(bitSizeofType(T)),
                dataList(times(bitsToBytes(
@@ -67,7 +67,7 @@ module C-MEMORY-WRITING
                     piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), 
                     initializerType(T))
           when maxBitSizeofList(L) >Int roundUpToByte(bitSizeofType(T))
-     rule makeUnknown(_, F:Id, fieldInfo(L:List, F |-> T:Type _, _)) => .
+     rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .
           when maxBitSizeofList(L) <=Int roundUpToByte(bitSizeofType(T))
 
      rule write-specific(Loc:SymLoc,
@@ -189,6 +189,9 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
           when hasCharType(T) andBool (isInt(N) =/=K true)
+     rule splitBytes(tv(unknown(N:Int), T:Type))
+          => dataList(splitUnknown(N))
+          when N ==Int bitSizeofType(T)
      rule splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, byteSizeofType(T))
           when hasIntegerType(T)
@@ -198,13 +201,21 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(I:Ptr, T:Type))
           => splitPointerBytes(I, T, byteSizeofType(T))
           when isPointerType(T)
-     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:Id, NBits:Int, Info:FieldInfo)))) 
+     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
                byteSizeofType(t(S, structType(X, NBits, Info))))
-     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:Id, NBits:Int, Info:FieldInfo)))) 
+     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
                byteSizeofType(t(S, unionType(X, NBits, Info))))
      
+     syntax List ::= splitUnknown(Int) [function]
+     rule splitUnknown(N:Int)
+          => ListItem(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
+               splitUnknown(N -Int cfg:bitsPerByte)
+          when N >Int 0
+     rule splitUnknown(N:Int) => .List
+          when N <=Int 0
+
      syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
      syntax DataList ::= splitIntegerBytes(Int, Type, Int, List) [function]
 

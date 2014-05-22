@@ -15,7 +15,7 @@ module C-CONVERSION
      imports C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-ERROR-SYNTAX
-     
+
      rule arithInterpret(T:Type, I:Int) => tv(I, T)
           when (min(T) <=Int I) 
                andBool (max(T) >=Int I)
@@ -23,11 +23,8 @@ module C-CONVERSION
      rule arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
           => tv(piece(unknown(N), N), T)
      // fixme
-     rule arithInterpret(t(Mods:Set, T:SimpleType), F:Float) 
-          => tv(F, t(Mods, T))
-          when (T ==K double)
-               orBool (T ==K float)
-               orBool (T ==K long-double)
+     rule arithInterpret(T:Type, F:Float) => tv(F, T)
+          when hasFloatType(T)
      // signed arithmetic isn't supposed to overflow
      rule arithInterpret(T:Type, I:Int) => tv(I %Int (max(T) +Int 1), T)
           when hasUnsignedIntegerType(T)
@@ -38,6 +35,10 @@ module C-CONVERSION
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
                andBool (I <Int min(T))
+
+     // TODO(chathhorn): the rules for cast are a bit of a mess because we've
+     // assumed they apply apply anywhere but they still need to raise some
+     // errors.
 
      //- switch assumes casts can happen anywhere
      rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
@@ -224,11 +225,17 @@ module C-CONVERSION
           ~> cast(T':Type, tv(I:Int, T:Type))
           when hasSignedIntegerType(T') andBool hasIntegerType(T)
                andBool notBool inRange(I, T')
+          [structural]
 
-     // this is starting to get into sketchy land
-     rule cast(T':Type, tv(piece(unknown(Len:Int), Len:Int), T:Type)) 
-          => tv(piece(unknown(bitSizeofType(T')), bitSizeofType(T')), T')
-          when hasIntegerType(T') andBool hasIntegerType(T)
+     // TODO(chathhorn): not sure about this.
+     rule cast(T':Type, tv(unknown(_), T:Type)) 
+          => tv(unknown(bitSizeofType(T')), T')
+          when bitSizeofType(T') >=Int bitSizeofType(T)
+          [structural, anywhere]
+     rule cast(T':Type, tv(unknown(_), T:Type)) 
+          => tv(trap(bitSizeofType(T')), T')
+          when bitSizeofType(T') <=Int bitSizeofType(T)
+          [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
@@ -241,10 +248,12 @@ module C-CONVERSION
           when hasIntegerType(T') andBool hasFloatType(T)
                andBool inRange(Float2Int(V), T')
                andBool notBool isBoolType (T')
+          [structural, anywhere]
      rule (. => ERROR("C2", "conversion to integer from float outside the range that can be represented.", "6.3.1.4:1"))
           ~> cast(T':Type, tv(V:Float, T:Type))
           when hasIntegerType(T') andBool hasFloatType(T)
                andBool notBool inRange(Float2Int(V), T')
+          [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
      When a value of integer type is converted to a real floating type, if the
@@ -258,15 +267,11 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(t(Mods:Set, float), tv(V:Int, T:Type)) 
-          => tv(Int2Float(V), t(Mods, float))
+     rule cast(T':Type, tv(V:Int, T:Type)) 
+          => tv(Int2Float(V), T')
           when hasIntegerType(T)
-     rule cast(t(Mods:Set, double), tv(V:Int, T:Type)) 
-          => tv(Int2Float(V), t(Mods, double))
-          when hasIntegerType(T)
-     rule cast(t(Mods:Set, long-double), tv(V:Int, T:Type)) 
-          => tv(Int2Float(V), t(Mods, long-double))
-          when hasIntegerType(T)
+               andBool inRange(Int2Float(V), T')
+          [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
      When a value of real floating type is converted to a real floating type,
@@ -280,13 +285,15 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(T', tv(F:Float, T)) => tv(F, T')
+     rule cast(T':Type, tv(V:Float, T:Type)) => tv(V, T')
           when hasFloatType(T') andBool hasFloatType(T)
-               andBool inRange(F, T')
+               andBool inRange(V, T')
+          [structural, anywhere]
      rule (. => ERROR("C3", "floating-point value outside the range of values that can be represented after conversion.", "6.3.1.5:1"))
-          ~> cast(T':Type, tv(F:Float, T:Type))
+          ~> cast(T':Type, tv(V:Float, T:Type))
           when hasFloatType(T') andBool hasFloatType(T)
-               andBool notBool inRange(F, T')
+               andBool notBool inRange(V, T')
+          [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
      The (nonexistent) value of a void expression (an expression that has type
@@ -297,6 +304,7 @@ module C-CONVERSION
      evaluated for its side effects.)
      }*/     
      rule cast(t(_, void), _) => skipval
+          [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object
@@ -319,6 +327,7 @@ module C-CONVERSION
      rule cast(T':Type, V:TypedValue) => tv(NullPointer, T')
           when isNullPointerConstant(V)
                andBool isPointerType(T')
+          [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{4}}}{
      Conversion of a null pointer to another pointer type yields a null pointer
@@ -336,9 +345,11 @@ module C-CONVERSION
           when hasIntegerType(T)
                andBool notBool isNullPointerConstant(tv(V, T))
                andBool isPointerType(T')
+          [structural, anywhere]
      rule cast(T':Type, tv(L:SymLoc, T:Type)) => tv(L, T')
           when hasIntegerType(T)
                andBool isPointerType(T')
+          [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously
@@ -350,9 +361,11 @@ module C-CONVERSION
      rule cast(T':Type, tv(N:Int, t(_, pointerType(_)))) => tv(N, T')
           when hasIntegerType(T')
                andBool notBool isBoolType (T')
+          [structural, anywhere]
      rule cast(T':Type, tv(L:SymLoc, t(_, pointerType(_)))) => tv(L, T')
           when hasIntegerType(T')
                andBool notBool isBoolType (T')
+          [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
      A pointer to an object type may be converted to a pointer to a different
@@ -378,5 +391,6 @@ module C-CONVERSION
      rule cast(t(Mods:Set, pointerType(T':Type)), 
                tv(Loc:SymLoc, t(_, pointerType(_)))) 
           => tv(Loc, t(Mods, pointerType(T')))
+          [structural, anywhere]
 endmodule
 

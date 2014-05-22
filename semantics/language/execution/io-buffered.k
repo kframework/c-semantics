@@ -135,12 +135,12 @@ module C-IO-BUFFERED
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, 2)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
-               ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
                     M:Map => M:Map[
-                         piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
+                         piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) 
                          / Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>

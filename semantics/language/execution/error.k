@@ -59,12 +59,12 @@ module C-EXECUTION-ERROR
     //       when notBool SetItem(B) in keys (M:Map)
     //       [structural, large]
      
-     rule [err00006]:
-          (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
-               21) ) ~>
-          joinIntegerBytes-aux(T:Type, _:List ListItem(piece(unknown(Len:Int), Len:Int)), _)
-          when notBool hasCharType(T)
-          [structural, large]
+     // rule [err00006]:
+     //      (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
+     //           21) ) ~>
+     //      joinIntegerBytes-aux(t(_, T:SimpleType), _ ListItem(piece(trap(Len:Int), Len)), _)
+     //      when T =/=K unsigned-char
+     //      [structural, large]
           
      rule [err00007]:
           <k> 
@@ -78,19 +78,19 @@ module C-EXECUTION-ERROR
                andBool (notBool loc(B, Offset, 0) in keys L)
           [structural, large]
      
-     rule [err00008]:
-          (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
-          concretize(t(_, pointerType(_)),
-               dataList(ListItem(piece(unknown(Len:Int), Len:Int)) _:List))
-          [structural, large]
-     
-     rule [err00009]:
-          (. => ERROR("00009", "Reading uninitialized memory.",
-               21) ) ~>
-          concretize(T:Type,
-               dataList(ListItem(piece(unknown(Len:Int), Len:Int)) _:List))
-          when hasFloatType(T)
-          [structural, large]
+     // rule [err00008]:
+     //      (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
+     //      concretize(t(_, pointerType(_)),
+     //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
+     //      [structural, large]
+     // 
+     // rule [err00009]:
+     //      (. => ERROR("00009", "Reading uninitialized memory.",
+     //           21) ) ~>
+     //      concretize(T:Type,
+     //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
+     //      when hasFloatType(T)
+     //      [structural, large]
           
      rule [err00010]:
           <k> 

@@ -3,8 +3,12 @@ module C-BITS-SYNTAX
 
      syntax Bits ::= Int
 
+     syntax Trap ::= trap(Int)
+     syntax Unknown ::= unknown(Int)
+     syntax Bits ::= Trap
+     syntax Bits ::= Unknown
+
      syntax Bits ::= piece(Bits, Int)
-     syntax Bits ::= unknown(Int)
      syntax Bits ::= Bits "bit::" Bits
 
      // original number, from, to inclusive
@@ -156,28 +160,48 @@ module C-BITS
      rule bitsToBytes(N:CSize) => N // Pass through sym values.
           when isInt(N) =/=K true
 
-     // these could be so much better...
+     // TODO(chathhorn): these probably shouldn't be defined on traps.
      rule ~Bits X:Int => ~Int X
+     rule ~Bits piece(trap(Len:Int), Len:Int) 
+          => piece(trap(Len:Int), Len:Int)
      rule ~Bits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len:Int), Len:Int)
      
      rule X:Int /Bits Y:Int => X /Int Y
+     rule piece(trap(N:Int), N) /Bits M:Int => piece(trap(N), N)
+          when M =/=Int 0
      rule piece(unknown(N:Int), N) /Bits M:Int => piece(unknown(N), N)
           when M =/=Int 0
 
      rule X:Int xorBits Y:Int => X xorInt Y
+     rule _:Bits xorBits piece(trap(Len:Int), Len:Int) 
+          => piece(trap(Len), Len)
+     rule piece(trap(Len:Int), Len:Int) xorBits _:Bits
+          => piece(trap(Len), Len)
      rule _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len), Len)
      rule piece(unknown(Len:Int), Len:Int) xorBits _:Bits
           => piece(unknown(Len), Len)
 
      rule X:Int |Bits Y:Int => X |Int Y
+     rule _:Bits |Bits piece(trap(Len:Int), Len:Int) 
+          => piece(trap(Len), Len)
+     rule piece(trap(Len:Int), Len:Int) |Bits _:Bits 
+          => piece(trap(Len), Len)
      rule _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
           => piece(unknown(Len), Len)
      rule piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
           => piece(unknown(Len), Len)
 
      rule X:Int &Bits Y:Int => X &Int Y
+     rule N:Int &Bits piece(trap(Len:Int), Len) => 0
+          when N ==Int 0 
+     rule N:Int &Bits piece(trap(Len:Int), Len) => 0
+          when N =/=Int 0 
+     rule piece(trap(Len:Int), Len) &Bits N:Int => 0
+          when N ==Int 0 
+     rule piece(trap(Len:Int), Len) &Bits N:Int => 0
+          when N =/=Int 0
      rule N:Int &Bits piece(unknown(Len:Int), Len) => 0
           when N ==Int 0 
      rule N:Int &Bits piece(unknown(Len:Int), Len) => 0

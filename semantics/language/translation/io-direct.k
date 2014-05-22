@@ -83,13 +83,13 @@ module C-IO-DIRECT
           
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
                => assert(Offset <Int Len, 2)
-                    ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
+                    ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), 
                          t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, _, 
                     M:Map => M:Map[
-                         piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
+                         piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) 
                          / Offset]) 
           ...</mem>
           when notBool Offset in (keys M)

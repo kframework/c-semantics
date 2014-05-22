@@ -10,9 +10,6 @@ module C-MEMORY-READING-SYNTAX
      // data, offset, size in bits
      syntax K ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
-     // TODO(chathhorn) used error check?
-     syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
-     
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
@@ -55,36 +52,69 @@ module C-MEMORY-READING
           when isBitfieldType(T)
           [structural]
      
-     syntax K ::= joinIntegerBytes(Type, List)
      rule concretize(T:Type, dataList(L:List)) 
           => joinIntegerBytes(T, L)
           when hasIntegerType(T) 
                andBool notBool isBitfieldType(T) 
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
      rule concretize(t(S:Set, bitfieldType(T:KResult, Len:CSize)), dataList(L:List)) 
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
+          when (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-          
      // FIXME very unsafe, not checking size of list or its contents
      rule concretize(T:Type, dataList(
-               ListItem(piece(encodedFloat(F:Float), Len:Int)) _)) 
+               ListItem(piece(encodedFloat(F:Float), Len:Int)) L:List)) 
           => tv(F:Float, stripQualifiers(T))
           when hasFloatType(T)
                andBool (Len ==Int cfg:bitsPerByte)
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-
-     syntax K ::= joinPointerBytes(Type, List)
-     syntax K ::= "joinPointerBytes-aux" "(" Type "," List "," K ")"
      // fixme should also check sizes are appropriate
      rule concretize(T:Type, dataList(L:List)) 
           => joinPointerBytes(T, L)
           when isPointerType(T)
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(unknown(bitSizeofType(T)), stripQualifiers(T))
+          when (#hasUnknown(L) ==K true)
+               andBool (#hasTrap(L) =/=K true)
+               andBool notBool (isStructType(T) orBool isUnionType(T))
+          [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(trap(bitSizeofType(T)), stripQualifiers(T))
+          when (#hasTrap(L) ==K true)
+               andBool notBool isUCharType(T)
+               andBool notBool (isStructType(T) orBool isUnionType(T))
+          [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(unknown(bitSizeofType(T)), stripQualifiers(T))
+          when (#hasTrap(L) ==K true)
+               andBool isUCharType(T)
+          [structural]
+     rule concretize(T:Type, dataList(L:List)) 
+          => tv(agg(L), stripQualifiers(T))
+          when isStructType(T) orBool isUnionType(T)
+          [structural]
+
+     syntax Bool ::= "#hasUnknown" "(" List ")" [function]
+     syntax Bool ::= "#hasTrap" "(" List ")" [function]
+
+     rule #hasUnknown(_ ListItem(piece(unknown(_), _)) _) => true
+     rule #hasTrap(_ ListItem(piece(trap(_), _)) _) => true
+
      rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
           [structural]
 
+     syntax K ::= joinPointerBytes(Type, List)
+     syntax K ::= "joinPointerBytes-aux" "(" Type "," List "," K ")"
      rule joinPointerBytes-aux(T:Type, 
                ListItem(piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int))
                L:List, subObject(N, 0, End:Int))
@@ -93,26 +123,19 @@ module C-MEMORY-READING
                andBool (SNatEnd ==Int End +Int 1)
           [structural]
      rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _:Int))
-          => checkValidLoc(N) ~> tv(N, stripQualifiers(T))
-          [structural]
-
-     rule concretize(T:Type, dataList(L:List)) 
-          => tv(agg(L), stripQualifiers(T))
-          when isStructType(T) orBool isUnionType(T)
+          => tv(N, stripQualifiers(T))
           [structural]
 
      // FIXME assuming bytes?
-     rule joinIntegerBytes(T:Type, L:List) 
+     syntax K ::= joinIntegerBytes(Type, List)
+     syntax K ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")"
+     rule joinIntegerBytes(T:Type, L:List)
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 
           [structural]
-     
-     // fixme may want to consider restricting further, or loosening
-     rule joinIntegerBytes-aux(T:Type, 
-               ListItem(piece(unknown(Len:Int), Len:Int)), piece(0, 0))
-          => tv(piece(unknown(Len), Len), stripQualifiers(T))
+     rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0)) 
+          => tv(unknown(bitSizeofType(T)), stripQualifiers(T))
           when hasCharType(T)
           [structural]
-     
      rule joinIntegerBytes-aux(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 
@@ -129,9 +152,7 @@ module C-MEMORY-READING
      // interpret the values of reading from mem
      syntax K ::= interpret(Type, K) [function]
      syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
-     
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     
      rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
           when (min(T) <=Int I) 
                andBool (max(T) >=Int I)
