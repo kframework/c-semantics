@@ -253,7 +253,7 @@ sub parseResult {
             $parsed->{finalComp} = $1;
       };
 
-      /<error-cell>.*?"(.*)".*?<\/error-cell>/s && do {
+      /<error-cell>\s*"(.*)"\s*<\/error-cell>/ && do {
             $parsed->{haveError} = 1;
             my $output = $1;
             $output =~ s/\%/\%\%/g;
@@ -262,11 +262,11 @@ sub parseResult {
             $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
       };
 
-      /<curr-function>.*?(Identifier \( "(.*?)" \)|(file-scope)).*?<\/curr-function>/s && do {
+      /<curr-function>\s*(Identifier \( "(.*?)" \)|(file-scope))\s*<\/curr-function>/ && do {
             $parsed->{errorFunc} = $2;
       };
 
-      /<curr-program-loc>.*?CabsLoc \( "(.*)" , (\d+) .*?<\/curr-program-loc>/s && do {
+      /<curr-program-loc>\s*CabsLoc\s*\(\s*"(.*)"\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*<\/curr-program-loc>/ && do {
             $parsed->{errorFile} = $1;
             $parsed->{errorLine} = $2;
       };
@@ -283,11 +283,11 @@ sub parseResult {
             $parsed->{finalCompType} = $1;
       };
 
-      /<output>.*?#buffer \( "(.*)" \).*?<\/output>/s && do {
+      /<output>\s*#buffer\s*\(\s*"(.*)"\s*\)\s*<\/output>/ && do {
             $parsed->{output} = $1;
       };
 
-      /<result-value>.*?tv \( (-?\d+) , t \( \.Set , int \) \).*?<\/result-value>/s && do {
+      /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = $1;
       };
 }
