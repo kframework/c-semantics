@@ -132,14 +132,14 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
                checkWrite(loc(Base:SymBase, _, _), _)
           ...</k>
-          <mem>... Base |-> memblock(_, (_ BagItem(mconst)), _) ...</mem>
+          <mem>... Base |-> memblock(_, (_ BagItem(Const)), _) ...</mem>
           [structural]
           
      rule [err00045b]:
           <k> (. => ERROR("00045b", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
                checkWrite(loc(Base:SymBase, _, _), T:Type)
           ...</k>
-          <mem>... Base |-> memblock(_, (_ BagItem(mvolatile)), _) ...</mem>
+          <mem>... Base |-> memblock(_, (_ BagItem(Volatile)), _) ...</mem>
           when notBool isVolatileType(T)
           [structural]
           

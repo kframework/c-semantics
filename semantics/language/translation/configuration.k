@@ -7,10 +7,9 @@ module C-CONFIGURATION
      configuration 
      <global>
           <mem> .Map </mem>
+          <not-writable> .Set </not-writable>
 
           <functions color="lightgray"> .Map </functions>
-
-          <not-writable> .Set </not-writable>
 
           <main-tu color="lightgray"> .Set </main-tu>
 

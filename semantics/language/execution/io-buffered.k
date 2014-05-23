@@ -53,10 +53,10 @@ module C-IO-BUFFERED
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
-               andBool (notBool (BagItem(mconst) in Attrs))
+               andBool (notBool (BagItem(Const) in Attrs))
                andBool (notBool (loc(Base, Offset, 0) in NotWritable))
                // Volatile.
-               andBool (notBool (BagItem(mvolatile) in Attrs)
+               andBool (notBool (BagItem(Volatile) in Attrs)
                     orBool isVolatileType(T))
           [structural]
 
@@ -112,7 +112,7 @@ module C-IO-BUFFERED
                => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T),
+               ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
@@ -122,12 +122,11 @@ module C-IO-BUFFERED
           <locs-written> Locs:Bag </locs-written>
           <buffer> .List </buffer>
           [structural]
-
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
                => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T),
+               ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
@@ -140,7 +139,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
+               ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
                ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
@@ -156,7 +155,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
+               ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
                ~> tv(piece(encode(getZero(T)), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>

@@ -18,8 +18,6 @@ module C-MEMORY-ALLOC-SYNTAX
 
      syntax K ::= sizeofLocation(SymLoc)
 
-     syntax K ::= "mconst" | "mvolatile"
-
      syntax K ::= makeUnwritableSubObject(K)
 
      syntax K ::= allocateType(SymLoc, Type)
@@ -80,17 +78,13 @@ module C-MEMORY-ALLOC
           <mem>... Base |-> memblock(_, _, _) ...</mem>
           [structural]
 
-     // TODO(chathhorn): I don't really see why we can't just use the actual
-     // type qualifiers. This is pretty silly.
      syntax Bag ::= bagifyQuals(Type) [function]
-     rule bagifyQuals(T:Type) => BagItem(mconst) BagItem(mvolatile)
-          when isConstType(T) andBool isVolatileType(T)
-     rule bagifyQuals(T:Type) => BagItem(mconst)
-          when isConstType(T) andBool notBool isVolatileType(T)
-     rule bagifyQuals(T:Type) => BagItem(mvolatile)
-          when notBool isConstType(T) andBool isVolatileType(T)
-     rule bagifyQuals(T:Type) => .Bag
-          when notBool isConstType(T) andBool notBool isVolatileType(T)
+     rule bagifyQuals(T:Type) => setToBag(getQualifiers(T))
+
+     syntax Bag ::= setToBag(Set) [function]
+     rule setToBag(SetItem(Q:K) Qs:Set)
+          => BagItem(Q) setToBag(Qs)
+     rule setToBag(.Set) => .Bag
 
      rule <k> alloc(loc(Base:SymBase, 0, 0), Len:TypedValue, Quals:Bag)
                => .
@@ -136,8 +130,6 @@ module C-MEMORY-ALLOC
                ~> writeWString(Loc, S)
           [structural] 
      
-     // FIXME could do better with bitfields
-     syntax K ::= makeUnwritable(SymLoc)
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
      rule <k> makeUnwritableSubObject(
                     lval(loc(Base:SymBase, Offset:Int, _), _)) 
@@ -150,9 +142,12 @@ module C-MEMORY-ALLOC
      rule makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
           when notBool isPhysicalLoc(Loc)
           [structural]
+
+     // FIXME could do better with bitfields
+     syntax K ::= makeUnwritable(SymLoc)
      rule <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>
           <mem>... 
-               Base |-> memblock(_, _ (.Bag => BagItem(mconst)), _) 
+               Base |-> memblock(_, _ (.Bag => BagItem(Const)), _) 
           ...</mem>
           [structural]
      rule makeUnwritable(Loc:SymLoc) => .
