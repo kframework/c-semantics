@@ -127,7 +127,7 @@ module C-TYPING-PREDICATES
      // comprises the real types, the complex type domain comprises the complex
      // types. 
      // */
-     rule isArithmeticType(T:Type)
+     rule hasArithmeticType(T:Type)
           => hasIntegerType(T) orBool hasFloatType(T)
                
      rule isExternType(T:Type) => Extern in getStorageSpecifiers(T)

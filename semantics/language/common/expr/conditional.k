@@ -57,8 +57,8 @@ module C-COMMON-EXPR-CONDITIONAL
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           when T1 =/=K T2
-               andBool isArithmeticType(T1)
-               andBool isArithmeticType(T2)
+               andBool hasArithmeticType(T1)
+               andBool hasArithmeticType(T2)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{

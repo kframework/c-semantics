@@ -1,5 +1,7 @@
 module C-DECL-ZERO-SYNTAX
-     syntax K ::= zero(K)
+     syntax K ::= zero(CId)
+     // Only defined for arithmetic, floats, and pointer types.
+     syntax K ::= getZero(Type) [function]
 endmodule
 
 module C-DECL-ZERO
@@ -13,23 +15,12 @@ module C-DECL-ZERO
 
      imports DEBUG-SYNTAX
 
-     rule <k> zero(Sym:K) => zeroType(Sym, T) ...</k>
-          <types>... Sym |-> T:Type ...</types>
+     rule <k> zero(X:CId) => zeroType(X, T) ...</k>
+          <types>... X |-> T:Type ...</types>
           [structural] 
           
      syntax K ::= zeroType(K, Type)
-     
-     rule zeroType(N:K, T:Type)
-          => Computation(allowWrite(N) := tv(0, t(.Set, int)))
-          when hasIntegerType(T)
-          [structural] 
-     rule zeroType(N:K, T:Type)
-          => Computation(allowWrite(N) := tv(0.0, t(.Set, float)))
-          when hasFloatType(T)
-          [structural] 
           
-     syntax K ::= zeroStruct(K, List)
-     
      // c1x 6.7.9:10 If an object that has automatic storage duration is not
      // initialized explicitly, its value is indeterminate. If an object that
      // has static or thread storage duration is not initialized explicitly,
@@ -43,10 +34,19 @@ module C-DECL-ZERO
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule zeroType(N:K, t(_, structType(_, _, 
+     rule zeroType(X:K, T:Type) 
+          => Computation(allowWrite(X) := tv(NullPointer, T))
+          when isPointerType(T)
+          [structural]
+     rule zeroType(X:K, T:Type)
+          => Computation(allowWrite(X) := tv(getZero(T), t(.Set, simpleType(T))))
+          when hasArithmeticType(T)
+          [structural] 
+
+     rule zeroType(X:K, t(_, structType(_, _, 
                fieldInfo(Fields:List, _, _)
           )))
-          => zeroStruct(N, Fields)
+          => zeroStruct(X, Fields)
           [structural] 
           
      // TODO(chathhorn): what does the standard mean by "any padding is
@@ -55,30 +55,20 @@ module C-DECL-ZERO
      // caused by the size of other fields in the union? As things are, we set
      // the padding between the end of the first field and the end of the union
      // to unknown.
-     rule zeroType(N:K, t(_, unionType(_, _,
+     rule zeroType(X:K, t(_, unionType(_, _,
                fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _) 
           )))
-          => zeroType(N . F, T)
-          [structural] 
-          
-     rule zeroStruct(Sym:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List) 
-          => zeroType(Sym . F, T) ~> zeroStruct(Sym, L) 
-          [structural] 
-     rule zeroStruct(_, .List) => .
+          => zeroType(X . F, T)
           [structural] 
 
-     rule zeroType(Sym:K, T:Type) 
-          => Computation(allowWrite(Sym) := tv(NullPointer, T))
-          when isPointerType(T)
-          [structural]
      rule zeroType(_, T:Type) => .
           when isFunctionType(T)
           [structural]
           
      // fixme snat
-     rule zeroType(Sym:K, t(S:Set, arrayType(T:Type, Len:Int))) 
-          => zeroType(Sym[Len -Int 1], T)
-               ~> zeroType(Sym, t(S:Set, arrayType(T, Len -Int 1))) 
+     rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int))) 
+          => zeroType(X[Len -Int 1], T)
+               ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1))) 
           when Len >Int 0
           [structural] 
      rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
@@ -86,5 +76,20 @@ module C-DECL-ZERO
 
      rule zeroType(_, t(_, flexibleArrayType(_:Type))) => .
           [structural]
+          
+     syntax K ::= zeroStruct(K, List)
+     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List) 
+          => zeroType(X . F, T) ~> zeroStruct(X, L) 
+          [structural] 
+     rule zeroStruct(_, .List) => .
+          [structural] 
+
+     rule getZero(T:Type) => 0
+          when hasIntegerType(T)
+     rule getZero(T:Type) => 0.0
+          when hasFloatType(T)
+     rule getZero(T:Type) => NullPointer
+          when isPointerType(T)
+     
 endmodule
 

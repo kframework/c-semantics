@@ -15,6 +15,7 @@ endmodule
 module C-IO-BUFFERED
      imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -159,11 +160,15 @@ module C-IO-BUFFERED
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
-               ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(getZero(T), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
-               M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
+               // Re getZero(): not totally sure this works because it's based
+               // on the type of the lvalue being read through and not the type
+               // of the declaration. But hopefully all mismatches between the
+               // lvalue type and the declared type should be caught by now.
+               M:Map => M[piece(getZero(T), cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset, 0) in locations(Mem))

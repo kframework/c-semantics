@@ -505,7 +505,7 @@ module C-DECL-INITIALIZER
      rule fillInit-aux(SingleInit(stringLiteral(""))) => .
           [structural]
      rule fillInit-aux(SingleInit(wstringLiteral(.List))) => .
-          [structural] 
+          [structural]
           
      // This rule assumes all unrollings have already occurred, so it needs to
      // be a rule. Alternatively, I've added the condition below which might be

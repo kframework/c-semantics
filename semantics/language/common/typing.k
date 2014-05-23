@@ -25,6 +25,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
      
+     syntax Bool ::= hasArithmeticType(Type) [function]
      syntax Bool ::= hasCharType(Type) [function]
      syntax Bool ::= isUCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
@@ -48,7 +49,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteArrayType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
-     syntax Bool ::= isArithmeticType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
 

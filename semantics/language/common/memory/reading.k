@@ -30,8 +30,6 @@ module C-MEMORY-READING
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
-     
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule read(Loc:SymLoc, T:Type) => readActual(Loc, T)
@@ -43,6 +41,7 @@ module C-MEMORY-READING
                andBool Loc =/=K NullPointer
           [ndtrans]
      
+     syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
      rule readActual(Loc:SymLoc, T:Type)
           => concretize(T, readBytes(Loc, byteSizeofType(T), T))
           when notBool isBitfieldType(T)
