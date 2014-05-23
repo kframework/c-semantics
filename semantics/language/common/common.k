@@ -50,7 +50,6 @@ module C-COMMON
      imports COMPAT
      imports C-CONSTRAINT-MAP
      imports C-CONVERSION
-     imports DEBUG
      imports C-DYNAMIC
      imports C-ENV
      imports C-ERROR

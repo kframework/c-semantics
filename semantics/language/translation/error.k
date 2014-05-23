@@ -4,7 +4,6 @@ module C-TRANSLATION-ERROR
      imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
      imports C-COMMON-EXPR-BITWISE-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
@@ -22,46 +21,29 @@ module C-TRANSLATION-ERROR
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-     rule <k> ERROR(Num:String, Msg:String, _) 
-          => #write(#stderr, "Error " +String Num +String ": " +String Msg +String "\n")
+     rule <k> EXIT(Msg:String) 
+          => #write(#stderr, Msg +String "\n")
           ~> #write(#stderr, "Location: " 
                +String File +String ":" 
                +String Int2String(Line)
-               // +String ":"
-               // +String Int2String(ColStart) +String "-"
-               // +String Int2String(ColEnd)
                +String "\n")
-          ~> HALT ... </k>
+          ~> HALT ...</k>
           <curr-program-loc> 
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
-     rule <k> ERROR(Num:String, Msg:String, _) 
-          => #write(#stderr, "Error " +String Num +String ": " +String Msg +String "\n")
-          ~> HALT ... </k>
+     rule <k> EXIT(Msg:String) 
+          => #write(#stderr, Msg +String "\n")
+          ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
 
      // TODO(chathhorn): clean up.
      // dynamic exp
      rule [err00001]: 
-          (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
-          cast(t(_, T:K), emptyValue)
-          when T:K =/=K void
+          (. => UNDEF("00001", "Casting empty value to type other than void.", "6.3.2.2:1"))
+          ~> cast(t(_, T:SimpleType), emptyValue)
+          when T =/=K void
           [structural, large]
          
-     // rule [err00003]:
-     //      (. => ERROR("00003", "Unsequenced side effect on scalar object with value computation of same object.", 315) ) ~>
-     //      assert(false, 3)
-     //      [structural, large]
-     
-     // rule [err00010]:
-     //      <k> 
-     //           (. => ERROR("00010", "Found pointer that refers outside the bounds of an object + 1.", 62) ) ~>
-     //           checkValidLoc-aux(loc(Base:SymBase, Offset:Int, _:Int)) 
-     //      ...</k>
-     //      <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-     //      when Offset:Int >Int Len:Int
-     //      [structural, large]
-          
      rule [err00022]:
           (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
           leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
@@ -99,13 +81,7 @@ module C-TRANSLATION-ERROR
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))
           [structural, large]
-          
-     rule [err00044]:
-          (. => ERROR("00044", "An array subscript is out of range.", (46,, 49)) ) ~>
-          addToPointer(_:SymLoc, T:Type, I:Int, tv(_:Int, _))
-          when notBool ifFromArrayInBounds(T, I)
-          [structural, large]
-          
+
      // rule [err00046]:
      //      (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
      //      concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))

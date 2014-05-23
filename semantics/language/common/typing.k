@@ -12,6 +12,8 @@ module C-TYPING-SYNTAX
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
 
+     syntax SimpleType ::= simpleType(Type) [function]
+
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Map, Map)
@@ -120,8 +122,14 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(Type) [function]
      syntax Bool ::= inRange(CValue, Type) [function]
 
-     syntax Modifier ::= Storage | CVSpecifier
-
+     syntax Modifier ::= Storage | CVSpecifier | Provenance
+     // Pointers from an array need to be checked that they don't go out of
+     // bounds of that array, even if that array happens to be part of a larger
+     // object (i.e., surrounded by valid addresses).
+     syntax Provenance ::= fromArray(Int, Int)
+     // Used to tag union members so the rest of the bytes in the union can be
+     // marked as undefined upon write.
+     syntax Modifier ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
 
@@ -130,13 +138,14 @@ module C-TYPING-SYNTAX
      // fromArray, oldStyle).
      syntax Set ::= getModifiers(Type) [function]
 
+     syntax Set ::= getProvenance(Type)
+
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
      syntax Type ::= stripConst(Type) [function]
-     
 
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
@@ -157,11 +166,10 @@ module C-TYPING-SYNTAX
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
 
-     // Used to tag union members so the rest of the bytes in the union can be
-     // marked as undefined upon write.
-     syntax K ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
      syntax Bool ::= hasUnionMarker(Type) [function]
      syntax Set ::= stripUnionMarker(Set) [function]
+
+     syntax Bool ::= isFromArray(Type) [function]
 
      syntax Bool ::= isNullPointerConstant(TypedValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]

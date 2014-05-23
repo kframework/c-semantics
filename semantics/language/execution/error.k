@@ -18,9 +18,7 @@ module C-EXECUTION-ERROR
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-COMMON-EXPR-BITWISE-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
 
      imports C-IO-BUFFERED-SYNTAX
 
@@ -30,26 +28,16 @@ module C-EXECUTION-ERROR
 
      imports DEBUG-SYNTAX
 
+     rule (<k> EXIT(Msg:String) ~> K:K </k> 
+          => <final-computation> K </final-computation>)
+          (.Bag => <error-cell> Msg </error-cell>)
+
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
           cast(t(_, T:SimpleType), emptyValue)
           when T =/=K void
           [structural, large]
          
-     rule [err00002]:
-          (. => ERROR("00002", "Reading outside the bounds of an object.", 
-               (19,, 43,, 47,, 62)) ) ~>
-          assert(false, 2)
-          [structural, large]
-     rule [err00003]:
-          (. => ERROR("00003", "Unsequenced side effect on scalar object with value computation of same object.", 315) ) ~>
-          assert(false, 3)
-          [structural, large]
-     rule [err00003b]:
-          (. => ERROR("0003b", "Trying to access an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-          assert(false, 4)
-          [structural, large]
-
     //  rule [err00005]:
     //       <k> 
     //            (. => ICE("00005", "Referring to an object outside of its lifetime.") ) ~>
@@ -66,18 +54,6 @@ module C-EXECUTION-ERROR
      //      when T =/=K unsigned-char
      //      [structural, large]
           
-     rule [err00007]:
-          <k> 
-               (. => ERROR("00007", "Referring to an object outside of its lifetime.",
-                    (9,, 10)) ) ~>
-               checkValidLoc-aux(loc(B:SymBase, Offset:Int, _)) 
-          ...</k>
-          <mem> M:Map </mem>
-          <linkings> L:Map </linkings>
-          when (notBool B in keys(M))
-               andBool (notBool loc(B, Offset, 0) in keys(L))
-          [structural, large]
-     
      // rule [err00008]:
      //      (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
      //      concretize(t(_, pointerType(_)),
@@ -91,15 +67,6 @@ module C-EXECUTION-ERROR
      //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
      //      when hasFloatType(T)
      //      [structural, large]
-          
-     rule [err00010]:
-          <k> 
-               (. => ERROR("00010", "Found pointer that refers outside the bounds of an object + 1.", 62) ) ~>
-               checkValidLoc-aux(loc(Base:SymBase, Offset:Int, _:Int)) 
-          ...</k>
-          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          when Offset:Int >Int Len:Int
-          [structural, large]
           
           
      rule [err00016]:
@@ -159,12 +126,6 @@ module C-EXECUTION-ERROR
           when (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))
-          [structural, large]
-          
-     rule [err00044]:
-          (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
-          addToPointer(_, T:Type, I:Int, tv(_, _))
-          when notBool ifFromArrayInBounds(T, I)
           [structural, large]
           
      rule [err00045]:

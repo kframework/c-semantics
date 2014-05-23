@@ -12,6 +12,8 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
+     rule simpleType(t(_, T:SimpleType)) => T
+          
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
      rule char => cfg:charAlias
@@ -140,6 +142,13 @@ module C-TYPING-MISC
      rule getModifiers(t(S:Set, _)) => S
      rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
+
+     rule getProvenance(t(SetItem(fromArray(X:Int, Y:Int))_, _))
+          => SetItem(fromArray(X, Y))
+     rule getProvenance(t(Mods:Set, T:SimpleType)) => .Set
+          when notBool isFromArray(t(Mods, T))
+     rule getProvenance(typedDeclaration(T:Type, _)) => getProvenance(T)
+     rule getProvenance(variadic) => .Set
 
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)

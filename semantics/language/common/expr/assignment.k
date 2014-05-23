@@ -50,18 +50,18 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when isArithmeticType(T') andBool isArithmeticType(T)
                andBool (getQualifiers(T) ==Set .Set)
-               andBool T' =/=K T
+               andBool (T' =/=K T)
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
-               andBool T' =/=K T
+               andBool (T' =/=K T)
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
-               => cast(t(Mods', pointerType(T')), tv(V, t(.Set, pointerType(T)))))
+               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when areCompatible(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
@@ -69,7 +69,7 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
-               => cast(t(Mods', pointerType(T')), tv(V, t(.Set, pointerType(T)))))
+               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when (isVoidType(T') orBool isVoidType(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
@@ -78,7 +78,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
           when isPointerType(T')
                andBool isNullPointerConstant(V)
-               andBool T' =/=K type(V)
+               andBool (T' =/=K type(V))
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))

@@ -1,6 +1,19 @@
 module C-ERROR-SYNTAX
      syntax K ::= ERROR(String, String)
      syntax K ::= ERROR(String, String, KList)
+     syntax K ::= ERROR(String, String, String, String)
+
+     // Error code, desc., C11 citation.
+     syntax K ::= UNDEF(String, String, String)
+     syntax K ::= UNSPEC(String, String, String)
+     syntax K ::= CV(String, String, String)
+     syntax K ::= CVUB(String, String, String)
+
+     syntax KResult ::= Bool
+     syntax K ::= Error
+     syntax K ::= assert(K, Error) [strict(1)]
+
+     syntax K ::= EXIT(String)
 endmodule
 
 module C-ERROR
@@ -19,36 +32,39 @@ module C-ERROR
 
      imports COMPAT-SYNTAX
 
-     syntax String ::= Error(String, String, KList) [function]
-     rule Error(Title:String, Msg:String, _:KList)  => 
+     rule assert(true, _) => .
+     rule assert(A:KResult, K:K) => K
+          when A =/=K true
+
+     syntax String ::= ErrorMsg(String, String, String, KList) [function]
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)  => 
           "Error: " 
           +String Title
           +String "\n"
           +String "Description: " 
           +String Msg
-     //     +String citeErrors(Refs)
+          +String "\n"
+          +String "Type: " 
+          +String ErrType
+          +String "\n"
+          +String "Citation: " 
+          +String Citation
 
      syntax ErrorRef ::= Int
 
-     // syntax String ::= citeError(ErrorTxt) [function]
-     // syntax String ::= citeConstraint(String, String) [function]
-     // syntax String ::= citeErrors(KList) [function]
+     rule ERROR(Title:String, Msg:String)
+          => EXIT(ErrorMsg(Title, Msg, "", ""))
+     rule ERROR(Title:String, Msg:String, _:KList)
+          => EXIT(ErrorMsg(Title, Msg, "", ""))
 
-     // rule citeError(err(Passage:String, Ref:String)) => 
-     //      "Undefined if (" +String Ref +String "): \"" +String Passage +String "\""
-     // rule citeConstraint(Passage:String, Ref:String) => 
-     //      "Constraint violated (" +String Ref +String "): \"" +String Passage +String "\""
-
-     // rule citeErrors((Ref:Int,, Refs:KList)) =>
-     //      "\n" +String citeError(Errors(Ref)) +String citeErrors(Refs)
-     // rule citeErrors((cv(Ref:String),, Refs:KList)) =>
-     //      "\n" +String citeConstraint(Constraints(Ref), Ref) +String citeErrors(Refs)
-     // rule citeErrors(.KList) => ""
-
-     rule ERROR(Title:String, Msg:String) => ERROR(Title, Msg, .KList)
-     rule (<k> ERROR(Title:String, Msg:String, Refs:KList) ~> K:K </k> 
-          => <final-computation> K </final-computation>)
-          (.Bag => <error-cell> Error(Title, Msg, Refs) </error-cell>)
+     rule UNDEF(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
+     rule UNSPEC(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
+     rule CV(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
+     rule CVUB(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
      rule [err00011]:
           (. => ERROR("00011", "Directly comparing an integer type with a pointer type.") ) ~>
@@ -106,8 +122,7 @@ module C-ERROR
 
      // See C-COMMON-EXPR-IDENTIFIER.
      rule [err00021a]:
-          <k> 
-               (. => ERROR("00021a", "Trying to look up identifier " 
+          <k> (. => ERROR("00021a", "Trying to look up identifier " 
                +String S +String 
                ", but no such identifier is in scope.", 
                (305,, 332)) ) ~>
@@ -119,8 +134,7 @@ module C-ERROR
                andBool (notBool Identifier(S) in keys(Types))
           [structural, large]
      rule [err00021b]:
-          <k> 
-               (. => ERROR("00021b", "No definition found for identifier " 
+          <k> (. => ERROR("00021b", "No definition found for identifier " 
                +String S +String ".") ) ~>
                Identifier(S:String)
           ...</k>
@@ -190,19 +204,14 @@ module C-ERROR
           [structural, large]
 
      rule [err00035]:
-          (. => ERROR("00035", "Trying to write through a const lvalue.", cv("6.5.16.1:1")) ) ~>
+          (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") ) ~>
           write(_, _, T:Type)
           when isConstType(T)
           [structural, large]
-               
-     rule [err00036]:
-          (. => ERROR("00036", "Trying to dereference a null pointer.") ) ~>
-          checkDerefLoc(NullPointer)
-          [structural, large]
 
      rule [err00038a]:
-          (. => ERROR("00038", "Arrays must have positive length.", cv("6.7.6.2:1"))) ~>
-          ArrayType(_:Type, tv(Len:Int, _), _)
+          (. => CV("00038", "Arrays must have positive length.", "6.7.6.2:1")) ~>
+          ArrayType(_, tv(Len:Int, _), _)
           when Len <=Int 0
           [structural, large]
      

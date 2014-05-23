@@ -1,14 +1,4 @@
-module C-COMMON-EXPR-ADDITIVE-SYNTAX
-     syntax K ::= fromArray(Int, Int) // offset, length
-
-     // TODO(chathhorn): error check
-     syntax K ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
-     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
-endmodule
-
 module C-COMMON-EXPR-ADDITIVE
-     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
-
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -16,6 +6,8 @@ module C-COMMON-EXPR-ADDITIVE
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-BITSIZE-SYNTAX
+
+     imports C-ERROR-SYNTAX
 
      imports C-SETTINGS-SYNTAX
 
@@ -103,10 +95,15 @@ module C-COMMON-EXPR-ADDITIVE
                andBool T' =/=K void
           [structural]
                
+     syntax K ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
      rule addToPointer(Loc:SymLoc, T:Type, I:Int, tv(Size:Int, _))
           => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
           when ifFromArrayInBounds(T, I)
           [structural]
+     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
+          addToPointer(_, T:Type, I:Int, tv(_, _))
+          when notBool ifFromArrayInBounds(T, I)
+          [structural, large]
           
      syntax Type ::= newFromArray(Type, Int) [function]
      rule newFromArray(
@@ -114,8 +111,9 @@ module C-COMMON-EXPR-ADDITIVE
                pointerType(T:Type)), I:Int) 
           => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
      rule newFromArray(T:Type, _) => T
-          when #isFromArray(T) =/=K true
+          when notBool isFromArray(T)
 
+     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
                pointerType(_)), I:Int)
@@ -127,11 +125,8 @@ module C-COMMON-EXPR-ADDITIVE
           => false
           when Offset +Int I >Int Len
      rule ifFromArrayInBounds(T:Type, _) => true
-          when #isFromArray(T) =/=K true
+          when notBool isFromArray(T)
 
-     syntax Bool ::= "#isFromArray" "(" Type ")" [function]
-     rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
-          
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same
      array object, or one past the last element of the array object; the result

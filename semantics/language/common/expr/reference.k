@@ -1,9 +1,10 @@
 module C-COMMON-EXPR-REFERENCE
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the
@@ -32,10 +33,16 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:Type))
-          => checkDerefLoc(Loc) ~> lv(Loc, innerType(T))
+     rule *(tv(Loc:SymLoc, T:Type)) => lv(Loc, innerType(T))
           when isPointerType(T)
                andBool notBool isVoidType(innerType(T))
+               andBool Loc =/=K NullPointer
           [structural]
+
+     rule (. => UNDEF("CR1", "trying to dereference a null pointer.", "6.5.3.2:4"))
+          ~> *(tv(Loc:SymLoc, _))
+          when Loc ==K NullPointer
+          [structural]
+
 endmodule
 

@@ -13,18 +13,17 @@ module C-IO-BUFFERED-SYNTAX
 endmodule
 
 module C-IO-BUFFERED
-     imports C-IO-BUFFERED-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
-
-     imports DEBUG-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
@@ -104,11 +103,17 @@ module C-IO-BUFFERED
           [structural] 
      
      // FIXME make sure it's a byte
+
+     syntax Error ::= "errorReadOutOfBounds"
+                    | "errorUnseqEffects"
+                    | "errorNonVolatileLVal"
      
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs), 3)
-               ~> assert(Offset <Int Len, 2)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
+                    errorUnseqEffects)
+               ~> assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T),
+                    errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -119,9 +124,11 @@ module C-IO-BUFFERED
           [large, structural]
 
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs), 3)
-               ~> assert(Offset <Int Len, 2)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
+                    errorUnseqEffects)
+               ~> assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T),
+                    errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -133,8 +140,9 @@ module C-IO-BUFFERED
           [large, structural]
           
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
-               => assert(Offset:Int <Int Len:Int, 2)
-               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 4)
+               => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
+                   errorNonVolatileLVal)
                ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -157,7 +165,7 @@ module C-IO-BUFFERED
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc) 
-//                  => assert(notBool BagItem(Loc) in Locs:Bag, 3)
+//                  => assert(notBool BagItem(Loc) in Locs:Bag, errorUnseqEffects)
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
 //             <locs-written> Locs:Bag </locs-written>
@@ -167,6 +175,16 @@ module C-IO-BUFFERED
 //             // for speed in interpretation; forces local buffer to be flushed
 //             // before a read
 //             //[interpRule] 
+
+     rule errorReadOutOfBounds
+          => UNDEF("EIO1", "Reading outside the bounds of an object.", "6.2.4")
+          [structural]
+     rule errorUnseqEffects
+          => UNDEF("EIO2", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
+          [structural]
+     rule errorNonVolatileLVal
+          => UNDEF("EIO3", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
+          [structural]
 
      syntax K ::= "realloc-aux" "(" Int "," SymLoc "," SymLoc "," Int "," Int ")"
      rule <k> realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)

@@ -7,7 +7,6 @@ endmodule
 
 module C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-COMMON-EXPR-ADDITIVE-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -47,7 +46,7 @@ module C-COMMON-EXPR-EVAL
                andBool (isTrap(V) =/=K true)
                andBool (isUnknown(V) =/=K true)
      rule checkUse(tv(V:SymLoc, T:Type))
-          => checkValidLoc(V) ~> tv(V, T)
+          => checkLoc(V) ~> tv(V, T)
      rule checkUse(tv(V:Trap, T:Type))
           => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
           ~> tv(V, T)

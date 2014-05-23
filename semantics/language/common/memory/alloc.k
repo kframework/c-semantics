@@ -4,8 +4,10 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, List)
 
-     syntax K ::= checkValidLoc(SymLoc)
-     syntax K ::= checkDerefLoc(SymLoc)
+     syntax K ::= checkLoc(SymLoc)
+     syntax K ::= isValidLoc(SymLoc)
+     syntax K ::= isInBounds(SymLoc)
+     syntax Error ::= "errorLocInvalid" | "errorLocBounds"
 
      syntax K ::= allocString(SymLoc, String)
      syntax K ::= allocWString(SymLoc, List)
@@ -35,6 +37,7 @@ module C-MEMORY-ALLOC
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
 
      imports COMPAT-SYNTAX
      
@@ -156,7 +159,10 @@ module C-MEMORY-ALLOC
           when notBool isPhysicalLoc(Loc)
           [structural]
 
-     rule checkDerefLoc(Loc:SymLoc) => checkValidLoc(Loc) 
+     rule checkLoc(NullPointer) => .
+     rule checkLoc(Loc:SymLoc)
+          => assert(isValidLoc(ceilingLoc(Loc)), errorLocInvalid)
+          ~> assert(isInBounds(ceilingLoc(Loc)), errorLocBounds)
           when Loc =/=K NullPointer
           [structural]
 

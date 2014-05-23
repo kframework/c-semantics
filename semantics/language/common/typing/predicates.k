@@ -164,9 +164,6 @@ module C-TYPING-PREDICATES
      rule #isUChar(t(_, unsigned-char)) => true
      rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T) 
 
-     syntax SimpleType ::= simpleType(Type) [function]
-     rule simpleType(t(_, T:SimpleType)) => T
-          
      rule #isPointer(t(_, pointerType(_))) => true 
      rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T) 
      
@@ -220,4 +217,9 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= #hasUnionMarker(Type) [function]
      rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
+
+     rule isFromArray(T:Type) => #isFromArray(T) ==K true
+
+     syntax Bool ::= "#isFromArray" "(" Type ")" [function]
+     rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
 endmodule

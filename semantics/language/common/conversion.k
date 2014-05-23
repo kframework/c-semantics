@@ -43,8 +43,8 @@ module C-CONVERSION
      //- switch assumes casts can happen anywhere
      rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
           [structural, anywhere]
-     rule cast(t(Mods:Set, T:SimpleType), tv(V:CValue, t(_, T:SimpleType))) 
-          => tv(V, t(Mods, T))
+     rule cast(t(Mods':Set, T':SimpleType), tv(V:CValue, t(_, T':SimpleType))) 
+          => tv(V, t(Mods', T'))
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -388,9 +388,9 @@ module C-CONVERSION
      // possibly not true with other endiannesses
      // choice
      // needs to handle alignment
-     rule cast(t(Mods:Set, pointerType(T':Type)), 
-               tv(Loc:SymLoc, t(_, pointerType(_)))) 
-          => tv(Loc, t(Mods, pointerType(T')))
+     rule cast(t(Mods':Set, pointerType(T':Type)), 
+               tv(Loc:SymLoc, t(_, pointerType(T:Type)))) 
+          => tv(Loc, t(Mods', pointerType(T')))
           [structural, anywhere]
 endmodule
 

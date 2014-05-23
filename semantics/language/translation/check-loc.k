@@ -1,5 +1,9 @@
 module C-CHECK-LOC
      imports C-MEMORY-ALLOC-SYNTAX
 
-     rule checkValidLoc(_) => .
+     rule isValidLoc(_) => true
+     rule isInBounds(_) => true
+
+     rule errorLocInvalid => .
+     rule errorLocBounds => .
 endmodule

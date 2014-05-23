@@ -1,11 +1,4 @@
 module DEBUG-SYNTAX
-     syntax K ::= assert(Bool, Int) // check, error#
-     syntax K ::= "HALT" | HALT(K) | ASSERT(Bool, K)
+     syntax K ::= "HALT" | HALT(K)
 endmodule
 
-module DEBUG
-     imports DEBUG-SYNTAX
-
-     rule assert(true, _) => . [structural]
-     rule ASSERT(true, _) => . [structural]
-endmodule

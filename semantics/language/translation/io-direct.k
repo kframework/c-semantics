@@ -41,7 +41,7 @@ module C-IO-DIRECT
           when (Offset <Int Len) andBool notBool isSymbolic(V)
           [large, structural]
 
-     rule (. => ERROR("IO1", "non-constant initializer."))
+     rule (. => CVUB("IO1", "Non-constant initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
           when isSymbolic(V)
           [structural]
@@ -74,7 +74,7 @@ module C-IO-DIRECT
      
      // FIXME make sure it's a byte
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0))
-               => assert(Offset <Int Len, 2) ~> tv(V, t(.Set, no-type))
+               => tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
@@ -82,9 +82,8 @@ module C-IO-DIRECT
           [large, structural]
           
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
-               => assert(Offset <Int Len, 2)
-                    ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), 
-                         t(.Set, no-type))
+               => tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte),
+                    t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, _, 

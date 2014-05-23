@@ -104,7 +104,7 @@ module C-COMPOUND-LITERAL
           [large, structural]
           
      syntax K ::= wstring(List)
-     rule <k> (.K => allocWString(Loc, S))
+     rule <k> (. => allocWString(Loc, S))
                ~> wstringLiteral(S:List)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
