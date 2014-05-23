@@ -33,11 +33,12 @@ module C-MEMORY-READING
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
      rule read(Loc:SymLoc, T:Type) => readActual(Loc, T)
-          when isThreadDuration(Loc)
+          when isThreadDuration(Loc) orBool isAutoDuration(Loc)
           [structural]
      rule  // read data of "allocated" duration
           read(Loc:SymLoc, T:Type) => readActual(Loc, T)
           when notBool isThreadDuration(Loc)
+               andBool notBool isAutoDuration(Loc)
                andBool Loc =/=K NullPointer
           [ndtrans]
      

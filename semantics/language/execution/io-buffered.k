@@ -173,7 +173,8 @@ module C-IO-BUFFERED
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset, 0) in locations(Mem))
                andBool (notBool Offset in (keys(M)))
-               andBool isStaticDuration(loc(Base, Offset, 0))
+               andBool (isStaticDuration(loc(Base, Offset, 0))
+                    orBool isThreadDuration(loc(Base, Offset, 0)))
           [large, structural]
           
      // Resolve a linker address to a real "physical" address.

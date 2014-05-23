@@ -20,12 +20,14 @@ module C-SYMLOC-SYNTAX
      syntax Duration ::= link(String)
      syntax Duration ::= static(String)
      syntax Duration ::= thread(Int)
+     syntax Duration ::= auto(Int)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      syntax Bool ::= isArgvDuration(SymLoc) [function]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
+     syntax Bool ::= isAutoDuration(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
 
      // I.e., static, argv, allocated, or thread (the same as "not
@@ -83,6 +85,7 @@ module C-SYMLOC
      syntax Bool ::= "#isArgvDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isAutoDuration" "(" SymLoc ")" [function]
 
      syntax Bool ::= "#isLinkerLoc" "(" SymLoc ")" [function]
 
@@ -90,7 +93,8 @@ module C-SYMLOC
           => (isAllocatedDuration(Loc) 
                orBool isArgvDuration(Loc)
                orBool isStaticDuration(Loc)
-               orBool isThreadDuration(Loc))
+               orBool isThreadDuration(Loc)
+               orBool isAutoDuration(Loc))
 
      rule isAllocatedDuration(Loc:SymLoc) 
           => #isAllocatedDuration(Loc) ==K true
@@ -100,6 +104,8 @@ module C-SYMLOC
           => #isStaticDuration(Loc) ==K true
      rule isThreadDuration(Loc:SymLoc)
           => #isThreadDuration(Loc) ==K true
+     rule isAutoDuration(Loc:SymLoc)
+          => #isAutoDuration(Loc) ==K true
      rule isLinkerLoc(Loc:SymLoc)
           => #isLinkerLoc(Loc) ==K true
 
@@ -111,6 +117,8 @@ module C-SYMLOC
      rule #isStaticDuration(loc(_ @ link(_), _, _)) => true
 
      rule #isThreadDuration(loc(_ @ thread(_), _, _)) => true
+
+     rule #isAutoDuration(loc(_ @ auto(_), _, _)) => true
 
      rule #isLinkerLoc(loc(_ @ link(_), _, _)) => true
 
@@ -153,6 +161,7 @@ module C-SYMLOC
      rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
 
      rule getThreadId(loc (_ @ thread(Th:Int), _, _)) => Th
+     rule getThreadId(loc (_ @ auto(Th:Int), _, _)) => Th
 
      rule getBitOffset(loc(_, _, M:Int)) => M %Int cfg:bitsPerByte
      rule getByteOffset(loc(_, M:Int, N:Int)) => M +Int N /Int cfg:bitsPerByte
