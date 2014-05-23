@@ -72,26 +72,11 @@ module C-IO-DIRECT
           => dataList(values(Aux:List)) 
           [structural] 
      
-     // FIXME make sure it's a byte
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0))
                => tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
+               Base |-> memblock(_, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
           [large, structural]
-          
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
-               => tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte),
-                    t(.Set, no-type))
-          ...</k>
-          <mem>... 
-               Base |-> memblock(Len:Int, _, 
-                    M:Map => M[
-                         piece(trap(cfg:bitsPerByte), cfg:bitsPerByte)
-                         <- Offset]) 
-          ...</mem>
-          when notBool Offset in keys(M)
-          [large, structural]
-
 endmodule

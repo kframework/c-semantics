@@ -22,7 +22,6 @@ module C-DECL-GLOBAL
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-LOCAL-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
 
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -627,7 +626,6 @@ module C-DECL-GLOBAL
      syntax K ::= allocateDecl(CId)
      rule <k> allocateDecl(X:CId) 
                => allocateType(Loc, T) 
-               ~> allowInit(zero(X))
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Loc:SymLoc ...</env>
@@ -636,7 +634,6 @@ module C-DECL-GLOBAL
      rule <k> allocateDecl(X:CId) 
                => addToEnv(X, Loc')
                ~> allocateType(Loc', T) 
-               ~> allowInit(zero(X))
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Loc:SymLoc ...</env>

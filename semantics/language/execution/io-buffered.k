@@ -153,6 +153,22 @@ module C-IO-BUFFERED
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset, 0) in locations(Mem))
                andBool (notBool Offset in (keys(M)))
+               andBool (notBool isStaticDuration(loc(Base, Offset, 0)))
+          [large, structural]
+     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
+               => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
+               ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
+                   errorNonVolatileLVal)
+               ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
+          ...</k>
+          <mem>... 
+               Base |-> memblock(Len:Int, Attrs:Bag, 
+               M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
+          ...</mem>
+          <buffer> Mem:List </buffer>
+          when (notBool loc(Base, Offset, 0) in locations(Mem))
+               andBool (notBool Offset in (keys(M)))
+               andBool isStaticDuration(loc(Base, Offset, 0))
           [large, structural]
           
      // Resolve a linker address to a real "physical" address.

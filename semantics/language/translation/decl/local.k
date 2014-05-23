@@ -7,7 +7,6 @@ module C-DECL-LOCAL
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-ENV-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 
@@ -108,7 +107,7 @@ module C-DECL-LOCAL
                => allocateType(Loc, T)
                ~> addToEnv(X, Loc)
                ~> giveType(X, T)
-               ~> allowInit(zero(X) ~> K)
+               ~> allowInit(K)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>

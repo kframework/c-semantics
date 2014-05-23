@@ -139,7 +139,7 @@ module C-MEMORY-READING
           => joinIntegerBytes-aux(T, L, piece(0, 0)) 
      rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0)) 
           => tv(unknown(bitSizeofType(T)), stripQualifiers(T))
-          when hasCharType(T)
+          when isUCharType(T)
      rule joinIntegerBytes-aux(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 

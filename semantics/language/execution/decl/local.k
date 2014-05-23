@@ -7,7 +7,6 @@ module C-DECL-LOCAL
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-ENV-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
