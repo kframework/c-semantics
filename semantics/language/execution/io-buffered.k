@@ -78,14 +78,12 @@ module C-IO-BUFFERED
      rule locations(bwrite(Loc:SymLoc, _) L:List)
           => SetItem(Loc) locations(L)
 
-     // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
-     syntax K ::= readByte(SymLoc, Type)
-     
      rule readBytes(Loc:SymLoc, Size:Int, T:Type)
           => readBytes-aux(Loc, Size, .List, T) 
           [structural] 
           
+     // loc, size in bytes, aux list
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List, T:Type)
           => readByte(Loc, T)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
@@ -109,6 +107,7 @@ module C-IO-BUFFERED
                     | "errorUnseqEffects"
                     | "errorNonVolatileLVal"
      
+     syntax K ::= readByte(SymLoc, Type)
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
                => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
                     errorUnseqEffects)
@@ -139,7 +138,6 @@ module C-IO-BUFFERED
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset, 0) in locations(Mem)
           [large, structural]
-          
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 

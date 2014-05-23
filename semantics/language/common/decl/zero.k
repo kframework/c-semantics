@@ -1,7 +1,7 @@
 module C-DECL-ZERO-SYNTAX
      syntax K ::= zero(CId)
-     // Only defined for arithmetic, floats, and pointer types.
-     syntax K ::= getZero(Type) [function]
+     // Only defined for arithmetic and pointer types.
+     syntax Bits ::= getZero(Type) [function]
 endmodule
 
 module C-DECL-ZERO
@@ -12,6 +12,7 @@ module C-DECL-ZERO
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-BITS-SYNTAX
 
      imports DEBUG-SYNTAX
 
@@ -34,13 +35,17 @@ module C-DECL-ZERO
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
      
-     rule zeroType(X:K, T:Type) 
-          => Computation(allowWrite(X) := tv(NullPointer, T))
-          when isPointerType(T)
-          [structural]
      rule zeroType(X:K, T:Type)
-          => Computation(allowWrite(X) := tv(getZero(T), t(.Set, simpleType(T))))
-          when hasArithmeticType(T)
+          => Computation(allowWrite(X) := tv(getZero(T), T))
+          when isPointerType(T) orBool hasArithmeticType(T)
+          [structural] 
+
+     rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int))) 
+          => zeroType(X[Len -Int 1], T)
+               ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1))) 
+          when Len >Int 0
+          [structural] 
+     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
           [structural] 
 
      rule zeroType(X:K, t(_, structType(_, _, 
@@ -49,12 +54,6 @@ module C-DECL-ZERO
           => zeroStruct(X, Fields)
           [structural] 
           
-     // TODO(chathhorn): what does the standard mean by "any padding is
-     // initialized to zero bits"? Does it mean the padding around bitfields
-     // and other such padding caused by alignment concerns, or the padding
-     // caused by the size of other fields in the union? As things are, we set
-     // the padding between the end of the first field and the end of the union
-     // to unknown.
      rule zeroType(X:K, t(_, unionType(_, _,
                fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _) 
           )))
@@ -65,16 +64,7 @@ module C-DECL-ZERO
           when isFunctionType(T)
           [structural]
           
-     // fixme snat
-     rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int))) 
-          => zeroType(X[Len -Int 1], T)
-               ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1))) 
-          when Len >Int 0
-          [structural] 
-     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
-          [structural] 
-
-     rule zeroType(_, t(_, flexibleArrayType(_:Type))) => .
+     rule zeroType(_, t(_, flexibleArrayType(_))) => .
           [structural]
           
      syntax K ::= zeroStruct(K, List)
@@ -86,7 +76,7 @@ module C-DECL-ZERO
 
      rule getZero(T:Type) => 0
           when hasIntegerType(T)
-     rule getZero(T:Type) => 0.0
+     rule getZero(T:Type) => encodedFloat(0.0)
           when hasFloatType(T)
      rule getZero(T:Type) => NullPointer
           when isPointerType(T)
