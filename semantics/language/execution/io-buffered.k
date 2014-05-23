@@ -158,7 +158,7 @@ module C-IO-BUFFERED
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
-               ~> tv(piece(getZero(T), cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(encode(getZero(T)), cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
@@ -166,7 +166,7 @@ module C-IO-BUFFERED
                // on the type of the lvalue being read through and not the type
                // of the declaration. But hopefully all mismatches between the
                // lvalue type and the declared type should be caught by now.
-               M:Map => M[piece(getZero(T), cfg:bitsPerByte) <- Offset]) 
+               M:Map => M[piece(encode(getZero(T)), cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset, 0) in locations(Mem))
@@ -174,7 +174,12 @@ module C-IO-BUFFERED
                andBool (isStaticDuration(loc(Base, Offset, 0))
                     orBool isThreadDuration(loc(Base, Offset, 0)))
           [structural]
-          
+
+     syntax Bits ::= encode(K) [function]
+     rule encode(F:Float) => encodedFloat(F)
+     rule encode(V:K) => V
+          when isFloat(V) =/=K true
+
      // Resolve a linker address to a real "physical" address.
      rule <k> readByte(loc((LinkBase:SymBase => Base), _, _), _) ...</k>
           <linkings>... 

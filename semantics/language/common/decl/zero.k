@@ -1,7 +1,7 @@
 module C-DECL-ZERO-SYNTAX
      syntax K ::= zero(CId)
      // Only defined for arithmetic and pointer types.
-     syntax Bits ::= getZero(Type) [function]
+     syntax K ::= getZero(Type) [function]
 endmodule
 
 module C-DECL-ZERO
@@ -76,7 +76,7 @@ module C-DECL-ZERO
 
      rule getZero(T:Type) => 0
           when hasIntegerType(T)
-     rule getZero(T:Type) => encodedFloat(0.0)
+     rule getZero(T:Type) => 0.0
           when hasFloatType(T)
      rule getZero(T:Type) => NullPointer
           when isPointerType(T)
