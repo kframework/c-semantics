@@ -111,7 +111,7 @@ module C-PROCESS-LABEL
           </decl-stack>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
-          [structural, large]
+          [structural]
           
      rule <computation> OnlyTypedef(K:K) => .K ...</computation>
           <decl-stack>... .List 
@@ -184,7 +184,7 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
-          [structural, large] 
+          [structural] 
           
      rule [compute-label-do-while]:
           <goto-calc>
@@ -215,7 +215,7 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
-          [structural, large]
+          [structural]
           
      rule [compute-label-while-mark]:
           <computation>
@@ -258,7 +258,7 @@ module C-PROCESS-LABEL
                     B
                </goto-calc>
           )
-          [structural, large] 
+          [structural] 
           
      rule [compute-label-switch]:
           <computation>
@@ -293,7 +293,7 @@ module C-PROCESS-LABEL
                     <- Target]))
           ...</goto-map>
           when notBool Target in keys(M)
-          [structural, large]
+          [structural]
           
      rule <computation> 
                (Case(SwitchNum:Int, CaseNum:Int, Val:K, S:K) => S) ~> K:K
@@ -314,7 +314,7 @@ module C-PROCESS-LABEL
                               <- case(CaseNum)])) 
           ...</goto-map>
           when notBool genLabel(SwitchNum, Val) in keys(M)
-          [structural, large] 
+          [structural] 
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
           </computation>
@@ -334,6 +334,6 @@ module C-PROCESS-LABEL
                     <- genLabel(SwitchNum, l('Default))])) 
           ...</goto-map>
           when notBool genLabel(SwitchNum, l('Default)) in keys(M)
-          [structural, large]
+          [structural]
 endmodule
  

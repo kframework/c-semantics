@@ -103,7 +103,7 @@ module C-COMMON-EXPR-ADDITIVE
      rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
           addToPointer(_, T:Type, I:Int, tv(_, _))
           when notBool ifFromArrayInBounds(T, I)
-          [structural, large]
+          [structural]
           
      syntax Type ::= newFromArray(Type, Int) [function]
      rule newFromArray(

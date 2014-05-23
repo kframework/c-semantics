@@ -58,7 +58,7 @@ module C-IO-BUFFERED
                // Volatile.
                andBool (notBool (BagItem(mvolatile) in Attrs)
                     orBool isVolatileType(T))
-          [large, structural]
+          [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
           <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
@@ -121,7 +121,7 @@ module C-IO-BUFFERED
           ...</mem>
           <locs-written> Locs:Bag </locs-written>
           <buffer> .List </buffer>
-          [large, structural]
+          [structural]
 
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
                => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
@@ -137,7 +137,7 @@ module C-IO-BUFFERED
           <locs-written> Locs:Bag </locs-written>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset, 0) in locations(Mem)
-          [large, structural]
+          [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
@@ -153,7 +153,7 @@ module C-IO-BUFFERED
           when (notBool loc(Base, Offset, 0) in locations(Mem))
                andBool (notBool Offset in (keys(M)))
                andBool (notBool isStaticDuration(loc(Base, Offset, 0)))
-          [large, structural]
+          [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(mvolatile) in Attrs) orBool isVolatileType(T), 
@@ -173,7 +173,7 @@ module C-IO-BUFFERED
                andBool (notBool Offset in (keys(M)))
                andBool (isStaticDuration(loc(Base, Offset, 0))
                     orBool isThreadDuration(loc(Base, Offset, 0)))
-          [large, structural]
+          [structural]
           
      // Resolve a linker address to a real "physical" address.
      rule <k> readByte(loc((LinkBase:SymBase => Base), _, _), _) ...</k>

@@ -56,7 +56,7 @@ module C-TRANSLATION-INIT
                     <next-static-loc> firstLoc(static(TU)) </next-static-loc>
                ...</tu>)
           ...</translation-units>
-          [structural, large]
+          [structural]
           
      syntax K ::= preDeclareStrings(List)
      

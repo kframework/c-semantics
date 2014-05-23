@@ -174,7 +174,7 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
           when ActualDepth +Int 1 =/=Int TargetDepth
-          [structural, large] 
+          [structural] 
           
      rule <k> ( . => pushBlock
                ~> addToHistory(TargetBlk)
@@ -186,7 +186,7 @@ module C-STMT-GOTO
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
           when ActualDepth +Int 1 =/=Int TargetDepth
-          [structural, large] 
+          [structural] 
      
      //  We've made it to the block above the target
      rule <k> L:KLabel(gotoObject(SIntDepth:Int, 

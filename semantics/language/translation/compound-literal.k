@@ -101,7 +101,7 @@ module C-COMPOUND-LITERAL
                     arrayType(t(.Set, char), lengthString(S) +Int 1))))
           </string-lits>
           when notBool (S in keys(M))
-          [large, structural]
+          [structural]
           
      syntax K ::= wstring(List)
      rule <k> (. => allocWString(Loc, S))
@@ -116,7 +116,7 @@ module C-COMPOUND-LITERAL
                     arrayType(cfg:wcharut, lengthList(S) +Int 1))))
           </string-lits>
           when notBool wstring(S) in keys(M)
-          [large, structural]
+          [structural]
           
      rule <k> stringLiteral(S:String) => V ...</k>
           <curr-tu> Tu:String </curr-tu>

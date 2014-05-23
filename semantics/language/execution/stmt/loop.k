@@ -42,7 +42,7 @@ module C-STMT-LOOP
           </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
-          [structural, large] 
+          [structural] 
           
      rule [for]:
           <k> loopMarked ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)

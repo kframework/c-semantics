@@ -139,7 +139,7 @@ module C-EXECUTION-INIT
                ...</file>)
           ...</files>
           when MainTU =/=K .K
-          [structural, large]
+          [structural]
      
      /*@ 
      \begin{lrbox}{\LstBox}

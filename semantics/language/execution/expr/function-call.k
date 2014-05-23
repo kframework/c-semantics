@@ -121,7 +121,7 @@ module C-EXPR-FUNCTION-CALL
                // TODO(chathhorn): better way to initialize?
                (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
-          [structural, large]
+          [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:TypedValue)
                => allocateType(Loc, T)

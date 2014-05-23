@@ -39,7 +39,7 @@ module C-IO-DIRECT
                Base |-> memblock(Len:Int, _, (M:Map => M:Map[V <- Offset]))
           ...</mem>
           when (Offset <Int Len) andBool notBool isSymbolic(V)
-          [large, structural]
+          [structural]
 
      rule (. => CVUB("IO1", "Non-constant initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
@@ -78,5 +78,5 @@ module C-IO-DIRECT
           <mem>... 
                Base |-> memblock(_, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          [large, structural]
+          [structural]
 endmodule

@@ -71,44 +71,44 @@ module C-ERROR
           tv(_, T:Type) < tv(_, T':Type)
           when (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large]
+          [structural]
      rule [err00012]:
           (. => ERROR("00012", "Directly comparing an integer type with a pointer type.") ) ~>
           tv(_, T:Type) <= tv(_, T':Type)
           when (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
+          [structural] 
      rule [err00013]:
           (. => ERROR("00013", "Directly comparing an integer type with a pointer type.") ) ~>
           tv(_, T:Type) > tv(_, T':Type)
           when (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
+          [structural] 
      rule [err00014]:
           (. => ERROR("00014", "Directly comparing an integer type with a pointer type.") ) ~>
           tv(_, T:Type) >= tv(_, T':Type)
           when (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
-          [structural, large] 
+          [structural] 
 
      rule [err00015]:
           (. => ERROR("00015", "Signed overflow.", 36) ) ~>
           arithInterpret(T:Type, I:Int)
           when hasSignedIntegerType(T)
                andBool notBool ((min(T) <=Int I:Int) andBool (max(T) >=Int I:Int))
-          [structural, large]      
+          [structural]      
           
      rule [err00017]:
           (. => ERROR("00017", "Division by 0.", 319) ) ~>
           tv(_, T:Type) / tv(0, T:Type)
           when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
+          [structural]
      
      rule [err00018]:
           (. => ERROR("00018", "Modulus by 0.", 320) ) ~>
           tv(_, T:Type) % tv(0, T:Type)
           when hasIntegerType(T) andBool isPromoted(T)
-          [structural, large]
+          [structural]
           
      rule [err00019]:
           (. => ERROR("00019", "Signed overflow.", 36) ) ~>
@@ -118,7 +118,7 @@ module C-ERROR
                     andBool max(T) >=Int I1 /Int I2)
                andBool isPromoted(T)
                andBool I2 =/=Int 0
-          [structural, large]
+          [structural]
 
      // See C-COMMON-EXPR-IDENTIFIER.
      rule [err00021a]:
@@ -132,7 +132,7 @@ module C-ERROR
           <types> Types:Map </types>
           when (notBool Identifier(S) in keys(Env))
                andBool (notBool Identifier(S) in keys(Types))
-          [structural, large]
+          [structural]
      rule [err00021b]:
           <k> (. => ERROR("00021b", "No definition found for identifier " 
                +String S +String ".") ) ~>
@@ -142,85 +142,85 @@ module C-ERROR
           <types>... Identifier(S) |-> T:Type ...</types>
           when (notBool Identifier(S) in keys(Env))
                andBool (notBool isFunctionType(T))
-          [structural, large]
+          [structural]
      
      rule [err00024a]:
           (. => ERROR("00024a", "Bitwise & used on a pointer type.") ) ~>
           tv(_, T:Type) & _
           when isPointerType(T)
-          [structural, large]
+          [structural]
      rule [err00024b]:
           (. => ERROR("00024b", "Bitwise & used on a pointer type.") ) ~>
           _ & tv(_, T:Type)
           when isPointerType(T)
-          [structural, large]
+          [structural]
      rule [err00024c]:
           (. => ERROR("00024c", "Bitwise & used on a float.") ) ~>
           tv(_:Float, _) & _
-          [structural, large]
+          [structural]
      rule [err00024d]:
           (. => ERROR("00024d", "Bitwise & used on a float.") ) ~>
           _ & tv(_:Float, _)
-          [structural, large]
+          [structural]
 
      rule [err00024a]:
           (. => ERROR("00025a", "Bitwise | used on a pointer type.") ) ~>
           tv(_, T:Type) | _
           when isPointerType(T)
-          [structural, large]
+          [structural]
      rule [err00024b]:
           (. => ERROR("00025b", "Bitwise | used on a pointer type.") ) ~>
           _ | tv(_, T:Type)
           when isPointerType(T)
-          [structural, large]
+          [structural]
      rule [err00024c]:
           (. => ERROR("00025c", "Bitwise | used on a float.") ) ~>
           tv(_:Float, _) | _
-          [structural, large]
+          [structural]
      rule [err00024d]:
           (. => ERROR("00025d", "Bitwise | used on a float.") ) ~>
           _ | tv(_:Float, _)
-          [structural, large]
+          [structural]
           
      rule [err00030]:
           (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
           tv(loc(Base:SymBase, _, _), T:Type) < tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
-          [structural, large]
+          [structural]
      rule [err00031]:
           (. => ERROR("00031", "Cannot compare pointers with different base objects using '>'.") ) ~>
           tv(loc(Base:SymBase, _, _), T:Type) > tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
-          [structural, large]
+          [structural]
      rule [err00032]:
           (. => ERROR("00032", "Cannot compare pointers with different base objects using '<='.") ) ~>
           tv(loc(Base:SymBase, _, _), T:Type) <= tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
-          [structural, large]
+          [structural]
      rule [err00033]:
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
           tv(loc(Base:SymBase, _, _), T:Type) >= tv(loc(Base':SymBase, _, _), T:Type)
           when Base =/=K Base'
-          [structural, large]
+          [structural]
 
      rule [err00035]:
           (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") ) ~>
           write(_, _, T:Type)
           when isConstType(T)
-          [structural, large]
+          [structural]
 
      rule [err00038a]:
           (. => CV("00038", "Arrays must have positive length.", "6.7.6.2:1")) ~>
           ArrayType(_, tv(Len:Int, _), _)
           when Len <=Int 0
-          [structural, large]
+          [structural]
      
      rule [err00039]:
           (. => ERROR("00039", "Unions cannot be empty.", 61) ) ~>
           StructDef(_, krlist(.List))
-          [structural, large]
+          [structural]
      rule [err00040]:
           (. => ERROR("00040", "Structs cannot be empty.", 61) ) ~>
           UnionDef(_, krlist(.List))
-          [structural, large]
+          [structural]
 endmodule

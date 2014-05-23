@@ -218,7 +218,7 @@ module C-DECL-INITIALIZER
                ))))
           ...</curr-subobject>
           when F' =/=K #NoName
-          [structural, large] 
+          [structural] 
       
      rule <curr-subobject>
                (next ListItem(te(K:K . F:CId, T:Type)) 
@@ -230,7 +230,7 @@ module C-DECL-INITIALIZER
                          ListItem(typedDeclaration(T':Type, F':CId)) _, _, _)
                ))))
           ...</curr-subobject>
-          [structural, large] 
+          [structural] 
           
      rule <curr-subobject>
                next (ListItem(te(K:K . F:CId, T:Type)) => .List)
@@ -238,7 +238,7 @@ module C-DECL-INITIALIZER
                     fieldInfo(_ ListItem(typedDeclaration(T, F)), _, _)
                ))))
           ...</curr-subobject>
-          [structural, large] 
+          [structural] 
      rule <curr-subobject>
                next (ListItem(te(K:K . F:CId, T:Type)) => .List)
                ListItem(te(K:K, t(_, structType(_, _,
@@ -247,7 +247,7 @@ module C-DECL-INITIALIZER
                          ListItem(typedDeclaration(_, #NoName)), _, _)
                ))))
           ...</curr-subobject>
-          [structural, large] 
+          [structural] 
           
      rule <curr-subobject>
                next (ListItem(te(K:K . _, _)) => .List)
@@ -415,7 +415,7 @@ module C-DECL-INITIALIZER
           <saved-init>...
                .K => Computation(allowWrite(K) := K')
           </saved-init> 
-          [structural, large] 
+          [structural] 
      
      rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
           when getKLabel(K) =/=KLabel 'stringLiteral

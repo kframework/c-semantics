@@ -79,5 +79,5 @@ module C-STMT-RETURN
                     ...</call-stack-frame>
                ) => .List
           ...</call-stack>
-          [structural, large] 
+          [structural] 
 endmodule

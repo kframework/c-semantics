@@ -25,7 +25,7 @@ module C-STMT-BLOCK
                <local-vars> Vars </local-vars>
                <local-addresses> Addresses </local-addresses>)
           ...</block-stack>
-          [structural, large] 
+          [structural] 
           
      rule <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
           <local-addresses>...
