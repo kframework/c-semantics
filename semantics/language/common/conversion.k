@@ -384,12 +384,10 @@ module C-CONVERSION
      whose type is not compatible with the referenced type, the behavior is
      undefined.
      }*/
-     // fixme
-     // possibly not true with other endiannesses
      // choice
-     // needs to handle alignment
+     // TODO needs to handle alignment
      rule cast(t(Mods':Set, pointerType(T':Type)), 
-               tv(Loc:SymLoc, t(_, pointerType(T:Type)))) 
+               tv(Loc:SymLoc, t(_, pointerType(_)))) 
           => tv(Loc, t(Mods', pointerType(T')))
           [structural, anywhere]
 endmodule

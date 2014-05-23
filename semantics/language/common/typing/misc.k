@@ -342,7 +342,7 @@ module C-TYPING-MISC
                andBool fromConstantExpr(T)
 
      // TODO(chathhorn)
-     rule fromConstantExpr(T:Type) => true
+     rule fromConstantExpr(_) => true
 
      rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
           => stripUnionMarker(S)
