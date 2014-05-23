@@ -36,7 +36,7 @@ module C-DECL-ZERO
      // to zero bits;
      
      rule zeroType(X:K, T:Type)
-          => Computation(allowWrite(X) := tv(getZero(T), T))
+          => Computation(allowWrite(X) := tv(getZero(T), stripQualifiers(T)))
           when isPointerType(T) orBool hasArithmeticType(T)
           [structural] 
 
