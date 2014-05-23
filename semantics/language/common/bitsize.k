@@ -50,6 +50,8 @@ module C-BITSIZE
           (ListItem(T:Type) => .List) _:List)
      rule maxBitSizeofList'(Sz:Int, .List) => Sz
      
+     rule bitSizeofType(t(_, no-type)) 
+          => 0
      rule bitSizeofType(t(_, arrayType(T:Type, N:Int))) 
           => bitSizeofType(T) *Int N
      rule bitSizeofType(t(_, flexibleArrayType(_))) 

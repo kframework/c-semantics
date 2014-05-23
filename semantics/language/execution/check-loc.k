@@ -42,10 +42,10 @@ module C-CHECK-LOC
           [structural]
 
      rule errorLocInvalid
-          => ERROR("00007", "referring to an object outside of its lifetime.", (9,, 10))
+          => UNDEF("ECL1", "referring to an object outside of its lifetime.", "6.2.4")
           [structural]
           
      rule errorLocBounds
-          => ERROR("00010", "found pointer that refers outside the bounds of an object + 1.", 62)
+          => UNDEF("ECL2", "found pointer that refers outside the bounds of an object + 1.", "6.2.4")
           [structural]
 endmodule

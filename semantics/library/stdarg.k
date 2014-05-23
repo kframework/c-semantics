@@ -60,19 +60,18 @@ module LIBC-STDARG
                ~> skipval
           [structural]
      
-     syntax K ::= "va-inc-aux" "(" K "," K "," K ")" // [strict(3)]
-     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
-     // fixme can do lots of checks here too
-     
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"), 
-               ListItem(ApLoc:KResult) 
-               ListItem(Size:KResult))
+               ListItem(ApLoc:TypedValue) 
+               ListItem(Size:TypedValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
+     syntax K ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
+     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
+     // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:KResult, _:KResult, Ap:KResult)
+          va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
           [structural]                  

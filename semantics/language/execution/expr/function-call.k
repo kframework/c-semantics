@@ -135,5 +135,16 @@ module C-EXPR-FUNCTION-CALL
           <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
           <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
           [structural]
+     rule <k> bindParam(X:CId)
+               => allocateType(Loc, t(.Set, no-type))
+               ~> addToEnv(X, Loc)
+               ~> giveType(X, t(.Set, no-type))
+          ...</k>
+          <curr-function-params>...
+               (.List => ListItem(X))
+          </curr-function-params>
+          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          [structural]
 
 endmodule

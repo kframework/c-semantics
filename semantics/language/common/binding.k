@@ -2,6 +2,7 @@ module C-BINDING-SYNTAX
      // TypedValues, Types, CIds
      syntax K ::= bind(List, List, List)
      syntax K ::= bindParam(CId, Type, K)
+     syntax K ::= bindParam(CId)
      syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= isArgPromoted(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
@@ -90,7 +91,8 @@ module C-BINDING
                (ListItem(V:TypedValue) => .List) _,
                (N:Int => N +Int 1))
           [structural]
-     rule bindVariadics(.List, _) => .
+     // Make one past the last variadic a legal address.
+     rule bindVariadics(.List, N:Int) => bindParam(vararg(N))
           [structural]
 
      // n1494 6.5.2.2:6 If the expression that denotes the called function has

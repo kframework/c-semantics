@@ -19,7 +19,7 @@ module LIBC-BOOTSTRAP
 
      rule rkludge(varg(K:K)) => varg(K) [structural, anywhere]
 
-     context incSymbolic((HOLE => reval(HOLE)))
+     context incSymbolic(HOLE => reval(HOLE))
      rule incSymbolic(tv(Loc:SymLoc, T:Type)) => tv(linc(Loc), T)
           [structural]
 

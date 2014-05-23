@@ -35,6 +35,7 @@ module C-EXPR-FUNCTION-CALL
 
      rule bindParam(_, T:Type, V:TypedValue)
           => Computation(allowWrite(lv(symVal, T)) := V)
+     rule bindParam(_) => .
 
 endmodule
 
