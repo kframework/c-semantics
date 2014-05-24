@@ -43,7 +43,7 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (. => UNDEF("CEB3", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
           ~> tv(_, T1:Type) << tv(E2:Int, _)
-          when E2 <Int bitSizeofType(T1)
+          when E2 >=Int bitSizeofType(T1)
           [structural]
      rule (. => UNDEF("CEB4", "The left operand in a bitwise left-shift is negative.", "6.5.7:4"))
           ~> tv(E1:Int, _) << tv(_, _)
@@ -76,7 +76,7 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (. => UNDEF("CEB7", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
           ~> tv(_, T1:Type) >> tv(E2:Int, _)
-          when E2 <Int bitSizeofType(T1)
+          when E2 >=Int bitSizeofType(T1)
           [structural]
      rule (. => UNSPEC("CEB8", "The left operand in a bitwise right-shift is negative.", "6.5.7:5"))
           ~> tv(E1:Int, _) >> tv(_, _)
