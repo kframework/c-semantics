@@ -73,7 +73,7 @@ module C-MEMORY-ALLOC
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
           [structural] 
-     rule <k> allocateTypeIfAbsent(loc(Base:SymBase, 0, 0), _) => . 
+     rule <k> allocateTypeIfAbsent(loc(Base:SymBase, 0), _) => . 
           ...</k>
           <mem>... Base |-> memblock(_, _, _) ...</mem>
           [structural]
@@ -86,24 +86,24 @@ module C-MEMORY-ALLOC
           => BagItem(Q) setToBag(Qs)
      rule setToBag(.Set) => .Bag
 
-     rule <k> alloc(loc(Base:SymBase, 0, 0), Len:TypedValue, Quals:Bag)
+     rule <k> alloc(loc(Base:SymBase, 0), Len:TypedValue, Quals:Bag)
                => .
           ...</k>
           <mem>...
                .Map => Base |-> memblock(value(Len), Quals, .Map)
           ...</mem>
-          when notBool isLinkerLoc(loc(Base, 0, 0))
+          when notBool isLinkerLoc(loc(Base, 0))
           [structural]
      
      // used by calloc
-     rule <k> zeroBlock(loc(Base:SymBase, 0, 0)) => . ...</k>
+     rule <k> zeroBlock(loc(Base:SymBase, 0)) => . ...</k>
           <mem>...
                Base |-> memblock(Len:Int, _, 
                     _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
           
-     rule <k> sizeofLocation(loc(Base:SymBase, _:Int, _:Int)) 
+     rule <k> sizeofLocation(loc(Base:SymBase, _)) 
                => tv(Len, cfg:sizeut)
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
@@ -132,11 +132,11 @@ module C-MEMORY-ALLOC
      
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
      rule <k> makeUnwritableSubObject(
-                    lval(loc(Base:SymBase, Offset:Int, _), _)) 
+                    lval(loc(Base:SymBase, Offset:Int), _)) 
                => . 
           ...</k>
           <not-writable>...
-               (. => SetItem(loc(Base, Offset:Int, 0)))
+               (. => SetItem(loc(Base, Offset:Int)))
           ...</not-writable>
           [structural]
      rule makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
@@ -145,7 +145,7 @@ module C-MEMORY-ALLOC
 
      // FIXME could do better with bitfields
      syntax K ::= makeUnwritable(SymLoc)
-     rule <k> makeUnwritable(loc(Base:SymBase, 0, 0)) => . ...</k>
+     rule <k> makeUnwritable(loc(Base:SymBase, 0)) => . ...</k>
           <mem>... 
                Base |-> memblock(_, _ (.Bag => BagItem(Const)), _) 
           ...</mem>
@@ -156,8 +156,8 @@ module C-MEMORY-ALLOC
 
      rule checkLoc(NullPointer) => .
      rule checkLoc(Loc:SymLoc)
-          => assert(isValidLoc(ceilingLoc(Loc)), errorLocInvalid)
-          ~> assert(isInBounds(ceilingLoc(Loc)), errorLocBounds)
+          => assert(isValidLoc(Loc), errorLocInvalid)
+          ~> assert(isInBounds(Loc), errorLocBounds)
           when Loc =/=K NullPointer
           [structural]
 

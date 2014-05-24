@@ -48,7 +48,7 @@ module LIBC-STDIO
           [structural]
           
      rule [pointerToString]:
-          pointerToString(loc(N:SymBase, M:Int, 0))
+          pointerToString(loc(N:SymBase, M:Int))
           => "[sym(" +String symBaseToString(N) +String ") + " 
                +String Int2String(M) +String "]"
           [structural]

@@ -8,7 +8,7 @@ module C-BITSIZE-SYNTAX
      // generates a tv(size, cfg:sizeut)
      syntax K ::= sizeofType(K) [strict]
 
-     syntax Int ::= maxBitSizeofList(List) [function]
+     syntax Int ::= maxByteSizeofList(List) [function]
 endmodule
 
 module C-BITSIZE
@@ -27,28 +27,27 @@ module C-BITSIZE
 
      imports COMPAT-SYNTAX
 
-     syntax Int ::= bitSizeofList(List) [function]
-     syntax Int ::= "bitSizeofList'" "(" Int "," List ")" [function]
-     
      rule sizeofType(T:Type)
           => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
           [structural]
-
      rule byteSizeofType(T:Type)
           => bitsToBytes(bitSizeofType(T)) 
 
-     rule bitSizeofList(L:List) => bitSizeofList'(0, L)
-     rule bitSizeofList'(
-          (Sz:Int => Sz +Int bitSizeofType(T)),
+     syntax Int ::= byteSizeofList(List) [function]
+     syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]
+
+     rule byteSizeofList(L:List) => byteSizeofList'(0, L)
+     rule byteSizeofList'(
+          (Sz:Int => Sz +Int byteSizeofType(T)),
           (ListItem(T:Type) => .List) _)
-     rule bitSizeofList'(Sz:Int, .List) => Sz
+     rule byteSizeofList'(Sz:Int, .List) => Sz
           
-     syntax Int ::= "maxBitSizeofList'" "(" Int "," List ")" [function]
-     rule maxBitSizeofList(L:List) => maxBitSizeofList'(0, L)
-     rule maxBitSizeofList'(
-          (Sz:Int => maxInt(Sz, bitSizeofType(T))),
+     syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
+     rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
+     rule maxByteSizeofList'(
+          (Sz:Int => maxInt(Sz, byteSizeofType(T))),
           (ListItem(T:Type) => .List) _:List)
-     rule maxBitSizeofList'(Sz:Int, .List) => Sz
+     rule maxByteSizeofList'(Sz:Int, .List) => Sz
      
      rule bitSizeofType(t(_, no-type)) 
           => 0
@@ -73,7 +72,17 @@ module C-BITSIZE
           => NBits
 
      rule bitSizeofStruct(fieldInfo(Decls:List, _, _))
-          => bitSizeofList(Decls)
+          => byteSizeofList(Decls) *Int cfg:bitsPerByte
      rule bitSizeofUnion(fieldInfo(Decls:List, _, _))
-          => maxBitSizeofList(Decls)
+          => maxByteSizeofList(Decls) *Int cfg:bitsPerByte
+
+     //- derived
+     syntax Int ::= bitsToBytes(CSize) [function]
+     rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
+          when cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1) 
+          when notBool cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:CSize) => N // Pass through sym values.
+          when isInt(N) =/=K true
+
 endmodule

@@ -22,12 +22,13 @@ module C-MEMORY-READING
      imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ These rules figure out whether the read should be structural or
@@ -112,8 +113,14 @@ module C-MEMORY-READING
      rule joinFloatBytes(T:Type,
                ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
           => joinFloatBytes(T, F, NBits, L)
+     rule joinFloatBytes(T:Type,
+               ListItem(piece(zero, NBits:Int)) L:List)
+          => joinFloatBytes(T, 0.0, NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int,
-               ListItem(piece(encodedFloat(F), NBits:Int)) L:List)
+               ListItem(piece(encodedFloat(_), NBits:Int)) L:List)
+          => joinFloatBytes(T, F, Len +Int NBits, L)
+     rule joinFloatBytes(T:Type, F:Float, Len:Int,
+               ListItem(piece(zero, NBits:Int)) L:List)
           => joinFloatBytes(T, F, Len +Int NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
           => tv(F, stripQualifiers(T))
@@ -130,8 +137,14 @@ module C-MEMORY-READING
           => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
           when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
-     rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _:Int))
+     rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _))
           => tv(N, stripQualifiers(T))
+     rule joinPointerBytes-aux(T:Type, 
+               ListItem(piece(zero, Len:Int)) L:List, zero)
+          => joinPointerBytes-aux(T, L, zero)
+          when (Len ==Int cfg:bitsPerByte)
+     rule joinPointerBytes-aux(T:Type, .List, zero)
+          => tv(NullPointer, stripQualifiers(T))
 
      syntax TypedValue ::= joinIntegerBytes(Type, List) [function]
      syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -144,6 +157,10 @@ module C-MEMORY-READING
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T, 
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
+     rule joinIntegerBytes-aux(T:Type, 
+               L:List ListItem(piece(zero, Len:Int)), piece(N':Int, Len':Int))
+          => joinIntegerBytes-aux(T, 
+               L, piece(piece(N', Len') bit:: piece(0, Len), Len +Int Len'))
      rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
           => interpret(stripQualifiers(T), piece(N, Len)) 
 
@@ -173,10 +190,7 @@ module C-MEMORY-READING
      
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
-               readBytes(
-                    floorLoc(Loc), bitsToBytes(bitSizeofType(T) +Int
-                    getBitOffset(Loc)), T), 
-               getBitOffset(Loc), bitSizeofType(T))
+               readBytes(Loc, byteSizeofType(T), T), 0, bitSizeofType(T))
           [structural] 
 
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 

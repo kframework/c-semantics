@@ -47,6 +47,7 @@ module C-LTLMC
      imports C-MEMORY-WRITING-SYNTAX
 
      imports C-SYMLOC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      rule B:Bag |=Ltl P:CProp => boolify(ltlRVal(B, P))
@@ -121,7 +122,8 @@ module C-LTLMC
                fillToBytes-aux(
                     extractBitsFromList-aux(
                          dataList(explodeToBits(V)), 
-                         Offset, bitSizeofType(T), .List),
+                         Offset *Int cfg:bitsPerByte,
+                         bitSizeofType(T), .List),
                     .List))
      rule ltlRVal(_,
           union(V:List,
@@ -162,7 +164,7 @@ module C-LTLMC
 
      rule dumbRead'(
           (_ Base |-> memblock(_, _, (_ Offset |-> V:K))), 
-          loc(Base:SymBase, (Offset:Int => Offset +Int 1), _), 
+          loc(Base:SymBase, (Offset:Int => Offset +Int 1)), 
           _, 
           (NBytes:Int => NBytes -Int 1), 
           _:List (.List => ListItem(V)))

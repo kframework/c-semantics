@@ -184,22 +184,22 @@ module C-ERROR
           
      rule [err00030]:
           (. => ERROR("00030", "Cannot compare pointers with different base objects using '<'.") ) ~>
-          tv(loc(Base:SymBase, _, _), T:Type) < tv(loc(Base':SymBase, _, _), T:Type)
+          tv(loc(Base:SymBase, _), T:Type) < tv(loc(Base':SymBase, _), T:Type)
           when Base =/=K Base'
           [structural]
      rule [err00031]:
           (. => ERROR("00031", "Cannot compare pointers with different base objects using '>'.") ) ~>
-          tv(loc(Base:SymBase, _, _), T:Type) > tv(loc(Base':SymBase, _, _), T:Type)
+          tv(loc(Base:SymBase, _), T:Type) > tv(loc(Base':SymBase, _), T:Type)
           when Base =/=K Base'
           [structural]
      rule [err00032]:
           (. => ERROR("00032", "Cannot compare pointers with different base objects using '<='.") ) ~>
-          tv(loc(Base:SymBase, _, _), T:Type) <= tv(loc(Base':SymBase, _, _), T:Type)
+          tv(loc(Base:SymBase, _), T:Type) <= tv(loc(Base':SymBase, _), T:Type)
           when Base =/=K Base'
           [structural]
      rule [err00033]:
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
-          tv(loc(Base:SymBase, _, _), T:Type) >= tv(loc(Base':SymBase, _, _), T:Type)
+          tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T:Type)
           when Base =/=K Base'
           [structural]
 

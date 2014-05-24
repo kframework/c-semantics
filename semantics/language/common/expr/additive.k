@@ -155,8 +155,8 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
-     rule computePointerDifference(loc(Base:SymBase, Offset1:Int, 0),
-               loc(Base:SymBase, Offset2:Int, 0), tv(Size:Int, _))
+     rule computePointerDifference(loc(Base:SymBase, Offset1:Int),
+               loc(Base:SymBase, Offset2:Int), tv(Size:Int, _))
           => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
           when (Offset1 -Int Offset2) %Int Size ==Int 0
           [structural]

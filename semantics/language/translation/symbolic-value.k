@@ -26,11 +26,7 @@ module C-SYMBOLIC-VALUE
      // Various rules for cramming this symVal down the throat of the
      // semantics. It might make better sense to just move all this stuff to
      // common.
-     rule symVal +bits _:Int => symVal
      rule symVal +bytes _:Int => symVal
-
-     rule floorLoc(symVal) => symVal
-     rule ceilingLoc(symVal) => symVal
 
      rule write(symVal, _, T:Type) => .
           when notBool isConstType(T)
@@ -46,9 +42,8 @@ module C-SYMBOLIC-VALUE
                times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
 
      rule write-specific(Loc:SymLoc, symVal, T:Type)
-          => writeBitfield(Loc, dataList(ListItem(symVal)), T)
+          => writeBytes(Loc, dataList(ListItem(symVal)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (notBool isByteLoc(Loc))
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
           [structural]
 

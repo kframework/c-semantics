@@ -82,7 +82,7 @@ module C-BUILTIN
      rule offsetOf(t(_, structType(_, _, 
                fieldInfo(_, _, (_ F:CId |-> Offset:Int))
           )), F:CId)
-          => tv(bitsToBytes(Offset:Int), cfg:sizeut)
+          => tv(Offset:Int, cfg:sizeut)
           [structural]
 
      rule offsetOf(t(_, unionType(_, _, _)), _) => tv(0, cfg:sizeut)

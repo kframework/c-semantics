@@ -77,23 +77,23 @@ module C-COMMON-EXPR-RELATIONAL
      //- comparison of pointers
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               < tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               < tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset <Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               <= tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               <= tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset <=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               > tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               > tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset >Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               >= tv(loc(Base:SymBase, Offset':Int, 0), T':Type)
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               >= tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset >=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
@@ -187,13 +187,13 @@ module C-COMMON-EXPR-RELATIONAL
           
      // otherwise, there are a number of cases.  
      // First, they are part of the same object        
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               == tv(loc(Base:SymBase, Offset':Int, 0), T':Type) 
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               == tv(loc(Base:SymBase, Offset':Int), T':Type) 
           => makeTruth(Offset ==Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               != tv(loc(Base:SymBase, Offset':Int, 0), T':Type) 
+     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
+               != tv(loc(Base:SymBase, Offset':Int), T':Type) 
           => makeTruth(Offset =/=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
@@ -202,8 +202,8 @@ module C-COMMON-EXPR-RELATIONAL
      // here, if the two objects are alive, and our pointers are in bounds, we
      // can conclude something.  if one of the objects is dead, we can't
      // conclude anything (the address could have been reused)
-     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-                    == tv(loc(Base':SymBase, Offset':Int, 0), T':Type) 
+     rule <k> tv(loc(Base:SymBase, Offset:Int), T:Type)
+                    == tv(loc(Base':SymBase, Offset':Int), T':Type) 
                => tv(0, t(.Set, int))
           ...</k>
           <mem> ...
@@ -215,8 +215,8 @@ module C-COMMON-EXPR-RELATIONAL
                andBool (Offset <Int Len)
                andBool (Offset' <Int Len')
           [structural]
-     rule <k> tv(loc(Base:SymBase, Offset:Int, 0), T:Type)
-                    != tv(loc(Base':SymBase, Offset':Int, 0), T':Type) 
+     rule <k> tv(loc(Base:SymBase, Offset:Int), T:Type)
+                    != tv(loc(Base':SymBase, Offset':Int), T':Type) 
                => tv(1, t(.Set, int))
           ...</k>
           <mem> ...

@@ -34,7 +34,7 @@ module C-IO-DIRECT
      rule writeBytes(_, dataList(.List)) => .
           [structural] 
 
-     rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, _, (M:Map => M:Map[V <- Offset]))
           ...</mem>
@@ -72,7 +72,7 @@ module C-IO-DIRECT
           => dataList(values(Aux:List)) 
           [structural] 
      
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0))
+     rule <k> readByte(loc(Base:SymBase, Offset:Int))
                => tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 

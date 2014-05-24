@@ -35,9 +35,9 @@ module C-DECL-TAGGED
                          [function]
      rule makeStructFieldInfo(L:List) 
           => makeStructFieldInfo'(
-               mergeBitfields(fillBitHoles(incompleteToFlexibleArrayMember(L))),
-               0, .Map, .Map, // TODO(chathhorn).
-               mergeBitfields(fillBitHoles(incompleteToFlexibleArrayMember(L))))
+               incompleteToFlexibleArrayMember(L),
+               0, .Map, .Map,
+               incompleteToFlexibleArrayMember(L))
           when L =/=List .List
 
      rule makeStructFieldInfo'(
@@ -47,7 +47,7 @@ module C-DECL-TAGGED
                , Offsets:Map
                , L':List
           )
-          => makeStructFieldInfo'(L, V +Int bitSizeofType(T),
+          => makeStructFieldInfo'(L, V +Int byteSizeofType(T),
                Types[T <- Field], Offsets[V <- Field], L')
      rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
@@ -68,9 +68,9 @@ module C-DECL-TAGGED
                          [function]
      rule makeUnionFieldInfo(L:List) 
           => makeUnionFieldInfo'(
-               mergeBitfields(fillUnionBitHoles(L)),
+               L,
                .Map, .Map,
-               mergeBitfields(fillUnionBitHoles(L)))
+               L)
           when L =/=List .List
 
      rule makeUnionFieldInfo'(
@@ -83,86 +83,6 @@ module C-DECL-TAGGED
                Types[T <- Field], Offsets[0 <- Field], L')
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
-
-     syntax List ::= fillBitHoles(List) [function]
-     syntax List ::=  fillBitHoles(Int, List) [function]
-     rule fillBitHoles(.List) => .List 
-     // if we haven't seen bitfields
-     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
-          => ListItem(typedDeclaration(T, X)) fillBitHoles(L)
-          when notBool isBitfieldType(T) 
-     
-     rule fillBitHoles(ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
-          => fillBitHoles(0, ListItem(typedDeclaration(T, X)) L)
-          when isBitfieldType(T) 
-     
-     // if we have seen bitfields
-     rule fillBitHoles(N:Int, 
-               ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
-          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-                    absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
-                    %Int cfg:bitsPerByte)), #NoName))
-               fillBitHoles(ListItem(typedDeclaration(T, X)) L)
-          when notBool isBitfieldType(T) 
-     
-     rule fillBitHoles(N:Int, 
-               ListItem(typedDeclaration(t(Mods:Set,
-                    bitfieldType(T:Type, N':Int)), X:CId))
-               L:List) 
-          => ListItem(typedDeclaration(t(Mods, bitfieldType(T, N')), X))
-               fillBitHoles(N +Int N', L)
-          when N' =/=Int 0 
-          
-     rule fillBitHoles(N:Int, ListItem(typedDeclaration(t(_, 
-               bitfieldType(_, N':Int)), _)) L:List) 
-          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte)) 
-               %Int cfg:bitsPerByte)), #NoName))
-               fillBitHoles(L)
-          when N' ==Int 0
-     
-     rule fillBitHoles(N:Int, .List) 
-          => ListItem(typedDeclaration(
-               t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               absInt(cfg:bitsPerByte -Int (N %Int cfg:bitsPerByte))
-               %Int cfg:bitsPerByte)), #NoName))
-          
-     syntax List ::= fillUnionBitHoles(List) [function]
-     syntax List ::= fillUnionBitHoles(Int, List) [function]
-     rule fillUnionBitHoles(.List) => .List
-     rule fillUnionBitHoles(ListItem(K:K) L:List) 
-          => fillUnionBitHoles(0, ListItem(K) L)
-     rule fillUnionBitHoles(N:Int, 
-               ListItem(typedDeclaration(T:Type, X:CId)) L:List) 
-          => ListItem(typedDeclaration(T, X))
-               fillUnionBitHoles(N, L)
-          when notBool isBitfieldType(T)
-     rule fillUnionBitHoles(N:Int, ListItem(typedDeclaration(
-               t(Mods:Set, bitfieldType(T:Type, N':Int)), X:CId)) L:List) 
-          => ListItem(typedDeclaration(t(Mods, bitfieldType(T, N')), X))
-               fillUnionBitHoles(maxInt(N, N'), L)
-     rule fillUnionBitHoles(N:Int, .List) 
-          => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int), 
-               N +Int (absInt(cfg:bitsPerByte -Int 
-               (N %Int cfg:bitsPerByte)) %Int cfg:bitsPerByte))), #NoName))
-
-
-     syntax List ::= mergeBitfields(List) [function]
-     rule mergeBitfields(
-               (ListItem(typedDeclaration(t(_, bitfieldType(_, N:Int)), #NoName))
-               ListItem(typedDeclaration(t(_, bitfieldType(_, N':Int)), #NoName))
-               => ListItem(typedDeclaration(t(.Set, bitfieldType(t(.Set, unsigned-int),
-                    N +Int N')), #NoName)))
-               _)
-     rule mergeBitfields(ListItem(F:Type) ListItem(F':Type) Fs:List)
-          => ListItem(F) mergeBitfields(ListItem(F') Fs)
-          when (#mergable(F) =/=K true) orBool (#mergable(F') =/=K true)
-     rule mergeBitfields(ListItem(F:Type)) => ListItem(F)
-     rule mergeBitfields(.List) => .List
-     
-     syntax Bool ::= "#mergable" "(" Type ")" [function]
-     rule #mergable(typedDeclaration(t(_, bitfieldType(_, _)), #NoName))
-          => true
 
      syntax K ::= addTag(CId, FieldInfo)
      rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))

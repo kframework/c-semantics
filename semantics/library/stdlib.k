@@ -49,7 +49,7 @@ module LIBC-STDLIB
      // TODO(chathhorn): move this. Should try to hide the details of our
      // symbolic addresses from the library semantics.
      syntax K ::= newAlloc(Int) [function]
-     rule newAlloc(Base:Int) => loc(Base @ allocated, 0, 0)
+     rule newAlloc(Base:Int) => loc(Base @ allocated, 0)
      
      rule <k> prepareBuiltin(Identifier("malloc"),
                     ListItem(tv(Len:Int, _:KResult)))

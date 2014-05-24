@@ -41,7 +41,7 @@ module C-EXECUTION-ERROR
     //  rule [err00005]:
     //       <k> 
     //            (. => ICE("00005", "Referring to an object outside of its lifetime.") ) ~>
-    //            readByte(loc(B:SymBase, _, _)) 
+    //            readByte(loc(B:SymBase, _)) 
     //       ...</k>
     //       <mem> M:Map </mem>
     //       when notBool SetItem(B) in keys(M:Map)
@@ -79,7 +79,7 @@ module C-EXECUTION-ERROR
 
      rule [err00020]:
           <k> (. => ERROR("00020", "Trying to write outside the bounds of an object.") ) ~>
-               checkWrite(loc(Base:SymBase, Offset:Int, _), _) 
+               checkWrite(loc(Base:SymBase, Offset:Int), _) 
           ...</k>
           <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
           when notBool Offset <Int Len
@@ -130,14 +130,14 @@ module C-EXECUTION-ERROR
           
      rule [err00045]:
           <k> (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-               checkWrite(loc(Base:SymBase, _, _), _)
+               checkWrite(loc(Base:SymBase, _), _)
           ...</k>
           <mem>... Base |-> memblock(_, (_ BagItem(Const)), _) ...</mem>
           [structural]
           
      rule [err00045b]:
           <k> (. => ERROR("00045b", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-               checkWrite(loc(Base:SymBase, _, _), T:Type)
+               checkWrite(loc(Base:SymBase, _), T:Type)
           ...</k>
           <mem>... Base |-> memblock(_, (_ BagItem(Volatile)), _) ...</mem>
           when notBool isVolatileType(T)

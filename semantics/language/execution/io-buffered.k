@@ -14,8 +14,8 @@ endmodule
 
 module C-IO-BUFFERED
      imports C-BITS-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-DECL-ZERO-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -24,6 +24,7 @@ module C-IO-BUFFERED
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      syntax ListItem ::= bwrite(SymLoc, K)
@@ -42,30 +43,30 @@ module C-IO-BUFFERED
      rule writeBytes(_, dataList(.List), _) => .
           [structural] 
 
-     rule <k> checkWrite(loc(Base:SymBase, Offset:Int, 0), T:Type) => . ...</k>
+     rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => . ...</k>
           <mem>... Base |-> memblock(Len:Int, Attrs:Bag, _) ...</mem>
           <locs-written>
-               Locs:Bag (.Bag => BagItem(loc(Base, Offset, 0)))
+               Locs:Bag (.Bag => BagItem(loc(Base, Offset)))
           </locs-written>
           <not-writable> NotWritable:Set </not-writable>
           when // Sequencing.
-               (notBool BagItem(loc(Base, Offset, 0)) in Locs)
+               (notBool BagItem(loc(Base, Offset)) in Locs)
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
                andBool (notBool (BagItem(Const) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in NotWritable))
+               andBool (notBool (loc(Base, Offset) in NotWritable))
                // Volatile.
                andBool (notBool (BagItem(Volatile) in Attrs)
                     orBool isVolatileType(T))
           [structural]
 
-     rule <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:CValue) => . ...</k>
-          <buffer>... (.List => bwrite(loc(Base, Offset, 0), V)) </buffer>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
+          <buffer>... (.List => bwrite(loc(Base, Offset), V)) </buffer>
           [structural]
           
      rule <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int, 0), V:K) => .List)
+               (bwrite(loc(Base:SymBase, Offset:Int), V:K) => .List)
           ...</buffer>
           <mem>...
                Base |-> memblock(Len:Int, _, M:Map => M[V <- Offset])
@@ -89,6 +90,8 @@ module C-IO-BUFFERED
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
           when Size >Int 0
           [structural]
+     rule readBytes-aux(_, 0, Aux:List, _) => dataList(values(Aux)) 
+          [structural] 
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, 
                (Aux:List => Aux ListItem(tv(V, T))), _)
@@ -98,9 +101,6 @@ module C-IO-BUFFERED
      rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K) values(L)
      rule values(.List) => .List
 
-     rule readBytes-aux(_, 0, Aux:List, _) => dataList(values(Aux)) 
-          [structural] 
-     
      // FIXME make sure it's a byte
 
      syntax Error ::= "errorReadOutOfBounds"
@@ -108,8 +108,8 @@ module C-IO-BUFFERED
                     | "errorNonVolatileLVal"
      
      syntax K ::= readByte(SymLoc, Type)
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
+               => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T),
@@ -122,8 +122,8 @@ module C-IO-BUFFERED
           <locs-written> Locs:Bag </locs-written>
           <buffer> .List </buffer>
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type)
-               => assert(notBool (BagItem(loc(Base, Offset, 0)) in Locs),
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
+               => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T),
@@ -135,9 +135,9 @@ module C-IO-BUFFERED
           ...</mem>
           <locs-written> Locs:Bag </locs-written>
           <buffer> Mem:List </buffer>
-          when notBool loc(Base, Offset, 0) in locations(Mem)
+          when notBool loc(Base, Offset) in locations(Mem)
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
@@ -149,40 +149,31 @@ module C-IO-BUFFERED
                     piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool loc(Base, Offset, 0) in locations(Mem))
+          when (notBool loc(Base, Offset) in locations(Mem))
                andBool (notBool Offset in (keys(M)))
-               andBool (notBool isStaticDuration(loc(Base, Offset, 0)))
+               andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int, 0), T:Type) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
-               ~> tv(piece(encode(getZero(T)), cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(zero, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
-               // Re getZero(): not totally sure this works because it's based
-               // on the type of the lvalue being read through and not the type
-               // of the declaration. But hopefully all mismatches between the
-               // lvalue type and the declared type should be caught by now.
-               M:Map => M[piece(encode(getZero(T)), cfg:bitsPerByte) <- Offset]) 
+               M:Map => M[piece(zero, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool loc(Base, Offset, 0) in locations(Mem))
+          when (notBool loc(Base, Offset) in locations(Mem))
                andBool (notBool Offset in (keys(M)))
-               andBool (isStaticDuration(loc(Base, Offset, 0))
-                    orBool isThreadDuration(loc(Base, Offset, 0)))
+               andBool (isStaticDuration(loc(Base, Offset))
+                    orBool isThreadDuration(loc(Base, Offset)))
           [structural]
 
-     syntax Bits ::= encode(K) [function]
-     rule encode(F:Float) => encodedFloat(F)
-     rule encode(V:K) => V
-          when isFloat(V) =/=K true
-
      // Resolve a linker address to a real "physical" address.
-     rule <k> readByte(loc((LinkBase:SymBase => Base), _, _), _) ...</k>
+     rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
           <linkings>... 
-               loc(LinkBase, 0, 0) |-> loc(Base:SymBase, _, _)
+               loc(LinkBase, 0) |-> loc(Base:SymBase, _)
           ...</linkings>
           [structural]
           
@@ -219,8 +210,8 @@ module C-IO-BUFFERED
           [structural]
           
      rule <k> realloc-aux((SNatN:Int => SNatN -Int 1), 
-               loc(OldBase:SymBase, _, _), 
-               loc(NewBase:SymBase, _, _), _, _)
+               loc(OldBase:SymBase, _), 
+               loc(NewBase:SymBase, _), _, _)
           ...</k>
           <mem>... 
                OldBase |-> memblock(_, _, (_ N:Int |-> K:K))
@@ -232,17 +223,17 @@ module C-IO-BUFFERED
           
      // fixme sNat
      rule <k> realloc-aux((SNatN:Int => SNatN -Int 1), 
-                    loc(OldBase:SymBase, _, _), _, _, _)
+                    loc(OldBase:SymBase, _), _, _, _)
           ...</k>
           <mem>... OldBase |-> memblock(_, _, M:Map) ...</mem>
           when (notBool SNatN -Int 1 in keys(M))
                andBool (SNatN >Int 0)
           [structural]
      rule realloc-aux(0,
-               loc(OldBase:SymBase, _, _),
-               loc(NewBase:SymBase, _, _), OldLen:Int, _)
+               loc(OldBase:SymBase, _),
+               loc(NewBase:SymBase, _), OldLen:Int, _)
           => copyModifiers(OldBase, NewBase)
-          ~> deleteSizedBlock(loc(OldBase, 0, 0), OldLen)
+          ~> deleteSizedBlock(loc(OldBase, 0), OldLen)
           [structural]   
 
      syntax K ::= copyModifiers(SymBase, SymBase)
@@ -252,7 +243,7 @@ module C-IO-BUFFERED
                NewBase |-> memblock(_, (_ => Mods), _)
           ...</mem>
           
-     rule <k> deleteSizedBlock(loc(Base:SymBase, _, _), Len:Int) => . 
+     rule <k> deleteSizedBlock(loc(Base:SymBase, _), Len:Int) => . 
           ...</k>
           <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
@@ -260,7 +251,7 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural] 
      
-     rule <k> deleteBlock(loc(Base:SymBase, _, _)) => .K ...</k>
+     rule <k> deleteBlock(loc(Base:SymBase, _)) => .K ...</k>
           <mem>... Base |-> memblock(_, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
           [structural] 

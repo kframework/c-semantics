@@ -125,7 +125,7 @@ module C-DECL-RESOLUTION
                (Identifier("main") |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
-               Identifier("main") |-> loc(_ @ static(MainTu:String), _, _)
+               Identifier("main") |-> loc(_ @ static(MainTu:String), _)
           ...</external-defs>
           <external-types>...
                Identifier("main") |-> _

@@ -1,14 +1,15 @@
 module C-COMMON-EXPR-MEMBERS
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-BITSIZE-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BITS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -37,7 +38,7 @@ module C-COMMON-EXPR-MEMBERS
                F |-> T:Type _,
                F |-> Offset:Int _))
           // Complete recursive struct/union definitions.
-          => lv(Loc +bits Offset,
+          => lv(Loc +bytes Offset,
                completeTag(S, Fields, addQualifiers(Mods, T)))
 
      // Same deal as above, only for byte lists.
@@ -58,7 +59,8 @@ module C-COMMON-EXPR-MEMBERS
                F |-> t(Mods':Set, T':SimpleType) _,
                F |-> Offset:Int _))
           => concretize(completeTag(S, Fields, t(Mods Mods', T')),
-               fillToBytes(extractBitsFromList(dataList(L), Offset,
+               fillToBytes(extractBitsFromList(dataList(L),
+                    Offset *Int cfg:bitsPerByte,
                     bitSizeofType(completeTag(S, Fields, t(Mods Mods', T'))))))
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
