@@ -1,17 +1,16 @@
 module C-IO-DIRECT
-     imports C-SYMLOC-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-ERROR-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
-
-     imports DEBUG-SYNTAX
 
      syntax K ::= writeBytes(SymLoc, DataList)
      syntax K ::= writeByte(SymLoc, CValue)
@@ -79,4 +78,14 @@ module C-IO-DIRECT
                Base |-> memblock(_, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
           [structural]
+     rule <k> readByte(loc(Base:SymBase, Offset:Int)) 
+               => tv(piece(zero, cfg:bitsPerByte), t(.Set, no-type))
+          ...</k>
+          <mem>... 
+               Base |-> memblock(_, _, 
+                    M:Map => M[piece(zero, cfg:bitsPerByte) <- Offset]) 
+          ...</mem>
+          when notBool Offset in (keys(M))
+          [structural]
+
 endmodule
