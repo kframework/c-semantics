@@ -4,11 +4,6 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, List)
 
-     syntax K ::= checkLoc(SymLoc)
-     syntax K ::= isValidLoc(SymLoc)
-     syntax K ::= isInBounds(SymLoc)
-     syntax Error ::= "errorLocInvalid" | "errorLocBounds"
-
      syntax K ::= allocString(SymLoc, String)
      syntax K ::= allocWString(SymLoc, List)
 
@@ -152,13 +147,6 @@ module C-MEMORY-ALLOC
           [structural]
      rule makeUnwritable(Loc:SymLoc) => .
           when notBool isPhysicalLoc(Loc)
-          [structural]
-
-     rule checkLoc(NullPointer) => .
-     rule checkLoc(Loc:SymLoc)
-          => assert(isValidLoc(Loc), errorLocInvalid)
-          ~> assert(isInBounds(Loc), errorLocBounds)
-          when Loc =/=K NullPointer
           [structural]
 
 endmodule

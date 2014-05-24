@@ -1,4 +1,5 @@
 module C-ERROR-SYNTAX
+     // Deprecated...
      syntax K ::= ERROR(String, String)
      syntax K ::= ERROR(String, String, KList)
      syntax K ::= ERROR(String, String, String, String)
@@ -10,7 +11,7 @@ module C-ERROR-SYNTAX
      syntax K ::= CVUB(String, String, String)
 
      syntax KResult ::= Bool
-     syntax K ::= Error
+     syntax Error ::= "errorDummy"
      syntax K ::= assert(K, Error) [strict(1)]
 
      syntax K ::= EXIT(String)
@@ -142,44 +143,6 @@ module C-ERROR
           <types>... Identifier(S) |-> T:Type ...</types>
           when (notBool Identifier(S) in keys(Env))
                andBool (notBool isFunctionType(T))
-          [structural]
-     
-     rule [err00024a]:
-          (. => ERROR("00024a", "Bitwise & used on a pointer type.") ) ~>
-          tv(_, T:Type) & _
-          when isPointerType(T)
-          [structural]
-     rule [err00024b]:
-          (. => ERROR("00024b", "Bitwise & used on a pointer type.") ) ~>
-          _ & tv(_, T:Type)
-          when isPointerType(T)
-          [structural]
-     rule [err00024c]:
-          (. => ERROR("00024c", "Bitwise & used on a float.") ) ~>
-          tv(_:Float, _) & _
-          [structural]
-     rule [err00024d]:
-          (. => ERROR("00024d", "Bitwise & used on a float.") ) ~>
-          _ & tv(_:Float, _)
-          [structural]
-
-     rule [err00024a]:
-          (. => ERROR("00025a", "Bitwise | used on a pointer type.") ) ~>
-          tv(_, T:Type) | _
-          when isPointerType(T)
-          [structural]
-     rule [err00024b]:
-          (. => ERROR("00025b", "Bitwise | used on a pointer type.") ) ~>
-          _ | tv(_, T:Type)
-          when isPointerType(T)
-          [structural]
-     rule [err00024c]:
-          (. => ERROR("00025c", "Bitwise | used on a float.") ) ~>
-          tv(_:Float, _) | _
-          [structural]
-     rule [err00024d]:
-          (. => ERROR("00025d", "Bitwise | used on a float.") ) ~>
-          _ | tv(_:Float, _)
           [structural]
           
      rule [err00030]:

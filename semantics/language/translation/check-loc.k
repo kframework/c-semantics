@@ -1,9 +1,5 @@
 module C-CHECK-LOC
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
 
-     rule isValidLoc(_) => true
-     rule isInBounds(_) => true
-
-     rule errorLocInvalid => .
-     rule errorLocBounds => .
+     rule checkLoc(_) => .
 endmodule

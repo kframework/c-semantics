@@ -85,19 +85,6 @@ module C-EXECUTION-ERROR
           when notBool Offset <Int Len
           [structural] 
           
-     rule [err00022]:
-          (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
-          leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
-          when hasSignedIntegerType(T)
-               andBool E1 <Int 0
-          [structural]
-          
-     rule [err00023]:
-          (. => ERROR("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.", 52) ) ~>
-          leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
-          when hasSignedIntegerType(T)
-               andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
-          [structural]
           
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
@@ -146,7 +133,7 @@ module C-EXECUTION-ERROR
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
           concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
-          when hasFloatType(T) andBool (N >=Int 0)
+          when hasFloatType(T) andBool (N >Int 0)
           [structural]
           
      rule [err00047]:

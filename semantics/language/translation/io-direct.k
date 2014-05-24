@@ -1,6 +1,5 @@
 module C-IO-DIRECT
      imports C-BITS-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -79,11 +78,11 @@ module C-IO-DIRECT
           ...</mem>
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int)) 
-               => tv(piece(zero, cfg:bitsPerByte), t(.Set, no-type))
+               => tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(_, _, 
-                    M:Map => M[piece(zero, cfg:bitsPerByte) <- Offset]) 
+                    M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           when notBool Offset in (keys(M))
           [structural]

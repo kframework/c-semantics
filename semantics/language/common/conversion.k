@@ -16,25 +16,25 @@ module C-CONVERSION
      imports C-SYMLOC-SYNTAX
      imports C-ERROR-SYNTAX
 
-     rule arithInterpret(T:Type, I:Int) => tv(I, T)
-          when (min(T) <=Int I) 
-               andBool (max(T) >=Int I)
+     rule arithInterpret(T:Type, N:Int) => tv(N, T)
+          when (min(T) <=Int N)
+               andBool (max(T) >=Int N)
                andBool hasIntegerType(T)
-     rule arithInterpret(T:Type, piece(unknown(N:Int), N:Int)) 
-          => tv(piece(unknown(N), N), T)
+     rule arithInterpret(T:Type, unknown) => tv(unknown, T)
+     rule arithInterpret(T:Type, trap) => tv(trap, T)
      // fixme
      rule arithInterpret(T:Type, F:Float) => tv(F, T)
           when hasFloatType(T)
      // signed arithmetic isn't supposed to overflow
-     rule arithInterpret(T:Type, I:Int) => tv(I %Int (max(T) +Int 1), T)
+     rule arithInterpret(T:Type, N:Int) => tv(N %Int (max(T) +Int 1), T)
           when hasUnsignedIntegerType(T)
-               andBool (I >Int max(T))
-     rule arithInterpret(T:Type, I:Int) 
-          => arithInterpret(T, (I %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
+               andBool (N >Int max(T))
+     rule arithInterpret(T:Type, N:Int) 
+          => arithInterpret(T, (N %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
           // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0)
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
-               andBool (I <Int min(T))
+               andBool (N <Int min(T))
 
      // TODO(chathhorn): the rules for cast are a bit of a mess because we've
      // assumed they apply apply anywhere but they still need to raise some
@@ -169,54 +169,54 @@ module C-CONVERSION
      }*/
      // choice
      // rule cast(T':Type, tv(I:Int, T:Type)) 
-     //      => cast(T', tv(I %Int (2 ^Int absInt(numBits(T'))), T)) 
+     //      => cast(T', tv(I %Int (2 ^Int absInt(bitSizeofType(T'))), T)) 
      //      when isBitfieldType(T')
-     //           andBool (absInt(I) >Int (2 ^Int absInt(numBits(T'))))
+     //           andBool (absInt(I) >Int (2 ^Int absInt(bitSizeofType(T'))))
      //           andBool hasIntegerType(T)
      //           andBool hasSignedIntegerType(innerType(T'))
      //      [structural, anywhere]
      // rule cast(t(Mods:Set, signed-char), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, signed-char),
-     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, signed-char)))), T)) 
-     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, signed-char)))))
+     //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, signed-char)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, signed-char)))))
      //           andBool hasIntegerType(T)
      //      [structural, anywhere]
      // rule cast(t(Mods:Set, short-int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, short-int), 
-     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, short-int)))), T)) 
-     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, short-int)))))
+     //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, short-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, short-int)))))
      //           andBool hasIntegerType(T)
      //      [structural, anywhere]
      // rule cast(t(Mods:Set, int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, int), 
-     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, int)))), T)) 
-     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, int)))))
+     //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, int)))))
      //           andBool hasIntegerType(T)
      //      [structural, anywhere]
      // rule cast(t(Mods:Set, long-int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, long-int), 
-     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-int)))), T)) 
-     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-int)))))
+     //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, long-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, long-int)))))
      //           andBool hasIntegerType(T)
      //      [structural, anywhere]
      // rule cast(t(Mods:Set, long-long-int), tv(I:Int, T:Type))
      //      => cast(t(Mods, long-long-int), 
-     //           tv(I %Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))), T)) 
-     //      when (absInt(I) >Int (2 ^Int absInt(numBits(t(Mods, long-long-int)))))
+     //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, long-long-int)))), T)) 
+     //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, long-long-int)))))
      //           andBool hasIntegerType(T)
      //      [structural, anywhere]
      // rule cast(T':Type, tv(I:Int, T:Type))
-     //      => tv(I +Int (2 ^Int absInt(numBits(T'))), T')
+     //      => tv(I +Int (2 ^Int absInt(bitSizeofType(T'))), T')
      //      when (I <Int min(T'))
-     //           andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+     //           andBool (absInt(I) <=Int (2 ^Int absInt(bitSizeofType(T'))))
      //           andBool hasSignedIntegerType(T')
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
      //      [structural, anywhere]
      // rule cast(T':Type, tv(I:Int, T:Type)) 
-     //      => tv(I -Int (2 ^Int absInt(numBits(T'))), T')
+     //      => tv(I -Int (2 ^Int absInt(bitSizeofType(T'))), T')
      //      when (I >Int max(T'))
-     //           andBool (absInt(I) <=Int (2 ^Int absInt(numBits(T'))))
+     //           andBool (absInt(I) <=Int (2 ^Int absInt(bitSizeofType(T'))))
      //           andBool hasSignedIntegerType(T')
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
@@ -228,12 +228,10 @@ module C-CONVERSION
           [structural]
 
      // TODO(chathhorn): not sure about this.
-     rule cast(T':Type, tv(unknown(_), T:Type)) 
-          => tv(unknown(bitSizeofType(T')), T')
+     rule cast(T':Type, tv(unknown, T:Type)) => tv(unknown, T')
           when bitSizeofType(T') >=Int bitSizeofType(T)
           [structural, anywhere]
-     rule cast(T':Type, tv(unknown(_), T:Type)) 
-          => tv(trap(bitSizeofType(T')), T')
+     rule cast(T':Type, tv(unknown, T:Type)) => tv(trap, T')
           when bitSizeofType(T') <=Int bitSizeofType(T)
           [structural, anywhere]
      

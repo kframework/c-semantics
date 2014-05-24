@@ -1,6 +1,5 @@
 module C-DECL-ZERO-SYNTAX
      syntax K ::= zero(CId)
-     syntax Bits ::= "zero"
 endmodule
 
 module C-DECL-ZERO

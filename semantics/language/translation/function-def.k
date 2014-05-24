@@ -71,9 +71,9 @@ module C-FUNCTION-DEF
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
           ...</k>
-          <env>... X |-> Loc:SymLoc ...</env>
+          <env>... X |-> loc(Base:SymBase, 0) ...</env>
           <functions>...
-               Loc |-> functionObject(_, Params:List, Proto:Type, _)
+               Base |-> functionObject(_, Params:List, Proto:Type, _)
           ...</functions>
           [structural]
 
@@ -153,12 +153,14 @@ module C-FUNCTION-DEF
           => true
           when T ==K char
 
-     rule <k> initFunction(tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult) 
+     rule <k> initFunction(
+               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
+               Fun:KResult) 
                => .
           ...</k>
-          <functions> M:Map => M[Fun <- Loc] </functions>
+          <functions> M:Map => M[Fun <- Base] </functions>
           when isFunctionType(T)
-               andBool (notBool Loc in keys(M))
+               andBool (notBool Base in keys(M))
           [structural]
 
      syntax K ::= safeBody(CId, K) [function]

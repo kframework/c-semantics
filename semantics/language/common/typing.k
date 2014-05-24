@@ -154,8 +154,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= typedDeclaration(Type, CId) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
-     syntax Int ::= numBits(Type) [function]
-
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 

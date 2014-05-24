@@ -1,18 +1,13 @@
-module C-COMMON-EXPR-BITWISE-SYNTAX
-     // TODO(chathhorn): error check
-     syntax K ::= leftShiftInterpret(Type, BaseValue, K) [function]
-     syntax K ::= rightShiftInterpret(Type, BaseValue) [function]
-endmodule
-
 module C-COMMON-EXPR-BITWISE
-     imports C-COMMON-EXPR-BITWISE-SYNTAX
-
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-PROMOTION-SYNTAX
-     imports C-CONVERSION-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
      The integer promotions are performed on each of the operands. The type of
@@ -30,20 +25,30 @@ module C-COMMON-EXPR-BITWISE
      is representable in the result type, then that is the resulting value;
      otherwise, the behavior is undefined.
      }*/
-     rule tv(I:Int, T:Type) << tv(N:Int, T':Type)
-          => leftShiftInterpret(T, I <<Int N, tv(I, T))
-          when isPromoted(T) andBool isPromoted(T')
-               andBool N <Int numBits(T)
+     rule tv(E1:Int, T1:Type) << tv(E2:Int, T2:Type)
+          => cast(T1, tv(E1 <<Int E2, cfg:largestUnsigned))
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T1)
+               andBool E1 >=Int 0
           [structural]
-     rule leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
-          => tv(I:Int %Int (max(T) +Int 1), T)
-          when hasUnsignedIntegerType(T)
-     rule leftShiftInterpret(T:Type, I:Int, tv(E:Int, T:Type))
-          => tv(I, T)
-          when hasSignedIntegerType(T)
-               andBool E >=Int 0
-               andBool I <=Int max(T)
-               andBool I >=Int min(T)
+     rule (. => CV("CEB1", "Both bitwise shift operands must have integer type.", "6.5.7:2"))
+          ~> tv(_, T1:Type) << tv(_, T2:Type)
+          when notBool hasIntegerType(T1) 
+               orBool notBool hasIntegerType(T2)
+          [structural]
+     rule (. => UNDEF("CEB2", "The right operand in a bitwise shift is negative.", "6.5.7:3"))
+          ~> tv(_, _) << tv(E2:Int, _)
+          when E2 <Int 0
+          [structural]
+     rule (. => UNDEF("CEB3", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
+          ~> tv(_, T1:Type) << tv(E2:Int, _)
+          when E2 <Int bitSizeofType(T1)
+          [structural]
+     rule (. => UNDEF("CEB4", "The left operand in a bitwise left-shift is negative.", "6.5.7:4"))
+          ~> tv(E1:Int, _) << tv(_, _)
+          when E1 <Int 0
+          [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -53,13 +58,30 @@ module C-COMMON-EXPR-BITWISE
      2^\text{\cinline{E2}}$. If \cinline{E1} has a signed type and a negative
      value, the resulting value is implementation-defined.
      }*/
-     rule tv(I:Int, T:Type) >> tv(N:Int, T':Type) 
-          => rightShiftInterpret(T, I >>Int N)
-          when isPromoted(T) andBool isPromoted(T')
-               andBool N <Int numBits(T)
+     rule tv(E1:Int, T1:Type) >> tv(E2:Int, T2:Type) 
+          => cast(T1, tv(E1 >>Int E2, cfg:largestUnsigned))
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T1)
+               andBool E1 >=Int 0
           [structural]
-     rule rightShiftInterpret(T:Type, I:Int) => tv(I, T)
-          when hasIntegerType(T)
+     rule (. => CV("CEB5", "Both bitwise shift operands must have integer type.", "6.5.7:2"))
+          ~> tv(_, T1:Type) >> tv(_, T2:Type)
+          when notBool hasIntegerType(T1) 
+               orBool notBool hasIntegerType(T2)
+          [structural]
+     rule (. => UNDEF("CEB6", "The right operand in a bitwise shift is negative.", "6.5.7:3"))
+          ~> tv(_, _) >> tv(E2:Int, _)
+          when E2 <Int 0
+          [structural]
+     rule (. => UNDEF("CEB7", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
+          ~> tv(_, T1:Type) >> tv(E2:Int, _)
+          when E2 <Int bitSizeofType(T1)
+          [structural]
+     rule (. => UNSPEC("CEB8", "The left operand in a bitwise right-shift is negative.", "6.5.7:5"))
+          ~> tv(E1:Int, _) >> tv(_, _)
+          when E1 <Int 0
+          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
      The usual arithmetic conversions are performed on the operands.
@@ -68,9 +90,14 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if each of
      the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Bits, T:Type) & tv(I2:Bits, T:Type)
-          => arithInterpret(T, I1 &Bits I2)
+     rule tv(E1:Bits, T:Type) & tv(E2:Bits, T:Type)
+          => arithInterpret(T, E1 &Bits E2)
           when isPromoted(T)
+          [structural]
+     rule (. => CV("CEB9", "Both bitwise AND operands must have integer type.", "6.5.10:2"))
+          ~> tv(_, T1:Type) & tv(_, T2:Type)
+          when notBool hasIntegerType(T1)
+               orBool notBool hasIntegerType(T2)
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.11}{3--4}}}{
@@ -80,9 +107,14 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if exactly
      one of the corresponding bits in the converted operands is set).     
      }*/
-     rule tv(I1:Bits, T:Type) ^ tv(I2:Bits, T:Type)
-          => arithInterpret(T, I1 xorBits I2)
+     rule tv(E1:Bits, T:Type) ^ tv(E2:Bits, T:Type)
+          => arithInterpret(T, E1 xorBits E2)
           when isPromoted(T)
+          [structural]
+     rule (. => CV("CEB10", "Both bitwise exclusive OR operands must have integer type.", "6.5.11:2"))
+          ~> tv(_, T1:Type) ^ tv(_, T2:Type)
+          when notBool hasIntegerType(T1)
+               orBool notBool hasIntegerType(T2)
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.5.12}{3--4}}}{
@@ -92,8 +124,13 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if at least
      one of the corresponding bits in the converted operands is set).
      }*/
-     rule tv(I1:Bits, T:Type) | tv(I2:Bits, T:Type)
-          => arithInterpret(T, I1 |Bits I2)
+     rule tv(E1:Bits, T:Type) | tv(E2:Bits, T:Type)
+          => arithInterpret(T, E1 |Bits E2)
           when isPromoted(T)
+          [structural]
+     rule (. => CV("CEB11", "Both bitwise inclusive OR operands must have integer type.", "6.5.12:2"))
+          ~> tv(_, T1:Type) | tv(_, T2:Type)
+          when notBool hasIntegerType(T1)
+               orBool notBool hasIntegerType(T2)
           [structural]
 endmodule

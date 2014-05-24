@@ -18,32 +18,6 @@ module C-TYPING-MISC
 
      rule char => cfg:charAlias
 
-     syntax Int ::= numBytes(Type) [function]
-     rule numBytes(t(_, bool)) => cfg:sizeofBool
-     rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
-     rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
-     rule numBytes(t(_, int)) => cfg:sizeofInt
-     rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
-     rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
-     
-     rule numBytes(t(_, float)) => cfg:sizeofFloat
-     rule numBytes(t(_, double)) => cfg:sizeofDouble
-     rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
-
-     rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
-     rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
-     rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
-     rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
-     rule numBytes(t(_, unsigned-long-long-int)) 
-          => numBytes(t(.Set, long-long-int))
-     
-     rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
-     
-     rule numBits(t(S:Set, T:SimpleType)) 
-          => numBytes(t(S, T)) *Int cfg:bitsPerByte
-          when getKLabel(T) =/=KLabel 'bitfieldType
-     rule numBits(t(_, bitfieldType(_, N:CSize))) => N
-
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
 
      rule correspondingUnsignedType(t(S:Set, int))
@@ -70,41 +44,41 @@ module C-TYPING-MISC
      rule max(t(_, bool)) => 1
      
      rule min(t(_, signed-char)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char)) 
-          => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
      rule min(t(_, short-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
      rule max(t(_, short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
      rule min(t(_, int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
      rule max(t(_, int)) 
-          => (2 ^Int absInt(numBits(t(.Set, int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
      rule min(t(_, long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
      rule max(t(_, long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
      rule min(t(_, long-long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
      
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char)) 
-          => 2 ^Int absInt(numBits(t(.Set, unsigned-char))) -Int 1
+          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-short-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
      rule max(t(_, enumType(_))) => cfg:enumMax

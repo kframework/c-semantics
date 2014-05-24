@@ -33,6 +33,26 @@ module C-BITSIZE
      rule byteSizeofType(T:Type)
           => bitsToBytes(bitSizeofType(T)) 
 
+     syntax Int ::= numBytes(Type) [function]
+     rule numBytes(t(_, bool)) => cfg:sizeofBool
+     rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
+     rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
+     rule numBytes(t(_, int)) => cfg:sizeofInt
+     rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
+     rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
+     
+     rule numBytes(t(_, float)) => cfg:sizeofFloat
+     rule numBytes(t(_, double)) => cfg:sizeofDouble
+     rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
+
+     rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
+     rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
+     rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
+     rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
+     rule numBytes(t(_, unsigned-long-long-int)) 
+          => numBytes(t(.Set, long-long-int))
+     rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
+
      syntax Int ::= byteSizeofList(List) [function]
      syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]
 
@@ -61,7 +81,7 @@ module C-BITSIZE
           => cfg:ptrsize *Int cfg:bitsPerByte
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
           => N
-     rule bitSizeofType(T:Type) => numBits(T)
+     rule bitSizeofType(T:Type) => numBytes(T) *Int cfg:bitsPerByte
           when isBasicType(T)
      rule bitSizeofType(typedDeclaration(T:Type, _)) 
           => bitSizeofType(T)

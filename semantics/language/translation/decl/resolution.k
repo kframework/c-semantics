@@ -65,7 +65,7 @@ module C-DECL-RESOLUTION
                X |-> (Loc:SymLoc => Loc')
           ...</genv>
           <linkings>...
-               (. => Loc |-> Loc')
+               (. => base(Loc) |-> base(Loc'))
           ...</linkings>
           when isLinkerLoc(Loc)
      rule <k> resolveReferences ...</k>

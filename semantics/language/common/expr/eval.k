@@ -3,6 +3,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax K ::= rkludge(K) [function, klabel('rkludge)]
      syntax K ::= pkludge(K) [function, klabel('pkludge)]
      syntax K ::= instantiate(SymLoc, Type)
+     syntax K ::= checkLoc(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -37,22 +38,6 @@ module C-COMMON-EXPR-EVAL
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
-     
-     syntax K ::= checkUse(K) [strict]
-     rule checkUse(V:KResult) => V
-          when isTypedValue(V) =/=K true
-     rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          when (isSymLoc(V) =/=K true)
-               andBool (isTrap(V) =/=K true)
-               andBool (isUnknown(V) =/=K true)
-     rule checkUse(tv(V:SymLoc, T:Type))
-          => checkLoc(V) ~> tv(V, T)
-     rule checkUse(tv(V:Trap, T:Type))
-          => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
-          ~> tv(V, T)
-     rule checkUse(tv(V:Unknown, T:Type))
-          => ERROR("E2", "unspecified value used in an expression.")
-          ~> tv(V, T)
 
      // FIXME Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
@@ -125,5 +110,22 @@ module C-COMMON-EXPR-EVAL
           when notBool isArrayType(T)
                andBool notBool isFunctionType(T) 
           [structural]
+
+     syntax K ::= checkUse(K) [strict]
+
+     rule checkUse(V:KResult) => V
+          when isTypedValue(V) =/=K true
+     rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
+          when (isSymLoc(V) =/=K true)
+               andBool (isTrap(V) =/=K true)
+               andBool (isUnknown(V) =/=K true)
+     rule checkUse(tv(V:SymLoc, T:Type))
+          => checkLoc(V) ~> tv(V, T)
+     rule checkUse(tv(V:Trap, T:Type))
+          => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
+          ~> tv(V, T)
+     rule checkUse(tv(V:Unknown, T:Type))
+          => ERROR("E2", "unspecified value used in an expression.")
+          ~> tv(V, T)
      
 endmodule

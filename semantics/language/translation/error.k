@@ -4,7 +4,6 @@ module C-TRANSLATION-ERROR
      imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-BITWISE-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
@@ -42,20 +41,6 @@ module C-TRANSLATION-ERROR
           (. => UNDEF("00001", "Casting empty value to type other than void.", "6.3.2.2:1"))
           ~> cast(t(_, T:SimpleType), emptyValue)
           when T =/=K void
-          [structural]
-         
-     rule [err00022]:
-          (. => ERROR("00022", "Trying to left-shift a negative signed value.", 52) ) ~>
-          leftShiftInterpret(T:Type, _:Int, tv(E1:Int, T:Type))
-          when hasSignedIntegerType(T)
-               andBool E1 <Int 0
-          [structural]
-          
-     rule [err00023]:
-          (. => ERROR("00023", "Trying to left-shift a signed value, but the result is not representable in the result type.", 52) ) ~>
-          leftShiftInterpret(T:Type, I:Int, tv(_:Int, T:Type))
-          when hasSignedIntegerType(T)
-               andBool notBool (I <=Int (2 ^Int absInt(numBits(T))))
           [structural]
           
      rule [err00034]:

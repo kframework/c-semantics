@@ -14,7 +14,6 @@ endmodule
 
 module C-IO-BUFFERED
      imports C-BITS-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -141,12 +140,12 @@ module C-IO-BUFFERED
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
-               ~> tv(piece(trap(cfg:bitsPerByte), cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(trap, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
                M:Map => M[
-                    piece(trap(cfg:bitsPerByte), cfg:bitsPerByte) <- Offset]) 
+                    piece(trap, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset) in locations(Mem))
@@ -157,11 +156,11 @@ module C-IO-BUFFERED
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert(notBool (BagItem(Volatile) in Attrs) orBool isVolatileType(T), 
                    errorNonVolatileLVal)
-               ~> tv(piece(zero, cfg:bitsPerByte), t(.Set, no-type))
+               ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
                Base |-> memblock(Len:Int, Attrs:Bag, 
-               M:Map => M[piece(zero, cfg:bitsPerByte) <- Offset]) 
+               M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool loc(Base, Offset) in locations(Mem))
@@ -172,9 +171,7 @@ module C-IO-BUFFERED
 
      // Resolve a linker address to a real "physical" address.
      rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
-          <linkings>... 
-               loc(LinkBase, 0) |-> loc(Base:SymBase, _)
-          ...</linkings>
+          <linkings>... LinkBase |-> Base:SymBase ...</linkings>
           [structural]
           
           // TODO(chathhorn): perf, elided

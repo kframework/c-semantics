@@ -62,7 +62,7 @@ module C-MEMORY-WRITING
           => writeBytes(Loc +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T), 
-                    piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), 
+                    piece(unknown, cfg:bitsPerByte))), 
                     initializerType(T))
           when maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
@@ -173,9 +173,8 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
           when hasCharType(T) andBool (isInt(N) =/=K true)
-     rule splitBytes(tv(unknown(N:Int), T:Type))
-          => dataList(splitUnknown(N))
-          when N ==Int bitSizeofType(T)
+     rule splitBytes(tv(unknown, T:Type))
+          => dataList(splitUnknown(bitSizeofType(T)))
      rule splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, byteSizeofType(T))
           when hasIntegerType(T)
@@ -194,7 +193,7 @@ module C-MEMORY-WRITING
      
      syntax List ::= splitUnknown(Int) [function]
      rule splitUnknown(N:Int)
-          => ListItem(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))
+          => ListItem(piece(unknown, cfg:bitsPerByte))
                splitUnknown(N -Int cfg:bitsPerByte)
           when N >Int 0
      rule splitUnknown(N:Int) => .List

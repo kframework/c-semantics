@@ -1,43 +1,47 @@
 module C-EXPR-BITWISE
-     imports C-SYMBOLIC-VALUE-SYNTAX
-     imports C-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-PROMOTION-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule tv(symVal, T:Type) << tv(N:Int, T':Type)
-          => tv(symVal, T)
-          when isPromoted(T) andBool isPromoted(T')
-               andBool N <Int numBits(T)
+     rule tv(symVal, T1:Type) << tv(E2:Int, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T1)
           [structural]
-     rule tv(_, T:Type) << tv(symVal, T':Type)
-          => tv(symVal, T)
-          when isPromoted(T) andBool isPromoted(T')
+     rule tv(E1:Int, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E1 >=Int 0
           [structural]
-
-     rule tv(symVal, T:Type) >> tv(N:Int, T':Type)
-          => tv(symVal, T)
-          when isPromoted(T) andBool isPromoted(T')
-               andBool N <Int numBits(T)
-          [structural]
-     rule tv(_, T:Type) >> tv(symVal, T':Type)
-          => tv(symVal, T)
-          when isPromoted(T) andBool isPromoted(T')
+     rule tv(symVal, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
           [structural]
 
-     rule tv(V:K, T:Type) & tv(V':K, T:Type)
-          => tv(symVal, T)
-          when ((V ==K symVal) orBool (V' ==K symVal))
+     rule tv(symVal, T1:Type) >> tv(E2:Int, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T1)
+          [structural]
+     rule tv(E1:Int, T1:Type) >> tv(symVal, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
+               andBool E1 >=Int 0
+          [structural]
+     rule tv(symVal, T1:Type) >> tv(symVal, T2:Type) => tv(symVal, T1)
+          when isPromoted(T1) andBool isPromoted(T2)
+          [structural]
+
+     rule tv(E1:CValue, T:Type) & tv(E2:CValue, T:Type) => tv(symVal, T)
+          when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
           [structural]
-     rule tv(V:K, T:Type) ^ tv(V':K, T:Type)
-          => tv(symVal, T)
-          when ((V ==K symVal) orBool (V' ==K symVal))
+     rule tv(E1:CValue, T:Type) ^ tv(E2:CValue, T:Type) => tv(symVal, T)
+          when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
           [structural]
-     rule tv(V:K, T:Type) | tv(V':K, T:Type)
-          => tv(symVal, T)
-          when ((V ==K symVal) orBool (V' ==K symVal))
+     rule tv(E1:CValue, T:Type) | tv(E2:CValue, T:Type) => tv(symVal, T)
+          when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
           [structural]
 endmodule

@@ -61,16 +61,16 @@ module C-EXPR-FUNCTION-CALL
      context Call'(_, (HOLE => revalParams(HOLE)))
 
      rule <k> Call'(
-               tv(Loc:SymLoc, t(_, pointerType(T:Type))),
+               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
                rvlist(L:List))
-               => sequencePoint ~> application(getTU(Loc), Fun, T, L)
+               => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
-          <functions>... Loc |-> Fun:KResult ...</functions>
+          <functions>... Base |-> Fun:KResult ...</functions>
           when isFunctionType(T)
           [structural]
      // Resolve a linker loc to a real loc.
-     rule <k> Call'(tv((Loc:SymLoc => Loc'), _), _) ...</k>
-          <linkings>... Loc |-> Loc':SymLoc ...</linkings>
+     rule <k> Call'(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
 
      syntax K ::= application(String, K, Type, List) [strict(2)]

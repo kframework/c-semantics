@@ -640,7 +640,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
-          <linkings>... (. => Loc |-> Loc') </linkings>
+          <linkings>... (. => base(Loc) |-> base(Loc')) </linkings>
           when isLinkerLoc(Loc)
           [structural]
 
