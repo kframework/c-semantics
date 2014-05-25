@@ -119,14 +119,10 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
           when (isSymLoc(V) =/=K true)
                andBool (isTrap(V) =/=K true)
-               andBool (isUnknown(V) =/=K true)
      rule checkUse(tv(V:SymLoc, T:Type))
           => checkLoc(V) ~> tv(V, T)
      rule checkUse(tv(trap, T:Type))
           => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
           ~> tv(trap, T)
-     rule checkUse(tv(unknown, T:Type))
-          => ERROR("E2", "unspecified value used in an expression.")
-          ~> tv(unknown, T)
      
 endmodule
