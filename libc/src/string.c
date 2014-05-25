@@ -113,7 +113,7 @@ int strcmp (const char * s1, const char * s2) {
 }
 
 void *memmove(void *s1, const void *s2, size_t n) {
-	char* tmp = (char*)malloc(n);
+	unsigned char* tmp = malloc(n);
 	memcpy(tmp, s2, n);
 	memcpy(s1, tmp, n);
 	free(tmp);
@@ -127,7 +127,7 @@ char *strchr(const char *s, int c) {
 	character we were looking for.  */
 	while (*s != '\0' && *s != (char)c)
 		s++;
-	return ( (*s == c) ? (char *) s : NULL );
+	return ((*s == c) ? (char *) s : NULL);
 }
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings#The_strncmp_function
@@ -171,8 +171,8 @@ char *(strrchr)(const char *s, int c) {
 // from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
 // by Daniel Vik
 void* memcpy(void* dest, const void* src, size_t count) {
-	char* dst8 = (char*)dest;
-	char* src8 = (char*)src;
+	unsigned char* dst8 = (unsigned char*)dest;
+	unsigned char* src8 = (unsigned char*)src;
 
 	while (count--) {
 		*dst8++ = *src8++;
