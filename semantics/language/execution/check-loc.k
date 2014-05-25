@@ -10,7 +10,7 @@ module C-CHECK-LOC
      rule <k> checkLoc(loc(Base:SymBase, Offset:Int))
                => checkOffsets(Offset, Len)
           ...</k>
-          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
+          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           <thread-id> ThreadId:Int </thread-id>
           when notBool (isThreadDuration(loc(Base, Offset))
                     orBool isAutoDuration(loc(Base, Offset)))

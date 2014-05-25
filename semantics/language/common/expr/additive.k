@@ -100,6 +100,8 @@ module C-COMMON-EXPR-ADDITIVE
           => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
           when ifFromArrayInBounds(T, I)
           [structural]
+     // TODO(chathhorn): the fromArray tag gets lost during e.g. assignment --
+     // probably need to tag the memory.
      rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
           addToPointer(_, T:Type, I:Int, tv(_, _))
           when notBool ifFromArrayInBounds(T, I)

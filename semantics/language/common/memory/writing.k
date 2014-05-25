@@ -181,8 +181,8 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(F:Float, T:Type)) 
           => splitFloatBytes(F, T, byteSizeofType(T))
           when hasFloatType(T)
-     rule splitBytes(tv(I:Ptr, T:Type))
-          => splitPointerBytes(I, T, byteSizeofType(T))
+     rule splitBytes(tv(Loc:SymLoc, T:Type))
+          => splitPointerBytes(Loc, T, byteSizeofType(T))
           when isPointerType(T)
      rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))) 
           => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
@@ -224,14 +224,14 @@ module C-MEMORY-WRITING
                andBool Len >Int 0
      rule splitStructBytes(_, _, 0, L:List) => dataList(L) 
           
-     syntax DataList ::= splitPointerBytes(Ptr, Type, Int) [function]
-     syntax DataList ::= splitPointerBytes(Ptr, Type, Int, K, List) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Type, Int) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Type, Int, K, List) [function]
 
-     rule splitPointerBytes(I:Ptr, T:Type, Len:Int)
-          => splitPointerBytes(I, T, Len, 0, .List) 
-     rule splitPointerBytes(I:Ptr, T:Type, Len:Int, N:Int, L:List)
-          => splitPointerBytes(I, T, Len -Int 1, N +Int 1,
-               L ListItem(piece(subObject(I, N, N), cfg:bitsPerByte)))
+     rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int)
+          => splitPointerBytes(Loc, T, Len, 0, .List) 
+     rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int, N:Int, L:List)
+          => splitPointerBytes(Loc, T, Len -Int 1, N +Int 1,
+               L ListItem(piece(subObject(Loc, N, N), cfg:bitsPerByte)))
           when Len >Int 0
      rule splitPointerBytes(_, _, 0, _, L:List) => dataList(L:List)
           

@@ -53,7 +53,7 @@ module LIBC-STDLIB
      
      rule <k> prepareBuiltin(Identifier("malloc"),
                     ListItem(tv(Len:Int, _:KResult)))
-               => alloc(newAlloc(N), Len:Int, .Bag)
+               => alloc(newAlloc(N), t(.Set, no-type), Len:Int)
                ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>

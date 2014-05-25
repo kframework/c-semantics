@@ -67,24 +67,6 @@ module C-EXECUTION-ERROR
      //      when hasFloatType(T)
      //      [structural]
           
-          
-     rule [err00016]:
-          <k> (. => ERROR("00016", "Unsequenced side effect on scalar object with side effect of same object.") ) ~>
-               checkWrite(Loc:SymLoc, _) 
-          ...</k>
-          <locs-written> Locs:Bag </locs-written>
-          when BagItem(Loc) in Locs:Bag
-          [structural] 
-
-     rule [err00020]:
-          <k> (. => ERROR("00020", "Trying to write outside the bounds of an object.") ) ~>
-               checkWrite(loc(Base:SymBase, Offset:Int), _) 
-          ...</k>
-          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
-          when notBool Offset <Int Len
-          [structural] 
-          
-          
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
           cast(t(_, T:SimpleType), skipval)
@@ -114,32 +96,10 @@ module C-EXECUTION-ERROR
                andBool (isStructType(T') orBool isUnionType(T'))
           [structural]
           
-     rule [err00045]:
-          <k> (. => ERROR("00045", "Trying to modify a string literal or an object declared with const type.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-               checkWrite(loc(Base:SymBase, _), _)
-          ...</k>
-          <mem>... Base |-> memblock(_, (_ BagItem(Const)), _) ...</mem>
-          [structural]
-          
-     rule [err00045b]:
-          <k> (. => ERROR("00045b", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", (33,, 64,, cv("6.5.16.1:1"))) ) ~>
-               checkWrite(loc(Base:SymBase, _), T:Type)
-          ...</k>
-          <mem>... Base |-> memblock(_, (_ BagItem(Volatile)), _) ...</mem>
-          when notBool isVolatileType(T)
-          [structural]
-          
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
           concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
           when hasFloatType(T) andBool (N >Int 0)
-          [structural]
-          
-     rule [err00047]:
-          <k> (. => ERROR("00047", "Trying to modify an object declared with const type.", 64) ) ~>
-               checkWrite(Loc:SymLoc, _)
-          ...</k>
-          <not-writable>... SetItem(Loc) ...</not-writable>
           [structural]
 
      rule (. => ERROR("00500", 

@@ -1,5 +1,5 @@
 module C-MEMORY-ALLOC-SYNTAX
-     syntax K ::= memblock(Int, Bag, Map)
+     syntax K ::= object(Type, Int, Map)
 
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, List)
@@ -7,7 +7,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= allocString(SymLoc, String)
      syntax K ::= allocWString(SymLoc, List)
 
-     syntax K ::= alloc(SymLoc, K, Bag) [strict(2)]
+     syntax K ::= alloc(SymLoc, Type, Int)
 
      syntax K ::= zeroBlock(SymLoc)
 
@@ -59,33 +59,22 @@ module C-MEMORY-ALLOC
                := tv(0, cfg:wcharut))
           [structural] 
 
-     rule allocateType(Loc:SymLoc, T:Type) 
-          => alloc(Loc, byteSizeofType(T), bagifyQuals(T))
+     rule allocateType(Loc:SymLoc, T:Type) => alloc(Loc, T, byteSizeofType(T))
           [structural]
      rule <k> allocateTypeIfAbsent(Loc:SymLoc, T:Type) 
-               => alloc(Loc, byteSizeofType(T), bagifyQuals(T))
+               => alloc(Loc, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
           when notBool (SetItem(base(Loc)) in (keys M))
           [structural] 
      rule <k> allocateTypeIfAbsent(loc(Base:SymBase, 0), _) => . 
           ...</k>
-          <mem>... Base |-> memblock(_, _, _) ...</mem>
+          <mem>... Base |-> object(_, _, _) ...</mem>
           [structural]
 
-     syntax Bag ::= bagifyQuals(Type) [function]
-     rule bagifyQuals(T:Type) => setToBag(getQualifiers(T))
-
-     syntax Bag ::= setToBag(Set) [function]
-     rule setToBag(SetItem(Q:K) Qs:Set)
-          => BagItem(Q) setToBag(Qs)
-     rule setToBag(.Set) => .Bag
-
-     rule <k> alloc(loc(Base:SymBase, 0), Len:TypedValue, Quals:Bag)
-               => .
-          ...</k>
+     rule <k> alloc(loc(Base:SymBase, 0), T:Type, Len:Int) => . ...</k>
           <mem>...
-               .Map => Base |-> memblock(value(Len), Quals, .Map)
+               .Map => Base |-> object(T, Len, .Map)
           ...</mem>
           when notBool isLinkerLoc(loc(Base, 0))
           [structural]
@@ -93,7 +82,7 @@ module C-MEMORY-ALLOC
      // used by calloc
      rule <k> zeroBlock(loc(Base:SymBase, 0)) => . ...</k>
           <mem>...
-               Base |-> memblock(Len:Int, _, 
+               Base |-> object(_, Len:Int, 
                     _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
@@ -101,7 +90,7 @@ module C-MEMORY-ALLOC
      rule <k> sizeofLocation(loc(Base:SymBase, _)) 
                => tv(Len, cfg:sizeut)
           ...</k>
-          <mem>... Base |-> memblock(Len:Int, _, _) ...</mem>
+          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
           
      // c99 6.5:2 If a side effect on a scalar object is unsequenced relative
@@ -125,6 +114,8 @@ module C-MEMORY-ALLOC
                ~> writeWString(Loc, S)
           [structural] 
      
+     // TODO(chathhorn): might be able to do away with this by looking up quals
+     // in the object type.
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
      rule <k> makeUnwritableSubObject(
                     lval(loc(Base:SymBase, Offset:Int), _)) 
@@ -137,16 +128,4 @@ module C-MEMORY-ALLOC
      rule makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
           when notBool isPhysicalLoc(Loc)
           [structural]
-
-     // FIXME could do better with bitfields
-     syntax K ::= makeUnwritable(SymLoc)
-     rule <k> makeUnwritable(loc(Base:SymBase, 0)) => . ...</k>
-          <mem>... 
-               Base |-> memblock(_, _ (.Bag => BagItem(Const)), _) 
-          ...</mem>
-          [structural]
-     rule makeUnwritable(Loc:SymLoc) => .
-          when notBool isPhysicalLoc(Loc)
-          [structural]
-
 endmodule

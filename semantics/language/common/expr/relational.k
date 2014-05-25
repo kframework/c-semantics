@@ -207,11 +207,13 @@ module C-COMMON-EXPR-RELATIONAL
                => tv(0, t(.Set, int))
           ...</k>
           <mem> ...
-               Base |-> memblock(Len:Int, _, _)
-               Base' |-> memblock(Len':Int, _, _)
+               Base |-> object(_, Len:Int, _)
+               Base' |-> object(_, Len':Int, _)
           ...</mem>
           when (isPointerType(T) andBool isPointerType(T'))
                andBool (Base =/=K Base')
+               // TODO(chathhorn): many of these checks are redundant now; e.g.
+               // we trap on out-of-bounds pointers in all exprs.
                andBool (Offset <Int Len)
                andBool (Offset' <Int Len')
           [structural]
@@ -220,8 +222,8 @@ module C-COMMON-EXPR-RELATIONAL
                => tv(1, t(.Set, int))
           ...</k>
           <mem> ...
-               Base |-> memblock(Len:Int, _, _)
-               Base' |-> memblock(Len':Int, _, _)
+               Base |-> object(_, Len:Int, _)
+               Base' |-> object(_, Len':Int, _)
           ...</mem>
           when isPointerType(T) andBool isPointerType(T')
                andBool (Base =/=K Base')

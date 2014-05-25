@@ -5,7 +5,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax Agg ::= agg(List)
 
-     syntax CValue ::= Bits | Ptr | Float | Agg
+     syntax CValue ::= Bits | SymLoc | Float | Agg
 
      syntax TypedValue ::= tv(CValue, Type) 
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]

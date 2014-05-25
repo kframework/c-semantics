@@ -1,5 +1,4 @@
 module C-BITS-SYNTAX
-     syntax Ptr ::= Int | SymLoc
 
      syntax Bits ::= Int
 
@@ -17,7 +16,7 @@ module C-BITS-SYNTAX
      // loc, size in bytes
      syntax Bits ::= encodedFloat(Float)
      // object, start piece, end piece
-     syntax Bits ::= subObject(Ptr, K, K)
+     syntax Bits ::= subObject(SymLoc, Int, Int)
 
      syntax K ::= fillToBytes(K) [strict] 
      syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]

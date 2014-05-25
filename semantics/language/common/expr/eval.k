@@ -9,12 +9,13 @@ endmodule
 module C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-EVAL-SYNTAX
 
-     imports C-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-ERROR-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
      rule arrayLength(t(_, arrayType(_, N:CSize))) => N
@@ -121,11 +122,11 @@ module C-COMMON-EXPR-EVAL
                andBool (isUnknown(V) =/=K true)
      rule checkUse(tv(V:SymLoc, T:Type))
           => checkLoc(V) ~> tv(V, T)
-     rule checkUse(tv(V:Trap, T:Type))
+     rule checkUse(tv(trap, T:Type))
           => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
-          ~> tv(V, T)
-     rule checkUse(tv(V:Unknown, T:Type))
+          ~> tv(trap, T)
+     rule checkUse(tv(unknown, T:Type))
           => ERROR("E2", "unspecified value used in an expression.")
-          ~> tv(V, T)
+          ~> tv(unknown, T)
      
 endmodule

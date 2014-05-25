@@ -3,10 +3,11 @@ require "builtins/model-checker.k"
 module C-LTLMC-SYNTAX
      imports LTL-HOOKS
      imports MODEL-CHECKER-HOOKS
+     imports C-BITS-SYNTAX
 
      // Ltl atomic propositions.
      syntax ValueProp ::= Int  
-                        | ptr(SymLoc, Type) 
+                        | ptr(SymLoc, Type)
                         | struct(List, FieldInfo)
                         | union(List, FieldInfo)
 
@@ -29,7 +30,6 @@ module C-LTLMC-SYNTAX
                     | CProp "!=" CProp [left]
 
      syntax Prop ::= CProp | Bool | "__running" | "__error"
-
 endmodule
 
 module C-LTLMC
@@ -163,7 +163,7 @@ module C-LTLMC
           => dumbRead'(Mem, Loc, T, byteSizeofType(T), .List)
 
      rule dumbRead'(
-          (_ Base |-> memblock(_, _, (_ Offset |-> V:K))), 
+          (_ Base |-> object(_, _, (_ Offset |-> V:K))), 
           loc(Base:SymBase, (Offset:Int => Offset +Int 1)), 
           _, 
           (NBytes:Int => NBytes -Int 1), 
@@ -218,5 +218,4 @@ module C-LTLMC
           ...</T> ...</generatedTop>, 
           S:String)
           => ptr(Loc, T)
-
 endmodule

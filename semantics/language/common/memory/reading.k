@@ -131,13 +131,13 @@ module C-MEMORY-READING
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
      rule joinPointerBytes-aux(T:Type, 
-               ListItem(piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int))
-               L:List, subObject(N, 0, End:Int))
-          => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
+               ListItem(piece(subObject(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
+               L:List, subObject(Loc, 0, End:Int))
+          => joinPointerBytes-aux(T, L, subObject(Loc, 0, End +Int 1))
           when (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
-     rule joinPointerBytes-aux(T:Type, .List, subObject(N:SymLoc, 0, _))
-          => tv(N, stripQualifiers(T))
+     rule joinPointerBytes-aux(T:Type, .List, subObject(Loc:SymLoc, 0, _))
+          => tv(Loc, stripQualifiers(T))
      rule joinPointerBytes-aux(T:Type, 
                ListItem(piece(0, Len:Int)) L:List, 0)
           => joinPointerBytes-aux(T, L, 0)
