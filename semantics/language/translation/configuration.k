@@ -5,149 +5,150 @@ module C-CONFIGURATION
      imports COMPAT-SYNTAX
 
      configuration 
-     <global>
-          <mem> .Map </mem>
-          <functions color="lightgray"> .Map </functions>
-          // SymLoc |-> Type
-          <effective-types> .Map </effective-types>
+<global>
+     <mem> .Map </mem>
+     <functions color="lightgray"> .Map </functions>
 
-          <main-tu color="lightgray"> .Set </main-tu>
+     <main-tu color="lightgray"> .Set </main-tu>
 
-          // CId |-> Types
-          <external-types> .Map </external-types>
-          // CId |-> Loc
-          <external-defs> .Map </external-defs>
+     // CId |-> Types
+     <external-types> .Map </external-types>
+     // CId |-> Loc
+     <external-defs> .Map </external-defs>
 
-          <linking-state>
-               // CId |-> Set(TUs)
-               <external-decls> .Map </external-decls>
-               // CIds
-               <external-uses> SetItem(Identifier("main")) </external-uses>
-          </linking-state>
+     <linking-state>
+          // CId |-> Set(TUs)
+          <external-decls> .Map </external-decls>
+          // CIds
+          <external-uses> SetItem(Identifier("main")) </external-uses>
+     </linking-state>
 
-          // dummy link base |-> real base
-          <linkings> .Map </linkings>
+     // dummy link base |-> real base
+     <linkings> .Map </linkings>
 
-          <translation-units>
-               <tu multiplicity="*">
-                    <tu-id> "" </tu-id>
-                    <genv color="lightgray"> .Map </genv>
-                    <gtypes color="lightgray"> .Map </gtypes>
-                    <gstructs color="lightgray"> .Map </gstructs>
+     <translation-units>
+          <tu multiplicity="*">
+               <tu-id> "" </tu-id>
+               <genv color="lightgray"> .Map </genv>
+               <gtypes color="lightgray"> .Map </gtypes>
+               <gstructs color="lightgray"> .Map </gstructs>
 
-                    // kpair(CId, BlockNum) |-> SymBase
-                    <local-statics> .Map </local-statics>
-                    // kpair(CId, BlockNum) |-> Type
-                    <local-types> .Map </local-types>
-                    // kpair(CId, BlockNum) |-> FieldInfo
-                    <local-structs> .Map </local-structs>
+               // kpair(CId, BlockNum) |-> SymBase
+               <local-statics> .Map </local-statics>
+               // kpair(CId, BlockNum) |-> Type
+               <local-types> .Map </local-types>
+               // kpair(CId, BlockNum) |-> FieldInfo
+               <local-structs> .Map </local-structs>
 
-                    <tu-linking-state>
-                         <externals> .Map </externals>
-                         <internals> .Map </internals>
-                         <next-link-loc> .K </next-link-loc>
-                         <next-static-loc> .K </next-static-loc>
-                    </tu-linking-state>
+               <tu-linking-state>
+                    <externals> .Map </externals>
+                    <internals> .Map </internals>
+                    <next-link-loc> .K </next-link-loc>
+                    <next-static-loc> .K </next-static-loc>
+               </tu-linking-state>
 
-                    <next-unnamed color="black"> 0 </next-unnamed>
+               <next-unnamed color="black"> 0 </next-unnamed>
 
-                    <goto-map color="lightgray"> .Map </goto-map>
-                    <string-lits color="lightgray"> .Map </string-lits>
+               <goto-map color="lightgray"> .Map </goto-map>
+               <string-lits color="lightgray"> .Map </string-lits>
 
-                    // TODO(chathhorn): move.
-                    <incomplete-tags> .Set </incomplete-tags>
-               </tu>
-          </translation-units>
-     </global>
-     <T multiplicity="?">
-     <exec>
-          <k color="green" multiplicity="?"> 
-               loadObj(mergeObj(
-                    unwrapObj($OBJ1:Bag), 
-                    unwrapObj($OBJ2:Bag)))
-               ~> $PGM:K 
-               ~> link
-               ~> cleanup
-          </k>
+               // TODO(chathhorn): move.
+               <incomplete-tags> .Set </incomplete-tags>
+          </tu>
+     </translation-units>
+</global>
+<T multiplicity="?">
+<exec>
+     // SymLoc |-> Type
+     <effective-types> .Map </effective-types>
 
-          <final-computation multiplicity="?" color="lightgray">
-               .K
-          </final-computation>
+     <k color="green" multiplicity="?"> 
+          loadObj(mergeObj(
+               unwrapObj($OBJ1:Bag), 
+               unwrapObj($OBJ2:Bag)))
+          ~> $PGM:K 
+          ~> link
+          ~> cleanup
+     </k>
 
-          <goto-map-calc color="cyan">
-               <goto-calc multiplicity="*" color="cyan">
-                    <computation color="cyan"> .K </computation>
-                    <computation-tail color="cyan">
-                         .K
-                    </computation-tail>
-                    <decl-stack color="cyan">
-                         .List
-                    </decl-stack>
-                    <goto-nesting-depth color="cyan">
-                         0
-                    </goto-nesting-depth>
-                    <goto-block-history color="cyan">
-                         .List
-                    </goto-block-history>
-                    <goto-loop-stack color="cyan">
-                         .List
-                    </goto-loop-stack>
-               </goto-calc>
-          </goto-map-calc>
-          <control>
-               <curr-tu color="lightgray"> "" </curr-tu>
-               <curr-function color="lightgray">
-                    file-scope
-               </curr-function>
-               <curr-program-loc color="black">
-                    UnknownCabsLoc
-               </curr-program-loc>
+     <final-computation multiplicity="?" color="lightgray">
+          .K
+     </final-computation>
 
-               // Toggle to allow writes for initializers.
-               <initializing> false </initializing>
+     <goto-map-calc color="cyan">
+          <goto-calc multiplicity="*" color="cyan">
+               <computation color="cyan"> .K </computation>
+               <computation-tail color="cyan">
+                    .K
+               </computation-tail>
+               <decl-stack color="cyan">
+                    .List
+               </decl-stack>
+               <goto-nesting-depth color="cyan">
+                    0
+               </goto-nesting-depth>
+               <goto-block-history color="cyan">
+                    .List
+               </goto-block-history>
+               <goto-loop-stack color="cyan">
+                    .List
+               </goto-loop-stack>
+          </goto-calc>
+     </goto-map-calc>
+     <control>
+          <curr-tu color="lightgray"> "" </curr-tu>
+          <curr-function color="lightgray">
+               file-scope
+          </curr-function>
+          <curr-program-loc color="black">
+               UnknownCabsLoc
+          </curr-program-loc>
 
-               <control-details> // TODO(chathhorn): dumb name
-                    <local>
-                         // maps from CIds
-                         <env color="red"> .Map </env>
-                         <types color="lightgray"> .Map </types>
-                         <structs color="lightgray"> .Map </structs>
-                         <block-history> .List </block-history>
-                    </local>
-                    <block-stack color="violet"> .List </block-stack>
+          // Toggle to allow writes for initializers.
+          <initializing> false </initializing>
 
-                    // Used to figure initializers.
-                    <curr-object color="cyan">
-                         .List
-                    </curr-object>
-                    <curr-subobject color="cyan">
-                         .List
-                    </curr-subobject>
-                    <incomplete-length color="cyan">
-                         0
-                    </incomplete-length>
-                    <saved-init color="cyan">
-                         .K
-                    </saved-init>
+          <control-details> // TODO(chathhorn): dumb name
+               <local>
+                    // maps from CIds
+                    <env color="red"> .Map </env>
+                    <types color="lightgray"> .Map </types>
+                    <structs color="lightgray"> .Map </structs>
+                    <block-history> .List </block-history>
+               </local>
+               <block-stack color="violet"> .List </block-stack>
 
-                    // Used for typing expressions.
-                    <type multiplicity="?" color="cyan"> .K </type>
-                    // Holds the innermost type while we unroll the
-                    // type around it.
-                    <decl-type-holder color="cyan">
-                         .K
-                    </decl-type-holder>
-               </control-details>        
-          </control>
+               // Used to figure initializers.
+               <curr-object color="cyan">
+                    .List
+               </curr-object>
+               <curr-subobject color="cyan">
+                    .List
+               </curr-subobject>
+               <incomplete-length color="cyan">
+                    0
+               </incomplete-length>
+               <saved-init color="cyan">
+                    .K
+               </saved-init>
 
-     </exec>
+               // Used for typing expressions.
+               <type multiplicity="?" color="cyan"> .K </type>
+               // Holds the innermost type while we unroll the
+               // type around it.
+               <decl-type-holder color="cyan">
+                    .K
+               </decl-type-holder>
+          </control-details>        
+     </control>
 
-     <error-cell multiplicity="?" color="black"> .K </error-cell>
+</exec>
 
-     <status> initializing </status>
+<error-cell multiplicity="?" color="black"> .K </error-cell>
 
-     <options> $OPTIONS:Set </options>
+<status> initializing </status>
 
-     </T>
+<options> $OPTIONS:Set </options>
+
+</T>
           
 endmodule
