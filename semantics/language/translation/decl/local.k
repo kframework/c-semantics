@@ -25,11 +25,11 @@ module C-DECL-LOCAL
      // 
      // Extern, external type and def exist.
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
           ...</k>
           <types> M:Map => M[T <- X] </types>
           <external-types>... X |-> T:Type ...</external-types>
-          <external-defs>... X |-> Loc:SymLoc ...</external-defs>
+          <external-defs>... X |-> Base:SymBase ...</external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
@@ -104,17 +104,17 @@ module C-DECL-LOCAL
 
      syntax K ::= initLocalStatic(CId, K) [strict(2)] 
      rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
-               => allocateType(Loc, T)
-               ~> addToEnv(X, Loc)
+               => allocObject(Base, T)
+               ~> addToEnv(X, Base)
                ~> giveType(X, T)
                ~> allowInit(K)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <local-statics>
-               LocalStatics:Map (.Map =>  kpair(X, BlockNum) |-> Loc)
+               LocalStatics:Map (.Map =>  kpair(X, BlockNum) |-> Base)
           </local-statics>
           <local-types>
                LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)

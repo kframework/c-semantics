@@ -22,8 +22,8 @@ module C-STMT-RETURN
      }*/
      
      rule [return-clean-local]:
-          <k> (.K => deleteBlock(Loc)) ~> Return(_:KResult) ...</k>
-          <local-addresses>... SetItem(Loc:SymLoc) => .Set ...</local-addresses>     
+          <k> (.K => deleteObject(Base)) ~> Return(_:KResult) ...</k>
+          <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>     
           [structural] 
           
      rule [fetch-all-locals]:

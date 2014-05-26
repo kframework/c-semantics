@@ -83,12 +83,12 @@ module LIBC-STDIO
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
-          => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofLocation(Loc))
+          => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofObject(base(Loc)))
           [structural]
      rule [nextvarg]:
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T), 
-               varg(tv(linc(Loc), t(.Set, pointerType(t(.Set, void))))))
+               varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
           when value(Len) ==Int value(Len')
           [structural]
      

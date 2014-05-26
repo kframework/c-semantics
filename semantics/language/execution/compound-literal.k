@@ -46,14 +46,14 @@ module C-COMPOUND-LITERAL
           [structural]
           
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => allocateType(Loc, T)
-               ~> addToEnv(X, Loc)
+               => allocObject(Base, T)
+               ~> addToEnv(X, Base)
                ~> giveType(X, T)
                ~> Init ~> sequencePoint
                ~> X
           ...</k>
-          <compound-lit-map> M:Map => M[Loc <- X] </compound-lit-map>
-          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <compound-lit-map> M:Map => M[Base <- X] </compound-lit-map>
+          <next-loc> Base:SymBase => linc(Base) </next-loc>
           when notBool X in keys M
           [structural]
 
@@ -62,12 +62,12 @@ module C-COMPOUND-LITERAL
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
      rule <k> handleCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, T)
                ~> Init ~> sequencePoint
                ~> X
           ...</k>
-          <compound-lit-map>... X |-> Loc:SymLoc ...</compound-lit-map>
+          <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           [structural]
           
      syntax K ::= wstring(List)

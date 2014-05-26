@@ -11,7 +11,7 @@ module C-DECL-GLOBAL-SYNTAX
      // linkage, which must then be completed and allocated at the end of
      // processing the TU if a tentative def exists and the type is still
      // incomplete.
-     syntax K ::= declState(SymLoc, Type, DeclState, Bool)
+     syntax K ::= declState(SymBase, Type, DeclState, Bool)
 
      syntax K ::= allowInit(K)
 endmodule
@@ -261,7 +261,7 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -272,7 +272,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
           <internals>...
-               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _)
+               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
                andBool notBool (X in keys(Exts))
@@ -293,7 +293,7 @@ module C-DECL-GLOBAL
 
      // Naked, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -302,7 +302,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... 
-               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
+               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
           ...</externals>
           <internals> Ints:Map </internals>
           when isNaked(T)
@@ -312,7 +312,7 @@ module C-DECL-GLOBAL
 
      // Extern, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -321,7 +321,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... 
-               X |-> declState(Loc:SymLoc, OldT:Type, State:DeclState, _) 
+               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
           ...</externals>
           <internals> Ints:Map </internals>
           when isExtern(T)
@@ -343,7 +343,7 @@ module C-DECL-GLOBAL
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -352,10 +352,10 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-link-loc> Loc:SymLoc => linc(Loc) </next-link-loc>
+          <next-link-loc> Base:SymBase => linc(Base) </next-link-loc>
           <externals>
                Exts:Map
-               (. => X |-> declState(Loc, stripStorageSpecifiers(T), declared, false))
+               (. => X |-> declState(Base, stripStorageSpecifiers(T), declared, false))
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
@@ -365,7 +365,7 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, stripStorageSpecifiers(T), K)), 
@@ -373,11 +373,11 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <externals> Exts:Map </externals>
           <internals>
                Ints:Map
-               (. => X |-> declState(Loc, stripStorageSpecifiers(T), declared, false))
+               (. => X |-> declState(Base, stripStorageSpecifiers(T), declared, false))
           </internals>
           when isStaticType(T)
                andBool notBool (X in keys(Exts))
@@ -533,76 +533,76 @@ module C-DECL-GLOBAL
 
      syntax K ::= updateDecl(CId, Linkage, DeclState)
      rule <k> updateDecl(X:CId, external, S':DeclState) 
-               => updateLinkState(X, T', Loc') 
+               => updateLinkState(X, T', Base') 
           ...</k>
-          <env>... X |-> Loc':SymLoc ...</env>
+          <env>... X |-> Base':SymBase ...</env>
           <types>... X |-> T':Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... 
-               X |-> declState((_ => Loc'), (_ => T'), (_ => S'), _)
+               X |-> declState((_ => Base'), (_ => T'), (_ => S'), _)
           ...</externals>
           [structural]
      rule <k> updateDecl(X:CId, internal, S':DeclState)
                => .
           ...</k>
-          <env>... X |-> Loc':SymLoc ...</env>
+          <env>... X |-> Base':SymBase ...</env>
           <types>... X |-> T':Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals>...
-               X |-> declState((_ => Loc'), (_ => T'), (_ => S'), _)
+               X |-> declState((_ => Base'), (_ => T'), (_ => S'), _)
           ...</internals>
           [structural]
 
-     syntax K ::= updateLinkState(CId, Type, SymLoc)
+     syntax K ::= updateLinkState(CId, Type, SymBase)
      // No previous decl, this isn't a def.
-     rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) ...</k>
+     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (. => X |-> T') </external-types>
-          when isLinkerLoc(Loc')
+          when isLinkerLoc(Base')
                andBool notBool X in keys(Decls)
           [structural]
      // No previous decl, this is a def.
-     rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) ...</k>
+     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
           <external-types> _ (.Map => X |-> T') </external-types>
-          <external-defs> _ (.Map => X |-> Loc') </external-defs>
-          when notBool isLinkerLoc(Loc')
+          <external-defs> _ (.Map => X |-> Base') </external-defs>
+          when notBool isLinkerLoc(Base')
                andBool notBool X in keys(Decls)
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
-     rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) => . ...</k>
+     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls>... X |-> set(_ (.Set => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> (_ => T') ...</external-types>
-          when isLinkerLoc(Loc')
+          when isLinkerLoc(Base')
           [structural]
      // New def.
-     rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) => . ...</k>
+     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
           <external-types>... X |-> (_ => T') ...</external-types>
-          <external-defs> Defs:Map (.Map => X |-> Loc') </external-defs>
-          when notBool isLinkerLoc(Loc')
+          <external-defs> Defs:Map (.Map => X |-> Base') </external-defs>
+          when notBool isLinkerLoc(Base')
                andBool (notBool X in keys(Defs))
           [structural]
      // Def already encountered.
-     rule <k> updateLinkState(X:CId, T':Type, Loc':SymLoc) => . ...</k>
+     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
           <external-types>... X |-> (_ => T') ...</external-types>
-          <external-defs>... X |-> Loc' ...</external-defs>
+          <external-defs>... X |-> Base' ...</external-defs>
           [structural]
    
      rule <k> (.K => ERROR("DG12",
                     "redefinition of symbol with external linkage: "
                     +String idToString(X)))
-               ~> updateLinkState(X:CId, _, Loc':SymLoc)
+               ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
-               X |-> Loc:SymLoc
+               X |-> Base:SymBase
           ...</external-defs>
-          when notBool isLinkerLoc(Loc')
-               andBool (Loc =/=K Loc')
+          when notBool isLinkerLoc(Base')
+               andBool (Base =/=K Base')
           [structural]
      
      syntax K ::= recordTentDef(CId, Linkage)
@@ -625,23 +625,23 @@ module C-DECL-GLOBAL
      // linker locs are transparent enough.
      syntax K ::= allocateDecl(CId)
      rule <k> allocateDecl(X:CId) 
-               => allocateType(Loc, T) 
+               => allocObject(Base, T) 
           ...</k>
           <types>... X |-> T:Type ...</types>
-          <env>... X |-> Loc:SymLoc ...</env>
-          when notBool isLinkerLoc(Loc)
+          <env>... X |-> Base:SymBase ...</env>
+          when notBool isLinkerLoc(Base)
           [structural]
      rule <k> allocateDecl(X:CId) 
-               => addToEnv(X, Loc')
-               ~> allocateType(Loc', T) 
+               => addToEnv(X, Base')
+               ~> allocObject(Base', T) 
           ...</k>
           <types>... X |-> T:Type ...</types>
-          <env>... X |-> Loc:SymLoc ...</env>
+          <env>... X |-> Base:SymBase ...</env>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc':SymLoc => linc(Loc') </next-static-loc>
-          <linkings>... (. => base(Loc) |-> base(Loc')) </linkings>
-          when isLinkerLoc(Loc)
+          <next-static-loc> Base':SymBase => linc(Base') </next-static-loc>
+          <linkings>... (. => Base |-> Base') </linkings>
+          when isLinkerLoc(Base)
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff *** 

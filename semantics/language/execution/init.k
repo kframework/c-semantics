@@ -67,11 +67,11 @@ module C-EXECUTION-INIT
           => incomingArguments-aux(L, 0) 
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
-          => allocateType(argvLoc(N +Int 1), strType(S))
-          ~> writeString(argvLoc(N +Int 1), S)
+          => allocObject(N +Int 1 @ argv, strType(S))
+          ~> writeString(lnew(N +Int 1 @ argv), S)
           ~> Computation(
                allowWrite(Identifier("#incomingArgumentsArray")[N])
-                    := lv(argvLoc(N +Int 1), strType(S)))
+                    := lv(lnew(N +Int 1 @ argv), strType(S)))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int) 
@@ -89,8 +89,8 @@ module C-EXECUTION-INIT
 
      syntax K ::= makeArgv(CId, Type)
      rule makeArgv(X:CId, T:Type) 
-          => allocateType(argvLoc(0), T)
-          ~> addToEnv(X, argvLoc(0))
+          => allocObject(0 @ argv, T)
+          ~> addToEnv(X, 0 @ argv)
           ~> giveType(X, T)
           [structural]
 
@@ -104,7 +104,7 @@ module C-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
-                    <next-loc> _ => firstLoc(auto(0)) </next-loc>
+                    <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...
                               <curr-function> 

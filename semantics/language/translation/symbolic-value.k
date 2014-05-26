@@ -1,5 +1,6 @@
 module C-SYMBOLIC-VALUE-SYNTAX
      syntax CSize ::= SymVal
+     syntax SymBase ::= SymVal
      syntax SymLoc ::= SymVal
      syntax Bits ::= SymVal
      syntax SymVal ::= "symVal"

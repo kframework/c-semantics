@@ -58,16 +58,16 @@ module C-DECL-RESOLUTION
                X |-> set((SetItem(Tu:String) => .) _)
           ...</external-decls>
           <external-defs>...
-               X |-> Loc':SymLoc
+               X |-> Base':SymBase
           ...</external-defs>
           <tu-id> Tu </tu-id>
           <genv>...
-               X |-> (Loc:SymLoc => Loc')
+               X |-> (Base:SymBase => Base')
           ...</genv>
           <linkings>...
-               (. => base(Loc) |-> base(Loc'))
+               (. => Base |-> Base')
           ...</linkings>
-          when isLinkerLoc(Loc)
+          when isLinkerLoc(Base)
      rule <k> resolveReferences ...</k>
           <external-uses>...
                SetItem(X:CId)
@@ -76,13 +76,13 @@ module C-DECL-RESOLUTION
                X |-> set((SetItem(Tu:String) => .) _)
           ...</external-decls>
           <external-defs>...
-               X |-> Loc:SymLoc
+               X |-> Base:SymBase
           ...</external-defs>
           <tu-id> Tu </tu-id>
           <genv>...
-               X |-> Loc
+               X |-> Base
           ...</genv>
-          when notBool isLinkerLoc(Loc)
+          when notBool isLinkerLoc(Base)
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
@@ -116,6 +116,7 @@ module C-DECL-RESOLUTION
           when notBool (X in keys(Defs))
                orBool notBool (X in keys(Types))
 
+     // Remember which TU has the definition of main.
      rule <k> resolveReferences ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           <external-uses>...
@@ -125,7 +126,7 @@ module C-DECL-RESOLUTION
                (Identifier("main") |-> set(.Set) => .Map)
           ...</external-decls>
           <external-defs>...
-               Identifier("main") |-> loc(_ @ static(MainTu:String), _)
+               Identifier("main") |-> _ @ static(MainTu:String)
           ...</external-defs>
           <external-types>...
                Identifier("main") |-> _

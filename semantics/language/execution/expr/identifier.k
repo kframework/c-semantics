@@ -11,8 +11,8 @@ module C-EXPR-IDENTIFIER
      designating an object (in which case it is an lvalue) or a function (in
      which case it is a function designator).
      }*/
-     rule <k> X:CId => lv(Loc, T) ...</k>
-          <env>... X |-> Loc:SymLoc ...</env>
+     rule <k> X:CId => lv(lnew(Base), T) ...</k>
+          <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
 

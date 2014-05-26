@@ -1,5 +1,4 @@
 module C-SYMLOC-SYNTAX
-     syntax K ::= firstLoc(Duration) [function]
      syntax SymBase ::= base(SymLoc) [function]
      syntax Int ::= offset(SymLoc) [function]
 
@@ -28,7 +27,8 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isStaticDuration(SymLoc) [function]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
      syntax Bool ::= isAutoDuration(SymLoc) [function]
-     syntax Bool ::= isLinkerLoc(SymLoc) [function]
+
+     syntax Bool ::= isLinkerLoc(SymBase) [function]
 
      // I.e., static, argv, allocated, or thread (the same as "not
      // isLinkerLoc," except it's a "positive" check). This is mostly intended
@@ -41,11 +41,10 @@ module C-SYMLOC-SYNTAX
      syntax SymLoc ::= loc(SymBase, Int) [klabel('loc)]
      syntax SymLoc ::= "NullPointer"
 
-     syntax SymLoc ::= argvLoc(Int) [function]
-
      syntax KResult ::= SymLoc
 
-     syntax SymLoc ::= linc(SymLoc) [function]
+     syntax SymBase ::= linc(SymBase) [function]
+     syntax SymLoc ::= lnew(SymBase) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -75,7 +74,7 @@ module C-SYMLOC
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isAutoDuration" "(" SymLoc ")" [function]
 
-     syntax Bool ::= "#isLinkerLoc" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isLinkerLoc" "(" SymBase ")" [function]
 
      rule isPhysicalLoc(Loc:SymLoc) 
           => (isAllocatedDuration(Loc) 
@@ -94,8 +93,9 @@ module C-SYMLOC
           => #isThreadDuration(Loc) ==K true
      rule isAutoDuration(Loc:SymLoc)
           => #isAutoDuration(Loc) ==K true
-     rule isLinkerLoc(Loc:SymLoc)
-          => #isLinkerLoc(Loc) ==K true
+
+     rule isLinkerLoc(Base:SymBase)
+          => #isLinkerLoc(Base) ==K true
 
      rule #isAllocatedDuration(loc(_ @ allocated, _)) => true
 
@@ -108,18 +108,15 @@ module C-SYMLOC
 
      rule #isAutoDuration(loc(_ @ auto(_), _)) => true
 
-     rule #isLinkerLoc(loc(_ @ link(_), _)) => true
+     rule #isLinkerLoc(_ @ link(_)) => true
 
-     rule firstLoc(D:Duration) => loc(0 @ D, 0)
-     
      rule base(loc(Base:SymBase, _)) => Base
 
      rule offset(loc(_, Offset:Int)) => Offset
 
-     rule argvLoc(N:Int) => loc(N @ argv, 0)
-     
-     rule linc(loc(X:Int @ D:Duration, Off:Int))
-          => loc(X +Int 1 @ D, Off)
+     rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
+
+     rule lnew(Base:SymBase) => loc(Base, 0)
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)

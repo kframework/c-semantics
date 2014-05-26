@@ -4,19 +4,19 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax K ::= writeString(SymLoc, String)
      syntax K ::= writeWString(SymLoc, List)
 
-     syntax K ::= allocString(SymLoc, String)
-     syntax K ::= allocWString(SymLoc, List)
+     syntax K ::= allocString(SymBase, String)
+     syntax K ::= allocWString(SymBase, List)
 
-     syntax K ::= alloc(SymLoc, Type, Int)
+     syntax K ::= alloc(SymBase, Type, Int)
 
-     syntax K ::= zeroBlock(SymLoc)
+     syntax K ::= zeroObject(SymBase)
 
-     syntax K ::= sizeofLocation(SymLoc)
+     syntax K ::= sizeofObject(SymBase)
 
      syntax K ::= makeUnwritableSubObject(K)
 
-     syntax K ::= allocateType(SymLoc, Type)
-     syntax K ::= allocateTypeIfAbsent(SymLoc, Type)
+     syntax K ::= allocObject(SymBase, Type)
+     syntax K ::= allocObjectIfAbsent(SymBase, Type)
 endmodule
 
 module C-MEMORY-ALLOC
@@ -59,35 +59,36 @@ module C-MEMORY-ALLOC
                := tv(0, cfg:wcharut))
           [structural] 
 
-     rule allocateType(Loc:SymLoc, T:Type) => alloc(Loc, T, byteSizeofType(T))
+     rule allocObject(Base:SymBase, T:Type)
+          => alloc(Base, T, byteSizeofType(T))
           [structural]
-     rule <k> allocateTypeIfAbsent(Loc:SymLoc, T:Type) 
-               => alloc(Loc, T, byteSizeofType(T))
+     rule <k> allocObjectIfAbsent(Base:SymBase, T:Type) 
+               => alloc(Base, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
-          when notBool (SetItem(base(Loc)) in (keys M))
+          when notBool (SetItem(Base) in (keys M))
           [structural] 
-     rule <k> allocateTypeIfAbsent(loc(Base:SymBase, 0), _) => . 
+     rule <k> allocObjectIfAbsent(Base:SymBase, _) => . 
           ...</k>
           <mem>... Base |-> object(_, _, _) ...</mem>
           [structural]
 
-     rule <k> alloc(loc(Base:SymBase, 0), T:Type, Len:Int) => . ...</k>
+     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => . ...</k>
           <mem>...
                .Map => Base |-> object(T, Len, .Map)
           ...</mem>
-          when notBool isLinkerLoc(loc(Base, 0))
+          when notBool isLinkerLoc(Base)
           [structural]
      
      // used by calloc
-     rule <k> zeroBlock(loc(Base:SymBase, 0)) => . ...</k>
+     rule <k> zeroObject(Base:SymBase) => . ...</k>
           <mem>...
                Base |-> object(_, Len:Int, 
                     _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
           
-     rule <k> sizeofLocation(loc(Base:SymBase, _)) 
+     rule <k> sizeofObject(Base:SymBase)
                => tv(Len, cfg:sizeut)
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
@@ -103,27 +104,23 @@ module C-MEMORY-ALLOC
      // i take this to mean that if i write to a location twice or read from a
      // location after being written to, then it is a problem
           
-     rule allocString(Loc:SymLoc, S:String)
-          => allocateType(Loc, addQualifier(Const,
+     rule allocString(Base:SymBase, S:String)
+          => allocObject(Base, addQualifier(Const,
                t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))))
-               ~> writeString(Loc, S)
+          ~> writeString(lnew(Base), S)
           [structural]
-     rule allocWString(Loc:SymLoc, S:List)
-          => allocateType(Loc, addQualifier(Const,
+     rule allocWString(Base:SymBase, S:List)
+          => allocObject(Base, addQualifier(Const,
                t(.Set, arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1)))))
-               ~> writeWString(Loc, S)
+          ~> writeWString(lnew(Base), S)
           [structural] 
      
-     // TODO(chathhorn): might be able to do away with this by looking up quals
-     // in the object type.
+     // TODO(chathhorn): should be able to do away with this by looking up
+     // quals in the effective object type.
      context makeUnwritableSubObject((HOLE => peval(HOLE)))
-     rule <k> makeUnwritableSubObject(
-                    lval(loc(Base:SymBase, Offset:Int), _)) 
-               => . 
-          ...</k>
-          <not-writable>...
-               (. => SetItem(loc(Base, Offset:Int)))
-          ...</not-writable>
+     rule <k> makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . ...</k>
+          <not-writable>... (. => SetItem(Loc)) ...</not-writable>
+          when isPhysicalLoc(Loc)
           [structural]
      rule makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
           when notBool isPhysicalLoc(Loc)

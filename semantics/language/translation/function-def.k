@@ -71,7 +71,7 @@ module C-FUNCTION-DEF
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
           ...</k>
-          <env>... X |-> loc(Base:SymBase, 0) ...</env>
+          <env>... X |-> Base:SymBase ...</env>
           <functions>...
                Base |-> functionObject(_, Params:List, Proto:Type, _)
           ...</functions>

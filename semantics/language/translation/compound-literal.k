@@ -54,8 +54,8 @@ module C-COMPOUND-LITERAL
           [structural]
           
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => allocateType(Loc, T)
-               ~> addToEnv(X, Loc)
+               => allocObject(Base, T)
+               ~> addToEnv(X, Base)
                ~> giveType(X, T)
                ~> zero(X)
                ~> Init
@@ -63,7 +63,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <initializing> true </initializing>
           [structural]
 
@@ -89,30 +89,30 @@ module C-COMPOUND-LITERAL
 
      }*/  
           
-     rule <k> (. => allocString(Loc, S))
+     rule <k> (. => allocString(Base, S))
                ~> stringLiteral(S:String)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <string-lits>
                M:Map
-               (. => S |-> lv(Loc, t(.Set, 
+               (. => S |-> lv(lnew(Base), t(.Set, 
                     arrayType(t(.Set, char), lengthString(S) +Int 1))))
           </string-lits>
           when notBool (S in keys(M))
           [structural]
           
      syntax K ::= wstring(List)
-     rule <k> (. => allocWString(Loc, S))
+     rule <k> (. => allocWString(Base, S))
                ~> wstringLiteral(S:List)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Loc:SymLoc => linc(Loc) </next-static-loc>
+          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <string-lits>
                M:Map
-               (.Map => wstring(S) |-> lv(Loc, t(.Set, 
+               (.Map => wstring(S) |-> lv(lnew(Base), t(.Set, 
                     arrayType(cfg:wcharut, lengthList(S) +Int 1))))
           </string-lits>
           when notBool wstring(S) in keys(M)

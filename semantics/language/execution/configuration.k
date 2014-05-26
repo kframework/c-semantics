@@ -17,10 +17,10 @@ module C-CONFIGURATION
 
                // CId |-> Type
                <external-types> .Map </external-types>
-               // CId |-> Loc
+               // CId |-> SymBase
                <external-defs> .Map </external-defs>
 
-               // dummy link loc |-> real loc
+               // dummy link base |-> real base
                <linkings> .Map </linkings> 
 
                <translation-units>
@@ -30,7 +30,7 @@ module C-CONFIGURATION
                          <gtypes color="lightgray"> .Map </gtypes>
                          <gstructs color="lightgray"> .Map </gstructs>
 
-                         // kpair(CId, BlockNum) |-> SymLoc
+                         // kpair(CId, BlockNum) |-> SymBase
                          <local-statics> .Map </local-statics>
                          // kpair(CId, BlockNum) |-> Type
                          <local-types> .Map </local-types>
@@ -74,7 +74,7 @@ module C-CONFIGURATION
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                     </k>
 
-                    <next-loc color="black"> 0 </next-loc>
+                    <next-loc color="black"> .K </next-loc>
                     <final-computation multiplicity="?" color="lightgray">
                          .K
                     </final-computation>

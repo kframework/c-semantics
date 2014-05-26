@@ -84,7 +84,7 @@ module LIBC-STDLIB
           <k> prepareBuiltin(Identifier("realloc"), 
                     ListItem(tv(OldLoc:SymLoc, _))
                     ListItem(tv(NewLen:Int, _:KResult)))
-               => realloc(OldLoc, newAlloc(N), OldLen:Int, NewLen:Int)
+               => realloc(base(OldLoc), base(newAlloc(N)), OldLen:Int, NewLen:Int)
                ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
@@ -110,16 +110,15 @@ module LIBC-STDLIB
                ListItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
-     rule [calloc-aux]:
-          (. => zeroBlock(Loc:SymLoc) ) 
-          ~> tv(Loc, t(_, pointerType(t(_, void))))
-          ~> (calloc-aux => .K)
+     rule (. => zeroObject(base(Loc)) ) 
+          ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
+          ~> (calloc-aux => .)
           [structural]
 
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
                     ListItem(tv(Loc:SymLoc, t(_, pointerType(_)))))
-               => deleteSizedBlock(Loc, Len:Int) 
+               => deleteSizedObject(base(Loc), Len:Int) 
                ~> skipval
           ...</k>
           <malloced>... Loc |-> Len:Int => .Map ...</malloced>

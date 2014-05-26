@@ -210,12 +210,12 @@ module C-LTLMC
      rule ltlLVal'(
           <generatedTop>... <T>...
                <genv>... 
-                    Identifier(S) |-> Loc:SymLoc
+                    Identifier(S) |-> Base:SymBase
                ...</genv>
                <gtypes>... 
                     Identifier(S) |-> T:Type
                ...</gtypes>
           ...</T> ...</generatedTop>, 
           S:String)
-          => ptr(Loc, T)
+          => ptr(lnew(Base), T)
 endmodule

@@ -52,8 +52,8 @@ module C-TRANSLATION-INIT
           <translation-units>...
                (.Bag => <tu>...
                     <tu-id> TU </tu-id>
-                    <next-link-loc> firstLoc(link(TU)) </next-link-loc>
-                    <next-static-loc> firstLoc(static(TU)) </next-static-loc>
+                    <next-link-loc> 0 @ link(TU) </next-link-loc>
+                    <next-static-loc> 0 @ static(TU) </next-static-loc>
                ...</tu>)
           ...</translation-units>
           [structural]

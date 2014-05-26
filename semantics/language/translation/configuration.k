@@ -25,7 +25,7 @@ module C-CONFIGURATION
                <external-uses> SetItem(Identifier("main")) </external-uses>
           </linking-state>
 
-          // dummy link loc |-> real loc
+          // dummy link base |-> real base
           <linkings> .Map </linkings>
 
           <translation-units>
@@ -35,7 +35,7 @@ module C-CONFIGURATION
                     <gtypes color="lightgray"> .Map </gtypes>
                     <gstructs color="lightgray"> .Map </gstructs>
 
-                    // kpair(CId, BlockNum) |-> SymLoc
+                    // kpair(CId, BlockNum) |-> SymBase
                     <local-statics> .Map </local-statics>
                     // kpair(CId, BlockNum) |-> Type
                     <local-types> .Map </local-types>

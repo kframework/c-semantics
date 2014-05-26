@@ -20,7 +20,8 @@ module LIBC-BOOTSTRAP
      rule rkludge(varg(K:K)) => varg(K) [structural, anywhere]
 
      context incSymbolic(HOLE => reval(HOLE))
-     rule incSymbolic(tv(Loc:SymLoc, T:Type)) => tv(linc(Loc), T)
+     rule incSymbolic(tv(Loc:SymLoc, T:Type))
+          => tv(loc(linc(base(Loc)), offset(Loc)), T)
           [structural]
 
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In

@@ -27,9 +27,9 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural] 
           
-     rule <k> (.K => deleteBlock(Loc)) ~> popBlock ...</k>
+     rule <k> (.K => deleteObject(Base)) ~> popBlock ...</k>
           <local-addresses>...
-               (SetItem(Loc:SymLoc) => .Set)
+               (SetItem(Base:SymBase) => .Set)
           ...</local-addresses>
           [structural] 
           

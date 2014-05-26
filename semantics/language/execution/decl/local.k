@@ -25,13 +25,13 @@ module C-DECL-LOCAL
      syntax K ::= declareInternalVariable(CId, Type, K)
 
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
-               => addToEnv(X, Loc) 
+               => addToEnv(X, Base) 
                ~> giveType(X, T')
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <external-defs>...
-               X |-> Loc:SymLoc
+               X |-> Base:SymBase
           ...</external-defs>
           <external-types>...
                X |-> T':Type
@@ -41,14 +41,14 @@ module C-DECL-LOCAL
           [structural] 
           
      rule <k> declareInternalVariable(X:CId, T:Type, _)
-               => addToEnv(X, Loc)
+               => addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-statics>... 
-               kpair(X, BlockNum) |-> Loc:SymLoc
+               kpair(X, BlockNum) |-> Base:SymBase
           ...</local-statics>
           <local-types>... 
                kpair(X, BlockNum) |-> T':Type
@@ -74,13 +74,13 @@ module C-DECL-LOCAL
           [structural] 
                     
      rule <k> declareOnly(X:CId, T:Type)
-               => allocateType(Loc, T) 
-               ~> addToEnv(X, Loc) 
+               => allocObject(Base, T) 
+               ~> addToEnv(X, Base) 
                ~> giveType(X, T)
           ...</k>
-          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (. => ListItem(X)) </local-vars>
-          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           when isCompleteType(T)
                andBool (notBool isStaticType(T))
                andBool (notBool isExternType(T))
@@ -100,11 +100,11 @@ module C-DECL-LOCAL
           [structural] 
 
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
-               => defineAndInit(X, T, figureInit(X, T, K), Loc)
+               => defineAndInit(X, T, figureInit(X, T, K), Base)
           ...</k>
-          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
+          <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (. => ListItem(X)) </local-vars>
-          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           // Again, this should be needed statically, but not dynamically.
           when notBool X in Vars
           [structural] 
@@ -117,11 +117,10 @@ module C-DECL-LOCAL
           <local-vars>... ListItem(X) ...</local-vars>
           [structural] 
 
-     syntax K ::= defineAndInit(CId, Type, K, SymLoc) [strict(3)] 
-
-     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, K:K), Loc:SymLoc)
-               => allocateTypeIfAbsent(Loc, T')
-               ~> addToEnv(X, Loc)
+     syntax K ::= defineAndInit(CId, Type, K, SymBase) [strict(3)] 
+     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, K:K), Base:SymBase)
+               => allocObjectIfAbsent(Base, T')
+               ~> addToEnv(X, Base)
                ~> giveType(X, T')
                ~> K
                ~> sequencePoint
@@ -129,9 +128,9 @@ module C-DECL-LOCAL
           <should-init> true </should-init>
           [structural] 
           
-     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, _), Loc:SymLoc)
-               => allocateTypeIfAbsent(Loc, T')
-               ~> addToEnv(X, Loc)
+     rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, _), Base:SymBase)
+               => allocObjectIfAbsent(Base, T')
+               ~> addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
           <should-init> false </should-init>

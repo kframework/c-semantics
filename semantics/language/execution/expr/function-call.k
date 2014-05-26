@@ -124,27 +124,27 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:TypedValue)
-               => allocateType(Loc, T)
-               ~> addToEnv(X, Loc)
+               => allocObject(Base, T)
+               ~> addToEnv(X, Base)
                ~> giveType(X, T)
                ~> Computation(allowWrite(X) := V)
           ...</k>
           <curr-function-params>...
                (.List => ListItem(X))
           </curr-function-params>
-          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
-          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
      rule <k> bindParam(X:CId)
-               => allocateType(Loc, t(.Set, no-type))
-               ~> addToEnv(X, Loc)
+               => allocObject(Base, t(.Set, no-type))
+               ~> addToEnv(X, Base)
                ~> giveType(X, t(.Set, no-type))
           ...</k>
           <curr-function-params>...
                (.List => ListItem(X))
           </curr-function-params>
-          <next-loc> Loc:SymLoc => linc(Loc) </next-loc>
-          <local-addresses>... .Set => SetItem(Loc) ...</local-addresses>
+          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
 endmodule

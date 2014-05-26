@@ -54,7 +54,7 @@ module LIBC-THREADS
           <br/>
           (.Bag =>
           <thread>...
-               <next-loc> firstLoc(thread(ThId:Int)) </next-loc>
+               <next-loc> 0 @ thread(ThId:Int) </next-loc>
                <thread-id> ThId:Int </thread-id>
                <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
                </k>

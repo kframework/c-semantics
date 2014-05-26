@@ -1,11 +1,11 @@
 module C-IO-BUFFERED-SYNTAX
-     syntax K ::= realloc(SymLoc, SymLoc, Int, Int)
+     syntax K ::= realloc(SymBase, SymBase, Int, Int)
 
      // deletes the base object from memory, given a location
-     syntax K ::= deleteBlock(SymLoc)
+     syntax K ::= deleteObject(SymBase)
      // deletes the base object from memory, given a location and it size (as a
      // check)
-     syntax K ::= deleteSizedBlock(SymLoc, Int)
+     syntax K ::= deleteSizedObject(SymBase, Int)
 
      syntax K ::= writeByte(SymLoc, CValue)
 endmodule
@@ -226,42 +226,39 @@ module C-IO-BUFFERED
           => UNDEF("EIO8", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
           [structural]
 
-     rule <k> realloc(Old:SymLoc, New:SymLoc, OldLen:Int, NewLen:Int)
+     rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)
                => alloc(New, t(.Set, no-type), NewLen)
                ~> copyBytes(minInt(OldLen, NewLen), Old, New)
-               ~> copyObjectType(base(Old), base(New))
-               ~> deleteSizedBlock(Old, OldLen)
+               ~> copyObjectType(Old, New)
+               ~> deleteSizedObject(Old, OldLen)
           ...</k>
           [structural]
           
-     syntax K ::= copyBytes(Int, SymLoc, SymLoc)
-     rule <k> copyBytes((N':Int => N' -Int 1), 
-               loc(OldBase:SymBase, _), 
-               loc(NewBase:SymBase, _))
+     syntax K ::= copyBytes(Int, SymBase, SymBase)
+     rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>... 
-               OldBase |-> object(_, _, _ N:Int |-> K:K)
-               NewBase |-> object(_, _, _ (.Map => (N' -Int 1) |-> K))
+               Old |-> object(_, _, _ N:Int |-> K:K)
+               New |-> object(_, _, _ (.Map => (N' -Int 1) |-> K))
           ...</mem>
           when (N' ==Int N +Int 1) andBool (N' >Int 0)
           [structural]   
-     rule <k> copyBytes((N':Int => N' -Int 1), 
-                    loc(OldBase:SymBase, _), _)
+     rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
-          <mem>... OldBase |-> object(_, _, M:Map) ...</mem>
+          <mem>... Old |-> object(_, _, M:Map) ...</mem>
           when (notBool (N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .
           [structural]   
 
      syntax K ::= copyObjectType(SymBase, SymBase)
-     rule <k> copyObjectType(OldBase:SymBase, NewBase:SymBase) => . ...</k>
+     rule <k> copyObjectType(Old:SymBase, New:SymBase) => . ...</k>
           <mem>... 
-               OldBase |-> object(T:Type, _, _)
-               NewBase |-> object((_ => T), _, _)
+               Old |-> object(T:Type, _, _)
+               New |-> object((_ => T), _, _)
           ...</mem>
           
-     rule <k> deleteSizedBlock(loc(Base:SymBase, _), Len:Int) => . 
+     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => . 
           ...</k>
           <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
@@ -269,7 +266,7 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural] 
      
-     rule <k> deleteBlock(loc(Base:SymBase, _)) => .K ...</k>
+     rule <k> deleteObject(Base:SymBase) => .K ...</k>
           <mem>... Base |-> object(_, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
           [structural] 
