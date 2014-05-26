@@ -50,6 +50,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
+     syntax Bool ::= isNoType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
 
      syntax Set ::= "typeQualifiers" [function]
@@ -173,6 +174,12 @@ module C-TYPING-SYNTAX
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
+
+     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
+     // or array, it'll return the struct/union/array type and not the type of
+     // its first member. Returns no-type when nothing seems to be aligned at
+     // that offset.
+     syntax Type ::= getTypeAtOffset(Type, Int) [function]
 endmodule
 
 module C-TYPING

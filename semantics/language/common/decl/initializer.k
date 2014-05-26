@@ -359,22 +359,13 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>... 
-               . => Computation(allowWrite(K) := K') ~> possiblyMakeConst(T, K)
+               . => Computation(allowWrite(K) := K')
           </saved-init>
           when (isBasicType(T) 
                     orBool isPointerType(T) 
                     orBool isBitfieldType(T))
                andBool notBool isStructType(T')
                andBool notBool isUnionType(T')
-          [structural]
-     
-     syntax K ::= possiblyMakeConst(Type, K)
-     
-     rule possiblyMakeConst(T:Type, K:K) => makeUnwritableSubObject(K)
-          when isConstType(T)
-          [structural]
-     rule possiblyMakeConst(T:Type, _) => .
-          when notBool isConstType(T)
           [structural]
           
      // this is used to have an aggregate on the RHS of a compound init

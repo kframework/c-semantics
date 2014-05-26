@@ -212,6 +212,6 @@ module C-MEMORY-READING
      
      rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
           [structural] 
-     
+
 endmodule
 

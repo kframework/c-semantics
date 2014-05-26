@@ -92,6 +92,7 @@ module C-TYPING-PREDICATES
      rule isArrayType(T:Type) => #isArray(T) ==K true
      rule isFlexibleArrayType(T:Type) => #isFlexibleArray(T) ==K true
      rule isVoidType(T:Type) => #isVoid(T) ==K true
+     rule isNoType(T:Type) => #isNoT(T) ==K true
 
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T) 
@@ -144,6 +145,7 @@ module C-TYPING-PREDICATES
                    | "#isArray" "(" Type ")" [function]
                    | "#isFlexibleArray" "(" Type ")" [function]
                    | "#isVoid" "(" Type ")" [function]
+                   | "#isNoT" "(" Type ")" [function]
                    | "#isStruct" "(" Type ")" [function]
                    | "#isUnion" "(" Type ")" [function]
                    | "#isIncompleteArray" "(" Type ")"  [function]
@@ -180,6 +182,9 @@ module C-TYPING-PREDICATES
 
      rule #isVoid(t(_, void)) => true
      rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)
+
+     rule #isNoT(t(_, no-type)) => true
+     rule #isNoT(typedDeclaration(T:Type, _)) => #isNoT(T)
 
      rule #isStruct(t(_, structType(_, _, _))) => true 
      rule #isStruct(t(_, incompleteStructType(_))) => true 

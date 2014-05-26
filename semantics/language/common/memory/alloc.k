@@ -13,10 +13,10 @@ module C-MEMORY-ALLOC-SYNTAX
 
      syntax K ::= sizeofObject(SymBase)
 
-     syntax K ::= makeUnwritableSubObject(K)
-
      syntax K ::= allocObject(SymBase, Type)
      syntax K ::= allocObjectIfAbsent(SymBase, Type)
+
+     syntax K ::= getEffectiveType(SymLoc)
 endmodule
 
 module C-MEMORY-ALLOC
@@ -115,14 +115,18 @@ module C-MEMORY-ALLOC
           ~> writeWString(lnew(Base), S)
           [structural] 
      
-     // TODO(chathhorn): should be able to do away with this by looking up
-     // quals in the effective object type.
-     context makeUnwritableSubObject((HOLE => peval(HOLE)))
-     rule <k> makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . ...</k>
-          <not-writable>... (. => SetItem(Loc)) ...</not-writable>
-          when isPhysicalLoc(Loc)
-          [structural]
-     rule makeUnwritableSubObject(lval(Loc:SymLoc, _)) => . 
-          when notBool isPhysicalLoc(Loc)
-          [structural]
+     rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int))
+               => getTypeAtOffset(T, Offset)
+          ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          when notBool isNoType(T)
+     rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <effective-types> EffTypes:Map </effective-types>
+          when isNoType(T)
+               andBool notBool (loc(Base, Offset) in keys(EffTypes))
+     // Probably shouldn't ever happen.
+     rule <k> getEffectiveType(Loc:SymLoc) => t(.Set, no-type) ...</k>
+          <mem>... Mem:Map ...</mem>
+          when notBool (base(Loc) in keys(Mem))
 endmodule

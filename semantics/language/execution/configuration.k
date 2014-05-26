@@ -9,10 +9,9 @@ module C-CONFIGURATION
      <exec>
           <global>
                <mem> .Map </mem>
-
                <functions color="lightgray"> .Map </functions>
-
-               <not-writable> .Set </not-writable>
+               // SymLoc |-> Type
+               <effective-types> .Map </effective-types>
 
                <main-tu color="lightgray"> .Set </main-tu>
 
