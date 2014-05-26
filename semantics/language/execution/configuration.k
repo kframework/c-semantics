@@ -8,8 +8,6 @@ module C-CONFIGURATION
 <global>
      <mem> .Map </mem>
      <functions color="lightgray"> .Map </functions>
-     // SymLoc |-> Type
-     <effective-types> .Map </effective-types>
 
      <main-tu color="lightgray"> .Set </main-tu>
 
