@@ -46,18 +46,13 @@ module LIBC-STDLIB
      The malloc function returns either a null pointer or a pointer to the
      allocated space.
      }*/
-     // TODO(chathhorn): move this. Should try to hide the details of our
-     // symbolic addresses from the library semantics.
-     syntax K ::= newAlloc(Int) [function]
-     rule newAlloc(Base:Int) => loc(Base @ allocated, 0)
-     
      rule <k> prepareBuiltin(Identifier("malloc"),
                     ListItem(tv(Len:Int, _:KResult)))
-               => alloc(newAlloc(N), t(.Set, no-type), Len:Int)
-               ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
+               => alloc(Base, t(.Set, no-type), Len:Int)
+               ~> tv(lnew(Base), t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>
-          <next-malloced> N:Int => N +Int 1 </next-malloced>
+          <malloced>... .Map => Base |-> Len:Int ...</malloced>
+          <next-malloced> Base:SymBase => linc(Base) </next-malloced>
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
@@ -81,17 +76,16 @@ module LIBC-STDLIB
      if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> prepareBuiltin(Identifier("realloc"), 
-                    ListItem(tv(OldLoc:SymLoc, _))
-                    ListItem(tv(NewLen:Int, _:KResult)))
-               => realloc(base(OldLoc), base(newAlloc(N)), OldLen:Int, NewLen:Int)
-               ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
+          <k> prepareBuiltin(Identifier("realloc"),
+                    ListItem(tv(loc(OldBase:SymBase, 0), _))
+                    ListItem(tv(NewLen:Int, _)))
+               => realloc(OldBase, NewBase, OldLen, NewLen)
+               ~> tv(lnew(NewBase), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
-               (OldLoc => newAlloc(N)) |-> (OldLen:Int => NewLen:Int) 
+               (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
           ...</malloced>
-          <next-malloced> N:Int => N +Int 1 </next-malloced>
-          when OldLoc =/=K NullPointer
+          <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
      
      rule [realloc-null]:
@@ -117,11 +111,11 @@ module LIBC-STDLIB
 
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
-                    ListItem(tv(Loc:SymLoc, t(_, pointerType(_)))))
-               => deleteSizedObject(base(Loc), Len:Int) 
+                    ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
+               => deleteSizedObject(Base, Len:Int) 
                ~> skipval
           ...</k>
-          <malloced>... Loc |-> Len:Int => .Map ...</malloced>
+          <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
           
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX

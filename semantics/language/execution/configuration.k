@@ -2,6 +2,7 @@ module C-CONFIGURATION
      imports C-EXECUTION-INIT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      configuration 
      <T>
@@ -52,7 +53,7 @@ module C-CONFIGURATION
           <rand-nat color="black"> 0 </rand-nat>
           // stdlib
           <malloced color="lightgray"> .Map </malloced>
-          <next-malloced> 0 </next-malloced>
+          <next-malloced> 0 @ allocated </next-malloced>
 
           <next-thread-id color="black"> 1 </next-thread-id>
 
@@ -74,7 +75,7 @@ module C-CONFIGURATION
                          ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                     </k>
 
-                    <next-loc color="black"> .K </next-loc>
+                    <next-loc color="black"> 0 @ auto(0) </next-loc>
                     <final-computation multiplicity="?" color="lightgray">
                          .K
                     </final-computation>
