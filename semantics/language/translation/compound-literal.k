@@ -98,7 +98,7 @@ module C-COMPOUND-LITERAL
           <string-lits>
                M:Map
                (. => S |-> lv(lnew(Base), t(.Set, 
-                    arrayType(t(.Set, char), lengthString(S) +Int 1))))
+                    arrayType(t(SetItem(Const), char), lengthString(S) +Int 1))))
           </string-lits>
           when notBool (S in keys(M))
           [structural]
@@ -113,7 +113,7 @@ module C-COMPOUND-LITERAL
           <string-lits>
                M:Map
                (.Map => wstring(S) |-> lv(lnew(Base), t(.Set, 
-                    arrayType(cfg:wcharut, lengthList(S) +Int 1))))
+                    arrayType(addQualifier(Const, cfg:wcharut), lengthList(S) +Int 1))))
           </string-lits>
           when notBool wstring(S) in keys(M)
           [structural]
