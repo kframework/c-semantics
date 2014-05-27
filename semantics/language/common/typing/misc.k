@@ -20,12 +20,20 @@ module C-TYPING-MISC
 
      rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
 
+     // Char types?
      rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
      rule correspondingUnsignedType(t(S:Set, long-int))
           => t(S, unsigned-long-int)
      rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
+
+     rule correspondingSignedType(t(S:Set, unsigned-int))
+          => t(S, int)
+     rule correspondingSignedType(t(S:Set, unsigned-long-int))
+          => t(S, long-int)
+     rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
+          => t(S, long-long-int)
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
           when hasUnsignedIntegerType(T)
@@ -332,42 +340,5 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
-
-     rule getTypeAtOffset(T:Type, 0) => T
-     // Preserve the modifiers for e.g. const/volatile checks.
-     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
-          when (Offset =/=Int 0)
-               andBool (Offset <Int byteSizeofType(T))
-               andBool notBool isAggregateType(T)
-     rule getTypeAtOffset(T:Type, Offset:Int) => t(.Set, no-type)
-          when (Offset =/=Int 0)
-               andBool (Offset >=Int byteSizeofType(T))
-               andBool notBool isAggregateType(T)
-     // Arrays.
-     rule getTypeAtOffset(t(_, arrayType(T:Type, Len:Int)), Offset:Int)
-          => getTypeAtOffset(T, Offset %Int byteSizeofType(T))
-          when (Offset =/=Int 0)
-               andBool (Offset <Int byteSizeofType(T) *Int Len)
-     rule getTypeAtOffset(t(_, arrayType(T:Type, Len:Int)), Offset:Int)
-          => t(.Set, no-type)
-          when Offset >= byteSizeofType(T) *Int Len
-     // Structs.
-     rule getTypeAtOffset(t(_, structType(_, _, fieldInfo(
-               _ ListItem(typedDeclaration(_, F1:CId))
-                 ListItem(typedDeclaration(_, F2:CId)) _,
-               _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int F2 |-> Offset2:Int
-          ))), Offset:Int) => getTypeAtOffset(T, Offset -Int Offset1)
-          when (Offset =/=Int 0)
-               andBool (Offset1 <=Int Offset)
-               andBool (Offset2 >Int Offset)
-     rule getTypeAtOffset(t(_, structType(_, _, fieldInfo(
-               _ ListItem(typedDeclaration(_, F1:CId)),
-               _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int
-          ))), Offset:Int) => getTypeAtOffset(T, Offset -Int Offset1)
-          when (Offset =/=Int 0)
-               andBool (Offset1 <=Int Offset)
-
 endmodule
 

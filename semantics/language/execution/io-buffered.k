@@ -51,9 +51,9 @@ module C-IO-BUFFERED
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
-               andBool (notBool isConstType(getTypeAtOffset(ObjT, Offset)))
+               andBool (notBool Const in getQualsAtOffset(ObjT, Offset))
                // Volatile.
-               andBool (notBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               andBool ((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T))
           [structural]
      rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
@@ -73,14 +73,14 @@ module C-IO-BUFFERED
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when isConstType(getTypeAtOffset(ObjT, Offset))
+          when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when notBool isVolatileType(T)
-               andBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               andBool Volatile in getQualsAtOffset(ObjT, Offset)
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
@@ -134,7 +134,7 @@ module C-IO-BUFFERED
                => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
@@ -149,7 +149,7 @@ module C-IO-BUFFERED
                => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
@@ -163,7 +163,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T), 
                     errorNonVolatileLVal)
                ~> tv(piece(trap, cfg:bitsPerByte), t(.Set, no-type))
@@ -180,7 +180,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(getTypeAtOffset(ObjT, Offset))
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T), 
                     errorNonVolatileLVal)
                ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))

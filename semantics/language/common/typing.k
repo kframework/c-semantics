@@ -114,6 +114,7 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
+     syntax Type ::= correspondingSignedType(Type) [function] 
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
@@ -175,11 +176,6 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
-     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
-     // or array, it'll return the struct/union/array type and not the type of
-     // its first member. Returns no-type when nothing seems to be aligned at
-     // that offset.
-     syntax Type ::= getTypeAtOffset(Type, Int) [function]
 endmodule
 
 module C-TYPING
