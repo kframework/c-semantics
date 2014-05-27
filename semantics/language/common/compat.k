@@ -78,6 +78,7 @@ module COMPAT-SYNTAX
      syntax Map ::= Map "[" K "<-" K "]"
      rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
+     syntax List ::= values(Map) [function]
 endmodule
 
 module COMPAT
@@ -186,5 +187,9 @@ module COMPAT
           [structural, anywhere]
 
      // rule lengthList(L:List) => size(L)
+
+     rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
+     rule values(.Map) => .List
+
 endmodule
 

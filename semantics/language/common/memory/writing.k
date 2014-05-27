@@ -29,22 +29,17 @@ module C-MEMORY-WRITING
      
      // Write thread-local or auto.
      rule write(Loc:SymLoc, V:CValue, T:Type)
-          // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
-          // if the object has a declared type and checkEff is only meaningful
-          // in the case of a declared type being present.
-          => setEffectiveType(Loc, T)
-          ~> checkEffectiveType(T, getEffectiveType(Loc))
-          ~> write-specific(Loc, V, T)
-          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+          => write-specific(Loc, V, T)
+          when (isThreadDuration(Loc)
+                    orBool isAutoDuration(Loc)
+                    orBool isArgvDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule write(Loc:SymLoc, V:CValue, T:Type)
-          => setEffectiveType(Loc, T)
-          ~> checkEffectiveType(T, getEffectiveType(Loc))
-          ~> write-specific(Loc, V, T)
-          when notBool isThreadDuration(Loc)
-               andBool notBool isAutoDuration(Loc)
+          => write-specific(Loc, V, T)
+          when (isStaticDuration(Loc)
+                    orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
           [ndtrans]
 
