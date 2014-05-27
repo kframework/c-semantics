@@ -84,12 +84,12 @@ char *strstr(const char *haystack, const char *needle) {
 }
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
-char *strtok_r(char *s, const char *delimiters, char **lasts) {
+char *strtok_r(char *restrict s, const char *restrict delimiters, char **restrict lasts) {
 	char *sbegin, *send;
 	sbegin = s ? s : *lasts;
 	sbegin += strspn(sbegin, delimiters);
 	if (*sbegin == '\0') {
-		*lasts = "";
+		*lasts = (char*)"";
 		return NULL;
 	}
 	send = sbegin + strcspn(sbegin, delimiters);
@@ -101,7 +101,7 @@ char *strtok_r(char *s, const char *delimiters, char **lasts) {
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
 char *strtok(char *restrict s1, const char *restrict delimiters) {
-	static char *ssave = "";
+	static char *ssave = (char*)"";
 	return strtok_r(s1, delimiters, &ssave);
 }
 
@@ -170,7 +170,7 @@ char *(strrchr)(const char *s, int c) {
 
 // from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
 // by Daniel Vik
-void* memcpy(void* dest, const void* src, size_t count) {
+void* memcpy(void* restrict dest, const void* restrict src, size_t count) {
 	unsigned char* dst8 = (unsigned char*)dest;
 	unsigned char* src8 = (unsigned char*)src;
 
