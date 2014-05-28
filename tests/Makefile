@@ -11,6 +11,9 @@ THIRD_PARTY_DIRECTORIES = lcc-tests clight-tests-unit cil llvm-regression llvm-u
 TORTURE_DIRECTORIES = gcc-torture
 CSMITH_DIRECTORIES = csmith
 
+UNDEFFAIL_DIRECTORIES = undef-fail
+UNDEFPASS_DIRECTORIES = undef-pass
+
 ALL_DIRECTORIES = $(GOOD_DIRECTORIES) $(SHOULDFAIL_DIRECTORIES) $(MUSTFAIL_DIRECTORIES)  $(MUSTPASS_DIRECTORIES) $(SHOULDPASS_DIRECTORIES) $(INTEGRATION_DIRECTORIES) $(UNIT_DIRECTORIES) $(THIRD_PARTY_DIRECTORIES) $(TORTURE_DIRECTORIES) $(CSMITH_DIRECTORIES)
 
 GOOD_TARGETS = $(foreach var,  $(GOOD_DIRECTORIES), results-pass-$(var).xml)
@@ -24,6 +27,8 @@ THIRD_PARTY_TARGETS = $(foreach var, $(THIRD_PARTY_DIRECTORIES), results-pass-$(
 TORTURE_TARGETS = $(foreach var, $(TORTURE_DIRECTORIES), results-pass-$(var).xml)
 CSMITH_TARGETS = $(foreach var, $(CSMITH_DIRECTORIES), results-pass-$(var).xml)
 
+UNDEFFAIL_TARGETS = $(foreach var,  $(UNDEFFAIL_DIRECTORIES), results-fail-$(var).xml)
+UNDEFPASS_TARGETS = $(foreach var,  $(UNDEFPASS_DIRECTORIES), results-pass-$(var).xml)
 
 CLEAN_TARGETS = $(foreach var, $(ALL_DIRECTORIES), clean-$(var))
 
@@ -31,6 +36,8 @@ CLEAN_TARGETS = $(foreach var, $(ALL_DIRECTORIES), clean-$(var))
 all: $(PARSER) test 
 
 integration: $(INTEGRATION_TARGETS)
+
+undef: $(UNDEFPASS_TARGETS) $(UNDEFFAIL_TARGETS)
 
 unit: $(MUSTPASS_TARGETS) $(MUSTFAIL_TARGETS) adhoc $(UNIT_TARGETS)
 
