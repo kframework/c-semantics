@@ -474,7 +474,7 @@ module LIBC-STDIO
      rule getFormatType-aux("%c", "")
           => t(.Set, int) [structural]
      rule getFormatType-aux("%s", "")
-          => t(.Set, pointerType(t(.Set, unsigned-char))) [structural]
+          => t(.Set, pointerType(t(.Set, char))) [structural]
      
      rule getFormatType-aux("%p", "")
           => t(.Set, pointerType(t(.Set, void))) [structural]
