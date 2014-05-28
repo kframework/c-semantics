@@ -89,7 +89,7 @@ char *strtok_r(char *restrict s, const char *restrict delimiters, char **restric
 	sbegin = s ? s : *lasts;
 	sbegin += strspn(sbegin, delimiters);
 	if (*sbegin == '\0') {
-		*lasts = (char*)"";
+		*lasts = "";
 		return NULL;
 	}
 	send = sbegin + strcspn(sbegin, delimiters);
@@ -101,7 +101,7 @@ char *strtok_r(char *restrict s, const char *restrict delimiters, char **restric
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
 char *strtok(char *restrict s1, const char *restrict delimiters) {
-	static char *ssave = (char*)"";
+	static char *ssave = "";
 	return strtok_r(s1, delimiters, &ssave);
 }
 
