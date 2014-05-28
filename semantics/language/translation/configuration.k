@@ -50,7 +50,6 @@ module C-CONFIGURATION
                <next-unnamed color="black"> 0 </next-unnamed>
 
                <goto-map color="lightgray"> .Map </goto-map>
-               <string-lits color="lightgray"> .Map </string-lits>
 
                // TODO(chathhorn): move.
                <incomplete-tags> .Set </incomplete-tags>

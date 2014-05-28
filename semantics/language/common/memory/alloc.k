@@ -103,13 +103,13 @@ module C-MEMORY-ALLOC
      // location after being written to, then it is a problem
           
      rule allocString(Base:SymBase, S:String)
-          => allocObject(Base, addQualifier(Const,
-               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))))
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ~> writeString(lnew(Base), S)
           [structural]
      rule allocWString(Base:SymBase, S:List)
-          => allocObject(Base, addQualifier(Const,
-               t(.Set, arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1)))))
+          => allocObject(Base, t(.Set,
+               arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1))))
           ~> writeWString(lnew(Base), S)
           [structural] 
      

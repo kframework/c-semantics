@@ -78,13 +78,13 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           when Offset >=Int Len orBool Offset <Int 0
           [structural] 
-     rule <k> (. => UNDEF("EIO3", "Trying to modify a string literal or an object declared with const type.", "6.4.5, 6.7.3"))
+     rule <k> (. => UNDEF("EIO3", "Trying to modify an object declared with const type.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO5", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
@@ -226,13 +226,13 @@ module C-IO-BUFFERED
 //             //[interpRule] 
 
      rule errorReadOutOfBounds
-          => UNDEF("EIO5", "Reading outside the bounds of an object.", "6.2.4")
+          => UNDEF("EIO6", "Reading outside the bounds of an object.", "6.2.4")
           [structural]
      rule errorUnseqEffects
-          => UNDEF("EIO6", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
+          => UNDEF("EIO7", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
           [structural]
      rule errorNonVolatileLVal
-          => UNDEF("EIO7", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
+          => UNDEF("EIO8", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)
@@ -320,7 +320,7 @@ module C-IO-BUFFERED
      rule checkEffectiveType(L:Type, Eff:Type) => .
           when #effectivelyCompat(L, Eff) ==K true
           [structural]
-     rule (. => UNDEF("EIO8", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
+     rule (. => UNDEF("EIO9", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
           when #effectivelyCompat(L, Eff) =/=K true
           [structural]

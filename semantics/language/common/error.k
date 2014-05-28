@@ -166,12 +166,6 @@ module C-ERROR
           when Base =/=K Base'
           [structural]
 
-     rule [err00035]:
-          (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") ) ~>
-          write(_, _, T:Type)
-          when isConstType(T)
-          [structural]
-
      rule [err00038a]:
           (. => CV("00038", "Arrays must have positive length.", "6.7.6.2:1")) ~>
           ArrayType(_, tv(Len:Int, _), _)

@@ -18,8 +18,6 @@ module C-TYPING-MISC
 
      rule char => cfg:charAlias
 
-     rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
-
      // Char types?
      rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
@@ -177,9 +175,11 @@ module C-TYPING-MISC
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           when notBool isArrayType(T)
-          
+
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
+     rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(stripStorageSpecifiers(T), X)
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 

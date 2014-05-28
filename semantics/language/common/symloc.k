@@ -28,6 +28,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isThreadDuration(SymLoc) [function]
      syntax Bool ::= isAutoDuration(SymLoc) [function]
 
+     syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymBase) [function]
 
      // I.e., static, argv, allocated, or thread (the same as "not
@@ -36,6 +37,9 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isPhysicalLoc(SymLoc) [function]
 
      syntax SymBase ::= Int "@" Duration
+
+     syntax SymBase ::= string(String)
+     syntax SymBase ::= wstring(List)
 
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int) [klabel('loc)]
@@ -74,6 +78,7 @@ module C-SYMLOC
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isAutoDuration" "(" SymLoc ")" [function]
 
+     syntax Bool ::= "#isStringLoc" "(" SymLoc ")" [function]
      syntax Bool ::= "#isLinkerLoc" "(" SymBase ")" [function]
 
      rule isPhysicalLoc(Loc:SymLoc) 
@@ -94,6 +99,8 @@ module C-SYMLOC
      rule isAutoDuration(Loc:SymLoc)
           => #isAutoDuration(Loc) ==K true
 
+     rule isStringLoc(Loc:SymLoc)
+          => #isStringLoc(Loc) ==K true
      rule isLinkerLoc(Base:SymBase)
           => #isLinkerLoc(Base) ==K true
 
@@ -107,6 +114,9 @@ module C-SYMLOC
      rule #isThreadDuration(loc(_ @ thread(_), _)) => true
 
      rule #isAutoDuration(loc(_ @ auto(_), _)) => true
+
+     rule #isStringLoc(loc(string(_), _)) => true
+     rule #isStringLoc(loc(wstring(_), _)) => true
 
      rule #isLinkerLoc(_ @ link(_)) => true
 

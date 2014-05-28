@@ -140,14 +140,12 @@ module C-TYPING-SYNTAX
      // fromArray, oldStyle).
      syntax Set ::= getModifiers(Type) [function]
 
-     syntax Set ::= getProvenance(Type)
-
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
+     syntax Set ::= getProvenance(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
-     syntax Type ::= stripConst(Type) [function]
 
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]

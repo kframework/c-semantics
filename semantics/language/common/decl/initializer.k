@@ -31,8 +31,7 @@ module C-DECL-INITIALIZER
           => lv(N, initializerType(T))
           [structural]
 
-     rule initializerType(T:Type)
-          => addStorage(Initializer, stripConst(T))
+     rule initializerType(T:Type) => addStorage(Initializer, T)
 
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
