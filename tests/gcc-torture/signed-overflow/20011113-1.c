@@ -1,6 +1,6 @@
 #include <stddef.h>
 //;
-extern void *memcpy (void *, const void *, size_t);
+extern void *memcpy (void * restrict, const void * restrict, size_t);
 extern void abort (void);
 extern void exit (int);
 

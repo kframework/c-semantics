@@ -2,7 +2,7 @@
 extern void exit(int);
 extern void abort (void);
 
-extern void * memcpy (void *, const void *, size_t);
+extern void * memcpy (void * restrict, const void * restrict, size_t);
 int foo (void *, void *, unsigned int c);
 
 int src[10];
