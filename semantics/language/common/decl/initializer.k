@@ -12,6 +12,8 @@ module C-DECL-INITIALIZER-SYNTAX
 
      syntax K ::= allowWrite(K) [strict]
      syntax Type ::= initializerType(Type) [function]
+
+     syntax K ::= singleIntInit(K) [strict]
 endmodule
 
 module C-DECL-INITIALIZER
