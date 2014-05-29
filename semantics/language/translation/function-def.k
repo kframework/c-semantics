@@ -1,5 +1,5 @@
 module C-FUNCTION-DEF-SYNTAX
-     syntax K ::= initFunction(K, K) [strict]
+     syntax KItem ::= initFunction(K, K) [strict]
      syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
@@ -138,7 +138,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (. => ERROR("FD8", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
-          when lengthList(Params) >Int 2
+          when size(Params) >Int 2
           [structural]
      rule (. => ERROR("FD9", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
@@ -195,6 +195,7 @@ module C-FUNCTION-DEF
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
+/*To DO
      rule #hasDupIds'(
                _
                ListItem(typedDeclaration(_, X:CId))
@@ -202,7 +203,7 @@ module C-FUNCTION-DEF
                ListItem(typedDeclaration(_, X:CId))
                _
           ) => true
-
+*/
      syntax K ::= dummyBind(List)
      
      rule dummyBind(.List) => .

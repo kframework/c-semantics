@@ -31,6 +31,8 @@ module C-DECL-TAGGED
           when L =/=List .List
           [structural]
 
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
+                         [function]
      rule makeStructFieldInfo(L:List) 
           => makeStructFieldInfo'(
                incompleteToFlexibleArrayMember(L),
@@ -38,8 +40,6 @@ module C-DECL-TAGGED
                incompleteToFlexibleArrayMember(L))
           when L =/=List .List
 
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
-                         [function]
      rule makeStructFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , V:Int
@@ -64,11 +64,15 @@ module C-DECL-TAGGED
           => ListItem(typedDeclaration(t(Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
-     rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
-          when L =/=List .List
-
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
+     rule makeUnionFieldInfo(L:List) 
+          => makeUnionFieldInfo'(
+               L,
+               .Map, .Map,
+               L)
+          when L =/=List .List
+
      rule makeUnionFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , Types:Map

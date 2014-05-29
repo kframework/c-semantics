@@ -127,7 +127,7 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))
           => #areCompat(T, T') andBool #areParamsCompat(L, L')
-          when (lengthList(L) ==Int lengthList(L'))
+          when (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
 
      syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]
@@ -142,9 +142,12 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(T, T') andBool #areCompat(L, L')
      rule #areCompat(.List, .List) => true
 
+     /*To do
      rule sameQualifiers(Mods:Set, Mods':Set)
           => intersectSet(Mods, typeQualifiers)
-               ==Set intersectSet(Mods', typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers) */
+     rule sameQualifiers(Mods:Set, Mods':Set)
+          => '_==Set_(intersectSet(Mods, typeQualifiers) ,, intersectSet(Mods', typeQualifiers))
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T

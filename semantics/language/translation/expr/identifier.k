@@ -39,5 +39,9 @@ module C-EXPR-IDENTIFIER
           [structural]
 
      rule <k> instantiate(_, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
+          <initializing> false </initializing>
 
+     rule <k> instantiate(L:SymLoc, T:Type) => read(L, T) ...</k>
+          <initializing> true </initializing>
+          when L =/=K symVal
 endmodule

@@ -105,6 +105,7 @@ module C-TRANSLATION-INIT
           (<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
+               <not-writable> NoWrite1:Set </not-writable>
 
                <external-types> ExtTypes1:Map </external-types>
                <external-defs> ExtDefs1:Map </external-defs>
@@ -123,6 +124,7 @@ module C-TRANSLATION-INIT
           (<global>
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
+               <not-writable> NoWrite2:Set </not-writable>
 
                <external-types> ExtTypes2:Map </external-types>
                <external-defs> ExtDefs2:Map </external-defs>
@@ -142,6 +144,7 @@ module C-TRANSLATION-INIT
           <global>
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
+               <not-writable> NoWrite1 NoWrite2 </not-writable>
 
                <external-types> ExtTypes1 ExtTypes2 </external-types>
                <external-defs> ExtDefs1 ExtDefs2 </external-defs>

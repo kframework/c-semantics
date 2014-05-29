@@ -1,6 +1,5 @@
 module C-COMPOUND-LITERAL
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -8,7 +7,6 @@ module C-COMPOUND-LITERAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -56,7 +54,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map> M:Map => M[Base <- X] </compound-lit-map>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          when notBool X in keys M
+          when notBool X in keys(M)
           [structural]
 
      // This and the compound-lit-map is apparently needed to properly handle
@@ -72,18 +70,15 @@ module C-COMPOUND-LITERAL
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           [structural]
           
-     // TODO(chathhorn) identical to trans, move these to common.
-     rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S)),
-                    t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ...</k>
-          <mem>... string(S) |-> _ ...</mem>
+     syntax K ::= wstring(List)
+     rule <k> stringLiteral(S:String) => V ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <string-lits>... S |-> V:LValue ...</string-lits>
           [structural]
-     rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S)),
-                    t(.Set, arrayType(cfg:wcharut, lengthList(S) +Int 1)))
-          ...</k>
-          <mem>... wstring(S) |-> _ ...</mem>
+     rule <k> wstringLiteral(S:List) => V ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <string-lits>... wstring(S) |-> V:LValue ...</string-lits>
           [structural]
-
 endmodule

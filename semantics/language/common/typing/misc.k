@@ -18,20 +18,14 @@ module C-TYPING-MISC
 
      rule char => cfg:charAlias
 
-     // Char types?
+     rule stripConst(t(S:Set, T:SimpleType)) => t((S -Set SetItem(Const)), T)
+
      rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
      rule correspondingUnsignedType(t(S:Set, long-int))
           => t(S, unsigned-long-int)
      rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
-
-     rule correspondingSignedType(t(S:Set, unsigned-int))
-          => t(S, int)
-     rule correspondingSignedType(t(S:Set, unsigned-long-int))
-          => t(S, long-int)
-     rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
-          => t(S, long-long-int)
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
           when hasUnsignedIntegerType(T)
@@ -175,11 +169,9 @@ module C-TYPING-MISC
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           when notBool isArrayType(T)
-
+          
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
-     rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
-          => typedDeclaration(stripStorageSpecifiers(T), X)
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
@@ -340,5 +332,6 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
+
 endmodule
 

@@ -40,6 +40,8 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
      syntax Bool ::= isBitfieldType(Type) [function]
+     syntax Bool ::= isExternType(Type) [function]
+     syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isInitializerType(Type) [function]
@@ -48,13 +50,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isVoidType(Type) [function]
-     syntax Bool ::= isNoType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
-
-     // Storage class specifiers.
-     syntax Bool ::= isExternType(Type) [function]
-     syntax Bool ::= isStaticType(Type) [function]
-     syntax Bool ::= isRegisterType(Type) [function]
 
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
@@ -117,7 +113,6 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function] 
-     syntax Type ::= correspondingSignedType(Type) [function] 
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
@@ -143,12 +138,14 @@ module C-TYPING-SYNTAX
      // fromArray, oldStyle).
      syntax Set ::= getModifiers(Type) [function]
 
+     syntax Set ::= getProvenance(Type)
+
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
-     syntax Set ::= getProvenance(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
+     syntax Type ::= stripConst(Type) [function]
 
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
@@ -162,7 +159,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax K ::= completeTags(K) [strict]
+     syntax K ::= "completeTags" "(" K ")" [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
@@ -176,7 +173,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
-
 endmodule
 
 module C-TYPING

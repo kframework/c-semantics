@@ -221,7 +221,7 @@ module C-CONVERSION
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
      //      [structural, anywhere]
-     rule (. => UNSPEC("CCV1", "conversion to signed integer outside the range that can be represented.", "6.3.1.3:3"))
+     rule (. => ERROR("C1", "conversion to signed integer outside the range that can be represented.", "6.3.1.3:3"))
           ~> cast(T':Type, tv(I:Int, T:Type))
           when hasSignedIntegerType(T') andBool hasIntegerType(T)
                andBool notBool inRange(I, T')

@@ -23,14 +23,6 @@ module C-COMMON-EXPR-REFERENCE
      */
      rule &(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(SetItem(fromArray(0, 1)), pointerType(T)))
-          when notBool isRegisterLoc(Loc)
-          [structural]
-     rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
-          ~> &(tv(_, _))
-          [structural]
-     rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
-          ~> &(lval(Loc:SymLoc, _))
-          when isRegisterLoc(Loc)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
@@ -46,7 +38,8 @@ module C-COMMON-EXPR-REFERENCE
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
           [structural]
-     rule (. => UNDEF("CER3", "Dereferencing a null pointer.", "6.5.3.2:4"))
+
+     rule (. => UNDEF("CR1", "trying to dereference a null pointer.", "6.5.3.2:4"))
           ~> *(tv(Loc:SymLoc, _))
           when Loc ==K NullPointer
           [structural]

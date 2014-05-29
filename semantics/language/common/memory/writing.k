@@ -21,7 +21,6 @@ module C-MEMORY-WRITING
      imports C-BITS-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
@@ -32,25 +31,15 @@ module C-MEMORY-WRITING
      rule write(Loc:SymLoc, V:CValue, T:Type)
           => write-specific(Loc, V, T)
           when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
+               andBool notBool isConstType(T)
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule write(Loc:SymLoc, V:CValue, T:Type)
           => write-specific(Loc, V, T)
-          when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
-               andBool (notBool isStringLoc(Loc) orBool isInitializerType(T))
+          when notBool isThreadDuration(Loc)
+               andBool notBool isAutoDuration(Loc)
+               andBool notBool isConstType(T)
           [ndtrans]
-     rule (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
-          ~> write(_, _, T:Type)
-          when isConstType(T)
-               andBool notBool isInitializerType(T)
-          [structural]
-     rule (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
-          ~> write(Loc:SymLoc, _, T:Type)
-          when isStringLoc(Loc)
-               andBool notBool isInitializerType(T)
-          [structural]
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(Loc, splitBytes(tv(V, T)), T)

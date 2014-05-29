@@ -10,6 +10,7 @@ module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-LOCAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX

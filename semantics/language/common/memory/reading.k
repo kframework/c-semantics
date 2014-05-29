@@ -32,13 +32,11 @@ module C-MEMORY-READING
 
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
-     rule read(Loc:SymLoc, T:Type)
-          => readActual(Loc, T)
+     rule read(Loc:SymLoc, T:Type) => readActual(Loc, T)
           when isThreadDuration(Loc) orBool isAutoDuration(Loc)
           [structural]
-     // read data of "allocated" duration
-     rule read(Loc:SymLoc, T:Type)
-          => readActual(Loc, T)
+     rule  // read data of "allocated" duration
+          read(Loc:SymLoc, T:Type) => readActual(Loc, T)
           when notBool isThreadDuration(Loc)
                andBool notBool isAutoDuration(Loc)
                andBool Loc =/=K NullPointer
@@ -53,7 +51,7 @@ module C-MEMORY-READING
           => concretize(T, fillToBytes(extractBitsFromMem(Loc, T))) 
           when isBitfieldType(T)
           [structural]
-
+     
      rule concretize(T:Type, dataList(L:List)) 
           => joinIntegerBytes(T, L)
           when hasIntegerType(T) 
@@ -214,6 +212,6 @@ module C-MEMORY-READING
      
      rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
           [structural] 
-
+     
 endmodule
 

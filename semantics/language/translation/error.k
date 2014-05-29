@@ -1,5 +1,7 @@
 module C-TRANSLATION-ERROR
      imports C-ERROR-SYNTAX
+     imports C-ERROR-MAP-SYNTAX
+     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
@@ -48,7 +50,7 @@ module C-TRANSLATION-ERROR
           [structural]
           
      rule [err00041]:
-          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
+          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
           types(ListItem(t(_, void)) ListItem(t(_, T:K)))
           when T:K =/=K void
           [structural]
@@ -58,7 +60,7 @@ module C-TRANSLATION-ERROR
           when T:K =/=K void
           [structural]
      rule [err00043]:
-          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
+          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
           types(ListItem(T:Type) ListItem(T':Type))
           when (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
@@ -71,6 +73,31 @@ module C-TRANSLATION-ERROR
      //      when hasFloatType(T) andBool (N >=Int 0)
      //      [structural]
           
+//     // TODO(chathhorn): figure out what to do with these error numbers.
+//     rule <k> (. => ERROR("90692a",
+//               "Global declaration of " +String S +String " appears with the auto storage class specifier.", cv("6.9:2"))) ~>
+//               verifySpecifiers(Identifier(S:String))
+//          ...</k>
+//          <curr-tu> Tu:String </curr-tu>
+//          <curr-function> file-scope </curr-function>
+//          <type-specifiers>... 
+//               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Auto))
+//          ...</type-specifiers>
+//     rule <k> (. => ERROR("90692b",
+//               "Global declaration of " +String S +String " appears with the register storage class specifier.", cv("6.9:2"))) ~>
+//               verifySpecifiers(Identifier(S:String))
+//          ...</k>
+//          <curr-tu> Tu:String </curr-tu>
+//          <curr-function> file-scope </curr-function>
+//          <type-specifiers>... 
+//               kpair(Tu, Identifier(S)) |-> qs(_ SetItem(Register))
+//          ...</type-specifiers>
+//
+//     rule <k> (. => ERROR("90058",
+//          "Initializer element is not a compile-time constant.", 58))
+//          ~> instantiateIdVal(symVal, _) ...</k>
+//          <initializing> true </initializing>
+
 // TODO(chathhorn): add this back.
 //      rule <k> (. => ERROR("00215",
 //                "Found multiple declarations of " +String S 

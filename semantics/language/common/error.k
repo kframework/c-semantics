@@ -19,6 +19,8 @@ endmodule
 
 module C-ERROR
      imports C-ERROR-SYNTAX
+     imports C-ERROR-MAP-SYNTAX
+     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -162,6 +164,12 @@ module C-ERROR
           (. => ERROR("00033", "Cannot compare pointers with different base objects using '>='.", 53) ) ~>
           tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T:Type)
           when Base =/=K Base'
+          [structural]
+
+     rule [err00035]:
+          (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") ) ~>
+          write(_, _, T:Type)
+          when isConstType(T)
           [structural]
 
      rule [err00038a]:

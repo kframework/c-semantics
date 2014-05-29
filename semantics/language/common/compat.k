@@ -58,7 +58,7 @@ module COMPAT-SYNTAX
 
      syntax List ::= reverseList(List) [function]
 
-     syntax ListItem ::= ListItem(Bag)
+     //TODO: syntax List ::= ListItem(Bag)
      syntax K ::= list(List)
      syntax K ::= map(Map)
      syntax K ::= set(Set)
@@ -73,12 +73,11 @@ module COMPAT-SYNTAX
 
      syntax List ::= times(Int, K) [function]
 
-     // syntax Int ::= lengthList(List) [function]
+     // syntax Int ::= size(List) [function]
 
-     syntax Map ::= Map "[" K "<-" K "]"
-     rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
+     //syntax Map ::= Map "[" K "<-" K "]"
+     //rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
-     syntax List ::= values(Map) [function]
 endmodule
 
 module COMPAT
@@ -134,7 +133,7 @@ module COMPAT
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
 
-     rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
+     //To do here Liyi Li:: rule X:Bag ==Bag Y:Bag => (Bag2KLabel X)(.KList) ==K (Bag2KLabel Y)(.KList) 
      // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
      // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
@@ -186,10 +185,6 @@ module COMPAT
      rule klist(L:KList) => list(klistToList(L))
           [structural, anywhere]
 
-     // rule lengthList(L:List) => size(L)
-
-     rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
-     rule values(.Map) => .List
-
+     // rule size(L:List) => size(L)
 endmodule
 
