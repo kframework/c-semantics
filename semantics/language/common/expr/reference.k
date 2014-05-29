@@ -23,14 +23,14 @@ module C-COMMON-EXPR-REFERENCE
      */
      rule &(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(SetItem(fromArray(0, 1)), pointerType(T)))
-          when notBool (Register in getStorageSpecifiers(T))
+          when notBool isRegisterLoc(Loc)
           [structural]
      rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(tv(_, _))
           [structural]
      rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
-          ~> &(tv(_, T:Type))
-          when Register in getStorageSpecifiers(T)
+          ~> &(lval(Loc:SymLoc, _))
+          when isRegisterLoc(Loc)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

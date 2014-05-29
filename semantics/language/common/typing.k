@@ -40,8 +40,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
      syntax Bool ::= isBitfieldType(Type) [function]
-     syntax Bool ::= isExternType(Type) [function]
-     syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isInitializerType(Type) [function]
@@ -52,6 +50,11 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isVoidType(Type) [function]
      syntax Bool ::= isNoType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
+
+     // Storage class specifiers.
+     syntax Bool ::= isExternType(Type) [function]
+     syntax Bool ::= isStaticType(Type) [function]
+     syntax Bool ::= isRegisterType(Type) [function]
 
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]

@@ -1,7 +1,5 @@
 module C-EXECUTION-ERROR
      imports C-ERROR-SYNTAX
-     imports C-ERROR-MAP-SYNTAX
-     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-EXECUTION-INIT-SYNTAX
 

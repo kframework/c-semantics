@@ -31,18 +31,15 @@ module C-MEMORY-WRITING
      // Write thread-local or auto.
      rule write(Loc:SymLoc, V:CValue, T:Type)
           => write-specific(Loc, V, T)
-          when (isThreadDuration(Loc)
-                    orBool isAutoDuration(Loc)
-                    orBool isArgvDuration(Loc))
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (notBool isConstType(T) orBool isInitializerType(T))
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule write(Loc:SymLoc, V:CValue, T:Type)
           => write-specific(Loc, V, T)
-          when (isStaticDuration(Loc)
-                    orBool isAllocatedDuration(Loc)
-                    orBool (isStringLoc(Loc) andBool isInitializerType(T)))
+          when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool (notBool isConstType(T) orBool isInitializerType(T))
+               andBool (notBool isStringLoc(Loc) orBool isInitializerType(T))
           [ndtrans]
      rule (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
           ~> write(_, _, T:Type)

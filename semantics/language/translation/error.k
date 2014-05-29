@@ -1,7 +1,5 @@
 module C-TRANSLATION-ERROR
      imports C-ERROR-SYNTAX
-     imports C-ERROR-MAP-SYNTAX
-     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
