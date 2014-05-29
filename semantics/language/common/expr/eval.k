@@ -14,6 +14,7 @@ module C-COMMON-EXPR-EVAL
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -79,7 +80,6 @@ module C-COMMON-EXPR-EVAL
      an lvalue. If the array object has register storage class, the behavior is
      undefined.
      }*/
-     // TODO(chathhorn): register storage class
      rule rkludge(lval(Loc:SymLoc, T:Type))
           => tv(Loc, stripQualifiers(arrayToPointer(T)))
           when isArrayType(T) 
@@ -121,8 +121,13 @@ module C-COMMON-EXPR-EVAL
                andBool (isTrap(V) =/=K true)
      rule checkUse(tv(V:SymLoc, T:Type))
           => checkLoc(V) ~> tv(V, T)
+          when notBool isRegisterLoc(V)
+     rule checkUse(tv(V:SymLoc, T:Type))
+          => UNDEF("CEE1", "Address of a value declared with register storage class used in an expression.", "")
+          ~> tv(V, T)
+          when isRegisterLoc(V)
      rule checkUse(tv(trap, T:Type))
-          => ERROR("E1", "indeterminate value used in an expression (undefined behavior).")
+          => UNDEF("CEE2", "Indeterminate value used in an expression.", "")
           ~> tv(trap, T)
      
 endmodule

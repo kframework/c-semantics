@@ -50,6 +50,5 @@ module C-COMMON-EXPR-REFERENCE
           ~> *(tv(Loc:SymLoc, _))
           when Loc ==K NullPointer
           [structural]
-
 endmodule
 

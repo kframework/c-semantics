@@ -16,7 +16,7 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T:Type ...</types>
           [structural]
 
-     rule instantiate(L:SymLoc, T:Type) => read(L, T)
+     rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
           [structural]
 endmodule
 

@@ -153,6 +153,7 @@ module C-SYMLOC
      rule getThreadId(loc(_ @ thread(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ auto(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ register(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ argv, _)) => 0
 
      rule getOffset(loc(_, Off:Int)) => Off
      

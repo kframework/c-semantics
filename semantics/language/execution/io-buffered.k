@@ -51,6 +51,7 @@ module C-IO-BUFFERED
 
      syntax K ::= checkWrite(SymLoc, Type)
      rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => . ...</k>
+          <thread-id> ThreadId:Int </thread-id>
           <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
           <locs-written>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset)))
@@ -64,6 +65,10 @@ module C-IO-BUFFERED
                // Volatile.
                andBool ((notBool Volatile in getQualsAtOffset(ObjT, Offset))
                     orBool isVolatileType(T))
+               // Cross-thread writes.
+               andBool notBool ((isThreadDuration(loc(Base, Offset))
+                         orBool isAutoDuration(loc(Base, Offset)))
+                    andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
      rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
@@ -84,12 +89,19 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (. => UNDEF("EIO5", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when notBool isVolatileType(T)
                andBool Volatile in getQualsAtOffset(ObjT, Offset)
+          [structural]
+     rule <k> (. => UNSPEC("EIO5", "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+               ~> checkWrite(Loc:SymLoc, _)
+          ...</k>
+          <thread-id> ThreadId:Int </thread-id>
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+               andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
@@ -110,10 +122,21 @@ module C-IO-BUFFERED
      rule locations(bwrite(Loc:SymLoc, _) L:List)
           => SetItem(Loc) locations(L)
 
-     rule readBytes(Loc:SymLoc, Size:Int, T:Type)
-          => checkEffectiveType(T, getEffectiveType(Loc))
-          ~> readBytes-aux(Loc, Size, .List, T) 
+     rule <k> readBytes(Loc:SymLoc, Size:Int, T:Type)
+               => checkEffectiveType(T, getEffectiveType(Loc))
+               ~> readBytes-aux(Loc, Size, .List, T) 
+          ...</k>
+          <thread-id> ThreadId:Int </thread-id>
+          when notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
+                    andBool (ThreadId =/=K getThreadId(Loc)))
           [structural] 
+     rule <k> (. => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+               ~> readBytes(Loc:SymLoc, _, _)
+          ...</k>
+          <thread-id> ThreadId:Int </thread-id>
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+               andBool (ThreadId =/=K getThreadId(Loc))
+          [structural]
           
      // loc, size in bytes, aux list
      syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
@@ -226,13 +249,13 @@ module C-IO-BUFFERED
 //             //[interpRule] 
 
      rule errorReadOutOfBounds
-          => UNDEF("EIO6", "Reading outside the bounds of an object.", "6.2.4")
+          => UNDEF("EIO7", "Reading outside the bounds of an object.", "6.2.4")
           [structural]
      rule errorUnseqEffects
-          => UNDEF("EIO7", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
+          => UNDEF("EIO8", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
           [structural]
      rule errorNonVolatileLVal
-          => UNDEF("EIO8", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
+          => UNDEF("EIO9", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)
@@ -320,7 +343,7 @@ module C-IO-BUFFERED
      rule checkEffectiveType(L:Type, Eff:Type) => .
           when #effectivelyCompat(L, Eff) ==K true
           [structural]
-     rule (. => UNDEF("EIO9", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
+     rule (. => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
           when #effectivelyCompat(L, Eff) =/=K true
           [structural]
